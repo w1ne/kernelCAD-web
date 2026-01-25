@@ -11,7 +11,12 @@ fi
 
 echo "🚀 Starting Release Process ($VERSION_TYPE)..."
 
-# 1. Validation
+# Reminder
+echo "⚠️  Have you updated CHANGELOG.md and verified documentation? (Ctrl+C to abort)"
+read -t 5 -p "Continuing in 5 seconds..." || true
+echo ""
+
+# 1. Ensure clean working directoryion
 # Ensure we are on master (or main)
 BRANCH=$(git branch --show-current)
 if [ "$BRANCH" != "master" ] && [ "$BRANCH" != "main" ]; then

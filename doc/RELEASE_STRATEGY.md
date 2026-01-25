@@ -15,20 +15,14 @@ npm run release patch
 
 # Release a minor version (e.g. 0.1.0 -> 0.2.0)
 npm run release minor
-```
-
-### Manual Release Process
-If you prefer to release manually:
-
-1.  **Commit Changes**: Ensure all changes are committed to the `master` branch.
-2.  **Tag Release**: Create a new tag starting with `v` (e.g., `v0.1.0`).
+## Release Process
+1.  **Update Documentation**: Ensure `CHANGELOG.md`, `README.md`, and `doc/` files reflect the new changes.
+2.  **Run Release Script**:
     ```bash
-    git tag v0.1.0
+    npm run release <type>
+    # type: patch, minor, or major
     ```
-3.  **Push Tag**: Push the tag to GitHub.
-    ```bash
-    git push origin v0.1.0
-    ```
+3.  **CI/CD**: The script pushes the tag, triggering the GitHub Action to deploy.
 
 ### Release Pipeline (`.github/workflows/deploy.yml`)
 1.  **Trigger**: `on: push: tags: - 'v*'`
