@@ -1,58 +1,54 @@
-# Roadmap
+# kernelCAD Roadmap 2.0: The Horizons
 
-## Milestone 1: MVP (Completed)
-**Goal**: Create a minimum viable product to prove the concept of browser-based code-CAD.
+> "Good one small step a time workflow."
 
-- [x] **Project Setup**: Vite + React + TypeScript.
-- [x] **Geometry Kernel**: Integrated Replicad (OpenCASCADE).
-- [x] **Code Editor**: Integrated Monaco Editor with syntax highlighting.
-- [x] **Viewer**: Real-time 3D viewing with React Three Fiber.
-- [x] **Deployment**: Automated GitHub Pages deployment via Actions.
-- [x] **Stability**: Error Boundaries and specific WASM loading fixes for production.
+This roadmap transitions from feature-chasing to architectural stability. We define "Horizons" to group architectural milestones.
 
-## Milestone 2: Input & Output (Completed)
-**Goal**: Make the tool useful for real-world workflows by supporting standard CAD formats.
+## Horizon 1: Foundation & Modularization (Current Focus)
+**Goal**: Deconstruct the monolith. The `App.tsx` has become too complex. We need a clean "Workbench" architecture to support future GUI features safely.
 
-- [x] **STEP Export**: Allow downloading the geometry as a standard STEP file.
-- [x] **STL Export**: Allow downloading mesh data for 3D printing.
-- [ ] **Parameter UI**: Auto-generate sliders/inputs based on variables in the code.
-- [ ] **URL Sharing**: Share designs via encoded URLs.
+- [ ] **Architecture**: Split `App.tsx` into a Layout/Workbench system.
+    -   `Workbench` (State Container)
+    -   `Layout` (Visual Shell)
+    -   `FeatureManager` (Dependency Injection for Tools)
+- [ ] **State Management**: Introduce a rigid state store (likely `zustand` or `context`) to manage `Code`, `Selection`, `ViewMode` globally without prop drilling.
+- [ ] **Code Organization**: Strictly separate:
+    -   `src/core` (Engine, Worker, Evaluation)
+    -   `src/ui` (Components, Dialogs, Toolbar)
+    -   `src/features` (The bridge between logic and UI, e.g., "BoxFeature")
 
-## Milestone 3: Release Automation (Completed)
-**Goal**: Automate testing, versioning, and deployment.
+## Horizon 2: The Command Pattern (Fusion 360 Core)
+**Goal**: Standardize how actions happen. A "Tool" shouldn't just run a function; it should enter a "State".
 
-- [x] **Release Script**: `scripts/release.sh` to handle linting, version bumping, and tagging.
-- [x] **Packages**: Single-package `release` command in `package.json`.
-- [x] **CI Integration**: GitHub Actions workflow (`deploy.yml`) triggered by tags.
+- [ ] **Command Infrastructure**: Implement a `Command` class system.
+    -   `StartCommand('CreateBox')` -> Enters "Parameter Selection" state.
+    -   `CommitCommand()` -> Generates code + Updates History.
+-   **Undo/Redo**: Not just text undo, but "Operation" undo.
+-   **AST Engine**: Replace Regex-based `extractVariables` with a real AST parser (babel/parser) to reliably read/write code structure without breaking user logic.
 
-## Milestone 4: Advanced Kernel Features (Completed)
-**Goal**: Expose more of OpenCASCADE's power through convenient helpers.
+## Horizon 3: The Scene Graph (Data Truth)
+**Goal**: The text buffer is too volatile to be the only source of truth. We need a structured representation.
 
-- [x] **Assemblies**: Support for multiple interacting parts (`makeCompound`).
-- [x] **Fillet/Chamfer Helpers**: Easier APIs for standard mechanical operations.
+-   **Shadow DOM for CAD**: Maintain a JSON-like tree of the model structure (Bodies, Operations, Parameters).
+-   **Bi-directional Sync**:
+    -   Code Change -> Updates Shadow Graph.
+    -   Graph Change (Rename Item) -> Refactors Code safely.
+-   **Selection Sync**: Robust mechanism to map a 3D Mesh UUID back to the specific `const` variable in the code.
 
-## Milestone 5: Refactoring & Quality (Completed)
-**Goal**: Ensure codebase modularity and test coverage.
+## Horizon 4: Interactive Interaction
+**Goal**: Touching the model.
 
-- [x] **Modularity**: Split engine into helpers and exports.
-- [x] **Testing**: Unit tests for helpers and engine integration.
+-   **Gizmos**: Transform Controls (Move/Scale/Rotate) in the 3D view that update variable values.
+-   **Visual Sketcher**: A 2D canvas for drawing profiles that generates code.
+-   **Draggable History**: Reorder code blocks via a drag-and-drop timeline.
 
-## Milestone 6: Performance & Polish (Planned)
-**Goal**: Handle complex models without freezing the UI.
+---
+## Detailed Next Steps (Horizon 1)
 
-- [ ] **Web Worker**: Move the geometry engine to a Web Worker to keep the UI responsive during computation.
-- [ ] **Incremental Updates**: Only recompute changed parts if possible.
-- [ ] **Theme Config**: User-configurable editor themes.
-
-## Backlog / Ideas
--   **Vim Mode**: Support Vim keybindings in Monaco.
--   **TypeScript Support**: First-class TS support in the editor with auto-completion.
-
-## Milestone 7: Hybrid GUI (Fusion 360 Workflow) (Planned)
-**Goal**: Bi-directional editing where GUI actions generate code, and code updates the GUI.
-
-- [ ] **Visual Toolbar**: Common operations (Sketch, Extrude, Fillet) available as buttons. Clicking them inserts the corresponding Replicad code snippet.
-- [ ] **Browser Tree**: A Fusion-style browser panel showing the hierarchy of Bodies, Sketches, and Planes.
-- [ ] **Design Timeline**: Visual history of operations. Hovering over a timeline step highlights the corresponding code and 3D geometry.
-- [ ] **Parametric Dialogs**: Selecting an operation (e.g., "Extrude") opens a floating dialog to adjust parameters (distance, direction) with sliders, immediately updating the code.
-- [ ] **Visual Sketcher**: A 2D UI for drawing profiles that generates `sketch().line()...` commands automatically.
+1.  **Extract `WorkbenchState`**: Move separate `useState` hooks (`code`, `viewMode`, `activeDialog`) into a unified hook or store.
+2.  **Atomic Components**: Break `App.tsx` into:
+    -   `<Header />`
+    -   `<ActivityBar />` (The left strip)
+    -   `<SidePanel />` (The Browser/Tool properties)
+    -   `<Workspace />` (The Editor/Viewer split)
+3.  **Feature Registry**: Instead of hardcoding `GEOMETRY_CONFIGS`, create a registry where features register themselves (`BoxFeature`, `CylinderFeature`). This makes adding new tools easy.

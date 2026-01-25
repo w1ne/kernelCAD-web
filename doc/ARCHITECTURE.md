@@ -2,29 +2,81 @@
 
 kernelCAD is a browser-based programmatic CAD application. It combines a React UI with a powerful "serverless" geometry engine running entirely in the client via WebAssembly (WASM).
 
-## High Level Design
-kernelCAD follows a "thick client" architecture where all geometry processing happens locally in the user's browser. There is no backend server for geometry generation.
+## Architecture
 
-**Key Components:**
-1.  **Editor (UI Thread)**: Monaco-based code editor for user input.
-2.  **Geometry Kernel (WASM)**: Replicad (OpenCASCADE.js) running in the main thread (for now, future: Worker).
-3.  **Viewer (WebGL)**: Three.js / React Three Fiber renderer.
+## High-Level Overview
+
+kernelCAD follows a **Workbench Architecture** designed for modularity and separation of concerns.
+
+```mermaid
+graph TD
+    Entry[main.tsx] --> Provider[WorkbenchProvider]
+    Provider --> Layout[WorkbenchLayout]
+    
+    Layout --> Header
+    Layout --> Sidebar[Left Pane]
+    Layout --> Workspace
+    
+    Sidebar --> Toolbar
+    Sidebar --> SidePanel[Scene Browser]
+    
+    Workspace --> Editor[Code Editor]
+    Workspace --> Viewer[3D Viewer]
+    
+    subgraph State Management
+        Context[WorkbenchContext]
+    end
+    
+    subgraph Core Logic
+        Engine[Geometry Engine (Replicad)]
+        Worker[Web Worker]
+        Analysis[Code Analysis / AST]
+    end
+    
+    Context <--> Engine
+    Layout --> Context
+    Editor --> Context
+    Viewer --> Context
+```
 
 ## Core Components
 
-### 1. The Geometry Engine (`src/lib/geometryEngine.ts`)
-This is the bridge between the user's JavaScript code and the OpenCASCADE kernel.
+### 1. Workbench Context (`src/context/WorkbenchContext.tsx`)
+The central nervous system of the application. It holds global state:
+-   **Code**: The source of truth for the model.
+-   **ViewMode**: 'code' (Editor+Viewer) or 'gui' (Viewer+Browser).
+-   **Geometries**: The computed meshes displayed in the viewer.
+-   **Status**: `isComputing`, `error`, `isReady`.
 
--   **Initialization**: Dynamically loads the `opencascade.wasm` binary from the `public/` directory.
--   **Execution**:
-    1.  User code -> `new Function()` sandbox.
-    2.  Injected `replicad` instance and helpers.
-    3.  Returns `replicad.Shape` objects.
--   **Meshing**: Converts parametric shapes into triangular meshes (`vertices`, `indices`, `normals`) suitable for Three.js.
--   **Safety**: Explicitly converts plain arrays to `Float32Array`/`Uint32Array` to prevent WebGL crashes.
+### 2. Layout System (`src/components/Layout/`)
+-   **WorkbenchLayout**: The main shell. Handles the responsive grid, sidebar resizing, and visibility toggling.
+-   **Header**: Application controls (Export, View Toggle).
+-   **SidePanel**: Context-aware sidebar (currently hosts the Scene Browser).
 
-### 1a. Helpers & Exports
-To maintain modularity, logic is split into:
+### 3. Logic Hooks
+-   **useCodeInsertion**: Encapsulates the smart logic for inserting code snippets. It handles:
+    -   Finding the correct insertion point (scoping).
+    -   Generating unique variable names.
+    -   Updating return statements automatically.
+
+### 4. Geometry Engine (`src/lib/geometryEngine.ts`)
+A facade over the OpenCASCADE/Replicad kernel.
+-   **Execution**: Code is sent to a **Web Worker** (`src/worker.ts`) to prevent UI freezing.
+-   **Evaluation**: The worker uses `new Function()` to execute the user's code in a sandboxed scope.
+-   **Meshing**: Replicad converts the BREP shapes to three.js-compatible BufferGeometry.
+
+### 5. Code Analysis (`src/lib/codeAnalysis.ts`)
+Provides static analysis capabilities:
+-   **`extractVariables`**: Regex/AST parsing to find defined shapes (`const box = ...`) for the Scene Browser.
+-   **`findInsertionPoint`**: Heuristic to find where `drawPart()` returns.
+
+## Data Flow
+1.  **User Action**: User clicks "Box" in Toolbar.
+2.  **Insertion**: `useCodeInsertion` updates the text in Monaco Editor.
+3.  **Change Detection**: Editor triggers `onChange`.
+4.  **Debounce**: `WorkbenchContext` waits 600ms.
+5.  **Computation**: Code is sent to Worker.
+6.  **Update**: Worker returns meshes -> Context updates `geometries` -> Viewer re-renders.
 -   **`src/lib/geometryHelpers.ts`**: Helper functions injected into the user scope (e.g., `fillet`, `chamfer`, `makeCompound`).
 -   **`src/lib/geometryExports.ts`**: Handles conversion of shapes to **STEP** and **STL** blobs for download.
 
