@@ -62,6 +62,7 @@ self.onmessage = async ({ data }) => {
 
             // Transfer buffers to avoid copy
             const transferables: Transferable[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             geometries.forEach((g: any) => {
                 transferables.push(g.vertices.buffer, g.indices.buffer, g.normals.buffer);
             });

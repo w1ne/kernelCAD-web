@@ -1,5 +1,6 @@
 // Worker instance
 let worker: Worker | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pendingMessages = new Map<string, { resolve: (val: any) => void, reject: (err: any) => void }>();
 
 export const defaultCode = `
@@ -58,6 +59,7 @@ export async function init() {
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function postToWorker(type: string, code: string): Promise<any> {
     if (!worker) init();
     return new Promise((resolve, reject) => {
