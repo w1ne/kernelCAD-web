@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
 import { WorkbenchProvider, useWorkbench } from '../context/WorkbenchContext';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 // Mock Geometry Engine
 vi.mock('../lib/geometryEngine', () => ({

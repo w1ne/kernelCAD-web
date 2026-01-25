@@ -3,7 +3,6 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
 import { WorkbenchProvider } from '../../context/WorkbenchContext';
-import React from 'react';
 import * as geometryEngine from '../../lib/geometryEngine';
 
 // Mock Geometry Engine exports

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SceneBrowser from './SceneBrowser';
 import type { VariableDefinition } from '../lib/codeAnalysis';
-import React from 'react';
+// React unused
 
 afterEach(() => {
     cleanup();

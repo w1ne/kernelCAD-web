@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import Toolbar from './Toolbar';
-import React from 'react';
+// React unused
 
 // Manually cleanup after each test
 afterEach(() => {

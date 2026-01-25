@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import ParameterDialog, { type DialogField } from './ParameterDialog';
-import React from 'react';
+
 
 // Manually cleanup after each test
 afterEach(() => {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { Loader2, Download, FileDown, Code, Monitor } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../lib/geometryEngine';

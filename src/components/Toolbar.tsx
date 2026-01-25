@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Cylinder, Scissors, LayoutTemplate, PenTool } from 'lucide-react';
 
 

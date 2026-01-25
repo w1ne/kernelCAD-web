@@ -1,4 +1,3 @@
-import React from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { extractVariables, type VariableDefinition } from '../../lib/codeAnalysis';
