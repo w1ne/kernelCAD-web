@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# kernelCAD
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**kernelCAD** is a modern, browser-based programmatic CAD tool powered by the OpenCASCADE kernel (via Replicad). It allows you to define 3D geometry using standard JavaScript code and view the results instantly.
 
-Currently, two official plugins are available:
+![kernelCAD Demo](https://via.placeholder.com/800x450?text=kernelCAD+Demo)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+-   **Code-First Design**: Define geometry using a powerful JavaScript API.
+-   **Instant Feedback**: Real-time 3D preview powered by React Three Fiber.
+-   **Robust Kernel**: Built on top of OpenCASCADE, the industry-standard CAD kernel.
+-   **Performance**: Geometry processing runs in a **Web Worker** to keep the UI responsive.
+-   **Standard Exports**: Download your designs as **STEP** (for CNC/CAM) or **STL** (for 3D printing).
+-   **Modern UI**: Sleek, dark-mode interface built with Tailwind CSS and Monaco Editor.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+-   Node.js (v18+)
+-   npm
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/w1ne/kernelCAD.git
+    cd kernelCAD
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+4.  Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Usage
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  **Write Code**: Use the editor on the left to define your shape.
+    ```javascript
+    const { Sketcher } = replicad;
+    const base = new Sketcher().hLine(50).vLine(50).hLine(-50).close().extrude(20);
+    return base.fillet(5);
+    ```
+2.  **View**: The 3D view updates automatically when you stop typing or save.
+3.  **Export**: Click the download icons in the top-right to export STEP or STL files.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Architecture
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+kernelCAD consists of three main parts:
+1.  **Editor**: Monaco-based code editor.
+2.  **Viewer**: Three.js/React-Three-Fiber viewport.
+3.  **Engine**: A Web Worker that runs Replicad/OpenCASCADE to compute geometry asynchronously.
+
+For more details, see [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md).
+
+## Roadmap
+
+See [doc/ROADMAP.md](doc/ROADMAP.md) for planned features and milestones.
+
+## License
+
+MIT
