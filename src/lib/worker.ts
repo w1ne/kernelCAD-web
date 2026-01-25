@@ -66,7 +66,8 @@ self.onmessage = async ({ data }) => {
                 transferables.push(g.vertices.buffer, g.indices.buffer, g.normals.buffer);
             });
 
-            self.postMessage({ type: 'SUCCESS', id, geometries }, { transfer: transferables });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            self.postMessage({ type: 'SUCCESS', id, geometries }, { transfer: transferables } as any);
 
         } catch (error) {
             self.postMessage({ type: 'ERROR', id, error: String(error) });

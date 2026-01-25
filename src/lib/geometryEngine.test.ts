@@ -31,7 +31,9 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onmessage: ((e: any) => void) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postMessage(data: any) {
     // Simulate success response
     if (this.onmessage) {
