@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { defaultCode, executeCode, init as initEngine, type GeometryResult } from './lib/geometryEngine';
+import { exportSTEP, exportSTL } from './lib/geometryExports';
 import CodeEditor from './components/Editor';
 import Viewer from './components/Viewer';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Download, FileDown } from 'lucide-react';
+
+
+
 
 function App() {
   const [code, setCode] = useState(defaultCode);
@@ -38,6 +42,27 @@ function App() {
     return () => clearTimeout(timer);
   }, [code, isReady]);
 
+  const handleExport = async (type: 'step' | 'stl') => {
+    try {
+      let blob: Blob;
+      if (type === 'step') {
+        blob = await exportSTEP(code);
+      } else {
+        blob = await exportSTL(code);
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `model.${type}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      setError("Export failed: " + (err instanceof Error ? err.message : String(err)));
+    }
+  };
+
   if (!isReady) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-black text-white">
@@ -58,7 +83,26 @@ function App() {
             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
             script.js
           </span>
-          {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleExport('step')}
+              disabled={isComputing}
+              className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
+              title="Export STEP"
+            >
+              <FileDown className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleExport('stl')}
+              disabled={isComputing}
+              className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
+              title="Export STL"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
+          </div>
         </div>
 
         <div className="flex-1 relative overflow-hidden">
@@ -82,4 +126,50 @@ function App() {
   );
 }
 
-export default App;
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-screen h-screen flex items-center justify-center bg-red-900 text-white p-10">
+          <div className="max-w-2xl">
+            <h1 className="text-3xl font-bold mb-4">Something went wrong</h1>
+            <pre className="bg-black/50 p-4 rounded overflow-auto border border-red-500">
+              {this.state.error?.toString()}
+              {this.state.error?.stack}
+            </pre>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-6 px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
+            >
+              Reload Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function AppWrapper() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  )
+}
+

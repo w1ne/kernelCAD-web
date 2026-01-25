@@ -13,7 +13,13 @@ The current CAD landscape forces a trade-off between Power, Accessibility, and W
 ## 3. The Solution: kernelCAD
 kernelCAD is the "Figma meets GitHub" for hardware design.
 
-### A. Core Technology
+Please refer to the following documents for detailed information:
+
+-   [Roadmap](./ROADMAP.md) - Current status and future plans.
+-   [Architecture](./ARCHITECTURE.md) - Technical design and component overview.
+-   [Release Strategy](./RELEASE_STRATEGY.md) - Deployment and release process.
+
+## Technology Stack
 - **Browser-Native Kernel**: Runs a C++/Rust B-Rep kernel compiled to WebAssembly (Wasm). This moves geometry calculation to the client side—ensuring privacy, offline capability, and zero latency.
 - **Hybrid Interface**:
     - **Viewport**: Standard 3D manipulation.

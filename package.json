@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "./scripts/release.sh",
+    "test": "vitest"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -19,6 +21,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "replicad": "^0.20.5",
+    "replicad-opencascadejs": "^0.20.2",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0"
   },
@@ -38,6 +41,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^4.0.18"
   }
 }
