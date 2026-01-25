@@ -29,14 +29,25 @@ vi.mock('replicad', () => {
   };
 });
 
-// Mock init to avoid WASM loading
-vi.mock('./geometryEngine', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./geometryEngine')>();
-  return {
-    ...actual,
-    init: vi.fn().mockResolvedValue(undefined),
-  };
-});
+// Mock Worker
+class MockWorker {
+  onmessage: ((e: any) => void) | null = null;
+  postMessage(data: any) {
+    // Simulate success response
+    if (this.onmessage) {
+      setTimeout(() => {
+        this.onmessage!({
+          data: {
+            type: 'SUCCESS',
+            id: data.id,
+            geometries: [{ vertices: [], indices: [], normals: [] }]
+          }
+        });
+      }, 10);
+    }
+  }
+}
+vi.stubGlobal('Worker', MockWorker);
 
 describe('Geometry Engine', () => {
   it('should generate a simple box', async () => {

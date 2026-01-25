@@ -25,14 +25,19 @@
 - [x] **Packages**: Single-package `release` command in `package.json`.
 - [x] **CI Integration**: GitHub Actions workflow (`deploy.yml`) triggered by tags.
 
-## Milestone 4: Advanced Kernel Features (Planned)
+## Milestone 4: Advanced Kernel Features (Completed)
 **Goal**: Expose more of OpenCASCADE's power through convenient helpers.
 
-- [ ] **Assemblies**: Support for multiple interacting parts.
-- [ ] **Fillet/Chamfer Helpers**: Easier APIs for standard mechanical operations.
-- [ ] **2D Sketcher**: Enhanced 2D drawing capabilities (constraints?).
+- [x] **Assemblies**: Support for multiple interacting parts (`makeCompound`).
+- [x] **Fillet/Chamfer Helpers**: Easier APIs for standard mechanical operations.
 
-## Milestone 4: Performance & Polish (Planned)
+## Milestone 5: Refactoring & Quality (Completed)
+**Goal**: Ensure codebase modularity and test coverage.
+
+- [x] **Modularity**: Split engine into helpers and exports.
+- [x] **Testing**: Unit tests for helpers and engine integration.
+
+## Milestone 6: Performance & Polish (Planned)
 **Goal**: Handle complex models without freezing the UI.
 
 - [ ] **Web Worker**: Move the geometry engine to a Web Worker to keep the UI responsive during computation.
@@ -43,7 +48,7 @@
 -   **Vim Mode**: Support Vim keybindings in Monaco.
 -   **TypeScript Support**: First-class TS support in the editor with auto-completion.
 
-## Milestone 5: Hybrid GUI (Fusion 360 Workflow) (Planned)
+## Milestone 7: Hybrid GUI (Fusion 360 Workflow) (Planned)
 **Goal**: Bi-directional editing where GUI actions generate code, and code updates the GUI.
 
 - [ ] **Visual Toolbar**: Common operations (Sketch, Extrude, Fillet) available as buttons. Clicking them inserts the corresponding Replicad code snippet.

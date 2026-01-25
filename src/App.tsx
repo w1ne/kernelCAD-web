@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { defaultCode, executeCode, init as initEngine, type GeometryResult } from './lib/geometryEngine';
-import { exportSTEP, exportSTL } from './lib/geometryExports';
+import { defaultCode, executeCode, init as initEngine, exportSTEP, exportSTL, type GeometryResult } from './lib/geometryEngine';
 import CodeEditor from './components/Editor';
 import Viewer from './components/Viewer';
 import { Loader2, AlertCircle, Download, FileDown } from 'lucide-react';

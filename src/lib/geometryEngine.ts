@@ -1,5 +1,6 @@
-import * as replicad from "replicad";
-import { startSketch, makeCompound, fillet, chamfer } from "./geometryHelpers";
+// Worker instance
+let worker: Worker | null = null;
+const pendingMessages = new Map<string, { resolve: (val: any) => void, reject: (err: any) => void }>();
 
 export const defaultCode = `
 // You can use standard Replicad API here.
@@ -36,73 +37,44 @@ export type GeometryResult = {
     normals: Float32Array;
 };
 
-import { setOC } from "replicad";
-
-let isInitialized = false;
-
 export async function init() {
-    if (isInitialized) return;
+    if (worker) return;
 
-    try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const opencascade = (await import("replicad-opencascadejs")).default;
+    // Initialize worker
+    worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 
-        let OC;
-        // Check if running in browser with Vite
-        if (typeof window !== "undefined" && import.meta.env) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            OC = await opencascade({
-                locateFile: () => (import.meta.env.BASE_URL + "opencascade.wasm").replace("//", "/"),
-            });
-        } else {
-            // Node.js / Test environment
-            // In Node, replicad-opencascadejs usually finds the wasm itself or doesn't need locateFile
-            OC = await opencascade();
+    worker.onmessage = ({ data }) => {
+        const { type, id, geometries, blob, error } = data;
+        const pending = pendingMessages.get(id);
+
+        if (pending) {
+            if (type === 'SUCCESS') {
+                pending.resolve(geometries || blob);
+            } else {
+                pending.reject(new Error(error));
+            }
+            pendingMessages.delete(id);
         }
-
-        setOC(OC);
-        isInitialized = true;
-        console.log("Replicad initialized successfully");
-    } catch (e) {
-        console.error("Replicad init error", e);
-        throw e;
-    }
+    };
 }
 
-export function executeCode(code: string): Promise<GeometryResult[]> {
+function postToWorker(type: string, code: string): Promise<any> {
+    if (!worker) init();
     return new Promise((resolve, reject) => {
-        try {
-            // Create a function from the user code
-            // "replicad" is injected
-            // We also inject common helpers for convenience
-            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", code);
-
-            const result = func(replicad, startSketch, makeCompound, fillet, chamfer);
-
-            // Normalize result to array
-            const shapes = Array.isArray(result) ? result : [result];
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const geometries: GeometryResult[] = shapes.map((shape: any) => {
-                if (!shape || typeof shape.mesh !== "function") {
-                    throw new Error("Result must be a Replicad Shape");
-                }
-
-                const mesh = shape.mesh({ tolerance: 0.1, angularTolerance: 30 });
-                return {
-                    vertices: new Float32Array(mesh.vertices),
-                    indices: new Uint32Array(mesh.triangles),
-                    normals: new Float32Array(mesh.normals)
-                };
-            });
-
-            resolve(geometries);
-        } catch (err) {
-            reject(err);
-        }
+        const id = Math.random().toString(36).substr(2, 9);
+        pendingMessages.set(id, { resolve, reject });
+        worker?.postMessage({ type, code, id });
     });
 }
 
+export function executeCode(code: string): Promise<GeometryResult[]> {
+    return postToWorker('EXECUTE', code);
+}
 
+export function exportSTEP(code: string): Promise<Blob> {
+    return postToWorker('EXPORT_STEP', code);
+}
+
+export function exportSTL(code: string): Promise<Blob> {
+    return postToWorker('EXPORT_STL', code);
+}
