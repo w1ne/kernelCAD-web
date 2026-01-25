@@ -51,6 +51,8 @@ export async function init() {
         let OC;
         // Check if running in browser with Vite
         if (typeof window !== "undefined" && import.meta.env) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             OC = await opencascade({
                 locateFile: () => (import.meta.env.BASE_URL + "opencascade.wasm").replace("//", "/"),
             });
