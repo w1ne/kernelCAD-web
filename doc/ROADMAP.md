@@ -30,34 +30,43 @@
 
 ---
 
-## 🎯 PHASE 1: Sketch-Based Modeling (v0.5.0) - NEXT PRIORITY
+## 🎯 PHASE 1: Sketch-Based Modeling (v0.5.0) - IN PROGRESS
 
 **Goal**: Sketch → Extrude workflow like Fusion360/CATIA
 
+**Status**: Basic UI complete, integrating code generation
+
 ### 1.1 Sketching System (v0.5.0)
-- [ ] **Sketch Plane Selection**
-  - [ ] XY, XZ, YZ planes
-  - [ ] Face selection from existing geometry
+- [x] **Sketch Plane Selection**
+  - [x] XY, XZ, YZ planes (defaults to XY)
+  - [ ] Face selection from existing geometry (deferred)
   
-- [ ] **2D Sketch Tools**
-  - [ ] Line (horizontal, vertical, arbitrary)
-  - [ ] Arc/Circle
-  - [ ] Rectangle
-  - [ ] Polygon
+- [/] **2D Sketch Tools**
+  - [x] Line tool (click-click)
+  - [/] Circle tool (UI done, code gen needs work)
+  - [x] Rectangle tool (click-drag)
+  - [ ] Polygon (deferred)
+  - [ ] Arc (deferred)
   
-- [ ] **Constraints**
+- [ ] **Constraints** (deferred to v0.5.1)
   - [ ] Geometric: Horizontal, Vertical, Parallel, Perpendicular
   - [ ] Dimensional: Distance, Radius, Angle
   - [ ] Parameter-driven (e.g., `width = 10`)
   
-- [ ] **Sketch UI**
-  - [ ] 2D canvas overlay for visual sketching
-  - [ ] Constraint indicators
-  - [ ] AST code generation: `startSketch('XY').line(...)`
+- [/] **Sketch UI & Code Generation**
+  - [x] 2D canvas overlay with grid
+  - [x] Mouse interaction (draw, preview)
+  - [x] Tool selector (Line, Rectangle, Circle)
+  - [/] AST code generation (in progress)
+  - [/] Code insertion (in progress)
+  - [ ] Scene browser integration
+  - [ ] 3D plane visualization
 
 - [ ] **Extrude Operation**
-  - [ ] Distance parameter
+  - [ ] Extrude dialog
+  - [ ] Distance parameter input
   - [ ] Direction (normal, reversed, both)
+  - [ ] Code generation for extrude
   - [ ] Preview before committing
 
 ---

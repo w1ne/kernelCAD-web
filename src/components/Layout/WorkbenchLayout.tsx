@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import CodeEditor from '../Editor';
 import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
+import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { SidePanel } from './SidePanel';
@@ -10,6 +11,8 @@ import { useWorkbench } from '../../context/WorkbenchContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
 import { featureRegistry } from '../../features/FeatureRegistry';
 import { type Feature } from '../../features/types';
+import { type SketchData } from '../../types/sketch';
+import { generateSketchCode, generateSketchName } from '../../lib/sketchCodegen';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function WorkbenchLayout() {
@@ -30,6 +33,10 @@ export function WorkbenchLayout() {
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
+
+    // Extrude dialog state
+    const [extrudeDialogOpen, setExtrudeDialogOpen] = useState(false);
+    const [pendingSketchName, setPendingSketchName] = useState<string | null>(null);
 
     // Get all features for the toolbar
     const features = useMemo(() => featureRegistry.getAll(), []);
@@ -144,15 +151,36 @@ export function WorkbenchLayout() {
                 <SketchCanvas
                     plane={sketchMode.plane}
                     onComplete={(entities) => {
-                        console.log('Sketch complete:', entities);
-                        // TODO: Generate code from entities and insert
-                        // For now, just exit sketch mode
+                        // Generate sketch name
+                        const sketchName = generateSketchName(code);
+
+                        // Create sketch data
+                        const sketchData: SketchData = {
+                            id: `sketch_${Date.now()}`,
+                            name: sketchName,
+                            plane: sketchMode.plane!,
+                            entities,
+                            closed: false,
+                            createdAt: Date.now(),
+                        };
+
+                        // Generate Replicad code
+                        const sketchCode = generateSketchCode(sketchData);
+
+                        // Insert sketch code
+                        insertCode(sketchCode);
+
+                        // Exit sketch mode
                         setSketchMode({
                             active: false,
                             plane: null,
                             currentSketch: null,
                             tool: 'select',
                         });
+
+                        // Show extrude dialog
+                        setPendingSketchName(sketchName);
+                        setExtrudeDialogOpen(true);
                     }}
                     onCancel={() => {
                         setSketchMode({
@@ -161,6 +189,30 @@ export function WorkbenchLayout() {
                             currentSketch: null,
                             tool: 'select',
                         });
+                    }}
+                />
+            )}
+
+            {/* Extrude Dialog */}
+            {extrudeDialogOpen && pendingSketchName && (
+                <ExtrudeDialog
+                    sketchName={pendingSketchName}
+                    onConfirm={({ distance, direction }) => {
+                        // Generate extrude code
+                        const extrudeCode = direction === 'reversed'
+                            ? `\nconst extruded${pendingSketchName.replace('sketch', '')} = ${pendingSketchName}.extrude(-${distance});`
+                            : `\nconst extruded${pendingSketchName.replace('sketch', '')} = ${pendingSketchName}.extrude(${distance});`;
+
+                        // Insert extrude code
+                        insertCode(extrudeCode);
+
+                        // Close dialog
+                        setExtrudeDialogOpen(false);
+                        setPendingSketchName(null);
+                    }}
+                    onCancel={() => {
+                        setExtrudeDialogOpen(false);
+                        setPendingSketchName(null);
                     }}
                 />
             )}
