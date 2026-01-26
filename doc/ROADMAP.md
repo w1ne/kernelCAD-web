@@ -103,37 +103,107 @@ This roadmap focuses on achieving feature parity with professional CAD tools thr
 
 ## 🔭 PHASE 2: Visualization & Interaction (v0.4.0)
 
-**Goal**: Professional-grade view controls matching CATIA/NX
+**Goal**: CAD-grade technical visualization (NOT photorealistic rendering)
 
-### 2.1 View Modes
-- [ ] **Shaded** (current default - solid with lighting)
-- [ ] **Wireframe** (edges only, black lines)
-- [ ] **Shaded with Edges** (most common in CAD)
-- [ ] **X-Ray** (transparent with edges)
+> **Design Philosophy**: Professional CAD software (CATIA/NX/Fusion360) prioritizes **clarity** and **technical precision** over photorealism. Features should be clearly visible, edges sharp, dimensions readable.
+
+### 2.1 View Modes (Priority Order)
+**CAD Standard Modes** (Must-have):
+- [ ] **Shaded with Edges** (Default, most common in CAD)
+  - Flat-shaded surfaces with black edge lines
+  - High contrast for readability
+  - Ambient + directional lighting (not realistic)
+  
+- [ ] **Wireframe** (Technical review)
+  - Edges only, no surfaces
+  - Black lines on light background or white lines on dark
+  - Performance: 60fps for 10k+ edges
+  
+- [ ] **Shaded** (Clean view)
+  - Solid surfaces without edge lines
+  - Consistent lighting (not shadows/reflections)
+  - Simple material: matte finish
+
 - [ ] **Hidden Line Removed**
-- [ ] **Zebra Stripes** (curvature analysis)
+  - Wireframe with occluded edges hidden or dashed
+  - Classic engineering drawing style
+  
+**Advanced Modes** (Nice-to-have):
+- [ ] **X-Ray / Transparent**
+  - See-through surfaces (opacity 30%)
+  - Edges visible through geometry
+  - For assembly collision checking
+  
+- [ ] **Faceted** (Mesh analysis)
+  - Show individual triangles
+  - Debug tessellation quality
 
-### 2.2 Display Settings
-- [ ] **Edge Display**
-  - [ ] Visible edges
-  - [ ] Hidden edges (dashed)
-  - [ ] Tangent edges (hide/show)
+**NOT Implementing** (Out of scope):
+- ❌ Ray-traced reflections
+- ❌ Global illumination
+- ❌ Material PBR (metal/glass realism)
+- ❌ Shadows (soft/hard)
+- ❌ Depth of field / bloom
+
+### 2.2 Lighting & Materials
+**CAD-Style Lighting** (Technical, not realistic):
+```javascript
+// Example: CATIA-style 3-point lighting
+const lights = [
+  new DirectionalLight(0xffffff, 0.7),  // Key (from camera)
+  new AmbientLight(0xffffff, 0.5),      // Fill (uniform)
+  new DirectionalLight(0xffffff, 0.3)   // Rim (from back)
+];
+```
+
+- [ ] **Headlight Mode** (light follows camera)
+- [ ] **Fixed Lights** (world-space, for orientation)
+- [ ] **Ambient Occlusion** (subtle only, for depth perception)
+- [ ] **No Shadows** (or minimal contact shadows only)
+
+**Materials**:
+- [ ] Simple matte shader (Lambertian or Phong, NOT PBR)
+- [ ] Consistent color across viewing angles
+- [ ] Edge emphasis (outline shader or post-process)
+
+### 2.3 Display Settings
+- [ ] **Edge Display Options**
+  - Visible edges (thick black lines)
+  - Tangent edges (hide/show toggle)
+  - Sharp edges vs smooth edges differentiation
+  - Edge thickness control (1-3px)
   
 - [ ] **Grid & Axes**
-  - [ ] Origin triad (XYZ arrows)
-  - [ ] Grid plane display
-  - [ ] Unit labels
+  - Origin triad (XYZ arrows, RGB colors)
+  - Grid plane display (fade with distance)
+  - Unit labels (mm/in toggle)
+  - Grid snap visualization
+  
+- [ ] **Background**
+  - Solid color (light gray or gradient)
+  - NOT skybox/environment map
 
-### 2.3 Camera Controls
-- [ ] **Standard Views**
-  - [ ] Front, Back, Left, Right, Top, Bottom
-  - [ ] Isometric, Trimetric
-  - [ ] Custom view save/recall
+### 2.4 Camera Controls
+- [ ] **Standard Views** (Orthographic)
+  - Front, Back, Left, Right, Top, Bottom
+  - Isometric (default 3D view)
+  - Home view (fit all in viewport)
+  
+- [ ] **Navigation**
+  - Orbit (rotate around center)
+  - Pan (translate view)
+  - Zoom (dolly or FOV)
+  - Frame selection (zoom to selected object)
+
+- [ ] **Projection**
+  - Orthographic (engineering default, no perspective distortion)
+  - Perspective (for assembly context only)
   
 - [ ] **Sectioning**
-  - [ ] Section plane (slice view)
-  - [ ] Half-section
-  - [ ] Multi-plane section
+  - Section plane (slice view)
+  - Half-section
+  - Multi-plane section
+  - Section fill pattern (hatch lines)
 
 ---
 
@@ -230,15 +300,93 @@ const SketchFeature = {
 };
 ```
 
-### View Mode Implementation
+### View Mode Implementation (CAD-Focused)
+**Current State** (v0.2.1):
 ```typescript
-// Material system (Three.js)
+// Simple PBR material (photorealistic approach)
+const material = new MeshStandardMaterial({
+  color: 0x3b82f6,
+  roughness: 0.7,
+  metalness: 0.3
+});
+```
+
+**Target State** (v0.4.0 - CAD approach):
+```typescript
+// CAD-style materials with edge emphasis
 const viewModes = {
-  shaded: new MeshStandardMaterial({ color, roughness, metalness }),
-  wireframe: new LineBasicMaterial({ color: 0x000000 }),
-  shadedWithEdges: edges + mesh,
-  xray: new MeshBasicMaterial({ transparent: true, opacity: 0.3 })
+  shadedWithEdges: {
+    // Flat shading for surfaces
+    mesh: new MeshLambertMaterial({ 
+      color: 0x3b82f6,
+      flatShading: true  // No smooth interpolation
+    }),
+    // Sharp black edges
+    edges: new LineSegments(
+      new EdgesGeometry(geometry, 15),  // 15° threshold for sharp edges
+      new LineBasicMaterial({ color: 0x000000, linewidth: 2 })
+    )
+  },
+  
+  wireframe: {
+    lines: new LineSegments(
+      new WireframeGeometry(geometry),
+      new LineBasicMaterial({ color: 0x000000 })
+    )
+  },
+  
+  shaded: {
+    mesh: new MeshLambertMaterial({ color: 0x3b82f6 })
+  },
+  
+  xray: {
+    mesh: new MeshBasicMaterial({ 
+      color: 0x3b82f6,
+      transparent: true, 
+      opacity: 0.3,
+      side: DoubleSide
+    }),
+    edges: new LineSegments(...)  // Visible through transparent mesh
+  }
 };
+```
+
+**Lighting Setup** (CAD vs Photorealistic):
+```typescript
+// ❌ DON'T: Realistic lighting (game engine style)
+const light = new DirectionalLight(0xffffff, 1.0);
+light.castShadow = true;
+const ambient = new AmbientLight(0x404040, 0.2);  // Dark ambient
+
+// ✅ DO: CAD lighting (technical clarity)
+const headlight = new DirectionalLight(0xffffff, 0.7);
+headlight.position.set(0, 0, 1);  // Attach to camera
+camera.add(headlight);
+
+const ambient = new AmbientLight(0xffffff, 0.5);  // Bright ambient
+const rim = new DirectionalLight(0xffffff, 0.3);
+rim.position.set(0, 0, -1);  // Back lighting for depth
+```
+
+**Edge Detection Shader** (Optional, for advanced edge rendering):
+```glsl
+// Fragment shader for CAD-style edge emphasis
+varying vec3 vNormal;
+varying vec3 vViewPosition;
+
+void main() {
+  vec3 normal = normalize(vNormal);
+  vec3 viewDir = normalize(vViewPosition);
+  float edgeFactor = 1.0 - abs(dot(normal, viewDir));
+  
+  // Emphasize edges (Fresnel-like)
+  vec3 color = baseColor;
+  if (edgeFactor > 0.7) {
+    color = mix(color, vec3(0.0), edgeFactor);  // Darken edges
+  }
+  
+  gl_FragColor = vec4(color, 1.0);
+}
 ```
 
 ### Constraint Solver Integration
