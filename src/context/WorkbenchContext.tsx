@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, type ReactNode 
 import { defaultCode, executeCode, init as initEngine, type GeometryResult } from '../lib/geometryEngine';
 import { CommandManager } from '../commands/CommandManager';
 import type { ViewMode3D } from '../types/viewMode';
+import type { SketchModeState } from '../types/sketch';
 
 interface WorkbenchContextType {
     viewMode: 'code' | 'gui';
@@ -21,6 +22,9 @@ interface WorkbenchContextType {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setEditorInstance: (instance: any) => void;
     commandManager: CommandManager;
+    // Sketch mode
+    sketchMode: SketchModeState;
+    setSketchMode: (mode: SketchModeState) => void;
 }
 
 // Export for testing
@@ -29,10 +33,18 @@ export const WorkbenchContext = createContext<WorkbenchContextType | undefined>(
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>('code');
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>('shadedWithEdges');
-    const [code, setCode] = useState(defaultCode);
+    const [code, setCode] = useState<string>(defaultCode);
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
+
+    // Sketch mode state
+    const [sketchMode, setSketchMode] = useState<SketchModeState>({
+        active: false,
+        plane: null,
+        currentSketch: null,
+        tool: 'select',
+    });
     const [isComputing, setIsComputing] = useState(false);
     const [activeDialog, setActiveDialog] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,7 +112,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }, [code, isReady]);
 
-    const value: WorkbenchContextType = {
+    const value = {
         viewMode,
         setViewMode,
         viewMode3D,
@@ -115,7 +127,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         setActiveDialog,
         editorInstance,
         setEditorInstance,
-        commandManager: commandManagerRef.current
+        commandManager: commandManagerRef.current,
+        sketchMode,
+        setSketchMode,
     };
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
