@@ -64,12 +64,11 @@
   - [ ] Scene browser integration
   - [ ] 3D plane visualization
 
-- [ ] **Extrude Operation**
-  - [ ] Extrude dialog
-  - [ ] Distance parameter input
-  - [ ] Direction (normal, reversed, both)
-  - [ ] Code generation for extrude
-  - [ ] Preview before committing
+- [x] **Feature-Based Modeling (v0.5.2)**
+  - [x] **Decoupled Extrude**: Standalone tool that acts on sketches
+  - [x] **Sketch as Primitive**: Sketches stored as geometry nodes (non-renderable by default)
+  - [x] **Extrude Tool UI**: Target selection + Distance input
+  - [x] Code generation: `const solid = sketch.extrude(distance)`
 
 ---
 

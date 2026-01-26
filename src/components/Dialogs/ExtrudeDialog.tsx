@@ -1,33 +1,65 @@
 import { useState } from 'react';
+import { useWorkbench } from '../../context/WorkbenchContext';
 
 interface ExtrudeDialogProps {
-    sketchName: string;
-    onConfirm: (params: { distance: number; direction: 'normal' | 'reversed' }) => void;
+    sketchName?: string;
+    onConfirm: (params: { sketchName: string; distance: number; direction: 'normal' | 'reversed' }) => void;
     onCancel: () => void;
 }
 
-export function ExtrudeDialog({ sketchName, onConfirm, onCancel }: ExtrudeDialogProps) {
+export function ExtrudeDialog({ sketchName: initialSketchName, onConfirm, onCancel }: ExtrudeDialogProps) {
+    const { sketches } = useWorkbench();
+    const [selectedSketch, setSelectedSketch] = useState(initialSketchName || (sketches.length > 0 ? sketches[sketches.length - 1].name : ''));
     const [distance, setDistance] = useState(10);
     const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm({ distance, direction });
+        if (!selectedSketch) return;
+        onConfirm({ sketchName: selectedSketch, distance, direction });
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-6 shadow-xl min-w-[400px]">
                 <h2 className="text-xl font-bold text-white mb-4">
-                    Extrude: {sketchName}
+                    Extrude
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label
+                            htmlFor="sketch-select"
+                            className="block text-sm font-medium text-gray-300 mb-2"
+                        >
+                            Select Sketch
+                        </label>
+                        <select
+                            id="sketch-select"
+                            value={selectedSketch}
+                            onChange={(e) => setSelectedSketch(e.target.value)}
+                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                            required
+                        >
+                            <option value="" disabled>Select a sketch...</option>
+                            {sketches.map((s) => (
+                                <option key={s.id} value={s.name}>{s.name} ({s.plane} Plane)</option>
+                            ))}
+                        </select>
+                        {sketches.length === 0 && (
+                            <p className="text-xs text-amber-500 mt-1">No sketches available to extrude.</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="extrude-distance"
+                            className="block text-sm font-medium text-gray-300 mb-2"
+                        >
                             Distance (mm)
                         </label>
                         <input
+                            id="extrude-distance"
                             type="number"
                             value={distance}
                             onChange={(e) => setDistance(Number(e.target.value))}
@@ -39,10 +71,14 @@ export function ExtrudeDialog({ sketchName, onConfirm, onCancel }: ExtrudeDialog
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label
+                            htmlFor="extrude-direction"
+                            className="block text-sm font-medium text-gray-300 mb-2"
+                        >
                             Direction
                         </label>
                         <select
+                            id="extrude-direction"
                             value={direction}
                             onChange={(e) => setDirection(e.target.value as 'normal' | 'reversed')}
                             className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"

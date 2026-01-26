@@ -53,7 +53,13 @@ The central nervous system of the application. It holds global state:
 -   **Header**: Application controls (Export, View Toggle).
 -   **SidePanel**: Context-aware sidebar (currently hosts the Scene Browser).
 
-### 3. Logic Hooks
+### 3. Feature System (`src/features/`)
+The workbench uses a plugin-style feature registry to handle CAD operations:
+-   **FeatureRegistry**: Central hub where tools are registered (Box, Cylinder, Extrude, etc.).
+-   **Feature Interface**: Each feature defines its UI (parameters or custom dialogs) and an `execute` function.
+-   **Decoupled Tools**: Standalone features like **Extrude** and **Offset Plane** trigger custom dialogs via `setActiveDialog` for target selection, rather than being hardcoded in specific workflows.
+
+### 4. Logic Hooks
 -   **useCodeInsertion**: Encapsulates the smart logic for inserting code snippets. It handles:
     -   Finding the correct insertion point (scoping).
     -   Generating unique variable names.
@@ -71,12 +77,13 @@ Provides static analysis capabilities:
 -   **`findInsertionPoint`**: Heuristic to find where `drawPart()` returns.
 
 ## Data Flow
-1.  **User Action**: User clicks "Box" in Toolbar.
-2.  **Insertion**: `useCodeInsertion` updates the text in Monaco Editor.
-3.  **Change Detection**: Editor triggers `onChange`.
-4.  **Debounce**: `WorkbenchContext` waits 600ms.
-5.  **Computation**: Code is sent to Worker.
-6.  **Update**: Worker returns meshes -> Context updates `geometries` -> Viewer re-renders.
+1.  **Selection**: User selects a tool from the **Toolbar**.
+2.  **Execution**: 
+    -   If the tool has **parameters**, `WorkbenchLayout` opens a `ParameterDialog`.
+    -   If the tool is **standalone** (like Extrude), it calls `setActiveDialog` to open a custom selection dialog.
+3.  **Insertion**: After confirmation, the feature's `execute` logic calls `insertCode`.
+4.  **Computation**: Monaco triggers `onChange` -> `WorkbenchContext` debounces -> Worker executes Replicad code.
+5.  **View Update**: Worker returns meshes -> Viewer re-renders.
 -   **`src/lib/geometryHelpers.ts`**: Helper functions injected into the user scope (e.g., `fillet`, `chamfer`, `makeCompound`).
 -   **`src/lib/geometryExports.ts`**: Handles conversion of shapes to **STEP** and **STL** blobs for download.
 

@@ -2,7 +2,7 @@ import { type LucideIcon } from 'lucide-react';
 
 export interface FeatureContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
-    // We can add more context later, like 'selection' or 'currentCode'
+    setActiveDialog: (dialogId: string | null) => void;
 }
 
 export interface DialogField {

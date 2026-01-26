@@ -1,9 +1,11 @@
 import { featureRegistry } from './FeatureRegistry';
-import { BoxFeature, CylinderFeature, FilletFeature, ChamferFeature, CutFeature } from './core';
+import { BoxFeature, CylinderFeature, FilletFeature, ChamferFeature, CutFeature, ExtrudeFeature, OffsetPlaneFeature } from './core';
 
 export function initFeatures() {
     featureRegistry.register(BoxFeature);
     featureRegistry.register(CylinderFeature);
+    featureRegistry.register(OffsetPlaneFeature);
+    featureRegistry.register(ExtrudeFeature);
     featureRegistry.register(FilletFeature);
     featureRegistry.register(ChamferFeature);
     featureRegistry.register(CutFeature);

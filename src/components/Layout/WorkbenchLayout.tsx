@@ -5,6 +5,7 @@ import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
 import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
 import { PlaneSelectorDialog } from '../Dialogs/PlaneSelectorDialog';
+import { OffsetPlaneDialog } from '../Dialogs/OffsetPlaneDialog';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { SidePanel } from './SidePanel';
@@ -13,6 +14,7 @@ import { useCodeInsertion } from '../../hooks/useCodeInsertion';
 import { featureRegistry } from '../../features/FeatureRegistry';
 import { type Feature } from '../../features/types';
 import { type SketchData } from '../../types/sketch';
+import { type SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchName } from '../../lib/sketchCodegen';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
@@ -32,13 +34,11 @@ export function WorkbenchLayout() {
         sketchMode,
         setSketchMode,
         addSketch,
+        planes,
+        addPlane,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
-
-    // Extrude dialog state
-    const [extrudeDialogOpen, setExtrudeDialogOpen] = useState(false);
-    const [pendingSketchName, setPendingSketchName] = useState<string | null>(null);
 
     // Get all features for the toolbar
     const features = useMemo(() => featureRegistry.getAll(), []);
@@ -62,13 +62,13 @@ export function WorkbenchLayout() {
         if (feature.parameters && feature.parameters.length > 0) {
             setActiveDialog(feature.id);
         } else {
-            feature.execute({ insertCode });
+            feature.execute({ insertCode, setActiveDialog });
         }
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
         if (activeFeature) {
-            activeFeature.execute({ insertCode }, values);
+            activeFeature.execute({ insertCode, setActiveDialog }, values);
         }
     };
 
@@ -182,10 +182,6 @@ export function WorkbenchLayout() {
                             currentSketch: null,
                             tool: 'select',
                         });
-
-                        // Show extrude dialog
-                        setPendingSketchName(sketchName);
-                        setExtrudeDialogOpen(true);
                     }}
                     onCancel={() => {
                         setSketchMode({
@@ -215,28 +211,57 @@ export function WorkbenchLayout() {
             )}
 
             {/* Extrude Dialog */}
-            {extrudeDialogOpen && pendingSketchName && (
+            {activeDialog === 'extrude' && (
                 <ExtrudeDialog
-                    sketchName={pendingSketchName}
-                    onConfirm={({ distance, direction }) => {
+                    onConfirm={({ sketchName, distance, direction }) => {
                         // Generate extrude code
                         const extrudeCode = direction === 'reversed'
-                            ? `\nconst extruded${pendingSketchName.replace('sketch', '')} = ${pendingSketchName}.extrude(-${distance});`
-                            : `\nconst extruded${pendingSketchName.replace('sketch', '')} = ${pendingSketchName}.extrude(${distance});`;
+                            ? `\nconst extruded${sketchName.replace('sketch', '')} = ${sketchName}.extrude(-${distance});`
+                            : `\nconst extruded${sketchName.replace('sketch', '')} = ${sketchName}.extrude(${distance});`;
 
                         // Insert extrude code
                         insertCode(extrudeCode);
 
                         // Close dialog
-                        setExtrudeDialogOpen(false);
-                        setPendingSketchName(null);
+                        setActiveDialog(null);
                     }}
                     onCancel={() => {
-                        setExtrudeDialogOpen(false);
-                        setPendingSketchName(null);
+                        setActiveDialog(null);
                     }}
                 />
             )}
+
+            {/* Offset Plane Dialog */}
+            {activeDialog === 'offsetPlane' && (
+                <OffsetPlaneDialog
+                    onConfirm={({ basePlaneId, offset }) => {
+                        const basePlane = planes.find(p => p.id === basePlaneId);
+                        if (!basePlane) return;
+
+                        const newId = `plane-${Date.now()}`;
+                        const newName = `Offset Plane ${planes.length - 2}`; // -3 base planes + 1
+
+                        const newPlane: SketchPlaneEntity = {
+                            id: newId,
+                            name: newName,
+                            type: 'offset',
+                            origin: [
+                                basePlane.origin[0] + basePlane.normal[0] * offset,
+                                basePlane.origin[1] + basePlane.normal[1] * offset,
+                                basePlane.origin[2] + basePlane.normal[2] * offset,
+                            ],
+                            normal: [...basePlane.normal] as [number, number, number],
+                            visible: true,
+                            parentId: basePlaneId
+                        };
+
+                        addPlane(newPlane);
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
+                />
+            )}
+
         </div>
     );
 }

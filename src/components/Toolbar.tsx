@@ -10,9 +10,10 @@ interface ToolbarProps {
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
     const { setActiveDialog } = useWorkbench();
 
-    // Separate creation tools vs modification tools
+    // Separate creation tools vs construction vs modification tools
     const creationTools = features.filter(f => ['box', 'cylinder'].includes(f.id));
-    const modificationTools = features.filter(f => !['box', 'cylinder'].includes(f.id));
+    const constructionTools = features.filter(f => ['offsetPlane'].includes(f.id));
+    const modificationTools = features.filter(f => ['extrude', 'fillet', 'chamfer', 'cut'].includes(f.id));
 
     // Start sketch mode
     const handleSketchClick = () => {
@@ -35,6 +36,23 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 <>
                     <span className="text-[10px] uppercase text-gray-500 font-bold mb-1">Add</span>
                     {creationTools.map(feature => (
+                        <button
+                            key={feature.id}
+                            onClick={() => onToolClick(feature)}
+                            className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
+                            title={feature.label}
+                        >
+                            <feature.icon size={20} />
+                        </button>
+                    ))}
+                    <div className="w-full h-px bg-[#333] my-1" />
+                </>
+            )}
+
+            {constructionTools.length > 0 && (
+                <>
+                    <span className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center">Cons</span>
+                    {constructionTools.map(feature => (
                         <button
                             key={feature.id}
                             onClick={() => onToolClick(feature)}
