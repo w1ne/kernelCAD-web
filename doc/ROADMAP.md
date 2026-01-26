@@ -37,9 +37,11 @@
 **Status**: Basic UI complete, integrating code generation
 
 ### 1.1 Sketching System (v0.5.0)
-- [x] **Sketch Plane Selection**
-  - [x] XY, XZ, YZ planes (defaults to XY)
-  - [ ] Face selection from existing geometry (deferred)
+- [ ] **Advanced Plane System** (v0.5.1)
+  - [/] Base Planes: XY, XZ, YZ (automatically added to workspace)
+  - [ ] **Face Selection**: Derive sketch plane from existing 3D faces
+  - [ ] **Custom Planes**: Offset plane, Plane at angle, 3-point plane
+  - [ ] **Scene Integration**: "Construction" folder in Scene Browser for planes
   
 - [/] **2D Sketch Tools**
   - [x] Line tool (click-click)

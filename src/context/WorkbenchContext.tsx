@@ -25,6 +25,9 @@ interface WorkbenchContextType {
     // Sketch mode
     sketchMode: SketchModeState;
     setSketchMode: (mode: SketchModeState) => void;
+    // Sketch history
+    sketches: any[]; // Using any for now to avoid circular dependency or complex types
+    addSketch: (sketch: any) => void;
 }
 
 // Export for testing
@@ -45,6 +48,13 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         currentSketch: null,
         tool: 'select',
     });
+    // Sketch history state
+    const [sketches, setSketches] = useState<any[]>([]);
+
+    const addSketch = (sketch: any) => {
+        setSketches(prev => [...prev, sketch]);
+    };
+
     const [isComputing, setIsComputing] = useState(false);
     const [activeDialog, setActiveDialog] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,6 +140,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         commandManager: commandManagerRef.current,
         sketchMode,
         setSketchMode,
+        sketches,
+        addSketch,
     };
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;

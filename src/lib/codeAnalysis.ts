@@ -42,6 +42,7 @@ export interface VariableDefinition {
     name: string;
     type: string;
     line: number; // 1-indexed
+    detail?: string;
 }
 
 /**
@@ -61,6 +62,7 @@ export function extractVariables(code: string): VariableDefinition[] {
         if (match) {
             const name = match[1];
             let type = 'Shape'; // Default
+            let detail: string | undefined;
 
             // Simple keyword matching for type guessing
             if (line.includes('makeBox')) type = 'Box';
@@ -70,12 +72,18 @@ export function extractVariables(code: string): VariableDefinition[] {
             else if (line.includes('chamfer')) type = 'Chamfer';
             else if (line.includes('cut')) type = 'Cut';
             else if (line.includes('fuse')) type = 'Union';
-            else if (line.includes('Sketcher')) type = 'Sketch';
+            else if (line.includes('extrude')) type = 'Extrude';
+            else if (line.includes('Sketcher')) {
+                type = 'Sketch';
+                const planeMatch = line.match(/new Sketcher\(['"](\w+)['"]\)/);
+                if (planeMatch) detail = planeMatch[1];
+            }
 
             variables.push({
                 name,
                 type,
-                line: index + 1
+                line: index + 1,
+                detail
             });
         }
     });

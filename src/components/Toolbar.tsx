@@ -8,7 +8,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
-    const { setSketchMode } = useWorkbench();
+    const { setActiveDialog } = useWorkbench();
 
     // Separate creation tools vs modification tools
     const creationTools = features.filter(f => ['box', 'cylinder'].includes(f.id));
@@ -16,12 +16,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
 
     // Start sketch mode
     const handleSketchClick = () => {
-        setSketchMode({
-            active: true,
-            plane: 'XY', // Default to XY plane
-            currentSketch: null,
-            tool: 'line',
-        });
+        setActiveDialog('planeSelector');
     };
 
     return (

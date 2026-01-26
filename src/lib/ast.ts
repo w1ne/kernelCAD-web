@@ -108,10 +108,24 @@ export function insertShape(code: string, statement: string): string {
 
     // Extract variable name from the statement (e.g., "const box1 = ...")
     let varName: string | null = null;
+    let isSketcher = false;
+
     if (statementNode.type === 'VariableDeclaration' && statementNode.declarations[0]) {
         const declarator = statementNode.declarations[0];
         if (declarator.id.type === 'Identifier') {
             varName = declarator.id.name;
+
+            // Detect if this is a Sketcher instance
+            // It could be `new Sketcher(...)` or a chain like `new Sketcher(...).lineTo(...)`
+            let init = declarator.init;
+            while (init && init.type === 'CallExpression') {
+                init = init.callee.object || init.callee;
+            }
+
+            if (init && init.type === 'NewExpression' &&
+                init.callee.name === 'Sketcher') {
+                isSketcher = true;
+            }
         }
     }
 
@@ -128,8 +142,8 @@ export function insertShape(code: string, statement: string): string {
                     // Insert statement before return
                     body.splice(returnIndex, 0, statementNode);
 
-                    // Update return statement if we have a variable name
-                    if (varName) {
+                    // Update return statement if we have a variable name AND it's not a sketcher
+                    if (varName && !isSketcher) {
                         const returnStmt = body[returnIndex + 1]; // Now shifted by 1
                         if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
                             // Check if return is an array

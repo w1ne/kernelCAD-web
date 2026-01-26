@@ -258,6 +258,22 @@ export default function main() {
         const newCode = insertShape(code, 'let box = makeBox(10);');
         expect(newCode).toContain('return [box]');
     });
+
+    it('should NOT add Sketcher variables to the return array', () => {
+        const code = `
+export default function main() {
+    function drawPart() {
+        return [];
+    }
+    return drawPart();
+}`;
+
+        const newCode = insertShape(code, "const sketch1 = new Sketcher('XY').movePointerTo([0, 0]).lineTo([10, 10]).close();");
+
+        expect(newCode).toContain('const sketch1 = new Sketcher');
+        expect(newCode).toContain('return []');
+        expect(newCode).not.toContain('return [sketch1]');
+    });
 });
 
 describe('AST - Edge Cases', () => {

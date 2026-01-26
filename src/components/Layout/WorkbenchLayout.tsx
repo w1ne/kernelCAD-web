@@ -4,6 +4,7 @@ import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
 import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
+import { PlaneSelectorDialog } from '../Dialogs/PlaneSelectorDialog';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { SidePanel } from './SidePanel';
@@ -30,6 +31,7 @@ export function WorkbenchLayout() {
         setEditorInstance,
         sketchMode,
         setSketchMode,
+        addSketch,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
@@ -170,6 +172,9 @@ export function WorkbenchLayout() {
                         // Insert sketch code
                         insertCode(sketchCode);
 
+                        // Track sketch history
+                        addSketch(sketchData);
+
                         // Exit sketch mode
                         setSketchMode({
                             active: false,
@@ -190,6 +195,22 @@ export function WorkbenchLayout() {
                             tool: 'select',
                         });
                     }}
+                />
+            )}
+
+            {/* Plane Selector Dialog */}
+            {activeDialog === 'planeSelector' && (
+                <PlaneSelectorDialog
+                    onSelect={(plane) => {
+                        setSketchMode({
+                            active: true,
+                            plane: plane,
+                            currentSketch: null,
+                            tool: 'line',
+                        });
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
                 />
             )}
 

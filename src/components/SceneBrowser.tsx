@@ -45,6 +45,11 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({ items, onSelect }) => {
                     >
                         {getIconForType(item.type)}
                         <span className="font-mono">{item.name}</span>
+                        {item.detail && (
+                            <span className="ml-2 text-[10px] px-1 bg-[#333] rounded text-gray-400 font-mono">
+                                {item.detail}
+                            </span>
+                        )}
                         <span className="ml-auto opacity-0 group-hover:opacity-100 text-gray-500 text-[10px]">
                             L{item.line}
                         </span>
