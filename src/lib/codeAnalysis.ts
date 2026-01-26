@@ -1,7 +1,7 @@
-
 /**
- * Simple code analysis helpers for kernelCAD.
- * Uses regex-based parsing to keep things lightweight.
+ * Code analysis utilities for kernelCAD.
+ * Note: Most code manipulation now uses AST (see ast.ts).
+ * This module contains only the utilities still needed for UI/analysis.
  */
 
 export interface InsertionContext {
@@ -38,91 +38,6 @@ export function generateUniqueName(code: string, baseName: string): string {
     return `${baseName}${maxIndex + 1}`;
 }
 
-/**
- * Finds the best line to insert code.
- * Strategy:
- * 1. Look for 'function drawPart()'.
- * 2. Look for the last 'return' statement inside it.
- * 3. Insert before that return.
- * 4. Fallback: End of script.
- */
-export function findInsertionPoint(code: string): number {
-    const lines = code.split('\n');
-    let drawPartStart = -1;
-    let returnLine = -1;
-
-    // 1. Find drawPart
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('function drawPart()')) {
-            drawPartStart = i;
-            break;
-        }
-    }
-
-    if (drawPartStart === -1) return lines.length + 1;
-
-    // 2. Find return statement after drawPart
-    // We search backwards from the end to find the last return, 
-    // assuming it's the main return for drawPart.
-    for (let i = lines.length - 1; i > drawPartStart; i--) {
-        const line = lines[i].trim();
-        // Ignore the return statement that returns the function result itself at the bottom
-        if (line.startsWith('return ') && !line.includes('drawPart(')) {
-            returnLine = i; // 0-indexed line index
-            break;
-        }
-    }
-
-    if (returnLine !== -1) {
-        return returnLine + 1; // Return 1-based line number (insert before this line)
-    }
-
-    // Fallback: search for closing brace of function
-    for (let i = lines.length - 1; i > drawPartStart; i--) {
-        if (lines[i].trim() === '}') {
-            return i + 1; // Insert before closing brace
-        }
-    }
-
-    return lines.length + 1;
-}
-
-/**
- * Tries to update the return statement to include the new variable.
- * Supported formats:
- * - return x; -> return [x, newVar];
- * - return [x, y]; -> return [x, y, newVar];
- */
-export function updateReturnStatement(code: string, newVar: string): string {
-    // Basic regex for `return <something>;`
-    // We only touch the specific return inside drawPart if possible, 
-    // but globally for now is simple enough if unique.
-
-    const returnRegex = /(return\s+)([^;]+)(;?)/;
-    const match = code.match(returnRegex);
-
-    if (!match) return code;
-
-    const [fullMatch, prefix, content, suffix] = match;
-    const trimmedContent = content.trim();
-
-    // Context: ignoring if it's "return drawPart();" at the end of file
-    if (trimmedContent.includes('drawPart(')) return code;
-
-    let newContent = trimmedContent;
-
-    if (trimmedContent.startsWith('[') && trimmedContent.endsWith(']')) {
-        // It's already an array: [x, y] -> [x, y, z]
-        const body = trimmedContent.slice(1, -1);
-        newContent = `[${body}, ${newVar}]`;
-    } else {
-        // It's a single item: x -> [x, z]
-        newContent = `[${trimmedContent}, ${newVar}]`;
-    }
-
-    return code.replace(fullMatch, `${prefix}${newContent}${suffix}`);
-}
-
 export interface VariableDefinition {
     name: string;
     type: string;
@@ -130,7 +45,7 @@ export interface VariableDefinition {
 }
 
 /**
- * Parses the code to find top-level shape definitions.
+ * Parses the code to find top-level shape definitions for Scene Browser.
  * Heuristics:
  * - Looks for `const varName = ...`
  * - Guesses type based on keywords (makeBox, makeCylinder, fillet, etc.)

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { generateUniqueName, findInsertionPoint, updateReturnStatement, extractVariables } from './codeAnalysis';
+import { generateUniqueName, extractVariables } from './codeAnalysis';
 
 describe('codeAnalysis', () => {
     describe('generateUniqueName', () => {
@@ -22,71 +22,9 @@ describe('codeAnalysis', () => {
         });
     });
 
-    describe('findInsertionPoint', () => {
-        it('should find line before return in drawPart', () => {
-            const code = `
-function drawPart() {
-    const x = 1;
-    return x;
-}
-            `.trim();
-            // Line 1: function...
-            // Line 2: const x...
-            // Line 3: return x;
-            // Expect insertion at line 3 (pushing return down)
-            // Note: Our helper returns 1-based line number. 
-            // In the split array: 
-            // 0: function
-            // 1: const
-            // 2: return
-            // findInsertionPoint returns index 2 + 1 = 3? 
-            // In the implementation: returns returnLine + 1. 
-            // If returnLine is index 2. We return 3. 
-
-            // Wait, inserting AT line 3 means the content at line 3 moves to line 4.
-            // So we insert BEFORE the return. Correct.
-            expect(findInsertionPoint(code)).toBe(3);
-        });
-
-        it('should ignore global return drawPart()', () => {
-            const code = `
-function drawPart() {
-    const x = 1;
-    return x;
-}
-
-return drawPart();
-            `.trim();
-            // Should find line 4 (return x), inserts at 4 (before return x)
-            expect(findInsertionPoint(code)).toBe(3);
-        });
-
-        it('should fallback to end if no return', () => {
-            const code = `
-function drawPart() {
-    const x = 1;
-}
-            `.trim();
-            expect(findInsertionPoint(code)).toBe(3); // Before }
-        });
-    });
-
-    describe('updateReturnStatement', () => {
-        it('should convert single return to array', () => {
-            const code = 'return box;';
-            expect(updateReturnStatement(code, 'cyl')).toBe('return [box, cyl];');
-        });
-
-        it('should append to array return', () => {
-            const code = 'return [box, sphere];';
-            expect(updateReturnStatement(code, 'cyl')).toBe('return [box, sphere, cyl];');
-        });
-
-        it('should ignore return drawPart()', () => {
-            const code = 'return drawPart();';
-            expect(updateReturnStatement(code, 'cyl')).toBe('return drawPart();');
-        });
-    });
+    // Tests for removed functions:
+    // - findInsertionPoint: replaced by AST insertStatementSimple()
+    // - updateReturnStatement: replaced by AST insertShape()
 
     describe('extractVariables', () => {
         it('should extract box variable', () => {

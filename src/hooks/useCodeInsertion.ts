@@ -1,5 +1,5 @@
 import { useWorkbench } from '../context/WorkbenchContext';
-import { generateUniqueName, findInsertionPoint, updateReturnStatement } from '../lib/codeAnalysis';
+import { generateUniqueName } from '../lib/codeAnalysis';
 import { InsertShapeCommand } from '../commands/implementations/InsertShapeCommand';
 
 export function useCodeInsertion() {
@@ -15,7 +15,7 @@ export function useCodeInsertion() {
         const varName = generateUniqueName(currentCode, baseName);
         const snippet = typeof inputSnippet === 'function' ? inputSnippet(varName) : inputSnippet;
 
-        // Check if this is a Shape declaration (Command Pattern)
+        // Check if this is a Shape declaration (Command Pattern with AST)
         // Simple heuristic: starts with declaration keyword
         if (/^\s*(const|let|var)\s+/.test(snippet)) {
             try {
@@ -28,15 +28,15 @@ export function useCodeInsertion() {
         }
 
         // --- Legacy Insertion for Modifiers (.fillet) or Fallback ---
+        // Note: This path is only used for non-declaration snippets like ".fillet(1)"
+        // Shape declarations should use AST Command Pattern above
 
         // 2. Determine insertion position
-        // Only use current position if it's "meaningful" (not line 1, column 1 usually)
         let position = editorInstance.getPosition();
 
-        // If cursor is at top (likely default) or unset, use smart detection
+        // If cursor is at top (likely default) or unset, use line 1
         if (!position || position.lineNumber <= 1) {
-            const line = findInsertionPoint(currentCode);
-            position = { lineNumber: line, column: 1 };
+            position = { lineNumber: 1, column: 1 };
         }
 
         if (!position) return;
@@ -52,12 +52,8 @@ export function useCodeInsertion() {
             textToInsert = '\n' + snippet;
         }
 
-        // 4. Prepare Edits
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const edits: any[] = [];
-
-        // Edit 1: Insert the snippet
-        edits.push({
+        // 4. Insert the snippet (modifiers like .fillet don't need return updates)
+        editorInstance.executeEdits('toolbar', [{
             range: {
                 startLineNumber: position.lineNumber,
                 startColumn: position.column,
@@ -66,30 +62,8 @@ export function useCodeInsertion() {
             },
             text: textToInsert,
             forceMoveMarkers: true
-        });
+        }]);
 
-        // Edit 2: Update return statement
-        if (isStatement && !snippet.startsWith('.')) {
-            // We only attempt to update the return if we can find it reliably
-            const matches = model.findMatches('return\\s+[^;]+;?', false, true, false, null, true);
-            // exclude 'return drawPart()' which is usually at the bottom
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const validMatch = matches.find((m: any) => !m.matches[0].includes('drawPart('));
-
-            if (validMatch) {
-                const originalReturn = validMatch.matches[0];
-                const updatedReturn = updateReturnStatement(originalReturn, varName);
-                if (updatedReturn !== originalReturn) {
-                    edits.push({
-                        range: validMatch.range,
-                        text: updatedReturn,
-                        forceMoveMarkers: false
-                    });
-                }
-            }
-        }
-
-        editorInstance.executeEdits('toolbar', edits);
         editorInstance.focus();
     };
 
