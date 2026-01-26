@@ -2,6 +2,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import Toolbar from './Toolbar';
+import { Box } from 'lucide-react';
+import { type Feature } from '../features/types';
 // React unused
 
 // Manually cleanup after each test
@@ -9,28 +11,36 @@ afterEach(() => {
     cleanup();
 });
 
+const mockFeatures: Feature[] = [
+    {
+        id: 'box',
+        label: 'Box',
+        icon: Box,
+        execute: vi.fn(),
+        parameters: [{ name: 'w', label: 'W', type: 'number', defaultValue: 10 }]
+    },
+    {
+        id: 'fillet',
+        label: 'Fillet',
+        icon: Box, // reuse icon
+        execute: vi.fn()
+    }
+];
+
 describe('Toolbar', () => {
-    it('should call onToolClick with BOX type for box button', () => {
+    it('should render feature buttons', () => {
         const onToolClick = vi.fn();
-        render(<Toolbar onToolClick={onToolClick} />);
+        render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
 
-        fireEvent.click(screen.getByTitle('Add Box'));
-        expect(onToolClick).toHaveBeenCalledWith('BOX', true);
+        expect(screen.getByTitle('Box')).toBeDefined();
+        expect(screen.getByTitle('Fillet')).toBeDefined();
     });
 
-    it('should call onToolClick with CYLINDER type for cylinder button', () => {
+    it('should call onToolClick with feature object', () => {
         const onToolClick = vi.fn();
-        render(<Toolbar onToolClick={onToolClick} />);
+        render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
 
-        fireEvent.click(screen.getByTitle('Add Cylinder'));
-        expect(onToolClick).toHaveBeenCalledWith('CYLINDER', true);
-    });
-
-    it('should call onToolClick with snippet for fillet button', () => {
-        const onToolClick = vi.fn();
-        render(<Toolbar onToolClick={onToolClick} />);
-
-        fireEvent.click(screen.getByTitle('Fillet'));
-        expect(onToolClick).toHaveBeenCalledWith('.fillet(1)', false);
+        fireEvent.click(screen.getByTitle('Box'));
+        expect(onToolClick).toHaveBeenCalledWith(mockFeatures[0]);
     });
 });

@@ -4,20 +4,20 @@
 
 This roadmap transitions from feature-chasing to architectural stability. We define "Horizons" to group architectural milestones.
 
-## Horizon 1: Foundation & Modularization (Current Focus)
+## Horizon 1: Foundation & Modularization (COMPLETE)
 **Goal**: Deconstruct the monolith. The `App.tsx` has become too complex. We need a clean "Workbench" architecture to support future GUI features safely.
 
-- [ ] **Architecture**: Split `App.tsx` into a Layout/Workbench system.
+- [x] **Architecture**: Split `App.tsx` into a Layout/Workbench system.
     -   `Workbench` (State Container)
     -   `Layout` (Visual Shell)
     -   `FeatureManager` (Dependency Injection for Tools)
-- [ ] **State Management**: Introduce a rigid state store (likely `zustand` or `context`) to manage `Code`, `Selection`, `ViewMode` globally without prop drilling.
-- [ ] **Code Organization**: Strictly separate:
+- [x] **State Management**: Introduce a rigid state store (likely `zustand` or `context`) to manage `Code`, `Selection`, `ViewMode` globally without prop drilling.
+- [x] **Code Organization**: Strictly separate:
     -   `src/core` (Engine, Worker, Evaluation)
     -   `src/ui` (Components, Dialogs, Toolbar)
     -   `src/features` (The bridge between logic and UI, e.g., "BoxFeature")
 
-## Horizon 2: The Command Pattern (Fusion 360 Core)
+## Horizon 2: The Command Pattern (Fusion 360 Core) (Current Focus)
 **Goal**: Standardize how actions happen. A "Tool" shouldn't just run a function; it should enter a "State".
 
 - [ ] **Command Infrastructure**: Implement a `Command` class system.

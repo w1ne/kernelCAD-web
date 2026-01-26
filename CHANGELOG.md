@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-01-26
+### Added
+- **AST-Based Code Manipulation**: Replaced fragile Regex patterns with robust Abstract Syntax Tree (AST) using `acorn` parser.
+- **Syntax-Aware Insertion**: Shape insertion now uses AST traversal to find the correct `drawPart` function and return statement.
+- **Auto-Return Updates**: Automatically appends inserted variables to return array (e.g., `return [box]` → `return [box, cylinder]`).
+- **Command System**: Implemented Command pattern with Undo/Redo support for code changes.
+- **Feature Registry**: Added pluggable feature system for Box, Cylinder, and Sphere primitives.
+- **Comprehensive Testing**: Added 39 new tests (24 unit + 15 integration) covering edge cases and full workflow.
+
+### Changed
+- **Code Insertion Logic**: Migrated from Regex to AST-based manipulation in `ast.ts`.
+- **Toolbar Integration**: Toolbar now uses feature registry and command system.
+- **Package Dependencies**: Added `acorn`, `acorn-walk`, and `astring` for AST processing.
+
+### Fixed
+- **Comment Corruption**: AST prevents Regex bug where comments containing "return" were incorrectly modified.
+- **String Literal Matching**: No longer matches patterns inside string literals.
+- **Nested Functions**: Correctly identifies target function scope instead of matching any return statement.
+
+### Technical Details
+- **Incremental Implementation**: 6-phase rollout with browser verification at each step.
+- **Browser Compatible**: All AST libraries work in browser without bundler issues.
+- **Test Coverage**: 77 tests passing (39 new AST tests + 38 existing tests).
+- **Backup Available**: Old Regex implementation preserved in `ast-regex.ts`.
+
 ## [0.1.0] - 2026-01-25
 ### Added
 -   **Scene Browser**: Fusion 360-style feature tree listing all objects (`box1`, `cyl2`) with "Jump to Code" functionality.

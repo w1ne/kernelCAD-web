@@ -1,11 +1,9 @@
 import { useWorkbench } from '../context/WorkbenchContext';
 import { generateUniqueName, findInsertionPoint, updateReturnStatement } from '../lib/codeAnalysis';
+import { InsertShapeCommand } from '../commands/implementations/InsertShapeCommand';
 
 export function useCodeInsertion() {
-    const { editorInstance } = useWorkbench();
-    // We need a ref for cursor position, but since we are extracting this, 
-    // maybe we can just query the editor directly?
-    // editor.getPosition() is synchronous.
+    const { editorInstance, commandManager } = useWorkbench();
 
     const insertCode = (inputSnippet: string | ((name: string) => string), baseName = 'shape') => {
         if (!editorInstance) return;
@@ -16,6 +14,20 @@ export function useCodeInsertion() {
         // 1. Determine variable name
         const varName = generateUniqueName(currentCode, baseName);
         const snippet = typeof inputSnippet === 'function' ? inputSnippet(varName) : inputSnippet;
+
+        // Check if this is a Shape declaration (Command Pattern)
+        // Simple heuristic: starts with declaration keyword
+        if (/^\s*(const|let|var)\s+/.test(snippet)) {
+            try {
+                commandManager.execute(new InsertShapeCommand(snippet, `Insert ${baseName}`));
+                editorInstance.focus();
+                return;
+            } catch (e) {
+                console.error("Command execution failed, falling back to legacy insertion", e);
+            }
+        }
+
+        // --- Legacy Insertion for Modifiers (.fillet) or Fallback ---
 
         // 2. Determine insertion position
         // Only use current position if it's "meaningful" (not line 1, column 1 usually)

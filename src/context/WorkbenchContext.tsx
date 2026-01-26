@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { defaultCode, executeCode, init as initEngine, type GeometryResult } from '../lib/geometryEngine';
+import { CommandManager } from '../commands/CommandManager';
 
 interface WorkbenchContextType {
     viewMode: 'code' | 'gui';
@@ -16,6 +17,7 @@ interface WorkbenchContextType {
     editorInstance: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setEditorInstance: (instance: any) => void;
+    commandManager: CommandManager;
 }
 
 const WorkbenchContext = createContext<WorkbenchContextType | undefined>(undefined);
@@ -30,6 +32,29 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const [activeDialog, setActiveDialog] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [editorInstance, setEditorInstance] = useState<any>(null);
+
+    // Keep code in ref for CommandManager to access latest without re-render loop
+    const codeRef = useRef(code);
+    useEffect(() => {
+        codeRef.current = code;
+    }, [code]);
+
+    // Initialize CommandManager once
+    const commandManagerRef = useRef<CommandManager | null>(null);
+    if (!commandManagerRef.current) {
+        commandManagerRef.current = new CommandManager(() => ({
+            code: codeRef.current,
+            setCode: (newCode) => {
+                setCode(newCode);
+                // Also update ref immediately for consecutive commands? 
+                // setCode is async-ish (batching), but CommandManager expects immediate update?
+                // Actually CommandManager just calls setCode. 
+                // If multiple commands run in one tick, codeRef might be stale.
+                // But typically UI limits speed.
+                codeRef.current = newCode;
+            }
+        }));
+    }
 
     // Initialize Engine
     useEffect(() => {
@@ -82,7 +107,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         activeDialog,
         setActiveDialog,
         editorInstance,
-        setEditorInstance
+        setEditorInstance,
+        commandManager: commandManagerRef.current
     };
 
     return (

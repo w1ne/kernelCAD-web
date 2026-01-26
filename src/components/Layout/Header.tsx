@@ -1,9 +1,9 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Code, Monitor } from 'lucide-react';
+import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2 } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../lib/geometryEngine';
 
 export function Header() {
-    const { viewMode, setViewMode, isComputing, code } = useWorkbench();
+    const { viewMode, setViewMode, isComputing, code, commandManager } = useWorkbench();
 
     const handleExport = async (type: 'step' | 'stl') => {
         try {
@@ -55,6 +55,27 @@ export function Header() {
                         {viewMode === 'gui' && <span>GUI</span>}
                     </button>
                 </div>
+
+                <div className="h-6 w-px bg-[#333] mx-2" />
+
+                <button
+                    onClick={() => commandManager.undo()}
+                    disabled={!commandManager.canUndo}
+                    className={`p-1 rounded transition-colors ${!commandManager.canUndo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
+                    title="Undo"
+                >
+                    <Undo2 className="w-4 h-4" />
+                </button>
+                <button
+                    onClick={() => commandManager.redo()}
+                    disabled={!commandManager.canRedo}
+                    className={`p-1 rounded transition-colors ${!commandManager.canRedo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
+                    title="Redo"
+                >
+                    <Redo2 className="w-4 h-4" />
+                </button>
+
+                <div className="h-6 w-px bg-[#333] mx-2" />
 
                 <button
                     onClick={() => handleExport('step')}

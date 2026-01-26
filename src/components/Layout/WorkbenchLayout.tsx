@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import CodeEditor from '../Editor';
 import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
@@ -7,7 +7,8 @@ import { Header } from './Header';
 import { SidePanel } from './SidePanel';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
-import { GEOMETRY_CONFIGS } from '../Dialogs/GeometryDialogs';
+import { featureRegistry } from '../../features/FeatureRegistry';
+import { type Feature } from '../../features/types';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function WorkbenchLayout() {
@@ -26,33 +27,35 @@ export function WorkbenchLayout() {
 
     const { insertCode } = useCodeInsertion();
 
+    // Get all features for the toolbar
+    const features = useMemo(() => featureRegistry.getAll(), []);
+
+    const activeFeature = useMemo(() => {
+        return activeDialog ? featureRegistry.get(activeDialog) : null;
+    }, [activeDialog]);
+
     // Refresh editor layout when switching modes
     React.useEffect(() => {
         if (viewMode === 'code' && editorInstance) {
-            // Small delay to allow transition to finish (duration-300)
             setTimeout(() => editorInstance.layout(), 350);
         }
     }, [viewMode, editorInstance]);
 
     const handleEditorDidMount = (editor: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         setEditorInstance(editor);
-        // Layout fix logic moved here if needed or kept in context effect
     };
 
-    const handleToolbarClick = (toolId: string, isDialog?: boolean) => {
-        if (isDialog) {
-            if (GEOMETRY_CONFIGS[toolId]) {
-                setActiveDialog(toolId);
-            }
+    const handleToolClick = (feature: Feature) => {
+        if (feature.parameters && feature.parameters.length > 0) {
+            setActiveDialog(feature.id);
         } else {
-            insertCode(toolId);
+            feature.execute({ insertCode });
         }
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
-        if (activeDialog && GEOMETRY_CONFIGS[activeDialog]) {
-            const config = GEOMETRY_CONFIGS[activeDialog];
-            insertCode((name) => config.template(values, name), config.baseName);
+        if (activeFeature) {
+            activeFeature.execute({ insertCode }, values);
         }
     };
 
@@ -83,7 +86,7 @@ export function WorkbenchLayout() {
                 {/* Left Pane */}
                 <div className={`h-full flex flex-col border-r border-[#333] transition-all duration-300 ${viewMode === 'code' ? 'w-[40%]' : 'w-[250px]'}`}>
                     <div className="flex-1 relative overflow-hidden flex">
-                        <Toolbar onToolClick={handleToolbarClick} />
+                        <Toolbar features={features} onToolClick={handleToolClick} />
 
                         <div className="flex-1 h-full relative flex flex-col">
                             {/* GUI Mode: Scene Browser */}
@@ -107,14 +110,19 @@ export function WorkbenchLayout() {
                             </div>
 
                             {/* Dialog Overlay */}
-                            {activeDialog && GEOMETRY_CONFIGS[activeDialog] && (
+                            {activeFeature && activeFeature.parameters && (
                                 <ParameterDialog
-                                    key={activeDialog}
+                                    key={activeFeature.id}
                                     isOpen={!!activeDialog}
                                     onClose={() => setActiveDialog(null)}
                                     onSubmit={handleDialogSubmit}
-                                    title={GEOMETRY_CONFIGS[activeDialog].title}
-                                    fields={GEOMETRY_CONFIGS[activeDialog].fields}
+                                    title={activeFeature.label}
+                                    fields={activeFeature.parameters.map(p => ({
+                                        key: p.name,
+                                        label: p.label,
+                                        defaultValue: p.defaultValue,
+                                        step: p.step
+                                    }))}
                                 />
                             )}
                         </div>
