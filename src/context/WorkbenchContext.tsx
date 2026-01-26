@@ -1,10 +1,13 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { defaultCode, executeCode, init as initEngine, type GeometryResult } from '../lib/geometryEngine';
 import { CommandManager } from '../commands/CommandManager';
+import type { ViewMode3D } from '../types/viewMode';
 
 interface WorkbenchContextType {
     viewMode: 'code' | 'gui';
     setViewMode: (mode: 'code' | 'gui') => void;
+    viewMode3D: ViewMode3D;
+    setViewMode3D: (mode: ViewMode3D) => void;
     code: string;
     setCode: (code: string) => void;
     geometries: GeometryResult[];
@@ -24,6 +27,7 @@ const WorkbenchContext = createContext<WorkbenchContextType | undefined>(undefin
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>('code');
+    const [viewMode3D, setViewMode3D] = useState<ViewMode3D>('shadedWithEdges');
     const [code, setCode] = useState(defaultCode);
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -98,6 +102,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const value: WorkbenchContextType = {
         viewMode,
         setViewMode,
+        viewMode3D,
+        setViewMode3D,
         code,
         setCode,
         geometries,

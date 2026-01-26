@@ -1,9 +1,9 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2 } from 'lucide-react';
+import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../lib/geometryEngine';
 
 export function Header() {
-    const { viewMode, setViewMode, isComputing, code, commandManager } = useWorkbench();
+    const { viewMode, setViewMode, viewMode3D, setViewMode3D, isComputing, code, commandManager } = useWorkbench();
 
     const handleExport = async (type: 'step' | 'stl') => {
         try {
@@ -53,6 +53,31 @@ export function Header() {
                     >
                         <Monitor size={14} />
                         {viewMode === 'gui' && <span>GUI</span>}
+                    </button>
+                </div>
+
+                {/* 3D View Mode Toggle */}
+                <div className="flex bg-[#222] rounded p-0.5">
+                    <button
+                        onClick={() => setViewMode3D('shadedWithEdges')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewMode3D === 'shadedWithEdges' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Shaded with Edges"
+                    >
+                        <Box size={14} />
+                    </button>
+                    <button
+                        onClick={() => setViewMode3D('wireframe')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewMode3D === 'wireframe' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Wireframe"
+                    >
+                        <GridIcon size={14} />
+                    </button>
+                    <button
+                        onClick={() => setViewMode3D('shaded')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewMode3D === 'shaded' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Shaded"
+                    >
+                        <Circle size={14} />
                     </button>
                 </div>
 

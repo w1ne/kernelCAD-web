@@ -14,6 +14,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 export function WorkbenchLayout() {
     const {
         viewMode,
+        viewMode3D,
         code,
         setCode,
         geometries,
@@ -131,7 +132,7 @@ export function WorkbenchLayout() {
 
                 {/* Right Pane: 3D Viewport */}
                 <div className="flex-1 h-full relative bg-[#0a0a0a]">
-                    <Viewer geometries={geometries} />
+                    <Viewer geometries={geometries} viewMode3D={viewMode3D} />
                 </div>
             </div>
         </div>
