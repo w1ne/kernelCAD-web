@@ -3,6 +3,7 @@ import CodeEditor from '../Editor';
 import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
+import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { SidePanel } from './SidePanel';
 import { useWorkbench } from '../../context/WorkbenchContext';
@@ -23,7 +24,9 @@ export function WorkbenchLayout() {
         activeDialog,
         setActiveDialog,
         editorInstance,
-        setEditorInstance
+        setEditorInstance,
+        sketchMode,
+        setSketchMode,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
@@ -135,6 +138,32 @@ export function WorkbenchLayout() {
                     <Viewer geometries={geometries} viewMode3D={viewMode3D} />
                 </div>
             </div>
+
+            {/* Sketch Canvas Overlay */}
+            {sketchMode.active && sketchMode.plane && (
+                <SketchCanvas
+                    plane={sketchMode.plane}
+                    onComplete={(entities) => {
+                        console.log('Sketch complete:', entities);
+                        // TODO: Generate code from entities and insert
+                        // For now, just exit sketch mode
+                        setSketchMode({
+                            active: false,
+                            plane: null,
+                            currentSketch: null,
+                            tool: 'select',
+                        });
+                    }}
+                    onCancel={() => {
+                        setSketchMode({
+                            active: false,
+                            plane: null,
+                            currentSketch: null,
+                            tool: 'select',
+                        });
+                    }}
+                />
+            )}
         </div>
     );
 }
