@@ -33,7 +33,7 @@ export function ExtrudeDialog({ sketchName, onConfirm, onCancel }: ExtrudeDialog
                             onChange={(e) => setDistance(Number(e.target.value))}
                             className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                             step="1"
-                            min="0.1"
+                            min="1"
                             autoFocus
                         />
                     </div>
