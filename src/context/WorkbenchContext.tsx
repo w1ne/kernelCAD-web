@@ -23,7 +23,8 @@ interface WorkbenchContextType {
     commandManager: CommandManager;
 }
 
-const WorkbenchContext = createContext<WorkbenchContextType | undefined>(undefined);
+// Export for testing
+export const WorkbenchContext = createContext<WorkbenchContextType | undefined>(undefined);
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>('code');
@@ -117,11 +118,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         commandManager: commandManagerRef.current
     };
 
-    return (
-        <WorkbenchContext.Provider value={value}>
-            {children}
-        </WorkbenchContext.Provider>
-    );
+    return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
