@@ -16,7 +16,7 @@ interface SidePanelProps {
 }
 
 export function SidePanel({ onJumpToLine }: SidePanelProps) {
-    const { code, setViewMode } = useWorkbench();
+    const { code, setViewMode, planes, togglePlaneVisibility } = useWorkbench();
 
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
@@ -26,10 +26,12 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
         <div className="flex-1 overflow-hidden bg-[#111] border-b border-[#333]">
             <SceneBrowser
                 items={items}
+                planes={planes}
                 onSelect={(item: VariableDefinition) => {
                     setViewMode('code');
                     onJumpToLine(item.line);
                 }}
+                onTogglePlane={togglePlaneVisibility}
             />
         </div>
     );

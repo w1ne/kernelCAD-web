@@ -3,6 +3,7 @@ import { defaultCode, executeCode, init as initEngine, type GeometryResult } fro
 import { CommandManager } from '../commands/CommandManager';
 import type { ViewMode3D } from '../types/viewMode';
 import type { SketchModeState } from '../types/sketch';
+import type { SketchPlaneEntity } from '../types/plane';
 
 interface WorkbenchContextType {
     viewMode: 'code' | 'gui';
@@ -28,6 +29,10 @@ interface WorkbenchContextType {
     // Sketch history
     sketches: any[]; // Using any for now to avoid circular dependency or complex types
     addSketch: (sketch: any) => void;
+    // Plane management
+    planes: SketchPlaneEntity[];
+    addPlane: (plane: SketchPlaneEntity) => void;
+    togglePlaneVisibility: (id: string) => void;
 }
 
 // Export for testing
@@ -53,6 +58,21 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
     const addSketch = (sketch: any) => {
         setSketches(prev => [...prev, sketch]);
+    };
+
+    // Plane management state
+    const [planes, setPlanes] = useState<SketchPlaneEntity[]>([
+        { id: 'base-xy', name: 'Origin XY', type: 'base', origin: [0, 0, 0], normal: [0, 0, 1], visible: true },
+        { id: 'base-xz', name: 'Origin XZ', type: 'base', origin: [0, 0, 0], normal: [0, 1, 0], visible: true },
+        { id: 'base-yz', name: 'Origin YZ', type: 'base', origin: [0, 0, 0], normal: [1, 0, 0], visible: true },
+    ]);
+
+    const addPlane = (plane: SketchPlaneEntity) => {
+        setPlanes(prev => [...prev, plane]);
+    };
+
+    const togglePlaneVisibility = (id: string) => {
+        setPlanes(prev => prev.map(p => p.id === id ? { ...p, visible: !p.visible } : p));
     };
 
     const [isComputing, setIsComputing] = useState(false);
@@ -142,6 +162,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         setSketchMode,
         sketches,
         addSketch,
+        planes,
+        addPlane,
+        togglePlaneVisibility,
     };
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
