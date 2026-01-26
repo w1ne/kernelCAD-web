@@ -30,11 +30,11 @@
 
 ---
 
-## 🎯 PHASE 1: Sketch-Based Modeling (v0.3.x)
+## 🎯 PHASE 1: Sketch-Based Modeling (v0.5.0) - NEXT PRIORITY
 
 **Goal**: Sketch → Extrude workflow like Fusion360/CATIA
 
-### 1.1 Sketching System (v0.3.0)
+### 1.1 Sketching System (v0.5.0)
 - [ ] **Sketch Plane Selection**
   - [ ] XY, XZ, YZ planes
   - [ ] Face selection from existing geometry
@@ -55,21 +55,14 @@
   - [ ] Constraint indicators
   - [ ] AST code generation: `startSketch('XY').line(...)`
 
-### 1.2 3D Operations (v0.3.1)
-- [ ] **Extrude**: Distance, direction, taper
-- [ ] **Revolve**: Axis, angle
-- [ ] **Sweep**: Path, guide curves
-- [ ] **Loft**: Multi-profile
-
-### 1.3 Modifiers (v0.3.2)
-- [ ] **Fillet**: Edge selection, radius
-- [ ] **Chamfer**: Edge selection, distance
-- [ ] **Shell**: Face removal, thickness
-- [ ] **Draft**: Angle for molding
+- [ ] **Extrude Operation**
+  - [ ] Distance parameter
+  - [ ] Direction (normal, reversed, both)
+  - [ ] Preview before committing
 
 ---
 
-## 🔭 PHASE 2: Visualization & Interaction (v0.4.x)
+## 🔭 PHASE 2: Visualization & Interaction (v0.6.x-v0.8.x)
 
 **Status**: Partially Complete (v0.4.0 shipped)
 
@@ -78,12 +71,12 @@
 - [x] Wireframe (geometric edges)
 - [x] Shaded (smooth surfaces)
 
-### 2.2 Advanced View Modes (v0.5.0)
+### 2.2 Advanced View Modes (v0.6.0)
 - [ ] **Hidden Line Removed** (wireframe with occlusion)
 - [ ] **X-Ray** (transparent surfaces, visible edges)
 - [ ] **Faceted** (show mesh triangulation for debugging)
 
-### 2.3 Display Settings (v0.6.0)
+### 2.3 Display Settings (v0.7.0)
 - [ ] **Edge Controls**
   - [ ] Edge thickness adjustment (1-5px)
   - [ ] Tangent edge toggle (show/hide)
@@ -94,7 +87,7 @@
   - [ ] Grid plane (fade with distance)
   - [ ] Unit display (mm/in toggle)
 
-### 2.4 Camera Controls (v0.7.0)
+### 2.4 Camera Controls (v0.8.0)
 - [ ] **Standard Views** (orthographic)
   - [ ] Front, Back, Left, Right, Top, Bottom
   - [ ] Isometric (default 3D)
@@ -117,11 +110,11 @@
 
 ---
 
-## 🕐 PHASE 2.5: Feature History & Timeline (v0.8.0)
+## 🕐 PHASE 2.5: Feature History & Timeline (v0.9.0)
 
 **Goal**: Parametric editing with automatic rebuild (Fusion360/CATIA-style)
 
-> **Note**: This is a MAJOR feature warranting a full minor version (0.8.0), not a patch release
+> **Note**: This is a MAJOR feature warranting a full minor version (0.9.0)
 
 ### 2.5.1 Timeline UI
 - [ ] Timeline panel (bottom of screen)
@@ -213,14 +206,16 @@
 - **MINOR** (0.x.0): New features, backward compatible
 - **PATCH** (0.x.y): Bug fixes only
 
-1. **v0.5.0**: Advanced View Modes (Hidden Line, X-Ray) - 2 weeks
-2. **v0.6.0**: Display Settings (Edge controls, Grid/Axes) - 2 weeks  
-3. **v0.7.0**: Camera Controls (Standard views, Projection) - 2 weeks
-4. **v0.8.0**: Feature History System (Timeline + Rebuild) - 8 weeks ⭐ **Critical**
-5. **v0.9.0**: Parameters & Patterns - 4 weeks
-6. **v0.10.0**: Sketching System - 6 weeks
+**Revised Priority** (Sketching moved to immediate next):
 
-**Note**: Phase 1 (Sketching) deferred until after History, as History is foundational infrastructure needed for parametric sketch editing.
+1. **v0.5.0**: Sketching System (Sketch + Extrude) - 6 weeks ⭐ **CURRENT PRIORITY**
+2. **v0.6.0**: Advanced View Modes (Hidden Line, X-Ray) - 2 weeks
+3. **v0.7.0**: Display Settings (Edge controls, Grid/Axes) - 2 weeks  
+4. **v0.8.0**: Camera Controls (Standard views, Section planes) - 2 weeks
+5. **v0.9.0**: Feature History System (Timeline + Rebuild) - 8 weeks ⭐ **Critical Infrastructure**
+6. **v1.0.0**: Parameters & Patterns - 4 weeks 🎉 **First Major Release**
+
+**Rationale**: Starting with Sketching to unlock sketch-based workflow early. Feature History (v0.9.0) remains critical but can build on sketch foundation.
 
 ---
 
