@@ -22,8 +22,8 @@ Please refer to the following documents for detailed information:
 ## Technology Stack
 - **Browser-Native Kernel**: Runs a C++/Rust B-Rep kernel compiled to WebAssembly (Wasm). This moves geometry calculation to the client side—ensuring privacy, offline capability, and zero latency.
 - **Hybrid Interface**:
-    - **Viewport**: Standard 3D manipulation.
-    - **Code-View**: A live, bi-directional code editor (TypeScript/Python). Every GUI action generates clean, human-readable code.
+    - **Viewport**: Professional 3D interaction featuring industry-standard **Transform Gizmos** (move/rotate/scale) and **Direct Manipulation** (drag-to-extrude, push/pull).
+    - **Code-View**: A live, bi-directional code editor (TypeScript). Every GUI action—including direct transformations—generates clean, human-readable code.
 
 ### B. The "Killer Feature": Git for Geometry
 - **Semantic Versioning**: Because the model is defined by code/text, kernelCAD supports true Git integration.

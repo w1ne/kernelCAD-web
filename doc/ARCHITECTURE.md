@@ -22,6 +22,7 @@ graph TD
     
     Workspace --> Editor[Code Editor]
     Workspace --> Viewer[3D Viewer]
+    Viewer --> Gizmos[Interaction Layer: Gizmos/Selection]
     
     subgraph State Management
         Context[WorkbenchContext]
@@ -92,6 +93,7 @@ A declarative 3D viewport built with `react-three-fiber`.
 
 -   **Scene**: OrbitControls, GridHelper, Lights.
 -   **Rendering**: Takes mesh data from the engine and updates the `THREE.BufferGeometry`.
+-   **Interaction Layer**: (Upcoming) A high-performance overlay for **Transform Gizmos** and **Face/Edge Selection**, enabling direct manipulation of solids.
 -   **Performance**: Reacts to `geometries` state changes.
 
 ### 3. The Editor (`src/components/Editor.tsx`)

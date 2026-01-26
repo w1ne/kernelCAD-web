@@ -2,253 +2,112 @@
 
 > Building a professional parametric CAD system in the browser
 
-**Current Version**: v0.4.0  
-**Status**: Phase 2 (Visualization) - In Progress
+**Current Version**: v0.5.2
+**Status**: Phase 1 (Professional Modeling Workflow) - In Progress
 
 ---
 
 ## ✅ COMPLETED
 
-### v0.1-0.2: Foundation & Architecture
+### v0.1-0.4: Foundation & CAD Visualization
 - [x] Workbench layout system (Header, SidePanel, Workspace)
 - [x] AST-based code manipulation with `acorn` parser
 - [x] Command Pattern with Undo/Redo support
 - [x] Feature Registry for primitives (Box, Cylinder, Sphere)
 - [x] Scene Browser with "Jump to Code"
-- [x] 85 unit tests (100% passing)
+- [x] **CAD Visualization Modes**: Shaded with Edges, Wireframe, Shaded.
 
-### v0.4.0: CAD-Style Visualization ✨ **NEW**
-- [x] **3 Professional View Modes**:
-  - [x] Shaded with Edges (default) - flat shading + black edges
-  - [x] Wireframe - geometric edges only (NOT mesh tessellation)
-  - [x] Shaded - smooth surfaces
-- [x] **CAD Materials**: MeshLambertMaterial (matte, no PBR)
-- [x] **CAD Lighting**: Headlight + bright ambient (no shadows)
-- [x] **View Mode UI**: Toggle buttons in Header
-- [x] **Edge Rendering**: EdgesGeometry with 15° threshold
-- [x] **Tests**: 14 new unit tests for materials & lighting
+### v0.5.0-v0.5.2: Decoupled Workflow Foundation
+- [x] **Decoupled Sketch-Extrude**: Sketches are standalone primitives; Extrude is a separate operation.
+- [x] **Construction Geometry**: Origin planes and Offset planes support.
+- [x] **Feature Execution System**: Support for custom dialogs and target selection.
 
 ---
 
-## 🎯 PHASE 1: Sketch-Based Modeling (v0.5.0) - IN PROGRESS
+## 🚀 PHASE 1: Professional Modeling Workflow (v0.6.x)
 
-**Goal**: Sketch → Extrude workflow like Fusion360/CATIA
+**Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
-**Status**: Basic UI complete, integrating code generation
+### 1.1 Advanced Modeling Operations
+- [ ] **Core Features**: Revolve, Sweep, Loft.
+- [ ] **Detailing**: Fillet and Chamfer with edge selection support.
+- [ ] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
+- [ ] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
 
-### 1.1 Sketching System (v0.5.0)
-- [ ] **Advanced Plane System** (v0.5.1)
-  - [/] Base Planes: XY, XZ, YZ (automatically added to workspace)
-  - [ ] **Face Selection**: Derive sketch plane from existing 3D faces
-  - [ ] **Custom Planes**: Offset plane, Plane at angle, 3-point plane
-  - [ ] **Scene Integration**: "Construction" folder in Scene Browser for planes
-  
-- [/] **2D Sketch Tools**
-  - [x] Line tool (click-click)
-  - [/] Circle tool (UI done, code gen needs work)
-  - [x] Rectangle tool (click-drag)
-  - [ ] Polygon (deferred)
-  - [ ] Arc (deferred)
-  
-- [ ] **Constraints** (deferred to v0.5.1)
-  - [ ] Geometric: Horizontal, Vertical, Parallel, Perpendicular
-  - [ ] Dimensional: Distance, Radius, Angle
-  - [ ] Parameter-driven (e.g., `width = 10`)
-  
-- [/] **Sketch UI & Code Generation**
-  - [x] 2D canvas overlay with grid
-  - [x] Mouse interaction (draw, preview)
-  - [x] Tool selector (Line, Rectangle, Circle)
-  - [/] AST code generation (in progress)
-  - [/] Code insertion (in progress)
-  - [ ] Scene browser integration
-  - [ ] 3D plane visualization
-
-- [x] **Feature-Based Modeling (v0.5.2)**
-  - [x] **Decoupled Extrude**: Standalone tool that acts on sketches
-  - [x] **Sketch as Primitive**: Sketches stored as geometry nodes (non-renderable by default)
-  - [x] **Extrude Tool UI**: Target selection + Distance input
-  - [x] Code generation: `const solid = sketch.extrude(distance)`
+### 1.2 Parametric Sketching
+- [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent.
+- [ ] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
+- [ ] **Constraint Solving**: Integration of a 2D constraint solver (e.g., plane-solver).
 
 ---
 
-## 🔭 PHASE 2: Visualization & Interaction (v0.6.x-v0.8.x)
+## 🕐 PHASE 2: Intelligence & Parametric Control (v0.7.x)
 
-**Status**: Partially Complete (v0.4.0 shipped)
+**Goal**: Full parametric control over the model history.
 
-### ✅ 2.1 View Modes (v0.4.0 - DONE)
-- [x] Shaded with Edges (default)
-- [x] Wireframe (geometric edges)
-- [x] Shaded (smooth surfaces)
+### 2.1 Feature History & Timeline
+- [ ] **Timeline UI**: Fusion360-style linear history at the bottom of the screen.
+- [ ] **Time Travel**: Drag the playhead to see previous states of the model.
+- [ ] **Re-ordering**: Drag and drop features in the timeline to change execution order.
 
-### 2.2 Advanced View Modes (v0.6.0)
-- [ ] **Hidden Line Removed** (wireframe with occlusion)
-- [ ] **X-Ray** (transparent surfaces, visible edges)
-- [ ] **Faceted** (show mesh triangulation for debugging)
-
-### 2.3 Display Settings (v0.7.0)
-- [ ] **Edge Controls**
-  - [ ] Edge thickness adjustment (1-5px)
-  - [ ] Tangent edge toggle (show/hide)
-  - [ ] Silhouette edges
-  
-- [ ] **Grid & Axes**
-  - [ ] Origin triad (XYZ arrows, RGB colors)
-  - [ ] Grid plane (fade with distance)
-  - [ ] Unit display (mm/in toggle)
-
-### 2.4 Camera Controls (v0.8.0)
-- [ ] **Standard Views** (orthographic)
-  - [ ] Front, Back, Left, Right, Top, Bottom
-  - [ ] Isometric (default 3D)
-  - [ ] Home view (fit all)
-  
-- [ ] **Projection Toggle**
-  - [ ] Orthographic (default, no distortion)
-  - [ ] Perspective (optional)
-  
-- [ ] **Section Plane**
-  - [ ] Single plane slice
-  - [ ] Half-section
-  - [ ] Hatch fill pattern
-
-### 2.5 Keyboard Shortcuts (v0.4.4)
-- [ ] View modes: `1` (Shaded+Edges), `2` (Wireframe), `3` (Shaded)
-- [ ] Standard views: `F` (Front), `T` (Top), `R` (Right), etc.
-- [ ] Frame all: `Home`
-- [ ] Toggle projection: `P`
+### 2.2 Parameters Management
+- [ ] **Global Parameters Panel**: Manage user-defined variables (e.g., `wallThickness = 2mm`).
+- [ ] **Expressions**: Support for math in all input fields (`width / 2 + 5`).
+- [ ] **Bidirectional Sync**: Changing a parameter in the GUI updates the code in real-time.
 
 ---
 
-## 🕐 PHASE 2.5: Feature History & Timeline (v0.9.0)
+## 🎨 PHASE 3: Direct Manipulation & Interaction (v0.8.x)
 
-**Goal**: Parametric editing with automatic rebuild (Fusion360/CATIA-style)
+**Goal**: Interact with the 3D model directly using industry-standard GUI tools.
 
-> **Note**: This is a MAJOR feature warranting a full minor version (0.9.0)
+### 3.1 Transform Gizmos
+- [ ] **Standard Gizmo**: Translation (arrows), Rotation (rings), and Scaling handles.
+- [ ] **Interactive Extrude**: Click and drag a sketch face to extrude it in 3D.
+- [ ] **Selection Highlighting**: Hover and click highlighting for faces, edges, and vertices.
 
-### 2.5.1 Timeline UI
-- [ ] Timeline panel (bottom of screen)
-- [ ] Feature cards with icons + names
-- [ ] Playhead for "time travel"
-- [ ] Drag-and-drop reordering
-
-### 2.5.2 Feature Editing
-- [ ] Parameter editing dialog
-- [ ] Automatic rebuild on parameter change
-- [ ] Feature operations: Suppress, Delete, Rename
-- [ ] Undo/redo for editing
-
-### 2.5.3 Rebuild System
-- [ ] Dependency graph (DAG)
-- [ ] Incremental rebuild (cache valid nodes)
-- [ ] Error handling (broken feature doesn't break model)
-- [ ] Performance: <500ms for typical model
-
-### 2.5.4 Code Synchronization
-- [ ] History → Code generation via AST
-- [ ] Code → History parsing
-- [ ] Bidirectional sync
-- [ ] Conflict resolution UI
-
-### 2.5.5 Advanced History
-- [ ] Playhead interaction (view history states)
-- [ ] Comparison mode (before/after)
-- [ ] History export/import (JSON)
+### 3.2 Direct Editing
+- [ ] **Push/Pull**: Select a face and pull it to change the underlying parameter.
+- [ ] **Snap System**: Snap to grid, vertices, or midpoints during manipulation.
 
 ---
 
-## 🎨 PHASE 3: Parameters & Advanced Features (v0.9.0+)
+## 🔭 PHASE 4: Visualization & Engineering (v0.9.x+)
 
-**Long-term goals**
+**Goal**: Refine the engineering experience and display quality.
 
-### 3.1 Parameters Panel (v0.5.0)
-- [ ] User-defined variables (`width = 10`)
-- [ ] Expressions (`holeSpacing = width / 3`)
-- [ ] Update → automatic rebuild
-- [ ] Dependency visualization
+### 4.1 Advanced Rendering
+- [ ] **Hidden Line Removed**: Professional wireframe visualization.
+- [ ] **Section Analysis**: Live section cutting through any plane.
+- [ ] **X-Ray & Ghosting**: See through parts to internal components.
 
-### 3.2 Patterns (v0.5.1)
-- [ ] Linear pattern (count, spacing)
-- [ ] Circular pattern (axis, count)
-- [ ] Mirror (plane selection)
-
-### 3.3 Transform Gizmos (v0.5.2)
-- [ ] Move arrows (X/Y/Z)
-- [ ] Rotate rings
-- [ ] Scale handles
-- [ ] Snap to grid/axes
-
-### 3.4 Measurement Tools (v0.5.3)
-- [ ] Distance measurement
-- [ ] Angle measurement
-- [ ] Area/volume
-- [ ] Center of mass
+### 4.2 Engineering Tools
+- [ ] **Measurement**: Precise point-to-point and face-to-face measurements.
+- [ ] **Mass Properties**: Volume, area, and center of gravity calculations.
 
 ---
 
-## 🚀 PHASE 4: Assembly & Collaboration (v0.6.x+)
+## 🚀 PHASE 5: Assembly & Collaboration (v1.0.0+)
 
-**Long-term goals**
+### 5.1 Multi-Body & Assembly
+- [ ] Component hierarchy and Sub-assemblies.
+- [ ] **Mates & Joints**: Define relationships between parts (Rigid, Slider, Revolute).
 
-### 4.1 Multi-Body & Assembly
-- [ ] Component tree
-- [ ] Mates/Joints (Fusion360-style)
-- [ ] Assembly constraints
-- [ ] Collision detection
-
-### 4.2 Import/Export
-- [ ] STEP export (already working)
-- [ ] STL export (already working)
-- [ ] STEP import
-- [ ] IGES support
-
-### 4.3 Collaboration (Future)
-- [ ] Save/load projects
-- [ ] Cloud storage
-- [ ] Version control
-- [ ] Sharing & permissions
+### 5.2 Ecosystem
+- [ ] **Git-for-Geometry**: Visual diffing of model changes in Pull Requests.
+- [ ] **Plugin Store**: Expand functionality with community scripts.
 
 ---
 
 ## 📋 Priority Order (Next 6 Months)
 
-**Semantic Versioning**: MAJOR.MINOR.PATCH
-- **MINOR** (0.x.0): New features, backward compatible
-- **PATCH** (0.x.y): Bug fixes only
-
-**Revised Priority** (Sketching moved to immediate next):
-
-1. **v0.5.0**: Sketching System (Sketch + Extrude) - 6 weeks ⭐ **CURRENT PRIORITY**
-2. **v0.6.0**: Advanced View Modes (Hidden Line, X-Ray) - 2 weeks
-3. **v0.7.0**: Display Settings (Edge controls, Grid/Axes) - 2 weeks  
-4. **v0.8.0**: Camera Controls (Standard views, Section planes) - 2 weeks
-5. **v0.9.0**: Feature History System (Timeline + Rebuild) - 8 weeks ⭐ **Critical Infrastructure**
-6. **v1.0.0**: Parameters & Patterns - 4 weeks 🎉 **First Major Release**
-
-**Rationale**: Starting with Sketching to unlock sketch-based workflow early. Feature History (v0.9.0) remains critical but can build on sketch foundation.
-
----
-
-## 🎯 Success Metrics
-
-### User Experience
-- Edit any feature → model rebuilds in <500ms
-- 3D view runs at 60fps with 100+ features
-- Zero crashes or data loss
-- Keyboard shortcuts for all common operations
-
-### Feature Parity
-- Match Fusion360 for sketch-extrude workflow
-- Match CATIA for parametric editing (history tree)
-- Match SolidWorks for visualization modes
-
-### Code Quality
-- 90%+ test coverage
-- All modules isolated and testable
-- Comprehensive documentation
-- Clean, maintainable architecture
+1. **v0.6.0**: Professional Modeling (Revolve, Fillet, Face-based sketching) ⭐ **HIGH PRIORITY**
+2. **v0.7.0**: Parametric Sketching (Constraints & Dimensions)
+3. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
+4. **v0.9.0**: Feature Timeline & History
+5. **v1.0.0**: Global Parameters & Sections 🎉
 
 ---
 
 **Last Updated**: 2026-01-26  
-**Next Review**: After v0.4.5 (Feature History) ships
+**Next Review**: After v0.6.0 (Professional Modeling) ships
