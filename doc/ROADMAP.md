@@ -207,7 +207,140 @@ const lights = [
 
 ---
 
-## 🚀 PHASE 3: Advanced Features (v0.5.0+)
+## � PHASE 2.5: Feature History & Timeline (v0.4.5)
+
+**Goal**: Fusion360/CATIA-style parametric history with live rebuild
+
+> **Critical CAD Feature**: The history tree is what makes CAD parametric. Every operation is stored as a step that can be edited, reordered, suppressed, or deleted. The model automatically rebuilds when you change the past.
+
+### 2.5.1 History Tree UI
+- [ ] **Timeline/History Panel** (like Fusion360's timeline at bottom)
+  - Visual timeline of all operations in chronological order
+  - Each feature shown as a card/node with icon + name
+  - Drag-and-drop to reorder features
+  - Hover to preview what feature does
+  
+- [ ] **Feature Cards Display**
+  - Feature type icon (Box, Cylinder, Fillet, etc.)
+  - Feature name (editable, e.g., "Base Box", "Corner Fillet")
+  - Parameter summary (e.g., "10×20×5mm")
+  - Status indicator (OK, Error, Warning, Suppressed)
+  
+- [ ] **Timeline Playhead**
+  - Drag playhead to any point in history
+  - Model rebuilds up to that point (future features hidden)
+  - "Roll back" to see model at earlier stage
+  - Current position highlighted
+
+### 2.5.2 History Editing
+- [ ] **Edit Feature Parameters**
+  - Click feature → parameter dialog opens
+  - Change values (e.g., box width 10→15)
+  - Model automatically rebuilds from that point forward
+  - Downstream features update based on new geometry
+  
+- [ ] **Feature Operations**
+  - **Suppress**: Temporarily disable feature (grayed out in tree)
+  - **Delete**: Remove feature permanently (rebuild without it)
+  - **Rename**: Give meaningful names ("Main Body" not "box1")
+  - **Duplicate**: Copy feature with same parameters
+  
+- [ ] **Reorder Features**
+  - Drag feature earlier/later in timeline
+  - Dependency checking (can't move fillet before its base)
+  - Model rebuilds in new order
+  - Undo/redo for reordering
+
+### 2.5.3 Automatic Rebuild System
+**Core Mechanism**: Dependency graph + incremental rebuild
+
+```typescript
+// Conceptual architecture
+interface FeatureNode {
+  id: string;
+  type: 'box' | 'cylinder' | 'fillet' | ...;
+  parameters: Record<string, any>;
+  dependencies: string[];  // IDs of features this depends on
+  codeRange: [number, number];  // Lines in code editor
+  geometry?: Solid;  // Cached result
+  status: 'valid' | 'error' | 'dirty' | 'suppressed';
+}
+
+// When user edits feature:
+1. Mark feature as dirty
+2. Mark all downstream features as dirty (recursive)
+3. Rebuild from first dirty feature
+4. Update 3D view
+5. Update code editor (AST modification)
+```
+
+- [ ] **Dependency Tracking**
+  - Analyze which features use outputs of others
+  - Build directed acyclic graph (DAG)
+  - Detect circular dependencies (error state)
+  
+- [ ] **Incremental Rebuild**
+  - Only recompute dirty features (not entire model)
+  - Cache valid geometry results
+  - Parallel rebuild where possible (independent branches)
+  
+- [ ] **Error Handling**
+  - Feature fails → mark as error, stop propagation
+  - Show error message in timeline and 3D view
+  - Allow fixing without breaking entire model
+
+### 2.5.4 Code ↔ History Synchronization
+**Challenge**: Keep history tree in sync with code editor
+
+- [ ] **History → Code**
+  - Editing feature updates code via AST
+  - Reordering features restructures code
+  - Deleting feature removes code lines
+  
+- [ ] **Code → History**
+  - Typing in code editor updates history tree
+  - Parser detects new features, updates timeline
+  - Manual code edits create "Custom Code" feature nodes
+  
+- [ ] **Bidirectional Sync**
+  - Both views always consistent
+  - Undo/redo works in both contexts
+  - Conflicts resolved gracefully (warn user)
+
+### 2.5.5 History Visualization States
+- [ ] **Current State** (default)
+  - Show all features up to latest
+  - Playhead at end of timeline
+  
+- [ ] **Historical State** (playhead moved back)
+  - Only show features before playhead
+  - 3D view grayed out for future features
+  - "You are viewing history at step 5/12" indicator
+  
+- [ ] **Comparison Mode**
+  - Show before/after of parameter change
+  - Overlay or side-by-side 3D view
+  - Diff view for code changes
+
+### 2.5.6 Advanced History Features
+- [ ] **Feature Patterns in History**
+  - Linear/circular patterns as single history entry
+  - Edit pattern parameters (count, spacing)
+  - Expand pattern to see individual instances
+  
+- [ ] **Branching** (Advanced)
+  - Create design alternatives from same base
+  - Switch between branches
+  - Merge branches (complex)
+  
+- [ ] **History Export/Import**
+  - Save history as JSON
+  - Share parametric models with others
+  - Import as template
+
+---
+
+## 🎨 PHASE 3: Parameters & Advanced Modeling (v0.5.0)+)
 
 ### 3.1 Feature Tree Management
 - [ ] **Drag-and-Drop Reordering** (history-based modeling)
