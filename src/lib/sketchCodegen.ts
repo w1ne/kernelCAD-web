@@ -26,9 +26,11 @@ export function generateSketchCode(sketch: SketchData): string {
         currentPos = generated.endPos;
     });
 
-    // Close the sketch if it forms a closed path
+    // Finish the sketch to get a Sketch object (which has the .extrude method)
     if (isClosedPath(entities)) {
         code += `  .close()`;
+    } else {
+        code += `  .done()`;
     }
 
     code += ';\n';
@@ -104,13 +106,14 @@ function generateCircleCode(
     circle: { center: Point2D; radius: number }
 ): { code: string; endPos: Point2D | null } {
     const { center, radius } = circle;
+    const [x, y] = center;
 
-    // Try using circle if available, otherwise approximate with arc
-    const code = `  .movePointerTo([${center[0] + radius}, ${center[1]}])\n` +
-        `  // TODO: Circle approximation - test if .circle(${radius}) works\n` +
-        `  // For now, this won't render correctly\n`;
+    // A circle as two 180-degree arcs (sagitta arcs)
+    const code = `  .movePointerTo([${x + radius}, ${y}])\n` +
+        `  .vSagittaArc(${radius * 2}, ${radius})\n` +
+        `  .vSagittaArc(${-radius * 2}, ${radius})\n`;
 
-    return { code, endPos: null };
+    return { code, endPos: [x + radius, y] };
 }
 
 /**
@@ -145,7 +148,7 @@ function getStartPoint(entity: SketchEntity): Point2D | null {
         case 'rectangle':
             return entity.corner;
         case 'circle':
-            return entity.center;
+            return [entity.center[0] + entity.radius, entity.center[1]];
         default:
             return null;
     }
@@ -161,7 +164,7 @@ function getEndPoint(entity: SketchEntity): Point2D | null {
         case 'rectangle':
             return entity.corner; // Rectangle closes to its corner
         case 'circle':
-            return null; // Circle has no end point
+            return [entity.center[0] + entity.radius, entity.center[1]];
         default:
             return null;
     }
