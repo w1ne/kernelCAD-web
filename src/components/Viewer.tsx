@@ -24,19 +24,17 @@ function Shape({ geometry, viewMode3D }: { geometry: GeometryResult; viewMode3D:
         return createCADMaterial(0x6366f1, viewMode3D);
     }, [viewMode3D]);
 
-    // Pre-compute all geometries to avoid conditional hooks
-    const wireframeGeo = useMemo(() =>
-        new THREE.WireframeGeometry(threeGeometry), [threeGeometry]
-    );
-
+    // Pre-compute geometries to avoid conditional hooks
+    // Use EdgesGeometry for both wireframe and shaded-with-edges
+    // This shows geometric edges, NOT mesh tessellation
     const edgesGeo = useMemo(() =>
         new THREE.EdgesGeometry(threeGeometry, 15), [threeGeometry]
     );
 
-    // Wireframe mode: Show only edges
+    // Wireframe mode: Show only geometric edges (NOT tessellation mesh)
     if (viewMode3D === 'wireframe' && materials.wireframe) {
         return (
-            <lineSegments geometry={wireframeGeo}>
+            <lineSegments geometry={edgesGeo}>
                 <primitive object={materials.wireframe} attach="material" />
             </lineSegments>
         );
