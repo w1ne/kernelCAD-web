@@ -78,12 +78,12 @@
 - [x] Wireframe (geometric edges)
 - [x] Shaded (smooth surfaces)
 
-### 2.2 Advanced View Modes (v0.4.1)
+### 2.2 Advanced View Modes (v0.5.0)
 - [ ] **Hidden Line Removed** (wireframe with occlusion)
 - [ ] **X-Ray** (transparent surfaces, visible edges)
 - [ ] **Faceted** (show mesh triangulation for debugging)
 
-### 2.3 Display Settings (v0.4.2)
+### 2.3 Display Settings (v0.6.0)
 - [ ] **Edge Controls**
   - [ ] Edge thickness adjustment (1-5px)
   - [ ] Tangent edge toggle (show/hide)
@@ -94,7 +94,7 @@
   - [ ] Grid plane (fade with distance)
   - [ ] Unit display (mm/in toggle)
 
-### 2.4 Camera Controls (v0.4.3)
+### 2.4 Camera Controls (v0.7.0)
 - [ ] **Standard Views** (orthographic)
   - [ ] Front, Back, Left, Right, Top, Bottom
   - [ ] Isometric (default 3D)
@@ -117,44 +117,46 @@
 
 ---
 
-## 🕐 PHASE 2.5: Feature History & Timeline (v0.4.5-0.4.9)
+## 🕐 PHASE 2.5: Feature History & Timeline (v0.8.0)
 
 **Goal**: Parametric editing with automatic rebuild (Fusion360/CATIA-style)
 
-### 2.5.1 Timeline UI (v0.4.5)
+> **Note**: This is a MAJOR feature warranting a full minor version (0.8.0), not a patch release
+
+### 2.5.1 Timeline UI
 - [ ] Timeline panel (bottom of screen)
 - [ ] Feature cards with icons + names
 - [ ] Playhead for "time travel"
 - [ ] Drag-and-drop reordering
 
-### 2.5.2 Feature Editing (v0.4.6)
+### 2.5.2 Feature Editing
 - [ ] Parameter editing dialog
 - [ ] Automatic rebuild on parameter change
 - [ ] Feature operations: Suppress, Delete, Rename
 - [ ] Undo/redo for editing
 
-### 2.5.3 Rebuild System (v0.4.7)
+### 2.5.3 Rebuild System
 - [ ] Dependency graph (DAG)
 - [ ] Incremental rebuild (cache valid nodes)
 - [ ] Error handling (broken feature doesn't break model)
 - [ ] Performance: <500ms for typical model
 
-### 2.5.4 Code Synchronization (v0.4.8)
+### 2.5.4 Code Synchronization
 - [ ] History → Code generation via AST
 - [ ] Code → History parsing
 - [ ] Bidirectional sync
 - [ ] Conflict resolution UI
 
-### 2.5.5 Advanced History (v0.4.9)
+### 2.5.5 Advanced History
 - [ ] Playhead interaction (view history states)
 - [ ] Comparison mode (before/after)
 - [ ] History export/import (JSON)
 
 ---
 
-## 🎨 PHASE 3: Parameters & Advanced Features (v0.5.x)
+## 🎨 PHASE 3: Parameters & Advanced Features (v0.9.0+)
 
-**Goal**: User-defined parameters and automation
+**Long-term goals**
 
 ### 3.1 Parameters Panel (v0.5.0)
 - [ ] User-defined variables (`width = 10`)
@@ -207,12 +209,18 @@
 
 ## 📋 Priority Order (Next 6 Months)
 
-1. **v0.4.1-0.4.4**: Complete visualization features (2-3 weeks)
-2. **v0.4.5-0.4.9**: Feature History system (7-8 weeks)
-3. **v0.5.0-0.5.3**: Parameters & advanced features (4-5 weeks)
-4. **v0.3.0-0.3.2**: Sketching system (6-8 weeks)
+**Semantic Versioning**: MAJOR.MINOR.PATCH
+- **MINOR** (0.x.0): New features, backward compatible
+- **PATCH** (0.x.y): Bug fixes only
 
-**Note**: Phase 1 (Sketching) deferred until after History system, as History is critical infrastructure needed for parametric sketch editing.
+1. **v0.5.0**: Advanced View Modes (Hidden Line, X-Ray) - 2 weeks
+2. **v0.6.0**: Display Settings (Edge controls, Grid/Axes) - 2 weeks  
+3. **v0.7.0**: Camera Controls (Standard views, Projection) - 2 weeks
+4. **v0.8.0**: Feature History System (Timeline + Rebuild) - 8 weeks ⭐ **Critical**
+5. **v0.9.0**: Parameters & Patterns - 4 weeks
+6. **v0.10.0**: Sketching System - 6 weeks
+
+**Note**: Phase 1 (Sketching) deferred until after History, as History is foundational infrastructure needed for parametric sketch editing.
 
 ---
 
