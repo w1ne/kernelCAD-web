@@ -26,7 +26,7 @@ function drawPart() {
   const cyl = replicad.makeCylinder(10, 30).translate(0, 0, 10);
 
   // Cut the cylinder from the base
-  return filleted.cut(cyl);
+  return [filleted.cut(cyl)];
 }
 
 return drawPart();
