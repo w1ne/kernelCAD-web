@@ -33,11 +33,27 @@
 - [x] **Detailing**: Fillet and Chamfer with edge selection support (Filter-based).
 - [x] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
 - [x] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
+- [ ] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
+- [ ] **Face Sketching**: Draw sketches directly on a selected face (`shape.sketchOnFace(id)`).
 
 ### 1.2 Parametric Sketching
 - [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent.
 - [ ] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
 - [ ] **Constraint Solving**: Integration of a 2D constraint solver (e.g., plane-solver).
+
+---
+
+## 🛠️ DEVELOPMENT EXPERIENCE (DX)
+
+**Goal**: Improve development speed and reliability through better tooling and testing.
+
+### 1.3 Infrastructure & Testing
+- [ ] **Interactive Test Runner**: Integrate Vitest UI for browser-based debugging.
+- [ ] **Geometry Regression Suite**: Snapshot-based validation of CAD workflows (Volume, Center of Mass, Bounding Box).
+- [ ] **Headless CAD Validation**: Automatic geometry checks in CI.
+
+### 1.4 Developer Tools
+- [ ] **Dev Lab**: Isolated environment for component testing and prototyping (e.g., `/dev-lab` route).
 
 ---
 
@@ -109,5 +125,5 @@
 
 ---
 
-**Last Updated**: 2026-01-26  
+**Last Updated**: 2026-01-27  
 **Next Review**: After v0.6.0 (Professional Modeling) ships
