@@ -29,9 +29,9 @@
 **Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
 ### 1.1 Advanced Modeling Operations
-- [ ] **Core Features**: Revolve, Sweep, Loft.
-- [ ] **Detailing**: Fillet and Chamfer with edge selection support.
-- [ ] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
+- [x] **Core Features**: Revolve (Sweep/Loft pending).
+- [x] **Detailing**: Fillet and Chamfer with edge selection support (Filter-based).
+- [x] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
 - [ ] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
 
 ### 1.2 Parametric Sketching

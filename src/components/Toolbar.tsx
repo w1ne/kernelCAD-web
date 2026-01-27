@@ -13,7 +13,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
     // Separate creation tools vs construction vs modification tools
     const creationTools = features.filter(f => ['box', 'cylinder'].includes(f.id));
     const constructionTools = features.filter(f => ['offsetPlane'].includes(f.id));
-    const modificationTools = features.filter(f => ['extrude', 'fillet', 'chamfer', 'cut'].includes(f.id));
+    const modificationTools = features.filter(f => ['extrude', 'revolve', 'fillet', 'chamfer', 'cut', 'union', 'intersect'].includes(f.id));
 
     // Start sketch mode
     const handleSketchClick = () => {

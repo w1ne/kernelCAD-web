@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import CodeEditor from '../Editor';
 import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
 import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
+import { RevolveDialog } from '../Dialogs/RevolveDialog';
+import { FilletDialog } from '../Dialogs/FilletDialog';
+import { ChamferDialog } from '../Dialogs/ChamferDialog';
 import { PlaneSelectorDialog } from '../Dialogs/PlaneSelectorDialog';
 import { OffsetPlaneDialog } from '../Dialogs/OffsetPlaneDialog';
 import { SketchCanvas } from '../SketchCanvas';
@@ -16,6 +19,9 @@ import { type Feature } from '../../features/types';
 import { type SketchData } from '../../types/sketch';
 import { type SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchName } from '../../lib/sketchCodegen';
+import { generateRevolveCode } from '../../features/core/revolve.feature';
+import { generateFilletCode, generateChamferCode, generateBooleanCode } from '../../features/core/modifiers.feature';
+import { BooleanDialog } from '../Dialogs/BooleanDialog';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function WorkbenchLayout() {
@@ -228,6 +234,62 @@ export function WorkbenchLayout() {
                     onCancel={() => {
                         setActiveDialog(null);
                     }}
+                />
+            )}
+
+            {/* Revolve Dialog */}
+            {activeDialog === 'revolve' && (
+                <RevolveDialog
+                    onConfirm={({ sketchName, angle, axis }) => {
+                        // Generate revolve code
+                        const revolveCode = generateRevolveCode(sketchName, angle, axis);
+
+                        // Insert revolve code
+                        insertCode(revolveCode);
+
+                        // Close dialog
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => {
+                        setActiveDialog(null);
+                    }}
+                />
+            )}
+
+            {/* Fillet Dialog */}
+            {activeDialog === 'fillet' && (
+                <FilletDialog
+                    onConfirm={({ targetName, radius, filterType }) => {
+                        const code = generateFilletCode(targetName, radius, filterType);
+                        insertCode(code);
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
+                />
+            )}
+
+            {/* Chamfer Dialog */}
+            {activeDialog === 'chamfer' && (
+                <ChamferDialog
+                    onConfirm={({ targetName, distance, filterType }) => {
+                        const code = generateChamferCode(targetName, distance, filterType);
+                        insertCode(code);
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
+                />
+            )}
+
+            {/* Boolean Operations Dialogs */}
+            {['union', 'cut', 'intersect'].includes(activeDialog || '') && (
+                <BooleanDialog
+                    type={activeDialog === 'union' ? 'fuse' : (activeDialog as any)}
+                    onConfirm={({ baseName, toolName, type }) => {
+                        const code = generateBooleanCode(baseName, toolName, type);
+                        insertCode(code);
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
                 />
             )}
 
