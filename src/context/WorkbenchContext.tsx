@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { defaultCode, executeCode, init as initEngine, type GeometryResult } from '../lib/geometryEngine';
+import { defaultCode, executeCode, init as initEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 import { CommandManager } from '../commands/CommandManager';
 import type { ViewMode3D } from '../types/viewMode';
 import type { SketchModeState } from '../types/sketch';
@@ -14,6 +14,9 @@ interface WorkbenchContextType {
     setCode: (code: string) => void;
     insertCode: (snippet: string) => void;
     geometries: GeometryResult[];
+    sketchesGeometries: SketchGeometry[];
+    showSketches: boolean;
+    toggleSketchVisibility: () => void;
     error: string | null;
     isReady: boolean;
     isComputing: boolean;
@@ -48,6 +51,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>('shadedWithEdges');
     const [code, setCode] = useState<string>(defaultCode);
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
+    const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
+    const [showSketches, setShowSketches] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
 
@@ -78,6 +83,10 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
     const togglePlaneVisibility = (id: string) => {
         setPlanes(prev => prev.map(p => p.id === id ? { ...p, visible: !p.visible } : p));
+    };
+
+    const toggleSketchVisibility = () => {
+        setShowSketches(prev => !prev);
     };
 
     const [isComputing, setIsComputing] = useState(false);
@@ -120,8 +129,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         const run = async () => {
             setIsComputing(true);
             try {
-                const shapes = await executeCode(code);
-                setGeometries(shapes);
+                const result = await executeCode(code);
+                setGeometries(result.geometries);
+                setSketchesGeometries(result.sketches);
                 setError(null);
             } catch (err: unknown) {
                 console.error(err);
@@ -176,6 +186,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         setCode,
         insertCode,
         geometries,
+        sketchesGeometries,
+        showSketches,
+        toggleSketchVisibility,
         error,
         isReady,
         isComputing,

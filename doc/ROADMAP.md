@@ -33,7 +33,7 @@
 - [x] **Detailing**: Fillet and Chamfer with edge selection support (Filter-based).
 - [x] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
 - [x] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
-- [ ] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
+- [x] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
 - [ ] **Face Sketching**: Draw sketches directly on a selected face (`shape.sketchOnFace(id)`).
 
 ### 1.2 Parametric Sketching

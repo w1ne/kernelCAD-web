@@ -2,13 +2,15 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo, useState } from "react";
-import type { GeometryResult, FaceGeometry } from "../lib/geometryEngine";
+import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geometryEngine";
 import type { ViewMode3D } from "../types/viewMode";
-import { createCADMaterial } from "../lib/materials";
+import { createCADMaterial, createSketchMaterial } from "../lib/materials";
 import { useWorkbench } from "../context/WorkbenchContext";
 
 interface ViewerProps {
     geometries: GeometryResult[];
+    sketchesGeometries: SketchGeometry[];
+    showSketches: boolean;
     viewMode3D: ViewMode3D;
 }
 
@@ -71,6 +73,22 @@ function FaceMesh({
     );
 }
 
+function SketchLine({ sketch }: { sketch: SketchGeometry }) {
+    const material = useMemo(() => createSketchMaterial(), []);
+
+    const geometry = useMemo(() => {
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(sketch.vertices, 3));
+        return geo;
+    }, [sketch]);
+
+    return (
+        <lineSegments geometry={geometry}>
+            <primitive object={material} attach="material" />
+        </lineSegments>
+    );
+}
+
 function Shape({
     geometry,
     shapeIndex,
@@ -97,7 +115,7 @@ function Shape({
     );
 }
 
-export default function Viewer({ geometries, viewMode3D }: ViewerProps) {
+export default function Viewer({ geometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
     const { setSelectedFace } = useWorkbench();
 
     return (
@@ -114,6 +132,14 @@ export default function Viewer({ geometries, viewMode3D }: ViewerProps) {
                         <Shape key={i} geometry={g} shapeIndex={i} viewMode3D={viewMode3D} />
                     ))}
                 </group>
+
+                {showSketches && (
+                    <group>
+                        {sketchesGeometries.map((s) => (
+                            <SketchLine key={s.id} sketch={s} />
+                        ))}
+                    </group>
+                )}
 
                 <OrbitControls makeDefault />
             </Canvas>

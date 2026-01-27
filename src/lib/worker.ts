@@ -39,9 +39,18 @@ self.onmessage = async ({ data }) => {
         try {
             await init();
 
+            // Track sketches created during execution
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const activeSketches: any[] = [];
+            const wrappedStartSketch = () => {
+                const s = startSketch();
+                activeSketches.push(s);
+                return s;
+            };
+
             // Create function with injected scope
             const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", code);
-            const result = func(replicad, startSketch, makeCompound, fillet, chamfer);
+            const result = func(replicad, wrappedStartSketch, makeCompound, fillet, chamfer);
 
             // Normalize result
             const shapes = Array.isArray(result) ? result : [result];
@@ -81,9 +90,28 @@ self.onmessage = async ({ data }) => {
 
                 return {
                     faces: faceGeometries
-                    // edges: ... could be added here
                 };
             });
+
+            // Extract geometries for sketches
+            const sketchGeometries = activeSketches.map((s, index) => {
+                try {
+                    // Try to get the wire from the sketcher
+                    // Sketcher.sketch returns the Sketch object
+                    // Sketch.wire returns the Wire object
+                    const wire = s.sketch.wire;
+                    const mesh = wire.mesh({ tolerance: 0.1 });
+
+                    return {
+                        id: `sketch-${index}-${Date.now()}`,
+                        name: `sketch${index + 1}`,
+                        vertices: new Float32Array(mesh.vertices)
+                    };
+                } catch (e) {
+                    console.warn("Failed to mesh sketch", e);
+                    return null;
+                }
+            }).filter(Boolean);
 
             // Transfer buffers
             const transferables: Transferable[] = [];
@@ -94,8 +122,19 @@ self.onmessage = async ({ data }) => {
                 });
             });
 
+            sketchGeometries.forEach((s: any) => {
+                if (s) transferables.push(s.vertices.buffer);
+            });
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            self.postMessage({ type: 'SUCCESS', id, geometries }, { transfer: transferables } as any);
+            self.postMessage({
+                type: 'SUCCESS',
+                id,
+                geometries: {
+                    geometries,
+                    sketches: sketchGeometries
+                }
+            }, { transfer: transferables } as any);
 
         } catch (error) {
             self.postMessage({ type: 'ERROR', id, error: String(error) });

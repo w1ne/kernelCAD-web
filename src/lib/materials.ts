@@ -63,3 +63,13 @@ export function disposeMaterials(config: CADMaterialConfig) {
     config.edges?.dispose();
     config.wireframe?.dispose();
 }
+
+/**
+ * Creates a material for sketches (blue lines)
+ */
+export function createSketchMaterial(): LineBasicMaterial {
+    return new LineBasicMaterial({
+        color: 0x3b82f6,  // Blue-500
+        linewidth: 2
+    });
+}

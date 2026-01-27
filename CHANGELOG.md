@@ -1,6 +1,25 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+ 
+## [0.6.0] - 2026-01-27
+### Added - Professional Modeling Workflow
+- **Sketch Visualization**: Toggleable cyan/blue line rendering for sketches in the 3D scene.
+- **Show/Hide Sketches**: Toolbar button to toggle visibility of all sketches.
+- **Face Selection & Sketching**: Support for `.sketchOnFace()` and creating sketch planes from 3D faces.
+- **Advanced Boolean UI**: Cleaner interfaces for Union, Subtract, and Intersect operations.
+- **Geometry Engine Updates**: Worker now extracts and meshes sketch wires for visualization.
+- **Enhanced Feature Execution**: Support for target selection and contextual feature execution.
+
+### Changed
+- **Workbench Architecture**: Updated `WorkbenchContext` to manage sketch geometries and visibility state.
+- **Viewer Component**: Now renders `lineSegments` for sketches alongside solid geometries.
+- **Worker Logic**: Injected `startSketch` wrapper to automatically capture all sketches created in user code.
+
+### Fixed
+- **Worker Stability**: Improved handling of large meshes and buffer transfers.
+- **Coordinate System**: Better alignment between sketch planes and 3D world coordinates for face-based sketching.
+
 
 ## [0.4.0] - 2026-01-26
 ### Added - CAD-Style View Modes

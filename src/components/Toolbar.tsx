@@ -1,4 +1,4 @@
-import { PenTool, MousePointer2, ArrowUpFromLine } from 'lucide-react';
+import { PenTool, MousePointer2, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { generateSketchOnFaceCode } from '../features/core/sketchOnFace.feature';
@@ -9,7 +9,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
-    const { setActiveDialog, selectedFace, selectedFacePlane, insertCode, setSketchMode } = useWorkbench();
+    const { setActiveDialog, selectedFace, selectedFacePlane, insertCode, setSketchMode, showSketches, toggleSketchVisibility } = useWorkbench();
 
     // Separate creation tools vs construction vs modification tools
     const creationTools = features.filter(f => ['box', 'cylinder'].includes(f.id));
@@ -63,6 +63,15 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 title="Start Sketch (Plane Selection)"
             >
                 <PenTool size={20} />
+            </button>
+
+            {/* Visibility toggle button */}
+            <button
+                onClick={toggleSketchVisibility}
+                className={`p-2 rounded hover:bg-[#333] transition-colors ${showSketches ? 'text-blue-400' : 'text-gray-500'}`}
+                title={showSketches ? "Hide Sketches" : "Show Sketches"}
+            >
+                {showSketches ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
 
             {/* Contextual Sketch on Face button */}

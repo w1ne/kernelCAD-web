@@ -43,11 +43,24 @@ export type FaceGeometry = {
     };
 };
 
+export type EdgeGeometry = {
+    vertices: Float32Array;
+};
+
 export type GeometryResult = {
     faces: FaceGeometry[];
-    edges?: {
-        vertices: Float32Array;
-    };
+    edges?: EdgeGeometry[];
+};
+
+export type SketchGeometry = {
+    id: string;
+    name: string;
+    vertices: Float32Array;
+};
+
+export type ExecutionResult = {
+    geometries: GeometryResult[];
+    sketches: SketchGeometry[];
 };
 
 export async function init() {
@@ -81,7 +94,7 @@ function postToWorker(type: string, code: string): Promise<any> {
     });
 }
 
-export function executeCode(code: string): Promise<GeometryResult[]> {
+export function executeCode(code: string): Promise<ExecutionResult> {
     return postToWorker('EXECUTE', code);
 }
 
