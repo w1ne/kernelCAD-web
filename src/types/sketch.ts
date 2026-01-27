@@ -1,3 +1,5 @@
+import type { SketchPlaneEntity } from './plane';
+
 /**
  * Sketch type definitions for v0.5.0 Sketching System
  */
@@ -5,7 +7,7 @@
 /**
  * Sketch planes in 3D space
  */
-export type SketchPlane = 'XY' | 'XZ' | 'YZ';
+export type SketchPlane = 'XY' | 'XZ' | 'YZ' | string;
 
 /**
  * A 2D point in sketch space
@@ -81,7 +83,7 @@ export interface SketchData {
  */
 export interface SketchModeState {
     active: boolean;
-    plane: SketchPlane | null;
+    plane: SketchPlane | SketchPlaneEntity | null;
     currentSketch: SketchData | null;
     tool: SketchTool;
 }

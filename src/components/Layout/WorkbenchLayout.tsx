@@ -4,6 +4,7 @@ import Viewer from '../Viewer';
 import Toolbar from '../Toolbar';
 import ParameterDialog from '../Dialogs/ParameterDialog';
 import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
+import { ExtrudeFromFaceDialog } from '../Dialogs/ExtrudeFromFaceDialog';
 import { RevolveDialog } from '../Dialogs/RevolveDialog';
 import { FilletDialog } from '../Dialogs/FilletDialog';
 import { ChamferDialog } from '../Dialogs/ChamferDialog';
@@ -42,6 +43,7 @@ export function WorkbenchLayout() {
         addSketch,
         planes,
         addPlane,
+        selectedFace,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
@@ -234,6 +236,22 @@ export function WorkbenchLayout() {
                     onCancel={() => {
                         setActiveDialog(null);
                     }}
+                />
+            )}
+
+            {/* Extrude From Face Dialog */}
+            {activeDialog === 'extrudeFromFace' && (
+                <ExtrudeFromFaceDialog
+                    onConfirm={(distance) => {
+                        if (activeFeature && activeFeature.execute && selectedFace) {
+                            activeFeature.execute(
+                                { insertCode, setActiveDialog },
+                                { distance, faceId: selectedFace.faceId }
+                            );
+                        }
+                        setActiveDialog(null);
+                    }}
+                    onCancel={() => setActiveDialog(null)}
                 />
             )}
 

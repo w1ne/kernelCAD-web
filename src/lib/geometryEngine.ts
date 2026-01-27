@@ -32,10 +32,22 @@ function drawPart() {
 return drawPart();
 `;
 
-export type GeometryResult = {
+export type FaceGeometry = {
     vertices: Float32Array;
     indices: Uint32Array;
     normals: Float32Array;
+    faceId: number;
+    plane?: {
+        origin: [number, number, number];
+        normal: [number, number, number];
+    };
+};
+
+export type GeometryResult = {
+    faces: FaceGeometry[];
+    edges?: {
+        vertices: Float32Array;
+    };
 };
 
 export async function init() {

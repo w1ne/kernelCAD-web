@@ -32,7 +32,7 @@
 - [x] **Core Features**: Revolve (Sweep/Loft pending).
 - [x] **Detailing**: Fillet and Chamfer with edge selection support (Filter-based).
 - [x] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
-- [ ] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
+- [x] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
 
 ### 1.2 Parametric Sketching
 - [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent.

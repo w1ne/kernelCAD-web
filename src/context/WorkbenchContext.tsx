@@ -12,6 +12,7 @@ interface WorkbenchContextType {
     setViewMode3D: (mode: ViewMode3D) => void;
     code: string;
     setCode: (code: string) => void;
+    insertCode: (snippet: string) => void;
     geometries: GeometryResult[];
     error: string | null;
     isReady: boolean;
@@ -33,6 +34,10 @@ interface WorkbenchContextType {
     planes: SketchPlaneEntity[];
     addPlane: (plane: SketchPlaneEntity) => void;
     togglePlaneVisibility: (id: string) => void;
+    // Selection
+    selectedFace: { shapeIndex: number; faceId: number } | null;
+    selectedFacePlane: { origin: [number, number, number]; normal: [number, number, number] } | null;
+    setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void;
 }
 
 // Export for testing
@@ -142,6 +147,26 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer);
     }, [code, isReady]);
 
+    const [selectedFace, setSelectedFaceState] = useState<{ shapeIndex: number; faceId: number } | null>(null);
+    const [selectedFacePlane, setSelectedFacePlane] = useState<{ origin: [number, number, number]; normal: [number, number, number] } | null>(null);
+
+    const setSelectedFace = (selection: { shapeIndex: number; faceId: number } | null) => {
+        setSelectedFaceState(selection);
+        if (selection && geometries[selection.shapeIndex]) {
+            const face = geometries[selection.shapeIndex].faces.find(f => f.faceId === selection.faceId);
+            setSelectedFacePlane(face?.plane || null);
+        } else {
+            setSelectedFacePlane(null);
+        }
+    };
+
+    const insertCode = (snippet: string) => {
+        setCode(prev => {
+            const trimmed = prev.trimEnd();
+            return trimmed + (trimmed ? '\n' : '') + snippet;
+        });
+    };
+
     const value = {
         viewMode,
         setViewMode,
@@ -149,6 +174,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         setViewMode3D,
         code,
         setCode,
+        insertCode,
         geometries,
         error,
         isReady,
@@ -165,6 +191,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         planes,
         addPlane,
         togglePlaneVisibility,
+        selectedFace,
+        selectedFacePlane,
+        setSelectedFace,
     };
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;

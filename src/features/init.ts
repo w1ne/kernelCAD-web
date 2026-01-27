@@ -1,5 +1,5 @@
 import { featureRegistry } from './FeatureRegistry';
-import { BoxFeature, CylinderFeature, FilletFeature, ChamferFeature, CutFeature, UnionFeature, IntersectFeature, ExtrudeFeature, RevolveFeature, OffsetPlaneFeature } from './core';
+import { BoxFeature, CylinderFeature, FilletFeature, ChamferFeature, CutFeature, UnionFeature, IntersectFeature, ExtrudeFeature, RevolveFeature, OffsetPlaneFeature, SketchOnFaceFeature, ExtrudeFromFaceFeature } from './core';
 
 export function initFeatures() {
     featureRegistry.register(BoxFeature);
@@ -12,4 +12,6 @@ export function initFeatures() {
     featureRegistry.register(CutFeature);
     featureRegistry.register(UnionFeature);
     featureRegistry.register(IntersectFeature);
+    featureRegistry.register(SketchOnFaceFeature);
+    featureRegistry.register(ExtrudeFromFaceFeature);
 }

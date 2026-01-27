@@ -52,19 +52,46 @@ self.onmessage = async ({ data }) => {
                 if (!shape || typeof shape.mesh !== "function") {
                     throw new Error("Result must be a Replicad Shape");
                 }
-                const mesh = shape.mesh({ tolerance: 0.1, angularTolerance: 30 });
+
+                const faceGeometries = shape.faces.map((face: any, index: number) => {
+                    const mesh = face.mesh({ tolerance: 0.1, angularTolerance: 30 });
+
+                    let plane;
+                    try {
+                        // Check if the face is planar
+                        if (face.geomType === 'PLANE') {
+                            const p = face.plane;
+                            plane = {
+                                origin: [p.origin.x, p.origin.y, p.origin.z] as [number, number, number],
+                                normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number]
+                            };
+                        }
+                    } catch (e) {
+                        // Not a simple plane or error getting it
+                    }
+
+                    return {
+                        vertices: new Float32Array(mesh.vertices),
+                        indices: new Uint32Array(mesh.triangles),
+                        normals: new Float32Array(mesh.normals),
+                        faceId: index,
+                        plane
+                    };
+                });
+
                 return {
-                    vertices: new Float32Array(mesh.vertices),
-                    indices: new Uint32Array(mesh.triangles),
-                    normals: new Float32Array(mesh.normals)
+                    faces: faceGeometries
+                    // edges: ... could be added here
                 };
             });
 
-            // Transfer buffers to avoid copy
+            // Transfer buffers
             const transferables: Transferable[] = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             geometries.forEach((g: any) => {
-                transferables.push(g.vertices.buffer, g.indices.buffer, g.normals.buffer);
+                g.faces.forEach((f: any) => {
+                    transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
+                });
             });
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
