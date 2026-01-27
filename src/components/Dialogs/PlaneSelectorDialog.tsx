@@ -1,13 +1,14 @@
 import React from 'react';
 import type { SketchPlane } from '../../types/sketch';
-import { Box, Layers, Grid } from 'lucide-react';
+import { Box, Layers, Grid, MousePointer2 } from 'lucide-react';
 
 interface PlaneSelectorDialogProps {
     onSelect: (plane: SketchPlane) => void;
+    onSelectFace: () => void;
     onCancel: () => void;
 }
 
-export function PlaneSelectorDialog({ onSelect, onCancel }: PlaneSelectorDialogProps) {
+export function PlaneSelectorDialog({ onSelect, onSelectFace, onCancel }: PlaneSelectorDialogProps) {
     const planes: { id: SketchPlane; label: string; description: string; icon: React.ReactNode }[] = [
         {
             id: 'XY',
@@ -51,6 +52,21 @@ export function PlaneSelectorDialog({ onSelect, onCancel }: PlaneSelectorDialogP
                             </div>
                         </button>
                     ))}
+
+                    <div className="h-px bg-[#333] my-2" />
+
+                    <button
+                        onClick={onSelectFace}
+                        className="flex items-center gap-6 p-4 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 hover:border-blue-500/60 transition-all group text-left"
+                    >
+                        <div className="p-3 bg-blue-500/20 rounded-lg group-hover:scale-110 transition-transform">
+                            <MousePointer2 className="w-8 h-8 text-blue-400" />
+                        </div>
+                        <div>
+                            <div className="text-lg font-semibold text-white">Select from 3D View</div>
+                            <div className="text-sm text-gray-400">Click a planar face of any object in the viewport.</div>
+                        </div>
+                    </button>
                 </div>
 
                 <div className="flex justify-center">

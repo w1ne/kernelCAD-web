@@ -1,7 +1,7 @@
 import { PenTool, MousePointer2, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { generateSketchOnFaceCode } from '../features/core/sketchOnFace.feature';
+import { getReturnedVariables } from '../lib/ast';
 
 interface ToolbarProps {
     features: Feature[];
@@ -9,7 +9,15 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
-    const { setActiveDialog, selectedFace, selectedFacePlane, insertCode, setSketchMode, showSketches, toggleSketchVisibility } = useWorkbench();
+    const {
+        setActiveDialog,
+        selectedFace,
+        selectedFacePlane,
+        setSketchMode,
+        showSketches,
+        toggleSketchVisibility,
+        code
+    } = useWorkbench();
 
     // Separate creation tools vs construction vs modification tools
     const creationTools = features.filter(f => ['box', 'cylinder'].includes(f.id));
@@ -24,32 +32,23 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
     const handleSketchOnFaceClick = () => {
         if (!selectedFace || !selectedFacePlane) return;
 
-        // Try to identify target shape. For now simple placeholder or 'shape'
-        // Ideally we map shapeIndex to variable name.
-        const targetName = 'shape';
-        const code = generateSketchOnFaceCode(targetName, selectedFace.faceId);
+        // Map shapeIndex to variable name using AST
+        const returnedVars = getReturnedVariables(code);
+        const targetName = returnedVars[selectedFace.shapeIndex] || 'shape';
 
-        insertCode(code);
-
-        // Enter sketch mode on this new plane
+        // Enter sketch mode on this face plane
         setSketchMode({
             active: true,
             plane: {
-                id: `face-${selectedFace.faceId}`,
-                name: `Face ${selectedFace.faceId}`,
+                id: `face-${selectedFace.faceId}-${Date.now()}`,
+                name: `Face ${selectedFace.faceId} of ${targetName}`,
                 type: 'face',
                 origin: selectedFacePlane.origin,
                 normal: selectedFacePlane.normal,
-                visible: true
+                visible: true,
+                parentId: targetName
             },
-            currentSketch: {
-                id: `sketch-${Date.now()}`,
-                name: `sketchFromFace${selectedFace.faceId}`,
-                plane: `face-${selectedFace.faceId}`,
-                entities: [],
-                closed: false,
-                createdAt: Date.now()
-            },
+            currentSketch: null,
             tool: 'line'
         });
     };

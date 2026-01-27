@@ -20,7 +20,7 @@ describe('OffsetPlaneDialog', () => {
     ];
 
     beforeEach(() => {
-        (useWorkbench as any).mockReturnValue({
+        (useWorkbench as unknown as { mockReturnValue: (v: unknown) => void }).mockReturnValue({
             planes: mockPlanes,
         });
     });
@@ -33,7 +33,7 @@ describe('OffsetPlaneDialog', () => {
     });
 
     it('should call onConfirm with selection and offset', () => {
-        const onConfirm = vi.fn();
+        const onConfirm = vi.fn() as unknown as (data: { basePlaneId: string; offset: number }) => void;
         render(<OffsetPlaneDialog onConfirm={onConfirm} onCancel={vi.fn()} />);
 
         const offsetInput = screen.getByLabelText(/Offset Distance/i);

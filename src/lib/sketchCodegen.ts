@@ -3,19 +3,21 @@
  */
 
 import type { SketchData, SketchEntity, Point2D } from '../types/sketch';
+import { formatPlaneForSketcher } from './planeUtils';
 
 /**
  * Generate Replicad code from sketch data
  */
 export function generateSketchCode(sketch: SketchData): string {
-    const { plane, entities } = sketch;
+    const { name, plane, entities } = sketch;
 
     if (entities.length === 0) {
         return '';
     }
 
     // Start sketch on plane
-    let code = `const ${sketch.name} = new Sketcher('${plane}')\n`;
+    const planeCode = formatPlaneForSketcher(plane);
+    let code = `const ${name} = new Sketcher(${planeCode})\n`;
 
     // Track current position for continuous path
     let currentPos: Point2D | null = null;

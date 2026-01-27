@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { SketchEntity, Point2D, SketchTool } from '../types/sketch';
+import type { SketchPlaneEntity } from '../types/plane';
 
 interface SketchCanvasProps {
-    plane: 'XY' | 'XZ' | 'YZ';
+    plane: string | SketchPlaneEntity;
     onComplete: (entities: SketchEntity[]) => void;
     onCancel: () => void;
 }
@@ -305,7 +306,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
             {/* Header */}
             <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-bold">Sketch Mode - {plane} Plane</h2>
+                    <h2 className="text-lg font-bold">Sketch Mode - {typeof plane === 'string' ? plane : plane.name}</h2>
                     <p className="text-sm text-gray-300">
                         Click and drag to draw. Grid: 1 unit = 1mm
                     </p>

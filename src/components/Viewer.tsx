@@ -119,8 +119,11 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
     const { setSelectedFace } = useWorkbench();
 
     return (
-        <div className="w-full h-full relative" onClick={() => setSelectedFace(null)}>
-            <Canvas camera={{ position: [40, 40, 40], fov: 40 }}>
+        <div className="w-full h-full relative">
+            <Canvas
+                camera={{ position: [40, 40, 40], fov: 40 }}
+                onPointerMissed={() => setSelectedFace(null)}
+            >
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
                 <directionalLight position={[-5, -10, -5]} intensity={0.3} />

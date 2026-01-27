@@ -1,3 +1,4 @@
+import { createPlaneConstructorCode } from '../../lib/planeUtils';
 import React, { useMemo } from 'react';
 import CodeEditor from '../Editor';
 import Viewer from '../Viewer';
@@ -23,7 +24,7 @@ import { generateSketchCode, generateSketchName } from '../../lib/sketchCodegen'
 import { generateRevolveCode } from '../../features/core/revolve.feature';
 import { generateFilletCode, generateChamferCode, generateBooleanCode } from '../../features/core/modifiers.feature';
 import { BooleanDialog } from '../Dialogs/BooleanDialog';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, MousePointer2 } from 'lucide-react';
 
 export function WorkbenchLayout() {
     const {
@@ -44,6 +45,9 @@ export function WorkbenchLayout() {
         planes,
         addPlane,
         selectedFace,
+        isFaceSelecting,
+        startFaceSelection,
+        cancelFaceSelection,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
@@ -152,7 +156,26 @@ export function WorkbenchLayout() {
 
                 {/* Right Pane: 3D Viewport */}
                 <div className="flex-1 h-full relative bg-[#0a0a0a]">
-                    <Viewer geometries={geometries} viewMode3D={viewMode3D} />
+                    <Viewer
+                        geometries={geometries}
+                        sketchesGeometries={[]} // TODO: Connect to real sketches
+                        showSketches={true}
+                        viewMode3D={viewMode3D}
+                    />
+                    {isFaceSelecting && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                            <div className="bg-blue-600/90 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce backdrop-blur-sm border border-blue-400/50 pointer-events-auto flex items-center gap-3">
+                                <MousePointer2 className="w-5 h-5" />
+                                <span className="font-bold">Click a face to start sketching</span>
+                                <button
+                                    onClick={cancelFaceSelection}
+                                    className="ml-2 hover:bg-white/20 p-1 rounded transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -168,14 +191,26 @@ export function WorkbenchLayout() {
                         const sketchData: SketchData = {
                             id: `sketch_${Date.now()}`,
                             name: sketchName,
-                            plane: sketchMode.plane!,
+                            plane: (sketchMode.plane as any).name || 'XY',
                             entities,
                             closed: false,
                             createdAt: Date.now(),
                         };
 
                         // Generate Replicad code
-                        const sketchCode = generateSketchCode(sketchData);
+                        const planeEntity = sketchMode.plane as any;
+                        let sketchCode = '';
+
+                        if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
+                            // Sketch on face: create a plane from origin and normal
+                            const planeSource = createPlaneConstructorCode(
+                                planeEntity.origin,
+                                planeEntity.normal
+                            );
+                            sketchCode = generateSketchCode({ ...sketchData, plane: planeSource });
+                        } else {
+                            sketchCode = generateSketchCode(sketchData);
+                        }
 
                         // Insert sketch code
                         insertCode(sketchCode);
@@ -214,6 +249,7 @@ export function WorkbenchLayout() {
                         });
                         setActiveDialog(null);
                     }}
+                    onSelectFace={startFaceSelection}
                     onCancel={() => setActiveDialog(null)}
                 />
             )}
@@ -301,7 +337,7 @@ export function WorkbenchLayout() {
             {/* Boolean Operations Dialogs */}
             {['union', 'cut', 'intersect'].includes(activeDialog || '') && (
                 <BooleanDialog
-                    type={activeDialog === 'union' ? 'fuse' : (activeDialog as any)}
+                    type={activeDialog === 'union' ? 'fuse' : (activeDialog as 'cut' | 'intersect')}
                     onConfirm={({ baseName, toolName, type }) => {
                         const code = generateBooleanCode(baseName, toolName, type);
                         insertCode(code);

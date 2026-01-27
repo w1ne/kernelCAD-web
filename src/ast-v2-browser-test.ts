@@ -1,11 +1,12 @@
-import { testParse, testVariableExtraction, testCodeGeneration, testSimpleInsertion, testReturnUpdate } from './lib/ast-v2';
+import { testParse, testVariableExtraction, testCodeGeneration, testSimpleInsertion, testReturnUpdate } from './lib/ast';
 
 // Expose for browser console testing
-(window as any).testASTv2 = testParse;
-(window as any).testASTv2Variables = testVariableExtraction;
-(window as any).testASTv2CodeGen = testCodeGeneration;
-(window as any).testASTv2Insertion = testSimpleInsertion;
-(window as any).testASTv2ReturnUpdate = testReturnUpdate;
+const win = window as unknown as Record<string, unknown>;
+win.testASTv2 = testParse;
+win.testASTv2Variables = testVariableExtraction;
+win.testASTv2CodeGen = testCodeGeneration;
+win.testASTv2Insertion = testSimpleInsertion;
+win.testASTv2ReturnUpdate = testReturnUpdate;
 
 console.log('[AST-V2] Test functions exposed:');
 console.log('  window.testASTv2() - Test basic parsing');

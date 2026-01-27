@@ -35,8 +35,8 @@ describe('SceneBrowser', () => {
     });
 
     it('should render planes', () => {
-        const mockPlanes: any[] = [{ id: 'plane1', name: 'Plane 1', type: 'base', visible: true }];
-        render(<SceneBrowser items={[]} planes={mockPlanes} onSelect={vi.fn()} onTogglePlane={vi.fn()} />);
+        const mockPlanes: unknown[] = [{ id: 'plane1', name: 'Plane 1', type: 'base', visible: true }];
+        render(<SceneBrowser items={[]} planes={mockPlanes as any} onSelect={vi.fn()} onTogglePlane={vi.fn()} />);
         expect(screen.getByText('Plane 1')).toBeDefined();
     });
 });

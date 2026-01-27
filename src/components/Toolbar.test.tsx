@@ -5,6 +5,7 @@ import Toolbar from './Toolbar';
 import { Box } from 'lucide-react';
 import { type Feature } from '../features/types';
 import * as WorkbenchContext from '../context/WorkbenchContext';
+import { CommandManager } from '../commands/CommandManager';
 
 // Mock useWorkbench
 beforeEach(() => {
@@ -23,7 +24,7 @@ beforeEach(() => {
         setActiveDialog: vi.fn(),
         editorInstance: null,
         setEditorInstance: vi.fn(),
-        commandManager: {} as any,
+        commandManager: {} as unknown as CommandManager,
         sketchMode: {
             active: false,
             plane: null,
@@ -31,7 +32,16 @@ beforeEach(() => {
             tool: 'select',
         },
         setSketchMode: vi.fn(),
-    });
+        insertCode: vi.fn(),
+        sketchesGeometries: [],
+        showSketches: true,
+        toggleSketchVisibility: vi.fn(),
+        planes: [],
+        addPlane: vi.fn(),
+        addSketch: vi.fn(),
+        selectedFace: null,
+        setSelectedFace: vi.fn(),
+    } as unknown as WorkbenchContext.WorkbenchContextType);
 });
 
 // Manually cleanup after each test

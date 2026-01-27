@@ -4,7 +4,7 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { RevolveDialog } from './RevolveDialog';
-import { WorkbenchContext } from '../../context/WorkbenchContext';
+import { WorkbenchContext, type WorkbenchContextType } from '../../context/WorkbenchContext';
 
 const mockWorkbenchContext = {
     sketches: [
@@ -23,7 +23,7 @@ describe('RevolveDialog', () => {
         const onCancel = vi.fn();
 
         render(
-            <WorkbenchContext.Provider value={mockWorkbenchContext as any}>
+            <WorkbenchContext.Provider value={mockWorkbenchContext as unknown as WorkbenchContextType}>
                 <RevolveDialog onConfirm={onConfirm} onCancel={onCancel} />
             </WorkbenchContext.Provider>
         );
@@ -39,7 +39,7 @@ describe('RevolveDialog', () => {
         const onCancel = vi.fn();
 
         render(
-            <WorkbenchContext.Provider value={mockWorkbenchContext as any}>
+            <WorkbenchContext.Provider value={mockWorkbenchContext as unknown as WorkbenchContextType}>
                 <RevolveDialog onConfirm={onConfirm} onCancel={onCancel} />
             </WorkbenchContext.Provider>
         );

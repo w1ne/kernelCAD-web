@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { defaultCode, executeCode, init as initEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 import { CommandManager } from '../commands/CommandManager';
+import { getReturnedVariables } from '../lib/ast';
 import type { ViewMode3D } from '../types/viewMode';
 import type { SketchModeState } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 
-interface WorkbenchContextType {
+export interface WorkbenchContextType {
     viewMode: 'code' | 'gui';
     setViewMode: (mode: 'code' | 'gui') => void;
     viewMode3D: ViewMode3D;
@@ -31,7 +32,9 @@ interface WorkbenchContextType {
     sketchMode: SketchModeState;
     setSketchMode: (mode: SketchModeState) => void;
     // Sketch history
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sketches: any[]; // Using any for now to avoid circular dependency or complex types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addSketch: (sketch: any) => void;
     // Plane management
     planes: SketchPlaneEntity[];
@@ -41,9 +44,14 @@ interface WorkbenchContextType {
     selectedFace: { shapeIndex: number; faceId: number } | null;
     selectedFacePlane: { origin: [number, number, number]; normal: [number, number, number] } | null;
     setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void;
+    // Face selection mode (for sketching)
+    isFaceSelecting: boolean;
+    startFaceSelection: () => void;
+    cancelFaceSelection: () => void;
 }
 
 // Export for testing
+// eslint-disable-next-line react-refresh/only-export-components
 export const WorkbenchContext = createContext<WorkbenchContextType | undefined>(undefined);
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
@@ -64,9 +72,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         tool: 'select',
     });
     // Sketch history state
-    const [sketches, setSketches] = useState<any[]>([]);
+    const [sketches, setSketches] = useState<unknown[]>([]);
 
-    const addSketch = (sketch: any) => {
+    const addSketch = (sketch: unknown) => {
         setSketches(prev => [...prev, sketch]);
     };
 
@@ -91,8 +99,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
     const [isComputing, setIsComputing] = useState(false);
     const [activeDialog, setActiveDialog] = useState<string | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [editorInstance, setEditorInstance] = useState<any>(null);
+    const [editorInstance, setEditorInstance] = useState<unknown>(null);
 
     // Keep code in ref for CommandManager to access latest without re-render loop
     const codeRef = useRef(code);
@@ -159,12 +166,46 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
     const [selectedFace, setSelectedFaceState] = useState<{ shapeIndex: number; faceId: number } | null>(null);
     const [selectedFacePlane, setSelectedFacePlane] = useState<{ origin: [number, number, number]; normal: [number, number, number] } | null>(null);
+    const [isFaceSelecting, setIsFaceSelecting] = useState(false);
+
+    const startFaceSelection = () => {
+        setIsFaceSelecting(true);
+        setActiveDialog(null); // Close plane selector
+    };
+
+    const cancelFaceSelection = () => {
+        setIsFaceSelecting(false);
+    };
 
     const setSelectedFace = (selection: { shapeIndex: number; faceId: number } | null) => {
         setSelectedFaceState(selection);
         if (selection && geometries[selection.shapeIndex]) {
             const face = geometries[selection.shapeIndex].faces.find(f => f.faceId === selection.faceId);
-            setSelectedFacePlane(face?.plane || null);
+            const plane = face?.plane || null;
+            setSelectedFacePlane(plane);
+
+            // If we are in face selection mode for sketching, automatically enter sketch mode
+            if (isFaceSelecting && plane) {
+                const returnedVars = getReturnedVariables(code);
+                let targetName = returnedVars[selection.shapeIndex] || 'shape';
+                if (targetName === 'unknown') targetName = 'shape';
+
+                setSketchMode({
+                    active: true,
+                    plane: {
+                        id: `face-${selection.faceId}-${Date.now()}`,
+                        name: `Face ${selection.faceId} of ${targetName}`,
+                        type: 'face',
+                        origin: plane.origin,
+                        normal: plane.normal,
+                        visible: true,
+                        parentId: targetName
+                    },
+                    currentSketch: null,
+                    tool: 'line'
+                });
+                setIsFaceSelecting(false);
+            }
         } else {
             setSelectedFacePlane(null);
         }
@@ -207,6 +248,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         selectedFace,
         selectedFacePlane,
         setSelectedFace,
+        isFaceSelecting,
+        startFaceSelection,
+        cancelFaceSelection,
     };
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;

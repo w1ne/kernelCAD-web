@@ -40,8 +40,7 @@ self.onmessage = async ({ data }) => {
             await init();
 
             // Track sketches created during execution
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const activeSketches: any[] = [];
+            const activeSketches: (replicad.Sketcher & { sketch?: { wire: replicad.Wire } })[] = [];
             const wrappedStartSketch = () => {
                 const s = startSketch();
                 activeSketches.push(s);
@@ -56,27 +55,38 @@ self.onmessage = async ({ data }) => {
             const shapes = Array.isArray(result) ? result : [result];
 
             // Mesh the shapes
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const geometries = shapes.map((shape: any) => {
+            const geometries = shapes.map((shape: replicad.Shape<any>) => {
                 if (!shape || typeof shape.mesh !== "function") {
                     throw new Error("Result must be a Replicad Shape");
                 }
 
-                const faceGeometries = shape.faces.map((face: any, index: number) => {
+                const faceGeometries = shape.faces.map((face: replicad.Face, index: number) => {
                     const mesh = face.mesh({ tolerance: 0.1, angularTolerance: 30 });
 
                     let plane;
                     try {
-                        // Check if the face is planar
-                        if (face.geomType === 'PLANE') {
-                            const p = face.plane;
-                            plane = {
-                                origin: [p.origin.x, p.origin.y, p.origin.z] as [number, number, number],
-                                normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number]
-                            };
+                        if ((face.geomType as any) === 'PLANE' || (face.geomType as any) === 'Planar') {
+                            // Try common ways to get plane in Replicad
+                            const p = (face as any).planarPlane || (face as any).plane;
+                            if (p && p.origin && p.normal) {
+                                plane = {
+                                    origin: [p.origin.x, p.origin.y, p.origin.z] as [number, number, number],
+                                    normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number]
+                                };
+                            } else {
+                                // Fallback to center and face normal if possible
+                                const center = face.center;
+                                const normal = face.normalAt();
+                                if (center && normal) {
+                                    plane = {
+                                        origin: [center.x, center.y, center.z] as [number, number, number],
+                                        normal: [normal.x, normal.y, normal.z] as [number, number, number]
+                                    };
+                                }
+                            }
                         }
                     } catch (e) {
-                        // Not a simple plane or error getting it
+                        console.warn("Worker: Error detecting face plane", e);
                     }
 
                     return {
@@ -99,7 +109,8 @@ self.onmessage = async ({ data }) => {
                     // Try to get the wire from the sketcher
                     // Sketcher.sketch returns the Sketch object
                     // Sketch.wire returns the Wire object
-                    const wire = s.sketch.wire;
+                    const wire = s.sketch?.wire;
+                    if (!wire) return null;
                     const mesh = wire.mesh({ tolerance: 0.1 });
 
                     return {
@@ -115,18 +126,16 @@ self.onmessage = async ({ data }) => {
 
             // Transfer buffers
             const transferables: Transferable[] = [];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            geometries.forEach((g: any) => {
-                g.faces.forEach((f: any) => {
+            geometries.forEach((g) => {
+                g.faces.forEach((f) => {
                     transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
                 });
             });
 
-            sketchGeometries.forEach((s: any) => {
+            sketchGeometries.forEach((s) => {
                 if (s) transferables.push(s.vertices.buffer);
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             self.postMessage({
                 type: 'SUCCESS',
                 id,
@@ -134,7 +143,7 @@ self.onmessage = async ({ data }) => {
                     geometries,
                     sketches: sketchGeometries
                 }
-            }, { transfer: transferables } as any);
+            }, { transfer: transferables } as unknown as { transfer: Transferable[] });
 
         } catch (error) {
             self.postMessage({ type: 'ERROR', id, error: String(error) });

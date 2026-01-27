@@ -2,7 +2,7 @@
 
 > Building a professional parametric CAD system in the browser
 
-**Current Version**: v0.5.2
+**Current Version**: v0.6.1
 **Status**: Phase 1 (Professional Modeling Workflow) - In Progress
 
 ---
@@ -22,24 +22,30 @@
 - [x] **Construction Geometry**: Origin planes and Offset planes support.
 - [x] **Feature Execution System**: Support for custom dialogs and target selection.
 
----
-
-## 🚀 PHASE 1: Professional Modeling Workflow (v0.6.x)
-
-**Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
-
-### 1.1 Advanced Modeling Operations
+### v0.6.0-v0.6.1: Advanced Modeling Operations
 - [x] **Core Features**: Revolve (Sweep/Loft pending).
 - [x] **Detailing**: Fillet and Chamfer with edge selection support (Filter-based).
 - [x] **Boolean Ops**: Clean UI for Union, Subtract, Intersect.
-- [x] **Face Selection**: Derive sketch planes and features directly from 3D faces (`.sketchOnFace()`).
+- [x] **Face Selection**: Derive sketch planes and features directly from 3D faces.
 - [x] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
-- [ ] **Face Sketching**: Draw sketches directly on a selected face (`shape.sketchOnFace(id)`).
+- [x] **Face Sketching**: Draw sketches directly on a selected face with proper plane geometry.
+
+---
+
+## 🚀 PHASE 1: Professional Modeling Workflow (v0.7.x)
+
+**Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
 ### 1.2 Parametric Sketching
 - [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent.
 - [ ] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
 - [ ] **Constraint Solving**: Integration of a 2D constraint solver (e.g., plane-solver).
+
+### 1.3 UI/UX Polish
+- [ ] **Icon Redesign**: Replace current icons with professional, consistent icon set (e.g., Lucide, Heroicons).
+- [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
+- [ ] **Tooltips**: Add comprehensive tooltips for all tools and features.
+- [ ] **Keyboard Shortcuts**: Implement industry-standard shortcuts (e.g., E for Extrude, S for Sketch).
 
 ---
 
