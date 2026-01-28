@@ -58,10 +58,18 @@ export function useFaceSelection({
                 f => f.faceId === selection.faceId
             );
             const plane = face?.plane || null;
-            setSelectedFacePlane(plane);
+
+            // Validate plane data before using it
+            const isValidPlane = plane &&
+                Array.isArray(plane.origin) && plane.origin.length === 3 &&
+                Array.isArray(plane.normal) && plane.normal.length === 3 &&
+                plane.origin.every(v => typeof v === 'number' && !isNaN(v)) &&
+                plane.normal.every(v => typeof v === 'number' && !isNaN(v));
+
+            setSelectedFacePlane(isValidPlane ? plane : null);
 
             // If we are in face selection mode for sketching, automatically enter sketch mode
-            if (isFaceSelecting && plane && onSketchModeChange) {
+            if (isFaceSelecting && isValidPlane && onSketchModeChange) {
                 const returnedVars = getReturnedVariables(code);
                 let targetName = returnedVars[selection.shapeIndex] || 'shape';
                 if (targetName === 'unknown') targetName = 'shape';
@@ -72,14 +80,18 @@ export function useFaceSelection({
                         id: `face-${selection.faceId}-${Date.now()}`,
                         name: `Face ${selection.faceId} of ${targetName}`,
                         type: 'face',
-                        origin: plane.origin,
-                        normal: plane.normal,
+                        origin: plane!.origin,
+                        normal: plane!.normal,
                         visible: true,
                         parentId: targetName
                     },
                     currentSketch: null,
                     tool: 'line'
                 });
+                setIsFaceSelecting(false);
+            } else if (isFaceSelecting && !isValidPlane) {
+                // Invalid plane - cancel face selection and show error
+                console.error('Selected face does not have a valid planar surface. Only flat faces can be sketched on.');
                 setIsFaceSelecting(false);
             }
         } else {
