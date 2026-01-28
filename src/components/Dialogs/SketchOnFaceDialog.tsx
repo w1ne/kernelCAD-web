@@ -1,60 +1,48 @@
 import { useState } from 'react';
 
-interface ExtrudeFromFaceDialogProps {
-    onConfirm: (distance: number, direction: 'normal' | 'reversed') => void;
+interface SketchOnFaceDialogProps {
+    defaultName: string;
+    faceId: number;
+    shapeName: string;
+    onConfirm: (name: string) => void;
     onCancel: () => void;
 }
 
-export function ExtrudeFromFaceDialog({ onConfirm, onCancel }: ExtrudeFromFaceDialogProps) {
-    const [distance, setDistance] = useState(20);
-    const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
+export function SketchOnFaceDialog({ defaultName, faceId, shapeName, onConfirm, onCancel }: SketchOnFaceDialogProps) {
+    const [name, setName] = useState(defaultName);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm(distance, direction);
+        onConfirm(name);
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-6 shadow-xl min-w-[300px]">
                 <h2 className="text-xl font-bold text-white mb-4">
-                    Extrude Face
+                    New Sketch
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="distance"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Distance
-                        </label>
-                        <input
-                            id="distance"
-                            type="number"
-                            value={distance}
-                            onChange={(e) => setDistance(parseFloat(e.target.value))}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            autoFocus
-                        />
+                    <div className="text-sm text-gray-400 mb-4">
+                        Creating sketch on <span className="text-blue-400">{shapeName}</span> (Face {faceId})
                     </div>
 
                     <div>
                         <label
-                            htmlFor="direction"
+                            htmlFor="sketch-name"
                             className="block text-sm font-medium text-gray-300 mb-2"
                         >
-                            Direction
+                            Sketch Name
                         </label>
-                        <select
-                            id="direction"
-                            value={direction}
-                            onChange={(e) => setDirection(e.target.value as 'normal' | 'reversed')}
+                        <input
+                            id="sketch-name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="normal">Normal</option>
-                            <option value="reversed">Reversed</option>
-                        </select>
+                            autoFocus
+                        />
                     </div>
 
                     <div className="flex gap-2 justify-end pt-4">
@@ -69,7 +57,7 @@ export function ExtrudeFromFaceDialog({ onConfirm, onCancel }: ExtrudeFromFaceDi
                             type="submit"
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                         >
-                            Extrude
+                            Create Sketch
                         </button>
                     </div>
                 </form>

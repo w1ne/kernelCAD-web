@@ -14,4 +14,5 @@ export function initFeatures() {
     featureRegistry.register(IntersectFeature);
     featureRegistry.register(SketchOnFaceFeature);
     featureRegistry.register(ExtrudeFromFaceFeature);
+    featureRegistry.register(ExtrudeFromFaceFeature);
 }

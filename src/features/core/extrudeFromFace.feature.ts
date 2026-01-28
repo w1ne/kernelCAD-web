@@ -52,9 +52,13 @@ export const generateExtrudeFromFaceCode = (targetName: string, faceId: number, 
     // const ext = sk.extrude(dist);
     // const result = shape.fuse(ext);
 
+    // const sk = shape.sketchOnFace(faceId);
+    // const ext = sk.extrude(dist);
+    // const result = shape.fuse(ext);
+
     return `
-const ${sketchName} = ${targetName}.sketchOnFace(${faceId});
-const ${extrusionName} = ${sketchName}.extrude(${distance});
+const ${sketchName} = sketchOnFace(${targetName}, ${faceId});
+const ${extrusionName} = extrude(${sketchName}, ${distance});
 const ${targetName}_fused = ${targetName}.fuse(${extrusionName});
 `.trim();
 };

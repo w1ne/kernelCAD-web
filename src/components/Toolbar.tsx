@@ -1,4 +1,4 @@
-import { PenTool, MousePointer2, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
+import { PenTool, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { getReturnedVariables } from '../lib/ast';
@@ -26,7 +26,11 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
 
     // Start sketch mode
     const handleSketchClick = () => {
-        setActiveDialog('planeSelector');
+        if (selectedFace) {
+            handleSketchOnFaceClick();
+        } else {
+            setActiveDialog('planeSelector');
+        }
     };
 
     const handleSketchOnFaceClick = () => {
@@ -59,9 +63,9 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
             <button
                 onClick={handleSketchClick}
                 className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
-                title="Start Sketch (Plane Selection)"
+                title={selectedFace ? "Sketch on Selected Face" : "Start Sketch (Select Plane)"}
             >
-                <PenTool size={20} />
+                <PenTool size={20} className={selectedFace ? "text-blue-400" : ""} />
             </button>
 
             {/* Visibility toggle button */}
@@ -73,16 +77,9 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 {showSketches ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
 
-            {/* Contextual Sketch on Face button */}
+            {/* Contextual Tools (only Extrude Face now) */}
             {selectedFacePlane && (
                 <>
-                    <button
-                        onClick={handleSketchOnFaceClick}
-                        className="p-2 rounded bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-blue-300 transition-colors mt-1"
-                        title="Sketch on Selected Face"
-                    >
-                        <MousePointer2 size={20} />
-                    </button>
                     {/* Contextual Extrude Face button */}
                     <button
                         onClick={() => {
@@ -94,6 +91,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                     >
                         <ArrowUpFromLine size={20} />
                     </button>
+                    <div className="w-full h-px bg-[#333] my-1" />
                 </>
             )}
 

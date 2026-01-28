@@ -184,7 +184,7 @@ View → Wireframe
 | **Visual Sketch Canvas** | ✅ | ❌ | v0.3 |
 | **2D Constraint Solver** | ✅ | ❌ | v0.3 |
 | **Dimension Input UI** | ✅ | ❌ | v0.3 |
-| **Extrude Dialog** | ✅ | ❌ (code only) | v0.3.1 |
+| **Extrude Dialog** | ✅ | ✅ | v0.2.1 |
 | **Wireframe View** | ✅ | ❌ | v0.4 |
 | **Shaded with Edges** | ✅ | ❌ | v0.4 |
 | **Edge Selection** | ✅ | ❌ | v0.3.2 |

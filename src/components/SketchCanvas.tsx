@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { SketchEntity, Point2D, SketchTool } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface SketchCanvasProps {
     plane: string | SketchPlaneEntity;
@@ -19,6 +20,21 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     // Grid settings
     const gridSize = 10; // Grid cell size in pixels
     const gridUnit = 1;  // 1 unit = 1mm
+
+    useKeyboardShortcuts({
+        'l': () => setTool('line'),
+        'r': () => setTool('rectangle'),
+        'c': () => setTool('circle'),
+        'escape': () => {
+            if (isDrawing) {
+                setIsDrawing(false);
+                setStartPoint(null);
+                setCurrentPoint(null);
+            } else {
+                onCancel();
+            }
+        }
+    });
 
     // Convert canvas pixel coordinates to sketch coordinates
     const canvasToSketch = useCallback((x: number, y: number): Point2D => {

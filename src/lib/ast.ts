@@ -178,31 +178,33 @@ export function insertShape(code: string, statement: string): string {
     const astNode = parseCode(code);
     const statementAst = parseCode(statement);
 
-    const statementNode = (statementAst as unknown as { body: acorn.Node[] }).body[0];
+    const statementNodes = (statementAst as unknown as { body: acorn.Node[] }).body;
 
-    // Extract variable name from the statement (e.g., "const box1 = ...")
+    // Extract variable name from the statements - use the LAST declared variable
     let varName: string | null = null;
     let isSketcher = false;
 
-    const declNode = statementNode as unknown as { type: string; declarations: { id: { type: string; name: string }; init: { type: string; callee?: { object?: { name?: string }; name?: string } } }[] };
-    if (declNode.type === 'VariableDeclaration' && declNode.declarations[0]) {
-        const declarator = declNode.declarations[0];
-        if (declarator.id.type === 'Identifier') {
-            varName = declarator.id.name;
+    statementNodes.forEach(node => {
+        const declNode = node as unknown as { type: string; declarations: { id: { type: string; name: string }; init: { type: string; callee?: { object?: { name?: string }; name?: string } } }[] };
+        if (declNode.type === 'VariableDeclaration' && declNode.declarations[0]) {
+            const declarator = declNode.declarations[0];
+            if (declarator.id.type === 'Identifier') {
+                varName = declarator.id.name;
 
-            // Detect if this is a Sketcher instance
-            // It could be `new Sketcher(...)` or a chain like `new Sketcher(...).lineTo(...)`
-            let init: any = declarator.init;
-            while (init && init.type === 'CallExpression') {
-                init = init.callee?.object || init.callee;
-            }
+                // Reset sketcher flag for each new var, check if THIS one is a sketcher
+                isSketcher = false;
+                let init: any = declarator.init;
+                while (init && init.type === 'CallExpression') {
+                    init = init.callee?.object || init.callee;
+                }
 
-            if (init && init.type === 'NewExpression' &&
-                init.callee?.name === 'Sketcher') {
-                isSketcher = true;
+                if (init && init.type === 'NewExpression' &&
+                    init.callee?.name === 'Sketcher') {
+                    isSketcher = true;
+                }
             }
         }
-    }
+    });
 
     let inserted = false;
 
@@ -215,12 +217,13 @@ export function insertShape(code: string, statement: string): string {
                 const returnIndex = body.findIndex((n) => n.type === 'ReturnStatement');
 
                 if (returnIndex !== -1) {
-                    // Insert statement before return
-                    body.splice(returnIndex, 0, statementNode);
+                    // Insert ALL statements before return
+                    // Use spread to insert multiple nodes
+                    body.splice(returnIndex, 0, ...statementNodes);
 
                     // Update return statement if we have a variable name AND it's not a sketcher
                     if (varName && !isSketcher) {
-                        const returnStmt = body[returnIndex + 1] as unknown as { type: string; argument: { type: string; elements: unknown[] } };
+                        const returnStmt = body[returnIndex + statementNodes.length] as unknown as { type: string; argument: { type: string; elements: unknown[] } };
                         if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
                             // Check if return is an array
                             if (returnStmt.argument.type === 'ArrayExpression') {

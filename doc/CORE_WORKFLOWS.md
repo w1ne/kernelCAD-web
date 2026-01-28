@@ -84,3 +84,31 @@ const body = extrude(profile, { distance: 25 });
 | **Lofting/Extruding** | Closed Sketch | `makePrism` | 3D Solid (B-Rep) |
 | **Filleting** | Edge Selection + Radius | `makeFillet` | Modified Solid |
 | **Exporting** | Solid Body | `toSTEP()` / `toSTL()` | Downloadable File |
+
+## 6. The "Stable Reference" Workflow (Datum Planes)
+
+*Definition:* Managing geometric references to prevent the "Topological Naming Problem".
+
+**The Problem:**
+When you sketch directly on a face (e.g., "Face 12"), and then modify the model (e.g., add a fillet), "Face 12" might change ID or disappear. Your sketch breaks.
+
+**The Solution: Datum Planes**
+A **Datum Plane** is an infinite construction plane captured at a specific point in time. It doesn't change when the model geometry changes.
+
+* **User Action:** Select Face → Click "Create Datum Plane" → Sketch on the new Plane.
+* **System Logic:**
+  * Capture the Origin and Normal of the selected face *right now*.
+  * Create a `new Plane(...)` in code.
+  * Attach the Sketch to this stable Plane object, not the volatile Face ID.
+  
+* **Code Output:**
+```typescript
+// 1. Capture the plane (Stable Reference)
+const plane_face12 = new replicad.Plane([...origin], null, [...normal]);
+
+// 2. Modify the shape (Face IDs change, but plane_face12 is safe)
+const filleted = shape.fillet(2);
+
+// 3. Sketch on the stable plane
+const sketch = new Sketcher(plane_face12)...
+```

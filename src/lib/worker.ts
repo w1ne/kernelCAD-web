@@ -1,6 +1,6 @@
 import * as replicad from "replicad";
 import { setOC } from "replicad";
-import { startSketch, makeCompound, fillet, chamfer } from "./geometryHelpers";
+import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude } from "./geometryHelpers";
 
 let isInitialized = false;
 
@@ -47,9 +47,15 @@ self.onmessage = async ({ data }) => {
                 return s;
             };
 
+            const wrappedSketchOnFace = (shape: any, faceId: number) => {
+                const s = sketchOnFace(shape, faceId);
+                activeSketches.push(s);
+                return s;
+            };
+
             // Create function with injected scope
-            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", code);
-            const result = func(replicad, wrappedStartSketch, makeCompound, fillet, chamfer);
+            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", "sketchOnFace", "extrude", code);
+            const result = func(replicad, wrappedStartSketch, makeCompound, fillet, chamfer, wrappedSketchOnFace, extrude);
 
             // Normalize result
             const shapes = Array.isArray(result) ? result : [result];
@@ -155,8 +161,8 @@ self.onmessage = async ({ data }) => {
             // but the user code might USE helpers, so we MUST inject them.
             // The function signature in 'EXECUTE' was ("replicad", "startSketch"...) 
             // The user code string is the body.
-            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", code);
-            const result = func(replicad, startSketch, makeCompound, fillet, chamfer);
+            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", "sketchOnFace", "extrude", code);
+            const result = func(replicad, startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude);
 
             const shape = Array.isArray(result) ? result[0] : result;
             if (!shape) throw new Error("No shape returned");

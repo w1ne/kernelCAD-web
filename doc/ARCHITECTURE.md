@@ -117,6 +117,19 @@ graph TD
     Viewer -->|WebGL| Canvas
 ```
 
+## Geometric References & Topological Naming
+
+### The Problem
+A classic CAD issue is the **Topological Naming Problem**. If a user sketches on "Face 12" and then modifies the model history, "Face 12" might change ID or disappear, breaking downstream features.
+
+### The Solution: Construction Planes (Datum)
+We mitigate this by **decoupling references**. Instead of attaching sketches directly to volatile IDs, we encourage an intermediate step:
+1.  **Capture**: User selects a Face.
+2.  **Stabilize**: The system generates a `new Plane(...)` constructor code using the face's *current* geometric properties (Origin, Normal).
+3.  **Reference**: Sketches use this stable `const plane_face12 = ...` variable.
+
+This "Construction Plane" entity acts as a stable anchor that persists even if the original face ID changes, preserving the user's intent.
+
 ## Boundaries & Constraints
 -   **No DOM Access in Kernel**: The geometry code runs in a sandbox (conceptually) and should not manipulate the DOM.
 -   **WASM Asset**: The `opencascade.wasm` file is large (~10MB) and must be served correctly with the correct MIME type. We serve it statically from `public/`.

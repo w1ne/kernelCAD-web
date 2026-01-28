@@ -7,21 +7,30 @@ interface OffsetPlaneDialogProps {
 }
 
 export function OffsetPlaneDialog({ onConfirm, onCancel }: OffsetPlaneDialogProps) {
-    const { planes } = useWorkbench();
-    const [basePlaneId, setBasePlaneId] = useState(planes.length > 0 ? planes[0].id : '');
-    const [offset, setOffset] = useState(10);
+    const { planes, selectedFace, geometries, code } = useWorkbench();
+
+    // Determine initial selection
+    const getInitialPlaneId = () => {
+        if (selectedFace) {
+            return `face-${selectedFace.faceId}`; // specific format for faces
+        }
+        return planes.length > 0 ? planes[0].id : '';
+    };
+
+    const [baseRefId, setBaseRefId] = useState(getInitialPlaneId());
+    const [offset, setOffset] = useState(0); // Default to 0 instead of 10
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!basePlaneId) return;
-        onConfirm({ basePlaneId, offset });
+        if (!baseRefId) return;
+        onConfirm({ basePlaneId: baseRefId, offset });
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-6 shadow-xl min-w-[400px]">
                 <h2 className="text-xl font-bold text-white mb-4">
-                    Create Offset Plane
+                    Construction Plane
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -30,19 +39,28 @@ export function OffsetPlaneDialog({ onConfirm, onCancel }: OffsetPlaneDialogProp
                             htmlFor="base-plane-select"
                             className="block text-sm font-medium text-gray-300 mb-2"
                         >
-                            Base Plane
+                            Reference Entity
                         </label>
                         <select
                             id="base-plane-select"
-                            value={basePlaneId}
-                            onChange={(e) => setBasePlaneId(e.target.value)}
+                            value={baseRefId}
+                            onChange={(e) => setBaseRefId(e.target.value)}
                             className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                             required
                         >
-                            <option value="" disabled>Select a plane...</option>
-                            {planes.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name} {p.type === 'base' ? '(Origin)' : ''}</option>
-                            ))}
+                            <option value="" disabled>Select a plane or face...</option>
+                            <optgroup label="Standard Planes">
+                                {planes.map((p) => (
+                                    <option key={p.id} value={p.id}>{p.name} {p.type === 'base' ? '(Origin)' : ''}</option>
+                                ))}
+                            </optgroup>
+                            {selectedFace && (
+                                <optgroup label="Selection">
+                                    <option value={`face-${selectedFace.faceId}`}>
+                                        Selected Face {selectedFace.faceId}
+                                    </option>
+                                </optgroup>
+                            )}
                         </select>
                     </div>
 

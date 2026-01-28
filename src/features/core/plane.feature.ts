@@ -3,9 +3,9 @@ import { type Feature } from '../types';
 
 export const OffsetPlaneFeature: Feature = {
     id: 'offsetPlane',
-    label: 'Offset Plane',
+    label: 'Construction Plane',
     icon: Plane,
-    description: 'Create a construction plane offset from an existing plane',
+    description: 'Create a reference plane from a face or existing plane',
     execute: (context) => {
         context.setActiveDialog('offsetPlane');
     }
