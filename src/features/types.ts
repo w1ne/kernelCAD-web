@@ -3,6 +3,7 @@ import { type LucideIcon } from 'lucide-react';
 export interface FeatureContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     setActiveDialog: (dialogId: string | null) => void;
+    code: string; // Current code for variable name resolution
 }
 
 export interface DialogField {

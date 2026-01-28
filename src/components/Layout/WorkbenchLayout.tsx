@@ -74,13 +74,13 @@ export function WorkbenchLayout() {
         if (feature.parameters && feature.parameters.length > 0) {
             setActiveDialog(feature.id);
         } else {
-            feature.execute({ insertCode, setActiveDialog });
+            feature.execute({ insertCode, setActiveDialog, code });
         }
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
         if (activeFeature) {
-            activeFeature.execute({ insertCode, setActiveDialog }, values);
+            activeFeature.execute({ insertCode, setActiveDialog, code }, values);
         }
     };
 
@@ -281,8 +281,8 @@ export function WorkbenchLayout() {
                     onConfirm={(distance) => {
                         if (activeFeature && activeFeature.execute && selectedFace) {
                             activeFeature.execute(
-                                { insertCode, setActiveDialog },
-                                { distance, faceId: selectedFace.faceId }
+                                { insertCode, setActiveDialog, code },
+                                { distance, faceId: selectedFace.faceId, shapeIndex: selectedFace.shapeIndex }
                             );
                         }
                         setActiveDialog(null);

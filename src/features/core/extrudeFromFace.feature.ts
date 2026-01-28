@@ -1,19 +1,26 @@
 import { ArrowUpFromLine } from 'lucide-react';
 import { type Feature } from '../types';
+import { getReturnedVariables } from '../../lib/ast';
 
 export const ExtrudeFromFaceFeature: Feature = {
     id: 'extrudeFromFace',
     label: 'Extrude Face',
     icon: ArrowUpFromLine,
     description: 'Extrude a selected planar face by a specified distance',
-    execute: ({ setActiveDialog, insertCode }, params) => {
+    execute: ({ setActiveDialog, insertCode, code }, params) => {
         if (params && typeof params.distance === 'number' && typeof params.faceId === 'number') {
-            const { distance, faceId } = params;
-            // Ideally we'd have the targetName passed too, but for now we default to 'shape' or derived logic
-            // In a real app, faceId might imply the shape.
-            const targetName = 'shape';
-            const code = generateExtrudeFromFaceCode(targetName, faceId, distance);
-            insertCode(code);
+            const { distance, faceId, shapeIndex } = params;
+
+            // Resolve the actual variable name from the code
+            let targetName = 'shape'; // fallback
+            if (code && typeof shapeIndex === 'number') {
+                const returnedVars = getReturnedVariables(code);
+                targetName = returnedVars[shapeIndex] || 'shape';
+                if (targetName === 'unknown') targetName = 'shape';
+            }
+
+            const generatedCode = generateExtrudeFromFaceCode(targetName, faceId, distance);
+            insertCode(generatedCode);
             setActiveDialog(null);
         } else {
             setActiveDialog('extrudeFromFace');
