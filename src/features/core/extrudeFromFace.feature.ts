@@ -22,8 +22,9 @@ export const ExtrudeFromFaceFeature: Feature = {
 };
 
 export const generateExtrudeFromFaceCode = (targetName: string, faceId: number, distance: number): string => {
-    // We create a temporary sketch on the face, then extrude it
-    const sketchName = `${targetName}_face${faceId}_sketch`;
+    // Use timestamp to ensure unique variable names and avoid conflicts with manual sketches
+    const timestamp = Date.now();
+    const sketchName = `${targetName}_extrudeFace${faceId}_${timestamp}`;
     const extrusionName = `${targetName}_face${faceId}_extrude`;
 
     // Code breakdown:
