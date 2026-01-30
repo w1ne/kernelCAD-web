@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { executeCode } from './geometryEngine';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { executeCode, GeometryEngine } from './geometryEngine';
 
 // Mock replicad and its methods
 vi.mock('replicad', () => {
@@ -34,6 +34,9 @@ class MockWorker {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onmessage: ((e: any) => void) | null = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onerror: ((e: any) => void) | null = null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postMessage(data: any) {
     // Simulate success response
     if (this.onmessage) {
@@ -42,24 +45,38 @@ class MockWorker {
           data: {
             type: 'SUCCESS',
             id: data.id,
-            geometries: [{ vertices: [], indices: [], normals: [] }]
+            geometries: {
+              geometries: [{ faces: [], edges: [] }],
+              sketches: []
+            }
           }
         });
       }, 10);
     }
   }
+  terminate() { }
 }
 vi.stubGlobal('Worker', MockWorker);
 
 describe('Geometry Engine', () => {
-  it('should generate a simple box', async () => {
+  beforeEach(() => {
+    // Reset singleton if possible, or just terminate existing
+    GeometryEngine.getInstance().terminate();
+  });
+
+  it('should maintain a singleton instance', () => {
+    const instance1 = GeometryEngine.getInstance();
+    const instance2 = GeometryEngine.getInstance();
+    expect(instance1).toBe(instance2);
+  });
+
+  it('should generate a simple box using standalone function', async () => {
     const code = `
       const { makeBox } = replicad;
       return makeBox(10, 10, 10);
     `;
     const results = await executeCode(code);
-    expect(results).toHaveLength(1);
-    // expect(replicad.makeBox).toHaveBeenCalledWith(10, 10, 10); // executeCode creates new function scope?
+    expect(results.geometries).toHaveLength(1);
   });
 
   it('should support fillet helper', async () => {
@@ -69,8 +86,7 @@ describe('Geometry Engine', () => {
       return fillet(box, 1);
     `;
     const results = await executeCode(code);
-    expect(results).toHaveLength(1);
-    // Verified that fillet was called on the box via the mock implementation logic inside executeCode
+    expect(results.geometries).toHaveLength(1);
   });
 
   it('should support chamfer helper', async () => {
@@ -80,7 +96,7 @@ describe('Geometry Engine', () => {
       return chamfer(box, 1);
     `;
     const results = await executeCode(code);
-    expect(results).toHaveLength(1);
+    expect(results.geometries).toHaveLength(1);
   });
 
   it('should support makeCompound helper', async () => {
@@ -90,6 +106,6 @@ describe('Geometry Engine', () => {
       return makeCompound([b1]);
     `;
     const results = await executeCode(code);
-    expect(results).toHaveLength(1);
+    expect(results.geometries).toHaveLength(1);
   });
 });

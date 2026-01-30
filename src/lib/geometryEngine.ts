@@ -1,7 +1,15 @@
-// Worker instance
-let worker: Worker | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const pendingMessages = new Map<string, { resolve: (val: any) => void, reject: (err: any) => void }>();
+// Geometry Engine: Class-based implementation
+import type {
+    WorkerRequest,
+    WorkerResponse,
+    ExecutionResult,
+    GeometryResult,
+    SketchGeometry,
+    FaceGeometry
+} from './workerTypes';
+
+// Re-export types for consumers
+export type { ExecutionResult, GeometryResult, SketchGeometry, FaceGeometry };
 
 export const defaultCode = `
 // You can use standard Replicad API here.
@@ -32,76 +40,122 @@ function drawPart() {
 return drawPart();
 `;
 
-export type FaceGeometry = {
-    vertices: Float32Array;
-    indices: Uint32Array;
-    normals: Float32Array;
-    faceId: number;
-    plane?: {
-        origin: [number, number, number];
-        normal: [number, number, number];
-    };
+type PendingMessage = {
+    resolve: (val: any) => void;
+    reject: (err: any) => void;
 };
 
-export type EdgeGeometry = {
-    vertices: Float32Array;
-};
+export class GeometryEngine {
+    private worker: Worker | null = null;
+    private pendingMessages = new Map<string, PendingMessage>();
+    private static instance: GeometryEngine | null = null;
 
-export type GeometryResult = {
-    faces: FaceGeometry[];
-    edges?: EdgeGeometry[];
-};
+    constructor() { }
 
-export type SketchGeometry = {
-    id: string;
-    name: string;
-    vertices: Float32Array;
-};
+    /**
+     * Get the singleton instance of GeometryEngine
+     */
+    public static getInstance(): GeometryEngine {
+        if (!GeometryEngine.instance) {
+            GeometryEngine.instance = new GeometryEngine();
+        }
+        return GeometryEngine.instance;
+    }
 
-export type ExecutionResult = {
-    geometries: GeometryResult[];
-    sketches: SketchGeometry[];
-};
+    /**
+     * Initialize the worker if not already initialized
+     */
+    public async initialize(): Promise<void> {
+        if (this.worker) return;
 
-export async function init() {
-    if (worker) return;
+        try {
+            // Initialize worker
+            this.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+            this.worker.onmessage = this.handleMessage.bind(this);
+            this.worker.onerror = this.handleError.bind(this);
+        } catch (error) {
+            console.error("Failed to initialize Geometry Worker:", error);
+            throw error;
+        }
+    }
 
-    // Initialize worker
-    worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+    /**
+     * Terminate the worker instance
+     */
+    public terminate(): void {
+        this.worker?.terminate();
+        this.worker = null;
+        this.pendingMessages.clear();
+    }
 
-    worker.onmessage = ({ data }) => {
-        const { type, id, geometries, blob, error } = data;
-        const pending = pendingMessages.get(id);
+    /**
+     * Handle incoming messages from the worker
+     */
+    private handleMessage(event: MessageEvent<WorkerResponse>): void {
+        const { id } = event.data;
+        const pending = this.pendingMessages.get(id);
 
         if (pending) {
-            if (type === 'SUCCESS') {
-                pending.resolve(geometries || blob);
+            if (event.data.type === 'SUCCESS') {
+                pending.resolve(event.data.geometries || event.data.blob);
             } else {
-                pending.reject(new Error(error));
+                pending.reject(new Error(event.data.error));
             }
-            pendingMessages.delete(id);
+            this.pendingMessages.delete(id);
         }
-    };
-}
+    }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function postToWorker(type: string, code: string): Promise<any> {
-    if (!worker) init();
-    return new Promise((resolve, reject) => {
+    /**
+     * Handle worker errors
+     */
+    private handleError(error: ErrorEvent): void {
+        console.error("Geometry Worker Error:", error);
+        // We could reject all pending messages here if the worker crashes
+    }
+
+    /**
+     * Post a message to the worker and await response
+     */
+    private async postToWorker<T>(message: WorkerRequest): Promise<T> {
+        await this.initialize();
+        return new Promise<T>((resolve, reject) => {
+            const id = message.id;
+            this.pendingMessages.set(id, { resolve, reject });
+            this.worker?.postMessage(message);
+        });
+    }
+
+    /**
+     * Execute CAD code
+     */
+    public executeCode(code: string): Promise<ExecutionResult> {
         const id = Math.random().toString(36).substr(2, 9);
-        pendingMessages.set(id, { resolve, reject });
-        worker?.postMessage({ type, code, id });
-    });
+        return this.postToWorker<ExecutionResult>({ type: 'EXECUTE', id, code });
+    }
+
+    /**
+     * Export to STEP
+     */
+    public exportSTEP(code: string): Promise<Blob> {
+        const id = Math.random().toString(36).substr(2, 9);
+        return this.postToWorker<Blob>({ type: 'EXPORT_STEP', id, code });
+    }
+
+    /**
+     * Export to STL
+     */
+    public exportSTL(code: string): Promise<Blob> {
+        const id = Math.random().toString(36).substr(2, 9);
+        return this.postToWorker<Blob>({ type: 'EXPORT_STL', id, code });
+    }
 }
 
-export function executeCode(code: string): Promise<ExecutionResult> {
-    return postToWorker('EXECUTE', code);
-}
+// Global Singleton (for backward compatibility and specific use cases)
+export const geometryEngine = GeometryEngine.getInstance();
 
-export function exportSTEP(code: string): Promise<Blob> {
-    return postToWorker('EXPORT_STEP', code);
-}
-
-export function exportSTL(code: string): Promise<Blob> {
-    return postToWorker('EXPORT_STL', code);
-}
+// Export standalone functions for backward compatibility if needed, 
+// but preferred usage is via the class instance or Context.
+export const init = () => geometryEngine.initialize();
+export const executeCode = (code: string) => geometryEngine.executeCode(code);
+export const exportSTEP = (code: string) => geometryEngine.exportSTEP(code);
+export const exportSTL = (code: string) => geometryEngine.exportSTL(code);

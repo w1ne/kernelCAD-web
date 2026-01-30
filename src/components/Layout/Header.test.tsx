@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
@@ -8,11 +8,18 @@ import * as geometryEngine from '../../lib/geometryEngine';
 // Mock Geometry Engine exports
 vi.mock('../../lib/geometryEngine', async () => {
     const actual = await vi.importActual('../../lib/geometryEngine');
+    const mockInstance = {
+        initialize: vi.fn().mockResolvedValue(true),
+        executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
+    };
     return {
         ...actual,
         exportSTEP: vi.fn().mockResolvedValue(new Blob(['mock data'])),
         exportSTL: vi.fn().mockResolvedValue(new Blob(['mock data'])),
         init: vi.fn().mockResolvedValue(true),
+        GeometryEngine: {
+            getInstance: () => mockInstance
+        }
     };
 });
 

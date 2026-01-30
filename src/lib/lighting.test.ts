@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
 import { createCADLighting } from './lighting';
 import { PerspectiveCamera, DirectionalLight, AmbientLight } from 'three';

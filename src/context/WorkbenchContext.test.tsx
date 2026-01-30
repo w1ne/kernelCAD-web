@@ -1,17 +1,26 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
 import { WorkbenchProvider, useWorkbench } from '../context/WorkbenchContext';
 import { useEffect } from 'react';
 
 // Mock Geometry Engine
-vi.mock('../lib/geometryEngine', () => ({
-    defaultCode: 'default',
-    init: vi.fn().mockResolvedValue(true),
-    executeCode: vi.fn().mockResolvedValue([]),
-    exportSTEP: vi.fn(),
-    exportSTL: vi.fn()
-}));
+vi.mock('../lib/geometryEngine', () => {
+    const mockInstance = {
+        initialize: vi.fn().mockResolvedValue(true),
+        executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
+    };
+    return {
+        defaultCode: 'default',
+        init: vi.fn().mockResolvedValue(true),
+        executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
+        exportSTEP: vi.fn(),
+        exportSTL: vi.fn(),
+        GeometryEngine: {
+            getInstance: () => mockInstance
+        }
+    };
+});
 
 afterEach(() => {
     cleanup();

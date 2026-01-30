@@ -1,5 +1,6 @@
 import { LayoutTemplate, PenTool, Scissors } from 'lucide-react';
 import { type Feature } from '../types';
+import { CodeBuilder } from '../../lib/CodeBuilder';
 
 export const FilletFeature: Feature = {
     id: 'fillet',
@@ -12,15 +13,18 @@ export const FilletFeature: Feature = {
 };
 
 export const generateFilletCode = (targetName: string, radius: number, filterType: string): string => {
-    let filterCode = '';
+    const builder = new CodeBuilder();
+    let filterArg = '';
+
     if (filterType === 'vertical') {
-        filterCode = `, (e) => e.inDirection('Z')`;
+        filterArg = `, (e) => e.inDirection('Z')`;
     } else if (filterType === 'horizontal') {
-        filterCode = `, (e) => !e.inDirection('Z')`;
+        filterArg = `, (e) => !e.inDirection('Z')`;
     }
 
-    const resultName = `${targetName}_filleted`;
-    return `\nconst ${resultName} = ${targetName}.fillet(${radius}${filterCode});`;
+    const resultName = builder.getUniqueName(`${targetName}_filleted`);
+    builder.addStatement(`const ${resultName} = ${targetName}.fillet(${radius}${filterArg});`);
+    return builder.toString();
 };
 
 export const ChamferFeature: Feature = {
@@ -34,15 +38,18 @@ export const ChamferFeature: Feature = {
 };
 
 export const generateChamferCode = (targetName: string, distance: number, filterType: string): string => {
-    let filterCode = '';
+    const builder = new CodeBuilder();
+    let filterArg = '';
+
     if (filterType === 'vertical') {
-        filterCode = `, (e) => e.inDirection('Z')`;
+        filterArg = `, (e) => e.inDirection('Z')`;
     } else if (filterType === 'horizontal') {
-        filterCode = `, (e) => !e.inDirection('Z')`;
+        filterArg = `, (e) => !e.inDirection('Z')`;
     }
 
-    const resultName = `${targetName}_chamfered`;
-    return `\nconst ${resultName} = ${targetName}.chamfer(${distance}${filterCode});`;
+    const resultName = builder.getUniqueName(`${targetName}_chamfered`);
+    builder.addStatement(`const ${resultName} = ${targetName}.chamfer(${distance}${filterArg});`);
+    return builder.toString();
 };
 
 export const CutFeature: Feature = {
@@ -76,6 +83,9 @@ export const IntersectFeature: Feature = {
 };
 
 export const generateBooleanCode = (baseName: string, toolName: string, type: 'fuse' | 'cut' | 'intersect'): string => {
-    const resultName = `${baseName}_${type}`;
-    return `\nconst ${resultName} = ${baseName}.${type}(${toolName});`;
+    const builder = new CodeBuilder();
+    // Special naming for boolean op result usually appends operation
+    const resultName = builder.getUniqueName(`${baseName}_${type}`);
+    builder.addStatement(`const ${resultName} = ${baseName}.${type}(${toolName});`);
+    return builder.toString();
 };

@@ -11,7 +11,10 @@ kernelCAD follows a **Workbench Architecture** designed for modularity and separ
 ```mermaid
 graph TD
     Entry[main.tsx] --> Provider[WorkbenchProvider]
-    Provider --> Layout[WorkbenchLayout]
+    Provider --> CodeProvider
+    Provider --> UIProvider
+    Provider --> SelectionProvider
+    Provider --> GeometryProvider
     
     Layout --> Header
     Layout --> Sidebar[Left Pane]
@@ -22,32 +25,35 @@ graph TD
     
     Workspace --> Editor[Code Editor]
     Workspace --> Viewer[3D Viewer]
-    Viewer --> Gizmos[Interaction Layer: Gizmos/Selection]
     
-    subgraph State Management
-        Context[WorkbenchContext]
+    subgraph Contexts
+        CodeProvider --> CodeContext
+        UIProvider --> UIContext
+        SelectionProvider --> SelectionContext
+        GeometryProvider --> GeometryContext
     end
     
     subgraph Core Logic
-        Engine[Geometry Engine (Replicad)]
+        Engine[Geometry Engine (Class)]
         Worker[Web Worker]
         Analysis[Code Analysis / AST]
+        Builder[CodeBuilder]
     end
     
-    Context <--> Engine
-    Layout --> Context
-    Editor --> Context
-    Viewer --> Context
+    GeometryContext <--> Engine
+    Engine <--> Worker
 ```
 
 ## Core Components
 
-### 1. Workbench Context (`src/context/WorkbenchContext.tsx`)
-The central nervous system of the application. It holds global state:
--   **Code**: The source of truth for the model.
--   **ViewMode**: 'code' (Editor+Viewer) or 'gui' (Viewer+Browser).
--   **Geometries**: The computed meshes displayed in the viewer.
--   **Status**: `isComputing`, `error`, `isReady`.
+### 1. Context System (`src/context/`)
+The monolithic `WorkbenchContext` has been split into focused contexts:
+-   **CodeContext**: Manages code content, editor instance, insertion logic, and undo/redo history.
+-   **GeometryContext**: Handles the `GeometryEngine` instance, execution lifecycle, and mesh data.
+-   **UIContext**: Controls view modes ('code' vs 'gui'), dialogs, and panels.
+-   **SelectionContext**: Manages user selection state (faces, edges) and highlighting.
+
+**Backward Compatibility**: `WorkbenchContext` re-exports a composed hook `useWorkbench()` that aggregates these contexts for legacy components.
 
 ### 2. Layout System (`src/components/Layout/`)
 -   **WorkbenchLayout**: The main shell. Handles the responsive grid, sidebar resizing, and visibility toggling.
@@ -56,9 +62,9 @@ The central nervous system of the application. It holds global state:
 
 ### 3. Feature System (`src/features/`)
 The workbench uses a plugin-style feature registry to handle CAD operations:
--   **FeatureRegistry**: Central hub where tools are registered (Box, Cylinder, Extrude, etc.).
--   **Feature Interface**: Each feature defines its UI (parameters or custom dialogs) and an `execute` function.
--   **Decoupled Tools**: Standalone features like **Extrude** and **Offset Plane** trigger custom dialogs via `setActiveDialog` for target selection, rather than being hardcoded in specific workflows.
+-   **CodeBuilder**: A standardized fluent API (`src/lib/CodeBuilder.ts`) for generating robust, unique code snippets.
+-   **FeatureRegistry**: Central hub where tools are registered.
+-   **Decoupled Tools**: Standalone features trigger custom dialogs via `setActiveDialog`.
 
 ### 4. Logic Hooks
 -   **useCodeInsertion**: Encapsulates the smart logic for inserting code snippets. It handles:
@@ -67,15 +73,35 @@ The workbench uses a plugin-style feature registry to handle CAD operations:
     -   Updating return statements automatically.
 
 ### 4. Geometry Engine (`src/lib/geometryEngine.ts`)
-A facade over the OpenCASCADE/Replicad kernel.
--   **Execution**: Code is sent to a **Web Worker** (`src/worker.ts`) to prevent UI freezing.
--   **Evaluation**: The worker uses `new Function()` to execute the user's code in a sandboxed scope.
--   **Meshing**: Replicad converts the BREP shapes to three.js-compatible BufferGeometry.
+A class-based facade over the OpenCASCADE/Replicad kernel.
+-   **Architecture**: Implements a Singleton pattern for global access (`GeometryEngine.getInstance()`) while allowing Dependency Injection in tests.
+-   **Worker Protocol**: Uses a **Type-Safe Messaging Protocol** (`workerTypes.ts`) with discriminated unions for reliable Main<->Worker communication.
+-   **Execution**: Code is executed in a sandboxed Web Worker to ensure UI responsiveness.
+-   **Error Handling**: Centralized error management for execution failures.
 
 ### 5. Code Analysis (`src/lib/codeAnalysis.ts`)
 Provides static analysis capabilities:
 -   **`extractVariables`**: Regex/AST parsing to find defined shapes (`const box = ...`) for the Scene Browser.
 -   **`findInsertionPoint`**: Heuristic to find where `drawPart()` returns.
+
+### 6. Sketch Canvas (`src/components/SketchCanvas.tsx`)
+A 2D drawing overlay for visual sketch creation:
+-   **Canvas-Based Drawing**: HTML5 Canvas with grid overlay for precise sketching.
+-   **Tools**: Line, Rectangle, Circle with click-to-draw interface.
+-   **Plane Support**: Works with named planes (XY, XZ, YZ) or face-derived planes.
+-   **Code Generation**: Completed sketches are converted to Replicad Sketcher code via `sketchCodegen.ts`.
+
+### 7. Reliability Layer (`src/lib/safeSketch.ts`)
+Wraps the Replicad Sketcher API to handle edge cases robustly:
+-   **SafeSketcher Class**: Tracks cursor position and loop state to prevent invalid geometry.
+-   **createSafeReplicad Factory**: Returns a modified replicad object with SafeSketcher as a drop-in replacement.
+-   **Error Prevention**: Handles redundant `movePointerTo()` calls, auto-closes open loops, and validates operations.
+
+
+### 8. System Reliability
+- **Error Boundaries**: `src/components/ErrorBoundary.tsx` wraps the workbench to catch React lifecycle errors.
+- **Code Rescue**: `src/components/ErrorFallback.tsx` provides a safe UI to recover/download code if the app crashes.
+- **Geometry Regression Suite**: `src/features/geometryRegression.test.ts` executes real kernel logic (in Node) to verify that primitives and boolean operations produce mathematically correct results (Volume, Bounds).
 
 ## Data Flow
 1.  **Selection**: User selects a tool from the **Toolbar**.

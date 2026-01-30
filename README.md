@@ -2,7 +2,7 @@
 
 **kernelCAD** is a modern, browser-based programmatic CAD tool powered by the OpenCASCADE kernel (via Replicad). It allows you to define 3D geometry using standard JavaScript code and view the results instantly.
 
-![kernelCAD Demo](https://via.placeholder.com/800x450?text=kernelCAD+Demo)
+
 
 ## Features
 
@@ -12,12 +12,16 @@
 -   **Performance**: Geometry processing runs in a **Web Worker** to keep the UI responsive.
 -   **Standard Exports**: Download your designs as **STEP** (for CNC/CAM) or **STL** (for 3D printing).
 -   **Modern UI**: Sleek, dark-mode interface built with Tailwind CSS and Monaco Editor.
+-   **Sketch Visualization**: Toggleable cyan/blue line rendering for 2D sketches in the 3D scene.
+-   **Face Selection & Sketching**: Create sketch planes directly from 3D faces.
+-   **Professional View Modes**: Shaded with Edges, Wireframe, and Shaded views matching CATIA/Fusion360.
+-   **Advanced Operations**: Revolve, Fillet, Chamfer, and Boolean operations with visual feedback.
 
 ## Getting Started
 
 ### Prerequisites
 
--   Node.js (v18+)
+-   Node.js (v22.12.0+)
 -   npm
 
 ### Installation

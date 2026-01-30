@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ExtrudeFromFaceDialog } from './ExtrudeFromFaceDialog';
@@ -17,7 +17,7 @@ describe('ExtrudeFromFaceDialog', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Extrude' }));
 
-        expect(onConfirm).toHaveBeenCalledWith(50);
+        expect(onConfirm).toHaveBeenCalledWith(50, 'normal');
     });
 
     it('should call onCancel', () => {

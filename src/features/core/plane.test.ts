@@ -7,6 +7,7 @@ describe('OffsetPlaneFeature', () => {
         const mockContext: FeatureContext = {
             insertCode: vi.fn(),
             setActiveDialog: vi.fn(),
+            code: '',
         };
 
         OffsetPlaneFeature.execute(mockContext);

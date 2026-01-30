@@ -1,5 +1,5 @@
 /**
- * @vitest-environment jsdom
+ * @vitest-environment happy-dom
  */
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -25,7 +25,9 @@ describe('FilletDialog', () => {
         fireEvent.change(screen.getByLabelText('Radius (mm)'), { target: { value: '5.5' } });
         fireEvent.change(screen.getByLabelText('Edge Filter'), { target: { value: 'vertical' } });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Apply Fillet' }));
+        // Use form submission directly instead of button click for happy-dom compatibility
+        const form = screen.getByRole('button', { name: 'Apply Fillet' }).closest('form')!;
+        fireEvent.submit(form);
 
         expect(onConfirm).toHaveBeenCalledWith({
             targetName: 'part1',

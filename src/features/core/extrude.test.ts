@@ -7,6 +7,7 @@ describe('ExtrudeFeature', () => {
         const mockContext: FeatureContext = {
             insertCode: vi.fn(),
             setActiveDialog: vi.fn(),
+            code: '',
         };
 
         ExtrudeFeature.execute(mockContext);

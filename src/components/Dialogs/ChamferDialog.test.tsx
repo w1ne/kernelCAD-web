@@ -1,5 +1,5 @@
 /**
- * @vitest-environment jsdom
+ * @vitest-environment happy-dom
  */
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -25,7 +25,9 @@ describe('ChamferDialog', () => {
         fireEvent.change(screen.getByLabelText('Distance (mm)'), { target: { value: '2' } });
         fireEvent.change(screen.getByLabelText('Edge Filter'), { target: { value: 'horizontal' } });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Apply Chamfer' }));
+        // Use form submission directly instead of button click for happy-dom compatibility
+        const form = screen.getByRole('button', { name: 'Apply Chamfer' }).closest('form')!;
+        fireEvent.submit(form);
 
         expect(onConfirm).toHaveBeenCalledWith({
             targetName: 'part2',

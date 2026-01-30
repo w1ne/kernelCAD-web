@@ -58,56 +58,48 @@ View → Section Analysis → Add Plane
 
 ---
 
-## kernelCAD Current Workflow (v0.2)
+## kernelCAD Current Workflow (v0.6.1)
 
 ### Same Bracket Creation (Current State)
 
-**1. Start in Code Editor**
-```javascript
-function drawPart() {
-  const bracket = /* ??? how to draw profile? */
-}
+**1. Start Sketch on Plane or Face**
 ```
-- No visual sketch canvas
-- Must know Replicad `Sketcher` API
-- Manual coordinate entry
+GUI → Sketch → Select Plane: XY (or click a face)
+```
+- ✅ Visual sketch canvas with grid
+- ✅ Tools: Line, Rectangle, Circle
+- ✅ Click-to-draw interface
 
-**2. Write Sketch Code Manually**
-```javascript
-const sketch = new Sketcher()
-  .movePointerTo([0, 0])
-  .lineTo([20, 0])
-  .lineTo([20, 40])
-  .lineTo([0, 40])
-  .close();
+**2. Draw Profile on Canvas**
 ```
-- Tedious coordinate calculation
-- No visual feedback
-- Prone to errors
+Tools: Line → Rectangle → Circle
+```
+- ✅ Click points to define geometry
+- ✅ Visual feedback in real-time
+- ✅ Code auto-generated via AST
 
-**3. Extrude via Code**
-```javascript
-const base = sketch.extrude(10);
+**3. Extrude with Dialog**
 ```
-- Works, but no dialog/preview
-- Hard to tweak parameters
+3D → Extrude → Distance: 10mm → OK
+```
+- ✅ Dialog with distance input
+- ✅ Code generated: `sketch.extrude(10)`
 
 **4. Add Features**
-```javascript
-const filleted = base.fillet(2, (e) => e);
 ```
-- Limited discoverability
-- No visual selection of edges
+Modify → Fillet → Select Edges → R2 → OK
+Modify → Revolve → Select Axis → Angle → OK
+```
+- ✅ Fillet and Chamfer with edge selection
+- ✅ Revolve operation
+- ✅ Boolean operations (Union, Subtract, Intersect)
 
-**5. Click "Box" Button (New in v0.2)**
+**5. View Modes**
 ```
-GUI → Box → Width: 20, Height: 20
+View → Shaded with Edges / Wireframe / Shaded
 ```
-- ✅ AST auto-inserts: `const box = replicad.makeBox(20, 20, 20);`
-- ⚠️ No positioning → stacks at origin
-- ⚠️ Only primitives (Box/Cylinder/Sphere)
-
-**View Mode**: Shaded only (no wireframe/edges)
+- ✅ Professional CAD view modes
+- ✅ Toggleable sketch visibility (blue lines)
 
 ---
 
@@ -179,18 +171,20 @@ View → Wireframe
 
 ### Essential for Basic CAD Workflow
 
-| Feature | CATIA/Fusion | kernelCAD v0.2 | Target (v0.3-0.5) |
-|---------|--------------|----------------|-------------------|
-| **Visual Sketch Canvas** | ✅ | ❌ | v0.3 |
-| **2D Constraint Solver** | ✅ | ❌ | v0.3 |
-| **Dimension Input UI** | ✅ | ❌ | v0.3 |
-| **Extrude Dialog** | ✅ | ✅ | v0.2.1 |
-| **Wireframe View** | ✅ | ❌ | v0.4 |
-| **Shaded with Edges** | ✅ | ❌ | v0.4 |
-| **Edge Selection** | ✅ | ❌ | v0.3.2 |
-| **Transform Gizmos** | ✅ | ❌ | v0.5 |
-| **Feature Tree Editing** | ✅ | ⚠️ (read-only) | v0.5 |
-| **Parameters Panel** | ✅ | ⚠️ (manual vars) | v0.5 |
+| Feature | CATIA/Fusion | kernelCAD v0.6.1 | Target (v0.7-0.8) |
+|---------|--------------|------------------|-------------------|
+| **Visual Sketch Canvas** | ✅ | ✅ | Done |
+| **2D Constraint Solver** | ✅ | ❌ | v0.7 |
+| **Dimension Input UI** | ✅ | ⚠️ (basic) | v0.7 |
+| **Extrude Dialog** | ✅ | ✅ | Done |
+| **Wireframe View** | ✅ | ✅ | Done |
+| **Shaded with Edges** | ✅ | ✅ | Done |
+| **Edge Selection** | ✅ | ✅ (filter-based) | Done |
+| **Revolve** | ✅ | ✅ | Done |
+| **Face Sketching** | ✅ | ✅ | Done |
+| **Transform Gizmos** | ✅ | ❌ | v0.8 |
+| **Feature Tree Editing** | ✅ | ⚠️ (read-only) | v0.8 |
+| **Parameters Panel** | ✅ | ⚠️ (manual vars) | v0.7 |
 
 ### Advanced (Post-v0.5)
 

@@ -121,15 +121,30 @@
 
 ---
 
+## 🏗️ ARCHITECTURE REFACTORING (Continuous)
+
+**Goal**: Improve code quality, testability, and maintainability.
+
+### A.1 State Management
+- [x] **Split Context**: Break `WorkbenchContext` into `CodeContext`, `GeometryContext`, `UIContext`, `SelectionContext`.
+
+### A.2 Type Safety
+- [x] **Type-Safe Worker Protocol**: Replace stringly-typed messages with discriminated unions.
+- [x] **CodeBuilder Pattern**: Standardize code generation across all features.
+
+### A.3 Engine & Testing
+- [x] **GeometryEngine Class**: Eliminate global state, improve testability.
+- [x] **Error Boundaries**: Centralized error handling with retry logic.
+- [x] **Geometry Validation Tests**: Snapshot tests for volume, bounding box, center of mass.
+
 ## 📋 Priority Order (Next 6 Months)
 
-1. **v0.6.0**: Professional Modeling (Revolve, Fillet, Face-based sketching) ⭐ **HIGH PRIORITY**
-2. **v0.7.0**: Parametric Sketching (Constraints & Dimensions)
-3. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
-4. **v0.9.0**: Feature Timeline & History
-5. **v1.0.0**: Global Parameters & Sections 🎉
+1. **v0.7.0**: Parametric Sketching (Constraints & Dimensions) ⭐ **HIGH PRIORITY**
+2. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
+3. **v0.9.0**: Feature Timeline & History
+4. **v1.0.0**: Global Parameters & Sections 🎉
 
 ---
 
-**Last Updated**: 2026-01-27  
-**Next Review**: After v0.6.0 (Professional Modeling) ships
+**Last Updated**: 2026-01-29  
+**Next Review**: After v0.7.0 (Parametric Sketching) ships

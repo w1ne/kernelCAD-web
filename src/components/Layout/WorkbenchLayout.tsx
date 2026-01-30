@@ -53,7 +53,6 @@ export function WorkbenchLayout() {
         isFaceSelecting,
         startFaceSelection,
         cancelFaceSelection,
-        selectedFacePlane,
     } = useWorkbench();
 
     const { insertCode } = useCodeInsertion();
@@ -68,7 +67,7 @@ export function WorkbenchLayout() {
     // Keyboard Shortcuts
     useKeyboardShortcuts({
         // E -> Extrude
-        'e': (e) => {
+        'e': (_e) => {
             if (activeDialog) return; // Don't override open dialogs
             if (selectedFace) {
                 // If face selected, smart extrude
@@ -81,7 +80,7 @@ export function WorkbenchLayout() {
             }
         },
         // S -> Sketch (Smart)
-        's': (e) => {
+        's': (_e) => {
             if (activeDialog || sketchMode.active) return;
             if (selectedFace) {
                 // Contextual logic handled in Toolbar usually, replicated here
@@ -95,13 +94,13 @@ export function WorkbenchLayout() {
             }
         },
         // P -> Construction Plane
-        'p': (e) => {
+        'p': (_e) => {
             if (activeDialog) return;
             const feature = featureRegistry.get('offsetPlane');
             if (feature) feature.execute({ insertCode, setActiveDialog, code });
         },
         // Esc -> Cancel / Close
-        'escape': (e) => {
+        'escape': (_e) => {
             if (activeDialog) {
                 setActiveDialog(null);
             }
@@ -490,7 +489,6 @@ export function WorkbenchLayout() {
                             // Handle Existing Plane Reference
                             const basePlane = planes.find(p => p.id === basePlaneId);
                             if (basePlane) {
-                                const newId = `plane-${Date.now()}`;
                                 const newName = `Offset Plane ${planes.length - 2}`; // -3 base planes + 1
 
                                 // Code generation for offset plane from existing plane variable
@@ -498,46 +496,36 @@ export function WorkbenchLayout() {
                                 // For basic planes (XY, XZ, YZ), we use 'Plane.XY', etc.
                                 // For custom planes, we use their ID (which should be the variable name)
 
-                                let planeRefCode = '';
                                 if (basePlane.type === 'base') {
-                                    const name = basePlane.name.replace('Origin ', '');
-                                    planeRefCode = `Plane.${name}`;
-                                    // Replicad might not have a simple .offset() method on the static Plane.XY
-                                    // We might need to construct a new plane manually.
-                                    // Actually Replicad planes have an offset method? No, usually separate class.
-                                    // Safest is to construct a new Plane.
-                                } else {
-                                    planeRefCode = basePlane.id;
+                                    // Calculate new origin
+                                    const [ox, oy, oz] = basePlane.origin;
+                                    const [nx, ny, nz] = basePlane.normal;
+                                    const newOrigin: [number, number, number] = [
+                                        ox + nx * offset,
+                                        oy + ny * offset,
+                                        oz + nz * offset
+                                    ];
+
+                                    const planeCode = createPlaneConstructorCode(newOrigin, basePlane.normal);
+                                    const uniqueName = generateUniqueName(code, 'plane_offset');
+                                    const codeToInsert = `const ${uniqueName} = ${planeCode};\n`;
+                                    insertCode(codeToInsert);
+
+                                    const newPlane: SketchPlaneEntity = {
+                                        id: uniqueName, // Use variable name as ID
+                                        name: newName,
+                                        type: 'offset',
+                                        origin: newOrigin,
+                                        normal: [...basePlane.normal] as [number, number, number],
+                                        visible: true,
+                                        parentId: basePlaneId
+                                    };
+
+                                    addPlane(newPlane);
                                 }
-
-                                // Calculate new origin
-                                const [ox, oy, oz] = basePlane.origin;
-                                const [nx, ny, nz] = basePlane.normal;
-                                const newOrigin: [number, number, number] = [
-                                    ox + nx * offset,
-                                    oy + ny * offset,
-                                    oz + nz * offset
-                                ];
-
-                                const planeCode = createPlaneConstructorCode(newOrigin, basePlane.normal);
-                                const uniqueName = generateUniqueName(code, 'plane_offset');
-                                const codeToInsert = `const ${uniqueName} = ${planeCode};\n`;
-                                insertCode(codeToInsert);
-
-                                const newPlane: SketchPlaneEntity = {
-                                    id: uniqueName, // Use variable name as ID
-                                    name: newName,
-                                    type: 'offset',
-                                    origin: newOrigin,
-                                    normal: [...basePlane.normal] as [number, number, number],
-                                    visible: true,
-                                    parentId: basePlaneId
-                                };
-
-                                addPlane(newPlane);
                             }
+                            setActiveDialog(null);
                         }
-                        setActiveDialog(null);
                     }}
                     onCancel={() => setActiveDialog(null)}
                 />

@@ -7,7 +7,7 @@ interface OffsetPlaneDialogProps {
 }
 
 export function OffsetPlaneDialog({ onConfirm, onCancel }: OffsetPlaneDialogProps) {
-    const { planes, selectedFace, geometries, code } = useWorkbench();
+    const { planes, selectedFace } = useWorkbench();
 
     // Determine initial selection
     const getInitialPlaneId = () => {

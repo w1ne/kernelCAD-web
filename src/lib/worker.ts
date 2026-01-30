@@ -1,6 +1,8 @@
 import * as replicad from "replicad";
 import { setOC } from "replicad";
 import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude } from "./geometryHelpers";
+import { createSafeReplicad } from "./safeSketch";
+import type { WorkerRequest, WorkerResponse } from "./workerTypes";
 
 let isInitialized = false;
 
@@ -32,17 +34,39 @@ async function init() {
     }
 }
 
-self.onmessage = async ({ data }) => {
+// Type-safe message handler
+function postResponse(response: WorkerResponse, transfer?: Transferable[]) {
+    if (transfer) {
+        self.postMessage(response, { transfer } as unknown as { transfer: Transferable[] });
+    } else {
+        self.postMessage(response);
+    }
+}
+
+self.onmessage = async ({ data }: { data: WorkerRequest }) => {
     const { type, code, id } = data;
 
     if (type === 'EXECUTE') {
         try {
             await init();
 
+            // Create Safe Replicad Proxy using Factory
+            const safeReplicad = createSafeReplicad(replicad);
+
             // Track sketches created during execution
             const activeSketches: (replicad.Sketcher & { sketch?: { wire: replicad.Wire } })[] = [];
+
+            // We need to capture the underlying sketcher from the SafeSketcher if we want to extract check wire?
+            // SafeSketcher wraps the real one. 
+            // 'activeSketches' functionality relies on the object returned by 'startSketch'.
+            // If startSketch returns SafeSketcher, can we mesh it?
+            // SafeSketcher proxies methods, but does it expose 'sketch' property?
+            // I need to add 'sketch' getter to SafeSketcher!
+
             const wrappedStartSketch = () => {
                 const s = startSketch();
+                // If startSketch returns raw Sketcher, we might want to wrap it too?
+                // But startSketch comes from geometryHelpers.
                 activeSketches.push(s);
                 return s;
             };
@@ -53,9 +77,13 @@ self.onmessage = async ({ data }) => {
                 return s;
             };
 
+            // Fix SafeSketcher to expose 'sketch' property (getter)
+            // or modify activeSketches logic to unwrap.
+
             // Create function with injected scope
             const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", "sketchOnFace", "extrude", code);
-            const result = func(replicad, wrappedStartSketch, makeCompound, fillet, chamfer, wrappedSketchOnFace, extrude);
+            // Pass safeReplicad instead of replicad
+            const result = func(safeReplicad, wrappedStartSketch, makeCompound, fillet, chamfer, wrappedSketchOnFace, extrude);
 
             // Normalize result
             const shapes = Array.isArray(result) ? result : [result];
@@ -128,7 +156,7 @@ self.onmessage = async ({ data }) => {
                     console.warn("Failed to mesh sketch", e);
                     return null;
                 }
-            }).filter(Boolean);
+            }).filter((s): s is NonNullable<typeof s> => s !== null);
 
             // Transfer buffers
             const transferables: Transferable[] = [];
@@ -142,17 +170,17 @@ self.onmessage = async ({ data }) => {
                 if (s) transferables.push(s.vertices.buffer);
             });
 
-            self.postMessage({
+            postResponse({
                 type: 'SUCCESS',
                 id,
                 geometries: {
                     geometries,
                     sketches: sketchGeometries
                 }
-            }, { transfer: transferables } as unknown as { transfer: Transferable[] });
+            }, transferables);
 
         } catch (error) {
-            self.postMessage({ type: 'ERROR', id, error: String(error) });
+            postResponse({ type: 'ERROR', id, error: String(error) });
         }
     } else if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
         try {
@@ -174,9 +202,9 @@ self.onmessage = async ({ data }) => {
                 blob = shape.blobSTL();
             }
 
-            self.postMessage({ type: 'SUCCESS', id, blob });
+            postResponse({ type: 'SUCCESS', id, blob });
         } catch (error) {
-            self.postMessage({ type: 'ERROR', id, error: String(error) });
+            postResponse({ type: 'ERROR', id, error: String(error) });
         }
     }
 };
