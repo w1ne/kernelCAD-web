@@ -5,19 +5,21 @@
  * while internally delegating to focused contexts.
  */
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { CodeProvider, useCode, type CodeContextType } from './CodeContext';
 import { UIProvider, useUI, type UIContextType } from './UIContext';
 import { SelectionProvider, useSelection, type SelectionContextType } from './SelectionContext';
 import { GeometryProvider, useGeometry, type GeometryContextType } from './GeometryContext';
 import { useFaceSelection } from '../hooks/useFaceSelection';
+import { SketchingProvider, useSketching, type SketchingContextType } from './SketchingContext';
 
 // Combined type for backward compatibility
 export interface WorkbenchContextType extends
     CodeContextType,
     UIContextType,
     Omit<SelectionContextType, 'setSelectedFacePlane' | 'setIsFaceSelecting'>,
-    GeometryContextType {
+    GeometryContextType,
+    SketchingContextType {
     // Override from useFaceSelection hook
     startFaceSelection: () => void;
     cancelFaceSelection: () => void;
@@ -35,6 +37,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
     const uiCtx = useUI();
     const selectionCtx = useSelection();
     const geometryCtx = useGeometry();
+    const sketchingCtx = useSketching();
 
     // Use face selection hook with geometry dependencies
     const faceSelection = useFaceSelection({
@@ -88,7 +91,37 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         isReady: geometryCtx.isReady,
         isComputing: geometryCtx.isComputing,
         executeGeometry: geometryCtx.executeGeometry,
+        // Sketching context
+        entities: sketchingCtx.entities,
+        constraints: sketchingCtx.constraints,
+        selectedEntityIds: sketchingCtx.selectedEntityIds,
+        addEntity: sketchingCtx.addEntity,
+        updateEntity: sketchingCtx.updateEntity,
+        addConstraint: sketchingCtx.addConstraint,
+        selectEntity: sketchingCtx.selectEntity,
+        clearSelection: sketchingCtx.clearSelection,
+        solve: sketchingCtx.solve,
     };
+
+    // Expose for E2E testing
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // @ts-ignore
+            window.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
+                console.log('TEST: Select Face (Workbench)', shapeIndex, faceId);
+                faceSelection.setSelectedFace({ shapeIndex, faceId });
+            };
+
+            // @ts-ignore
+            window.getSelectedFace = () => faceSelection.selectedFace;
+
+            // @ts-ignore
+            window.getGeometries = () => geometryCtx.geometries;
+
+            // @ts-ignore
+            window.getSketches = () => geometryCtx.sketchesGeometries;
+        }
+    }, [faceSelection, geometryCtx.geometries, geometryCtx.sketchesGeometries]);
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
 }
@@ -101,21 +134,27 @@ function GeometryWithCode({ children }: { children: ReactNode }) {
     return <GeometryProvider code={code}>{children}</GeometryProvider>;
 }
 
+import { WorkbenchStateProvider } from './WorkbenchStateContext';
+
 /**
  * Main WorkbenchProvider composing all focused contexts
  */
 export function WorkbenchProvider({ children, initialCode }: { children: ReactNode; initialCode?: string }) {
     return (
         <CodeProvider initialCode={initialCode}>
-            <UIProvider>
-                <SelectionProvider>
-                    <GeometryWithCode>
-                        <WorkbenchInnerProvider>
-                            {children}
-                        </WorkbenchInnerProvider>
-                    </GeometryWithCode>
-                </SelectionProvider>
-            </UIProvider>
+            <WorkbenchStateProvider>
+                <UIProvider>
+                    <SelectionProvider>
+                        <GeometryWithCode>
+                            <SketchingProvider>
+                                <WorkbenchInnerProvider>
+                                    {children}
+                                </WorkbenchInnerProvider>
+                            </SketchingProvider>
+                        </GeometryWithCode>
+                    </SelectionProvider>
+                </UIProvider>
+            </WorkbenchStateProvider>
         </CodeProvider>
     );
 }
@@ -134,3 +173,4 @@ export { useCode } from './CodeContext';
 export { useUI } from './UIContext';
 export { useSelection } from './SelectionContext';
 export { useGeometry } from './GeometryContext';
+export { useSketching } from './SketchingContext';

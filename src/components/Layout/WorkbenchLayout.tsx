@@ -16,6 +16,7 @@ import { ChamferDialog } from '../Dialogs/ChamferDialog';
 import { PlaneSelectorDialog } from '../Dialogs/PlaneSelectorDialog';
 import { OffsetPlaneDialog } from '../Dialogs/OffsetPlaneDialog';
 import { SketchCanvas } from '../SketchCanvas';
+import { ConstraintsToolbar } from '../Sketcher/ConstraintsToolbar';
 import { Header } from './Header';
 import { SidePanel } from './SidePanel';
 import { useWorkbench } from '../../context/WorkbenchContext';
@@ -24,7 +25,7 @@ import { featureRegistry } from '../../features/FeatureRegistry';
 import { type Feature } from '../../features/types';
 import { type SketchData } from '../../types/sketch';
 import { type SketchPlaneEntity } from '../../types/plane';
-import { generateSketchCode, generateSketchName } from '../../lib/sketchCodegen';
+import { generateSketchCode, generateSketchName, generateSketchBody } from '../../lib/sketchCodegen';
 import { generateSketchOnFaceCode } from '../../features/core/sketchOnFace.feature';
 import { generateRevolveCode } from '../../features/core/revolve.feature';
 import { generateFilletCode, generateChamferCode, generateBooleanCode } from '../../features/core/modifiers.feature';
@@ -38,6 +39,8 @@ export function WorkbenchLayout() {
         code,
         setCode,
         geometries,
+        sketchesGeometries,
+        showSketches,
         error,
         isReady,
         activeDialog,
@@ -55,10 +58,26 @@ export function WorkbenchLayout() {
         cancelFaceSelection,
     } = useWorkbench();
 
+    console.log('DEBUG_WORKBENCH_LAYOUT', { isReady, sketchMode, activeDialog });
+
+    // Expose helpers for E2E testing
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // @ts-ignore
+            window.setCode = setCode;
+            // @ts-ignore
+            window.getCode = () => code;
+            // @ts-ignore
+            window.isEditorReady = !!editorInstance;
+        }
+    }, [setCode, code, editorInstance]);
+
     const { insertCode } = useCodeInsertion();
 
     // Get all features for the toolbar
-    const features = useMemo(() => featureRegistry.getAll(), []);
+    const features = useMemo(() => {
+        return featureRegistry.getAll();
+    }, []);
 
     const activeFeature = useMemo(() => {
         return activeDialog ? featureRegistry.get(activeDialog) : null;
@@ -133,8 +152,11 @@ export function WorkbenchLayout() {
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
+        console.error('WorkbenchLayout handleDialogSubmit', values);
         if (activeFeature) {
             activeFeature.execute({ insertCode, setActiveDialog, code }, values);
+        } else {
+            console.error('WorkbenchLayout: No Active Feature');
         }
     };
 
@@ -212,10 +234,11 @@ export function WorkbenchLayout() {
                 <div className="flex-1 h-full relative bg-[#0a0a0a]">
                     <Viewer
                         geometries={geometries}
-                        sketchesGeometries={[]} // TODO: Connect to real sketches
-                        showSketches={true}
+                        sketchesGeometries={sketchesGeometries}
+                        showSketches={showSketches}
                         viewMode3D={viewMode3D}
                     />
+                    <ConstraintsToolbar />
                     {isFaceSelecting && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                             <div className="bg-blue-600/90 text-white px-6 py-3 rounded-full shadow-2xl animate-bounce backdrop-blur-sm border border-blue-400/50 pointer-events-auto flex items-center gap-3">
@@ -255,8 +278,13 @@ export function WorkbenchLayout() {
                         const planeEntity = sketchMode.plane as any;
                         let sketchCode = '';
 
-                        if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
-                            // Sketch on face: create a plane from origin and normal
+                        if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId) {
+                            // Parametric Sketch on Face
+                            const startCode = `const ${sketchName} = sketchOnFace(${planeEntity.parentId}, ${planeEntity.faceId})\n`;
+                            const bodyCode = generateSketchBody(entities);
+                            sketchCode = startCode + bodyCode + ';\n';
+                        } else if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
+                            // Fallback: Sketch on face with explicit plane (if parametric failed)
                             const planeSource = createPlaneConstructorCode(
                                 planeEntity.origin,
                                 planeEntity.normal
@@ -357,10 +385,41 @@ export function WorkbenchLayout() {
                         const targetName = returnedVars[selectedFace.shapeIndex] || 'shape';
                         const snippet = generateSketchOnFaceCode(targetName, selectedFace.faceId, name);
                         insertCode(snippet);
+
+                        // Enforce correct state: Enter Sketch Mode properly
+                        // We need to derive the plane from the face to set up the canvas
+                        const faceGeometry = geometries[selectedFace.shapeIndex].faces.find(f => f.faceId === selectedFace.faceId);
+
+                        if (faceGeometry && faceGeometry.plane) {
+                            // Add a temporary sketch entity to track this new sketch
+                            const newSketch = {
+                                id: name,
+                                name: name,
+                                plane: 'face', // It's a face sketch
+                                entities: [],
+                                closed: false,
+                                createdAt: Date.now()
+                            };
+
+                            addSketch(newSketch);
+
+                            // Initialize canvas with this face's plane
+                            setSketchMode({
+                                active: true,
+                                currentSketch: newSketch as any,
+                                tool: 'line',
+                                plane: {
+                                    id: `plane_${name}`,
+                                    name: `Face ${selectedFace.faceId}`,
+                                    type: 'face',
+                                    origin: faceGeometry.plane.origin,
+                                    normal: faceGeometry.plane.normal,
+                                    visible: true
+                                } as any
+                            });
+                        }
+
                         setActiveDialog(null);
-                        // Switch to sketch mode? Optional but helpful.
-                        // setSketchMode(true); 
-                        // Actually we need to wait for code update?
                     }}
                     onCancel={() => setActiveDialog(null)}
                 />
@@ -389,8 +448,8 @@ export function WorkbenchLayout() {
             {activeDialog === 'fillet' && (
                 <FilletDialog
                     onConfirm={({ targetName, radius, filterType }) => {
-                        const code = generateFilletCode(targetName, radius, filterType);
-                        insertCode(code);
+                        const codeSnippet = generateFilletCode(targetName, radius, filterType, code);
+                        insertCode(codeSnippet);
                         setActiveDialog(null);
                     }}
                     onCancel={() => setActiveDialog(null)}
@@ -401,8 +460,8 @@ export function WorkbenchLayout() {
             {activeDialog === 'chamfer' && (
                 <ChamferDialog
                     onConfirm={({ targetName, distance, filterType }) => {
-                        const code = generateChamferCode(targetName, distance, filterType);
-                        insertCode(code);
+                        const codeSnippet = generateChamferCode(targetName, distance, filterType, code);
+                        insertCode(codeSnippet);
                         setActiveDialog(null);
                     }}
                     onCancel={() => setActiveDialog(null)}
@@ -414,8 +473,8 @@ export function WorkbenchLayout() {
                 <BooleanDialog
                     type={activeDialog === 'union' ? 'fuse' : (activeDialog as 'cut' | 'intersect')}
                     onConfirm={({ baseName, toolName, type }) => {
-                        const code = generateBooleanCode(baseName, toolName, type);
-                        insertCode(code);
+                        const codeSnippet = generateBooleanCode(baseName, toolName, type, code);
+                        insertCode(codeSnippet);
                         setActiveDialog(null);
                     }}
                     onCancel={() => setActiveDialog(null)}

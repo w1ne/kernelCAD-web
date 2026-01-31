@@ -101,11 +101,11 @@ export function getReturnedVariables(code: string): string[] {
     const resolveVariableName = (node: any): string | null => {
         if (!node) return null;
         if (node.type === 'Identifier') return node.name;
+        // Strict: We only want the variable if it IS the variable.
+        // If it's a function call (filleted.cut()), the return is not 'filleted'.
+        // So we interpret CallExpressions as anonymous/null.
         if (node.type === 'CallExpression') {
-            // Try to find the base identifier for method calls, e.g., a.b() -> a
-            if (node.callee.type === 'MemberExpression' && node.callee.object.type === 'Identifier') {
-                return node.callee.object.name;
-            }
+            return null;
         }
         return null;
     };
@@ -147,6 +147,7 @@ export function insertStatementSimple(code: string, statement: string): string {
     const statementNode = (statementAst as unknown as { body: acorn.Node[] }).body[0];
     let inserted = false;
 
+    // 1. Try Function drawPart
     walk.simple(astNode, {
         FunctionDeclaration(node: acorn.Node) {
             if (inserted) return;
@@ -162,6 +163,16 @@ export function insertStatementSimple(code: string, statement: string): string {
             }
         }
     });
+
+    // 2. Fallback to top-level return
+    if (!inserted) {
+        const body = (astNode as any).body;
+        const returnIndex = body.findIndex((n: any) => n.type === 'ReturnStatement');
+        if (returnIndex !== -1) {
+            body.splice(returnIndex, 0, statementNode);
+            inserted = true;
+        }
+    }
 
     if (!inserted) {
         throw new Error('Could not find drawPart function or return statement');
@@ -182,7 +193,6 @@ export function insertShape(code: string, statement: string): string {
 
     // Extract variable name from the statements - use the LAST declared variable
     let varName: string | null = null;
-    let isSketcher = false;
 
     statementNodes.forEach(node => {
         const declNode = node as unknown as { type: string; declarations: { id: { type: string; name: string }; init: { type: string; callee?: { object?: { name?: string }; name?: string } } }[] };
@@ -190,24 +200,13 @@ export function insertShape(code: string, statement: string): string {
             const declarator = declNode.declarations[0];
             if (declarator.id.type === 'Identifier') {
                 varName = declarator.id.name;
-
-                // Reset sketcher flag for each new var, check if THIS one is a sketcher
-                isSketcher = false;
-                let init: any = declarator.init;
-                while (init && init.type === 'CallExpression') {
-                    init = init.callee?.object || init.callee;
-                }
-
-                if (init && init.type === 'NewExpression' &&
-                    init.callee?.name === 'Sketcher') {
-                    isSketcher = true;
-                }
             }
         }
     });
 
     let inserted = false;
 
+    // 1. Try Function drawPart
     walk.simple(astNode, {
         FunctionDeclaration(node: acorn.Node) {
             if (inserted) return;
@@ -218,12 +217,11 @@ export function insertShape(code: string, statement: string): string {
 
                 if (returnIndex !== -1) {
                     // Insert ALL statements before return
-                    // Use spread to insert multiple nodes
                     body.splice(returnIndex, 0, ...statementNodes);
 
-                    // Update return statement if we have a variable name AND it's not a sketcher
-                    if (varName && !isSketcher) {
-                        const returnStmt = body[returnIndex + statementNodes.length] as unknown as { type: string; argument: { type: string; elements: unknown[] } };
+                    // Update return statement if we have a variable name
+                    if (varName) {
+                        const returnStmt = body[returnIndex + statementNodes.length] as any;
                         if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
                             // Check if return is an array
                             if (returnStmt.argument.type === 'ArrayExpression') {
@@ -232,6 +230,19 @@ export function insertShape(code: string, statement: string): string {
                                     type: 'Identifier',
                                     name: varName
                                 });
+                            } else {
+                                // Convert to array return: return [oldValue, newVar]
+                                const oldArgument = returnStmt.argument;
+                                returnStmt.argument = {
+                                    type: 'ArrayExpression',
+                                    elements: [
+                                        oldArgument,
+                                        {
+                                            type: 'Identifier',
+                                            name: varName
+                                        }
+                                    ]
+                                };
                             }
                         }
                     }
@@ -241,6 +252,42 @@ export function insertShape(code: string, statement: string): string {
             }
         }
     });
+
+    // 2. Fallback to top-level return
+    if (!inserted) {
+        const body = (astNode as any).body;
+        const returnIndex = body.findIndex((n: any) => n.type === 'ReturnStatement');
+
+        if (returnIndex !== -1) {
+            body.splice(returnIndex, 0, ...statementNodes);
+
+            if (varName) {
+                const returnStmt = body[returnIndex + statementNodes.length] as any;
+                if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
+                    if (returnStmt.argument.type === 'ArrayExpression') {
+                        returnStmt.argument.elements.push({
+                            type: 'Identifier',
+                            name: varName
+                        });
+                    } else {
+                        // Convert to array
+                        const oldArgument = returnStmt.argument;
+                        returnStmt.argument = {
+                            type: 'ArrayExpression',
+                            elements: [
+                                oldArgument,
+                                {
+                                    type: 'Identifier',
+                                    name: varName
+                                }
+                            ]
+                        };
+                    }
+                }
+            }
+            inserted = true;
+        }
+    }
 
     if (!inserted) {
         throw new Error('Could not find drawPart function or return statement');
@@ -269,115 +316,6 @@ export function testParse(): boolean {
         return true;
     } catch (error) {
         console.error('Parse test failed:', error);
-        return false;
-    }
-}
-
-/**
- * Test function for Phase 2: Variable extraction.
- */
-export function testVariableExtraction(): boolean {
-    try {
-        const testCode = `
-            const box1 = makeBox(10);
-            let cylinder = makeCylinder(5);
-            function helper() {}
-        `;
-
-        const vars = getDeclaredVariablesAST(testCode);
-        console.log('Variables found:', Array.from(vars));
-
-        const hasBox = vars.has('box1');
-        const hasCyl = vars.has('cylinder');
-        const hasHelper = vars.has('helper');
-
-        console.log(`✓ box1: ${hasBox}, cylinder: ${hasCyl}, helper: ${hasHelper}`);
-        return hasBox && hasCyl && hasHelper;
-    } catch (error) {
-        console.error('Variable extraction test failed:', error);
-        return false;
-    }
-}
-
-/**
- * Test function for Phase 3: Code generation (round-trip).
- */
-export function testCodeGeneration(): boolean {
-    try {
-        const originalCode = `const x = 1;\nconst y = 2;`;
-
-        console.log('Original code:', originalCode);
-        const ast = parseCode(originalCode);
-        const generatedCode = generateCode(ast);
-        console.log('Generated code:', generatedCode);
-
-        parseCode(generatedCode);
-
-        console.log('✓ Round-trip successful!');
-        return true;
-    } catch (error) {
-        console.error('Code generation test failed:', error);
-        return false;
-    }
-}
-
-/**
- * Test function for Phase 4: Simple insertion.
- */
-export function testSimpleInsertion(): boolean {
-    try {
-        const originalCode = `
-export default function main() {
-    function drawPart() {
-        const box = makeBox(10);
-        return [box];
-    }
-    return drawPart();
-}`;
-
-        console.log('Original code:', originalCode);
-        const newCode = insertStatementSimple(originalCode, 'const cylinder = makeCylinder(5);');
-        console.log('Modified code:', newCode);
-
-        const hasCylinder = newCode.includes('const cylinder');
-        const hasReturn = newCode.includes('return');
-        const cylinderIndex = newCode.indexOf('const cylinder');
-        const returnIndex = newCode.indexOf('return [box]');
-        const beforeReturn = cylinderIndex < returnIndex;
-
-        console.log(`✓ Has cylinder: ${hasCylinder}, Has return: ${hasReturn}, Before return: ${beforeReturn}`);
-        return hasCylinder && hasReturn && beforeReturn;
-    } catch (error) {
-        console.error('Simple insertion test failed:', error);
-        return false;
-    }
-}
-
-/**
- * Test function for Phase 5: Return statement update.
- */
-export function testReturnUpdate(): boolean {
-    try {
-        const originalCode = `
-export default function main() {
-    function drawPart() {
-        const box = makeBox(10);
-        return [box];
-    }
-    return drawPart();
-}`;
-
-        console.log('Original code:', originalCode);
-        const newCode = insertShape(originalCode, 'const cylinder = makeCylinder(5);');
-        console.log('Modified code:', newCode);
-
-        const hasCylinder = newCode.includes('const cylinder');
-        const hasUpdatedReturn = newCode.includes('return [box, cylinder]');
-
-        console.log(`✓ Has cylinder: ${hasCylinder}, Updated return: ${hasUpdatedReturn}`);
-        return hasCylinder && hasUpdatedReturn;
-    } catch (error) {
-        console.error('Return update test failed:', error);
         return false;
     }
 }

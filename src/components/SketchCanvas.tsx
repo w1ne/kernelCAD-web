@@ -11,11 +11,38 @@ interface SketchCanvasProps {
 
 export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [tool, setTool] = useState<SketchTool>('line');
     const [entities, setEntities] = useState<SketchEntity[]>([]);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point2D | null>(null);
     const [currentPoint, setCurrentPoint] = useState<Point2D | null>(null);
+
+    // Canvas size state
+    const [size, setSize] = useState({ width: 800, height: 600 });
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const updateSize = () => {
+            if (containerRef.current) {
+                const { clientWidth, clientHeight } = containerRef.current;
+                if (clientWidth > 0 && clientHeight > 0) {
+                    setSize({ width: clientWidth, height: clientHeight });
+                    console.log('SketchCanvas Resized (Observer):', clientWidth, clientHeight);
+                }
+            }
+        };
+
+        const observer = new ResizeObserver(() => {
+            updateSize();
+        });
+
+        observer.observe(containerRef.current);
+        updateSize();
+
+        return () => observer.disconnect();
+    }, []);
 
     // Grid settings
     const gridSize = 10; // Grid cell size in pixels
@@ -230,7 +257,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
 
             ctx.setLineDash([]);
         }
-    }, [entities, isDrawing, startPoint, currentPoint, tool, drawGrid, drawLine, drawRectangle, drawCircle, sketchToCanvas]);
+    }, [size, entities, isDrawing, startPoint, currentPoint, tool, drawGrid, drawLine, drawRectangle, drawCircle, sketchToCanvas]);
 
     // Mouse down - start drawing
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -263,6 +290,14 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     // Mouse up - complete entity
     const handleMouseUp = () => {
         if (!isDrawing || !startPoint || !currentPoint) return;
+
+        // Prevent zero-length entities
+        if (startPoint[0] === currentPoint[0] && startPoint[1] === currentPoint[1]) {
+            setIsDrawing(false);
+            setStartPoint(null);
+            setCurrentPoint(null);
+            return;
+        }
 
         const newEntity = createEntity(tool, startPoint, currentPoint);
         if (newEntity) {
@@ -318,7 +353,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     };
 
     return (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col">
+        <div className="fixed inset-0 bg-white z-50 flex flex-col" data-testid="sketch-canvas-overlay">
             {/* Header */}
             <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
                 <div>
@@ -365,15 +400,16 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
             </div>
 
             {/* Canvas */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden" ref={containerRef}>
                 <canvas
                     ref={canvasRef}
-                    width={1200}
-                    height={800}
+                    width={size.width}
+                    height={size.height}
                     className="cursor-crosshair bg-white"
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
+                    data-testid="sketch-canvas"
                 />
             </div>
         </div>

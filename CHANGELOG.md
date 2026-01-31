@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
  
+## [0.8.0] - 2026-01-31
+### Added - Sketch Visibility & Test Expansion
+- **Sketch Visibility**:
+    - Connected `sketchesGeometries` to the `Viewer` for real-time visualization.
+    - Standardized `THREE.Line` rendering for continuous polylines.
+    - Automatic conversion of single return values to arrays in AST when sketches are added.
+- **E2E Test Coverage**:
+    - 10 new Playwright tests covering Primitives (Box, Cylinder), Booleans (Union, Cut), Exports (STEP, STL), and UI interactions (Undo/Redo, View Modes).
+    - Exposed `window.isEditorReady` and `window.getSketches` for test synchronization and validation.
+- **Worker Robustness**:
+    - Ultra-robust error handling in geometry worker via multiple try-catch layers.
+    - Graceful handling of invalid/zero-length geometry without engine crashes.
+    - Vertex-based sketch deduplication to prevent redundant rendering.
+ 
+### Fixed
+- **UI Stability**:
+    - Resolved a null-pointer crash during `sketchOnFace` initialization in `WorkbenchLayout`.
+    - Implemented zero-length entity filtering in `SketchCanvas` to prevent invalid Replicad inputs.
+- **E2E Regression**:
+    - Updated stress tests to use proper drag motions and verify visual geometry presence.
+ 
+## [0.7.0] - 2026-01-30
+### Added - Reliability & Testing Overhaul
+- **Comprehensive Fuzzing Suite**: Property-based testing using `fast-check` to validate geometry kernels against edge cases (`NaN`, infinite inputs, disjoint unions).
+- **Workflow Validation Framework**: Automated regression testing for complete end-to-end user workflows (`src/workflows`).
+- **Testing Strategy Documentation**: detailed guide in `doc/TESTING_STRATEGY.md`.
+
+### Changed
+- **Robustness**:
+    - **Logic**: Enforced disjoint inputs for Boolean Union to prevent kernel crashes in headless mode.
+    - **Validation**: Strict validation of operations (Fillet, Chamfer) with fallback checks for missing properties.
+- **Architecture**:
+    - **Linting**: Added architectural boundaries to prevent circular dependencies (e.g., forbidding imports from `src/components` into `src/lib`).
+
+### Fixed
+- **Headless Operations**: Resolved issues where `Chamfer` and `Union` operations returned valid shapes but missed `volume`/`boundingBox` properties in test environments.
+- **State Machine**: Hardened `WorkbenchContext` against invalid state transitions during sketch mode.
+
+
 ## [0.6.0] - 2026-01-27
 ### Added - Professional Modeling Workflow
 - **Sketch Visualization**: Toggleable cyan/blue line rendering for sketches in the 3D scene.

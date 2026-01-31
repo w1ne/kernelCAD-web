@@ -83,9 +83,9 @@ function SketchLine({ sketch }: { sketch: SketchGeometry }) {
     }, [sketch]);
 
     return (
-        <lineSegments geometry={geometry}>
+        <line geometry={geometry} renderOrder={999}>
             <primitive object={material} attach="material" />
-        </lineSegments>
+        </line>
     );
 }
 
@@ -111,6 +111,62 @@ function Shape({
                     onClick={() => setSelectedFace({ shapeIndex, faceId: face.faceId })}
                 />
             ))}
+        </group>
+    );
+}
+
+
+function ParametricLayer() {
+    const { entities, selectedEntityIds, selectEntity } = useWorkbench();
+    const entityList = useMemo(() => Array.from(entities.values()), [entities]);
+
+    return (
+        <group>
+            {entityList.map(entity => {
+                if (entity.type === 'POINT') {
+                    const isSelected = selectedEntityIds.includes(entity.id);
+                    return (
+                        <mesh
+                            key={entity.id}
+                            position={[entity.x, entity.y, 0]}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                selectEntity(entity.id, e.metaKey || e.ctrlKey);
+                            }}
+                        >
+                            <sphereGeometry args={[isSelected ? 0.8 : 0.5]} />
+                            <meshBasicMaterial color={isSelected ? "red" : "yellow"} />
+                        </mesh>
+                    );
+                } else if (entity.type === 'LINE') {
+                    const p1 = entities.get(entity.p1);
+                    const p2 = entities.get(entity.p2);
+
+                    if (p1 && p1.type === 'POINT' && p2 && p2.type === 'POINT') {
+                        const points = [
+                            new THREE.Vector3(p1.x, p1.y, 0),
+                            new THREE.Vector3(p2.x, p2.y, 0)
+                        ];
+                        const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                        const isSelected = selectedEntityIds.includes(entity.id);
+
+                        return (
+                            <lineSegments
+                                key={entity.id}
+                                geometry={lineGeo}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    selectEntity(entity.id, e.metaKey || e.ctrlKey);
+                                }}
+                            >
+                                <lineBasicMaterial color={isSelected ? "orange" : "cyan"} />
+                            </lineSegments>
+                        )
+                    }
+                    return null;
+                }
+                return null;
+            })}
         </group>
     );
 }
@@ -144,10 +200,12 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                     </group>
                 )}
 
+                <ParametricLayer />
+
                 <OrbitControls makeDefault />
             </Canvas>
-            <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none">
-                kernelCAD v0.6 | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
+            <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
+                kernelCAD v0.7.0 ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
                     viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
             </div>
         </div>
