@@ -83,6 +83,7 @@ function SketchLine({ sketch }: { sketch: SketchGeometry }) {
     }, [sketch]);
 
     return (
+        // @ts-ignore
         <line geometry={geometry} renderOrder={999}>
             <primitive object={material} attach="material" />
         </line>

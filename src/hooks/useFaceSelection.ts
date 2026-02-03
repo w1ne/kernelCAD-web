@@ -11,6 +11,7 @@ export interface FaceSelection {
 export interface FacePlane {
     origin: [number, number, number];
     normal: [number, number, number];
+    xDir?: [number, number, number];
 }
 
 export interface UseFaceSelectionOptions {
@@ -57,7 +58,8 @@ export function useFaceSelection({
             const face = geometries[selection.shapeIndex].faces.find(
                 f => f.faceId === selection.faceId
             );
-            const plane = face?.plane || null;
+            // Cast to include xDir which we added to Worker Types but might not be in generic types yet if they are shared
+            const plane = face?.plane as FacePlane | undefined || null;
 
             // Validate plane data before using it
             const isValidPlane = plane &&
@@ -71,19 +73,19 @@ export function useFaceSelection({
             // If we are in face selection mode for sketching, automatically enter sketch mode
             if (isFaceSelecting && isValidPlane && onSketchModeChange) {
                 const returnedVars = getReturnedVariables(code);
-                let targetName = returnedVars[selection.shapeIndex] || 'shape';
-                if (targetName === 'unknown') targetName = 'shape';
+                const targetName = returnedVars[selection.shapeIndex];
 
                 onSketchModeChange({
                     active: true,
                     plane: {
                         id: `face-${selection.faceId}-${Date.now()}`,
-                        name: `Face ${selection.faceId} of ${targetName}`,
+                        name: targetName ? `Face ${selection.faceId} of ${targetName}` : `Face ${selection.faceId}`,
                         type: 'face',
                         origin: plane!.origin,
                         normal: plane!.normal,
+                        xDir: plane!.xDir,
                         visible: true,
-                        parentId: targetName
+                        parentId: targetName || undefined
                     },
                     currentSketch: null,
                     tool: 'line'

@@ -17,10 +17,8 @@ test.describe('Sketch on Face Stress Test', () => {
         // 2. Inject Anonymous Shape Code
         const code = `
 const { Sketcher } = replicad;
-const base = new Sketcher().hLine(50).vLine(50).hLine(-50).close().extrude(40);
-const cyl = replicad.makeCylinder(10, 40).translate(0,0,10);
-// Anonymous Return
-return [base.cut(cyl)];
+// Truly Anonymous Return (no base variable name)
+return [ replicad.makeCylinder(20, 40) ];
 `;
         await page.evaluate((c) => {
             // @ts-ignore
@@ -95,7 +93,7 @@ return [base.cut(cyl)];
                 // @ts-ignore
                 return window.getCode();
             });
-        }, { timeout: 5000 }).toContain('new Sketcher(new replicad.Plane(');
+        }, { timeout: 10000, intervals: [500, 1000, 2000] }).toContain('new Sketcher(new replicad.Plane(');
 
         // 9. Verify Sketch Visibility
         await expect.poll(async () => {

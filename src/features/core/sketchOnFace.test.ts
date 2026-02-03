@@ -16,4 +16,13 @@ describe('SketchOnFaceFeature', () => {
         expect(code).toContain('plane_boxFaceSketch');
         expect(code).toContain('const boxFaceSketch = new Sketcher');
     });
+
+    it('should generate code with explicit X-axis if provided', () => {
+        const xDir: [number, number, number] = [0, 1, 0];
+        const code = generateSketchOnFaceCode('part', 1, 'sketch1', xDir);
+        expect(code).toContain('part.faces[1]');
+        expect(code).toContain('new replicad.Plane');
+        // Check for the array formatting
+        expect(code).toContain('[0, 1, 0]');
+    });
 });

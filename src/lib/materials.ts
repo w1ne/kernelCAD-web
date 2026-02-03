@@ -70,6 +70,9 @@ export function disposeMaterials(config: CADMaterialConfig) {
 export function createSketchMaterial(): LineBasicMaterial {
     return new LineBasicMaterial({
         color: 0x3b82f6,  // Blue-500
-        linewidth: 2
+        linewidth: 2,
+        polygonOffset: true,
+        polygonOffsetFactor: -2.0, // Stronger push towards camera
+        polygonOffsetUnits: -2.0
     });
 }

@@ -54,9 +54,9 @@
 **Goal**: Improve development speed and reliability through better tooling and testing.
 
 ### 1.3 Infrastructure & Testing
-- [ ] **Interactive Test Runner**: Integrate Vitest UI for browser-based debugging.
-- [ ] **Geometry Regression Suite**: Snapshot-based validation of CAD workflows (Volume, Center of Mass, Bounding Box).
-- [ ] **Headless CAD Validation**: Automatic geometry checks in CI.
+- [x] **Interactive Test Runner**: Integrated Vitest with UI support.
+- [x] **Geometry Regression Suite**: Snapshot-based validation of CAD workflows (Volume, Center of Mass, Bounding Box).
+- [x] **Headless CAD Validation**: Automatic geometry checks via `standardWorkflows.test.ts`.
 
 ### 1.4 Developer Tools
 - [ ] **Dev Lab**: Isolated environment for component testing and prototyping (e.g., `/dev-lab` route).

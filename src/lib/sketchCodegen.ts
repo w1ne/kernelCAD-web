@@ -19,6 +19,26 @@ export function generateSketchCode(sketch: SketchData): string {
     const planeCode = formatPlaneForSketcher(plane);
     let code = `const ${name} = new Sketcher(${planeCode})\n`;
 
+    // Append body
+    code += generateSketchBody(entities);
+
+    code += ';\n';
+
+    return code;
+}
+
+/**
+ * Generate the body of the sketch (drawing operations + close/done)
+ * Does NOT include the constructor or the final semicolon.
+ */
+export function generateSketchBody(entities: SketchEntity[]): string {
+    // Defensive validation - should never happen if UI validation works
+    if (!entities || entities.length === 0) {
+        throw new Error('Cannot generate sketch body: No entities provided. This indicates a validation bug.');
+    }
+
+    let code = '';
+
     // Track current position for continuous path
     let currentPos: Point2D | null = null;
 
@@ -28,14 +48,12 @@ export function generateSketchCode(sketch: SketchData): string {
         currentPos = generated.endPos;
     });
 
-    // Finish the sketch to get a Sketch object (which has the .extrude method)
+    // Finish the sketch
     if (isClosedPath(entities)) {
         code += `  .close()`;
     } else {
         code += `  .done()`;
     }
-
-    code += ';\n';
 
     return code;
 }
@@ -89,11 +107,11 @@ function generateRectangleCode(
     const { corner, width, height } = rect;
     const [x, y] = corner;
 
-    // Rectangle as 4 lines (bottom-left corner, counterclockwise)
+    // Rectangle as 4 lines (top-left corner, counterclockwise)
     const code = `  .movePointerTo([${x}, ${y}])\n` +
         `  .lineTo([${x + width}, ${y}])\n` +
-        `  .lineTo([${x + width}, ${y + height}])\n` +
-        `  .lineTo([${x}, ${y + height}])\n` +
+        `  .lineTo([${x + width}, ${y - height}])\n` +
+        `  .lineTo([${x}, ${y - height}])\n` +
         `  .lineTo([${x}, ${y}])\n`; // Close back to start
 
     return { code, endPos: corner };

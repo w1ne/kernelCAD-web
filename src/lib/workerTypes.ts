@@ -9,70 +9,100 @@
 // Request Messages (Main Thread → Worker)
 // ============================================================================
 
-export interface ExecuteRequest {
-    type: 'EXECUTE';
-    id: string;
-    code: string;
-}
+import { z } from 'zod';
 
-export interface ExportSTEPRequest {
-    type: 'EXPORT_STEP';
-    id: string;
-    code: string;
-}
+// ============================================================================
+// Request Messages (Main Thread → Worker)
+// ============================================================================
 
-export interface ExportSTLRequest {
-    type: 'EXPORT_STL';
-    id: string;
-    code: string;
-}
+export const ExecuteRequestSchema = z.object({
+    type: z.literal('EXECUTE'),
+    id: z.string(),
+    code: z.string(),
+});
 
-export type WorkerRequest = ExecuteRequest | ExportSTEPRequest | ExportSTLRequest;
+export const ExportSTEPRequestSchema = z.object({
+    type: z.literal('EXPORT_STEP'),
+    id: z.string(),
+    code: z.string(),
+});
+
+export const ExportSTLRequestSchema = z.object({
+    type: z.literal('EXPORT_STL'),
+    id: z.string(),
+    code: z.string(),
+});
+
+export const WorkerRequestSchema = z.discriminatedUnion('type', [
+    ExecuteRequestSchema,
+    ExportSTEPRequestSchema,
+    ExportSTLRequestSchema,
+]);
+
+export type WorkerRequest = z.infer<typeof WorkerRequestSchema>;
+export type ExecuteRequest = z.infer<typeof ExecuteRequestSchema>;
+export type ExportSTEPRequest = z.infer<typeof ExportSTEPRequestSchema>;
 
 // ============================================================================
 // Response Messages (Worker → Main Thread)
 // ============================================================================
 
-export interface FaceGeometry {
-    vertices: Float32Array;
-    indices: Uint32Array;
-    normals: Float32Array;
-    faceId: number;
-    plane?: {
-        origin: [number, number, number];
-        normal: [number, number, number];
-    };
-}
+const Float32ArraySchema = z.instanceof(Float32Array);
+const Uint32ArraySchema = z.instanceof(Uint32Array);
 
-export interface GeometryResult {
-    faces: FaceGeometry[];
-}
+export const FaceGeometrySchema = z.object({
+    vertices: Float32ArraySchema,
+    indices: Uint32ArraySchema,
+    normals: Float32ArraySchema,
+    faceId: z.number(),
+    plane: z.object({
+        origin: z.tuple([z.number(), z.number(), z.number()]),
+        normal: z.tuple([z.number(), z.number(), z.number()]),
+        xDir: z.tuple([z.number(), z.number(), z.number()]).optional(),
+        yDir: z.tuple([z.number(), z.number(), z.number()]).optional(),
+    }).optional(),
+});
 
-export interface SketchGeometry {
-    id: string;
-    name: string;
-    vertices: Float32Array;
-}
+export const GeometryResultSchema = z.object({
+    faces: z.array(FaceGeometrySchema),
+});
 
-export interface ExecutionResult {
-    geometries: GeometryResult[];
-    sketches: SketchGeometry[];
-}
+export const SketchGeometrySchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    vertices: Float32ArraySchema,
+});
 
-export interface SuccessResponse {
-    type: 'SUCCESS';
-    id: string;
-    geometries?: ExecutionResult;
-    blob?: Blob;
-}
+export const ExecutionResultSchema = z.object({
+    geometries: z.array(GeometryResultSchema),
+    sketches: z.array(SketchGeometrySchema),
+});
 
-export interface ErrorResponse {
-    type: 'ERROR';
-    id: string;
-    error: string;
-}
+export const SuccessResponseSchema = z.object({
+    type: z.literal('SUCCESS'),
+    id: z.string(),
+    geometries: ExecutionResultSchema.optional(),
+    blob: z.instanceof(Blob).optional(),
+});
 
-export type WorkerResponse = SuccessResponse | ErrorResponse;
+export const ErrorResponseSchema = z.object({
+    type: z.literal('ERROR'),
+    id: z.string(),
+    error: z.string(),
+});
+
+export const WorkerResponseSchema = z.discriminatedUnion('type', [
+    SuccessResponseSchema,
+    ErrorResponseSchema
+]);
+
+export type WorkerResponse = z.infer<typeof WorkerResponseSchema>;
+export type FaceGeometry = z.infer<typeof FaceGeometrySchema>;
+export type GeometryResult = z.infer<typeof GeometryResultSchema>;
+export type SketchGeometry = z.infer<typeof SketchGeometrySchema>;
+export type ExecutionResult = z.infer<typeof ExecutionResultSchema>;
+export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 
 // ============================================================================
 // Type Guards
@@ -82,7 +112,7 @@ export function isExecuteRequest(msg: WorkerRequest): msg is ExecuteRequest {
     return msg.type === 'EXECUTE';
 }
 
-export function isExportRequest(msg: WorkerRequest): msg is ExportSTEPRequest | ExportSTLRequest {
+export function isExportRequest(msg: WorkerRequest): msg is ExportSTEPRequest | z.infer<typeof ExportSTLRequestSchema> {
     return msg.type === 'EXPORT_STEP' || msg.type === 'EXPORT_STL';
 }
 

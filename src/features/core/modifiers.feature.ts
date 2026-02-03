@@ -1,6 +1,6 @@
 import { LayoutTemplate, PenTool, Scissors } from 'lucide-react';
 import { type Feature } from '../types';
-import { CodeBuilder } from '../../lib/CodeBuilder';
+import { type CodeGenerationContext } from '../../lib/codeGeneration';
 
 export const FilletFeature: Feature = {
     id: 'fillet',
@@ -12,8 +12,7 @@ export const FilletFeature: Feature = {
     }
 };
 
-export const generateFilletCode = (targetName: string, radius: number, filterType: string): string => {
-    const builder = new CodeBuilder();
+export const generateFilletCode = (context: CodeGenerationContext, targetName: string, radius: number, filterType: string): string => {
     let filterArg = '';
 
     if (filterType === 'vertical') {
@@ -22,9 +21,8 @@ export const generateFilletCode = (targetName: string, radius: number, filterTyp
         filterArg = `, (e) => !e.inDirection('Z')`;
     }
 
-    const resultName = builder.getUniqueName(`${targetName}_filleted`);
-    builder.addStatement(`const ${resultName} = ${targetName}.fillet(${radius}${filterArg});`);
-    return builder.toString();
+    const resultName = context.generateUniqueName(`${targetName}_filleted`);
+    return `const ${resultName} = ${targetName}.fillet(${radius}${filterArg});`;
 };
 
 export const ChamferFeature: Feature = {
@@ -37,8 +35,7 @@ export const ChamferFeature: Feature = {
     }
 };
 
-export const generateChamferCode = (targetName: string, distance: number, filterType: string): string => {
-    const builder = new CodeBuilder();
+export const generateChamferCode = (context: CodeGenerationContext, targetName: string, distance: number, filterType: string): string => {
     let filterArg = '';
 
     if (filterType === 'vertical') {
@@ -47,9 +44,8 @@ export const generateChamferCode = (targetName: string, distance: number, filter
         filterArg = `, (e) => !e.inDirection('Z')`;
     }
 
-    const resultName = builder.getUniqueName(`${targetName}_chamfered`);
-    builder.addStatement(`const ${resultName} = ${targetName}.chamfer(${distance}${filterArg});`);
-    return builder.toString();
+    const resultName = context.generateUniqueName(`${targetName}_chamfered`);
+    return `const ${resultName} = ${targetName}.chamfer(${distance}${filterArg});`;
 };
 
 export const CutFeature: Feature = {
@@ -65,7 +61,7 @@ export const CutFeature: Feature = {
 export const UnionFeature: Feature = {
     id: 'union',
     label: 'Join',
-    icon: LayoutTemplate, // Temporarily using LayoutTemplate, might change later
+    icon: LayoutTemplate,
     description: 'Fuse two shapes together',
     execute: (context) => {
         context.setActiveDialog('union');
@@ -75,17 +71,14 @@ export const UnionFeature: Feature = {
 export const IntersectFeature: Feature = {
     id: 'intersect',
     label: 'Intersect',
-    icon: PenTool, // Temporarily using PenTool, might change later
+    icon: PenTool,
     description: 'Common volume of two shapes',
     execute: (context) => {
         context.setActiveDialog('intersect');
     }
 };
 
-export const generateBooleanCode = (baseName: string, toolName: string, type: 'fuse' | 'cut' | 'intersect'): string => {
-    const builder = new CodeBuilder();
-    // Special naming for boolean op result usually appends operation
-    const resultName = builder.getUniqueName(`${baseName}_${type}`);
-    builder.addStatement(`const ${resultName} = ${baseName}.${type}(${toolName});`);
-    return builder.toString();
+export const generateBooleanCode = (context: CodeGenerationContext, baseName: string, toolName: string, type: 'fuse' | 'cut' | 'intersect'): string => {
+    const resultName = context.generateUniqueName(`${baseName}_${type}`);
+    return `const ${resultName} = ${baseName}.${type}(${toolName});`;
 };

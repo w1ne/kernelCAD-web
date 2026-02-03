@@ -10,32 +10,21 @@ export interface InsertionContext {
     line?: number; // Line to insert at (1-indexed)
 }
 
+import { getDeclaredVariablesAST } from './ast';
+
 /**
  * Generates a unique variable name to avoid collisions.
  * e.g., if 'box' exists, returns 'box1', then 'box2'.
  */
 export function generateUniqueName(code: string, baseName: string): string {
-    const regex = new RegExp(`\\b${baseName}(\\d*)\\b`, 'g');
-    const matches = code.match(regex) || [];
+    const existing = getDeclaredVariablesAST(code);
+    if (!existing.has(baseName)) return baseName;
 
-    if (matches.length === 0) return baseName;
-
-    let maxIndex = 0;
-    let hasBase = false;
-
-    matches.forEach(m => {
-        if (m === baseName) {
-            hasBase = true;
-        } else {
-            const num = parseInt(m.replace(baseName, ''), 10);
-            if (!isNaN(num) && num > maxIndex) {
-                maxIndex = num;
-            }
-        }
-    });
-
-    if (!hasBase) return baseName;
-    return `${baseName}${maxIndex + 1}`;
+    let counter = 1;
+    while (existing.has(`${baseName}${counter}`)) {
+        counter++;
+    }
+    return `${baseName}${counter}`;
 }
 
 export interface VariableDefinition {

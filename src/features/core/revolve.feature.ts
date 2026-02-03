@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import { type Feature } from '../types';
+import { type CodeGenerationContext } from '../../lib/codeGeneration';
 
 export const RevolveFeature: Feature = {
     id: 'revolve',
@@ -11,10 +12,11 @@ export const RevolveFeature: Feature = {
     }
 };
 
-export const generateRevolveCode = (sketchName: string, angle: number, axis: string): string => {
+export const generateRevolveCode = (context: CodeGenerationContext, sketchName: string, angle: number, axis: string): string => {
     let axisVector = '[1, 0, 0]';
     if (axis === 'Y') axisVector = '[0, 1, 0]';
     if (axis === 'Z') axisVector = '[0, 0, 1]';
 
-    return `\nconst revolved${sketchName.replace(/sketch/i, '')} = ${sketchName}.revolve(${angle}, ${axisVector});`;
+    const resultName = context.generateUniqueName(`revolved_${sketchName.replace(/sketch/i, '').replace(/^_+/, '')}`);
+    return `const ${resultName} = ${sketchName}.revolve(${angle}, ${axisVector});`;
 };

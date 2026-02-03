@@ -1,9 +1,11 @@
 import { type LucideIcon } from 'lucide-react';
+import { type CodeGenerationContext } from '../lib/codeGeneration';
 
 export interface FeatureContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     setActiveDialog: (dialogId: string | null) => void;
     code: string; // Current code for variable name resolution
+    codeContext: CodeGenerationContext;
 }
 
 export interface DialogField {

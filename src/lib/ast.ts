@@ -82,32 +82,46 @@ export function getDeclaredVariablesAST(code: string): Set<string> {
  * Extract the list of variable names returned by the drawPart function.
  * This is used to map shape indices from the viewer back to variable names.
  */
-export function getReturnedVariables(code: string): string[] {
+/**
+ * Resolve a variable name from an AST node, handling chained calls.
+ */
+/**
+ * Resolve a variable name from an AST node.
+ * STICT MODE: Only returns a name if the node is a direct Identifier.
+ * This prevents expressions like "box.cut(tool)" from resolving to "box",
+ * which would cause sketches to be attached to the wrong parent shape.
+ */
+export function resolveVariableName(node: any): string | null {
+    if (!node) return null;
+    if (node.type === 'Identifier') {
+        return node.name === 'replicad' ? null : node.name;
+    }
+    // We intentionally return null for CallExpression and MemberExpression
+    // to strictly identify "Variables" vs "Expressions".
+    // This forces anonymous shapes to use "detached sketches" (Path B)
+    // rather than incorrectly attaching to the base object (Path A).
+    return null;
+}
+
+/**
+ * Extract the list of variable names returned by the drawPart function.
+ * This is used to map shape indices from the viewer back to variable names.
+ * Returns (string | null)[] to preserve the index alignment with the viewer.
+ */
+export function getReturnedVariables(code: string): (string | null)[] {
     const astNode = parseCode(code);
-    const returnedVars: string[] = [];
+    const returnedVars: (string | null)[] = [];
 
     const processReturnArgument = (arg: any) => {
         if (arg.type === 'ArrayExpression') {
             arg.elements.forEach((el: any) => {
                 const name = resolveVariableName(el);
-                if (name) returnedVars.push(name);
+                returnedVars.push(name);
             });
         } else {
             const name = resolveVariableName(arg);
-            if (name) returnedVars.push(name);
+            returnedVars.push(name);
         }
-    };
-
-    const resolveVariableName = (node: any): string | null => {
-        if (!node) return null;
-        if (node.type === 'Identifier') return node.name;
-        // Strict: We only want the variable if it IS the variable.
-        // If it's a function call (filleted.cut()), the return is not 'filleted'.
-        // So we interpret CallExpressions as anonymous/null.
-        if (node.type === 'CallExpression') {
-            return null;
-        }
-        return null;
     };
 
     // 1. Check top-level return
@@ -195,7 +209,7 @@ export function insertShape(code: string, statement: string): string {
     let varName: string | null = null;
 
     statementNodes.forEach(node => {
-        const declNode = node as unknown as { type: string; declarations: { id: { type: string; name: string }; init: { type: string; callee?: { object?: { name?: string }; name?: string } } }[] };
+        const declNode = node as any;
         if (declNode.type === 'VariableDeclaration' && declNode.declarations[0]) {
             const declarator = declNode.declarations[0];
             if (declarator.id.type === 'Identifier') {
@@ -206,6 +220,75 @@ export function insertShape(code: string, statement: string): string {
 
     let inserted = false;
 
+    // Helper to find and replace or insert at the end of body
+    const processBody = (body: acorn.Node[]) => {
+        const returnIndex = body.findIndex((n) => n.type === 'ReturnStatement');
+
+        // Check if we can replace an existing declaration
+        if (varName) {
+            const existingIndex = body.findIndex(node => {
+                const declNode = node as any;
+                return declNode.type === 'VariableDeclaration' &&
+                    declNode.declarations[0] &&
+                    declNode.declarations[0].id.type === 'Identifier' &&
+                    declNode.declarations[0].id.name === varName;
+            });
+
+            if (existingIndex !== -1) {
+                // If it was already in the body, we replace it.
+                // If we are replacing multiple statements (like plane + sketch), we need to be careful
+                // For now, we just replace the single declaration.
+                body.splice(existingIndex, 1, ...statementNodes);
+                inserted = true;
+                return;
+            }
+        }
+
+        if (returnIndex !== -1) {
+            // Insert ALL statements before return
+            body.splice(returnIndex, 0, ...statementNodes);
+
+            // Update return statement if we have a variable name
+            if (varName) {
+                const returnStmt = body[returnIndex + statementNodes.length] as any;
+                if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
+                    // Check if return is an array
+                    if (returnStmt.argument.type === 'ArrayExpression') {
+                        // Add the new variable to the array if NOT already present
+                        const exists = returnStmt.argument.elements.some((el: any) =>
+                            resolveVariableName(el) === varName
+                        );
+                        if (!exists) {
+                            returnStmt.argument.elements.push({
+                                type: 'Identifier',
+                                name: varName
+                            });
+                        }
+                    } else {
+                        // Check if the single return is already this variable
+                        const currentArg = returnStmt.argument;
+                        const isSameVar = resolveVariableName(currentArg) === varName;
+
+                        if (!isSameVar) {
+                            // Convert to array return: return [oldValue, newVar]
+                            returnStmt.argument = {
+                                type: 'ArrayExpression',
+                                elements: [
+                                    currentArg,
+                                    {
+                                        type: 'Identifier',
+                                        name: varName
+                                    }
+                                ]
+                            };
+                        }
+                    }
+                }
+            }
+            inserted = true;
+        }
+    };
+
     // 1. Try Function drawPart
     walk.simple(astNode, {
         FunctionDeclaration(node: acorn.Node) {
@@ -213,80 +296,14 @@ export function insertShape(code: string, statement: string): string {
             const decl = node as unknown as NodeWithId & NodeWithBody;
             if (decl.id && decl.id.name === 'drawPart') {
                 const body = (decl.body as { body: acorn.Node[] }).body;
-                const returnIndex = body.findIndex((n) => n.type === 'ReturnStatement');
-
-                if (returnIndex !== -1) {
-                    // Insert ALL statements before return
-                    body.splice(returnIndex, 0, ...statementNodes);
-
-                    // Update return statement if we have a variable name
-                    if (varName) {
-                        const returnStmt = body[returnIndex + statementNodes.length] as any;
-                        if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
-                            // Check if return is an array
-                            if (returnStmt.argument.type === 'ArrayExpression') {
-                                // Add the new variable to the array
-                                returnStmt.argument.elements.push({
-                                    type: 'Identifier',
-                                    name: varName
-                                });
-                            } else {
-                                // Convert to array return: return [oldValue, newVar]
-                                const oldArgument = returnStmt.argument;
-                                returnStmt.argument = {
-                                    type: 'ArrayExpression',
-                                    elements: [
-                                        oldArgument,
-                                        {
-                                            type: 'Identifier',
-                                            name: varName
-                                        }
-                                    ]
-                                };
-                            }
-                        }
-                    }
-
-                    inserted = true;
-                }
+                processBody(body);
             }
         }
     });
 
     // 2. Fallback to top-level return
     if (!inserted) {
-        const body = (astNode as any).body;
-        const returnIndex = body.findIndex((n: any) => n.type === 'ReturnStatement');
-
-        if (returnIndex !== -1) {
-            body.splice(returnIndex, 0, ...statementNodes);
-
-            if (varName) {
-                const returnStmt = body[returnIndex + statementNodes.length] as any;
-                if (returnStmt.type === 'ReturnStatement' && returnStmt.argument) {
-                    if (returnStmt.argument.type === 'ArrayExpression') {
-                        returnStmt.argument.elements.push({
-                            type: 'Identifier',
-                            name: varName
-                        });
-                    } else {
-                        // Convert to array
-                        const oldArgument = returnStmt.argument;
-                        returnStmt.argument = {
-                            type: 'ArrayExpression',
-                            elements: [
-                                oldArgument,
-                                {
-                                    type: 'Identifier',
-                                    name: varName
-                                }
-                            ]
-                        };
-                    }
-                }
-            }
-            inserted = true;
-        }
+        processBody((astNode as any).body);
     }
 
     if (!inserted) {

@@ -14,7 +14,7 @@ describe('Geometry Regression Suite', () => {
                 const cyl = makeCylinder(10, 10);
                 return cyl;
             `;
-            const shape = executeGeometry(code);
+            const { shape } = executeGeometry(code);
             expectGeometryMatch({ volume: shape.volume }, { volume: Math.PI * 100 * 10 });
         });
     });
@@ -29,7 +29,7 @@ describe('Geometry Regression Suite', () => {
                 const fused = c1.fuse(c2);
                 return fused;
              `;
-            const shape = executeGeometry(code);
+            const { shape } = executeGeometry(code);
             // Two stacked cylinders. Total height 20.
             // Vol = PI * 25 * 20
             expectGeometryMatch({ volume: shape.volume }, { volume: Math.PI * 25 * 20 });
@@ -45,7 +45,7 @@ describe('Geometry Regression Suite', () => {
                  const result = base.cut(tool);
                  return result;
             `;
-            const shape = executeGeometry(code);
+            const { shape } = executeGeometry(code);
             // Vol = Base - Hole
             expectGeometryMatch({ volume: shape.volume }, { volume: Math.PI * 100 * 10 - Math.PI * 25 * 10 });
         });

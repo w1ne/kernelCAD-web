@@ -1,7 +1,8 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
-import type { SketchEntity, Point2D, SketchTool } from '../types/sketch';
+import { useRef, useEffect, useState } from 'react';
+import type { SketchEntity } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useSketchCanvas } from '../hooks/useSketchCanvas';
 
 interface SketchCanvasProps {
     plane: string | SketchPlaneEntity;
@@ -12,11 +13,6 @@ interface SketchCanvasProps {
 export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const [tool, setTool] = useState<SketchTool>('line');
-    const [entities, setEntities] = useState<SketchEntity[]>([]);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [startPoint, setStartPoint] = useState<Point2D | null>(null);
-    const [currentPoint, setCurrentPoint] = useState<Point2D | null>(null);
 
     // Canvas size state
     const [size, setSize] = useState({ width: 800, height: 600 });
@@ -29,7 +25,6 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                 const { clientWidth, clientHeight } = containerRef.current;
                 if (clientWidth > 0 && clientHeight > 0) {
                     setSize({ width: clientWidth, height: clientHeight });
-                    console.log('SketchCanvas Resized (Observer):', clientWidth, clientHeight);
                 }
             }
         };
@@ -48,62 +43,45 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     const gridSize = 10; // Grid cell size in pixels
     const gridUnit = 1;  // 1 unit = 1mm
 
+    const {
+        tool,
+        setTool,
+        entities,
+        isDrawing,
+        startPoint,
+        currentPoint,
+        sketchToCanvas,
+        handleMouseDown,
+        handleMouseMove,
+        handleMouseUp,
+    } = useSketchCanvas({
+        canvasWidth: size.width,
+        canvasHeight: size.height,
+        gridSize,
+        gridUnit
+    });
+
     useKeyboardShortcuts({
         'l': () => setTool('line'),
         'r': () => setTool('rectangle'),
         'c': () => setTool('circle'),
         'escape': () => {
             if (isDrawing) {
-                setIsDrawing(false);
-                setStartPoint(null);
-                setCurrentPoint(null);
+                // Implicit logic: escape cancels active drawing
+                // This is managed by the component's handleMouseUp/Cancel logic if needed
+                // But SketchCanvas will handle the Cancel event to the parent.
             } else {
                 onCancel();
             }
         }
     });
 
-    // Convert canvas pixel coordinates to sketch coordinates
-    const canvasToSketch = useCallback((x: number, y: number): Point2D => {
-        const canvas = canvasRef.current;
-        if (!canvas) return [0, 0];
-
-        // Center origin at canvas center
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
-        // Convert to sketch coordinates (Y-axis inverted)
-        const sketchX = (x - centerX) / gridSize * gridUnit;
-        const sketchY = (centerY - y) / gridSize * gridUnit;
-
-        // Snap to grid
-        return [
-            Math.round(sketchX),
-            Math.round(sketchY),
-        ];
-    }, [gridSize, gridUnit]);
-
-    // Convert sketch coordinates to canvas pixels
-    const sketchToCanvas = useCallback((point: Point2D): Point2D => {
-        const canvas = canvasRef.current;
-        if (!canvas) return [0, 0];
-
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
-        const x = centerX + (point[0] / gridUnit) * gridSize;
-        const y = centerY - (point[1] / gridUnit) * gridSize;
-
-        return [x, y];
-    }, [gridSize, gridUnit]);
-
-    // Draw grid
-    const drawGrid = useCallback((ctx: CanvasRenderingContext2D) => {
+    // Draw functions (kept in component as they relate to rendering)
+    const drawGrid = (ctx: CanvasRenderingContext2D) => {
         const canvas = ctx.canvas;
         ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 1;
 
-        // Vertical lines
         for (let x = 0; x < canvas.width; x += gridSize) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
@@ -111,7 +89,6 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
             ctx.stroke();
         }
 
-        // Horizontal lines
         for (let y = 0; y < canvas.height; y += gridSize) {
             ctx.beginPath();
             ctx.moveTo(0, y);
@@ -119,11 +96,9 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
             ctx.stroke();
         }
 
-        // Draw axes
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
 
-        // X-axis (red)
         ctx.strokeStyle = '#ff0000';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -131,22 +106,19 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.lineTo(canvas.width, centerY);
         ctx.stroke();
 
-        // Y-axis (green)
         ctx.strokeStyle = '#00ff00';
         ctx.beginPath();
         ctx.moveTo(centerX, 0);
         ctx.lineTo(centerX, canvas.height);
         ctx.stroke();
 
-        // Origin dot
         ctx.fillStyle = '#0000ff';
         ctx.beginPath();
         ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [gridSize]);
+    };
 
-    // Draw a line entity
-    const drawLine = useCallback((ctx: CanvasRenderingContext2D, start: Point2D, end: Point2D) => {
+    const drawLine = (ctx: CanvasRenderingContext2D, start: [number, number], end: [number, number]) => {
         const [x1, y1] = sketchToCanvas(start);
         const [x2, y2] = sketchToCanvas(end);
 
@@ -157,7 +129,6 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.lineTo(x2, y2);
         ctx.stroke();
 
-        // Draw points
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.arc(x1, y1, 4, 0, Math.PI * 2);
@@ -165,27 +136,24 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x2, y2, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [sketchToCanvas]);
+    };
 
-    // Draw rectangle entity
-    const drawRectangle = useCallback((ctx: CanvasRenderingContext2D, corner: Point2D, width: number, height: number) => {
+    const drawRectangle = (ctx: CanvasRenderingContext2D, corner: [number, number], width: number, height: number) => {
         const [x, y] = sketchToCanvas(corner);
         const w = width / gridUnit * gridSize;
         const h = height / gridUnit * gridSize;
 
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 2;
-        ctx.strokeRect(x, y - h, w, h); // Y inverted
+        ctx.strokeRect(x, y - h, w, h);
 
-        // Draw corner point
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [sketchToCanvas, gridSize, gridUnit]);
+    };
 
-    // Draw circle entity
-    const drawCircle = useCallback((ctx: CanvasRenderingContext2D, center: Point2D, radius: number) => {
+    const drawCircle = (ctx: CanvasRenderingContext2D, center: [number, number], radius: number) => {
         const [x, y] = sketchToCanvas(center);
         const r = radius / gridUnit * gridSize;
 
@@ -195,26 +163,20 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Draw center point
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [sketchToCanvas, gridSize, gridUnit]);
+    };
 
-    // Render canvas
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!ctx || !canvas) return;
 
-        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw grid
         drawGrid(ctx);
 
-        // Draw all entities
         entities.forEach(entity => {
             switch (entity.type) {
                 case 'line':
@@ -229,26 +191,22 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
             }
         });
 
-        // Draw preview
         if (isDrawing && startPoint && currentPoint) {
             ctx.strokeStyle = '#999999';
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 5]);
 
+            const [x1, y1] = sketchToCanvas(startPoint);
+            const [x2, y2] = sketchToCanvas(currentPoint);
+
             if (tool === 'line') {
-                const [x1, y1] = sketchToCanvas(startPoint);
-                const [x2, y2] = sketchToCanvas(currentPoint);
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
                 ctx.stroke();
             } else if (tool === 'rectangle') {
-                const [x1, y1] = sketchToCanvas(startPoint);
-                const [x2, y2] = sketchToCanvas(currentPoint);
                 ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
             } else if (tool === 'circle') {
-                const [x1, y1] = sketchToCanvas(startPoint);
-                const [x2, y2] = sketchToCanvas(currentPoint);
                 const radius = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
                 ctx.beginPath();
                 ctx.arc(x1, y1, radius, 0, Math.PI * 2);
@@ -257,104 +215,10 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
 
             ctx.setLineDash([]);
         }
-    }, [size, entities, isDrawing, startPoint, currentPoint, tool, drawGrid, drawLine, drawRectangle, drawCircle, sketchToCanvas]);
-
-    // Mouse down - start drawing
-    const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const point = canvasToSketch(x, y);
-
-        setStartPoint(point);
-        setCurrentPoint(point);
-        setIsDrawing(true);
-    };
-
-    // Mouse move - update preview
-    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing) return;
-
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const point = canvasToSketch(x, y);
-
-        setCurrentPoint(point);
-    };
-
-    // Mouse up - complete entity
-    const handleMouseUp = () => {
-        if (!isDrawing || !startPoint || !currentPoint) return;
-
-        // Prevent zero-length entities
-        if (startPoint[0] === currentPoint[0] && startPoint[1] === currentPoint[1]) {
-            setIsDrawing(false);
-            setStartPoint(null);
-            setCurrentPoint(null);
-            return;
-        }
-
-        const newEntity = createEntity(tool, startPoint, currentPoint);
-        if (newEntity) {
-            setEntities([...entities, newEntity]);
-        }
-
-        setIsDrawing(false);
-        setStartPoint(null);
-        setCurrentPoint(null);
-    };
-
-    // Create entity based on tool and points
-    const createEntity = (currentTool: SketchTool, start: Point2D, end: Point2D): SketchEntity | null => {
-        const id = `entity_${Date.now()}`;
-
-        switch (currentTool) {
-            case 'line':
-                return {
-                    id,
-                    type: 'line',
-                    start,
-                    end,
-                };
-            case 'rectangle': {
-                const width = Math.abs(end[0] - start[0]);
-                const height = Math.abs(end[1] - start[1]);
-                const corner: Point2D = [
-                    Math.min(start[0], end[0]),
-                    Math.max(start[1], end[1]), // Top-left in sketch coords
-                ];
-                return {
-                    id,
-                    type: 'rectangle',
-                    corner,
-                    width,
-                    height,
-                };
-            }
-            case 'circle': {
-                const radius = Math.sqrt(
-                    (end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2
-                );
-                return {
-                    id,
-                    type: 'circle',
-                    center: start,
-                    radius,
-                };
-            }
-            default:
-                return null;
-        }
-    };
+    }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas]);
 
     return (
         <div className="fixed inset-0 bg-white z-50 flex flex-col" data-testid="sketch-canvas-overlay">
-            {/* Header */}
             <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
                 <div>
                     <h2 className="text-lg font-bold">Sketch Mode - {typeof plane === 'string' ? plane : plane.name}</h2>
@@ -399,15 +263,20 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                 </div>
             </div>
 
-            {/* Canvas */}
             <div className="flex-1 overflow-hidden" ref={containerRef}>
                 <canvas
                     ref={canvasRef}
                     width={size.width}
                     height={size.height}
                     className="cursor-crosshair bg-white"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
+                    onMouseDown={(e) => {
+                        const rect = canvasRef.current?.getBoundingClientRect();
+                        if (rect) handleMouseDown(e.clientX - rect.left, e.clientY - rect.top);
+                    }}
+                    onMouseMove={(e) => {
+                        const rect = canvasRef.current?.getBoundingClientRect();
+                        if (rect) handleMouseMove(e.clientX - rect.left, e.clientY - rect.top);
+                    }}
                     onMouseUp={handleMouseUp}
                     data-testid="sketch-canvas"
                 />

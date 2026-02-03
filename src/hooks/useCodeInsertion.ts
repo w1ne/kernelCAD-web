@@ -1,23 +1,24 @@
 import { useWorkbench } from '../context/WorkbenchContext';
-import { generateUniqueName } from '../lib/codeAnalysis';
 import { InsertShapeCommand } from '../commands/implementations/InsertShapeCommand';
 
 export function useCodeInsertion() {
-    const { editorInstance, commandManager } = useWorkbench();
+    const { editorInstance, commandManager, codeContext } = useWorkbench();
 
     const insertCode = (inputSnippet: string | ((name: string) => string), baseName = 'shape') => {
         if (!editorInstance) return;
 
         const model = editorInstance.getModel();
-        const currentCode = model.getValue();
+        if (!model) return;
 
         // 1. Determine variable name
-        const varName = generateUniqueName(currentCode, baseName);
+        const varName = codeContext.generateUniqueName(baseName);
         const snippet = typeof inputSnippet === 'function' ? inputSnippet(varName) : inputSnippet;
 
         // Check if this is a Shape declaration (Command Pattern with AST)
-        // Simple heuristic: starts with declaration keyword
-        if (/^\s*(const|let|var)\s+/.test(snippet)) {
+        // Strip leading comments to properly detect declarations
+        const trimmedSnippet = snippet.replace(/^(\s*\/\/.*\n|\s*\/\*[\s\S]*?\*\/\n?)*/g, '').trim();
+
+        if (/^(const|let|var)\s+/.test(trimmedSnippet)) {
             try {
                 commandManager.execute(new InsertShapeCommand(snippet, `Insert ${baseName}`));
                 editorInstance.focus();

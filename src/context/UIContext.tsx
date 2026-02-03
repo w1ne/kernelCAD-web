@@ -12,10 +12,24 @@ export interface UIContextType {
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
 
+import { useWorkbenchState } from './WorkbenchStateContext';
+
 export function UIProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>('code');
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>('shadedWithEdges');
-    const [activeDialog, setActiveDialog] = useState<string | null>(null);
+
+    // Use the central state machine for dialogs
+    const { state, dispatch } = useWorkbenchState();
+
+    const activeDialog = state.mode.type === 'DIALOG' ? state.mode.id : null;
+
+    const setActiveDialog = (dialogId: string | null) => {
+        if (dialogId) {
+            dispatch({ type: 'OPEN_DIALOG', id: dialogId });
+        } else {
+            dispatch({ type: 'CLOSE_DIALOG' });
+        }
+    };
 
     const value: UIContextType = {
         viewMode,

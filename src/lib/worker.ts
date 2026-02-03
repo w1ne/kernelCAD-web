@@ -61,7 +61,7 @@ self.onmessage = async ({ data: rawData }: { data: unknown }) => {
             await init();
 
             // Track sketches created during execution
-            const activeSketches: (replicad.Sketcher & { sketch?: { wire: replicad.Wire } })[] = [];
+            const activeSketches: any[] = [];
 
             // Create Safe Replicad Proxy using Factory and capture sketches
             const safeReplicad = createSafeReplicad(replicad, (sketch) => {
@@ -158,11 +158,15 @@ self.onmessage = async ({ data: rawData }: { data: unknown }) => {
                                             if (p && p.origin && p.normal) {
                                                 plane = {
                                                     origin: [p.origin.x, p.origin.y, p.origin.z] as [number, number, number],
-                                                    normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number]
+                                                    normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number],
+                                                    xDir: p.xDir ? [p.xDir.x, p.xDir.y, p.xDir.z] as [number, number, number] : undefined,
+                                                    yDir: p.yDir ? [p.yDir.x, p.yDir.y, p.yDir.z] as [number, number, number] : undefined
                                                 };
                                             } else {
                                                 const center = face.center;
                                                 const normal = face.normalAt();
+                                                // For non-planar surfaces or fallback, we might not have a stable X-axis easily available
+                                                // unless we compute it from UV derivatives.
                                                 if (center && normal) {
                                                     plane = {
                                                         origin: [center.x, center.y, center.z] as [number, number, number],

@@ -102,6 +102,9 @@ Wraps the Replicad Sketcher API to handle edge cases robustly:
 - **Error Boundaries**: `src/components/ErrorBoundary.tsx` wraps the workbench to catch React lifecycle errors.
 - **Code Rescue**: `src/components/ErrorFallback.tsx` provides a safe UI to recover/download code if the app crashes.
 - **Geometry Regression Suite**: `src/features/geometryRegression.test.ts` executes real kernel logic (in Node) to verify that primitives and boolean operations produce mathematically correct results (Volume, Bounds).
+- **Workflow Integration**: 
+    - `src/features/standardWorkflows.test.ts`: Validates end-to-end code generation and execution logic.
+    - `src/features/guiIntegration.test.tsx`: Validates UI (Toolbar -> Dialog -> Code) wiring using `happy-dom`.
 
 ## Data Flow
 1.  **Selection**: User selects a tool from the **Toolbar**.

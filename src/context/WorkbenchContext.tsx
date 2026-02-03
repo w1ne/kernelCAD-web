@@ -5,13 +5,14 @@
  * while internally delegating to focused contexts.
  */
 
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { CodeProvider, useCode, type CodeContextType } from './CodeContext';
 import { UIProvider, useUI, type UIContextType } from './UIContext';
 import { SelectionProvider, useSelection, type SelectionContextType } from './SelectionContext';
 import { GeometryProvider, useGeometry, type GeometryContextType } from './GeometryContext';
 import { useFaceSelection } from '../hooks/useFaceSelection';
 import { SketchingProvider, useSketching, type SketchingContextType } from './SketchingContext';
+import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
 
 // Combined type for backward compatibility
 export interface WorkbenchContextType extends
@@ -20,6 +21,8 @@ export interface WorkbenchContextType extends
     Omit<SelectionContextType, 'setSelectedFacePlane' | 'setIsFaceSelecting'>,
     GeometryContextType,
     SketchingContextType {
+    // New: Code generation context
+    codeContext: CodeGenerationContext;
     // Override from useFaceSelection hook
     startFaceSelection: () => void;
     cancelFaceSelection: () => void;
@@ -45,6 +48,12 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         code: codeCtx.code,
         onSketchModeChange: selectionCtx.setSketchMode
     });
+
+    // Create code context for feature generators
+    const codeContext = useMemo(() => {
+        const analyzer = new CodeAnalyzer(codeCtx.code);
+        return analyzer.createContext();
+    }, [codeCtx.code]);
 
     // Wrap startFaceSelection to also close the dialog
     const startFaceSelectionWithDialog = () => {
@@ -101,6 +110,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         selectEntity: sketchingCtx.selectEntity,
         clearSelection: sketchingCtx.clearSelection,
         solve: sketchingCtx.solve,
+        // New: Code generation context
+        codeContext,
     };
 
     // Expose for E2E testing

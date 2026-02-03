@@ -1,11 +1,15 @@
 // Geometry Engine: Class-based implementation
 import type {
     WorkerRequest,
-    WorkerResponse,
     ExecutionResult,
     GeometryResult,
     SketchGeometry,
     FaceGeometry
+} from './workerTypes';
+
+import {
+    WorkerResponseSchema,
+    isSuccessResponse
 } from './workerTypes';
 
 // Re-export types for consumers
@@ -91,17 +95,25 @@ export class GeometryEngine {
     /**
      * Handle incoming messages from the worker
      */
-    private handleMessage(event: MessageEvent<WorkerResponse>): void {
-        const { id } = event.data;
-        const pending = this.pendingMessages.get(id);
+    private handleMessage(event: MessageEvent<unknown>): void {
+        try {
+            // Strictly validate the incoming message structure
+            const response = WorkerResponseSchema.parse(event.data);
+            const { id } = response;
+            const pending = this.pendingMessages.get(id);
 
-        if (pending) {
-            if (event.data.type === 'SUCCESS') {
-                pending.resolve(event.data.geometries || event.data.blob);
-            } else {
-                pending.reject(new Error(event.data.error));
+            if (pending) {
+                if (isSuccessResponse(response)) {
+                    // response.geometries and response.blob are mutually exclusive but typed correctly by the guard
+                    pending.resolve(response.geometries || response.blob);
+                } else {
+                    pending.reject(new Error(response.error));
+                }
+                this.pendingMessages.delete(id);
             }
-            this.pendingMessages.delete(id);
+        } catch (err) {
+            console.error("Worker Protocol Violation:", err);
+            // Protocol error - we might not know the ID so we can't reject specific promise
         }
     }
 

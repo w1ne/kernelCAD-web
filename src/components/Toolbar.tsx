@@ -1,7 +1,6 @@
 import { PenTool, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { getReturnedVariables } from '../lib/ast';
 
 interface ToolbarProps {
     features: Feature[];
@@ -9,6 +8,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
+    console.error('Toolbar Render. Features prop count:', features.length);
     const {
         setActiveDialog,
         selectedFace,
@@ -16,7 +16,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
         setSketchMode,
         showSketches,
         toggleSketchVisibility,
-        code
+        codeContext
     } = useWorkbench();
 
     // Separate creation tools vs construction vs modification tools
@@ -36,21 +36,21 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
     const handleSketchOnFaceClick = () => {
         if (!selectedFace || !selectedFacePlane) return;
 
-        // Map shapeIndex to variable name using AST
-        const returnedVars = getReturnedVariables(code);
-        const targetName = returnedVars[selectedFace.shapeIndex] || 'shape';
+        // Map shapeIndex to variable name using unified context
+        const targetName = codeContext.returnedVariables[selectedFace.shapeIndex];
 
         // Enter sketch mode on this face plane
         setSketchMode({
             active: true,
             plane: {
                 id: `face-${selectedFace.faceId}-${Date.now()}`,
-                name: `Face ${selectedFace.faceId} of ${targetName}`,
+                name: targetName ? `Face ${selectedFace.faceId} of ${targetName}` : `Face ${selectedFace.faceId} of Anonymous Shape`,
                 type: 'face',
                 origin: selectedFacePlane.origin,
                 normal: selectedFacePlane.normal,
                 visible: true,
-                parentId: targetName
+                parentId: targetName as string | undefined, // Cast to match expected type (string | undefined)
+                faceId: selectedFace.faceId
             },
             currentSketch: null,
             tool: 'line'

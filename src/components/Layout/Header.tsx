@@ -120,6 +120,9 @@ export function Header() {
                 </button>
                 {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
             </div>
+            <div className="absolute bottom-0 right-0 p-1 text-[9px] text-gray-700 pointer-events-none opacity-50 font-mono">
+                {typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}
+            </div>
         </div>
     );
 }

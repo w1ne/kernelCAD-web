@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
  
+## [0.9.0] - 2026-02-01
+### Fixed - Critical Sketch Bugs
+- **Empty Sketch Extrusion Crash**:
+    - System now detects empty sketches (no geometry drawn) and throws a descriptive error instead of crashing with "No lines to convert into a wire".
+    - Implemented `_hasGeometry` tracking in `SafeSketcher` via Proxy pattern to intercept drawing commands.
+    - Updated `extrude` helper in `geometryHelpers.ts` to provide user-friendly error messages.
+    - Added comprehensive unit tests in `tests/reproduce_empty_sketch.test.ts`.
+- **Anonymous Shape Sketching Bug**:
+    - Fixed AST parser incorrectly resolving chained expressions (e.g., `box.cut(tool)`) to base variables (`box`).
+    - This caused sketches to attach to the wrong parent shape, leading to visual/parametric mismatches and empty sketch generation.
+    - Implemented strict `resolveVariableName` in `src/lib/ast.ts` to only resolve direct identifiers.
+    - System now generates safe "detached sketches" (`new Sketcher(plane)`) for anonymous shapes, ensuring correct global coordinates.
+- **Sketch Code Generation Split**:
+    - Resolved issue where sketch entities were generated in separate code blocks instead of being combined into the parent `sketchOnFace` call.
+
+### Changed
+- **SafeSketcher Proxy**: Enhanced method chaining to correctly return proxy instance for all drawing operations.
+- **AST Resolution**: Removed recursive variable resolution for `CallExpression` and `MemberExpression` to prevent false parent identification.
+
+### Technical
+- **Tests**: +6 new unit tests for empty sketch handling and AST resolution.
+- **Architecture**: Improved reliability layer defensive programming patterns.
+
 ## [0.8.0] - 2026-01-31
 ### Added - Sketch Visibility & Test Expansion
 - **Sketch Visibility**:

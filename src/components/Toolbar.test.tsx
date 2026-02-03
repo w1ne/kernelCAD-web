@@ -82,4 +82,34 @@ describe('Toolbar', () => {
         fireEvent.click(screen.getByTitle('Box'));
         expect(onToolClick).toHaveBeenCalledWith(mockFeatures[0]);
     });
+    it('should call setSketchMode when Sketch button clicked with selected face', () => {
+        const setSketchMode = vi.fn();
+        const selectedFace = { shapeIndex: 0, faceId: 12 };
+        const selectedFacePlane = { origin: [0, 0, 10], normal: [0, 0, 1] };
+
+        // Override mock for this test
+        vi.spyOn(WorkbenchContext, 'useWorkbench').mockReturnValue({
+            ...WorkbenchContext.useWorkbench(),
+            selectedFace,
+            selectedFacePlane,
+            setSketchMode,
+            code: 'const shape = {};'
+        } as any);
+
+        render(<Toolbar features={mockFeatures} onToolClick={vi.fn()} />);
+
+        // Find sketch button (PenTool icon)
+        // Lucide icons usually don't have text, but we added title attribute "Sketch on Selected Face"
+        const sketchBtn = screen.getByTitle('Sketch on Selected Face');
+        fireEvent.click(sketchBtn);
+
+        expect(setSketchMode).toHaveBeenCalledWith(expect.objectContaining({
+            active: true,
+            plane: expect.objectContaining({
+                id: expect.stringContaining('face-12'),
+                origin: selectedFacePlane.origin,
+                normal: selectedFacePlane.normal
+            })
+        }));
+    });
 });

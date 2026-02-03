@@ -62,7 +62,7 @@ describe('Standard Workflow Validation', () => {
         const removedVol = 4 * 10 * cornerArea;
         const expectedVol = 10000 - removedVol;
 
-        expectGeometryMatch({ volume: shape.volume }, { volume: expectedVol });
+        expectGeometryMatch({ volume: (shape as any).volume }, { volume: expectedVol });
     });
 
     it('should execute the Drilling workflow (Cylinder -> Cylinder -> Cut)', () => {
@@ -101,6 +101,6 @@ describe('Standard Workflow Validation', () => {
         // Result: 6000PI
 
         const expectedVol = Math.PI * 6000;
-        expectGeometryMatch({ volume: shape.volume }, { volume: expectedVol });
+        expectGeometryMatch({ volume: (shape as any).volume }, { volume: expectedVol });
     });
 });
