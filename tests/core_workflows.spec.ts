@@ -123,14 +123,14 @@ return replicad.makeBaseBox(${w}, 10, 10);
         let count = await getNextExecutionCount(page);
         await page.evaluate((c) => (window as any).setCode(c), code(10));
         await waitForStability(page, count);
-        let vol1 = await getTotalVolume(page);
+        const vol1 = await getTotalVolume(page);
         expect(vol1).toBeCloseTo(1000, 0.1);
 
         // Width 20 -> Vol 2000
         count = await getNextExecutionCount(page);
         await page.evaluate((c) => (window as any).setCode(c), code(20));
         await waitForStability(page, count);
-        let vol2 = await getTotalVolume(page);
+        const vol2 = await getTotalVolume(page);
         expect(vol2).toBeCloseTo(2000, 0.1);
 
         // Verify linearity

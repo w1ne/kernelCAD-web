@@ -59,11 +59,11 @@ export function createSafeReplicad<T extends ReplicadLike>(
   (safeReplicad as unknown as Record<string, unknown>).Sketcher = SafeSketcherWrapper;
 
   // Wrap makeBox to handle dimensions (w, h, d) by delegating to makeBaseBox
-  const originalMakeBox = (replicad as any).makeBox;
-  const originalMakeBaseBox = (replicad as any).makeBaseBox;
+  const originalMakeBox = (replicad as unknown as Record<string, unknown>).makeBox;
+  const originalMakeBaseBox = (replicad as unknown as Record<string, unknown>).makeBaseBox;
 
   if (typeof originalMakeBox === 'function' && typeof originalMakeBaseBox === 'function') {
-    (safeReplicad as any).makeBox = (...args: unknown[]) => {
+    (safeReplicad as unknown as Record<string, unknown>).makeBox = (...args: unknown[]) => {
       if (args.length === 3 && args.every((a) => typeof a === 'number')) {
         return originalMakeBaseBox.apply(safeReplicad, args);
       }

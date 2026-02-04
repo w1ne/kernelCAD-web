@@ -1,6 +1,6 @@
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
-import { chamfer, extrude, fillet, makeCompound, sketchOnFace, startSketch } from './geometryHelpers';
+import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from './geometryHelpers';
 import { createSafeReplicad, SafeSketcher } from './safeSketch';
 import { withTemporaryGlobals } from './withTemporaryGlobals';
 import { createUserGlobals } from './userGlobals';
@@ -160,8 +160,8 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
 
     // Fallback for native Replicad objects: use center and normalAt
     try {
-      const center = getFn(face, 'center') ? (face as any).center : (face as any).center;
-      const normal = getFn(face, 'normalAt') ? (face as any).normalAt() : null;
+      const center = getFn(face, 'center') ? (face as Record<string, unknown>).center : (face as Record<string, unknown>).center;
+      const normal = getFn(face, 'normalAt') ? (face as Record<string, () => unknown>).normalAt() : null;
 
       if (center && normal) {
         const origin = tryVec3(center);
@@ -250,7 +250,7 @@ function tryGetVolume(shape: unknown): number | undefined {
 
   // Try measureVolume from replicad
   try {
-    const v = (replicad as any).measureVolume(shape);
+    const v = (replicad as unknown as Record<string, (s: unknown) => unknown>).measureVolume(shape);
     if (typeof v === 'number' && v !== 0) return v;
   } catch {
     // ignore
@@ -419,7 +419,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
 
             // Safety check for deleted objects
             const isRec = isRecord(shape);
-            if (isRec && (shape as any).isDeleted) {
+            if (isRec && (shape as Record<string, unknown>).isDeleted) {
               console.warn(`Worker: Shape ${shapeIndex} is marked as deleted!`);
               return;
             }
@@ -473,8 +473,8 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           }
         });
 
-	        const trackedSketches = activeSketches
-	          .map((s, index) => {
+        const trackedSketches = activeSketches
+          .map((s, index) => {
             try {
               const sketchObj = s.sketch;
               const wire = getWire(sketchObj) ?? getWire(s as unknown);
@@ -484,31 +484,31 @@ self.onmessage = (e: MessageEvent<unknown>) => {
               console.warn(`Worker: Failed to track sketch ${index}:`, e);
               return null;
             }
-	          })
-	          .filter((s): s is SketchGeometry => s !== null);
+          })
+          .filter((s): s is SketchGeometry => s !== null);
 
-	        const allSketchesByFingerprint = new Map<string, SketchGeometry>();
-	        [...returnedSketches, ...trackedSketches].forEach((s) => {
-	          // Deduplicate sketches defensively (same sketch can be discovered via "returned shapes"
-	          // and via "tracked sketches"). Use a bbox-based fingerprint to avoid collisions.
-	          const v = s.vertices;
-	          let minX = Infinity, minY = Infinity, minZ = Infinity;
-	          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-	          for (let i = 0; i < v.length; i += 3) {
-	            const x = v[i] ?? 0;
-	            const y = v[i + 1] ?? 0;
-	            const z = v[i + 2] ?? 0;
-	            if (x < minX) minX = x;
-	            if (y < minY) minY = y;
-	            if (z < minZ) minZ = z;
-	            if (x > maxX) maxX = x;
-	            if (y > maxY) maxY = y;
-	            if (z > maxZ) maxZ = z;
-	          }
-	          const r = (n: number) => (Number.isFinite(n) ? Math.round(n * 1000) / 1000 : 0);
-	          const fingerprint = `${v.length}-${r(minX)}-${r(minY)}-${r(minZ)}-${r(maxX)}-${r(maxY)}-${r(maxZ)}`;
-	          if (!allSketchesByFingerprint.has(fingerprint)) allSketchesByFingerprint.set(fingerprint, s);
-	        });
+        const allSketchesByFingerprint = new Map<string, SketchGeometry>();
+        [...returnedSketches, ...trackedSketches].forEach((s) => {
+          // Deduplicate sketches defensively (same sketch can be discovered via "returned shapes"
+          // and via "tracked sketches"). Use a bbox-based fingerprint to avoid collisions.
+          const v = s.vertices;
+          let minX = Infinity, minY = Infinity, minZ = Infinity;
+          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+          for (let i = 0; i < v.length; i += 3) {
+            const x = v[i] ?? 0;
+            const y = v[i + 1] ?? 0;
+            const z = v[i + 2] ?? 0;
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (z < minZ) minZ = z;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            if (z > maxZ) maxZ = z;
+          }
+          const r = (n: number) => (Number.isFinite(n) ? Math.round(n * 1000) / 1000 : 0);
+          const fingerprint = `${v.length}-${r(minX)}-${r(minY)}-${r(minZ)}-${r(maxX)}-${r(maxY)}-${r(maxZ)}`;
+          if (!allSketchesByFingerprint.has(fingerprint)) allSketchesByFingerprint.set(fingerprint, s);
+        });
         const allSketches = [...allSketchesByFingerprint.values()];
 
         const transferables: Transferable[] = [];
@@ -537,14 +537,14 @@ self.onmessage = (e: MessageEvent<unknown>) => {
         const code = request.code;
         const safeReplicad = createSafeReplicad(replicad);
 
-	        const wrappedStartSketch = () => {
-	          const SketcherCtor = (safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher }).Sketcher;
-	          return new SketcherCtor();
-	        };
+        const wrappedStartSketch = () => {
+          const SketcherCtor = (safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher }).Sketcher;
+          return new SketcherCtor();
+        };
 
-	        const func = new Function(
-	          'replicad',
-	          'startSketch',
+        const func = new Function(
+          'replicad',
+          'startSketch',
           'makeCompound',
           'fillet',
           'chamfer',
