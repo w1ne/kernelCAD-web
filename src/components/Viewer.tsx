@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo, useState } from "react";
@@ -101,9 +101,9 @@ function SketchLine({
         <primitive
             object={line}
             renderOrder={999}
-            onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+            onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); }}
             onPointerOut={() => setHovered(false)}
-            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); }}
         />
     );
 }
@@ -151,7 +151,7 @@ function ParametricLayer() {
                         <mesh
                             key={entity.id}
                             position={[entity.x, entity.y, 0]}
-                            onClick={(e) => {
+                            onClick={(e: ThreeEvent<MouseEvent>) => {
                                 e.stopPropagation();
                                 selectEntity(entity.id, e.metaKey || e.ctrlKey);
                             }}
@@ -176,7 +176,7 @@ function ParametricLayer() {
                             <lineSegments
                                 key={entity.id}
                                 geometry={lineGeo}
-                                onClick={(e) => {
+                                onClick={(e: ThreeEvent<MouseEvent>) => {
                                     e.stopPropagation();
                                     selectEntity(entity.id, e.metaKey || e.ctrlKey);
                                 }}
@@ -200,7 +200,15 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
         <div className="w-full h-full relative">
             <Canvas
                 camera={{ position: [40, 40, 40], fov: 40 }}
-                raycaster={{ params: { Line: { threshold: 0.4 } } }}
+                raycaster={{
+                    params: {
+                        Line: { threshold: 0.4 },
+                        Mesh: {},
+                        LOD: {},
+                        Points: { threshold: 0.1 },
+                        Sprite: {}
+                    }
+                } as unknown as Partial<THREE.Raycaster>}
                 onPointerMissed={() => {
                     setSelectedFace(null);
                     setSelectedSketchName(null);

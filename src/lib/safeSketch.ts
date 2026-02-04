@@ -7,6 +7,7 @@ type ReplicadLike = Record<string, unknown> & {
 type SketcherLike = {
   movePointerTo(point: Point): unknown;
   lineTo(point: Point): unknown;
+  line(x: number, y: number): unknown;
   hLine(x: number): unknown;
   vLine(y: number): unknown;
   close(): unknown;

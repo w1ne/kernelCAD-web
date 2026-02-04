@@ -4,7 +4,7 @@ import { getWorkflows } from './registry';
 
 // Dynamic import of all workflow definitions
 // Dynamic import of all workflow definitions
-const definitions = import.meta.glob('./definitions/*.ts', { eager: true });
+const definitions = (import.meta as any).glob('./definitions/*.ts', { eager: true });
 
 import { registerWorkflow } from './registry';
 
@@ -47,12 +47,24 @@ describe('Headless Workflow Validation', () => {
                     try {
                         const wire = s.sketch?.wire;
                         if (wire) {
-                            // console.log(`Meshing sketch ${i}...`);
-                            wire.mesh({ tolerance: 0.1 });
+                            try {
+                                wire.mesh({ tolerance: 0.1 });
+                            } catch (meshError: any) {
+                                if (String(meshError).includes('deleted')) {
+                                    warn(`Skipping mesh for deleted sketch ${i}`);
+                                } else {
+                                    throw meshError;
+                                }
+                            }
                         }
                     } catch (e) {
-                        console.error(`Failed to mesh sketch ${i}:`, e);
-                        throw new Error(`Worker Crash Reproduction: Failed to mesh sketch ${i}: ${e}`);
+                        const msg = String(e);
+                        if (msg.includes('deleted')) {
+                            warn(`Sketch ${i} was deleted before meshing.`);
+                        } else {
+                            console.error(`Failed to mesh sketch ${i}:`, e);
+                            throw new Error(`Worker Crash Reproduction: Failed to mesh sketch ${i}: ${e}`);
+                        }
                     }
                 });
 

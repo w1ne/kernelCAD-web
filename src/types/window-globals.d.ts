@@ -8,6 +8,7 @@ declare global {
     isEditorReady?: boolean;
 
     __TEST_SELECT_FACE?: (shapeIndex: number, faceId: number) => void;
+    __TEST_SELECT_SKETCH?: (name: string | null) => void;
     getSelectedFace?: () => { shapeIndex: number; faceId: number } | null;
 
     getGeometries?: () => unknown;

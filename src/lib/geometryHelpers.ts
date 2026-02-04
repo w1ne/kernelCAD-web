@@ -92,7 +92,7 @@ export const extrude = (profile: unknown, distance: number) => {
     throw new Error(`Cannot extrude non-planar object (type: ${geomType}). Please select a flat face.`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('No lines to convert into a wire')) {
+    if (message.includes('No lines to convert into a wire') || message.includes('face.clone is not a function')) {
       throw new Error(
         'Extrusion failed: The sketch is empty or contains invalid geometry. Please draw some geometry before extruding.',
       );
