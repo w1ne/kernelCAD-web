@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
  
+## [0.10.0] - 2026-02-04
+### Added - Release Automation & Testing Infrastructure
+- **Release Automation**:
+    - Created `scripts/release.ts` for automated version bumping, tagging, and release note generation.
+    - Integrated release script with `npm run release -- [major|minor|patch]` command.
+    - Automated CHANGELOG updates and git tag creation.
+- **Comprehensive E2E Test Suite**:
+    - Added `tests/core_workflows.spec.ts` covering Box, Cylinder, Extrude, Revolve, Fillet, and Boolean operations.
+    - Added `tests/error_handling.spec.ts` for edge case validation and error recovery.
+    - Added `tests/extrude_face_anonymous_shape.spec.ts` and `tests/extrude_from_code_sketch.spec.ts`.
+    - Improved Playwright configuration for better test stability and parallelization.
+- **Custom Icon System**:
+    - Created `src/icons/cad.ts` with custom CAD-specific icons.
+    - Added `src/components/CustomIcons.tsx` for icon component library.
+- **Integration Test Suite**:
+    - Added `src/integration/e2e_workflows.test.ts` for workflow validation.
+    - Added `src/integration/ui_workflows.test.tsx` for UI interaction testing.
+
+### Changed
+- **Documentation**:
+    - Updated `RELEASE_STRATEGY.md` with Git Flow branching model and branch protection rules.
+    - Added comprehensive release note template matching professional standards.
+    - Enhanced `TESTING_STRATEGY.md` with detailed testing approach and coverage goals.
+    - Updated `INTERFACES.md` with improved API documentation.
+- **Worker Improvements**:
+    - Refactored geometry worker for better error handling and reliability.
+    - Improved memory management and buffer transfers.
+    - Enhanced sketch processing and validation.
+- **Type System**:
+    - Added `src/types/editor.ts`, `src/types/replicad-opencascadejs.d.ts`, and `src/types/window-globals.d.ts`.
+    - Improved type safety across the codebase.
+
+### Fixed
+- **Build Configuration**:
+    - Updated `vite.config.ts` for better build performance.
+    - Enhanced `tsconfig.app.json` with stricter type checking.
+- **Test Stability**:
+    - Removed flaky test artifacts and improved test isolation.
+    - Fixed empty sketch validation tests.
+
+### Technical
+- **Code Quality**: Added ESLint rules for better code organization.
+- **Dependencies**: Updated package-lock.json with latest compatible versions.
+- **Cleanup**: Removed obsolete files (`scripts/release.sh`, `public/opencascade.wasm`).
+
 ## [0.9.0] - 2026-02-01
 ### Fixed - Critical Sketch Bugs
 - **Empty Sketch Extrusion Crash**:
