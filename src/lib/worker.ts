@@ -1,306 +1,581 @@
-import * as replicad from "replicad";
-import { setOC } from "replicad";
-import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude } from "./geometryHelpers";
-import { createSafeReplicad, SafeSketcher } from "./safeSketch";
-import { type WorkerRequest, type WorkerResponse, WorkerRequestSchema } from "./workerTypes";
+import * as replicad from 'replicad';
+import { setOC } from 'replicad';
+import { chamfer, extrude, fillet, makeCompound, sketchOnFace, startSketch } from './geometryHelpers';
+import { createSafeReplicad, SafeSketcher } from './safeSketch';
+import { withTemporaryGlobals } from './withTemporaryGlobals';
+import { createUserGlobals } from './userGlobals';
+import {
+  type ExecutionResult,
+  type FaceGeometry,
+  type GeometryResult,
+  type SketchGeometry,
+  type WorkerRequest,
+  type WorkerResponse,
+  WorkerRequestSchema,
+} from './workerTypes';
+
+type UnknownRecord = Record<string, unknown>;
+
+const DEBUG = false;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function getFn(obj: unknown, key: string): ((...args: unknown[]) => unknown) | null {
+  if (!isRecord(obj)) return null;
+  const val = obj[key];
+  return typeof val === 'function' ? (val as (...args: unknown[]) => unknown) : null;
+}
+
+function getString(obj: unknown, key: string): string | null {
+  if (!isRecord(obj)) return null;
+  const val = obj[key];
+  return typeof val === 'string' ? val : null;
+}
+
+function getWire(obj: unknown): unknown | null {
+  if (!isRecord(obj)) return null;
+
+  // Prefer explicit wire/outline accessors when available (sketch results, planar faces, etc.).
+  const tryWireValue = (val: unknown, ctx: unknown): unknown | null => {
+    if (!val) return null;
+    if (isRecord(val)) return val;
+    if (typeof val === 'function') {
+      try {
+        const out = (val as (...args: unknown[]) => unknown).call(ctx);
+        return out ?? null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // Unwrap common Replicad wrappers.
+  const raw =
+    (isRecord((obj as UnknownRecord)._wrapped) ? ((obj as UnknownRecord)._wrapped as UnknownRecord) : null) ??
+    (isRecord((obj as UnknownRecord).occ) ? ((obj as UnknownRecord).occ as UnknownRecord) : null);
+  if (raw) {
+    const unwrapped = getWire(raw);
+    if (unwrapped) return unwrapped;
+  }
+
+  const shapeProp = (obj as UnknownRecord).shape;
+  if (shapeProp) {
+    const fromShape = getWire(shapeProp);
+    if (fromShape) return fromShape;
+  }
+
+  const directWire = tryWireValue(obj.wire, obj);
+  if (directWire) return directWire;
+
+  const wireFn = getFn(obj, 'wire');
+  if (wireFn) {
+    try {
+      const out = wireFn.call(obj);
+      if (out) return out;
+    } catch {
+      // ignore
+    }
+  }
+
+  const outerWire = tryWireValue((obj as UnknownRecord).outerWire, obj);
+  if (outerWire) return outerWire;
+
+  const outerWireFn = getFn(obj, 'outerWire');
+  if (outerWireFn) {
+    try {
+      const out = outerWireFn.call(obj);
+      if (out) return out;
+    } catch {
+      // ignore
+    }
+  }
+
+  const wires = (obj as UnknownRecord).wires;
+  if (Array.isArray(wires) && wires.length > 0 && isRecord(wires[0])) return wires[0];
+
+  // Recurse into common wrapper containers (e.g. SafeSketcher.sketch, sketch result holders).
+  const sketch = (obj as UnknownRecord).sketch;
+  if (sketch) {
+    const fromSketch = getWire(sketch);
+    if (fromSketch) return fromSketch;
+  }
+
+  return null;
+}
+
+function tryVec3(v: unknown): [number, number, number] | null {
+  if (Array.isArray(v) && v.length >= 3) {
+    const [x, y, z] = v;
+    if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number') return [x, y, z];
+  }
+  if (!isRecord(v)) return null;
+  const xr = (v as UnknownRecord).x;
+  const yr = (v as UnknownRecord).y;
+  const zr = (v as UnknownRecord).z;
+  const Xr = (v as UnknownRecord).X;
+  const Yr = (v as UnknownRecord).Y;
+  const Zr = (v as UnknownRecord).Z;
+
+  const x = typeof xr === 'number' ? xr : (typeof xr === 'function' ? (xr as () => unknown).call(v) : (typeof Xr === 'number' ? Xr : (typeof Xr === 'function' ? (Xr as () => unknown).call(v) : null)));
+  const y = typeof yr === 'number' ? yr : (typeof yr === 'function' ? (yr as () => unknown).call(v) : (typeof Yr === 'number' ? Yr : (typeof Yr === 'function' ? (Yr as () => unknown).call(v) : null)));
+  const z = typeof zr === 'number' ? zr : (typeof zr === 'function' ? (zr as () => unknown).call(v) : (typeof Zr === 'number' ? Zr : (typeof Zr === 'function' ? (Zr as () => unknown).call(v) : null)));
+
+  if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') return null;
+  return [x, y, z];
+}
+
+function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
+  if (!isRecord(face)) return undefined;
+  const geomType = getString(face, 'geomType');
+  if (!geomType) return undefined;
+  const geomTypeUpper = geomType.toUpperCase();
+  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
+
+  const p =
+    (isRecord(face.planarPlane) ? face.planarPlane : null) ??
+    (isRecord(face.plane) ? face.plane : null) ??
+    (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
+
+  if (!p) {
+    // Preferred fallback: use Replicad helper to compute a full plane.
+    try {
+      const makePlaneFromFace = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
+      if (typeof makePlaneFromFace === 'function') {
+        const plane = makePlaneFromFace(face);
+        const origin = tryVec3((plane as UnknownRecord).origin);
+        const norm = tryVec3((plane as UnknownRecord).zDir) ?? tryVec3((plane as UnknownRecord).normal);
+        const xDir = tryVec3((plane as UnknownRecord).xDir);
+        const yDir = tryVec3((plane as UnknownRecord).yDir);
+
+        if (origin && norm) {
+          return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+        }
+      }
+    } catch (e) {
+      if (DEBUG) console.warn('Worker: makePlaneFromFace extraction failed', e);
+    }
+
+    // Fallback for native Replicad objects: use center and normalAt
+    try {
+      const center = getFn(face, 'center') ? (face as any).center : (face as any).center;
+      const normal = getFn(face, 'normalAt') ? (face as any).normalAt() : null;
+
+      if (center && normal) {
+        const origin = tryVec3(center);
+        const norm = tryVec3(normal);
+        if (origin && norm) {
+          return { origin, normal: norm };
+        }
+      }
+    } catch (e) {
+      if (DEBUG) console.warn('Worker: Fallback plane extraction failed', e);
+    }
+    return undefined;
+  }
+
+  const origin =
+    tryVec3((p as UnknownRecord).origin) ??
+    tryVec3((p as UnknownRecord).location) ??
+    tryVec3((p as UnknownRecord).pos) ??
+    tryVec3((p as UnknownRecord).p0);
+
+  const normal =
+    tryVec3((p as UnknownRecord).normal) ??
+    tryVec3((p as UnknownRecord).zDir) ??
+    tryVec3((p as UnknownRecord).direction) ??
+    tryVec3((p as UnknownRecord).dir);
+
+  if (!origin || !normal) return undefined;
+
+  const xDir =
+    tryVec3((p as UnknownRecord).xDir) ??
+    tryVec3((p as UnknownRecord).xDirection) ??
+    tryVec3((p as UnknownRecord).xAxis);
+  const yDir =
+    tryVec3((p as UnknownRecord).yDir) ??
+    tryVec3((p as UnknownRecord).yDirection) ??
+    tryVec3((p as UnknownRecord).yAxis);
+
+  return { origin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+}
+
+function meshWireToSketch(wire: unknown, id: string, name: string): SketchGeometry | null {
+  if (!isRecord(wire)) return null;
+  const meshEdgesFn = getFn(wire, 'meshEdges');
+  if (meshEdgesFn) {
+    const meshEdges = meshEdgesFn.call(wire, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+    const lines = isRecord(meshEdges) && Array.isArray((meshEdges as UnknownRecord).lines)
+      ? ((meshEdges as UnknownRecord).lines as number[])
+      : null;
+    if (lines && lines.length > 0) {
+      return { id, name, vertices: new Float32Array(lines) };
+    }
+  }
+
+  const meshFn = getFn(wire, 'mesh');
+  if (!meshFn) return null;
+
+  const mesh = meshFn.call(wire, { tolerance: 0.1 }) as UnknownRecord;
+  if (!isRecord(mesh) || !Array.isArray(mesh.vertices)) return null;
+  return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
+}
+
+function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null {
+  if (!isRecord(face)) return null;
+  const meshFn = getFn(face, 'mesh');
+  if (!meshFn) return null;
+
+  const mesh = meshFn.call(face, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+  if (!isRecord(mesh)) return null;
+
+  const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
+  const triangles = Array.isArray(mesh.triangles) ? (mesh.triangles as number[]) : null;
+  const normals = Array.isArray(mesh.normals) ? (mesh.normals as number[]) : null;
+  if (!vertices || !triangles || !normals) return null;
+
+  return {
+    vertices: new Float32Array(vertices),
+    indices: new Uint32Array(triangles),
+    normals: new Float32Array(normals),
+    faceId,
+    plane: tryExtractPlaneFromFace(face),
+  };
+}
+
+function tryGetVolume(shape: unknown): number | undefined {
+  if (!isRecord(shape)) return undefined;
+
+  // Try measureVolume from replicad
+  try {
+    const v = (replicad as any).measureVolume(shape);
+    if (typeof v === 'number' && v !== 0) return v;
+  } catch {
+    // ignore
+  }
+
+  const raw = (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
+
+  // Try to call volume() method with context
+  const volFn = getFn(raw, 'volume') ?? getFn(shape, 'volume');
+  if (volFn) {
+    try {
+      const context = getFn(raw, 'volume') ? raw : shape;
+      const v = volFn.call(context);
+      if (typeof v === 'number') return v;
+    } catch {
+      // ignore and look for property
+    }
+  }
+
+  // Try to read volume property
+  const volVal = (raw as UnknownRecord).volume;
+  if (typeof volVal === 'number') return volVal;
+
+  const shapeVolVal = (shape as UnknownRecord).volume;
+  if (typeof shapeVolVal === 'number') return shapeVolVal;
+
+  return undefined;
+}
 
 let isInitialized = false;
+let executionLock = Promise.resolve();
 
 async function init() {
-    if (isInitialized) return;
+  if (isInitialized) return;
 
-    try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const opencascade = (await import("replicad-opencascadejs")).default;
+  try {
+    const mod = (await import('replicad-opencascadejs')) as unknown as {
+      default: (opts?: unknown) => Promise<unknown>;
+    };
+    const opencascade = mod.default;
 
-        let OC;
-        if (typeof self !== "undefined" && import.meta.env) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            OC = await opencascade({
-                locateFile: () => (import.meta.env.BASE_URL + "opencascade.wasm").replace("//", "/"),
-            });
-        } else {
-            OC = await opencascade();
+    const env = (import.meta as unknown as { env?: Record<string, unknown> }).env ?? {};
+    if (DEBUG) console.log('Worker: Initializing OpenCascade...');
+    if (DEBUG) console.log('Worker: Environment:', JSON.stringify(env));
+
+    const OC = await opencascade({
+      locateFile: (file: string) => {
+        if (file.endsWith('.wasm')) {
+          const baseUrl = typeof env.BASE_URL === 'string' ? env.BASE_URL : '/';
+          let path = baseUrl.startsWith('.') ? '/' + file : baseUrl + file;
+          path = path.replace(/\/\//g, '/');
+          const finalUrl = new URL(path, self.location.origin).href + '?v=' + Date.now();
+          if (DEBUG) console.log(`Worker: Locating ${file} -> ${finalUrl}`);
+          return finalUrl;
         }
+        return file;
+      },
+    });
 
-        setOC(OC);
-        isInitialized = true;
-        console.log("Worker: Replicad initialized");
-    } catch (e) {
-        console.error("Worker: Init error", e);
-        throw e;
-    }
+    setOC(OC);
+    isInitialized = true;
+    if (DEBUG) console.log('Worker: OpenCascade initialized successfully');
+  } catch (err) {
+    console.error('Worker: Failed to initialize OpenCascade:', err);
+    throw err;
+  }
 }
 
-// Type-safe message handler
 function postResponse(response: WorkerResponse, transfer?: Transferable[]) {
-    if (transfer) {
-        self.postMessage(response, { transfer } as unknown as { transfer: Transferable[] });
-    } else {
-        self.postMessage(response);
-    }
+  if (transfer) self.postMessage(response, { transfer } as unknown as { transfer: Transferable[] });
+  else self.postMessage(response);
 }
 
-self.onmessage = async ({ data: rawData }: { data: unknown }) => {
+self.onmessage = (e: MessageEvent<unknown>) => {
+  const rawData = e.data;
+
+  // Queue all incoming messages to process them sequentially
+  executionLock = executionLock.then(async () => {
     let request: WorkerRequest;
     try {
-        request = WorkerRequestSchema.parse(rawData);
-    } catch (e) {
-        console.error("Worker Protocol Violation:", e);
-        const id = (rawData as any)?.id || 'unknown';
-        postResponse({ type: 'ERROR', id, error: `Protocol Violation: ${e}` });
-        return;
+      request = WorkerRequestSchema.parse(rawData);
+    } catch (err: unknown) {
+      const id = getString(rawData, 'id') ?? 'unknown';
+      postResponse({ type: 'ERROR', id, error: `Protocol Violation: ${String(err)}` });
+      return;
     }
 
-    const { type, code, id } = request;
+    const { type, id } = request;
+
+    if (type === 'INIT') {
+      try {
+        await init();
+        postResponse({ type: 'SUCCESS', id });
+      } catch (error: unknown) {
+        postResponse({ type: 'ERROR', id, error: String(error) });
+      }
+      return;
+    }
 
     if (type === 'EXECUTE') {
-        try {
-            await init();
+      try {
+        await init();
+        const code = request.code;
+        if (DEBUG) console.log(`Worker: Executing code: ${code.substring(0, 100)}...`);
 
-            // Track sketches created during execution
-            const activeSketches: any[] = [];
+        const activeSketches: SafeSketcher[] = [];
+        const safeReplicad = createSafeReplicad(replicad, (sketch) => activeSketches.push(sketch));
 
-            // Create Safe Replicad Proxy using Factory and capture sketches
-            const safeReplicad = createSafeReplicad(replicad, (sketch) => {
-                activeSketches.push(sketch);
-            });
+        const wrappedStartSketch = () => {
+          const SketcherCtor = (safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher }).Sketcher;
+          return new SketcherCtor();
+        };
 
-            // We need to capture the underlying sketcher from the SafeSketcher if we want to extract check wire?
-            // SafeSketcher wraps the real one. 
-            // 'activeSketches' functionality relies on the object returned by 'startSketch'.
-            // If startSketch returns SafeSketcher, can we mesh it?
-            // SafeSketcher proxies methods, but does it expose 'sketch' property?
-            // I need to add 'sketch' getter to SafeSketcher!
+        const wrappedSketchOnFace = (shape: unknown, faceId: number) => {
+          const native = getFn(shape, 'sketchOnFace');
+          const sketcher = native ? native.call(shape, faceId) : sketchOnFace(shape, faceId);
+          const safeSketch = new SafeSketcher(sketcher);
+          activeSketches.push(safeSketch);
+          return safeSketch;
+        };
 
-            // Helper to proxy objects and capture derived sketches
-            const createCaptureProxy = (target: any): any => {
-                if (typeof target !== 'object' || target === null) return target;
+        const userGlobals = createUserGlobals(
+          safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher },
+        );
 
-                return new Proxy(target, {
-                    get: (obj, prop) => {
-                        const value = (obj as any)[prop];
-                        if (typeof value === 'function') {
-                            return (...args: any[]) => {
-                                const result = value.apply(obj, args);
-                                // If result looks like a sketch/shape (has wire/mesh), capture it
-                                if (result && typeof result === 'object') {
-                                    // Check for wire or mesh capability to identify interesting objects
-                                    // But avoid capturing generic objects or arrays unless they are shapes
-                                    if ((result.wire || result.sketch?.wire || typeof result.mesh === 'function') && !activeSketches.includes(result)) {
-                                        activeSketches.push(result);
-                                        // Recursively proxy the result so we capture ITS children
-                                        return createCaptureProxy(result);
-                                    }
-                                }
-                                return result;
-                            };
-                        }
-                        return value;
-                    }
-                });
-            };
+        const func = new Function(
+          'replicad',
+          'startSketch',
+          'makeCompound',
+          'fillet',
+          'chamfer',
+          'sketchOnFace',
+          'extrude',
+          code,
+        ) as unknown as (...args: unknown[]) => unknown;
 
-            const wrappedStartSketch = () => {
-                const s = startSketch();
-                const safeS = new SafeSketcher(s);
-                activeSketches.push(safeS);
-                return safeS;
-            };
+        const result = withTemporaryGlobals(
+          {
+            // Convenience globals for generated snippets and common user code.
+            // Safe per-execution: restored after this run to avoid leaking callbacks/closures.
+            ...userGlobals,
+          },
+          () =>
+            func(
+              safeReplicad,
+              wrappedStartSketch,
+              makeCompound,
+              fillet,
+              chamfer,
+              wrappedSketchOnFace,
+              extrude,
+            ),
+        );
+        const shapes = (Array.isArray(result) ? result : [result]).filter(Boolean);
 
-            const wrappedSketchOnFace = (shape: any, faceId: number) => {
-                const s = sketchOnFace(shape, faceId);
-                const safeS = new SafeSketcher(s);
-                activeSketches.push(safeS);
-                return safeS;
-            };
+        const geometries: GeometryResult[] = [];
+        const returnedSketches: SketchGeometry[] = [];
 
-            // Fix SafeSketcher to expose 'sketch' property (getter)
-            // or modify activeSketches logic to unwrap.
-
-            // Create function with injected scope
-            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", "sketchOnFace", "extrude", code);
-            // Pass safeReplicad instead of replicad
-            const result = func(safeReplicad, wrappedStartSketch, makeCompound, fillet, chamfer, wrappedSketchOnFace, extrude);
-
-            // Normalize result
-            const shapes = Array.isArray(result) ? result : [result];
-
-            const geometries: any[] = [];
-            const returnedSketches: any[] = [];
-
-            shapes
-                .filter((shape: any, index: number) => {
-                    if (!shape || (typeof shape.mesh !== "function" && !shape.wire && !shape.sketch?.wire)) {
-                        console.warn(`Worker: Invalid object at index ${index} - skipping mesh. Details:`, {
-                            typeof: typeof shape,
-                            keys: shape ? Object.keys(shape) : null,
-                            constructor: shape?.constructor?.name
-                        });
-                        return false;
-                    }
-                    return true;
-                })
-                .forEach((shape: any, shapeIndex: number) => {
-                    try {
-                        // 1. Check for Faces (Solid Geometry)
-                        if (shape.faces && shape.faces.length > 0) {
-                            const faceGeometries = shape.faces.map((face: replicad.Face, index: number) => {
-                                try {
-                                    const mesh = face.mesh({ tolerance: 0.1, angularTolerance: 30 });
-
-                                    let plane;
-                                    try {
-                                        if ((face.geomType as any) === 'PLANE' || (face.geomType as any) === 'Planar') {
-                                            const p = (face as any).planarPlane || (face as any).plane;
-                                            if (p && p.origin && p.normal) {
-                                                plane = {
-                                                    origin: [p.origin.x, p.origin.y, p.origin.z] as [number, number, number],
-                                                    normal: [p.normal.x, p.normal.y, p.normal.z] as [number, number, number],
-                                                    xDir: p.xDir ? [p.xDir.x, p.xDir.y, p.xDir.z] as [number, number, number] : undefined,
-                                                    yDir: p.yDir ? [p.yDir.x, p.yDir.y, p.yDir.z] as [number, number, number] : undefined
-                                                };
-                                            } else {
-                                                const center = face.center;
-                                                const normal = face.normalAt();
-                                                // For non-planar surfaces or fallback, we might not have a stable X-axis easily available
-                                                // unless we compute it from UV derivatives.
-                                                if (center && normal) {
-                                                    plane = {
-                                                        origin: [center.x, center.y, center.z] as [number, number, number],
-                                                        normal: [normal.x, normal.y, normal.z] as [number, number, number]
-                                                    };
-                                                }
-                                            }
-                                        }
-                                    } catch (e) {
-                                        // Silent warning for plane detection
-                                    }
-
-                                    return {
-                                        vertices: new Float32Array(mesh.vertices),
-                                        indices: new Uint32Array(mesh.triangles),
-                                        normals: new Float32Array(mesh.normals),
-                                        faceId: index,
-                                        plane
-                                    };
-                                } catch (e) {
-                                    console.warn(`Worker: Failed to mesh face ${index} of shape ${shapeIndex}`, e);
-                                    return null;
-                                }
-                            }).filter((f: any) => f !== null);
-
-                            if (faceGeometries.length > 0) {
-                                geometries.push({
-                                    faces: faceGeometries
-                                });
-                            }
-                        }
-
-                        // 2. Check for Wire (Sketch Geometry) in the returned shapes
-                        // Use try-catch for property access as Replicad objects can throw on property access if invalid
-                        try {
-                            const wire = shape.wire || shape.sketch?.wire;
-                            if (wire) {
-                                const mesh = wire.mesh({ tolerance: 0.1 });
-                                returnedSketches.push({
-                                    id: `return-sketch-${shapeIndex}-${Date.now()}`,
-                                    name: `sketch_ret_${shapeIndex + 1}`,
-                                    vertices: new Float32Array(mesh.vertices)
-                                });
-                            }
-                        } catch (e) {
-                            console.warn(`Worker: Failed to extract/mesh wire for shape ${shapeIndex}`, e);
-                        }
-                    } catch (e) {
-                        console.error(`Worker: Critical error processing shape ${shapeIndex}`, e);
-                    }
-                });
-
-            // Extract geometries for sketches from activeSketches tracker
-            const trackedSketches = activeSketches.map((s, index) => {
-                try {
-                    // Try to get wire from SafeSketcher or original
-                    const wire = (s as any).wire || (s as any).sketch?.wire || (s as any).sketcher?.sketch?.wire;
-
-                    if (!wire) {
-                        return null;
-                    }
-                    const mesh = wire.mesh({ tolerance: 0.1 });
-
-                    return {
-                        id: `sketch-${index}-${Date.now()}`,
-                        name: `sketch${index + 1}`,
-                        vertices: new Float32Array(mesh.vertices)
-                    };
-                } catch (e) {
-                    console.warn("Failed to mesh tracked sketch", e);
-                    return null;
-                }
-            }).filter((s): s is NonNullable<typeof s> => s !== null);
-
-            // Combine and deduplicate sketches by comparing vertex count and first vertex
-            // (Simple heuristic to avoid double-rendering same sketches from return and tracker)
-            const allSketchesMap = new Map<string, any>();
-
-            [...returnedSketches, ...trackedSketches].forEach(s => {
-                const fingerprint = `${s.vertices.length}-${s.vertices[0]}-${s.vertices[1]}`;
-                if (!allSketchesMap.has(fingerprint)) {
-                    allSketchesMap.set(fingerprint, s);
-                }
-            });
-
-            const allSketches = Array.from(allSketchesMap.values());
-
-            // Transfer buffers
-            const transferables: Transferable[] = [];
-            geometries.forEach((g: any) => {
-                g.faces.forEach((f: any) => {
-                    transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
-                });
-            });
-
-            allSketches.forEach((s) => {
-                if (s) transferables.push(s.vertices.buffer);
-            });
-
-            postResponse({
-                type: 'SUCCESS',
-                id,
-                geometries: {
-                    geometries,
-                    sketches: allSketches
-                }
-            }, transferables);
-
-        } catch (error) {
-            postResponse({ type: 'ERROR', id, error: String(error) });
-        }
-    } else if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
-        try {
-            await init();
-            // Export usually doesn't need helpers injected into the function if the code is just the user code, 
-            // but the user code might USE helpers, so we MUST inject them.
-            // The function signature in 'EXECUTE' was ("replicad", "startSketch"...) 
-            // The user code string is the body.
-            const func = new Function("replicad", "startSketch", "makeCompound", "fillet", "chamfer", "sketchOnFace", "extrude", code);
-            const result = func(replicad, startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude);
-
-            const shape = Array.isArray(result) ? result[0] : result;
-            if (!shape) throw new Error("No shape returned");
-
-            let blob;
-            if (type === 'EXPORT_STEP') {
-                blob = shape.blobSTEP();
-            } else {
-                blob = shape.blobSTL();
+        shapes.forEach((shape, shapeIndex) => {
+          try {
+            console.log(`Worker: Processing shape ${shapeIndex}...`);
+            if (!isRecord(shape)) {
+              console.log(`Worker: Shape ${shapeIndex} is not a record:`, typeof shape);
+              return;
             }
 
-            postResponse({ type: 'SUCCESS', id, blob });
-        } catch (error) {
-            postResponse({ type: 'ERROR', id, error: String(error) });
+            // Safety check for deleted objects
+            const isRec = isRecord(shape);
+            if (isRec && (shape as any).isDeleted) {
+              console.warn(`Worker: Shape ${shapeIndex} is marked as deleted!`);
+              return;
+            }
+
+            const facesRaw = shape.faces;
+            console.log(`Worker: Shape ${shapeIndex} faces accessed.`);
+
+            const faces = (() => {
+              if (Array.isArray(facesRaw)) return facesRaw;
+              if (!isRecord(facesRaw)) return null;
+
+              const maybeLen = (facesRaw as { length?: unknown }).length;
+              if (typeof maybeLen !== 'number') return null;
+              return Array.from(facesRaw as unknown as ArrayLike<unknown>);
+            })();
+
+            console.log(`Worker: Shape ${shapeIndex} faces retrieved: ${faces?.length || 0}`);
+
+            const faceGeometries: FaceGeometry[] = [];
+            if (Array.isArray(faces)) {
+              faces.forEach((face, faceId) => {
+                try {
+                  const geometry = meshFaceToGeometry(face, faceId);
+                  if (geometry) faceGeometries.push(geometry);
+                } catch (e) {
+                  console.warn(`Worker: Failed to mesh face ${faceId} of shape ${shapeIndex}:`, e);
+                }
+              });
+            }
+
+            if (faceGeometries.length > 0) {
+              const volume = tryGetVolume(shape);
+              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}`);
+              geometries.push({ faces: faceGeometries, volume });
+            } else {
+              console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
+            }
+
+            const wire = getWire(shape);
+            if (wire) {
+              console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
+              try {
+                const sketch = meshWireToSketch(wire, `return-sketch-${shapeIndex}-${Date.now()}`, `sketch_ret_${shapeIndex + 1}`);
+                if (sketch) returnedSketches.push(sketch);
+              } catch (e) {
+                console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e);
+              }
+            }
+          } catch (err) {
+            console.error(`Worker: Fatal error processing shape ${shapeIndex}:`, err);
+          }
+        });
+
+	        const trackedSketches = activeSketches
+	          .map((s, index) => {
+            try {
+              const sketchObj = s.sketch;
+              const wire = getWire(sketchObj) ?? getWire(s as unknown);
+              if (!wire) return null;
+              return meshWireToSketch(wire, `sketch-${index}-${Date.now()}`, `sketch${index + 1}`);
+            } catch (e) {
+              console.warn(`Worker: Failed to track sketch ${index}:`, e);
+              return null;
+            }
+	          })
+	          .filter((s): s is SketchGeometry => s !== null);
+
+	        const allSketchesByFingerprint = new Map<string, SketchGeometry>();
+	        [...returnedSketches, ...trackedSketches].forEach((s) => {
+	          // Deduplicate sketches defensively (same sketch can be discovered via "returned shapes"
+	          // and via "tracked sketches"). Use a bbox-based fingerprint to avoid collisions.
+	          const v = s.vertices;
+	          let minX = Infinity, minY = Infinity, minZ = Infinity;
+	          let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+	          for (let i = 0; i < v.length; i += 3) {
+	            const x = v[i] ?? 0;
+	            const y = v[i + 1] ?? 0;
+	            const z = v[i + 2] ?? 0;
+	            if (x < minX) minX = x;
+	            if (y < minY) minY = y;
+	            if (z < minZ) minZ = z;
+	            if (x > maxX) maxX = x;
+	            if (y > maxY) maxY = y;
+	            if (z > maxZ) maxZ = z;
+	          }
+	          const r = (n: number) => (Number.isFinite(n) ? Math.round(n * 1000) / 1000 : 0);
+	          const fingerprint = `${v.length}-${r(minX)}-${r(minY)}-${r(minZ)}-${r(maxX)}-${r(maxY)}-${r(maxZ)}`;
+	          if (!allSketchesByFingerprint.has(fingerprint)) allSketchesByFingerprint.set(fingerprint, s);
+	        });
+        const allSketches = [...allSketchesByFingerprint.values()];
+
+        const transferables: Transferable[] = [];
+        geometries.forEach((g) => {
+          g.faces.forEach((f) => {
+            transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
+          });
+        });
+        allSketches.forEach((s) => transferables.push(s.vertices.buffer));
+
+        const payload: ExecutionResult = { geometries, sketches: allSketches };
+        postResponse({ type: 'SUCCESS', id, geometries: payload }, transferables);
+      } catch (error: unknown) {
+        let message = String(error);
+        if (message.match(/^\d+$/)) {
+          message = `OpenCascade Error (Code: ${message}). This often means an invalid geometric operation.`;
         }
+        postResponse({ type: 'ERROR', id, error: message });
+      }
+      return;
     }
+
+    if (type === 'EXPORT_STEP' || type === 'EXPORT_STL') {
+      try {
+        await init();
+        const code = request.code;
+        const safeReplicad = createSafeReplicad(replicad);
+
+	        const wrappedStartSketch = () => {
+	          const SketcherCtor = (safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher }).Sketcher;
+	          return new SketcherCtor();
+	        };
+
+	        const func = new Function(
+	          'replicad',
+	          'startSketch',
+          'makeCompound',
+          'fillet',
+          'chamfer',
+          'sketchOnFace',
+          'extrude',
+          code,
+        ) as unknown as (...args: unknown[]) => unknown;
+
+        const userGlobals = createUserGlobals(
+          safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher },
+        );
+
+        const result = withTemporaryGlobals(userGlobals, () =>
+          func(safeReplicad, wrappedStartSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude),
+        );
+        const shape = Array.isArray(result) ? result[0] : result;
+        if (!shape) throw new Error('No shape returned');
+
+        const blobFn = type === 'EXPORT_STEP' ? getFn(shape, 'blobSTEP') : getFn(shape, 'blobSTL');
+        if (!blobFn) throw new Error(`Shape does not support ${type === 'EXPORT_STEP' ? 'blobSTEP()' : 'blobSTL()'}`);
+
+        const maybeBlob = blobFn.call(shape);
+        const blob = maybeBlob instanceof Promise ? await maybeBlob : maybeBlob;
+        if (!(blob instanceof Blob)) throw new Error('Export did not return a Blob');
+
+        postResponse({ type: 'SUCCESS', id, blob });
+      } catch (error: unknown) {
+        postResponse({ type: 'ERROR', id, error: String(error) });
+      }
+    }
+  }).catch((err) => {
+    console.error('Worker: Unhandled lock error:', err);
+  });
 };

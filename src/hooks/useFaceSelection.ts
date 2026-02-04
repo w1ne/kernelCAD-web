@@ -93,7 +93,9 @@ export function useFaceSelection({
                 setIsFaceSelecting(false);
             } else if (isFaceSelecting && !isValidPlane) {
                 // Invalid plane - cancel face selection and show error
-                console.error('Selected face does not have a valid planar surface. Only flat faces can be sketched on.');
+                if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
+                    console.error('Selected face does not have a valid planar surface. Only flat faces can be sketched on.');
+                }
                 setIsFaceSelecting(false);
             }
         } else {

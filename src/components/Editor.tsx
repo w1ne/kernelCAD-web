@@ -1,10 +1,10 @@
 import Editor from "@monaco-editor/react";
+import type { EditorLike } from '../types/editor';
 
 interface CodeEditorProps {
     value: string;
     onChange: (val: string | undefined) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onMount?: (editor: any) => void;
+    onMount?: (editor: EditorLike) => void;
 }
 
 export default function CodeEditor({ value, onChange, onMount }: CodeEditorProps) {
@@ -16,7 +16,7 @@ export default function CodeEditor({ value, onChange, onMount }: CodeEditorProps
                 theme="vs-dark"
                 value={value}
                 onChange={onChange}
-                onMount={onMount}
+                onMount={(editor) => onMount?.(editor as unknown as EditorLike)}
                 options={{
                     minimap: { enabled: false },
                     fontSize: 14,

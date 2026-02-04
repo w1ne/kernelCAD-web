@@ -3,6 +3,7 @@ import { type CodeGenerationContext } from '../lib/codeGeneration';
 
 export interface FeatureContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
+    setCode: (code: string) => void;
     setActiveDialog: (dialogId: string | null) => void;
     code: string; // Current code for variable name resolution
     codeContext: CodeGenerationContext;
@@ -21,7 +22,7 @@ export interface DialogField {
 export interface Feature {
     id: string;
     label: string;
-    icon: LucideIcon;
+    icon: LucideIcon | React.ComponentType<any>;
     description?: string;
 
     /**

@@ -1,9 +1,8 @@
-
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 
-import { SafeSketcher } from '../src/lib/safeSketch';
-import { extrude } from '../src/lib/geometryHelpers';
+import { SafeSketcher } from './safeSketch';
+import { extrude } from './geometryHelpers';
 
 describe('SafeSketcher Empty Sketch Handling', () => {
     beforeAll(async () => {

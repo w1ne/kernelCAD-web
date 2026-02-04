@@ -5,7 +5,7 @@
  * while internally delegating to focused contexts.
  */
 
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { CodeProvider, useCode, type CodeContextType } from './CodeContext';
 import { UIProvider, useUI, type UIContextType } from './UIContext';
 import { SelectionProvider, useSelection, type SelectionContextType } from './SelectionContext';
@@ -51,18 +51,28 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
 
     // Create code context for feature generators
     const codeContext = useMemo(() => {
-        const analyzer = new CodeAnalyzer(codeCtx.code);
-        return analyzer.createContext();
+        try {
+            const analyzer = new CodeAnalyzer(codeCtx.code);
+            return analyzer.createContext();
+        } catch (e) {
+            console.warn('WorkbenchContext: Failed to analyze code (likely syntax error):', e);
+            // Return a minimal context for features to still function with fallbacks
+            return {
+                variables: [],
+                getVariableAtIndex: () => 'shape',
+                generateUniqueName: (prefix: string) => `${prefix}_${Date.now()}`
+            } as unknown as CodeGenerationContext;
+        }
     }, [codeCtx.code]);
 
     // Wrap startFaceSelection to also close the dialog
-    const startFaceSelectionWithDialog = () => {
+    const startFaceSelectionWithDialog = useCallback(() => {
         faceSelection.startFaceSelection();
         uiCtx.setActiveDialog(null);
-    };
+    }, [faceSelection, uiCtx]);
 
     // Combine all contexts into unified interface
-    const value: WorkbenchContextType = {
+    const value: WorkbenchContextType = useMemo(() => ({
         // Code context
         code: codeCtx.code,
         setCode: codeCtx.setCode,
@@ -91,6 +101,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         planes: selectionCtx.planes,
         addPlane: selectionCtx.addPlane,
         togglePlaneVisibility: selectionCtx.togglePlaneVisibility,
+        selectedSketchName: selectionCtx.selectedSketchName,
+        setSelectedSketchName: selectionCtx.setSelectedSketchName,
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,
@@ -99,6 +111,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         error: geometryCtx.error,
         isReady: geometryCtx.isReady,
         isComputing: geometryCtx.isComputing,
+        executionCount: geometryCtx.executionCount,
         executeGeometry: geometryCtx.executeGeometry,
         // Sketching context
         entities: sketchingCtx.entities,
@@ -112,27 +125,89 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         solve: sketchingCtx.solve,
         // New: Code generation context
         codeContext,
-    };
+    }), [
+        codeCtx.code,
+        codeCtx.setCode,
+        codeCtx.insertCode,
+        codeCtx.editorInstance,
+        codeCtx.setEditorInstance,
+        codeCtx.commandManager,
+        uiCtx.viewMode,
+        uiCtx.setViewMode,
+        uiCtx.viewMode3D,
+        uiCtx.setViewMode3D,
+        uiCtx.activeDialog,
+        uiCtx.setActiveDialog,
+        faceSelection.selectedFace,
+        faceSelection.selectedFacePlane,
+        faceSelection.setSelectedFace,
+        faceSelection.isFaceSelecting,
+        startFaceSelectionWithDialog,
+        faceSelection.cancelFaceSelection,
+        selectionCtx.sketchMode,
+        selectionCtx.setSketchMode,
+        selectionCtx.sketches,
+        selectionCtx.addSketch,
+        selectionCtx.planes,
+        selectionCtx.addPlane,
+        selectionCtx.togglePlaneVisibility,
+        selectionCtx.selectedSketchName,
+        selectionCtx.setSelectedSketchName,
+        geometryCtx.geometries,
+        geometryCtx.sketchesGeometries,
+        geometryCtx.showSketches,
+        geometryCtx.toggleSketchVisibility,
+        geometryCtx.error,
+        geometryCtx.isReady,
+        geometryCtx.isComputing,
+        geometryCtx.executionCount,
+        geometryCtx.executeGeometry,
+        sketchingCtx.entities,
+        sketchingCtx.constraints,
+        sketchingCtx.selectedEntityIds,
+        sketchingCtx.addEntity,
+        sketchingCtx.updateEntity,
+        sketchingCtx.addConstraint,
+        sketchingCtx.selectEntity,
+        sketchingCtx.clearSelection,
+        sketchingCtx.solve,
+        codeContext,
+    ]);
 
     // Expose for E2E testing
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            // @ts-ignore
-            window.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
-                console.log('TEST: Select Face (Workbench)', shapeIndex, faceId);
-                faceSelection.setSelectedFace({ shapeIndex, faceId });
-            };
+        const expose = import.meta.env.DEV || import.meta.env.MODE === 'test';
+        if (!expose || typeof window === 'undefined') return;
 
-            // @ts-ignore
-            window.getSelectedFace = () => faceSelection.selectedFace;
+        window.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
+            faceSelection.setSelectedFace({ shapeIndex, faceId });
+        };
 
-            // @ts-ignore
-            window.getGeometries = () => geometryCtx.geometries;
+        window.getSelectedFace = () => faceSelection.selectedFace;
 
-            // @ts-ignore
-            window.getSketches = () => geometryCtx.sketchesGeometries;
-        }
-    }, [faceSelection, geometryCtx.geometries, geometryCtx.sketchesGeometries]);
+        window.getGeometries = () => geometryCtx.geometries;
+
+        window.getSketches = () => geometryCtx.sketchesGeometries;
+
+        window.__TEST_SELECT_SKETCH = (name: string | null) => {
+            selectionCtx.setSelectedSketchName(name);
+        };
+
+        window.isComputing = () => geometryCtx.isComputing;
+        window.getExecutionCount = () => geometryCtx.executionCount;
+        window.getError = () => geometryCtx.error;
+
+        return () => {
+            delete window.__TEST_SELECT_FACE;
+            delete window.__TEST_SELECT_SKETCH;
+            delete window.getSelectedFace;
+            delete window.getGeometries;
+            delete window.getSketches;
+            delete window.isComputing;
+            delete window.getExecutionCount;
+            delete window.getError;
+        };
+    }, [faceSelection, geometryCtx.geometries, geometryCtx.sketchesGeometries, geometryCtx.isComputing, geometryCtx.executionCount, geometryCtx.error, selectionCtx]);
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
 }
@@ -180,8 +255,13 @@ export function useWorkbench() {
 }
 
 // Re-export individual hooks for components that want focused access
+// eslint-disable-next-line react-refresh/only-export-components
 export { useCode } from './CodeContext';
+// eslint-disable-next-line react-refresh/only-export-components
 export { useUI } from './UIContext';
+// eslint-disable-next-line react-refresh/only-export-components
 export { useSelection } from './SelectionContext';
+// eslint-disable-next-line react-refresh/only-export-components
 export { useGeometry } from './GeometryContext';
+// eslint-disable-next-line react-refresh/only-export-components
 export { useSketching } from './SketchingContext';

@@ -2,11 +2,12 @@
 
 import CodeEditor from '../Editor';
 import { AlertCircle } from 'lucide-react';
+import type { EditorLike } from '../../types/editor';
 
 interface EditorPanelProps {
     code: string;
     onChange: (value: string) => void;
-    onMount: (editor: any) => void;
+    onMount: (editor: EditorLike) => void;
     error: string | null;
     visible: boolean;
 }

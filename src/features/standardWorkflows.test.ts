@@ -3,6 +3,7 @@ import { initReplicad, executeGeometry } from '../test/regressionTestHelpers';
 import { expectGeometryMatch } from '../test/geometryValidators';
 import { generateSketchCode } from '../lib/sketchCodegen';
 import { generateBooleanCode, generateFilletCode } from './core/modifiers.feature';
+import { CodeAnalyzer } from '../lib/codeGeneration';
 import type { SketchData } from '../types/sketch';
 
 describe('Standard Workflow Validation', () => {
@@ -26,6 +27,7 @@ describe('Standard Workflow Validation', () => {
     });
 
     it('should execute the Bracket workflow (Sketch -> Extrude -> Fillet)', () => {
+        const ctx = new CodeAnalyzer('').createContext();
         // 1. Generate Code (User Workflow Simulation)
         const sketch = createRectangleSketch('baseSketch', 50, 20);
         const sketchCode = generateSketchCode(sketch);
@@ -37,13 +39,14 @@ describe('Standard Workflow Validation', () => {
 
         // Fillet
         // generateFilletCode expects a shape name. 
-        const filletCode = generateFilletCode('baseBlock', 5, 'vertical');
+        const filletCode = generateFilletCode(ctx, 'baseBlock', 5, 'vertical');
 
         const workflowCode = `
+            const { Sketcher } = replicad;
             ${sketchCode}
             ${extrudeCode}
             ${filletCode}
-            return baseBlock; 
+            return baseBlock_filleted; 
         `;
 
         // 2. Execute
@@ -66,6 +69,7 @@ describe('Standard Workflow Validation', () => {
     });
 
     it('should execute the Drilling workflow (Cylinder -> Cylinder -> Cut)', () => {
+        const ctx = new CodeAnalyzer('').createContext();
         // 1. Generate Code
         // User creates base cylinder
         const baseCode = `
@@ -79,7 +83,7 @@ describe('Standard Workflow Validation', () => {
         `;
 
         // Boolean Cut
-        const cutCode = generateBooleanCode('base', 'tool', 'cut');
+        const cutCode = generateBooleanCode(ctx, 'base', 'tool', 'cut');
 
         const workflowCode = `
             ${baseCode}

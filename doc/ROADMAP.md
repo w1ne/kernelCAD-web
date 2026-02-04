@@ -2,7 +2,8 @@
 
 > Building a professional parametric CAD system in the browser
 
-**Current Version**: v0.6.1
+**App Version (package.json)**: v0.7.0
+**Latest Git Tag**: v0.4.0
 **Status**: Phase 1 (Professional Modeling Workflow) - In Progress
 
 ---

@@ -17,7 +17,7 @@ Object.defineProperty(navigator, 'clipboard', {
 // Mock Geometry Engine
 vi.mock('../lib/geometryEngine', () => {
     return {
-        defaultCode: 'default code',
+        defaultCode: 'return [];',
         GeometryEngine: {
             getInstance: () => ({
                 initialize: vi.fn().mockResolvedValue(true),

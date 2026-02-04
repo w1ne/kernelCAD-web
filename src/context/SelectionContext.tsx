@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
-import type { SketchModeState } from '../types/sketch';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import type { SketchData, SketchModeState } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 
 export interface SelectionContextType {
@@ -8,6 +8,9 @@ export interface SelectionContextType {
     selectedFacePlane: { origin: [number, number, number]; normal: [number, number, number] } | null;
     setSelectedFace: (selection: { shapeIndex: number; faceId: number } | null) => void;
     setSelectedFacePlane: (plane: { origin: [number, number, number]; normal: [number, number, number] } | null) => void;
+    // Sketch selection (viewport)
+    selectedSketchName: string | null;
+    setSelectedSketchName: (name: string | null) => void;
     // Face selection mode
     isFaceSelecting: boolean;
     setIsFaceSelecting: (selecting: boolean) => void;
@@ -15,10 +18,8 @@ export interface SelectionContextType {
     sketchMode: SketchModeState;
     setSketchMode: (mode: SketchModeState) => void;
     // Sketch history
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sketches: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    addSketch: (sketch: any) => void;
+    sketches: SketchData[];
+    addSketch: (sketch: SketchData) => void;
     // Planes
     planes: SketchPlaneEntity[];
     addPlane: (plane: SketchPlaneEntity) => void;
@@ -32,20 +33,21 @@ import { useWorkbenchState } from './WorkbenchStateContext';
 export function SelectionProvider({ children }: { children: ReactNode }) {
     const [selectedFace, setSelectedFace] = useState<{ shapeIndex: number; faceId: number } | null>(null);
     const [selectedFacePlane, setSelectedFacePlane] = useState<{ origin: [number, number, number]; normal: [number, number, number] } | null>(null);
+    const [selectedSketchName, setSelectedSketchName] = useState<string | null>(null);
 
     // Central state machine
     const { state, dispatch } = useWorkbenchState();
 
     const isFaceSelecting = state.mode.type === 'FACE_SELECTION';
 
-    const setIsFaceSelecting = (selecting: boolean) => {
+    const setIsFaceSelecting = useCallback((selecting: boolean) => {
         if (selecting) {
             // Defaulting to feature purpose if generic toggle
             dispatch({ type: 'START_FACE_SELECTION', purpose: 'feature' });
         } else {
             dispatch({ type: 'CANCEL_SELECTION' });
         }
-    };
+    }, [dispatch]);
 
     const [planes, setPlanes] = useState<SketchPlaneEntity[]>([
         { id: 'base-xy', name: 'Origin XY', type: 'base', origin: [0, 0, 0], normal: [0, 0, 1], visible: true },
@@ -53,32 +55,33 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         { id: 'base-yz', name: 'Origin YZ', type: 'base', origin: [0, 0, 0], normal: [1, 0, 0], visible: true },
     ]);
 
-    const addPlane = (plane: SketchPlaneEntity) => {
+    const addPlane = useCallback((plane: SketchPlaneEntity) => {
         setPlanes(prev => {
             if (prev.find(p => p.id === plane.id)) return prev;
             return [...prev, plane];
         });
-    };
+    }, []);
 
-    // Derived Sketch Mode - Resolves plane object from ID
-    let sketchMode: SketchModeState = {
-        active: false,
-        plane: null,
-        currentSketch: null,
-        tool: 'select'
-    };
+    const sketchMode: SketchModeState = useMemo(() => {
+        if (state.mode.type !== 'SKETCHING') {
+            return {
+                active: false,
+                plane: null,
+                currentSketch: null,
+                tool: 'select',
+            };
+        }
 
-    if (state.mode.type === 'SKETCHING') {
         const planeId = state.mode.planeId;
-        sketchMode = {
+        return {
             active: true,
             plane: planes.find(p => p.id === planeId) || planeId,
             currentSketch: null, // TODO: Pass sketch object via state or lookup
             tool: 'line', // Default tool
         };
-    }
+    }, [planes, state.mode]);
 
-    const setSketchMode = (mode: SketchModeState) => {
+    const setSketchMode = useCallback((mode: SketchModeState) => {
         if (mode.active) {
             let planeId = '';
             if (typeof mode.plane === 'string') {
@@ -97,22 +100,24 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         } else {
             dispatch({ type: 'EXIT_SKETCH' });
         }
-    };
+    }, [addPlane, dispatch]);
 
-    const [sketches, setSketches] = useState<unknown[]>([]);
-    const addSketch = (sketch: unknown) => {
+    const [sketches, setSketches] = useState<SketchData[]>([]);
+    const addSketch = useCallback((sketch: SketchData) => {
         setSketches(prev => [...prev, sketch]);
-    };
+    }, []);
 
-    const togglePlaneVisibility = (id: string) => {
+    const togglePlaneVisibility = useCallback((id: string) => {
         setPlanes(prev => prev.map(p => p.id === id ? { ...p, visible: !p.visible } : p));
-    };
+    }, []);
 
-    const value: SelectionContextType = {
+    const value: SelectionContextType = useMemo(() => ({
         selectedFace,
         selectedFacePlane,
         setSelectedFace,
         setSelectedFacePlane,
+        selectedSketchName,
+        setSelectedSketchName,
         isFaceSelecting,
         setIsFaceSelecting,
         sketchMode,
@@ -122,27 +127,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         planes,
         addPlane,
         togglePlaneVisibility,
-    };
-
-    // Expose for E2E testing
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            // @ts-ignore
-            window.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
-                console.log('TEST: Select Face', shapeIndex, faceId);
-                setSelectedFace({ shapeIndex, faceId });
-
-                // Mock a plane so the Toolbar button works
-                setSelectedFacePlane({
-                    origin: [10, 0, 10],
-                    normal: [1, 0, 0], // Pointing X
-                });
-            };
-
-            // @ts-ignore
-            window.getSelectedFace = () => selectedFace;
-        }
-    }, [selectedFace, setSelectedFace, setSelectedFacePlane]);
+    }), [selectedFace, selectedFacePlane, selectedSketchName, isFaceSelecting, setIsFaceSelecting, sketchMode, setSketchMode, sketches, addSketch, planes, addPlane, togglePlaneVisibility]);
 
     return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
 }

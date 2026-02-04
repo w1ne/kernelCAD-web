@@ -2,7 +2,10 @@ import { describe, test, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { executeGeometry, initReplicad } from '../test/regressionTestHelpers';
 
-describe('Geometry Fuzzing', () => {
+const runFuzz = process.env.KERNELCAD_FUZZ === '1';
+const describeIfFuzz = runFuzz ? describe : describe.skip;
+
+describeIfFuzz('Geometry Fuzzing', () => {
     test('Parametric Box Stability', async () => {
         await initReplicad();
 

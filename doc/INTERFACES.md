@@ -77,15 +77,15 @@ The core class that executes CAD code in a Web Worker.
 import { GeometryEngine } from './lib/geometryEngine';
 
 const engine = GeometryEngine.getInstance();
-await engine.execute(code);
-const meshes = engine.getGeometries();
+await engine.initialize();
+const { geometries, sketches } = await engine.executeCode(code);
 ```
 
 **Methods:**
-- `execute(code: string): Promise<ExecutionResult>` - Run CAD code
-- `getGeometries(): GeometryResult[]` - Get mesh data
-- `exportSTEP(shapeIndex: number): Promise<Blob>` - Export to STEP
-- `exportSTL(shapeIndex: number): Promise<Blob>` - Export to STL
+- `initialize(): Promise<void>` - Start the worker (idempotent)
+- `executeCode(code: string): Promise<ExecutionResult>` - Run CAD code
+- `exportSTEP(code: string): Promise<Blob>` - Export (first returned shape) to STEP
+- `exportSTL(code: string): Promise<Blob>` - Export (first returned shape) to STL
 
 ### `GeometryResult`
 Type definition for rendered geometry:
@@ -94,10 +94,6 @@ Type definition for rendered geometry:
 interface GeometryResult {
   faces: FaceGeometry[];
   volume?: number;
-  boundingBox?: {
-    min: [number, number, number];
-    max: [number, number, number];
-  };
 }
 
 interface FaceGeometry {
@@ -105,10 +101,11 @@ interface FaceGeometry {
   vertices: Float32Array;
   normals: Float32Array;
   indices: Uint32Array;
-  plane: {
+  plane?: {
     origin: [number, number, number];
     normal: [number, number, number];
     xDir?: [number, number, number];
+    yDir?: [number, number, number];
   };
 }
 ```
@@ -148,10 +145,10 @@ interface Feature {
 }
 
 interface FeatureContext {
-  insertCode: (code: string) => void;
+  insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
   setActiveDialog: (dialog: string | null) => void;
   code: string;
-  geometries: GeometryResult[];
+  codeContext: CodeGenerationContext;
 }
 ```
 

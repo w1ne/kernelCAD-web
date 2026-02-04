@@ -27,6 +27,18 @@ return [filleted.cut(cyl)];
             });
         }, { timeout: 15000 }).toBeGreaterThan(0);
 
+        await expect.poll(async () => {
+            return await page.evaluate(() => {
+                // @ts-ignore
+                return typeof window.getSketches === 'function';
+            });
+        }, { timeout: 15000 }).toBe(true);
+
+        const initialSketchCount = await page.evaluate(() => {
+            // @ts-ignore
+            return window.getSketches?.()?.length ?? 0;
+        }) as number;
+
         // Select Face
         await page.evaluate(() => {
             // @ts-ignore
@@ -71,6 +83,23 @@ return [filleted.cut(cyl)];
         const doneBtn = page.getByText(/Done \(\d+\)/);
         await expect(doneBtn).toContainText('Done (1)');
         await doneBtn.click();
+
+        // Expect at least one new sketch to be captured after finishing the face sketch.
+        await expect.poll(async () => {
+            return await page.evaluate(() => {
+                // @ts-ignore
+                return window.getSketches?.()?.length ?? 0;
+            });
+        }, { timeout: 15000 }).toBeGreaterThan(initialSketchCount);
+
+        // Sketch lines should be non-empty (otherwise they won't be visible).
+        await expect.poll(async () => {
+            return await page.evaluate(() => {
+                // @ts-ignore
+                const sketches = window.getSketches?.() ?? [];
+                return sketches.some((s: any) => (s?.vertices?.length ?? 0) > 0);
+            });
+        }, { timeout: 15000 }).toBe(true);
 
         // Verify Code
         const finalCode = await page.evaluate(() => {

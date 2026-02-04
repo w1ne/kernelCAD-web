@@ -31,28 +31,31 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onmessage: ((e: any) => void) | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onerror: ((e: any) => void) | null = null;
+  onmessage: ((e: { data: unknown }) => void) | null = null;
+  onerror: ((e: unknown) => void) | null = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  postMessage(data: any) {
-    // Simulate success response
-    if (this.onmessage) {
-      setTimeout(() => {
-        this.onmessage!({
-          data: {
-            type: 'SUCCESS',
-            id: data.id,
-            geometries: {
-              geometries: [{ faces: [], edges: [] }],
-              sketches: []
-            }
-          }
-        });
-      }, 10);
-    }
+  postMessage(data: { id: string; type: string }) {
+    if (!this.onmessage) return;
+
+    setTimeout(() => {
+      // INIT handshake
+      if (data.type === 'INIT') {
+        this.onmessage!({ data: { type: 'SUCCESS', id: data.id } });
+        return;
+      }
+
+      // Simulate execute success response
+      this.onmessage!({
+        data: {
+          type: 'SUCCESS',
+          id: data.id,
+          geometries: {
+            geometries: [{ faces: [] }],
+            sketches: [],
+          },
+        },
+      });
+    }, 10);
   }
   terminate() { }
 }

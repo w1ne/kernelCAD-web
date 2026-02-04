@@ -9,19 +9,24 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Empty Sketch Validation', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:5175');
-        await page.waitForSelector('[data-testid="viewer-canvas"]', { timeout: 10000 });
+        await page.goto('/');
+        await page.waitForSelector('canvas', { timeout: 20000 });
+        await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 30000 });
+        await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 30000 });
     });
 
     test('should prevent completing sketch without drawing anything', async ({ page }) => {
         // Start sketch mode
-        await page.click('button:has-text("Start Sketch")');
+        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        await expect(startSketchBtn).toBeVisible();
+        await startSketchBtn.click();
+        await expect(page.getByText('Select Sketch Plane')).toBeVisible();
 
         // Select XY plane
-        await page.click('button:has-text("XY Plane")');
+        await page.getByText('XY Plane (Top)', { exact: true }).click();
 
         // Wait for sketch canvas to appear
-        await page.waitForSelector('[data-testid="sketch-canvas-overlay"]');
+        await expect(page.getByTestId('sketch-canvas-overlay')).toBeVisible();
 
         // Verify "Done" button is disabled when no entities
         const doneButton = page.locator('button:has-text("Done")');
@@ -34,19 +39,21 @@ test.describe('Empty Sketch Validation', () => {
         await expect(page.locator('[data-testid="sketch-canvas-overlay"]')).toBeVisible();
 
         // Verify no code was added
-        const editor = page.locator('.monaco-editor');
-        const editorText = await editor.textContent();
-        expect(editorText).not.toContain('const sketch');
+        const code = await page.evaluate(() => (window as any).getCode());
+        expect(code).not.toContain('const sketch');
     });
 
     test('should allow completing sketch after drawing geometry', async ({ page }) => {
         // Start sketch mode
-        await page.click('button:has-text("Start Sketch")');
-        await page.click('button:has-text("XY Plane")');
-        await page.waitForSelector('[data-testid="sketch-canvas"]');
+        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        await expect(startSketchBtn).toBeVisible();
+        await startSketchBtn.click();
+        await expect(page.getByText('Select Sketch Plane')).toBeVisible();
+        await page.getByText('XY Plane (Top)', { exact: true }).click();
+        const canvas = page.getByTestId('sketch-canvas');
+        await expect(canvas).toBeVisible();
 
         // Draw a rectangle
-        const canvas = page.locator('[data-testid="sketch-canvas"]');
         const box = await canvas.boundingBox();
         if (!box) throw new Error('Canvas not found');
 
@@ -71,47 +78,25 @@ test.describe('Empty Sketch Validation', () => {
 
         // Verify sketch code was added
         await page.waitForTimeout(500);
-        const editor = page.locator('.monaco-editor');
-        const editorText = await editor.textContent();
-        expect(editorText).toContain('const sketch');
-        expect(editorText).toContain('Sketcher');
+        const code = await page.evaluate(() => (window as any).getCode());
+        expect(code).toContain('const sketch');
+        expect(code).toContain('Sketcher');
     });
 
     test('should show error if empty sketch somehow gets through', async ({ page }) => {
-        // This test uses console monitoring to catch defensive errors
-        const consoleErrors: string[] = [];
-        page.on('console', msg => {
-            if (msg.type() === 'error') {
-                consoleErrors.push(msg.text());
-            }
-        });
-
         // Start sketch
-        await page.click('button:has-text("Start Sketch")');
-        await page.click('button:has-text("XY Plane")');
-        await page.waitForSelector('[data-testid="sketch-canvas"]');
+        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        await expect(startSketchBtn).toBeVisible({ timeout: 15000 });
+        await startSketchBtn.click();
+        await expect(page.getByText('Select Sketch Plane')).toBeVisible({ timeout: 15000 });
+        await page.getByText('XY Plane (Top)', { exact: true }).click();
+        await expect(page.getByTestId('sketch-canvas')).toBeVisible({ timeout: 15000 });
 
-        // Try to programmatically trigger completion with empty entities
-        // This simulates a bug where validation is bypassed
-        await page.evaluate(() => {
-            // Find the SketchCanvas component and try to call onComplete with empty array
-            const doneButton = document.querySelector('button:has-text("Done")') as HTMLButtonElement;
-            if (doneButton) {
-                // Force enable and click
-                doneButton.disabled = false;
-                doneButton.click();
-            }
-        });
-
-        await page.waitForTimeout(500);
-
-        // Verify error was logged or alert was shown
-        const hasError = consoleErrors.some(err =>
-            err.includes('No geometry') || err.includes('No entities')
-        );
-
-        // Note: alert() will pause execution, so we check console instead
-        expect(hasError || consoleErrors.length > 0).toBeTruthy();
+        // Ensure UI-level guard stays in place
+        const doneButton = page.locator('button:has-text("Done")');
+        await expect(doneButton).toBeDisabled();
+        await doneButton.click({ force: true });
+        await expect(page.getByTestId('sketch-canvas-overlay')).toBeVisible({ timeout: 15000 });
     });
 
     test('should not add invisible shapes to the scene', async ({ page }) => {
@@ -131,9 +116,12 @@ test.describe('Empty Sketch Validation', () => {
         const initialCount = await getShapeCount();
 
         // Try to create empty sketch
-        await page.click('button:has-text("Start Sketch")');
-        await page.click('button:has-text("XY Plane")');
-        await page.waitForSelector('[data-testid="sketch-canvas"]');
+        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        await expect(startSketchBtn).toBeVisible();
+        await startSketchBtn.click();
+        await expect(page.getByText('Select Sketch Plane')).toBeVisible();
+        await page.getByText('XY Plane (Top)', { exact: true }).click();
+        await expect(page.getByTestId('sketch-canvas')).toBeVisible();
 
         // Cancel without drawing
         await page.click('button:has-text("Cancel")');

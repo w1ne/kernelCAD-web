@@ -65,12 +65,9 @@ vi.mock('../hooks/useKeyboardShortcuts', () => ({
     useKeyboardShortcuts: (shortcuts: any) => {
         // Simplified mock implementation that just binds to window without checks
         React.useEffect(() => {
-            console.error('Mock useKeyboardShortcuts mounted', Object.keys(shortcuts));
             const handler = (e: KeyboardEvent) => {
                 const key = e.key.toLowerCase();
-                console.error('Mock KeyDown:', key);
                 if (shortcuts[key]) {
-                    console.error('Triggering shortcut for:', key);
                     shortcuts[key](e);
                 }
             };
@@ -86,7 +83,6 @@ const mockExtrudeFeature = {
     label: 'Extrude',
     icon: Box,
     execute: ({ insertCode, setActiveDialog }: any, params?: any) => {
-        console.error('Mock Extrude Execute', params ? 'with params' : 'no params');
         if (params) {
             // Dialog submission
             insertCode(`sketch1.extrude(${params.distance})`);
@@ -132,6 +128,8 @@ describe('GUI Workflow Integration', () => {
             setSketchMode: vi.fn(),
             addSketch: vi.fn(),
             addPlane: vi.fn(),
+            planes: [],
+            togglePlaneVisibility: vi.fn(),
             setSelectedFace: vi.fn(),
             isFaceSelecting: false, // Could be state controlled if needed
             startFaceSelection: vi.fn(),
@@ -150,7 +148,15 @@ describe('GUI Workflow Integration', () => {
                     ]
                 }
             ],
-            selectedFace: { shapeIndex: 0, faceId: 12 } // Simulate selected face state
+            selectedFace: { shapeIndex: 0, faceId: 12 }, // Simulate selected face state
+            selectedFacePlane: { origin: [0, 0, 0], normal: [0, 0, 1] },
+            codeContext: {
+                code: 'return [];',
+                declaredVariables: new Set<string>(),
+                returnedVariables: ['shape0'],
+                generateUniqueName: (base: string) => base,
+                getVariableAtIndex: (_i: number) => 'shape0',
+            },
         } as any;
     };
 
@@ -164,7 +170,6 @@ describe('GUI Workflow Integration', () => {
 
         // Register feature
         featureRegistry.register(mockExtrudeFeature);
-        console.error('Test beforeEach: Registry size:', featureRegistry.getAll().length);
     });
 
     afterEach(() => {
@@ -177,7 +182,6 @@ describe('GUI Workflow Integration', () => {
     it('should complete the Extrude workflow via GUI', async () => {
         // 1. Render the Layout
         render(<WorkbenchLayout />);
-        screen.debug(); // Inspect DOM immediately after render
 
         // 2. Click Extrude in Toolbar
         // Use findBy to wait for render (though render is sync, effects might not be?)

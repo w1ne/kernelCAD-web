@@ -49,11 +49,18 @@ export function formatPlaneForSketcher(plane: string): string {
 /**
  * Validates if the plane object has valid origin and normal arrays
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isValidPlaneData(plane: any): boolean {
-    return plane &&
-        Array.isArray(plane.origin) && plane.origin.length === 3 &&
-        Array.isArray(plane.normal) && plane.normal.length === 3 &&
-        plane.origin.every((v: any) => typeof v === 'number' && !isNaN(v)) &&
-        plane.normal.every((v: any) => typeof v === 'number' && !isNaN(v));
+export function isValidPlaneData(
+    plane: unknown,
+): plane is { origin: [number, number, number]; normal: [number, number, number] } {
+    if (typeof plane !== 'object' || plane === null) return false;
+    const rec = plane as Record<string, unknown>;
+    const origin = rec.origin;
+    const normal = rec.normal;
+
+    const isVec3 = (v: unknown): v is [number, number, number] =>
+        Array.isArray(v) &&
+        v.length === 3 &&
+        v.every((n) => typeof n === 'number' && Number.isFinite(n));
+
+    return isVec3(origin) && isVec3(normal);
 }

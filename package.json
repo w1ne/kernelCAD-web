@@ -12,8 +12,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release": "./scripts/release.sh",
-    "test": "vitest"
+    "release": "npx tsx scripts/release.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@babel/generator": "^7.28.6",

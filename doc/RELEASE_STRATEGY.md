@@ -10,6 +10,32 @@ We follow [Semantic Versioning](https://semver.org/):
 - **MINOR** (0.x.0): New features, non-breaking improvements
 - **PATCH** (0.0.x): Bug fixes, performance improvements
 
+## Branching Strategy
+
+We follow the **Git Flow** branching model.
+
+### Branch Roles
+- **`main`**: Production-ready code. Represents the latest stable release.
+- **`develop`**: Integration branch for the next release. Contains the latest development changes.
+- **`feature/*`**: Feature branches branched from `develop` and merged back into `develop`.
+- **`release/*`**: Release branches branched from `develop` for preparing a new production release. Merged into both `main` and `develop`.
+- **`hotfix/*`**: Hotfix branches branched from `main` for critical bug fixes. Merged into both `main` and `develop`.
+
+### Branch Protection Rules
+
+To ensure code quality and stability, direct pushes to `main` and `develop` are **disabled**.
+
+#### `main` Branch
+- **No direct pushes allowed.**
+- **Pull Request Required**:
+  - Must pass all status checks (CI/Build/Tests).
+  - Requires at least **1** approving review.
+
+#### `develop` Branch
+- **No direct pushes allowed.**
+- **Pull Request Required**:
+  - Must pass all status checks.
+
 ## Release Checklist
 
 ### 1. Code Quality
@@ -50,11 +76,112 @@ We follow [Semantic Versioning](https://semver.org/):
 - [ ] Verify deployed version works correctly
 
 ### 6. Communication
-- [ ] Update GitHub release notes
-- [ ] Post to relevant channels (if applicable)
-- [ ] Update demo/screenshots if UI changed significantly
+- [ ] Update GitHub release notes (using the template below).
+- [ ] Post to relevant channels (if applicable).
+- [ ] Update demo/screenshots if UI changed significantly.
 
-## Post-Release
+## Release Note Template
+
+We use the following template for GitHub releases. This ensures consistency and highlights the value of each release.
+
+```markdown
+# 🚀 kernelCAD v{VERSION}
+
+**Modern Programmable CAD for the Web**
+
+---
+
+## 📋 What's New
+
+### Added
+- **Feature Name**: Brief description of the new feature.
+- **Another Feature**: Description.
+
+### Changed
+- Updated ...
+
+### Fixed
+- Resolved issue with ...
+
+---
+
+## ✅ Test Results
+
+- **Unit Tests**: {PASS/FAIL} ({PASS_COUNT} passed)
+- **E2E Tests**: {PASS/FAIL}
+- **Linting**: {PASS/FAIL}
+
+---
+
+## 📦 Build Information
+
+- **Version**: {VERSION}
+- **Build Date**: {YYYY-MM-DD HH:mm:ss UTC}
+- **Platform**: {OS/Browser}
+
+## 🎯 Supported Features
+
+kernelCAD v{VERSION} supports:
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Sketcher | 2D constraint solver | Stable |
+| Extrude | 3D extrusion from faces | Stable |
+| Fillet/Chamfer | Edge modifications | Beta |
+| STEP Export | CNC/CAM compatibility | Stable |
+
+---
+
+## 📥 Installation
+
+### Use Online
+Visit [kernelcad.com](https://kernelcad.com) (or your deployment URL).
+
+### Run Locally
+
+```bash
+git clone https://github.com/w1ne/kernelCAD.git
+cd kernelCAD
+git checkout v{VERSION}
+npm install
+npm run dev
+```
+
+---
+
+## 📚 Documentation
+
+- [Architecture Guide](doc/ARCHITECTURE.md)
+- [Core Workflows](doc/CORE_WORKFLOWS.md)
+- [Roadmap](doc/ROADMAP.md)
+
+---
+
+## 🐛 Report Issues
+
+Found a bug? [Open an issue](https://github.com/w1ne/kernelCAD/issues)
+
+## 📜 Full Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
+```
+
+## Release Automation
+
+We use a script to automate the release process, ensuring consistent versioning and note generation.
+
+```bash
+# To create a new release (e.g., minor version bump)
+npm run release -- minor
+```
+
+This script will:
+1. Run linting and tests.
+2. Bump the version in `package.json`.
+3. Generate `RELEASE_NOTES.md` populated with recent commits.
+4. Create a git tag.
+5. Push changes and tags to remote.
+
 - [ ] Monitor for critical bugs
 - [ ] Triage user feedback
 - [ ] Plan next version milestones

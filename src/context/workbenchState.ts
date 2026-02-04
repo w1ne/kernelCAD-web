@@ -5,7 +5,7 @@
 export type WorkbenchMode =
     | { type: 'IDLE' }
     | { type: 'SKETCHING'; planeId: string; sketchId?: string }
-    | { type: 'DIALOG'; id: string; params?: any }
+    | { type: 'DIALOG'; id: string; params?: unknown }
     | { type: 'FACE_SELECTION'; purpose: 'sketch' | 'feature'; featureId?: string };
 
 export interface WorkbenchState {
@@ -24,7 +24,7 @@ export const INITIAL_STATE: WorkbenchState = {
 export type WorkbenchAction =
     | { type: 'START_SKETCH'; planeId: string; sketchId?: string }
     | { type: 'EXIT_SKETCH' }
-    | { type: 'OPEN_DIALOG'; id: string; params?: any }
+    | { type: 'OPEN_DIALOG'; id: string; params?: unknown }
     | { type: 'CLOSE_DIALOG' }
     | { type: 'START_FACE_SELECTION'; purpose: 'sketch' | 'feature'; featureId?: string }
     | { type: 'CANCEL_SELECTION' }

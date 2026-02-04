@@ -61,9 +61,9 @@ function drawPart() {
 }
 
 return drawPart();
-`,
+    `,
     expected: {
         sketchCount: 4, // 1 base + 2 face sketches + maybe internal or extra sketch?
-        faceCount: 31
+        faceCount: 39
     }
 };

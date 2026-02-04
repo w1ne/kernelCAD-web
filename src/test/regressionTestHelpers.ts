@@ -4,6 +4,16 @@ import opencascade from 'replicad-opencascadejs';
 import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude, findPlanarFace } from '../lib/geometryHelpers';
 import { createSafeReplicad, SafeSketcher } from '../lib/safeSketch';
 
+const DEBUG = process.env.KERNELCAD_TEST_LOG === '1';
+
+function log(...args: unknown[]) {
+    if (DEBUG) console.log(...args);
+}
+
+function logError(...args: unknown[]) {
+    if (DEBUG) console.error(...args);
+}
+
 // Initialize Replicad in Node environment
 let isInitialized = false;
 export async function initReplicad() {
@@ -17,7 +27,7 @@ export async function initReplicad() {
 export function executeGeometry(code: string) {
     if (!isInitialized) throw new Error("Replicad not initialized");
 
-    const activeSketches: any[] = [];
+    const activeSketches: unknown[] = [];
 
     // Use the factory to create SafeReplicad and spy on sketches
     const safeReplicad = createSafeReplicad(replicad, (sketch) => {
@@ -25,14 +35,14 @@ export function executeGeometry(code: string) {
     });
 
     const wrappedStartSketch = () => {
-        console.log("Helper: startSketch called");
+        log("Helper: startSketch called");
         const s = startSketch();
         activeSketches.push(s);
         return s;
     };
 
-    const wrappedSketchOnFace = (shape: any, faceId: number) => {
-        console.log(`Helper: sketchOnFace called for face ${faceId}`);
+    const wrappedSketchOnFace = (shape: unknown, faceId: number) => {
+        log(`Helper: sketchOnFace called for face ${faceId}`);
         const s = sketchOnFace(shape, faceId);
         // User expects API with .circle(), so we must wrap it if it's a Sketcher
         // sketchOnFace returns a Sketcher (native replicad object)
@@ -46,25 +56,24 @@ export function executeGeometry(code: string) {
         `try { 
             ${code} 
         } catch (e) {
-            console.error("Inner Code Error:", e);
             throw e;
         }`
     );
 
-    console.log("Executing workflow code...");
+    log("Executing workflow code...");
     const result = func(
         safeReplicad, wrappedStartSketch, makeCompound, fillet, chamfer, wrappedSketchOnFace, extrude, findPlanarFace
     );
-    console.log("Workflow code executed. Result:", typeof result);
+    log("Workflow code executed. Result:", typeof result);
 
     const shapes = Array.isArray(result) ? result : [result];
     if (shapes.length === 0 || !shapes[0]) throw new Error("No shape returned");
 
     // Inspect shape structure for volume
     try {
-        if (shapes[0].volume) console.log("Shape has volume property");
-        else console.log("Shape volume property missing. Keys:", Object.keys(shapes[0]));
-    } catch (e) { console.log("Error checking shape keys", e); }
+        if ((shapes[0] as { volume?: unknown }).volume) log("Shape has volume property");
+        else log("Shape volume property missing. Keys:", Object.keys(shapes[0] as object));
+    } catch (e) { logError("Error checking shape keys", e); }
 
 
     return {

@@ -89,11 +89,55 @@ describe('Toolbar', () => {
 
         // Override mock for this test
         vi.spyOn(WorkbenchContext, 'useWorkbench').mockReturnValue({
-            ...WorkbenchContext.useWorkbench(),
+            viewMode: 'code',
+            setViewMode: vi.fn(),
+            viewMode3D: 'shadedWithEdges',
+            setViewMode3D: vi.fn(),
+            code: 'return [];',
+            setCode: vi.fn(),
+            insertCode: vi.fn(),
+            editorInstance: null,
+            setEditorInstance: vi.fn(),
+            commandManager: {} as unknown as CommandManager,
+            activeDialog: null,
+            setActiveDialog: vi.fn(),
+            geometries: [],
+            sketchesGeometries: [],
+            showSketches: true,
+            toggleSketchVisibility: vi.fn(),
+            error: null,
+            isReady: true,
+            isComputing: false,
+            sketchMode: { active: false, plane: null, currentSketch: null, tool: 'select' },
             selectedFace,
             selectedFacePlane,
             setSketchMode,
-            code: 'const shape = {};'
+            addSketch: vi.fn(),
+            planes: [],
+            addPlane: vi.fn(),
+            togglePlaneVisibility: vi.fn(),
+            setSelectedFace: vi.fn(),
+            isFaceSelecting: false,
+            startFaceSelection: vi.fn(),
+            cancelFaceSelection: vi.fn(),
+            // Sketching context (not used by Toolbar)
+            entities: new Map(),
+            constraints: [],
+            selectedEntityIds: [],
+            addEntity: vi.fn(),
+            updateEntity: vi.fn(),
+            addConstraint: vi.fn(),
+            selectEntity: vi.fn(),
+            clearSelection: vi.fn(),
+            solve: vi.fn(),
+            // Code generation context (required by Toolbar)
+            codeContext: {
+                code: 'return [];',
+                declaredVariables: new Set(),
+                returnedVariables: ['shape0'],
+                generateUniqueName: (base: string) => base,
+                getVariableAtIndex: (_index: number) => 'shape0',
+            },
         } as any);
 
         render(<Toolbar features={mockFeatures} onToolClick={vi.fn()} />);

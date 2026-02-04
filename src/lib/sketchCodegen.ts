@@ -50,6 +50,7 @@ export function generateSketchBody(entities: SketchEntity[]): string {
 
     // Finish the sketch
     if (isClosedPath(entities)) {
+        // Replicad's Sketcher `.close()` finalizes closed paths (returns a sketch object).
         code += `  .close()`;
     } else {
         code += `  .done()`;

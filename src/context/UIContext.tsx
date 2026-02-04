@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ViewMode3D } from '../types/viewMode';
 
 export interface UIContextType {
@@ -23,22 +23,22 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
     const activeDialog = state.mode.type === 'DIALOG' ? state.mode.id : null;
 
-    const setActiveDialog = (dialogId: string | null) => {
+    const setActiveDialog = useCallback((dialogId: string | null) => {
         if (dialogId) {
             dispatch({ type: 'OPEN_DIALOG', id: dialogId });
         } else {
             dispatch({ type: 'CLOSE_DIALOG' });
         }
-    };
+    }, [dispatch]);
 
-    const value: UIContextType = {
+    const value: UIContextType = useMemo(() => ({
         viewMode,
         setViewMode,
         viewMode3D,
         setViewMode3D,
         activeDialog,
         setActiveDialog,
-    };
+    }), [viewMode, viewMode3D, activeDialog, setActiveDialog]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

@@ -73,8 +73,21 @@ function FaceMesh({
     );
 }
 
-function SketchLine({ sketch }: { sketch: SketchGeometry }) {
-    const material = useMemo(() => createSketchMaterial(), []);
+function SketchLine({
+    sketch,
+    isSelected,
+    onClick
+}: {
+    sketch: SketchGeometry;
+    isSelected: boolean;
+    onClick: () => void;
+}) {
+    const [hovered, setHovered] = useState(false);
+
+    const material = useMemo(() => {
+        const color = isSelected ? 0xffa500 : (hovered ? 0x93c5fd : 0x3b82f6);
+        return createSketchMaterial(color);
+    }, [hovered, isSelected]);
 
     const geometry = useMemo(() => {
         const geo = new THREE.BufferGeometry();
@@ -82,11 +95,16 @@ function SketchLine({ sketch }: { sketch: SketchGeometry }) {
         return geo;
     }, [sketch]);
 
+    const line = useMemo(() => new THREE.Line(geometry, material), [geometry, material]);
+
     return (
-        // @ts-ignore
-        <line geometry={geometry} renderOrder={999}>
-            <primitive object={material} attach="material" />
-        </line>
+        <primitive
+            object={line}
+            renderOrder={999}
+            onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+            onPointerOut={() => setHovered(false)}
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+        />
     );
 }
 
@@ -99,7 +117,7 @@ function Shape({
     shapeIndex: number;
     viewMode3D: ViewMode3D
 }) {
-    const { selectedFace, setSelectedFace } = useWorkbench();
+    const { selectedFace, setSelectedFace, setSelectedSketchName } = useWorkbench();
 
     return (
         <group>
@@ -109,7 +127,10 @@ function Shape({
                     face={face}
                     viewMode3D={viewMode3D}
                     isSelected={selectedFace?.shapeIndex === shapeIndex && selectedFace?.faceId === face.faceId}
-                    onClick={() => setSelectedFace({ shapeIndex, faceId: face.faceId })}
+                    onClick={() => {
+                        setSelectedSketchName(null);
+                        setSelectedFace({ shapeIndex, faceId: face.faceId });
+                    }}
                 />
             ))}
         </group>
@@ -173,13 +194,17 @@ function ParametricLayer() {
 }
 
 export default function Viewer({ geometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
-    const { setSelectedFace } = useWorkbench();
+    const { setSelectedFace, selectedSketchName, setSelectedSketchName } = useWorkbench();
 
     return (
         <div className="w-full h-full relative">
             <Canvas
                 camera={{ position: [40, 40, 40], fov: 40 }}
-                onPointerMissed={() => setSelectedFace(null)}
+                raycaster={{ params: { Line: { threshold: 0.4 } } }}
+                onPointerMissed={() => {
+                    setSelectedFace(null);
+                    setSelectedSketchName(null);
+                }}
             >
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
@@ -196,7 +221,15 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                 {showSketches && (
                     <group>
                         {sketchesGeometries.map((s) => (
-                            <SketchLine key={s.id} sketch={s} />
+                            <SketchLine
+                                key={s.id}
+                                sketch={s}
+                                isSelected={selectedSketchName === s.name}
+                                onClick={() => {
+                                    setSelectedFace(null);
+                                    setSelectedSketchName(s.name);
+                                }}
+                            />
                         ))}
                     </group>
                 )}
@@ -206,7 +239,7 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                 <OrbitControls makeDefault />
             </Canvas>
             <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
-                kernelCAD v0.7.0 ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
+                kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
                     viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
             </div>
         </div>

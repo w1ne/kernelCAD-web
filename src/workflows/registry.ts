@@ -3,7 +3,7 @@ export interface WorkflowDefinition {
     name: string;
     description: string;
     code: string;
-    inputs?: Record<string, any>;
+    inputs?: Record<string, unknown>;
     expected: {
         volume?: number;
         faceCount?: number;
@@ -11,6 +11,7 @@ export interface WorkflowDefinition {
         boundingBox?: { min: [number, number, number], max: [number, number, number] };
         sketchCount?: number;
         error?: string | RegExp;
+        timeoutMs?: number;
     };
 }
 

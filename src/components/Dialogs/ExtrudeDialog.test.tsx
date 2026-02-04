@@ -21,6 +21,7 @@ describe('ExtrudeDialog', () => {
 
     beforeEach(() => {
         (useWorkbench as unknown as { mockReturnValue: (v: unknown) => void }).mockReturnValue({
+            code: '',
             sketches: mockSketches,
         });
     });

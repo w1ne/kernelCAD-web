@@ -33,7 +33,7 @@ export class ConstraintSolver {
 
     private getPoint(id: string, entities: Map<string, SketchEntity>): Point | null {
         // Direct point
-        let entity = entities.get(id);
+        const entity = entities.get(id);
         if (entity?.type === 'POINT') return entity;
 
         // If entity is a line/circle, we might be referencing a sub-point, 

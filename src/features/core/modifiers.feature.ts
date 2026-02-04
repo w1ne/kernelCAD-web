@@ -1,11 +1,12 @@
-import { LayoutTemplate, PenTool, Scissors } from 'lucide-react';
+import { SquareRoundCorner, SquaresIntersect, SquaresSubtract, SquaresUnite } from 'lucide-react';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
+import { FilletIcon, ChamferIcon } from '../../components/CustomIcons';
 
 export const FilletFeature: Feature = {
     id: 'fillet',
     label: 'Fillet',
-    icon: LayoutTemplate,
+    icon: FilletIcon,
     description: 'Round the edges of the selected shape',
     execute: (context) => {
         context.setActiveDialog('fillet');
@@ -28,7 +29,7 @@ export const generateFilletCode = (context: CodeGenerationContext, targetName: s
 export const ChamferFeature: Feature = {
     id: 'chamfer',
     label: 'Chamfer',
-    icon: PenTool,
+    icon: ChamferIcon,
     description: 'Bevel the edges of the selected shape',
     execute: (context) => {
         context.setActiveDialog('chamfer');
@@ -51,7 +52,7 @@ export const generateChamferCode = (context: CodeGenerationContext, targetName: 
 export const CutFeature: Feature = {
     id: 'cut',
     label: 'Cut',
-    icon: Scissors,
+    icon: SquaresSubtract,
     description: 'Subtract one shape from another',
     execute: (context) => {
         context.setActiveDialog('cut');
@@ -61,7 +62,7 @@ export const CutFeature: Feature = {
 export const UnionFeature: Feature = {
     id: 'union',
     label: 'Join',
-    icon: LayoutTemplate,
+    icon: SquaresUnite,
     description: 'Fuse two shapes together',
     execute: (context) => {
         context.setActiveDialog('union');
@@ -71,7 +72,7 @@ export const UnionFeature: Feature = {
 export const IntersectFeature: Feature = {
     id: 'intersect',
     label: 'Intersect',
-    icon: PenTool,
+    icon: SquaresIntersect,
     description: 'Common volume of two shapes',
     execute: (context) => {
         context.setActiveDialog('intersect');

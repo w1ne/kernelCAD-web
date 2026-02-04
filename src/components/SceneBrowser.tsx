@@ -1,7 +1,8 @@
 import React from 'react';
 import type { VariableDefinition } from '../lib/codeAnalysis';
 import type { SketchPlaneEntity } from '../types/plane';
-import { Box, Cylinder, Layers, Scissors, Divide, Circle, Square, MousePointer2, Plane, Eye, EyeOff, ChevronRight, ChevronDown } from 'lucide-react';
+import { Box, Cylinder, Layers, SquaresSubtract, SquaresUnite, SquaresIntersect, SquareRoundCorner, Circle, Square, MousePointer2, Plane, Eye, EyeOff, ChevronRight, ChevronDown, SquareArrowUp, Rotate3D } from 'lucide-react';
+import { ChamferIcon } from '../icons/cad';
 
 interface SceneBrowserProps {
     items: VariableDefinition[];
@@ -15,10 +16,13 @@ const getIconForType = (type: string) => {
         case 'Box': return <Box size={14} className="text-blue-400" />;
         case 'Cylinder': return <Cylinder size={14} className="text-green-400" />;
         case 'Sphere': return <Circle size={14} className="text-yellow-400" />;
-        case 'Fillet':
-        case 'Chamfer': return <Scissors size={14} className="text-purple-400" />;
-        case 'Cut':
-        case 'Union': return <Divide size={14} className="text-red-400" />;
+        case 'Fillet': return <SquareRoundCorner size={14} className="text-purple-400" />;
+        case 'Chamfer': return <ChamferIcon size={14} className="text-purple-400" />;
+        case 'Cut': return <SquaresSubtract size={14} className="text-red-400" />;
+        case 'Union': return <SquaresUnite size={14} className="text-red-400" />;
+        case 'Intersect': return <SquaresIntersect size={14} className="text-red-400" />;
+        case 'Extrude': return <SquareArrowUp size={14} className="text-cyan-400" />;
+        case 'Revolve': return <Rotate3D size={14} className="text-cyan-400" />;
         case 'Sketch': return <Square size={14} className="text-gray-400" />;
         default: return <Layers size={14} className="text-gray-500" />;
     }

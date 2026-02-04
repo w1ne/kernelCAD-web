@@ -7,6 +7,7 @@ import { RevolveDialog } from './RevolveDialog';
 import { WorkbenchContext, type WorkbenchContextType } from '../../context/WorkbenchContext';
 
 const mockWorkbenchContext = {
+    code: '',
     sketches: [
         { id: '1', name: 'sketch1', plane: 'XY' },
         { id: '2', name: 'sketch2', plane: 'XZ' }

@@ -1,11 +1,11 @@
-import { RefreshCw } from 'lucide-react';
+import { RevolveIcon } from '../../components/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
 
 export const RevolveFeature: Feature = {
     id: 'revolve',
     label: 'Revolve',
-    icon: RefreshCw,
+    icon: RevolveIcon,
     description: 'Rotate a sketch around an axis to create a solid',
     execute: (context) => {
         context.setActiveDialog('revolve');

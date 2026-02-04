@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 
 export interface GeometryContextType {
@@ -9,6 +9,7 @@ export interface GeometryContextType {
     error: string | null;
     isReady: boolean;
     isComputing: boolean;
+    executionCount: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
 }
@@ -22,13 +23,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isComputing, setIsComputing] = useState(false);
+    const [executionCount, setExecutionCount] = useState(0);
 
     // Get singleton instance
     const engine = GeometryEngine.getInstance();
 
-    const toggleSketchVisibility = () => {
+    const toggleSketchVisibility = useCallback(() => {
         setShowSketches(prev => !prev);
-    };
+    }, []);
 
     // Initialize Engine
     useEffect(() => {
@@ -38,7 +40,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // engine.terminate(); 
             // note: terminating the global singleton might be bad if we remount.
         };
-    }, []);
+    }, [engine]);
 
     // Execution Loop
     useEffect(() => {
@@ -68,14 +70,15 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setError(message);
             } finally {
                 setIsComputing(false);
+                setExecutionCount(prev => prev + 1);
             }
         };
 
         const timer = setTimeout(run, 600);
         return () => clearTimeout(timer);
-    }, [code, isReady]);
+    }, [code, isReady, engine]);
 
-    const executeGeometry = async (codeToExecute: string) => {
+    const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
         setIsComputing(true);
         try {
@@ -87,10 +90,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             setError(err instanceof Error ? err.message : String(err));
         } finally {
             setIsComputing(false);
+            setExecutionCount(prev => prev + 1);
         }
-    };
+    }, [engine, isReady]);
 
-    const value: GeometryContextType = {
+    const value: GeometryContextType = useMemo(() => ({
         geometries,
         sketchesGeometries,
         showSketches,
@@ -98,8 +102,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         error,
         isReady,
         isComputing,
+        executionCount,
         executeGeometry,
-    };
+    }), [geometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }
