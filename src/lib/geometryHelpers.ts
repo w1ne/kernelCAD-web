@@ -72,7 +72,7 @@ export const extrude = (profile: unknown, distance: number) => {
 
     // Planar face: compute a plane from the face and extrude its outline.
     const isPlanarFace = geomType === 'PLANE' || geomType === 'Planar';
-    const plane = (profile as UnknownRecord).planarPlane ?? (profile as UnknownRecord).plane ?? (isPlanarFace ? (replicad as any).makePlaneFromFace?.(profile) : null);
+    const plane = (profile as UnknownRecord).planarPlane ?? (profile as UnknownRecord).plane ?? (isPlanarFace ? (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace?.(profile) : null);
 
     if (plane) {
       const drawFaceOutline = (replicad as unknown as { drawFaceOutline?: (p: unknown) => unknown }).drawFaceOutline;

@@ -1,4 +1,4 @@
-import { type LucideIcon } from 'lucide-react';
+import { type LucideIcon, type LucideProps } from 'lucide-react';
 import { type CodeGenerationContext } from '../lib/codeGeneration';
 
 export interface FeatureContext {
@@ -22,7 +22,7 @@ export interface DialogField {
 export interface Feature {
     id: string;
     label: string;
-    icon: LucideIcon | React.ComponentType<any>;
+    icon: LucideIcon | React.FC<LucideProps>;
     description?: string;
 
     /**

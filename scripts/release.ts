@@ -13,7 +13,7 @@ const run = (cmd: string, errorMsg: string) => {
     try {
         console.log(`Running: ${cmd}`);
         execSync(cmd, { stdio: 'inherit' });
-    } catch (e) {
+    } catch {
         console.error(`❌ Error: ${errorMsg}`);
         process.exit(1);
     }
@@ -22,7 +22,7 @@ const run = (cmd: string, errorMsg: string) => {
 const getOutput = (cmd: string): string => {
     try {
         return execSync(cmd).toString().trim();
-    } catch (e) {
+    } catch {
         return '';
     }
 };

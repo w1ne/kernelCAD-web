@@ -54,6 +54,7 @@ export function RevolveDialog({ sketchName: initialSketchName, onConfirm, onCanc
     useEffect(() => {
         if (selectedSketch) return;
         if (sketchOptions.length === 0) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedSketch(sketchOptions[sketchOptions.length - 1].value);
     }, [selectedSketch, sketchOptions]);
 

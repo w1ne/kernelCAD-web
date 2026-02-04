@@ -1,4 +1,4 @@
-import { SquareRoundCorner, SquaresIntersect, SquaresSubtract, SquaresUnite } from 'lucide-react';
+import { SquaresIntersect, SquaresSubtract, SquaresUnite } from 'lucide-react';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
 import { FilletIcon, ChamferIcon } from '../../components/CustomIcons';
