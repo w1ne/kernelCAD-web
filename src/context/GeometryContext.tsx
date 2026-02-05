@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
+import { getSketchVariablesAST } from '../lib/ast';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
@@ -65,7 +66,28 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             try {
                 const result = await engine.executeCode(code);
                 setGeometries(result.geometries);
-                setSketchesGeometries(result.sketches);
+                const sketchVarNames = (() => {
+                    try {
+                        return getSketchVariablesAST(code);
+                    } catch {
+                        return [];
+                    }
+                })();
+
+                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`.
+                // Remap those names to the real variable names from user code so viewport
+                // selection can drive feature dialogs (extrude/revolve) correctly.
+                const remappedSketches = result.sketches.map((s) => {
+                    const m = /^sketch-(\d+)-/.exec(s.id);
+                    if (!m) return s;
+                    const idx = Number(m[1]);
+                    const name = sketchVarNames[idx];
+                    if (!name) return s;
+                    if (s.name === name) return s;
+                    return { ...s, name };
+                });
+
+                setSketchesGeometries(remappedSketches);
                 setError(null);
             } catch (err: unknown) {
                 console.error(err);
@@ -98,7 +120,25 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         try {
             const result = await engine.executeCode(codeToExecute);
             setGeometries(result.geometries);
-            setSketchesGeometries(result.sketches);
+            const sketchVarNames = (() => {
+                try {
+                    return getSketchVariablesAST(codeToExecute);
+                } catch {
+                    return [];
+                }
+            })();
+
+            const remappedSketches = result.sketches.map((s) => {
+                const m = /^sketch-(\d+)-/.exec(s.id);
+                if (!m) return s;
+                const idx = Number(m[1]);
+                const name = sketchVarNames[idx];
+                if (!name) return s;
+                if (s.name === name) return s;
+                return { ...s, name };
+            });
+
+            setSketchesGeometries(remappedSketches);
             setError(null);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : String(err));

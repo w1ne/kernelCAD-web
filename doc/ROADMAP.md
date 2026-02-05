@@ -18,7 +18,7 @@
 - [x] **Keyboard Shortcuts**: Added CAD-style tool hotkeys and Undo/Redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y) with “don’t trigger while typing” guards.
 - [x] **Preference Persistence**: Persist view modes and sketch visibility across reloads.
 - [x] **QC Gate**: Added `npm run qc` / `npm run qc:full` and wired into release automation.
-- [x] **CI Enforcement**: CI runs `qc` + Build, runs Playwright E2E on `main`, and uploads Playwright reports/traces.
+- [x] **CI Enforcement**: CI runs `qc` + Build on PRs, runs Playwright E2E only on `master`, uploads Playwright reports/traces, and avoids duplicate push+PR runs.
 
 ### v0.1-0.4: Foundation & CAD Visualization
 - [x] Workbench layout system (Header, SidePanel, Workspace)
