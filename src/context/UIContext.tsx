@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ViewMode3D } from '../types/viewMode';
 
 export interface UIContextType {
@@ -14,9 +14,26 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 
 import { useWorkbenchState } from './WorkbenchStateContext';
 
+const STORAGE_KEYS = {
+    viewMode: 'kernelcad:viewMode',
+    viewMode3D: 'kernelcad:viewMode3D',
+} as const;
+
+function readStoredViewMode(): 'code' | 'gui' {
+    if (typeof window === 'undefined') return 'code';
+    const raw = window.localStorage.getItem(STORAGE_KEYS.viewMode);
+    return raw === 'gui' || raw === 'code' ? raw : 'code';
+}
+
+function readStoredViewMode3D(): ViewMode3D {
+    if (typeof window === 'undefined') return 'shadedWithEdges';
+    const raw = window.localStorage.getItem(STORAGE_KEYS.viewMode3D);
+    return raw === 'shadedWithEdges' || raw === 'wireframe' || raw === 'shaded' ? raw : 'shadedWithEdges';
+}
+
 export function UIProvider({ children }: { children: ReactNode }) {
-    const [viewMode, setViewMode] = useState<'code' | 'gui'>('code');
-    const [viewMode3D, setViewMode3D] = useState<ViewMode3D>('shadedWithEdges');
+    const [viewMode, setViewMode] = useState<'code' | 'gui'>(() => readStoredViewMode());
+    const [viewMode3D, setViewMode3D] = useState<ViewMode3D>(() => readStoredViewMode3D());
 
     // Use the central state machine for dialogs
     const { state, dispatch } = useWorkbenchState();
@@ -30,6 +47,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
             dispatch({ type: 'CLOSE_DIALOG' });
         }
     }, [dispatch]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(STORAGE_KEYS.viewMode, viewMode);
+    }, [viewMode]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(STORAGE_KEYS.viewMode3D, viewMode3D);
+    }, [viewMode3D]);
 
     const value: UIContextType = useMemo(() => ({
         viewMode,

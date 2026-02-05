@@ -1,10 +1,9 @@
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geometryEngine";
 import type { ViewMode3D } from "../types/viewMode";
-import { createCADMaterial, createSketchMaterial } from "../lib/materials";
 import { useWorkbench } from "../context/WorkbenchContext";
 
 interface ViewerProps {
@@ -37,18 +36,19 @@ function FaceMesh({
 
     const color = isSelected ? 0xffa500 : (hovered ? 0x818cf8 : 0x6366f1);
 
-    const materials = useMemo(() => {
-        return createCADMaterial(color, viewMode3D);
-    }, [color, viewMode3D]);
-
     const edgesGeo = useMemo(() =>
         new THREE.EdgesGeometry(threeGeometry, 15), [threeGeometry]
     );
 
-    if (viewMode3D === 'wireframe' && materials.wireframe) {
+    if (viewMode3D === 'wireframe') {
         return (
-            <lineSegments geometry={edgesGeo}>
-                <primitive object={materials.wireframe} attach="material" />
+            <lineSegments
+                geometry={edgesGeo}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+                onPointerOut={() => setHovered(false)}
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+            >
+                <lineBasicMaterial color={color} />
             </lineSegments>
         );
     }
@@ -59,14 +59,12 @@ function FaceMesh({
             onPointerOut={() => setHovered(false)}
             onClick={(e) => { e.stopPropagation(); onClick(); }}
         >
-            {materials.mesh && (
-                <mesh geometry={threeGeometry}>
-                    <primitive object={materials.mesh} attach="material" />
-                </mesh>
-            )}
-            {viewMode3D === 'shadedWithEdges' && materials.edges && (
+            <mesh geometry={threeGeometry}>
+                <meshLambertMaterial color={color} flatShading={viewMode3D === 'shadedWithEdges'} />
+            </mesh>
+            {viewMode3D === 'shadedWithEdges' && (
                 <lineSegments geometry={edgesGeo}>
-                    <primitive object={materials.edges} attach="material" />
+                    <lineBasicMaterial color={0x000000} />
                 </lineSegments>
             )}
         </group>
@@ -83,11 +81,7 @@ function SketchLine({
     onClick: () => void;
 }) {
     const [hovered, setHovered] = useState(false);
-
-    const material = useMemo(() => {
-        const color = isSelected ? 0xffa500 : (hovered ? 0x93c5fd : 0x3b82f6);
-        return createSketchMaterial(color);
-    }, [hovered, isSelected]);
+    const color = isSelected ? 0xffa500 : (hovered ? 0x93c5fd : 0x3b82f6);
 
     const geometry = useMemo(() => {
         const geo = new THREE.BufferGeometry();
@@ -95,7 +89,38 @@ function SketchLine({
         return geo;
     }, [sketch]);
 
-    const line = useMemo(() => new THREE.Line(geometry, material), [geometry, material]);
+    useEffect(() => {
+        return () => geometry.dispose();
+    }, [geometry]);
+
+    const material = useMemo(() => {
+        return new THREE.LineBasicMaterial({
+            color,
+            linewidth: 2,
+            depthTest: false,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -2.0,
+            polygonOffsetUnits: -2.0
+        });
+        // material is intentionally created once; color is updated via effect below
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        material.color.setHex(color);
+        material.needsUpdate = true;
+    }, [material, color]);
+
+    useEffect(() => {
+        return () => material.dispose();
+    }, [material]);
+
+    const line = useMemo(() => {
+        const l = new THREE.Line(geometry, material);
+        l.frustumCulled = false;
+        return l;
+    }, [geometry, material]);
 
     return (
         <primitive

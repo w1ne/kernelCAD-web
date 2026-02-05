@@ -34,16 +34,17 @@ To ensure code quality and stability, direct pushes to `main` and `develop` are 
 #### `develop` Branch
 - **No direct pushes allowed.**
 - **Pull Request Required**:
-  - Must pass all status checks.
+  - CI checks are recommended but optional.
 
 ## Release Checklist
 
 ### 1. Code Quality
+- [ ] Run full QC (`npm run qc:full`)
 - [ ] All tests passing (`npm test`)
 - [ ] E2E tests passing (`npm run test:e2e`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] No linting errors (`npm run lint`)
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
+- [ ] No TypeScript errors (`npm run typecheck`)
 - [ ] Manual smoke test in browser
 
 ### 2. Documentation Updates
@@ -173,6 +174,12 @@ We use a script to automate the release process, ensuring consistent versioning 
 ```bash
 # To create a new release (e.g., minor version bump)
 npm run release -- minor
+```
+
+To enforce the full checklist gate (including Playwright E2E and a production build), run:
+
+```bash
+npm run release -- minor --full
 ```
 
 This script will:
