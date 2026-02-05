@@ -79,4 +79,81 @@ describe('ConstraintSolver', () => {
         // X shouldn't change much (solver moves it vertically)
         expect(p2.x).toBeCloseTo(10);
     });
+    it('should solve PARALLEL constraint', () => {
+        state.entities.set('l1_p1', { id: 'l1_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('l1_p2', { id: 'l1_p2', type: 'POINT', x: 10, y: 0, fixed: true }); // Horizontal fixed
+        state.entities.set('l1', { id: 'l1', type: 'LINE', p1: 'l1_p1', p2: 'l1_p2' });
+
+        state.entities.set('l2_p1', { id: 'l2_p1', type: 'POINT', x: 0, y: 10, fixed: false }); // Start here
+        state.entities.set('l2_p2', { id: 'l2_p2', type: 'POINT', x: 5, y: 20, fixed: false }); // Diagonal
+        state.entities.set('l2', { id: 'l2', type: 'LINE', p1: 'l2_p1', p2: 'l2_p2' });
+
+        state.constraints.push({
+            id: 'c1',
+            type: 'PARALLEL',
+            entities: ['l1', 'l2']
+        });
+
+        solver.solve(state);
+
+        const p1 = asPoint(state.entities.get('l2_p1'));
+        const p2 = asPoint(state.entities.get('l2_p2'));
+
+        // Slope should be 0 (horizontal)
+        const dy = p2.y - p1.y;
+        const dx = p2.x - p1.x;
+        expect(Math.abs(dy)).toBeLessThan(0.1);
+        expect(Math.abs(dx)).toBeGreaterThan(1);
+    });
+
+    it('should solve PERPENDICULAR constraint', () => {
+        state.entities.set('l1_p1', { id: 'l1_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('l1_p2', { id: 'l1_p2', type: 'POINT', x: 10, y: 0, fixed: true }); // Horizontal fixed
+        state.entities.set('l1', { id: 'l1', type: 'LINE', p1: 'l1_p1', p2: 'l1_p2' });
+
+        state.entities.set('l2_p1', { id: 'l2_p1', type: 'POINT', x: 5, y: 5, fixed: false });
+        state.entities.set('l2_p2', { id: 'l2_p2', type: 'POINT', x: 6, y: 6, fixed: false }); // Diagonal
+        state.entities.set('l2', { id: 'l2', type: 'LINE', p1: 'l2_p1', p2: 'l2_p2' });
+
+        state.constraints.push({
+            id: 'c1',
+            type: 'PERPENDICULAR',
+            entities: ['l1', 'l2']
+        });
+
+        solver.solve(state);
+
+        const p1 = asPoint(state.entities.get('l2_p1'));
+        const p2 = asPoint(state.entities.get('l2_p2'));
+
+        // Should be vertical (x constant)
+        const dx = p2.x - p1.x;
+        expect(Math.abs(dx)).toBeLessThan(0.1);
+    });
+
+    it('should solve TANGENT constraint (Circle-Line)', () => {
+        state.entities.set('c_center', { id: 'c_center', type: 'POINT', x: 0, y: 10, fixed: false });
+        state.entities.set('c1', { id: 'c1', type: 'CIRCLE', center: 'c_center', radius: 10 });
+
+        state.entities.set('l1_p1', { id: 'l1_p1', type: 'POINT', x: -10, y: 0, fixed: true });
+        state.entities.set('l1_p2', { id: 'l1_p2', type: 'POINT', x: 10, y: 0, fixed: true }); // Line on X axis
+        state.entities.set('l1', { id: 'l1', type: 'LINE', p1: 'l1_p1', p2: 'l1_p2' });
+
+        // Circle center is at (0, 10), radius 10. Touches line at (0,0). Already tangent.
+        // Let's move center away.
+        state.entities.set('c_center', { id: 'c_center', type: 'POINT', x: 0, y: 15, fixed: false });
+
+        state.constraints.push({
+            id: 'c1',
+            type: 'TANGENT',
+            entities: ['c1', 'l1']
+        });
+
+        solver.solve(state);
+
+        const center = asPoint(state.entities.get('c_center'));
+        // Should settle at y=10 (radius distance from x-axis)
+        expect(center.y).toBeCloseTo(10, 1); // loosen precision a bit for iterative solver
+        expect(center.x).toBeCloseTo(0);
+    });
 });

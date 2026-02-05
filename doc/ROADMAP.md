@@ -48,12 +48,12 @@
 **Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
 ### 1.2 Parametric Sketching
-- [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent.
+- [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent (Foundations in `solver.ts`).
 - [ ] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
-- [ ] **Constraint Solving**: Integration of a 2D constraint solver (e.g., plane-solver).
+- [x] **Constraint Solving**: Integration of a basic 2D constraint solver (Iterative solver integrated).
 
 ### 1.3 UI/UX Polish
-- [ ] **Icon Redesign**: Replace current icons with professional, consistent icon set (e.g., Lucide, Heroicons).
+- [x] **Icon Redesign**: Replace current icons with professional, consistent icon set (via `lucide-react`).
 - [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
 - [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
