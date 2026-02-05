@@ -40,7 +40,7 @@
 - [x] **Face Selection**: Derive sketch planes and features directly from 3D faces.
 - [x] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
 - [x] **Face Sketching**: Draw sketches directly on a selected face with proper plane geometry.
-- [ ] **Smart Camera**: Auto-focus camera on selected faces for sketching (Professional View).
+- [x] **Smart Camera**: Auto-focus camera on selected faces for sketching (Professional View).
 
 ---
 
@@ -49,12 +49,15 @@
 **Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
 ### 1.2 Parametric Sketching
-- [ ] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent (Foundations in `solver.ts`).
-- [ ] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
+- [x] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent (Foundations in `solver.ts`).
+- [x] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
 - [x] **Constraint Solving**: Integration of a basic 2D constraint solver (Iterative solver integrated).
 
-### 1.3 UI/UX Polish
+### 1.3 Next-Gen UI/UX & Workflow
 - [x] **Icon Redesign**: Replace current icons with professional, consistent icon set (via `lucide-react`).
+- [ ] **Command Palette**: Global search and command execution (`Cmd+K`) for keyboard-centric workflow.
+- [ ] **Floating Panels**: Non-blocking, context-aware property panels replacing modal dialogs.
+- [ ] **Context-Aware UI**: Dynamic toolbars/properties that react to selection (Canvas-First).
 - [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
 - [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.

@@ -32,7 +32,9 @@ export type ConstraintType =
     | 'PARALLEL'
     | 'PERPENDICULAR'
     | 'EQUAL_LENGTH'
-    | 'TANGENT';
+    | 'TANGENT'
+    | 'RADIUS'
+    | 'ANGLE';
 
 export interface Constraint {
     id: string;

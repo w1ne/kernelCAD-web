@@ -156,4 +156,76 @@ describe('ConstraintSolver', () => {
         expect(center.y).toBeCloseTo(10, 1); // loosen precision a bit for iterative solver
         expect(center.x).toBeCloseTo(0);
     });
+    it('should solve RADIUS constraint', () => {
+        state.entities.set('c_center', { id: 'c_center', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('c1', { id: 'c1', type: 'CIRCLE', center: 'c_center', radius: 10 });
+
+        state.constraints.push({
+            id: 'c_radius',
+            type: 'RADIUS',
+            entities: ['c1'],
+            value: 20
+        });
+
+        solver.solve(state);
+
+        // Can't check state.entities directly for radius change because 'c1' object might be replaced or mutated?
+        // In our memory model, it's mutated in place.
+        // But let's check:
+        const c1 = state.entities.get('c1');
+        if (c1?.type !== 'CIRCLE') throw new Error('Not a circle');
+
+        expect(c1.radius).toBeCloseTo(20);
+    });
+
+    it('should solve ANGLE constraint', () => {
+        state.entities.set('l1_p1', { id: 'l1_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('l1_p2', { id: 'l1_p2', type: 'POINT', x: 10, y: 0, fixed: true }); // Horizontal 0deg
+        state.entities.set('l1', { id: 'l1', type: 'LINE', p1: 'l1_p1', p2: 'l1_p2' });
+
+        state.entities.set('l2_p1', { id: 'l2_p1', type: 'POINT', x: 0, y: 0, fixed: true }); // Shared point
+        state.entities.set('l2_p2', { id: 'l2_p2', type: 'POINT', x: 10, y: 10, fixed: false }); // 45 deg
+        state.entities.set('l2', { id: 'l2', type: 'LINE', p1: 'l2_p1', p2: 'l2_p2' });
+
+        // Force to 90 degrees
+        state.constraints.push({
+            id: 'c_angle',
+            type: 'ANGLE',
+            entities: ['l1', 'l2'],
+            value: 90
+        });
+
+        solver.solve(state);
+
+        const p2 = asPoint(state.entities.get('l2_p2'));
+        const dx = p2.x;
+        const dy = p2.y;
+        // Expect vertical line: x ~ 0, y > 0
+        expect(Math.abs(dx)).toBeLessThan(0.1);
+        expect(dy).toBeGreaterThan(5);
+    });
+
+    it('should solve EQUAL_LENGTH constraint', () => {
+        state.entities.set('l1_p1', { id: 'l1_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('l1_p2', { id: 'l1_p2', type: 'POINT', x: 10, y: 0, fixed: true }); // Len 10 (Fixed)
+        state.entities.set('l1', { id: 'l1', type: 'LINE', p1: 'l1_p1', p2: 'l1_p2' });
+
+        state.entities.set('l2_p1', { id: 'l2_p1', type: 'POINT', x: 0, y: 10, fixed: true }); // Fixed start
+        state.entities.set('l2_p2', { id: 'l2_p2', type: 'POINT', x: 0, y: 15, fixed: false }); // Len 5
+        state.entities.set('l2', { id: 'l2', type: 'LINE', p1: 'l2_p1', p2: 'l2_p2' });
+
+        state.constraints.push({
+            id: 'c_eq',
+            type: 'EQUAL_LENGTH',
+            entities: ['l1', 'l2']
+        });
+
+        solver.solve(state);
+
+        const l2_p2 = asPoint(state.entities.get('l2_p2'));
+        const len2 = l2_p2.y - 10;
+
+        // L1 is fixed at 10. L2 should grow to 10.
+        expect(len2).toBeCloseTo(10);
+    });
 });

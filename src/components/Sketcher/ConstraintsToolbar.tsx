@@ -1,6 +1,6 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
 import type { ConstraintType } from '../../lib/constraints/types';
-import { Anchor, ArrowLeftRight, MoveHorizontal, MoveVertical } from 'lucide-react';
+import { Anchor, ArrowLeftRight, MoveHorizontal, MoveVertical, Circle, Ruler, Equal } from 'lucide-react';
 
 export function ConstraintsToolbar() {
     const {
@@ -13,15 +13,50 @@ export function ConstraintsToolbar() {
     if (!sketchMode.active) return null;
 
     const handleAddConstraint = (type: ConstraintType) => {
-        if (selectedEntityIds.length < 2) {
-            alert("Select at least 2 entities");
-            return;
+        let val: number | undefined = undefined;
+
+        if (type === 'RADIUS') {
+            if (selectedEntityIds.length !== 1) {
+                alert("Select exactly 1 circle for Radius");
+                return;
+            }
+            const input = prompt("Enter Radius:");
+            if (!input) return;
+            val = parseFloat(input);
+            if (isNaN(val)) return;
+        } else if (type === 'ANGLE') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 lines for Angle");
+                return;
+            }
+            const input = prompt("Enter Angle (degrees):");
+            if (!input) return;
+            val = parseFloat(input);
+            if (isNaN(val)) return;
+        } else if (type === 'EQUAL_LENGTH') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 lines");
+                return;
+            }
+        } else if (type === 'DISTANCE') {
+            if (selectedEntityIds.length < 2) {
+                alert("Select at least 2 entities");
+                return;
+            }
+            val = 50; // Default or prompt? Let's leave default for now as per prev code, or prompt?
+            // Prev code had default 50. Let's keep it but maybe prompt in future.
+        } else {
+            if (selectedEntityIds.length < 2) { // Coincident, etc
+                alert("Select at least 2 entities");
+                return;
+            }
         }
+
         addConstraint({
             id: crypto.randomUUID(),
             type,
             entities: [...selectedEntityIds],
-            value: type === 'DISTANCE' ? 50 : undefined // Default distance
+            value: val ?? (type === 'DISTANCE' ? 50 : undefined)
         });
         solve();
     };
@@ -60,6 +95,32 @@ export function ConstraintsToolbar() {
                 title="Vertical"
             >
                 <MoveVertical size={16} />
+            </button>
+
+            <div className="h-px bg-[#444] my-1" />
+
+            <button
+                onClick={() => handleAddConstraint('RADIUS')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Radius"
+            >
+                <Circle size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('ANGLE')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Angle"
+            >
+                <Ruler size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('EQUAL_LENGTH')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Equal"
+            >
+                <Equal size={16} />
             </button>
 
             {/* Debug Info */}
