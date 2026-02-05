@@ -88,6 +88,10 @@ return replicad.makeBox(10, 10, 10);
         await page.evaluate((c) => (window as any).setCode?.(c), code);
         await waitForStability(page, count);
 
+        // Regression guard: worker sketch geometry names should match code variable names.
+        const sketchNames = await page.evaluate(() => ((window as any).getSketches?.() || []).map((s: any) => s.name));
+        expect(sketchNames).toContain('sketch');
+
         // Select the sketch via test hook (mirrors clicking the sketch in the viewport).
         await page.evaluate(() => (window as any).__TEST_SELECT_SKETCH?.('sketch'));
 
