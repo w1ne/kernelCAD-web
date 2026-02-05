@@ -71,15 +71,15 @@ describe('Toolbar', () => {
         const onToolClick = vi.fn();
         render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
 
-        expect(screen.getByTitle('Box')).toBeDefined();
-        expect(screen.getByTitle('Fillet')).toBeDefined();
+        expect(screen.getByRole('button', { name: 'Box' })).toBeDefined();
+        expect(screen.getByRole('button', { name: 'Fillet' })).toBeDefined();
     });
 
     it('should call onToolClick with feature object', () => {
         const onToolClick = vi.fn();
         render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
 
-        fireEvent.click(screen.getByTitle('Box'));
+        fireEvent.click(screen.getByRole('button', { name: 'Box' }));
         expect(onToolClick).toHaveBeenCalledWith(mockFeatures[0]);
     });
     it('should call setSketchMode when Sketch button clicked with selected face', () => {
@@ -142,9 +142,7 @@ describe('Toolbar', () => {
 
         render(<Toolbar features={mockFeatures} onToolClick={vi.fn()} />);
 
-        // Find sketch button (PenTool icon)
-        // Lucide icons usually don't have text, but we added title attribute "Sketch on Selected Face"
-        const sketchBtn = screen.getByTitle('Sketch on Selected Face');
+        const sketchBtn = screen.getByLabelText('Sketch');
         fireEvent.click(sketchBtn);
 
         expect(setSketchMode).toHaveBeenCalledWith(expect.objectContaining({

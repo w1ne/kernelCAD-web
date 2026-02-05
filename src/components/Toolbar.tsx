@@ -1,6 +1,7 @@
 import { PenTool, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
+import { FEATURE_SHORTCUTS, formatTooltip, SHORTCUT_HINTS } from '../constants/shortcuts';
 
 interface ToolbarProps {
     features: Feature[];
@@ -62,7 +63,12 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
             <button
                 onClick={handleSketchClick}
                 className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
-                title={selectedFace ? "Sketch on Selected Face" : "Start Sketch (Select Plane)"}
+                aria-label="Sketch"
+                title={
+                    selectedFace
+                        ? formatTooltip('Sketch on Face', SHORTCUT_HINTS.sketch, 'Create a sketch on the selected face')
+                        : formatTooltip('Sketch', SHORTCUT_HINTS.sketch, 'Start a sketch by selecting a plane (or a face)')
+                }
             >
                 <PenTool size={20} className={selectedFace ? "text-blue-400" : ""} />
             </button>
@@ -71,6 +77,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
             <button
                 onClick={toggleSketchVisibility}
                 className={`p-2 rounded hover:bg-[#333] transition-colors ${showSketches ? 'text-blue-400' : 'text-gray-500'}`}
+                aria-label="Sketch Visibility"
                 title={showSketches ? "Hide Sketches" : "Show Sketches"}
             >
                 {showSketches ? <Eye size={20} /> : <EyeOff size={20} />}
@@ -86,7 +93,8 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                             if (feature) onToolClick(feature);
                         }}
                         className="p-2 rounded bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-blue-300 transition-colors mt-1"
-                        title="Extrude Selected Face"
+                        aria-label="Extrude Face"
+                        title={formatTooltip('Extrude Face', SHORTCUT_HINTS.extrude, 'Extrude the selected face')}
                     >
                         <ArrowUpFromLine size={20} />
                     </button>
@@ -104,7 +112,8 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                             key={feature.id}
                             onClick={() => onToolClick(feature)}
                             className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
-                            title={feature.label}
+                            aria-label={feature.label}
+                            title={formatTooltip(feature.label, FEATURE_SHORTCUTS[feature.id], feature.description)}
                         >
                             <feature.icon size={20} />
                         </button>
@@ -121,7 +130,8 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                             key={feature.id}
                             onClick={() => onToolClick(feature)}
                             className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
-                            title={feature.label}
+                            aria-label={feature.label}
+                            title={formatTooltip(feature.label, FEATURE_SHORTCUTS[feature.id], feature.description)}
                         >
                             <feature.icon size={20} />
                         </button>
@@ -138,7 +148,8 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                             key={feature.id}
                             onClick={() => onToolClick(feature)}
                             className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
-                            title={feature.label}
+                            aria-label={feature.label}
+                            title={formatTooltip(feature.label, FEATURE_SHORTCUTS[feature.id], feature.description)}
                         >
                             <feature.icon size={20} />
                         </button>
