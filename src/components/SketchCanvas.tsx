@@ -40,7 +40,18 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     }, []);
 
     // Grid settings
-    const gridSize = 10; // Grid cell size in pixels
+    // Calculate pixels per unit based on camera distance and FOV
+    // Visible Height at Reference Depth = 2 * Distance * tan(FOV / 2)
+    // Distance = 20 (SKETCH_DISTANCE), FOV = 40 (SKETCH_FOV)
+    // We assume the camera is mainly at this distance.
+    const SKETCH_DISTANCE = 20;
+    const SKETCH_FOV = 40;
+
+    const visibleHeight = 2 * SKETCH_DISTANCE * Math.tan((SKETCH_FOV / 2) * (Math.PI / 180));
+    const pixelsPerUnit = size.height / visibleHeight;
+
+    // gridSize is the pixel size of one unit
+    const gridSize = pixelsPerUnit;
     const gridUnit = 1;  // 1 unit = 1mm
 
     const {
@@ -79,7 +90,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     // Draw functions (kept in component as they relate to rendering)
     const drawGrid = useCallback((ctx: CanvasRenderingContext2D) => {
         const canvas = ctx.canvas;
-        ctx.strokeStyle = '#e0e0e0';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // Faint white for dark/transparent bg
         ctx.lineWidth = 1;
 
         for (let x = 0; x < canvas.width; x += gridSize) {
@@ -122,7 +133,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         const [x1, y1] = sketchToCanvas(start);
         const [x2, y2] = sketchToCanvas(end);
 
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#ffffff'; // White lines for visibility
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -143,7 +154,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         const w = width / gridUnit * gridSize;
         const h = height / gridUnit * gridSize;
 
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y - h, w, h);
 
@@ -157,7 +168,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         const [x, y] = sketchToCanvas(center);
         const r = radius / gridUnit * gridSize;
 
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -192,7 +203,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         });
 
         if (isDrawing && startPoint && currentPoint) {
-            ctx.strokeStyle = '#999999';
+            ctx.strokeStyle = '#cccccc'; // Lighter grey for pending drawing
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 5]);
 
@@ -218,7 +229,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas, drawGrid, drawLine, drawRectangle, drawCircle]);
 
     return (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col" data-testid="sketch-canvas-overlay">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex flex-col" data-testid="sketch-canvas-overlay">
             <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
                 <div>
                     <h2 className="text-lg font-bold">Sketch Mode - {typeof plane === 'string' ? plane : plane.name}</h2>
@@ -268,7 +279,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                     ref={canvasRef}
                     width={size.width}
                     height={size.height}
-                    className="cursor-crosshair bg-white"
+                    className="cursor-crosshair bg-transparent"
                     onMouseDown={(e) => {
                         const rect = canvasRef.current?.getBoundingClientRect();
                         if (rect) handleMouseDown(e.clientX - rect.left, e.clientY - rect.top);

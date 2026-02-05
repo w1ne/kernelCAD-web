@@ -1,10 +1,14 @@
-import { Canvas, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geometryEngine";
 import type { ViewMode3D } from "../types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
+
+// Constants for sketch camera
+export const SKETCH_FOV = 40;
+export const SKETCH_DISTANCE = 20;
 
 interface ViewerProps {
     geometries: GeometryResult[];
@@ -218,13 +222,137 @@ function ParametricLayer() {
     );
 }
 
+function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
+    const { selectedFace, sketchMode } = useWorkbench();
+    const { camera, controls } = useThree();
+    // Target state for animation
+    const [targetState, setTargetState] = useState<{
+        position: THREE.Vector3;
+        lookAt: THREE.Vector3;
+    } | null>(null);
+
+    // Track previous sketch active state to trigger only on activation
+    const prevSketchActive = useRef(false);
+
+    // Saved camera state for restoration
+    const savedCameraState = useRef<{
+        position: THREE.Vector3;
+        target: THREE.Vector3;
+    } | null>(null);
+
+    useEffect(() => {
+        const isSketching = sketchMode.active;
+        const wasSketching = prevSketchActive.current;
+        prevSketchActive.current = isSketching;
+
+        // On Sketch Enter
+        if (isSketching && !wasSketching) {
+            // Check if we are sketching on a face
+            let faceId: number | undefined;
+            let shapeIndex: number | undefined;
+
+            if (sketchMode.plane && typeof sketchMode.plane === 'object' && sketchMode.plane.type === 'face') {
+                faceId = sketchMode.plane.faceId;
+                if (selectedFace && selectedFace.faceId === faceId) {
+                    shapeIndex = selectedFace.shapeIndex;
+                }
+            }
+
+            if (faceId !== undefined && shapeIndex !== undefined) {
+                // Find the selected face geometry and calculate target
+                const geometry = geometries[shapeIndex];
+                if (!geometry) return;
+                const face = geometry.faces.find(f => f.faceId === faceId);
+                if (!face) return;
+
+                const center = new THREE.Vector3();
+                const normal = new THREE.Vector3();
+                const v = new THREE.Vector3();
+                const n = new THREE.Vector3();
+                const vertexCount = face.vertices.length / 3;
+
+                for (let i = 0; i < face.vertices.length; i += 3) {
+                    v.set(face.vertices[i], face.vertices[i + 1], face.vertices[i + 2]);
+                    center.add(v);
+                    n.set(face.normals[i], face.normals[i + 1], face.normals[i + 2]);
+                    normal.add(n);
+                }
+
+                if (vertexCount > 0) {
+                    center.divideScalar(vertexCount);
+                    normal.divideScalar(vertexCount).normalize();
+                }
+
+                // Save current state before moving
+                // Save current state before moving
+                // We need to get the current control target.
+                const ctrl = controls as unknown as { target?: THREE.Vector3 };
+                savedCameraState.current = {
+                    position: camera.position.clone(),
+                    target: ctrl?.target ? ctrl.target.clone() : new THREE.Vector3(0, 0, 0)
+                };
+
+                // Zoom in closer for sketching
+                const newPos = center.clone().add(normal.multiplyScalar(SKETCH_DISTANCE));
+
+                setTargetState({
+                    position: newPos,
+                    lookAt: center
+                });
+            }
+        }
+
+        // On Sketch Exit
+        if (!isSketching && wasSketching) {
+            if (savedCameraState.current) {
+                setTargetState({
+                    position: savedCameraState.current.position,
+                    lookAt: savedCameraState.current.target
+                });
+            }
+        }
+
+    }, [sketchMode, selectedFace, geometries, camera, controls]);
+
+    useFrame((state, delta) => {
+        if (!targetState) return;
+
+        const dampFactor = 5.0 * delta; // Slightly faster for responsiveness
+
+        // Interpolate position
+        state.camera.position.lerp(targetState.position, dampFactor);
+
+        // Interpolate controls target if available
+        // OrbitControls from @react-three/drei puts the actual controls instance in state.controls usually?
+        // Or we use the hook result if makeDefault is true?
+        // The type of `controls` from `useThree` is unknown by default, we cast or check
+        const ctrl = controls as unknown as { target: THREE.Vector3, update: () => void };
+
+        if (ctrl && ctrl.target) {
+            ctrl.target.lerp(targetState.lookAt, dampFactor);
+            ctrl.update();
+        } else {
+            state.camera.lookAt(targetState.lookAt);
+        }
+
+        // Stop animating when close enough to save perf? 
+        // For now, continuous damping is fine and handles interruptions gracefully
+        if (state.camera.position.distanceTo(targetState.position) < 0.1 &&
+            (ctrl?.target?.distanceTo(targetState.lookAt) || 0) < 0.1) {
+            setTargetState(null);
+        }
+    });
+
+    return null;
+}
+
 export default function Viewer({ geometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
-    const { setSelectedFace, selectedSketchName, setSelectedSketchName } = useWorkbench();
+    const { setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode } = useWorkbench();
 
     return (
         <div className="w-full h-full relative">
             <Canvas
-                camera={{ position: [40, 40, 40], fov: 40 }}
+                camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 raycaster={{
                     params: {
                         Line: { threshold: 0.4 },
@@ -243,7 +371,9 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
                 <directionalLight position={[-5, -10, -5]} intensity={0.3} />
 
-                <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
+                {!sketchMode.active && (
+                    <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
+                )}
 
                 <group>
                     {geometries.map((g, i) => (
@@ -269,7 +399,8 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
 
                 <ParametricLayer />
 
-                <OrbitControls makeDefault />
+                <OrbitControls makeDefault enabled={!sketchMode.active} />
+                <CameraHandler geometries={geometries} />
             </Canvas>
             <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
                 kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
