@@ -67,10 +67,14 @@ export function disposeMaterials(config: CADMaterialConfig) {
 /**
  * Creates a material for sketches (blue lines)
  */
-export function createSketchMaterial(): LineBasicMaterial {
+export function createSketchMaterial(color: number = 0x3b82f6): LineBasicMaterial {
     return new LineBasicMaterial({
-        color: 0x3b82f6,  // Blue-500
+        color,
         linewidth: 2,
+        // Sketches should remain visible when coplanar with faces.
+        // Disabling depth test avoids z-fighting and matches typical CAD overlays.
+        depthTest: false,
+        depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -2.0, // Stronger push towards camera
         polygonOffsetUnits: -2.0

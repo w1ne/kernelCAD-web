@@ -10,7 +10,7 @@ export function ConstraintsToolbar() {
         solve
     } = useWorkbench();
 
-    if (!sketchMode) return null;
+    if (!sketchMode.active) return null;
 
     const handleAddConstraint = (type: ConstraintType) => {
         if (selectedEntityIds.length < 2) {

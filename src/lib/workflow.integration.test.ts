@@ -8,6 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateSketchCode, generateSketchName } from './sketchCodegen';
+import { CodeAnalyzer } from './codeGeneration';
 import { generateExtrudeFromFaceCode } from '../features/core/extrudeFromFace.feature';
 import { generateRevolveCode } from '../features/core/revolve.feature';
 import { generateSketchOnFaceCode } from '../features/core/sketchOnFace.feature';
@@ -17,6 +18,8 @@ import {
     generateBooleanCode
 } from '../features/core/modifiers.feature';
 import type { SketchData } from '../types/sketch';
+
+const createCodeContext = (code = '') => new CodeAnalyzer(code).createContext();
 
 // ============================================================================
 // Test Fixtures - Reusable sketch data for common shapes
@@ -79,8 +82,8 @@ describe('Workflow: Sketch → Extrude', () => {
         // Should move to corner and draw rectangle
         expect(code).toContain('.movePointerTo([0, 0])');
         expect(code).toContain('.lineTo([20, 0])');
-        expect(code).toContain('.lineTo([20, 10])');
-        expect(code).toContain('.lineTo([0, 10])');
+        expect(code).toContain('.lineTo([20, -10])');
+        expect(code).toContain('.lineTo([0, -10])');
         // Rectangle should close back to start
         expect(code).toContain('.close()');
     });
@@ -98,7 +101,7 @@ describe('Workflow: Sketch → Extrude', () => {
         const code = generateSketchCode(sketch);
 
         expect(code).toContain('.done();');
-        expect(code).not.toContain('.close();');
+        expect(code).not.toContain('.close()');
     });
 
     it('should generate circle using sagitta arcs', () => {
@@ -126,20 +129,21 @@ describe('Workflow: Sketch → Extrude', () => {
 
 describe('Workflow: Face Sketching', () => {
     it('should generate sketch on face code', () => {
-        const code = generateSketchOnFaceCode('myBox', 3, 'faceSketch1');
+        const ctx = createCodeContext();
+        const code = generateSketchOnFaceCode(ctx, 'myBox', 3, 'faceSketch1');
 
         // Should create a plane from face and a new Sketcher
-        expect(code).toContain('myBox');
-        expect(code).toContain('3');
-        expect(code).toContain('new replicad.Plane');
+        expect(code).toContain('myBox.faces[3]');
+        expect(code).toContain('replicad.makePlaneFromFace');
         expect(code).toContain('new Sketcher');
     });
 
     it('should generate extrude from face workflow', () => {
-        const code = generateExtrudeFromFaceCode('basePart', 2, 15);
+        const ctx = createCodeContext();
+        const code = generateExtrudeFromFaceCode(ctx, 'basePart', 2, 15);
 
-        // Full workflow: sketch on face → extrude → fuse
-        expect(code).toContain('sketchOnFace(basePart, 2)');
+        // Full workflow: face reference → extrude → fuse
+        expect(code).toContain('basePart.faces[2]');
         expect(code).toContain('extrude(');
         expect(code).toContain('15)');
         expect(code).toContain('basePart.fuse(');
@@ -152,14 +156,16 @@ describe('Workflow: Face Sketching', () => {
 
 describe('Workflow: Revolve', () => {
     it('should generate revolve code with default axis', () => {
-        const code = generateRevolveCode('profile', 360, 'X');
+        const ctx = createCodeContext();
+        const code = generateRevolveCode(ctx, 'profile', 360, 'X');
 
         expect(code).toContain('profile');
         expect(code).toContain('revolve');
     });
 
     it('should handle partial revolve angles', () => {
-        const code = generateRevolveCode('sketch', 180, 'Y');
+        const ctx = createCodeContext();
+        const code = generateRevolveCode(ctx, 'sketch', 180, 'Y');
 
         expect(code).toContain('180');
     });
@@ -171,25 +177,29 @@ describe('Workflow: Revolve', () => {
 
 describe('Workflow: Boolean Operations', () => {
     it('should generate fuse (union) code', () => {
-        const code = generateBooleanCode('box', 'cylinder', 'fuse');
+        const ctx = createCodeContext();
+        const code = generateBooleanCode(ctx, 'box', 'cylinder', 'fuse');
 
-        expect(code).toContain('box.fuse(cylinder)');
+        expect(code).toContain('.fuse(cylinder)');
     });
 
     it('should generate cut (subtract) code', () => {
-        const code = generateBooleanCode('box', 'hole', 'cut');
+        const ctx = createCodeContext();
+        const code = generateBooleanCode(ctx, 'box', 'hole', 'cut');
 
-        expect(code).toContain('box.cut(hole)');
+        expect(code).toContain('.cut(hole)');
     });
 
     it('should generate intersect code', () => {
-        const code = generateBooleanCode('shape1', 'shape2', 'intersect');
+        const ctx = createCodeContext();
+        const code = generateBooleanCode(ctx, 'shape1', 'shape2', 'intersect');
 
         expect(code).toContain('intersect');
     });
 
     it('should create unique result variable names', () => {
-        const code = generateBooleanCode('partA', 'partB', 'fuse');
+        const ctx = createCodeContext();
+        const code = generateBooleanCode(ctx, 'partA', 'partB', 'fuse');
 
         // Should have a result variable with operation suffix
         expect(code).toContain('const ');
@@ -203,20 +213,23 @@ describe('Workflow: Boolean Operations', () => {
 
 describe('Workflow: Fillet & Chamfer', () => {
     it('should generate fillet code for all edges', () => {
-        const code = generateFilletCode('box', 2, 'all');
+        const ctx = createCodeContext();
+        const code = generateFilletCode(ctx, 'box', 2, 'all');
 
         expect(code).toContain('box.fillet(2');
     });
 
     it('should generate fillet code for vertical edges', () => {
-        const code = generateFilletCode('shape', 3, 'vertical');
+        const ctx = createCodeContext();
+        const code = generateFilletCode(ctx, 'shape', 3, 'vertical');
 
         expect(code).toContain('fillet');
         expect(code).toContain('3');
     });
 
     it('should generate chamfer code', () => {
-        const code = generateChamferCode('part', 1.5, 'all');
+        const ctx = createCodeContext();
+        const code = generateChamferCode(ctx, 'part', 1.5, 'all');
 
         expect(code).toContain('chamfer');
         expect(code).toContain('1.5');
@@ -229,12 +242,13 @@ describe('Workflow: Fillet & Chamfer', () => {
 
 describe('Workflow: Bracket Pattern (Integration)', () => {
     it('should generate L-bracket workflow', () => {
+        const ctx = createCodeContext();
         // Step 1: Create base sketch
         const baseSketch = createRectangleSketch('base', 50, 30);
         const sketchCode = generateSketchCode(baseSketch);
 
         // Step 2: Fillet the base
-        const filletCode = generateFilletCode('extruded', 3, 'all');
+        const filletCode = generateFilletCode(ctx, 'extruded', 3, 'all');
 
         // Validate the workflow generates valid patterns
         expect(sketchCode).toContain("new Sketcher('XY')");
@@ -243,6 +257,7 @@ describe('Workflow: Bracket Pattern (Integration)', () => {
     });
 
     it('should generate box with hole workflow', () => {
+        const ctx = createCodeContext();
         // Step 1: Create box sketch
         const boxSketch = createRectangleSketch('boxBase', 40, 40);
         const boxCode = generateSketchCode(boxSketch);
@@ -252,7 +267,7 @@ describe('Workflow: Bracket Pattern (Integration)', () => {
         const holeCode = generateSketchCode(holeSketch);
 
         // Step 3: Boolean cut
-        const cutCode = generateBooleanCode('box', 'hole', 'cut');
+        const cutCode = generateBooleanCode(ctx, 'box', 'hole', 'cut');
 
         // Validate workflow
         expect(boxCode).toContain('.close();');

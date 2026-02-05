@@ -36,11 +36,19 @@ return [ replicad.makeCylinder(20, 40) ];
             });
         }, { timeout: 15000 }).toBeGreaterThan(0);
 
-        // 3. Select Face (Side Face, usually ID 0 or similarly low index for box-like)
-        await page.evaluate(() => {
+        // 3. Select a planar face (needed for sketching)
+        const planarFaceId = await page.evaluate(() => {
             // @ts-ignore
-            if (window.__TEST_SELECT_FACE) window.__TEST_SELECT_FACE(0, 0); // Shape 0, Face 0
+            const geometries = (typeof window.getGeometries === 'function' && window.getGeometries()) || [];
+            const faces = geometries?.[0]?.faces || [];
+            const idx = faces.findIndex((f: any) => f?.plane?.origin && f?.plane?.normal);
+            return idx >= 0 ? idx : null;
         });
+        expect(planarFaceId).not.toBeNull();
+        await page.evaluate((faceId) => {
+            // @ts-ignore
+            if (window.__TEST_SELECT_FACE) window.__TEST_SELECT_FACE(0, faceId);
+        }, planarFaceId);
 
         // Verify selection applied
         await expect.poll(async () => {
@@ -50,8 +58,8 @@ return [ replicad.makeCylinder(20, 40) ];
             });
         }, { timeout: 5000 }).toBe(true);
 
-        // Wait for UI to react
-        await page.waitForTimeout(500);
+        // Wait for the derived face plane to be available (required for sketch-on-face)
+        await expect(page.getByTitle('Extrude Selected Face')).toBeVisible({ timeout: 15000 });
 
         // 4. Click Sketch Button
         const sketchBtn = page.getByTitle('Sketch on Selected Face');
@@ -60,7 +68,7 @@ return [ replicad.makeCylinder(20, 40) ];
 
         // 5. Verify Sketch Mode Entered (Canvas appears)
         const overlay = page.getByTestId('sketch-canvas-overlay');
-        await expect(overlay).toBeVisible();
+        await expect(overlay).toBeVisible({ timeout: 15000 });
 
         const canvas = page.getByTestId('sketch-canvas');
         await expect(canvas).toBeVisible();
@@ -102,6 +110,15 @@ return [ replicad.makeCylinder(20, 40) ];
                 return (typeof window.getSketches === 'function' && window.getSketches())?.length;
             });
         }, { timeout: 10000 }).toBeGreaterThan(0);
+
+        // Sketch lines should have vertices (otherwise they won't be visible).
+        await expect.poll(async () => {
+            return await page.evaluate(() => {
+                // @ts-ignore
+                const sketches = (typeof window.getSketches === 'function' && window.getSketches()) || [];
+                return sketches.some((s: any) => (s?.vertices?.length ?? 0) > 0);
+            });
+        }, { timeout: 10000 }).toBe(true);
 
         const finalCode = await page.evaluate(() => { // @ts-ignore 
             return window.getCode();
@@ -200,6 +217,14 @@ return [base];
                 return (typeof window.getSketches === 'function' && window.getSketches())?.length;
             });
         }, { timeout: 10000 }).toBeGreaterThan(0);
+
+        await expect.poll(async () => {
+            return await page.evaluate(() => {
+                // @ts-ignore
+                const sketches = (typeof window.getSketches === 'function' && window.getSketches()) || [];
+                return sketches.some((s: any) => (s?.vertices?.length ?? 0) > 0);
+            });
+        }, { timeout: 10000 }).toBe(true);
 
         const finalCode = await page.evaluate(() => { // @ts-ignore
             return window.getCode();

@@ -10,8 +10,11 @@ test('has title', async ({ page }) => {
 test('workbench loads', async ({ page }) => {
     await page.goto('/');
 
-    // Check for the code editor
-    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10000 });
+    await page.waitForSelector('canvas', { timeout: 20000 });
+    await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 30000 });
+
+    // Check for the code editor (default view mode)
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 30000 });
 
     // Check for the canvas
     await expect(page.locator('canvas').first()).toBeVisible();

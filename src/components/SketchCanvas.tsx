@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SketchEntity } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -77,7 +77,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     });
 
     // Draw functions (kept in component as they relate to rendering)
-    const drawGrid = (ctx: CanvasRenderingContext2D) => {
+    const drawGrid = useCallback((ctx: CanvasRenderingContext2D) => {
         const canvas = ctx.canvas;
         ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 1;
@@ -116,9 +116,9 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
         ctx.fill();
-    };
+    }, [gridSize]);
 
-    const drawLine = (ctx: CanvasRenderingContext2D, start: [number, number], end: [number, number]) => {
+    const drawLine = useCallback((ctx: CanvasRenderingContext2D, start: [number, number], end: [number, number]) => {
         const [x1, y1] = sketchToCanvas(start);
         const [x2, y2] = sketchToCanvas(end);
 
@@ -136,9 +136,9 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x2, y2, 4, 0, Math.PI * 2);
         ctx.fill();
-    };
+    }, [sketchToCanvas]);
 
-    const drawRectangle = (ctx: CanvasRenderingContext2D, corner: [number, number], width: number, height: number) => {
+    const drawRectangle = useCallback((ctx: CanvasRenderingContext2D, corner: [number, number], width: number, height: number) => {
         const [x, y] = sketchToCanvas(corner);
         const w = width / gridUnit * gridSize;
         const h = height / gridUnit * gridSize;
@@ -151,9 +151,9 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    };
+    }, [sketchToCanvas]);
 
-    const drawCircle = (ctx: CanvasRenderingContext2D, center: [number, number], radius: number) => {
+    const drawCircle = useCallback((ctx: CanvasRenderingContext2D, center: [number, number], radius: number) => {
         const [x, y] = sketchToCanvas(center);
         const r = radius / gridUnit * gridSize;
 
@@ -167,7 +167,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    };
+    }, [sketchToCanvas]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -215,7 +215,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
 
             ctx.setLineDash([]);
         }
-    }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas]);
+    }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas, drawGrid, drawLine, drawRectangle, drawCircle]);
 
     return (
         <div className="fixed inset-0 bg-white z-50 flex flex-col" data-testid="sketch-canvas-overlay">

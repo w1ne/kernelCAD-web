@@ -15,8 +15,9 @@ import { Header } from './Header';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
 import { featureRegistry } from '../../features/FeatureRegistry';
-import { type Feature } from '../../features/types';
-import { type SketchData } from '../../types/sketch';
+import { type Feature, type DialogField } from '../../features/types';
+import { type SketchData, type SketchPlane } from '../../types/sketch';
+import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { generateSketchOnFaceCode } from '../../features/core/sketchOnFace.feature';
 import { generateExtrudeCode } from '../../features/core/extrude.feature';
@@ -36,6 +37,7 @@ export function WorkbenchLayout() {
         viewMode3D,
         code,
         setCode,
+        commandManager,
         geometries,
         sketchesGeometries,
         showSketches,
@@ -52,6 +54,7 @@ export function WorkbenchLayout() {
         addPlane,
         selectedFace,
         selectedFacePlane,
+        selectedSketchName,
         isFaceSelecting,
         startFaceSelection,
         cancelFaceSelection,
@@ -59,16 +62,13 @@ export function WorkbenchLayout() {
     } = useWorkbench();
 
     // Expose helpers for E2E testing
-    React.useEffect(() => {
-        if (typeof window !== 'undefined') {
-            // @ts-ignore
-            window.setCode = setCode;
-            // @ts-ignore
-            window.getCode = () => code;
-            // @ts-ignore
-            window.isEditorReady = !!editorInstance;
-        }
-    }, [setCode, code, editorInstance]);
+	    React.useEffect(() => {
+	        if (typeof window !== 'undefined') {
+	            window.setCode = setCode;
+	            window.getCode = () => code;
+	            window.isEditorReady = !!editorInstance;
+	        }
+	    }, [setCode, code, editorInstance]);
 
     const { insertCode } = useCodeInsertion();
 
@@ -81,7 +81,49 @@ export function WorkbenchLayout() {
             if (activeDialog) return;
             const featureId = selectedFace ? 'extrudeFromFace' : 'extrude';
             const feature = featureRegistry.get(featureId);
-            if (feature) feature.execute({ insertCode, setActiveDialog, code, codeContext });
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'r': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('revolve');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'f': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('fillet');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'c': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('chamfer');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'j': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('union');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'x': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('cut');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'i': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('intersect');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'mod+z': () => {
+            if (activeDialog) return;
+            commandManager.undo();
+        },
+        'mod+shift+z': () => {
+            if (activeDialog) return;
+            commandManager.redo();
+        },
+        'mod+y': () => {
+            if (activeDialog) return;
+            commandManager.redo();
         },
         's': () => {
             if (activeDialog || sketchMode.active) return;
@@ -90,7 +132,7 @@ export function WorkbenchLayout() {
         'p': () => {
             if (activeDialog) return;
             const feature = featureRegistry.get('offsetPlane');
-            if (feature) feature.execute({ insertCode, setActiveDialog, code, codeContext });
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
         },
         'escape': () => {
             if (activeDialog) setActiveDialog(null);
@@ -102,13 +144,13 @@ export function WorkbenchLayout() {
         if (feature.parameters && feature.parameters.length > 0) {
             setActiveDialog(feature.id);
         } else {
-            feature.execute({ insertCode, setActiveDialog, code, codeContext });
+            feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
         }
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
         if (activeFeature) {
-            activeFeature.execute({ insertCode, setActiveDialog, code, codeContext }, values);
+            activeFeature.execute({ insertCode, setCode, setActiveDialog, code, codeContext }, values);
         }
     };
 
@@ -174,27 +216,28 @@ export function WorkbenchLayout() {
                         }
 
                         // Use the name from the active sketch session if available
-                        const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
-
-                        // Parse plane name correctly (handle both string IDs and object names)
-                        let planeName = 'XY';
-                        if (typeof sketchMode.plane === 'string') {
-                            planeName = sketchMode.plane;
-                        } else if (sketchMode.plane && (sketchMode.plane as any).name) {
-                            planeName = (sketchMode.plane as any).name;
-                        }
-
-                        const sketchData: SketchData = {
-                            id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
-                            name: sketchName,
-                            plane: planeName as any,
-                            entities,
-                            closed: false,
-                            createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
-                        };
-
-                        const planeEntity = sketchMode.plane as any;
-                        let sketchCode = '';
+	                        const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
+	
+	                        // Parse plane name correctly (handle both string IDs and object names)
+	                        let planeName: SketchPlane = 'XY';
+	                        if (typeof sketchMode.plane === 'string') {
+	                            planeName = sketchMode.plane;
+	                        } else if (sketchMode.plane && typeof sketchMode.plane === 'object') {
+	                            planeName = sketchMode.plane.name;
+	                        }
+	
+	                        const sketchData: SketchData = {
+	                            id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
+	                            name: sketchName,
+	                            plane: planeName,
+	                            entities,
+	                            closed: false,
+	                            createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
+	                        };
+	
+	                        const planeEntity: SketchPlaneEntity | null =
+	                            sketchMode.plane && typeof sketchMode.plane === 'object' ? sketchMode.plane : null;
+	                        let sketchCode = '';
 
                         // Case 1: Parametric Sketch on Face
                         if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId && planeEntity.parentId !== 'unknown' && planeEntity.parentId !== 'shape') {
@@ -202,13 +245,13 @@ export function WorkbenchLayout() {
                             const bodyCode = generateSketchBody(entities);
                             sketchCode = startCode + bodyCode + ';\n';
                         }
-                        // Case 2: Detached Sketch on a specific Plane object/origin
-                        else if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
-                            const xDir = (planeEntity as any).xDir;
-                            const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
-                            const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
-                            const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
-                            const bodyCode = generateSketchBody(entities);
+	                        // Case 2: Detached Sketch on a specific Plane object/origin
+	                        else if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
+	                            const xDir = planeEntity.xDir;
+	                            const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
+	                            const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
+	                            const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
+	                            const bodyCode = generateSketchBody(entities);
                             sketchCode = startCode + bodyCode + ';\n';
                         }
                         // Case 3: Standard Plane Sketch
@@ -227,19 +270,20 @@ export function WorkbenchLayout() {
             )}
 
             {/* Dialogs */}
-            {activeDialog === 'planeSelector' && (
-                <PlaneSelectorDialog
-                    onSelect={(plane: any) => {
-                        setSketchMode({ active: true, plane: plane, currentSketch: null, tool: 'line' });
-                        setActiveDialog(null);
-                    }}
-                    onSelectFace={startFaceSelection}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
+	            {activeDialog === 'planeSelector' && (
+	                <PlaneSelectorDialog
+	                    onSelect={(plane) => {
+	                        setSketchMode({ active: true, plane, currentSketch: null, tool: 'line' });
+	                        setActiveDialog(null);
+	                    }}
+	                    onSelectFace={startFaceSelection}
+	                    onCancel={() => setActiveDialog(null)}
+	                />
+	            )}
 
             {activeDialog === 'extrude' && (
                 <ExtrudeDialog
+                    sketchName={selectedSketchName || undefined}
                     onConfirm={({ sketchName, distance, direction }) => {
                         const extrudeCode = generateExtrudeCode(codeContext, sketchName, distance, direction === 'normal' ? 'default' : direction);
                         insertCode(extrudeCode);
@@ -255,7 +299,7 @@ export function WorkbenchLayout() {
                         if (activeFeature && activeFeature.execute && selectedFace) {
                             const finalDistance = direction === 'reversed' ? -distance : distance;
                             activeFeature.execute(
-                                { insertCode, setActiveDialog, code, codeContext },
+                                { insertCode, setCode, setActiveDialog, code, codeContext },
                                 {
                                     distance: finalDistance,
                                     faceId: selectedFace.faceId,
@@ -287,53 +331,55 @@ export function WorkbenchLayout() {
                         const faceGeometry = geometry?.faces.find(f => f.faceId === selectedFace.faceId);
                         const plane = faceGeometry?.plane;
 
-                        const snippet = generateSketchOnFaceCode(
-                            codeContext,
-                            targetName,
-                            selectedFace.faceId,
-                            name,
-                            plane ? {
-                                origin: plane.origin,
-                                normal: plane.normal,
-                                xDir: (plane as any).xDir
-                            } : undefined
-                        );
-                        insertCode(snippet);
-
-                        if (faceGeometry && faceGeometry.plane) {
-                            const newSketch = {
-                                id: name,
-                                name: name,
-                                plane: 'face',
-                                entities: [],
-                                closed: false,
-                                createdAt: Date.now()
-                            };
-                            addSketch(newSketch);
-                            setSketchMode({
-                                active: true,
-                                currentSketch: newSketch as any,
-                                tool: 'line',
-                                plane: {
-                                    id: `plane_${name}`,
-                                    name: targetName ? `Face ${selectedFace.faceId} of ${targetName}` : `Face ${selectedFace.faceId}`,
-                                    type: 'face',
-                                    origin: faceGeometry.plane.origin,
-                                    normal: faceGeometry.plane.normal,
-                                    visible: true,
-                                    parentId: targetName || undefined,
-                                    faceId: selectedFace.faceId
-                                } as any
-                            });
-                        }
-                        setActiveDialog(null);
-                    }}
+	                        const snippet = generateSketchOnFaceCode(
+	                            codeContext,
+	                            targetName,
+	                            selectedFace.faceId,
+	                            name,
+	                            plane ? {
+	                                origin: plane.origin,
+	                                normal: plane.normal,
+	                                xDir: plane.xDir
+	                            } : undefined
+	                        );
+	                        insertCode(snippet);
+	
+	                        if (faceGeometry && faceGeometry.plane) {
+	                            const newSketch: SketchData = {
+	                                id: name,
+	                                name: name,
+	                                plane: 'face',
+	                                entities: [],
+	                                closed: false,
+	                                createdAt: Date.now()
+	                            };
+	                            addSketch(newSketch);
+	                            const planeEntity: SketchPlaneEntity = {
+	                                id: `plane_${name}`,
+	                                name: targetName ? `Face ${selectedFace.faceId} of ${targetName}` : `Face ${selectedFace.faceId}`,
+	                                type: 'face',
+	                                origin: faceGeometry.plane.origin,
+	                                normal: faceGeometry.plane.normal,
+	                                visible: true,
+	                                parentId: targetName || undefined,
+	                                faceId: selectedFace.faceId
+	                            };
+	                            setSketchMode({
+	                                active: true,
+	                                currentSketch: newSketch,
+	                                tool: 'line',
+	                                plane: planeEntity
+	                            });
+	                        }
+	                        setActiveDialog(null);
+	                    }}
                     onCancel={() => setActiveDialog(null)}
                 />
             )}
 
             {activeDialog === 'revolve' && (
                 <RevolveDialog
+                    sketchName={selectedSketchName || undefined}
                     onConfirm={({ sketchName, angle, axis }) => {
                         const revolveCode = generateRevolveCode(codeContext, sketchName, angle, axis);
                         insertCode(revolveCode);
@@ -444,21 +490,21 @@ export function WorkbenchLayout() {
             )}
 
             {/* Dialog Overlay (for features with generic parameters) */}
-            {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(activeDialog || '') && (
-                <ParameterDialog
+	            {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(activeDialog || '') && (
+	                <ParameterDialog
                     key={activeFeature.id}
                     isOpen={!!activeDialog}
                     onClose={() => setActiveDialog(null)}
-                    onSubmit={handleDialogSubmit}
-                    title={activeFeature.label}
-                    fields={activeFeature.parameters.map((p: any) => ({
-                        key: p.name,
-                        label: p.label,
-                        defaultValue: p.defaultValue,
-                        step: p.step
-                    }))}
-                />
-            )}
+	                    onSubmit={handleDialogSubmit}
+	                    title={activeFeature.label}
+	                    fields={activeFeature.parameters.map((p: DialogField) => ({
+	                        key: p.name,
+	                        label: p.label,
+	                        defaultValue: p.defaultValue,
+	                        step: p.step
+	                    }))}
+	                />
+	            )}
         </div>
     );
 }

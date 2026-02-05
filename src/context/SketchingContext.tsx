@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useMemo, type ReactNode, useRef, useCallback } from 'react';
 import type { Constraint, SketchEntity, SolverState } from '../lib/constraints/types';
 import { ConstraintSolver } from '../lib/constraints/solver';
 
@@ -22,6 +22,7 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
     const [constraints, setConstraints] = useState<Constraint[]>([]);
     const [selectedEntityIds, setSelectedEntityIds] = useState<string[]>([]);
     const solverRef = useRef(new ConstraintSolver());
+    const constraintsRef = useRef<Constraint[]>([]);
 
     const addEntity = useCallback((entity: SketchEntity) => {
         setEntities(prev => {
@@ -36,20 +37,38 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
             const next = new Map(prev);
             const entity = next.get(id);
             if (entity) {
-                // Safe update by casting to any or discriminating
-                // Since updates is partial, we trust the caller passing valid updates for the entity type
-                // Typically one would check: if (entity.type === 'POINT') ...
+                // We trust the caller to pass valid updates for the entity type.
                 next.set(id, { ...entity, ...updates } as SketchEntity);
             }
             return next;
         });
     }, []);
 
-    const addConstraint = useCallback((constraint: Constraint) => {
-        setConstraints(prev => [...prev, constraint]);
-        // Auto-solve when adding constraint
-        setTimeout(solve, 0);
+    const solve = useCallback(() => {
+        setEntities(prev => {
+            const next = new Map(prev);
+
+            // Re-copy objects to avoid mutation of old state
+            for (const [key, val] of next.entries()) {
+                next.set(key, { ...val });
+            }
+
+            const solverState: SolverState = { entities: next, constraints: constraintsRef.current };
+            solverRef.current.solve(solverState);
+
+            return next;
+        });
     }, []);
+
+    const addConstraint = useCallback((constraint: Constraint) => {
+        setConstraints(prev => {
+            const next = [...prev, constraint];
+            constraintsRef.current = next;
+            return next;
+        });
+        // Auto-solve when adding constraint (after state updates flush)
+        queueMicrotask(solve);
+    }, [solve]);
 
     const selectEntity = useCallback((id: string, multi = false) => {
         setSelectedEntityIds(prev => {
@@ -64,28 +83,7 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
         setSelectedEntityIds([]);
     }, []);
 
-    const solve = useCallback(() => {
-        setEntities(prev => {
-            const next = new Map(prev);
-            // Create a temporary solver state
-            // We use 'constraints' from the state, but we need to access the LATEST constraints.
-            // Since this runs in setEntities updater, 'constraints' variable is captured from closure 'solve' creation.
-            // We should use a ref for constraints if we want latest inside this callback without re-creating 'solve'.
-            // For now, depending on 'constraints' in dependency array is fine.
-
-            // Re-copy objects to avoid mutation of old state
-            for (const [key, val] of next.entries()) {
-                next.set(key, { ...val });
-            }
-
-            const solverState: SolverState = { entities: next, constraints };
-            solverRef.current.solve(solverState);
-
-            return next;
-        });
-    }, [constraints]);
-
-    const value: SketchingContextType = {
+    const value: SketchingContextType = useMemo(() => ({
         entities,
         constraints,
         selectedEntityIds,
@@ -95,11 +93,12 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
         selectEntity,
         clearSelection,
         solve
-    };
+    }), [entities, constraints, selectedEntityIds, addEntity, updateEntity, addConstraint, selectEntity, clearSelection, solve]);
 
     return <SketchingContext.Provider value={value}>{children}</SketchingContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSketching() {
     const context = useContext(SketchingContext);
     if (!context) {

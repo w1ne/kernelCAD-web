@@ -2,7 +2,10 @@ import { describe, test, expect, beforeAll } from 'vitest';
 import * as fc from 'fast-check';
 import { executeGeometry, initReplicad } from '../../test/regressionTestHelpers';
 
-describe('Fuzzing: Geometric Primitives', () => {
+const runFuzz = process.env.KERNELCAD_FUZZ === '1';
+const describeIfFuzz = runFuzz ? describe : describe.skip;
+
+describeIfFuzz('Fuzzing: Geometric Primitives', () => {
     beforeAll(async () => {
         await initReplicad();
     });

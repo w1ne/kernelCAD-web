@@ -11,7 +11,7 @@ vi.mock('../lib/geometryEngine', () => {
         executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
     };
     return {
-        defaultCode: 'default',
+        defaultCode: 'return [];',
         init: vi.fn().mockResolvedValue(true),
         executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
         exportSTEP: vi.fn(),

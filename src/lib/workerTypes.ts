@@ -21,6 +21,11 @@ export const ExecuteRequestSchema = z.object({
     code: z.string(),
 });
 
+export const InitRequestSchema = z.object({
+    type: z.literal('INIT'),
+    id: z.string(),
+});
+
 export const ExportSTEPRequestSchema = z.object({
     type: z.literal('EXPORT_STEP'),
     id: z.string(),
@@ -34,6 +39,7 @@ export const ExportSTLRequestSchema = z.object({
 });
 
 export const WorkerRequestSchema = z.discriminatedUnion('type', [
+    InitRequestSchema,
     ExecuteRequestSchema,
     ExportSTEPRequestSchema,
     ExportSTLRequestSchema,
@@ -65,6 +71,7 @@ export const FaceGeometrySchema = z.object({
 
 export const GeometryResultSchema = z.object({
     faces: z.array(FaceGeometrySchema),
+    volume: z.number().optional(),
 });
 
 export const SketchGeometrySchema = z.object({

@@ -5,10 +5,11 @@ export const sketchVisibility: WorkflowDefinition = {
     name: 'Sketch Visibility on Face',
     description: 'Verifies that a sketch drawn on a face is located at the correct Z-height and returned.',
     code: `
-const { Sketcher } = replicad;
-
-// 1. Create Base Shape
-const base = new Sketcher()
+	const { Sketcher } = replicad;
+	const __DEBUG__ = typeof process !== 'undefined' && process?.env?.KERNELCAD_TEST_LOG === '1';
+	
+	// 1. Create Base Shape
+	const base = new Sketcher()
     .hLine(40)
     .vLine(40)
     .hLine(-40)
@@ -33,24 +34,24 @@ if (filleted.faces && filleted.faces.length > 0) {
                 // Replicad Plane usually has zDir vector as normal.
                 
                 let normalZ = 0;
-                if (plane.zDir) {
-                    normalZ = plane.zDir.z;
-                }
-                
-                console.log('Face ' + i + ': NormalZ=' + normalZ);
-
-                // Side face is vertical, so Normal Z should be near 0.
-                if (Math.abs(normalZ) < 0.1) {
-                     faceIndex = i;
-                     console.log('Found side face (Vertical) at index ' + i);
-                     break;
-                }
-             } catch (e) {
-                 console.log('Face ' + i + ': Error checking plane ' + e);
-             }
-        }
-    }
-}
+	                if (plane.zDir) {
+	                    normalZ = plane.zDir.z;
+	                }
+	                
+	                if (__DEBUG__) console.log('Face ' + i + ': NormalZ=' + normalZ);
+	
+	                // Side face is vertical, so Normal Z should be near 0.
+	                if (Math.abs(normalZ) < 0.1) {
+	                     faceIndex = i;
+	                     if (__DEBUG__) console.log('Found side face (Vertical) at index ' + i);
+	                     break;
+	                }
+	             } catch (e) {
+	                 if (__DEBUG__) console.log('Face ' + i + ': Error checking plane ' + e);
+	             }
+	        }
+	    }
+	}
 
 if (faceIndex === -1) {
     throw new Error('Could not find a side face. Check logs.');

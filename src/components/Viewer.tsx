@@ -1,10 +1,9 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geometryEngine";
 import type { ViewMode3D } from "../types/viewMode";
-import { createCADMaterial, createSketchMaterial } from "../lib/materials";
 import { useWorkbench } from "../context/WorkbenchContext";
 
 interface ViewerProps {
@@ -37,18 +36,19 @@ function FaceMesh({
 
     const color = isSelected ? 0xffa500 : (hovered ? 0x818cf8 : 0x6366f1);
 
-    const materials = useMemo(() => {
-        return createCADMaterial(color, viewMode3D);
-    }, [color, viewMode3D]);
-
     const edgesGeo = useMemo(() =>
         new THREE.EdgesGeometry(threeGeometry, 15), [threeGeometry]
     );
 
-    if (viewMode3D === 'wireframe' && materials.wireframe) {
+    if (viewMode3D === 'wireframe') {
         return (
-            <lineSegments geometry={edgesGeo}>
-                <primitive object={materials.wireframe} attach="material" />
+            <lineSegments
+                geometry={edgesGeo}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+                onPointerOut={() => setHovered(false)}
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+            >
+                <lineBasicMaterial color={color} />
             </lineSegments>
         );
     }
@@ -59,22 +59,29 @@ function FaceMesh({
             onPointerOut={() => setHovered(false)}
             onClick={(e) => { e.stopPropagation(); onClick(); }}
         >
-            {materials.mesh && (
-                <mesh geometry={threeGeometry}>
-                    <primitive object={materials.mesh} attach="material" />
-                </mesh>
-            )}
-            {viewMode3D === 'shadedWithEdges' && materials.edges && (
+            <mesh geometry={threeGeometry}>
+                <meshLambertMaterial color={color} flatShading={viewMode3D === 'shadedWithEdges'} />
+            </mesh>
+            {viewMode3D === 'shadedWithEdges' && (
                 <lineSegments geometry={edgesGeo}>
-                    <primitive object={materials.edges} attach="material" />
+                    <lineBasicMaterial color={0x000000} />
                 </lineSegments>
             )}
         </group>
     );
 }
 
-function SketchLine({ sketch }: { sketch: SketchGeometry }) {
-    const material = useMemo(() => createSketchMaterial(), []);
+function SketchLine({
+    sketch,
+    isSelected,
+    onClick
+}: {
+    sketch: SketchGeometry;
+    isSelected: boolean;
+    onClick: () => void;
+}) {
+    const [hovered, setHovered] = useState(false);
+    const color = isSelected ? 0xffa500 : (hovered ? 0x93c5fd : 0x3b82f6);
 
     const geometry = useMemo(() => {
         const geo = new THREE.BufferGeometry();
@@ -82,11 +89,47 @@ function SketchLine({ sketch }: { sketch: SketchGeometry }) {
         return geo;
     }, [sketch]);
 
+    useEffect(() => {
+        return () => geometry.dispose();
+    }, [geometry]);
+
+    const material = useMemo(() => {
+        return new THREE.LineBasicMaterial({
+            color,
+            linewidth: 2,
+            depthTest: false,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -2.0,
+            polygonOffsetUnits: -2.0
+        });
+        // material is intentionally created once; color is updated via effect below
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        material.color.setHex(color);
+        material.needsUpdate = true;
+    }, [material, color]);
+
+    useEffect(() => {
+        return () => material.dispose();
+    }, [material]);
+
+    const line = useMemo(() => {
+        const l = new THREE.Line(geometry, material);
+        l.frustumCulled = false;
+        return l;
+    }, [geometry, material]);
+
     return (
-        // @ts-ignore
-        <line geometry={geometry} renderOrder={999}>
-            <primitive object={material} attach="material" />
-        </line>
+        <primitive
+            object={line}
+            renderOrder={999}
+            onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); }}
+            onPointerOut={() => setHovered(false)}
+            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); }}
+        />
     );
 }
 
@@ -99,7 +142,7 @@ function Shape({
     shapeIndex: number;
     viewMode3D: ViewMode3D
 }) {
-    const { selectedFace, setSelectedFace } = useWorkbench();
+    const { selectedFace, setSelectedFace, setSelectedSketchName } = useWorkbench();
 
     return (
         <group>
@@ -109,7 +152,10 @@ function Shape({
                     face={face}
                     viewMode3D={viewMode3D}
                     isSelected={selectedFace?.shapeIndex === shapeIndex && selectedFace?.faceId === face.faceId}
-                    onClick={() => setSelectedFace({ shapeIndex, faceId: face.faceId })}
+                    onClick={() => {
+                        setSelectedSketchName(null);
+                        setSelectedFace({ shapeIndex, faceId: face.faceId });
+                    }}
                 />
             ))}
         </group>
@@ -130,7 +176,7 @@ function ParametricLayer() {
                         <mesh
                             key={entity.id}
                             position={[entity.x, entity.y, 0]}
-                            onClick={(e) => {
+                            onClick={(e: ThreeEvent<MouseEvent>) => {
                                 e.stopPropagation();
                                 selectEntity(entity.id, e.metaKey || e.ctrlKey);
                             }}
@@ -155,7 +201,7 @@ function ParametricLayer() {
                             <lineSegments
                                 key={entity.id}
                                 geometry={lineGeo}
-                                onClick={(e) => {
+                                onClick={(e: ThreeEvent<MouseEvent>) => {
                                     e.stopPropagation();
                                     selectEntity(entity.id, e.metaKey || e.ctrlKey);
                                 }}
@@ -173,13 +219,25 @@ function ParametricLayer() {
 }
 
 export default function Viewer({ geometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
-    const { setSelectedFace } = useWorkbench();
+    const { setSelectedFace, selectedSketchName, setSelectedSketchName } = useWorkbench();
 
     return (
         <div className="w-full h-full relative">
             <Canvas
                 camera={{ position: [40, 40, 40], fov: 40 }}
-                onPointerMissed={() => setSelectedFace(null)}
+                raycaster={{
+                    params: {
+                        Line: { threshold: 0.4 },
+                        Mesh: {},
+                        LOD: {},
+                        Points: { threshold: 0.1 },
+                        Sprite: {}
+                    }
+                } as unknown as Partial<THREE.Raycaster>}
+                onPointerMissed={() => {
+                    setSelectedFace(null);
+                    setSelectedSketchName(null);
+                }}
             >
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
@@ -196,7 +254,15 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                 {showSketches && (
                     <group>
                         {sketchesGeometries.map((s) => (
-                            <SketchLine key={s.id} sketch={s} />
+                            <SketchLine
+                                key={s.id}
+                                sketch={s}
+                                isSelected={selectedSketchName === s.name}
+                                onClick={() => {
+                                    setSelectedFace(null);
+                                    setSelectedSketchName(s.name);
+                                }}
+                            />
                         ))}
                     </group>
                 )}
@@ -206,7 +272,7 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
                 <OrbitControls makeDefault />
             </Canvas>
             <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
-                kernelCAD v0.7.0 ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
+                kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
                     viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
             </div>
         </div>

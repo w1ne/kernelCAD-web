@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCode, getDeclaredVariablesAST, generateCode, insertStatementSimple, insertShape } from './ast';
+import { parseCode, getDeclaredVariablesAST, getSketchVariablesAST, generateCode, insertStatementSimple, insertShape, promoteReturnExpressionAtIndexToVariable, insertStatementsAndReplaceReturnAtIndex } from './ast';
 
 describe('AST - Basic Parsing', () => {
     it('should parse simple code without crashing', () => {
@@ -87,6 +87,20 @@ describe('AST - Variable Extraction', () => {
         const vars = getDeclaredVariablesAST(code);
         expect(vars.has('commented')).toBe(false);
         expect(vars.has('real')).toBe(true);
+    });
+
+    it('should extract sketch variables', () => {
+        const code = `
+            const box = replicad.makeBox(10, 10, 10);
+            const sketch = new Sketcher('XY').movePointerTo(0, 0).lineTo(10, 0).close();
+            const sketch2 = startSketch().rect(0, 0, 10, 10).close();
+            const sketch3 = sketchOnFace(box, 0).rect(0, 0, 5, 5).close();
+        `;
+        const vars = getSketchVariablesAST(code);
+        expect(vars).toContain('sketch');
+        expect(vars).toContain('sketch2');
+        expect(vars).toContain('sketch3');
+        expect(vars).not.toContain('box');
     });
 });
 
@@ -273,6 +287,30 @@ export default function main() {
         expect(newCode).toContain('const sketch1 = new Sketcher');
         expect(newCode).toContain('return []');
         expect(newCode).not.toContain('return [sketch1]');
+    });
+});
+
+describe('AST - Return Rewrites', () => {
+    it('should promote a top-level return expression to a variable', () => {
+        const code = `
+const x = 1;
+return replicad.makeBox(10, 10, 10);
+        `;
+        const next = promoteReturnExpressionAtIndexToVariable(code, 0, 'box1');
+        expect(next).toContain('const box1');
+        expect(next).toContain('return box1');
+        expect(next).not.toContain('return replicad.makeBox');
+    });
+
+    it('should insert statements and replace an element in return array', () => {
+        const code = `
+const a = replicad.makeBox(10, 10, 10);
+const b = replicad.makeBox(5, 5, 5);
+return [a, b];
+        `;
+        const next = insertStatementsAndReplaceReturnAtIndex(code, 'const c = a.fuse(b);', 0, 'c');
+        expect(next).toContain('const c');
+        expect(next).toContain('return [c, b]');
     });
 });
 

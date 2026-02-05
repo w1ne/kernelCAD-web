@@ -8,7 +8,6 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
-    console.error('Toolbar Render. Features prop count:', features.length);
     const {
         setActiveDialog,
         selectedFace,

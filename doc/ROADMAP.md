@@ -2,12 +2,23 @@
 
 > Building a professional parametric CAD system in the browser
 
-**Current Version**: v0.6.1
+**App Version (package.json)**: v0.10.0
+**Latest Git Tag**: v0.10.0
 **Status**: Phase 1 (Professional Modeling Workflow) - In Progress
 
 ---
 
 ## ✅ COMPLETED
+
+### v0.10.0: Workflow, DX, and CI Hardening
+- [x] **Sketch Selection in Viewer**: Click sketch wires to select, highlight, and prefill feature dialogs.
+- [x] **Extrude From Code Sketch**: Extrude/Revolve dialogs include sketch variables declared in user code.
+- [x] **Extrude Face Reliability**: Anonymous returned shapes are auto-named and replaced in `return` (no detached “plane + rect” junk).
+- [x] **Dev Lab**: Added `/dev-lab` for fast scenario loading and debugging.
+- [x] **Keyboard Shortcuts**: Added CAD-style tool hotkeys and Undo/Redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y) with “don’t trigger while typing” guards.
+- [x] **Preference Persistence**: Persist view modes and sketch visibility across reloads.
+- [x] **QC Gate**: Added `npm run qc` / `npm run qc:full` and wired into release automation.
+- [x] **CI Enforcement**: CI runs `qc` + Build on PRs, runs Playwright E2E only on `master`, uploads Playwright reports/traces, and avoids duplicate push+PR runs.
 
 ### v0.1-0.4: Foundation & CAD Visualization
 - [x] Workbench layout system (Header, SidePanel, Workspace)
@@ -32,7 +43,7 @@
 
 ---
 
-## 🚀 PHASE 1: Professional Modeling Workflow (v0.7.x)
+## 🚀 PHASE 1: Professional Modeling Workflow (v0.10.x)
 
 **Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
@@ -45,7 +56,7 @@
 - [ ] **Icon Redesign**: Replace current icons with professional, consistent icon set (e.g., Lucide, Heroicons).
 - [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
 - [ ] **Tooltips**: Add comprehensive tooltips for all tools and features.
-- [ ] **Keyboard Shortcuts**: Implement industry-standard shortcuts (e.g., E for Extrude, S for Sketch).
+- [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
 
 ---
 
@@ -59,11 +70,11 @@
 - [x] **Headless CAD Validation**: Automatic geometry checks via `standardWorkflows.test.ts`.
 
 ### 1.4 Developer Tools
-- [ ] **Dev Lab**: Isolated environment for component testing and prototyping (e.g., `/dev-lab` route).
+- [x] **Dev Lab**: Isolated environment for component testing and prototyping (e.g., `/dev-lab` route).
 
 ---
 
-## 🕐 PHASE 2: Intelligence & Parametric Control (v0.7.x)
+## 🕐 PHASE 2: Intelligence & Parametric Control (v0.10.x)
 
 **Goal**: Full parametric control over the model history.
 
@@ -139,12 +150,12 @@
 
 ## 📋 Priority Order (Next 6 Months)
 
-1. **v0.7.0**: Parametric Sketching (Constraints & Dimensions) ⭐ **HIGH PRIORITY**
+1. **v0.10.x**: Parametric Sketching (Constraints & Dimensions) ⭐ **HIGH PRIORITY**
 2. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
 3. **v0.9.0**: Feature Timeline & History
 4. **v1.0.0**: Global Parameters & Sections 🎉
 
 ---
 
-**Last Updated**: 2026-01-29  
-**Next Review**: After v0.7.0 (Parametric Sketching) ships
+**Last Updated**: 2026-02-05  
+**Next Review**: After v0.10.x (Parametric Sketching) ships

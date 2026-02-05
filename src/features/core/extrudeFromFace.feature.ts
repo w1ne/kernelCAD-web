@@ -2,13 +2,14 @@ import { ArrowUpFromLine } from 'lucide-react';
 import { type Feature } from '../types';
 import { CodeBuilder } from '../../lib/CodeBuilder';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
+import { insertStatementsAndReplaceReturnAtIndex, promoteReturnExpressionAtIndexToVariable } from '../../lib/ast';
 
 export const ExtrudeFromFaceFeature: Feature = {
     id: 'extrudeFromFace',
     label: 'Extrude Face',
     icon: ArrowUpFromLine,
     description: 'Extrude a selected planar face by a specified distance',
-    execute: ({ setActiveDialog, insertCode, codeContext }, params) => {
+    execute: ({ setActiveDialog, insertCode, setCode, code, codeContext }, params) => {
         if (params && typeof params.distance === 'number' && typeof params.faceId === 'number') {
             const { distance, faceId, shapeIndex } = params;
 
@@ -17,16 +18,45 @@ export const ExtrudeFromFaceFeature: Feature = {
                 ? codeContext.getVariableAtIndex(shapeIndex)
                 : null;
 
-            // Extract plane data if provided (for detached fallback)
-            let planeData: { origin: [number, number, number]; normal: [number, number, number] } | undefined;
-            if (typeof params.originX === 'number') {
-                planeData = {
-                    origin: [params.originX, params.originY, params.originZ],
-                    normal: [params.normalX, params.normalY, params.normalZ]
-                };
+            // Prefer rewriting code to (1) name anonymous returns, and (2) replace the
+            // selected shape in the return list with the fused result (no duplicates).
+            const idx = typeof shapeIndex === 'number' ? shapeIndex : 0;
+            let workingCode = code;
+            let resolvedTarget = targetName;
+
+            if (!resolvedTarget) {
+                const generatedBase = codeContext.generateUniqueName('shape');
+                try {
+                    workingCode = promoteReturnExpressionAtIndexToVariable(workingCode, idx, generatedBase);
+                    resolvedTarget = generatedBase;
+                } catch {
+                    resolvedTarget = null;
+                }
             }
 
-            const generatedCode = generateExtrudeFromFaceCode(codeContext, targetName, faceId, distance, planeData);
+            if (resolvedTarget) {
+                const faceName = codeContext.generateUniqueName(`${resolvedTarget}_face_${faceId}`);
+                const extrusionName = codeContext.generateUniqueName(`${resolvedTarget}_extrude_${faceId}`);
+                const resultName = codeContext.generateUniqueName(`${resolvedTarget}_fused`);
+
+                const statements = [
+                    `const ${faceName} = ${resolvedTarget}.faces[${faceId}];`,
+                    `const ${extrusionName} = extrude(${faceName}, ${distance});`,
+                    `const ${resultName} = ${resolvedTarget}.fuse(${extrusionName});`,
+                ].join('\n');
+
+                try {
+                    const next = insertStatementsAndReplaceReturnAtIndex(workingCode, statements, idx, resultName);
+                    setCode(next);
+                    setActiveDialog(null);
+                    return;
+                } catch {
+                    // Fallback to snippet insertion below.
+                }
+            }
+
+            // Fallback: insert a snippet without mutating existing return structure.
+            const generatedCode = generateExtrudeFromFaceCode(codeContext, resolvedTarget, faceId, distance);
             insertCode(generatedCode);
             setActiveDialog(null);
         } else {
@@ -40,36 +70,22 @@ export const generateExtrudeFromFaceCode = (
     targetName: string | null,
     faceId: number,
     distance: number,
-    planeData?: { origin: [number, number, number]; normal: [number, number, number] }
 ): string => {
     const builder = new CodeBuilder();
 
-    // Path A: Parametric (Linked to variable)
-    if (targetName && targetName !== 'unknown' && targetName !== 'shape') {
-        const sketchName = context.generateUniqueName(`${targetName}_sketch_${faceId}`);
-        const extrusionName = context.generateUniqueName(`${targetName}_extrude_${faceId}`);
-        const resultName = context.generateUniqueName(`${targetName}_fused`);
-
-        builder.addStatement(`const ${sketchName} = sketchOnFace(${targetName}, ${faceId});`);
-        builder.addStatement(`const ${extrusionName} = extrude(${sketchName}, ${distance});`);
-        builder.addStatement(`const ${resultName} = ${targetName}.fuse(${extrusionName});`);
-
+    if (!targetName) {
+        builder.addStatement(`// Cannot extrude from face: the selected shape is anonymous in the return statement.`);
+        builder.addStatement(`// Assign it to a variable first (e.g. "const part = ...; return part;") and try again.`);
         return builder.toString();
     }
 
-    // Path B: Detached (Anonymous shape)
-    const sketchName = context.generateUniqueName(`sketch_face_${faceId}`);
-    const extrusionName = context.generateUniqueName(`extrude_face_${faceId}`);
+    const faceName = context.generateUniqueName(`${targetName}_face_${faceId}`);
+    const extrusionName = context.generateUniqueName(`${targetName}_extrude_${faceId}`);
+    const resultName = context.generateUniqueName(`${targetName}_fused`);
 
-    const origin = planeData?.origin || [0, 0, 0];
-    const normal = planeData?.normal || [0, 0, 1];
-
-    builder.addStatement(`// NOTE: This extrusion is detached because the parent shape is anonymous.`);
-    builder.addStatement(`const plane_${sketchName} = new replicad.Plane([${origin.join(', ')}], null, [${normal.join(', ')}]);`);
-    builder.addStatement(`const ${sketchName} = new Sketcher(plane_${sketchName});`);
-    builder.addStatement(`// DRAW HERE (e.g. ${sketchName}.rect(10, 10))`);
-    builder.addComment(`Extruding the detached sketch`);
-    builder.addStatement(`const ${extrusionName} = extrude(${sketchName}, ${distance});`);
+    builder.addStatement(`const ${faceName} = ${targetName}.faces[${faceId}];`);
+    builder.addStatement(`const ${extrusionName} = extrude(${faceName}, ${distance});`);
+    builder.addStatement(`const ${resultName} = ${targetName}.fuse(${extrusionName});`);
 
     return builder.toString();
 };

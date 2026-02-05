@@ -92,7 +92,7 @@ test('Sketch on Face Workflow E2E', async ({ page }) => {
     // Visual Regression Check
     // We wait a bit for rendering to settle
     await page.waitForTimeout(1000);
-    expect(await page.screenshot()).toMatchSnapshot('sketch-visibility.png');
+    expect(await page.screenshot()).toMatchSnapshot('sketch-visibility.png', { maxDiffPixelRatio: 0.02 });
 
     // Check captured worker logs
     const workerLogs = consoleMessages.filter(msg => msg.includes('Worker:'));

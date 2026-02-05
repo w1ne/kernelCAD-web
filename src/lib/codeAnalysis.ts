@@ -61,7 +61,9 @@ export function extractVariables(code: string): VariableDefinition[] {
             else if (line.includes('chamfer')) type = 'Chamfer';
             else if (line.includes('cut')) type = 'Cut';
             else if (line.includes('fuse')) type = 'Union';
+            else if (line.includes('intersect')) type = 'Intersect';
             else if (line.includes('extrude')) type = 'Extrude';
+            else if (line.includes('revolve')) type = 'Revolve';
             else if (line.includes('Sketcher')) {
                 type = 'Sketch';
                 const planeMatch = line.match(/new Sketcher\(['"](\w+)['"]\)/);

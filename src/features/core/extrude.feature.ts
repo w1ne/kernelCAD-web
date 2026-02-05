@@ -1,11 +1,11 @@
-import { ArrowUpToLine } from 'lucide-react';
+import { ExtrudeIcon } from '../../components/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
 
 export const ExtrudeFeature: Feature = {
     id: 'extrude',
     label: 'Extrude',
-    icon: ArrowUpToLine,
+    icon: ExtrudeIcon,
     description: 'Extrude a sketch into a 3D solid',
     execute: (context) => {
         context.setActiveDialog('extrude');

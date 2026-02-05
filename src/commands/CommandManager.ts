@@ -9,6 +9,10 @@ export class CommandManager {
         this.contextProvider = contextProvider;
     }
 
+    setContextProvider(contextProvider: () => CommandContext): void {
+        this.contextProvider = contextProvider;
+    }
+
     execute(command: Command): void {
         // Remove any future (redo) commands
         if (this.index < this.history.length - 1) {

@@ -1,11 +1,11 @@
-import { MousePointer2 } from 'lucide-react';
+import { SketchIcon } from '../../components/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
 
 export const SketchOnFaceFeature: Feature = {
     id: 'sketchOnFace',
     label: 'Sketch on Face',
-    icon: MousePointer2,
+    icon: SketchIcon,
     description: 'Start a new sketch on the selected planar face',
     execute: (context) => {
         context.setActiveDialog('sketchOnFace');

@@ -8,6 +8,7 @@ describe('Sketcher Reliability', () => {
 
     it('should capture sketches created with new Sketcher()', () => {
         const code = `
+            const { Sketcher } = replicad;
             const sketch = new Sketcher().hLine(10).close();
             return sketch.extrude(10);
         `;
@@ -29,6 +30,7 @@ describe('Sketcher Reliability', () => {
         // Let's rely on a known failure pattern if we can find one.
         // For now, let's test a complex chain.
         const complexCode = `
+            const { Sketcher } = replicad;
             const s = new Sketcher();
             s.hLine(10).vLine(10).hLine(-10).close();
             // Start second loop

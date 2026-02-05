@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
+import { getSketchVariablesAST } from '../../lib/ast';
 
 interface ExtrudeDialogProps {
     sketchName?: string;
@@ -8,10 +9,55 @@ interface ExtrudeDialogProps {
 }
 
 export function ExtrudeDialog({ sketchName: initialSketchName, onConfirm, onCancel }: ExtrudeDialogProps) {
-    const { sketches } = useWorkbench();
-    const [selectedSketch, setSelectedSketch] = useState(initialSketchName || (sketches.length > 0 ? sketches[sketches.length - 1].name : ''));
+    const { sketches, code } = useWorkbench();
+
+    const sketchOptions = useMemo(() => {
+        // Prefer UI-created sketches (have plane info). Fill in from computed sketch geometries too.
+        const options: Array<{ key: string; value: string; label: string }> = [];
+        const seenNames = new Set<string>();
+
+        for (const s of sketches) {
+            if (!s.name || seenNames.has(s.name)) continue;
+            seenNames.add(s.name);
+            options.push({
+                key: `ui:${s.id}`,
+                value: s.name,
+                label: `${s.name} (${s.plane} Plane)`
+            });
+        }
+
+        let codeSketches: string[] = [];
+        try {
+            codeSketches = getSketchVariablesAST(code);
+        } catch {
+            codeSketches = [];
+        }
+
+        for (const name of codeSketches) {
+            if (!name || seenNames.has(name)) continue;
+            seenNames.add(name);
+            options.push({
+                key: `code:${name}`,
+                value: name,
+                label: `${name} (From Code)`
+            });
+        }
+
+        return options;
+    }, [sketches, code]);
+
+    const [selectedSketch, setSelectedSketch] = useState(
+        initialSketchName || (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '')
+    );
     const [distance, setDistance] = useState(10);
     const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
+
+    useEffect(() => {
+        if (selectedSketch) return;
+        if (sketchOptions.length === 0) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedSketch(sketchOptions[sketchOptions.length - 1].value);
+    }, [selectedSketch, sketchOptions]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,11 +88,11 @@ export function ExtrudeDialog({ sketchName: initialSketchName, onConfirm, onCanc
                             required
                         >
                             <option value="" disabled>Select a sketch...</option>
-                            {sketches.map((s) => (
-                                <option key={s.id} value={s.name}>{s.name} ({s.plane} Plane)</option>
+                            {sketchOptions.map((s) => (
+                                <option key={s.key} value={s.value}>{s.label}</option>
                             ))}
                         </select>
-                        {sketches.length === 0 && (
+                        {sketchOptions.length === 0 && (
                             <p className="text-xs text-amber-500 mt-1">No sketches available to extrude.</p>
                         )}
                     </div>
