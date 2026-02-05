@@ -1,6 +1,7 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../lib/geometryEngine';
+import { formatTooltip, SHORTCUT_HINTS } from '../../constants/shortcuts';
 
 export function Header() {
     const { viewMode, setViewMode, viewMode3D, setViewMode3D, isComputing, code, commandManager } = useWorkbench();
@@ -83,22 +84,24 @@ export function Header() {
 
                 <div className="h-6 w-px bg-[#333] mx-2" />
 
-                <button
-                    onClick={() => commandManager.undo()}
-                    disabled={!commandManager.canUndo}
-                    className={`p-1 rounded transition-colors ${!commandManager.canUndo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
-                    title="Undo"
-                >
-                    <Undo2 className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={() => commandManager.redo()}
-                    disabled={!commandManager.canRedo}
-                    className={`p-1 rounded transition-colors ${!commandManager.canRedo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
-                    title="Redo"
-                >
-                    <Redo2 className="w-4 h-4" />
-                </button>
+                    <button
+                        onClick={() => commandManager.undo()}
+                        disabled={!commandManager.canUndo}
+                        className={`p-1 rounded transition-colors ${!commandManager.canUndo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
+                        aria-label="Undo"
+                        title={formatTooltip('Undo', SHORTCUT_HINTS.undo)}
+                    >
+                        <Undo2 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => commandManager.redo()}
+                        disabled={!commandManager.canRedo}
+                        className={`p-1 rounded transition-colors ${!commandManager.canRedo ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
+                        aria-label="Redo"
+                        title={formatTooltip('Redo', SHORTCUT_HINTS.redo)}
+                    >
+                        <Redo2 className="w-4 h-4" />
+                    </button>
 
                 <div className="h-6 w-px bg-[#333] mx-2" />
 
@@ -107,6 +110,7 @@ export function Header() {
                     disabled={isComputing}
                     className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
                     title="Export STEP"
+                    aria-label="Export STEP"
                 >
                     <FileDown className="w-4 h-4" />
                 </button>
@@ -115,6 +119,7 @@ export function Header() {
                     disabled={isComputing}
                     className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
                     title="Export STL"
+                    aria-label="Export STL"
                 >
                     <Download className="w-4 h-4" />
                 </button>

@@ -55,7 +55,7 @@
 ### 1.3 UI/UX Polish
 - [ ] **Icon Redesign**: Replace current icons with professional, consistent icon set (e.g., Lucide, Heroicons).
 - [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
-- [ ] **Tooltips**: Add comprehensive tooltips for all tools and features.
+- [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
 
 ---
