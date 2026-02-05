@@ -3,12 +3,9 @@ name: CI
 on:
   push:
     branches:
-      - main
       - master
-      - develop
   pull_request:
     branches:
-      - main
       - master
       - develop
   workflow_dispatch:
@@ -48,9 +45,9 @@ jobs:
     timeout-minutes: 30
     needs: qc
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'master') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     steps:
       - name: Checkout
         uses: actions/checkout@v4

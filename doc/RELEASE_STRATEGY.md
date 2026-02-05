@@ -15,26 +15,26 @@ We follow [Semantic Versioning](https://semver.org/):
 We follow the **Git Flow** branching model.
 
 ### Branch Roles
-- **`main`**: Production-ready code. Represents the latest stable release.
+- **`master`**: Production-ready code. Represents the latest stable release.
 - **`develop`**: Integration branch for the next release. Contains the latest development changes.
 - **`feature/*`**: Feature branches branched from `develop` and merged back into `develop`.
-- **`release/*`**: Release branches branched from `develop` for preparing a new production release. Merged into both `main` and `develop`.
-- **`hotfix/*`**: Hotfix branches branched from `main` for critical bug fixes. Merged into both `main` and `develop`.
+- **`release/*`**: Release branches branched from `develop` for preparing a new production release. Merged into both `master` and `develop`.
+- **`hotfix/*`**: Hotfix branches branched from `master` for critical bug fixes. Merged into both `master` and `develop`.
 
 ### Branch Protection Rules
 
-To ensure code quality and stability, direct pushes to `main` and `develop` are **disabled**.
+To ensure code quality and stability, direct pushes to `master` are **disabled**.
 
-#### `main` Branch
+#### `master` Branch
 - **No direct pushes allowed.**
 - **Pull Request Required**:
-  - Must pass all status checks (CI/Build/Tests).
-  - Requires at least **1** approving review.
+  - Must pass required status checks: **`CI / qc`** and **`CI / e2e`**.
+  - Approving reviews required: **0** (solo maintainer workflow).
 
 #### `develop` Branch
-- **No direct pushes allowed.**
-- **Pull Request Required**:
-  - CI checks are recommended but optional.
+- Direct pushes are allowed.
+- Pull Requests are recommended for larger changes:
+  - CI checks run on PRs into `develop`.
 
 ## Release Checklist
 
@@ -197,11 +197,11 @@ This script will:
 
 For critical bugs requiring immediate patching:
 
-1. Create hotfix branch from `main`: `git checkout -b hotfix/v0.x.1`
+1. Create hotfix branch from `master`: `git checkout -b hotfix/v0.x.1`
 2. Fix the bug with minimal changes
 3. Update `CHANGELOG.md` with patch notes
 4. Bump patch version in `package.json`
-5. Merge to `main` and tag immediately
+5. Merge to `master` and tag immediately
 6. Deploy ASAP
 7. Backport fix to `develop` if using gitflow
 
