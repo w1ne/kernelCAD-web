@@ -6,6 +6,10 @@ import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geomet
 import type { ViewMode3D } from "../types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 
+// Constants for sketch camera
+export const SKETCH_FOV = 40;
+export const SKETCH_DISTANCE = 20;
+
 interface ViewerProps {
     geometries: GeometryResult[];
     sketchesGeometries: SketchGeometry[];
@@ -280,16 +284,16 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
                 }
 
                 // Save current state before moving
+                // Save current state before moving
                 // We need to get the current control target.
-                const ctrl = controls as unknown as { target: THREE.Vector3 };
+                const ctrl = controls as unknown as { target?: THREE.Vector3 };
                 savedCameraState.current = {
                     position: camera.position.clone(),
-                    target: ctrl && ctrl.target ? ctrl.target.clone() : new THREE.Vector3(0, 0, 0)
+                    target: ctrl?.target ? ctrl.target.clone() : new THREE.Vector3(0, 0, 0)
                 };
 
                 // Zoom in closer for sketching
-                const dist = 20; // Closer than 40
-                const newPos = center.clone().add(normal.multiplyScalar(dist));
+                const newPos = center.clone().add(normal.multiplyScalar(SKETCH_DISTANCE));
 
                 setTargetState({
                     position: newPos,
@@ -348,7 +352,7 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
     return (
         <div className="w-full h-full relative">
             <Canvas
-                camera={{ position: [40, 40, 40], fov: 40 }}
+                camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 raycaster={{
                     params: {
                         Line: { threshold: 0.4 },
@@ -395,7 +399,7 @@ export default function Viewer({ geometries, sketchesGeometries, showSketches, v
 
                 <ParametricLayer />
 
-                <OrbitControls makeDefault />
+                <OrbitControls makeDefault enabled={!sketchMode.active} />
                 <CameraHandler geometries={geometries} />
             </Canvas>
             <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">

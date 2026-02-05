@@ -40,7 +40,18 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     }, []);
 
     // Grid settings
-    const gridSize = 10; // Grid cell size in pixels
+    // Calculate pixels per unit based on camera distance and FOV
+    // Visible Height at Reference Depth = 2 * Distance * tan(FOV / 2)
+    // Distance = 20 (SKETCH_DISTANCE), FOV = 40 (SKETCH_FOV)
+    // We assume the camera is mainly at this distance.
+    const SKETCH_DISTANCE = 20;
+    const SKETCH_FOV = 40;
+
+    const visibleHeight = 2 * SKETCH_DISTANCE * Math.tan((SKETCH_FOV / 2) * (Math.PI / 180));
+    const pixelsPerUnit = size.height / visibleHeight;
+
+    // gridSize is the pixel size of one unit
+    const gridSize = pixelsPerUnit;
     const gridUnit = 1;  // 1 unit = 1mm
 
     const {
