@@ -40,6 +40,7 @@
 - [x] **Face Selection**: Derive sketch planes and features directly from 3D faces.
 - [x] **Sketch Visualization**: Toggleable visibility of sketches in 3D scene (Blue lines).
 - [x] **Face Sketching**: Draw sketches directly on a selected face with proper plane geometry.
+- [ ] **Smart Camera**: Auto-focus camera on selected faces for sketching (Professional View).
 
 ---
 

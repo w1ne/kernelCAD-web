@@ -6,6 +6,7 @@ declare global {
     setCode?: (code: string) => void;
     getCode?: () => string;
     isEditorReady?: boolean;
+    setActiveDialog?: (dialog: string | null) => void;
 
     __TEST_SELECT_FACE?: (shapeIndex: number, faceId: number) => void;
     __TEST_SELECT_SKETCH?: (name: string | null) => void;
