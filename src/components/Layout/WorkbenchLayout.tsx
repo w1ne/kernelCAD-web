@@ -37,6 +37,7 @@ export function WorkbenchLayout() {
         viewMode3D,
         code,
         setCode,
+        commandManager,
         geometries,
         sketchesGeometries,
         showSketches,
@@ -81,6 +82,48 @@ export function WorkbenchLayout() {
             const featureId = selectedFace ? 'extrudeFromFace' : 'extrude';
             const feature = featureRegistry.get(featureId);
             if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'r': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('revolve');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'f': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('fillet');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'c': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('chamfer');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'j': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('union');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'x': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('cut');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'i': () => {
+            if (activeDialog) return;
+            const feature = featureRegistry.get('intersect');
+            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+        },
+        'mod+z': () => {
+            if (activeDialog) return;
+            commandManager.undo();
+        },
+        'mod+shift+z': () => {
+            if (activeDialog) return;
+            commandManager.redo();
+        },
+        'mod+y': () => {
+            if (activeDialog) return;
+            commandManager.redo();
         },
         's': () => {
             if (activeDialog || sketchMode.active) return;

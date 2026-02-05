@@ -35,20 +35,19 @@ const getCurrentVersion = () => {
 // --- Main Script ---
 const args = process.argv.slice(2);
 const versionType = args[0] as 'major' | 'minor' | 'patch' | undefined;
+const fullQC = args.includes('--full');
 
 if (!versionType || !['major', 'minor', 'patch'].includes(versionType)) {
-    console.error('Usage: npm run release -- [major|minor|patch]');
+    console.error('Usage: npm run release -- [major|minor|patch] [--full]');
     process.exit(1);
 }
 
 console.log(`🚀 Starting Release Process for ${versionType} version...`);
+console.log(`🔎 QC Mode: ${fullQC ? 'full (qc:full)' : 'quick (qc)'}`);
 
 // 1. Quality Checks
 console.log('\n🔍 Running Quality Checks...');
-run('npm run lint', 'Linting failed.');
-// Skipping full build/test for speed in this demo, but typically:
-// run('npm test', 'Tests failed.');
-// run('npm run build', 'Build failed.');
+run(fullQC ? 'npm run qc:full' : 'npm run qc', 'Quality checks failed.');
 
 // 2. Git Status Check
 const status = getOutput('git status --porcelain');

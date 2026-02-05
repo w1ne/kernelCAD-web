@@ -16,10 +16,19 @@ export interface GeometryContextType {
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
 
+const STORAGE_KEY_SHOW_SKETCHES = 'kernelcad:showSketches';
+function readStoredShowSketches(): boolean {
+    if (typeof window === 'undefined') return true;
+    const raw = window.localStorage.getItem(STORAGE_KEY_SHOW_SKETCHES);
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    return true;
+}
+
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
-    const [showSketches, setShowSketches] = useState(true);
+    const [showSketches, setShowSketches] = useState(() => readStoredShowSketches());
     const [error, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isComputing, setIsComputing] = useState(false);
@@ -31,6 +40,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const toggleSketchVisibility = useCallback(() => {
         setShowSketches(prev => !prev);
     }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(STORAGE_KEY_SHOW_SKETCHES, String(showSketches));
+    }, [showSketches]);
 
     // Initialize Engine
     useEffect(() => {
