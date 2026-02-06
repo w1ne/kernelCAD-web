@@ -16,27 +16,58 @@ const mockItems: VariableDefinition[] = [
 
 describe('SceneBrowser', () => {
     it('should render items', () => {
-        render(<SceneBrowser items={mockItems} planes={[]} onSelect={vi.fn()} onTogglePlane={vi.fn()} />);
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
         expect(screen.getByText('box1')).toBeDefined();
         expect(screen.getByText('cyl1')).toBeDefined();
     });
 
     it('should display empty state', () => {
-        render(<SceneBrowser items={[]} planes={[]} onSelect={vi.fn()} onTogglePlane={vi.fn()} />);
+        render(<SceneBrowser items={[]} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
         expect(screen.getByText('No operations yet.')).toBeDefined();
     });
 
     it('should call onSelect when item clicked', () => {
         const onSelect = vi.fn();
-        render(<SceneBrowser items={mockItems} planes={[]} onSelect={onSelect} onTogglePlane={vi.fn()} />);
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={onSelect} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
 
         fireEvent.click(screen.getByText('box1'));
         expect(onSelect).toHaveBeenCalledWith(mockItems[0]);
     });
 
     it('should render planes', () => {
-        const mockPlanes: unknown[] = [{ id: 'plane1', name: 'Plane 1', type: 'base', visible: true }];
-        render(<SceneBrowser items={[]} planes={mockPlanes as any} onSelect={vi.fn()} onTogglePlane={vi.fn()} />);
+        const mockPlanes: any[] = [{ id: 'plane1', name: 'Plane 1', type: 'base', visible: true }];
+        render(<SceneBrowser items={[]} planes={mockPlanes} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
         expect(screen.getByText('Plane 1')).toBeDefined();
+    });
+
+    it('should call onToggleVisibility when Eye icon clicked', () => {
+        const onToggleVisibility = vi.fn();
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={onToggleVisibility} onTogglePlane={vi.fn()} />);
+
+        const toggleButtons = screen.getAllByTitle('Hide Operation');
+        fireEvent.click(toggleButtons[0]);
+        expect(onToggleVisibility).toHaveBeenCalledWith('box1');
+    });
+
+    it('should call onHover when mouse enters/leaves item', () => {
+        const onHover = vi.fn();
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={onHover} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
+
+        const item = screen.getByText('box1');
+        fireEvent.mouseEnter(item);
+        expect(onHover).toHaveBeenCalledWith('box1');
+
+        fireEvent.mouseLeave(item);
+        expect(onHover).toHaveBeenCalledWith(null);
+    });
+
+    it('should show context menu on right click', () => {
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} />);
+
+        const item = screen.getByText('box1');
+        fireEvent.contextMenu(item);
+
+        expect(screen.getByText('Delete')).toBeDefined();
+        expect(screen.getByText('Isolate')).toBeDefined();
     });
 });

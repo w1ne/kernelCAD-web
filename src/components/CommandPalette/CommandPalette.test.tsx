@@ -77,6 +77,8 @@ describe('CommandPalette', () => {
         const cmdItem = await screen.findByText('Test Command 1');
         fireEvent.click(cmdItem);
 
-        expect(mockCommands[0].action).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(mockCommands[0].action).toHaveBeenCalled();
+        });
     });
 });

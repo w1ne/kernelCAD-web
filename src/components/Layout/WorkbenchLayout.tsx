@@ -63,6 +63,10 @@ export function WorkbenchLayout() {
         cancelFaceSelection,
         codeContext,
         previewGeometries,
+        hideItem,
+        showAll,
+        selectedItemId,
+        toggleVisibility,
     } = useWorkbench();
 
     // Expose helpers for E2E testing
@@ -142,6 +146,32 @@ export function WorkbenchLayout() {
         'escape': () => {
             if (activeDialog) setActiveDialog(null);
             if (isFaceSelecting) cancelFaceSelection();
+        },
+        'h': () => {
+            if (activeDialog) return;
+            if (selectedItemId) hideItem(selectedItemId);
+        },
+        'shift+h': () => {
+            if (activeDialog) return;
+            showAll();
+        },
+        'space': () => {
+            if (activeDialog) return;
+            if (selectedItemId) toggleVisibility(selectedItemId);
+        },
+        'backspace': () => {
+            if (activeDialog) return;
+            if (selectedItemId) {
+                console.log('Delete item:', selectedItemId);
+                // Implementation pending for real delete logic
+            }
+        },
+        'delete': () => {
+            if (activeDialog) return;
+            if (selectedItemId) {
+                console.log('Delete item:', selectedItemId);
+                // Implementation pending for real delete logic
+            }
         }
     });
 
@@ -304,7 +334,7 @@ export function WorkbenchLayout() {
     }
 
     return (
-        <div className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col">
+        <div className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col" data-testid="workbench-ready">
             <Header />
 
             <div className="flex-1 flex overflow-hidden">

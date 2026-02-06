@@ -61,6 +61,12 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         isDrawing,
         startPoint,
         currentPoint,
+        dynamicInput,
+        setDynamicInput,
+        secondaryInput,
+        setSecondaryInput,
+        inputTarget,
+        setInputTarget,
         sketchToCanvas,
         handleMouseDown,
         handleMouseMove,
@@ -73,19 +79,65 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     });
 
     useKeyboardShortcuts({
-        'l': () => setTool('line'),
-        'r': () => setTool('rectangle'),
-        'c': () => setTool('circle'),
+        'l': () => !isDrawing && setTool('line'),
+        'r': () => !isDrawing && setTool('rectangle'),
+        'c': () => !isDrawing && setTool('circle'),
         'escape': () => {
             if (isDrawing) {
-                // Implicit logic: escape cancels active drawing
-                // This is managed by the component's handleMouseUp/Cancel logic if needed
-                // But SketchCanvas will handle the Cancel event to the parent.
+                // Cancel drawing
+                handleMouseUp();
             } else {
                 onCancel();
             }
         }
     });
+
+    // Handle dynamic dimension input
+    useEffect(() => {
+        if (!isDrawing) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Numbers and decimals
+            if (/^[0-9.]$/.test(e.key)) {
+                e.stopPropagation();
+                if (inputTarget === 'primary') {
+                    setDynamicInput(prev => prev + e.key);
+                } else {
+                    setSecondaryInput(prev => prev + e.key);
+                }
+                return;
+            }
+
+            // Backspace
+            if (e.key === 'Backspace') {
+                e.stopPropagation();
+                if (inputTarget === 'primary') {
+                    setDynamicInput(prev => prev.slice(0, -1));
+                } else {
+                    setSecondaryInput(prev => prev.slice(0, -1));
+                }
+                return;
+            }
+
+            // Tab (Switch target)
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                e.stopPropagation();
+                setInputTarget(prev => prev === 'primary' ? 'secondary' : 'primary');
+                return;
+            }
+
+            // Enter (Finish)
+            if (e.key === 'Enter') {
+                e.stopPropagation();
+                handleMouseUp();
+                return;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown, true); // Use capture phase to be first
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
+    }, [isDrawing, handleMouseUp, setDynamicInput, setSecondaryInput, inputTarget, setInputTarget]);
 
     // Draw functions (kept in component as they relate to rendering)
     const drawGrid = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -162,7 +214,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [sketchToCanvas]);
+    }, [sketchToCanvas, gridUnit, gridSize]);
 
     const drawCircle = useCallback((ctx: CanvasRenderingContext2D, center: [number, number], radius: number) => {
         const [x, y] = sketchToCanvas(center);
@@ -178,7 +230,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-    }, [sketchToCanvas]);
+    }, [sketchToCanvas, gridUnit, gridSize]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -291,6 +343,68 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                     onMouseUp={handleMouseUp}
                     data-testid="sketch-canvas"
                 />
+
+                {/* Dynamic Input Floating UI */}
+                {isDrawing && currentPoint && (
+                    <div
+                        className="pointer-events-none absolute z-50 flex items-center gap-2"
+                        style={{
+                            left: sketchToCanvas(currentPoint)[0] + 20,
+                            top: sketchToCanvas(currentPoint)[1] - 20,
+                        }}
+                    >
+                        <div className="flex flex-col gap-1 rounded-lg border border-white/10 bg-zinc-900/90 p-2 shadow-2xl backdrop-blur-xl">
+                            {/* Primary Input */}
+                            <div className="flex items-center gap-2">
+                                <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
+                                    {tool === 'line' ? 'Len' :
+                                        tool === 'circle' ? 'Rad' :
+                                            'Width'}
+                                </span>
+                                <div
+                                    className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'primary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                    data-testid="primary-input-display"
+                                >
+                                    <span className={`text-sm font-mono ${inputTarget === 'primary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                        {dynamicInput || '---'}
+                                    </span>
+                                    <span className="text-[10px] text-zinc-500">mm</span>
+                                </div>
+                            </div>
+
+                            {/* Secondary Input (Conditional) */}
+                            {(tool === 'line' || tool === 'rectangle') && (
+                                <div className="flex items-center gap-2">
+                                    <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
+                                        {tool === 'line' ? 'Ang' : 'Height'}
+                                    </span>
+                                    <div
+                                        className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'secondary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                        data-testid="secondary-input-display"
+                                    >
+                                        <span className={`text-sm font-mono ${inputTarget === 'secondary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                            {secondaryInput || '---'}
+                                        </span>
+                                        <span className="text-[10px] text-zinc-500">{tool === 'line' ? 'deg' : 'mm'}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="mt-1 flex flex-col gap-0.5 border-t border-white/5 pt-1">
+                                {(tool === 'line' || tool === 'rectangle') && (
+                                    <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+                                        <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Tab</kbd>
+                                        <span>to switch fields</span>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+                                    <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Enter</kbd>
+                                    <span>to finish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -24,6 +24,17 @@ export interface SelectionContextType {
     planes: SketchPlaneEntity[];
     addPlane: (plane: SketchPlaneEntity) => void;
     togglePlaneVisibility: (id: string) => void;
+    // List-based selection (Scene Browser / Viewer objects)
+    selectedItemIds: string[];
+    selectedItemId: string | null; // Primary selection (usually the last selected)
+    setSelectedItemId: (id: string | null) => void;
+    toggleSelection: (id: string, multi: boolean) => void;
+    hoveredItemId: string | null;
+    setHoveredItemId: (id: string | null) => void;
+    hiddenIds: string[]; // IDs of hidden objects (Solids, Sketches, etc.)
+    toggleVisibility: (id: string) => void;
+    hideItem: (id: string) => void;
+    showAll: () => void;
 }
 
 const SelectionContext = createContext<SelectionContextType | undefined>(undefined);
@@ -34,6 +45,39 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     const [selectedFace, setSelectedFace] = useState<{ shapeIndex: number; faceId: number } | null>(null);
     const [selectedFacePlane, setSelectedFacePlane] = useState<{ origin: [number, number, number]; normal: [number, number, number] } | null>(null);
     const [selectedSketchName, setSelectedSketchName] = useState<string | null>(null);
+
+    // Multi-selection state
+    const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+
+    // Backward compatibility: primary selection is the last selected item (or null)
+    const selectedItemId = useMemo(() => selectedItemIds.length > 0 ? selectedItemIds[selectedItemIds.length - 1] : null, [selectedItemIds]);
+
+    const setSelectedItemId = useCallback((id: string | null) => {
+        setSelectedItemIds(id ? [id] : []);
+    }, []);
+
+    const toggleSelection = useCallback((id: string, multi: boolean) => {
+        setSelectedItemIds(prev => {
+            if (!multi) {
+                // If single select mode, asking to toggle could mean:
+                // 1. If ID matches unique selection, deselect?
+                // 2. If ID matches one of many, select only it?
+                // Standard behavior: Click without modifier selects ONLY that item.
+                // If it was already the ONLY selected item, usually we don't deselect in CAD unless clicking void.
+                // But SceneBrowser behavior 'onSelect' usually implies "Select this".
+                return [id];
+            } else {
+                // Multi select (Cmd/Ctrl)
+                if (prev.includes(id)) {
+                    return prev.filter(i => i !== id);
+                } else {
+                    return [...prev, id];
+                }
+            }
+        });
+    }, []);
+    const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+    const [hiddenIds, setHiddenIds] = useState<string[]>([]);
 
     // Central state machine
     const { state, dispatch } = useWorkbenchState();
@@ -109,6 +153,22 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
 
     const togglePlaneVisibility = useCallback((id: string) => {
         setPlanes(prev => prev.map(p => p.id === id ? { ...p, visible: !p.visible } : p));
+        // Also sync to hiddenIds for unified lookup if needed, 
+        // but for now we keep planes slightly separate as they have their own entities.
+    }, []);
+
+    const toggleVisibility = useCallback((id: string) => {
+        setHiddenIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    }, []);
+
+    const hideItem = useCallback((id: string) => {
+        setHiddenIds(prev => prev.includes(id) ? prev : [...prev, id]);
+    }, []);
+
+    const showAll = useCallback(() => {
+        setHiddenIds([]);
+        // Optionally show all planes too if we want a true "Show All"
+        setPlanes(prev => prev.map(p => ({ ...p, visible: true })));
     }, []);
 
     const value: SelectionContextType = useMemo(() => ({
@@ -127,7 +187,22 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         planes,
         addPlane,
         togglePlaneVisibility,
-    }), [selectedFace, selectedFacePlane, selectedSketchName, isFaceSelecting, setIsFaceSelecting, sketchMode, setSketchMode, sketches, addSketch, planes, addPlane, togglePlaneVisibility]);
+        selectedItemIds,
+        selectedItemId,
+        setSelectedItemId,
+        toggleSelection,
+        hoveredItemId,
+        setHoveredItemId,
+        hiddenIds,
+        toggleVisibility,
+        hideItem,
+        showAll,
+    }), [
+        selectedFace, selectedFacePlane, selectedSketchName, isFaceSelecting, setIsFaceSelecting,
+        sketchMode, setSketchMode, sketches, addSketch, planes, addPlane, togglePlaneVisibility,
+        selectedItemId, setSelectedItemId, hoveredItemId, setHoveredItemId, hiddenIds,
+        toggleVisibility, hideItem, showAll, selectedItemIds, toggleSelection
+    ]);
 
     return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
 }

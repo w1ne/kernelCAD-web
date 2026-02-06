@@ -48,8 +48,9 @@ export function BooleanPanel({ type, onConfirm, onCancel }: BooleanPanelProps) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Target Selection */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Base Shape (Target)</label>
+                    <label htmlFor="boolean-base" className="text-xs font-medium text-zinc-400">Base Shape (Target)</label>
                     <input
+                        id="boolean-base"
                         type="text"
                         value={baseName}
                         onChange={(e) => setBaseName(e.target.value)}
@@ -61,8 +62,9 @@ export function BooleanPanel({ type, onConfirm, onCancel }: BooleanPanelProps) {
 
                 {/* Tool Selection */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Tool Shape (Modifier)</label>
+                    <label htmlFor="boolean-tool" className="text-xs font-medium text-zinc-400">Tool Shape (Modifier)</label>
                     <input
+                        id="boolean-tool"
                         type="text"
                         value={toolName}
                         onChange={(e) => setToolName(e.target.value)}

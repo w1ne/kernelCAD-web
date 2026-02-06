@@ -58,7 +58,7 @@ View → Section Analysis → Add Plane
 
 ---
 
-## kernelCAD Current Workflow (v0.6.1)
+## kernelCAD Current Workflow (v0.10.0)
 
 ### Same Bracket Creation (Current State)
 
@@ -103,7 +103,7 @@ View → Shaded with Edges / Wireframe / Shaded
 
 ---
 
-## kernelCAD Target Workflow (v0.3-0.5)
+## kernelCAD Target Workflow (v0.12+)
 
 ### Same Bracket with Planned Features
 
@@ -171,20 +171,20 @@ View → Wireframe
 
 ### Essential for Basic CAD Workflow
 
-| Feature | CATIA/Fusion | kernelCAD v0.6.1 | Target (v0.7-0.8) |
-|---------|--------------|------------------|-------------------|
+| Feature | CATIA/Fusion | kernelCAD v0.10.x | Target (v1.0) |
+|---------|--------------|-------------------|---------------|
 | **Visual Sketch Canvas** | ✅ | ✅ | Done |
-| **2D Constraint Solver** | ✅ | ❌ | v0.7 |
-| **Dimension Input UI** | ✅ | ⚠️ (basic) | v0.7 |
+| **2D Constraint Solver** | ✅ | ⚠️ (Engine ready, UI partial) | v0.12 |
+| **Dimension Input UI** | ✅ | ⚠️ (via params) | v0.12 |
 | **Extrude Dialog** | ✅ | ✅ | Done |
 | **Wireframe View** | ✅ | ✅ | Done |
 | **Shaded with Edges** | ✅ | ✅ | Done |
-| **Edge Selection** | ✅ | ✅ (filter-based) | Done |
+| **Edge Selection** | ✅ | ✅ | Done |
 | **Revolve** | ✅ | ✅ | Done |
 | **Face Sketching** | ✅ | ✅ | Done |
-| **Transform Gizmos** | ✅ | ❌ | v0.8 |
-| **Feature Tree Editing** | ✅ | ⚠️ (read-only) | v0.8 |
-| **Parameters Panel** | ✅ | ⚠️ (manual vars) | v0.7 |
+| **Transform Gizmos** | ✅ | ❌ | v0.12 |
+| **Feature Tree Editing** | ✅ | ⚠️ (Code-based) | v1.0 |
+| **Parameters Panel** | ✅ | ⚠️ (manual vars) | v1.0 |
 
 ### Advanced (Post-v0.5)
 

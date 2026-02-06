@@ -1,0 +1,790 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/andrii/Projects/kernelCAD[39m
+
+[90mstderr[2m | src/components/CommandPalette/CommandPalette.test.tsx[2m > [22m[2mCommandPalette[2m > [22m[2mshould open when Cmd+K is pressed
+[22m[39m`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+[90mstderr[2m | src/components/CommandPalette/CommandPalette.test.tsx[2m > [22m[2mCommandPalette[2m > [22m[2mshould display registered commands
+[22m[39m`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+[90mstderr[2m | src/components/CommandPalette/CommandPalette.test.tsx[2m > [22m[2mCommandPalette[2m > [22m[2mshould execute command action on click
+[22m[39m`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+ [31m❯[39m src/components/CommandPalette/CommandPalette.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 6783[2mms[22m[39m
+     [32m✓[39m should be hidden by default[32m 99[2mms[22m[39m
+[31m     [31m×[31m should open when Cmd+K is pressed[39m[33m 3112[2mms[22m[39m
+     [33m[2m✓[22m[39m should display registered commands [33m 373[2mms[22m[39m
+[31m     [31m×[31m should execute command action on click[39m[33m 3161[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/components/CommandPalette/CommandPalette.test.tsx[2m > [22mCommandPalette[2m > [22mshould open when Cmd+K is pressed
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements with the placeholder text of: Type a command or search...
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<input[39m
+  [33maria-autocomplete[39m=[32m"list"[39m
+  [33maria-controls[39m=[32m"radix-_r_6_"[39m
+  [33maria-expanded[39m=[32m"true"[39m
+  [33maria-labelledby[39m=[32m"radix-_r_7_"[39m
+  [33mautocomplete[39m=[32m"off"[39m
+  [33mautocorrect[39m=[32m"off"[39m
+  [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+  [33mcmdk-input[39m=[32m""[39m
+  [33mid[39m=[32m"radix-_r_8_"[39m
+  [33mplaceholder[39m=[32m"Type a command or search..."[39m
+  [33mrole[39m=[32m"combobox"[39m
+  [33mspellcheck[39m=[32m"false"[39m
+  [33mtype[39m=[32m"text"[39m
+  [33mvalue[39m=[32m""[39m
+[36m/>[39m
+
+Ignored nodes: comments, script, style
+[36m<input[39m
+  [33maria-autocomplete[39m=[32m"list"[39m
+  [33maria-controls[39m=[32m"radix-_r_f_"[39m
+  [33maria-expanded[39m=[32m"true"[39m
+  [33maria-labelledby[39m=[32m"radix-_r_g_"[39m
+  [33mautocomplete[39m=[32m"off"[39m
+  [33mautocorrect[39m=[32m"off"[39m
+  [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+  [33mcmdk-input[39m=[32m""[39m
+  [33mid[39m=[32m"radix-_r_h_"[39m
+  [33mplaceholder[39m=[32m"Type a command or search..."[39m
+  [33mrole[39m=[32m"combobox"[39m
+  [33mspellcheck[39m=[32m"false"[39m
+  [33mtype[39m=[32m"text"[39m
+  [33mvalue[39m=[32m""[39m
+[36m/>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"2"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-overlay[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_2_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-label[39m=[32m"Global Command Menu"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_1_"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-dialog[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_0_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"[39m
+      [33mcmdk-root[39m=[32m""[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mcmdk-label[39m=[32m""[39m
+        [33mfor[39m=[32m"radix-_r_8_"[39m
+        [33mid[39m=[32m"radix-_r_7_"[39m
+        [33mstyle[39m=[32m"position: absolute; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border-width: 0px;"[39m
+      [36m>[39m
+        [0mGlobal Command Menu[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black/40 backdrop-blur-sm"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"relative w-full max-w-xl overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 shadow-2xl backdrop-blur-xl"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+        [33mtransition[39m=[32m"[object Object]"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center border-b border-white/10 px-4"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-search mr-2 h-5 w-5 text-zinc-500"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 21-4.34-4.34"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"11"[39m
+              [33mcy[39m=[32m"11"[39m
+              [33mr[39m=[32m"8"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<input[39m
+            [33maria-autocomplete[39m=[32m"list"[39m
+            [33maria-controls[39m=[32m"radix-_r_6_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-labelledby[39m=[32m"radix-_r_7_"[39m
+            [33mautocomplete[39m=[32m"off"[39m
+            [33mautocorrect[39m=[32m"off"[39m
+            [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+            [33mcmdk-input[39m=[32m""[39m
+            [33mid[39m=[32m"radix-_r_8_"[39m
+            [33mplaceholder[39m=[32m"Type a command or search..."[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mspellcheck[39m=[32m"false"[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-400"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-xs"[39m
+            [36m>[39m
+              [0mESC[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"Suggestions"[39m
+          [33mclass[39m=[32m"max-h-[60vh] overflow-y-auto p-2 scrollbar-hide"[39m
+          [33mcmdk-list[39m=[32m""[39m
+          [33mid[39m=[32m"radix-_r_6_"[39m
+          [33mrole[39m=[32m"listbox"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mcmdk-list-sizer[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-2"[39m
+              [33mcmdk-group[39m=[32m""[39m
+              [33mdata-value[39m=[32m"General"[39m
+              [33mrole[39m=[32m"presentation"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mcmdk-group-heading[39m=[32m""[39m
+                [33mid[39m=[32m"radix-_r_a_"[39m
+              [36m>[39m
+                [0mGeneral[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33maria-labelledby[39m=[32m"radix-_r_a_"[39m
+                [33mcmdk-group-items[39m=[32m""[39m
+                [33mrole[39m=[32m"group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mb-1 px-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"[39m
+                [36m>[39m
+                  [0mGeneral[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33maria-disabled[39m=[32m"false"[39m
+                  [33maria-selected[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/10 aria-selecte...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"2"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-overlay[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_2_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-label[39m=[32m"Global Command Menu"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_1_"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-dialog[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_0_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"[39m
+      [33mcmdk-root[39m=[32m""[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mcmdk-label[39m=[32m""[39m
+        [33mfor[39m=[32m"radix-_r_8_"[39m
+        [33mid[39m=[32m"radix-_r_7_"[39m
+        [33mstyle[39m=[32m"position: absolute; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border-width: 0px;"[39m
+      [36m>[39m
+        [0mGlobal Command Menu[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black/40 backdrop-blur-sm"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"relative w-full max-w-xl overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 shadow-2xl backdrop-blur-xl"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+        [33mtransition[39m=[32m"[object Object]"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center border-b border-white/10 px-4"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-search mr-2 h-5 w-5 text-zinc-500"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 21-4.34-4.34"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"11"[39m
+              [33mcy[39m=[32m"11"[39m
+              [33mr[39m=[32m"8"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<input[39m
+            [33maria-autocomplete[39m=[32m"list"[39m
+            [33maria-controls[39m=[32m"radix-_r_6_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-labelledby[39m=[32m"radix-_r_7_"[39m
+            [33mautocomplete[39m=[32m"off"[39m
+            [33mautocorrect[39m=[32m"off"[39m
+            [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+            [33mcmdk-input[39m=[32m""[39m
+            [33mid[39m=[32m"radix-_r_8_"[39m
+            [33mplaceholder[39m=[32m"Type a command or search..."[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mspellcheck[39m=[32m"false"[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-400"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-xs"[39m
+            [36m>[39m
+              [0mESC[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"Suggestions"[39m
+          [33mclass[39m=[32m"max-h-[60vh] overflow-y-auto p-2 scrollbar-hide"[39m
+          [33mcmdk-list[39m=[32m""[39m
+          [33mid[39m=[32m"radix-_r_6_"[39m
+          [33mrole[39m=[32m"listbox"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mcmdk-list-sizer[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-2"[39m
+              [33mcmdk-group[39m=[32m""[39m
+              [33mdata-value[39m=[32m"General"[39m
+              [33mrole[39m=[32m"presentation"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mcmdk-group-heading[39m=[32m""[39m
+                [33mid[39m=[32m"radix-_r_a_"[39m
+              [36m>[39m
+                [0mGeneral[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33maria-labelledby[39m=[32m"radix-_r_a_"[39m
+                [33mcmdk-group-items[39m=[32m""[39m
+                [33mrole[39m=[32m"group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mb-1 px-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"[39m
+                [36m>[39m
+                  [0mGeneral[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33maria-disabled[39m=[32m"false"[39m
+                  [33maria-selected[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/10 aria-selecte...
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m86:33[22m[39m
+[36m [2m❯[22m src/components/CommandPalette/CommandPalette.test.tsx:[2m58:29[22m[39m
+    [90m 56| [39m        fireEvent[33m.[39m[34mkeyDown[39m(document[33m,[39m { key[33m:[39m [32m'k'[39m[33m,[39m metaKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m 57| [39m
+    [90m 58| [39m        expect(await screen.findByPlaceholderText('Type a command or s…
+    [90m   | [39m                            [31m^[39m
+    [90m 59| [39m    })[33m;[39m
+    [90m 60| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/CommandPalette/CommandPalette.test.tsx[2m > [22mCommandPalette[2m > [22mshould execute command action on click
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements with the text: Test Command 1
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span>[39m
+  [0mTest Command 1[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span>[39m
+  [0mTest Command 1[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span>[39m
+  [0mTest Command 1[0m
+[36m</span>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"3"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-overlay[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_16_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-label[39m=[32m"Global Command Menu"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_15_"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-dialog[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_14_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"[39m
+      [33mcmdk-root[39m=[32m""[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mcmdk-label[39m=[32m""[39m
+        [33mfor[39m=[32m"radix-_r_1f_"[39m
+        [33mid[39m=[32m"radix-_r_1e_"[39m
+        [33mstyle[39m=[32m"position: absolute; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border-width: 0px;"[39m
+      [36m>[39m
+        [0mGlobal Command Menu[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black/40 backdrop-blur-sm"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"relative w-full max-w-xl overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 shadow-2xl backdrop-blur-xl"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+        [33mtransition[39m=[32m"[object Object]"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center border-b border-white/10 px-4"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-search mr-2 h-5 w-5 text-zinc-500"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 21-4.34-4.34"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"11"[39m
+              [33mcy[39m=[32m"11"[39m
+              [33mr[39m=[32m"8"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<input[39m
+            [33maria-autocomplete[39m=[32m"list"[39m
+            [33maria-controls[39m=[32m"radix-_r_1d_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-labelledby[39m=[32m"radix-_r_1e_"[39m
+            [33mautocomplete[39m=[32m"off"[39m
+            [33mautocorrect[39m=[32m"off"[39m
+            [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+            [33mcmdk-input[39m=[32m""[39m
+            [33mid[39m=[32m"radix-_r_1f_"[39m
+            [33mplaceholder[39m=[32m"Type a command or search..."[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mspellcheck[39m=[32m"false"[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-400"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-xs"[39m
+            [36m>[39m
+              [0mESC[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"Suggestions"[39m
+          [33mclass[39m=[32m"max-h-[60vh] overflow-y-auto p-2 scrollbar-hide"[39m
+          [33mcmdk-list[39m=[32m""[39m
+          [33mid[39m=[32m"radix-_r_1d_"[39m
+          [33mrole[39m=[32m"listbox"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mcmdk-list-sizer[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-2"[39m
+              [33mcmdk-group[39m=[32m""[39m
+              [33mdata-value[39m=[32m"General"[39m
+              [33mrole[39m=[32m"presentation"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mcmdk-group-heading[39m=[32m""[39m
+                [33mid[39m=[32m"radix-_r_1h_"[39m
+              [36m>[39m
+                [0mGeneral[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33maria-labelledby[39m=[32m"radix-_r_1h_"[39m
+                [33mcmdk-group-items[39m=[32m""[39m
+                [33mrole[39m=[32m"group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mb-1 px-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"[39m
+                [36m>[39m
+                  [0mGeneral[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33maria-disabled[39m=[32m"...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"3"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-overlay[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_16_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-label[39m=[32m"Global Command Menu"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_15_"[39m
+    [33mclass[39m=[32m""[39m
+    [33mcmdk-dialog[39m=[32m""[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_14_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"[39m
+      [33mcmdk-root[39m=[32m""[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mcmdk-label[39m=[32m""[39m
+        [33mfor[39m=[32m"radix-_r_1f_"[39m
+        [33mid[39m=[32m"radix-_r_1e_"[39m
+        [33mstyle[39m=[32m"position: absolute; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border-width: 0px;"[39m
+      [36m>[39m
+        [0mGlobal Command Menu[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"fixed inset-0 bg-black/40 backdrop-blur-sm"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33manimate[39m=[32m"[object Object]"[39m
+        [33mclass[39m=[32m"relative w-full max-w-xl overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 shadow-2xl backdrop-blur-xl"[39m
+        [33mexit[39m=[32m"[object Object]"[39m
+        [33minitial[39m=[32m"[object Object]"[39m
+        [33mtransition[39m=[32m"[object Object]"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center border-b border-white/10 px-4"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-search mr-2 h-5 w-5 text-zinc-500"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m21 21-4.34-4.34"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"11"[39m
+              [33mcy[39m=[32m"11"[39m
+              [33mr[39m=[32m"8"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<input[39m
+            [33maria-autocomplete[39m=[32m"list"[39m
+            [33maria-controls[39m=[32m"radix-_r_1d_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33maria-labelledby[39m=[32m"radix-_r_1e_"[39m
+            [33mautocomplete[39m=[32m"off"[39m
+            [33mautocorrect[39m=[32m"off"[39m
+            [33mclass[39m=[32m"flex-1 bg-transparent py-4 text-lg text-white placeholder-zinc-500 outline-none"[39m
+            [33mcmdk-input[39m=[32m""[39m
+            [33mid[39m=[32m"radix-_r_1f_"[39m
+            [33mplaceholder[39m=[32m"Type a command or search..."[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mspellcheck[39m=[32m"false"[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-400"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-xs"[39m
+            [36m>[39m
+              [0mESC[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"Suggestions"[39m
+          [33mclass[39m=[32m"max-h-[60vh] overflow-y-auto p-2 scrollbar-hide"[39m
+          [33mcmdk-list[39m=[32m""[39m
+          [33mid[39m=[32m"radix-_r_1d_"[39m
+          [33mrole[39m=[32m"listbox"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mcmdk-list-sizer[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-2"[39m
+              [33mcmdk-group[39m=[32m""[39m
+              [33mdata-value[39m=[32m"General"[39m
+              [33mrole[39m=[32m"presentation"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mcmdk-group-heading[39m=[32m""[39m
+                [33mid[39m=[32m"radix-_r_1h_"[39m
+              [36m>[39m
+                [0mGeneral[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33maria-labelledby[39m=[32m"radix-_r_1h_"[39m
+                [33mcmdk-group-items[39m=[32m""[39m
+                [33mrole[39m=[32m"group"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"mb-1 px-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"[39m
+                [36m>[39m
+                  [0mGeneral[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33maria-disabled[39m=[32m"...
+[90m [2m❯[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m86:33[22m[39m
+[36m [2m❯[22m src/components/CommandPalette/CommandPalette.test.tsx:[2m73:38[22m[39m
+    [90m 71| [39m        fireEvent[33m.[39m[34mkeyDown[39m(document[33m,[39m { key[33m:[39m [32m'k'[39m[33m,[39m metaKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m 72| [39m
+    [90m 73| [39m        [35mconst[39m cmdItem [33m=[39m [35mawait[39m screen[33m.[39m[34mfindByText[39m([32m'Test Command 1'[39m)[33m;[39m
+    [90m   | [39m                                     [31m^[39m
+    [90m 74| [39m        fireEvent[33m.[39m[34mclick[39m(cmdItem)[33m;[39m
+    [90m 75| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 00:39:43
+[2m   Duration [22m 12.32s[2m (transform 646ms, setup 0ms, import 2.04s, tests 6.78s, environment 2.58s)[22m
+

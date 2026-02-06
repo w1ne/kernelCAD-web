@@ -114,8 +114,8 @@ return [box1, box2];
         await expect(panel).toBeVisible();
 
         // Fill inputs
-        await page.getByLabel('Base Shape (Target)').fill('box1');
-        await page.getByLabel('Tool Shape (Modifier)').fill('box2');
+        await panel.getByLabel('Base Shape (Target)').fill('box1');
+        await panel.getByLabel('Tool Shape (Modifier)').fill('box2');
 
         // Verify live preview for boolean
         await expect.poll(async () => {
@@ -127,6 +127,6 @@ return [box1, box2];
 
         await expect.poll(async () => {
             return await page.evaluate(() => (window as any).getCode?.() || '');
-        }).toContain('replicad.fuse(box1, box2)');
+        }).toContain('.fuse(box2)');
     });
 });

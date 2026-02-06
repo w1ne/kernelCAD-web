@@ -469,6 +469,30 @@ export class ConstraintSolver {
     }
 
     private solveAngle(c: Constraint, entities: Map<string, SketchEntity>): number {
+        // Absolute Angle (Single Line relative to X-axis)
+        if (c.entities.length === 1 && c.value !== undefined) {
+            const l = this.getLine(c.entities[0], entities);
+            if (!l) return 0;
+
+            const dx = l.p2.x - l.p1.x;
+            const dy = l.p2.y - l.p1.y;
+            const currentRad = Math.atan2(dy, dx);
+            const targetRad = c.value * (Math.PI / 180);
+
+            let err = targetRad - currentRad;
+            // Wrap error to [-PI, PI]
+            while (err > Math.PI) err -= 2 * Math.PI;
+            while (err < -Math.PI) err += 2 * Math.PI;
+
+            if (Math.abs(err) < 0.00001) return 0;
+
+            // Larger step for faster convergence
+            const correction = err * 0.5;
+            this.rotateLine(l, correction);
+
+            return Math.abs(err);
+        }
+
         // Angle between two lines
         if (c.entities.length !== 2 || c.value === undefined) return 0;
         const l1 = this.getLine(c.entities[0], entities);

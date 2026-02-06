@@ -116,4 +116,80 @@ describe('useSketchCanvas', () => {
             radius: 3
         });
     });
+
+    it('should snap line length when dynamic input is provided', () => {
+        const { result } = setup();
+
+        // Start drawing at (0, 0)
+        act(() => {
+            result.current.handleMouseDown(400, 300); // Center
+        });
+
+        // Set dynamic input to 50
+        act(() => {
+            result.current.setDynamicInput('50');
+        });
+
+        // Move mouse to some diagonal position
+        act(() => {
+            result.current.handleMouseMove(500, 400);
+        });
+
+        // Verify currentPoint is at distance 50 from start
+        const start = result.current.startPoint!;
+        const current = result.current.currentPoint!;
+        const dx = current[0] - start[0];
+        const dy = current[1] - start[1];
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        expect(Math.abs(distance - 50)).toBeLessThan(0.001);
+    });
+
+    it('should snap rectangle width when input target is primary', () => {
+        const { result } = setup();
+
+        act(() => { result.current.setTool('rectangle'); });
+        act(() => { result.current.handleMouseDown(400, 300); });
+        act(() => { result.current.setDynamicInput('30'); });
+        act(() => { result.current.handleMouseMove(500, 400); });
+
+        const start = result.current.startPoint!;
+        const current = result.current.currentPoint!;
+
+        // Width should be exactly 30
+        expect(Math.abs(current[0] - start[0])).toBe(30);
+    });
+
+    it('should snap rectangle height when input target is secondary', () => {
+        const { result } = setup();
+
+        act(() => { result.current.setTool('rectangle'); });
+        act(() => { result.current.handleMouseDown(400, 300); });
+        act(() => { result.current.setInputTarget('secondary'); });
+        act(() => { result.current.setDynamicInput('40'); });
+        act(() => { result.current.handleMouseMove(500, 400); });
+
+        const start = result.current.startPoint!;
+        const current = result.current.currentPoint!;
+
+        // Height should be exactly 40
+        expect(Math.abs(current[1] - start[1])).toBe(40);
+    });
+
+    it('should snap circle radius when dynamic input is provided', () => {
+        const { result } = setup();
+
+        act(() => { result.current.setTool('circle'); });
+        act(() => { result.current.handleMouseDown(400, 300); });
+        act(() => { result.current.setDynamicInput('25'); });
+        act(() => { result.current.handleMouseMove(500, 400); });
+
+        const start = result.current.startPoint!;
+        const current = result.current.currentPoint!;
+        const dx = current[0] - start[0];
+        const dy = current[1] - start[1];
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        expect(Math.abs(distance - 25)).toBeLessThan(0.001);
+    });
 });

@@ -15,7 +15,7 @@ const TestRunner = ({
     // Use a ref or simple effect to run once
     useEffect(() => {
         onReady(ctx);
-    }, []);
+    }, [ctx, onReady]);
 
     return null;
 };

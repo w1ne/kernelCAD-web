@@ -9,6 +9,9 @@ import type { SketchPlaneEntity } from "../types/plane";
 
 import { computeCentroid } from "../lib/sketchHelpers";
 import { HoverManager, type HoverResult } from "../features/interaction/HoverManager";
+import { SnapManager, type SnapResult } from "../features/interaction/SnapManager";
+import { CAD_COLORS, CAD_COLORS_HEX } from "../constants/colors";
+import { extractVariables } from "../lib/codeAnalysis";
 
 // Constants for sketch camera
 export const SKETCH_FOV = 40;
@@ -31,7 +34,7 @@ function FaceMesh({
     face: FaceGeometry;
     viewMode3D: ViewMode3D;
     isSelected: boolean;
-    onClick: () => void;
+    onClick: (e: ThreeEvent<MouseEvent>) => void;
 }) {
 
 
@@ -43,7 +46,7 @@ function FaceMesh({
         return geo;
     }, [face]);
 
-    const color = isSelected ? 0x2EC4B6 : 0x6366f1; // var(--selection-blue) : default blue
+    const color = isSelected ? CAD_COLORS.selection : 0x6366f1; // var(--selection-blue) : default blue
 
     const edgesGeo = useMemo(() =>
         new THREE.EdgesGeometry(threeGeometry, 15), [threeGeometry]
@@ -53,8 +56,9 @@ function FaceMesh({
         return (
             <lineSegments
                 geometry={edgesGeo}
-                onClick={(e) => { e.stopPropagation(); onClick(); }}
-                userData={{ type: 'FACE', id: face.faceId }}
+                onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(e); }}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                userData={{ type: 'FACE', id: face.faceId, ownerId: (onClick as any).ownerId }}
             >
                 <lineBasicMaterial color={color} />
             </lineSegments>
@@ -63,14 +67,16 @@ function FaceMesh({
 
     return (
         <group
-            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(e); }}
         >
-            <mesh geometry={threeGeometry} userData={{ type: 'FACE', id: face.faceId }}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <mesh geometry={threeGeometry} userData={{ type: 'FACE', id: face.faceId, ownerId: (onClick as any).ownerId }}>
                 {/* Use meshLambertMaterial but slightly adjusted for standard look */}
                 <meshLambertMaterial color={color} flatShading={viewMode3D === 'shadedWithEdges'} />
             </mesh>
             {viewMode3D === 'shadedWithEdges' && (
-                <lineSegments geometry={edgesGeo} userData={{ type: 'EDGE', id: `edge-${face.faceId}` }}>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                <lineSegments geometry={edgesGeo} userData={{ type: 'EDGE', id: `edge-${face.faceId}`, ownerId: (onClick as any).ownerId }}>
                     <lineBasicMaterial color={0x000000} />
                 </lineSegments>
             )}
@@ -85,10 +91,10 @@ function SketchLine({
 }: {
     sketch: SketchGeometry;
     isSelected: boolean;
-    onClick: () => void;
+    onClick: (e?: ThreeEvent<MouseEvent>) => void;
 }) {
     // const [hovered, setHovered] = useState(false); // Removed local hover
-    const color = isSelected ? 0x2EC4B6 : 0x3b82f6; // Selection Blue or Info Blue
+    const color = isSelected ? CAD_COLORS.selection : 0x3b82f6; // Selection Blue or Info Blue
 
     const geometry = useMemo(() => {
         const geo = new THREE.BufferGeometry();
@@ -107,10 +113,11 @@ function SketchLine({
             depthTest: false,
             depthWrite: false
         });
-    }, []);
+    }, [color]);
 
     useEffect(() => {
         material.color.setHex(color);
+        // eslint-disable-next-line react-hooks/immutability
         material.needsUpdate = true;
     }, [material, color]);
 
@@ -121,16 +128,16 @@ function SketchLine({
     const line = useMemo(() => {
         const l = new THREE.Line(geometry, material);
         l.frustumCulled = false;
-        // User data for hover manager
-        l.userData = { type: 'EDGE', id: sketch.id };
+        // User data for hover manager - ownerId is the sketch name
+        l.userData = { type: 'EDGE', id: sketch.id, ownerId: sketch.name };
         return l;
-    }, [geometry, material]);
+    }, [geometry, material, sketch.id, sketch.name]);
 
     return (
         <primitive
             object={line}
             renderOrder={999}
-            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); }}
+            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(e); }}
         />
     );
 }
@@ -214,7 +221,7 @@ function GhostShape({
 
                 return (
                     <mesh key={face.faceId} geometry={threeGeometry}>
-                        <meshBasicMaterial color="#2EC4B6" transparent opacity={0.4} />
+                        <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.4} />
                     </mesh>
                 );
             })}
@@ -225,13 +232,52 @@ function GhostShape({
 function Shape({
     geometry,
     shapeIndex,
-    viewMode3D
+    viewMode3D,
+    isSelected,
+    name
 }: {
     geometry: GeometryResult;
     shapeIndex: number;
-    viewMode3D: ViewMode3D
+    viewMode3D: ViewMode3D;
+    isSelected: boolean;
+    name: string | undefined;
 }) {
-    const { selectedFace, setSelectedFace, setSelectedSketchName } = useWorkbench();
+    const {
+        selectedFace,
+        setSelectedFace,
+        setSelectedSketchName,
+        setSelectedItemId,
+        toggleSelection
+    } = useWorkbench();
+
+    // Inject ownerId into the onClick handler for FaceMesh to pick up
+    const handleClick = useMemo(() => {
+        const fn = (e?: ThreeEvent<MouseEvent>) => {
+            // Check for modifiers
+            const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
+
+            if (name) {
+                if (isMulti) {
+                    toggleSelection(name, true);
+                    return;
+                }
+            }
+
+            // Normal click
+            setSelectedSketchName(null);
+
+            // Extract face ID from the clicked object's userData
+            const userData = e?.object?.userData as { id?: number } | undefined;
+            const clickedFaceId = userData?.id;
+            const faceId = (typeof clickedFaceId === 'number') ? clickedFaceId : -1;
+
+            setSelectedFace({ shapeIndex, faceId });
+            if (name) setSelectedItemId(name);
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/immutability
+        (fn as any).ownerId = name;
+        return fn;
+    }, [name, setSelectedFace, setSelectedItemId, setSelectedSketchName, shapeIndex, toggleSelection]);
 
     return (
         <group>
@@ -240,11 +286,8 @@ function Shape({
                     key={face.faceId}
                     face={face}
                     viewMode3D={viewMode3D}
-                    isSelected={selectedFace?.shapeIndex === shapeIndex && selectedFace?.faceId === face.faceId}
-                    onClick={() => {
-                        setSelectedSketchName(null);
-                        setSelectedFace({ shapeIndex, faceId: face.faceId });
-                    }}
+                    isSelected={isSelected || (selectedFace?.shapeIndex === shapeIndex && selectedFace?.faceId === face.faceId)}
+                    onClick={handleClick}
                 />
             ))}
         </group>
@@ -269,17 +312,17 @@ function ParametricLayer() {
 
     // Dummy Object State for Gizmo
     // We need a stable object for TransformControls to attach to.
-    const dummyRef = useRef<THREE.Group>(null);
+    const [dummy, setDummy] = useState<THREE.Group | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const initialPositions = useRef<Map<string, { x: number, y: number }>>(new Map());
     const initialCentroid = useRef<{ x: number, y: number } | null>(null);
 
     // Sync dummy position to centroid when NOT dragging
     useEffect(() => {
-        if (!isDragging && dummyRef.current && centroid) {
-            dummyRef.current.position.set(centroid.x, centroid.y, 0);
+        if (!isDragging && dummy && centroid) {
+            dummy.position.set(centroid.x, centroid.y, 0);
         }
-    }, [centroid, isDragging]);
+    }, [centroid, isDragging, dummy]);
 
     return (
         <group>
@@ -341,39 +384,41 @@ function ParametricLayer() {
             {centroid && (
                 <>
                     {/* Invisible dummy target for Gizmo */}
-                    <group ref={dummyRef} position={[centroid.x, centroid.y, 0]} />
+                    <group ref={setDummy} position={[centroid.x, centroid.y, 0]} />
 
-                    <TransformControls
-                        object={dummyRef.current as any}
-                        mode="translate"
-                        showZ={false}
-                        size={0.6}
-                        translationSnap={0.5} // Snapping 0.5 units
-                        onMouseDown={() => {
-                            setIsDragging(true);
-                            initialCentroid.current = { x: dummyRef.current!.position.x, y: dummyRef.current!.position.y };
-                            initialPositions.current.clear();
-                            selectedPoints.forEach(p => {
-                                initialPositions.current.set(p.id, { x: p.x, y: p.y });
-                            });
-                        }}
-                        onMouseUp={() => {
-                            setIsDragging(false);
-                            initialCentroid.current = null;
-                        }}
-                        onObjectChange={(_e: any) => {
-                            if (isDragging && initialCentroid.current && dummyRef.current) {
-                                const currentPos = dummyRef.current.position;
-                                const dx = currentPos.x - initialCentroid.current.x;
-                                const dy = currentPos.y - initialCentroid.current.y;
-
-                                initialPositions.current.forEach((startPos, id) => {
-                                    updateEntity(id, { x: startPos.x + dx, y: startPos.y + dy });
+                    {dummy && (
+                        <TransformControls
+                            object={dummy}
+                            mode="translate"
+                            showZ={false}
+                            size={0.6}
+                            translationSnap={0.5} // Snapping 0.5 units
+                            onMouseDown={() => {
+                                setIsDragging(true);
+                                initialCentroid.current = { x: dummy.position.x, y: dummy.position.y };
+                                initialPositions.current.clear();
+                                selectedPoints.forEach(p => {
+                                    initialPositions.current.set(p.id, { x: p.x, y: p.y });
                                 });
-                                solve();
-                            }
-                        }}
-                    />
+                            }}
+                            onMouseUp={() => {
+                                setIsDragging(false);
+                                initialCentroid.current = null;
+                            }}
+                            onObjectChange={() => {
+                                if (isDragging && initialCentroid.current && dummy) {
+                                    const currentPos = dummy.position;
+                                    const dx = currentPos.x - initialCentroid.current.x;
+                                    const dy = currentPos.y - initialCentroid.current.y;
+
+                                    initialPositions.current.forEach((startPos, id) => {
+                                        updateEntity(id, { x: startPos.x + dx, y: startPos.y + dy });
+                                    });
+                                    solve();
+                                }
+                            }}
+                        />
+                    )}
                 </>
             )}
         </group>
@@ -384,7 +429,7 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
     // Target state for animation
-    const [targetState, setTargetState] = useState<{
+    const targetState = useRef<{
         position: THREE.Vector3;
         lookAt: THREE.Vector3;
     } | null>(null);
@@ -406,8 +451,8 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
         // On Sketch Enter
         if (isSketching && !wasSketching) {
             if (sketchMode.plane) {
-                let center = new THREE.Vector3(0, 0, 0);
-                let normalVec = new THREE.Vector3(0, 0, 1);
+                const center = new THREE.Vector3(0, 0, 0);
+                const normalVec = new THREE.Vector3(0, 0, 1);
                 let found = false;
 
                 if (typeof sketchMode.plane === 'object') {
@@ -432,10 +477,10 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
                     // Zoom in closer for sketching
                     const newPos = center.clone().add(normalVec.multiplyScalar(SKETCH_DISTANCE));
 
-                    setTargetState({
+                    targetState.current = {
                         position: newPos,
                         lookAt: center
-                    });
+                    };
                 }
             }
         }
@@ -443,22 +488,22 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
         // On Sketch Exit
         if (!isSketching && wasSketching) {
             if (savedCameraState.current) {
-                setTargetState({
+                targetState.current = {
                     position: savedCameraState.current.position,
                     lookAt: savedCameraState.current.target
-                });
+                };
             }
         }
 
     }, [sketchMode, selectedFace, geometries, camera, controls]);
 
     useFrame((state, delta) => {
-        if (!targetState) return;
+        if (!targetState.current) return;
 
         const dampFactor = 5.0 * delta; // Slightly faster for responsiveness
 
         // Interpolate position
-        state.camera.position.lerp(targetState.position, dampFactor);
+        state.camera.position.lerp(targetState.current.position, dampFactor);
 
         // Interpolate controls target if available
         // OrbitControls from @react-three/drei puts the actual controls instance in state.controls usually?
@@ -467,17 +512,17 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
         const ctrl = controls as unknown as { target: THREE.Vector3, update: () => void };
 
         if (ctrl && ctrl.target) {
-            ctrl.target.lerp(targetState.lookAt, dampFactor);
+            ctrl.target.lerp(targetState.current.lookAt, dampFactor);
             ctrl.update();
         } else {
-            state.camera.lookAt(targetState.lookAt);
+            state.camera.lookAt(targetState.current.lookAt);
         }
 
         // Stop animating when close enough to save perf? 
         // For now, continuous damping is fine and handles interruptions gracefully
-        if (state.camera.position.distanceTo(targetState.position) < 0.1 &&
-            (ctrl?.target?.distanceTo(targetState.lookAt) || 0) < 0.1) {
-            setTargetState(null);
+        if (state.camera.position.distanceTo(targetState.current.position) < 0.1 &&
+            (ctrl?.target?.distanceTo(targetState.current.lookAt) || 0) < 0.1) {
+            targetState.current = null;
         }
     });
 
@@ -485,7 +530,7 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
 }
 
 
-function InteractionHandler({ setHovered }: { setHovered: (h: HoverResult | null) => void }) {
+function InteractionHandler({ setHovered, setSnap }: { setHovered: (h: HoverResult | null) => void, setSnap: (s: SnapResult | null) => void }) {
     const { camera, scene, raycaster, pointer } = useThree();
 
     useFrame(() => {
@@ -496,10 +541,45 @@ function InteractionHandler({ setHovered }: { setHovered: (h: HoverResult | null
         const intersects = raycaster.intersectObjects(scene.children, true);
 
         const best = HoverManager.getBestHover(intersects);
+        if (best) console.log('Hover hit:', best.type, best.id);
         setHovered(best);
+        setSnap(SnapManager.getSnapFromHover(best));
     });
 
     return null;
+}
+
+function SnapIndicator({ snap }: { snap: SnapResult | null }) {
+    if (!snap) return null;
+
+    const { type, position } = snap;
+
+    // Choose icon based on snap type
+    // ENDPOINT: Square
+    // MIDPOINT: Triangle
+    // CENTER: Circle (if added)
+
+    return (
+        <group position={position}>
+            {type === 'ENDPOINT' && (
+                <mesh renderOrder={2000}>
+                    <boxGeometry args={[0.5, 0.5, 0.5]} />
+                    <meshBasicMaterial color={CAD_COLORS_HEX.snap} depthTest={false} />
+                </mesh>
+            )}
+            {type === 'MIDPOINT' && (
+                <mesh renderOrder={2000} rotation={[0, 0, Math.PI / 4]}>
+                    <octahedronGeometry args={[0.4]} />
+                    <meshBasicMaterial color={CAD_COLORS_HEX.snap} depthTest={false} />
+                </mesh>
+            )}
+            {/* Outline for the snap point */}
+            <mesh renderOrder={2001}>
+                <sphereGeometry args={[0.6]} />
+                <meshBasicMaterial color="black" wireframe depthTest={false} transparent opacity={0.2} />
+            </mesh>
+        </group>
+    );
 }
 
 
@@ -530,7 +610,7 @@ function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
                 matrixAutoUpdate={false}
                 renderOrder={1000}
             >
-                <meshBasicMaterial color="#2EC4B6" transparent opacity={0.3} depthTest={false} />
+                <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.3} depthTest={false} />
                 {/* IDK about depthTest false, might show through everything. Let's try true first. */}
             </mesh>
         );
@@ -547,7 +627,7 @@ function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
                     matrixAutoUpdate={false}
                     renderOrder={1000}
                 >
-                    <lineBasicMaterial color="#FF9F1C" linewidth={2} depthTest={false} />
+                    <lineBasicMaterial color={CAD_COLORS_HEX.highlight} linewidth={2} depthTest={false} />
                 </lineSegments>
             );
         }
@@ -563,7 +643,7 @@ function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
                     matrixAutoUpdate={false}
                     renderOrder={1001} // High priority
                 >
-                    <meshBasicMaterial color="#FF9F1C" depthTest={false} />
+                    <meshBasicMaterial color={CAD_COLORS_HEX.highlight} depthTest={false} />
                 </mesh>
             );
         }
@@ -572,12 +652,87 @@ function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
     return null;
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
-    const { setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes } = useWorkbench();
-    const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
+/**
+ * SelectionOutline renders a high-visibility outline around the selected object(s).
+ */
+function SelectionOutline({ geometries, itemNames, selectedItemIds }: { geometries: GeometryResult[], itemNames: string[], selectedItemIds: string[] }) {
+    // Collect all selected geometries
+    const selectedGeometries = useMemo(() => {
+        return selectedItemIds.map(id => {
+            const idx = itemNames.indexOf(id);
+            return idx !== -1 ? geometries[idx] : null;
+        }).filter((g): g is GeometryResult => g !== null);
+    }, [geometries, itemNames, selectedItemIds]);
+
+    if (selectedGeometries.length === 0) return null;
 
     return (
-        <div className="w-full h-full relative" style={{ cursor: hoveredItem ? 'pointer' : 'default' }}>
+        <group>
+            {selectedGeometries.map((geometry, i) => (
+                <group key={`sel-group-${i}`}>
+                    {geometry.faces.map((face) => {
+                        const threeGeometry = new THREE.BufferGeometry();
+                        threeGeometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
+                        threeGeometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+                        threeGeometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
+
+                        const edgesGeo = new THREE.EdgesGeometry(threeGeometry, 15);
+
+                        return (
+                            <lineSegments key={`outline-${face.faceId}`} geometry={edgesGeo} renderOrder={1002}>
+                                <lineBasicMaterial color={CAD_COLORS_HEX.selection} linewidth={3} depthTest={false} transparent opacity={0.8} />
+                            </lineSegments>
+                        );
+                    })}
+                </group>
+            ))}
+        </group>
+    );
+}
+
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
+    const {
+        setSelectedFace,
+        selectedSketchName,
+        setSelectedSketchName,
+        sketchMode,
+        planes,
+        code,
+        hiddenIds,
+        selectedItemIds, // New
+        setSelectedItemId,
+        toggleSelection // New
+    } = useWorkbench();
+
+    // Correlate geometries with names from code
+    const itemNames = useMemo(() => extractVariables(code).map(v => v.name), [code]);
+
+    const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
+    const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
+
+    const { setHoveredItemId } = useWorkbench();
+
+    // Sync local hover to global hoveredItemId
+    useEffect(() => {
+        if (hoveredItem?.object?.userData?.ownerId) {
+            setHoveredItemId(hoveredItem.object.userData.ownerId);
+        } else {
+            setHoveredItemId(null);
+        }
+    }, [hoveredItem, setHoveredItemId]);
+
+    // Cursor Logic
+    const cursor = useMemo(() => {
+        if (sketchMode.active) return 'crosshair';
+        if (hoveredItem) {
+            if (hoveredItem.type === 'VERTEX') return 'move';
+            return 'pointer';
+        }
+        return 'default';
+    }, [hoveredItem, sketchMode.active]);
+
+    return (
+        <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
             <Canvas
                 camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 raycaster={{
@@ -592,14 +747,17 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 onPointerMissed={() => {
                     setSelectedFace(null);
                     setSelectedSketchName(null);
+                    setSelectedItemId(null);
                 }}
             >
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
                 <directionalLight position={[-5, -10, -5]} intensity={0.3} />
 
-                <InteractionHandler setHovered={setHoveredItem} />
+                <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
                 <BetterHighlightOverlay hovered={hoveredItem} />
+                <SnapIndicator snap={snapPoint} />
+                <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
                 {!sketchMode.active && (
                     <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
@@ -607,9 +765,20 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
 
                 <group>
-                    {geometries.map((g, i) => (
-                        <Shape key={i} geometry={g} shapeIndex={i} viewMode3D={viewMode3D} />
-                    ))}
+                    {geometries.map((g, i) => {
+                        const name = itemNames[i];
+                        if (name && hiddenIds.includes(name)) return null;
+                        return (
+                            <Shape
+                                key={i}
+                                geometry={g}
+                                shapeIndex={i}
+                                viewMode3D={viewMode3D}
+                                isSelected={name ? selectedItemIds.includes(name) : false}
+                                name={name}
+                            />
+                        );
+                    })}
                 </group>
 
                 <group>
@@ -620,14 +789,21 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
                 {showSketches && (
                     <group>
-                        {sketchesGeometries.map((s) => (
+                        {sketchesGeometries.filter(s => !hiddenIds.includes(s.name)).map((s) => (
                             <SketchLine
                                 key={s.id}
                                 sketch={s}
-                                isSelected={selectedSketchName === s.name}
-                                onClick={() => {
+                                isSelected={selectedSketchName === s.name || selectedItemIds.includes(s.name)}
+                                onClick={(e) => {
+                                    const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
+                                    if (isMulti) {
+                                        toggleSelection(s.name, true);
+                                        return;
+                                    }
+
                                     setSelectedFace(null);
                                     setSelectedSketchName(s.name);
+                                    setSelectedItemId(s.name);
                                 }}
                             />
                         ))}

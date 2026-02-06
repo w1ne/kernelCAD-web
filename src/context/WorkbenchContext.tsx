@@ -26,6 +26,9 @@ export interface WorkbenchContextType extends
     // Override from useFaceSelection hook
     startFaceSelection: () => void;
     cancelFaceSelection: () => void;
+
+    // Commands
+    renameItem: (oldName: string, newName: string) => void;
 }
 
 // Export for testing
@@ -103,6 +106,28 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         togglePlaneVisibility: selectionCtx.togglePlaneVisibility,
         selectedSketchName: selectionCtx.selectedSketchName,
         setSelectedSketchName: selectionCtx.setSelectedSketchName,
+        selectedItemId: selectionCtx.selectedItemId,
+        selectedItemIds: selectionCtx.selectedItemIds,
+        toggleSelection: selectionCtx.toggleSelection,
+        setSelectedItemId: selectionCtx.setSelectedItemId,
+        hoveredItemId: selectionCtx.hoveredItemId,
+        setHoveredItemId: selectionCtx.setHoveredItemId,
+        hiddenIds: selectionCtx.hiddenIds,
+        hideItem: selectionCtx.hideItem,
+        showAll: selectionCtx.showAll,
+        toggleVisibility: selectionCtx.toggleVisibility,
+        renameItem: (oldName: string, newName: string) => {
+            if (!codeCtx.code) return;
+            // Lazy load or import refactoring manager to avoid circular deps if needed?
+            // But we can import it directly.
+            // Ideally we should move this logic to a helper or hook, but here is fine for now.
+            import('../features/modeling/RefactoringManager').then(({ refactoringManager }) => {
+                const newCode = refactoringManager.renameVariable(codeCtx.code, oldName, newName);
+                if (newCode !== codeCtx.code) {
+                    codeCtx.setCode(newCode);
+                }
+            });
+        },
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,
@@ -128,12 +153,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         // New: Code generation context
         codeContext,
     }), [
-        codeCtx.code,
-        codeCtx.setCode,
-        codeCtx.insertCode,
-        codeCtx.editorInstance,
-        codeCtx.setEditorInstance,
-        codeCtx.commandManager,
+        codeCtx,
         uiCtx.viewMode,
         uiCtx.setViewMode,
         uiCtx.viewMode3D,
@@ -155,6 +175,16 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         selectionCtx.togglePlaneVisibility,
         selectionCtx.selectedSketchName,
         selectionCtx.setSelectedSketchName,
+        selectionCtx.selectedItemIds,
+        selectionCtx.selectedItemId,
+        selectionCtx.setSelectedItemId,
+        selectionCtx.toggleSelection,
+        selectionCtx.hoveredItemId,
+        selectionCtx.setHoveredItemId,
+        selectionCtx.hiddenIds,
+        selectionCtx.toggleVisibility,
+        selectionCtx.hideItem,
+        selectionCtx.showAll,
         geometryCtx.geometries,
         geometryCtx.sketchesGeometries,
         geometryCtx.showSketches,
@@ -198,6 +228,21 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
             selectionCtx.setSelectedSketchName(name);
         };
 
+        window.__TEST_SELECT_ITEM = (id: string | null) => {
+            selectionCtx.setSelectedItemId(id);
+        };
+
+        window.__TEST_SET_HOVERED = (id: string | null) => {
+            selectionCtx.setHoveredItemId(id);
+        };
+
+        window.getHoveredItemId = () => selectionCtx.hoveredItemId;
+        window.selectedItemId = () => selectionCtx.selectedItemId;
+
+        window.__TEST_TOGGLE_VISIBILITY = (id: string) => {
+            selectionCtx.toggleVisibility(id);
+        };
+
         window.isComputing = () => geometryCtx.isComputing;
         window.getExecutionCount = () => geometryCtx.executionCount;
         window.getError = () => geometryCtx.error;
@@ -213,7 +258,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
             delete window.getExecutionCount;
             delete window.getError;
         };
-    }, [faceSelection, geometryCtx.geometries, geometryCtx.sketchesGeometries, geometryCtx.isComputing, geometryCtx.executionCount, geometryCtx.error, selectionCtx]);
+    }, [faceSelection, geometryCtx.geometries, geometryCtx.previewGeometries, geometryCtx.sketchesGeometries, geometryCtx.isComputing, geometryCtx.executionCount, geometryCtx.error, selectionCtx]);
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
 }

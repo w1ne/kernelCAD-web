@@ -1,6 +1,8 @@
 # kernelCAD Roadmap
 
 > Building a professional parametric CAD system in the browser
+>
+> **See Also**: [Project Vision](./VISION.md) for the long-term blueprint.
 
 **App Version (package.json)**: v0.10.0
 **Latest Git Tag**: v0.10.0
@@ -59,7 +61,7 @@
 **Goal**: Transform kernelCAD from a code-editor with a viewer into a professional CAD workbench.
 
 ### 1.2 Parametric Sketching
-- [x] **Geometric Constraints**: Horizontal, Vertical, Parallel, Perpendicular, Tangent (Foundations in `solver.ts`).
+- [x] **Geometric Constraints**: Horizontal, Vertical, Equal, Radius, Angle (UI). Parallel, Perpendicular, Tangent (Solver support only).
 - [x] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
 - [x] **Constraint Solving**: Integration of a basic 2D constraint solver (Iterative solver integrated).
 - [ ] **Auto-Constraint Inference**: "Magnetic" cursors that snap to Vertical/Horizontal/Coincident while drawing.
@@ -75,8 +77,8 @@
 - [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
 - [ ] **Visual Feedback System** (See [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md)):
-  - [ ] **Theme Infrastructure**: Define CSS variables for `highlight-orange`, `selection-blue`, and `snap-green`.
-  - [ ] **Hover Engine**: Implement a centralized `HoverManager` that detects `Edge`, `Face`, and `Vertex` hits with Z-index priority (Vertex > Edge > Face).
+  - [x] **Theme Infrastructure**: Define CSS variables for `highlight-orange`, `selection-blue`, and `snap-green` (Implemented in `colors.ts`).
+  - [x] **Hover Engine**: Implement a centralized `HoverManager` that detects `Edge`, `Face`, and `Vertex` hits with Z-index priority (Vertex > Edge > Face).
   - [ ] **Snap Indicators**: Create a lightweight React component to render SVG icons (Square, Triangle, X) at valid inference points.
   - [ ] **Cursor State Machine**: Update `InteractionManager` to support `default`, `grab`, `grabbing` and tool-specific badges (e.g., "Pencil" icon).
 - [ ] **Standardized Interaction Logic** (See [Interaction Specs](./DETAILED_INTERACTION_SPECS.md)):
@@ -98,6 +100,7 @@
 - [x] **Interactive Test Runner**: Integrated Vitest with UI support.
 - [x] **Geometry Regression Suite**: Snapshot-based validation of CAD workflows (Volume, Center of Mass, Bounding Box).
 - [x] **Headless CAD Validation**: Automatic geometry checks via `standardWorkflows.test.ts`.
+- [x] **E2E Stability**: Critical fix for Viewer interaction and App rendering (Feb 2026).
 
 ### 1.4 Developer Tools
 - [x] **Dev Lab**: Isolated environment for component testing and prototyping (e.g., `/dev-lab` route).
@@ -127,7 +130,7 @@
 **Goal**: Interact with the 3D model directly using industry-standard GUI tools.
 
 ### 3.1 Transform Gizmos
-- [ ] **Standard Gizmo**: Translation (arrows), Rotation (rings), and Scaling handles.
+- [x] **Standard Gizmo**: Translation (arrows) implemented using `TransformControls` with safe render logic.
 - [ ] **Interactive Extrude**: Click and drag a sketch face to extrude it in 3D (See [Specs](./DETAILED_INTERACTION_SPECS.md#31-extrude-e)).
 - [ ] **Selection Highlighting**: Hover and click highlighting (Orange/Blue) as per [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md).
 
@@ -209,5 +212,5 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 
 ---
 
-**Last Updated**: 2026-02-05  
+**Last Updated**: 2026-02-06
 **Next Review**: After v0.10.x (Parametric Sketching) ships

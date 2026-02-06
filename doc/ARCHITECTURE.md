@@ -4,6 +4,8 @@ kernelCAD is a browser-based programmatic CAD application. It combines a React U
 
 ## Architecture
 
+> **See Also**: [Implementation Details](./IMPLEMENTATION_DETAILS.md) for deep dives into specific subsystems (Solver, Visual Feedback).
+
 ## High-Level Overview
 
 kernelCAD follows a **Workbench Architecture** designed for modularity and separation of concerns.

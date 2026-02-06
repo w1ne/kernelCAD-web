@@ -15,6 +15,7 @@
 -   **Sketch Visualization**: Toggleable cyan/blue line rendering for 2D sketches in the 3D scene.
 -   **Face Selection & Sketching**: Create sketch planes directly from 3D faces.
 -   **Professional View Modes**: Shaded with Edges, Wireframe, and Shaded views matching CATIA/Fusion360.
+-   **Parametric Constraints**: Geometric solver for Distance, Angle, Radius, and Coincident constraints.
 -   **Advanced Operations**: Revolve, Fillet, Chamfer, and Boolean operations with visual feedback.
 
 ## Getting Started
@@ -59,12 +60,15 @@ kernelCAD consists of three main parts:
 2.  **Viewer**: Three.js/React-Three-Fiber viewport.
 3.  **Engine**: A Web Worker that runs Replicad/OpenCASCADE to compute geometry asynchronously.
 
-For more details, see [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) and the [CAD Query Guide](doc/CAD_QUERY_GUIDE.md).
+### Documentation Index
 
-## Roadmap
-
-- [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md): Cursor states, snapping cues, and highlight colors.
-- **[CAD Query Guide](./CAD_QUERY_GUIDE.md)**: Fluent modeling & robust selectors.
+- **[Architecture](./doc/ARCHITECTURE.md)**: High-level system design and component overview.
+- **[Implementation Details](./doc/IMPLEMENTATION_DETAILS.md)**: Deep dive into the Visual Feedback System, Solver, and Code Generation.
+- **[Interfaces & APIs](./doc/INTERFACES.md)**: Detailed API references for Extensibility.
+- **[Roadmap](./doc/ROADMAP.md)**: Future plans and current status.
+- **[Keyboard Shortcuts](./doc/KEYBOARD_SHORTCUTS.md)**: Speed up your workflow.
+- **[CAD Query Guide](./doc/CAD_QUERY_GUIDE.md)**: Guide to robust selector-based modeling.
+- **[Core Workflows](./doc/CORE_WORKFLOWS.md)**: Step-by-step user interaction references.
 
 ## License
 

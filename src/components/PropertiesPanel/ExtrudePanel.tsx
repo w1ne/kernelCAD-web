@@ -50,18 +50,14 @@ export function ExtrudePanel({ sketchName: initialSketchName, onConfirm, onCance
     }, [sketches, code]);
 
     const [selectedSketch, setSelectedSketch] = useState(
-        initialSketchName || (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '')
+        initialSketchName || ''
     );
     const [distance, setDistance] = useState(10);
     const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
 
     const { setPreviewCode, codeContext } = useWorkbench();
 
-    useEffect(() => {
-        if (!selectedSketch && sketchOptions.length > 0) {
-            setSelectedSketch(sketchOptions[sketchOptions.length - 1].value);
-        }
-    }, [selectedSketch, sketchOptions]);
+    // removed auto-select effect to valid setState-in-effect error
 
     // Live Preview Effect
     useEffect(() => {

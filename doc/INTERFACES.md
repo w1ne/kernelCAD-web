@@ -123,9 +123,8 @@ import { featureRegistry } from './features/FeatureRegistry';
 
 featureRegistry.register({
   id: 'my-feature',
-  name: 'My Feature',
+  label: 'My Feature',
   icon: MyIcon,
-  category: 'primitives',
   execute: (context) => {
     context.insertCode('const shape = ...');
   }
@@ -137,16 +136,17 @@ featureRegistry.register({
 ```typescript
 interface Feature {
   id: string;
-  name: string;
-  icon: React.ComponentType;
-  category: 'primitives' | 'modifiers' | 'operations';
-  execute: (context: FeatureContext) => void;
-  parameters?: ParameterDefinition[];
+  label: string; // Changed from 'name'
+  icon: LucideIcon | React.FC<LucideProps>;
+  description?: string;
+  parameters?: DialogField[];
+  execute: (context: FeatureContext, args?: Record<string, number>) => void;
 }
 
 interface FeatureContext {
   insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
-  setActiveDialog: (dialog: string | null) => void;
+  setCode: (code: string) => void;
+  setActiveDialog: (dialogId: string | null) => void;
   code: string;
   codeContext: CodeGenerationContext;
 }

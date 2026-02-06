@@ -43,8 +43,9 @@ export function ChamferPanel({ onConfirm, onCancel }: ChamferPanelProps) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Target Name */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Target Variable</label>
+                    <label htmlFor="chamfer-target" className="text-xs font-medium text-zinc-400">Target Variable</label>
                     <input
+                        id="chamfer-target"
                         type="text"
                         value={targetName}
                         onChange={(e) => setTargetName(e.target.value)}
@@ -56,8 +57,9 @@ export function ChamferPanel({ onConfirm, onCancel }: ChamferPanelProps) {
 
                 {/* Distance */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Distance (mm)</label>
+                    <label htmlFor="chamfer-distance" className="text-xs font-medium text-zinc-400">Distance (mm)</label>
                     <input
+                        id="chamfer-distance"
                         type="number"
                         value={distance}
                         onChange={(e) => setDistance(Number(e.target.value))}

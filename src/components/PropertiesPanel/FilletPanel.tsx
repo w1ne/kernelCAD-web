@@ -43,8 +43,9 @@ export function FilletPanel({ onConfirm, onCancel }: FilletPanelProps) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Target Name */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Target Variable</label>
+                    <label htmlFor="fillet-target" className="text-xs font-medium text-zinc-400">Target Variable</label>
                     <input
+                        id="fillet-target"
                         type="text"
                         value={targetName}
                         onChange={(e) => setTargetName(e.target.value)}
@@ -56,8 +57,9 @@ export function FilletPanel({ onConfirm, onCancel }: FilletPanelProps) {
 
                 {/* Radius */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Radius (mm)</label>
+                    <label htmlFor="fillet-radius" className="text-xs font-medium text-zinc-400">Radius (mm)</label>
                     <input
+                        id="fillet-radius"
                         type="number"
                         value={radius}
                         onChange={(e) => setRadius(Number(e.target.value))}

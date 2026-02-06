@@ -48,18 +48,16 @@ export function RevolvePanel({ sketchName: initialSketchName, onConfirm, onCance
     }, [sketches, code]);
 
     const [selectedSketch, setSelectedSketch] = useState(
-        initialSketchName || (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '')
+        initialSketchName || ''
     );
     const [angle, setAngle] = useState(360);
     const [axis, setAxis] = useState('X');
 
     const { setPreviewCode, codeContext } = useWorkbench();
 
-    useEffect(() => {
-        if (!selectedSketch && sketchOptions.length > 0) {
-            setSelectedSketch(sketchOptions[sketchOptions.length - 1].value);
-        }
-    }, [selectedSketch, sketchOptions]);
+    // Select first sketch if none selected and options available
+    // (Logic moved to useState initializer and form rendering if needed, 
+    // or just rely on user selection to avoid auto-select jitter)
 
     // Live Preview Effect
     useEffect(() => {
@@ -90,8 +88,9 @@ export function RevolvePanel({ sketchName: initialSketchName, onConfirm, onCance
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Sketch Selection */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Profile</label>
+                    <label htmlFor="revolve-profile" className="text-xs font-medium text-zinc-400">Profile</label>
                     <select
+                        id="revolve-profile"
                         value={selectedSketch}
                         onChange={(e) => setSelectedSketch(e.target.value)}
                         className="rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
@@ -106,8 +105,9 @@ export function RevolvePanel({ sketchName: initialSketchName, onConfirm, onCance
 
                 {/* Angle Input */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Angle (deg)</label>
+                    <label htmlFor="revolve-angle" className="text-xs font-medium text-zinc-400">Angle (deg)</label>
                     <input
+                        id="revolve-angle"
                         type="number"
                         value={angle}
                         onChange={(e) => setAngle(Number(e.target.value))}

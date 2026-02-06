@@ -40,8 +40,9 @@ export function OffsetPlanePanel({ onConfirm, onCancel }: OffsetPlanePanelProps)
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Reference Selection */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Reference Entity</label>
+                    <label htmlFor="plane-base" className="text-xs font-medium text-zinc-400">Reference Entity</label>
                     <select
+                        id="plane-base"
                         value={baseRefId}
                         onChange={(e) => setBaseRefId(e.target.value)}
                         className="w-full rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
@@ -65,8 +66,9 @@ export function OffsetPlanePanel({ onConfirm, onCancel }: OffsetPlanePanelProps)
 
                 {/* Offset Distance */}
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-400">Offset Distance (mm)</label>
+                    <label htmlFor="plane-offset" className="text-xs font-medium text-zinc-400">Offset Distance (mm)</label>
                     <input
+                        id="plane-offset"
                         type="number"
                         value={offset}
                         onChange={(e) => setOffset(Number(e.target.value))}
