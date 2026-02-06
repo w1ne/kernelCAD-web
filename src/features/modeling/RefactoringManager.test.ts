@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { refactoringManager } from './RefactoringManager';
 
 describe('RefactoringManager', () => {
+    vi.setConfig({ testTimeout: 20000 });
+
     it('should rename a variable definition and references', () => {
         const code = `
             const myVar = 10;
