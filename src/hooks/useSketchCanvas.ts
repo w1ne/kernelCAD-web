@@ -9,6 +9,11 @@ interface UseSketchCanvasProps {
     gridUnit: number;
 }
 
+export interface SnapState {
+    type: 'none' | 'horizontal' | 'vertical' | 'coincident';
+    point: Point2D;
+}
+
 export function useSketchCanvas({
     canvasWidth,
     canvasHeight,
@@ -23,6 +28,7 @@ export function useSketchCanvas({
     const [dynamicInput, setDynamicInput] = useState<string>('');
     const [secondaryInput, setSecondaryInput] = useState<string>('');
     const [inputTarget, setInputTarget] = useState<'primary' | 'secondary'>('primary');
+    const [snapState, setSnapState] = useState<SnapState | undefined>(undefined); // State for snapping visualization
 
     // Convert canvas pixel coordinates to sketch coordinates
     const canvasToSketch = useCallback((x: number, y: number): Point2D => {
@@ -119,33 +125,122 @@ export function useSketchCanvas({
 
 
     // Help calculate snapped points based on mouse + typed dimensions
-    const calculateSnappedPoint = useCallback((start: Point2D, current: Point2D, dim1: string, dim2: string): Point2D => {
+    const calculateSnappedPoint = useCallback((start: Point2D, current: Point2D, dim1: string, dim2: string): { point: Point2D, type: 'none' | 'horizontal' | 'vertical' | 'coincident' } => {
         const val1 = parseFloat(dim1);
         const val2 = parseFloat(dim2);
 
-        if (isNaN(val1) && isNaN(val2)) return current;
+        // Default result
+        let resultPoint: Point2D = [...current];
+        let snapType: 'none' | 'horizontal' | 'vertical' | 'coincident' = 'none';
 
-        let point = [...current] as Point2D;
+        // 1. Gather Candidate Snap Points (Vertices) from existing entities
+        const snapCandidates: Point2D[] = [];
+        entities.forEach(e => {
+            if (e.type === 'line') {
+                snapCandidates.push(e.start);
+                snapCandidates.push(e.end);
+            } else if (e.type === 'rectangle') {
+                snapCandidates.push(e.corner);
+                snapCandidates.push([e.corner[0] + e.width, e.corner[1]]);
+                snapCandidates.push([e.corner[0], e.corner[1] + e.height]);
+                snapCandidates.push([e.corner[0] + e.width, e.corner[1] + e.height]);
+            } else if (e.type === 'circle') {
+                snapCandidates.push(e.center);
+            }
+        });
 
+        // 2. Check Coincident Snapping (Highest Priority)
+        // If we provided a manual dimension (length/angle), we generally don't snap coincident
+        // unless it perfectly matches? For now, manual dimensions disable coincident snap to avoid fighting.
+        if (isNaN(val1) && isNaN(val2)) {
+            // Tolerance: We use grid units from the hook prop, but here we work in sketch coordinates.
+            // Since coordinates are integers (mostly), we look for exact or very close matches?
+            // "Magnetic" means we snap even if slightly off.
+            // Let's say threshold is 1 unit (since grid is 1).
+            const SNAP_THRESHOLD = 1.5; // Allow snapping to adjacent diagonals?
+
+            let bestDist = Infinity;
+            let bestPoint: Point2D | null = null;
+
+            for (const cand of snapCandidates) {
+                // Don't snap to start point of CURRENT line (trivial)
+                if (cand[0] === start[0] && cand[1] === start[1]) continue;
+
+                const dx = current[0] - cand[0];
+                const dy = current[1] - cand[1];
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= SNAP_THRESHOLD && dist < bestDist) {
+                    bestDist = dist;
+                    bestPoint = cand;
+                }
+            }
+
+            if (bestPoint) {
+                return { point: bestPoint, type: 'coincident' };
+            }
+        }
+
+        // 3. Tool-Specific Logic with Alignment Snapping
         if (tool === 'line') {
             const dx = current[0] - start[0];
             const dy = current[1] - start[1];
             let angle = Math.atan2(dy, dx);
             let length = Math.sqrt(dx * dx + dy * dy);
 
+            // Alignment Snapping (H/V)
+            // Only if angle NOT explicitly typed
+            if (isNaN(val2)) {
+                // Determine deviation from horizontal (0 or PI) and vertical (PI/2 or -PI/2)
+                const absAngle = Math.abs(angle);
+                const isHoriz = absAngle < 0.1 || Math.abs(absAngle - Math.PI) < 0.1; // ~5.7 degrees
+                const isVert = Math.abs(absAngle - Math.PI / 2) < 0.1;
+
+                if (isHoriz) {
+                    // Force dy to 0
+                    // But we must respect the current X projection 
+                    // Snap Y to start Y
+                    resultPoint = [current[0], start[1]];
+                    // Recalculate length based on new projection
+                    length = Math.abs(current[0] - start[0]);
+                    angle = (current[0] >= start[0]) ? 0 : Math.PI;
+                    snapType = 'horizontal';
+                } else if (isVert) {
+                    // Snap X to start X
+                    resultPoint = [start[0], current[1]];
+                    length = Math.abs(current[1] - start[1]);
+                    angle = (current[1] >= start[1]) ? Math.PI / 2 : -Math.PI / 2;
+                    snapType = 'vertical';
+                }
+            }
+
+            // Dimensions Override
             if (!isNaN(val1)) length = val1;
             if (!isNaN(val2)) angle = (val2 * Math.PI) / 180;
 
-            point = [
-                start[0] + Math.cos(angle) * length,
-                start[1] + Math.sin(angle) * length
-            ];
+            if (!isNaN(val1) || !isNaN(val2) || snapType !== 'none') {
+                resultPoint = [
+                    start[0] + Math.cos(angle) * length,
+                    start[1] + Math.sin(angle) * length
+                ];
+                // Round to nearest integer for grid coherence?
+                // If typed dimension is "50", we want exactly 50.0.
+                // But generally the sketcher works in grid units?
+                // If we return float, `canvasToSketch` might round it next frame? 
+                // No, this is for `currentPoint` state which drives rendering.
+                // We should keep floats if dimensions are specific.
+                // But for snaps (H/V), we want integers if start is integer.
+                if (snapType !== 'none' && isNaN(val1)) {
+                    resultPoint = [Math.round(resultPoint[0]), Math.round(resultPoint[1])];
+                }
+            }
         } else if (tool === 'circle') {
+            // ... existing circle logic ...
             if (!isNaN(val1)) {
                 const dx = current[0] - start[0];
                 const dy = current[1] - start[1];
                 const angle = Math.atan2(dy, dx);
-                point = [
+                resultPoint = [
                     start[0] + Math.cos(angle) * val1,
                     start[1] + Math.sin(angle) * val1
                 ];
@@ -159,13 +254,14 @@ export function useSketchCanvas({
             if (!isNaN(val1)) width = val1;
             if (!isNaN(val2)) height = val2;
 
-            point = [
+            resultPoint = [
                 start[0] + signX * width,
                 start[1] + signY * height
             ];
         }
-        return point;
-    }, [tool]);
+
+        return { point: resultPoint, type: snapType };
+    }, [tool, entities]);
 
     const handleMouseDown = useCallback((x: number, y: number) => {
         const point = canvasToSketch(x, y);
@@ -175,28 +271,32 @@ export function useSketchCanvas({
         setDynamicInput('');
         setSecondaryInput('');
         setInputTarget('primary');
+        setSnapState(undefined);
     }, [canvasToSketch]);
 
     const handleMouseMove = useCallback((x: number, y: number) => {
         if (!isDrawing || !startPoint) return;
         const rawPoint = canvasToSketch(x, y);
-        const snappedPoint = calculateSnappedPoint(startPoint, rawPoint, dynamicInput, secondaryInput);
+        const { point: snappedPoint, type: snapType } = calculateSnappedPoint(startPoint, rawPoint, dynamicInput, secondaryInput);
+
         setCurrentPoint(snappedPoint);
+        setSnapState({ type: snapType, point: snappedPoint });
     }, [isDrawing, canvasToSketch, dynamicInput, secondaryInput, startPoint, calculateSnappedPoint]);
 
     const handleMouseUp = useCallback(() => {
         if (!isDrawing || !startPoint || !currentPoint) return;
 
-        // Ensure we use the latest snapped point even if mouse didn't move after typing
-        const finalPoint = calculateSnappedPoint(startPoint, currentPoint, dynamicInput, secondaryInput);
+        // Ensure we use the latest snapped point
+        const { point: finalPoint } = calculateSnappedPoint(startPoint, currentPoint, dynamicInput, secondaryInput);
 
         // Prevent zero-length entities
-        if (startPoint[0] === finalPoint[0] && startPoint[1] === finalPoint[1]) {
+        if (Math.abs(startPoint[0] - finalPoint[0]) < 0.001 && Math.abs(startPoint[1] - finalPoint[1]) < 0.001) {
             setIsDrawing(false);
             setStartPoint(null);
             setCurrentPoint(null);
             setDynamicInput('');
             setSecondaryInput('');
+            setSnapState(undefined);
             return;
         }
 
@@ -213,6 +313,7 @@ export function useSketchCanvas({
         setCurrentPoint(null);
         setDynamicInput('');
         setSecondaryInput('');
+        setSnapState(undefined);
     }, [isDrawing, startPoint, currentPoint, tool, createEntity, dynamicInput, secondaryInput, calculateSnappedPoint]);
 
     const clear = useCallback(() => setEntities([]), []);
@@ -225,6 +326,7 @@ export function useSketchCanvas({
         isDrawing,
         startPoint,
         currentPoint,
+        snapState,
         dynamicInput,
         setDynamicInput,
         secondaryInput,
@@ -239,3 +341,4 @@ export function useSketchCanvas({
         clear
     };
 }
+
