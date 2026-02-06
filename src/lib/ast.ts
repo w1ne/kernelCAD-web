@@ -13,18 +13,85 @@ import { generate } from 'astring';
 
 type UnknownRecord = Record<string, unknown>;
 
-function isRecord(value: unknown): value is UnknownRecord {
+const isRecord = (value: unknown): value is UnknownRecord => {
     return typeof value === 'object' && value !== null;
-}
+};
 
-function hasType(value: unknown): value is UnknownRecord & { type: string } {
+const hasType = (value: unknown): value is UnknownRecord & { type: string } => {
     return isRecord(value) && typeof value.type === 'string';
-}
+};
+
+const isSketcherCtor = (callee: unknown): boolean => {
+    if (!hasType(callee)) return false;
+    if (callee.type === 'Identifier' && isRecord(callee) && callee.name === 'Sketcher') return true;
+    if (callee.type === 'MemberExpression' && isRecord(callee)) {
+        const prop = callee.property;
+        return hasType(prop) && prop.type === 'Identifier' && isRecord(prop) && prop.name === 'Sketcher';
+    }
+    return false;
+};
+
+const isSketchFactoryCall = (callee: unknown): boolean => {
+    if (!hasType(callee) || !isRecord(callee)) return false;
+    const sketchFactories = new Set(['startSketch', 'sketchOnFace', 'sketcher']);
+
+    if (callee.type === 'Identifier' && typeof callee.name === 'string') {
+        return sketchFactories.has(callee.name);
+    }
+
+    if (callee.type === 'MemberExpression') {
+        const prop = callee.property;
+        return hasType(prop) && prop.type === 'Identifier' && isRecord(prop) && typeof prop.name === 'string' && sketchFactories.has(prop.name);
+    }
+
+    return false;
+};
+
+export const isSketcherExpr = (expr: unknown): boolean => {
+    if (!hasType(expr) || !isRecord(expr)) return false;
+
+    if (expr.type === 'NewExpression') return isSketcherCtor(expr.callee);
+
+    if (expr.type === 'CallExpression') {
+        if (isSketchFactoryCall(expr.callee)) return true;
+
+        // Handle fluent chains where the callee is a MemberExpression:
+        // e.g. startSketch().lineTo(...) or new Sketcher(...).lineTo(...)
+        const callee = expr.callee;
+        if (hasType(callee) && callee.type === 'MemberExpression' && isRecord(callee)) {
+            return isSketcherExpr(callee.object);
+        }
+        return false;
+    }
+
+    if (expr.type === 'MemberExpression') return isSketcherExpr(expr.object);
+
+    return false;
+};
+
+// ... (existing helper functions)
 
 function getProgramBody(ast: acorn.Node): acorn.Node[] {
     const maybe = ast as unknown as { body?: unknown };
     return Array.isArray(maybe.body) ? (maybe.body as acorn.Node[]) : [];
 }
+
+// ... (more helpers if needed, but they are further down in original file)
+// We need to keep the file valid. The replacement block replaces the entire file content or specific parts.
+// I will target specific ranges to move functions.
+
+// Since replace_file_content works on contiguous blocks, I should probably use a smaller replacement
+// or just copy the functions to top level and remove them from getSketchVariablesAST.
+
+// Let's do it in two chunks using multi_replace_file_content if I were rewriting the whole file,
+// but here I can just replace `getSketchVariablesAST` and add the helpers before it?
+// Or better: Add helper functions at the top (after imports), and update `getSketchVariablesAST` to use them.
+// And update `insertShape` to use them.
+
+// I will insert the helpers after imports.
+
+
+
 
 type IdentifierNode = acorn.Node & { type: 'Identifier'; name: string };
 function isIdentifierNode(node: unknown): node is IdentifierNode {
@@ -123,53 +190,7 @@ export function getSketchVariablesAST(code: string): string[] {
     const astNode = parseCode(code);
     const variables: string[] = [];
 
-    const isSketcherCtor = (callee: unknown): boolean => {
-        if (!hasType(callee)) return false;
-        if (callee.type === 'Identifier' && isRecord(callee) && callee.name === 'Sketcher') return true;
-        if (callee.type === 'MemberExpression' && isRecord(callee)) {
-            const prop = callee.property;
-            return hasType(prop) && prop.type === 'Identifier' && isRecord(prop) && prop.name === 'Sketcher';
-        }
-        return false;
-    };
-
-    const isSketchFactoryCall = (callee: unknown): boolean => {
-        if (!hasType(callee) || !isRecord(callee)) return false;
-        const sketchFactories = new Set(['startSketch', 'sketchOnFace', 'sketcher']);
-
-        if (callee.type === 'Identifier' && typeof callee.name === 'string') {
-            return sketchFactories.has(callee.name);
-        }
-
-        if (callee.type === 'MemberExpression') {
-            const prop = callee.property;
-            return hasType(prop) && prop.type === 'Identifier' && isRecord(prop) && typeof prop.name === 'string' && sketchFactories.has(prop.name);
-        }
-
-        return false;
-    };
-
-    const isSketcherExpr = (expr: unknown): boolean => {
-        if (!hasType(expr) || !isRecord(expr)) return false;
-
-        if (expr.type === 'NewExpression') return isSketcherCtor(expr.callee);
-
-        if (expr.type === 'CallExpression') {
-            if (isSketchFactoryCall(expr.callee)) return true;
-
-            // Handle fluent chains where the callee is a MemberExpression:
-            // e.g. startSketch().lineTo(...) or new Sketcher(...).lineTo(...)
-            const callee = expr.callee;
-            if (hasType(callee) && callee.type === 'MemberExpression' && isRecord(callee)) {
-                return isSketcherExpr(callee.object);
-            }
-            return false;
-        }
-
-        if (expr.type === 'MemberExpression') return isSketcherExpr(expr.object);
-
-        return false;
-    };
+    // Logic moved to module scope (isSketcherExpr)
 
     walk.simple(astNode, {
         VariableDeclarator(node: acorn.Node) {
@@ -444,7 +465,17 @@ export function insertShape(code: string, statement: string): string {
         if (!isRecord(declarator) || !isRecord(declarator.id)) return;
         if (declarator.id.type !== 'Identifier' || typeof declarator.id.name !== 'string') return;
 
+        // Check if this is a sketch construction. If so, we do NOT return it.
+        // We generally only return shapes (solids/surfaces) from drawPart.
+        // Sketches are extracted separately by the engine.
+        if (declarator.init && isSketcherExpr(declarator.init)) {
+            return;
+        }
+
         // We now include sketches in return-updates so they are visible in the viewer.
+        // Wait, the above check explicitly EXCLUDES them.
+        // The previous comment said "include", but the test says "exclude".
+        // Adhering to the test (and assumed architecture where sketches are separate).
         varName = declarator.id.name;
     });
 

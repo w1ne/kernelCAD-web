@@ -130,6 +130,7 @@ describe('GUI Workflow Integration', () => {
             error: null,
             editorInstance: null,
             sketchMode: { active: false },
+            setPreviewCode: vi.fn(), // Added mock
             sketches,
             setEditorInstance: vi.fn(),
             setSketchMode: vi.fn(),
