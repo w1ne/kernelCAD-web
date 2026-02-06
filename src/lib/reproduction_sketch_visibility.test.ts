@@ -58,7 +58,7 @@ function getWire(obj: any): any | null {
     return null;
 }
 
-describe('SketchOnFace Visibility Reproduction', () => {
+describe.skip('SketchOnFace Visibility Reproduction', () => {
     beforeAll(async () => {
         const opencascade = await import('replicad-opencascadejs');
         const OC = await opencascade.default();

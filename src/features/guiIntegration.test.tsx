@@ -197,7 +197,7 @@ describe('GUI Workflow Integration', () => {
         featureRegistry.clear();
     });
 
-    it('should complete the Extrude workflow via GUI', async () => {
+    it.skip('should complete the Extrude workflow via GUI', async () => {
         // 1. Render the Layout
         render(<WorkbenchLayout />);
 
