@@ -197,7 +197,7 @@ describe('GUI Workflow Integration', () => {
         featureRegistry.clear();
     });
 
-    it.skip('should complete the Extrude workflow via GUI', async () => {
+    it('should complete the Extrude workflow via GUI', async () => {
         // 1. Render the Layout
         render(<WorkbenchLayout />);
 
@@ -210,7 +210,10 @@ describe('GUI Workflow Integration', () => {
         // Wait for dialog to appear. ExtrudeDialog has "Extrude Parameters" text?
         expect(await screen.findByText('sketch1 (XY Plane)')).toBeDefined();
 
-        // 4. Interaction: Select Sketch is already default (sketch1), Enter Distance
+        // 4. Interaction: Select Sketch explicitly (auto-select was removed)
+        const sketchSelect = screen.getByRole('combobox');
+        fireEvent.change(sketchSelect, { target: { value: 'sketch1' } });
+
         const distanceInput = screen.getByLabelText(/Distance/i);
         fireEvent.change(distanceInput, { target: { value: '50' } });
 

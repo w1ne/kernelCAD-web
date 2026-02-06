@@ -58,6 +58,8 @@ function getWire(obj: any): any | null {
     return null;
 }
 
+// Skipping because running OCCT in vitest environment is causing "Unknown Error" crashes (likely WASM/memory issues).
+// The visibility regression was fixed in ast.ts and verified by ast.test.ts.
 describe.skip('SketchOnFace Visibility Reproduction', () => {
     beforeAll(async () => {
         const opencascade = await import('replicad-opencascadejs');
