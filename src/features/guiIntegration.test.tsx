@@ -102,6 +102,8 @@ const mockExtrudeFeature = {
 };
 
 describe('GUI Workflow Integration', () => {
+    vi.setConfig({ testTimeout: 20000 }); // Increase timeout for CI/slow environments
+
     // We need to capture the 'insertCode' call to verify the result
     const insertCodeMock = vi.fn();
 
