@@ -465,17 +465,8 @@ export function insertShape(code: string, statement: string): string {
         if (!isRecord(declarator) || !isRecord(declarator.id)) return;
         if (declarator.id.type !== 'Identifier' || typeof declarator.id.name !== 'string') return;
 
-        // Check if this is a sketch construction. If so, we do NOT return it.
-        // We generally only return shapes (solids/surfaces) from drawPart.
-        // Sketches are extracted separately by the engine.
-        if (declarator.init && isSketcherExpr(declarator.init)) {
-            return;
-        }
-
         // We now include sketches in return-updates so they are visible in the viewer.
-        // Wait, the above check explicitly EXCLUDES them.
-        // The previous comment said "include", but the test says "exclude".
-        // Adhering to the test (and assumed architecture where sketches are separate).
+        // This ensures they appear in the Scene Browser and are rendered.
         varName = declarator.id.name;
     });
 
