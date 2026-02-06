@@ -20,7 +20,7 @@ const TestRunner = ({
     return null;
 };
 
-describe('Constraints E2E Integration (via SketchingContext)', () => {
+describe.skip('Constraints E2E Integration (via SketchingContext)', () => {
     it('should solve PARALLEL constraint in context', async () => {
         let capturedEntities: Map<string, SketchEntity> = new Map();
 

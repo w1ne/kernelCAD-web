@@ -41,11 +41,21 @@ export class HoverManager {
         });
 
         const winner = candidates[0];
-        const type = winner.object.userData.type as InteractionType;
+        const userData = winner.object.userData;
+        const type = userData.type as InteractionType;
+
+        // Resolve ID: If consolidated mesh having faceMap, lookup faceId from faceIndex
+        let id = userData.id;
+        if (userData.faceMap && winner.faceIndex != null) {
+            const mappedId = userData.faceMap[winner.faceIndex];
+            if (mappedId !== undefined) {
+                id = mappedId;
+            }
+        }
 
         return {
             type,
-            id: winner.object.userData.id,
+            id: id,
             object: winner.object,
             point: winner.point
         };

@@ -28,7 +28,7 @@ Implement a dynamic debounce that increases with code length or previous executi
 #### [ ] Offload Edge Mesh to Worker
 Move the `EdgesGeometry` generation (or equivalent wireframe extraction) to the Web Worker. The worker should return both the face mesh AND the edge lines, so the Viewer can simply upload them to the GPU.
 
-#### [ ] Consolidated Mesh Rendering
+#### [x] Consolidated Mesh Rendering
 Combine all faces of a single `Shape` into a single `BufferGeometry`. 
 - Use groups or multi-material support if face-specific selection is needed.
 - This reduces the component count from $O(\text{faces})$ to $O(\text{shapes})$.

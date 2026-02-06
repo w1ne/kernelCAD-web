@@ -1,7 +1,7 @@
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Grid, TransformControls } from "@react-three/drei";
 import * as THREE from "three";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import type { GeometryResult, FaceGeometry, SketchGeometry } from "../lib/geometryEngine";
 import type { ViewMode3D } from "../types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
@@ -25,64 +25,7 @@ interface ViewerProps {
     viewMode3D: ViewMode3D;
 }
 
-function FaceMesh({
-    face,
-    viewMode3D,
-    isSelected,
-    onClick
-}: {
-    face: FaceGeometry;
-    viewMode3D: ViewMode3D;
-    isSelected: boolean;
-    onClick: (e: ThreeEvent<MouseEvent>) => void;
-}) {
 
-
-    const threeGeometry = useMemo(() => {
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-        geo.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-        geo.setIndex(new THREE.BufferAttribute(face.indices, 1));
-        return geo;
-    }, [face]);
-
-    const color = isSelected ? CAD_COLORS.selection : 0x6366f1; // var(--selection-blue) : default blue
-
-    const edgesGeo = useMemo(() =>
-        new THREE.EdgesGeometry(threeGeometry, 15), [threeGeometry]
-    );
-
-    if (viewMode3D === 'wireframe') {
-        return (
-            <lineSegments
-                geometry={edgesGeo}
-                onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(e); }}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                userData={{ type: 'FACE', id: face.faceId, ownerId: (onClick as any).ownerId }}
-            >
-                <lineBasicMaterial color={color} />
-            </lineSegments>
-        );
-    }
-
-    return (
-        <group
-            onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(e); }}
-        >
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <mesh geometry={threeGeometry} userData={{ type: 'FACE', id: face.faceId, ownerId: (onClick as any).ownerId }}>
-                {/* Use meshLambertMaterial but slightly adjusted for standard look */}
-                <meshLambertMaterial color={color} flatShading={viewMode3D === 'shadedWithEdges'} />
-            </mesh>
-            {viewMode3D === 'shadedWithEdges' && (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                <lineSegments geometry={edgesGeo} userData={{ type: 'EDGE', id: `edge-${face.faceId}`, ownerId: (onClick as any).ownerId }}>
-                    <lineBasicMaterial color={0x000000} />
-                </lineSegments>
-            )}
-        </group>
-    );
-}
 
 function SketchLine({
     sketch,
@@ -229,7 +172,73 @@ function GhostShape({
     );
 }
 
-function Shape({
+// Consolidated Geometry Helper
+function useConsolidatedGeometry(faces: FaceGeometry[]) {
+    return useMemo(() => {
+        if (faces.length === 0) return { geometry: null, faceMap: null };
+
+        // 1. Calculate totals
+        let totalVertices = 0;
+        let totalIndices = 0;
+        faces.forEach(f => {
+            totalVertices += f.vertices.length;
+            totalIndices += f.indices.length;
+        });
+
+        // 2. Allocate
+        const positionArray = new Float32Array(totalVertices);
+        const normalArray = new Float32Array(totalVertices); // Normals match vertex count (x3)
+        const indexArray = new Uint32Array(totalIndices);
+
+        // Map triangle index to faceId
+        // totalIndices contains 3 * numTriangles
+        const faceMap = new Int32Array(totalIndices / 3);
+
+        // 3. Merge
+        let currentVertexOffset = 0; // In float count (not vertex count, wait. vertices is Float32Array of coords)
+        // Attribute access: vertices[i]
+        // But indices reference vertex INDEX (v0, v1..), not float index.
+        // Vertex count = vertices.length / 3
+
+        let vertexCountOffset = 0;
+        let indexOffset = 0;
+        let triangleIndexOffset = 0;
+
+        faces.forEach(f => {
+            // Copy Positions
+            positionArray.set(f.vertices, currentVertexOffset);
+
+            // Copy Normals
+            normalArray.set(f.normals, currentVertexOffset);
+
+            // Copy Indices (adjusted)
+            const numVertices = f.vertices.length / 3;
+            for (let i = 0; i < f.indices.length; i++) {
+                indexArray[indexOffset + i] = f.indices[i] + vertexCountOffset;
+            }
+
+            // Fill FaceMap
+            const numTriangles = f.indices.length / 3;
+            for (let i = 0; i < numTriangles; i++) {
+                faceMap[triangleIndexOffset + i] = f.faceId;
+            }
+
+            currentVertexOffset += f.vertices.length;
+            vertexCountOffset += numVertices;
+            indexOffset += f.indices.length;
+            triangleIndexOffset += numTriangles;
+        });
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
+        geometry.setAttribute('normal', new THREE.BufferAttribute(normalArray, 3));
+        geometry.setIndex(new THREE.BufferAttribute(indexArray, 1));
+
+        return { geometry, faceMap };
+    }, [faces]);
+}
+
+function ConsolidatedShape({
     geometry,
     shapeIndex,
     viewMode3D,
@@ -250,47 +259,138 @@ function Shape({
         toggleSelection
     } = useWorkbench();
 
-    // Inject ownerId into the onClick handler for FaceMesh to pick up
-    const handleClick = useMemo(() => {
-        const fn = (e?: ThreeEvent<MouseEvent>) => {
-            // Check for modifiers
-            const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
+    const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
 
-            if (name) {
-                if (isMulti) {
-                    toggleSelection(name, true);
-                    return;
-                }
+    // Compute edges for the entire shape ONCE
+    const edgesGeo = useMemo(() => {
+        if (!mergedGeometry) return null;
+        return new THREE.EdgesGeometry(mergedGeometry, 15);
+    }, [mergedGeometry]);
+
+    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+        // e.stopPropagation(); // Stop propagation to other objects, but allow bubbling if needed? 
+        // In R3F, stopPropagation() stops it from hitting objects behind this one. Good.
+        e.stopPropagation();
+
+        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
+
+        if (name) {
+            if (isMulti) {
+                toggleSelection(name, true);
+                return;
             }
+        }
 
-            // Normal click
-            setSelectedSketchName(null);
+        setSelectedSketchName(null);
 
-            // Extract face ID from the clicked object's userData
-            const userData = e?.object?.userData as { id?: number } | undefined;
-            const clickedFaceId = userData?.id;
-            const faceId = (typeof clickedFaceId === 'number') ? clickedFaceId : -1;
+        // Resolve Face ID
+        let faceId = -1;
+        // Check userData first (if legacy or direct)
+        if (e.object.userData.faceMap && e.faceIndex != null) {
+            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
+        } else if (typeof e.object.userData.id === 'number') {
+            faceId = e.object.userData.id;
+        }
 
-            setSelectedFace({ shapeIndex, faceId });
-            if (name) setSelectedItemId(name);
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/immutability
-        (fn as any).ownerId = name;
-        return fn;
-    }, [name, setSelectedFace, setSelectedItemId, setSelectedSketchName, shapeIndex, toggleSelection]);
+        setSelectedFace({ shapeIndex, faceId });
+        if (name) setSelectedItemId(name);
+
+        // Tag event with ownerId for legacy listeners if any
+        // (e as any).ownerId = name; 
+    }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection]);
+
+
+    // Color logic
+    const color = isSelected ? CAD_COLORS.selection : 0x808080;
+
+    // Memoize material to avoid flickering (moved before early return)
+    const material = useMemo(() => new THREE.MeshLambertMaterial({
+        color,
+        flatShading: viewMode3D === 'shadedWithEdges'
+    }), [color, viewMode3D]);
+
+    if (!mergedGeometry) return null;
 
     return (
         <group>
-            {geometry.faces.map((face) => (
-                <FaceMesh
-                    key={face.faceId}
-                    face={face}
-                    viewMode3D={viewMode3D}
-                    isSelected={isSelected || (selectedFace?.shapeIndex === shapeIndex && selectedFace?.faceId === face.faceId)}
-                    onClick={handleClick}
+            <mesh
+                geometry={mergedGeometry}
+                material={material}
+                onClick={handleClick}
+                userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: name }}
+            />
+
+            {/* Edges */}
+            {viewMode3D === 'shadedWithEdges' && edgesGeo && (
+                <lineSegments geometry={edgesGeo} renderOrder={500}>
+                    <lineBasicMaterial color={0x000000} />
+                </lineSegments>
+            )}
+
+            {/* Selected Face Overlay */}
+            {selectedFace?.shapeIndex === shapeIndex && (
+                <FaceSelectionOverlay
+                    face={geometry.faces.find(f => f.faceId === selectedFace.faceId)}
+                    isSelected={true}
                 />
-            ))}
+            )}
         </group>
+    );
+}
+
+// Helper to render just the selected/hovered face on top
+function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry, isSelected: boolean }) {
+    const geometry = useMemo(() => {
+        if (!face) return null;
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
+        geo.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+        geo.setIndex(new THREE.BufferAttribute(face.indices, 1));
+        return geo;
+    }, [face]);
+
+    if (!face || !geometry) return null;
+
+    return (
+        <mesh geometry={geometry} renderOrder={1001}>
+            {/* Use polygonOffset to prevent z-fighting */}
+            <meshBasicMaterial
+                color={CAD_COLORS.selection}
+                transparent={!isSelected}
+                opacity={isSelected ? 1.0 : 0.3}
+                depthTest={true}
+                polygonOffset
+                polygonOffsetFactor={-1}
+            />
+        </mesh>
+    );
+}
+
+// Shape Wrapper (Renamed from original Shape, but keeping the name 'Shape' for compatibility if exported, 
+// though it is not exported. I will replace the internal Shape function)
+// Actually, I'll name it Shape to match the existing component name in the file.
+
+function Shape({
+    geometry,
+    shapeIndex,
+    viewMode3D,
+    isSelected,
+    name
+}: {
+    geometry: GeometryResult;
+    shapeIndex: number;
+    viewMode3D: ViewMode3D;
+    isSelected: boolean;
+    name: string | undefined;
+}) {
+    return (
+        <ConsolidatedShape
+            geometry={geometry}
+            shapeIndex={shapeIndex}
+            viewMode3D={viewMode3D}
+            isSelected={isSelected}
+            name={name}
+        />
     );
 }
 
@@ -532,8 +632,28 @@ function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
 
 function InteractionHandler({ setHovered, setSnap }: { setHovered: (h: HoverResult | null) => void, setSnap: (s: SnapResult | null) => void }) {
     const { camera, scene, raycaster, pointer } = useThree();
+    const lastCheckTime = useRef(0);
+    const lastPointer = useRef(new THREE.Vector2(0, 0));
 
-    useFrame(() => {
+    useFrame((state) => {
+        const now = state.clock.elapsedTime;
+        // Throttle to ~20 FPS (every 0.05s) to save massive CPU on idle
+        if (now - lastCheckTime.current < 0.05) return;
+
+        // Optimization: Only raycast if pointer moved significantly
+        const pointerDist = lastPointer.current.distanceTo(pointer);
+        if (pointerDist < 0.001) {
+            // Even if mouse didn't move, we might need to update if the model changed (geometries updated).
+            // But usually model update triggers re-render anyway. 
+            // Logic: If static scene + static mouse, NO RAYCAST.
+            // We'll update the timestamp though if we skipped to avoid stalling forever if something moved under cursor?
+            // Actually, if scene moves, we probably want to update.
+            // But for now, mouse movement is the primary trigger for hover changes.
+        }
+
+        lastCheckTime.current = now;
+        lastPointer.current.copy(pointer);
+
         // Update raycaster
         raycaster.setFromCamera(pointer, camera);
 
@@ -541,7 +661,7 @@ function InteractionHandler({ setHovered, setSnap }: { setHovered: (h: HoverResu
         const intersects = raycaster.intersectObjects(scene.children, true);
 
         const best = HoverManager.getBestHover(intersects);
-        if (best) console.log('Hover hit:', best.type, best.id);
+        // Avoid state thrashing
         setHovered(best);
         setSnap(SnapManager.getSnapFromHover(best));
     });
@@ -553,11 +673,6 @@ function SnapIndicator({ snap }: { snap: SnapResult | null }) {
     if (!snap) return null;
 
     const { type, position } = snap;
-
-    // Choose icon based on snap type
-    // ENDPOINT: Square
-    // MIDPOINT: Triangle
-    // CENTER: Circle (if added)
 
     return (
         <group position={position}>
@@ -583,45 +698,48 @@ function SnapIndicator({ snap }: { snap: SnapResult | null }) {
 }
 
 
-
 // Fixed HighlightOverlay logic
-function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
-
-
-    useFrame(() => {
-        // Ensure overlay tracks the object if it moves (e.g. gizmo dragging)
-        if (hovered?.object) {
-            // This component re-renders often anyway due to parent state?
-            // Actually no, setHovered in parent triggers re-render.
-        }
-    });
-
+function BetterHighlightOverlay({ hovered, geometries }: { hovered: HoverResult | null, geometries: GeometryResult[] }) {
     if (!hovered || !hovered.object) return null;
-    const { type, object } = hovered;
+    const { type, object, id } = hovered;
 
-    // Use <primitive> with a CLONED material? No, that modifies original object.
-    // We want to render a COPY.
+    if (type === 'FACE') {
+        // If it's a consolidated mesh, we need to extract the specific face geometry
+        if (object.userData.faceMap) {
+            // Find the face
+            const shapeIndex = object.userData.shapeIndex as number;
+            const faceId = id as number;
 
-    if (type === 'FACE' && object instanceof THREE.Mesh) {
-        return (
-            <mesh
-                geometry={object.geometry}
-                matrix={object.matrixWorld}
-                matrixAutoUpdate={false}
-                renderOrder={1000}
-            >
-                <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.3} depthTest={false} />
-                {/* IDK about depthTest false, might show through everything. Let's try true first. */}
-            </mesh>
-        );
+            if (typeof shapeIndex === 'number' && geometries[shapeIndex]) {
+                const face = geometries[shapeIndex].faces.find(f => f.faceId === faceId);
+                if (face) {
+                    return (
+                        <FaceSelectionOverlay face={face} isSelected={false} />
+                    );
+                }
+            }
+            return null;
+        }
+
+        // Legacy/Direct Mesh
+        if (object instanceof THREE.Mesh) {
+            return (
+                <mesh
+                    geometry={object.geometry}
+                    matrix={object.matrixWorld}
+                    matrixAutoUpdate={false}
+                    renderOrder={1000}
+                >
+                    <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.3} depthTest={false} />
+                </mesh>
+            );
+        }
     }
 
     if (type === 'EDGE') {
-        // Could be Line or LineSegments
-        // Assuming geometry is compatible
         if (object instanceof THREE.Line || object instanceof THREE.LineSegments) {
             return (
-                <lineSegments // Use lineSegments generic wrapper
+                <lineSegments
                     geometry={object.geometry}
                     matrix={object.matrixWorld}
                     matrixAutoUpdate={false}
@@ -634,7 +752,6 @@ function BetterHighlightOverlay({ hovered }: { hovered: HoverResult | null }) {
     }
 
     if (type === 'VERTEX') {
-        // It's a sphere mesh
         if (object instanceof THREE.Mesh) {
             return (
                 <mesh
@@ -755,7 +872,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <directionalLight position={[-5, -10, -5]} intensity={0.3} />
 
                 <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
-                <BetterHighlightOverlay hovered={hoveredItem} />
+                <BetterHighlightOverlay hovered={hoveredItem} geometries={geometries} />
                 <SnapIndicator snap={snapPoint} />
                 <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
