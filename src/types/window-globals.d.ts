@@ -13,6 +13,7 @@ declare global {
     getSelectedFace?: () => { shapeIndex: number; faceId: number } | null;
 
     getGeometries?: () => unknown;
+    getPreviewGeometries?: () => unknown;
     getSketches?: () => unknown;
     isComputing?: () => boolean;
     getExecutionCount?: () => number;

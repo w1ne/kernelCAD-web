@@ -113,6 +113,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         isComputing: geometryCtx.isComputing,
         executionCount: geometryCtx.executionCount,
         executeGeometry: geometryCtx.executeGeometry,
+        previewGeometries: geometryCtx.previewGeometries,
+        setPreviewCode: geometryCtx.setPreviewCode,
         // Sketching context
         entities: sketchingCtx.entities,
         constraints: sketchingCtx.constraints,
@@ -162,6 +164,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         geometryCtx.isComputing,
         geometryCtx.executionCount,
         geometryCtx.executeGeometry,
+        geometryCtx.previewGeometries,
+        geometryCtx.setPreviewCode,
         sketchingCtx.entities,
         sketchingCtx.constraints,
         sketchingCtx.selectedEntityIds,
@@ -186,6 +190,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         window.getSelectedFace = () => faceSelection.selectedFace;
 
         window.getGeometries = () => geometryCtx.geometries;
+        window.getPreviewGeometries = () => geometryCtx.previewGeometries;
 
         window.getSketches = () => geometryCtx.sketchesGeometries;
 
@@ -202,6 +207,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
             delete window.__TEST_SELECT_SKETCH;
             delete window.getSelectedFace;
             delete window.getGeometries;
+            delete window.getPreviewGeometries;
             delete window.getSketches;
             delete window.isComputing;
             delete window.getExecutionCount;

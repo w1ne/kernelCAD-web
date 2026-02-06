@@ -2,16 +2,19 @@ import { createPlaneConstructorCode, isValidPlaneData } from '../../lib/planeUti
 import React, { useMemo } from 'react';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import ParameterDialog from '../Dialogs/ParameterDialog';
-import { ExtrudeDialog } from '../Dialogs/ExtrudeDialog';
-import { ExtrudeFromFaceDialog } from '../Dialogs/ExtrudeFromFaceDialog';
-import { SketchOnFaceDialog } from '../Dialogs/SketchOnFaceDialog';
-import { RevolveDialog } from '../Dialogs/RevolveDialog';
-import { FilletDialog } from '../Dialogs/FilletDialog';
-import { ChamferDialog } from '../Dialogs/ChamferDialog';
-import { PlaneSelectorDialog } from '../Dialogs/PlaneSelectorDialog';
-import { OffsetPlaneDialog } from '../Dialogs/OffsetPlaneDialog';
+import { ExtrudePanel } from '../PropertiesPanel/ExtrudePanel';
+import { ExtrudeFromFacePanel } from '../PropertiesPanel/ExtrudeFromFacePanel';
+import { SketchOnFacePanel } from '../PropertiesPanel/SketchOnFacePanel';
+import { RevolvePanel } from '../PropertiesPanel/RevolvePanel';
+import { FilletPanel } from '../PropertiesPanel/FilletPanel';
+import { ChamferPanel } from '../PropertiesPanel/ChamferPanel';
+import { PlaneSelectorPanel } from '../PropertiesPanel/PlaneSelectorPanel';
+import { OffsetPlanePanel } from '../PropertiesPanel/OffsetPlanePanel';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
+import { CommandPalette } from '../CommandPalette/CommandPalette';
+import { useCommandRegistry } from '../../hooks/useCommandRegistry';
+import { Box, Circle, Layers, Scissors, Square, Triangle } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
 import { featureRegistry } from '../../features/FeatureRegistry';
@@ -23,7 +26,7 @@ import { generateSketchOnFaceCode } from '../../features/core/sketchOnFace.featu
 import { generateExtrudeCode } from '../../features/core/extrude.feature';
 import { generateRevolveCode } from '../../features/core/revolve.feature';
 import { generateFilletCode, generateChamferCode, generateBooleanCode } from '../../features/core/modifiers.feature';
-import { BooleanDialog } from '../Dialogs/BooleanDialog';
+import { BooleanPanel } from '../PropertiesPanel/BooleanPanel';
 import { Loader2 } from 'lucide-react';
 
 // Modular Panels
@@ -59,6 +62,7 @@ export function WorkbenchLayout() {
         startFaceSelection,
         cancelFaceSelection,
         codeContext,
+        previewGeometries,
     } = useWorkbench();
 
     // Expose helpers for E2E testing
@@ -141,6 +145,131 @@ export function WorkbenchLayout() {
         }
     });
 
+    // Register Commands for Palette
+    const { registerCommand } = useCommandRegistry();
+
+    // Use a ref to store the latest values needed by command actions
+    // This allows us to have a stable effect for command registration
+    const actionContextRef = React.useRef({
+        selectedFace,
+        insertCode,
+        setCode,
+        setActiveDialog,
+        code,
+        codeContext
+    });
+
+    // Update the ref on every render
+    React.useEffect(() => {
+        actionContextRef.current = {
+            selectedFace,
+            insertCode,
+            setCode,
+            setActiveDialog,
+            code,
+            codeContext
+        };
+    });
+
+    React.useEffect(() => {
+        const unregisters: (() => void)[] = [];
+
+        // Modeling Commands
+        unregisters.push(registerCommand({
+            id: 'extrude',
+            label: 'Extrude',
+            section: 'Modeling',
+            shortcut: 'E',
+            icon: <Box className="w-4 h-4" />,
+            action: () => {
+                const { selectedFace, insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const featureId = selectedFace ? 'extrudeFromFace' : 'extrude';
+                const feature = featureRegistry.get(featureId);
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'revolve',
+            label: 'Revolve',
+            section: 'Modeling',
+            shortcut: 'R',
+            icon: <Circle className="w-4 h-4" />,
+            action: () => {
+                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const feature = featureRegistry.get('revolve');
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'fillet',
+            label: 'Fillet',
+            section: 'Modeling',
+            shortcut: 'F',
+            icon: <Circle className="w-4 h-4" />,
+            action: () => {
+                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const feature = featureRegistry.get('fillet');
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'chamfer',
+            label: 'Chamfer',
+            section: 'Modeling',
+            shortcut: 'C',
+            icon: <Triangle className="w-4 h-4" />,
+            action: () => {
+                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const feature = featureRegistry.get('chamfer');
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'boolean-union',
+            label: 'Boolean Union',
+            section: 'Modeling',
+            shortcut: 'J',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const feature = featureRegistry.get('union');
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'boolean-cut',
+            label: 'Boolean Cut',
+            section: 'Modeling',
+            shortcut: 'X',
+            icon: <Scissors className="w-4 h-4" />,
+            action: () => {
+                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
+                const feature = featureRegistry.get('cut');
+                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            }
+        }));
+
+        // Contextual Commands
+        unregisters.push(registerCommand({
+            id: 'sketch-plane-selector',
+            label: 'New Sketch (Select Plane)',
+            section: 'General',
+            shortcut: 'S',
+            icon: <Square className="w-4 h-4" />,
+            action: () => {
+                const { setActiveDialog } = actionContextRef.current;
+                setActiveDialog('planeSelector');
+            }
+        }));
+
+        return () => unregisters.forEach(u => u());
+    }, [registerCommand]); // Only stable dependencies
+
     const handleToolClick = (feature: Feature) => {
         if (feature.parameters && feature.parameters.length > 0) {
             setActiveDialog(feature.id);
@@ -196,6 +325,7 @@ export function WorkbenchLayout() {
 
                 <ViewerPanel
                     geometries={geometries}
+                    previewGeometries={previewGeometries}
                     sketchesGeometries={sketchesGeometries}
                     showSketches={showSketches}
                     viewMode3D={viewMode3D}
@@ -272,18 +402,21 @@ export function WorkbenchLayout() {
 
             {/* Dialogs */}
             {activeDialog === 'planeSelector' && (
-                <PlaneSelectorDialog
+                <PlaneSelectorPanel
                     onSelect={(plane) => {
                         setSketchMode({ active: true, plane, currentSketch: null, tool: 'line' });
                         setActiveDialog(null);
                     }}
-                    onSelectFace={startFaceSelection}
+                    onSelectFace={() => {
+                        setActiveDialog(null);
+                        startFaceSelection();
+                    }}
                     onCancel={() => setActiveDialog(null)}
                 />
             )}
 
             {activeDialog === 'extrude' && (
-                <ExtrudeDialog
+                <ExtrudePanel
                     sketchName={selectedSketchName || undefined}
                     onConfirm={({ sketchName, distance, direction }) => {
                         const extrudeCode = generateExtrudeCode(codeContext, sketchName, distance, direction === 'normal' ? 'default' : direction);
@@ -295,7 +428,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'extrudeFromFace' && (
-                <ExtrudeFromFaceDialog
+                <ExtrudeFromFacePanel
                     onConfirm={(distance, direction) => {
                         if (activeFeature && activeFeature.execute && selectedFace) {
                             const finalDistance = direction === 'reversed' ? -distance : distance;
@@ -322,7 +455,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'sketchOnFace' && selectedFace && (
-                <SketchOnFaceDialog
+                <SketchOnFacePanel
                     defaultName={codeContext.generateUniqueName('sketch')}
                     faceId={selectedFace.faceId}
                     shapeName={codeContext.getVariableAtIndex(selectedFace.shapeIndex) || 'Anonymous Shape'}
@@ -379,7 +512,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'revolve' && (
-                <RevolveDialog
+                <RevolvePanel
                     sketchName={selectedSketchName || undefined}
                     onConfirm={({ sketchName, angle, axis }) => {
                         const revolveCode = generateRevolveCode(codeContext, sketchName, angle, axis);
@@ -391,7 +524,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'fillet' && (
-                <FilletDialog
+                <FilletPanel
                     onConfirm={({ targetName, radius, filterType }) => {
                         const codeSnippet = generateFilletCode(codeContext, targetName, radius, filterType);
                         insertCode(codeSnippet);
@@ -402,7 +535,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'chamfer' && (
-                <ChamferDialog
+                <ChamferPanel
                     onConfirm={({ targetName, distance, filterType }) => {
                         const codeSnippet = generateChamferCode(codeContext, targetName, distance, filterType);
                         insertCode(codeSnippet);
@@ -413,7 +546,7 @@ export function WorkbenchLayout() {
             )}
 
             {['union', 'cut', 'intersect'].includes(activeDialog || '') && (
-                <BooleanDialog
+                <BooleanPanel
                     type={activeDialog === 'union' ? 'fuse' : (activeDialog as 'cut' | 'intersect')}
                     onConfirm={({ baseName, toolName, type }) => {
                         const codeSnippet = generateBooleanCode(codeContext, baseName, toolName, type);
@@ -425,7 +558,7 @@ export function WorkbenchLayout() {
             )}
 
             {activeDialog === 'offsetPlane' && (
-                <OffsetPlaneDialog
+                <OffsetPlanePanel
                     onConfirm={({ basePlaneId, offset }) => {
                         if (basePlaneId.startsWith('face-')) {
                             const faceId = parseInt(basePlaneId.replace('face-', '').split('-')[0]);
@@ -463,7 +596,7 @@ export function WorkbenchLayout() {
                             }
                         } else {
                             const basePlane = planes.find(p => p.id === basePlaneId);
-                            if (basePlane && basePlane.type === 'base') {
+                            if (basePlane) {
                                 const [ox, oy, oz] = basePlane.origin;
                                 const [nx, ny, nz] = basePlane.normal;
                                 const newOrigin: [number, number, number] = [
@@ -475,7 +608,7 @@ export function WorkbenchLayout() {
                                 insertCode(`const ${uniqueName} = ${createPlaneConstructorCode(newOrigin, basePlane.normal)};\n`);
                                 addPlane({
                                     id: uniqueName,
-                                    name: `Offset Plane ${planes.length - 2}`,
+                                    name: basePlane.type === 'base' ? `Offset Plane ${planes.length - 2}` : `Offset from ${basePlane.name}`,
                                     type: 'offset',
                                     origin: newOrigin,
                                     normal: [...basePlane.normal] as [number, number, number],
@@ -506,6 +639,8 @@ export function WorkbenchLayout() {
                     }))}
                 />
             )}
+            {/* Command Palette Overlay */}
+            <CommandPalette />
         </div>
     );
 }

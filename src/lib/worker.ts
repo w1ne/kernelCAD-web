@@ -139,25 +139,27 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
     (isRecord(face.plane) ? face.plane : null) ??
     (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
 
-  if (!p) {
-    // Preferred fallback: use Replicad helper to compute a full plane.
-    try {
-      const makePlaneFromFace = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
-      if (typeof makePlaneFromFace === 'function') {
-        const plane = makePlaneFromFace(face);
-        const origin = tryVec3((plane as UnknownRecord).origin);
-        const norm = tryVec3((plane as UnknownRecord).zDir) ?? tryVec3((plane as UnknownRecord).normal);
-        const xDir = tryVec3((plane as UnknownRecord).xDir);
-        const yDir = tryVec3((plane as UnknownRecord).yDir);
+  // Preferred strategy: use Replicad helper if available
+  try {
+    const makePlaneFromFaceFn = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
+    if (typeof makePlaneFromFaceFn === 'function') {
+      const planeObj = makePlaneFromFaceFn(face);
+      if (isRecord(planeObj)) {
+        const origin = tryVec3(planeObj.origin);
+        const norm = tryVec3(planeObj.zDir) ?? tryVec3(planeObj.normal);
+        const xDir = tryVec3(planeObj.xDir);
+        const yDir = tryVec3(planeObj.yDir);
 
         if (origin && norm) {
           return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
-    } catch (e) {
-      if (DEBUG) console.warn('Worker: makePlaneFromFace extraction failed', e);
     }
+  } catch (e) {
+    if (DEBUG) console.warn('Worker: replicad.makePlaneFromFace failed', e);
+  }
 
+  if (!p) {
     // Fallback for native Replicad objects: use center and normalAt
     try {
       const center = getFn(face, 'center') ? (face as Record<string, unknown>).center : (face as Record<string, unknown>).center;

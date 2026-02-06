@@ -30,6 +30,16 @@ export const chamfer = (shape: unknown, distance: number, filter?: unknown) => {
   return fn.call(shape, distance, filter);
 };
 
+/**
+ * CAD Query style selection helper.
+ * Proxies to Replicad's selection methods (faces, edges, etc.)
+ */
+export const select = (shape: unknown, query: string, type: 'faces' | 'edges' = 'faces') => {
+  const fn = getFn(shape, type);
+  if (!fn) throw new Error(`Shape does not support ${type} selection`);
+  return fn.call(shape, query);
+};
+
 export const findPlanarFace = (shape: unknown): { face: unknown; index: number } => {
   if (!isRecord(shape) || !Array.isArray(shape.faces)) throw new Error('Shape has no faces');
 

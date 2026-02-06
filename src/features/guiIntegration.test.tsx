@@ -1,4 +1,4 @@
-// @vitest-environment happy-dom
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import React, { useState } from 'react';
@@ -22,6 +22,13 @@ vi.mock('../components/Viewer', () => ({
 
 vi.mock('../components/Editor', () => ({
     default: () => <div data-testid="mock-editor">Editor</div>
+}));
+
+// Mock @react-three/drei to prevent happy-dom hang
+vi.mock('@react-three/drei', () => ({
+    OrbitControls: () => null,
+    Grid: () => null,
+    TransformControls: () => null
 }));
 
 // Use vi.hoisted to ensure mock is initialized before imports
@@ -157,6 +164,16 @@ describe('GUI Workflow Integration', () => {
                 generateUniqueName: (base: string) => base,
                 getVariableAtIndex: (_i: number) => 'shape0',
             },
+            // Sketching Context Mocks
+            entities: new Map(),
+            constraints: [],
+            selectedEntityIds: [],
+            addEntity: vi.fn(),
+            updateEntity: vi.fn(),
+            addConstraint: vi.fn(),
+            selectEntity: vi.fn(),
+            clearSelection: vi.fn(),
+            solve: vi.fn(),
         } as any;
     };
 

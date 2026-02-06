@@ -106,6 +106,19 @@ Wraps the Replicad Sketcher API to handle edge cases robustly:
     - `src/features/standardWorkflows.test.ts`: Validates end-to-end code generation and execution logic.
     - `src/features/guiIntegration.test.tsx`: Validates UI (Toolbar -> Dialog -> Code) wiring using `happy-dom`.
 
+### 9. Parametric Engine (`src/lib/constraints/solver.ts`)
+A dedicated 2D constraint solver that enforces geometric relationships between sketch entities.
+- **Iterative Solver**: Uses an iterative relaxation method to satisfy constraints (Coincident, Parallel, Tangent, etc.).
+- **Entities**: Works on `Points`, `Lines`, and `Circles`. complex constraints are broken down into point-level operations.
+- **Integration**: The `ConstraintSolver` class takes a `SolverState` (entities + constraints) and modifies entity coordinates in-place to minimize error.
+
+### 10. Interaction System (`src/features/interaction/HoverManager.ts`)
+A prioritized raycasting system for detecting user intent in the 3D viewport.
+- **Priority Logic**: Resolves ambiguity when multiple objects are under the cursor (Vertex > Edge > Face).
+- **Depth Tolerance**: Uses a custom tolerance window to prioritize "important" geometry (like vertices) even if they are slightly behind a face.
+- **Result**: Returns a typed `HoverResult` used for highlighting and selection.
+
+
 ## Data Flow
 1.  **Selection**: User selects a tool from the **Toolbar**.
 2.  **Execution**: 

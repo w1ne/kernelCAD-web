@@ -4,6 +4,7 @@ import { getSketchVariablesAST } from '../lib/ast';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
+    previewGeometries: GeometryResult[];
     sketchesGeometries: SketchGeometry[];
     showSketches: boolean;
     toggleSketchVisibility: () => void;
@@ -13,6 +14,7 @@ export interface GeometryContextType {
     executionCount: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
+    setPreviewCode: (code: string | null) => void;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -28,6 +30,8 @@ function readStoredShowSketches(): boolean {
 
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
+    const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
+    const [previewCode, setPreviewCode] = useState<string | null>(null);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
     const [showSketches, setShowSketches] = useState(() => readStoredShowSketches());
     const [error, setError] = useState<string | null>(null);
@@ -114,6 +118,30 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         return () => clearTimeout(timer);
     }, [code, isReady, engine]);
 
+    // Preview Execution Loop
+    useEffect(() => {
+        if (!isReady || !previewCode) {
+            setPreviewGeometries([]);
+            return;
+        }
+
+        const runPreview = async () => {
+            try {
+                // Combine current code (as library) with preview code
+                // Or just run the preview code if it's independent
+                // For live modeling, it's usually current code + the new operation
+                const result = await engine.executeCode(`${code}\n${previewCode}`);
+                setPreviewGeometries(result.geometries);
+            } catch (err) {
+                // Silently ignore preview errors to avoid flickering red screens
+                console.warn('Live Preview Error:', err);
+            }
+        };
+
+        const timer = setTimeout(runPreview, 150); // Aggressive debounce for preview
+        return () => clearTimeout(timer);
+    }, [code, previewCode, isReady, engine]);
+
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
         setIsComputing(true);
@@ -150,6 +178,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const value: GeometryContextType = useMemo(() => ({
         geometries,
+        previewGeometries,
         sketchesGeometries,
         showSketches,
         toggleSketchVisibility,
@@ -158,7 +187,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         isComputing,
         executionCount,
         executeGeometry,
-    }), [geometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
+        setPreviewCode,
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

@@ -100,6 +100,25 @@ export class CodeBuilder {
     }
 
     /**
+     * Helper for fluent CAD Query style calls.
+     * e.g. .faces(">Z")
+     */
+    addFluentCall(variableName: string, methodName: string, arg: string): this {
+        this.lines.push(`${variableName} = ${variableName}.${methodName}("${arg}");`);
+        return this;
+    }
+
+    /**
+     * Adds a filtered operation call.
+     * e.g. const filleted = box.fillet(1, box.faces(">Z"));
+     */
+    addFilteredOperation(targetVar: string, sourceVar: string, op: string, param: number, selector: string, selectorType: 'faces' | 'edges' = 'faces'): this {
+        this.lines.push(`const ${targetVar} = ${sourceVar}.${op}(${param}, ${sourceVar}.${selectorType}("${selector}"));`);
+        this.variables.add(targetVar);
+        return this;
+    }
+
+    /**
      * Returns the complete code string.
      */
     toString(): string {

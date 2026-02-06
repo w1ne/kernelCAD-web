@@ -59,11 +59,12 @@ kernelCAD consists of three main parts:
 2.  **Viewer**: Three.js/React-Three-Fiber viewport.
 3.  **Engine**: A Web Worker that runs Replicad/OpenCASCADE to compute geometry asynchronously.
 
-For more details, see [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md).
+For more details, see [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) and the [CAD Query Guide](doc/CAD_QUERY_GUIDE.md).
 
 ## Roadmap
 
-See [doc/ROADMAP.md](doc/ROADMAP.md) for planned features and milestones.
+- [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md): Cursor states, snapping cues, and highlight colors.
+- **[CAD Query Guide](./CAD_QUERY_GUIDE.md)**: Fluent modeling & robust selectors.
 
 ## License
 

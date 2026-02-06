@@ -197,6 +197,60 @@ const code = generateSketchCode(sketchData);
 
 ---
 
+## Constraint Solver
+
+### `ConstraintSolver`
+The engine for solving 2D geometric constraints.
+
+```typescript
+import { ConstraintSolver } from './lib/constraints/solver';
+
+const solver = new ConstraintSolver();
+solver.solve(solverState); 
+// unique IDs in solverState are updated in place
+```
+
+**Constraints Supported:**
+- `COINCIDENT`: Points share location
+- `DISTANCE`: Fixed distance between points
+- `HORIZONTAL`/`VERTICAL`: Alignment
+- `PARALLEL`/`PERPENDICULAR`: Line orientation
+- `TANGENT`: Circle/Line or Circle/Circle continuity
+- `RADIUS`: Fixed circle radius
+- `ANGLE`: Angle between lines
+- `EQUAL_LENGTH`: Force lines to match length
+
+---
+
+## Interaction System
+
+### `HoverManager`
+Utility for determining what the user is hovering over in the 3D scene.
+
+```typescript
+import { HoverManager } from './features/interaction/HoverManager';
+
+// result is HoverResult | null
+const result = HoverManager.getBestHover(threeJsIntersects);
+```
+
+**Priority Rules:**
+1. **Vertex** (Highest)
+2. **Edge**
+3. **Face** (Lowest)
+
+**HoverResult:**
+```typescript
+interface HoverResult {
+  type: 'VERTEX' | 'EDGE' | 'FACE';
+  id: string | number;
+  object: THREE.Object3D;
+  point: THREE.Vector3;
+}
+```
+
+---
+
 ## Code Generation
 
 ### AST Manipulation
@@ -279,26 +333,26 @@ const customOperations = {
 
 ```typescript
 import type {
-  // Contexts
-  WorkbenchContextType,
+  // Contexts (src/types/...)
   CodeContextType,
   GeometryContextType,
   
-  // Geometry
+  // Geometry (src/lib/workerTypes.ts)
   GeometryResult,
   FaceGeometry,
   SketchGeometry,
   
-  // Features
+  // Features (src/features/types.ts)
   Feature,
   FeatureContext,
   
-  // Sketches
+  // Sketches (src/types/sketch.ts)
   SketchData,
   SketchEntity,
   Point2D,
 } from './types';
 ```
+
 
 ---
 

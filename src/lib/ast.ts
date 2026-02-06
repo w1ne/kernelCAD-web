@@ -135,7 +135,7 @@ export function getSketchVariablesAST(code: string): string[] {
 
     const isSketchFactoryCall = (callee: unknown): boolean => {
         if (!hasType(callee) || !isRecord(callee)) return false;
-        const sketchFactories = new Set(['startSketch', 'sketchOnFace']);
+        const sketchFactories = new Set(['startSketch', 'sketchOnFace', 'sketcher']);
 
         if (callee.type === 'Identifier' && typeof callee.name === 'string') {
             return sketchFactories.has(callee.name);
@@ -444,44 +444,8 @@ export function insertShape(code: string, statement: string): string {
         if (!isRecord(declarator) || !isRecord(declarator.id)) return;
         if (declarator.id.type !== 'Identifier' || typeof declarator.id.name !== 'string') return;
 
-        const init = declarator.init;
-        const isSketcherInit = (() => {
-            const isSketcherCtor = (callee: unknown): boolean => {
-                if (!hasType(callee)) return false;
-                if (callee.type === 'Identifier' && isRecord(callee) && callee.name === 'Sketcher') return true;
-                if (callee.type === 'MemberExpression' && isRecord(callee)) {
-                    const prop = callee.property;
-                    return hasType(prop) && prop.type === 'Identifier' && isRecord(prop) && prop.name === 'Sketcher';
-                }
-                return false;
-            };
-
-            const isSketcherExpr = (expr: unknown): boolean => {
-                if (!hasType(expr) || !isRecord(expr)) return false;
-
-                if (expr.type === 'NewExpression') return isSketcherCtor(expr.callee);
-
-                // Handle fluent chains like: new Sketcher('XY').movePointerTo(...).lineTo(...).close()
-                if (expr.type === 'CallExpression') {
-                    const callee = expr.callee;
-                    if (hasType(callee) && callee.type === 'MemberExpression' && isRecord(callee)) {
-                        return isSketcherExpr(callee.object);
-                    }
-                    return false;
-                }
-
-                if (expr.type === 'MemberExpression') return isSketcherExpr(expr.object);
-
-                return false;
-            };
-
-            return isSketcherExpr(init);
-        })();
-
-        // Prefer the last non-sketch variable for return-updates.
-        if (!isSketcherInit) {
-            varName = declarator.id.name;
-        }
+        // We now include sketches in return-updates so they are visible in the viewer.
+        varName = declarator.id.name;
     });
 
     let inserted = false;

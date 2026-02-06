@@ -85,7 +85,8 @@ export function useFaceSelection({
                         normal: plane!.normal,
                         xDir: plane!.xDir,
                         visible: true,
-                        parentId: targetName || undefined
+                        parentId: targetName || undefined,
+                        faceId: selection.faceId
                     },
                     currentSketch: null,
                     tool: 'line'

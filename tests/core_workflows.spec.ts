@@ -150,7 +150,7 @@ return box;
         // Select face 0
         await page.evaluate(() => (window as any).__TEST_SELECT_FACE?.(0, 0));
         await page.waitForFunction(() => (window as any).getSelectedFace?.() !== null);
-        await expect(page.getByTitle('Extrude Selected Face')).toBeVisible({ timeout: 15000 });
+        await expect(page.getByTitle(/Extrude Face/)).toBeVisible({ timeout: 15000 });
 
         // Fillet the box first (to shuffle IDs)
         const filletedCode = `
@@ -165,7 +165,7 @@ return filleted;
         // Now trigger "Extrude on Selected Face"
         // If the selection got invalidated after topology changes, reselect a planar face.
         try {
-            await expect(page.getByTitle('Extrude Selected Face')).toBeVisible({ timeout: 5000 });
+            await expect(page.getByTitle(/Extrude Face/)).toBeVisible({ timeout: 5000 });
         } catch {
             const planarFaceId = await page.evaluate(() => {
                 const geometries = (window as any).getGeometries?.() || [];
@@ -174,11 +174,11 @@ return filleted;
                 return idx >= 0 ? idx : 0;
             });
             await page.evaluate((faceId) => (window as any).__TEST_SELECT_FACE?.(0, faceId), planarFaceId);
-            await expect(page.getByTitle('Extrude Selected Face')).toBeVisible({ timeout: 15000 });
+            await expect(page.getByTitle(/Extrude Face/)).toBeVisible({ timeout: 15000 });
         }
 
-        await page.getByTitle('Extrude Selected Face').click();
-        await expect(page.locator('h2', { hasText: 'Extrude Face' })).toBeVisible();
+        await page.getByTitle(/Extrude Face/).click();
+        await expect(page.getByRole('dialog', { name: 'Extrude' })).toBeVisible();
         await page.locator('button[type="submit"]', { hasText: 'Extrude' }).click();
 
         count = await getNextExecutionCount(page);
