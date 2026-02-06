@@ -165,8 +165,8 @@ describe('useSketchCanvas', () => {
 
         act(() => { result.current.setTool('rectangle'); });
         act(() => { result.current.handleMouseDown(400, 300); });
-        act(() => { result.current.setInputTarget('secondary'); });
-        act(() => { result.current.setDynamicInput('40'); });
+        act(() => { result.current.setInputTarget('secondary'); }); // Only affects UI state in hook
+        act(() => { result.current.setSecondaryInput('40'); });     // Correctly set secondary value
         act(() => { result.current.handleMouseMove(500, 400); });
 
         const start = result.current.startPoint!;
