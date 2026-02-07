@@ -5,6 +5,9 @@
 import type { SketchData, SketchEntity, Point2D } from '../types/sketch';
 import { formatPlaneForSketcher } from './planeUtils';
 
+// Helper to format numbers for code generation
+const f = (n: number) => Number(n.toFixed(4));
+
 /**
  * Generate Replicad code from sketch data
  */
@@ -89,11 +92,11 @@ function generateLineCode(
 
     // Move to start if not already there
     if (!currentPos || !pointsEqual(currentPos, line.start)) {
-        code += `  .movePointerTo([${line.start[0]}, ${line.start[1]}])\n`;
+        code += `  .movePointerTo([${f(line.start[0])}, ${f(line.start[1])}])\n`;
     }
 
     // Draw line to end
-    code += `  .lineTo([${line.end[0]}, ${line.end[1]}])\n`;
+    code += `  .lineTo([${f(line.end[0])}, ${f(line.end[1])}])\n`;
 
     return { code, endPos: line.end };
 }
@@ -109,11 +112,11 @@ function generateRectangleCode(
     const [x, y] = corner;
 
     // Rectangle as 4 lines (top-left corner, counterclockwise)
-    const code = `  .movePointerTo([${x}, ${y}])\n` +
-        `  .lineTo([${x + width}, ${y}])\n` +
-        `  .lineTo([${x + width}, ${y - height}])\n` +
-        `  .lineTo([${x}, ${y - height}])\n` +
-        `  .lineTo([${x}, ${y}])\n`; // Close back to start
+    const code = `  .movePointerTo([${f(x)}, ${f(y)}])\n` +
+        `  .lineTo([${f(x + width)}, ${f(y)}])\n` +
+        `  .lineTo([${f(x + width)}, ${f(y - height)}])\n` +
+        `  .lineTo([${f(x)}, ${f(y - height)}])\n` +
+        `  .lineTo([${f(x)}, ${f(y)}])\n`; // Close back to start
 
     return { code, endPos: corner };
 }
@@ -130,9 +133,9 @@ function generateCircleCode(
     const [x, y] = center;
 
     // A circle as two 180-degree arcs (sagitta arcs)
-    const code = `  .movePointerTo([${x + radius}, ${y}])\n` +
-        `  .vSagittaArc(${radius * 2}, ${radius})\n` +
-        `  .vSagittaArc(${-radius * 2}, ${radius})\n`;
+    const code = `  .movePointerTo([${f(x + radius)}, ${f(y)}])\n` +
+        `  .vSagittaArc(${f(radius * 2)}, ${f(radius)})\n` +
+        `  .vSagittaArc(${f(-radius * 2)}, ${f(radius)})\n`;
 
     return { code, endPos: [x + radius, y] };
 }

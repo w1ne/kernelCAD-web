@@ -8,7 +8,7 @@ export const SketchOnFaceFeature: Feature = {
     icon: SketchIcon,
     description: 'Start a new sketch on the selected planar face',
     execute: (context) => {
-        context.setActiveDialog('sketchOnFace');
+        context.openPanel('sketchOnFace');
     }
 };
 
@@ -36,10 +36,17 @@ const ${sketchName} = new Sketcher(${planeName});
     // Fallback: Detached Sketch (Path B)
     // Used for anonymous shapes (e.g. return [box.cut(cyl)])
     const sketchName = context.generateUniqueName(sketchNameBase);
-    const origin = planeData?.origin || [0, 0, 0];
-    const normal = planeData?.normal || [0, 0, 1];
+    const origin = planeData?.origin;
+    const normal = planeData?.normal;
     const xDir = planeData?.xDir;
     const xDirArg = xDir ? `[${xDir[0]}, ${xDir[1]}, ${xDir[2]}]` : 'null';
+
+    if (!origin || !normal) {
+        return `
+// WARNING: Sketch plane data was incomplete. Falling back to XY plane.
+const ${sketchName} = new Sketcher('XY');
+`.trim();
+    }
 
     return `
 // NOTE: This sketch is detached because the parent shape is anonymous (no variable name).

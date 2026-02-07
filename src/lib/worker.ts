@@ -107,6 +107,14 @@ function getWire(obj: unknown): unknown | null {
 }
 
 function tryVec3(v: unknown): [number, number, number] | null {
+  if (typeof v === 'function') {
+    try {
+      v = (v as () => unknown).call(null);
+    } catch {
+      return null;
+    }
+  }
+
   if (Array.isArray(v) && v.length >= 3) {
     const [x, y, z] = v;
     if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number') return [x, y, z];
@@ -145,10 +153,22 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
     if (typeof makePlaneFromFaceFn === 'function') {
       const planeObj = makePlaneFromFaceFn(face);
       if (isRecord(planeObj)) {
-        const origin = tryVec3(planeObj.origin);
-        const norm = tryVec3(planeObj.zDir) ?? tryVec3(planeObj.normal);
-        const xDir = tryVec3(planeObj.xDir);
-        const yDir = tryVec3(planeObj.yDir);
+        const originFn = getFn(planeObj, 'origin');
+        const origin = tryVec3(originFn ? (originFn as () => unknown).call(planeObj) : planeObj.origin);
+
+        const zDirFn = getFn(planeObj, 'zDir');
+        const normalFnAlt = getFn(planeObj, 'normal');
+        const norm = tryVec3(
+          zDirFn ? (zDirFn as () => unknown).call(planeObj) :
+            normalFnAlt ? (normalFnAlt as () => unknown).call(planeObj) :
+              (planeObj.zDir ?? planeObj.normal)
+        );
+
+        const xDirFn = getFn(planeObj, 'xDir');
+        const xDir = tryVec3(xDirFn ? (xDirFn as () => unknown).call(planeObj) : planeObj.xDir);
+
+        const yDirFn = getFn(planeObj, 'yDir');
+        const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
 
         if (origin && norm) {
           return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
@@ -162,14 +182,29 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   if (!p) {
     // Fallback for native Replicad objects: use center and normalAt
     try {
-      const center = getFn(face, 'center') ? (face as Record<string, unknown>).center : (face as Record<string, unknown>).center;
-      const normal = getFn(face, 'normalAt') ? (face as Record<string, () => unknown>).normalAt() : null;
+      const centerFn = getFn(face, 'center');
+      const center = centerFn ? centerFn.call(face) : (face as UnknownRecord).center;
+
+      const normalFn = getFn(face, 'normalAt');
+      const faceRec = face as UnknownRecord;
+      const normal = normalFn
+        ? (normalFn.length === 0 ? normalFn.call(face) : normalFn.call(face, center || [0, 0, 0]))
+        : (faceRec.normal || (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).normal : null) || (isRecord(faceRec.plane) ? (faceRec.plane as UnknownRecord).normal : null));
 
       if (center && normal) {
         const origin = tryVec3(center);
         const norm = tryVec3(normal);
+
+        // Final fallback: try to get directions if it's a plane
+        const faceRec = face as UnknownRecord;
+        const planeNode = faceRec.plane ||
+          (isRecord(faceRec.surface) ? (faceRec.surface as UnknownRecord).plane : null) ||
+          faceRec.planarPlane;
+        const xDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).xDir || (typeof (planeNode as UnknownRecord).xDir === 'function' ? ((planeNode as UnknownRecord).xDir as () => unknown)() : null)) : undefined;
+        const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
+
         if (origin && norm) {
-          return { origin, normal: norm };
+          return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
     } catch (e) {
