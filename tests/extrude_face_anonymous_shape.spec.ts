@@ -46,8 +46,9 @@ return replicad.makeBox(10, 10, 10);
         await page.waitForFunction(() => (window as any).getSelectedFace?.() !== null);
 
         await page.getByTitle(/Extrude Face/).click();
-        await expect(page.getByRole('dialog', { name: 'Extrude' })).toBeVisible();
-        await page.locator('button[type="submit"]', { hasText: 'Extrude' }).click();
+        const panel = page.getByTestId('panel-extrudeFromFace');
+        await expect(panel).toBeVisible();
+        await panel.locator('button[type="submit"]', { hasText: /Extrude/i }).click();
 
         count = await getNextExecutionCount(page);
         await waitForStability(page, count);

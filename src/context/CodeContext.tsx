@@ -6,7 +6,7 @@ import type { EditorLike } from '../types/editor';
 export interface CodeContextType {
     code: string;
     setCode: (code: string) => void;
-    insertCode: (snippet: string) => void;
+    insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     editorInstance: EditorLike | null;
     setEditorInstance: (instance: EditorLike | null) => void;
     commandManager: CommandManager;
@@ -24,10 +24,11 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         commandManager.setContextProvider(() => ({ code, setCode }));
     }, [commandManager, code]);
 
-    const insertCode = useCallback((snippet: string) => {
+    const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
         setCode(prev => {
+            const resolvedSnippet = typeof snippet === 'function' ? snippet(baseName || 'shape') : snippet;
             const trimmed = prev.trimEnd();
-            return trimmed + (trimmed ? '\n' : '') + snippet;
+            return trimmed + (trimmed ? '\n' : '') + resolvedSnippet;
         });
     }, []);
 

@@ -132,7 +132,10 @@ export function parseCode(code: string): acorn.Node {
  */
 export function generateCode(ast: acorn.Node): string {
     try {
-        return generate(ast);
+        return generate(ast, {
+            indent: '    ',
+            lineEnd: '\n',
+        });
     } catch (error) {
         if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
             console.error('Code generation error:', error);

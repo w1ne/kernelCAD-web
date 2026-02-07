@@ -64,8 +64,8 @@
 - [x] **Geometric Constraints**: Horizontal, Vertical, Equal, Radius, Angle (UI). Parallel, Perpendicular, Tangent (Solver support only).
 - [x] **Dimensional Constraints**: Driving dimensions that update the underlying code automatically.
 - [x] **Constraint Solving**: Integration of a basic 2D constraint solver (Iterative solver integrated).
-- [ ] **Auto-Constraint Inference**: "Magnetic" cursors that snap to Vertical/Horizontal/Coincident while drawing.
-- [ ] **Dynamic Dimensioning**: Type values (e.g., "50") while drawing to immediate set length/angle.
+- [x] **Auto-Constraint Inference**: "Magnetic" cursors that snap to Vertical/Horizontal/Coincident while drawing.
+- [x] **Dynamic Dimensioning**: Type values (e.g., "50") while drawing to immediate set length/angle.
 
 ### 1.3 Next-Gen UI/UX & Workflow
 - [x] **Icon Redesign**: Replace current icons with professional, consistent icon set (via `lucide-react`).
@@ -79,8 +79,8 @@
 - [ ] **Visual Feedback System** (See [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md)):
   - [x] **Theme Infrastructure**: Define CSS variables for `highlight-orange`, `selection-blue`, and `snap-green` (Implemented in `colors.ts`).
   - [x] **Hover Engine**: Implement a centralized `HoverManager` that detects `Edge`, `Face`, and `Vertex` hits with Z-index priority (Vertex > Edge > Face).
-  - [ ] **Snap Indicators**: Create a lightweight React component to render SVG icons (Square, Triangle, X) at valid inference points.
-  - [ ] **Cursor State Machine**: Update `InteractionManager` to support `default`, `grab`, `grabbing` and tool-specific badges (e.g., "Pencil" icon).
+  - [x] **Snap Indicators**: Create a lightweight React component to render SVG icons (Square, Triangle, X) at valid inference points.
+  - [x] **Cursor State Machine**: Update `InteractionManager` to support `default`, `grab`, `grabbing` and tool-specific badges (e.g., "Pencil" icon).
 - [ ] **Standardized Interaction Logic** (See [Interaction Specs](./DETAILED_INTERACTION_SPECS.md)):
   - [ ] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
   - [ ] **Drag-to-Edit**: Implement shared logic for "Press-Drag-Release" operations (used in Extrude, Fillet, and new Plane tools).

@@ -1,15 +1,6 @@
-import { createPlaneConstructorCode, isValidPlaneData } from '../../lib/planeUtils';
 import React, { useMemo } from 'react';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import ParameterDialog from '../Dialogs/ParameterDialog';
-import { ExtrudePanel } from '../PropertiesPanel/ExtrudePanel';
-import { ExtrudeFromFacePanel } from '../PropertiesPanel/ExtrudeFromFacePanel';
-import { SketchOnFacePanel } from '../PropertiesPanel/SketchOnFacePanel';
-import { RevolvePanel } from '../PropertiesPanel/RevolvePanel';
-import { FilletPanel } from '../PropertiesPanel/FilletPanel';
-import { ChamferPanel } from '../PropertiesPanel/ChamferPanel';
-import { PlaneSelectorPanel } from '../PropertiesPanel/PlaneSelectorPanel';
-import { OffsetPlanePanel } from '../PropertiesPanel/OffsetPlanePanel';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { CommandPalette } from '../CommandPalette/CommandPalette';
@@ -22,17 +13,13 @@ import { type Feature, type DialogField } from '../../features/types';
 import { type SketchData, type SketchPlane } from '../../types/sketch';
 import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
-import { generateSketchOnFaceCode } from '../../features/core/sketchOnFace.feature';
-import { generateExtrudeCode } from '../../features/core/extrude.feature';
-import { generateRevolveCode } from '../../features/core/revolve.feature';
-import { generateFilletCode, generateChamferCode, generateBooleanCode } from '../../features/core/modifiers.feature';
-import { BooleanPanel } from '../PropertiesPanel/BooleanPanel';
 import { Loader2 } from 'lucide-react';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
 import { ViewerPanel } from './ViewerPanel';
 import { NavigationPanel } from './NavigationPanel';
+import { PanelManager } from './PanelManager';
 
 export function WorkbenchLayout() {
     const {
@@ -53,13 +40,8 @@ export function WorkbenchLayout() {
         sketchMode,
         setSketchMode,
         addSketch,
-        planes,
-        addPlane,
         selectedFace,
-        selectedFacePlane,
-        selectedSketchName,
         isFaceSelecting,
-        startFaceSelection,
         cancelFaceSelection,
         codeContext,
         previewGeometries,
@@ -67,6 +49,8 @@ export function WorkbenchLayout() {
         showAll,
         selectedItemId,
         toggleVisibility,
+        openPanel,
+        closePanel
     } = useWorkbench();
 
     // Expose helpers for E2E testing
@@ -88,39 +72,31 @@ export function WorkbenchLayout() {
     useKeyboardShortcuts({
         'e': () => {
             if (activeDialog) return;
-            const featureId = selectedFace ? 'extrudeFromFace' : 'extrude';
-            const feature = featureRegistry.get(featureId);
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('extrude');
         },
         'r': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('revolve');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('revolve');
         },
         'f': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('fillet');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('fillet');
         },
         'c': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('chamfer');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('chamfer');
         },
         'j': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('union');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('union');
         },
         'x': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('cut');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('cut');
         },
         'i': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('intersect');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('intersect');
         },
         'mod+z': () => {
             if (activeDialog) return;
@@ -136,12 +112,11 @@ export function WorkbenchLayout() {
         },
         's': () => {
             if (activeDialog || sketchMode.active) return;
-            setActiveDialog('planeSelector');
+            openPanel('planeSelector');
         },
         'p': () => {
             if (activeDialog) return;
-            const feature = featureRegistry.get('offsetPlane');
-            if (feature) feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            openPanel('offsetPlane');
         },
         'escape': () => {
             if (activeDialog) setActiveDialog(null);
@@ -212,10 +187,7 @@ export function WorkbenchLayout() {
             shortcut: 'E',
             icon: <Box className="w-4 h-4" />,
             action: () => {
-                const { selectedFace, insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const featureId = selectedFace ? 'extrudeFromFace' : 'extrude';
-                const feature = featureRegistry.get(featureId);
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('extrude');
             }
         }));
 
@@ -226,9 +198,7 @@ export function WorkbenchLayout() {
             shortcut: 'R',
             icon: <Circle className="w-4 h-4" />,
             action: () => {
-                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const feature = featureRegistry.get('revolve');
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('revolve');
             }
         }));
 
@@ -239,9 +209,7 @@ export function WorkbenchLayout() {
             shortcut: 'F',
             icon: <Circle className="w-4 h-4" />,
             action: () => {
-                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const feature = featureRegistry.get('fillet');
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('fillet');
             }
         }));
 
@@ -252,9 +220,7 @@ export function WorkbenchLayout() {
             shortcut: 'C',
             icon: <Triangle className="w-4 h-4" />,
             action: () => {
-                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const feature = featureRegistry.get('chamfer');
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('chamfer');
             }
         }));
 
@@ -265,9 +231,7 @@ export function WorkbenchLayout() {
             shortcut: 'J',
             icon: <Layers className="w-4 h-4" />,
             action: () => {
-                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const feature = featureRegistry.get('union');
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('union');
             }
         }));
 
@@ -278,9 +242,7 @@ export function WorkbenchLayout() {
             shortcut: 'X',
             icon: <Scissors className="w-4 h-4" />,
             action: () => {
-                const { insertCode, setCode, setActiveDialog, code, codeContext } = actionContextRef.current;
-                const feature = featureRegistry.get('cut');
-                feature?.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+                openPanel('cut');
             }
         }));
 
@@ -292,8 +254,18 @@ export function WorkbenchLayout() {
             shortcut: 'S',
             icon: <Square className="w-4 h-4" />,
             action: () => {
-                const { setActiveDialog } = actionContextRef.current;
-                setActiveDialog('planeSelector');
+                openPanel('planeSelector');
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'offset-plane',
+            label: 'Construction Plane',
+            section: 'Modeling',
+            shortcut: 'P',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                openPanel('offsetPlane');
             }
         }));
 
@@ -301,16 +273,44 @@ export function WorkbenchLayout() {
     }, [registerCommand]); // Only stable dependencies
 
     const handleToolClick = (feature: Feature) => {
-        if (feature.parameters && feature.parameters.length > 0) {
-            setActiveDialog(feature.id);
+        if (feature.id === 'extrudeFromFace') {
+            openPanel('extrudeFromFace');
+        } else if (feature.id === 'sketchOnFace') {
+            openPanel('sketchOnFace');
         } else {
-            feature.execute({ insertCode, setCode, setActiveDialog, code, codeContext });
+            // Original logic for other features
+            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(feature.id)) {
+                openPanel(feature.id);
+                return;
+            }
+
+            if (feature.parameters && feature.parameters.length > 0) {
+                setActiveDialog(feature.id);
+            } else {
+                feature.execute({
+                    insertCode,
+                    setCode,
+                    setActiveDialog,
+                    openPanel,
+                    closePanel,
+                    code,
+                    codeContext
+                });
+            }
         }
     };
 
     const handleDialogSubmit = (values: Record<string, number>) => {
         if (activeFeature) {
-            activeFeature.execute({ insertCode, setCode, setActiveDialog, code, codeContext }, values);
+            activeFeature.execute({
+                insertCode,
+                setCode,
+                setActiveDialog,
+                openPanel,
+                closePanel,
+                code,
+                codeContext
+            }, values);
         }
     };
 
@@ -430,229 +430,6 @@ export function WorkbenchLayout() {
                 />
             )}
 
-            {/* Dialogs */}
-            {activeDialog === 'planeSelector' && (
-                <PlaneSelectorPanel
-                    onSelect={(plane) => {
-                        setSketchMode({ active: true, plane, currentSketch: null, tool: 'line' });
-                        setActiveDialog(null);
-                    }}
-                    onSelectFace={() => {
-                        setActiveDialog(null);
-                        startFaceSelection();
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'extrude' && (
-                <ExtrudePanel
-                    sketchName={selectedSketchName || undefined}
-                    onConfirm={({ sketchName, distance, direction }) => {
-                        const extrudeCode = generateExtrudeCode(codeContext, sketchName, distance, direction === 'normal' ? 'default' : direction);
-                        insertCode(extrudeCode);
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'extrudeFromFace' && (
-                <ExtrudeFromFacePanel
-                    onConfirm={(distance, direction) => {
-                        if (activeFeature && activeFeature.execute && selectedFace) {
-                            const finalDistance = direction === 'reversed' ? -distance : distance;
-                            activeFeature.execute(
-                                { insertCode, setCode, setActiveDialog, code, codeContext },
-                                {
-                                    distance: finalDistance,
-                                    faceId: selectedFace.faceId,
-                                    shapeIndex: selectedFace.shapeIndex,
-                                    // Pass plane data for anonymous shape fallback
-                                    originX: selectedFacePlane?.origin[0] || 0,
-                                    originY: selectedFacePlane?.origin[1] || 0,
-                                    originZ: selectedFacePlane?.origin[2] || 0,
-                                    normalX: selectedFacePlane?.normal[0] || 0,
-                                    normalY: selectedFacePlane?.normal[1] || 0,
-                                    normalZ: selectedFacePlane?.normal[2] || 0,
-                                }
-                            );
-                        }
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'sketchOnFace' && selectedFace && (
-                <SketchOnFacePanel
-                    defaultName={codeContext.generateUniqueName('sketch')}
-                    faceId={selectedFace.faceId}
-                    shapeName={codeContext.getVariableAtIndex(selectedFace.shapeIndex) || 'Anonymous Shape'}
-                    onConfirm={(name) => {
-                        const targetName = codeContext.getVariableAtIndex(selectedFace.shapeIndex);
-                        const geometry = geometries[selectedFace.shapeIndex];
-                        const faceGeometry = geometry?.faces.find(f => f.faceId === selectedFace.faceId);
-                        const plane = faceGeometry?.plane;
-
-                        const snippet = generateSketchOnFaceCode(
-                            codeContext,
-                            targetName,
-                            selectedFace.faceId,
-                            name,
-                            plane ? {
-                                origin: plane.origin,
-                                normal: plane.normal,
-                                xDir: plane.xDir
-                            } : undefined
-                        );
-                        insertCode(snippet);
-
-                        if (faceGeometry && faceGeometry.plane) {
-                            const newSketch: SketchData = {
-                                id: name,
-                                name: name,
-                                plane: 'face',
-                                entities: [],
-                                closed: false,
-                                createdAt: Date.now()
-                            };
-                            addSketch(newSketch);
-                            const planeEntity: SketchPlaneEntity = {
-                                id: `plane_${name}`,
-                                name: targetName ? `Face ${selectedFace.faceId} of ${targetName}` : `Face ${selectedFace.faceId}`,
-                                type: 'face',
-                                origin: faceGeometry.plane.origin,
-                                normal: faceGeometry.plane.normal,
-                                visible: true,
-                                parentId: targetName || undefined,
-                                faceId: selectedFace.faceId
-                            };
-                            setSketchMode({
-                                active: true,
-                                currentSketch: newSketch,
-                                tool: 'line',
-                                plane: planeEntity
-                            });
-                        }
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'revolve' && (
-                <RevolvePanel
-                    sketchName={selectedSketchName || undefined}
-                    onConfirm={({ sketchName, angle, axis }) => {
-                        const revolveCode = generateRevolveCode(codeContext, sketchName, angle, axis);
-                        insertCode(revolveCode);
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'fillet' && (
-                <FilletPanel
-                    onConfirm={({ targetName, radius, filterType }) => {
-                        const codeSnippet = generateFilletCode(codeContext, targetName, radius, filterType);
-                        insertCode(codeSnippet);
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'chamfer' && (
-                <ChamferPanel
-                    onConfirm={({ targetName, distance, filterType }) => {
-                        const codeSnippet = generateChamferCode(codeContext, targetName, distance, filterType);
-                        insertCode(codeSnippet);
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {['union', 'cut', 'intersect'].includes(activeDialog || '') && (
-                <BooleanPanel
-                    type={activeDialog === 'union' ? 'fuse' : (activeDialog as 'cut' | 'intersect')}
-                    onConfirm={({ baseName, toolName, type }) => {
-                        const codeSnippet = generateBooleanCode(codeContext, baseName, toolName, type);
-                        insertCode(codeSnippet);
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
-            {activeDialog === 'offsetPlane' && (
-                <OffsetPlanePanel
-                    onConfirm={({ basePlaneId, offset }) => {
-                        if (basePlaneId.startsWith('face-')) {
-                            const faceId = parseInt(basePlaneId.replace('face-', '').split('-')[0]);
-                            if (selectedFace && selectedFace.faceId === faceId && geometries[selectedFace.shapeIndex]) {
-                                const { shapeIndex } = selectedFace;
-                                const geometry = geometries[shapeIndex];
-                                const face = geometry.faces.find(f => f.faceId === faceId);
-
-                                if (face && face.plane && isValidPlaneData(face.plane)) {
-                                    let targetName = codeContext.getVariableAtIndex(shapeIndex) || 'shape';
-                                    if (targetName === 'unknown') targetName = 'shape';
-                                    const uniqueName = codeContext.generateUniqueName(`plane_${targetName}_face${faceId}`);
-
-                                    let planeCode = createPlaneConstructorCode(face.plane.origin, face.plane.normal);
-                                    let finalOrigin = [...face.plane.origin];
-
-                                    if (offset !== 0) {
-                                        const [ox, oy, oz] = face.plane.origin;
-                                        const [nx, ny, nz] = face.plane.normal;
-                                        finalOrigin = [ox + nx * offset, oy + ny * offset, oz + nz * offset];
-                                        planeCode = createPlaneConstructorCode(finalOrigin as [number, number, number], face.plane.normal);
-                                    }
-
-                                    insertCode(`const ${uniqueName} = ${planeCode};\n`);
-                                    addPlane({
-                                        id: uniqueName,
-                                        name: offset === 0 ? `Datum (Face ${faceId})` : `Offset ${offset} (Face ${faceId})`,
-                                        type: 'face',
-                                        origin: finalOrigin as [number, number, number],
-                                        normal: face.plane.normal,
-                                        visible: true,
-                                        parentId: targetName
-                                    });
-                                }
-                            }
-                        } else {
-                            const basePlane = planes.find(p => p.id === basePlaneId);
-                            if (basePlane) {
-                                const [ox, oy, oz] = basePlane.origin;
-                                const [nx, ny, nz] = basePlane.normal;
-                                const newOrigin: [number, number, number] = [
-                                    ox + nx * offset,
-                                    oy + ny * offset,
-                                    oz + nz * offset
-                                ];
-                                const uniqueName = codeContext.generateUniqueName('plane_offset');
-                                insertCode(`const ${uniqueName} = ${createPlaneConstructorCode(newOrigin, basePlane.normal)};\n`);
-                                addPlane({
-                                    id: uniqueName,
-                                    name: basePlane.type === 'base' ? `Offset Plane ${planes.length - 2}` : `Offset from ${basePlane.name}`,
-                                    type: 'offset',
-                                    origin: newOrigin,
-                                    normal: [...basePlane.normal] as [number, number, number],
-                                    visible: true,
-                                    parentId: basePlaneId
-                                });
-                            }
-                        }
-                        setActiveDialog(null);
-                    }}
-                    onCancel={() => setActiveDialog(null)}
-                />
-            )}
-
             {/* Dialog Overlay (for features with generic parameters) */}
             {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(activeDialog || '') && (
                 <ParameterDialog
@@ -671,6 +448,9 @@ export function WorkbenchLayout() {
             )}
             {/* Command Palette Overlay */}
             <CommandPalette />
+
+            {/* Multi-Panel Layer */}
+            <PanelManager />
         </div>
     );
 }

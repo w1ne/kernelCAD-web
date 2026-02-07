@@ -2,15 +2,23 @@
 import { renderHook, act } from '@testing-library/react';
 import { useSketchCanvas } from '../useSketchCanvas';
 import { describe, it, expect } from 'vitest';
+import { SketchingProvider } from '../../context/SketchingContext';
+import React from 'react';
 
 describe('useSketchCanvas Snapping', () => {
     const setup = () => {
+        const wrapper = ({ children }: { children: React.ReactNode }) => (
+            <SketchingProvider>
+                {children}
+            </SketchingProvider>
+        );
+
         return renderHook(() => useSketchCanvas({
             canvasWidth: 800,
             canvasHeight: 600,
             gridSize: 10,
             gridUnit: 1
-        }));
+        }), { wrapper });
     };
 
     it('should snap to horizontal line', () => {

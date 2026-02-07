@@ -1,6 +1,9 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { SketchEntity, Point2D, SketchTool } from '../types/sketch';
+import { useSketching } from '../context/SketchingContext';
+import { decomposeUISketchEntities, syncUIEntities } from '../lib/constraints/bridge';
+import type { Constraint } from '../lib/constraints/types';
 
 interface UseSketchCanvasProps {
     canvasWidth: number;
@@ -21,15 +24,26 @@ export function useSketchCanvas({
     gridSize,
     gridUnit
 }: UseSketchCanvasProps) {
+    const { entities: solverEntitiesMap, addEntity, addConstraint } = useSketching();
     const [tool, setTool] = useState<SketchTool>('line');
     const [entities, setEntities] = useState<SketchEntity[]>([]);
+
+    // Sync UI entities with Solver results
+    const syncedEntities = useMemo(() => {
+        return syncUIEntities(entities, solverEntitiesMap);
+    }, [entities, solverEntitiesMap]);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point2D | null>(null);
     const [currentPoint, setCurrentPoint] = useState<Point2D | null>(null);
     const [dynamicInput, setDynamicInput] = useState<string>('');
     const [secondaryInput, setSecondaryInput] = useState<string>('');
     const [inputTarget, setInputTarget] = useState<'primary' | 'secondary'>('primary');
-    const [snapState, setSnapState] = useState<SnapState | undefined>(undefined); // State for snapping visualization
+    const [snapState, setSnapState] = useState<SnapState | undefined>(undefined);
+    const [startSnap, setStartSnap] = useState<SnapState | undefined>(undefined);
+
+    const { pointMap } = useMemo(() => decomposeUISketchEntities(entities), [entities]);
+
+    const getPointKey = (p: Point2D) => `${p[0].toFixed(6)},${p[1].toFixed(6)}`;
 
     // Convert canvas pixel coordinates to sketch coordinates
     const canvasToSketch = useCallback((x: number, y: number): Point2D => {
@@ -323,15 +337,18 @@ export function useSketchCanvas({
     }, [tool, entities, gridSize]);
 
     const handleMouseDown = useCallback((x: number, y: number) => {
-        const point = canvasToSketch(x, y);
-        setStartPoint(point);
-        setCurrentPoint(point);
+        const rawPoint = canvasToSketch(x, y);
+        const { point: snappedPoint, type: snapType } = calculateSnappedPoint(rawPoint, rawPoint, '', '');
+
+        setStartPoint(snappedPoint);
+        setCurrentPoint(snappedPoint);
+        setStartSnap({ type: snapType, point: snappedPoint });
         setIsDrawing(true);
         setDynamicInput('');
         setSecondaryInput('');
         setInputTarget('primary');
         setSnapState(undefined);
-    }, [canvasToSketch]);
+    }, [canvasToSketch, calculateSnappedPoint]);
 
     const handleMouseMove = useCallback((x: number, y: number) => {
         if (!isDrawing || !startPoint) return;
@@ -356,6 +373,7 @@ export function useSketchCanvas({
             setDynamicInput('');
             setSecondaryInput('');
             setSnapState(undefined);
+            setStartSnap(undefined);
             return;
         }
 
@@ -363,8 +381,77 @@ export function useSketchCanvas({
             primary: dynamicInput,
             secondary: secondaryInput
         }, snapType);
+
         if (newEntity) {
             setEntities(prev => [...prev, newEntity]);
+
+            // Add to SketchingContext (Solver)
+            // 1. Map atoms (line/arc parts)
+            const { solverEntities } = decomposeUISketchEntities([newEntity]);
+            solverEntities.forEach(e => addEntity(e));
+
+            // 2. Register Constraints
+            const newConstraints: Constraint[] = [];
+
+            // A. Start point coincidence
+            if (startSnap && startSnap.type !== 'none' && startSnap.type !== 'horizontal' && startSnap.type !== 'vertical') {
+                const targetPointId = pointMap.get(getPointKey(startSnap.point));
+                if (targetPointId) {
+                    newConstraints.push({
+                        id: `const_start_coin_${Date.now()}_${Math.random()}`,
+                        type: 'COINCIDENT',
+                        entities: [`${newEntity.id}_start`, targetPointId]
+                    });
+                }
+            }
+
+            // B. End point coincidence
+            if (snapType !== 'none' && snapType !== 'horizontal' && snapType !== 'vertical' && snapType !== 'alignment') {
+                const targetPointId = pointMap.get(getPointKey(finalPoint));
+                if (targetPointId) {
+                    newConstraints.push({
+                        id: `const_end_coin_${Date.now()}_${Math.random()}`,
+                        type: 'COINCIDENT',
+                        entities: [`${newEntity.id}_end`, targetPointId]
+                    });
+                }
+            }
+
+            // C. Auto-constraints (Horizontal/Vertical)
+            if (snapType === 'horizontal') {
+                newConstraints.push({
+                    id: `const_h_${newEntity.id}`,
+                    type: 'HORIZONTAL',
+                    entities: [`${newEntity.id}_start`, `${newEntity.id}_end`]
+                });
+            } else if (snapType === 'vertical') {
+                newConstraints.push({
+                    id: `const_v_${newEntity.id}`,
+                    type: 'VERTICAL',
+                    entities: [`${newEntity.id}_start`, `${newEntity.id}_end`]
+                });
+            }
+
+            // D. Driving Dimensions
+            if (!isNaN(parseFloat(dynamicInput))) {
+                if (tool === 'line') {
+                    newConstraints.push({
+                        id: `const_len_${newEntity.id}`,
+                        type: 'DISTANCE',
+                        entities: [`${newEntity.id}_start`, `${newEntity.id}_end`],
+                        value: parseFloat(dynamicInput)
+                    });
+                } else if (tool === 'circle') {
+                    newConstraints.push({
+                        id: `const_rad_${newEntity.id}`,
+                        type: 'RADIUS',
+                        entities: [newEntity.id],
+                        value: parseFloat(dynamicInput)
+                    });
+                }
+            }
+
+            newConstraints.forEach(c => addConstraint(c));
         }
 
         setIsDrawing(false);
@@ -373,14 +460,15 @@ export function useSketchCanvas({
         setDynamicInput('');
         setSecondaryInput('');
         setSnapState(undefined);
-    }, [isDrawing, startPoint, currentPoint, tool, createEntity, dynamicInput, secondaryInput, calculateSnappedPoint]);
+        setStartSnap(undefined);
+    }, [isDrawing, startPoint, currentPoint, tool, createEntity, dynamicInput, secondaryInput, calculateSnappedPoint, addEntity, addConstraint, pointMap, startSnap]);
 
     const clear = useCallback(() => setEntities([]), []);
 
     return {
         tool,
         setTool,
-        entities,
+        entities: syncedEntities,
         setEntities,
         isDrawing,
         startPoint,

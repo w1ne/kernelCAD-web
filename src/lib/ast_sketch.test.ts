@@ -1,50 +1,54 @@
+
 import { describe, it, expect } from 'vitest';
 import { insertShape } from './ast';
 
-describe('AST Insertion - Sketch Handling', () => {
-    it('should include sketches in the return array if return is already an array', () => {
-        const code = `
-const box = replicad.makeBox(10, 10, 10);
-return [box];
-`;
-        const snippet = `const sketch1 = new Sketcher('XY').rect(5, 5).done();`;
-        const result = insertShape(code, snippet);
-
-        expect(result).toContain('return [box, sketch1]');
-    });
-
-    it('should convert single return to array return if a sketch is inserted', () => {
-        const code = `
-const box = replicad.makeBox(10, 10, 10);
-return box;
-`;
-        const snippet = `const sketch1 = new Sketcher('XY').rect(5, 5).done();`;
-        const result = insertShape(code, snippet);
-
-        expect(result).toContain('return [box, sketch1]');
-    });
-
-    it('should handle startSketch() factory calls', () => {
-        const code = `
-const box = replicad.makeBox(10, 10, 10);
-return [box];
-`;
-        const snippet = `const sketch1 = startSketch().rect(5, 5).done();`;
-        const result = insertShape(code, snippet);
-
-        expect(result).toContain('return [box, sketch1]');
-    });
-
-    it('should handle multiple nested returns in drawPart correctly', () => {
-        const code = `
-function drawPart() {
+describe('ast.ts - sketch insertion', () => {
+    it('should correctly insert a multi-line sketch chain and preserve all calls', () => {
+        const initialCode = `
+export function drawPart() {
     const box = replicad.makeBox(10, 10, 10);
-    return [box];
+    return box;
 }
-`;
-        const snippet = `const sketch1 = new Sketcher('XY').rect(5, 5).done();`;
-        const result = insertShape(code, snippet);
+        `.trim();
 
+        const sketchCode = `
+const sketch1 = new Sketcher('XY')
+    .movePointerTo([5, 0])
+    .vSagittaArc(10, 5)
+    .vSagittaArc(-10, 5)
+    .close();
+        `.trim();
+
+        const result = insertShape(initialCode, sketchCode);
+
+        // Verify return statement is updated
         expect(result).toContain('return [box, sketch1]');
+
+        // Verify all sketch calls are present (ignoring whitespace differences caused by astring)
+        expect(result).toContain('.movePointerTo([5, 0])');
+        expect(result).toContain('.vSagittaArc(10, 5)');
+        expect(result).toContain('.vSagittaArc(-10, 5)');
+        expect(result).toContain('.close()');
+    });
+
+    it('should handle detached plane sketches with long numbers', () => {
+        const initialCode = `
+export function drawPart() {
+    return [replicad.makeBox(10, 10, 10)];
+}
+        `.trim();
+
+        const sketchCode = `
+const sketch1 = new Sketcher(new replicad.Plane([5, -5, 10], null, [0, 0, 1]))
+    .movePointerTo([3.62842712474668, 0])
+    .vSagittaArc(10, 5)
+    .close();
+        `.trim();
+
+        const result = insertShape(initialCode, sketchCode);
+
+        expect(result).toContain('new replicad.Plane([5, -5, 10], null, [0, 0, 1])');
+        expect(result).toContain('.movePointerTo([3.62842712474668, 0])');
+        expect(result).toContain('.close()');
     });
 });

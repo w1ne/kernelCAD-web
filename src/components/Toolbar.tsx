@@ -1,7 +1,7 @@
 import { PenTool, ArrowUpFromLine, Eye, EyeOff, Layers } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { FEATURE_SHORTCUTS, formatTooltip, SHORTCUT_HINTS } from '../constants/shortcuts';
+import { FEATURE_SHORTCUTS, formatTooltip } from '../constants/shortcuts';
 
 interface ToolbarProps {
     features: Feature[];
@@ -76,12 +76,13 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
             {/* Sketch button */}
             <button
                 onClick={handleSketchClick}
+                data-testid="toolbar-sketch"
                 className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
                 aria-label="Sketch"
                 title={
                     selectedFace
-                        ? formatTooltip('Sketch on Face', SHORTCUT_HINTS.sketch, 'Create a sketch on the selected face')
-                        : formatTooltip('Sketch', SHORTCUT_HINTS.sketch, 'Start a sketch by selecting a plane (or a face)')
+                        ? "Sketch on Face"
+                        : "Sketch"
                 }
             >
                 <PenTool size={20} className={selectedFace ? "text-blue-400" : ""} />
@@ -106,9 +107,10 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                             const feature = features.find(f => f.id === 'extrudeFromFace');
                             if (feature) onToolClick(feature);
                         }}
+                        data-testid="toolbar-extrude-face"
                         className="p-2 rounded bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-blue-300 transition-colors mt-1"
                         aria-label="Extrude Face"
-                        title={formatTooltip('Extrude Face', SHORTCUT_HINTS.extrude, 'Extrude the selected face')}
+                        title="Extrude Face"
                     >
                         <ArrowUpFromLine size={20} />
                     </button>

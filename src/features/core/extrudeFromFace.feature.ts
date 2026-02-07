@@ -9,23 +9,23 @@ export const ExtrudeFromFaceFeature: Feature = {
     label: 'Extrude Face',
     icon: ArrowUpFromLine,
     description: 'Extrude a selected planar face by a specified distance',
-    execute: ({ setActiveDialog, insertCode, setCode, code, codeContext }, params) => {
+    execute: (context, params) => {
         if (params && typeof params.distance === 'number' && typeof params.faceId === 'number') {
             const { distance, faceId, shapeIndex } = params;
 
             // Resolve the actual variable name using the unified context
             const targetName = typeof shapeIndex === 'number'
-                ? codeContext.getVariableAtIndex(shapeIndex)
+                ? context.codeContext.getVariableAtIndex(shapeIndex)
                 : null;
 
             // Prefer rewriting code to (1) name anonymous returns, and (2) replace the
             // selected shape in the return list with the fused result (no duplicates).
             const idx = typeof shapeIndex === 'number' ? shapeIndex : 0;
-            let workingCode = code;
+            let workingCode = context.code;
             let resolvedTarget = targetName;
 
             if (!resolvedTarget) {
-                const generatedBase = codeContext.generateUniqueName('shape');
+                const generatedBase = context.codeContext.generateUniqueName('shape');
                 try {
                     workingCode = promoteReturnExpressionAtIndexToVariable(workingCode, idx, generatedBase);
                     resolvedTarget = generatedBase;
@@ -35,9 +35,9 @@ export const ExtrudeFromFaceFeature: Feature = {
             }
 
             if (resolvedTarget) {
-                const faceName = codeContext.generateUniqueName(`${resolvedTarget}_face_${faceId}`);
-                const extrusionName = codeContext.generateUniqueName(`${resolvedTarget}_extrude_${faceId}`);
-                const resultName = codeContext.generateUniqueName(`${resolvedTarget}_fused`);
+                const faceName = context.codeContext.generateUniqueName(`${resolvedTarget}_face_${faceId}`);
+                const extrusionName = context.codeContext.generateUniqueName(`${resolvedTarget}_extrude_${faceId}`);
+                const resultName = context.codeContext.generateUniqueName(`${resolvedTarget}_fused`);
 
                 const statements = [
                     `const ${faceName} = ${resolvedTarget}.faces[${faceId}];`,
@@ -47,8 +47,8 @@ export const ExtrudeFromFaceFeature: Feature = {
 
                 try {
                     const next = insertStatementsAndReplaceReturnAtIndex(workingCode, statements, idx, resultName);
-                    setCode(next);
-                    setActiveDialog(null);
+                    context.setCode(next);
+                    context.closePanel('extrudeFromFace');
                     return;
                 } catch {
                     // Fallback to snippet insertion below.
@@ -56,11 +56,11 @@ export const ExtrudeFromFaceFeature: Feature = {
             }
 
             // Fallback: insert a snippet without mutating existing return structure.
-            const generatedCode = generateExtrudeFromFaceCode(codeContext, resolvedTarget, faceId, distance);
-            insertCode(generatedCode);
-            setActiveDialog(null);
+            const generatedCode = generateExtrudeFromFaceCode(context.codeContext, resolvedTarget, faceId, distance);
+            context.insertCode(generatedCode);
+            context.closePanel('extrudeFromFace');
         } else {
-            setActiveDialog('extrudeFromFace');
+            context.openPanel('extrudeFromFace');
         }
     }
 };

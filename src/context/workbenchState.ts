@@ -10,11 +10,13 @@ export type WorkbenchMode =
 
 export interface WorkbenchState {
     mode: WorkbenchMode;
+    activePanels: string[]; // List of IDs for floating panels
     // We can piggyback transient UI state here if needed, but keeping it minimal is safer
 }
 
 export const INITIAL_STATE: WorkbenchState = {
-    mode: { type: 'IDLE' }
+    mode: { type: 'IDLE' },
+    activePanels: []
 };
 
 // ============================================================================
@@ -28,7 +30,9 @@ export type WorkbenchAction =
     | { type: 'CLOSE_DIALOG' }
     | { type: 'START_FACE_SELECTION'; purpose: 'sketch' | 'feature'; featureId?: string }
     | { type: 'CANCEL_SELECTION' }
-    | { type: 'GO_IDLE' };
+    | { type: 'GO_IDLE' }
+    | { type: 'OPEN_PANEL'; id: string }
+    | { type: 'CLOSE_PANEL'; id: string };
 
 // ============================================================================
 // Reducer
@@ -78,6 +82,19 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
 
         case 'GO_IDLE':
             return { ...state, mode: { type: 'IDLE' } };
+
+        case 'OPEN_PANEL':
+            if (state.activePanels.includes(action.id)) return state;
+            return {
+                ...state,
+                activePanels: [...state.activePanels, action.id]
+            };
+
+        case 'CLOSE_PANEL':
+            return {
+                ...state,
+                activePanels: state.activePanels.filter(id => id !== action.id)
+            };
 
         default:
             return state;

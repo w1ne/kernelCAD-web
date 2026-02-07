@@ -3,15 +3,16 @@ import { OffsetPlaneFeature } from './plane.feature';
 import { type FeatureContext } from '../types';
 
 describe('OffsetPlaneFeature', () => {
-    it('should trigger the offsetPlane dialog on execution', () => {
+    it('should trigger the offsetPlane panel on execution', () => {
         const mockContext: FeatureContext = {
             insertCode: vi.fn(),
-            setActiveDialog: vi.fn(),
+            openPanel: vi.fn(),
+            closePanel: vi.fn(),
             code: '',
-        };
+        } as unknown as FeatureContext;
 
         OffsetPlaneFeature.execute(mockContext);
 
-        expect(mockContext.setActiveDialog).toHaveBeenCalledWith('offsetPlane');
+        expect(mockContext.openPanel).toHaveBeenCalledWith('offsetPlane');
     });
 });

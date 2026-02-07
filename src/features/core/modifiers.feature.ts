@@ -9,7 +9,7 @@ export const FilletFeature: Feature = {
     icon: FilletIcon,
     description: 'Round the edges of the selected shape',
     execute: (context) => {
-        context.setActiveDialog('fillet');
+        context.openPanel('fillet');
     }
 };
 
@@ -32,7 +32,7 @@ export const ChamferFeature: Feature = {
     icon: ChamferIcon,
     description: 'Bevel the edges of the selected shape',
     execute: (context) => {
-        context.setActiveDialog('chamfer');
+        context.openPanel('chamfer');
     }
 };
 
@@ -55,7 +55,7 @@ export const CutFeature: Feature = {
     icon: SquaresSubtract,
     description: 'Subtract one shape from another',
     execute: (context) => {
-        context.setActiveDialog('cut');
+        context.openPanel('cut');
     }
 };
 
@@ -65,7 +65,7 @@ export const UnionFeature: Feature = {
     icon: SquaresUnite,
     description: 'Fuse two shapes together',
     execute: (context) => {
-        context.setActiveDialog('union');
+        context.openPanel('union');
     }
 };
 
@@ -75,7 +75,7 @@ export const IntersectFeature: Feature = {
     icon: SquaresIntersect,
     description: 'Common volume of two shapes',
     execute: (context) => {
-        context.setActiveDialog('intersect');
+        context.openPanel('intersect');
     }
 };
 
