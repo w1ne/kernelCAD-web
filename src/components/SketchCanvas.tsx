@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pencil, Circle, Square, MousePointer2 } from 'lucide-react';
 import type { SketchEntity } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useSketchCanvas } from '../hooks/useSketchCanvas';
+import { SnapIndicators } from './Sketch/SnapIndicators';
 
 interface SketchCanvasProps {
     plane: string | SketchPlaneEntity;
@@ -54,6 +56,8 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
     const gridSize = pixelsPerUnit;
     const gridUnit = 1;  // 1 unit = 1mm
 
+    const [mousePosition, setMousePosition] = useState<{ x: number, y: number } | null>(null);
+
     const {
         tool,
         setTool,
@@ -72,6 +76,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         handleMouseDown,
         handleMouseMove,
         handleMouseUp,
+        clear
     } = useSketchCanvas({
         canvasWidth: size.width,
         canvasHeight: size.height,
@@ -279,7 +284,48 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
 
             ctx.setLineDash([]);
         }
-    }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas, drawGrid, drawLine, drawRectangle, drawCircle]);
+
+        // Draw guidelines (Alignment / H / V)
+        if (isDrawing && snapState && snapState.type !== 'none') {
+            const SNAP_GREEN = 'rgba(0, 255, 157, 0.4)'; // #00FF9D with opacity
+            ctx.strokeStyle = SNAP_GREEN;
+            ctx.setLineDash([8, 4]);
+            ctx.lineWidth = 1;
+
+            if (snapState.type === 'alignment' && snapState.refPoints) {
+                snapState.refPoints.forEach(pt => {
+                    const [px, py] = sketchToCanvas(pt);
+                    const [cx, cy] = sketchToCanvas(snapState.point);
+
+                    if (Math.abs(px - cx) < 1) { // Vertical guide
+                        ctx.beginPath();
+                        ctx.moveTo(px, 0);
+                        ctx.lineTo(px, canvas.height);
+                        ctx.stroke();
+                    }
+                    if (Math.abs(py - cy) < 1) { // Horizontal guide
+                        ctx.beginPath();
+                        ctx.moveTo(0, py);
+                        ctx.lineTo(canvas.width, py);
+                        ctx.stroke();
+                    }
+                });
+            } else if (snapState.type === 'horizontal' && startPoint) {
+                const [, sy] = sketchToCanvas(startPoint);
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(canvas.width, sy);
+                ctx.stroke();
+            } else if (snapState.type === 'vertical' && startPoint) {
+                const [sx] = sketchToCanvas(startPoint);
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, canvas.height);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+    }, [size, entities, isDrawing, startPoint, currentPoint, tool, sketchToCanvas, drawGrid, drawLine, drawRectangle, drawCircle, snapState]);
 
     return (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex flex-col" data-testid="sketch-canvas-overlay">
@@ -312,8 +358,15 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                 </div>
                 <div className="flex gap-2">
                     <button
+                        onClick={clear}
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-medium transition-colors"
+                        disabled={entities.length === 0}
+                    >
+                        Clear All
+                    </button>
+                    <button
                         onClick={() => onComplete(entities)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded"
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-medium transition-colors shadow-lg shadow-green-900/20"
                         disabled={entities.length === 0}
                     >
                         Done ({entities.length})
@@ -339,9 +392,15 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                     }}
                     onMouseMove={(e) => {
                         const rect = canvasRef.current?.getBoundingClientRect();
-                        if (rect) handleMouseMove(e.clientX - rect.left, e.clientY - rect.top);
+                        if (rect) {
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            setMousePosition({ x, y });
+                            handleMouseMove(x, y);
+                        }
                     }}
                     onMouseUp={handleMouseUp}
+                    onMouseLeave={() => setMousePosition(null)}
                     data-testid="sketch-canvas"
                 />
 
@@ -391,10 +450,16 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                                                     'Width'}
                                         </span>
                                         <div
-                                            className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'primary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                            className={`flex items-center gap-1 rounded px-2 py-1 transition-all ${inputTarget === 'primary'
+                                                ? (snapState?.type !== 'none' ? 'bg-[#00FF9D]/10 ring-1 ring-[#00FF9D]/50 shadow-[0_0_10px_rgba(0,255,157,0.1)]' : 'bg-blue-500/20 ring-1 ring-blue-500/50')
+                                                : 'bg-zinc-800'
+                                                }`}
                                             data-testid="primary-input-display"
                                         >
-                                            <span className={`text-sm font-mono ${inputTarget === 'primary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                            <span className={`text-sm font-mono transition-colors ${inputTarget === 'primary'
+                                                ? (snapState?.type !== 'none' ? 'text-[#00FF9D] font-bold' : 'text-blue-400')
+                                                : 'text-zinc-400'
+                                                }`}>
                                                 {dynamicInput || livePrimary}
                                             </span>
                                             <span className="text-[10px] text-zinc-500">mm</span>
@@ -408,10 +473,16 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                                                 {tool === 'line' ? 'Ang' : 'Height'}
                                             </span>
                                             <div
-                                                className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'secondary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                                className={`flex items-center gap-1 rounded px-2 py-1 transition-all ${inputTarget === 'secondary'
+                                                    ? (snapState?.type !== 'none' ? 'bg-[#00FF9D]/10 ring-1 ring-[#00FF9D]/50 shadow-[0_0_10px_rgba(0,255,157,0.1)]' : 'bg-blue-500/20 ring-1 ring-blue-500/50')
+                                                    : 'bg-zinc-800'
+                                                    }`}
                                                 data-testid="secondary-input-display"
                                             >
-                                                <span className={`text-sm font-mono ${inputTarget === 'secondary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                                <span className={`text-sm font-mono transition-colors ${inputTarget === 'secondary'
+                                                    ? (snapState?.type !== 'none' ? 'text-[#00FF9D] font-bold' : 'text-blue-400')
+                                                    : 'text-zinc-400'
+                                                    }`}>
                                                     {secondaryInput || liveSecondary}
                                                 </span>
                                                 <span className="text-[10px] text-zinc-500">{tool === 'line' ? 'deg' : 'mm'}</span>
@@ -446,19 +517,21 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                             top: sketchToCanvas(snapState.point)[1],
                         }}
                     >
-                        {snapState.type === 'coincident' && (
-                            <div className="w-4 h-4 border-2 border-yellow-400 bg-yellow-400/20" />
-                        )}
-                        {snapState.type === 'horizontal' && (
-                            <div className="flex flex-col items-center">
-                                <div className="text-[10px] font-bold text-yellow-400 bg-black/50 px-1 rounded">H</div>
-                            </div>
-                        )}
-                        {snapState.type === 'vertical' && (
-                            <div className="flex flex-row items-center">
-                                <div className="text-[10px] font-bold text-yellow-400 bg-black/50 px-1 rounded">V</div>
-                            </div>
-                        )}
+                        <SnapIndicators type={snapState.type} />
+                    </div>
+                )}
+
+                {/* Custom Cursor Badge */}
+                {mousePosition && (
+                    <div
+                        className="pointer-events-none absolute z-[100] transform translate-x-3 translate-y-3 flex items-center gap-1.5 bg-zinc-900/90 backdrop-blur-md px-2 py-1 rounded border border-white/10 shadow-2xl transition-opacity animate-in fade-in duration-200"
+                        style={{ left: mousePosition.x, top: mousePosition.y }}
+                    >
+                        {tool === 'line' && <Pencil size={12} className="text-blue-400" />}
+                        {tool === 'circle' && <Circle size={12} className="text-purple-400" />}
+                        {tool === 'rectangle' && <Square size={12} className="text-green-400" />}
+                        {tool === 'select' && <MousePointer2 size={12} className="text-zinc-400" />}
+                        <span className="text-[10px] text-zinc-100 font-bold uppercase tracking-widest">{tool}</span>
                     </div>
                 )}
             </div>

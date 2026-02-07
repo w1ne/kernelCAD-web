@@ -32,6 +32,8 @@ export interface LineEntity extends BaseSketchEntity {
     constraints?: {
         length?: number;
         angle?: number;
+        horizontal?: boolean;
+        vertical?: boolean;
     };
 }
 
