@@ -93,6 +93,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         sidePanelVisible: uiCtx.sidePanelVisible,
         setSidePanelVisible: uiCtx.setSidePanelVisible,
         toggleSidePanel: uiCtx.toggleSidePanel,
+        activePanels: uiCtx.activePanels,
         // Selection context
         selectedFace: faceSelection.selectedFace,
         selectedFacePlane: faceSelection.selectedFacePlane,
@@ -119,6 +120,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         hideItem: selectionCtx.hideItem,
         showAll: selectionCtx.showAll,
         toggleVisibility: selectionCtx.toggleVisibility,
+        openPanel: uiCtx.openPanel,
+        closePanel: uiCtx.closePanel,
         renameItem: (oldName: string, newName: string) => {
             if (!codeCtx.code) return;
             // Lazy load or import refactoring manager to avoid circular deps if needed?
@@ -166,6 +169,9 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         uiCtx.sidePanelVisible,
         uiCtx.setSidePanelVisible,
         uiCtx.toggleSidePanel,
+        uiCtx.activePanels,
+        uiCtx.openPanel,
+        uiCtx.closePanel,
         faceSelection.selectedFace,
         faceSelection.selectedFacePlane,
         faceSelection.setSelectedFace,

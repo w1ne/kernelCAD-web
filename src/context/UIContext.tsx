@@ -11,6 +11,9 @@ export interface UIContextType {
     sidePanelVisible: boolean;
     setSidePanelVisible: (visible: boolean) => void;
     toggleSidePanel: () => void;
+    activePanels: string[];
+    openPanel: (id: string) => void;
+    closePanel: (id: string) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -63,6 +66,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
         setSidePanelVisible(prev => !prev);
     }, []);
 
+    const openPanel = useCallback((id: string) => {
+        dispatch({ type: 'OPEN_PANEL', id });
+    }, [dispatch]);
+
+    const closePanel = useCallback((id: string) => {
+        dispatch({ type: 'CLOSE_PANEL', id });
+    }, [dispatch]);
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         window.localStorage.setItem(STORAGE_KEYS.viewMode, viewMode);
@@ -88,7 +99,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
         sidePanelVisible,
         setSidePanelVisible,
         toggleSidePanel,
-    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel]);
+        activePanels: state.activePanels,
+        openPanel,
+        closePanel,
+    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

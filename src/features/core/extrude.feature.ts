@@ -8,7 +8,7 @@ export const ExtrudeFeature: Feature = {
     icon: ExtrudeIcon,
     description: 'Extrude a sketch into a 3D solid',
     execute: (context) => {
-        context.setActiveDialog('extrude');
+        context.openPanel('extrude');
     }
 };
 

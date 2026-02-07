@@ -7,6 +7,6 @@ export const OffsetPlaneFeature: Feature = {
     icon: PlaneIcon,
     description: 'Create a reference plane from a face or existing plane',
     execute: (context) => {
-        context.setActiveDialog('offsetPlane');
+        context.openPanel('offsetPlane');
     }
 };

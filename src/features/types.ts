@@ -5,6 +5,8 @@ export interface FeatureContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     setCode: (code: string) => void;
     setActiveDialog: (dialogId: string | null) => void;
+    openPanel: (id: string) => void;
+    closePanel: (id: string) => void;
     code: string; // Current code for variable name resolution
     codeContext: CodeGenerationContext;
 }
