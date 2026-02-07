@@ -54,6 +54,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                 onHover={setHoveredItemId}
                 onToggleVisibility={toggleVisibility}
                 onTogglePlane={togglePlaneVisibility}
+                onSelectPlane={(id) => setSelectedItemId(id)}
                 onRename={renameItem}
             />
         </div>

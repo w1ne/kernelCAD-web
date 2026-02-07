@@ -134,10 +134,10 @@
 - [ ] **Interactive Extrude**: Click and drag a sketch face to extrude it in 3D (See [Specs](./DETAILED_INTERACTION_SPECS.md#31-extrude-e)).
 - [ ] **Selection Highlighting**: Hover and click highlighting (Orange/Blue) as per [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md).
 
-- [ ] **Visibility & Selection System** (See [Spec](./VISIBILITY_AND_SELECTION_SPEC.md)):
-  - [ ] Per-object visibility toggles in Scene Browser.
-  - [ ] Universal selection for Solids, Planes, and Sketches.
-  - [ ] Visual highlighting of selected objects in 3D scene.
+- [x] **Visibility & Selection System** (See [Spec](./VISIBILITY_AND_SELECTION_SPEC.md)):
+  - [x] Per-object visibility toggles in Scene Browser.
+  - [x] Universal selection for Solids, Planes, and Sketches.
+  - [x] Visual highlighting of selected objects in 3D scene.
 
 ---
 

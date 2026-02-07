@@ -67,6 +67,7 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
         setSecondaryInput,
         inputTarget,
         setInputTarget,
+        snapState,
         sketchToCanvas,
         handleMouseDown,
         handleMouseMove,
@@ -353,56 +354,111 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                             top: sketchToCanvas(currentPoint)[1] - 20,
                         }}
                     >
-                        <div className="flex flex-col gap-1 rounded-lg border border-white/10 bg-zinc-900/90 p-2 shadow-2xl backdrop-blur-xl">
-                            {/* Primary Input */}
-                            <div className="flex items-center gap-2">
-                                <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
-                                    {tool === 'line' ? 'Len' :
-                                        tool === 'circle' ? 'Rad' :
-                                            'Width'}
-                                </span>
-                                <div
-                                    className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'primary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
-                                    data-testid="primary-input-display"
-                                >
-                                    <span className={`text-sm font-mono ${inputTarget === 'primary' ? 'text-blue-400' : 'text-zinc-400'}`}>
-                                        {dynamicInput || '---'}
-                                    </span>
-                                    <span className="text-[10px] text-zinc-500">mm</span>
-                                </div>
-                            </div>
 
-                            {/* Secondary Input (Conditional) */}
-                            {(tool === 'line' || tool === 'rectangle') && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
-                                        {tool === 'line' ? 'Ang' : 'Height'}
-                                    </span>
-                                    <div
-                                        className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'secondary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
-                                        data-testid="secondary-input-display"
-                                    >
-                                        <span className={`text-sm font-mono ${inputTarget === 'secondary' ? 'text-blue-400' : 'text-zinc-400'}`}>
-                                            {secondaryInput || '---'}
+                        {(() => {
+                            // Calculate live values if input is empty
+                            let livePrimary = '---';
+                            let liveSecondary = '---';
+
+                            if (startPoint) {
+                                if (tool === 'line') {
+                                    const dx = currentPoint[0] - startPoint[0];
+                                    const dy = currentPoint[1] - startPoint[1];
+                                    const len = Math.sqrt(dx * dx + dy * dy);
+                                    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+                                    livePrimary = len.toFixed(1);
+                                    liveSecondary = Math.abs(ang).toFixed(0);
+                                } else if (tool === 'circle') {
+                                    const dx = currentPoint[0] - startPoint[0];
+                                    const dy = currentPoint[1] - startPoint[1];
+                                    const r = Math.sqrt(dx * dx + dy * dy);
+                                    livePrimary = r.toFixed(1);
+                                } else if (tool === 'rectangle') {
+                                    const w = Math.abs(currentPoint[0] - startPoint[0]);
+                                    const h = Math.abs(currentPoint[1] - startPoint[1]);
+                                    livePrimary = w.toFixed(1);
+                                    liveSecondary = h.toFixed(1);
+                                }
+                            }
+
+                            return (
+                                <div className="flex flex-col gap-1 rounded-lg border border-white/10 bg-zinc-900/90 p-2 shadow-2xl backdrop-blur-xl">
+                                    {/* Primary Input */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
+                                            {tool === 'line' ? 'Len' :
+                                                tool === 'circle' ? 'Rad' :
+                                                    'Width'}
                                         </span>
-                                        <span className="text-[10px] text-zinc-500">{tool === 'line' ? 'deg' : 'mm'}</span>
+                                        <div
+                                            className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'primary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                            data-testid="primary-input-display"
+                                        >
+                                            <span className={`text-sm font-mono ${inputTarget === 'primary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                                {dynamicInput || livePrimary}
+                                            </span>
+                                            <span className="text-[10px] text-zinc-500">mm</span>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
 
-                            <div className="mt-1 flex flex-col gap-0.5 border-t border-white/5 pt-1">
-                                {(tool === 'line' || tool === 'rectangle') && (
-                                    <div className="flex items-center gap-1 text-[10px] text-zinc-500">
-                                        <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Tab</kbd>
-                                        <span>to switch fields</span>
+                                    {/* Secondary Input (Conditional) */}
+                                    {(tool === 'line' || tool === 'rectangle') && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-12 text-[10px] font-bold uppercase text-zinc-500">
+                                                {tool === 'line' ? 'Ang' : 'Height'}
+                                            </span>
+                                            <div
+                                                className={`flex items-center gap-1 rounded px-2 py-1 ${inputTarget === 'secondary' ? 'bg-blue-500/20 ring-1 ring-blue-500/50' : 'bg-zinc-800'}`}
+                                                data-testid="secondary-input-display"
+                                            >
+                                                <span className={`text-sm font-mono ${inputTarget === 'secondary' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                                                    {secondaryInput || liveSecondary}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-500">{tool === 'line' ? 'deg' : 'mm'}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-1 flex flex-col gap-0.5 border-t border-white/5 pt-1">
+                                        {(tool === 'line' || tool === 'rectangle') && (
+                                            <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+                                                <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Tab</kbd>
+                                                <span>to switch fields</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+                                            <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Enter</kbd>
+                                            <span>to finish</span>
+                                        </div>
                                     </div>
-                                )}
-                                <div className="flex items-center gap-1 text-[10px] text-zinc-500">
-                                    <kbd className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-400">Enter</kbd>
-                                    <span>to finish</span>
                                 </div>
+                            );
+                        })()}
+                    </div>
+                )}
+
+                {/* Snap Indicators */}
+                {isDrawing && snapState && snapState.type !== 'none' && (
+                    <div
+                        className="pointer-events-none absolute z-50 transform -translate-x-1/2 -translate-y-1/2"
+                        style={{
+                            left: sketchToCanvas(snapState.point)[0],
+                            top: sketchToCanvas(snapState.point)[1],
+                        }}
+                    >
+                        {snapState.type === 'coincident' && (
+                            <div className="w-4 h-4 border-2 border-yellow-400 bg-yellow-400/20" />
+                        )}
+                        {snapState.type === 'horizontal' && (
+                            <div className="flex flex-col items-center">
+                                <div className="text-[10px] font-bold text-yellow-400 bg-black/50 px-1 rounded">H</div>
                             </div>
-                        </div>
+                        )}
+                        {snapState.type === 'vertical' && (
+                            <div className="flex flex-row items-center">
+                                <div className="text-[10px] font-bold text-yellow-400 bg-black/50 px-1 rounded">V</div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

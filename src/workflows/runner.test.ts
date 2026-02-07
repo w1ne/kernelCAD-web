@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from 'vitest';
+import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { initReplicad, executeGeometry } from '../test/regressionTestHelpers';
 import { getWorkflows } from './registry';
 

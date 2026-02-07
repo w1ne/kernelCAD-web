@@ -17,6 +17,15 @@ vi.mock('../SidePanel', () => ({
     SidePanel: () => <div data-testid="mock-sidepanel">Side Panel</div>
 }));
 
+// Use a variable to control mock state
+let mockSidePanelVisible = true;
+
+vi.mock('../../../context/UIContext', () => ({
+    useUI: () => ({
+        sidePanelVisible: mockSidePanelVisible
+    })
+}));
+
 describe('NavigationPanel', () => {
     afterEach(() => {
         cleanup();
@@ -30,14 +39,22 @@ describe('NavigationPanel', () => {
         children: <div data-testid="child-element">Editor Content</div>
     };
 
-    it('should render the toolbar in code mode', () => {
+    it('should NOT render the side panel in code mode if hidden', () => {
+        mockSidePanelVisible = false;
         render(<NavigationPanel {...defaultProps} />);
         expect(screen.getByTestId('mock-toolbar')).toBeTruthy();
         expect(screen.queryByTestId('mock-sidepanel')).toBeNull();
         expect(screen.getByTestId('child-element')).toBeTruthy();
     });
 
-    it('should render both toolbar and sidepanel in gui mode', () => {
+    it('should render the side panel in code mode if toggled visible', () => {
+        mockSidePanelVisible = true;
+        render(<NavigationPanel {...defaultProps} />);
+        expect(screen.queryByTestId('mock-sidepanel')).toBeTruthy();
+    });
+
+    it('should render sidepanel in gui mode if visible', () => {
+        mockSidePanelVisible = true;
         render(<NavigationPanel {...defaultProps} viewMode="gui" />);
         expect(screen.getByTestId('mock-toolbar')).toBeTruthy();
         expect(screen.getByTestId('mock-sidepanel')).toBeTruthy();

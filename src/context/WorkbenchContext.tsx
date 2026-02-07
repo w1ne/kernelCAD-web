@@ -90,6 +90,9 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         setViewMode3D: uiCtx.setViewMode3D,
         activeDialog: uiCtx.activeDialog,
         setActiveDialog: uiCtx.setActiveDialog,
+        sidePanelVisible: uiCtx.sidePanelVisible,
+        setSidePanelVisible: uiCtx.setSidePanelVisible,
+        toggleSidePanel: uiCtx.toggleSidePanel,
         // Selection context
         selectedFace: faceSelection.selectedFace,
         selectedFacePlane: faceSelection.selectedFacePlane,
@@ -160,6 +163,9 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         uiCtx.setViewMode3D,
         uiCtx.activeDialog,
         uiCtx.setActiveDialog,
+        uiCtx.sidePanelVisible,
+        uiCtx.setSidePanelVisible,
+        uiCtx.toggleSidePanel,
         faceSelection.selectedFace,
         faceSelection.selectedFacePlane,
         faceSelection.setSelectedFace,
@@ -213,52 +219,96 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         const expose = import.meta.env.DEV || import.meta.env.MODE === 'test';
         if (!expose || typeof window === 'undefined') return;
 
-        window.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
             faceSelection.setSelectedFace({ shapeIndex, faceId });
         };
 
-        window.getSelectedFace = () => faceSelection.selectedFace;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getSelectedFace = () => faceSelection.selectedFace;
 
-        window.getGeometries = () => geometryCtx.geometries;
-        window.getPreviewGeometries = () => geometryCtx.previewGeometries;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getGeometries = () => geometryCtx.geometries;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getPreviewGeometries = () => geometryCtx.previewGeometries;
 
-        window.getSketches = () => geometryCtx.sketchesGeometries;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getSketches = () => geometryCtx.sketchesGeometries;
 
-        window.__TEST_SELECT_SKETCH = (name: string | null) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).setCode = (code: string) => codeCtx.setCode(code);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).startFaceSelection = (purpose?: string) => {
+            // Dispatch directly if needed or use the context helper
+            // But startFaceSelectionWithDialog doesn't take arguments
+            if (purpose === 'sketch') {
+                // For testing, we might want to bypass dialog
+            }
+            faceSelection.startFaceSelection();
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).__TEST_SELECT_SKETCH = (name: string | null) => {
             selectionCtx.setSelectedSketchName(name);
         };
 
-        window.__TEST_SELECT_ITEM = (id: string | null) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).__TEST_SELECT_ITEM = (id: string | null) => {
             selectionCtx.setSelectedItemId(id);
         };
 
-        window.__TEST_SET_HOVERED = (id: string | null) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).__TEST_SET_HOVERED = (id: string | null) => {
             selectionCtx.setHoveredItemId(id);
         };
 
-        window.getHoveredItemId = () => selectionCtx.hoveredItemId;
-        window.selectedItemId = () => selectionCtx.selectedItemId;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getHoveredItemId = () => selectionCtx.hoveredItemId;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).selectedItemId = () => selectionCtx.selectedItemId;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getSelectedItemId = () => selectionCtx.selectedItemId;
 
-        window.__TEST_TOGGLE_VISIBILITY = (id: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).__TEST_TOGGLE_VISIBILITY = (id: string) => {
             selectionCtx.toggleVisibility(id);
         };
 
-        window.isComputing = () => geometryCtx.isComputing;
-        window.getExecutionCount = () => geometryCtx.executionCount;
-        window.getError = () => geometryCtx.error;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).isComputing = () => geometryCtx.isComputing;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getExecutionCount = () => geometryCtx.executionCount;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).getError = () => geometryCtx.error;
 
         return () => {
-            delete window.__TEST_SELECT_FACE;
-            delete window.__TEST_SELECT_SKETCH;
-            delete window.getSelectedFace;
-            delete window.getGeometries;
-            delete window.getPreviewGeometries;
-            delete window.getSketches;
-            delete window.isComputing;
-            delete window.getExecutionCount;
-            delete window.getError;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).__TEST_SELECT_FACE;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).__TEST_SELECT_SKETCH;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getSelectedFace;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getGeometries;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getPreviewGeometries;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getSketches;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).setCode;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).startFaceSelection;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).isComputing;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getExecutionCount;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getError;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).getSelectedItemId;
         };
-    }, [faceSelection, geometryCtx.geometries, geometryCtx.previewGeometries, geometryCtx.sketchesGeometries, geometryCtx.isComputing, geometryCtx.executionCount, geometryCtx.error, selectionCtx]);
+    }, [faceSelection, geometryCtx.geometries, geometryCtx.previewGeometries, geometryCtx.sketchesGeometries, geometryCtx.isComputing, geometryCtx.executionCount, geometryCtx.error, selectionCtx, codeCtx]);
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;
 }

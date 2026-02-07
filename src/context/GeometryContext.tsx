@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
-import { getSketchVariablesAST } from '../lib/ast';
+import { getSketchVariablesAST, getReturnedVariables } from '../lib/ast';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
@@ -78,17 +78,35 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     }
                 })();
 
-                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`.
-                // Remap those names to the real variable names from user code so viewport
-                // selection can drive feature dialogs (extrude/revolve) correctly.
+                const returnedVarNames = (() => {
+                    try {
+                        return getReturnedVariables(code);
+                    } catch {
+                        return [];
+                    }
+                })();
+
+                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`
+                // and returned sketch ids like `return-sketch-${index}-${Date.now()}`.
+                // Remap those names to the real variable names from user code.
                 const remappedSketches = result.sketches.map((s) => {
-                    const m = /^sketch-(\d+)-/.exec(s.id);
-                    if (!m) return s;
-                    const idx = Number(m[1]);
-                    const name = sketchVarNames[idx];
-                    if (!name) return s;
-                    if (s.name === name) return s;
-                    return { ...s, name };
+                    // Path A: Tracked sketches (from startSketch/sketchOnFace variables)
+                    const mTracked = /^sketch-(\d+)-/.exec(s.id);
+                    if (mTracked) {
+                        const idx = Number(mTracked[1]);
+                        const name = sketchVarNames[idx];
+                        if (name) return { ...s, name };
+                    }
+
+                    // Path B: Returned sketches (wires of returned shapes)
+                    const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
+                    if (mReturned) {
+                        const idx = Number(mReturned[1]);
+                        const name = returnedVarNames[idx];
+                        if (name) return { ...s, name };
+                    }
+
+                    return s;
                 });
 
                 setSketchesGeometries(remappedSketches);
@@ -156,14 +174,29 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 }
             })();
 
+            const returnedVarNames = (() => {
+                try {
+                    return getReturnedVariables(codeToExecute);
+                } catch {
+                    return [];
+                }
+            })();
+
             const remappedSketches = result.sketches.map((s) => {
-                const m = /^sketch-(\d+)-/.exec(s.id);
-                if (!m) return s;
-                const idx = Number(m[1]);
-                const name = sketchVarNames[idx];
-                if (!name) return s;
-                if (s.name === name) return s;
-                return { ...s, name };
+                const mTracked = /^sketch-(\d+)-/.exec(s.id);
+                if (mTracked) {
+                    const idx = Number(mTracked[1]);
+                    const name = sketchVarNames[idx];
+                    if (name) return { ...s, name };
+                }
+
+                const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
+                if (mReturned) {
+                    const idx = Number(mReturned[1]);
+                    const name = returnedVarNames[idx];
+                    if (name) return { ...s, name };
+                }
+                return s;
             });
 
             setSketchesGeometries(remappedSketches);

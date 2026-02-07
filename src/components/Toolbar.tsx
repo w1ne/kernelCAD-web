@@ -1,4 +1,4 @@
-import { PenTool, ArrowUpFromLine, Eye, EyeOff } from 'lucide-react';
+import { PenTool, ArrowUpFromLine, Eye, EyeOff, Layers } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { FEATURE_SHORTCUTS, formatTooltip, SHORTCUT_HINTS } from '../constants/shortcuts';
@@ -16,7 +16,9 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
         setSketchMode,
         showSketches,
         toggleSketchVisibility,
-        codeContext
+        codeContext,
+        toggleSidePanel,
+        sidePanelVisible,
     } = useWorkbench();
 
     // Separate creation tools vs construction vs modification tools
@@ -59,6 +61,18 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
 
     return (
         <div className="flex flex-col gap-2 p-2 bg-[#111] border-r border-[#333] w-14 items-center">
+            {/* Side Panel Toggle */}
+            <button
+                onClick={toggleSidePanel}
+                className={`p-2 rounded hover:bg-[#333] transition-colors ${sidePanelVisible ? 'text-blue-400' : 'text-gray-500'}`}
+                aria-label="Toggle Scene Browser"
+                title={sidePanelVisible ? "Hide Scene Browser" : "Show Scene Browser"}
+            >
+                <Layers size={20} />
+            </button>
+
+            <div className="w-full h-px bg-[#333] my-1" />
+
             {/* Sketch button */}
             <button
                 onClick={handleSketchClick}

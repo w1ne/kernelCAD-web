@@ -43,6 +43,20 @@ vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => mockUseWorkbench()
 }));
 
+vi.mock('../context/UIContext', () => ({
+    useUI: () => ({
+        viewMode: 'gui',
+        setViewMode: vi.fn(),
+        viewMode3D: 'shadedWithEdges',
+        setViewMode3D: vi.fn(),
+        activeDialog: null,
+        setActiveDialog: vi.fn(),
+        sidePanelVisible: true,
+        setSidePanelVisible: vi.fn(),
+        toggleSidePanel: vi.fn(),
+    })
+}));
+
 vi.mock('../hooks/useCodeInsertion', () => ({
     useCodeInsertion: () => ({
         insertCode: mockInsertCode

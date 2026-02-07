@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { SketchData, SketchModeState } from '../types/sketch';
 import type { SketchPlaneEntity } from '../types/plane';
 
@@ -77,7 +77,22 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         });
     }, []);
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-    const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+    const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem('kernelcad_hidden_ids');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.warn('Failed to load hiddenIds:', e);
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('kernelcad_hidden_ids', JSON.stringify(hiddenIds));
+        }
+    }, [hiddenIds]);
 
     // Central state machine
     const { state, dispatch } = useWorkbenchState();
@@ -94,9 +109,9 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     }, [dispatch]);
 
     const [planes, setPlanes] = useState<SketchPlaneEntity[]>([
-        { id: 'base-xy', name: 'Origin XY', type: 'base', origin: [0, 0, 0], normal: [0, 0, 1], visible: true },
-        { id: 'base-xz', name: 'Origin XZ', type: 'base', origin: [0, 0, 0], normal: [0, 1, 0], visible: true },
-        { id: 'base-yz', name: 'Origin YZ', type: 'base', origin: [0, 0, 0], normal: [1, 0, 0], visible: true },
+        { id: 'base-xy', name: 'Origin XY', type: 'base', origin: [0, 0, 0], normal: [0, 0, 1] },
+        { id: 'base-xz', name: 'Origin XZ', type: 'base', origin: [0, 0, 0], normal: [0, 1, 0] },
+        { id: 'base-yz', name: 'Origin YZ', type: 'base', origin: [0, 0, 0], normal: [1, 0, 0] },
     ]);
 
     const addPlane = useCallback((plane: SketchPlaneEntity) => {
@@ -151,15 +166,13 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
         setSketches(prev => [...prev, sketch]);
     }, []);
 
-    const togglePlaneVisibility = useCallback((id: string) => {
-        setPlanes(prev => prev.map(p => p.id === id ? { ...p, visible: !p.visible } : p));
-        // Also sync to hiddenIds for unified lookup if needed, 
-        // but for now we keep planes slightly separate as they have their own entities.
-    }, []);
-
     const toggleVisibility = useCallback((id: string) => {
         setHiddenIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     }, []);
+
+    const togglePlaneVisibility = useCallback((id: string) => {
+        toggleVisibility(id);
+    }, [toggleVisibility]);
 
     const hideItem = useCallback((id: string) => {
         setHiddenIds(prev => prev.includes(id) ? prev : [...prev, id]);
@@ -167,8 +180,6 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
 
     const showAll = useCallback(() => {
         setHiddenIds([]);
-        // Optionally show all planes too if we want a true "Show All"
-        setPlanes(prev => prev.map(p => ({ ...p, visible: true })));
     }, []);
 
     const value: SelectionContextType = useMemo(() => ({

@@ -16,6 +16,7 @@ interface SceneBrowserProps {
     onHover: (id: string | null) => void;
     onToggleVisibility: (id: string) => void;
     onTogglePlane: (id: string) => void;
+    onSelectPlane?: (id: string) => void;
     onRename?: (oldName: string, newName: string) => void;
 }
 
@@ -48,6 +49,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
     onHover,
     onToggleVisibility,
     onTogglePlane,
+    onSelectPlane,
     onRename
 }) => {
     const [constructionOpen, setConstructionOpen] = React.useState(true);
@@ -139,25 +141,37 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                 </button>
                 {constructionOpen && (
                     <div className="py-1">
-                        {planes.map((plane) => (
-                            <div
-                                key={plane.id}
-                                className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] group transition-colors ${selectedItemId === plane.id ? 'bg-selection-blue/20 text-white' : ''}`}
-                            >
-                                <Plane size={14} className="text-gray-500" />
-                                <span className="font-sans truncate">{plane.name}</span>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onTogglePlane(plane.id);
+                        {planes.map((plane) => {
+                            const isHidden = hiddenIds.includes(plane.id);
+                            return (
+                                <div
+                                    key={plane.id}
+                                    data-testid={`scene-item-${plane.id}`}
+                                    onClick={() => {
+                                        if (onToggleSelection) {
+                                            onToggleSelection(plane.id, false);
+                                        } else if (onSelectPlane) {
+                                            onSelectPlane(plane.id);
+                                        }
                                     }}
-                                    className={`ml-auto ${plane.visible ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} p-1 hover:bg-[#333] rounded transition-all`}
-                                    title={plane.visible ? "Hide Plane" : "Show Plane"}
+                                    className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] group transition-colors cursor-pointer ${selectedItemId === plane.id ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
                                 >
-                                    {plane.visible ? <Eye size={12} className="text-blue-400" /> : <EyeOff size={12} className="text-gray-600" />}
-                                </button>
-                            </div>
-                        ))}
+                                    <Plane size={14} className="text-gray-500" />
+                                    <span className={`font-sans truncate ${isHidden ? 'text-gray-600 italic' : ''}`}>{plane.name}</span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onTogglePlane(plane.id);
+                                        }}
+                                        data-testid={`visibility-toggle-${plane.id}`}
+                                        className={`ml-auto ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'} p-1 hover:bg-[#333] rounded transition-all`}
+                                        title={isHidden ? "Show Plane" : "Hide Plane"}
+                                    >
+                                        {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -213,7 +227,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                                                     e.stopPropagation();
                                                     onToggleVisibility(item.name);
                                                 }}
-                                                className={`p-1 hover:bg-[#444] rounded transition-all ${isHidden ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                                                className={`p-1 hover:bg-[#444] rounded transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                                                 title={isHidden ? "Show Operation" : "Hide Operation"}
                                             >
                                                 {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}

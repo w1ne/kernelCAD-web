@@ -99,6 +99,19 @@ Found a bug? [Open an issue](https://github.com/w1ne/kernelCAD/issues)
 
 All notable changes to this project will be documented in this file.
  
+## [Unreleased]
+### Added - Visibility & Selection System
+- **Visibility Persistence**:
+    - Implemented `localStorage` persistence for `hiddenIds`.
+    - Hiding objects in Scene Browser (via Eye icon) is now preserved across page reloads.
+- **Universal Selection**:
+    - **Plane Selection**: Made all plane types (Base, Offset, Face-derived) selectable in the 3D Viewer.
+    - **Visual Feedback**: Clicking a plane highlights it with `selection-blue`.
+    - **Synchronization**: Selection state stays in sync between 3D Viewer and Scene Browser.
+- **Testing Infrastructure**:
+    - Enhanced `WorkbenchContext` to expose `setCode`, `startFaceSelection` and selection helpers to `window` for robust E2E testing.
+    - Added `tests/visibility_selection.spec.ts` to verify persistence and interaction flows.
+
 ## [0.10.0] - 2026-02-04
 ### Added - Release Automation & Testing Infrastructure
 - **Release Automation**:

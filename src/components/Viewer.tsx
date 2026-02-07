@@ -11,7 +11,6 @@ import { computeCentroid } from "../lib/sketchHelpers";
 import { HoverManager, type HoverResult } from "../features/interaction/HoverManager";
 import { SnapManager, type SnapResult } from "../features/interaction/SnapManager";
 import { CAD_COLORS, CAD_COLORS_HEX } from "../constants/colors";
-import { extractVariables } from "../lib/codeAnalysis";
 
 // Constants for sketch camera
 export const SKETCH_FOV = 40;
@@ -86,9 +85,10 @@ function SketchLine({
 }
 
 function PlaneLayer({ planes }: { planes: SketchPlaneEntity[] }) {
+    const { hiddenIds } = useWorkbench();
     return (
         <group>
-            {planes.filter(p => p.visible).map(plane => (
+            {planes.filter(p => !hiddenIds.includes(p.id)).map(plane => (
                 <PlaneEntity key={plane.id} plane={plane} />
             ))}
         </group>
@@ -96,6 +96,7 @@ function PlaneLayer({ planes }: { planes: SketchPlaneEntity[] }) {
 }
 
 function PlaneEntity({ plane }: { plane: SketchPlaneEntity }) {
+    const { toggleSelection, setSelectedItemId, selectedItemIds } = useWorkbench();
     // Generate a geometric plane mesh
     // Standard size for reference planes
     const size = 20;
@@ -115,6 +116,7 @@ function PlaneEntity({ plane }: { plane: SketchPlaneEntity }) {
     }
 
     const meshRef = useRef<THREE.Mesh>(null);
+    const isSelected = selectedItemIds.includes(plane.id);
 
     useFrame(() => {
         if (meshRef.current) {
@@ -130,19 +132,26 @@ function PlaneEntity({ plane }: { plane: SketchPlaneEntity }) {
     });
 
     return (
-        <mesh ref={meshRef}>
+        <mesh
+            ref={meshRef}
+            onClick={(e) => {
+                e.stopPropagation();
+                toggleSelection(plane.id, e.metaKey || e.ctrlKey || e.shiftKey);
+                setSelectedItemId(plane.id);
+            }}
+        >
             <primitive object={geometry} attach="geometry" />
             <meshBasicMaterial
-                color={color}
+                color={isSelected ? CAD_COLORS.selection : color}
                 transparent
-                opacity={0.15}
+                opacity={isSelected ? 0.3 : 0.15}
                 side={THREE.DoubleSide}
                 depthWrite={false}
             />
             {/* Outline */}
             <lineSegments>
                 <edgesGeometry args={[geometry]} />
-                <lineBasicMaterial color={color} transparent opacity={0.5} />
+                <lineBasicMaterial color={isSelected ? CAD_COLORS.selection : color} transparent opacity={isSelected ? 0.8 : 0.5} />
             </lineSegments>
         </mesh>
     );
@@ -261,11 +270,22 @@ function ConsolidatedShape({
 
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
 
-    // Compute edges for the entire shape ONCE
+    // Compute edges for the entire shape ONCE (or use pre-computed)
     const edgesGeo = useMemo(() => {
+        if (geometry.edges) {
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
+            return geo;
+        }
         if (!mergedGeometry) return null;
         return new THREE.EdgesGeometry(mergedGeometry, 15);
-    }, [mergedGeometry]);
+    }, [mergedGeometry, geometry.edges]);
+
+    useEffect(() => {
+        return () => {
+            edgesGeo?.dispose();
+        };
+    }, [edgesGeo]);
 
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         // e.stopPropagation(); // Stop propagation to other objects, but allow bubbling if needed? 
@@ -772,7 +792,65 @@ function BetterHighlightOverlay({ hovered, geometries }: { hovered: HoverResult 
 /**
  * SelectionOutline renders a high-visibility outline around the selected object(s).
  */
-function SelectionOutline({ geometries, itemNames, selectedItemIds }: { geometries: GeometryResult[], itemNames: string[], selectedItemIds: string[] }) {
+// Helper component for rendering selection outline of a single geometry
+function SelectedGeometryOutline({ geometry }: { geometry: GeometryResult }) {
+    // Case 1: Pre-computed edges (Analytical)
+    if (geometry.edges) {
+        return <AnalyticalEdgeOutline edges={geometry.edges} />;
+    }
+
+    // Case 2: Fallback to face-based edges (Visual)
+    return (
+        <group>
+            {geometry.faces.map((face) => (
+                <FaceEdgeOutline key={face.faceId} face={face} />
+            ))}
+        </group>
+    );
+}
+
+function AnalyticalEdgeOutline({ edges }: { edges: Float32Array }) {
+    const geometry = useMemo(() => {
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(edges, 3));
+        return geo;
+    }, [edges]);
+
+    useEffect(() => {
+        return () => geometry.dispose();
+    }, [geometry]);
+
+    return (
+        <lineSegments geometry={geometry} renderOrder={1002}>
+            <lineBasicMaterial color={CAD_COLORS_HEX.selection} linewidth={3} depthTest={false} transparent opacity={0.8} />
+        </lineSegments>
+    );
+}
+
+function FaceEdgeOutline({ face }: { face: FaceGeometry }) {
+    const geometry = useMemo(() => {
+        const threeGeometry = new THREE.BufferGeometry();
+        threeGeometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
+        threeGeometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+        threeGeometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
+        return new THREE.EdgesGeometry(threeGeometry, 15);
+    }, [face]);
+
+    useEffect(() => {
+        return () => geometry.dispose();
+    }, [geometry]);
+
+    return (
+        <lineSegments geometry={geometry} renderOrder={1002}>
+            <lineBasicMaterial color={CAD_COLORS_HEX.selection} linewidth={3} depthTest={false} transparent opacity={0.8} />
+        </lineSegments>
+    );
+}
+
+/**
+ * SelectionOutline renders a high-visibility outline around the selected object(s).
+ */
+function SelectionOutline({ geometries, itemNames, selectedItemIds }: { geometries: GeometryResult[], itemNames: (string | null)[], selectedItemIds: string[] }) {
     // Collect all selected geometries
     const selectedGeometries = useMemo(() => {
         return selectedItemIds.map(id => {
@@ -786,26 +864,12 @@ function SelectionOutline({ geometries, itemNames, selectedItemIds }: { geometri
     return (
         <group>
             {selectedGeometries.map((geometry, i) => (
-                <group key={`sel-group-${i}`}>
-                    {geometry.faces.map((face) => {
-                        const threeGeometry = new THREE.BufferGeometry();
-                        threeGeometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-                        threeGeometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-                        threeGeometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
-
-                        const edgesGeo = new THREE.EdgesGeometry(threeGeometry, 15);
-
-                        return (
-                            <lineSegments key={`outline-${face.faceId}`} geometry={edgesGeo} renderOrder={1002}>
-                                <lineBasicMaterial color={CAD_COLORS_HEX.selection} linewidth={3} depthTest={false} transparent opacity={0.8} />
-                            </lineSegments>
-                        );
-                    })}
-                </group>
+                <SelectedGeometryOutline key={i} geometry={geometry} />
             ))}
         </group>
     );
 }
+
 
 export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D }: ViewerProps) {
     const {
@@ -814,15 +878,18 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setSelectedSketchName,
         sketchMode,
         planes,
-        code,
         hiddenIds,
         selectedItemIds, // New
         setSelectedItemId,
-        toggleSelection // New
+        toggleSelection, // New
+        codeContext
     } = useWorkbench();
 
     // Correlate geometries with names from code
-    const itemNames = useMemo(() => extractVariables(code).map(v => v.name), [code]);
+    // We use the AST-derived returned variables to ensure alignment with worker results
+    const itemNames = useMemo(() => {
+        return (codeContext?.returnedVariables as (string | null)[]) || [];
+    }, [codeContext]);
 
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
@@ -892,7 +959,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                                 shapeIndex={i}
                                 viewMode3D={viewMode3D}
                                 isSelected={name ? selectedItemIds.includes(name) : false}
-                                name={name}
+                                name={name ?? undefined}
                             />
                         );
                     })}

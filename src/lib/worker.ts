@@ -454,8 +454,27 @@ self.onmessage = (e: MessageEvent<unknown>) => {
 
             if (faceGeometries.length > 0) {
               const volume = tryGetVolume(shape);
-              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}`);
-              geometries.push({ faces: faceGeometries, volume });
+
+              // Extract Analytical Edges
+              let edges: Float32Array | undefined;
+              try {
+                const meshEdgesFn = getFn(shape, 'meshEdges');
+                if (meshEdgesFn) {
+                  // Use a fine tolerance for visualization edges
+                  const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+                  if (isRecord(edgeRes) && Array.isArray((edgeRes as UnknownRecord).lines)) {
+                    const lines = (edgeRes as UnknownRecord).lines as number[];
+                    if (lines.length > 0) {
+                      edges = new Float32Array(lines);
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn(`Worker: Failed to mesh edges for shape ${shapeIndex}`, e);
+              }
+
+              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}, Edges: ${edges?.length ? (edges.length / 3) + ' pts' : 'none'}`);
+              geometries.push({ faces: faceGeometries, volume, edges });
             } else {
               console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
             }
@@ -518,6 +537,9 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           g.faces.forEach((f) => {
             transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
           });
+          if (g.edges) {
+            transferables.push(g.edges.buffer);
+          }
         });
         allSketches.forEach((s) => transferables.push(s.vertices.buffer));
 

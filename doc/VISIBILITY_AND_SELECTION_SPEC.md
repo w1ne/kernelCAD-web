@@ -1,6 +1,7 @@
 # Specification: Visibility and Selection System
 
 This document outlines the design for the per-object visibility control and selection system in kernelCAD.
+> **Status**: ✅ Implemented (v0.10.x)
 
 ## Overview
 Every object in the scene (Solids, Sketches, Planes) must be independently hidable and selectable from both the **Scene Browser** and the **3D Viewer**.
