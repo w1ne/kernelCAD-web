@@ -273,20 +273,20 @@ export default function main() {
         expect(newCode).toContain('return [box]');
     });
 
-    it('should NOT add Sketcher variables to the return array', () => {
+    it('should add Sketcher variables to the return array', () => {
         const code = `
 export default function main() {
     function drawPart() {
         return [];
     }
     return drawPart();
-}`;
+}
+`;
 
         const newCode = insertShape(code, "const sketch1 = new Sketcher('XY').movePointerTo([0, 0]).lineTo([10, 10]).close();");
 
         expect(newCode).toContain('const sketch1 = new Sketcher');
-        expect(newCode).toContain('return []');
-        expect(newCode).not.toContain('return [sketch1]');
+        expect(newCode).toContain('return [sketch1]');
     });
 });
 

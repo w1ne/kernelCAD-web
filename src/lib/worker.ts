@@ -139,25 +139,27 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
     (isRecord(face.plane) ? face.plane : null) ??
     (isRecord(face.surface) && isRecord((face.surface as UnknownRecord).plane) ? ((face.surface as UnknownRecord).plane as UnknownRecord) : null);
 
-  if (!p) {
-    // Preferred fallback: use Replicad helper to compute a full plane.
-    try {
-      const makePlaneFromFace = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
-      if (typeof makePlaneFromFace === 'function') {
-        const plane = makePlaneFromFace(face);
-        const origin = tryVec3((plane as UnknownRecord).origin);
-        const norm = tryVec3((plane as UnknownRecord).zDir) ?? tryVec3((plane as UnknownRecord).normal);
-        const xDir = tryVec3((plane as UnknownRecord).xDir);
-        const yDir = tryVec3((plane as UnknownRecord).yDir);
+  // Preferred strategy: use Replicad helper if available
+  try {
+    const makePlaneFromFaceFn = (replicad as unknown as { makePlaneFromFace?: (f: unknown) => unknown }).makePlaneFromFace;
+    if (typeof makePlaneFromFaceFn === 'function') {
+      const planeObj = makePlaneFromFaceFn(face);
+      if (isRecord(planeObj)) {
+        const origin = tryVec3(planeObj.origin);
+        const norm = tryVec3(planeObj.zDir) ?? tryVec3(planeObj.normal);
+        const xDir = tryVec3(planeObj.xDir);
+        const yDir = tryVec3(planeObj.yDir);
 
         if (origin && norm) {
           return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
-    } catch (e) {
-      if (DEBUG) console.warn('Worker: makePlaneFromFace extraction failed', e);
     }
+  } catch (e) {
+    if (DEBUG) console.warn('Worker: replicad.makePlaneFromFace failed', e);
+  }
 
+  if (!p) {
     // Fallback for native Replicad objects: use center and normalAt
     try {
       const center = getFn(face, 'center') ? (face as Record<string, unknown>).center : (face as Record<string, unknown>).center;
@@ -452,8 +454,27 @@ self.onmessage = (e: MessageEvent<unknown>) => {
 
             if (faceGeometries.length > 0) {
               const volume = tryGetVolume(shape);
-              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}`);
-              geometries.push({ faces: faceGeometries, volume });
+
+              // Extract Analytical Edges
+              let edges: Float32Array | undefined;
+              try {
+                const meshEdgesFn = getFn(shape, 'meshEdges');
+                if (meshEdgesFn) {
+                  // Use a fine tolerance for visualization edges
+                  const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+                  if (isRecord(edgeRes) && Array.isArray((edgeRes as UnknownRecord).lines)) {
+                    const lines = (edgeRes as UnknownRecord).lines as number[];
+                    if (lines.length > 0) {
+                      edges = new Float32Array(lines);
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn(`Worker: Failed to mesh edges for shape ${shapeIndex}`, e);
+              }
+
+              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}, Edges: ${edges?.length ? (edges.length / 3) + ' pts' : 'none'}`);
+              geometries.push({ faces: faceGeometries, volume, edges });
             } else {
               console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
             }
@@ -516,6 +537,9 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           g.faces.forEach((f) => {
             transferables.push(f.vertices.buffer, f.indices.buffer, f.normals.buffer);
           });
+          if (g.edges) {
+            transferables.push(g.edges.buffer);
+          }
         });
         allSketches.forEach((s) => transferables.push(s.vertices.buffer));
 

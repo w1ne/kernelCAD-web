@@ -6,12 +6,20 @@ In `kernelCAD`, because we are building a **hybrid (Code + GUI)** tool, every wo
 
 Here are the 5 Core Workflows required for v0.1 MVP.
 
+## 📚 Reference Documentation
+> [!IMPORTANT]
+> The following workflows are high-level architecture descriptions. For **exact input sequences** (clicks, drags, keys) and **visual feedback**, refer to:
+> - [Determinstic Interaction Specs](./DETAILED_INTERACTION_SPECS.md) (Source of Truth for E2E)
+> - [Visual Feedback System](./VISUAL_FEEDBACK_SYSTEM.md) (Cursors, Snaps, Highlights)
+
+
 ## 1. The "Sketch-Profile" Workflow
 
 *Definition:* Creating a 2D closed loop on a planar surface to serve as the foundation for a 3D solid.
 
-* **User Action:** Select a Plane (XY, YZ, ZX) → Draw Entities (Line, Arc, Circle, Rectangle) → Close the loop.
+* **User Action (High Level):** Select a Plane (XY, YZ, ZX) → Draw Entities (Line, Arc, Circle, Rectangle) → Close the loop. [See Interaction Specs: Sketch Tools](./DETAILED_INTERACTION_SPECS.md#2-sketching-tools)
 * **System Logic:**
+  * **Inference Engine:** As defined in [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md#2-snapping--inference-cues), the cursor must snap to nearby geometry (Endpoint, Midpoint) before clicking.
   * **Validate Closure:** The kernel must detect if end-points match (Coincident constraint).
   * **Planar check:** Ensure all points lie on the local plane.
     
@@ -42,7 +50,8 @@ const profile = sketch(Plane.XY)
 
 *Definition:* Pushing a 2D profile along a vector to create 3D volume (B-Rep).
 
-* **User Action:** Select Sketch Profile → Input `Distance` value → Generate Solid.
+* **User Action:** Select Sketch Profile → Input `Distance` value → Generate Solid. [See Interaction Specs: Solid Modeling](./DETAILED_INTERACTION_SPECS.md#3-solid-modeling-operations)
+   * *Refinement:* Support "Drag-to-Extrude" via on-canvas manipulators (Cone Arrow) as per [Visual Feedback System](./VISUAL_FEEDBACK_SYSTEM.md#41-linear-drag-handles-extrudeplane).
 * **System Logic:**
   * **Face Generation:** Create side faces connecting the profile edges.
   * **Cap Generation:** Create top/bottom faces.

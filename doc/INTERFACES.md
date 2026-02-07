@@ -123,9 +123,8 @@ import { featureRegistry } from './features/FeatureRegistry';
 
 featureRegistry.register({
   id: 'my-feature',
-  name: 'My Feature',
+  label: 'My Feature',
   icon: MyIcon,
-  category: 'primitives',
   execute: (context) => {
     context.insertCode('const shape = ...');
   }
@@ -137,16 +136,17 @@ featureRegistry.register({
 ```typescript
 interface Feature {
   id: string;
-  name: string;
-  icon: React.ComponentType;
-  category: 'primitives' | 'modifiers' | 'operations';
-  execute: (context: FeatureContext) => void;
-  parameters?: ParameterDefinition[];
+  label: string; // Changed from 'name'
+  icon: LucideIcon | React.FC<LucideProps>;
+  description?: string;
+  parameters?: DialogField[];
+  execute: (context: FeatureContext, args?: Record<string, number>) => void;
 }
 
 interface FeatureContext {
   insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
-  setActiveDialog: (dialog: string | null) => void;
+  setCode: (code: string) => void;
+  setActiveDialog: (dialogId: string | null) => void;
   code: string;
   codeContext: CodeGenerationContext;
 }
@@ -193,6 +193,60 @@ const sketchData: SketchData = {
 
 const code = generateSketchCode(sketchData);
 // Output: const mySketch = new Sketcher('XY').lineTo([10,0])...
+```
+
+---
+
+## Constraint Solver
+
+### `ConstraintSolver`
+The engine for solving 2D geometric constraints.
+
+```typescript
+import { ConstraintSolver } from './lib/constraints/solver';
+
+const solver = new ConstraintSolver();
+solver.solve(solverState); 
+// unique IDs in solverState are updated in place
+```
+
+**Constraints Supported:**
+- `COINCIDENT`: Points share location
+- `DISTANCE`: Fixed distance between points
+- `HORIZONTAL`/`VERTICAL`: Alignment
+- `PARALLEL`/`PERPENDICULAR`: Line orientation
+- `TANGENT`: Circle/Line or Circle/Circle continuity
+- `RADIUS`: Fixed circle radius
+- `ANGLE`: Angle between lines
+- `EQUAL_LENGTH`: Force lines to match length
+
+---
+
+## Interaction System
+
+### `HoverManager`
+Utility for determining what the user is hovering over in the 3D scene.
+
+```typescript
+import { HoverManager } from './features/interaction/HoverManager';
+
+// result is HoverResult | null
+const result = HoverManager.getBestHover(threeJsIntersects);
+```
+
+**Priority Rules:**
+1. **Vertex** (Highest)
+2. **Edge**
+3. **Face** (Lowest)
+
+**HoverResult:**
+```typescript
+interface HoverResult {
+  type: 'VERTEX' | 'EDGE' | 'FACE';
+  id: string | number;
+  object: THREE.Object3D;
+  point: THREE.Vector3;
+}
 ```
 
 ---
@@ -279,26 +333,26 @@ const customOperations = {
 
 ```typescript
 import type {
-  // Contexts
-  WorkbenchContextType,
+  // Contexts (src/types/...)
   CodeContextType,
   GeometryContextType,
   
-  // Geometry
+  // Geometry (src/lib/workerTypes.ts)
   GeometryResult,
   FaceGeometry,
   SketchGeometry,
   
-  // Features
+  // Features (src/features/types.ts)
   Feature,
   FeatureContext,
   
-  // Sketches
+  // Sketches (src/types/sketch.ts)
   SketchData,
   SketchEntity,
   Point2D,
 } from './types';
 ```
+
 
 ---
 

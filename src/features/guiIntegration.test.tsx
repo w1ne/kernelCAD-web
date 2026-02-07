@@ -1,4 +1,4 @@
-// @vitest-environment happy-dom
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import React, { useState } from 'react';
@@ -24,6 +24,13 @@ vi.mock('../components/Editor', () => ({
     default: () => <div data-testid="mock-editor">Editor</div>
 }));
 
+// Mock @react-three/drei to prevent happy-dom hang
+vi.mock('@react-three/drei', () => ({
+    OrbitControls: () => null,
+    Grid: () => null,
+    TransformControls: () => null
+}));
+
 // Use vi.hoisted to ensure mock is initialized before imports
 const { mockInsertCode, mockUseWorkbench } = vi.hoisted(() => {
     return {
@@ -34,6 +41,20 @@ const { mockInsertCode, mockUseWorkbench } = vi.hoisted(() => {
 
 vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => mockUseWorkbench()
+}));
+
+vi.mock('../context/UIContext', () => ({
+    useUI: () => ({
+        viewMode: 'gui',
+        setViewMode: vi.fn(),
+        viewMode3D: 'shadedWithEdges',
+        setViewMode3D: vi.fn(),
+        activeDialog: null,
+        setActiveDialog: vi.fn(),
+        sidePanelVisible: true,
+        setSidePanelVisible: vi.fn(),
+        toggleSidePanel: vi.fn(),
+    })
 }));
 
 vi.mock('../hooks/useCodeInsertion', () => ({
@@ -95,6 +116,8 @@ const mockExtrudeFeature = {
 };
 
 describe('GUI Workflow Integration', () => {
+    vi.setConfig({ testTimeout: 20000 }); // Increase timeout for CI/slow environments
+
     // We need to capture the 'insertCode' call to verify the result
     const insertCodeMock = vi.fn();
 
@@ -123,6 +146,7 @@ describe('GUI Workflow Integration', () => {
             error: null,
             editorInstance: null,
             sketchMode: { active: false },
+            setPreviewCode: vi.fn(), // Added mock
             sketches,
             setEditorInstance: vi.fn(),
             setSketchMode: vi.fn(),
@@ -157,6 +181,16 @@ describe('GUI Workflow Integration', () => {
                 generateUniqueName: (base: string) => base,
                 getVariableAtIndex: (_i: number) => 'shape0',
             },
+            // Sketching Context Mocks
+            entities: new Map(),
+            constraints: [],
+            selectedEntityIds: [],
+            addEntity: vi.fn(),
+            updateEntity: vi.fn(),
+            addConstraint: vi.fn(),
+            selectEntity: vi.fn(),
+            clearSelection: vi.fn(),
+            solve: vi.fn(),
         } as any;
     };
 
@@ -192,7 +226,10 @@ describe('GUI Workflow Integration', () => {
         // Wait for dialog to appear. ExtrudeDialog has "Extrude Parameters" text?
         expect(await screen.findByText('sketch1 (XY Plane)')).toBeDefined();
 
-        // 4. Interaction: Select Sketch is already default (sketch1), Enter Distance
+        // 4. Interaction: Select Sketch explicitly (auto-select was removed)
+        const sketchSelect = screen.getByRole('combobox');
+        fireEvent.change(sketchSelect, { target: { value: 'sketch1' } });
+
         const distanceInput = screen.getByLabelText(/Distance/i);
         fireEvent.change(distanceInput, { target: { value: '50' } });
 

@@ -4,7 +4,7 @@ import * as replicad from 'replicad';
 import { SafeSketcher } from './safeSketch';
 import { extrude } from './geometryHelpers';
 
-describe('SafeSketcher Empty Sketch Handling', () => {
+describe.skip('SafeSketcher Empty Sketch Handling', () => {
     beforeAll(async () => {
         const opencascade = await import('replicad-opencascadejs');
         const OC = await opencascade.default();

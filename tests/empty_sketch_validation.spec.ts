@@ -17,7 +17,7 @@ test.describe('Empty Sketch Validation', () => {
 
     test('should prevent completing sketch without drawing anything', async ({ page }) => {
         // Start sketch mode
-        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        const startSketchBtn = page.getByLabel('Sketch', { exact: true });
         await expect(startSketchBtn).toBeVisible();
         await startSketchBtn.click();
         await expect(page.getByText('Select Sketch Plane')).toBeVisible();
@@ -45,7 +45,7 @@ test.describe('Empty Sketch Validation', () => {
 
     test('should allow completing sketch after drawing geometry', async ({ page }) => {
         // Start sketch mode
-        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        const startSketchBtn = page.getByLabel('Sketch', { exact: true });
         await expect(startSketchBtn).toBeVisible();
         await startSketchBtn.click();
         await expect(page.getByText('Select Sketch Plane')).toBeVisible();
@@ -85,7 +85,7 @@ test.describe('Empty Sketch Validation', () => {
 
     test('should show error if empty sketch somehow gets through', async ({ page }) => {
         // Start sketch
-        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        const startSketchBtn = page.getByLabel('Sketch', { exact: true });
         await expect(startSketchBtn).toBeVisible({ timeout: 15000 });
         await startSketchBtn.click();
         await expect(page.getByText('Select Sketch Plane')).toBeVisible({ timeout: 15000 });
@@ -116,7 +116,7 @@ test.describe('Empty Sketch Validation', () => {
         const initialCount = await getShapeCount();
 
         // Try to create empty sketch
-        const startSketchBtn = page.getByTitle('Start Sketch (Select Plane)');
+        const startSketchBtn = page.getByLabel('Sketch', { exact: true });
         await expect(startSketchBtn).toBeVisible();
         await startSketchBtn.click();
         await expect(page.getByText('Select Sketch Plane')).toBeVisible();

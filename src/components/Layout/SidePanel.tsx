@@ -16,7 +16,21 @@ interface SidePanelProps {
 }
 
 export function SidePanel({ onJumpToLine }: SidePanelProps) {
-    const { code, setViewMode, planes, togglePlaneVisibility } = useWorkbench();
+    const {
+        code,
+        setViewMode,
+        planes,
+        togglePlaneVisibility,
+        selectedItemId,
+        setSelectedItemId,
+        hoveredItemId,
+        setHoveredItemId,
+        hiddenIds,
+        toggleVisibility,
+        selectedItemIds,
+        toggleSelection,
+        renameItem
+    } = useWorkbench();
 
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
@@ -27,11 +41,21 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
             <SceneBrowser
                 items={items}
                 planes={planes}
+                selectedItemId={selectedItemId}
+                selectedItemIds={selectedItemIds}
+                hoveredItemId={hoveredItemId}
+                hiddenIds={hiddenIds}
                 onSelect={(item: VariableDefinition) => {
                     setViewMode('code');
+                    setSelectedItemId(item.name);
                     onJumpToLine(item.line);
                 }}
+                onToggleSelection={toggleSelection}
+                onHover={setHoveredItemId}
+                onToggleVisibility={toggleVisibility}
                 onTogglePlane={togglePlaneVisibility}
+                onSelectPlane={(id) => setSelectedItemId(id)}
+                onRename={renameItem}
             />
         </div>
     );

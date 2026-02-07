@@ -72,6 +72,7 @@ export const FaceGeometrySchema = z.object({
 export const GeometryResultSchema = z.object({
     faces: z.array(FaceGeometrySchema),
     volume: z.number().optional(),
+    edges: Float32ArraySchema.optional(),
 });
 
 export const SketchGeometrySchema = z.object({
@@ -103,13 +104,50 @@ export const WorkerResponseSchema = z.discriminatedUnion('type', [
     ErrorResponseSchema
 ]);
 
-export type WorkerResponse = z.infer<typeof WorkerResponseSchema>;
-export type FaceGeometry = z.infer<typeof FaceGeometrySchema>;
-export type GeometryResult = z.infer<typeof GeometryResultSchema>;
-export type SketchGeometry = z.infer<typeof SketchGeometrySchema>;
-export type ExecutionResult = z.infer<typeof ExecutionResultSchema>;
-export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
-export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export interface FaceGeometry {
+    vertices: Float32Array;
+    indices: Uint32Array;
+    normals: Float32Array;
+    faceId: number;
+    plane?: {
+        origin: [number, number, number];
+        normal: [number, number, number];
+        xDir?: [number, number, number];
+        yDir?: [number, number, number];
+    };
+}
+
+export interface GeometryResult {
+    faces: FaceGeometry[];
+    volume?: number;
+    edges?: Float32Array;
+}
+
+export interface SketchGeometry {
+    id: string;
+    name: string;
+    vertices: Float32Array;
+}
+
+export interface ExecutionResult {
+    geometries: GeometryResult[];
+    sketches: SketchGeometry[];
+}
+
+export interface SuccessResponse {
+    type: 'SUCCESS';
+    id: string;
+    geometries?: ExecutionResult;
+    blob?: Blob;
+}
+
+export interface ErrorResponse {
+    type: 'ERROR';
+    id: string;
+    error: string;
+}
+
+export type WorkerResponse = SuccessResponse | ErrorResponse;
 
 // ============================================================================
 // Type Guards

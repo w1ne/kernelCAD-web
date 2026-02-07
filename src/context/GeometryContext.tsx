@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
-import { getSketchVariablesAST } from '../lib/ast';
+import { getSketchVariablesAST, getReturnedVariables } from '../lib/ast';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
+    previewGeometries: GeometryResult[];
     sketchesGeometries: SketchGeometry[];
     showSketches: boolean;
     toggleSketchVisibility: () => void;
@@ -13,6 +14,7 @@ export interface GeometryContextType {
     executionCount: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
+    setPreviewCode: (code: string | null) => void;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -28,6 +30,8 @@ function readStoredShowSketches(): boolean {
 
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
+    const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
+    const [previewCode, setPreviewCode] = useState<string | null>(null);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
     const [showSketches, setShowSketches] = useState(() => readStoredShowSketches());
     const [error, setError] = useState<string | null>(null);
@@ -74,17 +78,35 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     }
                 })();
 
-                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`.
-                // Remap those names to the real variable names from user code so viewport
-                // selection can drive feature dialogs (extrude/revolve) correctly.
+                const returnedVarNames = (() => {
+                    try {
+                        return getReturnedVariables(code);
+                    } catch {
+                        return [];
+                    }
+                })();
+
+                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`
+                // and returned sketch ids like `return-sketch-${index}-${Date.now()}`.
+                // Remap those names to the real variable names from user code.
                 const remappedSketches = result.sketches.map((s) => {
-                    const m = /^sketch-(\d+)-/.exec(s.id);
-                    if (!m) return s;
-                    const idx = Number(m[1]);
-                    const name = sketchVarNames[idx];
-                    if (!name) return s;
-                    if (s.name === name) return s;
-                    return { ...s, name };
+                    // Path A: Tracked sketches (from startSketch/sketchOnFace variables)
+                    const mTracked = /^sketch-(\d+)-/.exec(s.id);
+                    if (mTracked) {
+                        const idx = Number(mTracked[1]);
+                        const name = sketchVarNames[idx];
+                        if (name) return { ...s, name };
+                    }
+
+                    // Path B: Returned sketches (wires of returned shapes)
+                    const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
+                    if (mReturned) {
+                        const idx = Number(mReturned[1]);
+                        const name = returnedVarNames[idx];
+                        if (name) return { ...s, name };
+                    }
+
+                    return s;
                 });
 
                 setSketchesGeometries(remappedSketches);
@@ -114,6 +136,30 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         return () => clearTimeout(timer);
     }, [code, isReady, engine]);
 
+    // Preview Execution Loop
+    useEffect(() => {
+        if (!isReady || !previewCode) {
+            setPreviewGeometries([]);
+            return;
+        }
+
+        const runPreview = async () => {
+            try {
+                // Combine current code (as library) with preview code
+                // Or just run the preview code if it's independent
+                // For live modeling, it's usually current code + the new operation
+                const result = await engine.executeCode(`${code}\n${previewCode}`);
+                setPreviewGeometries(result.geometries);
+            } catch (err) {
+                // Silently ignore preview errors to avoid flickering red screens
+                console.warn('Live Preview Error:', err);
+            }
+        };
+
+        const timer = setTimeout(runPreview, 150); // Aggressive debounce for preview
+        return () => clearTimeout(timer);
+    }, [code, previewCode, isReady, engine]);
+
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
         setIsComputing(true);
@@ -128,14 +174,29 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 }
             })();
 
+            const returnedVarNames = (() => {
+                try {
+                    return getReturnedVariables(codeToExecute);
+                } catch {
+                    return [];
+                }
+            })();
+
             const remappedSketches = result.sketches.map((s) => {
-                const m = /^sketch-(\d+)-/.exec(s.id);
-                if (!m) return s;
-                const idx = Number(m[1]);
-                const name = sketchVarNames[idx];
-                if (!name) return s;
-                if (s.name === name) return s;
-                return { ...s, name };
+                const mTracked = /^sketch-(\d+)-/.exec(s.id);
+                if (mTracked) {
+                    const idx = Number(mTracked[1]);
+                    const name = sketchVarNames[idx];
+                    if (name) return { ...s, name };
+                }
+
+                const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
+                if (mReturned) {
+                    const idx = Number(mReturned[1]);
+                    const name = returnedVarNames[idx];
+                    if (name) return { ...s, name };
+                }
+                return s;
             });
 
             setSketchesGeometries(remappedSketches);
@@ -150,6 +211,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const value: GeometryContextType = useMemo(() => ({
         geometries,
+        previewGeometries,
         sketchesGeometries,
         showSketches,
         toggleSketchVisibility,
@@ -158,7 +220,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         isComputing,
         executionCount,
         executeGeometry,
-    }), [geometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
+        setPreviewCode,
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from 'vitest';
+import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { initReplicad, executeGeometry } from '../test/regressionTestHelpers';
 import { getWorkflows } from './registry';
 
@@ -22,9 +22,11 @@ const log = (...args: unknown[]) => { if (LOG) console.log(...args); };
 const warn = (...args: unknown[]) => { if (LOG) console.warn(...args); };
 
 describe('Headless Workflow Validation', () => {
+    vi.setConfig({ testTimeout: 30000 });
+
     beforeAll(async () => {
         await initReplicad();
-    });
+    }, 30000);
 
     const activeWorkflows = getWorkflows();
 

@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+@theme {
+    --color-highlight-orange: #FF9F1C;
+    --color-selection-blue: #2EC4B6;
+    --color-snap-green: #00FF9D;
+    --color-guide-grey: #AAB3C2;
+    --color-error-red: #FF4D4D;
+}
+
+:root {
+    /* Fallback/Raw usage if needed, but Tailwind handles the above mapping */
+    --highlight-orange: #FF9F1C;
+    --selection-blue: #2EC4B6;
+    --snap-green: #00FF9D;
+    --guide-grey: #AAB3C2;
+    --error-red: #FF4D4D;
+}
+
 body {
     margin: 0;
     padding: 0;

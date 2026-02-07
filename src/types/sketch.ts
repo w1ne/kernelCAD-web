@@ -29,6 +29,12 @@ export interface LineEntity extends BaseSketchEntity {
     type: 'line';
     start: Point2D;
     end: Point2D;
+    constraints?: {
+        length?: number;
+        angle?: number;
+        horizontal?: boolean;
+        vertical?: boolean;
+    };
 }
 
 /**
@@ -39,6 +45,10 @@ export interface RectangleEntity extends BaseSketchEntity {
     corner: Point2D;
     width: number;
     height: number;
+    constraints?: {
+        width?: number;
+        height?: number;
+    };
 }
 
 /**
@@ -48,6 +58,9 @@ export interface CircleEntity extends BaseSketchEntity {
     type: 'circle';
     center: Point2D;
     radius: number;
+    constraints?: {
+        radius?: number;
+    };
 }
 
 /**

@@ -267,7 +267,8 @@ export class SafeSketcher {
     return this;
   }
 
-  rect(width: number, height: number, center = true): this {
+  rect(width: number, height: number, options: { center?: boolean } | boolean = true): this {
+    const center = typeof options === 'object' ? options.center ?? true : options;
     const halfW = width / 2;
     const halfH = height / 2;
 
