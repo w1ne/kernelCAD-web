@@ -3,15 +3,16 @@ import { ExtrudeFeature } from './extrude.feature';
 import { type FeatureContext } from '../types';
 
 describe('ExtrudeFeature', () => {
-    it('should trigger the extrude dialog on execution', () => {
+    it('should trigger the extrude panel on execution', () => {
         const mockContext: FeatureContext = {
             insertCode: vi.fn(),
-            setActiveDialog: vi.fn(),
+            openPanel: vi.fn(),
+            closePanel: vi.fn(),
             code: '',
-        };
+        } as unknown as FeatureContext;
 
         ExtrudeFeature.execute(mockContext);
 
-        expect(mockContext.setActiveDialog).toHaveBeenCalledWith('extrude');
+        expect(mockContext.openPanel).toHaveBeenCalledWith('extrude');
     });
 });
