@@ -793,7 +793,9 @@ function BetterHighlightOverlay({ hovered, geometries }: { hovered: HoverResult 
  * SelectionOutline renders a high-visibility outline around the selected object(s).
  */
 // Helper component for rendering selection outline of a single geometry
-function SelectedGeometryOutline({ geometry }: { geometry: GeometryResult }) {
+function SelectedGeometryOutline({ geometry }: { geometry: GeometryResult | null | undefined }) {
+    if (!geometry) return null;
+
     // Case 1: Pre-computed edges (Analytical)
     if (geometry.edges) {
         return <AnalyticalEdgeOutline edges={geometry.edges} />;
@@ -855,8 +857,10 @@ function SelectionOutline({ geometries, itemNames, selectedItemIds }: { geometri
     const selectedGeometries = useMemo(() => {
         return selectedItemIds.map(id => {
             const idx = itemNames.indexOf(id);
+            // Some selected items might be sketches (exists in itemNames but not in geometries)
+            // or other non-geometric entities.
             return idx !== -1 ? geometries[idx] : null;
-        }).filter((g): g is GeometryResult => g !== null);
+        }).filter((g): g is GeometryResult => g !== null && g !== undefined);
     }, [geometries, itemNames, selectedItemIds]);
 
     if (selectedGeometries.length === 0) return null;
