@@ -284,16 +284,15 @@ export function useSketchCanvas({
             if (!isNaN(val1)) length = val1;
             if (!isNaN(val2)) angle = (val2 * Math.PI) / 180;
 
-            if (!isNaN(val1) || !isNaN(val2) || snapType !== 'none') {
+            if (!isNaN(val1) || !isNaN(val2)) {
                 resultPoint = [
                     start[0] + Math.cos(angle) * length,
                     start[1] + Math.sin(angle) * length
                 ];
 
-                // For H/V/Alignment without explicit length, try to keep it snapping to grid or reference
-                if (snapType !== 'none' && isNaN(val1)) {
-                    // For alignment, we already have exact coordinates
-                }
+                // Preserve exact axis for H/V snaps even with dimension overrides
+                if (snapType === 'horizontal') resultPoint[1] = start[1];
+                if (snapType === 'vertical') resultPoint[0] = start[0];
             }
         } else if (tool === 'circle') {
             if (!isNaN(val1)) {
