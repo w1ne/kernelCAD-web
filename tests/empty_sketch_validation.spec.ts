@@ -52,6 +52,7 @@ test.describe('Empty Sketch Validation', () => {
         await page.getByText('XY Plane (Top)', { exact: true }).click();
         const canvas = page.getByTestId('sketch-canvas');
         await expect(canvas).toBeVisible();
+        await page.waitForTimeout(500);
 
         // Draw a rectangle
         const box = await canvas.boundingBox();
@@ -64,9 +65,9 @@ test.describe('Empty Sketch Validation', () => {
         await page.click('button:has-text("Rectangle")');
 
         // Draw rectangle by dragging
-        await page.mouse.move(centerX - 50, centerY - 50);
+        await page.mouse.move(centerX - 100, centerY - 100);
         await page.mouse.down();
-        await page.mouse.move(centerX + 50, centerY + 50);
+        await page.mouse.move(centerX + 100, centerY + 100);
         await page.mouse.up();
 
         // Verify "Done" button is now enabled
