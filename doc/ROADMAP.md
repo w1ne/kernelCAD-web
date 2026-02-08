@@ -69,10 +69,10 @@
 
 ### 1.3 Next-Gen UI/UX & Workflow
 - [x] **Icon Redesign**: Replace current icons with professional, consistent icon set (via `lucide-react`).
-- [ ] **Command Palette**: Global search and command execution (`Cmd+K`) for keyboard-centric workflow.
-- [ ] **Floating Panels**: Non-blocking, context-aware property panels replacing modal dialogs.
-- [ ] **Context-Aware UI**: Dynamic toolbars/properties that react to selection (Canvas-First).
-- [ ] **Contextual Mini-Toolbar**: Floating actions (Extrude, Sketch) appearing near the cursor upon selection.
+- [x] **Command Palette**: Global search and command execution (`Cmd+K`) for keyboard-centric workflow.
+- [x] **Floating Panels**: Non-blocking, context-aware property panels replacing modal dialogs.
+- [x] **Context-Aware UI**: Dynamic toolbars/properties that react to selection (Canvas-First).
+- [x] **Contextual Mini-Toolbar**: Floating actions (Extrude, Sketch) appearing near the cursor upon selection.
 - [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
 - [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
@@ -82,7 +82,7 @@
   - [x] **Snap Indicators**: Create a lightweight React component to render SVG icons (Square, Triangle, X) at valid inference points.
   - [x] **Cursor State Machine**: Update `InteractionManager` to support `default`, `grab`, `grabbing` and tool-specific badges (e.g., "Pencil" icon).
 - [ ] **Standardized Interaction Logic** (See [Interaction Specs](./DETAILED_INTERACTION_SPECS.md)):
-  - [ ] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
+  - [x] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
   - [ ] **Drag-to-Edit**: Implement shared logic for "Press-Drag-Release" operations (used in Extrude, Fillet, and new Plane tools).
   - [ ] **Sketch Tool Refactor**: Update Line, Circle, and Rect tools to support the "Click-Move-Click" pattern with "Dynamic Input" field focus.
 - [ ] **Construction Geometry UI** (See [Specs](./DETAILED_INTERACTION_SPECS.md#6-construction-geometry)):

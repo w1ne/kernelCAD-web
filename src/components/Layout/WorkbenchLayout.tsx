@@ -54,7 +54,8 @@ export function WorkbenchLayout() {
         openPanel,
         closePanel,
         selectedSketchName,
-        toggleSketchVisibility
+        toggleSketchVisibility,
+        activePanels
     } = useWorkbench();
 
     const { contextMenu, setContextMenu } = useUI();
@@ -128,6 +129,8 @@ export function WorkbenchLayout() {
             if (activeDialog) setActiveDialog(null);
             if (isFaceSelecting) cancelFaceSelection();
             setContextMenu({ ...contextMenu, visible: false });
+            // Close all active panels on Escape
+            activePanels.forEach(id => closePanel(id));
         },
         'h': () => {
             if (activeDialog) return;

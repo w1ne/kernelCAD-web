@@ -237,7 +237,6 @@ function ConsolidatedShape({
     } = useWorkbench();
 
     const { setContextMenu } = useUI();
-    const { size } = useThree();
 
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
 
@@ -275,14 +274,14 @@ function ConsolidatedShape({
         setSelectedFace({ shapeIndex, faceId });
         if (name) setSelectedItemId(name);
 
-        const x = (e.pointer.x + 1) * size.width / 2;
-        const y = (-e.pointer.y + 1) * size.height / 2;
+        const x = e.nativeEvent.clientX;
+        const y = e.nativeEvent.clientY;
         setContextMenu({
             visible: true,
             position: { x, y },
             type: 'FACE'
         });
-    }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, size, setContextMenu]);
+    }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
     const color = isSelected ? CAD_COLORS.selection : 0x808080;
     const material = useMemo(() => new THREE.MeshLambertMaterial({
@@ -721,7 +720,6 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     } = useWorkbench();
 
     const { setContextMenu } = useUI();
-    const { size } = useThree();
 
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
@@ -822,8 +820,8 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                                     setSelectedItemId(s.name);
 
                                     if (e) {
-                                        const x = (e.pointer.x + 1) * size.width / 2;
-                                        const y = (-e.pointer.y + 1) * size.height / 2;
+                                        const x = e.nativeEvent.clientX;
+                                        const y = e.nativeEvent.clientY;
                                         setContextMenu({
                                             visible: true,
                                             position: { x, y },
