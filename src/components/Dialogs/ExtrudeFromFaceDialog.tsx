@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { BaseFormDialog, type FormValues } from '../Forms';
+import { extrudeFromFaceSchema } from '../Forms/schemas';
 
 interface ExtrudeFromFaceDialogProps {
     onConfirm: (distance: number, direction: 'normal' | 'reversed') => void;
@@ -6,74 +7,19 @@ interface ExtrudeFromFaceDialogProps {
 }
 
 export function ExtrudeFromFaceDialog({ onConfirm, onCancel }: ExtrudeFromFaceDialogProps) {
-    const [distance, setDistance] = useState(20);
-    const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onConfirm(distance, direction);
+    const handleConfirm = (values: FormValues) => {
+        onConfirm(
+            values.distance as number,
+            values.direction as 'normal' | 'reversed'
+        );
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-6 shadow-xl min-w-[300px]">
-                <h2 className="text-xl font-bold text-white mb-4">
-                    Extrude Face
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="distance"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Distance
-                        </label>
-                        <input
-                            id="distance"
-                            type="number"
-                            value={distance}
-                            onChange={(e) => setDistance(parseFloat(e.target.value))}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            autoFocus
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="direction"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Direction
-                        </label>
-                        <select
-                            id="direction"
-                            value={direction}
-                            onChange={(e) => setDirection(e.target.value as 'normal' | 'reversed')}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="normal">Normal</option>
-                            <option value="reversed">Reversed</option>
-                        </select>
-                    </div>
-
-                    <div className="flex gap-2 justify-end pt-4">
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                        >
-                            Extrude
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <BaseFormDialog
+            schema={extrudeFromFaceSchema}
+            onConfirm={handleConfirm}
+            onCancel={onCancel}
+            confirmButtonText="Extrude"
+        />
     );
 }

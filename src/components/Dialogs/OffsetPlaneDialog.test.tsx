@@ -36,7 +36,8 @@ describe('OffsetPlaneDialog', () => {
         const onConfirm = vi.fn() as unknown as (data: { basePlaneId: string; offset: number }) => void;
         render(<OffsetPlaneDialog onConfirm={onConfirm} onCancel={vi.fn()} />);
 
-        const offsetInput = screen.getByLabelText(/Offset Distance/i);
+        // Use getElementById for consistency with other tests
+        const offsetInput = document.getElementById('field-offset') as HTMLInputElement;
         fireEvent.change(offsetInput, { target: { value: '50' } });
 
         const submitButton = screen.getByRole('button', { name: /Create Plane/i });

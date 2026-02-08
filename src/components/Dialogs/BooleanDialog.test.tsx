@@ -31,8 +31,9 @@ describe('BooleanDialog', () => {
         const onCancel = vi.fn();
         render(<BooleanDialog type="fuse" onConfirm={onConfirm} onCancel={onCancel} />);
 
-        const baseInput = screen.getByLabelText('Base Shape (Target)');
-        const toolInput = screen.getByLabelText('Tool Shape (Modifier)');
+        // Use getElementById for consistency
+        const baseInput = document.getElementById('field-baseName') as HTMLInputElement;
+        const toolInput = document.getElementById('field-toolName') as HTMLInputElement;
         const submitButton = screen.getByRole('button', { name: 'Join' });
 
         fireEvent.change(baseInput, { target: { value: 'myBox' } });

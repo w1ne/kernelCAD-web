@@ -47,9 +47,9 @@ export function FilletPanel() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Target Name */}
             <div className="flex flex-col gap-1">
-                <label htmlFor="fillet-target" className="text-xs font-medium text-zinc-400">Target Variable</label>
+                <label htmlFor="target-name" className="text-xs font-medium text-zinc-400">Target Variable</label>
                 <input
-                    id="fillet-target"
+                    id="target-name"
                     type="text"
                     value={targetName}
                     onChange={(e) => setTargetName(e.target.value)}

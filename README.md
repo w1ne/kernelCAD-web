@@ -69,6 +69,7 @@ kernelCAD consists of three main parts:
 - **[Keyboard Shortcuts](./doc/KEYBOARD_SHORTCUTS.md)**: Speed up your workflow.
 - **[CAD Query Guide](./doc/CAD_QUERY_GUIDE.md)**: Guide to robust selector-based modeling.
 - **[Core Workflows](./doc/CORE_WORKFLOWS.md)**: Step-by-step user interaction references.
+- **[Competitive Analysis](./doc/COMPETITIVE_ANALYSIS.md)**: Comparison with CascadeStudio and Chilli3D.
 
 ## License
 

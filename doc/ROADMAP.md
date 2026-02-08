@@ -69,26 +69,32 @@
 
 ### 1.3 Next-Gen UI/UX & Workflow
 - [x] **Icon Redesign**: Replace current icons with professional, consistent icon set (via `lucide-react`).
-- [ ] **Command Palette**: Global search and command execution (`Cmd+K`) for keyboard-centric workflow.
-- [ ] **Floating Panels**: Non-blocking, context-aware property panels replacing modal dialogs.
-- [ ] **Context-Aware UI**: Dynamic toolbars/properties that react to selection (Canvas-First).
-- [ ] **Contextual Mini-Toolbar**: Floating actions (Extrude, Sketch) appearing near the cursor upon selection.
-- [ ] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
+- [x] **Command Palette**: Global search and command execution (`Cmd+K`) for keyboard-centric workflow.
+- [x] **Floating Panels**: Non-blocking, context-aware property panels replacing modal dialogs.
+- [x] **Context-Aware UI**: Dynamic toolbars/properties that react to selection (Canvas-First).
+- [x] **Contextual Mini-Toolbar**: Floating actions (Extrude, Sketch) appearing near the cursor upon selection.
+- [x] **Visual Hierarchy**: Improve toolbar and panel layouts for better usability.
 - [x] **Tooltips**: Add comprehensive tooltips for tools/features (including keyboard shortcut hints).
 - [x] **Keyboard Shortcuts**: Industry-standard shortcuts (E/S/P + R/F/C + J/X/I + Undo/Redo) with typing-safe guards.
-- [ ] **Visual Feedback System** (See [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md)):
+- [x] **Visual Feedback System** (See [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md)):
   - [x] **Theme Infrastructure**: Define CSS variables for `highlight-orange`, `selection-blue`, and `snap-green` (Implemented in `colors.ts`).
   - [x] **Hover Engine**: Implement a centralized `HoverManager` that detects `Edge`, `Face`, and `Vertex` hits with Z-index priority (Vertex > Edge > Face).
   - [x] **Snap Indicators**: Create a lightweight React component to render SVG icons (Square, Triangle, X) at valid inference points.
   - [x] **Cursor State Machine**: Update `InteractionManager` to support `default`, `grab`, `grabbing` and tool-specific badges (e.g., "Pencil" icon).
-- [ ] **Standardized Interaction Logic** (See [Interaction Specs](./DETAILED_INTERACTION_SPECS.md)):
-  - [ ] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
-  - [ ] **Drag-to-Edit**: Implement shared logic for "Press-Drag-Release" operations (used in Extrude, Fillet, and new Plane tools).
-  - [ ] **Sketch Tool Refactor**: Update Line, Circle, and Rect tools to support the "Click-Move-Click" pattern with "Dynamic Input" field focus.
-- [ ] **Construction Geometry UI** (See [Specs](./DETAILED_INTERACTION_SPECS.md#6-construction-geometry)):
-  - [ ] **Offset Plane Tool**: User selects face -> drags arrow manipulator -> types distance.
-  - [ ] **Midplane Tool**: User selects Face A + Face B -> logic computes midpoint transform.
-  - [ ] **Tangent Plane Tool**: User selects Cylinder -> drags radial handle for angle.
+- [x] **Standardized Interaction Logic** (See [Interaction Specs](./DETAILED_INTERACTION_SPECS.md)):
+  - [x] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
+  - [x] **Drag-to-Edit**: Implement shared logic for "Press-Drag-Release" operations (used in Extrude, Fillet, and new Plane tools).
+  - [x] **Sketch Tool Refactor**: Update Line, Circle, and Rect tools to support the "Click-Move-Click" pattern with "Dynamic Input" field focus.
+- [x] **Construction Geometry** (See [Specs](./DETAILED_INTERACTION_SPECS.md#6-construction-geometry)):
+  - [x] **Offset Plane Tool**: User selects face -> drags arrow manipulator -> types distance.
+  - [x] **Midplane Tool**: User selects Face A + Face B -> logic computes midpoint transform.
+  - [x] **Tangent Plane Tool**: User selects Cylinder -> drags radial handle for angle.
+
+### 1.4 Pre-Release Polish (v0.11.x)
+- [x] **Project Management**: Save/Open `.kcad` project files (JSON w/ code & settings).
+- [ ] **Examples Library**: Built-in "Welcome" modal with loadable example scripts (Bracket, Flange, Vase).
+- [ ] **Export Robustness**: Ensure STEP/STL export handles complex compounds reliability.
+- [ ] **Error Recovery**: Graceful handling of infinite loops or worker crashes.
 
 ---
 
@@ -118,7 +124,13 @@
 - [ ] **Suppression**: Temporarily disable features without deleting code.
 - [ ] **Contextual Deletion**: Remove features and handle dependency cascades.
 
-### 2.2 Parameters Management
+### 2.2 Neuro-Symbolic AI (Engineering Copilot)
+- [ ] **Text-to-CAD Generation**: Generate editable code (KCL/CadQuery) from natural language prompts.
+- [ ] **Visual Inspection Agent**: AI "sees" the model to suggest corrections (e.g., "Bolt holes too close to edge").
+- [ ] **Auto-Constrainer**: Automatically apply geometric constraints to loose sketches based on design intent.
+- [ ] **Visual Refactoring**: High-level commands to "Parameterize this pattern" or "Extract variable" from 3D selection.
+
+### 2.3 Parameters Management
 - [ ] **Global Parameters Panel**: Manage user-defined variables (e.g., `wallThickness = 2mm`).
 - [ ] **Expressions**: Support for math in all input fields (`width / 2 + 5`).
 - [ ] **Bidirectional Sync**: Changing a parameter in the GUI updates the code in real-time.
@@ -133,6 +145,7 @@
 - [x] **Standard Gizmo**: Translation (arrows) implemented using `TransformControls` with safe render logic.
 - [ ] **Interactive Extrude**: Click and drag a sketch face to extrude it in 3D (See [Specs](./DETAILED_INTERACTION_SPECS.md#31-extrude-e)).
 - [ ] **Selection Highlighting**: Hover and click highlighting (Orange/Blue) as per [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md).
+- [ ] **Isomorphic Manipulation**: Bi-directional sync where dragging geometry updates code variables and vice-versa (Provenance tracking).
 
 - [x] **Visibility & Selection System** (See [Spec](./VISIBILITY_AND_SELECTION_SPEC.md)):
   - [x] Per-object visibility toggles in Scene Browser.
@@ -153,6 +166,7 @@
 ### 4.2 Engineering Tools
 - [ ] **Measurement**: Precise point-to-point and face-to-face measurements.
 - [ ] **Mass Properties**: Volume, area, and center of gravity calculations.
+- [ ] **HardwareOps CI**: Automated DFM (Design for Manufacturing) and interference checks in CI/CD pipelines.
 
 ---
 
@@ -171,6 +185,7 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [ ] **Incremental Meshing**: Cache shape results and re-mesh only the dirty path.
 - [ ] **Adaptive Quality**: Use coarse meshes during live interaction and high-precision for final view.
 - [ ] **WASM Streaming & Caching**: Use IndexedDB and direct streaming to minimize boot time.
+- [ ] **WebGPU Compute**: Use Compute Shaders to offload heavy geometric calculations (Booleans, Raytracing) to the client GPU.
 
 ---
 
@@ -180,8 +195,11 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [ ] Component hierarchy and Sub-assemblies.
 - [ ] **Mates & Joints**: Define relationships between parts (Rigid, Slider, Revolute).
 
-### 5.2 Ecosystem
-- [ ] **Git-for-Geometry**: Visual diffing of model changes in Pull Requests.
+### 5.2 Ecosystem & HardwareOps
+- [ ] **Git-for-Geometry**: Visual 3D diffing of model changes in Pull Requests/Branches.
+- [ ] **CAD Package Manager**: NPM-style versioned dependencies for parts and assemblies (e.g., `PartCAD`).
+- [ ] **Real-Time Multiplayer**: Google Docs-style co-editing with CRDT conflict resolution.
+- [ ] **Live Share**: "Pair Engineering" where users follow a presenter's camera and code view.
 - [ ] **Plugin Store**: Expand functionality with community scripts.
 
 ---
@@ -203,14 +221,23 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [x] **Geometry Validation Tests**: Snapshot tests for volume, bounding box, center of mass.
 
 ## 📋 Priority Order (Next 6 Months)
-
-1. **v0.10.x**: Parametric Sketching (Constraints & Dimensions) ⭐ **HIGH PRIORITY**
-2. **Object Management**: Visibility & Selection System ([Spec](./VISIBILITY_AND_SELECTION_SPEC.md))
-3. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
-4. **v0.9.0**: Feature Timeline & History
-5. **v1.0.0**: Global Parameters & Sections 🎉
+1. **v0.11.x**: Pre-Release Polish (Projects, Examples, Stability) ⭐ **NEXT PRIORITY**
+2. **v0.12.x**: Documentation & "First Time User Experience"
+3. **v1.0.0**: Public Beta Release 🎉
+4. **Future**: Direct Manipulation, History/Timeline, and Assemblies.
 
 ---
 
-**Last Updated**: 2026-02-06
+## 🌌 PHASE 6: Next-Gen Foundations (Future)
+
+**Goal**: Explore fundamental shifts in geometry representation and performance.
+
+### 6.1 Implicit Modeling
+- [ ] **SDF Engine Integration**: Research Signed Distance Fields for "unbreakable" boolean operations.
+- [ ] **Hybrid Kernel**: Bridge Implicit Modeling (for rapid exploration) with B-Rep (for precise manufacturing output).
+- [ ] **Lattice & Gyroid Generation**: Compact representation of complex internal structures for 3D printing.
+
+---
+
+**Last Updated**: 2026-02-08
 **Next Review**: After v0.10.x (Parametric Sketching) ships

@@ -14,6 +14,8 @@ export interface UIContextType {
     activePanels: string[];
     openPanel: (id: string) => void;
     closePanel: (id: string) => void;
+    contextMenu: { visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' };
+    setContextMenu: (menu: { visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -48,6 +50,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>(() => readStoredViewMode());
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>(() => readStoredViewMode3D());
     const [sidePanelVisible, setSidePanelVisible] = useState(() => readStoredSidePanelVisible());
+    const [contextMenu, setContextMenu] = useState<{ visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }>({
+        visible: false,
+        position: null,
+        type: 'FACE'
+    });
 
     // Use the central state machine for dialogs
     const { state, dispatch } = useWorkbenchState();
@@ -56,6 +63,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
     const setActiveDialog = useCallback((dialogId: string | null) => {
         if (dialogId) {
+            // Redirect specific IDs to panels if they are part of the new system
+            const panelIds = [
+                'extrude', 'revolve', 'fillet', 'chamfer',
+                'union', 'cut', 'intersect', 'offsetPlane',
+                'planeSelector', 'midplane', 'tangentPlane'
+            ];
+
+            if (panelIds.includes(dialogId)) {
+                dispatch({ type: 'OPEN_PANEL', id: dialogId });
+                return;
+            }
+
             dispatch({ type: 'OPEN_DIALOG', id: dialogId });
         } else {
             dispatch({ type: 'CLOSE_DIALOG' });
@@ -102,7 +121,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
         activePanels: state.activePanels,
         openPanel,
         closePanel,
-    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel]);
+        contextMenu,
+        setContextMenu,
+    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

@@ -21,11 +21,15 @@ describe('ChamferDialog', () => {
         const onCancel = vi.fn();
         render(<ChamferDialog onConfirm={onConfirm} onCancel={onCancel} />);
 
-        fireEvent.change(screen.getByLabelText('Target Variable Name'), { target: { value: 'part2' } });
-        fireEvent.change(screen.getByLabelText('Distance (mm)'), { target: { value: '2' } });
-        fireEvent.change(screen.getByLabelText('Edge Filter'), { target: { value: 'horizontal' } });
+        // Use getElementById since happy-dom has issues with getByLabelText
+        const targetNameInput = document.getElementById('field-targetName') as HTMLInputElement;
+        const distanceInput = document.getElementById('field-distance') as HTMLInputElement;
+        const filterSelect = document.getElementById('field-filterType') as HTMLSelectElement;
 
-        // Use form submission directly instead of button click for happy-dom compatibility
+        fireEvent.change(targetNameInput, { target: { value: 'part2' } });
+        fireEvent.change(distanceInput, { target: { value: '2' } });
+        fireEvent.change(filterSelect, { target: { value: 'horizontal' } });
+
         const form = screen.getByRole('button', { name: 'Apply Chamfer' }).closest('form')!;
         fireEvent.submit(form);
 

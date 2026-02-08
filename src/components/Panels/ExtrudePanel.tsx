@@ -90,6 +90,7 @@ export function ExtrudePanel() {
             <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-zinc-400">Profile</label>
                 <select
+                    id="sketch-select"
                     value={selectedSketch}
                     onChange={(e) => setSelectedSketch(e.target.value)}
                     className="rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"

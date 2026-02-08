@@ -239,6 +239,101 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   return { origin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
 }
 
+function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
+  if (!isRecord(face)) return undefined;
+
+  // Check geomType
+  const geomType = getString(face, 'geomType');
+
+  if (geomType) {
+    const t = geomType.toUpperCase();
+    if (t !== 'CYLINDER' && t !== 'CYLINDRICAL' && t !== 'CYLINDRE') {
+      return undefined;
+    }
+  }
+
+  // 1. Try OCJS direct extraction if available
+  if (OC) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawFace = (face as any)._wrapped ?? (face as any).occ ?? face;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const adaptor = new (OC as any).BRepAdaptor_Surface_2(rawFace, true);
+      const type = adaptor.GetType();
+
+      // Check if it is a cylinder (GeomAbs_Cylinder = 3)
+      // We use the validation from geomType or the adaptor check
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const isCyl = (type.value === (OC as any).GeomAbs_SurfaceType.GeomAbs_Cylinder.value) ||
+        (geomType && geomType.toUpperCase().includes('CYL'));
+
+      if (isCyl) {
+        const cyl = adaptor.Cylinder();
+        const ax1 = cyl.Axis();
+        const loc = ax1.Location();
+        const dir = ax1.Direction();
+
+        const origin: [number, number, number] = [loc.X(), loc.Y(), loc.Z()];
+        const axis: [number, number, number] = [dir.X(), dir.Y(), dir.Z()];
+        const radius = cyl.Radius();
+
+        adaptor.delete();
+        cyl.delete();
+        ax1.delete();
+        loc.delete();
+        dir.delete();
+
+        return { origin, axis, radius };
+      }
+      adaptor.delete();
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      console.warn('Worker: OC extraction failed', e, (e as any).stack);
+    }
+  }
+
+  // Helper to extract cylinder data from a surface object
+  const extractFromSurface = (surf: unknown): FaceGeometry['cylinder'] | undefined => {
+    if (!isRecord(surf)) return undefined;
+
+    const origin =
+      tryVec3((surf as UnknownRecord).origin) ??
+      tryVec3((surf as UnknownRecord).location);
+
+    const axis =
+      tryVec3((surf as UnknownRecord).axis) ??
+      tryVec3((surf as UnknownRecord).direction) ??
+      tryVec3((surf as UnknownRecord).zDir);
+
+    const radius = (surf as UnknownRecord).radius;
+
+    if (origin && axis && typeof radius === 'number') {
+      return { origin, axis, radius };
+    }
+    return undefined;
+  };
+
+  // 1. Try direct properties (if it's a surface)
+  const direct = extractFromSurface(face);
+  if (direct) return direct;
+
+  // 2. Try 'surface' property
+  const surface = (face as UnknownRecord).surface;
+  if (surface) {
+    const fromSurf = extractFromSurface(surface);
+    if (fromSurf) return fromSurf;
+  }
+
+  // 3. Try Replicad 'geom' property (sometimes found on faces)
+  const geom = (face as UnknownRecord).geom;
+  if (geom) {
+    const fromGeom = extractFromSurface(geom);
+    if (fromGeom) return fromGeom;
+  }
+
+  return undefined;
+}
+
 function meshWireToSketch(wire: unknown, id: string, name: string): SketchGeometry | null {
   if (!isRecord(wire)) return null;
   const meshEdgesFn = getFn(wire, 'meshEdges');
@@ -279,6 +374,7 @@ function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null 
     normals: new Float32Array(normals),
     faceId,
     plane: tryExtractPlaneFromFace(face),
+    cylinder: tryExtractCylinderFromFace(face),
   };
 }
 
@@ -319,6 +415,8 @@ function tryGetVolume(shape: unknown): number | undefined {
 
 let isInitialized = false;
 let executionLock = Promise.resolve();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let OC: any = null;
 
 async function init() {
   if (isInitialized) return;
@@ -333,7 +431,7 @@ async function init() {
     if (DEBUG) console.log('Worker: Initializing OpenCascade...');
     if (DEBUG) console.log('Worker: Environment:', JSON.stringify(env));
 
-    const OC = await opencascade({
+    OC = await opencascade({
       locateFile: (file: string) => {
         if (file.endsWith('.wasm')) {
           const baseUrl = typeof env.BASE_URL === 'string' ? env.BASE_URL : '/';

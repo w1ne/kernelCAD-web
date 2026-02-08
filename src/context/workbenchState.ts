@@ -6,7 +6,8 @@ export type WorkbenchMode =
     | { type: 'IDLE' }
     | { type: 'SKETCHING'; planeId: string; sketchId?: string }
     | { type: 'DIALOG'; id: string; params?: unknown }
-    | { type: 'FACE_SELECTION'; purpose: 'sketch' | 'feature'; featureId?: string };
+    | { type: 'FACE_SELECTION'; purpose: 'sketch' | 'feature'; featureId?: string }
+    | { type: 'TOOL_ACTIVE'; id: string; state: 'IDLE' | 'ACTIVE' | 'FINISHED' };
 
 export interface WorkbenchState {
     mode: WorkbenchMode;
@@ -32,7 +33,10 @@ export type WorkbenchAction =
     | { type: 'CANCEL_SELECTION' }
     | { type: 'GO_IDLE' }
     | { type: 'OPEN_PANEL'; id: string }
-    | { type: 'CLOSE_PANEL'; id: string };
+    | { type: 'CLOSE_PANEL'; id: string }
+    | { type: 'START_TOOL'; id: string }
+    | { type: 'UPDATE_TOOL_STATE'; state: 'IDLE' | 'ACTIVE' | 'FINISHED' }
+    | { type: 'CANCEL_TOOL' };
 
 // ============================================================================
 // Reducer
@@ -95,6 +99,23 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
                 ...state,
                 activePanels: state.activePanels.filter(id => id !== action.id)
             };
+
+        case 'START_TOOL':
+            return {
+                ...state,
+                mode: { type: 'TOOL_ACTIVE', id: action.id, state: 'IDLE' }
+            };
+
+        case 'UPDATE_TOOL_STATE':
+            if (state.mode.type !== 'TOOL_ACTIVE') return state;
+            return {
+                ...state,
+                mode: { ...state.mode, state: action.state }
+            };
+
+        case 'CANCEL_TOOL':
+            if (state.mode.type !== 'TOOL_ACTIVE') return state;
+            return { ...state, mode: { type: 'IDLE' } };
 
         default:
             return state;
