@@ -10,7 +10,6 @@ interface ToolbarProps {
 
 export default function Toolbar({ features, onToolClick }: ToolbarProps) {
     const {
-        setActiveDialog,
         selectedFace,
         selectedFacePlane,
         setSketchMode,
@@ -19,6 +18,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
         codeContext,
         toggleSidePanel,
         sidePanelVisible,
+        openPanel
     } = useWorkbench();
 
     // Separate creation tools vs construction vs modification tools
@@ -31,7 +31,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
         if (selectedFace) {
             handleSketchOnFaceClick();
         } else {
-            setActiveDialog('planeSelector');
+            openPanel('planeSelector');
         }
     };
 
