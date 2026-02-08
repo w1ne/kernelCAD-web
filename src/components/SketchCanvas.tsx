@@ -404,7 +404,85 @@ export function SketchCanvas({ plane, onComplete, onCancel }: SketchCanvasProps)
                     data-testid="sketch-canvas"
                 />
 
-                {/* Dynamic Input Floating UI */}
+                {/* Persistent Dimension Labels - Rendered as HTML overlays for better text quality & positioning */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    {entities.map(entity => {
+                        if (!('constraints' in entity) || !entity.constraints) return null;
+
+                        const labels = [];
+
+                        if (entity.type === 'line') {
+                            const constraints = entity.constraints;
+                            const [x1, y1] = sketchToCanvas(entity.start);
+                            const [x2, y2] = sketchToCanvas(entity.end);
+                            const midX = (x1 + x2) / 2;
+                            const midY = (y1 + y2) / 2;
+
+                            if (constraints?.length !== undefined) {
+                                labels.push(
+                                    <div key="len" className="absolute px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-[#00FF9D] font-mono border border-[#00FF9D]/30 backdrop-blur-sm"
+                                        style={{ left: midX, top: midY, transform: 'translate(-50%, -50%)' }}>
+                                        L: {constraints.length}
+                                    </div>
+                                );
+                            }
+                            if (constraints?.angle !== undefined) {
+                                // Place angle label near start point
+                                labels.push(
+                                    <div key="ang" className="absolute px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-blue-400 font-mono border border-blue-400/30 backdrop-blur-sm"
+                                        style={{ left: x1, top: y1, transform: 'translate(10px, -20px)' }}>
+                                        A: {constraints.angle}°
+                                    </div>
+                                );
+                            }
+                        } else if (entity.type === 'rectangle') {
+                            const constraints = entity.constraints;
+                            // Based on drawRectangle logic: Top-Left on screen is (x, y - h)? 
+                            // Actually let's recalculate screen coords safely
+                            // entity.corner is top-left in sketch (max Y)
+                            const [sx, sy] = sketchToCanvas(entity.corner);
+                            const w = entity.width / gridUnit * gridSize;
+                            const h = entity.height / gridUnit * gridSize;
+
+                            // Visual rect top-left is (sx, sy - h) based on drawRectangle
+                            const topY = sy - h;
+                            const leftX = sx;
+
+                            if (constraints?.width !== undefined) {
+                                labels.push(
+                                    <div key="w" className="absolute px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-[#00FF9D] font-mono border border-[#00FF9D]/30 backdrop-blur-sm"
+                                        style={{ left: leftX + w / 2, top: topY, transform: 'translate(-50%, -100%) translateY(-4px)' }}>
+                                        W: {constraints.width}
+                                    </div>
+                                );
+                            }
+                            if (constraints?.height !== undefined) {
+                                labels.push(
+                                    <div key="h" className="absolute px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-[#00FF9D] font-mono border border-[#00FF9D]/30 backdrop-blur-sm"
+                                        style={{ left: leftX, top: topY + h / 2, transform: 'translate(-100%, -50%) translateX(-4px)' }}>
+                                        H: {constraints.height}
+                                    </div>
+                                );
+                            }
+                        } else if (entity.type === 'circle') {
+                            const constraints = entity.constraints;
+                            const [cx, cy] = sketchToCanvas(entity.center);
+                            const r = entity.radius / gridUnit * gridSize;
+
+                            if (constraints?.radius !== undefined) {
+                                labels.push(
+                                    <div key="r" className="absolute px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-[#00FF9D] font-mono border border-[#00FF9D]/30 backdrop-blur-sm"
+                                        style={{ left: cx, top: cy, transform: `translate(${r / 1.4}px, -${r / 1.4}px)` }}>
+                                        R: {constraints.radius}
+                                    </div>
+                                );
+                            }
+                        }
+
+                        if (labels.length === 0) return null;
+                        return <div key={entity.id}>{labels}</div>;
+                    })}
+                </div>
                 {isDrawing && currentPoint && (
                     <div
                         className="pointer-events-none absolute z-50 flex items-center gap-2"

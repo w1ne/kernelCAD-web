@@ -94,6 +94,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         setSidePanelVisible: uiCtx.setSidePanelVisible,
         toggleSidePanel: uiCtx.toggleSidePanel,
         activePanels: uiCtx.activePanels,
+        contextMenu: uiCtx.contextMenu,
+        setContextMenu: uiCtx.setContextMenu,
         // Selection context
         selectedFace: faceSelection.selectedFace,
         selectedFacePlane: faceSelection.selectedFacePlane,
@@ -172,6 +174,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         uiCtx.activePanels,
         uiCtx.openPanel,
         uiCtx.closePanel,
+        uiCtx.contextMenu,
+        uiCtx.setContextMenu,
         faceSelection.selectedFace,
         faceSelection.selectedFacePlane,
         faceSelection.setSelectedFace,

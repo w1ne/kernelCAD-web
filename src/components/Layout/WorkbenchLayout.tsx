@@ -20,6 +20,8 @@ import { EditorPanel } from './EditorPanel';
 import { ViewerPanel } from './ViewerPanel';
 import { NavigationPanel } from './NavigationPanel';
 import { PanelManager } from './PanelManager';
+import { ContextToolbar } from './ContextToolbar';
+import { useUI } from '../../context/UIContext';
 
 export function WorkbenchLayout() {
     const {
@@ -50,8 +52,12 @@ export function WorkbenchLayout() {
         selectedItemId,
         toggleVisibility,
         openPanel,
-        closePanel
+        closePanel,
+        selectedSketchName,
+        toggleSketchVisibility
     } = useWorkbench();
+
+    const { contextMenu, setContextMenu } = useUI();
 
     // Expose helpers for E2E testing
     React.useEffect(() => {
@@ -121,6 +127,7 @@ export function WorkbenchLayout() {
         'escape': () => {
             if (activeDialog) setActiveDialog(null);
             if (isFaceSelecting) cancelFaceSelection();
+            setContextMenu({ ...contextMenu, visible: false });
         },
         'h': () => {
             if (activeDialog) return;
@@ -147,14 +154,17 @@ export function WorkbenchLayout() {
                 console.log('Delete item:', selectedItemId);
                 // Implementation pending for real delete logic
             }
+        },
+        'alt+s': () => {
+            toggleSketchVisibility();
         }
     });
+
 
     // Register Commands for Palette
     const { registerCommand } = useCommandRegistry();
 
     // Use a ref to store the latest values needed by command actions
-    // This allows us to have a stable effect for command registration
     const actionContextRef = React.useRef({
         selectedFace,
         insertCode,
@@ -246,6 +256,17 @@ export function WorkbenchLayout() {
             }
         }));
 
+        unregisters.push(registerCommand({
+            id: 'toggle-sketches',
+            label: 'Toggle Sketches',
+            section: 'View',
+            shortcut: 'Alt+S',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                toggleSketchVisibility();
+            }
+        }));
+
         // Contextual Commands
         unregisters.push(registerCommand({
             id: 'sketch-plane-selector',
@@ -270,7 +291,7 @@ export function WorkbenchLayout() {
         }));
 
         return () => unregisters.forEach(u => u());
-    }, [registerCommand]); // Only stable dependencies
+    }, [registerCommand, toggleSketchVisibility, openPanel]); // Only stable dependencies
 
     const handleToolClick = (feature: Feature) => {
         if (feature.id === 'extrudeFromFace') {
@@ -297,6 +318,22 @@ export function WorkbenchLayout() {
                     codeContext
                 });
             }
+        }
+    };
+
+    const handleContextAction = (actionId: string) => {
+        setContextMenu({ ...contextMenu, visible: false });
+        if (actionId === 'sketchOnFace') {
+            openPanel('sketchOnFace');
+        } else if (actionId === 'extrude') {
+            // Check if we have a selected sketch or face
+            if (selectedSketchName) {
+                openPanel('extrude');
+            } else if (selectedFace) {
+                openPanel('extrudeFromFace');
+            }
+        } else {
+            openPanel(actionId);
         }
     };
 
@@ -379,7 +416,7 @@ export function WorkbenchLayout() {
                         // Use the name from the active sketch session if available
                         const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
 
-                        // Parse plane name correctly (handle both string IDs and object names)
+                        // Parse plane name correctly
                         let planeName: SketchPlane = 'XY';
                         if (typeof sketchMode.plane === 'string') {
                             planeName = sketchMode.plane;
@@ -430,7 +467,7 @@ export function WorkbenchLayout() {
                 />
             )}
 
-            {/* Dialog Overlay (for features with generic parameters) */}
+            {/* Dialog Overlay */}
             {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(activeDialog || '') && (
                 <ParameterDialog
                     key={activeFeature.id}
@@ -448,6 +485,14 @@ export function WorkbenchLayout() {
             )}
             {/* Command Palette Overlay */}
             <CommandPalette />
+
+            {/* Contextual Toolbar Overlay */}
+            <ContextToolbar
+                visible={contextMenu.visible}
+                position={contextMenu.position}
+                type={contextMenu.type}
+                onAction={handleContextAction}
+            />
 
             {/* Multi-Panel Layer */}
             <PanelManager />

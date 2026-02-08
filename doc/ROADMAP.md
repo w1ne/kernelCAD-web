@@ -118,7 +118,13 @@
 - [ ] **Suppression**: Temporarily disable features without deleting code.
 - [ ] **Contextual Deletion**: Remove features and handle dependency cascades.
 
-### 2.2 Parameters Management
+### 2.2 Neuro-Symbolic AI (Engineering Copilot)
+- [ ] **Text-to-CAD Generation**: Generate editable code (KCL/CadQuery) from natural language prompts.
+- [ ] **Visual Inspection Agent**: AI "sees" the model to suggest corrections (e.g., "Bolt holes too close to edge").
+- [ ] **Auto-Constrainer**: Automatically apply geometric constraints to loose sketches based on design intent.
+- [ ] **Visual Refactoring**: High-level commands to "Parameterize this pattern" or "Extract variable" from 3D selection.
+
+### 2.3 Parameters Management
 - [ ] **Global Parameters Panel**: Manage user-defined variables (e.g., `wallThickness = 2mm`).
 - [ ] **Expressions**: Support for math in all input fields (`width / 2 + 5`).
 - [ ] **Bidirectional Sync**: Changing a parameter in the GUI updates the code in real-time.
@@ -133,6 +139,7 @@
 - [x] **Standard Gizmo**: Translation (arrows) implemented using `TransformControls` with safe render logic.
 - [ ] **Interactive Extrude**: Click and drag a sketch face to extrude it in 3D (See [Specs](./DETAILED_INTERACTION_SPECS.md#31-extrude-e)).
 - [ ] **Selection Highlighting**: Hover and click highlighting (Orange/Blue) as per [Visual Feedback](./VISUAL_FEEDBACK_SYSTEM.md).
+- [ ] **Isomorphic Manipulation**: Bi-directional sync where dragging geometry updates code variables and vice-versa (Provenance tracking).
 
 - [x] **Visibility & Selection System** (See [Spec](./VISIBILITY_AND_SELECTION_SPEC.md)):
   - [x] Per-object visibility toggles in Scene Browser.
@@ -153,6 +160,7 @@
 ### 4.2 Engineering Tools
 - [ ] **Measurement**: Precise point-to-point and face-to-face measurements.
 - [ ] **Mass Properties**: Volume, area, and center of gravity calculations.
+- [ ] **HardwareOps CI**: Automated DFM (Design for Manufacturing) and interference checks in CI/CD pipelines.
 
 ---
 
@@ -171,6 +179,7 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [ ] **Incremental Meshing**: Cache shape results and re-mesh only the dirty path.
 - [ ] **Adaptive Quality**: Use coarse meshes during live interaction and high-precision for final view.
 - [ ] **WASM Streaming & Caching**: Use IndexedDB and direct streaming to minimize boot time.
+- [ ] **WebGPU Compute**: Use Compute Shaders to offload heavy geometric calculations (Booleans, Raytracing) to the client GPU.
 
 ---
 
@@ -180,8 +189,11 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [ ] Component hierarchy and Sub-assemblies.
 - [ ] **Mates & Joints**: Define relationships between parts (Rigid, Slider, Revolute).
 
-### 5.2 Ecosystem
-- [ ] **Git-for-Geometry**: Visual diffing of model changes in Pull Requests.
+### 5.2 Ecosystem & HardwareOps
+- [ ] **Git-for-Geometry**: Visual 3D diffing of model changes in Pull Requests/Branches.
+- [ ] **CAD Package Manager**: NPM-style versioned dependencies for parts and assemblies (e.g., `PartCAD`).
+- [ ] **Real-Time Multiplayer**: Google Docs-style co-editing with CRDT conflict resolution.
+- [ ] **Live Share**: "Pair Engineering" where users follow a presenter's camera and code view.
 - [ ] **Plugin Store**: Expand functionality with community scripts.
 
 ---
@@ -212,5 +224,16 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 
 ---
 
-**Last Updated**: 2026-02-06
+## 🌌 PHASE 6: Next-Gen Foundations (Future)
+
+**Goal**: Explore fundamental shifts in geometry representation and performance.
+
+### 6.1 Implicit Modeling
+- [ ] **SDF Engine Integration**: Research Signed Distance Fields for "unbreakable" boolean operations.
+- [ ] **Hybrid Kernel**: Bridge Implicit Modeling (for rapid exploration) with B-Rep (for precise manufacturing output).
+- [ ] **Lattice & Gyroid Generation**: Compact representation of complex internal structures for 3D printing.
+
+---
+
+**Last Updated**: 2026-02-08
 **Next Review**: After v0.10.x (Parametric Sketching) ships

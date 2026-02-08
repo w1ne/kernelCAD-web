@@ -14,6 +14,8 @@ export interface UIContextType {
     activePanels: string[];
     openPanel: (id: string) => void;
     closePanel: (id: string) => void;
+    contextMenu: { visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' };
+    setContextMenu: (menu: { visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -48,6 +50,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>(() => readStoredViewMode());
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>(() => readStoredViewMode3D());
     const [sidePanelVisible, setSidePanelVisible] = useState(() => readStoredSidePanelVisible());
+    const [contextMenu, setContextMenu] = useState<{ visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }>({
+        visible: false,
+        position: null,
+        type: 'FACE'
+    });
 
     // Use the central state machine for dialogs
     const { state, dispatch } = useWorkbenchState();
@@ -102,7 +109,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
         activePanels: state.activePanels,
         openPanel,
         closePanel,
-    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel]);
+        contextMenu,
+        setContextMenu,
+    }), [viewMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }
