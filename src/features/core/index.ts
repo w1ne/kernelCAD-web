@@ -5,6 +5,6 @@ export { FilletFeature, ChamferFeature, CutFeature, UnionFeature, IntersectFeatu
 export { ExtrudeFeature } from './extrude.feature';
 export { RevolveFeature, generateRevolveCode } from './revolve.feature';
 export { SketchOnFaceFeature, generateSketchOnFaceCode } from './sketchOnFace.feature';
-export { OffsetPlaneFeature } from './plane.feature';
+export { OffsetPlaneFeature, MidplaneFeature, TangentPlaneFeature } from './plane.feature';
 export { ExtrudeFromFaceFeature, generateExtrudeFromFaceCode } from './extrudeFromFace.feature';
 

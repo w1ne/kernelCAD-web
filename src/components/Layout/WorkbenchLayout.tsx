@@ -293,6 +293,28 @@ export function WorkbenchLayout() {
             }
         }));
 
+        unregisters.push(registerCommand({
+            id: 'midplane',
+            label: 'Midplane',
+            section: 'Modeling',
+            shortcut: 'Alt+M',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                openPanel('midplane');
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'tangent-plane',
+            label: 'Tangent Plane',
+            section: 'Modeling',
+            shortcut: 'Alt+T',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                openPanel('tangentPlane');
+            }
+        }));
+
         return () => unregisters.forEach(u => u());
     }, [registerCommand, toggleSketchVisibility, openPanel]); // Only stable dependencies
 
@@ -303,7 +325,7 @@ export function WorkbenchLayout() {
             openPanel('sketchOnFace');
         } else {
             // Original logic for other features
-            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(feature.id)) {
+            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector', 'midplane', 'tangentPlane'].includes(feature.id)) {
                 openPanel(feature.id);
                 return;
             }
@@ -471,7 +493,7 @@ export function WorkbenchLayout() {
             )}
 
             {/* Dialog Overlay */}
-            {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector'].includes(activeDialog || '') && (
+            {activeFeature && activeFeature.parameters && !['extrude', 'extrudeFromFace', 'sketchOnFace', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector', 'midplane', 'tangentPlane'].includes(activeDialog || '') && (
                 <ParameterDialog
                     key={activeFeature.id}
                     isOpen={!!activeDialog}

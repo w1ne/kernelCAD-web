@@ -10,6 +10,8 @@ import { PlaneSelectorPanel } from '../Panels/PlaneSelectorPanel';
 import { OffsetPlanePanel } from '../Panels/OffsetPlanePanel';
 import { SketchOnFacePanel } from '../Panels/SketchOnFacePanel';
 import { ExtrudeFromFacePanel } from '../Panels/ExtrudeFromFacePanel';
+import { MidplanePanel } from '../Panels/MidplanePanel';
+import { TangentPlanePanel } from '../Panels/TangentPlanePanel';
 
 export function PanelManager() {
     const { activePanels, closePanel } = useUI();
@@ -146,6 +148,30 @@ export function PanelManager() {
                         initialPosition={{ x: window.innerWidth - 380, y: 440 }}
                     >
                         <ExtrudeFromFacePanel />
+                    </FloatingPanel>
+                );
+            case 'midplane':
+                return (
+                    <FloatingPanel
+                        key="midplane"
+                        id="midplane"
+                        title="Midplane"
+                        onClose={() => closePanel('midplane')}
+                        initialPosition={{ x: window.innerWidth - 380, y: 380 }}
+                    >
+                        <MidplanePanel />
+                    </FloatingPanel>
+                );
+            case 'tangentPlane':
+                return (
+                    <FloatingPanel
+                        key="tangentPlane"
+                        id="tangentPlane"
+                        title="Tangent Plane"
+                        onClose={() => closePanel('tangentPlane')}
+                        initialPosition={{ x: window.innerWidth - 380, y: 420 }}
+                    >
+                        <TangentPlanePanel />
                     </FloatingPanel>
                 );
             // Add more panels here

@@ -1,4 +1,4 @@
-export type PlaneType = 'base' | 'offset' | 'face' | 'angle';
+export type PlaneType = 'base' | 'offset' | 'face' | 'angle' | 'midplane' | 'tangent';
 
 export interface SketchPlaneEntity {
     id: string;

@@ -18,7 +18,18 @@ export function CommandPalette() {
         };
 
         document.addEventListener('keydown', down);
-        return () => document.removeEventListener('keydown', down);
+
+        // Expose for testing
+        if (typeof window !== 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).openCommandPalette = () => setOpen(true);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', down);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (window as any).openCommandPalette;
+        };
     }, []);
 
     // Group commands

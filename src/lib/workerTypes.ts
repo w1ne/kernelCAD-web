@@ -67,6 +67,11 @@ export const FaceGeometrySchema = z.object({
         xDir: z.tuple([z.number(), z.number(), z.number()]).optional(),
         yDir: z.tuple([z.number(), z.number(), z.number()]).optional(),
     }).optional(),
+    cylinder: z.object({
+        origin: z.tuple([z.number(), z.number(), z.number()]),
+        axis: z.tuple([z.number(), z.number(), z.number()]),
+        radius: z.number(),
+    }).optional(),
 });
 
 export const GeometryResultSchema = z.object({
@@ -114,6 +119,11 @@ export interface FaceGeometry {
         normal: [number, number, number];
         xDir?: [number, number, number];
         yDir?: [number, number, number];
+    };
+    cylinder?: {
+        origin: [number, number, number];
+        axis: [number, number, number];
+        radius: number;
     };
 }
 
