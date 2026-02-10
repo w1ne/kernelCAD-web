@@ -8,9 +8,10 @@ interface BaseFormPanelProps {
     initialValues?: FormValues;
     onConfirm: (values: FormValues) => void;
     onCancel: () => void;
+    onChange?: (values: FormValues) => void; // For live preview
 }
 
-export function BaseFormPanel({ schema, initialValues, onConfirm, onCancel }: BaseFormPanelProps) {
+export function BaseFormPanel({ schema, initialValues, onConfirm, onCancel, onChange }: BaseFormPanelProps) {
     const [values, setValues] = useState<FormValues>(() => ({
         ...getDefaultValues(schema),
         ...initialValues,
@@ -31,7 +32,14 @@ export function BaseFormPanel({ schema, initialValues, onConfirm, onCancel }: Ba
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleFieldChange = (fieldName: string, value: any) => {
-        setValues(prev => ({ ...prev, [fieldName]: value }));
+        setValues(prev => {
+            const newValues = { ...prev, [fieldName]: value };
+            // Call onChange callback for live preview
+            if (onChange) {
+                onChange(newValues);
+            }
+            return newValues;
+        });
         // Clear error for this field when user changes it
         if (errors[fieldName]) {
             setErrors(prev => {

@@ -1,4 +1,5 @@
 import type { FormField as FormFieldSchema } from './FormSchema';
+import { SketchSelector } from './SketchSelector';
 
 interface FormFieldProps {
     field: FormFieldSchema;
@@ -60,6 +61,16 @@ export function FormField({ field, value, error, onChange }: FormFieldProps) {
                             </option>
                         ))}
                     </select>
+                );
+
+            case 'sketch-selector':
+                return (
+                    <SketchSelector
+                        value={value as string}
+                        onChange={onChange}
+                        label={field.label}
+                        required={field.required}
+                    />
                 );
 
             case 'checkbox':

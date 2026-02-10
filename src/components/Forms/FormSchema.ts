@@ -5,7 +5,7 @@
  * in both Dialog and Panel contexts.
  */
 
-export type FormFieldType = 'number' | 'select' | 'checkbox' | 'text';
+export type FormFieldType = 'number' | 'select' | 'checkbox' | 'text' | 'sketch-selector';
 
 export interface SelectOption {
     value: string;

@@ -1,165 +1,95 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
-import { getSketchVariablesAST } from '../../lib/ast';
-import { generateExtrudeCode } from '../../features/core/extrude.feature';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
+import { useSketchOptions } from '../../hooks/useSketchOptions';
+import { generateExtrudeCode } from '../../features/core/extrude.feature';
+import { BaseFormPanel } from '../Forms/BaseFormPanel';
+import type { FormSchema, FormValues } from '../Forms/FormSchema';
+
+const extrudeSchema: FormSchema = {
+    title: 'Extrude',
+    fields: [
+        {
+            name: 'sketchName',
+            type: 'sketch-selector',
+            label: 'Profile',
+            required: true
+        },
+        {
+            name: 'distance',
+            type: 'number',
+            label: 'Distance (mm)',
+            defaultValue: 10,
+            min: 0.1,
+            step: 0.5
+        },
+        {
+            name: 'direction',
+            type: 'select',
+            label: 'Direction',
+            defaultValue: 'normal',
+            options: [
+                { value: 'normal', label: 'Normal' },
+                { value: 'reversed', label: 'Reversed' }
+            ]
+        }
+    ]
+};
 
 export function ExtrudePanel() {
-    const { sketches, code, setPreviewCode, codeContext, selectedSketchName } = useWorkbench();
+    const { codeContext, setPreviewCode, selectedSketchName } = useWorkbench();
     const { closePanel } = useUI();
     const { insertCode } = useCodeInsertion();
+    const sketchOptions = useSketchOptions();
 
-    // Replicate sketch finding logic
-    const sketchOptions = useMemo(() => {
-        const options: Array<{ key: string; value: string; label: string }> = [];
-        const seenNames = new Set<string>();
+    // Auto-select last sketch or use selectedSketchName
+    const defaultSketchName = selectedSketchName ||
+        (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '');
 
-        // 1. Current session sketches
-        for (const s of sketches) {
-            if (!s.name || seenNames.has(s.name)) continue;
-            seenNames.add(s.name);
-            options.push({
-                key: `ui:${s.id}`,
-                value: s.name,
-                label: `${s.name} (${s.plane} Plane)`
-            });
-        }
+    const handleConfirm = (values: FormValues) => {
+        const code = generateExtrudeCode(
+            codeContext,
+            values.sketchName as string,
+            values.distance as number,
+            values.direction === 'normal' ? 'default' : 'reversed'
+        );
+        insertCode(code);
+        closePanel('extrude');
+    };
 
-        // 2. Sketches in code AST
-        let codeSketches: string[] = [];
-        try {
-            codeSketches = getSketchVariablesAST(code);
-        } catch {
-            codeSketches = [];
-        }
-
-        for (const name of codeSketches) {
-            if (!name || seenNames.has(name)) continue;
-            seenNames.add(name);
-            options.push({
-                key: `code:${name}`,
-                value: name,
-                label: `${name} (From Code)`
-            });
-        }
-        return options;
-    }, [sketches, code]);
-
-    const [selectedSketch, setSelectedSketch] = useState(
-        selectedSketchName || (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '')
-    );
-    const [distance, setDistance] = useState(10);
-    const [direction, setDirection] = useState<'normal' | 'reversed'>('normal');
-
-    // Live Preview Effect
-    useEffect(() => {
-        if (!selectedSketch) {
+    // Live preview handler
+    const handleChange = (values: FormValues) => {
+        if (!values.sketchName) {
             setPreviewCode(null);
             return;
         }
 
         const previewCode = generateExtrudeCode(
             codeContext,
-            selectedSketch,
-            distance,
-            direction === 'normal' ? 'default' : direction
+            values.sketchName as string,
+            values.distance as number,
+            values.direction === 'normal' ? 'default' : 'reversed'
         );
         setPreviewCode(previewCode);
-
-        return () => setPreviewCode(null);
-    }, [selectedSketch, distance, direction, codeContext, setPreviewCode]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedSketch) return;
-
-        const extrudeCode = generateExtrudeCode(
-            codeContext,
-            selectedSketch,
-            distance,
-            direction === 'normal' ? 'default' : direction
-        );
-        insertCode(extrudeCode);
-        closePanel('extrude');
     };
 
+    // Clear preview on unmount
+    useEffect(() => {
+        return () => setPreviewCode(null);
+    }, [setPreviewCode]);
+
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Sketch Selection */}
-            <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-zinc-400">Profile</label>
-                <select
-                    id="sketch-select"
-                    value={selectedSketch}
-                    onChange={(e) => setSelectedSketch(e.target.value)}
-                    className="rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
-                >
-                    <option value="" disabled>Select Sketch...</option>
-                    {sketchOptions.map((s) => (
-                        <option key={s.key} value={s.value}>{s.label}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Distance Input */}
-            <div className="flex flex-col gap-1">
-                <label htmlFor="extrude-distance" className="text-xs font-medium text-zinc-400">Distance (mm)</label>
-                <div className="relative">
-                    <input
-                        id="extrude-distance"
-                        type="number"
-                        value={distance}
-                        onChange={(e) => setDistance(parseFloat(e.target.value))}
-                        step="0.5"
-                        className="w-full rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
-                    />
-                </div>
-            </div>
-
-            {/* Direction Toggle (Segmented Control style) */}
-            <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-zinc-400">Direction</label>
-                <div className="flex rounded border border-white/10 bg-black/20 p-1">
-                    <button
-                        type="button"
-                        onClick={() => setDirection('normal')}
-                        className={`flex-1 rounded py-1 text-xs transition-colors ${direction === 'normal'
-                            ? 'bg-zinc-700 text-white shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                    >
-                        Normal
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setDirection('reversed')}
-                        className={`flex-1 rounded py-1 text-xs transition-colors ${direction === 'reversed'
-                            ? 'bg-zinc-700 text-white shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                    >
-                        Reversed
-                    </button>
-                </div>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-2 flex justify-end gap-2">
-                <button
-                    type="button"
-                    onClick={() => closePanel('extrude')}
-                    className="rounded px-3 py-1.5 text-xs font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    className="rounded bg-selection-blue/20 border border-selection-blue/20 px-4 py-1.5 text-xs font-medium text-selection-blue hover:bg-selection-blue/30 transition-colors shadow-[0_0_10px_rgba(46,196,182,0.2)]"
-                >
-                    Extrude
-                </button>
-            </div>
-        </form>
+        <BaseFormPanel
+            schema={extrudeSchema}
+            initialValues={{
+                sketchName: defaultSketchName,
+                distance: 10,
+                direction: 'normal'
+            }}
+            onConfirm={handleConfirm}
+            onCancel={() => closePanel('extrude')}
+            onChange={handleChange}
+        />
     );
 }
