@@ -44,11 +44,11 @@ return replicad.makeBox(10, 10, 10);
   test('R opens Revolve when not typing', async ({ page }) => {
     await page.locator('canvas[data-engine]').first().click({ position: { x: 50, y: 50 } });
     await page.keyboard.press('r');
-    await expect(page.locator('h2', { hasText: 'Revolve' })).toBeVisible();
+    await expect(page.locator('[id^="panel-title-"]', { hasText: 'Revolve' })).toBeVisible();
   });
 
   test('R does not trigger while typing in editor', async ({ page }) => {
-    await expect(page.locator('h2', { hasText: 'Revolve' })).toHaveCount(0);
+    await expect(page.locator('[id^="panel-title-"]', { hasText: 'Revolve' })).toHaveCount(0);
 
     // Focus Monaco input area (use focus() to ensure activeElement is the textarea).
     await page.evaluate(() => {
@@ -57,16 +57,16 @@ return replicad.makeBox(10, 10, 10);
     });
     await page.waitForFunction(() => document.activeElement?.tagName?.toLowerCase() === 'textarea');
     await page.keyboard.press('r');
-    await expect(page.locator('h2', { hasText: 'Revolve' })).toHaveCount(0);
+    await expect(page.locator('[id^="panel-title-"]', { hasText: 'Revolve' })).toHaveCount(0);
   });
 
   test('Escape closes dialogs even when input focused', async ({ page }) => {
     await page.locator('canvas[data-engine]').first().click({ position: { x: 50, y: 50 } });
     await page.keyboard.press('e');
-    await expect(page.locator('h2', { hasText: 'Extrude' })).toBeVisible();
+    await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toBeVisible();
 
     await page.locator('#extrude-distance').click();
     await page.keyboard.press('Escape');
-    await expect(page.locator('h2', { hasText: 'Extrude' })).toHaveCount(0);
+    await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toHaveCount(0);
   });
 });

@@ -10,3 +10,23 @@ export const OffsetPlaneFeature: Feature = {
         context.openPanel('offsetPlane');
     }
 };
+
+export const MidplaneFeature: Feature = {
+    id: 'midplane',
+    label: 'Midplane',
+    icon: PlaneIcon, // Will update to more specific icon if needed later
+    description: 'Create a plane exactly between two selected faces',
+    execute: (context) => {
+        context.openPanel('midplane');
+    }
+};
+
+export const TangentPlaneFeature: Feature = {
+    id: 'tangentPlane',
+    label: 'Tangent Plane',
+    icon: PlaneIcon,
+    description: 'Create a plane tangent to a cylindrical or conical face',
+    execute: (context) => {
+        context.openPanel('tangentPlane');
+    }
+};

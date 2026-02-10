@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
-import { getSketchVariablesAST, getReturnedVariables } from '../lib/ast';
+import { remapSketchNames } from '../lib/sketchNaming';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
@@ -70,45 +70,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             try {
                 const result = await engine.executeCode(code);
                 setGeometries(result.geometries);
-                const sketchVarNames = (() => {
-                    try {
-                        return getSketchVariablesAST(code);
-                    } catch {
-                        return [];
-                    }
-                })();
-
-                const returnedVarNames = (() => {
-                    try {
-                        return getReturnedVariables(code);
-                    } catch {
-                        return [];
-                    }
-                })();
-
-                // Worker assigns tracked sketch ids like `sketch-${index}-${Date.now()}`
-                // and returned sketch ids like `return-sketch-${index}-${Date.now()}`.
-                // Remap those names to the real variable names from user code.
-                const remappedSketches = result.sketches.map((s) => {
-                    // Path A: Tracked sketches (from startSketch/sketchOnFace variables)
-                    const mTracked = /^sketch-(\d+)-/.exec(s.id);
-                    if (mTracked) {
-                        const idx = Number(mTracked[1]);
-                        const name = sketchVarNames[idx];
-                        if (name) return { ...s, name };
-                    }
-
-                    // Path B: Returned sketches (wires of returned shapes)
-                    const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
-                    if (mReturned) {
-                        const idx = Number(mReturned[1]);
-                        const name = returnedVarNames[idx];
-                        if (name) return { ...s, name };
-                    }
-
-                    return s;
-                });
-
+                const remappedSketches = remapSketchNames(result.sketches, code);
                 setSketchesGeometries(remappedSketches);
                 setError(null);
             } catch (err: unknown) {
@@ -166,39 +128,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         try {
             const result = await engine.executeCode(codeToExecute);
             setGeometries(result.geometries);
-            const sketchVarNames = (() => {
-                try {
-                    return getSketchVariablesAST(codeToExecute);
-                } catch {
-                    return [];
-                }
-            })();
-
-            const returnedVarNames = (() => {
-                try {
-                    return getReturnedVariables(codeToExecute);
-                } catch {
-                    return [];
-                }
-            })();
-
-            const remappedSketches = result.sketches.map((s) => {
-                const mTracked = /^sketch-(\d+)-/.exec(s.id);
-                if (mTracked) {
-                    const idx = Number(mTracked[1]);
-                    const name = sketchVarNames[idx];
-                    if (name) return { ...s, name };
-                }
-
-                const mReturned = /^return-sketch-(\d+)-/.exec(s.id);
-                if (mReturned) {
-                    const idx = Number(mReturned[1]);
-                    const name = returnedVarNames[idx];
-                    if (name) return { ...s, name };
-                }
-                return s;
-            });
-
+            const remappedSketches = remapSketchNames(result.sketches, codeToExecute);
             setSketchesGeometries(remappedSketches);
             setError(null);
         } catch (err: unknown) {

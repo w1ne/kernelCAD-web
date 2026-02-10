@@ -85,10 +85,16 @@
   - [x] **Finite State Machine (FSM)**: Refactor `AbstractTool` to rigidly enforce `Idle` -> `Active` -> `Finished` states to prevent "stuck" tools.
   - [x] **Drag-to-Edit**: Implement shared logic for "Press-Drag-Release" operations (used in Extrude, Fillet, and new Plane tools).
   - [x] **Sketch Tool Refactor**: Update Line, Circle, and Rect tools to support the "Click-Move-Click" pattern with "Dynamic Input" field focus.
-- [ ] **Construction Geometry UI** (See [Specs](./DETAILED_INTERACTION_SPECS.md#6-construction-geometry)):
+- [x] **Construction Geometry** (See [Specs](./DETAILED_INTERACTION_SPECS.md#6-construction-geometry)):
   - [x] **Offset Plane Tool**: User selects face -> drags arrow manipulator -> types distance.
-  - [ ] **Midplane Tool**: User selects Face A + Face B -> logic computes midpoint transform.
-  - [ ] **Tangent Plane Tool**: User selects Cylinder -> drags radial handle for angle.
+  - [x] **Midplane Tool**: User selects Face A + Face B -> logic computes midpoint transform.
+  - [x] **Tangent Plane Tool**: User selects Cylinder -> drags radial handle for angle.
+
+### 1.4 Pre-Release Polish (v0.11.x)
+- [x] **Project Management**: Save/Open `.kcad` project files (JSON w/ code & settings).
+- [ ] **Examples Library**: Built-in "Welcome" modal with loadable example scripts (Bracket, Flange, Vase).
+- [ ] **Export Robustness**: Ensure STEP/STL export handles complex compounds reliability.
+- [ ] **Error Recovery**: Graceful handling of infinite loops or worker crashes.
 
 ---
 
@@ -215,12 +221,10 @@ See detail spec in **[Performance Strategy](./PERFORMANCE_IMPROVEMENTS.md)**.
 - [x] **Geometry Validation Tests**: Snapshot tests for volume, bounding box, center of mass.
 
 ## 📋 Priority Order (Next 6 Months)
-
-1. **v0.10.x**: Parametric Sketching (Constraints & Dimensions) ⭐ **HIGH PRIORITY**
-2. **Object Management**: Visibility & Selection System ([Spec](./VISIBILITY_AND_SELECTION_SPEC.md))
-3. **v0.8.0**: Direct Manipulation (Gizmos & Selection)
-4. **v0.9.0**: Feature Timeline & History
-5. **v1.0.0**: Global Parameters & Sections 🎉
+1. **v0.11.x**: Pre-Release Polish (Projects, Examples, Stability) ⭐ **NEXT PRIORITY**
+2. **v0.12.x**: Documentation & "First Time User Experience"
+3. **v1.0.0**: Public Beta Release 🎉
+4. **Future**: Direct Manipulation, History/Timeline, and Assemblies.
 
 ---
 

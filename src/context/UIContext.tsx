@@ -63,6 +63,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
     const setActiveDialog = useCallback((dialogId: string | null) => {
         if (dialogId) {
+            // Redirect specific IDs to panels if they are part of the new system
+            const panelIds = [
+                'extrude', 'revolve', 'fillet', 'chamfer',
+                'union', 'cut', 'intersect', 'offsetPlane',
+                'planeSelector', 'midplane', 'tangentPlane'
+            ];
+
+            if (panelIds.includes(dialogId)) {
+                dispatch({ type: 'OPEN_PANEL', id: dialogId });
+                return;
+            }
+
             dispatch({ type: 'OPEN_DIALOG', id: dialogId });
         } else {
             dispatch({ type: 'CLOSE_DIALOG' });

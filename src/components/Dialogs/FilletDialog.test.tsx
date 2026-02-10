@@ -21,11 +21,15 @@ describe('FilletDialog', () => {
         const onCancel = vi.fn();
         render(<FilletDialog onConfirm={onConfirm} onCancel={onCancel} />);
 
-        fireEvent.change(screen.getByLabelText('Target Variable Name'), { target: { value: 'part1' } });
-        fireEvent.change(screen.getByLabelText('Radius (mm)'), { target: { value: '5.5' } });
-        fireEvent.change(screen.getByLabelText('Edge Filter'), { target: { value: 'vertical' } });
+        // Use getElementById since happy-dom has issues with getByLabelText
+        const targetNameInput = document.getElementById('field-targetName') as HTMLInputElement;
+        const radiusInput = document.getElementById('field-radius') as HTMLInputElement;
+        const filterSelect = document.getElementById('field-filterType') as HTMLSelectElement;
 
-        // Use form submission directly instead of button click for happy-dom compatibility
+        fireEvent.change(targetNameInput, { target: { value: 'part1' } });
+        fireEvent.change(radiusInput, { target: { value: '5.5' } });
+        fireEvent.change(filterSelect, { target: { value: 'vertical' } });
+
         const form = screen.getByRole('button', { name: 'Apply Fillet' }).closest('form')!;
         fireEvent.submit(form);
 

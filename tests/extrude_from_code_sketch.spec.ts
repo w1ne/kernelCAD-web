@@ -49,7 +49,7 @@ return replicad.makeBox(10, 10, 10);
         await waitForStability(page, count);
 
         await page.getByTitle('Extrude').click();
-        await expect(page.locator('h2', { hasText: 'Extrude' })).toBeVisible();
+        await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toBeVisible();
 
         // Regression guard: sketch declared in code should be selectable.
         await expect(page.locator('#sketch-select')).toContainText('sketch (From Code)');
@@ -96,7 +96,7 @@ return replicad.makeBox(10, 10, 10);
         await page.evaluate(() => (window as any).__TEST_SELECT_SKETCH?.('sketch'));
 
         await page.getByTitle('Extrude').click();
-        await expect(page.locator('h2', { hasText: 'Extrude' })).toBeVisible();
+        await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toBeVisible();
 
         const selected = await page.locator('#sketch-select').inputValue();
         expect(selected).toBe('sketch');
