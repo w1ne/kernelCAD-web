@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FormField } from './FormField';
 import type { FormSchema, FormValues } from './FormSchema';
 import { validateFormValues, getDefaultValues } from './FormSchema';
@@ -29,6 +29,18 @@ export function BaseFormPanel({
         ...initialValues,
     }));
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Sync internal state with initialValues updates (e.g. from selection)
+    useEffect(() => {
+        if (initialValues) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setValues(prev => ({
+                ...prev,
+                ...initialValues,
+            }));
+        }
+    }, [initialValues]);
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

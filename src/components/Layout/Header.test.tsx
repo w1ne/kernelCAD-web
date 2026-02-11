@@ -63,4 +63,30 @@ describe('Header', () => {
 
         expect(geometryEngine.exportSTEP).toHaveBeenCalled();
     });
+
+    it('should switch between shading modes', () => {
+        render(
+            <WorkbenchProvider>
+                <Header />
+            </WorkbenchProvider>
+        );
+
+        // Default is usually shadedWithEdges (from WorkbenchContext)
+        const boxBtn = screen.getByTitle('Shaded with Edges');
+        const wireframeBtn = screen.getByTitle('Wireframe');
+        const shadedBtn = screen.getByTitle('Shaded');
+
+        // Initial check for shadedWithEdges active style (bg-[#444])
+        expect(boxBtn.className).toContain('bg-[#444]');
+
+        // Click wireframe
+        fireEvent.click(wireframeBtn);
+        expect(wireframeBtn.className).toContain('bg-[#444]');
+        expect(boxBtn.className).not.toContain('bg-[#444]');
+
+        // Click shaded
+        fireEvent.click(shadedBtn);
+        expect(shadedBtn.className).toContain('bg-[#444]');
+        expect(wireframeBtn.className).not.toContain('bg-[#444]');
+    });
 });

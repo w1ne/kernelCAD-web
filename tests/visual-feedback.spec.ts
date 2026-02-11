@@ -8,12 +8,12 @@ test.describe('Visual Feedback System', () => {
     });
 
     test('should change cursor to pointer when hovering a face', async ({ page }) => {
-        // 1. Create a large box
+        // 1. Create a large box and ensure it is returned
         await page.evaluate(() => {
-            (window as any).setCode('const box = replicad.makeBox(50, 50, 50);');
+            (window as any).setCode('const box = replicad.makeBox(50, 50, 50); return box;');
         });
 
-        // 2. Wait for rendering (increased)
+        // 2. Wait for rendering and stability
         await page.waitForTimeout(2000);
 
         // 3. Move mouse to center of canvas
@@ -24,15 +24,9 @@ test.describe('Visual Feedback System', () => {
         // Target the center of the canvas where the box should be
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 
-        // 4. Verify cursor style
-        const cursor = await page.evaluate(() => {
-            const viewer = document.querySelector('[data-testid="viewer-container"]');
-            return window.getComputedStyle(viewer as Element).cursor;
-        });
-
-        console.log('Detected cursor:', cursor);
-
-        expect(cursor).toBe('pointer');
+        // 4. Verify cursor style using robust locator
+        const viewer = page.locator('[data-testid="viewer-container"]');
+        await expect(viewer).toHaveCSS('cursor', 'pointer');
     });
 
     test('should change cursor to crosshair in sketch mode', async ({ page }) => {
@@ -40,12 +34,8 @@ test.describe('Visual Feedback System', () => {
         await page.keyboard.press('s');
         await page.getByText('XY Plane').click();
 
-        // 2. Verify cursor style
-        const cursor = await page.evaluate(() => {
-            const viewer = document.querySelector('.relative.w-full.h-full');
-            return window.getComputedStyle(viewer as Element).cursor;
-        });
-
-        expect(cursor).toBe('crosshair');
+        // 2. Verify cursor style using robust locator
+        const viewer = page.locator('[data-testid="viewer-container"]');
+        await expect(viewer).toHaveCSS('cursor', 'crosshair');
     });
 });

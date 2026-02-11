@@ -6,7 +6,7 @@ import { devLabScenarios } from './devlab/scenarios';
 import { useEffect, useState } from 'react';
 import { projectService } from './lib/projectService';
 
-type ViewMode3D = 'shadedWithEdges' | 'wireframe' | 'shaded';
+
 
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { code, viewMode, viewMode3D, sidePanelVisible, showSketches, setCode, setViewMode, setViewMode3D } = useWorkbench();
@@ -22,10 +22,6 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     const savedProject = projectService.loadFromLocalStorage();
     if (savedProject) {
       setCode(savedProject.code);
-      if (savedProject.viewState) {
-        setViewMode(savedProject.viewState.viewMode);
-        setViewMode3D(savedProject.viewState.viewMode3D as ViewMode3D);
-      }
     }
     setTimeout(() => setIsLoaded(true), 0);
   }, [isDevLab, setCode, setViewMode, setViewMode3D]);

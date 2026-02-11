@@ -562,6 +562,7 @@ function InteractionHandler({ setHovered, setSnap }: { setHovered: (h: HoverResu
         lastPointer.current.copy(pointer);
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
+
         const best = HoverManager.getBestHover(intersects);
         setHovered(best);
         setSnap(SnapManager.getSnapFromHover(best));
