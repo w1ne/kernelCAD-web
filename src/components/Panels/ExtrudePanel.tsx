@@ -22,7 +22,7 @@ const extrudeSchema: FormSchema = {
             type: 'number',
             label: 'Distance (mm)',
             defaultValue: 10,
-            min: 0.1,
+            min: 0,
             step: 0.5,
             id: 'extrude-distance'
         },
@@ -50,15 +50,20 @@ export function ExtrudePanel() {
         (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '');
 
     const handleConfirm = (values: FormValues) => {
-        console.log('ExtrudePanel: Confirming with values:', values);
-        const code = generateExtrudeCode(
-            codeContext,
-            values.sketchName as string,
-            values.distance as number,
-            values.direction === 'normal' ? 'default' : 'reversed'
-        );
-        insertCode(code);
-        closePanel('extrude');
+        try {
+            const code = generateExtrudeCode(
+                codeContext,
+                values.sketchName as string,
+                values.distance as number,
+                values.direction === 'normal' ? 'default' : 'reversed'
+            );
+            insertCode(code);
+        } catch (error) {
+            console.error('Error generating/inserting code:', error);
+            // Optionally add toast notification here
+        } finally {
+            closePanel('extrude');
+        }
     };
 
     // Live preview handler

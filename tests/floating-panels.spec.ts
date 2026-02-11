@@ -48,6 +48,7 @@ return [box1, mySketch.extrude(2)];
         }, { timeout: 15000 }).toBeGreaterThan(0);
 
         // 6. Submit and verify final code
+        // 6. Submit and verify final code
         const submitBtn = panel.getByRole('button', { name: 'Apply', exact: true });
         await expect(submitBtn).toBeVisible();
         await submitBtn.click();
