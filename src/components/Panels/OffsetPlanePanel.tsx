@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
 import { createPlaneConstructorCode } from '../../lib/planeUtils';
+import { BaseFormPanel, type FormValues, type FormSchema } from '../Forms';
 
 export function OffsetPlanePanel() {
     const {
@@ -15,24 +16,54 @@ export function OffsetPlanePanel() {
     } = useWorkbench();
     const { closePanel } = useUI();
 
-    // Determine initial selection
-    const getInitialPlaneId = () => {
+    // Build dynamic options for plane selection
+    const planeOptions = useMemo(() => {
+        const options = planes.map(p => ({
+            value: p.id,
+            label: `${p.name}${p.type === 'base' ? ' (Origin)' : ''}`
+        }));
+
         if (selectedFace) {
-            return `face-${selectedFace.faceId}`;
+            options.push({
+                value: `face-${selectedFace.faceId}`,
+                label: `Selected Face ${selectedFace.faceId}`
+            });
         }
-        return planes.length > 0 ? planes[0].id : '';
-    };
+        return options;
+    }, [planes, selectedFace]);
 
-    const [baseRefId, setBaseRefId] = useState(getInitialPlaneId());
-    const [offset, setOffset] = useState(0);
+    // Determine initial plane selection
+    const initialPlaneId = useMemo(() => {
+        return selectedFace
+            ? `face-${selectedFace.faceId}`
+            : (planes.length > 0 ? planes[0].id : '');
+    }, [selectedFace, planes]);
 
-    // Live Preview Effect (Future: Implement plane ghosting)
-    useEffect(() => {
-        return () => setPreviewCode(null);
-    }, [setPreviewCode]);
+    const schema: FormSchema = useMemo(() => ({
+        title: 'Construction Plane',
+        fields: [
+            {
+                name: 'basePlaneId',
+                label: 'Reference Entity',
+                type: 'select',
+                options: planeOptions,
+                defaultValue: initialPlaneId,
+                required: true,
+            },
+            {
+                name: 'offset',
+                label: 'Offset Distance (mm)',
+                type: 'number',
+                defaultValue: 0,
+                step: 1,
+            },
+        ],
+    }), [planeOptions, initialPlaneId]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleConfirm = (values: FormValues) => {
+        const baseRefId = values.basePlaneId as string;
+        const offset = values.offset as number;
+
         if (!baseRefId) return;
 
         if (baseRefId.startsWith('face-')) {
@@ -96,64 +127,20 @@ export function OffsetPlanePanel() {
         closePanel('offsetPlane');
     };
 
+    // Clear preview on unmount
+    useEffect(() => {
+        return () => setPreviewCode(null);
+    }, [setPreviewCode]);
+
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Reference Selection */}
-            <div className="flex flex-col gap-1">
-                <label htmlFor="plane-base" className="text-xs font-medium text-zinc-400">Reference Entity</label>
-                <select
-                    id="plane-base"
-                    value={baseRefId}
-                    onChange={(e) => setBaseRefId(e.target.value)}
-                    className="w-full rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
-                    required
-                >
-                    <option value="" disabled>Select a plane or face...</option>
-                    <optgroup label="Standard Planes">
-                        {planes.map((p) => (
-                            <option key={p.id} value={p.id}>{p.name} {p.type === 'base' ? '(Origin)' : ''}</option>
-                        ))}
-                    </optgroup>
-                    {selectedFace && (
-                        <optgroup label="Selection">
-                            <option value={`face-${selectedFace.faceId}`}>
-                                Selected Face {selectedFace.faceId}
-                            </option>
-                        </optgroup>
-                    )}
-                </select>
-            </div>
-
-            {/* Offset Distance */}
-            <div className="flex flex-col gap-1">
-                <label htmlFor="plane-offset" className="text-xs font-medium text-zinc-400">Offset Distance (mm)</label>
-                <input
-                    id="plane-offset"
-                    type="number"
-                    value={offset}
-                    onChange={(e) => setOffset(Number(e.target.value))}
-                    className="w-full rounded border border-white/10 bg-black/20 px-2 py-1.5 text-sm text-zinc-200 focus:border-selection-blue focus:outline-none focus:ring-1 focus:ring-selection-blue"
-                    step="1"
-                    autoFocus
-                />
-            </div>
-
-            {/* Actions */}
-            <div className="mt-2 flex justify-end gap-2">
-                <button
-                    type="button"
-                    onClick={() => closePanel('offsetPlane')}
-                    className="rounded px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    className="rounded bg-selection-blue/20 border border-selection-blue/20 px-4 py-1.5 text-xs font-medium text-selection-blue hover:bg-selection-blue/30 transition-colors shadow-[0_0_10px_rgba(46,196,182,0.2)]"
-                >
-                    Create Plane
-                </button>
-            </div>
-        </form>
+        <BaseFormPanel
+            schema={schema}
+            initialValues={{
+                basePlaneId: initialPlaneId,
+                offset: 0
+            }}
+            onConfirm={handleConfirm}
+            onCancel={() => closePanel('offsetPlane')}
+        />
     );
 }
