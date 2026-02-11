@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useWorkbench } from '../../context/WorkbenchContext';
-import { getSketchVariablesAST } from '../../lib/ast';
+import { useSketchOptions } from '../../hooks/useSketchOptions';
+import { BaseFormDialog } from '../Forms/BaseFormDialog';
+import type { FormSchema, FormValues } from '../Forms/FormSchema';
 
 interface RevolveDialogProps {
     sketchName?: string;
@@ -8,149 +8,64 @@ interface RevolveDialogProps {
     onCancel: () => void;
 }
 
+const revolveSchema: FormSchema = {
+    title: 'Revolve',
+    fields: [
+        {
+            name: 'sketchName',
+            type: 'sketch-selector',
+            label: 'Select Sketch Profile',
+            required: true
+        },
+        {
+            name: 'angle',
+            type: 'number',
+            label: 'Angle (degrees)',
+            defaultValue: 360,
+            min: 1,
+            max: 360,
+            step: 1
+        },
+        {
+            name: 'axis',
+            type: 'select',
+            label: 'Rotation Axis (local)',
+            defaultValue: 'X',
+            options: [
+                { value: 'X', label: 'X Axis' },
+                { value: 'Y', label: 'Y Axis' },
+                { value: 'Z', label: 'Z Axis' }
+            ]
+        }
+    ]
+};
+
 export function RevolveDialog({ sketchName: initialSketchName, onConfirm, onCancel }: RevolveDialogProps) {
-    const { sketches, code } = useWorkbench();
+    const sketchOptions = useSketchOptions();
 
-    const sketchOptions = useMemo(() => {
-        const options: Array<{ key: string; value: string; label: string }> = [];
-        const seenNames = new Set<string>();
+    // Auto-select last sketch if no initial sketch provided
+    const defaultSketchName = initialSketchName ||
+        (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '');
 
-        for (const s of sketches) {
-            if (!s.name || seenNames.has(s.name)) continue;
-            seenNames.add(s.name);
-            options.push({
-                key: `ui:${s.id}`,
-                value: s.name,
-                label: `${s.name} (${s.plane} Plane)`
-            });
-        }
-
-        let codeSketches: string[] = [];
-        try {
-            codeSketches = getSketchVariablesAST(code);
-        } catch {
-            codeSketches = [];
-        }
-
-        for (const name of codeSketches) {
-            if (!name || seenNames.has(name)) continue;
-            seenNames.add(name);
-            options.push({
-                key: `code:${name}`,
-                value: name,
-                label: `${name} (From Code)`
-            });
-        }
-
-        return options;
-    }, [sketches, code]);
-
-    const [selectedSketch, setSelectedSketch] = useState(
-        initialSketchName || (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '')
-    );
-    const [angle, setAngle] = useState(360);
-    const [axis, setAxis] = useState('X');
-
-    useEffect(() => {
-        if (selectedSketch) return;
-        if (sketchOptions.length === 0) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedSketch(sketchOptions[sketchOptions.length - 1].value);
-    }, [selectedSketch, sketchOptions]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedSketch) return;
-        onConfirm({ sketchName: selectedSketch, angle, axis });
+    const handleConfirm = (values: FormValues) => {
+        onConfirm({
+            sketchName: values.sketchName as string,
+            angle: values.angle as number,
+            axis: values.axis as string
+        });
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-6 shadow-xl min-w-[400px]">
-                <h2 className="text-xl font-bold text-white mb-4">
-                    Revolve
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="sketch-select"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Select Sketch Profile
-                        </label>
-                        <select
-                            id="sketch-select"
-                            value={selectedSketch}
-                            onChange={(e) => setSelectedSketch(e.target.value)}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            required
-                        >
-                            <option value="" disabled>Select a sketch...</option>
-                            {sketchOptions.map((s) => (
-                                <option key={s.key} value={s.value}>{s.label}</option>
-                            ))}
-                        </select>
-                        {sketchOptions.length === 0 && (
-                            <p className="text-xs text-amber-500 mt-1">No sketches available to revolve.</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="revolve-angle"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Angle (degrees)
-                        </label>
-                        <input
-                            id="revolve-angle"
-                            type="number"
-                            value={angle}
-                            onChange={(e) => setAngle(Number(e.target.value))}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            step="1"
-                            max="360"
-                            min="1"
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="revolve-axis"
-                            className="block text-sm font-medium text-gray-300 mb-2"
-                        >
-                            Rotation Axis (local)
-                        </label>
-                        <select
-                            id="revolve-axis"
-                            value={axis}
-                            onChange={(e) => setAxis(e.target.value)}
-                            className="w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="X">X Axis</option>
-                            <option value="Y">Y Axis</option>
-                            <option value="Z">Z Axis</option>
-                        </select>
-                    </div>
-
-                    <div className="flex gap-2 justify-end pt-4">
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#333] text-gray-300 rounded transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                        >
-                            Revolve
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <BaseFormDialog
+            schema={revolveSchema}
+            initialValues={{
+                sketchName: defaultSketchName,
+                angle: 360,
+                axis: 'X'
+            }}
+            onConfirm={handleConfirm}
+            onCancel={onCancel}
+            confirmButtonText="Revolve"
+        />
     );
 }
