@@ -9,9 +9,19 @@ interface BaseFormPanelProps {
     onConfirm: (values: FormValues) => void;
     onCancel: () => void;
     onChange?: (values: FormValues) => void; // For live preview
+    activeField?: string;
+    onFieldActivate?: (fieldName: string) => void;
 }
 
-export function BaseFormPanel({ schema, initialValues, onConfirm, onCancel, onChange }: BaseFormPanelProps) {
+export function BaseFormPanel({
+    schema,
+    initialValues,
+    onConfirm,
+    onCancel,
+    onChange,
+    activeField,
+    onFieldActivate
+}: BaseFormPanelProps) {
     const [values, setValues] = useState<FormValues>(() => ({
         ...getDefaultValues(schema),
         ...initialValues,
@@ -68,6 +78,8 @@ export function BaseFormPanel({ schema, initialValues, onConfirm, onCancel, onCh
                         value={values[field.name]}
                         error={errors[field.name]}
                         onChange={(value) => handleFieldChange(field.name, value)}
+                        active={activeField === field.name}
+                        onActivate={() => onFieldActivate?.(field.name)}
                     />
                 ))}
 
