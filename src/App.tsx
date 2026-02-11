@@ -14,9 +14,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
   // Auto-load on mount
   useEffect(() => {
-    const isTest = typeof window !== 'undefined' && (window.navigator.webdriver || window.location.search.includes('test=true'));
-
-    if (isDevLab || isTest) {
+    if (isDevLab) {
       setTimeout(() => setIsLoaded(true), 0);
       return;
     }

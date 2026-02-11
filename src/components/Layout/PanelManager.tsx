@@ -25,7 +25,7 @@ export function PanelManager() {
                         id="extrude"
                         title="Extrude"
                         onClose={() => closePanel('extrude')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 80 }}
+                        initialPosition={{ x: 80, y: 80 }}
                     >
                         <ExtrudePanel />
                     </FloatingPanel>
@@ -37,7 +37,7 @@ export function PanelManager() {
                         id="revolve"
                         title="Revolve"
                         onClose={() => closePanel('revolve')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 120 }}
+                        initialPosition={{ x: 100, y: 100 }}
                     >
                         <RevolvePanel />
                     </FloatingPanel>
@@ -49,7 +49,7 @@ export function PanelManager() {
                         id="fillet"
                         title="Fillet"
                         onClose={() => closePanel('fillet')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 160 }}
+                        initialPosition={{ x: 120, y: 120 }}
                     >
                         <FilletPanel />
                     </FloatingPanel>
@@ -61,7 +61,7 @@ export function PanelManager() {
                         id="chamfer"
                         title="Chamfer"
                         onClose={() => closePanel('chamfer')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 200 }}
+                        initialPosition={{ x: 140, y: 140 }}
                     >
                         <ChamferPanel />
                     </FloatingPanel>
@@ -73,7 +73,7 @@ export function PanelManager() {
                         id="union"
                         title="Join (Union)"
                         onClose={() => closePanel('union')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 240 }}
+                        initialPosition={{ x: 80, y: 80 }}
                     >
                         <BooleanPanel type="fuse" />
                     </FloatingPanel>
@@ -85,7 +85,7 @@ export function PanelManager() {
                         id="cut"
                         title="Cut (Subtract)"
                         onClose={() => closePanel('cut')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 280 }}
+                        initialPosition={{ x: 100, y: 100 }}
                     >
                         <BooleanPanel type="cut" />
                     </FloatingPanel>
@@ -97,7 +97,7 @@ export function PanelManager() {
                         id="intersect"
                         title="Intersect"
                         onClose={() => closePanel('intersect')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 320 }}
+                        initialPosition={{ x: 120, y: 120 }}
                     >
                         <BooleanPanel type="intersect" />
                     </FloatingPanel>
@@ -109,7 +109,7 @@ export function PanelManager() {
                         id="planeSelector"
                         title="Select Sketch Plane"
                         onClose={() => closePanel('planeSelector')}
-                        initialPosition={{ x: window.innerWidth / 2 - 160, y: 150 }}
+                        initialPosition={{ x: 300, y: 150 }}
                     >
                         <PlaneSelectorPanel />
                     </FloatingPanel>
@@ -121,7 +121,7 @@ export function PanelManager() {
                         id="offsetPlane"
                         title="Construction Plane"
                         onClose={() => closePanel('offsetPlane')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 360 }}
+                        initialPosition={{ x: 140, y: 140 }}
                     >
                         <OffsetPlanePanel />
                     </FloatingPanel>
@@ -133,7 +133,7 @@ export function PanelManager() {
                         id="sketchOnFace"
                         title="New Sketch"
                         onClose={() => closePanel('sketchOnFace')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 400 }}
+                        initialPosition={{ x: 160, y: 160 }}
                     >
                         <SketchOnFacePanel />
                     </FloatingPanel>
@@ -145,7 +145,7 @@ export function PanelManager() {
                         id="extrudeFromFace"
                         title="Extrude"
                         onClose={() => closePanel('extrudeFromFace')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 440 }}
+                        initialPosition={{ x: 180, y: 180 }}
                     >
                         <ExtrudeFromFacePanel />
                     </FloatingPanel>
@@ -157,7 +157,7 @@ export function PanelManager() {
                         id="midplane"
                         title="Midplane"
                         onClose={() => closePanel('midplane')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 380 }}
+                        initialPosition={{ x: 200, y: 200 }}
                     >
                         <MidplanePanel />
                     </FloatingPanel>
@@ -169,7 +169,7 @@ export function PanelManager() {
                         id="tangentPlane"
                         title="Tangent Plane"
                         onClose={() => closePanel('tangentPlane')}
-                        initialPosition={{ x: window.innerWidth - 380, y: 420 }}
+                        initialPosition={{ x: 220, y: 220 }}
                     >
                         <TangentPlanePanel />
                     </FloatingPanel>

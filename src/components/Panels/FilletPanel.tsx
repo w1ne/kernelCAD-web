@@ -48,6 +48,7 @@ export function FilletPanel() {
             onConfirm={handleConfirm}
             onCancel={() => closePanel('fillet')}
             onChange={handleChange}
+            submitLabel="Fillet"
         />
     );
 }

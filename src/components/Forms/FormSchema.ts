@@ -26,6 +26,7 @@ export interface FormField {
     validation?: (value: any) => string | null;
     placeholder?: string;
     required?: boolean;
+    id?: string;
 }
 
 export interface FormSchema {

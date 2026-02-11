@@ -23,11 +23,13 @@ export function FloatingPanel({ id, title, children, onClose, initialPosition = 
             dragMomentum={false}
             dragListener={false}
             dragControls={controls}
-            initial={{ opacity: 0, scale: 0.9, x: initialPosition.x, y: initialPosition.y }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             style={{
                 position: 'fixed',
+                top: initialPosition.y,
+                left: initialPosition.x,
                 zIndex: 40,
             }}
             className="w-[320px] bg-[#1a1a1a]/95 border border-[#333] rounded-lg shadow-2xl overflow-hidden backdrop-blur-md"

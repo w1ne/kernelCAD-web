@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Floating Panels HUD & Live Preview', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
+        await page.evaluate(() => localStorage.clear());
         await page.waitForSelector('canvas');
         await page.waitForFunction(() => (window as any).isEngineReady === true);
 
@@ -32,7 +33,7 @@ return [box1, mySketch.extrude(2)];
         await expect(panel).toBeVisible();
 
         // 3. Wait for the sketch to be selected in the dropdown
-        const sketchSelect = panel.locator('select');
+        const sketchSelect = panel.locator('#sketch-select');
         await expect(sketchSelect).toHaveValue('mySketch');
 
         // 4. Change distance and check preview geometries
@@ -47,7 +48,12 @@ return [box1, mySketch.extrude(2)];
         }, { timeout: 15000 }).toBeGreaterThan(0);
 
         // 6. Submit and verify final code
-        await panel.getByRole('button', { name: 'Extrude', exact: true }).click();
+        const submitBtn = panel.getByRole('button', { name: 'Apply', exact: true });
+        await expect(submitBtn).toBeVisible();
+        await submitBtn.click();
+
+        // Wait for panel to close
+        await expect(panel).toBeHidden();
 
         await expect.poll(async () => {
             return await page.evaluate(() => (window as any).getCode?.() || '');
@@ -123,7 +129,7 @@ return [box1, box2];
             return (previewGeoms as any[]).length;
         }).toBeGreaterThan(0);
 
-        await panel.getByRole('button', { name: 'Join', exact: true }).click();
+        await page.getByTestId('base-form-submit').click();
 
         await expect.poll(async () => {
             return await page.evaluate(() => (window as any).getCode?.() || '');

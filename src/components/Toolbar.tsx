@@ -1,7 +1,7 @@
 import { PenTool, ArrowUpFromLine, Eye, EyeOff, Layers } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { FEATURE_SHORTCUTS, formatTooltip } from '../constants/shortcuts';
+import { FEATURE_SHORTCUTS, SHORTCUT_HINTS, formatTooltip } from '../constants/shortcuts';
 
 interface ToolbarProps {
     features: Feature[];
@@ -66,7 +66,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 onClick={toggleSidePanel}
                 className={`p-2 rounded hover:bg-[#333] transition-colors ${sidePanelVisible ? 'text-blue-400' : 'text-gray-500'}`}
                 aria-label="Toggle Scene Browser"
-                title={sidePanelVisible ? "Hide Scene Browser" : "Show Scene Browser"}
+                title={formatTooltip(sidePanelVisible ? "Hide Scene Browser" : "Show Scene Browser", undefined)}
             >
                 <Layers size={20} />
             </button>
@@ -79,11 +79,10 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 data-testid="toolbar-sketch"
                 className="p-2 rounded hover:bg-[#333] text-gray-400 hover:text-white transition-colors"
                 aria-label="Sketch"
-                title={
-                    selectedFace
-                        ? "Sketch on Face"
-                        : "Sketch"
-                }
+                title={formatTooltip(
+                    selectedFace ? "Sketch on Face" : "Sketch",
+                    SHORTCUT_HINTS.sketch
+                )}
             >
                 <PenTool size={20} className={selectedFace ? "text-blue-400" : ""} />
             </button>
@@ -93,7 +92,7 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
                 onClick={toggleSketchVisibility}
                 className={`p-2 rounded hover:bg-[#333] transition-colors ${showSketches ? 'text-blue-400' : 'text-gray-500'}`}
                 aria-label="Sketch Visibility"
-                title={showSketches ? "Hide Sketches" : "Show Sketches"}
+                title={formatTooltip(showSketches ? "Hide Sketches" : "Show Sketches", undefined)}
             >
                 {showSketches ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>

@@ -86,6 +86,7 @@ export function SketchOnFacePanel() {
             schema={schema}
             onConfirm={handleConfirm}
             onCancel={() => closePanel('sketchOnFace')}
+            submitLabel="Create Sketch"
         />
     );
 }

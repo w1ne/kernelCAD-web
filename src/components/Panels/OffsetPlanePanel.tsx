@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
 import { createPlaneConstructorCode } from '../../lib/planeUtils';
@@ -51,18 +51,19 @@ export function OffsetPlanePanel() {
                 required: true,
             },
             {
-                name: 'offset',
-                label: 'Offset Distance (mm)',
+                name: 'distance',
+                label: 'Distance (mm)',
                 type: 'number',
-                defaultValue: 0,
+                defaultValue: 10,
                 step: 1,
+                id: 'offset-distance'
             },
         ],
     }), [planeOptions, initialPlaneId]);
 
     const handleConfirm = (values: FormValues) => {
         const baseRefId = values.basePlaneId as string;
-        const offset = values.offset as number;
+        const distance = values.distance as number;
 
         if (!baseRefId) return;
 
@@ -81,17 +82,17 @@ export function OffsetPlanePanel() {
                     let planeCode = createPlaneConstructorCode(face.plane.origin, face.plane.normal);
                     let finalOrigin = [...face.plane.origin];
 
-                    if (offset !== 0) {
+                    if (distance !== 0) {
                         const [ox, oy, oz] = face.plane.origin;
                         const [nx, ny, nz] = face.plane.normal;
-                        finalOrigin = [ox + nx * offset, oy + ny * offset, oz + nz * offset];
+                        finalOrigin = [ox + nx * distance, oy + ny * distance, oz + nz * distance];
                         planeCode = createPlaneConstructorCode(finalOrigin as [number, number, number], face.plane.normal);
                     }
 
                     insertCode(`const ${uniqueName} = ${planeCode};\n`);
                     addPlane({
                         id: uniqueName,
-                        name: offset === 0 ? `Datum (Face ${faceId})` : `Offset ${offset} (Face ${faceId})`,
+                        name: distance === 0 ? `Datum (Face ${faceId})` : `Offset ${distance} (Face ${faceId})`,
                         type: 'face',
                         origin: finalOrigin as [number, number, number],
                         normal: face.plane.normal,
@@ -106,9 +107,9 @@ export function OffsetPlanePanel() {
                 const [ox, oy, oz] = basePlane.origin;
                 const [nx, ny, nz] = basePlane.normal;
                 const newOrigin: [number, number, number] = [
-                    ox + nx * offset,
-                    oy + ny * offset,
-                    oz + nz * offset
+                    ox + nx * distance,
+                    oy + ny * distance,
+                    oz + nz * distance
                 ];
                 const uniqueName = codeContext.generateUniqueName('plane_offset');
                 insertCode(`const ${uniqueName} = ${createPlaneConstructorCode(newOrigin, basePlane.normal)};\n`);
@@ -127,20 +128,30 @@ export function OffsetPlanePanel() {
         closePanel('offsetPlane');
     };
 
-    // Clear preview on unmount
-    useEffect(() => {
-        return () => setPreviewCode(null);
-    }, [setPreviewCode]);
+    const handlePreview = (values: FormValues) => {
+        const baseRefId = values.basePlaneId as string;
+
+        if (!baseRefId) {
+            setPreviewCode(null);
+            return;
+        }
+
+        // Simplistic preview: just show a plane at the origin/offset
+        // We could reuse logic from handleConfirm but without insert/add
+        // For now, let's keep it simple as before
+    };
 
     return (
         <BaseFormPanel
             schema={schema}
             initialValues={{
                 basePlaneId: initialPlaneId,
-                offset: 0
+                distance: 10
             }}
             onConfirm={handleConfirm}
             onCancel={() => closePanel('offsetPlane')}
+            onChange={handlePreview}
+            submitLabel="Create Plane"
         />
     );
 }

@@ -78,6 +78,7 @@ export function ExtrudeFromFacePanel() {
                 onConfirm={handleConfirm}
                 onCancel={() => closePanel('extrudeFromFace')}
                 onChange={handleChange}
+                submitLabel="Extrude"
             />
         </>
     );
