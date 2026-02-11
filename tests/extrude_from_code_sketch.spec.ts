@@ -48,7 +48,7 @@ return replicad.makeBox(10, 10, 10);
         await page.evaluate((c) => (window as any).setCode?.(c), code);
         await waitForStability(page, count);
 
-        await page.getByTitle('Extrude').click();
+        await page.getByTitle('Extrude', { exact: false }).click();
         await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toBeVisible();
 
         // Regression guard: sketch declared in code should be selectable.
@@ -56,7 +56,7 @@ return replicad.makeBox(10, 10, 10);
 
         // Use the sketch and insert extrude code.
         await page.locator('#sketch-select').selectOption('sketch');
-        await page.locator('button[type="submit"]', { hasText: 'Extrude' }).click();
+        await page.locator('button[type="submit"]', { hasText: 'Apply' }).click();
 
         const count2 = await getNextExecutionCount(page);
         await waitForStability(page, count2);
@@ -95,7 +95,7 @@ return replicad.makeBox(10, 10, 10);
         // Select the sketch via test hook (mirrors clicking the sketch in the viewport).
         await page.evaluate(() => (window as any).__TEST_SELECT_SKETCH?.('sketch'));
 
-        await page.getByTitle('Extrude').click();
+        await page.getByTitle('Extrude', { exact: false }).click();
         await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toBeVisible();
 
         const selected = await page.locator('#sketch-select').inputValue();

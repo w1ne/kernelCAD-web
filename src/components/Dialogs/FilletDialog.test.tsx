@@ -21,16 +21,15 @@ describe('FilletDialog', () => {
         const onCancel = vi.fn();
         render(<FilletDialog onConfirm={onConfirm} onCancel={onCancel} />);
 
-        // Use getElementById since happy-dom has issues with getByLabelText
-        const targetNameInput = document.getElementById('field-targetName') as HTMLInputElement;
-        const radiusInput = document.getElementById('field-radius') as HTMLInputElement;
-        const filterSelect = document.getElementById('field-filterType') as HTMLSelectElement;
+        const targetNameInput = screen.getByLabelText(/target variable name/i) as HTMLInputElement;
+        const radiusInput = screen.getByLabelText(/radius \(mm\)/i) as HTMLInputElement;
+        const filterSelect = screen.getByLabelText(/edge filter/i) as HTMLSelectElement;
 
         fireEvent.change(targetNameInput, { target: { value: 'part1' } });
         fireEvent.change(radiusInput, { target: { value: '5.5' } });
         fireEvent.change(filterSelect, { target: { value: 'vertical' } });
 
-        const form = screen.getByRole('button', { name: 'Apply Fillet' }).closest('form')!;
+        const form = screen.getByRole('button', { name: /apply fillet/i }).closest('form')!;
         fireEvent.submit(form);
 
         expect(onConfirm).toHaveBeenCalledWith({

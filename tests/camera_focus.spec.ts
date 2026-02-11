@@ -6,10 +6,19 @@ test.describe('Camera Focus & Sketching', () => {
         page.on('console', msg => console.log(`[Browser Console]: ${msg.text()}`));
         page.on('pageerror', err => console.log(`[Browser Error]: ${err.message}`));
 
-        // 1. Load Application
+        // 1. Load Application with clean state
         await page.goto('/');
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });
+
+        // Force Code mode to ensure editor is visible
+        await page.evaluate(() => {
+            (window as any).setViewMode?.('code');
+        });
 
         // 2. Wait for Editor
+        await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 15000 });
         const editor = page.locator('.monaco-editor').first();
         await expect(editor).toBeVisible({ timeout: 15000 });
         await page.waitForTimeout(1000);

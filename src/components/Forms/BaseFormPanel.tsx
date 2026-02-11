@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FormField } from './FormField';
 import type { FormSchema, FormValues } from './FormSchema';
 import { validateFormValues, getDefaultValues } from './FormSchema';
@@ -11,6 +11,7 @@ interface BaseFormPanelProps {
     onChange?: (values: FormValues) => void; // For live preview
     activeField?: string;
     onFieldActivate?: (fieldName: string) => void;
+    submitLabel?: string;
 }
 
 export function BaseFormPanel({
@@ -20,13 +21,26 @@ export function BaseFormPanel({
     onCancel,
     onChange,
     activeField,
-    onFieldActivate
+    onFieldActivate,
+    submitLabel = 'Apply'
 }: BaseFormPanelProps) {
     const [values, setValues] = useState<FormValues>(() => ({
         ...getDefaultValues(schema),
         ...initialValues,
     }));
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Sync internal state with initialValues updates (e.g. from selection)
+    useEffect(() => {
+        if (initialValues) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setValues(prev => ({
+                ...prev,
+                ...initialValues,
+            }));
+        }
+    }, [initialValues]);
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,14 +56,14 @@ export function BaseFormPanel({
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleFieldChange = (fieldName: string, value: any) => {
-        setValues(prev => {
-            const newValues = { ...prev, [fieldName]: value };
-            // Call onChange callback for live preview
-            if (onChange) {
-                onChange(newValues);
-            }
-            return newValues;
-        });
+        const nextValues = { ...values, [fieldName]: value };
+        setValues(nextValues);
+
+        // Call onChange callback for live preview safely after queueing the state update
+        if (onChange) {
+            onChange(nextValues);
+        }
+
         // Clear error for this field when user changes it
         if (errors[fieldName]) {
             setErrors(prev => {
@@ -61,7 +75,10 @@ export function BaseFormPanel({
     };
 
     return (
-        <div className="bg-[#1e1e1e] border border-[#333] rounded-lg p-4 shadow-xl w-full">
+        <div
+            className="bg-[#1e1e1e] border border-[#333] rounded-lg p-4 shadow-xl w-full"
+            aria-label={schema.title}
+        >
             <h3 className="text-lg font-semibold text-white mb-3">
                 {schema.title}
             </h3>
@@ -93,9 +110,10 @@ export function BaseFormPanel({
                     </button>
                     <button
                         type="submit"
+                        data-testid="base-form-submit"
                         className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                     >
-                        Apply
+                        {submitLabel}
                     </button>
                 </div>
             </form>

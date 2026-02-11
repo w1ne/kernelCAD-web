@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
@@ -14,15 +14,17 @@ const extrudeSchema: FormSchema = {
             name: 'sketchName',
             type: 'sketch-selector',
             label: 'Profile',
-            required: true
+            required: true,
+            id: 'sketch-select'
         },
         {
             name: 'distance',
             type: 'number',
             label: 'Distance (mm)',
             defaultValue: 10,
-            min: 0.1,
-            step: 0.5
+            min: 0,
+            step: 0.5,
+            id: 'extrude-distance'
         },
         {
             name: 'direction',
@@ -48,14 +50,20 @@ export function ExtrudePanel() {
         (sketchOptions.length > 0 ? sketchOptions[sketchOptions.length - 1].value : '');
 
     const handleConfirm = (values: FormValues) => {
-        const code = generateExtrudeCode(
-            codeContext,
-            values.sketchName as string,
-            values.distance as number,
-            values.direction === 'normal' ? 'default' : 'reversed'
-        );
-        insertCode(code);
-        closePanel('extrude');
+        try {
+            const code = generateExtrudeCode(
+                codeContext,
+                values.sketchName as string,
+                values.distance as number,
+                values.direction === 'normal' ? 'default' : 'reversed'
+            );
+            insertCode(code);
+        } catch (error) {
+            console.error('Error generating/inserting code:', error);
+            // Optionally add toast notification here
+        } finally {
+            closePanel('extrude');
+        }
     };
 
     // Live preview handler
@@ -79,17 +87,20 @@ export function ExtrudePanel() {
         return () => setPreviewCode(null);
     }, [setPreviewCode]);
 
+    const initialValues = useMemo(() => ({
+        sketchName: defaultSketchName,
+        distance: 10,
+        direction: 'normal'
+    }), [defaultSketchName]);
+
     return (
         <BaseFormPanel
             schema={extrudeSchema}
-            initialValues={{
-                sketchName: defaultSketchName,
-                distance: 10,
-                direction: 'normal'
-            }}
+            initialValues={initialValues}
             onConfirm={handleConfirm}
             onCancel={() => closePanel('extrude')}
             onChange={handleChange}
+            submitLabel="Apply"
         />
     );
 }

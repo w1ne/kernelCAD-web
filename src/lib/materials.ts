@@ -41,7 +41,7 @@ export function createCADMaterial(
                     flatShading: true  // Flat shading shows facets clearly
                 }),
                 edges: new LineBasicMaterial({
-                    color: 0x000000,  // Black edges for contrast
+                    color: 0x222222,  // Dark gray edges for contrast against mesh
                     linewidth: 1      // Note: linewidth > 1 not supported on all platforms
                 })
             };
@@ -49,7 +49,7 @@ export function createCADMaterial(
         case 'wireframe':
             return {
                 wireframe: new LineBasicMaterial({
-                    color: 0x000000  // Black wireframe lines
+                    color: 0xffffff  // White wireframe lines for visibility on dark background
                 })
             };
     }

@@ -10,17 +10,21 @@ test.describe('UI Persistence', () => {
     await page.goto('/');
     await waitForReady(page);
 
-    await page.getByTitle('Design Mode').click();
+    await page.getByTitle('Design Mode', { exact: false }).click();
     await expect(page.getByText('Design', { exact: true }).first()).toBeVisible();
 
-    await page.getByTitle('Wireframe').click();
-    const wireframeBtn = page.getByTitle('Wireframe');
+    await page.getByTitle('Wireframe', { exact: false }).click();
+    const wireframeBtn = page.getByTitle('Wireframe', { exact: false });
+    // In Header.tsx, active state uses bg-[#444]
     await expect(wireframeBtn).toHaveClass(/bg-\[#444\]/);
 
     await page.reload();
     await waitForReady(page);
 
+    // Give UI time to restore state from localStorage
+    await page.waitForTimeout(500);
+
     await expect(page.getByText('Design', { exact: true }).first()).toBeVisible();
-    await expect(page.getByTitle('Wireframe')).toHaveClass(/bg-\[#444\]/);
+    await expect(page.getByTitle('Wireframe', { exact: false })).toHaveClass(/bg-\[#444\]/);
   });
 });

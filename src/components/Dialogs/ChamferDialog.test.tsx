@@ -21,16 +21,15 @@ describe('ChamferDialog', () => {
         const onCancel = vi.fn();
         render(<ChamferDialog onConfirm={onConfirm} onCancel={onCancel} />);
 
-        // Use getElementById since happy-dom has issues with getByLabelText
-        const targetNameInput = document.getElementById('field-targetName') as HTMLInputElement;
-        const distanceInput = document.getElementById('field-distance') as HTMLInputElement;
-        const filterSelect = document.getElementById('field-filterType') as HTMLSelectElement;
+        const targetNameInput = screen.getByLabelText(/target variable name/i) as HTMLInputElement;
+        const distanceInput = screen.getByLabelText(/distance \(mm\)/i) as HTMLInputElement;
+        const filterSelect = screen.getByLabelText(/edge filter/i) as HTMLSelectElement;
 
         fireEvent.change(targetNameInput, { target: { value: 'part2' } });
         fireEvent.change(distanceInput, { target: { value: '2' } });
         fireEvent.change(filterSelect, { target: { value: 'horizontal' } });
 
-        const form = screen.getByRole('button', { name: 'Apply Chamfer' }).closest('form')!;
+        const form = screen.getByRole('button', { name: /apply chamfer/i }).closest('form')!;
         fireEvent.submit(form);
 
         expect(onConfirm).toHaveBeenCalledWith({

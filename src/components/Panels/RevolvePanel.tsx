@@ -92,6 +92,7 @@ export function RevolvePanel() {
             onConfirm={handleConfirm}
             onCancel={() => closePanel('revolve')}
             onChange={handleChange}
+            submitLabel="Revolve"
         />
     );
 }

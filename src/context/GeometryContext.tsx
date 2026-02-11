@@ -55,9 +55,6 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     useEffect(() => {
         engine.initialize().then(() => setIsReady(true));
         return () => {
-            // Optional: we could terminate here if we wanted to kill worker on unmount
-            // engine.terminate(); 
-            // note: terminating the global singleton might be bad if we remount.
         };
     }, [engine]);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
 import { createPlaneConstructorCode } from '../../lib/planeUtils';
@@ -149,12 +149,15 @@ export function TangentPlanePanel() {
         closePanel('tangentPlane');
     };
 
+    const initialValues = useMemo(() => values, [values]);
+
     return (
         <BaseFormPanel
             schema={tangentPlaneSchema}
-            initialValues={values}
+            initialValues={initialValues}
             onConfirm={handleConfirm}
             onCancel={() => closePanel('tangentPlane')}
+            submitLabel="Create"
         />
     );
 }

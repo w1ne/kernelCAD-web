@@ -19,6 +19,7 @@ export const chamferFormSchema: FormSchema = {
             min: 0.1,
             step: 0.1,
             required: true,
+            id: 'chamfer-distance',
         },
         {
             name: 'filterType',
@@ -54,6 +55,7 @@ export const filletFormSchema: FormSchema = {
             min: 0.1,
             step: 0.1,
             required: true,
+            id: 'fillet-radius',
         },
         {
             name: 'filterType',
@@ -83,6 +85,7 @@ export function createBooleanSchema(type: 'fuse' | 'cut' | 'intersect'): FormSch
                 defaultValue: 'shape1',
                 placeholder: 'e.g. box1',
                 required: true,
+                id: 'base-name',
             },
             {
                 name: 'toolName',
@@ -91,6 +94,7 @@ export function createBooleanSchema(type: 'fuse' | 'cut' | 'intersect'): FormSch
                 defaultValue: 'shape2',
                 placeholder: 'e.g. cylinder1',
                 required: true,
+                id: 'tool-name',
             },
         ],
     };
@@ -105,6 +109,7 @@ export const extrudeFromFaceSchema: FormSchema = {
             type: 'number',
             defaultValue: 20,
             required: true,
+            id: 'extrude-distance',
         },
         {
             name: 'direction',

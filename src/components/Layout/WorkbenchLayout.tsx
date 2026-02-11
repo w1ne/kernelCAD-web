@@ -54,21 +54,52 @@ export function WorkbenchLayout() {
         openPanel,
         closePanel,
         selectedSketchName,
+        setSelectedSketchName,
         toggleSketchVisibility,
-        activePanels
+        activePanels,
+        setViewMode,
+        isComputing,
+        setSelectedFace,
+        startFaceSelection
     } = useWorkbench();
 
     const { contextMenu, setContextMenu } = useUI();
 
-    // Expose helpers for E2E testing
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
-            window.setCode = setCode;
-            window.getCode = () => code;
-            window.isEditorReady = !!editorInstance;
-            window.setActiveDialog = setActiveDialog;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const w = window as any;
+
+            // Core Editor Helpers
+            w.setCode = setCode;
+            w.getCode = () => code;
+            w.isEditorReady = !!editorInstance;
+            w.setActiveDialog = setActiveDialog;
+            w.setViewMode = setViewMode;
+
+            // Geometry & Selection Helpers
+            w.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
+                setSelectedFace({ shapeIndex, faceId });
+            };
+
+            w.getSelectedFace = () => selectedFace;
+            w.getGeometries = () => geometries;
+            w.getPreviewGeometries = () => previewGeometries;
+            w.getSketches = () => sketchesGeometries;
+            w.isComputing = () => isComputing;
+
+            // Face selection
+            w.startFaceSelection = () => {
+                startFaceSelection();
+            };
+
+            w.__TEST_SELECT_SKETCH = (name: string | null) => {
+                setSelectedSketchName(name);
+            };
+
+            w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
 
     const { insertCode } = useCodeInsertion();
 

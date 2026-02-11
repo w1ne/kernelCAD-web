@@ -59,10 +59,10 @@ return [ replicad.makeCylinder(20, 40) ];
         }, { timeout: 5000 }).toBe(true);
 
         // Wait for the derived face plane to be available (required for sketch-on-face)
-        await expect(page.getByTitle(/Extrude Face/)).toBeVisible({ timeout: 15000 });
+        await expect(page.getByTitle(/Extrude Face/, { exact: false })).toBeVisible({ timeout: 15000 });
 
         // 4. Click Sketch Button
-        const sketchBtn = page.getByTitle('Sketch on Selected Face');
+        const sketchBtn = page.getByTitle('Sketch on Face', { exact: false });
         await expect(sketchBtn).toBeVisible();
         await sketchBtn.click();
 
@@ -173,7 +173,7 @@ return [base];
         await page.waitForTimeout(500);
 
         // 4. Click Sketch
-        await page.getByTitle('Sketch on Selected Face').click();
+        await page.getByTitle('Sketch on Face', { exact: false }).click();
 
         // 5. Verify Sketch Mode
         const canvas = page.getByTestId('sketch-canvas');

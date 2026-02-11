@@ -31,14 +31,14 @@ describe('BooleanDialog', () => {
         const onCancel = vi.fn();
         render(<BooleanDialog type="fuse" onConfirm={onConfirm} onCancel={onCancel} />);
 
-        // Use getElementById for consistency
-        const baseInput = document.getElementById('field-baseName') as HTMLInputElement;
-        const toolInput = document.getElementById('field-toolName') as HTMLInputElement;
-        const submitButton = screen.getByRole('button', { name: 'Join' });
+        const baseInput = screen.getByLabelText(/base shape/i) as HTMLInputElement;
+        const toolInput = screen.getByLabelText(/tool shape/i) as HTMLInputElement;
 
         fireEvent.change(baseInput, { target: { value: 'myBox' } });
         fireEvent.change(toolInput, { target: { value: 'myCyl' } });
-        fireEvent.click(submitButton);
+
+        const form = screen.getByRole('button', { name: 'Join' }).closest('form')!;
+        fireEvent.submit(form);
 
         expect(onConfirm).toHaveBeenCalledWith({
             baseName: 'myBox',

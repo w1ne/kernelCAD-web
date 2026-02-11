@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useUI } from '../../context/UIContext';
 import { createPlaneConstructorCode } from '../../lib/planeUtils';
@@ -128,14 +128,17 @@ export function MidplanePanel() {
         closePanel('midplane');
     };
 
+    const initialValues = useMemo(() => values, [values]);
+
     return (
         <BaseFormPanel
             schema={midplaneSchema}
-            initialValues={values}
+            initialValues={initialValues}
             onConfirm={handleConfirm}
             onCancel={() => closePanel('midplane')}
             activeField={activeField}
             onFieldActivate={(name) => setActiveField(name as 'ref1' | 'ref2')}
+            submitLabel="Create"
         />
     );
 }

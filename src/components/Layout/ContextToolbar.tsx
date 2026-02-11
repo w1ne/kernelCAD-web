@@ -12,13 +12,13 @@ interface ContextToolbarProps {
 export function ContextToolbar({ visible, position, type, onAction }: ContextToolbarProps) {
     const actions = useMemo(() => {
         const baseActions = [
-            { id: 'extrude', label: 'Extrude', icon: <Box size={16} />, shortcut: 'E' },
+            { id: 'extrude', label: 'Extrude Face', icon: <Box size={16} />, shortcut: 'E' },
         ];
 
         if (type === 'FACE') {
             return [
                 ...baseActions,
-                { id: 'sketchOnFace', label: 'Sketch on Face', icon: <Square size={16} />, shortcut: 'S' },
+                { id: 'sketchOnFace', label: 'Sketch on Selected Face', icon: <Square size={16} />, shortcut: 'S' },
                 { id: 'revolve', label: 'Revolve', icon: <Circle size={16} />, shortcut: 'R' },
             ];
         }

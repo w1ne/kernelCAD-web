@@ -28,7 +28,6 @@ const Slider = ({ field, value, onChange }: { field: FormFieldSchema, value: any
             max={field.max ?? 100}
             step={field.step ?? 1}
             value={value ?? field.defaultValue ?? 0}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onChange={(e) => onChange(Number(e.target.value))}
             className="w-full accent-selection-blue h-1 rounded-full bg-white/10 appearance-none cursor-grab active:cursor-grabbing"
         />
@@ -38,7 +37,8 @@ const Slider = ({ field, value, onChange }: { field: FormFieldSchema, value: any
 export function FormField({ field, value, error, onChange, active, onActivate }: FormFieldProps) {
     const baseInputClasses = "w-full bg-[#2a2a2a] border border-[#444] rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500";
     const errorClasses = error ? "border-red-500" : "";
-    const fieldId = `field-${field.name}`;
+    const generatedFieldId = `field-${field.name}`;
+    const fieldId = field.id ?? generatedFieldId;
 
     const renderInput = () => {
         switch (field.type) {
@@ -91,6 +91,7 @@ export function FormField({ field, value, error, onChange, active, onActivate }:
             case 'sketch-selector':
                 return (
                     <SketchSelector
+                        id={fieldId}
                         value={value as string}
                         onChange={onChange}
                         label={field.label}

@@ -48,6 +48,7 @@ export function ChamferPanel() {
             onConfirm={handleConfirm}
             onCancel={() => closePanel('chamfer')}
             onChange={handleChange}
+            submitLabel="Chamfer"
         />
     );
 }

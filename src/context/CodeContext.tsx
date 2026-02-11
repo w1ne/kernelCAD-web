@@ -16,6 +16,7 @@ const CodeContext = createContext<CodeContextType | undefined>(undefined);
 
 export function CodeProvider({ children, initialCode = defaultCode }: { children: ReactNode; initialCode?: string }) {
     const [code, setCode] = useState<string>(initialCode);
+
     const [editorInstance, setEditorInstance] = useState<EditorLike | null>(null);
 
     // Initialize CommandManager once, then update its context provider as state changes.

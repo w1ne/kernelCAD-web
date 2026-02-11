@@ -56,7 +56,7 @@ return [filleted.cut(cyl)];
         await page.waitForTimeout(1000);
 
         // Click Sketch
-        await page.getByTitle('Sketch on Selected Face').click();
+        await page.getByTitle('Sketch on Face', { exact: false }).click();
 
         // Verify Sketch Mode
         const canvas = page.getByTestId('sketch-canvas');

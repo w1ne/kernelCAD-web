@@ -55,6 +55,7 @@ export function BooleanPanel({ type }: BooleanPanelProps) {
             onConfirm={handleConfirm}
             onCancel={() => closePanel(panelId)}
             onChange={handleChange}
+            submitLabel={type === 'fuse' ? 'Join' : (type === 'cut' ? 'Cut' : 'Intersect')}
         />
     );
 }
