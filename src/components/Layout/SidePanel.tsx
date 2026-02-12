@@ -22,7 +22,8 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
         toggleVisibility,
         selectedItemIds,
         toggleSelection,
-        renameItem
+        renameItem,
+        deleteItem
     } = useWorkbench();
 
     const [activeTab, setActiveTab] = useState<'scene' | 'ai'>('scene');
@@ -70,6 +71,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         onTogglePlane={togglePlaneVisibility}
                         onSelectPlane={(id) => setSelectedItemId(id)}
                         onRename={renameItem}
+                        onDelete={(item) => deleteItem(item.name, item.line)}
                     />
                 ) : (
                     <AIAssistant />

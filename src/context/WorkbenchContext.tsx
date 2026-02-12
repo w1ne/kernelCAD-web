@@ -29,6 +29,7 @@ export interface WorkbenchContextType extends
 
     // Commands
     renameItem: (oldName: string, newName: string) => void;
+    deleteItem: (name: string, lineHint?: number) => void;
 
     // Safety
     applyCodeSafe: (code: string) => Promise<boolean>;
@@ -121,6 +122,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         openPanel: uiCtx.openPanel,
         closePanel: uiCtx.closePanel,
         renameItem: codeCtx.renameItem,
+        deleteItem: codeCtx.deleteItem,
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,
@@ -142,6 +144,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         addConstraint: sketchingCtx.addConstraint,
         selectEntity: sketchingCtx.selectEntity,
         clearSelection: sketchingCtx.clearSelection,
+        clearAll: sketchingCtx.clearAll,
         solve: sketchingCtx.solve,
         // New: Code generation context
         codeContext: codeCtx.codeContext,
@@ -211,6 +214,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         sketchingCtx.addConstraint,
         sketchingCtx.selectEntity,
         sketchingCtx.clearSelection,
+        sketchingCtx.clearAll,
         sketchingCtx.solve,
     ]);
 

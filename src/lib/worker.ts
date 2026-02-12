@@ -135,6 +135,19 @@ function tryVec3(v: unknown): [number, number, number] | null {
   return [x, y, z];
 }
 
+function tryExtractFaceCenter(face: unknown): [number, number, number] | null {
+  if (!isRecord(face)) return null;
+  const centerFn = getFn(face, 'center');
+  if (centerFn) {
+    try {
+      return tryVec3(centerFn.call(face));
+    } catch {
+      // ignore and continue with property-based fallback
+    }
+  }
+  return tryVec3((face as UnknownRecord).center);
+}
+
 function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
   if (!isRecord(face)) return undefined;
   const geomType = getString(face, 'geomType');
@@ -171,7 +184,10 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
         const yDir = tryVec3(yDirFn ? (yDirFn as () => unknown).call(planeObj) : planeObj.yDir);
 
         if (origin && norm) {
-          return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+          // Anchor plane to a point guaranteed to lie on the selected face.
+          // Some plane origins are generic/canonical and can shift committed sketches.
+          const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
+          return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
     }
@@ -204,7 +220,8 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
         const yDir = planeNode && isRecord(planeNode) ? tryVec3((planeNode as UnknownRecord).yDir || (typeof (planeNode as UnknownRecord).yDir === 'function' ? ((planeNode as UnknownRecord).yDir as () => unknown)() : null)) : undefined;
 
         if (origin && norm) {
-          return { origin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+          const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
+          return { origin: anchoredOrigin, normal: norm, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
         }
       }
     } catch (e) {
@@ -236,7 +253,8 @@ function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
     tryVec3((p as UnknownRecord).yDirection) ??
     tryVec3((p as UnknownRecord).yAxis);
 
-  return { origin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
+  const anchoredOrigin = tryExtractFaceCenter(face) ?? origin;
+  return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
 }
 
 function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
@@ -368,12 +386,28 @@ function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null 
   const normals = Array.isArray(mesh.normals) ? (mesh.normals as number[]) : null;
   if (!vertices || !triangles || !normals) return null;
 
+  const plane = tryExtractPlaneFromFace(face);
+  if (plane) {
+    let cx = 0;
+    let cy = 0;
+    let cz = 0;
+    const count = Math.floor(vertices.length / 3);
+    if (count > 0) {
+      for (let i = 0; i < vertices.length; i += 3) {
+        cx += vertices[i] ?? 0;
+        cy += vertices[i + 1] ?? 0;
+        cz += vertices[i + 2] ?? 0;
+      }
+      plane.origin = [cx / count, cy / count, cz / count];
+    }
+  }
+
   return {
     vertices: new Float32Array(vertices),
     indices: new Uint32Array(triangles),
     normals: new Float32Array(normals),
     faceId,
-    plane: tryExtractPlaneFromFace(face),
+    plane,
     cylinder: tryExtractCylinderFromFace(face),
   };
 }

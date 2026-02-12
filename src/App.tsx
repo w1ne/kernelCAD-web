@@ -5,7 +5,16 @@ import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
 import { useEffect, useState } from 'react';
 import { projectService } from './lib/projectService';
+import { parseCode } from './lib/ast';
 
+function isCodeParsable(code: string): boolean {
+  try {
+    parseCode(code);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
@@ -21,7 +30,21 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
     const savedProject = projectService.loadFromLocalStorage();
     if (savedProject) {
-      setCode(savedProject.code);
+      const savedCode = savedProject.code;
+      if (isCodeParsable(savedCode)) {
+        setCode(savedCode);
+        if (savedProject.viewState?.viewMode === 'gui' || savedProject.viewState?.viewMode === 'code') {
+          setViewMode(savedProject.viewState.viewMode);
+        }
+        if (typeof savedProject.viewState?.viewMode3D === 'string') {
+          setViewMode3D(savedProject.viewState.viewMode3D as typeof viewMode3D);
+        }
+      } else {
+        // Avoid reload loops where invalid code is restored forever.
+        projectService.clearLocalStorage();
+        setViewMode('code');
+        console.warn('Recovered from invalid saved project code in localStorage.');
+      }
     }
     setTimeout(() => setIsLoaded(true), 0);
   }, [isDevLab, setCode, setViewMode, setViewMode3D]);
@@ -29,6 +52,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   // Auto-save on changes
   useEffect(() => {
     if (!isLoaded || isDevLab) return;
+    if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
       const project = projectService.createProject(code, {

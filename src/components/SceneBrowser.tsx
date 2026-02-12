@@ -18,6 +18,7 @@ interface SceneBrowserProps {
     onTogglePlane: (id: string) => void;
     onSelectPlane?: (id: string) => void;
     onRename?: (oldName: string, newName: string) => void;
+    onDelete?: (item: VariableDefinition) => void;
 }
 
 const getIconForType = (type: string) => {
@@ -50,7 +51,8 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
     onToggleVisibility,
     onTogglePlane,
     onSelectPlane,
-    onRename
+    onRename,
+    onDelete
 }) => {
     const [constructionOpen, setConstructionOpen] = React.useState(true);
     const [historyOpen, setHistoryOpen] = React.useState(true);
@@ -79,8 +81,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                     <button
                         className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
                         onClick={() => {
-                            // In a real app we'd have a delete command
-                            console.log('Delete', contextMenu.item.name);
+                            onDelete?.(contextMenu.item);
                             setContextMenu(null);
                         }}
                     >

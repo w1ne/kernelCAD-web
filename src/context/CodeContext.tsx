@@ -3,6 +3,7 @@ import { CommandManager } from '../commands/CommandManager';
 import { defaultCode } from '../lib/geometryEngine';
 import type { EditorLike } from '../types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationFallback, parseCode } from '../lib/ast';
 
 export interface CodeContextType {
     code: string;
@@ -13,6 +14,7 @@ export interface CodeContextType {
     commandManager: CommandManager;
     codeContext: CodeGenerationContext;
     renameItem: (oldName: string, newName: string) => void;
+    deleteItem: (name: string, lineHint?: number) => void;
     applyCodeSafe: (code: string) => Promise<boolean>;
 }
 
@@ -29,13 +31,26 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         commandManager.setContextProvider(() => ({ code, setCode }));
     }, [commandManager, code]);
 
-    const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
+    const commitMutation = useCallback((mutate: (prev: string) => string, mutationName: string): void => {
         setCode(prev => {
+            try {
+                const next = mutate(prev);
+                parseCode(next);
+                return next;
+            } catch (e) {
+                console.error(`${mutationName} failed; keeping previous code`, e);
+                return prev;
+            }
+        });
+    }, []);
+
+    const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
+        commitMutation((prev) => {
             const resolvedSnippet = typeof snippet === 'function' ? snippet(baseName || 'shape') : snippet;
             const trimmed = prev.trimEnd();
             return trimmed + (trimmed ? '\n' : '') + resolvedSnippet;
-        });
-    }, []);
+        }, 'insertCode');
+    }, [commitMutation]);
 
     // Generic Code Context for Features
     const codeContext = useMemo(() => {
@@ -55,12 +70,37 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
 
     const renameItem = useCallback((oldName: string, newName: string) => {
         import('../features/modeling/RefactoringManager').then(({ refactoringManager }) => {
-            const newCode = refactoringManager.renameVariable(code, oldName, newName);
-            if (newCode !== code) {
-                setCode(newCode);
-            }
+            commitMutation((prev) => refactoringManager.renameVariable(prev, oldName, newName), 'renameItem');
         });
-    }, [code]);
+    }, [commitMutation]);
+
+    const deleteItem = useCallback((name: string, lineHint?: number) => {
+        commitMutation((prev) => {
+            const candidates: string[] = [];
+
+            // 1) AST path
+            candidates.push(deleteVariableDeclarationAST(prev, name));
+
+            // 2) Line-aware fallback (if we know where declaration is in History)
+            if (typeof lineHint === 'number') {
+                candidates.push(deleteVariableDeclarationByLineFallback(prev, name, lineHint));
+            }
+
+            // 3) Name-only fallback
+            candidates.push(deleteVariableDeclarationFallback(prev, name));
+
+            for (const candidate of candidates) {
+                try {
+                    parseCode(candidate);
+                    return candidate;
+                } catch {
+                    // try next strategy
+                }
+            }
+
+            throw new Error(`All delete strategies failed for "${name}"`);
+        }, 'deleteItem');
+    }, [commitMutation]);
 
     const applyCodeSafe = useCallback(async (newCode: string): Promise<boolean> => {
         try {
@@ -128,8 +168,9 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         commandManager,
         codeContext,
         renameItem,
+        deleteItem,
         applyCodeSafe
-    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, applyCodeSafe]);
+    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, applyCodeSafe]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }

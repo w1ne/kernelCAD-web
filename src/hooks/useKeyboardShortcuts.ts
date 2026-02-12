@@ -11,7 +11,11 @@ function isTypingTarget(target: EventTarget | null): boolean {
     if (!el) return false;
     if (el.isContentEditable) return true;
     const tag = el.tagName?.toLowerCase();
-    return tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+    // Monaco and similar editors often use div-based textboxes.
+    if (el.getAttribute('role') === 'textbox') return true;
+    if (el.closest('.monaco-editor')) return true;
+    return false;
 }
 
 function normalizeKey(e: KeyboardEvent): string {
@@ -38,11 +42,17 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig) {
             const handler = shortcuts[combo] ?? shortcuts[key];
             if (handler) {
                 e.preventDefault();
+                e.stopPropagation();
+                // Prevent downstream handlers (including editors) from also processing the key.
+                if (typeof e.stopImmediatePropagation === 'function') {
+                    e.stopImmediatePropagation();
+                }
                 handler(e);
             }
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        // Capture phase lets us consume app shortcuts before nested widgets.
+        window.addEventListener('keydown', handleKeyDown, true);
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
     }, [shortcuts]);
 }

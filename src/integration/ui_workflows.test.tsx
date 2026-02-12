@@ -6,6 +6,7 @@ import App from '../App';
 import * as GeometryEngine from '../lib/geometryEngine';
 import { initFeatures } from '../features/init';
 import type { EditorLike } from '../types/editor';
+import { parseCode } from '../lib/ast';
 
 const runUIE2E = process.env.KERNELCAD_UI_E2E === '1';
 const describeUI = runUIE2E ? describe : describe.skip;
@@ -20,6 +21,14 @@ vi.mock('../lib/geometryEngine', () => ({
     exportSTEP: vi.fn().mockResolvedValue(new Blob()),
     exportSTL: vi.fn().mockResolvedValue(new Blob()),
     defaultCode: '// KernelCAD Start',
+    GeometryEngine: {
+        getInstance: () => ({
+            initialize: vi.fn().mockResolvedValue(true),
+            executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
+            exportSTEP: vi.fn().mockResolvedValue(new Blob()),
+            exportSTL: vi.fn().mockResolvedValue(new Blob()),
+        }),
+    },
 }));
 
 vi.mock('../components/Editor', () => ({
@@ -104,5 +113,37 @@ describeUI('UI Workflows E2E', () => {
             expect(generatedCode).toContain('.lineTo(');
             expect(generatedCode).toContain('.extrude(50)');
         }, { timeout: 10000 });
+    });
+
+    it('should delete a sketch from history without corrupting code', async () => {
+        render(<App />);
+
+        const initialCode = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([0, 0])
+      .lineTo([10, 0])
+      .done();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).setCode(initialCode);
+
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        fireEvent.click(screen.getByText('sketch'));
+        fireEvent.keyDown(window, { key: 'Delete' });
+
+        await waitFor(() => {
+            const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+            expect(editor.value).not.toContain('const sketch');
+            expect(editor.value).toContain('return [box]');
+            expect(() => parseCode(editor.value)).not.toThrow();
+        });
     });
 });

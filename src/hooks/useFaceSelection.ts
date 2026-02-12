@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { getReturnedVariables } from '../lib/ast';
 import type { GeometryResult } from '../lib/geometryEngine';
 import type { SketchModeState } from '../types/sketch';
+import { buildFaceSketchPlaneEntity } from '../lib/sketchPlane';
 
 export interface FaceSelection {
     shapeIndex: number;
@@ -77,17 +78,13 @@ export function useFaceSelection({
 
                 onSketchModeChange({
                     active: true,
-                    plane: {
-                        id: `face-${selection.faceId}-${Date.now()}`,
-                        name: targetName ? `Face ${selection.faceId} of ${targetName}` : `Face ${selection.faceId}`,
-                        type: 'face',
+                    plane: buildFaceSketchPlaneEntity({
+                        faceId: selection.faceId,
+                        targetName,
                         origin: plane!.origin,
                         normal: plane!.normal,
-                        xDir: plane!.xDir,
-                        visible: true,
-                        parentId: targetName || undefined,
-                        faceId: selection.faceId
-                    },
+                        xDir: plane!.xDir
+                    }),
                     currentSketch: null,
                     tool: 'line'
                 });

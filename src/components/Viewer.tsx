@@ -836,7 +836,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 )}
 
                 <PlaneLayer planes={planes} />
-                <ParametricLayer />
+                {sketchMode.active && <ParametricLayer />}
                 <OrbitControls makeDefault enabled={!sketchMode.active} />
                 <CameraHandler geometries={geometries} />
             </Canvas>

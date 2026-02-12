@@ -2,6 +2,7 @@ import { PenTool, ArrowUpFromLine, Eye, EyeOff, Layers } from 'lucide-react';
 import { type Feature } from '../features/types';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { FEATURE_SHORTCUTS, SHORTCUT_HINTS, formatTooltip } from '../constants/shortcuts';
+import { buildFaceSketchPlaneEntity } from '../lib/sketchPlane';
 
 interface ToolbarProps {
     features: Feature[];
@@ -44,16 +45,12 @@ export default function Toolbar({ features, onToolClick }: ToolbarProps) {
         // Enter sketch mode on this face plane
         setSketchMode({
             active: true,
-            plane: {
-                id: `face-${selectedFace.faceId}-${Date.now()}`,
-                name: targetName ? `Face ${selectedFace.faceId} of ${targetName}` : `Face ${selectedFace.faceId} of Anonymous Shape`,
-                type: 'face',
+            plane: buildFaceSketchPlaneEntity({
+                faceId: selectedFace.faceId,
+                targetName,
                 origin: selectedFacePlane.origin,
-                normal: selectedFacePlane.normal,
-                visible: true,
-                parentId: targetName as string | undefined, // Cast to match expected type (string | undefined)
-                faceId: selectedFace.faceId
-            },
+                normal: selectedFacePlane.normal
+            }),
             currentSketch: null,
             tool: 'line'
         });

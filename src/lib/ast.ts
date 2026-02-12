@@ -568,3 +568,159 @@ export function insertShape(code: string, statement: string): string {
 
     return generateCode(astNode);
 }
+
+/**
+ * Deletes a top-level variable declaration by name and removes it from drawPart/top-level return.
+ * Keeps resulting code syntactically valid.
+ */
+export function deleteVariableDeclarationAST(code: string, variableName: string): string {
+    const astNode = parseCode(code);
+    let changed = false;
+
+    const removeFromReturn = (returnStmt: ReturnStatementNode) => {
+        const arg = returnStmt.argument;
+        if (!arg) return;
+
+        if (isArrayExpressionNode(arg)) {
+            const next = arg.elements.filter((el: unknown) => resolveVariableName(el) !== variableName);
+            if (next.length !== arg.elements.length) {
+                (returnStmt as unknown as { argument: unknown }).argument = {
+                    type: 'ArrayExpression',
+                    elements: next
+                };
+                changed = true;
+            }
+            return;
+        }
+
+        if (resolveVariableName(arg) === variableName) {
+            (returnStmt as unknown as { argument: unknown }).argument = {
+                type: 'ArrayExpression',
+                elements: []
+            };
+            changed = true;
+        }
+    };
+
+    const removeDeclFromBody = (body: acorn.Node[]) => {
+        for (let i = body.length - 1; i >= 0; i--) {
+            const node = body[i];
+            if (!hasType(node) || node.type !== 'VariableDeclaration') continue;
+            const declNode = node as unknown as { declarations?: unknown[] };
+            if (!Array.isArray(declNode.declarations) || declNode.declarations.length === 0) continue;
+
+            const remainingDecls = declNode.declarations.filter((decl) => {
+                if (!isRecord(decl) || !isRecord(decl.id)) return true;
+                return !(decl.id.type === 'Identifier' && decl.id.name === variableName);
+            });
+
+            if (remainingDecls.length === declNode.declarations.length) continue;
+
+            if (remainingDecls.length === 0) {
+                body.splice(i, 1);
+            } else {
+                (node as unknown as { declarations: unknown[] }).declarations = remainingDecls;
+            }
+            changed = true;
+        }
+
+        body.forEach((n) => {
+            if (isReturnStatementNode(n)) removeFromReturn(n);
+        });
+    };
+
+    let processedDrawPart = false;
+    walk.simple(astNode, {
+        FunctionDeclaration(node: acorn.Node) {
+            const fn = node as unknown as NodeWithId & NodeWithBody;
+            if (!fn.id || fn.id.name !== 'drawPart') return;
+            const body = (fn.body as { body: acorn.Node[] }).body;
+            removeDeclFromBody(body);
+            processedDrawPart = true;
+        }
+    });
+
+    if (!processedDrawPart) {
+        removeDeclFromBody(getProgramBody(astNode));
+    }
+
+    return changed ? generateCode(astNode) : code;
+}
+
+/**
+ * Fallback text-based deletion for malformed edge cases:
+ * removes a `const <name> = ...;` statement block (including multiline fluent chains)
+ * and prunes `<name>` from `return [ ... ]` lists.
+ */
+export function deleteVariableDeclarationFallback(code: string, variableName: string): string {
+    const escaped = variableName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Remove multiline const statement until terminating semicolon.
+    // Tolerant to malformed token variants seen in corrupted autosaves (e.g. "onst sketch = ...")
+    // and accidental leading quote characters.
+    const declBlock = new RegExp(`(^|\\n)\\s*['"]?\\s*(?:const|onst|let|var)\\s+${escaped}\\s*=([\\s\\S]*?);\\s*(?=\\n|$)`, 'm');
+    let next = code.replace(declBlock, '\n');
+
+    // Remove variable from return array while keeping commas sane.
+    const returnArrayRe = /return\s*\[([\s\S]*?)\];/m;
+    next = next.replace(returnArrayRe, (_full, inner: string) => {
+        const elements = inner
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+            .filter(el => el !== variableName);
+        return `return [${elements.join(', ')}];`;
+    });
+
+    // Remove now-useless standalone identifier expression statements.
+    const standaloneRef = new RegExp(`(^|\\n)\\s*${escaped}\\s*;\\s*(?=\\n|$)`, 'g');
+    next = next.replace(standaloneRef, '\n');
+
+    return next;
+}
+
+/**
+ * Line-aware fallback deletion used by History panel items.
+ * Starts from a known declaration line and removes until the terminating semicolon.
+ */
+export function deleteVariableDeclarationByLineFallback(code: string, variableName: string, line: number): string {
+    const lines = code.split('\n');
+    if (line < 1 || line > lines.length) return deleteVariableDeclarationFallback(code, variableName);
+
+    const escaped = variableName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const declStartRe = new RegExp(`^\\s*['"]?\\s*(?:const|onst|let|var)\\s+${escaped}\\s*=`);
+
+    let start = line - 1;
+    if (!declStartRe.test(lines[start] ?? '')) {
+        for (let i = Math.max(0, line - 3); i < Math.min(lines.length, line + 3); i++) {
+            if (declStartRe.test(lines[i] ?? '')) {
+                start = i;
+                break;
+            }
+        }
+    }
+    if (!declStartRe.test(lines[start] ?? '')) {
+        return deleteVariableDeclarationFallback(code, variableName);
+    }
+
+    let end = start;
+    while (end < lines.length && !(lines[end] ?? '').includes(';')) {
+        end++;
+    }
+    if (end >= lines.length) end = lines.length - 1;
+
+    const nextLines = [...lines.slice(0, start), ...lines.slice(end + 1)];
+    let next = nextLines.join('\n');
+
+    const returnArrayRe = /return\s*\[([\s\S]*?)\];/m;
+    next = next.replace(returnArrayRe, (_full, inner: string) => {
+        const elements = inner
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+            .filter(el => el !== variableName);
+        return `return [${elements.join(', ')}];`;
+    });
+
+    return next;
+}

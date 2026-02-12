@@ -62,6 +62,8 @@ kernelCAD consists of three main parts:
 ### Documentation Index
 
 - **[Architecture](./doc/ARCHITECTURE.md)**: High-level system design and component overview.
+- **[Refactoring Analysis](./doc/REFACTORING_ANALYSIS.md)**: Root-cause flow/logic gaps and staged refactor plan.
+- **[CAD Engineering Standards](./doc/CAD_ENGINEERING_STANDARDS.md)**: Best-in-class CAD practices translated into kernelCAD implementation standards.
 - **[Implementation Details](./doc/IMPLEMENTATION_DETAILS.md)**: Deep dive into the Visual Feedback System, Solver, and Code Generation.
 - **[Interfaces & APIs](./doc/INTERFACES.md)**: Detailed API references for Extensibility.
 - **[Roadmap](./doc/ROADMAP.md)**: Future plans and current status.

@@ -14,6 +14,7 @@ import { type SketchData, type SketchPlane } from '../../types/sketch';
 import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { Loader2 } from 'lucide-react';
+import { extractVariables } from '../../lib/codeAnalysis';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
@@ -52,6 +53,7 @@ export function WorkbenchLayout() {
         hideItem,
         showAll,
         selectedItemId,
+        deleteItem,
         toggleVisibility,
         openPanel,
         closePanel,
@@ -60,6 +62,8 @@ export function WorkbenchLayout() {
         toggleSketchVisibility,
         activePanels,
         setViewMode,
+        setSidePanelVisible,
+        clearAll,
         isComputing,
         executionCount,
         setSelectedFace,
@@ -106,11 +110,25 @@ export function WorkbenchLayout() {
         }
     }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
 
+    // Recovery guard: never keep the editor hidden while code/execution is in error.
+    React.useEffect(() => {
+        if (!error) return;
+        if (viewMode === 'gui') {
+            setViewMode('code');
+        }
+        setSidePanelVisible(true);
+    }, [error, viewMode, setViewMode, setSidePanelVisible]);
+
     const { insertCode } = useCodeInsertion();
 
     const features = useMemo(() => featureRegistry.getAll(), []);
 
     const activeFeature = useMemo(() => activeDialog ? featureRegistry.get(activeDialog) : null, [activeDialog]);
+    const variableIndex = useMemo(() => {
+        const map = new Map<string, number>();
+        extractVariables(code).forEach((v) => map.set(v.name, v.line));
+        return map;
+    }, [code]);
 
     const featureShortcuts = useMemo(() => {
         const shortcuts: Record<string, () => void> = {};
@@ -207,22 +225,29 @@ export function WorkbenchLayout() {
             if (activeDialog) return;
             if (selectedItemId) toggleVisibility(selectedItemId);
         },
-        'backspace': () => {
+        'backspace': (e) => {
             if (activeDialog) return;
             if (selectedItemId) {
-                console.log('Delete item:', selectedItemId);
-                // Implementation pending for real delete logic
+                e.preventDefault();
+                deleteItem(selectedItemId, variableIndex.get(selectedItemId));
             }
         },
-        'delete': () => {
+        'delete': (e) => {
             if (activeDialog) return;
             if (selectedItemId) {
-                console.log('Delete item:', selectedItemId);
-                // Implementation pending for real delete logic
+                e.preventDefault();
+                deleteItem(selectedItemId, variableIndex.get(selectedItemId));
             }
         },
         'alt+s': () => {
             toggleSketchVisibility();
+        },
+        'mod+1': () => {
+            setViewMode('code');
+            setSidePanelVisible(true);
+        },
+        'mod+2': () => {
+            setViewMode('gui');
         }
     });
 
@@ -364,62 +389,71 @@ export function WorkbenchLayout() {
                 <SketchCanvas
                     plane={sketchMode.plane}
                     onComplete={(entities) => {
-                        // CRITICAL: Validate entities before proceeding
-                        if (!entities || entities.length === 0) {
-                            console.error('Cannot create sketch: No geometry drawn');
-                            alert('Please draw some geometry before completing the sketch.');
-                            return;
+                        try {
+                            // CRITICAL: Validate entities before proceeding
+                            if (!entities || entities.length === 0) {
+                                console.error('Cannot create sketch: No geometry drawn');
+                                alert('Please draw some geometry before completing the sketch.');
+                                return;
+                            }
+
+                            // Use the name from the active sketch session if available
+                            const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
+
+                            // Parse plane name correctly
+                            let planeName: SketchPlane = 'XY';
+                            if (typeof sketchMode.plane === 'string') {
+                                planeName = sketchMode.plane;
+                            } else if (sketchMode.plane && typeof sketchMode.plane === 'object') {
+                                planeName = sketchMode.plane.name;
+                            }
+
+                            const sketchData: SketchData = {
+                                id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
+                                name: sketchName,
+                                plane: planeName,
+                                entities,
+                                closed: false,
+                                createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
+                            };
+
+                            const planeEntity: SketchPlaneEntity | null =
+                                sketchMode.plane && typeof sketchMode.plane === 'object' ? sketchMode.plane : null;
+                            let sketchCode = '';
+
+                            // Case 1: Detached sketch on captured face plane.
+                            // Prefer stable plane data over faceId because topology reindexing can move face indices.
+                            if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
+                                const xDir = planeEntity.xDir;
+                                const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
+                                const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
+                                const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
+                                const bodyCode = generateSketchBody(entities);
+                                sketchCode = startCode + bodyCode + ';\n';
+                            }
+                            // Case 2: Parametric sketch on face index (fallback when no plane data is available)
+                            else if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId && planeEntity.parentId !== 'unknown' && planeEntity.parentId !== 'shape') {
+                                const startCode = `const ${sketchName} = sketchOnFace(${planeEntity.parentId}, ${planeEntity.faceId})\n`;
+                                const bodyCode = generateSketchBody(entities);
+                                sketchCode = startCode + bodyCode + ';\n';
+                            }
+                            // Case 3: Standard base plane sketch
+                            else {
+                                sketchCode = generateSketchCode(sketchData);
+                            }
+
+                            insertCode(sketchCode);
+                            addSketch(sketchData);
+                            clearAll();
+                            setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
+                        } catch (err) {
+                            const message = err instanceof Error ? err.message : String(err);
+                            console.error('Failed to complete sketch:', err);
+                            alert(`Failed to complete sketch: ${message}`);
                         }
-
-                        // Use the name from the active sketch session if available
-                        const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
-
-                        // Parse plane name correctly
-                        let planeName: SketchPlane = 'XY';
-                        if (typeof sketchMode.plane === 'string') {
-                            planeName = sketchMode.plane;
-                        } else if (sketchMode.plane && typeof sketchMode.plane === 'object') {
-                            planeName = sketchMode.plane.name;
-                        }
-
-                        const sketchData: SketchData = {
-                            id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
-                            name: sketchName,
-                            plane: planeName,
-                            entities,
-                            closed: false,
-                            createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
-                        };
-
-                        const planeEntity: SketchPlaneEntity | null =
-                            sketchMode.plane && typeof sketchMode.plane === 'object' ? sketchMode.plane : null;
-                        let sketchCode = '';
-
-                        // Case 1: Parametric Sketch on Face
-                        if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId && planeEntity.parentId !== 'unknown' && planeEntity.parentId !== 'shape') {
-                            const startCode = `const ${sketchName} = sketchOnFace(${planeEntity.parentId}, ${planeEntity.faceId})\n`;
-                            const bodyCode = generateSketchBody(entities);
-                            sketchCode = startCode + bodyCode + ';\n';
-                        }
-                        // Case 2: Detached Sketch on a specific Plane object/origin
-                        else if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
-                            const xDir = planeEntity.xDir;
-                            const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
-                            const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
-                            const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
-                            const bodyCode = generateSketchBody(entities);
-                            sketchCode = startCode + bodyCode + ';\n';
-                        }
-                        // Case 3: Standard Plane Sketch
-                        else {
-                            sketchCode = generateSketchCode(sketchData);
-                        }
-
-                        insertCode(sketchCode);
-                        addSketch(sketchData);
-                        setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
                     }}
                     onCancel={() => {
+                        clearAll();
                         setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
                     }}
                 />

@@ -70,4 +70,13 @@ describe('SceneBrowser', () => {
         expect(screen.getByText('Delete')).toBeDefined();
         expect(screen.getByText('Isolate')).toBeDefined();
     });
+
+    it('should call onDelete from context menu', () => {
+        const onDelete = vi.fn();
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} onDelete={onDelete} />);
+
+        fireEvent.contextMenu(screen.getByText('box1'));
+        fireEvent.click(screen.getByText('Delete'));
+        expect(onDelete).toHaveBeenCalledWith(mockItems[0]);
+    });
 });
