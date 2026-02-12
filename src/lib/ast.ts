@@ -117,7 +117,8 @@ export function parseCode(code: string): acorn.Node {
             ecmaVersion: 'latest',
             sourceType: 'module',
             // Allow return outside function (needed for our template code)
-            allowReturnOutsideFunction: true
+            allowReturnOutsideFunction: true,
+            locations: true
         });
     } catch (error) {
         if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
@@ -642,6 +643,76 @@ export function deleteVariableDeclarationAST(code: string, variableName: string)
 
     if (!processedDrawPart) {
         removeDeclFromBody(getProgramBody(astNode));
+    }
+
+    return changed ? generateCode(astNode) : code;
+}
+
+/**
+ * Deterministic deletion by declaration identity (name + source line).
+ * Preferred for History-based delete operations.
+ */
+export function deleteVariableDeclarationByNameAndLineAST(code: string, variableName: string, line: number): string {
+    const astNode = parseCode(code);
+    let changed = false;
+
+    const removeFromReturn = (returnStmt: ReturnStatementNode) => {
+        const arg = returnStmt.argument;
+        if (!arg) return;
+        if (!isArrayExpressionNode(arg)) return;
+
+        const next = arg.elements.filter((el: unknown) => resolveVariableName(el) !== variableName);
+        if (next.length !== arg.elements.length) {
+            (returnStmt as unknown as { argument: unknown }).argument = {
+                type: 'ArrayExpression',
+                elements: next
+            };
+            changed = true;
+        }
+    };
+
+    const removeFromBody = (body: acorn.Node[]) => {
+        for (let i = body.length - 1; i >= 0; i--) {
+            const node = body[i];
+            if (!hasType(node) || node.type !== 'VariableDeclaration') continue;
+            const varDecl = node as unknown as {
+                loc?: { start?: { line?: number } };
+                declarations?: Array<{
+                    id?: { type?: string; name?: string; loc?: { start?: { line?: number } } };
+                }>;
+            };
+            if (!Array.isArray(varDecl.declarations) || varDecl.declarations.length === 0) continue;
+
+            const matches = varDecl.declarations.some((decl) => {
+                if (!isRecord(decl) || !isRecord(decl.id)) return false;
+                if (decl.id.type !== 'Identifier' || decl.id.name !== variableName) return false;
+                const idLine = decl.id.loc?.start?.line;
+                const declLine = varDecl.loc?.start?.line;
+                return idLine === line || declLine === line;
+            });
+
+            if (!matches) continue;
+            body.splice(i, 1);
+            changed = true;
+        }
+
+        body.forEach((n) => {
+            if (isReturnStatementNode(n)) removeFromReturn(n);
+        });
+    };
+
+    let processedDrawPart = false;
+    walk.simple(astNode, {
+        FunctionDeclaration(node: acorn.Node) {
+            const fn = node as unknown as NodeWithId & NodeWithBody;
+            if (!fn.id || fn.id.name !== 'drawPart') return;
+            removeFromBody((fn.body as { body: acorn.Node[] }).body);
+            processedDrawPart = true;
+        }
+    });
+
+    if (!processedDrawPart) {
+        removeFromBody(getProgramBody(astNode));
     }
 
     return changed ? generateCode(astNode) : code;

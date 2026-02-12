@@ -3,7 +3,7 @@ import { CommandManager } from '../commands/CommandManager';
 import { defaultCode } from '../lib/geometryEngine';
 import type { EditorLike } from '../types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
-import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationFallback, parseCode } from '../lib/ast';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
 
 export interface CodeContextType {
     code: string;
@@ -76,29 +76,15 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
 
     const deleteItem = useCallback((name: string, lineHint?: number) => {
         commitMutation((prev) => {
-            const candidates: string[] = [];
-
-            // 1) AST path
-            candidates.push(deleteVariableDeclarationAST(prev, name));
-
-            // 2) Line-aware fallback (if we know where declaration is in History)
             if (typeof lineHint === 'number') {
-                candidates.push(deleteVariableDeclarationByLineFallback(prev, name, lineHint));
+                const byIdentity = deleteVariableDeclarationByNameAndLineAST(prev, name, lineHint);
+                parseCode(byIdentity);
+                return byIdentity;
             }
 
-            // 3) Name-only fallback
-            candidates.push(deleteVariableDeclarationFallback(prev, name));
-
-            for (const candidate of candidates) {
-                try {
-                    parseCode(candidate);
-                    return candidate;
-                } catch {
-                    // try next strategy
-                }
-            }
-
-            throw new Error(`All delete strategies failed for "${name}"`);
+            const byName = deleteVariableDeclarationAST(prev, name);
+            parseCode(byName);
+            return byName;
         }, 'deleteItem');
     }, [commitMutation]);
 

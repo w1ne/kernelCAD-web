@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 import { remapSketchNames } from '../lib/sketchNaming';
+import { parseCode } from '../lib/ast';
 
 export interface GeometryContextType {
     geometries: GeometryResult[];
@@ -63,6 +64,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         if (!isReady) return;
 
         const run = async () => {
+            try {
+                parseCode(code);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                setError(message);
+                return;
+            }
             setIsComputing(true);
             try {
                 const result = await engine.executeCode(code);
@@ -104,6 +112,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const runPreview = async () => {
             try {
+                parseCode(code);
+                parseCode(`${code}\n${previewCode}`);
                 // Combine current code (as library) with preview code
                 // Or just run the preview code if it's independent
                 // For live modeling, it's usually current code + the new operation
@@ -121,6 +131,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
+        try {
+            parseCode(codeToExecute);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : String(err));
+            return;
+        }
         setIsComputing(true);
         try {
             const result = await engine.executeCode(codeToExecute);

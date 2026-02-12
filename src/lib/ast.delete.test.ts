@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deleteVariableDeclarationAST, deleteVariableDeclarationFallback, parseCode } from './ast';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByNameAndLineAST, deleteVariableDeclarationFallback, parseCode } from './ast';
 
 describe('deleteVariableDeclarationAST', () => {
     it('deletes sketch declaration and removes it from return array', () => {
@@ -68,6 +68,27 @@ return [replicad.makeBox(10, 10, 10), sketch];
         const next = deleteVariableDeclarationFallback(code, 'sketch');
         expect(next).not.toContain('sketch =');
         expect(next).toContain('return [replicad.makeBox(10, 10, 10)]');
+        expect(() => parseCode(next)).not.toThrow();
+    });
+
+    it('deletes by declaration identity (name + line) deterministically', () => {
+        const code = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([2, 2])
+      .lineTo([6, 2])
+      .close();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        const next = deleteVariableDeclarationByNameAndLineAST(code, 'sketch', 4);
+        expect(next).not.toContain('const sketch');
+        expect(next).toContain('return [box]');
         expect(() => parseCode(next)).not.toThrow();
     });
 });
