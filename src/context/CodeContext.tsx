@@ -3,7 +3,8 @@ import { CommandManager } from '../commands/CommandManager';
 import { defaultCode } from '../lib/geometryEngine';
 import type { EditorLike } from '../types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
-import { deleteVariableDeclarationAST, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
+import type { HistoryItem } from '../lib/codeAnalysis';
 
 export interface CodeContextType {
     code: string;
@@ -15,6 +16,7 @@ export interface CodeContextType {
     codeContext: CodeGenerationContext;
     renameItem: (oldName: string, newName: string) => void;
     deleteItem: (name: string, lineHint?: number) => void;
+    deleteHistoryItem: (item: HistoryItem) => void;
     applyCodeSafe: (code: string) => Promise<boolean>;
 }
 
@@ -88,6 +90,20 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         }, 'deleteItem');
     }, [commitMutation]);
 
+    const deleteHistoryItem = useCallback((item: HistoryItem) => {
+        commitMutation((prev) => {
+            try {
+                const byIdentity = deleteVariableDeclarationByNameAndLineAST(prev, item.name, item.line);
+                parseCode(byIdentity);
+                return byIdentity;
+            } catch {
+                const recovered = deleteVariableDeclarationByLineFallback(prev, item.name, item.line);
+                parseCode(recovered);
+                return recovered;
+            }
+        }, 'deleteHistoryItem');
+    }, [commitMutation]);
+
     const applyCodeSafe = useCallback(async (newCode: string): Promise<boolean> => {
         try {
             const { agentAPI } = await import('../agent/AgentAPI');
@@ -155,8 +171,9 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         codeContext,
         renameItem,
         deleteItem,
+        deleteHistoryItem,
         applyCodeSafe
-    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, applyCodeSafe]);
+    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }

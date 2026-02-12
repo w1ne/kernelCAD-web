@@ -30,6 +30,7 @@ export interface WorkbenchContextType extends
     // Commands
     renameItem: (oldName: string, newName: string) => void;
     deleteItem: (name: string, lineHint?: number) => void;
+    deleteHistoryItem: CodeContextType['deleteHistoryItem'];
 
     // Safety
     applyCodeSafe: (code: string) => Promise<boolean>;
@@ -123,6 +124,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         closePanel: uiCtx.closePanel,
         renameItem: codeCtx.renameItem,
         deleteItem: codeCtx.deleteItem,
+        deleteHistoryItem: codeCtx.deleteHistoryItem,
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,
