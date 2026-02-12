@@ -71,7 +71,15 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         onTogglePlane={togglePlaneVisibility}
                         onSelectPlane={(id) => setSelectedItemId(id)}
                         onRename={renameItem}
-                        onDelete={deleteHistoryItem}
+                        onDelete={(item) => {
+                            deleteHistoryItem(item);
+                            if (selectedItemId === item.name) {
+                                setSelectedItemId(null);
+                            }
+                            if (hoveredItemId === item.name) {
+                                setHoveredItemId(null);
+                            }
+                        }}
                     />
                 ) : (
                     <AIAssistant />
