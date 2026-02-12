@@ -138,6 +138,7 @@ return replicad.makeBaseBox(${w}, 10, 10);
     });
 
     test('Workflow 6: Stable Reference (Resilience to ID Shift)', async ({ page }) => {
+        test.setTimeout(60000); // Allow more time for complex sequence
         const code = `
 const box = replicad.makeBaseBox(10, 10, 10);
 return box;

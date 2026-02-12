@@ -7,6 +7,7 @@ export const RevolveFeature: Feature = {
     label: 'Revolve',
     icon: RevolveIcon,
     description: 'Rotate a sketch around an axis to create a solid',
+    shortcut: 'r',
     execute: (context) => {
         context.openPanel('revolve');
     }

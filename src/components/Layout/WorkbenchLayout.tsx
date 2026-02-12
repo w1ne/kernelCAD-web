@@ -5,7 +5,7 @@ import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
 import { CommandPalette } from '../CommandPalette/CommandPalette';
 import { useCommandRegistry } from '../../hooks/useCommandRegistry';
-import { Box, Circle, Layers, Scissors, Square, Triangle } from 'lucide-react';
+import { Layers, Square } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useCodeInsertion } from '../../hooks/useCodeInsertion';
 import { featureRegistry } from '../../features/FeatureRegistry';
@@ -20,6 +20,8 @@ import { EditorPanel } from './EditorPanel';
 import { ViewerPanel } from './ViewerPanel';
 import { NavigationPanel } from './NavigationPanel';
 import { PanelManager } from './PanelManager';
+import { FloatingAgent } from '../../features/ai/FloatingAgent';
+import { SmartWidget } from '../../features/ai/SmartWidget';
 import { ContextToolbar } from './ContextToolbar';
 import { useUI } from '../../context/UIContext';
 
@@ -59,6 +61,7 @@ export function WorkbenchLayout() {
         activePanels,
         setViewMode,
         isComputing,
+        executionCount,
         setSelectedFace,
         startFaceSelection
     } = useWorkbench();
@@ -87,6 +90,8 @@ export function WorkbenchLayout() {
             w.getPreviewGeometries = () => previewGeometries;
             w.getSketches = () => sketchesGeometries;
             w.isComputing = () => isComputing;
+            w.getExecutionCount = () => executionCount;
+            w.getError = () => error;
 
             // Face selection
             w.startFaceSelection = () => {
@@ -99,43 +104,37 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
 
     const { insertCode } = useCodeInsertion();
 
     const features = useMemo(() => featureRegistry.getAll(), []);
     const activeFeature = useMemo(() => activeDialog ? featureRegistry.get(activeDialog) : null, [activeDialog]);
 
+    const featureShortcuts = useMemo(() => {
+        const shortcuts: Record<string, () => void> = {};
+        features.forEach(f => {
+            if (f.shortcut) {
+                shortcuts[f.shortcut] = () => {
+                    if (activeDialog) return;
+                    f.execute({
+                        insertCode,
+                        setCode,
+                        code,
+                        setActiveDialog,
+                        openPanel,
+                        closePanel,
+                        codeContext
+                    }, undefined);
+                };
+            }
+        });
+        return shortcuts;
+    }, [features, activeDialog, insertCode, setCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
+
     // Keyboard Shortcuts
     useKeyboardShortcuts({
-        'e': () => {
-            if (activeDialog) return;
-            openPanel('extrude');
-        },
-        'r': () => {
-            if (activeDialog) return;
-            openPanel('revolve');
-        },
-        'f': () => {
-            if (activeDialog) return;
-            openPanel('fillet');
-        },
-        'c': () => {
-            if (activeDialog) return;
-            openPanel('chamfer');
-        },
-        'j': () => {
-            if (activeDialog) return;
-            openPanel('union');
-        },
-        'x': () => {
-            if (activeDialog) return;
-            openPanel('cut');
-        },
-        'i': () => {
-            if (activeDialog) return;
-            openPanel('intersect');
-        },
+        ...featureShortcuts,
         'mod+z': () => {
             if (activeDialog) return;
             commandManager.undo();
@@ -151,10 +150,6 @@ export function WorkbenchLayout() {
         's': () => {
             if (activeDialog || sketchMode.active) return;
             openPanel('planeSelector');
-        },
-        'p': () => {
-            if (activeDialog) return;
-            openPanel('offsetPlane');
         },
         'escape': () => {
             if (activeDialog) setActiveDialog(null);
@@ -220,136 +215,7 @@ export function WorkbenchLayout() {
         };
     });
 
-    React.useEffect(() => {
-        const unregisters: (() => void)[] = [];
-
-        // Modeling Commands
-        unregisters.push(registerCommand({
-            id: 'extrude',
-            label: 'Extrude',
-            section: 'Modeling',
-            shortcut: 'E',
-            icon: <Box className="w-4 h-4" />,
-            action: () => {
-                openPanel('extrude');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'revolve',
-            label: 'Revolve',
-            section: 'Modeling',
-            shortcut: 'R',
-            icon: <Circle className="w-4 h-4" />,
-            action: () => {
-                openPanel('revolve');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'fillet',
-            label: 'Fillet',
-            section: 'Modeling',
-            shortcut: 'F',
-            icon: <Circle className="w-4 h-4" />,
-            action: () => {
-                openPanel('fillet');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'chamfer',
-            label: 'Chamfer',
-            section: 'Modeling',
-            shortcut: 'C',
-            icon: <Triangle className="w-4 h-4" />,
-            action: () => {
-                openPanel('chamfer');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'boolean-union',
-            label: 'Boolean Union',
-            section: 'Modeling',
-            shortcut: 'J',
-            icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                openPanel('union');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'boolean-cut',
-            label: 'Boolean Cut',
-            section: 'Modeling',
-            shortcut: 'X',
-            icon: <Scissors className="w-4 h-4" />,
-            action: () => {
-                openPanel('cut');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'toggle-sketches',
-            label: 'Toggle Sketches',
-            section: 'View',
-            shortcut: 'Alt+S',
-            icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                toggleSketchVisibility();
-            }
-        }));
-
-        // Contextual Commands
-        unregisters.push(registerCommand({
-            id: 'sketch-plane-selector',
-            label: 'New Sketch (Select Plane)',
-            section: 'General',
-            shortcut: 'S',
-            icon: <Square className="w-4 h-4" />,
-            action: () => {
-                openPanel('planeSelector');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'offset-plane',
-            label: 'Construction Plane',
-            section: 'Modeling',
-            shortcut: 'P',
-            icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                openPanel('offsetPlane');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'midplane',
-            label: 'Midplane',
-            section: 'Modeling',
-            shortcut: 'Alt+M',
-            icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                openPanel('midplane');
-            }
-        }));
-
-        unregisters.push(registerCommand({
-            id: 'tangent-plane',
-            label: 'Tangent Plane',
-            section: 'Modeling',
-            shortcut: 'Alt+T',
-            icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                openPanel('tangentPlane');
-            }
-        }));
-
-        return () => unregisters.forEach(u => u());
-    }, [registerCommand, toggleSketchVisibility, openPanel]); // Only stable dependencies
-
-    const handleToolClick = (feature: Feature) => {
+    const handleToolClick = React.useCallback((feature: Feature) => {
         if (feature.id === 'extrudeFromFace') {
             openPanel('extrudeFromFace');
         } else if (feature.id === 'sketchOnFace') {
@@ -372,10 +238,56 @@ export function WorkbenchLayout() {
                     closePanel,
                     code,
                     codeContext
-                });
+                }, undefined);
             }
         }
-    };
+    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext]);
+
+    React.useEffect(() => {
+        const unregisters: (() => void)[] = [];
+
+        // Dynamic Feature Commands
+        features.forEach(f => {
+            if (['sketchOnFace', 'extrudeFromFace'].includes(f.id)) return; // Handled specially or excluded if redundant
+
+            unregisters.push(registerCommand({
+                id: f.id,
+                label: f.label,
+                section: 'Modeling',
+                shortcut: f.shortcut?.toUpperCase(),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                icon: React.createElement(f.icon as any, { className: "w-4 h-4" }),
+                action: () => handleToolClick(f)
+            }));
+        });
+
+        // View & Utility Commands
+        unregisters.push(registerCommand({
+            id: 'toggle-sketches',
+            label: 'Toggle Sketches',
+            section: 'View',
+            shortcut: 'Alt+S',
+            icon: <Layers className="w-4 h-4" />,
+            action: () => {
+                toggleSketchVisibility();
+            }
+        }));
+
+        unregisters.push(registerCommand({
+            id: 'sketch-plane-selector',
+            label: 'New Sketch (Select Plane)',
+            section: 'General',
+            shortcut: 'S',
+            icon: <Square className="w-4 h-4" />,
+            action: () => {
+                openPanel('planeSelector');
+            }
+        }));
+
+        return () => unregisters.forEach(u => u());
+    }, [registerCommand, toggleSketchVisibility, openPanel, features, handleToolClick]); // Only stable dependencies
+
+
 
     const handleContextAction = (actionId: string) => {
         setContextMenu({ ...contextMenu, visible: false });
@@ -430,7 +342,7 @@ export function WorkbenchLayout() {
         <div className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col" data-testid="workbench-ready">
             <Header />
 
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden relative">
                 <NavigationPanel
                     viewMode={viewMode}
                     features={features}
@@ -455,6 +367,10 @@ export function WorkbenchLayout() {
                     isFaceSelecting={isFaceSelecting}
                     onCancelFaceSelection={cancelFaceSelection}
                 />
+
+                {/* AI Agents Layer */}
+                <FloatingAgent />
+                <SmartWidget />
             </div>
 
             {/* Sketch Canvas Overlay */}

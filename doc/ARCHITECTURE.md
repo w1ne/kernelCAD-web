@@ -1,49 +1,28 @@
 # Architecture
 
-kernelCAD is a browser-based programmatic CAD application. It combines a React UI with a powerful "serverless" geometry engine running entirely in the client via WebAssembly (WASM).
-
-## Architecture
-
-> **See Also**: [Implementation Details](./IMPLEMENTATION_DETAILS.md) for deep dives into specific subsystems (Solver, Visual Feedback).
+**kernelCAD** is an **Agentic CAD Platform**. It consists of a **Headless Geometry Kernel** (for AI agents and scripts) and a **Web-Based Visual Debugger** (for human verification).
 
 ## High-Level Overview
 
-kernelCAD follows a **Workbench Architecture** designed for modularity and separation of concerns.
+The system is designed to be "Headless-First". The core geometry engine runs in Node.js or a Web Worker, decoupled from the UI.
 
 ```mermaid
 graph TD
-    Entry[main.tsx] --> Provider[WorkbenchProvider]
-    Provider --> CodeProvider
-    Provider --> UIProvider
-    Provider --> SelectionProvider
-    Provider --> GeometryProvider
-    
-    Layout --> Header
-    Layout --> Sidebar[Left Pane]
-    Layout --> Workspace
-    
-    Sidebar --> Toolbar
-    Sidebar --> SidePanel[Scene Browser]
-    
-    Workspace --> Editor[Code Editor]
-    Workspace --> Viewer[3D Viewer]
-    
-    subgraph Contexts
-        CodeProvider --> CodeContext
-        UIProvider --> UIContext
-        SelectionProvider --> SelectionContext
-        GeometryProvider --> GeometryContext
+    Agent[AI Agent / Script] -->|API Calls| Kernel[Headless Kernel]
+    Kernel -->|Code Execution| OC[OpenCASCADE (WASM)]
+    User[User] -->|Natural Language| AI[AI Assistant]
+    AI -->|Generated Code| Kernel
+
+    subgraph Web Debugger
+        Viewer[3D Viewer]
+        Editor[Code Editor]
+        Introspection[State Inspector]
+        AI_UI[AI Chat Panel]
     end
     
-    subgraph Core Logic
-        Engine[Geometry Engine (Class)]
-        Worker[Web Worker]
-        Analysis[Code Analysis / AST]
-        Builder[CodeBuilder]
-    end
-    
-    GeometryContext <--> Engine
-    Engine <--> Worker
+    Kernel -->|State Update| Viewer
+    Kernel -->|Logs/Errors| Introspection
+    Editor -->|Live Tweaks| Kernel
 ```
 
 ## Core Components
@@ -86,7 +65,13 @@ Provides static analysis capabilities:
 -   **`extractVariables`**: Regex/AST parsing to find defined shapes (`const box = ...`) for the Scene Browser.
 -   **`findInsertionPoint`**: Heuristic to find where `drawPart()` returns.
 
-### 6. Sketch Canvas (`src/components/SketchCanvas.tsx`)
+### 6. AI Assistant (`src/features/ai/`)
+**[NEW]** A built-in "AI Consultant" that allows users to generate geometry using natural language.
+-   **LLMService**: Handles communication with external LLM providers (Google Gemini, OpenAI).
+-   **AIAssistant**: The chat UI component integrated into the Side Panel.
+-   **Agent API**: The bridge between the AI's generated code and the `HeadlessKernel`.
+
+### 7. Sketch Canvas (`src/components/SketchCanvas.tsx`)
 A 2D drawing overlay for visual sketch creation:
 -   **Canvas-Based Drawing**: HTML5 Canvas with grid overlay for precise sketching.
 -   **Tools**: Line, Rectangle, Circle with click-to-draw interface.

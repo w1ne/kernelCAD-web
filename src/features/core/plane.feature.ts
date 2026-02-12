@@ -6,6 +6,7 @@ export const OffsetPlaneFeature: Feature = {
     label: 'Construction Plane',
     icon: PlaneIcon,
     description: 'Create a reference plane from a face or existing plane',
+    shortcut: 'p',
     execute: (context) => {
         context.openPanel('offsetPlane');
     }

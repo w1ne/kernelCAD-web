@@ -1,7 +1,7 @@
 import { Box } from 'lucide-react';
 import { type Feature } from '../types';
 
-export const BoxFeature: Feature = {
+export const BoxFeature: Feature<Record<string, number>> = {
     id: 'box',
     label: 'Box',
     icon: Box,
