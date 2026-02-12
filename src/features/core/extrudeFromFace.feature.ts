@@ -4,7 +4,13 @@ import { CodeBuilder } from '../../lib/CodeBuilder';
 import { type CodeGenerationContext } from '../../lib/codeGeneration';
 import { insertStatementsAndReplaceReturnAtIndex, promoteReturnExpressionAtIndexToVariable } from '../../lib/ast';
 
-export const ExtrudeFromFaceFeature: Feature = {
+interface ExtrudeParams {
+    distance: number;
+    faceId: number;
+    shapeIndex?: number;
+}
+
+export const ExtrudeFromFaceFeature: Feature<ExtrudeParams> = {
     id: 'extrudeFromFace',
     label: 'Extrude Face',
     icon: ArrowUpFromLine,

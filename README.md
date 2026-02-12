@@ -1,23 +1,22 @@
-# kernelCAD
-
-**kernelCAD** is a modern, browser-based programmatic CAD tool powered by the OpenCASCADE kernel (via Replicad). It allows you to define 3D geometry using standard JavaScript code and view the results instantly.
-
-
-
-## Features
-
--   **Code-First Design**: Define geometry using a powerful JavaScript API.
--   **Instant Feedback**: Real-time 3D preview powered by React Three Fiber.
--   **Robust Kernel**: Built on top of OpenCASCADE, the industry-standard CAD kernel.
--   **Performance**: Geometry processing runs in a **Web Worker** to keep the UI responsive.
--   **Standard Exports**: Download your designs as **STEP** (for CNC/CAM) or **STL** (for 3D printing).
--   **Modern UI**: Sleek, dark-mode interface built with Tailwind CSS and Monaco Editor.
--   **Sketch Visualization**: Toggleable cyan/blue line rendering for 2D sketches in the 3D scene.
--   **Face Selection & Sketching**: Create sketch planes directly from 3D faces.
--   **Professional View Modes**: Shaded with Edges, Wireframe, and Shaded views matching CATIA/Fusion360.
--   **Parametric Constraints**: Geometric solver for Distance, Angle, Radius, and Coincident constraints.
--   **Advanced Operations**: Revolve, Fillet, Chamfer, and Boolean operations with visual feedback.
-
+# kernelCAD - Agentic CAD Platform
+ 
+ **kernelCAD** is a **Headless-First CAD Platform** designed for AI Agents.
+ 
+ It provides a robust, scriptable API for agents to generate, analyze, and modify 3D geometry using the OpenCASCADE kernel. A web-based "Visual Debugger" allows human engineers to verify and tweak the agent's output.
+ 
+ ## Philosophy
+ 1.  **Agent-Driven**: The primary interface is the `AgentAPI` (Node.js/TS), not the mouse.
+ 2.  **Verifiable**: Geometry is produced by deterministic code, not manual clicks.
+ 3.  **Visual Debugging**: Humans trust what they can see. The Web App acts as a high-fidelity viewer for the headless core.
+ 
+ ## Features
+ 
+ -   **Headless Core**: Run CAD operations in Node.js or Web Workers without a DOM.
+ -   **Agent API**: JSON-serializable commands, introspection, and feedback loops.
+ -   **Visual Debugger**: Real-time 3D preview powered by React Three Fiber.
+ -   **Standard Exports**: STEP/STL generation.
+ -   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
+  
 ## Getting Started
 
 ### Prerequisites

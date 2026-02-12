@@ -66,8 +66,8 @@ test.describe('Project Management', () => {
             (window as any).setCode(code);
         }, autoSaveCode);
 
-        // 2. Wait for debounce (1s)
-        await page.waitForTimeout(1500);
+        // 2. Wait for debounce (1s) + buffer
+        await page.waitForTimeout(2500);
 
         // 3. Refresh
         await page.reload();

@@ -33,6 +33,52 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         });
     }, []);
 
+    // Magic Comment Detection
+    useEffect(() => {
+        const magicCommentRegex = /\/\/ @ai:(.+)(\n|$)/;
+        const match = code.match(magicCommentRegex);
+
+        if (match) {
+            const fullMatch = match[0];
+            const instruction = match[1].trim();
+            const isFinished = fullMatch.endsWith('\n');
+
+            if (isFinished && instruction) {
+                // Prevent infinite loops or re-triggering
+                // We'll immediately "mark" it as processing by replacing it or adding a loader comment
+                // For now, simpler: replace with "Generating..."
+
+                const processingPlaceholder = `// @ai-processing: ${instruction}...\n`;
+                const newCodeWithPlaceholder = code.replace(fullMatch, processingPlaceholder);
+                setCode(newCodeWithPlaceholder);
+
+                // Import LLM Service dynamically to avoid circular dependency issues at top level if any
+                import('../features/ai/LLMService').then(async ({ llmService }) => {
+                    try {
+                        // We pass the *current code* as context so it knows what to do
+                        // We exclude the magic comment line itself from the context to avoid confusing the AI
+                        const contextCode = code.replace(fullMatch, '');
+
+                        const prompt = `Generate code for: "${instruction}". return ONLY the code.`;
+
+                        const response = await llmService.sendMessage(
+                            [{ role: 'user', content: prompt }],
+                            { code: contextCode }
+                        );
+
+                        // Clean up response (remove markdown blocks if present)
+                        const cleanCode = response.replace(/```javascript/g, '').replace(/```/g, '').trim();
+
+                        setCode(prev => prev.replace(processingPlaceholder, cleanCode + '\n'));
+                    } catch (error) {
+                        console.error("Magic Comment Error:", error);
+                        setCode(prev => prev.replace(processingPlaceholder, `// @ai-error: Failed to generate for "${instruction}"\n`));
+                    }
+                });
+            }
+        }
+    }, [code]);
+
     const value: CodeContextType = useMemo(() => ({
         code,
         setCode,

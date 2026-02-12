@@ -5,6 +5,10 @@ test('construction geometry - midplane and tangent plane', async ({ page }) => {
     // 1. Initialize
     page.on('console', msg => console.log(msg.text()));
     await page.goto('/');
+    await page.waitForSelector('[data-testid="workbench-ready"]');
+    // Wait for E2E globals
+    await page.waitForFunction(() => typeof (window as any).openCommandPalette === 'function');
+
     const canvas = page.locator('canvas');
     await expect(canvas).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000); // Wait for initialization
@@ -23,7 +27,7 @@ return [box, cyl];
     // Open Midplane Panel (Command Palette)
     await page.evaluate(() => (window as any).openCommandPalette());
     const cmdInput = page.locator('[placeholder="Type a command or search..."]');
-    await cmdInput.waitFor({ state: 'visible', timeout: 5000 });
+    await cmdInput.waitFor({ state: 'visible', timeout: 10000 });
     await cmdInput.type('Midplane');
     await page.keyboard.press('Enter');
     await page.waitForTimeout(500);

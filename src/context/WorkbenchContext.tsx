@@ -29,6 +29,9 @@ export interface WorkbenchContextType extends
 
     // Commands
     renameItem: (oldName: string, newName: string) => void;
+
+    // Safety
+    applyCodeSafe: (code: string) => Promise<boolean>;
 }
 
 // Export for testing
@@ -160,6 +163,32 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         solve: sketchingCtx.solve,
         // New: Code generation context
         codeContext,
+        /**
+         * Safely applies code after validating it with the Agent API.
+         * Returns true if successful, false if validation failed.
+         */
+        applyCodeSafe: async (newCode: string): Promise<boolean> => {
+            try {
+                // Dynamic import to avoid circular dependency if AgentAPI depends on things that depend on this
+                const { agentAPI } = await import('../agent/AgentAPI');
+                const result = await agentAPI.evaluateCode(newCode);
+
+                if (result.errors && result.errors.length > 0) {
+                    const msg = "AI Validation Failed:\n" + result.errors.join('\n');
+                    console.error(msg);
+                    alert(msg);
+                    return false;
+                }
+
+                codeCtx.setCode(newCode);
+                return true;
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : String(e);
+                console.error("Safety Check Error:", e);
+                alert("Safety Check Error: " + message);
+                return false;
+            }
+        }
     }), [
         codeCtx,
         uiCtx.viewMode,

@@ -8,6 +8,7 @@ export const FilletFeature: Feature = {
     label: 'Fillet',
     icon: FilletIcon,
     description: 'Round the edges of the selected shape',
+    shortcut: 'f',
     execute: (context) => {
         context.openPanel('fillet');
     }
@@ -31,6 +32,7 @@ export const ChamferFeature: Feature = {
     label: 'Chamfer',
     icon: ChamferIcon,
     description: 'Bevel the edges of the selected shape',
+    shortcut: 'c',
     execute: (context) => {
         context.openPanel('chamfer');
     }
@@ -54,6 +56,7 @@ export const CutFeature: Feature = {
     label: 'Cut',
     icon: SquaresSubtract,
     description: 'Subtract one shape from another',
+    shortcut: 'x',
     execute: (context) => {
         context.openPanel('cut');
     }
@@ -61,9 +64,10 @@ export const CutFeature: Feature = {
 
 export const UnionFeature: Feature = {
     id: 'union',
-    label: 'Join',
+    label: 'Union',
     icon: SquaresUnite,
     description: 'Fuse two shapes together',
+    shortcut: 'j',
     execute: (context) => {
         context.openPanel('union');
     }
@@ -74,6 +78,7 @@ export const IntersectFeature: Feature = {
     label: 'Intersect',
     icon: SquaresIntersect,
     description: 'Common volume of two shapes',
+    shortcut: 'i',
     execute: (context) => {
         context.openPanel('intersect');
     }
