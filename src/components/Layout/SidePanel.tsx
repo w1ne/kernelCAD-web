@@ -31,6 +31,20 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
     const items = extractHistoryItems(code);
+    const selectedHistoryId = selectedItemId
+        ? (items.find((item) => item.id === selectedItemId)?.id
+            ?? items.find((item) => item.name === selectedItemId)?.id
+            ?? selectedItemId)
+        : null;
+    const hoveredHistoryId = hoveredItemId
+        ? (items.find((item) => item.id === hoveredItemId)?.id
+            ?? items.find((item) => item.name === hoveredItemId)?.id
+            ?? hoveredItemId)
+        : null;
+    const selectedHistoryIds = selectedItemIds
+        .map((id) => items.find((item) => item.id === id)?.id
+            ?? items.find((item) => item.name === id)?.id
+            ?? id);
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
@@ -56,9 +70,9 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                     <SceneBrowser
                         items={items}
                         planes={planes}
-                        selectedItemId={selectedItemId}
-                        selectedItemIds={selectedItemIds}
-                        hoveredItemId={hoveredItemId}
+                        selectedItemId={selectedHistoryId}
+                        selectedItemIds={selectedHistoryIds}
+                        hoveredItemId={hoveredHistoryId}
                         hiddenIds={hiddenIds}
                         onSelect={(item: HistoryItem) => {
                             setViewMode('code');
@@ -80,10 +94,10 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         onRename={renameItem}
                         onDelete={(item) => {
                             deleteHistoryItem(item);
-                            if (selectedItemId === item.id || selectedItemId === item.name) {
+                            if (selectedHistoryId === item.id) {
                                 setSelectedItemId(null);
                             }
-                            if (hoveredItemId === item.id || hoveredItemId === item.name) {
+                            if (hoveredHistoryId === item.id) {
                                 setHoveredItemId(null);
                             }
                         }}

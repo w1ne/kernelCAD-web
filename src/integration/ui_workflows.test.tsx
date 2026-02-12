@@ -72,6 +72,7 @@ if (typeof window !== 'undefined') {
 describeUI('UI Workflows E2E', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        localStorage.clear();
         initFeatures();
     });
 
@@ -144,6 +145,52 @@ export default function main() {
             expect(editor.value).not.toContain('const sketch');
             expect(editor.value).toContain('return [box]');
             expect(() => parseCode(editor.value)).not.toThrow();
+        });
+    });
+
+    it('should recover after reload and delete an autosaved sketch without syntax errors', async () => {
+        const autosavedCode = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([0, 0])
+      .lineTo([10, 0])
+      .done();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        localStorage.setItem('kernelcad_current_project', JSON.stringify({
+            version: '1.0',
+            name: 'Auto-saved Project',
+            code: autosavedCode,
+            viewState: {
+                viewMode: 'code',
+                viewMode3D: 'shaded',
+                sidePanelVisible: true,
+                showSketches: true
+            },
+            lastUpdated: new Date('2026-02-12T00:00:00.000Z').toISOString()
+        }));
+
+        const { unmount } = render(<App />);
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        unmount();
+
+        render(<App />);
+
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        fireEvent.click(screen.getByText('sketch'));
+        fireEvent.keyDown(window, { key: 'Delete' });
+
+        await waitFor(() => {
+            const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+            expect(editor.value).not.toContain('const sketch');
+            expect(() => parseCode(editor.value)).not.toThrow();
+            expect(screen.queryByText(/SyntaxError:/i)).toBeNull();
         });
     });
 });

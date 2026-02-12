@@ -194,9 +194,9 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                         ) : (
                             items.map((item, idx) => {
                                 const isSelected = selectedItemIds
-                                    ? selectedItemIds.includes(item.id) || selectedItemIds.includes(item.name)
-                                    : selectedItemId === item.id || selectedItemId === item.name;
-                                const isHovered = hoveredItemId === item.id || hoveredItemId === item.name;
+                                    ? selectedItemIds.includes(item.id)
+                                    : selectedItemId === item.id;
+                                const isHovered = hoveredItemId === item.id;
                                 const isHidden = hiddenIds.includes(item.name);
                                 return (
                                     <div

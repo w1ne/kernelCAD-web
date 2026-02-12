@@ -39,7 +39,7 @@ const TestComponent = () => {
 
     return (
         <div>
-            <button data-testid="trigger-hover" onClick={() => setHoveredItemId('box1')}>Trigger</button>
+            <button data-testid="trigger-hover" onClick={() => setHoveredItemId('box1:1:1:10')}>Trigger</button>
             <button data-testid="clear-hover" onClick={() => setHoveredItemId(null)}>Clear</button>
             <SceneBrowser
                 items={mockItems}

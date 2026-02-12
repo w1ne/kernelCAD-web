@@ -9,7 +9,10 @@ const mockSetHoveredItemId = vi.fn();
 
 vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
-        code: 'const box = replicad.makeBox(1, 1, 1);',
+        code: `
+const box = replicad.makeBox(1, 1, 1);
+const sketch = new Sketcher('XY').lineTo([1, 1]).done();
+`.trim(),
         setViewMode: vi.fn(),
         planes: [],
         togglePlaneVisibility: vi.fn(),
@@ -27,10 +30,10 @@ vi.mock('../../context/WorkbenchContext', () => ({
 }));
 
 vi.mock('../SceneBrowser', () => ({
-    default: ({ onDelete }: { onDelete: (item: { id: string; name: string; type: string; line: number }) => void }) => (
+    default: ({ items, onDelete }: { items: Array<{ id: string; name: string; type: string; line: number }>; onDelete: (item: { id: string; name: string; type: string; line: number }) => void }) => (
         <button
             data-testid="trigger-delete"
-            onClick={() => onDelete({ id: 'sketch:1:1:1', name: 'sketch', type: 'Sketch', line: 1 })}
+            onClick={() => onDelete(items.find((i) => i.name === 'sketch') ?? items[0])}
         >
             Delete
         </button>
