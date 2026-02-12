@@ -47,7 +47,7 @@ return [box1, box2];
         await page.evaluate((c) => (window as any).setCode(c), code);
         await page.waitForTimeout(1000);
 
-        const joinBtn = page.getByTitle('Join');
+        const joinBtn = page.getByTitle('Union');
         await expect(joinBtn).toBeVisible();
         await joinBtn.click();
 

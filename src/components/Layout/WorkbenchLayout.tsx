@@ -109,6 +109,7 @@ export function WorkbenchLayout() {
     const { insertCode } = useCodeInsertion();
 
     const features = useMemo(() => featureRegistry.getAll(), []);
+
     const activeFeature = useMemo(() => activeDialog ? featureRegistry.get(activeDialog) : null, [activeDialog]);
 
     const featureShortcuts = useMemo(() => {
@@ -131,6 +132,42 @@ export function WorkbenchLayout() {
         });
         return shortcuts;
     }, [features, activeDialog, insertCode, setCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
+
+    const handleToolClick = React.useCallback((feature: Feature) => {
+        if (activeDialog) return;
+
+        if (feature.id === 'extrudeFromFace') {
+            openPanel('extrudeFromFace');
+        } else if (feature.id === 'sketchOnFace') {
+            openPanel('sketchOnFace');
+        } else {
+            // Original logic for other features
+            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'midplane', 'tangentPlane'].includes(feature.id)) {
+                openPanel(feature.id);
+                return;
+            }
+
+            if (feature.parameters && feature.parameters.length > 0) {
+                setActiveDialog(feature.id);
+            } else {
+                feature.execute({
+                    insertCode,
+                    setCode,
+                    setActiveDialog,
+                    openPanel,
+                    closePanel,
+                    code,
+                    codeContext
+                }, undefined);
+            }
+        }
+    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext, activeDialog]);
+
+    // Use a ref for handleToolClick to avoid re-registering commands when it changes due to code updates
+    const handleToolClickRef = React.useRef(handleToolClick);
+    React.useEffect(() => {
+        handleToolClickRef.current = handleToolClick;
+    }, [handleToolClick]);
 
     // Keyboard Shortcuts
     useKeyboardShortcuts({
@@ -193,90 +230,39 @@ export function WorkbenchLayout() {
     // Register Commands for Palette
     const { registerCommand } = useCommandRegistry();
 
-    // Use a ref to store the latest values needed by command actions
-    const actionContextRef = React.useRef({
-        selectedFace,
-        insertCode,
-        setCode,
-        setActiveDialog,
-        code,
-        codeContext
-    });
 
-    // Update the ref on every render
-    React.useEffect(() => {
-        actionContextRef.current = {
-            selectedFace,
-            insertCode,
-            setCode,
-            setActiveDialog,
-            code,
-            codeContext
-        };
-    });
 
-    const handleToolClick = React.useCallback((feature: Feature) => {
-        if (feature.id === 'extrudeFromFace') {
-            openPanel('extrudeFromFace');
-        } else if (feature.id === 'sketchOnFace') {
-            openPanel('sketchOnFace');
-        } else {
-            // Original logic for other features
-            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector', 'midplane', 'tangentPlane'].includes(feature.id)) {
-                openPanel(feature.id);
-                return;
-            }
 
-            if (feature.parameters && feature.parameters.length > 0) {
-                setActiveDialog(feature.id);
-            } else {
-                feature.execute({
-                    insertCode,
-                    setCode,
-                    setActiveDialog,
-                    openPanel,
-                    closePanel,
-                    code,
-                    codeContext
-                }, undefined);
-            }
-        }
-    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext]);
 
     React.useEffect(() => {
         const unregisters: (() => void)[] = [];
 
-        // Dynamic Feature Commands
+        // Register feature commands
         features.forEach(f => {
-            if (['sketchOnFace', 'extrudeFromFace'].includes(f.id)) return; // Handled specially or excluded if redundant
-
             unregisters.push(registerCommand({
                 id: f.id,
                 label: f.label,
+                icon: f.icon ? <f.icon className="w-4 h-4" /> : undefined,
+                shortcut: f.shortcut,
                 section: 'Modeling',
-                shortcut: f.shortcut?.toUpperCase(),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                icon: React.createElement(f.icon as any, { className: "w-4 h-4" }),
-                action: () => handleToolClick(f)
+                action: () => handleToolClickRef.current(f)
             }));
         });
 
-        // View & Utility Commands
+        // Register utility commands
         unregisters.push(registerCommand({
-            id: 'toggle-sketches',
+            id: 'toggleSketchVisibility',
             label: 'Toggle Sketches',
+            shortcut: 'Alt+S', // Example
             section: 'View',
-            shortcut: 'Alt+S',
             icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                toggleSketchVisibility();
-            }
+            action: toggleSketchVisibility
         }));
 
         unregisters.push(registerCommand({
-            id: 'sketch-plane-selector',
-            label: 'New Sketch (Select Plane)',
-            section: 'General',
+            id: 'planeSelector',
+            label: 'Select Plane',
+            section: 'Navigation',
             shortcut: 'S',
             icon: <Square className="w-4 h-4" />,
             action: () => {
@@ -285,7 +271,7 @@ export function WorkbenchLayout() {
         }));
 
         return () => unregisters.forEach(u => u());
-    }, [registerCommand, toggleSketchVisibility, openPanel, features, handleToolClick]); // Only stable dependencies
+    }, [registerCommand, toggleSketchVisibility, openPanel, features]); // Removed handleToolClick to prevent loop
 
 
 
