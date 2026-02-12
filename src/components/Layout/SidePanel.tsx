@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { extractVariables, type VariableDefinition } from '../../lib/codeAnalysis';
+import { extractHistoryItems, type HistoryItem } from '../../lib/codeAnalysis';
 import { AIAssistant } from '../../features/ai/AIAssistant';
 
 interface SidePanelProps {
@@ -30,7 +30,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
 
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
-    const items = extractVariables(code);
+    const items = extractHistoryItems(code);
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
@@ -60,7 +60,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         selectedItemIds={selectedItemIds}
                         hoveredItemId={hoveredItemId}
                         hiddenIds={hiddenIds}
-                        onSelect={(item: VariableDefinition) => {
+                        onSelect={(item: HistoryItem) => {
                             setViewMode('code');
                             setSelectedItemId(item.name);
                             onJumpToLine(item.line);

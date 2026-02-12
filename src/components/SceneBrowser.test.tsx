@@ -2,16 +2,16 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SceneBrowser from './SceneBrowser';
-import type { VariableDefinition } from '../lib/codeAnalysis';
+import type { HistoryItem } from '../lib/codeAnalysis';
 // React unused
 
 afterEach(() => {
     cleanup();
 });
 
-const mockItems: VariableDefinition[] = [
-    { name: 'box1', type: 'Box', line: 1 },
-    { name: 'cyl1', type: 'Cylinder', line: 5 },
+const mockItems: HistoryItem[] = [
+    { id: 'box1:1:1:10', name: 'box1', type: 'Box', line: 1 },
+    { id: 'cyl1:5:11:20', name: 'cyl1', type: 'Cylinder', line: 5 },
 ];
 
 describe('SceneBrowser', () => {

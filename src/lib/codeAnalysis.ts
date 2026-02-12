@@ -30,10 +30,15 @@ export function generateUniqueName(code: string, baseName: string): string {
 }
 
 export interface VariableDefinition {
+    id?: string;
     name: string;
     type: string;
     line: number; // 1-indexed
     detail?: string;
+}
+
+export interface HistoryItem extends VariableDefinition {
+    id: string;
 }
 
 /**
@@ -42,8 +47,40 @@ export interface VariableDefinition {
  * - Looks for `const varName = ...`
  * - Guesses type based on keywords (makeBox, makeCylinder, fillet, etc.)
  */
-export function extractVariables(code: string): VariableDefinition[] {
-    const variables: VariableDefinition[] = [];
+function classifyVariable(initSrc: string, init?: { arguments?: unknown[] }): { type: string; detail?: string } {
+    let type = 'Shape';
+    let detail: string | undefined;
+
+    if (initSrc.includes('makeBox')) type = 'Box';
+    else if (initSrc.includes('makeCylinder')) type = 'Cylinder';
+    else if (initSrc.includes('makeSphere')) type = 'Sphere';
+    else if (initSrc.includes('fillet')) type = 'Fillet';
+    else if (initSrc.includes('chamfer')) type = 'Chamfer';
+    else if (initSrc.includes('cut')) type = 'Cut';
+    else if (initSrc.includes('fuse')) type = 'Union';
+    else if (initSrc.includes('intersect')) type = 'Intersect';
+    else if (initSrc.includes('extrude')) type = 'Extrude';
+    else if (initSrc.includes('revolve')) type = 'Revolve';
+    else if (initSrc.includes('Sketcher')) {
+        type = 'Sketch';
+        const firstArg = Array.isArray(init?.arguments) ? init.arguments[0] : null;
+        const arg = firstArg as unknown as { type?: string; value?: unknown } | null;
+        if (arg && arg.type === 'Literal' && typeof arg.value === 'string') {
+            detail = arg.value;
+        } else {
+            const planeMatch = initSrc.match(/new Sketcher\(['"](\w+)['"]\)/);
+            if (planeMatch) detail = planeMatch[1];
+        }
+    }
+
+    return { type, detail };
+}
+
+/**
+ * AST-backed history extraction with stable IDs for UI identity.
+ */
+export function extractHistoryItems(code: string): HistoryItem[] {
+    const items: HistoryItem[] = [];
     try {
         const ast = acorn.parse(code, {
             ecmaVersion: 'latest',
@@ -67,39 +104,34 @@ export function extractVariables(code: string): VariableDefinition[] {
                 const initSrc = init && typeof init.start === 'number' && typeof init.end === 'number'
                     ? code.slice(init.start, init.end)
                     : '';
-
-                let type = 'Shape';
-                let detail: string | undefined;
-
-                if (initSrc.includes('makeBox')) type = 'Box';
-                else if (initSrc.includes('makeCylinder')) type = 'Cylinder';
-                else if (initSrc.includes('makeSphere')) type = 'Sphere';
-                else if (initSrc.includes('fillet')) type = 'Fillet';
-                else if (initSrc.includes('chamfer')) type = 'Chamfer';
-                else if (initSrc.includes('cut')) type = 'Cut';
-                else if (initSrc.includes('fuse')) type = 'Union';
-                else if (initSrc.includes('intersect')) type = 'Intersect';
-                else if (initSrc.includes('extrude')) type = 'Extrude';
-                else if (initSrc.includes('revolve')) type = 'Revolve';
-                else if (initSrc.includes('Sketcher')) {
-                    type = 'Sketch';
-                    const firstArg = Array.isArray(init?.arguments) ? init.arguments[0] : null;
-                    const arg = firstArg as unknown as { type?: string; value?: unknown } | null;
-                    if (arg && arg.type === 'Literal' && typeof arg.value === 'string') {
-                        detail = arg.value;
-                    } else {
-                        const planeMatch = initSrc.match(/new Sketcher\(['"](\w+)['"]\)/);
-                        if (planeMatch) detail = planeMatch[1];
-                    }
-                }
-
-                variables.push({ name, type, line, detail });
+                const { type, detail } = classifyVariable(initSrc, init);
+                const start = init?.start ?? line;
+                const end = init?.end ?? line;
+                items.push({
+                    id: `${name}:${line}:${start}:${end}`,
+                    name,
+                    type,
+                    line,
+                    detail
+                });
             }
         });
     } catch {
-        // On syntax errors keep behavior non-throwing; return best effort (empty list).
+        // On syntax errors keep behavior non-throwing.
         return [];
     }
 
+    return items;
+}
+
+/**
+ * Backward-compatible variable extraction.
+ */
+export function extractVariables(code: string): VariableDefinition[] {
+    const items = extractHistoryItems(code);
+    const variables: VariableDefinition[] = items.map(({ name, type, line, detail }) => {
+        if (detail !== undefined) return { name, type, line, detail };
+        return { name, type, line };
+    });
     return variables;
 }
