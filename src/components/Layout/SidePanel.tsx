@@ -62,21 +62,28 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                         hiddenIds={hiddenIds}
                         onSelect={(item: HistoryItem) => {
                             setViewMode('code');
-                            setSelectedItemId(item.name);
+                            setSelectedItemId(item.id);
                             onJumpToLine(item.line);
                         }}
                         onToggleSelection={toggleSelection}
-                        onHover={setHoveredItemId}
+                        onHover={(id) => {
+                            if (!id) {
+                                setHoveredItemId(null);
+                                return;
+                            }
+                            const item = items.find((entry) => entry.id === id);
+                            setHoveredItemId(item?.name ?? id);
+                        }}
                         onToggleVisibility={toggleVisibility}
                         onTogglePlane={togglePlaneVisibility}
                         onSelectPlane={(id) => setSelectedItemId(id)}
                         onRename={renameItem}
                         onDelete={(item) => {
                             deleteHistoryItem(item);
-                            if (selectedItemId === item.name) {
+                            if (selectedItemId === item.id || selectedItemId === item.name) {
                                 setSelectedItemId(null);
                             }
-                            if (hoveredItemId === item.name) {
+                            if (hoveredItemId === item.id || hoveredItemId === item.name) {
                                 setHoveredItemId(null);
                             }
                         }}

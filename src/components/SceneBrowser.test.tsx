@@ -55,7 +55,7 @@ describe('SceneBrowser', () => {
 
         const item = screen.getByText('box1');
         fireEvent.mouseEnter(item);
-        expect(onHover).toHaveBeenCalledWith('box1');
+        expect(onHover).toHaveBeenCalledWith('box1:1:1:10');
 
         fireEvent.mouseLeave(item);
         expect(onHover).toHaveBeenCalledWith(null);

@@ -193,8 +193,10 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                             <div className="px-6 py-4 text-gray-500 italic">No operations yet.</div>
                         ) : (
                             items.map((item, idx) => {
-                                const isSelected = selectedItemIds ? selectedItemIds.includes(item.name) : selectedItemId === item.name;
-                                const isHovered = hoveredItemId === item.name;
+                                const isSelected = selectedItemIds
+                                    ? selectedItemIds.includes(item.id) || selectedItemIds.includes(item.name)
+                                    : selectedItemId === item.id || selectedItemId === item.name;
+                                const isHovered = hoveredItemId === item.id || hoveredItemId === item.name;
                                 const isHidden = hiddenIds.includes(item.name);
                                 return (
                                     <div
@@ -202,12 +204,12 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                                         data-testid={`scene-item-${item.id ?? item.name}`}
                                         onClick={(e) => {
                                             if (onToggleSelection && (e.metaKey || e.ctrlKey || e.shiftKey)) {
-                                                onToggleSelection(item.name, true);
+                                                onToggleSelection(item.id, true);
                                             } else {
                                                 onSelect(item);
                                             }
                                         }}
-                                        onMouseEnter={() => onHover(item.name)}
+                                        onMouseEnter={() => onHover(item.id)}
                                         onMouseLeave={() => onHover(null)}
                                         onContextMenu={(e) => handleContextMenu(e, item)}
                                         className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] hover:text-white transition-colors text-left group cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : isHovered ? 'bg-[#333] text-white' : ''}`}

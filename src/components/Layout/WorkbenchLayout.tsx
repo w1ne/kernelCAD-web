@@ -14,7 +14,7 @@ import { type SketchData, type SketchPlane } from '../../types/sketch';
 import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { Loader2 } from 'lucide-react';
-import { extractVariables } from '../../lib/codeAnalysis';
+import { extractHistoryItems, extractVariables } from '../../lib/codeAnalysis';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
@@ -54,6 +54,7 @@ export function WorkbenchLayout() {
         showAll,
         selectedItemId,
         deleteItem,
+        deleteHistoryItem,
         toggleVisibility,
         openPanel,
         closePanel,
@@ -129,6 +130,12 @@ export function WorkbenchLayout() {
         extractVariables(code).forEach((v) => map.set(v.name, v.line));
         return map;
     }, [code]);
+    const historyItems = useMemo(() => extractHistoryItems(code), [code]);
+    const historyItemById = useMemo(() => {
+        const map = new Map<string, { id: string; name: string; line: number; type: string; detail?: string }>();
+        historyItems.forEach((item) => map.set(item.id, item));
+        return map;
+    }, [historyItems]);
 
     const featureShortcuts = useMemo(() => {
         const shortcuts: Record<string, () => void> = {};
@@ -215,7 +222,10 @@ export function WorkbenchLayout() {
         },
         'h': () => {
             if (activeDialog) return;
-            if (selectedItemId) hideItem(selectedItemId);
+            if (selectedItemId) {
+                const visibilityTarget = historyItemById.get(selectedItemId)?.name ?? selectedItemId;
+                hideItem(visibilityTarget);
+            }
         },
         'shift+h': () => {
             if (activeDialog) return;
@@ -223,20 +233,33 @@ export function WorkbenchLayout() {
         },
         'space': () => {
             if (activeDialog) return;
-            if (selectedItemId) toggleVisibility(selectedItemId);
+            if (selectedItemId) {
+                const visibilityTarget = historyItemById.get(selectedItemId)?.name ?? selectedItemId;
+                toggleVisibility(visibilityTarget);
+            }
         },
         'backspace': (e) => {
             if (activeDialog) return;
             if (selectedItemId) {
                 e.preventDefault();
-                deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                const historyItem = historyItemById.get(selectedItemId);
+                if (historyItem) {
+                    deleteHistoryItem(historyItem);
+                } else {
+                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                }
             }
         },
         'delete': (e) => {
             if (activeDialog) return;
             if (selectedItemId) {
                 e.preventDefault();
-                deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                const historyItem = historyItemById.get(selectedItemId);
+                if (historyItem) {
+                    deleteHistoryItem(historyItem);
+                } else {
+                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                }
             }
         },
         'alt+s': () => {

@@ -34,7 +34,7 @@ const TestComponent = () => {
     } = useWorkbench();
 
     const mockItems = [
-        { name: 'box1', type: 'Box', line: 1 },
+        { id: 'box1:1:1:10', name: 'box1', type: 'Box', line: 1 },
     ];
 
     return (
