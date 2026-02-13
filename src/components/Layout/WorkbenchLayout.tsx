@@ -3,6 +3,7 @@ import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import ParameterDialog from '../Dialogs/ParameterDialog';
 import { SketchCanvas } from '../SketchCanvas';
 import { Header } from './Header';
+import ProjectManagerDialog from '../Dialogs/ProjectManagerDialog';
 import { CommandPalette } from '../CommandPalette/CommandPalette';
 import { useCommandRegistry } from '../../hooks/useCommandRegistry';
 import { Layers, Square } from 'lucide-react';
@@ -535,6 +536,12 @@ export function WorkbenchLayout() {
                     }))}
                 />
             )}
+            {/* Project Manager Overlay */}
+            <ProjectManagerDialog
+                isOpen={activeDialog === 'projectManager'}
+                onClose={() => setActiveDialog(null)}
+            />
+
             {/* Command Palette Overlay */}
             <CommandPalette />
 

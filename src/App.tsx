@@ -4,7 +4,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
 import { useEffect, useState } from 'react';
-import { projectService } from './lib/projectService';
 import { parseCode } from './lib/ast';
 
 function isCodeParsable(code: string): boolean {
@@ -16,56 +15,52 @@ function isCodeParsable(code: string): boolean {
   }
 }
 
+import { useProject } from './context/ProjectContext';
 
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
-  const { code, viewMode, viewMode3D, sidePanelVisible, showSketches, setCode, setViewMode, setViewMode3D } = useWorkbench();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const {
+    code, viewMode, viewMode3D, sidePanelVisible, showSketches,
+    setCode, setViewMode, setViewMode3D
+  } = useWorkbench();
 
-  // Auto-load on mount
+  const { activeProject, saveActiveProject } = useProject();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Sync active project -> workbench state
   useEffect(() => {
-    if (isDevLab) {
-      setTimeout(() => setIsLoaded(true), 0);
-      return;
-    }
+    if (isDevLab || !activeProject) return;
 
-    const savedProject = projectService.loadFromLocalStorage();
-    if (savedProject) {
-      const savedCode = savedProject.code;
-      if (isCodeParsable(savedCode)) {
-        setCode(savedCode);
-        if (savedProject.viewState?.viewMode === 'gui' || savedProject.viewState?.viewMode === 'code') {
-          setViewMode(savedProject.viewState.viewMode);
-        }
-        if (typeof savedProject.viewState?.viewMode3D === 'string') {
-          setViewMode3D(savedProject.viewState.viewMode3D as typeof viewMode3D);
-        }
-      } else {
-        // Avoid reload loops where invalid code is restored forever.
-        projectService.clearLocalStorage();
-        setViewMode('code');
-        console.warn('Recovered from invalid saved project code in localStorage.');
+    // Only sync on initial load or project switch
+    if (!isInitialized || activeProject.code !== code) {
+      setCode(activeProject.code);
+      if (activeProject.viewState) {
+        setViewMode(activeProject.viewState.viewMode);
+        setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsInitialized(true);
     }
-    setTimeout(() => setIsLoaded(true), 0);
-  }, [isDevLab, setCode, setViewMode, setViewMode3D]);
+  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D]);
 
-  // Auto-save on changes
+  // Auto-save: workbench state -> active project
   useEffect(() => {
-    if (!isLoaded || isDevLab) return;
+    if (isDevLab || !isInitialized || !activeProject) return;
     if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
-      const project = projectService.createProject(code, {
-        viewMode,
-        viewMode3D,
-        sidePanelVisible,
-        showSketches
-      }, 'Auto-saved Project');
-      projectService.persistToLocalStorage(project);
-    }, 1000); // Debounce save
+      saveActiveProject({
+        code,
+        viewState: {
+          viewMode,
+          viewMode3D,
+          sidePanelVisible,
+          showSketches
+        }
+      });
+    }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isLoaded, isDevLab]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isDevLab, isInitialized, activeProject, saveActiveProject]);
 
   return isDevLab ? <DevLab /> : <WorkbenchLayout />;
 }

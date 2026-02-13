@@ -246,26 +246,30 @@ function GeometryWithCode({ children }: { children: ReactNode }) {
 
 import { WorkbenchStateProvider } from './WorkbenchStateContext';
 
+import { ProjectProvider } from './ProjectContext';
+
 /**
  * Main WorkbenchProvider composing all focused contexts
  */
 export function WorkbenchProvider({ children, initialCode }: { children: ReactNode; initialCode?: string }) {
     return (
-        <CodeProvider initialCode={initialCode}>
-            <WorkbenchStateProvider>
-                <UIProvider>
-                    <SelectionProvider>
-                        <GeometryWithCode>
-                            <SketchingProvider>
-                                <WorkbenchInnerProvider>
-                                    {children}
-                                </WorkbenchInnerProvider>
-                            </SketchingProvider>
-                        </GeometryWithCode>
-                    </SelectionProvider>
-                </UIProvider>
-            </WorkbenchStateProvider>
-        </CodeProvider>
+        <ProjectProvider>
+            <CodeProvider initialCode={initialCode}>
+                <WorkbenchStateProvider>
+                    <UIProvider>
+                        <SelectionProvider>
+                            <GeometryWithCode>
+                                <SketchingProvider>
+                                    <WorkbenchInnerProvider>
+                                        {children}
+                                    </WorkbenchInnerProvider>
+                                </SketchingProvider>
+                            </GeometryWithCode>
+                        </SelectionProvider>
+                    </UIProvider>
+                </WorkbenchStateProvider>
+            </CodeProvider>
+        </ProjectProvider>
     );
 }
 
