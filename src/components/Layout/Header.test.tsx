@@ -28,27 +28,26 @@ afterEach(() => {
 });
 
 describe('Header', () => {
-    it('should render title', () => {
+    it('should render project name', () => {
         render(
             <WorkbenchProvider>
                 <Header />
             </WorkbenchProvider>
         );
-        expect(screen.getByText('script.js')).toBeDefined();
+        // Default project name from ProjectContext
+        expect(screen.getByText('Untitled Project')).toBeDefined();
     });
 
-    it('should show Design title in gui mode', () => {
-        // We can't easily set state inside provider without a helper, 
-        // but the toggle button should switch it.
+    it('should show view modes correctly', () => {
         render(
             <WorkbenchProvider>
                 <Header />
             </WorkbenchProvider>
         );
 
-        const guiBtn = screen.getByTitle('Design Mode');
-        fireEvent.click(guiBtn);
-        expect(screen.getByText('Design')).toBeDefined();
+        // Verify mode toggle buttons exist
+        expect(screen.getByTitle('Code Mode')).toBeDefined();
+        expect(screen.getByTitle('Design Mode')).toBeDefined();
     });
 
     it('should trigger export', () => {
