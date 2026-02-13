@@ -138,11 +138,13 @@ export default function main() {
 
         expect(await screen.findByText('sketch')).toBeTruthy();
         fireEvent.click(screen.getByText('sketch'));
-        fireEvent.keyDown(window, { key: 'Delete' });
+        const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+        editor.focus();
+        fireEvent.keyDown(editor, { key: 'Delete' });
 
         await waitFor(() => {
-            const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
             expect(editor.value).not.toContain('const sketch');
+            expect(editor.value).not.toContain('onst sketch');
             expect(editor.value).toContain('return [box]');
             expect(() => parseCode(editor.value)).not.toThrow();
         });
