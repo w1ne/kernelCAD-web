@@ -70,6 +70,11 @@ export class HeadlessKernel implements HeadlessContext {
         this.analyzer.updateCode(code);
     }
 
+    mutateCode(transform: (prev: string) => string): void {
+        const next = transform(this.code);
+        this.setCode(next);
+    }
+
     get codeContext(): CodeGenerationContext {
         return this.analyzer.createContext();
     }

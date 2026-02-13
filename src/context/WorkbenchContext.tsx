@@ -77,6 +77,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         // Code context
         code: codeCtx.code,
         setCode: codeCtx.setCode,
+        mutateCode: codeCtx.mutateCode,
         insertCode: codeCtx.insertCode,
         editorInstance: codeCtx.editorInstance,
         setEditorInstance: codeCtx.setEditorInstance,

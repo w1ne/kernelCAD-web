@@ -5,10 +5,12 @@ import type { EditorLike } from '../types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
 import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
 import type { HistoryItem } from '../lib/codeAnalysis';
+import { CodeMutationService, type CodeTransform } from '../lib/CodeMutationService';
 
 export interface CodeContextType {
     code: string;
     setCode: (code: string) => void;
+    mutateCode: (transform: CodeTransform, mutationName: string) => void;
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     editorInstance: EditorLike | null;
     setEditorInstance: (instance: EditorLike | null) => void;
@@ -23,27 +25,33 @@ export interface CodeContextType {
 const CodeContext = createContext<CodeContextType | undefined>(undefined);
 
 export function CodeProvider({ children, initialCode = defaultCode }: { children: ReactNode; initialCode?: string }) {
-    const [code, setCode] = useState<string>(initialCode);
+    const [code, setRawCode] = useState<string>(initialCode);
 
     const [editorInstance, setEditorInstance] = useState<EditorLike | null>(null);
+    const mutationService = useMemo(() => new CodeMutationService(setRawCode), []);
 
     // Initialize CommandManager once, then update its context provider as state changes.
-    const [commandManager] = useState(() => new CommandManager(() => ({ code: initialCode, setCode })));
+    const [commandManager] = useState(() => new CommandManager(() => ({
+        code: initialCode,
+        setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
+    })));
     useEffect(() => {
-        commandManager.setContextProvider(() => ({ code, setCode }));
-    }, [commandManager, code]);
+        commandManager.setContextProvider(() => ({
+            code,
+            setCode: (next) => mutationService.replace(next, 'commandManager.setCode')
+        }));
+    }, [commandManager, code, mutationService]);
 
-    const commitMutation = useCallback((mutate: (prev: string) => string, mutationName: string): void => {
-        setCode(prev => {
-            try {
-                const next = mutate(prev);
-                parseCode(next);
-                return next;
-            } catch (e) {
-                console.error(`${mutationName} failed; keeping previous code`, e);
-                return prev;
-            }
-        });
+    const commitMutation = useCallback((mutate: CodeTransform, mutationName: string): void => {
+        mutationService.apply(mutate, mutationName);
+    }, [mutationService]);
+
+    const mutateCode = useCallback((transform: CodeTransform, mutationName: string): void => {
+        mutationService.apply(transform, mutationName);
+    }, [mutationService]);
+
+    const setCode = useCallback((nextCode: string): void => {
+        setRawCode(nextCode);
     }, []);
 
     const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
@@ -124,7 +132,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
             alert("Safety Check Error: " + message);
             return false;
         }
-    }, []);
+    }, [setCode]);
 
     // Magic Comment Detection
     useEffect(() => {
@@ -139,7 +147,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
             if (isFinished && instruction) {
                 const processingPlaceholder = `// @ai-processing: ${instruction}...\n`;
                 const newCodeWithPlaceholder = code.replace(fullMatch, processingPlaceholder);
-                setCode(newCodeWithPlaceholder);
+                mutationService.replace(newCodeWithPlaceholder, 'magicComment.processing');
 
                 import('../features/ai/LLMService').then(async ({ llmService }) => {
                     try {
@@ -150,20 +158,27 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
                             { code: contextCode }
                         );
                         const cleanCode = response.replace(/```javascript/g, '').replace(/```/g, '').trim();
-                        setCode(prev => prev.replace(processingPlaceholder, cleanCode + '\n'));
+                        mutationService.apply(
+                            (prev) => prev.replace(processingPlaceholder, cleanCode + '\n'),
+                            'magicComment.success',
+                        );
                     } catch (error) {
                         console.error("Magic Comment Error:", error);
-                        setCode(prev => prev.replace(processingPlaceholder, `// @ai-error: Failed to generate for "${instruction}"\n`));
+                        mutationService.apply(
+                            (prev) => prev.replace(processingPlaceholder, `// @ai-error: Failed to generate for "${instruction}"\n`),
+                            'magicComment.failure',
+                        );
                     }
                 });
             }
         }
-    }, [code]);
+    }, [code, mutationService]);
 
 
     const value: CodeContextType = useMemo(() => ({
         code,
         setCode,
+        mutateCode,
         insertCode,
         editorInstance,
         setEditorInstance,
@@ -173,7 +188,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         deleteItem,
         deleteHistoryItem,
         applyCodeSafe
-    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe]);
+    }), [code, setCode, mutateCode, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }

@@ -2,24 +2,26 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { InsertShapeCommand } from '../commands/implementations/InsertShapeCommand';
 
 export function useCodeInsertion() {
-    const { editorInstance, commandManager, codeContext, setCode, code: currentCode } = useWorkbench();
+    const { editorInstance, commandManager, codeContext, mutateCode } = useWorkbench();
 
     const insertCode = (inputSnippet: string | ((name: string) => string), baseName = 'shape') => {
         const varName = codeContext.generateUniqueName(baseName);
         const snippet = typeof inputSnippet === 'function' ? inputSnippet(varName) : inputSnippet;
 
         if (!editorInstance) {
-            const trimmed = currentCode.trimEnd();
-            const newCode = trimmed + (trimmed ? '\n' : '') + snippet;
-            setCode(newCode);
+            mutateCode((prev) => {
+                const trimmed = prev.trimEnd();
+                return trimmed + (trimmed ? '\n' : '') + snippet;
+            }, 'useCodeInsertion.noEditor');
             return;
         }
 
         const model = editorInstance.getModel();
         if (!model) {
-            const trimmed = currentCode.trimEnd();
-            const newCode = trimmed + (trimmed ? '\n' : '') + snippet;
-            setCode(newCode);
+            mutateCode((prev) => {
+                const trimmed = prev.trimEnd();
+                return trimmed + (trimmed ? '\n' : '') + snippet;
+            }, 'useCodeInsertion.noModel');
             return;
         }
 

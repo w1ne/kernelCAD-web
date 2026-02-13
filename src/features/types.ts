@@ -5,6 +5,7 @@ import { z } from 'zod';
 export interface HeadlessContext {
     insertCode: (snippet: string | ((name: string) => string), baseName?: string) => void;
     setCode: (code: string) => void;
+    mutateCode: (transform: (prev: string) => string, mutationName: string) => void;
     code: string; // Current code for variable name resolution
 }
 
