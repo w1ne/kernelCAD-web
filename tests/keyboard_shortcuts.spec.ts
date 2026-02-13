@@ -111,4 +111,66 @@ return [replicad.makeBox(10, 10, 10), sketch];
         hasReturnSketchRef: false,
       });
   });
+
+  test('Delete works after autosave reload when editor is focused', async ({ page }) => {
+    const autosavedCode = `
+const sketch = new Sketcher('XY')
+  .movePointerTo([0, 0])
+  .hLine(10)
+  .vLine(10)
+  .hLine(-10)
+  .close();
+return [replicad.makeBox(10, 10, 10), sketch];
+    `.trim();
+
+    await page.evaluate((code) => {
+      localStorage.setItem('kernelcad_current_project', JSON.stringify({
+        version: '1.0',
+        name: 'Auto-saved Project',
+        code,
+        viewState: {
+          viewMode: 'code',
+          viewMode3D: 'shadedWithEdges',
+          sidePanelVisible: true,
+          showSketches: true,
+        },
+        lastUpdated: new Date('2026-02-13T00:00:00.000Z').toISOString(),
+      }));
+    }, autosavedCode);
+
+    await page.reload();
+    await page.waitForSelector('canvas', { timeout: 20000 });
+    await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 30000 });
+    await waitForStability(page);
+
+    const sketchItem = page.locator('[data-testid^="scene-item-sketch"]').first();
+    await expect(sketchItem).toBeVisible();
+    await sketchItem.click();
+
+    await page.evaluate(() => {
+      const ta = document.querySelector('.monaco-editor textarea') as HTMLTextAreaElement | null;
+      ta?.focus();
+    });
+    await page.waitForFunction(() => document.activeElement?.tagName?.toLowerCase() === 'textarea');
+    await page.keyboard.press('Delete');
+
+    await expect
+      .poll(async () => {
+        const nextCode = await page.evaluate(() => (window as any).getCode?.() || '');
+        const error = await page.evaluate(() => (window as any).getError?.() || null);
+        return {
+          hasSketchDecl: nextCode.includes('const sketch'),
+          hasCorruption: nextCode.includes('onst sketch'),
+          hasReturnSketchRef: /\breturn\s*\[[^\]]*\bsketch\b/.test(nextCode),
+          hasRuntimeError: Boolean(error),
+        };
+      }, { timeout: 10000 })
+      .toEqual({
+        hasSketchDecl: false,
+        hasCorruption: false,
+        hasReturnSketchRef: false,
+        hasRuntimeError: false,
+      });
+  });
 });
