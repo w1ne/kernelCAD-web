@@ -31,21 +31,33 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
+  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' = 'success';
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onerror: ((e: unknown) => void) | null = null;
 
   postMessage(data: { id: string; type: string }) {
-    if (!this.onmessage) return;
-
     setTimeout(() => {
       // INIT handshake
       if (data.type === 'INIT') {
-        this.onmessage!({ data: { type: 'SUCCESS', id: data.id } });
+        if (MockWorker.mode === 'initError') {
+          this.onmessage?.({ data: { type: 'ERROR', id: data.id, error: 'init failed' } });
+          return;
+        }
+        this.onmessage?.({ data: { type: 'SUCCESS', id: data.id } });
+        return;
+      }
+
+      if (MockWorker.mode === 'crashOnExecute') {
+        this.onerror?.({ message: 'worker crashed' });
+        return;
+      }
+
+      if (MockWorker.mode === 'noResponse') {
         return;
       }
 
       // Simulate execute success response
-      this.onmessage!({
+      this.onmessage?.({
         data: {
           type: 'SUCCESS',
           id: data.id,
@@ -65,6 +77,8 @@ describe('Geometry Engine', () => {
   beforeEach(() => {
     // Reset singleton if possible, or just terminate existing
     GeometryEngine.getInstance().terminate();
+    MockWorker.mode = 'success';
+    vi.useRealTimers();
   });
 
   it('should maintain a singleton instance', () => {
@@ -110,5 +124,27 @@ describe('Geometry Engine', () => {
     `;
     const results = await executeCode(code);
     expect(results.geometries).toHaveLength(1);
+  });
+
+  it('should reject initialize when worker init fails', async () => {
+    MockWorker.mode = 'initError';
+    await expect(GeometryEngine.getInstance().initialize()).rejects.toThrow('init failed');
+  });
+
+  it('should reject pending requests when worker crashes', async () => {
+    MockWorker.mode = 'crashOnExecute';
+    const code = 'return replicad.makeBox(1, 1, 1);';
+    await expect(executeCode(code)).rejects.toThrow('Geometry worker crashed.');
+  });
+
+  it('should timeout worker requests without response', async () => {
+    vi.useFakeTimers();
+    MockWorker.mode = 'noResponse';
+    const code = 'return replicad.makeBox(1, 1, 1);';
+
+    const pending = executeCode(code);
+    const assertion = expect(pending).rejects.toThrow('Worker request timed out (EXECUTE)');
+    await vi.advanceTimersByTimeAsync(31_000);
+    await assertion;
   });
 });

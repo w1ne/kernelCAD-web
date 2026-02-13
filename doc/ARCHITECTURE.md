@@ -164,6 +164,34 @@ This "Construction Plane" entity acts as a stable anchor that persists even if t
 -   **WASM Asset**: The `opencascade.wasm` file is large (~10MB) and must be served correctly with the correct MIME type. We serve it statically from `public/`.
 -   **Three.js Compatibility**: Three.js is strict about TypedArrays. All mesh data crossing the boundary from Replicad (which might output plain arrays) must be cast to `Float32Array` or `Uint32Array`.
 
+## Determinism Contract (Target)
+
+To make the architecture reliable under async and failure conditions, core subsystems should follow this contract:
+
+1. **Latest-intent-wins execution**
+   - Every execution request carries a monotonic revision.
+   - UI state only accepts the latest revision response.
+   - Preview and committed execution channels do not share revision state.
+
+2. **Bounded worker failure behavior**
+   - Worker init/execute/export requests are time-bounded.
+   - Worker crash/protocol failure rejects all pending requests.
+   - Engine transitions to explicit error state, never silent deadlock.
+
+3. **Single mutation commit boundary**
+   - Modeling code writes pass through one transactional mutation service.
+   - Each mutation follows: transform -> validate -> commit -> emit metadata.
+   - Direct non-transactional writes are disallowed for modeling operations.
+
+4. **Stable identity for derived artifacts**
+   - Sketch/geometry metadata uses deterministic IDs (not wall-clock timestamps).
+   - Same code and dependencies produce stable identity across reruns.
+
+5. **Strict persistence contract**
+   - Saved project payloads are schema-validated.
+   - Version upgrades use explicit migrations.
+   - Invalid/unsupported payloads fail fast at load boundaries.
+
 ## Tech Stack
 -   **UI**: React, Tailwind CSS
 -   **Build**: Vite

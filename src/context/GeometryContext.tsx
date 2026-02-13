@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect, useRef, type ReactNode } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 import { remapSketchNames } from '../lib/sketchNaming';
 import { parseCode } from '../lib/ast';
@@ -39,6 +39,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [isReady, setIsReady] = useState(false);
     const [isComputing, setIsComputing] = useState(false);
     const [executionCount, setExecutionCount] = useState(0);
+    const mainRevisionRef = useRef(0);
+    const previewRevisionRef = useRef(0);
 
     // Get singleton instance
     const engine = GeometryEngine.getInstance();
@@ -64,9 +66,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         if (!isReady) return;
 
         const run = async () => {
+            const revision = ++mainRevisionRef.current;
             try {
                 parseCode(code);
             } catch (err) {
+                if (revision !== mainRevisionRef.current) return;
                 const message = err instanceof Error ? err.message : String(err);
                 setError(message);
                 return;
@@ -74,11 +78,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             setIsComputing(true);
             try {
                 const result = await engine.executeCode(code);
+                if (revision !== mainRevisionRef.current) return;
                 setGeometries(result.geometries);
                 const remappedSketches = remapSketchNames(result.sketches, code);
                 setSketchesGeometries(remappedSketches);
                 setError(null);
             } catch (err: unknown) {
+                if (revision !== mainRevisionRef.current) return;
                 console.error(err);
                 let message = "Unknown error";
                 if (err instanceof Error) {
@@ -94,8 +100,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 }
                 setError(message);
             } finally {
-                setIsComputing(false);
-                setExecutionCount(prev => prev + 1);
+                if (revision === mainRevisionRef.current) {
+                    setIsComputing(false);
+                    setExecutionCount(prev => prev + 1);
+                }
             }
         };
 
@@ -111,6 +119,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         }
 
         const runPreview = async () => {
+            const revision = ++previewRevisionRef.current;
             try {
                 parseCode(code);
                 parseCode(`${code}\n${previewCode}`);
@@ -118,8 +127,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 // Or just run the preview code if it's independent
                 // For live modeling, it's usually current code + the new operation
                 const result = await engine.executeCode(`${code}\n${previewCode}`);
+                if (revision !== previewRevisionRef.current) return;
                 setPreviewGeometries(result.geometries);
             } catch (err) {
+                if (revision !== previewRevisionRef.current) return;
                 // Silently ignore preview errors to avoid flickering red screens
                 console.warn('Live Preview Error:', err);
             }
