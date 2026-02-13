@@ -45,12 +45,12 @@ vi.mock('../../features/ai/AIAssistant', () => ({
 }));
 
 describe('SidePanel', () => {
-    it('clears selected and hovered item when deleting currently selected history item', () => {
+    it('deletes the selected history item and does not clear legacy name-based selection state', () => {
         const { getByTestId } = render(<SidePanel onJumpToLine={vi.fn()} />);
         getByTestId('trigger-delete').click();
 
         expect(mockDeleteHistoryItem).toHaveBeenCalledTimes(1);
-        expect(mockSetSelectedItemId).toHaveBeenCalledWith(null);
-        expect(mockSetHoveredItemId).toHaveBeenCalledWith(null);
+        expect(mockSetSelectedItemId).not.toHaveBeenCalled();
+        expect(mockSetHoveredItemId).not.toHaveBeenCalled();
     });
 });

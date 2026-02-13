@@ -31,20 +31,10 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
     const items = extractHistoryItems(code);
-    const selectedHistoryId = selectedItemId
-        ? (items.find((item) => item.id === selectedItemId)?.id
-            ?? items.find((item) => item.name === selectedItemId)?.id
-            ?? selectedItemId)
-        : null;
-    const hoveredHistoryId = hoveredItemId
-        ? (items.find((item) => item.id === hoveredItemId)?.id
-            ?? items.find((item) => item.name === hoveredItemId)?.id
-            ?? hoveredItemId)
-        : null;
-    const selectedHistoryIds = selectedItemIds
-        .map((id) => items.find((item) => item.id === id)?.id
-            ?? items.find((item) => item.name === id)?.id
-            ?? id);
+    const historyIds = new Set(items.map((item) => item.id));
+    const selectedHistoryId = selectedItemId && historyIds.has(selectedItemId) ? selectedItemId : null;
+    const hoveredHistoryId = hoveredItemId && historyIds.has(hoveredItemId) ? hoveredItemId : null;
+    const selectedHistoryIds = selectedItemIds.filter((id) => historyIds.has(id));
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
@@ -85,8 +75,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                                 setHoveredItemId(null);
                                 return;
                             }
-                            const item = items.find((entry) => entry.id === id);
-                            setHoveredItemId(item?.name ?? id);
+                            setHoveredItemId(id);
                         }}
                         onToggleVisibility={toggleVisibility}
                         onTogglePlane={togglePlaneVisibility}
