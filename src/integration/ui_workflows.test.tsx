@@ -133,8 +133,8 @@ export default function main() {
 }
 `.trim();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).setCode(initialCode);
+        expect(typeof window.setCode).toBe('function');
+        window.setCode?.(initialCode);
 
         expect(await screen.findByText('sketch')).toBeTruthy();
         fireEvent.click(screen.getByText('sketch'));

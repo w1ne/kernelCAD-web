@@ -60,6 +60,9 @@ export function WorkbenchLayout() {
         closePanel,
         selectedSketchName,
         setSelectedSketchName,
+        setSelectedItemId,
+        setHoveredItemId,
+        hoveredItemId,
         toggleSketchVisibility,
         activePanels,
         setViewMode,
@@ -106,10 +109,18 @@ export function WorkbenchLayout() {
             w.__TEST_SELECT_SKETCH = (name: string | null) => {
                 setSelectedSketchName(name);
             };
+            w.__TEST_SELECT_ITEM = (id: string | null) => {
+                setSelectedItemId(id);
+            };
+            w.__TEST_SET_HOVERED = (id: string | null) => {
+                setHoveredItemId(id);
+            };
+            w.getHoveredItemId = () => hoveredItemId;
+            w.selectedItemId = () => selectedItemId;
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {
