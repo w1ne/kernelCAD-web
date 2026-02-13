@@ -13,6 +13,8 @@ describe('SafeSketcher', () => {
         const sketcher = new safeReplicad.Sketcher("plane");
         expect(sketcher).toBeInstanceOf(SafeSketcher);
     });
+
+
     it('should delegate basic commands to the underlying sketcher', () => {
         const mockSketcher = {
             movePointerTo: vi.fn().mockReturnThis(),
