@@ -158,6 +158,9 @@ export default function main() {
             expect(typeof window.__TEST_SET_HOVERED).toBe('function');
             expect(typeof window.selectedItemId).toBe('function');
             expect(typeof window.getHoveredItemId).toBe('function');
+            expect(typeof window.getGeometryMetrics).toBe('function');
+            expect(typeof window.getEngineDiagnostics).toBe('function');
+            expect(typeof window.resetEngineDiagnostics).toBe('function');
         });
 
         const historyId = 'box:1:1:10';
@@ -166,6 +169,10 @@ export default function main() {
 
         window.__TEST_SET_HOVERED?.(historyId);
         expect(window.getHoveredItemId?.()).toBe(historyId);
+        expect(window.getGeometryMetrics?.()).toEqual({
+            staleMainResponsesDropped: 0,
+            stalePreviewResponsesDropped: 0,
+        });
     });
 
     it('should recover after reload and delete an autosaved sketch without syntax errors', async () => {
