@@ -31,13 +31,15 @@ vi.mock('../lib/geometryEngine', () => ({
 }));
 
 function Probe() {
-  const { geometries, executionCount, isComputing } = useGeometry();
+  const { geometries, executionCount, isComputing, staleMainResponsesDropped, stalePreviewResponsesDropped } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
   return (
     <div>
       <span data-testid="face-count">{String(faceCount)}</span>
       <span data-testid="execution-count">{String(executionCount)}</span>
       <span data-testid="is-computing">{String(isComputing)}</span>
+      <span data-testid="stale-main">{String(staleMainResponsesDropped)}</span>
+      <span data-testid="stale-preview">{String(stalePreviewResponsesDropped)}</span>
     </div>
   );
 }
@@ -103,5 +105,6 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('face-count').textContent).toBe('2');
     expect(screen.getByTestId('execution-count').textContent).toBe('1');
     expect(screen.getByTestId('is-computing').textContent).toBe('false');
+    expect(screen.getByTestId('stale-main').textContent).toBe('1');
   });
 });

@@ -15,6 +15,7 @@ import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { Loader2 } from 'lucide-react';
 import { extractHistoryItems, extractVariables } from '../../lib/codeAnalysis';
+import { GeometryEngine } from '../../lib/geometryEngine';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
@@ -71,6 +72,8 @@ export function WorkbenchLayout() {
         clearAll,
         isComputing,
         executionCount,
+        staleMainResponsesDropped,
+        stalePreviewResponsesDropped,
         setSelectedFace,
         startFaceSelection
     } = useWorkbench();
@@ -101,6 +104,12 @@ export function WorkbenchLayout() {
             w.isComputing = () => isComputing;
             w.getExecutionCount = () => executionCount;
             w.getError = () => error;
+            w.getGeometryMetrics = () => ({
+                staleMainResponsesDropped,
+                stalePreviewResponsesDropped,
+            });
+            w.getEngineDiagnostics = () => GeometryEngine.getInstance().getDiagnostics();
+            w.resetEngineDiagnostics = () => GeometryEngine.getInstance().resetDiagnostics();
 
             // Face selection
             w.startFaceSelection = () => {
@@ -121,7 +130,7 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {

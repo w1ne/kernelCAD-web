@@ -192,6 +192,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
   - add request timeout guard
 - Refs:
   - `src/lib/geometryEngine.ts`
+- Status: Completed (timeouts + init/crash/protocol rejection + diagnostics counters)
 
 #### P0.2 Stale async results must never overwrite latest state
 - Problem: Geometry results are applied without revision guard.
@@ -201,6 +202,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
   - keep preview and committed channels isolated
 - Refs:
   - `src/context/GeometryContext.tsx`
+- Status: Completed (latest-revision-wins + stale-drop counters)
 
 ### Priority P1
 
@@ -213,6 +215,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
 - Refs:
   - `src/context/CodeContext.tsx`
   - `src/hooks/useCodeInsertion.ts`
+- Status: Completed for modeling flows (`FeatureContext` now mutation-boundary-only)
 
 #### P1.2 Replace time-based IDs with deterministic IDs
 - Problem: IDs based on `Date.now()` break reproducibility.
@@ -222,6 +225,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
 - Refs:
   - `src/lib/worker.ts`
   - `src/context/CodeContext.tsx`
+- Status: Completed
 
 ### Priority P2
 
@@ -233,6 +237,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
   - reject unsupported versions with actionable error
 - Refs:
   - `src/lib/projectService.ts`
+- Status: Completed (strict schema + migration + version rejection)
 
 #### P2.2 Feature registry determinism
 - Problem: duplicate feature registration overwrites silently.
@@ -241,6 +246,7 @@ This backlog extends the refactor plan with concrete runtime determinism and fai
   - keep overwrite behavior test-only with explicit opt-in
 - Refs:
   - `src/features/FeatureRegistry.ts`
+- Status: Completed (fail-fast outside tests)
 
 ## Execution Order
 

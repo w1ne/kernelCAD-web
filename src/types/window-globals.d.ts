@@ -23,6 +23,17 @@ declare global {
     isComputing?: () => boolean;
     getExecutionCount?: () => number;
     getError?: () => string | null;
+    getGeometryMetrics?: () => { staleMainResponsesDropped: number; stalePreviewResponsesDropped: number };
+    getEngineDiagnostics?: () => {
+      initFailures: number;
+      workerCrashes: number;
+      protocolViolations: number;
+      requestTimeouts: number;
+      requestsSent: number;
+      requestsResolved: number;
+      requestsRejected: number;
+    };
+    resetEngineDiagnostics?: () => void;
     isEngineReady?: boolean;
 
     // Monaco is used in some Playwright suites

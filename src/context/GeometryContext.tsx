@@ -13,6 +13,8 @@ export interface GeometryContextType {
     isReady: boolean;
     isComputing: boolean;
     executionCount: number;
+    staleMainResponsesDropped: number;
+    stalePreviewResponsesDropped: number;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
     setPreviewCode: (code: string | null) => void;
@@ -39,6 +41,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [isReady, setIsReady] = useState(false);
     const [isComputing, setIsComputing] = useState(false);
     const [executionCount, setExecutionCount] = useState(0);
+    const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
+    const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
     const previewRevisionRef = useRef(0);
 
@@ -67,10 +71,15 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const run = async () => {
             const revision = ++mainRevisionRef.current;
+            let staleRecorded = false;
             try {
                 parseCode(code);
             } catch (err) {
-                if (revision !== mainRevisionRef.current) return;
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    staleRecorded = true;
+                    return;
+                }
                 const message = err instanceof Error ? err.message : String(err);
                 setError(message);
                 return;
@@ -78,13 +87,21 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             setIsComputing(true);
             try {
                 const result = await engine.executeCode(code);
-                if (revision !== mainRevisionRef.current) return;
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    staleRecorded = true;
+                    return;
+                }
                 setGeometries(result.geometries);
                 const remappedSketches = remapSketchNames(result.sketches, code);
                 setSketchesGeometries(remappedSketches);
                 setError(null);
             } catch (err: unknown) {
-                if (revision !== mainRevisionRef.current) return;
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    staleRecorded = true;
+                    return;
+                }
                 console.error(err);
                 let message = "Unknown error";
                 if (err instanceof Error) {
@@ -103,6 +120,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 if (revision === mainRevisionRef.current) {
                     setIsComputing(false);
                     setExecutionCount(prev => prev + 1);
+                } else if (!staleRecorded) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
                 }
             }
         };
@@ -127,10 +146,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 // Or just run the preview code if it's independent
                 // For live modeling, it's usually current code + the new operation
                 const result = await engine.executeCode(`${code}\n${previewCode}`);
-                if (revision !== previewRevisionRef.current) return;
+                if (revision !== previewRevisionRef.current) {
+                    setStalePreviewResponsesDropped((prev) => prev + 1);
+                    return;
+                }
                 setPreviewGeometries(result.geometries);
             } catch (err) {
-                if (revision !== previewRevisionRef.current) return;
+                if (revision !== previewRevisionRef.current) {
+                    setStalePreviewResponsesDropped((prev) => prev + 1);
+                    return;
+                }
                 // Silently ignore preview errors to avoid flickering red screens
                 console.warn('Live Preview Error:', err);
             }
@@ -173,9 +198,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         isReady,
         isComputing,
         executionCount,
+        staleMainResponsesDropped,
+        stalePreviewResponsesDropped,
         executeGeometry,
         setPreviewCode,
-    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, executeGeometry]);
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

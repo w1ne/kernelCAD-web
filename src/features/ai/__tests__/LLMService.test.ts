@@ -119,4 +119,19 @@ ${JSON.stringify(mockVariations)}
             { type: 'image_url', image_url: { url: 'data:image/png;base64,abc' } }
         ]));
     });
+
+    it('should reject generated code with forbidden patterns', async () => {
+        const mockResponse = {
+            ok: true,
+            json: async () => ({
+                choices: [{ message: { content: "const s = replicad.union(a, b); return s;" } }]
+            })
+        };
+        (global.fetch as any).mockResolvedValue(mockResponse);
+
+        const result = await llmService.sendMessage([{ role: 'user', content: 'test' }]);
+
+        expect(result).toContain('Generation Rejected');
+        expect(result).toContain('replicad.union is not supported');
+    });
 });

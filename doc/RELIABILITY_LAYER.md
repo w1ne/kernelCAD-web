@@ -100,29 +100,29 @@ Refs:
 ## Hardening Plan (Phased)
 
 ### Phase 0: Failure Safety (Do First)
-- [ ] Reject `initPromise` on `INIT` error response.
-- [ ] Reject all pending worker requests on `onerror`/protocol violation/terminate.
-- [ ] Add per-request timeout (fail fast, surface explicit timeout error).
-- [ ] Add structured error kinds (`init_failed`, `worker_crashed`, `protocol_violation`, `timeout`).
+- [x] Reject `initPromise` on `INIT` error response.
+- [x] Reject all pending worker requests on `onerror`/protocol violation/terminate.
+- [x] Add per-request timeout (fail fast, surface explicit timeout error).
+- [x] Add structured diagnostics counters for failure modes (`initFailures`, `workerCrashes`, `protocolViolations`, `requestTimeouts`).
 
 ### Phase 1: Deterministic Execution Contract
-- [ ] Add monotonically increasing `requestRevision` in `GeometryContext`.
-- [ ] Apply response only if `response.revision === latestRevision`.
+- [x] Add monotonically increasing `requestRevision` in `GeometryContext`.
+- [x] Apply response only if `response.revision === latestRevision`.
 - [ ] Split preview execution channel from committed execution channel (independent revision streams).
-- [ ] Remove timestamp-based IDs from worker payload; replace with deterministic IDs.
+- [x] Remove timestamp-based IDs from worker payload; replace with deterministic IDs.
 
 ### Phase 2: Transactional Code Mutation
-- [ ] Introduce `CodeMutationService` as the only commit gateway.
-- [ ] Route insert/delete/rename through AST transform + parse validation + commit.
+- [x] Introduce `CodeMutationService` as the only commit gateway.
+- [x] Route insert/delete/rename through AST transform + parse validation + commit.
 - [ ] Keep fallback heuristic path behind explicit feature flag and log every fallback.
 
 ### Phase 3: Persistence Contract
-- [ ] Define `zod` schema for `.kcad` payload.
-- [ ] Validate all fields strictly (no partial acceptance).
-- [ ] Add migration pipeline (`v1 -> v2 -> ...`) and reject unsupported versions.
+- [x] Define `zod` schema for `.kcad` payload.
+- [x] Validate all fields strictly (no partial acceptance).
+- [x] Add migration pipeline (`v1 -> v2 -> ...`) and reject unsupported versions.
 
 ### Phase 4: Observability and Burn-In
-- [ ] Add counters for stale response drops, mutation fallback usage, worker restarts, and timeout errors.
+- [~] Add counters for stale response drops and engine failure/timeout diagnostics.
 - [ ] Add regression tests for each failure mode.
 
 ## Determinism Invariants

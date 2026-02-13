@@ -1,5 +1,4 @@
 
-
 export interface ChatMessage {
     role: 'user' | 'model';
     content: string;
@@ -29,6 +28,13 @@ Here is the code for a box:
 const box = replicad.makeBox(10, 10, 10);
 return box;
 \`\`\`
+
+API GUIDELINES:
+- Replicad uses an Object-Oriented style for boolean operations.
+- DO NOT use imaginary functional APIs like \`replicad.union\`, \`replicad.cut\`, or \`replicad.intersect\`.
+- CORRECT: \`shape1.fuse(shape2)\` (Union)
+- CORRECT: \`shape1.cut(tool)\` (Difference)
+- CORRECT: \`shape1.intersect(other)\` (Intersection)
 `;
 
 export class LLMService {
@@ -50,6 +56,22 @@ export class LLMService {
 
     getApiKey(): string | null {
         return this.apiKey;
+    }
+
+    validateCode(code: string): string[] {
+        const errors: string[] = [];
+        const forbidden = [
+            { pattern: /replicad\.union\(/, message: "replicad.union is not supported. Use shape.fuse(other) instead." },
+            { pattern: /replicad\.cut\(/, message: "replicad.cut is not supported. Use shape.cut(tool) instead." },
+            { pattern: /replicad\.intersect\(/, message: "replicad.intersect is not supported. Use shape.intersect(other) instead." },
+        ];
+
+        for (const rule of forbidden) {
+            if (rule.pattern.test(code)) {
+                errors.push(rule.message);
+            }
+        }
+        return errors;
     }
 
     async sendMessage(history: ChatMessage[], context?: { code?: string; selectedId?: string; style?: string; image?: string }): Promise<string> {
@@ -156,6 +178,12 @@ export class LLMService {
 
             if (!text) {
                 throw new Error("No response content from LLM.");
+            }
+
+            // Validate the generated code
+            const validationErrors = this.validateCode(text);
+            if (validationErrors.length > 0) {
+                return `**Generation Rejected**: The AI generated code that uses unsupported APIs.\n\nIssues Found:\n` + validationErrors.map(e => `- ${e}`).join('\n');
             }
 
             return text;
