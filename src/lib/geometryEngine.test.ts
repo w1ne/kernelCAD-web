@@ -77,6 +77,7 @@ describe('Geometry Engine', () => {
   beforeEach(() => {
     // Reset singleton if possible, or just terminate existing
     GeometryEngine.getInstance().terminate();
+    GeometryEngine.getInstance().resetDiagnostics();
     MockWorker.mode = 'success';
     vi.useRealTimers();
   });
@@ -128,23 +129,32 @@ describe('Geometry Engine', () => {
 
   it('should reject initialize when worker init fails', async () => {
     MockWorker.mode = 'initError';
-    await expect(GeometryEngine.getInstance().initialize()).rejects.toThrow('init failed');
+    const engine = GeometryEngine.getInstance();
+    await expect(engine.initialize()).rejects.toThrow('init failed');
+    expect(engine.getDiagnostics().initFailures).toBe(1);
   });
 
   it('should reject pending requests when worker crashes', async () => {
     MockWorker.mode = 'crashOnExecute';
     const code = 'return replicad.makeBox(1, 1, 1);';
+    const engine = GeometryEngine.getInstance();
     await expect(executeCode(code)).rejects.toThrow('Geometry worker crashed.');
+    expect(engine.getDiagnostics().workerCrashes).toBe(1);
+    expect(engine.getDiagnostics().requestsRejected).toBeGreaterThanOrEqual(1);
   });
 
   it('should timeout worker requests without response', async () => {
     vi.useFakeTimers();
     MockWorker.mode = 'noResponse';
     const code = 'return replicad.makeBox(1, 1, 1);';
+    const engine = GeometryEngine.getInstance();
 
     const pending = executeCode(code);
     const assertion = expect(pending).rejects.toThrow('Worker request timed out (EXECUTE)');
     await vi.advanceTimersByTimeAsync(31_000);
     await assertion;
+    const diagnostics = engine.getDiagnostics();
+    expect(diagnostics.requestTimeouts).toBe(1);
+    expect(diagnostics.requestsRejected).toBeGreaterThanOrEqual(1);
   });
 });

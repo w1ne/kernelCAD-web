@@ -30,4 +30,15 @@ describe('FeatureRegistry', () => {
         const all = featureRegistry.getAll();
         expect(all).toContain(mockFeature);
     });
+
+    it('should allow overwrite in test runtime', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+        const next = { ...mockFeature, label: 'Test 2' };
+        featureRegistry.register(mockFeature);
+        featureRegistry.register(next);
+
+        expect(featureRegistry.get('test-feat')?.label).toBe('Test 2');
+        expect(warnSpy).toHaveBeenCalled();
+        warnSpy.mockRestore();
+    });
 });

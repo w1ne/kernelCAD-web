@@ -2,11 +2,22 @@ import { type Feature } from './types';
 
 class FeatureRegistry {
     private features: Map<string, Feature> = new Map();
+    private isTestRuntime(): boolean {
+        const viteMode = (import.meta as unknown as { env?: { MODE?: string } }).env?.MODE;
+        if (viteMode === 'test') return true;
+        const maybeProcess = (globalThis as unknown as { process?: { env?: { VITEST?: string } } }).process;
+        if (maybeProcess?.env?.VITEST) return true;
+        return false;
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     register(feature: Feature<any>) {
         if (this.features.has(feature.id)) {
-            console.warn(`Feature ${feature.id} already registered. Overwriting.`);
+            if (this.isTestRuntime()) {
+                console.warn(`Feature ${feature.id} already registered in test runtime. Overwriting.`);
+            } else {
+                throw new Error(`Feature "${feature.id}" is already registered.`);
+            }
         }
         this.features.set(feature.id, feature);
     }

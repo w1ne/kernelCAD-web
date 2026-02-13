@@ -29,6 +29,16 @@ type PendingMessage = {
     timeoutId: ReturnType<typeof setTimeout>;
 };
 
+export interface GeometryEngineDiagnostics {
+    initFailures: number;
+    workerCrashes: number;
+    protocolViolations: number;
+    requestTimeouts: number;
+    requestsSent: number;
+    requestsResolved: number;
+    requestsRejected: number;
+}
+
 export class GeometryEngine {
     private worker: Worker | null = null;
     private pendingMessages = new Map<string, PendingMessage>();
@@ -37,6 +47,15 @@ export class GeometryEngine {
     private initPromise: Promise<void> | null = null;
     private initResolve: (() => void) | null = null;
     private initReject: ((err: unknown) => void) | null = null;
+    private diagnostics: GeometryEngineDiagnostics = {
+        initFailures: 0,
+        workerCrashes: 0,
+        protocolViolations: 0,
+        requestTimeouts: 0,
+        requestsSent: 0,
+        requestsResolved: 0,
+        requestsRejected: 0,
+    };
 
     private static readonly INIT_TIMEOUT_MS = 20000;
     private static readonly REQUEST_TIMEOUT_MS = 30000;
@@ -106,6 +125,22 @@ export class GeometryEngine {
         this.isInitialized = false;
     }
 
+    public getDiagnostics(): Readonly<GeometryEngineDiagnostics> {
+        return { ...this.diagnostics };
+    }
+
+    public resetDiagnostics(): void {
+        this.diagnostics = {
+            initFailures: 0,
+            workerCrashes: 0,
+            protocolViolations: 0,
+            requestTimeouts: 0,
+            requestsSent: 0,
+            requestsResolved: 0,
+            requestsRejected: 0,
+        };
+    }
+
     private resetInitializationState(): void {
         this.initPromise = null;
         this.initResolve = null;
@@ -114,6 +149,7 @@ export class GeometryEngine {
 
     private failInitialization(err: Error): void {
         if (this.initReject) {
+            this.diagnostics.initFailures += 1;
             this.initReject(err);
         }
         this.resetInitializationState();
@@ -134,6 +170,7 @@ export class GeometryEngine {
         for (const [, pending] of this.pendingMessages) {
             clearTimeout(pending.timeoutId);
             pending.reject(err);
+            this.diagnostics.requestsRejected += 1;
         }
         this.pendingMessages.clear();
     }
@@ -162,13 +199,16 @@ export class GeometryEngine {
                 clearTimeout(pending.timeoutId);
                 if (isSuccessResponse(response)) {
                     pending.resolve(response.geometries || response.blob);
+                    this.diagnostics.requestsResolved += 1;
                 } else {
                     pending.reject(new Error(response.error));
+                    this.diagnostics.requestsRejected += 1;
                 }
                 this.pendingMessages.delete(id);
             }
         } catch (err) {
             console.error("Worker Protocol Violation:", err);
+            this.diagnostics.protocolViolations += 1;
             this.terminate('Worker protocol violation.');
         }
     }
@@ -178,6 +218,7 @@ export class GeometryEngine {
      */
     private handleError(error: ErrorEvent): void {
         console.error("Geometry Worker Error:", error);
+        this.diagnostics.workerCrashes += 1;
         this.terminate('Geometry worker crashed.');
     }
 
@@ -188,8 +229,11 @@ export class GeometryEngine {
         await this.initialize();
         return new Promise<T>((resolve, reject) => {
             const id = message.id;
+            this.diagnostics.requestsSent += 1;
             const timeoutId = setTimeout(() => {
                 this.pendingMessages.delete(id);
+                this.diagnostics.requestTimeouts += 1;
+                this.diagnostics.requestsRejected += 1;
                 reject(new Error(`Worker request timed out (${message.type})`));
             }, GeometryEngine.REQUEST_TIMEOUT_MS);
             this.pendingMessages.set(id, {
