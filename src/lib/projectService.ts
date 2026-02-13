@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface KernelCADProject {
     version: string;
     name: string;
@@ -13,10 +15,76 @@ export interface ViewState {
     showSketches: boolean;
 }
 
+const CURRENT_PROJECT_VERSION = '1.1';
+
+const ViewModeSchema = z.enum(['code', 'gui']);
+
+const ViewStateSchema = z.object({
+    viewMode: ViewModeSchema,
+    viewMode3D: z.string().min(1),
+    sidePanelVisible: z.boolean(),
+    showSketches: z.boolean(),
+});
+
+const ProjectSchema = z.object({
+    version: z.literal(CURRENT_PROJECT_VERSION),
+    name: z.string().min(1),
+    code: z.string(),
+    viewState: ViewStateSchema,
+    lastUpdated: z.string().datetime(),
+});
+
+const LegacyProjectSchemaV10 = z.object({
+    version: z.literal('1.0').optional(),
+    name: z.string().optional(),
+    code: z.string(),
+    viewState: z.object({
+        viewMode: ViewModeSchema.optional(),
+        viewMode3D: z.string().optional(),
+        sidePanelVisible: z.boolean().optional(),
+        showSketches: z.boolean().optional(),
+    }).optional(),
+    lastUpdated: z.string().optional(),
+});
+
+function migrateLegacyProject(input: unknown): KernelCADProject {
+    const legacy = LegacyProjectSchemaV10.parse(input);
+    const viewState = legacy.viewState ?? {};
+    return {
+        version: CURRENT_PROJECT_VERSION,
+        name: legacy.name?.trim() ? legacy.name : 'Untitled',
+        code: legacy.code,
+        viewState: {
+            viewMode: viewState.viewMode ?? 'code',
+            viewMode3D: viewState.viewMode3D ?? 'shadedWithEdges',
+            sidePanelVisible: viewState.sidePanelVisible ?? true,
+            showSketches: viewState.showSketches ?? true,
+        },
+        lastUpdated: legacy.lastUpdated && !Number.isNaN(Date.parse(legacy.lastUpdated))
+            ? legacy.lastUpdated
+            : new Date().toISOString(),
+    };
+}
+
+function parseProjectWithMigration(project: unknown): KernelCADProject {
+    const strictParsed = ProjectSchema.safeParse(project);
+    if (strictParsed.success) return strictParsed.data;
+
+    const maybe = project as { version?: unknown } | null;
+    if (maybe && typeof maybe === 'object' && 'version' in maybe) {
+        const version = maybe.version;
+        if (version !== undefined && version !== '1.0' && version !== CURRENT_PROJECT_VERSION) {
+            throw new Error(`Unsupported project version: ${String(version)}`);
+        }
+    }
+
+    return migrateLegacyProject(project);
+}
+
 export const projectService = {
     createProject(code: string, viewState: ViewState, name: string = 'Untitled'): KernelCADProject {
         return {
-            version: '1.0',
+            version: CURRENT_PROJECT_VERSION,
             name,
             code,
             viewState,
@@ -48,14 +116,16 @@ export const projectService = {
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const project = JSON.parse(e.target?.result as string);
-                    if (this.validateProject(project)) {
-                        resolve(project);
+                    const raw = JSON.parse(e.target?.result as string);
+                    const project = parseProjectWithMigration(raw);
+                    resolve(project);
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    if (message.startsWith('Unsupported project version:')) {
+                        reject(new Error(message));
                     } else {
-                        reject(new Error('Invalid project file format'));
+                        reject(new Error('Failed to parse project file'));
                     }
-                } catch {
-                    reject(new Error('Failed to parse project file'));
                 }
             };
             reader.onerror = () => reject(new Error('Failed to read file'));
@@ -64,12 +134,12 @@ export const projectService = {
     },
 
     validateProject(project: unknown): project is KernelCADProject {
-        const p = project as Record<string, unknown>;
-        if (!p || typeof p.version !== 'string' || typeof p.code !== 'string' || !p.viewState || typeof p.viewState !== 'object') {
+        try {
+            parseProjectWithMigration(project);
+            return true;
+        } catch {
             return false;
         }
-        const vs = p.viewState as Record<string, unknown>;
-        return typeof vs.viewMode === 'string';
     },
 
     persistToLocalStorage(project: KernelCADProject) {
@@ -80,8 +150,12 @@ export const projectService = {
         const data = localStorage.getItem('kernelcad_current_project');
         if (!data) return null;
         try {
-            const project = JSON.parse(data);
-            return this.validateProject(project) ? project : null;
+            const raw = JSON.parse(data);
+            const migrated = parseProjectWithMigration(raw);
+            if (migrated.version !== (raw as { version?: unknown })?.version) {
+                this.persistToLocalStorage(migrated);
+            }
+            return migrated;
         } catch {
             return null;
         }
