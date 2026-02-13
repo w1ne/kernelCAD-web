@@ -157,7 +157,6 @@ export function WorkbenchLayout() {
                     if (activeDialog) return;
                     f.execute({
                         insertCode,
-                        setCode,
                         mutateCode,
                         code,
                         setActiveDialog,
@@ -169,7 +168,7 @@ export function WorkbenchLayout() {
             }
         });
         return shortcuts;
-    }, [features, activeDialog, insertCode, setCode, mutateCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
+    }, [features, activeDialog, insertCode, mutateCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
 
     const handleToolClick = React.useCallback((feature: Feature) => {
         if (activeDialog) return;
@@ -190,7 +189,6 @@ export function WorkbenchLayout() {
             } else {
                 feature.execute({
                     insertCode,
-                    setCode,
                     mutateCode,
                     setActiveDialog,
                     openPanel,
@@ -200,7 +198,7 @@ export function WorkbenchLayout() {
                 }, undefined);
             }
         }
-    }, [openPanel, setActiveDialog, insertCode, setCode, mutateCode, closePanel, code, codeContext, activeDialog]);
+    }, [openPanel, setActiveDialog, insertCode, mutateCode, closePanel, code, codeContext, activeDialog]);
 
     // Use a ref for handleToolClick to avoid re-registering commands when it changes due to code updates
     const handleToolClickRef = React.useRef(handleToolClick);
@@ -362,7 +360,6 @@ export function WorkbenchLayout() {
         if (activeFeature) {
             activeFeature.execute({
                 insertCode,
-                setCode,
                 mutateCode,
                 setActiveDialog,
                 openPanel,
