@@ -191,4 +191,19 @@ describe('Geometry Engine', () => {
     const secondNum = Number(second?.replace('req_', ''));
     expect(secondNum).toBeGreaterThan(firstNum);
   });
+
+  it('should recover and process requests after a worker crash', async () => {
+    // 1. Crash the worker
+    MockWorker.mode = 'crashOnExecute';
+    await expect(executeCode('return 1;')).rejects.toThrow('Geometry worker crashed.');
+
+    // 2. Setup success for next run
+    MockWorker.mode = 'success';
+    const results = await executeCode('return replicad.makeBox(1,1,1);');
+
+    expect(results.geometries).toHaveLength(1);
+    expect(GeometryEngine.getInstance().getDiagnostics().workerCrashes).toBe(1);
+    // Verify it was a new worker or at least it works
+    expect(MockWorker.sentMessages.filter(m => m.type === 'INIT').length).toBeGreaterThanOrEqual(2);
+  });
 });

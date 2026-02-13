@@ -20,4 +20,17 @@ describe('remapSketchNames', () => {
     expect(remapped[1]?.name).toBe('sketchB');
     expect(remapped[2]?.name).toBe('sketchA');
   });
+
+  it('remains stable when code shifts (lines added before)', () => {
+    const codeBefore = `const s = startSketch().hLine(10).close(); return s;`;
+    const codeAfter = `\n// comment\nconst s = startSketch().hLine(10).close(); return s;`;
+
+    const sketches = [{ id: 'sketch-0-seq-0', name: 'sketch1', vertices: new Float32Array([0]) }];
+
+    const remap1 = remapSketchNames(sketches, codeBefore);
+    const remap2 = remapSketchNames(sketches, codeAfter);
+
+    expect(remap1[0]?.name).toBe('s');
+    expect(remap2[0]?.name).toBe('s');
+  });
 });

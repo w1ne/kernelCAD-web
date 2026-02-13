@@ -176,7 +176,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const timer = setTimeout(run, 600);
         return () => clearTimeout(timer);
-    }, [code, isReady, engine, executionCount, pushExecutionRecord]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [code, isReady, engine, pushExecutionRecord]);
 
     // Preview Execution Loop
     useEffect(() => {
