@@ -72,6 +72,9 @@ export function WorkbenchLayout() {
         clearAll,
         isComputing,
         executionCount,
+        currentCodeRevision,
+        lastSuccessfulRevision,
+        executionHistory,
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
         getMutationDiagnostics,
@@ -109,7 +112,11 @@ export function WorkbenchLayout() {
             w.getGeometryMetrics = () => ({
                 staleMainResponsesDropped,
                 stalePreviewResponsesDropped,
+                currentCodeRevision,
+                lastSuccessfulRevision,
+                executionHistoryLength: executionHistory.length,
             });
+            w.getExecutionHistory = () => executionHistory;
             w.getEngineDiagnostics = () => GeometryEngine.getInstance().getDiagnostics();
             w.resetEngineDiagnostics = () => GeometryEngine.getInstance().resetDiagnostics();
             w.getMutationDiagnostics = () => getMutationDiagnostics();
@@ -134,7 +141,7 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {

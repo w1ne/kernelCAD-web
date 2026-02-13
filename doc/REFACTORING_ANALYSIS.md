@@ -175,6 +175,7 @@ Use the same validity policy for:
 - History operations use AST identity, not text heuristics.
 - No code corruption from delete in reload/autosave scenarios.
 - Sketch placement logic comes from one service and is reproducible.
+- Code revisions remain authoritative; model state is derived and only advances on successful execution.
 
 ---
 

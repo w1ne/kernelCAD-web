@@ -133,3 +133,22 @@ The system should satisfy these invariants:
 3. Every modeling mutation is either fully committed or fully rejected (no partial writes).
 4. Worker failures terminate in bounded time with explicit error states.
 5. Persisted project is either schema-valid/migrated or rejected at load time.
+
+## Code-First CAD Contract
+
+For kernelCAD, **code is the only source of truth** and geometry is a computed projection.
+
+### Rules
+
+1. A code edit creates a new code revision.
+2. The engine attempts to execute that revision.
+3. On success, the projected model updates to that revision.
+4. On failure, the previous successful model remains visible.
+5. Execution outcome is tracked per revision (`success`, `error`, `stale`) as metadata.
+
+### Consequences
+
+- No independent model timeline is authoritative.
+- Undo/redo operates on code revisions.
+- The UI can show "code is newer than model" when latest execution fails.
+- History can track both code revision and execution outcome without diverging ownership.

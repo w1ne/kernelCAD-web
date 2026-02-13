@@ -3,6 +3,15 @@ import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib
 import { remapSketchNames } from '../lib/sketchNaming';
 import { parseCode } from '../lib/ast';
 
+export type ExecutionStatus = 'success' | 'error' | 'stale';
+
+export interface ExecutionRecord {
+    revision: number;
+    status: ExecutionStatus;
+    error?: string;
+    executionCountAtRecord: number;
+}
+
 export interface GeometryContextType {
     geometries: GeometryResult[];
     previewGeometries: GeometryResult[];
@@ -13,6 +22,9 @@ export interface GeometryContextType {
     isReady: boolean;
     isComputing: boolean;
     executionCount: number;
+    currentCodeRevision: number;
+    lastSuccessfulRevision: number | null;
+    executionHistory: ExecutionRecord[];
     staleMainResponsesDropped: number;
     stalePreviewResponsesDropped: number;
     // Execute code to update geometries
@@ -41,6 +53,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [isReady, setIsReady] = useState(false);
     const [isComputing, setIsComputing] = useState(false);
     const [executionCount, setExecutionCount] = useState(0);
+    const [currentCodeRevision, setCurrentCodeRevision] = useState(0);
+    const [lastSuccessfulRevision, setLastSuccessfulRevision] = useState<number | null>(null);
+    const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>([]);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
@@ -51,6 +66,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const toggleSketchVisibility = useCallback(() => {
         setShowSketches(prev => !prev);
+    }, []);
+
+    const pushExecutionRecord = useCallback((record: ExecutionRecord) => {
+        setExecutionHistory((prev) => {
+            const next = [...prev, record];
+            // Keep bounded history for long sessions.
+            return next.length > 200 ? next.slice(next.length - 200) : next;
+        });
     }, []);
 
     useEffect(() => {
@@ -71,6 +94,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const run = async () => {
             const revision = ++mainRevisionRef.current;
+            setCurrentCodeRevision(revision);
             let staleRecorded = false;
             try {
                 parseCode(code);
@@ -82,6 +106,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 }
                 const message = err instanceof Error ? err.message : String(err);
                 setError(message);
+                pushExecutionRecord({
+                    revision,
+                    status: 'error',
+                    error: message,
+                    executionCountAtRecord: executionCount + 1,
+                });
                 return;
             }
             setIsComputing(true);
@@ -96,6 +126,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 const remappedSketches = remapSketchNames(result.sketches, code);
                 setSketchesGeometries(remappedSketches);
                 setError(null);
+                setLastSuccessfulRevision(revision);
+                pushExecutionRecord({
+                    revision,
+                    status: 'success',
+                    executionCountAtRecord: executionCount + 1,
+                });
             } catch (err: unknown) {
                 if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
@@ -116,19 +152,31 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     message = String(err);
                 }
                 setError(message);
+                // Preserve last successful geometry; only track failed execution metadata.
+                pushExecutionRecord({
+                    revision,
+                    status: 'error',
+                    error: message,
+                    executionCountAtRecord: executionCount + 1,
+                });
             } finally {
                 if (revision === mainRevisionRef.current) {
                     setIsComputing(false);
                     setExecutionCount(prev => prev + 1);
                 } else if (!staleRecorded) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'stale',
+                        executionCountAtRecord: executionCount + 1,
+                    });
                 }
             }
         };
 
         const timer = setTimeout(run, 600);
         return () => clearTimeout(timer);
-    }, [code, isReady, engine]);
+    }, [code, isReady, engine, executionCount, pushExecutionRecord]);
 
     // Preview Execution Loop
     useEffect(() => {
@@ -167,26 +215,68 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
+        const revision = ++mainRevisionRef.current;
+        setCurrentCodeRevision(revision);
         try {
             parseCode(codeToExecute);
         } catch (err) {
-            setError(err instanceof Error ? err.message : String(err));
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message);
+            pushExecutionRecord({
+                revision,
+                status: 'error',
+                error: message,
+                executionCountAtRecord: executionCount + 1,
+            });
             return;
         }
         setIsComputing(true);
         try {
             const result = await engine.executeCode(codeToExecute);
+            if (revision !== mainRevisionRef.current) {
+                setStaleMainResponsesDropped((prev) => prev + 1);
+                pushExecutionRecord({
+                    revision,
+                    status: 'stale',
+                    executionCountAtRecord: executionCount + 1,
+                });
+                return;
+            }
             setGeometries(result.geometries);
             const remappedSketches = remapSketchNames(result.sketches, codeToExecute);
             setSketchesGeometries(remappedSketches);
             setError(null);
+            setLastSuccessfulRevision(revision);
+            pushExecutionRecord({
+                revision,
+                status: 'success',
+                executionCountAtRecord: executionCount + 1,
+            });
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err));
+            if (revision !== mainRevisionRef.current) {
+                setStaleMainResponsesDropped((prev) => prev + 1);
+                pushExecutionRecord({
+                    revision,
+                    status: 'stale',
+                    executionCountAtRecord: executionCount + 1,
+                });
+                return;
+            }
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message);
+            pushExecutionRecord({
+                revision,
+                status: 'error',
+                error: message,
+                executionCountAtRecord: executionCount + 1,
+            });
         } finally {
-            setIsComputing(false);
-            setExecutionCount(prev => prev + 1);
+            if (revision === mainRevisionRef.current) {
+                setIsComputing(false);
+                setExecutionCount(prev => prev + 1);
+            }
         }
-    }, [engine, isReady]);
+    }, [engine, isReady, executionCount, pushExecutionRecord]);
 
     const value: GeometryContextType = useMemo(() => ({
         geometries,
@@ -198,11 +288,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         isReady,
         isComputing,
         executionCount,
+        currentCodeRevision,
+        lastSuccessfulRevision,
+        executionHistory,
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
         executeGeometry,
         setPreviewCode,
-    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

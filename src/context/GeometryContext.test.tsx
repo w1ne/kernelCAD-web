@@ -31,7 +31,16 @@ vi.mock('../lib/geometryEngine', () => ({
 }));
 
 function Probe() {
-  const { geometries, executionCount, isComputing, staleMainResponsesDropped, stalePreviewResponsesDropped } = useGeometry();
+  const {
+    geometries,
+    executionCount,
+    isComputing,
+    staleMainResponsesDropped,
+    stalePreviewResponsesDropped,
+    currentCodeRevision,
+    lastSuccessfulRevision,
+    executionHistory,
+  } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
   return (
     <div>
@@ -40,6 +49,9 @@ function Probe() {
       <span data-testid="is-computing">{String(isComputing)}</span>
       <span data-testid="stale-main">{String(staleMainResponsesDropped)}</span>
       <span data-testid="stale-preview">{String(stalePreviewResponsesDropped)}</span>
+      <span data-testid="current-rev">{String(currentCodeRevision)}</span>
+      <span data-testid="last-success-rev">{String(lastSuccessfulRevision)}</span>
+      <span data-testid="history-length">{String(executionHistory.length)}</span>
     </div>
   );
 }
@@ -106,5 +118,8 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('execution-count').textContent).toBe('1');
     expect(screen.getByTestId('is-computing').textContent).toBe('false');
     expect(screen.getByTestId('stale-main').textContent).toBe('1');
+    expect(Number(screen.getByTestId('current-rev').textContent)).toBeGreaterThanOrEqual(2);
+    expect(Number(screen.getByTestId('last-success-rev').textContent)).toBeGreaterThanOrEqual(1);
+    expect(Number(screen.getByTestId('history-length').textContent)).toBeGreaterThanOrEqual(1);
   });
 });

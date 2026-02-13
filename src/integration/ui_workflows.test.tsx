@@ -174,7 +174,11 @@ export default function main() {
         expect(window.getGeometryMetrics?.()).toEqual({
             staleMainResponsesDropped: 0,
             stalePreviewResponsesDropped: 0,
+            currentCodeRevision: 0,
+            lastSuccessfulRevision: null,
+            executionHistoryLength: 0,
         });
+        expect(window.getExecutionHistory?.()).toEqual([]);
         expect(window.getMutationDiagnostics?.()).toEqual({
             attempts: 0,
             succeeded: 0,

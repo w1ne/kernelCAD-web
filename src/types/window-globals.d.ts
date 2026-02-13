@@ -23,7 +23,19 @@ declare global {
     isComputing?: () => boolean;
     getExecutionCount?: () => number;
     getError?: () => string | null;
-    getGeometryMetrics?: () => { staleMainResponsesDropped: number; stalePreviewResponsesDropped: number };
+    getGeometryMetrics?: () => {
+      staleMainResponsesDropped: number;
+      stalePreviewResponsesDropped: number;
+      currentCodeRevision: number;
+      lastSuccessfulRevision: number | null;
+      executionHistoryLength: number;
+    };
+    getExecutionHistory?: () => Array<{
+      revision: number;
+      status: 'success' | 'error' | 'stale';
+      error?: string;
+      executionCountAtRecord: number;
+    }>;
     getEngineDiagnostics?: () => {
       initFailures: number;
       workerCrashes: number;
