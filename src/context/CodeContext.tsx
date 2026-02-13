@@ -65,7 +65,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
             return {
                 variables: [],
                 getVariableAtIndex: () => 'shape',
-                generateUniqueName: (prefix: string) => `${prefix}_${Date.now()}`
+                generateUniqueName: (prefix: string) => `${prefix}_fallback`
             } as unknown as CodeGenerationContext;
         }
     }, [code]);
