@@ -283,6 +283,11 @@ export function WorkbenchLayout() {
         'mod+2': () => {
             setViewMode('gui');
         }
+    }, {
+        shouldAllowInTypingTarget: ({ key }) => {
+            if (key !== 'delete' && key !== 'backspace') return false;
+            return Boolean(selectedItemId);
+        }
     });
 
 

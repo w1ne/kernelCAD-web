@@ -6,9 +6,13 @@ interface ShortcutConfig {
     [key: string]: KeyHandler;
 }
 
+interface ShortcutOptions {
+    shouldAllowInTypingTarget?: (ctx: { key: string; combo: string; event: KeyboardEvent }) => boolean;
+}
+
 function isTypingTarget(target: EventTarget | null): boolean {
-    const el = target as HTMLElement | null;
-    if (!el) return false;
+    if (!(target instanceof Element)) return false;
+    const el = target as HTMLElement;
     if (el.isContentEditable) return true;
     const tag = el.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
@@ -29,15 +33,16 @@ function normalizeKey(e: KeyboardEvent): string {
     return parts.join('+');
 }
 
-export function useKeyboardShortcuts(shortcuts: ShortcutConfig) {
+export function useKeyboardShortcuts(shortcuts: ShortcutConfig, options?: ShortcutOptions) {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.defaultPrevented) return;
             const key = e.key.toLowerCase();
             const combo = normalizeKey(e);
+            const allowInTypingTarget = options?.shouldAllowInTypingTarget?.({ key, combo, event: e }) ?? false;
 
             // Don't trigger shortcuts while typing in inputs/editor, but always allow Escape.
-            if (key !== 'escape' && (isTypingTarget(e.target) || isTypingTarget(document.activeElement))) return;
+            if (key !== 'escape' && !allowInTypingTarget && (isTypingTarget(e.target) || isTypingTarget(document.activeElement))) return;
 
             const handler = shortcuts[combo] ?? shortcuts[key];
             if (handler) {
@@ -54,5 +59,5 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig) {
         // Capture phase lets us consume app shortcuts before nested widgets.
         window.addEventListener('keydown', handleKeyDown, true);
         return () => window.removeEventListener('keydown', handleKeyDown, true);
-    }, [shortcuts]);
+    }, [shortcuts, options]);
 }
