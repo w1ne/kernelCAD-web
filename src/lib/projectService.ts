@@ -15,7 +15,15 @@ export interface ViewState {
     showSketches: boolean;
 }
 
+export interface ProjectMetadata {
+    id: string;
+    name: string;
+    lastUpdated: string;
+}
+
 const CURRENT_PROJECT_VERSION = '1.1';
+const INDEX_KEY = 'kernelcad_project_index';
+const LEGACY_STORAGE_KEY = 'kernelcad_current_project';
 
 const ViewModeSchema = z.enum(['code', 'gui']);
 
@@ -82,6 +90,10 @@ function parseProjectWithMigration(project: unknown): KernelCADProject {
 }
 
 export const projectService = {
+    generateId(): string {
+        return Math.random().toString(36).substring(2, 11);
+    },
+
     createProject(code: string, viewState: ViewState, name: string = 'Untitled'): KernelCADProject {
         return {
             version: CURRENT_PROJECT_VERSION,
@@ -90,6 +102,70 @@ export const projectService = {
             viewState,
             lastUpdated: new Date().toISOString(),
         };
+    },
+
+    listProjects(): ProjectMetadata[] {
+        const raw = localStorage.getItem(INDEX_KEY);
+        if (!raw) return [];
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return [];
+        }
+    },
+
+    getProject(id: string): KernelCADProject | null {
+        const data = localStorage.getItem(`kernelcad_project_${id}`);
+        if (!data) return null;
+        try {
+            const raw = JSON.parse(data);
+            return parseProjectWithMigration(raw);
+        } catch {
+            return null;
+        }
+    },
+
+    saveProject(id: string, project: KernelCADProject) {
+        const updatedProject = { ...project, lastUpdated: new Date().toISOString() };
+        localStorage.setItem(`kernelcad_project_${id}`, JSON.stringify(updatedProject));
+        this.updateIndex(id, updatedProject.name, updatedProject.lastUpdated);
+        return updatedProject;
+    },
+
+    updateIndex(id: string, name: string, lastUpdated: string) {
+        const index = this.listProjects();
+        const existing = index.find(p => p.id === id);
+        if (existing) {
+            existing.name = name;
+            existing.lastUpdated = lastUpdated;
+        } else {
+            index.push({ id, name, lastUpdated });
+        }
+        localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+    },
+
+    deleteProject(id: string) {
+        localStorage.removeItem(`kernelcad_project_${id}`);
+        const index = this.listProjects().filter(p => p.id !== id);
+        localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+    },
+
+    migrateLegacyIfNeeded(): string | null {
+        const legacyData = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (!legacyData) return null;
+
+        try {
+            const raw = JSON.parse(legacyData);
+            const project = parseProjectWithMigration(raw);
+            const id = this.generateId();
+            this.saveProject(id, { ...project, name: project.name === 'Untitled' ? 'Imported Project' : project.name });
+            localStorage.removeItem(LEGACY_STORAGE_KEY);
+            return id;
+        } catch (e) {
+            console.error("Migration failed:", e);
+            localStorage.removeItem(LEGACY_STORAGE_KEY);
+            return null;
+        }
     },
 
     saveProjectToFile(project: KernelCADProject) {
@@ -103,10 +179,6 @@ export const projectService = {
         URL.revokeObjectURL(url);
     },
 
-    /**
-     * Formal method to export a project to a .kcad file.
-     * This is used by the UI to trigger a download.
-     */
     exportToKcad(project: KernelCADProject) {
         this.saveProjectToFile(project);
     },
@@ -140,28 +212,5 @@ export const projectService = {
         } catch {
             return false;
         }
-    },
-
-    persistToLocalStorage(project: KernelCADProject) {
-        localStorage.setItem('kernelcad_current_project', JSON.stringify(project));
-    },
-
-    loadFromLocalStorage(): KernelCADProject | null {
-        const data = localStorage.getItem('kernelcad_current_project');
-        if (!data) return null;
-        try {
-            const raw = JSON.parse(data);
-            const migrated = parseProjectWithMigration(raw);
-            if (migrated.version !== (raw as { version?: unknown })?.version) {
-                this.persistToLocalStorage(migrated);
-            }
-            return migrated;
-        } catch {
-            return null;
-        }
-    },
-
-    clearLocalStorage() {
-        localStorage.removeItem('kernelcad_current_project');
     }
 };

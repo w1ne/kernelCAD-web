@@ -1,19 +1,16 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle, FileCode, FolderOpen } from 'lucide-react';
+import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../lib/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../constants/shortcuts';
-import { projectService } from '../../lib/projectService';
-import { useRef } from 'react';
-
-type ViewMode3D = 'shadedWithEdges' | 'wireframe' | 'shaded';
+import { useProject } from '../../context/ProjectContext';
 
 export function Header() {
     const {
         viewMode, setViewMode, viewMode3D, setViewMode3D,
-        isComputing, code, setCode, commandManager,
-        sidePanelVisible, showSketches
+        isComputing, code, commandManager, setActiveDialog
     } = useWorkbench();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { activeProject } = useProject();
 
     const handleExport = async (type: 'step' | 'stl') => {
         try {
@@ -27,7 +24,7 @@ export function Header() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `model.${type}`;
+            a.download = `${(activeProject?.name || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
             a.click();
             URL.revokeObjectURL(url);
         } catch (err) {
@@ -36,42 +33,19 @@ export function Header() {
         }
     };
 
-    const handleSaveProject = () => {
-        const project = projectService.createProject(code, {
-            viewMode,
-            viewMode3D,
-            sidePanelVisible,
-            showSketches
-        });
-        projectService.saveProjectToFile(project);
-    };
-
-    const handleOpenProject = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        try {
-            const project = await projectService.loadProjectFromFile(file);
-            setCode(project.code);
-            if (project.viewState) {
-                setViewMode(project.viewState.viewMode);
-                setViewMode3D(project.viewState.viewMode3D as ViewMode3D);
-                // Note: sidePanelVisible and showSketches are handled by their respective contexts
-            }
-        } catch (err) {
-            alert("Failed to load project: " + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    };
-
     return (
         <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 justify-between select-none shrink-0" data-testid="header">
             <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                    {viewMode === 'code' ? 'script.js' : 'Design'}
-                </span>
+                <button
+                    onClick={() => setActiveDialog('projectManager')}
+                    className="flex items-center gap-2 group hover:bg-[#222] px-2 py-1 rounded transition-colors"
+                >
+                    <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:animate-pulse"></div>
+                    <span className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                        {activeProject?.name || 'Untitled Project'}
+                        <FolderOpen size={12} className="text-gray-500 group-hover:text-blue-400" />
+                    </span>
+                </button>
             </div>
 
             <div className="flex gap-2 items-center">
@@ -145,33 +119,6 @@ export function Header() {
                 >
                     <Redo2 className="w-4 h-4" />
                 </button>
-
-                <div className="h-6 w-px bg-[#333] mx-2" />
-
-                <button
-                    onClick={() => handleSaveProject()}
-                    className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
-                    title="Save Project (.kcad)"
-                    aria-label="Save Project"
-                >
-                    <FileCode className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-1 hover:bg-[#333] rounded text-gray-400 hover:text-white transition-colors"
-                    title="Open Project (.kcad)"
-                    aria-label="Open Project"
-                >
-                    <FolderOpen className="w-4 h-4" />
-                </button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleOpenProject}
-                    accept=".kcad"
-                    className="hidden"
-                    aria-hidden="true"
-                />
 
                 <div className="h-6 w-px bg-[#333] mx-2" />
 
