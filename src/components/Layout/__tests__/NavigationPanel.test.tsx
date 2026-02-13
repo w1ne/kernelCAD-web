@@ -51,6 +51,10 @@ describe('NavigationPanel', () => {
         mockSidePanelVisible = true;
         render(<NavigationPanel {...defaultProps} />);
         expect(screen.queryByTestId('mock-sidepanel')).toBeTruthy();
+        const sidePanelSlot = screen.getByTestId('sidepanel-slot');
+        const editorSlot = screen.getByTestId('editor-slot');
+        expect(sidePanelSlot.className).toContain('basis-[45%]');
+        expect(editorSlot.className).toContain('flex-1');
     });
 
     it('should render sidepanel in gui mode if visible', () => {
@@ -59,6 +63,8 @@ describe('NavigationPanel', () => {
         expect(screen.getByTestId('mock-toolbar')).toBeTruthy();
         expect(screen.getByTestId('mock-sidepanel')).toBeTruthy();
         expect(screen.getByTestId('child-element')).toBeTruthy();
+        const sidePanelSlot = screen.getByTestId('sidepanel-slot');
+        expect(sidePanelSlot.className).toContain('flex-1');
     });
 
     it('should adjust width based on view mode', () => {
