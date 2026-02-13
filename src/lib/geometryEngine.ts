@@ -47,6 +47,7 @@ export class GeometryEngine {
     private initPromise: Promise<void> | null = null;
     private initResolve: (() => void) | null = null;
     private initReject: ((err: unknown) => void) | null = null;
+    private requestSequence = 0;
     private diagnostics: GeometryEngineDiagnostics = {
         initFailures: 0,
         workerCrashes: 0,
@@ -245,11 +246,16 @@ export class GeometryEngine {
         });
     }
 
+    private nextRequestId(): string {
+        this.requestSequence += 1;
+        return `req_${this.requestSequence}`;
+    }
+
     /**
      * Execute CAD code
      */
     public executeCode(code: string): Promise<ExecutionResult> {
-        const id = Math.random().toString(36).substr(2, 9);
+        const id = this.nextRequestId();
         return this.postToWorker<ExecutionResult>({ type: 'EXECUTE', id, code });
     }
 
@@ -257,7 +263,7 @@ export class GeometryEngine {
      * Export to STEP
      */
     public exportSTEP(code: string): Promise<Blob> {
-        const id = Math.random().toString(36).substr(2, 9);
+        const id = this.nextRequestId();
         return this.postToWorker<Blob>({ type: 'EXPORT_STEP', id, code });
     }
 
@@ -265,7 +271,7 @@ export class GeometryEngine {
      * Export to STL
      */
     public exportSTL(code: string): Promise<Blob> {
-        const id = Math.random().toString(36).substr(2, 9);
+        const id = this.nextRequestId();
         return this.postToWorker<Blob>({ type: 'EXPORT_STL', id, code });
     }
 }

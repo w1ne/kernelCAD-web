@@ -31,11 +31,13 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
-  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' = 'success';
+  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' | 'invalidResponse' = 'success';
+  static sentMessages: Array<{ id: string; type: string }> = [];
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onerror: ((e: unknown) => void) | null = null;
 
   postMessage(data: { id: string; type: string }) {
+    MockWorker.sentMessages.push({ id: data.id, type: data.type });
     setTimeout(() => {
       // INIT handshake
       if (data.type === 'INIT') {
@@ -53,6 +55,11 @@ class MockWorker {
       }
 
       if (MockWorker.mode === 'noResponse') {
+        return;
+      }
+
+      if (MockWorker.mode === 'invalidResponse') {
+        this.onmessage?.({ data: { foo: 'bar' } });
         return;
       }
 
@@ -79,6 +86,7 @@ describe('Geometry Engine', () => {
     GeometryEngine.getInstance().terminate();
     GeometryEngine.getInstance().resetDiagnostics();
     MockWorker.mode = 'success';
+    MockWorker.sentMessages = [];
     vi.useRealTimers();
   });
 
@@ -156,5 +164,31 @@ describe('Geometry Engine', () => {
     const diagnostics = engine.getDiagnostics();
     expect(diagnostics.requestTimeouts).toBe(1);
     expect(diagnostics.requestsRejected).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should reject pending requests on protocol violation', async () => {
+    MockWorker.mode = 'invalidResponse';
+    const engine = GeometryEngine.getInstance();
+    await expect(executeCode('return replicad.makeBox(1,1,1);')).rejects.toThrow('Worker protocol violation.');
+    const diagnostics = engine.getDiagnostics();
+    expect(diagnostics.protocolViolations).toBe(1);
+    expect(diagnostics.requestsRejected).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should generate monotonic deterministic request IDs', async () => {
+    await executeCode('return replicad.makeBox(1,1,1);');
+    await executeCode('return replicad.makeBox(2,2,2);');
+
+    const executeIds = MockWorker.sentMessages
+      .filter((m) => m.type === 'EXECUTE')
+      .map((m) => m.id);
+
+    expect(executeIds.length).toBe(2);
+    const [first, second] = executeIds;
+    expect(first).toMatch(/^req_\d+$/);
+    expect(second).toMatch(/^req_\d+$/);
+    const firstNum = Number(first?.replace('req_', ''));
+    const secondNum = Number(second?.replace('req_', ''));
+    expect(secondNum).toBeGreaterThan(firstNum);
   });
 });
