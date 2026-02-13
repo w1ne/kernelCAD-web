@@ -148,6 +148,24 @@ export default function main() {
         });
     });
 
+    it('should expose test window helpers for selection and hover', async () => {
+        render(<App />);
+
+        await waitFor(() => {
+            expect(typeof window.__TEST_SELECT_ITEM).toBe('function');
+            expect(typeof window.__TEST_SET_HOVERED).toBe('function');
+            expect(typeof window.selectedItemId).toBe('function');
+            expect(typeof window.getHoveredItemId).toBe('function');
+        });
+
+        const historyId = 'box:1:1:10';
+        window.__TEST_SELECT_ITEM?.(historyId);
+        expect(window.selectedItemId?.()).toBe(historyId);
+
+        window.__TEST_SET_HOVERED?.(historyId);
+        expect(window.getHoveredItemId?.()).toBe(historyId);
+    });
+
     it('should recover after reload and delete an autosaved sketch without syntax errors', async () => {
         const autosavedCode = `
 export default function main() {
