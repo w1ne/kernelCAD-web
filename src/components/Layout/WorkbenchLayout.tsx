@@ -14,6 +14,7 @@ import { type SketchData, type SketchPlane } from '../../types/sketch';
 import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { Loader2 } from 'lucide-react';
+import { extractHistoryItems, extractVariables } from '../../lib/codeAnalysis';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
@@ -52,14 +53,21 @@ export function WorkbenchLayout() {
         hideItem,
         showAll,
         selectedItemId,
+        deleteItem,
+        deleteHistoryItem,
         toggleVisibility,
         openPanel,
         closePanel,
         selectedSketchName,
         setSelectedSketchName,
+        setSelectedItemId,
+        setHoveredItemId,
+        hoveredItemId,
         toggleSketchVisibility,
         activePanels,
         setViewMode,
+        setSidePanelVisible,
+        clearAll,
         isComputing,
         executionCount,
         setSelectedFace,
@@ -101,15 +109,44 @@ export function WorkbenchLayout() {
             w.__TEST_SELECT_SKETCH = (name: string | null) => {
                 setSelectedSketchName(name);
             };
+            w.__TEST_SELECT_ITEM = (id: string | null) => {
+                setSelectedItemId(id);
+            };
+            w.__TEST_SET_HOVERED = (id: string | null) => {
+                setHoveredItemId(id);
+            };
+            w.getHoveredItemId = () => hoveredItemId;
+            w.selectedItemId = () => selectedItemId;
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+
+    // Recovery guard: never keep the editor hidden while code/execution is in error.
+    React.useEffect(() => {
+        if (!error) return;
+        if (viewMode === 'gui') {
+            setViewMode('code');
+        }
+        setSidePanelVisible(true);
+    }, [error, viewMode, setViewMode, setSidePanelVisible]);
 
     const { insertCode } = useCodeInsertion();
 
     const features = useMemo(() => featureRegistry.getAll(), []);
+
     const activeFeature = useMemo(() => activeDialog ? featureRegistry.get(activeDialog) : null, [activeDialog]);
+    const variableIndex = useMemo(() => {
+        const map = new Map<string, number>();
+        extractVariables(code).forEach((v) => map.set(v.name, v.line));
+        return map;
+    }, [code]);
+    const historyItems = useMemo(() => extractHistoryItems(code), [code]);
+    const historyItemById = useMemo(() => {
+        const map = new Map<string, { id: string; name: string; line: number; type: string; detail?: string }>();
+        historyItems.forEach((item) => map.set(item.id, item));
+        return map;
+    }, [historyItems]);
 
     const featureShortcuts = useMemo(() => {
         const shortcuts: Record<string, () => void> = {};
@@ -131,6 +168,42 @@ export function WorkbenchLayout() {
         });
         return shortcuts;
     }, [features, activeDialog, insertCode, setCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
+
+    const handleToolClick = React.useCallback((feature: Feature) => {
+        if (activeDialog) return;
+
+        if (feature.id === 'extrudeFromFace') {
+            openPanel('extrudeFromFace');
+        } else if (feature.id === 'sketchOnFace') {
+            openPanel('sketchOnFace');
+        } else {
+            // Original logic for other features
+            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'midplane', 'tangentPlane'].includes(feature.id)) {
+                openPanel(feature.id);
+                return;
+            }
+
+            if (feature.parameters && feature.parameters.length > 0) {
+                setActiveDialog(feature.id);
+            } else {
+                feature.execute({
+                    insertCode,
+                    setCode,
+                    setActiveDialog,
+                    openPanel,
+                    closePanel,
+                    code,
+                    codeContext
+                }, undefined);
+            }
+        }
+    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext, activeDialog]);
+
+    // Use a ref for handleToolClick to avoid re-registering commands when it changes due to code updates
+    const handleToolClickRef = React.useRef(handleToolClick);
+    React.useEffect(() => {
+        handleToolClickRef.current = handleToolClick;
+    }, [handleToolClick]);
 
     // Keyboard Shortcuts
     useKeyboardShortcuts({
@@ -160,7 +233,10 @@ export function WorkbenchLayout() {
         },
         'h': () => {
             if (activeDialog) return;
-            if (selectedItemId) hideItem(selectedItemId);
+            if (selectedItemId) {
+                const visibilityTarget = historyItemById.get(selectedItemId)?.name ?? selectedItemId;
+                hideItem(visibilityTarget);
+            }
         },
         'shift+h': () => {
             if (activeDialog) return;
@@ -168,24 +244,44 @@ export function WorkbenchLayout() {
         },
         'space': () => {
             if (activeDialog) return;
-            if (selectedItemId) toggleVisibility(selectedItemId);
-        },
-        'backspace': () => {
-            if (activeDialog) return;
             if (selectedItemId) {
-                console.log('Delete item:', selectedItemId);
-                // Implementation pending for real delete logic
+                const visibilityTarget = historyItemById.get(selectedItemId)?.name ?? selectedItemId;
+                toggleVisibility(visibilityTarget);
             }
         },
-        'delete': () => {
+        'backspace': (e) => {
             if (activeDialog) return;
             if (selectedItemId) {
-                console.log('Delete item:', selectedItemId);
-                // Implementation pending for real delete logic
+                e.preventDefault();
+                const historyItem = historyItemById.get(selectedItemId);
+                if (historyItem) {
+                    deleteHistoryItem(historyItem);
+                } else {
+                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                }
+            }
+        },
+        'delete': (e) => {
+            if (activeDialog) return;
+            if (selectedItemId) {
+                e.preventDefault();
+                const historyItem = historyItemById.get(selectedItemId);
+                if (historyItem) {
+                    deleteHistoryItem(historyItem);
+                } else {
+                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
+                }
             }
         },
         'alt+s': () => {
             toggleSketchVisibility();
+        },
+        'mod+1': () => {
+            setViewMode('code');
+            setSidePanelVisible(true);
+        },
+        'mod+2': () => {
+            setViewMode('gui');
         }
     });
 
@@ -193,90 +289,39 @@ export function WorkbenchLayout() {
     // Register Commands for Palette
     const { registerCommand } = useCommandRegistry();
 
-    // Use a ref to store the latest values needed by command actions
-    const actionContextRef = React.useRef({
-        selectedFace,
-        insertCode,
-        setCode,
-        setActiveDialog,
-        code,
-        codeContext
-    });
 
-    // Update the ref on every render
-    React.useEffect(() => {
-        actionContextRef.current = {
-            selectedFace,
-            insertCode,
-            setCode,
-            setActiveDialog,
-            code,
-            codeContext
-        };
-    });
 
-    const handleToolClick = React.useCallback((feature: Feature) => {
-        if (feature.id === 'extrudeFromFace') {
-            openPanel('extrudeFromFace');
-        } else if (feature.id === 'sketchOnFace') {
-            openPanel('sketchOnFace');
-        } else {
-            // Original logic for other features
-            if (['extrude', 'revolve', 'fillet', 'chamfer', 'union', 'cut', 'intersect', 'offsetPlane', 'planeSelector', 'midplane', 'tangentPlane'].includes(feature.id)) {
-                openPanel(feature.id);
-                return;
-            }
 
-            if (feature.parameters && feature.parameters.length > 0) {
-                setActiveDialog(feature.id);
-            } else {
-                feature.execute({
-                    insertCode,
-                    setCode,
-                    setActiveDialog,
-                    openPanel,
-                    closePanel,
-                    code,
-                    codeContext
-                }, undefined);
-            }
-        }
-    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext]);
 
     React.useEffect(() => {
         const unregisters: (() => void)[] = [];
 
-        // Dynamic Feature Commands
+        // Register feature commands
         features.forEach(f => {
-            if (['sketchOnFace', 'extrudeFromFace'].includes(f.id)) return; // Handled specially or excluded if redundant
-
             unregisters.push(registerCommand({
                 id: f.id,
                 label: f.label,
+                icon: f.icon ? <f.icon className="w-4 h-4" /> : undefined,
+                shortcut: f.shortcut,
                 section: 'Modeling',
-                shortcut: f.shortcut?.toUpperCase(),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                icon: React.createElement(f.icon as any, { className: "w-4 h-4" }),
-                action: () => handleToolClick(f)
+                action: () => handleToolClickRef.current(f)
             }));
         });
 
-        // View & Utility Commands
+        // Register utility commands
         unregisters.push(registerCommand({
-            id: 'toggle-sketches',
+            id: 'toggleSketchVisibility',
             label: 'Toggle Sketches',
+            shortcut: 'Alt+S', // Example
             section: 'View',
-            shortcut: 'Alt+S',
             icon: <Layers className="w-4 h-4" />,
-            action: () => {
-                toggleSketchVisibility();
-            }
+            action: toggleSketchVisibility
         }));
 
         unregisters.push(registerCommand({
-            id: 'sketch-plane-selector',
-            label: 'New Sketch (Select Plane)',
-            section: 'General',
+            id: 'planeSelector',
+            label: 'Select Plane',
+            section: 'Navigation',
             shortcut: 'S',
             icon: <Square className="w-4 h-4" />,
             action: () => {
@@ -285,7 +330,7 @@ export function WorkbenchLayout() {
         }));
 
         return () => unregisters.forEach(u => u());
-    }, [registerCommand, toggleSketchVisibility, openPanel, features, handleToolClick]); // Only stable dependencies
+    }, [registerCommand, toggleSketchVisibility, openPanel, features]); // Removed handleToolClick to prevent loop
 
 
 
@@ -378,62 +423,71 @@ export function WorkbenchLayout() {
                 <SketchCanvas
                     plane={sketchMode.plane}
                     onComplete={(entities) => {
-                        // CRITICAL: Validate entities before proceeding
-                        if (!entities || entities.length === 0) {
-                            console.error('Cannot create sketch: No geometry drawn');
-                            alert('Please draw some geometry before completing the sketch.');
-                            return;
+                        try {
+                            // CRITICAL: Validate entities before proceeding
+                            if (!entities || entities.length === 0) {
+                                console.error('Cannot create sketch: No geometry drawn');
+                                alert('Please draw some geometry before completing the sketch.');
+                                return;
+                            }
+
+                            // Use the name from the active sketch session if available
+                            const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
+
+                            // Parse plane name correctly
+                            let planeName: SketchPlane = 'XY';
+                            if (typeof sketchMode.plane === 'string') {
+                                planeName = sketchMode.plane;
+                            } else if (sketchMode.plane && typeof sketchMode.plane === 'object') {
+                                planeName = sketchMode.plane.name;
+                            }
+
+                            const sketchData: SketchData = {
+                                id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
+                                name: sketchName,
+                                plane: planeName,
+                                entities,
+                                closed: false,
+                                createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
+                            };
+
+                            const planeEntity: SketchPlaneEntity | null =
+                                sketchMode.plane && typeof sketchMode.plane === 'object' ? sketchMode.plane : null;
+                            let sketchCode = '';
+
+                            // Case 1: Detached sketch on captured face plane.
+                            // Prefer stable plane data over faceId because topology reindexing can move face indices.
+                            if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
+                                const xDir = planeEntity.xDir;
+                                const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
+                                const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
+                                const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
+                                const bodyCode = generateSketchBody(entities);
+                                sketchCode = startCode + bodyCode + ';\n';
+                            }
+                            // Case 2: Parametric sketch on face index (fallback when no plane data is available)
+                            else if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId && planeEntity.parentId !== 'unknown' && planeEntity.parentId !== 'shape') {
+                                const startCode = `const ${sketchName} = sketchOnFace(${planeEntity.parentId}, ${planeEntity.faceId})\n`;
+                                const bodyCode = generateSketchBody(entities);
+                                sketchCode = startCode + bodyCode + ';\n';
+                            }
+                            // Case 3: Standard base plane sketch
+                            else {
+                                sketchCode = generateSketchCode(sketchData);
+                            }
+
+                            insertCode(sketchCode);
+                            addSketch(sketchData);
+                            clearAll();
+                            setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
+                        } catch (err) {
+                            const message = err instanceof Error ? err.message : String(err);
+                            console.error('Failed to complete sketch:', err);
+                            alert(`Failed to complete sketch: ${message}`);
                         }
-
-                        // Use the name from the active sketch session if available
-                        const sketchName = sketchMode.currentSketch?.name || codeContext.generateUniqueName('sketch');
-
-                        // Parse plane name correctly
-                        let planeName: SketchPlane = 'XY';
-                        if (typeof sketchMode.plane === 'string') {
-                            planeName = sketchMode.plane;
-                        } else if (sketchMode.plane && typeof sketchMode.plane === 'object') {
-                            planeName = sketchMode.plane.name;
-                        }
-
-                        const sketchData: SketchData = {
-                            id: sketchMode.currentSketch?.id || `sketch_${Date.now()}`,
-                            name: sketchName,
-                            plane: planeName,
-                            entities,
-                            closed: false,
-                            createdAt: sketchMode.currentSketch?.createdAt || Date.now(),
-                        };
-
-                        const planeEntity: SketchPlaneEntity | null =
-                            sketchMode.plane && typeof sketchMode.plane === 'object' ? sketchMode.plane : null;
-                        let sketchCode = '';
-
-                        // Case 1: Parametric Sketch on Face
-                        if (planeEntity && planeEntity.type === 'face' && planeEntity.faceId !== undefined && planeEntity.parentId && planeEntity.parentId !== 'unknown' && planeEntity.parentId !== 'shape') {
-                            const startCode = `const ${sketchName} = sketchOnFace(${planeEntity.parentId}, ${planeEntity.faceId})\n`;
-                            const bodyCode = generateSketchBody(entities);
-                            sketchCode = startCode + bodyCode + ';\n';
-                        }
-                        // Case 2: Detached Sketch on a specific Plane object/origin
-                        else if (planeEntity && planeEntity.type === 'face' && planeEntity.origin && planeEntity.normal) {
-                            const xDir = planeEntity.xDir;
-                            const xDirStr = xDir ? JSON.stringify(xDir) : 'null';
-                            const planeCode = `new replicad.Plane(${JSON.stringify(planeEntity.origin)}, ${xDirStr}, ${JSON.stringify(planeEntity.normal)})`;
-                            const startCode = `const ${sketchName} = new Sketcher(${planeCode})\n`;
-                            const bodyCode = generateSketchBody(entities);
-                            sketchCode = startCode + bodyCode + ';\n';
-                        }
-                        // Case 3: Standard Plane Sketch
-                        else {
-                            sketchCode = generateSketchCode(sketchData);
-                        }
-
-                        insertCode(sketchCode);
-                        addSketch(sketchData);
-                        setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
                     }}
                     onCancel={() => {
+                        clearAll();
                         setSketchMode({ active: false, plane: null, currentSketch: null, tool: 'select' });
                     }}
                 />

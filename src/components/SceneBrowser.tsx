@@ -1,23 +1,24 @@
 import React from 'react';
-import type { VariableDefinition } from '../lib/codeAnalysis';
+import type { HistoryItem } from '../lib/codeAnalysis';
 import type { SketchPlaneEntity } from '../types/plane';
 import { Box, Cylinder, Layers, SquaresSubtract, SquaresUnite, SquaresIntersect, SquareRoundCorner, Circle, Square, Plane, Eye, EyeOff, ChevronRight, ChevronDown, SquareArrowUp, Rotate3D } from 'lucide-react';
 import { ChamferIcon } from '../icons/cad';
 
 interface SceneBrowserProps {
-    items: VariableDefinition[];
+    items: HistoryItem[];
     planes: SketchPlaneEntity[];
     selectedItemId: string | null;
     selectedItemIds?: string[];
     hoveredItemId: string | null;
     hiddenIds: string[];
-    onSelect: (item: VariableDefinition) => void;
+    onSelect: (item: HistoryItem) => void;
     onToggleSelection?: (id: string, multi: boolean) => void;
     onHover: (id: string | null) => void;
     onToggleVisibility: (id: string) => void;
     onTogglePlane: (id: string) => void;
     onSelectPlane?: (id: string) => void;
     onRename?: (oldName: string, newName: string) => void;
+    onDelete?: (item: HistoryItem) => void;
 }
 
 const getIconForType = (type: string) => {
@@ -50,14 +51,15 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
     onToggleVisibility,
     onTogglePlane,
     onSelectPlane,
-    onRename
+    onRename,
+    onDelete
 }) => {
     const [constructionOpen, setConstructionOpen] = React.useState(true);
     const [historyOpen, setHistoryOpen] = React.useState(true);
 
-    const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, item: VariableDefinition } | null>(null);
+    const [contextMenu, setContextMenu] = React.useState<{ x: number, y: number, item: HistoryItem } | null>(null);
 
-    const handleContextMenu = (e: React.MouseEvent, item: VariableDefinition) => {
+    const handleContextMenu = (e: React.MouseEvent, item: HistoryItem) => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY, item });
     };
@@ -79,8 +81,7 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                     <button
                         className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
                         onClick={() => {
-                            // In a real app we'd have a delete command
-                            console.log('Delete', contextMenu.item.name);
+                            onDelete?.(contextMenu.item);
                             setContextMenu(null);
                         }}
                     >
@@ -192,21 +193,23 @@ const SceneBrowser: React.FC<SceneBrowserProps> = ({
                             <div className="px-6 py-4 text-gray-500 italic">No operations yet.</div>
                         ) : (
                             items.map((item, idx) => {
-                                const isSelected = selectedItemIds ? selectedItemIds.includes(item.name) : selectedItemId === item.name;
-                                const isHovered = hoveredItemId === item.name;
+                                const isSelected = selectedItemIds
+                                    ? selectedItemIds.includes(item.id)
+                                    : selectedItemId === item.id;
+                                const isHovered = hoveredItemId === item.id;
                                 const isHidden = hiddenIds.includes(item.name);
                                 return (
                                     <div
-                                        key={`${item.name}-${idx}`}
-                                        data-testid={`scene-item-${item.name}`}
+                                        key={item.id ?? `${item.name}-${idx}`}
+                                        data-testid={`scene-item-${item.id ?? item.name}`}
                                         onClick={(e) => {
                                             if (onToggleSelection && (e.metaKey || e.ctrlKey || e.shiftKey)) {
-                                                onToggleSelection(item.name, true);
+                                                onToggleSelection(item.id, true);
                                             } else {
                                                 onSelect(item);
                                             }
                                         }}
-                                        onMouseEnter={() => onHover(item.name)}
+                                        onMouseEnter={() => onHover(item.id)}
                                         onMouseLeave={() => onHover(null)}
                                         onContextMenu={(e) => handleContextMenu(e, item)}
                                         className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] hover:text-white transition-colors text-left group cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : isHovered ? 'bg-[#333] text-white' : ''}`}

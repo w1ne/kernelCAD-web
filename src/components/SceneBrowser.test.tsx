@@ -2,16 +2,16 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SceneBrowser from './SceneBrowser';
-import type { VariableDefinition } from '../lib/codeAnalysis';
+import type { HistoryItem } from '../lib/codeAnalysis';
 // React unused
 
 afterEach(() => {
     cleanup();
 });
 
-const mockItems: VariableDefinition[] = [
-    { name: 'box1', type: 'Box', line: 1 },
-    { name: 'cyl1', type: 'Cylinder', line: 5 },
+const mockItems: HistoryItem[] = [
+    { id: 'box1:1:1:10', name: 'box1', type: 'Box', line: 1 },
+    { id: 'cyl1:5:11:20', name: 'cyl1', type: 'Cylinder', line: 5 },
 ];
 
 describe('SceneBrowser', () => {
@@ -55,7 +55,7 @@ describe('SceneBrowser', () => {
 
         const item = screen.getByText('box1');
         fireEvent.mouseEnter(item);
-        expect(onHover).toHaveBeenCalledWith('box1');
+        expect(onHover).toHaveBeenCalledWith('box1:1:1:10');
 
         fireEvent.mouseLeave(item);
         expect(onHover).toHaveBeenCalledWith(null);
@@ -69,5 +69,14 @@ describe('SceneBrowser', () => {
 
         expect(screen.getByText('Delete')).toBeDefined();
         expect(screen.getByText('Isolate')).toBeDefined();
+    });
+
+    it('should call onDelete from context menu', () => {
+        const onDelete = vi.fn();
+        render(<SceneBrowser items={mockItems} planes={[]} selectedItemId={null} hoveredItemId={null} hiddenIds={[]} onSelect={vi.fn()} onHover={vi.fn()} onToggleVisibility={vi.fn()} onTogglePlane={vi.fn()} onDelete={onDelete} />);
+
+        fireEvent.contextMenu(screen.getByText('box1'));
+        fireEvent.click(screen.getByText('Delete'));
+        expect(onDelete).toHaveBeenCalledWith(mockItems[0]);
     });
 });

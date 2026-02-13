@@ -6,6 +6,7 @@ import App from '../App';
 import * as GeometryEngine from '../lib/geometryEngine';
 import { initFeatures } from '../features/init';
 import type { EditorLike } from '../types/editor';
+import { parseCode } from '../lib/ast';
 
 const runUIE2E = process.env.KERNELCAD_UI_E2E === '1';
 const describeUI = runUIE2E ? describe : describe.skip;
@@ -20,6 +21,14 @@ vi.mock('../lib/geometryEngine', () => ({
     exportSTEP: vi.fn().mockResolvedValue(new Blob()),
     exportSTL: vi.fn().mockResolvedValue(new Blob()),
     defaultCode: '// KernelCAD Start',
+    GeometryEngine: {
+        getInstance: () => ({
+            initialize: vi.fn().mockResolvedValue(true),
+            executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
+            exportSTEP: vi.fn().mockResolvedValue(new Blob()),
+            exportSTL: vi.fn().mockResolvedValue(new Blob()),
+        }),
+    },
 }));
 
 vi.mock('../components/Editor', () => ({
@@ -63,6 +72,7 @@ if (typeof window !== 'undefined') {
 describeUI('UI Workflows E2E', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        localStorage.clear();
         initFeatures();
     });
 
@@ -104,5 +114,101 @@ describeUI('UI Workflows E2E', () => {
             expect(generatedCode).toContain('.lineTo(');
             expect(generatedCode).toContain('.extrude(50)');
         }, { timeout: 10000 });
+    });
+
+    it('should delete a sketch from history without corrupting code', async () => {
+        render(<App />);
+
+        const initialCode = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([0, 0])
+      .lineTo([10, 0])
+      .done();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        expect(typeof window.setCode).toBe('function');
+        window.setCode?.(initialCode);
+
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        fireEvent.click(screen.getByText('sketch'));
+        fireEvent.keyDown(window, { key: 'Delete' });
+
+        await waitFor(() => {
+            const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+            expect(editor.value).not.toContain('const sketch');
+            expect(editor.value).toContain('return [box]');
+            expect(() => parseCode(editor.value)).not.toThrow();
+        });
+    });
+
+    it('should expose test window helpers for selection and hover', async () => {
+        render(<App />);
+
+        await waitFor(() => {
+            expect(typeof window.__TEST_SELECT_ITEM).toBe('function');
+            expect(typeof window.__TEST_SET_HOVERED).toBe('function');
+            expect(typeof window.selectedItemId).toBe('function');
+            expect(typeof window.getHoveredItemId).toBe('function');
+        });
+
+        const historyId = 'box:1:1:10';
+        window.__TEST_SELECT_ITEM?.(historyId);
+        expect(window.selectedItemId?.()).toBe(historyId);
+
+        window.__TEST_SET_HOVERED?.(historyId);
+        expect(window.getHoveredItemId?.()).toBe(historyId);
+    });
+
+    it('should recover after reload and delete an autosaved sketch without syntax errors', async () => {
+        const autosavedCode = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([0, 0])
+      .lineTo([10, 0])
+      .done();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        localStorage.setItem('kernelcad_current_project', JSON.stringify({
+            version: '1.0',
+            name: 'Auto-saved Project',
+            code: autosavedCode,
+            viewState: {
+                viewMode: 'code',
+                viewMode3D: 'shaded',
+                sidePanelVisible: true,
+                showSketches: true
+            },
+            lastUpdated: new Date('2026-02-12T00:00:00.000Z').toISOString()
+        }));
+
+        const { unmount } = render(<App />);
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        unmount();
+
+        render(<App />);
+
+        expect(await screen.findByText('sketch')).toBeTruthy();
+        fireEvent.click(screen.getByText('sketch'));
+        fireEvent.keyDown(window, { key: 'Delete' });
+
+        await waitFor(() => {
+            const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+            expect(editor.value).not.toContain('const sketch');
+            expect(() => parseCode(editor.value)).not.toThrow();
+            expect(screen.queryByText(/SyntaxError:/i)).toBeNull();
+        });
     });
 });

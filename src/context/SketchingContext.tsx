@@ -11,6 +11,7 @@ export interface SketchingContextType {
     addConstraint: (constraint: Constraint) => void;
     selectEntity: (id: string, multi?: boolean) => void;
     clearSelection: () => void;
+    clearAll: () => void;
     solve: () => void;
 }
 
@@ -83,6 +84,13 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
         setSelectedEntityIds([]);
     }, []);
 
+    const clearAll = useCallback(() => {
+        setEntities(new Map());
+        setConstraints([]);
+        constraintsRef.current = [];
+        setSelectedEntityIds([]);
+    }, []);
+
     const value: SketchingContextType = useMemo(() => ({
         entities,
         constraints,
@@ -92,8 +100,9 @@ export function SketchingProvider({ children }: { children: ReactNode }) {
         addConstraint,
         selectEntity,
         clearSelection,
+        clearAll,
         solve
-    }), [entities, constraints, selectedEntityIds, addEntity, updateEntity, addConstraint, selectEntity, clearSelection, solve]);
+    }), [entities, constraints, selectedEntityIds, addEntity, updateEntity, addConstraint, selectEntity, clearSelection, clearAll, solve]);
 
     return <SketchingContext.Provider value={value}>{children}</SketchingContext.Provider>;
 }

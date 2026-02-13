@@ -12,7 +12,7 @@ import { SelectionProvider, useSelection, type SelectionContextType } from './Se
 import { GeometryProvider, useGeometry, type GeometryContextType } from './GeometryContext';
 import { useFaceSelection } from '../hooks/useFaceSelection';
 import { SketchingProvider, useSketching, type SketchingContextType } from './SketchingContext';
-import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
+import { type CodeGenerationContext } from '../lib/codeGeneration';
 
 // Combined type for backward compatibility
 export interface WorkbenchContextType extends
@@ -29,6 +29,8 @@ export interface WorkbenchContextType extends
 
     // Commands
     renameItem: (oldName: string, newName: string) => void;
+    deleteItem: (name: string, lineHint?: number) => void;
+    deleteHistoryItem: CodeContextType['deleteHistoryItem'];
 
     // Safety
     applyCodeSafe: (code: string) => Promise<boolean>;
@@ -49,33 +51,26 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
     const sketchingCtx = useSketching();
 
     // Use face selection hook with geometry dependencies
-    const faceSelection = useFaceSelection({
+    const {
+        selectedFace,
+        selectedFacePlane,
+        setSelectedFace,
+        isFaceSelecting,
+        startFaceSelection,
+        cancelFaceSelection,
+    } = useFaceSelection({
         geometries: geometryCtx.geometries,
         code: codeCtx.code,
         onSketchModeChange: selectionCtx.setSketchMode
     });
 
-    // Create code context for feature generators
-    const codeContext = useMemo(() => {
-        try {
-            const analyzer = new CodeAnalyzer(codeCtx.code);
-            return analyzer.createContext();
-        } catch (e) {
-            console.warn('WorkbenchContext: Failed to analyze code (likely syntax error):', e);
-            // Return a minimal context for features to still function with fallbacks
-            return {
-                variables: [],
-                getVariableAtIndex: () => 'shape',
-                generateUniqueName: (prefix: string) => `${prefix}_${Date.now()}`
-            } as unknown as CodeGenerationContext;
-        }
-    }, [codeCtx.code]);
+    // Code context is now handled by CodeProvider
 
     // Wrap startFaceSelection to also close the dialog
     const startFaceSelectionWithDialog = useCallback(() => {
-        faceSelection.startFaceSelection();
+        startFaceSelection();
         uiCtx.setActiveDialog(null);
-    }, [faceSelection, uiCtx]);
+    }, [startFaceSelection, uiCtx]);
 
     // Combine all contexts into unified interface
     const value: WorkbenchContextType = useMemo(() => ({
@@ -100,12 +95,12 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         contextMenu: uiCtx.contextMenu,
         setContextMenu: uiCtx.setContextMenu,
         // Selection context
-        selectedFace: faceSelection.selectedFace,
-        selectedFacePlane: faceSelection.selectedFacePlane,
-        setSelectedFace: faceSelection.setSelectedFace,
-        isFaceSelecting: faceSelection.isFaceSelecting,
+        selectedFace,
+        selectedFacePlane,
+        setSelectedFace,
+        isFaceSelecting,
         startFaceSelection: startFaceSelectionWithDialog,
-        cancelFaceSelection: faceSelection.cancelFaceSelection,
+        cancelFaceSelection,
         sketchMode: selectionCtx.sketchMode,
         setSketchMode: selectionCtx.setSketchMode,
         sketches: selectionCtx.sketches,
@@ -127,18 +122,9 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         toggleVisibility: selectionCtx.toggleVisibility,
         openPanel: uiCtx.openPanel,
         closePanel: uiCtx.closePanel,
-        renameItem: (oldName: string, newName: string) => {
-            if (!codeCtx.code) return;
-            // Lazy load or import refactoring manager to avoid circular deps if needed?
-            // But we can import it directly.
-            // Ideally we should move this logic to a helper or hook, but here is fine for now.
-            import('../features/modeling/RefactoringManager').then(({ refactoringManager }) => {
-                const newCode = refactoringManager.renameVariable(codeCtx.code, oldName, newName);
-                if (newCode !== codeCtx.code) {
-                    codeCtx.setCode(newCode);
-                }
-            });
-        },
+        renameItem: codeCtx.renameItem,
+        deleteItem: codeCtx.deleteItem,
+        deleteHistoryItem: codeCtx.deleteHistoryItem,
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,
@@ -160,35 +146,15 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         addConstraint: sketchingCtx.addConstraint,
         selectEntity: sketchingCtx.selectEntity,
         clearSelection: sketchingCtx.clearSelection,
+        clearAll: sketchingCtx.clearAll,
         solve: sketchingCtx.solve,
         // New: Code generation context
-        codeContext,
+        codeContext: codeCtx.codeContext,
         /**
          * Safely applies code after validating it with the Agent API.
          * Returns true if successful, false if validation failed.
          */
-        applyCodeSafe: async (newCode: string): Promise<boolean> => {
-            try {
-                // Dynamic import to avoid circular dependency if AgentAPI depends on things that depend on this
-                const { agentAPI } = await import('../agent/AgentAPI');
-                const result = await agentAPI.evaluateCode(newCode);
-
-                if (result.errors && result.errors.length > 0) {
-                    const msg = "AI Validation Failed:\n" + result.errors.join('\n');
-                    console.error(msg);
-                    alert(msg);
-                    return false;
-                }
-
-                codeCtx.setCode(newCode);
-                return true;
-            } catch (e: unknown) {
-                const message = e instanceof Error ? e.message : String(e);
-                console.error("Safety Check Error:", e);
-                alert("Safety Check Error: " + message);
-                return false;
-            }
-        }
+        applyCodeSafe: codeCtx.applyCodeSafe
     }), [
         codeCtx,
         uiCtx.viewMode,
@@ -205,12 +171,13 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         uiCtx.closePanel,
         uiCtx.contextMenu,
         uiCtx.setContextMenu,
-        faceSelection.selectedFace,
-        faceSelection.selectedFacePlane,
-        faceSelection.setSelectedFace,
-        faceSelection.isFaceSelecting,
+        // faceSelection removed
+        selectedFace,
+        selectedFacePlane,
+        setSelectedFace,
+        isFaceSelecting,
         startFaceSelectionWithDialog,
-        faceSelection.cancelFaceSelection,
+        cancelFaceSelection,
         selectionCtx.sketchMode,
         selectionCtx.setSketchMode,
         selectionCtx.sketches,
@@ -249,8 +216,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         sketchingCtx.addConstraint,
         sketchingCtx.selectEntity,
         sketchingCtx.clearSelection,
+        sketchingCtx.clearAll,
         sketchingCtx.solve,
-        codeContext,
     ]);
 
     return <WorkbenchContext.Provider value={value}>{children}</WorkbenchContext.Provider>;

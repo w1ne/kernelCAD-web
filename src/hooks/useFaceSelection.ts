@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { getReturnedVariables } from '../lib/ast';
 import type { GeometryResult } from '../lib/geometryEngine';
 import type { SketchModeState } from '../types/sketch';
+import { buildFaceSketchPlaneEntity } from '../lib/sketchPlane';
 
 export interface FaceSelection {
     shapeIndex: number;
@@ -42,15 +43,15 @@ export function useFaceSelection({
     const [selectedFacePlane, setSelectedFacePlane] = useState<FacePlane | null>(null);
     const [isFaceSelecting, setIsFaceSelecting] = useState(false);
 
-    const startFaceSelection = () => {
+    const startFaceSelection = useCallback(() => {
         setIsFaceSelecting(true);
-    };
+    }, []);
 
-    const cancelFaceSelection = () => {
+    const cancelFaceSelection = useCallback(() => {
         setIsFaceSelecting(false);
-    };
+    }, []);
 
-    const setSelectedFace = (selection: FaceSelection | null) => {
+    const setSelectedFace = useCallback((selection: FaceSelection | null) => {
         setSelectedFaceState(selection);
 
         if (selection && geometries[selection.shapeIndex]) {
@@ -77,32 +78,36 @@ export function useFaceSelection({
 
                 onSketchModeChange({
                     active: true,
-                    plane: {
-                        id: `face-${selection.faceId}-${Date.now()}`,
-                        name: targetName ? `Face ${selection.faceId} of ${targetName}` : `Face ${selection.faceId}`,
-                        type: 'face',
+                    plane: buildFaceSketchPlaneEntity({
+                        faceId: selection.faceId,
+                        targetName,
                         origin: plane!.origin,
                         normal: plane!.normal,
-                        xDir: plane!.xDir,
-                        visible: true,
-                        parentId: targetName || undefined,
-                        faceId: selection.faceId
-                    },
+                        xDir: plane!.xDir
+                    }),
                     currentSketch: null,
                     tool: 'line'
                 });
-                setIsFaceSelecting(false);
+                // We should ideally use a ref for isFaceSelecting if we want to avoid dependency loop,
+                // but since this is an event handler, it's tricky.
+                // Actually, isFaceSelecting is state.
+                // We can't access current state in useCallback without adding it to deps.
+                // If we add it to deps, function changes when state changes.
+                // That's acceptable.
             } else if (isFaceSelecting && !isValidPlane) {
-                // Invalid plane - cancel face selection and show error
                 if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
                     console.error('Selected face does not have a valid planar surface. Only flat faces can be sketched on.');
                 }
+            }
+            // Always turn off face selection after a click in selection mode?
+            // Original logic:
+            if (isFaceSelecting) {
                 setIsFaceSelecting(false);
             }
         } else {
             setSelectedFacePlane(null);
         }
-    };
+    }, [geometries, code, onSketchModeChange, isFaceSelecting]);
 
     return {
         selectedFace,

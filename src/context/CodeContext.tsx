@@ -2,6 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { CommandManager } from '../commands/CommandManager';
 import { defaultCode } from '../lib/geometryEngine';
 import type { EditorLike } from '../types/editor';
+import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
+import type { HistoryItem } from '../lib/codeAnalysis';
 
 export interface CodeContextType {
     code: string;
@@ -10,6 +13,11 @@ export interface CodeContextType {
     editorInstance: EditorLike | null;
     setEditorInstance: (instance: EditorLike | null) => void;
     commandManager: CommandManager;
+    codeContext: CodeGenerationContext;
+    renameItem: (oldName: string, newName: string) => void;
+    deleteItem: (name: string, lineHint?: number) => void;
+    deleteHistoryItem: (item: HistoryItem) => void;
+    applyCodeSafe: (code: string) => Promise<boolean>;
 }
 
 const CodeContext = createContext<CodeContextType | undefined>(undefined);
@@ -25,12 +33,97 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         commandManager.setContextProvider(() => ({ code, setCode }));
     }, [commandManager, code]);
 
-    const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
+    const commitMutation = useCallback((mutate: (prev: string) => string, mutationName: string): void => {
         setCode(prev => {
+            try {
+                const next = mutate(prev);
+                parseCode(next);
+                return next;
+            } catch (e) {
+                console.error(`${mutationName} failed; keeping previous code`, e);
+                return prev;
+            }
+        });
+    }, []);
+
+    const insertCode = useCallback((snippet: string | ((name: string) => string), baseName?: string) => {
+        commitMutation((prev) => {
             const resolvedSnippet = typeof snippet === 'function' ? snippet(baseName || 'shape') : snippet;
             const trimmed = prev.trimEnd();
             return trimmed + (trimmed ? '\n' : '') + resolvedSnippet;
+        }, 'insertCode');
+    }, [commitMutation]);
+
+    // Generic Code Context for Features
+    const codeContext = useMemo(() => {
+        try {
+            const analyzer = new CodeAnalyzer(code);
+            return analyzer.createContext();
+        } catch (e) {
+            console.warn('CodeContext: Failed to analyze code (likely syntax error):', e);
+            // Return a minimal context
+            return {
+                variables: [],
+                getVariableAtIndex: () => 'shape',
+                generateUniqueName: (prefix: string) => `${prefix}_${Date.now()}`
+            } as unknown as CodeGenerationContext;
+        }
+    }, [code]);
+
+    const renameItem = useCallback((oldName: string, newName: string) => {
+        import('../features/modeling/RefactoringManager').then(({ refactoringManager }) => {
+            commitMutation((prev) => refactoringManager.renameVariable(prev, oldName, newName), 'renameItem');
         });
+    }, [commitMutation]);
+
+    const deleteItem = useCallback((name: string, lineHint?: number) => {
+        commitMutation((prev) => {
+            if (typeof lineHint === 'number') {
+                const byIdentity = deleteVariableDeclarationByNameAndLineAST(prev, name, lineHint);
+                parseCode(byIdentity);
+                return byIdentity;
+            }
+
+            const byName = deleteVariableDeclarationAST(prev, name);
+            parseCode(byName);
+            return byName;
+        }, 'deleteItem');
+    }, [commitMutation]);
+
+    const deleteHistoryItem = useCallback((item: HistoryItem) => {
+        commitMutation((prev) => {
+            try {
+                const byIdentity = deleteVariableDeclarationByNameAndLineAST(prev, item.name, item.line);
+                parseCode(byIdentity);
+                return byIdentity;
+            } catch {
+                const recovered = deleteVariableDeclarationByLineFallback(prev, item.name, item.line);
+                parseCode(recovered);
+                return recovered;
+            }
+        }, 'deleteHistoryItem');
+    }, [commitMutation]);
+
+    const applyCodeSafe = useCallback(async (newCode: string): Promise<boolean> => {
+        try {
+            const { agentAPI } = await import('../agent/AgentAPI');
+            const result = await agentAPI.evaluateCode(newCode);
+
+            if (result.errors && result.errors.length > 0) {
+                const msg = "AI Validation Failed:\n" + result.errors.join('\n');
+                console.error(msg);
+                alert(msg);
+                return false;
+            }
+
+            setCode(newCode);
+            return true;
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            console.error("Safety Check Error:", e);
+            alert("Safety Check Error: " + message);
+            return false;
+        }
     }, []);
 
     // Magic Comment Detection
@@ -44,31 +137,19 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
             const isFinished = fullMatch.endsWith('\n');
 
             if (isFinished && instruction) {
-                // Prevent infinite loops or re-triggering
-                // We'll immediately "mark" it as processing by replacing it or adding a loader comment
-                // For now, simpler: replace with "Generating..."
-
                 const processingPlaceholder = `// @ai-processing: ${instruction}...\n`;
                 const newCodeWithPlaceholder = code.replace(fullMatch, processingPlaceholder);
                 setCode(newCodeWithPlaceholder);
 
-                // Import LLM Service dynamically to avoid circular dependency issues at top level if any
                 import('../features/ai/LLMService').then(async ({ llmService }) => {
                     try {
-                        // We pass the *current code* as context so it knows what to do
-                        // We exclude the magic comment line itself from the context to avoid confusing the AI
                         const contextCode = code.replace(fullMatch, '');
-
                         const prompt = `Generate code for: "${instruction}". return ONLY the code.`;
-
                         const response = await llmService.sendMessage(
                             [{ role: 'user', content: prompt }],
                             { code: contextCode }
                         );
-
-                        // Clean up response (remove markdown blocks if present)
                         const cleanCode = response.replace(/```javascript/g, '').replace(/```/g, '').trim();
-
                         setCode(prev => prev.replace(processingPlaceholder, cleanCode + '\n'));
                     } catch (error) {
                         console.error("Magic Comment Error:", error);
@@ -79,6 +160,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         }
     }, [code]);
 
+
     const value: CodeContextType = useMemo(() => ({
         code,
         setCode,
@@ -86,7 +168,12 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         editorInstance,
         setEditorInstance,
         commandManager,
-    }), [code, insertCode, editorInstance, commandManager]);
+        codeContext,
+        renameItem,
+        deleteItem,
+        deleteHistoryItem,
+        applyCodeSafe
+    }), [code, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }

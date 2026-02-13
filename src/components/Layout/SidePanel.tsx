@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { extractVariables, type VariableDefinition } from '../../lib/codeAnalysis';
+import { extractHistoryItems, type HistoryItem } from '../../lib/codeAnalysis';
 import { AIAssistant } from '../../features/ai/AIAssistant';
 
 interface SidePanelProps {
@@ -22,14 +22,29 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
         toggleVisibility,
         selectedItemIds,
         toggleSelection,
-        renameItem
+        renameItem,
+        deleteHistoryItem
     } = useWorkbench();
 
     const [activeTab, setActiveTab] = useState<'scene' | 'ai'>('scene');
 
     // We compute items on the fly. 
     // In a real app we might memoize this or put it in context.
-    const items = extractVariables(code);
+    const items = extractHistoryItems(code);
+    const selectedHistoryId = selectedItemId
+        ? (items.find((item) => item.id === selectedItemId)?.id
+            ?? items.find((item) => item.name === selectedItemId)?.id
+            ?? selectedItemId)
+        : null;
+    const hoveredHistoryId = hoveredItemId
+        ? (items.find((item) => item.id === hoveredItemId)?.id
+            ?? items.find((item) => item.name === hoveredItemId)?.id
+            ?? hoveredItemId)
+        : null;
+    const selectedHistoryIds = selectedItemIds
+        .map((id) => items.find((item) => item.id === id)?.id
+            ?? items.find((item) => item.name === id)?.id
+            ?? id);
 
     return (
         <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
@@ -55,21 +70,37 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
                     <SceneBrowser
                         items={items}
                         planes={planes}
-                        selectedItemId={selectedItemId}
-                        selectedItemIds={selectedItemIds}
-                        hoveredItemId={hoveredItemId}
+                        selectedItemId={selectedHistoryId}
+                        selectedItemIds={selectedHistoryIds}
+                        hoveredItemId={hoveredHistoryId}
                         hiddenIds={hiddenIds}
-                        onSelect={(item: VariableDefinition) => {
+                        onSelect={(item: HistoryItem) => {
                             setViewMode('code');
-                            setSelectedItemId(item.name);
+                            setSelectedItemId(item.id);
                             onJumpToLine(item.line);
                         }}
                         onToggleSelection={toggleSelection}
-                        onHover={setHoveredItemId}
+                        onHover={(id) => {
+                            if (!id) {
+                                setHoveredItemId(null);
+                                return;
+                            }
+                            const item = items.find((entry) => entry.id === id);
+                            setHoveredItemId(item?.name ?? id);
+                        }}
                         onToggleVisibility={toggleVisibility}
                         onTogglePlane={togglePlaneVisibility}
                         onSelectPlane={(id) => setSelectedItemId(id)}
                         onRename={renameItem}
+                        onDelete={(item) => {
+                            deleteHistoryItem(item);
+                            if (selectedHistoryId === item.id) {
+                                setSelectedItemId(null);
+                            }
+                            if (hoveredHistoryId === item.id) {
+                                setHoveredItemId(null);
+                            }
+                        }}
                     />
                 ) : (
                     <AIAssistant />

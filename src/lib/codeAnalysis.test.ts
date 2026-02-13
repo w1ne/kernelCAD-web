@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
-import { generateUniqueName, extractVariables } from './codeAnalysis';
+import { generateUniqueName, extractVariables, extractHistoryItems } from './codeAnalysis';
 
 describe('codeAnalysis', () => {
     describe('generateUniqueName', () => {
@@ -45,6 +45,19 @@ const res = box.cut(cyl);
             expect(vars[0]).toEqual({ name: 'box', type: 'Box', line: 1 });
             expect(vars[1]).toEqual({ name: 'cyl', type: 'Cylinder', line: 2 });
             expect(vars[2]).toEqual({ name: 'res', type: 'Cut', line: 3 });
+        });
+    });
+
+    describe('extractHistoryItems', () => {
+        it('should return stable ids for AST-extracted items', () => {
+            const code = `
+const box = replicad.makeBox(10, 10, 10);
+const sketch = new Sketcher('XY').lineTo([1, 1]).done();
+            `.trim();
+            const items = extractHistoryItems(code);
+            expect(items).toHaveLength(2);
+            expect(items[0].id).toContain('box:1:');
+            expect(items[1].id).toContain('sketch:2:');
         });
     });
 });
