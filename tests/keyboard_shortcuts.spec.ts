@@ -69,4 +69,46 @@ return replicad.makeBox(10, 10, 10);
     await page.keyboard.press('Escape');
     await expect(page.locator('[id^="panel-title-"]', { hasText: 'Extrude' })).toHaveCount(0);
   });
+
+  test('Delete removes selected history sketch even when editor is focused', async ({ page }) => {
+    const code = `
+const sketch = new Sketcher('XY')
+  .movePointerTo([0, 0])
+  .hLine(10)
+  .vLine(10)
+  .hLine(-10)
+  .close();
+return [replicad.makeBox(10, 10, 10), sketch];
+    `.trim();
+
+    const count = await getNextExecutionCount(page);
+    await page.evaluate((c) => (window as any).setCode?.(c), code);
+    await waitForStability(page, count);
+
+    const sketchItem = page.locator('[data-testid^="scene-item-sketch"]').first();
+    await expect(sketchItem).toBeVisible();
+    await sketchItem.click();
+
+    await page.evaluate(() => {
+      const ta = document.querySelector('.monaco-editor textarea') as HTMLTextAreaElement | null;
+      ta?.focus();
+    });
+    await page.waitForFunction(() => document.activeElement?.tagName?.toLowerCase() === 'textarea');
+    await page.keyboard.press('Delete');
+
+    await expect
+      .poll(async () => {
+        const nextCode = await page.evaluate(() => (window as any).getCode?.() || '');
+        return {
+          hasSketchDecl: nextCode.includes('const sketch'),
+          hasCorruption: nextCode.includes('onst sketch'),
+          hasReturnSketchRef: /\breturn\s*\[[^\]]*\bsketch\b/.test(nextCode),
+        };
+      }, { timeout: 10000 })
+      .toEqual({
+        hasSketchDecl: false,
+        hasCorruption: false,
+        hasReturnSketchRef: false,
+      });
+  });
 });
