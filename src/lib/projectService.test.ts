@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { projectService, type KernelCADProject } from './projectService';
+import { projectService } from './projectService';
 
 describe('projectService', () => {
     const mockCode = 'const box = show(makeBox(10, 10, 10));';
@@ -20,7 +20,7 @@ describe('projectService', () => {
 
     it('creates a project with correct version and metadata', () => {
         const project = projectService.createProject(mockCode, mockViewState, 'Test Project');
-        expect(project.version).toBe('1.0');
+        expect(project.version).toBe('1.1');
         expect(project.name).toBe('Test Project');
         expect(project.code).toBe(mockCode);
         expect(project.viewState).toEqual(mockViewState);
@@ -35,7 +35,34 @@ describe('projectService', () => {
     it('invalidates an incorrect project', () => {
         expect(projectService.validateProject({})).toBe(false);
         expect(projectService.validateProject({ version: '1.0' })).toBe(false);
-        expect(projectService.validateProject({ version: '1.0', code: '' })).toBe(false);
+        expect(projectService.validateProject({ version: '1.0', code: 123 })).toBe(false);
+        expect(projectService.validateProject({
+            version: '9.9',
+            name: 'X',
+            code: 'return 1;',
+            viewState: mockViewState,
+            lastUpdated: new Date().toISOString()
+        })).toBe(false);
+    });
+
+    it('migrates legacy 1.0 project from localStorage', () => {
+        localStorage.setItem('kernelcad_current_project', JSON.stringify({
+            version: '1.0',
+            name: 'Legacy',
+            code: mockCode,
+            viewState: {
+                viewMode: 'gui'
+            },
+            lastUpdated: 'invalid-date'
+        }));
+
+        const loaded = projectService.loadFromLocalStorage();
+        expect(loaded).not.toBeNull();
+        expect(loaded?.version).toBe('1.1');
+        expect(loaded?.viewState.viewMode).toBe('gui');
+        expect(loaded?.viewState.viewMode3D).toBe('shadedWithEdges');
+        expect(loaded?.viewState.sidePanelVisible).toBe(true);
+        expect(loaded?.viewState.showSketches).toBe(true);
     });
 
     it('persists and loads from localStorage', () => {
@@ -77,5 +104,18 @@ describe('projectService', () => {
         expect(mockLink.href).toBe('blob:test');
         expect(mockLink.click).toHaveBeenCalled();
         expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
+    });
+
+    it('rejects unsupported project versions when loading from file', async () => {
+        const json = JSON.stringify({
+            version: '2.5',
+            name: 'Future',
+            code: mockCode,
+            viewState: mockViewState,
+            lastUpdated: new Date().toISOString()
+        });
+        const file = new File([json], 'bad.kcad', { type: 'application/json' });
+
+        await expect(projectService.loadProjectFromFile(file)).rejects.toThrow('Unsupported project version: 2.5');
     });
 });

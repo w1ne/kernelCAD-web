@@ -23,6 +23,35 @@ declare global {
     isComputing?: () => boolean;
     getExecutionCount?: () => number;
     getError?: () => string | null;
+    getGeometryMetrics?: () => {
+      staleMainResponsesDropped: number;
+      stalePreviewResponsesDropped: number;
+      currentCodeRevision: number;
+      lastSuccessfulRevision: number | null;
+      executionHistoryLength: number;
+    };
+    getExecutionHistory?: () => Array<{
+      revision: number;
+      status: 'success' | 'error' | 'stale';
+      error?: string;
+      executionCountAtRecord: number;
+    }>;
+    getEngineDiagnostics?: () => {
+      initFailures: number;
+      workerCrashes: number;
+      protocolViolations: number;
+      requestTimeouts: number;
+      requestsSent: number;
+      requestsResolved: number;
+      requestsRejected: number;
+    };
+    resetEngineDiagnostics?: () => void;
+    getMutationDiagnostics?: () => {
+      attempts: number;
+      succeeded: number;
+      failed: number;
+    };
+    resetMutationDiagnostics?: () => void;
     isEngineReady?: boolean;
 
     // Monaco is used in some Playwright suites

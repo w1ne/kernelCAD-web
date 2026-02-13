@@ -15,6 +15,7 @@ import type { SketchPlaneEntity } from '../../types/plane';
 import { generateSketchCode, generateSketchBody } from '../../lib/sketchCodegen';
 import { Loader2 } from 'lucide-react';
 import { extractHistoryItems, extractVariables } from '../../lib/codeAnalysis';
+import { GeometryEngine } from '../../lib/geometryEngine';
 
 // Modular Panels
 import { EditorPanel } from './EditorPanel';
@@ -32,6 +33,7 @@ export function WorkbenchLayout() {
         viewMode3D,
         code,
         setCode,
+        mutateCode,
         commandManager,
         geometries,
         sketchesGeometries,
@@ -70,6 +72,13 @@ export function WorkbenchLayout() {
         clearAll,
         isComputing,
         executionCount,
+        currentCodeRevision,
+        lastSuccessfulRevision,
+        executionHistory,
+        staleMainResponsesDropped,
+        stalePreviewResponsesDropped,
+        getMutationDiagnostics,
+        resetMutationDiagnostics,
         setSelectedFace,
         startFaceSelection
     } = useWorkbench();
@@ -100,6 +109,18 @@ export function WorkbenchLayout() {
             w.isComputing = () => isComputing;
             w.getExecutionCount = () => executionCount;
             w.getError = () => error;
+            w.getGeometryMetrics = () => ({
+                staleMainResponsesDropped,
+                stalePreviewResponsesDropped,
+                currentCodeRevision,
+                lastSuccessfulRevision,
+                executionHistoryLength: executionHistory.length,
+            });
+            w.getExecutionHistory = () => executionHistory;
+            w.getEngineDiagnostics = () => GeometryEngine.getInstance().getDiagnostics();
+            w.resetEngineDiagnostics = () => GeometryEngine.getInstance().resetDiagnostics();
+            w.getMutationDiagnostics = () => getMutationDiagnostics();
+            w.resetMutationDiagnostics = () => resetMutationDiagnostics();
 
             // Face selection
             w.startFaceSelection = () => {
@@ -120,7 +141,7 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {
@@ -156,7 +177,7 @@ export function WorkbenchLayout() {
                     if (activeDialog) return;
                     f.execute({
                         insertCode,
-                        setCode,
+                        mutateCode,
                         code,
                         setActiveDialog,
                         openPanel,
@@ -167,7 +188,7 @@ export function WorkbenchLayout() {
             }
         });
         return shortcuts;
-    }, [features, activeDialog, insertCode, setCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
+    }, [features, activeDialog, insertCode, mutateCode, code, setActiveDialog, openPanel, closePanel, codeContext]);
 
     const handleToolClick = React.useCallback((feature: Feature) => {
         if (activeDialog) return;
@@ -188,7 +209,7 @@ export function WorkbenchLayout() {
             } else {
                 feature.execute({
                     insertCode,
-                    setCode,
+                    mutateCode,
                     setActiveDialog,
                     openPanel,
                     closePanel,
@@ -197,7 +218,7 @@ export function WorkbenchLayout() {
                 }, undefined);
             }
         }
-    }, [openPanel, setActiveDialog, insertCode, setCode, closePanel, code, codeContext, activeDialog]);
+    }, [openPanel, setActiveDialog, insertCode, mutateCode, closePanel, code, codeContext, activeDialog]);
 
     // Use a ref for handleToolClick to avoid re-registering commands when it changes due to code updates
     const handleToolClickRef = React.useRef(handleToolClick);
@@ -283,6 +304,11 @@ export function WorkbenchLayout() {
         'mod+2': () => {
             setViewMode('gui');
         }
+    }, {
+        shouldAllowInTypingTarget: ({ key }) => {
+            if (key !== 'delete' && key !== 'backspace') return false;
+            return Boolean(selectedItemId);
+        }
     });
 
 
@@ -354,7 +380,7 @@ export function WorkbenchLayout() {
         if (activeFeature) {
             activeFeature.execute({
                 insertCode,
-                setCode,
+                mutateCode,
                 setActiveDialog,
                 openPanel,
                 closePanel,

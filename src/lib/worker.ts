@@ -577,12 +577,13 @@ self.onmessage = (e: MessageEvent<unknown>) => {
 
         const geometries: GeometryResult[] = [];
         const returnedSketches: SketchGeometry[] = [];
+        let returnedSketchSeq = 0;
 
         shapes.forEach((shape, shapeIndex) => {
           try {
-            console.log(`Worker: Processing shape ${shapeIndex}...`);
+            if (DEBUG) console.log(`Worker: Processing shape ${shapeIndex}...`);
             if (!isRecord(shape)) {
-              console.log(`Worker: Shape ${shapeIndex} is not a record:`, typeof shape);
+              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} is not a record:`, typeof shape);
               return;
             }
 
@@ -594,7 +595,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
             }
 
             const facesRaw = shape.faces;
-            console.log(`Worker: Shape ${shapeIndex} faces accessed.`);
+            if (DEBUG) console.log(`Worker: Shape ${shapeIndex} faces accessed.`);
 
             const faces = (() => {
               if (Array.isArray(facesRaw)) return facesRaw;
@@ -605,7 +606,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
               return Array.from(facesRaw as unknown as ArrayLike<unknown>);
             })();
 
-            console.log(`Worker: Shape ${shapeIndex} faces retrieved: ${faces?.length || 0}`);
+            if (DEBUG) console.log(`Worker: Shape ${shapeIndex} faces retrieved: ${faces?.length || 0}`);
 
             const faceGeometries: FaceGeometry[] = [];
             if (Array.isArray(faces)) {
@@ -640,7 +641,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
                 console.warn(`Worker: Failed to mesh edges for shape ${shapeIndex}`, e);
               }
 
-              console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}, Edges: ${edges?.length ? (edges.length / 3) + ' pts' : 'none'}`);
+              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}, Edges: ${edges?.length ? (edges.length / 3) + ' pts' : 'none'}`);
               geometries.push({ faces: faceGeometries, volume, edges });
             } else {
               console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
@@ -648,9 +649,10 @@ self.onmessage = (e: MessageEvent<unknown>) => {
 
             const wire = getWire(shape);
             if (wire) {
-              console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
+              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
               try {
-                const sketch = meshWireToSketch(wire, `return-sketch-${shapeIndex}-${Date.now()}`, `sketch_ret_${shapeIndex + 1}`);
+                const sketchId = `return-sketch-${shapeIndex}-seq-${returnedSketchSeq++}`;
+                const sketch = meshWireToSketch(wire, sketchId, `sketch_ret_${shapeIndex + 1}`);
                 if (sketch) returnedSketches.push(sketch);
               } catch (e) {
                 console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e);
@@ -661,13 +663,15 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           }
         });
 
+        let trackedSketchSeq = 0;
         const trackedSketches = activeSketches
           .map((s, index) => {
             try {
               const sketchObj = s.sketch;
               const wire = getWire(sketchObj) ?? getWire(s as unknown);
               if (!wire) return null;
-              return meshWireToSketch(wire, `sketch-${index}-${Date.now()}`, `sketch${index + 1}`);
+              const sketchId = `sketch-${index}-seq-${trackedSketchSeq++}`;
+              return meshWireToSketch(wire, sketchId, `sketch${index + 1}`);
             } catch (e) {
               console.warn(`Worker: Failed to track sketch ${index}:`, e);
               return null;

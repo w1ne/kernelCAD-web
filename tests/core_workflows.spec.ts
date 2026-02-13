@@ -23,6 +23,18 @@ async function waitForStability(page: Page, expectedCount?: number) {
         console.error(`DEBUG: CAD Engine Error detected: ${error}`);
         throw new Error(`CAD Engine Error: ${error}`);
     }
+    const diagnostics = await page.evaluate(() => (window as any).getEngineDiagnostics?.());
+    if (diagnostics) {
+        expect(diagnostics.workerCrashes).toBe(0);
+        expect(diagnostics.protocolViolations).toBe(0);
+        expect(diagnostics.requestTimeouts).toBe(0);
+    }
+    const geometryMetrics = await page.evaluate(() => (window as any).getGeometryMetrics?.());
+    if (geometryMetrics) {
+        // Stale drops can occur under rapid input, but should stay low in stable workflows.
+        expect(geometryMetrics.staleMainResponsesDropped).toBeLessThanOrEqual(2);
+        expect(geometryMetrics.stalePreviewResponsesDropped).toBeLessThanOrEqual(5);
+    }
     const currentCount = await page.evaluate(() => (window as any).getExecutionCount?.());
     console.log(`DEBUG: Stability reached (Count: ${currentCount}).`);
 }
@@ -54,6 +66,7 @@ test.describe('Core CAD Workflows E2E (Hardened)', () => {
         await page.goto('/');
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);
+        await page.evaluate(() => (window as any).resetEngineDiagnostics?.());
 
         // Wait for the initial defaultCode execution to finish (execution count 1)
         await waitForStability(page, 1);

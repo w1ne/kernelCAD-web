@@ -26,11 +26,18 @@ export function NavigationPanel({
             <div className="flex-1 relative overflow-hidden flex">
                 <Toolbar features={features} onToolClick={onToolClick} />
 
-                <div className="flex-1 h-full relative flex flex-col">
+                <div className="flex-1 h-full min-h-0 relative flex flex-col">
                     {sidePanelVisible && (
-                        <SidePanel onJumpToLine={onJumpToLine} />
+                        <div
+                            data-testid="sidepanel-slot"
+                            className={viewMode === 'code' ? 'shrink-0 basis-[45%] min-h-[220px] max-h-[65%] overflow-hidden' : 'flex-1 min-h-0 overflow-hidden'}
+                        >
+                            <SidePanel onJumpToLine={onJumpToLine} />
+                        </div>
                     )}
-                    {children}
+                    <div data-testid="editor-slot" className="flex-1 min-h-0">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

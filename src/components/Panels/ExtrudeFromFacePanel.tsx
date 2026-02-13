@@ -11,7 +11,7 @@ export function ExtrudeFromFacePanel() {
         codeContext,
         selectedFace,
         insertCode,
-        setCode,
+        mutateCode,
         code,
         setActiveDialog,
         openPanel
@@ -28,7 +28,7 @@ export function ExtrudeFromFacePanel() {
         ExtrudeFromFaceFeature.execute(
             {
                 insertCode,
-                setCode,
+                mutateCode,
                 setActiveDialog,
                 openPanel,
                 closePanel,

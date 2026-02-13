@@ -53,7 +53,7 @@ export const ExtrudeFromFaceFeature: Feature<ExtrudeParams> = {
 
                 try {
                     const next = insertStatementsAndReplaceReturnAtIndex(workingCode, statements, idx, resultName);
-                    context.setCode(next);
+                    context.mutateCode(() => next, 'extrudeFromFace.rewrite');
                     context.closePanel('extrudeFromFace');
                     return;
                 } catch {

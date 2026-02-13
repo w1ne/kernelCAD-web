@@ -175,3 +175,94 @@ Use the same validity policy for:
 - History operations use AST identity, not text heuristics.
 - No code corruption from delete in reload/autosave scenarios.
 - Sketch placement logic comes from one service and is reproducible.
+- Code revisions remain authoritative; model state is derived and only advances on successful execution.
+
+---
+
+## 2026 Determinism & Reliability Backlog
+
+This backlog extends the refactor plan with concrete runtime determinism and failure-safety work.
+
+### Priority P0 (Blocker)
+
+#### P0.1 Worker init failure must be bounded and explicit
+- Problem: init can hang indefinitely when worker returns init error.
+- Action:
+  - reject `initialize()` promise on `ERROR/init`
+  - reject all pending requests on worker crash/protocol failure
+  - add request timeout guard
+- Refs:
+  - `src/lib/geometryEngine.ts`
+- Status: Completed (timeouts + init/crash/protocol rejection + diagnostics counters)
+
+#### P0.2 Stale async results must never overwrite latest state
+- Problem: Geometry results are applied without revision guard.
+- Action:
+  - add monotonic `revision`
+  - commit state only when response matches latest revision
+  - keep preview and committed channels isolated
+- Refs:
+  - `src/context/GeometryContext.tsx`
+- Status: Completed (latest-revision-wins + stale-drop counters)
+
+### Priority P1
+
+#### P1.1 Single transactional mutation gateway
+- Problem: code writes still occur via mixed pathways.
+- Action:
+  - add `CodeMutationService`
+  - route insert/delete/rename through one AST-based commit path
+  - deprecate direct modeling `setCode` writes
+- Refs:
+  - `src/context/CodeContext.tsx`
+  - `src/hooks/useCodeInsertion.ts`
+- Status: Completed for modeling flows (`FeatureContext` now mutation-boundary-only)
+
+#### P1.2 Replace time-based IDs with deterministic IDs
+- Problem: IDs based on `Date.now()` break reproducibility.
+- Action:
+  - use stable geometry fingerprint + deterministic sequence
+  - remove timestamp usage from worker sketch IDs
+- Refs:
+  - `src/lib/worker.ts`
+  - `src/context/CodeContext.tsx`
+- Status: Completed
+
+### Priority P2
+
+#### P2.1 Harden persistence schema and migrations
+- Problem: project validation is too permissive.
+- Action:
+  - strict schema validation for all persisted fields
+  - explicit migration chain by version
+  - reject unsupported versions with actionable error
+- Refs:
+  - `src/lib/projectService.ts`
+- Status: Completed (strict schema + migration + version rejection)
+
+#### P2.2 Feature registry determinism
+- Problem: duplicate feature registration overwrites silently.
+- Action:
+  - fail fast in non-test runtime on duplicate `feature.id`
+  - keep overwrite behavior test-only with explicit opt-in
+- Refs:
+  - `src/features/FeatureRegistry.ts`
+- Status: Completed (fail-fast outside tests)
+
+## Execution Order
+
+1. P0.1 worker failure contract
+2. P0.2 execution revision guard
+3. P1.1 mutation gateway
+4. P1.2 deterministic IDs
+5. P2 persistence + registry hardening
+
+## Test Matrix Additions
+
+- `worker_init_error_rejects_and_recovers`
+- `worker_crash_rejects_all_pending`
+- `stale_preview_response_ignored`
+- `stale_main_response_ignored`
+- `same_code_produces_stable_sketch_ids`
+- `invalid_project_payload_is_rejected`
+- `duplicate_feature_registration_fails`
