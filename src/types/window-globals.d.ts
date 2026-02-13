@@ -34,6 +34,12 @@ declare global {
       requestsRejected: number;
     };
     resetEngineDiagnostics?: () => void;
+    getMutationDiagnostics?: () => {
+      attempts: number;
+      succeeded: number;
+      failed: number;
+    };
+    resetMutationDiagnostics?: () => void;
     isEngineReady?: boolean;
 
     // Monaco is used in some Playwright suites

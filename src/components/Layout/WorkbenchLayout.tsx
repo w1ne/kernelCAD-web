@@ -74,6 +74,8 @@ export function WorkbenchLayout() {
         executionCount,
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
+        getMutationDiagnostics,
+        resetMutationDiagnostics,
         setSelectedFace,
         startFaceSelection
     } = useWorkbench();
@@ -110,6 +112,8 @@ export function WorkbenchLayout() {
             });
             w.getEngineDiagnostics = () => GeometryEngine.getInstance().getDiagnostics();
             w.resetEngineDiagnostics = () => GeometryEngine.getInstance().resetDiagnostics();
+            w.getMutationDiagnostics = () => getMutationDiagnostics();
+            w.resetMutationDiagnostics = () => resetMutationDiagnostics();
 
             // Face selection
             w.startFaceSelection = () => {
@@ -130,7 +134,7 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {

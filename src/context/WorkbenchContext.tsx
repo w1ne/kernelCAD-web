@@ -126,6 +126,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         renameItem: codeCtx.renameItem,
         deleteItem: codeCtx.deleteItem,
         deleteHistoryItem: codeCtx.deleteHistoryItem,
+        getMutationDiagnostics: codeCtx.getMutationDiagnostics,
+        resetMutationDiagnostics: codeCtx.resetMutationDiagnostics,
         // Geometry context
         geometries: geometryCtx.geometries,
         sketchesGeometries: geometryCtx.sketchesGeometries,

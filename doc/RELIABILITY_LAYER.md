@@ -122,7 +122,7 @@ Refs:
 - [x] Add migration pipeline (`v1 -> v2 -> ...`) and reject unsupported versions.
 
 ### Phase 4: Observability and Burn-In
-- [~] Add counters for stale response drops and engine failure/timeout diagnostics.
+- [~] Add counters for stale response drops, engine failure/timeout diagnostics, and code mutation attempts/success/failures.
 - [ ] Add regression tests for each failure mode.
 
 ## Determinism Invariants

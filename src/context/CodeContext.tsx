@@ -5,7 +5,7 @@ import type { EditorLike } from '../types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
 import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
 import type { HistoryItem } from '../lib/codeAnalysis';
-import { CodeMutationService, type CodeTransform } from '../lib/CodeMutationService';
+import { CodeMutationService, type CodeMutationDiagnostics, type CodeTransform } from '../lib/CodeMutationService';
 
 export interface CodeContextType {
     code: string;
@@ -20,6 +20,8 @@ export interface CodeContextType {
     deleteItem: (name: string, lineHint?: number) => void;
     deleteHistoryItem: (item: HistoryItem) => void;
     applyCodeSafe: (code: string) => Promise<boolean>;
+    getMutationDiagnostics: () => Readonly<CodeMutationDiagnostics>;
+    resetMutationDiagnostics: () => void;
 }
 
 const CodeContext = createContext<CodeContextType | undefined>(undefined);
@@ -134,6 +136,9 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         }
     }, [setCode]);
 
+    const getMutationDiagnostics = useCallback(() => mutationService.getDiagnostics(), [mutationService]);
+    const resetMutationDiagnostics = useCallback(() => mutationService.resetDiagnostics(), [mutationService]);
+
     // Magic Comment Detection
     useEffect(() => {
         const magicCommentRegex = /\/\/ @ai:(.+)(\n|$)/;
@@ -187,8 +192,10 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
         renameItem,
         deleteItem,
         deleteHistoryItem,
-        applyCodeSafe
-    }), [code, setCode, mutateCode, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe]);
+        applyCodeSafe,
+        getMutationDiagnostics,
+        resetMutationDiagnostics
+    }), [code, setCode, mutateCode, insertCode, editorInstance, commandManager, codeContext, renameItem, deleteItem, deleteHistoryItem, applyCodeSafe, getMutationDiagnostics, resetMutationDiagnostics]);
 
     return <CodeContext.Provider value={value}>{children}</CodeContext.Provider>;
 }

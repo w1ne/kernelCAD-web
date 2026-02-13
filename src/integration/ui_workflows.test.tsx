@@ -161,6 +161,8 @@ export default function main() {
             expect(typeof window.getGeometryMetrics).toBe('function');
             expect(typeof window.getEngineDiagnostics).toBe('function');
             expect(typeof window.resetEngineDiagnostics).toBe('function');
+            expect(typeof window.getMutationDiagnostics).toBe('function');
+            expect(typeof window.resetMutationDiagnostics).toBe('function');
         });
 
         const historyId = 'box:1:1:10';
@@ -172,6 +174,11 @@ export default function main() {
         expect(window.getGeometryMetrics?.()).toEqual({
             staleMainResponsesDropped: 0,
             stalePreviewResponsesDropped: 0,
+        });
+        expect(window.getMutationDiagnostics?.()).toEqual({
+            attempts: 0,
+            succeeded: 0,
+            failed: 0,
         });
     });
 
