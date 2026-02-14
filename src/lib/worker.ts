@@ -23,6 +23,24 @@ function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
 
+/**
+ * Safely access a property or call a getter on a Replicad object.
+ * Returns null if the object is deleted or access fails.
+ */
+function getSafe(obj: unknown, key: string): unknown | null {
+  if (!isRecord(obj)) return null;
+  try {
+    const val = (obj as UnknownRecord)[key];
+    if (typeof val === 'function') {
+      return val.call(obj);
+    }
+    return val ?? null;
+  } catch (e) {
+    if (DEBUG) console.warn(`Worker: Failed to get property "${key}":`, e);
+    return null;
+  }
+}
+
 function getFn(obj: unknown, key: string): ((...args: unknown[]) => unknown) | null {
   if (!isRecord(obj)) return null;
   const val = obj[key];
@@ -413,41 +431,6 @@ function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry | null 
   };
 }
 
-function tryGetVolume(shape: unknown): number | undefined {
-  if (!isRecord(shape)) return undefined;
-
-  // Try measureVolume from replicad
-  try {
-    const v = (replicad as unknown as Record<string, (s: unknown) => unknown>).measureVolume(shape);
-    if (typeof v === 'number' && v !== 0) return v;
-  } catch {
-    // ignore
-  }
-
-  const raw = (isRecord(shape._wrapped) ? shape._wrapped : null) ?? (isRecord(shape.occ) ? shape.occ : null) ?? shape;
-
-  // Try to call volume() method with context
-  const volFn = getFn(raw, 'volume') ?? getFn(shape, 'volume');
-  if (volFn) {
-    try {
-      const context = getFn(raw, 'volume') ? raw : shape;
-      const v = volFn.call(context);
-      if (typeof v === 'number') return v;
-    } catch {
-      // ignore and look for property
-    }
-  }
-
-  // Try to read volume property
-  const volVal = (raw as UnknownRecord).volume;
-  if (typeof volVal === 'number') return volVal;
-
-  const shapeVolVal = (shape as UnknownRecord).volume;
-  if (typeof shapeVolVal === 'number') return shapeVolVal;
-
-  return undefined;
-}
-
 let isInitialized = false;
 let executionLock = Promise.resolve();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -527,7 +510,10 @@ self.onmessage = (e: MessageEvent<unknown>) => {
         if (DEBUG) console.log(`Worker: Executing code: ${code.substring(0, 100)}...`);
 
         const activeSketches: SafeSketcher[] = [];
-        const safeReplicad = createSafeReplicad(replicad, (sketch) => activeSketches.push(sketch));
+        const safeReplicad = createSafeReplicad(
+          replicad,
+          (sketch) => activeSketches.push(sketch),
+        );
 
         const wrappedStartSketch = () => {
           const SketcherCtor = (safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher }).Sketcher;
@@ -574,93 +560,94 @@ self.onmessage = (e: MessageEvent<unknown>) => {
               extrude,
             ),
         );
-        const shapes = (Array.isArray(result) ? result : [result]).filter(Boolean);
+
+        // Use the returned objects as the definitive list of shapes to render.
+        // Auto-Return ensures this includes all top-level variables.
+        // We preserve the array order to maintain alignment with the UI variable list.
+        const inputShapes = Array.isArray(result) ? result : (result ? [result] : []);
+
+        if (DEBUG) console.log(`Worker: Processing ${inputShapes.length} input shapes.`);
 
         const geometries: GeometryResult[] = [];
         const returnedSketches: SketchGeometry[] = [];
         let returnedSketchSeq = 0;
 
-        shapes.forEach((shape, shapeIndex) => {
+        inputShapes.forEach((shape, shapeIndex) => {
+          const faceGeometries: FaceGeometry[] = [];
+          let volume: number | undefined;
+          let edges: Float32Array | undefined;
+
           try {
             if (DEBUG) console.log(`Worker: Processing shape ${shapeIndex}...`);
-            if (!isRecord(shape)) {
-              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} is not a record:`, typeof shape);
-              return;
-            }
 
-            // Safety check for deleted objects
-            const isRec = isRecord(shape);
-            if (isRec && (shape as Record<string, unknown>).isDeleted) {
-              console.warn(`Worker: Shape ${shapeIndex} is marked as deleted!`);
-              return;
-            }
+            // Safety check for deleted objects using getSafe
+            const isDeleted = getSafe(shape, 'isDeleted');
+            if (isDeleted) {
+              if (DEBUG) console.warn(`Worker: Shape ${shapeIndex} is marked as deleted!`);
+            } else {
+              const facesRaw = getSafe(shape, 'faces');
+              const faces = (() => {
+                if (Array.isArray(facesRaw)) return facesRaw;
+                if (!isRecord(facesRaw)) return null;
 
-            const facesRaw = shape.faces;
-            if (DEBUG) console.log(`Worker: Shape ${shapeIndex} faces accessed.`);
+                const maybeLen = (facesRaw as { length?: unknown }).length;
+                if (typeof maybeLen !== 'number') return null;
+                return Array.from(facesRaw as unknown as ArrayLike<unknown>);
+              })();
 
-            const faces = (() => {
-              if (Array.isArray(facesRaw)) return facesRaw;
-              if (!isRecord(facesRaw)) return null;
-
-              const maybeLen = (facesRaw as { length?: unknown }).length;
-              if (typeof maybeLen !== 'number') return null;
-              return Array.from(facesRaw as unknown as ArrayLike<unknown>);
-            })();
-
-            if (DEBUG) console.log(`Worker: Shape ${shapeIndex} faces retrieved: ${faces?.length || 0}`);
-
-            const faceGeometries: FaceGeometry[] = [];
-            if (Array.isArray(faces)) {
-              faces.forEach((face, faceId) => {
-                try {
-                  const geometry = meshFaceToGeometry(face, faceId);
-                  if (geometry) faceGeometries.push(geometry);
-                } catch (e) {
-                  console.warn(`Worker: Failed to mesh face ${faceId} of shape ${shapeIndex}:`, e);
-                }
-              });
-            }
-
-            if (faceGeometries.length > 0) {
-              const volume = tryGetVolume(shape);
-
-              // Extract Analytical Edges
-              let edges: Float32Array | undefined;
-              try {
-                const meshEdgesFn = getFn(shape, 'meshEdges');
-                if (meshEdgesFn) {
-                  // Use a fine tolerance for visualization edges
-                  const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
-                  if (isRecord(edgeRes) && Array.isArray((edgeRes as UnknownRecord).lines)) {
-                    const lines = (edgeRes as UnknownRecord).lines as number[];
-                    if (lines.length > 0) {
-                      edges = new Float32Array(lines);
-                    }
+              if (faces && faces.length > 0) {
+                faces.forEach((face, faceIndex) => {
+                  try {
+                    const geometry = meshFaceToGeometry(face, faceIndex);
+                    if (geometry) faceGeometries.push(geometry);
+                  } catch (e) {
+                    if (DEBUG) console.warn(`Worker: Failed to mesh face ${faceIndex} of shape ${shapeIndex}`, e);
                   }
-                }
-              } catch (e) {
-                console.warn(`Worker: Failed to mesh edges for shape ${shapeIndex}`, e);
+                });
               }
 
-              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${volume}, Edges: ${edges?.length ? (edges.length / 3) + ' pts' : 'none'}`);
-              geometries.push({ faces: faceGeometries, volume, edges });
-            } else {
-              console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
-            }
+              if (faceGeometries.length > 0) {
+                try {
+                  const vol = getSafe(shape, 'volume');
+                  volume = typeof vol === 'number' ? vol : undefined;
+                } catch {
+                  // ignore
+                }
 
-            const wire = getWire(shape);
-            if (wire) {
-              if (DEBUG) console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
-              try {
-                const sketchId = `return-sketch-${shapeIndex}-seq-${returnedSketchSeq++}`;
-                const sketch = meshWireToSketch(wire, sketchId, `sketch_ret_${shapeIndex + 1}`);
-                if (sketch) returnedSketches.push(sketch);
-              } catch (e) {
-                console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e);
+                // Extract Analytical Edges
+                try {
+                  const meshEdgesFn = getFn(shape, 'meshEdges');
+                  if (meshEdgesFn) {
+                    const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+                    if (isRecord(edgeRes) && Array.isArray((edgeRes as UnknownRecord).lines)) {
+                      const lines = (edgeRes as UnknownRecord).lines as number[];
+                      if (lines.length > 0) {
+                        edges = new Float32Array(lines);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  if (DEBUG) console.warn(`Worker: Failed to mesh edges for shape ${shapeIndex}`, e);
+                }
+              }
+
+              const wire = getWire(shape);
+              if (wire) {
+                if (DEBUG) console.log(`Worker: Shape ${shapeIndex} has wire, meshing to sketch...`);
+                try {
+                  const sketchId = `return-sketch-${shapeIndex}-seq-${returnedSketchSeq++}`;
+                  const sketch = meshWireToSketch(wire, sketchId, `sketch_ret_${shapeIndex + 1}`);
+                  if (sketch) returnedSketches.push(sketch);
+                } catch (e) {
+                  if (DEBUG) console.warn(`Worker: Failed to mesh wire of shape ${shapeIndex}`, e);
+                }
               }
             }
           } catch (err) {
             console.error(`Worker: Fatal error processing shape ${shapeIndex}:`, err);
+          } finally {
+            // ALWAYS push an entry to geometries to maintain 1:1 alignment with inputShapes/UI variables
+            geometries.push({ faces: faceGeometries, volume, edges });
           }
         });
 

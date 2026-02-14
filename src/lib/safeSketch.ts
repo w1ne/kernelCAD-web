@@ -48,6 +48,7 @@ function isValidPoint(point: unknown): point is Point {
 export function createSafeReplicad<T extends ReplicadLike>(
   replicad: T,
   onSketchCreated?: (s: SafeSketcher) => void,
+  onShapeCreated?: (shape: unknown) => void,
 ): T {
   const safeReplicad = Object.create(replicad) as T;
 
@@ -55,7 +56,7 @@ export function createSafeReplicad<T extends ReplicadLike>(
     constructor(plane?: unknown) {
       const SketcherCtor = replicad.Sketcher as unknown as new (plane?: unknown) => SketcherLike;
       const realSketcher = new SketcherCtor(plane);
-      const instance = new SafeSketcher(realSketcher);
+      const instance = new SafeSketcher(realSketcher, onShapeCreated);
       onSketchCreated?.(instance);
       return instance;
     }
@@ -73,26 +74,49 @@ export function createSafeReplicad<T extends ReplicadLike>(
 
   if (typeof originalMakeBox === 'function' && typeof originalMakeBaseBox === 'function') {
     (safeReplicad as unknown as Record<string, unknown>).makeBox = (...args: unknown[]) => {
+      let result;
       if (args.length === 3 && args.every((a) => typeof a === 'number')) {
-        return originalMakeBaseBox.apply(safeReplicad, args);
+        result = originalMakeBaseBox.apply(safeReplicad, args);
+      } else {
+        result = originalMakeBox.apply(safeReplicad, args);
       }
-      return originalMakeBox.apply(safeReplicad, args);
+      onShapeCreated?.(result);
+      return result;
     };
   }
+
+  // Helper to wrap primitive creators
+  const wrapPrimitive = (name: string) => {
+    const original = (replicad as unknown as Record<string, unknown>)[name];
+    if (typeof original === 'function') {
+      (safeReplicad as unknown as Record<string, unknown>)[name] = (...args: unknown[]) => {
+        const result = (original as (...a: unknown[]) => unknown).apply(safeReplicad, args);
+        onShapeCreated?.(result);
+        return result;
+      };
+    }
+  };
+
+  wrapPrimitive('makeCylinder');
+  wrapPrimitive('makeSphere');
+  wrapPrimitive('makeCone');
+  wrapPrimitive('makeTorus');
 
   return safeReplicad;
 }
 
 export class SafeSketcher {
   private sketcher: SketcherLike;
+  private onShapeCreated?: (shape: unknown) => void;
   private currentPosition: Point | null = null;
   private isLoopOpen = false;
   private hasGeometry = false;
   private lastDoneResult: unknown = null;
   private readonly tolerance = 1e-6;
 
-  constructor(sketcher: unknown) {
+  constructor(sketcher: unknown, onShapeCreated?: (shape: unknown) => void) {
     this.sketcher = sketcher as SketcherLike;
+    this.onShapeCreated = onShapeCreated;
 
     // Return Proxy to forward unknown calls to underlying sketcher
     return new Proxy(this, {
@@ -224,7 +248,9 @@ export class SafeSketcher {
       throw new Error('Sketch result does not support extrude()');
     }
 
-    return (maybeExtrude as (d: number, cfg?: unknown) => unknown).call(doneResult, distance, config);
+    const result = (maybeExtrude as (d: number, cfg?: unknown) => unknown).call(doneResult, distance, config);
+    this.onShapeCreated?.(result);
+    return result;
   }
 
   revolve(revolutionAxis?: unknown, config?: unknown): unknown {
@@ -236,7 +262,9 @@ export class SafeSketcher {
       throw new Error('Sketch result does not support revolve()');
     }
 
-    return (maybeRevolve as (axis?: unknown, cfg?: unknown) => unknown).call(doneResult, revolutionAxis, config);
+    const result = (maybeRevolve as (axis?: unknown, cfg?: unknown) => unknown).call(doneResult, revolutionAxis, config);
+    this.onShapeCreated?.(result);
+    return result;
   }
 
   close(): unknown {
@@ -360,6 +388,7 @@ export class SafeSketcher {
     }
     const result = this.sketcher.done();
     this.lastDoneResult = result;
+    this.onShapeCreated?.(result);
     return result;
   }
 }

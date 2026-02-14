@@ -166,4 +166,46 @@ describe('SafeSketcher', () => {
         expect(() => safe.spline([[1, 1], [Infinity, 2]] as any)).toThrow('Invalid spline input');
         expect(mockSketcher.spline).not.toHaveBeenCalled();
     });
+
+    it('should call onShapeCreated upon extrude', () => {
+        const mockExtrudeResult = { type: 'shape' };
+        const mockDoneResult = {
+            extrude: vi.fn().mockReturnValue(mockExtrudeResult)
+        };
+        const mockSketcher = {
+            done: vi.fn().mockReturnValue(mockDoneResult),
+            hasGeometry: true
+        } as any;
+
+        const onShapeCreated = vi.fn();
+        const safe = new SafeSketcher(mockSketcher, onShapeCreated);
+        (safe as any).hasGeometry = true; // manually set for test
+
+        const result = safe.extrude(10);
+
+        expect(result).toBe(mockExtrudeResult);
+        expect(onShapeCreated).toHaveBeenCalledWith(mockExtrudeResult);
+    });
+
+    it('should wrap primitive creators in createSafeReplicad', () => {
+        const mockBox = { type: 'box' };
+        const mockCylinder = { type: 'cylinder' };
+        const mockReplicad = {
+            Sketcher: class { constructor() { } },
+            makeBox: vi.fn().mockReturnValue(mockBox),
+            makeBaseBox: vi.fn().mockReturnValue(mockBox),
+            makeCylinder: vi.fn().mockReturnValue(mockCylinder),
+        };
+
+        const onShapeCreated = vi.fn();
+        const safeReplicad = createSafeReplicad(mockReplicad as any, undefined, onShapeCreated);
+
+        const box = (safeReplicad as any).makeBox(10, 10, 10);
+        expect(box).toBe(mockBox);
+        expect(onShapeCreated).toHaveBeenCalledWith(mockBox);
+
+        const cylinder = (safeReplicad as any).makeCylinder(5, 10);
+        expect(cylinder).toBe(mockCylinder);
+        expect(onShapeCreated).toHaveBeenCalledWith(mockCylinder);
+    });
 });

@@ -11,6 +11,7 @@ import {
     WorkerResponseSchema,
     isSuccessResponse
 } from './workerTypes';
+import { getDeclaredVariablesAST } from './ast';
 
 // Re-export types for consumers
 export type { ExecutionResult, GeometryResult, SketchGeometry, FaceGeometry };
@@ -253,11 +254,34 @@ export class GeometryEngine {
     }
 
     /**
+     * Wraps user code to automatically return all top-level variables
+     * if no explicit return or drawPart is present.
+     */
+    private wrapCodeWithAutoReturn(code: string): string {
+        try {
+            // If the code already has a return or drawPart, we don't interfere
+            if (code.includes('return ') || code.includes('drawPart')) {
+                return code;
+            }
+
+            const variables = Array.from(getDeclaredVariablesAST(code));
+            if (variables.length === 0) return code;
+
+            const returnStmt = `\nreturn [${variables.join(', ')}];`;
+            return code + returnStmt;
+        } catch {
+            // If parsing fails for any reason, return original code and let the worker handle it
+            return code;
+        }
+    }
+
+    /**
      * Execute CAD code
      */
     public executeCode(code: string): Promise<ExecutionResult> {
         const id = this.nextRequestId();
-        return this.postToWorker<ExecutionResult>({ type: 'EXECUTE', id, code });
+        const wrappedCode = this.wrapCodeWithAutoReturn(code);
+        return this.postToWorker<ExecutionResult>({ type: 'EXECUTE', id, code: wrappedCode });
     }
 
     /**
@@ -265,7 +289,8 @@ export class GeometryEngine {
      */
     public exportSTEP(code: string): Promise<Blob> {
         const id = this.nextRequestId();
-        return this.postToWorker<Blob>({ type: 'EXPORT_STEP', id, code });
+        const wrappedCode = this.wrapCodeWithAutoReturn(code);
+        return this.postToWorker<Blob>({ type: 'EXPORT_STEP', id, code: wrappedCode });
     }
 
     /**
@@ -273,7 +298,8 @@ export class GeometryEngine {
      */
     public exportSTL(code: string): Promise<Blob> {
         const id = this.nextRequestId();
-        return this.postToWorker<Blob>({ type: 'EXPORT_STL', id, code });
+        const wrappedCode = this.wrapCodeWithAutoReturn(code);
+        return this.postToWorker<Blob>({ type: 'EXPORT_STL', id, code: wrappedCode });
     }
 }
 

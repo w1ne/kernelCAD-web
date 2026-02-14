@@ -8,7 +8,7 @@ import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import type { HoverResult } from "../features/interaction/HoverManager";
 import type { SnapResult } from "../features/interaction/SnapManager";
-import { extractReturnedHistoryItemIds } from "../lib/codeAnalysis";
+import { extractHistoryItems, extractReturnedHistoryItemIds, type HistoryItem } from "../lib/codeAnalysis";
 
 // Extracted Components
 import { SketchLine } from "./viewer/entities/SketchLine";
@@ -52,14 +52,26 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     const { setContextMenu } = useUI();
 
     const itemNames = useMemo(() => {
-        return (codeContext?.returnedVariables as (string | null)[]) || [];
-    }, [codeContext]);
+        const returned = (codeContext?.returnedVariables as (string | null)[]) || [];
+        if (returned.length > 0) return returned;
+
+        // Fallback: If no explicit return, match geometries to history items (variables) in order
+        const history = extractHistoryItems(code);
+        return history.map(h => h.name);
+    }, [codeContext, code]);
+
     const itemIds = useMemo(() => {
-        const ids = extractReturnedHistoryItemIds(code);
-        if (ids.length === itemNames.length) return ids;
-        // Keep array alignment with rendered geometry list even if parser cannot recover.
-        return itemNames.map((_, idx) => ids[idx] ?? null);
-    }, [code, itemNames]);
+        const returned = (codeContext?.returnedVariables as (string | null)[]) || [];
+        if (returned.length > 0) {
+            const ids = extractReturnedHistoryItemIds(code);
+            if (ids.length === returned.length) return ids;
+            return returned.map((_, idx) => ids[idx] ?? null);
+        }
+
+        // Fallback: Match to history item IDs
+        const history = extractHistoryItems(code);
+        return history.map((h: HistoryItem) => h.id);
+    }, [code, codeContext]);
 
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
