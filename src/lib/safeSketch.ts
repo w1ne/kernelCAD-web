@@ -29,12 +29,20 @@ type SketcherLike = {
     longAxis?: boolean,
     sweep?: boolean,
   ): unknown;
+  bezier?(control1: Point, control2: Point, endPoint: Point): unknown;
+  spline?(points: Point[]): unknown;
   sketch?: unknown;
   [key: string]: unknown;
 };
 
 function isPoint3(point: Point): point is [number, number, number] {
   return point.length === 3;
+}
+
+function isValidPoint(point: unknown): point is Point {
+  if (!Array.isArray(point)) return false;
+  if (point.length !== 2 && point.length !== 3) return false;
+  return point.every((coord) => typeof coord === 'number' && Number.isFinite(coord));
 }
 
 export function createSafeReplicad<T extends ReplicadLike>(
@@ -302,6 +310,43 @@ export class SafeSketcher {
     this.isLoopOpen = true;
     this.hasGeometry = true;
     this.sketcher.ellipse(xDist, yDist, horizontalRadius, verticalRadius, rotation, longAxis, sweep);
+    return this;
+  }
+
+  bezier(control1: Point, control2: Point, endPoint: Point): this {
+    if (!isValidPoint(control1) || !isValidPoint(control2) || !isValidPoint(endPoint)) {
+      throw new Error('Invalid bezier input: control points and endpoint must be finite 2D/3D points.');
+    }
+
+    const bezier = this.sketcher.bezier;
+    if (typeof bezier !== 'function') {
+      throw new Error('Sketcher does not support bezier().');
+    }
+
+    this.currentPosition = endPoint;
+    this.isLoopOpen = true;
+    this.hasGeometry = true;
+    bezier.call(this.sketcher, control1, control2, endPoint);
+    return this;
+  }
+
+  spline(points: Point[]): this {
+    if (!Array.isArray(points) || points.length < 2) {
+      throw new Error('Invalid spline input: at least 2 points are required.');
+    }
+    if (!points.every((p) => isValidPoint(p))) {
+      throw new Error('Invalid spline input: all points must be finite 2D/3D points.');
+    }
+
+    const spline = this.sketcher.spline;
+    if (typeof spline !== 'function') {
+      throw new Error('Sketcher does not support spline().');
+    }
+
+    this.currentPosition = points[points.length - 1] as Point;
+    this.isLoopOpen = true;
+    this.hasGeometry = true;
+    spline.call(this.sketcher, points);
     return this;
   }
 

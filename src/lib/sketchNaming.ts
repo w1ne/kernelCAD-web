@@ -1,5 +1,6 @@
 import type { SketchGeometry } from './geometryEngine';
 import { getSketchVariablesAST, getReturnedVariables } from './ast';
+import { extractHistoryItems } from './codeAnalysis';
 
 /**
  * Remaps sketch IDs to meaningful variable names from user code.
@@ -14,6 +15,12 @@ export function remapSketchNames(
     sketches: SketchGeometry[],
     code: string
 ): SketchGeometry[] {
+    const historyIdByName = (() => {
+        const map = new Map<string, string>();
+        extractHistoryItems(code).forEach((item) => map.set(item.name, item.id));
+        return map;
+    })();
+
     const sketchVarNames = (() => {
         try {
             return getSketchVariablesAST(code);
@@ -36,7 +43,10 @@ export function remapSketchNames(
         if (mTracked) {
             const idx = Number(mTracked[1]);
             const name = sketchVarNames[idx];
-            if (name) return { ...s, name };
+            if (name) {
+                const stableId = historyIdByName.get(name);
+                return stableId ? { ...s, name, id: stableId } : { ...s, name };
+            }
         }
 
         // Path B: Returned sketches (wires of returned shapes)
@@ -44,7 +54,10 @@ export function remapSketchNames(
         if (mReturned) {
             const idx = Number(mReturned[1]);
             const name = returnedVarNames[idx];
-            if (name) return { ...s, name };
+            if (name) {
+                const stableId = historyIdByName.get(name);
+                return stableId ? { ...s, name, id: stableId } : { ...s, name };
+            }
         }
 
         return s;

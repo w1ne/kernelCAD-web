@@ -9,13 +9,13 @@ export default defineConfig({
     // in parallel is flaky and starves the dev server. Keep runs deterministic.
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: 0,
     workers: 1,
     reporter: 'html',
     use: {
-        // Use IPv4 explicitly: in this sandbox, connecting to ::1 can fail with EPERM.
-        baseURL: 'http://127.0.0.1:5173',
-        trace: 'on-first-retry',
+        // Use a dedicated IPv4 port for e2e to avoid collisions with local dev sessions.
+        baseURL: 'http://127.0.0.1:4173',
+        trace: 'retain-on-failure',
     },
 
     projects: [
@@ -25,9 +25,11 @@ export default defineConfig({
         },
     ],
 
-    webServer: {
-        command: 'npm run dev -- --host 127.0.0.1 --port 5173',
-        url: 'http://127.0.0.1:5173',
-        reuseExistingServer: !process.env.CI,
-    },
+    webServer: process.env.PW_SKIP_WEBSERVER
+        ? undefined
+        : {
+            command: 'npm run dev -- --host 127.0.0.1 --port 4173',
+            url: 'http://127.0.0.1:4173',
+            reuseExistingServer: true,
+        },
 });

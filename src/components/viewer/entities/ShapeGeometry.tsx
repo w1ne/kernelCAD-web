@@ -14,6 +14,7 @@ interface ShapeProps {
     viewMode3D: ViewMode3D;
     isSelected: boolean;
     name: string | undefined;
+    itemId: string | undefined;
 }
 
 export function GhostShape({
@@ -70,7 +71,8 @@ export function ConsolidatedShape({
     shapeIndex,
     viewMode3D,
     isSelected,
-    name
+    name,
+    itemId
 }: ShapeProps) {
     const {
         selectedFace,
@@ -102,8 +104,8 @@ export function ConsolidatedShape({
         e.stopPropagation();
         const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
 
-        if (name && isMulti) {
-            toggleSelection(name, true);
+        if (itemId && isMulti) {
+            toggleSelection(itemId, true);
             return;
         }
 
@@ -116,7 +118,7 @@ export function ConsolidatedShape({
         }
 
         setSelectedFace({ shapeIndex, faceId });
-        if (name) setSelectedItemId(name);
+        if (itemId) setSelectedItemId(itemId);
 
         const x = e.nativeEvent.clientX;
         const y = e.nativeEvent.clientY;
@@ -125,7 +127,7 @@ export function ConsolidatedShape({
             position: { x, y },
             type: 'FACE'
         });
-    }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [itemId, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
     const color = isSelected ? CAD_COLORS.selection : 0x808080;
     const material = useMemo(() => new THREE.MeshLambertMaterial({
@@ -141,7 +143,7 @@ export function ConsolidatedShape({
                 geometry={mergedGeometry}
                 material={material}
                 onClick={handleClick}
-                userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: name }}
+                userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: itemId ?? name }}
             />
             {viewMode3D === 'shadedWithEdges' && edgesGeo && (
                 <lineSegments geometry={edgesGeo} renderOrder={500}>

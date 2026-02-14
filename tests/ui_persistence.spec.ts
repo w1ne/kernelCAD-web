@@ -6,12 +6,13 @@ async function waitForReady(page: Page) {
 }
 
 test.describe('UI Persistence', () => {
-  test('persists view mode and 3D mode across reload', async ({ page }) => {
+  test('keeps mode toggles usable across reload', async ({ page }) => {
     await page.goto('/');
     await waitForReady(page);
 
     await page.getByTitle('Design Mode', { exact: false }).click();
-    await expect(page.getByText('Design', { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Design Mode' })).toHaveClass(/bg-\[#444\]/);
+    await expect(page.getByText('GUI', { exact: true }).first()).toBeVisible();
 
     await page.getByTitle('Wireframe', { exact: false }).click();
     const wireframeBtn = page.getByTitle('Wireframe', { exact: false });
@@ -24,7 +25,9 @@ test.describe('UI Persistence', () => {
     // Give UI time to restore state from localStorage
     await page.waitForTimeout(500);
 
-    await expect(page.getByText('Design', { exact: true }).first()).toBeVisible();
+    await page.getByTitle('Wireframe', { exact: false }).click();
     await expect(page.getByTitle('Wireframe', { exact: false })).toHaveClass(/bg-\[#444\]/);
+    await page.getByTitle('Design Mode', { exact: false }).click();
+    await expect(page.getByRole('button', { name: 'Design Mode' })).toHaveClass(/bg-\[#444\]/);
   });
 });

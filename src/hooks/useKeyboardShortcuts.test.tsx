@@ -5,14 +5,17 @@ import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 function TestHarness({
     onDelete,
+    onEscape,
     allowDeleteInTypingTarget
 }: {
     onDelete: (e: KeyboardEvent) => void;
+    onEscape?: (e: KeyboardEvent) => void | boolean;
     allowDeleteInTypingTarget: boolean;
 }) {
     useKeyboardShortcuts(
         {
             delete: onDelete,
+            ...(onEscape ? { escape: onEscape } : {}),
         },
         {
             shouldAllowInTypingTarget: ({ key }) => allowDeleteInTypingTarget && key === 'delete'
@@ -51,5 +54,17 @@ describe('useKeyboardShortcuts', () => {
 
         expect(onDelete).toHaveBeenCalledTimes(1);
         expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('does not consume event when shortcut handler returns false', () => {
+        const onDelete = vi.fn();
+        const onEscape = vi.fn(() => false);
+        render(<TestHarness onDelete={onDelete} onEscape={onEscape} allowDeleteInTypingTarget={false} />);
+
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        window.dispatchEvent(event);
+
+        expect(onEscape).toHaveBeenCalledTimes(1);
+        expect(event.defaultPrevented).toBe(false);
     });
 });

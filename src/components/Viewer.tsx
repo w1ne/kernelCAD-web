@@ -8,6 +8,7 @@ import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import type { HoverResult } from "../features/interaction/HoverManager";
 import type { SnapResult } from "../features/interaction/SnapManager";
+import { extractReturnedHistoryItemIds } from "../lib/codeAnalysis";
 
 // Extracted Components
 import { SketchLine } from "./viewer/entities/SketchLine";
@@ -44,7 +45,8 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setSelectedItemId,
         toggleSelection,
         codeContext,
-        setHoveredItemId
+        setHoveredItemId,
+        code
     } = useWorkbench();
 
     const { setContextMenu } = useUI();
@@ -52,6 +54,12 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
     }, [codeContext]);
+    const itemIds = useMemo(() => {
+        const ids = extractReturnedHistoryItemIds(code);
+        if (ids.length === itemNames.length) return ids;
+        // Keep array alignment with rendered geometry list even if parser cannot recover.
+        return itemNames.map((_, idx) => ids[idx] ?? null);
+    }, [code, itemNames]);
 
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
@@ -100,7 +108,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
                 <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
                 <SnapIndicator snap={snapPoint} />
-                <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
+                <SelectionOutline geometries={geometries} itemIds={itemIds} selectedItemIds={selectedItemIds} />
 
                 {!sketchMode.active && (
                     <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
@@ -109,6 +117,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <group>
                     {geometries.map((g, i) => {
                         const name = itemNames[i];
+                        const itemId = itemIds[i] ?? undefined;
                         if (name && hiddenIds.includes(name)) return null;
                         return (
                             <Shape
@@ -116,8 +125,9 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                                 geometry={g}
                                 shapeIndex={i}
                                 viewMode3D={viewMode3D}
-                                isSelected={name ? selectedItemIds.includes(name) : false}
+                                isSelected={itemId ? selectedItemIds.includes(itemId) : false}
                                 name={name ?? undefined}
+                                itemId={itemId}
                             />
                         );
                     })}
@@ -131,34 +141,37 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
                 {showSketches && (
                     <group>
-                        {sketchesGeometries.filter(s => !hiddenIds.includes(s.name)).map((s) => (
-                            <SketchLine
-                                key={s.id}
-                                sketch={s}
-                                isSelected={selectedSketchName === s.name || selectedItemIds.includes(s.name)}
-                                onClick={(e) => {
-                                    const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
-                                    if (isMulti) {
-                                        toggleSelection(s.name, true);
-                                        return;
-                                    }
+                        {sketchesGeometries.filter(s => !hiddenIds.includes(s.name)).map((s) => {
+                            return (
+                                <SketchLine
+                                    key={s.id}
+                                    sketch={s}
+                                    ownerId={s.id}
+                                    isSelected={selectedSketchName === s.name || selectedItemIds.includes(s.id)}
+                                    onClick={(e) => {
+                                        const isMulti = e ? (e.metaKey || e.ctrlKey || e.shiftKey) : false;
+                                        if (isMulti) {
+                                            toggleSelection(s.id, true);
+                                            return;
+                                        }
 
-                                    setSelectedFace(null);
-                                    setSelectedSketchName(s.name);
-                                    setSelectedItemId(s.name);
+                                        setSelectedFace(null);
+                                        setSelectedSketchName(s.name);
+                                        setSelectedItemId(s.id);
 
-                                    if (e) {
-                                        const x = e.nativeEvent.clientX;
-                                        const y = e.nativeEvent.clientY;
-                                        setContextMenu({
-                                            visible: true,
-                                            position: { x, y },
-                                            type: 'SKETCH'
-                                        });
-                                    }
-                                }}
-                            />
-                        ))}
+                                        if (e) {
+                                            const x = e.nativeEvent.clientX;
+                                            const y = e.nativeEvent.clientY;
+                                            setContextMenu({
+                                                visible: true,
+                                                position: { x, y },
+                                                type: 'SKETCH'
+                                            });
+                                        }
+                                    }}
+                                />
+                            );
+                        })}
                     </group>
                 )}
 

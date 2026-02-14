@@ -9,7 +9,7 @@ test('construction geometry - midplane and tangent plane', async ({ page }) => {
     // Wait for E2E globals
     await page.waitForFunction(() => typeof (window as any).openCommandPalette === 'function');
 
-    const canvas = page.locator('canvas');
+    const canvas = page.locator('[data-testid="viewer-container"] canvas');
     await expect(canvas).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000); // Wait for initialization
 

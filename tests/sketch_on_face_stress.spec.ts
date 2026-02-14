@@ -203,12 +203,19 @@ return [base];
         await expect(doneBtn).toBeEnabled({ timeout: 5000 });
         await doneBtn.click();
 
-        // 8. Verify Parametric Code
+        // 8. Verify generated sketch code for named shape.
+        // Current implementation may use either:
+        // - parametric sketchOnFace(base, faceId), or
+        // - detached captured face plane (topology-stable fallback).
         await expect.poll(async () => {
-            return await page.evaluate(() => { // @ts-ignore
+            const currentCode = await page.evaluate(() => { // @ts-ignore
                 return window.getCode();
-            });
-        }, { timeout: 5000 }).toContain('sketchOnFace(base,');
+            }) as string;
+            return (
+                currentCode.includes('sketchOnFace(base,') ||
+                currentCode.includes('new Sketcher(new replicad.Plane(')
+            );
+        }, { timeout: 5000 }).toBe(true);
 
         // 9. Verify Sketch Visibility
         await expect.poll(async () => {

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
-import { generateUniqueName, extractVariables, extractHistoryItems } from './codeAnalysis';
+import { generateUniqueName, extractVariables, extractHistoryItems, extractReturnedHistoryItemIds } from './codeAnalysis';
 
 describe('codeAnalysis', () => {
     describe('generateUniqueName', () => {
@@ -58,6 +58,20 @@ const sketch = new Sketcher('XY').lineTo([1, 1]).done();
             expect(items).toHaveLength(2);
             expect(items[0].id).toContain('box:1:');
             expect(items[1].id).toContain('sketch:2:');
+        });
+    });
+
+    describe('extractReturnedHistoryItemIds', () => {
+        it('should return history ids in return-array order', () => {
+            const code = `
+const box = replicad.makeBox(10, 10, 10);
+const sketch = new Sketcher('XY').lineTo([1, 1]).done();
+return [box, sketch];
+            `.trim();
+            const ids = extractReturnedHistoryItemIds(code);
+            expect(ids).toHaveLength(2);
+            expect(ids[0]).toContain('box:1:');
+            expect(ids[1]).toContain('sketch:2:');
         });
     });
 });

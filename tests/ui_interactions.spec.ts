@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('UI Interactions E2E', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
-        await page.waitForSelector('canvas');
-        await page.waitForFunction(() => (window as any).isEditorReady === true);
+        await page.waitForSelector('[data-testid="workbench-ready"]');
+        await page.waitForSelector('[data-testid="viewer-container"] canvas');
         await page.waitForFunction(() => (window as any).isEngineReady === true);
     });
 
@@ -105,11 +105,11 @@ return base;
     });
 
     test('Should toggle Design and Code modes', async ({ page }) => {
-        // Start in Design mode if possible, or check current
         await page.getByTitle('Design Mode').click();
-        await expect(page.getByText('Design', { exact: true }).first()).toBeVisible();
+        await expect(page.getByTitle('Design Mode')).toContainText('GUI');
 
         await page.getByTitle('Code Mode').click();
-        await expect(page.getByText('script.js').first()).toBeVisible();
+        await expect(page.getByTitle('Code Mode')).toContainText('Code');
+        await expect(page.locator('.monaco-editor').first()).toBeVisible();
     });
 });

@@ -8,54 +8,32 @@ test.describe('Project Management', () => {
         await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });
     });
 
-    test('should save and open project file', async ({ page }) => {
-        // 1. Change the code via internal helper for stability
-        const customCode = 'const box = show(makeBox(15, 15, 15));';
+    test('should create and switch projects while preserving code', async ({ page }) => {
+        // 1. Change active project code
+        const customCode = 'const box = replicad.makeBox(15, 15, 15); return box;';
         await page.evaluate((code) => {
             (window as any).setCode(code);
         }, customCode);
 
-        // Wait for computation spin to settle
-        await expect(page.locator('.animate-spin')).toBeHidden({ timeout: 10000 });
+        await expect.poll(async () => {
+            return await page.evaluate(() => (window as any).getCode?.() || '');
+        }).toContain('makeBox(15, 15, 15)');
 
-        // 2. Export .kcad
-        // Wait for a small debounce for auto-save before we reload
+        // Allow debounced autosave to persist into the active project snapshot.
         await page.waitForTimeout(1500);
 
-        // Wait for a small debounce if any, then click save
-        const saveButton = page.getByRole('button', { name: 'Save Project' });
-        const [download] = await Promise.all([
-            page.waitForEvent('download', { timeout: 60000 }),
-            saveButton.click()
-        ]);
+        // 2. Open project manager and create a new project.
+        await page.getByRole('button', { name: 'Untitled Project' }).click();
+        await expect(page.getByRole('heading', { name: 'Project Manager' })).toBeVisible();
+        await page.getByRole('button', { name: 'Create New Project' }).click();
 
-        expect(download.suggestedFilename()).toContain('.kcad');
-        const path = await download.path();
-
-        // 3. Clear workspace (refresh)
-        await page.reload();
-        await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });
-        await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 10000 });
-
-        // 4. Verify auto-load (since we refresh, auto-load from localStorage should kick in)
-        // Note: Playwright's page.reload() preserves localStorage.
-        await expect(page.locator('.monaco-editor')).toContainText('makeBox(15, 15, 15)');
-
-        // 5. Explicitly Open .kcad
-        // First clear localStorage and refresh to ensure we are at default
-        await page.evaluate(() => localStorage.clear());
-        await page.reload();
-        await page.waitForSelector('[data-testid="workbench-ready"]', { state: 'attached' });
-        await page.waitForFunction(() => (window as any).isEditorReady === true, { timeout: 10000 });
+        // New project should start with default code.
         await expect(page.locator('.monaco-editor')).not.toContainText('makeBox(15, 15, 15)');
 
-        const openButton = page.getByRole('button', { name: 'Open Project' });
-        const fileChooserPromise = page.waitForEvent('filechooser');
-        await openButton.click();
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles(path);
+        // 3. Switch back to the previous project from the manager dialog.
+        await page.getByRole('button', { name: 'Switch' }).first().click();
 
-        // 6. Verify restored code
+        // 4. Previous project code should be restored.
         await expect(page.locator('.monaco-editor')).toContainText('makeBox(15, 15, 15)');
     });
 

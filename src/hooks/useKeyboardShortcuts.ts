@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-type KeyHandler = (e: KeyboardEvent) => void;
+type KeyHandler = (e: KeyboardEvent) => void | boolean;
 
 interface ShortcutConfig {
     [key: string]: KeyHandler;
@@ -46,13 +46,14 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig, options?: Shortc
 
             const handler = shortcuts[combo] ?? shortcuts[key];
             if (handler) {
+                const handled = handler(e);
+                if (handled === false) return;
                 e.preventDefault();
                 e.stopPropagation();
                 // Prevent downstream handlers (including editors) from also processing the key.
                 if (typeof e.stopImmediatePropagation === 'function') {
                     e.stopImmediatePropagation();
                 }
-                handler(e);
             }
         };
 

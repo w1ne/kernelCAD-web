@@ -18,7 +18,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "qc": "npm run lint && npm run typecheck && npm test",
-    "qc:full": "npm run qc && npm run test:e2e && npm run build"
+    "qc:full": "npm run qc && ./scripts/run-e2e-with-dev-server.sh && npm run build"
   },
   "dependencies": {
     "@babel/generator": "^7.28.6",

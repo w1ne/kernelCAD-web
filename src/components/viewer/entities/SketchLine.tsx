@@ -6,12 +6,14 @@ import { CAD_COLORS } from "../../../constants/colors";
 
 interface SketchLineProps {
     sketch: SketchGeometry;
+    ownerId: string;
     isSelected: boolean;
     onClick: (e?: ThreeEvent<MouseEvent>) => void;
 }
 
 export function SketchLine({
     sketch,
+    ownerId,
     isSelected,
     onClick
 }: SketchLineProps) {
@@ -49,9 +51,9 @@ export function SketchLine({
     const line = useMemo(() => {
         const l = new THREE.Line(geometry, material);
         l.frustumCulled = false;
-        l.userData = { type: 'EDGE', id: sketch.id, ownerId: sketch.name };
+        l.userData = { type: 'EDGE', id: sketch.id, ownerId };
         return l;
-    }, [geometry, material, sketch.id, sketch.name]);
+    }, [geometry, material, sketch.id, ownerId]);
 
     return (
         <primitive

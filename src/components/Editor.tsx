@@ -1,5 +1,9 @@
-import Editor from "@monaco-editor/react";
+import Editor, { loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 import type { EditorLike } from '../types/editor';
+
+// Avoid runtime CDN dependency in tests/CI by loading Monaco from local npm package.
+loader.config({ monaco });
 
 interface CodeEditorProps {
     value: string;

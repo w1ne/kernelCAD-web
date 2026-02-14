@@ -3,7 +3,7 @@ import { WorkbenchLayout } from './components/Layout/WorkbenchLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseCode } from './lib/ast';
 
 function isCodeParsable(code: string): boolean {
@@ -23,24 +23,27 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     setCode, setViewMode, setViewMode3D
   } = useWorkbench();
 
-  const { activeProject, saveActiveProject } = useProject();
+  const { activeProject, activeProjectId, saveActiveProject } = useProject();
   const [isInitialized, setIsInitialized] = useState(false);
+  const loadedProjectIdRef = useRef<string | null>(null);
 
   // Sync active project -> workbench state
   useEffect(() => {
     if (isDevLab || !activeProject) return;
 
-    // Only sync on initial load or project switch
-    if (!isInitialized || activeProject.code !== code) {
+    // Sync project into editor only on first load and explicit project switches.
+    const didProjectChange = loadedProjectIdRef.current !== activeProjectId;
+    if (!isInitialized || didProjectChange) {
       setCode(activeProject.code);
       if (activeProject.viewState) {
         setViewMode(activeProject.viewState.viewMode);
         setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
       }
+      loadedProjectIdRef.current = activeProjectId;
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D]);
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, viewMode3D]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {

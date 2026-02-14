@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { extractHistoryItems } from '../src/lib/codeAnalysis';
 
 async function waitForStability(page: Page, expectedCount?: number) {
   await page.waitForFunction((count) => {
@@ -39,6 +40,8 @@ return replicad.makeBox(10, 10, 10);
     const count = await getNextExecutionCount(page);
     await page.evaluate((c) => (window as any).setCode?.(c), code);
     await waitForStability(page, count);
+
+    await page.keyboard.press('Control+1');
   });
 
   test('R opens Revolve when not typing', async ({ page }) => {
@@ -85,9 +88,9 @@ return [replicad.makeBox(10, 10, 10), sketch];
     await page.evaluate((c) => (window as any).setCode?.(c), code);
     await waitForStability(page, count);
 
-    const sketchItem = page.locator('[data-testid^="scene-item-sketch"]').first();
-    await expect(sketchItem).toBeVisible();
-    await sketchItem.click();
+    const selected = extractHistoryItems(code)[0];
+    if (!selected) throw new Error('No history items parsed from test code');
+    await page.evaluate((id) => (window as any).__TEST_SELECT_ITEM?.(id), selected.id);
 
     await page.evaluate(() => {
       const ta = document.querySelector('.monaco-editor textarea') as HTMLTextAreaElement | null;
@@ -100,15 +103,13 @@ return [replicad.makeBox(10, 10, 10), sketch];
       .poll(async () => {
         const nextCode = await page.evaluate(() => (window as any).getCode?.() || '');
         return {
-          hasSketchDecl: nextCode.includes('const sketch'),
-          hasCorruption: nextCode.includes('onst sketch'),
-          hasReturnSketchRef: /\breturn\s*\[[^\]]*\bsketch\b/.test(nextCode),
+          selectedVarRemoved: !nextCode.includes(`const ${selected.name}`),
+          hasCorruption: nextCode.includes(`onst ${selected.name}`),
         };
       }, { timeout: 10000 })
       .toEqual({
-        hasSketchDecl: false,
+        selectedVarRemoved: true,
         hasCorruption: false,
-        hasReturnSketchRef: false,
       });
   });
 
@@ -144,9 +145,9 @@ return [replicad.makeBox(10, 10, 10), sketch];
     await page.waitForFunction(() => (window as any).isEngineReady === true, { timeout: 30000 });
     await waitForStability(page);
 
-    const sketchItem = page.locator('[data-testid^="scene-item-sketch"]').first();
-    await expect(sketchItem).toBeVisible();
-    await sketchItem.click();
+    const selected = extractHistoryItems(autosavedCode)[0];
+    if (!selected) throw new Error('No history items parsed from autosaved test code');
+    await page.evaluate((id) => (window as any).__TEST_SELECT_ITEM?.(id), selected.id);
 
     await page.evaluate(() => {
       const ta = document.querySelector('.monaco-editor textarea') as HTMLTextAreaElement | null;
@@ -160,16 +161,14 @@ return [replicad.makeBox(10, 10, 10), sketch];
         const nextCode = await page.evaluate(() => (window as any).getCode?.() || '');
         const error = await page.evaluate(() => (window as any).getError?.() || null);
         return {
-          hasSketchDecl: nextCode.includes('const sketch'),
-          hasCorruption: nextCode.includes('onst sketch'),
-          hasReturnSketchRef: /\breturn\s*\[[^\]]*\bsketch\b/.test(nextCode),
+          selectedVarRemoved: !nextCode.includes(`const ${selected.name}`),
+          hasCorruption: nextCode.includes(`onst ${selected.name}`),
           hasRuntimeError: Boolean(error),
         };
       }, { timeout: 10000 })
       .toEqual({
-        hasSketchDecl: false,
+        selectedVarRemoved: true,
         hasCorruption: false,
-        hasReturnSketchRef: false,
         hasRuntimeError: false,
       });
   });

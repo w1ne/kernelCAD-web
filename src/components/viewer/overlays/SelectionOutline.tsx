@@ -51,17 +51,17 @@ function SelectedGeometryOutline({ geometry }: { geometry: GeometryResult | null
 
 interface SelectionOutlineProps {
     geometries: GeometryResult[];
-    itemNames: (string | null)[];
+    itemIds: (string | null)[];
     selectedItemIds: string[];
 }
 
-export function SelectionOutline({ geometries, itemNames, selectedItemIds }: SelectionOutlineProps) {
+export function SelectionOutline({ geometries, itemIds, selectedItemIds }: SelectionOutlineProps) {
     const selectedGeometries = useMemo(() => {
         return selectedItemIds.map(id => {
-            const idx = itemNames.indexOf(id);
+            const idx = itemIds.indexOf(id);
             return idx !== -1 ? geometries[idx] : null;
         }).filter((g): g is GeometryResult => g !== null && g !== undefined);
-    }, [geometries, itemNames, selectedItemIds]);
+    }, [geometries, itemIds, selectedItemIds]);
 
     if (selectedGeometries.length === 0) return null;
 

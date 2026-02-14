@@ -105,4 +105,65 @@ describe('SafeSketcher', () => {
         expect(mockSketcher.close).toHaveBeenCalledTimes(1);
         expect(mockSketcher.movePointerTo).toHaveBeenCalledTimes(2); // Initial [0,0] and [20,0]
     });
+
+    it('should delegate valid bezier to underlying sketcher', () => {
+        const mockSketcher = {
+            movePointerTo: vi.fn().mockReturnThis(),
+            lineTo: vi.fn().mockReturnThis(),
+            close: vi.fn().mockReturnThis(),
+            done: vi.fn(),
+            bezier: vi.fn().mockReturnThis(),
+        } as any;
+
+        const safe = new SafeSketcher(mockSketcher);
+        safe.movePointerTo([0, 0]);
+        safe.bezier([1, 1], [2, 1], [3, 0]);
+
+        expect(mockSketcher.bezier).toHaveBeenCalledWith([1, 1], [2, 1], [3, 0]);
+    });
+
+    it('should throw on invalid bezier input', () => {
+        const mockSketcher = {
+            movePointerTo: vi.fn().mockReturnThis(),
+            lineTo: vi.fn().mockReturnThis(),
+            close: vi.fn().mockReturnThis(),
+            done: vi.fn(),
+            bezier: vi.fn().mockReturnThis(),
+        } as any;
+
+        const safe = new SafeSketcher(mockSketcher);
+        expect(() => safe.bezier([1, 1], [NaN, 1], [3, 0])).toThrow('Invalid bezier input');
+        expect(mockSketcher.bezier).not.toHaveBeenCalled();
+    });
+
+    it('should delegate valid spline to underlying sketcher', () => {
+        const mockSketcher = {
+            movePointerTo: vi.fn().mockReturnThis(),
+            lineTo: vi.fn().mockReturnThis(),
+            close: vi.fn().mockReturnThis(),
+            done: vi.fn(),
+            spline: vi.fn().mockReturnThis(),
+        } as any;
+
+        const safe = new SafeSketcher(mockSketcher);
+        safe.movePointerTo([0, 0]);
+        safe.spline([[1, 1], [2, 1], [3, 0]]);
+
+        expect(mockSketcher.spline).toHaveBeenCalledWith([[1, 1], [2, 1], [3, 0]]);
+    });
+
+    it('should throw on invalid spline input', () => {
+        const mockSketcher = {
+            movePointerTo: vi.fn().mockReturnThis(),
+            lineTo: vi.fn().mockReturnThis(),
+            close: vi.fn().mockReturnThis(),
+            done: vi.fn(),
+            spline: vi.fn().mockReturnThis(),
+        } as any;
+
+        const safe = new SafeSketcher(mockSketcher);
+        expect(() => safe.spline([[1, 1]])).toThrow('Invalid spline input');
+        expect(() => safe.spline([[1, 1], [Infinity, 2]] as any)).toThrow('Invalid spline input');
+        expect(mockSketcher.spline).not.toHaveBeenCalled();
+    });
 });

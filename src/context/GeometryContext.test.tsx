@@ -19,14 +19,19 @@ function deferred<T>(): Deferred<T> {
   return { promise, resolve, reject };
 }
 
-const mockEngine = {
+const mockMainEngine = {
+  initialize: vi.fn().mockResolvedValue(undefined),
+  executeCode: vi.fn(),
+};
+
+const mockPreviewEngine = {
   initialize: vi.fn().mockResolvedValue(undefined),
   executeCode: vi.fn(),
 };
 
 vi.mock('../lib/geometryEngine', () => ({
   GeometryEngine: {
-    getInstance: () => mockEngine,
+    getInstance: (channel?: 'main' | 'preview') => (channel === 'preview' ? mockPreviewEngine : mockMainEngine),
   },
 }));
 
@@ -68,8 +73,10 @@ function Probe() {
 describe('GeometryContext latest-intent-wins', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    mockEngine.initialize.mockResolvedValue(undefined);
-    mockEngine.executeCode.mockReset();
+    mockMainEngine.initialize.mockResolvedValue(undefined);
+    mockMainEngine.executeCode.mockReset();
+    mockPreviewEngine.initialize.mockResolvedValue(undefined);
+    mockPreviewEngine.executeCode.mockReset();
   });
 
   afterEach(() => {
@@ -81,7 +88,7 @@ describe('GeometryContext latest-intent-wins', () => {
     const first = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
     const second = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
 
-    mockEngine.executeCode
+    mockMainEngine.executeCode
       .mockImplementationOnce(() => first.promise)
       .mockImplementationOnce(() => second.promise);
 
@@ -139,13 +146,20 @@ describe('GeometryContext latest-intent-wins', () => {
     const secondPreview = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
 
     let mainResolved = false;
-    mockEngine.executeCode.mockImplementation((source: string) => {
-      if (source.includes('makeBox(1,1,1)')) return firstPreview.promise;
-      if (source.includes('makeBox(2,2,2)')) return secondPreview.promise;
+    mockMainEngine.executeCode.mockImplementation((source: string) => {
+      if (source.includes('makeBox(1,1,1)') || source.includes('makeBox(2,2,2)')) {
+        return Promise.resolve({ geometries: [{ faces: [] }], sketches: [] });
+      }
       if (!mainResolved) {
         mainResolved = true;
         return mainPromise.promise;
       }
+      return Promise.resolve({ geometries: [{ faces: [] }], sketches: [] });
+    });
+
+    mockPreviewEngine.executeCode.mockImplementation((source: string) => {
+      if (source.includes('makeBox(1,1,1)')) return firstPreview.promise;
+      if (source.includes('makeBox(2,2,2)')) return secondPreview.promise;
       return Promise.resolve({ geometries: [{ faces: [] }], sketches: [] });
     });
 
@@ -219,5 +233,49 @@ describe('GeometryContext latest-intent-wins', () => {
     });
     expect(screen.getByTestId('preview-face-count').textContent).toBe('2');
     expect(screen.getByTestId('stale-preview').textContent).toBe('1');
+  });
+
+  it('keeps preview responsive while main execution is still blocked', async () => {
+    const mainDeferred = deferred<{ geometries: Array<{ faces: unknown[] }>; sketches: unknown[] }>();
+
+    mockMainEngine.executeCode.mockImplementation(() => mainDeferred.promise);
+    mockPreviewEngine.executeCode.mockImplementation((source: string) => {
+      if (source.includes('makeBox(1,1,1)')) {
+        return Promise.resolve({ geometries: [{ faces: [{}, {}] }], sketches: [] });
+      }
+      return Promise.resolve({ geometries: [{ faces: [] }], sketches: [] });
+    });
+
+    render(
+      <GeometryProvider code={'const a = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+      await Promise.resolve();
+    });
+
+    // Main is still running, preview should still be able to execute independently.
+    await act(async () => {
+      screen.getByTestId('trigger-preview').click();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('face-count').textContent).toBe('0');
+    expect(screen.getByTestId('preview-face-count').textContent).toBe('2');
+
+    await act(async () => {
+      mainDeferred.resolve({ geometries: [{ faces: [{}] }], sketches: [] });
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('is-computing').textContent).toBe('false');
   });
 });

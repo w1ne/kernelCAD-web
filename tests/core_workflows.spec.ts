@@ -64,7 +64,8 @@ test.describe('Core CAD Workflows E2E (Hardened)', () => {
             }
         });
         await page.goto('/');
-        await page.waitForFunction(() => (window as any).isEditorReady === true);
+        await page.waitForSelector('[data-testid="workbench-ready"]');
+        await page.waitForSelector('[data-testid="viewer-container"] canvas');
         await page.waitForFunction(() => (window as any).isEngineReady === true);
         await page.evaluate(() => (window as any).resetEngineDiagnostics?.());
 

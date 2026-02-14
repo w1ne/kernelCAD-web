@@ -42,7 +42,7 @@ export interface GeometryEngineDiagnostics {
 export class GeometryEngine {
     private worker: Worker | null = null;
     private pendingMessages = new Map<string, PendingMessage>();
-    private static instance: GeometryEngine | null = null;
+    private static instances = new Map<string, GeometryEngine>();
     private isInitialized = false;
     private initPromise: Promise<void> | null = null;
     private initResolve: (() => void) | null = null;
@@ -66,11 +66,12 @@ export class GeometryEngine {
     /**
      * Get the singleton instance of GeometryEngine
      */
-    public static getInstance(): GeometryEngine {
-        if (!GeometryEngine.instance) {
-            GeometryEngine.instance = new GeometryEngine();
-        }
-        return GeometryEngine.instance;
+    public static getInstance(channel: 'main' | 'preview' = 'main'): GeometryEngine {
+        const existing = GeometryEngine.instances.get(channel);
+        if (existing) return existing;
+        const created = new GeometryEngine();
+        GeometryEngine.instances.set(channel, created);
+        return created;
     }
 
     /**

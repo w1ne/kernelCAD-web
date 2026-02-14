@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('CAD Features E2E', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
-        await page.waitForSelector('canvas');
-        await page.waitForFunction(() => (window as any).isEditorReady === true);
+        await page.waitForSelector('[data-testid="workbench-ready"]');
+        await page.waitForSelector('[data-testid="viewer-container"] canvas');
+        await page.waitForFunction(() => (window as any).isEngineReady === true);
     });
 
     test('Should create a Box primitive', async ({ page }) => {

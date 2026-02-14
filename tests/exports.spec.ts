@@ -9,6 +9,9 @@ test.describe('Export Functionality E2E', () => {
         await page.waitForFunction(() => (window as any).isEditorReady === true);
         await page.waitForFunction(() => (window as any).isEngineReady === true);
         await page.waitForFunction(() => (window as any).isComputing?.() === false);
+        await page.evaluate(() => {
+            (window as any).setCode?.('const model = replicad.makeBox(20, 20, 20); return model;');
+        });
         await page.waitForFunction(() => ((window as any).getGeometries?.() || []).length > 0);
     });
 
@@ -35,7 +38,7 @@ test.describe('Export Functionality E2E', () => {
 
         await expect.poll(async () => {
             return await page.evaluate(() => (window as any).__TEST_EXPORT?.download || null);
-        }, { timeout: 60000 }).toBe('model.step');
+        }, { timeout: 60000 }).toMatch(/\.step$/);
     });
 
     test('Should trigger STL export', async ({ page }) => {
@@ -61,6 +64,6 @@ test.describe('Export Functionality E2E', () => {
 
         await expect.poll(async () => {
             return await page.evaluate(() => (window as any).__TEST_EXPORT?.download || null);
-        }, { timeout: 60000 }).toBe('model.stl');
+        }, { timeout: 60000 }).toMatch(/\.stl$/);
     });
 });

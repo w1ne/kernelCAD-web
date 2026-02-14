@@ -53,6 +53,7 @@ export function WorkbenchLayout() {
         cancelFaceSelection,
         codeContext,
         previewGeometries,
+        setPreviewCode,
         hideItem,
         showAll,
         selectedItemId,
@@ -100,12 +101,20 @@ export function WorkbenchLayout() {
 
             // Geometry & Selection Helpers
             w.__TEST_SELECT_FACE = (shapeIndex: number, faceId: number) => {
-                setSelectedFace({ shapeIndex, faceId });
+                const shape = geometries[shapeIndex];
+                const isValidFace =
+                    !!shape &&
+                    Array.isArray(shape.faces) &&
+                    Number.isInteger(faceId) &&
+                    faceId >= 0 &&
+                    faceId < shape.faces.length;
+                setSelectedFace(isValidFace ? { shapeIndex, faceId } : null);
             };
 
             w.getSelectedFace = () => selectedFace;
             w.getGeometries = () => geometries;
             w.getPreviewGeometries = () => previewGeometries;
+            w.setPreviewCode = setPreviewCode;
             w.getSketches = () => sketchesGeometries;
             w.isComputing = () => isComputing;
             w.getExecutionCount = () => executionCount;
@@ -118,6 +127,7 @@ export function WorkbenchLayout() {
                 executionHistoryLength: executionHistory.length,
             });
             w.getExecutionHistory = () => executionHistory;
+            w.getHistoryItems = () => extractHistoryItems(code);
             w.getEngineDiagnostics = () => GeometryEngine.getInstance().getDiagnostics();
             w.resetEngineDiagnostics = () => GeometryEngine.getInstance().resetDiagnostics();
             w.getMutationDiagnostics = () => getMutationDiagnostics();
@@ -142,7 +152,7 @@ export function WorkbenchLayout() {
 
             w.setActiveDialog = setActiveDialog;
         }
-    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, sketchesGeometries, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
+    }, [setCode, code, editorInstance, setActiveDialog, setViewMode, geometries, previewGeometries, setPreviewCode, sketchesGeometries, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, staleMainResponsesDropped, stalePreviewResponsesDropped, getMutationDiagnostics, resetMutationDiagnostics, error, setSelectedFace, selectedFace, startFaceSelection, setSelectedSketchName, setSelectedItemId, setHoveredItemId, hoveredItemId, selectedItemId]);
 
     // Recovery guard: never keep the editor hidden while code/execution is in error.
     React.useEffect(() => {
@@ -169,6 +179,34 @@ export function WorkbenchLayout() {
         historyItems.forEach((item) => map.set(item.id, item));
         return map;
     }, [historyItems]);
+
+    const resolveSelectedHistoryId = React.useCallback((): string | null => {
+        if (selectedItemId && historyItemById.has(selectedItemId)) return selectedItemId;
+        if (typeof document === 'undefined') return null;
+
+        const selected = document.querySelector('[data-testid^="scene-item-"][class*="border-selection-blue"]') as HTMLElement | null;
+        if (!selected) return null;
+
+        const testId = selected.getAttribute('data-testid');
+        if (!testId?.startsWith('scene-item-')) return null;
+        const candidateId = testId.slice('scene-item-'.length);
+        return historyItemById.has(candidateId) ? candidateId : null;
+    }, [historyItemById, selectedItemId]);
+
+    const deleteSelectedHistoryItem = React.useCallback((e: KeyboardEvent) => {
+        if (activeDialog) return;
+        const targetId = resolveSelectedHistoryId();
+        if (!targetId) return;
+
+        e.preventDefault();
+        const historyItem = historyItemById.get(targetId);
+        if (historyItem) {
+            deleteHistoryItem(historyItem);
+            return;
+        }
+
+        deleteItem(targetId, variableIndex.get(targetId));
+    }, [activeDialog, resolveSelectedHistoryId, historyItemById, deleteHistoryItem, deleteItem, variableIndex]);
 
     const featureShortcuts = useMemo(() => {
         const shortcuts: Record<string, () => void> = {};
@@ -247,6 +285,8 @@ export function WorkbenchLayout() {
             openPanel('planeSelector');
         },
         'escape': () => {
+            // Let cmdk handle Escape itself when palette is open.
+            if (document.querySelector('[cmdk-root]')) return false;
             if (activeDialog) setActiveDialog(null);
             if (isFaceSelecting) cancelFaceSelection();
             setContextMenu({ ...contextMenu, visible: false });
@@ -271,30 +311,8 @@ export function WorkbenchLayout() {
                 toggleVisibility(visibilityTarget);
             }
         },
-        'backspace': (e) => {
-            if (activeDialog) return;
-            if (selectedItemId) {
-                e.preventDefault();
-                const historyItem = historyItemById.get(selectedItemId);
-                if (historyItem) {
-                    deleteHistoryItem(historyItem);
-                } else {
-                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
-                }
-            }
-        },
-        'delete': (e) => {
-            if (activeDialog) return;
-            if (selectedItemId) {
-                e.preventDefault();
-                const historyItem = historyItemById.get(selectedItemId);
-                if (historyItem) {
-                    deleteHistoryItem(historyItem);
-                } else {
-                    deleteItem(selectedItemId, variableIndex.get(selectedItemId));
-                }
-            }
-        },
+        'backspace': deleteSelectedHistoryItem,
+        'delete': deleteSelectedHistoryItem,
         'alt+s': () => {
             toggleSketchVisibility();
         },
@@ -308,7 +326,7 @@ export function WorkbenchLayout() {
     }, {
         shouldAllowInTypingTarget: ({ key }) => {
             if (key !== 'delete' && key !== 'backspace') return false;
-            return Boolean(selectedItemId);
+            return Boolean(resolveSelectedHistoryId());
         }
     });
 

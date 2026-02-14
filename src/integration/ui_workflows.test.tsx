@@ -231,4 +231,40 @@ export default function main() {
             expect(screen.queryByText(/SyntaxError:/i)).toBeNull();
         });
     });
+
+    it('should delete from Scene context menu while editor is focused without corrupting code', async () => {
+        render(<App />);
+
+        const initialCode = `
+export default function main() {
+  function drawPart() {
+    const box = replicad.makeBox(10, 10, 10);
+    const sketch = new Sketcher('XY')
+      .movePointerTo([0, 0])
+      .lineTo([10, 0])
+      .done();
+    return [box, sketch];
+  }
+  return drawPart();
+}
+`.trim();
+
+        expect(typeof window.setCode).toBe('function');
+        window.setCode?.(initialCode);
+
+        const sceneSketchItem = await screen.findByText('sketch');
+        fireEvent.contextMenu(sceneSketchItem);
+        expect(await screen.findByText('Delete')).toBeTruthy();
+
+        const editor = screen.getByTestId('code-editor') as HTMLTextAreaElement;
+        editor.focus();
+        fireEvent.click(screen.getByText('Delete'));
+
+        await waitFor(() => {
+            expect(editor.value).not.toContain('const sketch');
+            expect(editor.value).not.toContain('onst sketch');
+            expect(editor.value).toContain('return [box]');
+            expect(() => parseCode(editor.value)).not.toThrow();
+        });
+    });
 });

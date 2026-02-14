@@ -124,6 +124,69 @@ export function extractHistoryItems(code: string): HistoryItem[] {
     return items;
 }
 
+function resolveReturnedVariableNames(ast: acorn.Node): string[] {
+    const namesFromArgument = (arg: unknown): string[] => {
+        if (!arg || typeof arg !== 'object') return [];
+        const node = arg as { type?: string; elements?: unknown[]; name?: string };
+        if (node.type === 'Identifier' && typeof node.name === 'string') return [node.name];
+        if (node.type === 'ArrayExpression' && Array.isArray(node.elements)) {
+            return node.elements.flatMap((el) => {
+                if (!el || typeof el !== 'object') return [];
+                const e = el as { type?: string; name?: string };
+                return e.type === 'Identifier' && typeof e.name === 'string' ? [e.name] : [];
+            });
+        }
+        return [];
+    };
+
+    // Prefer drawPart() return to align with modeling convention.
+    let drawPartReturn: string[] = [];
+    walk.simple(ast, {
+        FunctionDeclaration(node: acorn.Node) {
+            if (drawPartReturn.length > 0) return;
+            const fn = node as unknown as { id?: { name?: string }; body?: { body?: unknown[] } };
+            if (fn.id?.name !== 'drawPart' || !Array.isArray(fn.body?.body)) return;
+            for (const stmt of fn.body.body) {
+                const r = stmt as { type?: string; argument?: unknown };
+                if (r.type === 'ReturnStatement') {
+                    drawPartReturn = namesFromArgument(r.argument);
+                    break;
+                }
+            }
+        }
+    });
+    if (drawPartReturn.length > 0) return drawPartReturn;
+
+    const program = ast as unknown as { body?: unknown[] };
+    if (!Array.isArray(program.body)) return [];
+    for (const stmt of program.body) {
+        const r = stmt as { type?: string; argument?: unknown };
+        if (r.type === 'ReturnStatement') return namesFromArgument(r.argument);
+    }
+    return [];
+}
+
+/**
+ * Returns stable history IDs in return order for geometry selection/outline mapping.
+ */
+export function extractReturnedHistoryItemIds(code: string): (string | null)[] {
+    try {
+        const ast = acorn.parse(code, {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            allowReturnOutsideFunction: true,
+            locations: true
+        }) as unknown as acorn.Node;
+
+        const historyByName = new Map<string, string>();
+        extractHistoryItems(code).forEach((item) => historyByName.set(item.name, item.id));
+
+        return resolveReturnedVariableNames(ast).map((name) => historyByName.get(name) ?? null);
+    } catch {
+        return [];
+    }
+}
+
 /**
  * Backward-compatible variable extraction.
  */

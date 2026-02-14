@@ -1,70 +1,162 @@
-# Release Readiness Assessment
+# Release Readiness Gate (Public V1)
 
-**Date:** 2026-02-13
-**Status:** ⚠️ **NOT READY FOR RELEASE**
+**Date:** 2026-02-14  
+**Current Verdict:** ⚠️ NOT READY (Final CI dry-run still pending)  
+**Release Rule:** Only ship when every `P0` checkbox is complete and evidence is attached.
 
-## Executive Summary
+## Exit Criteria
 
-While significant architectural improvements (Reliability Layer, AST-based mutations, Persistence Schema) have been implemented, the platform currently lacks the rigorous testing and runtime isolation required for a public release.
+- [ ] All `P0` items complete
+- [x] `npm run qc:full` passes on release branch
+- [ ] Required CI checks (`qc`, `e2e`, `build`) are green
+- [ ] No unresolved `P0` known issues in release notes
 
-The "Dealbreakers" listed below represent risks of data loss, application hangs, or user frustration that must be addressed before V1.0.
+## P0 Blockers (Must Fix Before Public Launch)
 
-## 🚨 Dealbreakers (Must Fix)
+### P0-1 Reliability Regression Matrix
+Owner: `@unassigned`  
+Status: ☑ Complete
 
-### 1. Missing Reliability Regression Suite
-The `doc/REFACTORING_ANALYSIS.md` lists critical regression tests that are **currently missing from the codebase**:
-- `worker_init_error_rejects_and_recovers`
-- `worker_crash_rejects_all_pending`
-- `stale_preview_response_ignored`
-- `stale_main_response_ignored`
+Required tests:
+- [x] `worker_init_error_rejects_and_recovers`
+- [x] `worker_crash_rejects_all_pending`
+- [x] `stale_preview_response_ignored`
+- [x] `stale_main_response_ignored`
+- [x] `history_delete_with_editor_focus_does_not_corrupt_code`
+- [x] `autosave_reload_delete_history_sketch_stable`
 
-**Risk**: We have implemented the *fixes* (timeouts, revision guards) in `GeometryEngine` and `GeometryContext`, but we have **zero automated verification** that they actually work. A regression here means the app hangs indefinitely or corrupts user data.
+Pass criteria:
+- [x] All above tests exist and are deterministic in CI
+- [x] No flaky retry allowances for these cases
 
-### 2. Single Thread Bottleneck (UX Blocker)
-Both "Main Execution" (compiling the model) and "Live Preview" (hovering over shapes) share the **same Web Worker and Message Queue**.
-- **Scenario**: User makes a complex boolean operation (takes 2s). While waiting, they move the mouse.
-- **Result**: The UI freezes or lags because preview requests are queued behind the heavy computation.
-- **Requirement**: Separate `PreviewWorker` and `MainWorker` are needed to keep the UI responsive.
+Evidence:
+- Unit tests:
+  - `src/lib/geometryEngine.test.ts`
+  - `src/context/GeometryContext.test.tsx`
+- E2E tests:
+  - `tests/keyboard_shortcuts.spec.ts`
+- Playwright config:
+  - `playwright.config.ts` (`retries: 0`)
+- CI run: `TBD`
 
-### 3. Incomplete "SafeSketcher" Wrappers
-The `SafeSketcher` class proxies many methods but does not explicitly wrap advanced curves with safety logic (e.g., `bezier`, `spline`).
-- **Risk**: Users scripting these curves might trigger internal OpenCASCADE crashes that are not caught by our safety layer, potentially crashing the worker hard.
+### P0-2 Worker Isolation (Main vs Preview)
+Owner: `@unassigned`  
+Status: ☑ Complete
 
-### 4. Codebase & Documentation Drift
-The documentation claims certain refactors are "Completed" (e.g., Phase 4 Observability `[~]`), but the code shows they are either partial or missing specific implementation details (like the missing tests).
+Requirements:
+- [x] Preview execution no longer shares blocking queue with main execution
+- [x] Main execution latency does not block hover/preview feedback path
 
-## ✅ Ready / Strong Points
+Pass criteria:
+- [x] Two independent execution channels or workers implemented
+- [x] E2E stress test proves preview remains responsive during heavy main operation
 
-- **Persistence**: Project saving/loading is robust, using `zod` schemas and version migration (v1.0 -> v1.1).
-- **Code Mutation**: The switch to AST-based mutations (`CodeContext`, `codeAnalysis`) prevents syntax errors during UI interactions.
-- **Core Engine**: The `GeometryEngine` class structure is solid, with built-in diagnostics and timeout handling.
+Evidence:
+- Implementation:
+  - `src/lib/geometryEngine.ts` (channel-scoped singleton instances)
+  - `src/context/GeometryContext.tsx` (main/preview engines separated)
+- Stress test:
+  - `src/context/GeometryContext.test.tsx` (`keeps preview responsive while main execution is still blocked`)
+  - `tests/worker_isolation.spec.ts` (`preview remains responsive while main worker is blocked`)
 
-## Recommended Action Plan
+### P0-3 SafeSketcher Advanced Curve Hardening
+Owner: `@unassigned`  
+Status: ☑ Complete
 
-1.  **Implement the Missing Test Matrix**: Create `src/features/core/reliability.test.ts` and implement the missing regression tests.
-2.  **Split the Worker**: Refactor `GeometryEngine` to manage a pool (or at least 2 workers: Main & Preview).
-3.  **Harden SafeLayer**:
-    -   Explicitly wrap `bezier` and `spline` in `SafeSketcher`.
-    -   Reduce `as any` usage in `worker.ts` and `Viewer.tsx` to prevent silent geometric failures.
-4.  **Refactor Monolithic Viewer**: Extract `CameraHandler`, `InteractionHandler`, and `ConsolidatedShape` into separate files. `Viewer.tsx` is currently too high-risk for maintenance.
-5.  **Fix State Synchronization**: Complete the `TODO` in `SelectionContext` to ensure the UI is always in sync with the actual sketch object from the workbench state.
-6.  **Feature Freeze**: Focus on stability and architectural cleanup before v1.0.
+Requirements:
+- [x] Explicit wrappers/guards for advanced curves (`bezier`, `spline`)
+- [x] Failure behavior is deterministic (no worker crash / no silent corruption)
 
-## Pass 2: Technical Debt & Architectural Risks
+Pass criteria:
+- [x] Unit tests cover valid and invalid advanced curve inputs
+- [x] Worker remains alive and returns explicit error metadata on invalid curve operations
 
-### 1. Monolithic 3D Core (`Viewer.tsx`)
-The 3D viewport component is over 800 lines and handles mixed concerns: Three.js initialization, meshing logic, camera animations, and parametric entity dragging.
-- **Risk**: High maintenance cost and frequent regressions in 3D interaction.
+Evidence:
+- Test file(s):
+  - `src/lib/safeSketch.test.ts`
+  - `src/lib/workerError.test.ts`
+  - `src/lib/geometryEngine.test.ts` (`continue processing after SAFE_SKETCH_VALIDATION`)
 
-### 2. Type "Opacity" (`as any`)
-Over 60 instances of `as any` exist, particularly in the critical geometry worker. 
-- **Risk**: OpenCASCADE internal errors (like code 1) are often caught too late or lead to "undefined is not a function" in the main thread due to loose typing.
+### P0-4 Selection Identity Consistency (ID-Native)
+Owner: `@unassigned`  
+Status: ☑ Complete
 
-### 3. Sketch State Desync
-`SelectionContext` contains a `TODO` for looking up the active sketch object. 
-- **Risk**: The UI "Sketch Mode" might operate on a stale reference or fail to update when the underlying code changes, especially during undo/redo operations.
+Requirements:
+- [x] Scene history uses stable IDs only (selection, hover, delete)
+- [x] Viewer object selection path is ID-native for solids/sketches/planes
+- [x] No remaining compatibility shims that map name -> id at runtime for core flows
 
-### 4. Magic Comment Fragility
-The `// @ai:` magic comment system in `CodeContext` is powerful but lacks an "Abort" controller or robust error recovery if the worker or LLM fails mid-stream.
-- **Risk**: Potential for infinite "AI processing..." comments or code corruption if the user keeps typing while the AI is responding.
+Pass criteria:
+- [x] Integration + E2E tests verify keyboard/context-menu delete with focused editor
+- [x] No text corruption regressions (`const` -> `onst`) in tested paths
 
+Evidence:
+- Core files:
+  - `src/components/Viewer.tsx`
+  - `src/components/viewer/entities/ShapeGeometry.tsx`
+  - `src/components/viewer/entities/SketchLine.tsx`
+  - `src/components/viewer/overlays/SelectionOutline.tsx`
+  - `src/lib/codeAnalysis.ts`
+  - `src/lib/sketchNaming.ts`
+- Tests:
+  - `tests/keyboard_shortcuts.spec.ts`
+  - `src/integration/ui_workflows.test.tsx`
+
+### P0-5 Release CI Gate Enforcement
+Owner: `@unassigned`  
+Status: ☑ In Progress
+
+Requirements:
+- [x] Branch protection requires `qc`, `e2e`, and `build`
+- [x] Release branch template/checklist enforced
+
+Pass criteria:
+- [x] Cannot merge release candidate without required checks
+- [ ] Dry-run release on `release/*` branch succeeds
+
+Evidence:
+- GitHub branch protection (develop): `https://github.com/w1ne/kernelCAD/settings/branches`
+- GitHub ruleset (release gate): `https://github.com/w1ne/kernelCAD/rules/12789133`
+- Template/checklist:
+  - `.github/PULL_REQUEST_TEMPLATE/release.md`
+  - `.github/workflows/release-template-check.yml`
+- Dry run PR: `TBD`
+- Local gate evidence:
+  - `npm run qc:full` passed on 2026-02-14 (lint + typecheck + vitest + playwright 72/72 + build)
+
+## P1 (Should Ship Soon After Public Launch)
+
+- [ ] Remove high-risk `as any` hotspots in worker/viewer critical paths
+- [ ] Complete Sketch state synchronization TODOs in selection/workbench state
+- [ ] Add abort/cancel semantics for `// @ai:` long-running operations
+- [ ] Add user-facing crash recovery UX polish and diagnostics export
+
+## Verification Commands
+
+Run before every release candidate:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
+```
+
+Or single gate:
+
+```bash
+npm run qc:full
+```
+
+## Release Decision Log
+
+| Date | Decision | Reason | By |
+|---|---|---|---|
+| 2026-02-13 | NO-GO | P0 blockers open | Team |
+| 2026-02-14 | HOLD | `qc:full` green; awaiting release/* dry-run proof for P0-5 | Team |
+
+## Notes
+
+- Public launch is blocked until all `P0` items are checked with evidence.
+- Use this file as the single source of truth for go/no-go.

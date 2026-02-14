@@ -4,6 +4,7 @@ import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from './geometry
 import { createSafeReplicad, SafeSketcher } from './safeSketch';
 import { withTemporaryGlobals } from './withTemporaryGlobals';
 import { createUserGlobals } from './userGlobals';
+import { classifyExecutionError } from './workerError';
 import {
   type ExecutionResult,
   type FaceGeometry,
@@ -717,11 +718,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
         const payload: ExecutionResult = { geometries, sketches: allSketches };
         postResponse({ type: 'SUCCESS', id, geometries: payload }, transferables);
       } catch (error: unknown) {
-        let message = String(error);
-        if (message.match(/^\d+$/)) {
-          message = `OpenCascade Error (Code: ${message}). This often means an invalid geometric operation.`;
-        }
-        postResponse({ type: 'ERROR', id, error: message });
+        postResponse({ type: 'ERROR', id, error: classifyExecutionError(error) });
       }
       return;
     }

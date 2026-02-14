@@ -60,9 +60,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
     const previewRevisionRef = useRef(0);
+    const executionCountRef = useRef(0);
+    const lastSuccessfulCodeRef = useRef(code);
 
-    // Get singleton instance
-    const engine = GeometryEngine.getInstance();
+    // Use isolated execution channels so preview cannot be blocked by main.
+    const mainEngine = GeometryEngine.getInstance('main');
+    const previewEngine = GeometryEngine.getInstance('preview');
 
     const toggleSketchVisibility = useCallback(() => {
         setShowSketches(prev => !prev);
@@ -77,16 +80,20 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     }, []);
 
     useEffect(() => {
+        executionCountRef.current = executionCount;
+    }, [executionCount]);
+
+    useEffect(() => {
         if (typeof window === 'undefined') return;
         window.localStorage.setItem(STORAGE_KEY_SHOW_SKETCHES, String(showSketches));
     }, [showSketches]);
 
     // Initialize Engine
     useEffect(() => {
-        engine.initialize().then(() => setIsReady(true));
+        Promise.all([mainEngine.initialize(), previewEngine.initialize()]).then(() => setIsReady(true));
         return () => {
         };
-    }, [engine]);
+    }, [mainEngine, previewEngine]);
 
     // Execution Loop
     useEffect(() => {
@@ -110,13 +117,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     revision,
                     status: 'error',
                     error: message,
-                    executionCountAtRecord: executionCount + 1,
+                    executionCountAtRecord: executionCountRef.current + 1,
                 });
+                setExecutionCount((prev) => prev + 1);
                 return;
             }
             setIsComputing(true);
             try {
-                const result = await engine.executeCode(code);
+                const result = await mainEngine.executeCode(code);
                 if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
                     staleRecorded = true;
@@ -127,10 +135,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setSketchesGeometries(remappedSketches);
                 setError(null);
                 setLastSuccessfulRevision(revision);
+                lastSuccessfulCodeRef.current = code;
                 pushExecutionRecord({
                     revision,
                     status: 'success',
-                    executionCountAtRecord: executionCount + 1,
+                    executionCountAtRecord: executionCountRef.current + 1,
                 });
             } catch (err: unknown) {
                 if (revision !== mainRevisionRef.current) {
@@ -157,7 +166,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     revision,
                     status: 'error',
                     error: message,
-                    executionCountAtRecord: executionCount + 1,
+                    executionCountAtRecord: executionCountRef.current + 1,
                 });
             } finally {
                 if (revision === mainRevisionRef.current) {
@@ -168,7 +177,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     pushExecutionRecord({
                         revision,
                         status: 'stale',
-                        executionCountAtRecord: executionCount + 1,
+                        executionCountAtRecord: executionCountRef.current + 1,
                     });
                 }
             }
@@ -176,8 +185,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const timer = setTimeout(run, 600);
         return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [code, isReady, engine, pushExecutionRecord]);
+    }, [code, isReady, mainEngine, pushExecutionRecord]);
 
     // Preview Execution Loop
     useEffect(() => {
@@ -189,12 +197,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         const runPreview = async () => {
             const revision = ++previewRevisionRef.current;
             try {
-                parseCode(code);
-                parseCode(`${code}\n${previewCode}`);
-                // Combine current code (as library) with preview code
-                // Or just run the preview code if it's independent
-                // For live modeling, it's usually current code + the new operation
-                const result = await engine.executeCode(`${code}\n${previewCode}`);
+                const baseCode = lastSuccessfulCodeRef.current;
+                parseCode(baseCode);
+                parseCode(`${baseCode}\n${previewCode}`);
+                // Keep preview isolated from in-progress/broken edits by evaluating
+                // against the last successfully executed main code snapshot.
+                const result = await previewEngine.executeCode(`${baseCode}\n${previewCode}`);
                 if (revision !== previewRevisionRef.current) {
                     setStalePreviewResponsesDropped((prev) => prev + 1);
                     return;
@@ -212,7 +220,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
         const timer = setTimeout(runPreview, 150); // Aggressive debounce for preview
         return () => clearTimeout(timer);
-    }, [code, previewCode, isReady, engine]);
+    }, [code, previewCode, isReady, previewEngine]);
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         if (!isReady) return;
@@ -227,13 +235,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 revision,
                 status: 'error',
                 error: message,
-                executionCountAtRecord: executionCount + 1,
+                executionCountAtRecord: executionCountRef.current + 1,
             });
+            setExecutionCount((prev) => prev + 1);
             return;
         }
         setIsComputing(true);
         try {
-            const result = await engine.executeCode(codeToExecute);
+            const result = await mainEngine.executeCode(codeToExecute);
             if (revision !== mainRevisionRef.current) {
                 setStaleMainResponsesDropped((prev) => prev + 1);
                 pushExecutionRecord({
@@ -248,10 +257,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             setSketchesGeometries(remappedSketches);
             setError(null);
             setLastSuccessfulRevision(revision);
+            lastSuccessfulCodeRef.current = codeToExecute;
             pushExecutionRecord({
                 revision,
                 status: 'success',
-                executionCountAtRecord: executionCount + 1,
+                executionCountAtRecord: executionCountRef.current + 1,
             });
         } catch (err: unknown) {
             if (revision !== mainRevisionRef.current) {
@@ -259,7 +269,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 pushExecutionRecord({
                     revision,
                     status: 'stale',
-                    executionCountAtRecord: executionCount + 1,
+                    executionCountAtRecord: executionCountRef.current + 1,
                 });
                 return;
             }
@@ -269,7 +279,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 revision,
                 status: 'error',
                 error: message,
-                executionCountAtRecord: executionCount + 1,
+                executionCountAtRecord: executionCountRef.current + 1,
             });
         } finally {
             if (revision === mainRevisionRef.current) {
@@ -277,7 +287,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setExecutionCount(prev => prev + 1);
             }
         }
-    }, [engine, isReady, executionCount, pushExecutionRecord]);
+    }, [mainEngine, isReady, executionCount, pushExecutionRecord]);
 
     const value: GeometryContextType = useMemo(() => ({
         geometries,

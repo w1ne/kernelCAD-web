@@ -19,6 +19,9 @@ describe('remapSketchNames', () => {
     expect(remapped[0]?.name).toBe('sketchA');
     expect(remapped[1]?.name).toBe('sketchB');
     expect(remapped[2]?.name).toBe('sketchA');
+    expect(remapped[0]?.id).toContain('sketchA:');
+    expect(remapped[1]?.id).toContain('sketchB:');
+    expect(remapped[2]?.id).toContain('sketchA:');
   });
 
   it('remains stable when code shifts (lines added before)', () => {

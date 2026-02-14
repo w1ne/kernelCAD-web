@@ -31,7 +31,7 @@ vi.mock('replicad', () => {
 
 // Mock Worker
 class MockWorker {
-  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' | 'invalidResponse' = 'success';
+  static mode: 'success' | 'initError' | 'crashOnExecute' | 'noResponse' | 'invalidResponse' | 'safeSketchError' = 'success';
   static sentMessages: Array<{ id: string; type: string }> = [];
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onerror: ((e: unknown) => void) | null = null;
@@ -60,6 +60,17 @@ class MockWorker {
 
       if (MockWorker.mode === 'invalidResponse') {
         this.onmessage?.({ data: { foo: 'bar' } });
+        return;
+      }
+
+      if (MockWorker.mode === 'safeSketchError') {
+        this.onmessage?.({
+          data: {
+            type: 'ERROR',
+            id: data.id,
+            error: 'Invalid spline input: at least 2 points are required.\n[KCAD_ERROR]{"code":"SAFE_SKETCH_VALIDATION","recoverable":true,"operation":"spline"}',
+          },
+        });
         return;
       }
 
@@ -94,6 +105,14 @@ describe('Geometry Engine', () => {
     const instance1 = GeometryEngine.getInstance();
     const instance2 = GeometryEngine.getInstance();
     expect(instance1).toBe(instance2);
+  });
+
+  it('should isolate instances by execution channel', () => {
+    const main = GeometryEngine.getInstance('main');
+    const preview = GeometryEngine.getInstance('preview');
+    expect(main).not.toBe(preview);
+    expect(main).toBe(GeometryEngine.getInstance('main'));
+    expect(preview).toBe(GeometryEngine.getInstance('preview'));
   });
 
   it('should generate a simple box using standalone function', async () => {
@@ -151,6 +170,27 @@ describe('Geometry Engine', () => {
     expect(engine.getDiagnostics().requestsRejected).toBeGreaterThanOrEqual(1);
   });
 
+  it('should reject all in-flight requests when worker crashes', async () => {
+    MockWorker.mode = 'crashOnExecute';
+    const engine = GeometryEngine.getInstance();
+
+    const first = executeCode('return replicad.makeBox(1, 1, 1);');
+    const second = executeCode('return replicad.makeBox(2, 2, 2);');
+
+    const [firstResult, secondResult] = await Promise.allSettled([first, second]);
+    expect(firstResult.status).toBe('rejected');
+    expect(secondResult.status).toBe('rejected');
+    if (firstResult.status === 'rejected') {
+      expect(String(firstResult.reason)).toContain('Geometry worker crashed.');
+    }
+    if (secondResult.status === 'rejected') {
+      expect(String(secondResult.reason)).toContain('Geometry worker crashed.');
+    }
+
+    expect(engine.getDiagnostics().workerCrashes).toBeGreaterThanOrEqual(1);
+    expect(engine.getDiagnostics().requestsRejected).toBeGreaterThanOrEqual(2);
+  });
+
   it('should timeout worker requests without response', async () => {
     vi.useFakeTimers();
     MockWorker.mode = 'noResponse';
@@ -205,5 +245,14 @@ describe('Geometry Engine', () => {
     expect(GeometryEngine.getInstance().getDiagnostics().workerCrashes).toBe(1);
     // Verify it was a new worker or at least it works
     expect(MockWorker.sentMessages.filter(m => m.type === 'INIT').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should continue processing requests after recoverable safe-sketch validation errors', async () => {
+    MockWorker.mode = 'safeSketchError';
+    await expect(executeCode('return 1;')).rejects.toThrow('SAFE_SKETCH_VALIDATION');
+
+    MockWorker.mode = 'success';
+    const results = await executeCode('return replicad.makeBox(1,1,1);');
+    expect(results.geometries).toHaveLength(1);
   });
 });
