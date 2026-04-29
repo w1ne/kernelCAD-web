@@ -1,3 +1,34 @@
+## v0.1.0 — 2026-04-29
+
+### Added
+- New flat feature-graph IR (`src/intent/`)
+- Runtime feature capture (`src/capture/`) — script-primary, no AST walk
+- `ParamRegistry` with mathjs expressions, units, cycle detection (`src/compute/paramRegistry.ts`)
+- `DependencyGraph` with topo sort + canReorder validation (`src/compute/dependencyGraph.ts`)
+- `RecomputeEngine` with input-resolution and health states (`src/compute/recomputeEngine.ts`)
+- `ShapeBackend` + `FeatureLowerer` interfaces (`src/backends/backend.ts`)
+- `OcctBackend` + `OcctLowerer` for box/cylinder/sphere/extrude/revolve/boolean (`src/backends/occt/`)
+- TypeScript script transpile + `vm`-based execution isolation (`src/script-runtime/`)
+- `kernelcad` CLI: `evaluate` + `export stl|step` (`src/cli/`, esbuild bundle)
+- v0.1 acceptance demo: parametric plate with hole
+
+### Changed
+- Version reset 0.10.0 → 0.1.0 per NORTHSTAR roadmap (new architecture line)
+- Moved `src/lib/worker.ts` → `src/backends/occt/worker.ts`
+
+### Deferred to v0.2+
+- Edge features (fillet, chamfer, shell, hole, cut, draft) — require stable naming
+- 2D sketch primitives + `tracked`/`created`/`propagated` topology refs
+- `NamingHistory` walking + geometry-snapshot fallback
+
+### Documentation
+- New NORTHSTAR architecture spec (`docs/superpowers/specs/2026-04-29-kernelcad-NORTHSTAR.md`)
+- Ported internal docs from `kernelCAD-private` into `docs/internals/`
+- Added clean-room IP boundary clause to `CONTRIBUTING.md`
+- Archived 22 obsolete docs to `archive/doc/`
+
+---
+
 # 🚀 kernelCAD v0.10.0
 
 **Modern Programmable CAD for the Web**
