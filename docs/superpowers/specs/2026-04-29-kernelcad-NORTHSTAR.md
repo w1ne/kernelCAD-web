@@ -144,7 +144,8 @@ type ScriptLocation = { file: string; line: number; column: number };
 // Param: a number that may be an expression with units
 interface Param {
   expression: string;                    // 'width / 2 + 5 mm'
-  unit: 'mm' | 'in' | 'deg' | 'rad' | 'unitless' | string;
+  unit: 'mm' | 'in' | 'm' | 'deg' | 'rad' | 'unitless';
+  // Future: open this to `| string` when we need mass/force/etc.
   evaluated: number;                     // canonical (mm for length, deg for angle)
   // For UI sliders, registered separately (see Param Registry below)
 }
