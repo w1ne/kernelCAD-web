@@ -7,9 +7,13 @@
     "node": ">=22.12.0",
     "npm": ">=10.0.0"
   },
+  "bin": {
+    "kernelcad": "./dist/cli/index.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:cli": "tsc -p tsconfig.cli.json",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",

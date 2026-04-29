@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "declaration": false,
+    "rootDir": "./src"
+  },
+  "include": ["src/cli/**/*", "src/script-runtime/**/*", "src/capture/**/*",
+              "src/compute/**/*", "src/intent/**/*", "src/backends/**/*",
+              "src/diagnostics/**/*", "src/modules/**/*", "src/naming/**/*"],
+  "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
+              "tests/**/*", "**/*.test.ts"]
+}
