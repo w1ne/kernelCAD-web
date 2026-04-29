@@ -1,6 +1,7 @@
 import type { FeatureId, ScriptLocation } from '../intent/types';
+import type { BackendTarget } from '../backends/backend';
 
-export type BackendTarget = 'export-occt' | 'faceted-mesh';
+export type { BackendTarget };
 
 export type DiagnosticSeverity = 'info' | 'warn' | 'error';
 
