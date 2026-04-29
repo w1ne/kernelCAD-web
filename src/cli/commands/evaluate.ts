@@ -11,7 +11,6 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 
 export interface EvaluateInput {
   file: string;
-  json?: boolean;
 }
 
 export interface EvaluateResult {
@@ -65,7 +64,7 @@ export function evaluateCommand(): Command {
     .argument('<file>', 'path to a .kcad.ts script')
     .option('--json', 'emit diagnostics as JSON')
     .action(async (file: string, opts: { json?: boolean }) => {
-      const r = await evaluateScript({ file, json: opts.json });
+      const r = await evaluateScript({ file });
       if (opts.json) {
         console.log(JSON.stringify({
           ok: r.exitCode === 0,

@@ -10,7 +10,6 @@ export interface ExportInput {
   file: string;
   format: ExportFormat;
   out: string;
-  json?: boolean; // plumbed for CLI parity; only the action handler reads this
 }
 
 export interface ExportCliResult {
@@ -67,7 +66,7 @@ export function exportCommand(): Command {
         console.error(`Unsupported format: ${format}. Use 'stl' or 'step'.`);
         process.exitCode = 2; return;
       }
-      const r = await exportScript({ file, format: format as ExportFormat, out: opts.out, json: opts.json });
+      const r = await exportScript({ file, format: format as ExportFormat, out: opts.out });
       if (opts.json) {
         console.log(JSON.stringify({
           ok: r.exitCode === 0,
