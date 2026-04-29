@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "declaration": false,
+    "tsBuildInfoFile": null,
+    "verbatimModuleSyntax": false,
+    "allowImportingTsExtensions": false,
+    "noUncheckedSideEffectImports": false,
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/cli/**/*", "src/script-runtime/**/*", "src/capture/**/*",
+              "src/compute/**/*", "src/intent/**/*", "src/backends/**/*",
+              "src/diagnostics/**/*",
+              "src/lib/geometryHelpers.ts", "src/lib/safeSketch.ts",
+              "src/lib/userGlobals.ts", "src/lib/withTemporaryGlobals.ts", "src/lib/workerTypes.ts",
+              "src/modules/**/*", "src/naming/**/*"],
+  "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
+              "src/backends/occt/worker.ts",
+              "tests/**/*", "**/*.test.ts"]
+}

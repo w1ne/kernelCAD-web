@@ -81,7 +81,7 @@ export class GeometryEngine {
 
         if (!this.worker) {
             try {
-                this.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+                this.worker = new Worker(new URL('../backends/occt/worker.ts', import.meta.url), { type: 'module' });
                 this.worker.onmessage = this.handleMessage.bind(this);
                 this.worker.onerror = this.handleError.bind(this);
             } catch (error) {
