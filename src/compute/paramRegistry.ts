@@ -26,20 +26,24 @@ export class ParamRegistry {
     if (this.params.has(name)) {
       throw new Error(`Param '${name}' already registered`);
     }
+    // Build the entry FIRST without any registry mutations
+    const dependsOn = this.parseDependencies(expression);
     const entry: ParamEntry = {
       expression,
       unit: options.unit,
       options,
       evaluated: 0,
-      dependsOn: this.parseDependencies(expression),
+      dependsOn,
       dependents: new Set(),
     };
+    // Try evaluation in a sandboxed scope using current values from this.params
+    const value = this.evaluateExpression(name, expression, dependsOn, entry.unit);
+    entry.evaluated = value;
+    // ALL throws are above this line — only commit AFTER eval succeeds
     this.params.set(name, entry);
-    for (const dep of entry.dependsOn) {
-      const e = this.params.get(dep);
-      if (e) e.dependents.add(name);
+    for (const dep of dependsOn) {
+      this.params.get(dep)?.dependents.add(name);
     }
-    this.evaluate(name);
   }
 
   update(name: string, newExpression: string): void {
@@ -49,7 +53,14 @@ export class ParamRegistry {
     if (this.wouldCycle(name, newDeps)) {
       throw new Error(`Cycle detected: '${name}' depends on itself transitively`);
     }
-    for (const oldDep of entry.dependsOn) {
+    // Snapshot prior state for rollback on failure
+    const prevExpression = entry.expression;
+    const prevDeps = entry.dependsOn;
+    const prevEvaluated = entry.evaluated;
+    // Try the new evaluation BEFORE mutating registry links
+    const value = this.evaluateExpression(name, newExpression, newDeps, entry.unit);
+    // Eval succeeded — commit changes
+    for (const oldDep of prevDeps) {
       this.params.get(oldDep)?.dependents.delete(name);
     }
     entry.expression = newExpression;
@@ -57,12 +68,30 @@ export class ParamRegistry {
     for (const dep of newDeps) {
       this.params.get(dep)?.dependents.add(name);
     }
-    this.evaluate(name);
+    entry.evaluated = value;
+    // Cascade re-evaluation to dependents with visited set to avoid duplicates
     const queue = [...entry.dependents];
-    while (queue.length) {
-      const next = queue.shift()!;
-      this.evaluate(next);
-      for (const d of this.params.get(next)!.dependents) queue.push(d);
+    const visited = new Set<string>();
+    try {
+      while (queue.length) {
+        const next = queue.shift()!;
+        if (visited.has(next)) continue;
+        visited.add(next);
+        this.evaluate(next);
+        for (const d of this.params.get(next)!.dependents) queue.push(d);
+      }
+    } catch (err) {
+      // Roll back this entry's state if cascade fails
+      for (const dep of newDeps) {
+        this.params.get(dep)?.dependents.delete(name);
+      }
+      entry.expression = prevExpression;
+      entry.dependsOn = prevDeps;
+      entry.evaluated = prevEvaluated;
+      for (const dep of prevDeps) {
+        this.params.get(dep)?.dependents.add(name);
+      }
+      throw err;
     }
   }
 
@@ -108,20 +137,29 @@ export class ParamRegistry {
 
   private evaluate(name: string): void {
     const entry = this.params.get(name)!;
+    entry.evaluated = this.evaluateExpression(name, entry.expression, entry.dependsOn, entry.unit);
+  }
+
+  private evaluateExpression(
+    name: string,
+    expression: string,
+    dependsOn: Set<string>,
+    unit: Unit,
+  ): number {
     const scope: Record<string, number> = {};
-    for (const dep of entry.dependsOn) {
-      scope[dep] = this.params.get(dep)!.evaluated;
+    for (const dep of dependsOn) {
+      const e = this.params.get(dep);
+      if (!e) throw new Error(`Param '${name}' references unknown symbol '${dep}'`);
+      scope[dep] = e.evaluated;
     }
-    const result = math.evaluate(entry.expression, scope);
-    let value: number;
+    const result = math.evaluate(expression, scope);
     if (typeof result === 'number') {
-      value = result;
-    } else if (result && typeof result.toNumber === 'function') {
-      value = result.toNumber(this.canonicalUnitString(entry.unit));
-    } else {
-      throw new Error(`Param '${name}' evaluation produced unexpected type: ${typeof result}`);
+      return result;
     }
-    entry.evaluated = value;
+    if (result && typeof result.toNumber === 'function') {
+      return result.toNumber(this.canonicalUnitString(unit));
+    }
+    throw new Error(`Param '${name}' evaluation produced unexpected type: ${typeof result}`);
   }
 
   private canonicalUnitString(unit: Unit): string {

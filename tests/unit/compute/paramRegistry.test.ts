@@ -35,4 +35,26 @@ describe('ParamRegistry', () => {
     r.register('Len', '1 in', { unit: 'mm' });
     expect(r.get('Len').evaluated).toBeCloseTo(25.4, 3);
   });
+
+  it('register() with bad expression leaves no partial state', () => {
+    const r = new ParamRegistry();
+    r.register('Width', '100', { unit: 'mm' });
+    expect(() => r.register('Bad', 'NonExistent + 1', { unit: 'mm' })).toThrow();
+    expect(r.list()).not.toContain('Bad');
+    // Width's dependents must not include Bad
+    expect(r.get('Width').evaluated).toBe(100);
+  });
+
+  it('update() with bad expression rolls back to prior state', () => {
+    const r = new ParamRegistry();
+    r.register('Width', '100', { unit: 'mm' });
+    r.register('Half', 'Width / 2', { unit: 'mm' });
+    expect(() => r.update('Half', 'NoSuch / 2')).toThrow();
+    // Half should still have prior expression and prior evaluated value
+    expect(r.get('Half').expression).toBe('Width / 2');
+    expect(r.get('Half').evaluated).toBe(50);
+    // Updating Width should still cascade to Half
+    r.update('Width', '200');
+    expect(r.get('Half').evaluated).toBe(100);
+  });
 });
