@@ -2929,7 +2929,10 @@ And add a build script:
   },
   "include": ["src/cli/**/*", "src/script-runtime/**/*", "src/capture/**/*",
               "src/compute/**/*", "src/intent/**/*", "src/backends/**/*",
-              "src/diagnostics/**/*", "src/modules/**/*", "src/naming/**/*"],
+              "src/diagnostics/**/*",
+              "src/lib/geometryHelpers.ts", "src/lib/safeSketch.ts",
+              "src/lib/userGlobals.ts", "src/lib/withTemporaryGlobals.ts", "src/lib/workerTypes.ts",
+              "src/modules/**/*", "src/naming/**/*"],
   "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
               "tests/**/*", "**/*.test.ts"]
 }
