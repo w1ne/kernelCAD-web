@@ -1,6 +1,6 @@
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureId } from '../intent/types';
-import type { FeatureLowerer, ShapeBackend, ResolvedInputs } from '../backends/backend';
+import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
 import { DependencyGraph } from './dependencyGraph';
 
@@ -11,7 +11,8 @@ export interface RecomputeResult {
 }
 
 export class RecomputeEngine {
-  constructor(private lowerer: FeatureLowerer) {}
+  private readonly lowerer: FeatureLowerer;
+  constructor(lowerer: FeatureLowerer) { this.lowerer = lowerer; }
 
   async run(records: readonly FeatureRecord[]): Promise<RecomputeResult> {
     const shapes = new Map<FeatureId, ShapeBackend>();
