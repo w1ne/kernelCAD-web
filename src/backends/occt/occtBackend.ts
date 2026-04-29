@@ -119,7 +119,7 @@ export class OcctBackend implements ShapeBackend {
     w: number,
     h: number,
     offsetX: number,
-    _angleDeg: number,
+    _angleDeg: number, // eslint-disable-line @typescript-eslint/no-unused-vars
   ): OcctBackend {
     if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
     const drawing = replicad
@@ -173,6 +173,7 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend((this.shape as any).intersect(o) as ReplicadShape3D);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   splitByPlane(_normal: Vec3, _offset: number): [ShapeBackend, ShapeBackend] {
     throw new Error('splitByPlane not implemented in v0.1');
   }
