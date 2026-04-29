@@ -1,9 +1,9 @@
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
-import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from './geometryHelpers';
-import { createSafeReplicad, SafeSketcher } from './safeSketch';
-import { withTemporaryGlobals } from './withTemporaryGlobals';
-import { createUserGlobals } from './userGlobals';
+import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../lib/geometryHelpers';
+import { createSafeReplicad, SafeSketcher } from '../../lib/safeSketch';
+import { withTemporaryGlobals } from '../../lib/withTemporaryGlobals';
+import { createUserGlobals } from '../../lib/userGlobals';
 import {
   type ExecutionResult,
   type FaceGeometry,
@@ -12,7 +12,7 @@ import {
   type WorkerRequest,
   type WorkerResponse,
   WorkerRequestSchema,
-} from './workerTypes';
+} from '../../lib/workerTypes';
 
 type UnknownRecord = Record<string, unknown>;
 
