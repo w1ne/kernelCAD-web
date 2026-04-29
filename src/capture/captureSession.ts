@@ -40,6 +40,15 @@ export class CaptureSession {
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
+    // Validate all input shapes belong to this session.
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`boolean: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    for (let i = 0; i < cutters.length; i++) {
+      if (!this.records.some(r => r.id === cutters[i].id)) {
+        throw new Error(`boolean: cutter shape '${cutters[i].id}' is not from this CaptureSession`);
+      }
+    }
     const inputs: Record<string, FeatureRef> = {
       base: { kind: 'feature', id: base.id },
     };

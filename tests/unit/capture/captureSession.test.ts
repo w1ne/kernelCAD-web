@@ -61,4 +61,12 @@ describe('CaptureSession', () => {
     expect(records[2].inputs.cutter_0).toEqual({ kind: 'feature', id: b.id });
     expect(c.id).toBe(records[2].id);
   });
+
+  it('rejects boolean across two CaptureSessions', () => {
+    const s1 = new CaptureSession();
+    const s2 = new CaptureSession();
+    const a = s1.createShape({ kind: 'box', params: {}, inputs: {} });
+    const b = s2.createShape({ kind: 'cylinder', params: {}, inputs: {} });
+    expect(() => a.subtract(b)).toThrow(/not from this CaptureSession/i);
+  });
 });
