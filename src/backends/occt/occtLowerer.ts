@@ -54,6 +54,59 @@ export class OcctLowerer implements FeatureLowerer {
         shape = OcctBackend.sphere(r.params.r.evaluated);
         break;
       }
+      case 'extrude': {
+        // Profile kind is a quoted string in IR (e.g. "'rect'", "'circle'").
+        const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
+        const height = r.params.height.evaluated;
+        if (profileKind === 'rect') {
+          shape = OcctBackend.extrudeRect(
+            r.params.w.evaluated,
+            r.params.h.evaluated,
+            height,
+          );
+        } else if (profileKind === 'circle') {
+          shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
+        } else {
+          return {
+            shape: undefined as unknown as ShapeBackend,
+            diagnostics: [
+              {
+                target: this.target,
+                code: 'feature.extrude.unsupported-profile',
+                featureId: r.id,
+                severity: 'error',
+                message: `Profile kind '${profileKind}' not supported in v0.1`,
+              },
+            ],
+          };
+        }
+        break;
+      }
+      case 'revolve': {
+        const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
+        if (profileKind === 'rect') {
+          shape = OcctBackend.revolveRect(
+            r.params.w.evaluated,
+            r.params.h.evaluated,
+            r.params.offsetX.evaluated,
+            r.params.angleDeg.evaluated,
+          );
+        } else {
+          return {
+            shape: undefined as unknown as ShapeBackend,
+            diagnostics: [
+              {
+                target: this.target,
+                code: 'feature.revolve.unsupported-profile',
+                featureId: r.id,
+                severity: 'error',
+                message: `Profile kind '${profileKind}' not supported in v0.1`,
+              },
+            ],
+          };
+        }
+        break;
+      }
       case 'boolean': {
         // Op expression is a quoted string in IR (e.g. "'difference'").
         const op = String(r.params.op.expression).replace(/'/g, '');

@@ -81,6 +81,60 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(replicad.makeSphere(r) as ReplicadShape3D);
   }
 
+  /**
+   * Extrude a centered axis-aligned rectangular profile (width × height) on
+   * the XY plane up to `height` along Z. The resulting solid is centered
+   * about the origin in X/Y and spans `Z = 0..height`.
+   */
+  static extrudeRect(w: number, h: number, height: number): OcctBackend {
+    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
+    const sketch = replicad.drawRectangle(w, h).sketchOnPlane('XY');
+    // `sketchOnPlane` may return Sketches for multi-face drawings; rect is single.
+    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
+    return new OcctBackend(single.extrude(height));
+  }
+
+  /**
+   * Extrude a circle of radius `r` (centered at origin on the XY plane) up to
+   * `height` along Z.
+   */
+  static extrudeCircle(r: number, height: number): OcctBackend {
+    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
+    const sketch = replicad.drawCircle(r).sketchOnPlane('XY');
+    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
+    return new OcctBackend(single.extrude(height));
+  }
+
+  /**
+   * Revolve an axis-aligned rectangular profile around the Z axis.
+   * The rect is placed in the XZ plane with its corner at `(offsetX, 0)`,
+   * extends `w` in radial X and `h` in axial Z. With `angleDeg = 360`, the
+   * result is a washer: inner radius `offsetX`, outer radius `offsetX + w`,
+   * height `h`.
+   *
+   * NOTE: `angleDeg` is currently informational — Replicad's `Sketch.revolve`
+   * always sweeps a full turn. Partial revolutions are deferred to v0.2.
+   */
+  static revolveRect(
+    w: number,
+    h: number,
+    offsetX: number,
+    _angleDeg: number,
+  ): OcctBackend {
+    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
+    const drawing = replicad
+      .draw([offsetX, 0])
+      .hLine(w)
+      .vLine(h)
+      .hLine(-w)
+      .close();
+    const sketch = drawing.sketchOnPlane('XZ');
+    const single = sketch as unknown as {
+      revolve: (axis?: [number, number, number]) => ReplicadShape3D;
+    };
+    return new OcctBackend(single.revolve([0, 0, 1]));
+  }
+
   translate(x: number, y: number, z: number): OcctBackend {
     return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
   }
