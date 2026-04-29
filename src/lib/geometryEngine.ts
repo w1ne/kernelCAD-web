@@ -15,12 +15,21 @@ import {
 // Re-export types for consumers
 export type { ExecutionResult, GeometryResult, SketchGeometry, FaceGeometry };
 
-export const defaultCode = `
-// You can use standard Replicad API here.
-// The variable 'replicad' is available in the scope.
-// Helpers available: startSketch(), makeCompound(), fillet(), chamfer()
-// You must return a Shape or an array of Shapes.
-return replicad.makeBox(10, 10, 10);
+/**
+ * Default starter script — kernelCAD v0.1 web demo.
+ *
+ * v0.1 is script-as-source-of-truth (`.kcad.ts` files): top-level statements
+ * with a final `return` of the root shape. The browser worker exposes the
+ * v0.1 API (`param`, `box`, `cylinder`, `sphere`) alongside the legacy
+ * Replicad globals so existing 0.10.0 projects keep working.
+ */
+export const defaultCode = `const w = param('Width', 60, { unit: 'mm' });
+const h = param('Height', 40, { unit: 'mm' });
+const t = param('Thickness', 5, { unit: 'mm' });
+
+const base = box(w, h, t);
+const hole = cylinder(t + 2, 4).translate(w / 2, h / 2, -1);
+return base.subtract(hole);
 `;
 
 type PendingMessage = {

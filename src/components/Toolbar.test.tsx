@@ -41,6 +41,8 @@ beforeEach(() => {
         addSketch: vi.fn(),
         selectedFace: null,
         setSelectedFace: vi.fn(),
+        sidePanelVisible: true,
+        toggleSidePanel: vi.fn(),
     } as unknown as WorkbenchContext.WorkbenchContextType);
 });
 
@@ -66,92 +68,30 @@ const mockFeatures: Feature[] = [
     }
 ];
 
-describe('Toolbar', () => {
-    it('should render feature buttons', () => {
+describe('Toolbar (v0.1 web demo)', () => {
+    it('renders only the Toggle Scene Browser button', () => {
         const onToolClick = vi.fn();
         render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
 
-        expect(screen.getByRole('button', { name: 'Box' })).toBeDefined();
-        expect(screen.getByRole('button', { name: 'Fillet' })).toBeDefined();
+        // Per v0.1 NORTHSTAR spec, Studio UI commands (Box, Cylinder, Sketch,
+        // Extrude, Fillet, etc.) are deferred to v0.5. The toolbar in the
+        // deployed demo shows only the Toggle Scene Browser button.
+        expect(screen.getByRole('button', { name: 'Toggle Scene Browser' })).toBeDefined();
+        expect(screen.queryByRole('button', { name: 'Box' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Fillet' })).toBeNull();
+        expect(screen.queryByLabelText('Sketch')).toBeNull();
+        expect(screen.queryByLabelText('Sketch Visibility')).toBeNull();
     });
 
-    it('should call onToolClick with feature object', () => {
-        const onToolClick = vi.fn();
-        render(<Toolbar features={mockFeatures} onToolClick={onToolClick} />);
-
-        fireEvent.click(screen.getByRole('button', { name: 'Box' }));
-        expect(onToolClick).toHaveBeenCalledWith(mockFeatures[0]);
-    });
-    it('should call setSketchMode when Sketch button clicked with selected face', () => {
-        const setSketchMode = vi.fn();
-        const selectedFace = { shapeIndex: 0, faceId: 12 };
-        const selectedFacePlane = { origin: [0, 0, 10], normal: [0, 0, 1] };
-
-        // Override mock for this test
+    it('toggles the side panel when the Toggle Scene Browser button is clicked', () => {
+        const toggleSidePanel = vi.fn();
         vi.spyOn(WorkbenchContext, 'useWorkbench').mockReturnValue({
-            viewMode: 'code',
-            setViewMode: vi.fn(),
-            viewMode3D: 'shadedWithEdges',
-            setViewMode3D: vi.fn(),
-            code: 'return [];',
-            setCode: vi.fn(),
-            insertCode: vi.fn(),
-            editorInstance: null,
-            setEditorInstance: vi.fn(),
-            commandManager: {} as unknown as CommandManager,
-            activeDialog: null,
-            setActiveDialog: vi.fn(),
-            geometries: [],
-            sketchesGeometries: [],
-            showSketches: true,
-            toggleSketchVisibility: vi.fn(),
-            error: null,
-            isReady: true,
-            isComputing: false,
-            sketchMode: { active: false, plane: null, currentSketch: null, tool: 'select' },
-            selectedFace,
-            selectedFacePlane,
-            setSketchMode,
-            addSketch: vi.fn(),
-            planes: [],
-            addPlane: vi.fn(),
-            togglePlaneVisibility: vi.fn(),
-            setSelectedFace: vi.fn(),
-            isFaceSelecting: false,
-            startFaceSelection: vi.fn(),
-            cancelFaceSelection: vi.fn(),
-            // Sketching context (not used by Toolbar)
-            entities: new Map(),
-            constraints: [],
-            selectedEntityIds: [],
-            addEntity: vi.fn(),
-            updateEntity: vi.fn(),
-            addConstraint: vi.fn(),
-            selectEntity: vi.fn(),
-            clearSelection: vi.fn(),
-            solve: vi.fn(),
-            // Code generation context (required by Toolbar)
-            codeContext: {
-                code: 'return [];',
-                declaredVariables: new Set(),
-                returnedVariables: ['shape0'],
-                generateUniqueName: (base: string) => base,
-                getVariableAtIndex: (_index: number) => 'shape0',
-            },
-        } as any);
+            sidePanelVisible: true,
+            toggleSidePanel,
+        } as unknown as WorkbenchContext.WorkbenchContextType);
 
-        render(<Toolbar features={mockFeatures} onToolClick={vi.fn()} />);
-
-        const sketchBtn = screen.getByLabelText('Sketch');
-        fireEvent.click(sketchBtn);
-
-        expect(setSketchMode).toHaveBeenCalledWith(expect.objectContaining({
-            active: true,
-            plane: expect.objectContaining({
-                id: expect.stringContaining('face-12'),
-                origin: selectedFacePlane.origin,
-                normal: selectedFacePlane.normal
-            })
-        }));
+        render(<Toolbar features={[]} onToolClick={vi.fn()} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Toggle Scene Browser' }));
+        expect(toggleSidePanel).toHaveBeenCalled();
     });
 });

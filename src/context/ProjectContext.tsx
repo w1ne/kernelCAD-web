@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { projectService, type KernelCADProject, type ProjectMetadata } from '../lib/projectService';
+import { defaultCode } from '../lib/geometryEngine';
 
 interface ProjectContextType {
     activeProjectId: string | null;
@@ -39,7 +40,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             }
         } else {
             const id = projectService.generateId();
-            const defaultProj = projectService.createProject('// New Project\n', {
+            const defaultProj = projectService.createProject(defaultCode, {
                 viewMode: 'code',
                 viewMode3D: 'shadedWithEdges',
                 sidePanelVisible: true,
@@ -69,7 +70,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     const createProject = useCallback((name: string = 'Untitled Project') => {
         const id = projectService.generateId();
-        const newProj = projectService.createProject('// New Project\n', {
+        const newProj = projectService.createProject(defaultCode, {
             viewMode: 'code',
             viewMode3D: 'shadedWithEdges',
             sidePanelVisible: true,

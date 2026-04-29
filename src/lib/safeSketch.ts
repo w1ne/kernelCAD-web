@@ -41,7 +41,13 @@ export function createSafeReplicad<T extends ReplicadLike>(
   replicad: T,
   onSketchCreated?: (s: SafeSketcher) => void,
 ): T {
-  const safeReplicad = Object.create(replicad) as T;
+  // NOTE: We deliberately do NOT use `Object.create(replicad)` here. When
+  // `replicad` is an ES Module namespace (the case in the production worker),
+  // its exports are non-writable, non-configurable getters; in strict mode
+  // an assignment to a property whose prototype-chain entry is non-writable
+  // throws `TypeError: Cannot assign to read only property`. Copying the
+  // enumerable bindings into a fresh object sidesteps that.
+  const safeReplicad = { ...(replicad as unknown as Record<string, unknown>) } as T;
 
   const SafeSketcherWrapper = class {
     constructor(plane?: unknown) {

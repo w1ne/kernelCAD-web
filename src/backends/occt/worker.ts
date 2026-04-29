@@ -4,6 +4,7 @@ import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../lib/
 import { createSafeReplicad, SafeSketcher } from '../../lib/safeSketch';
 import { withTemporaryGlobals } from '../../lib/withTemporaryGlobals';
 import { createUserGlobals } from '../../lib/userGlobals';
+import { createV01ApiGlobals, unwrapV01Shape } from '../../lib/v01ApiShim';
 import {
   type ExecutionResult,
   type FaceGeometry,
@@ -545,6 +546,12 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher },
         );
 
+        // v0.1 API globals: `param`, `box`, `cylinder`, `sphere`. The shim
+        // returns Replicad-shape proxies that expose v0.1's `subtract`/
+        // `union`/`intersect`/`translate` while still supporting the worker's
+        // existing mesh / blob extraction paths.
+        const v01Api = createV01ApiGlobals(replicad);
+
         const func = new Function(
           'replicad',
           'startSketch',
@@ -553,6 +560,10 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           'chamfer',
           'sketchOnFace',
           'extrude',
+          'param',
+          'box',
+          'cylinder',
+          'sphere',
           code,
         ) as unknown as (...args: unknown[]) => unknown;
 
@@ -561,6 +572,7 @@ self.onmessage = (e: MessageEvent<unknown>) => {
             // Convenience globals for generated snippets and common user code.
             // Safe per-execution: restored after this run to avoid leaking callbacks/closures.
             ...userGlobals,
+            ...v01Api,
           },
           () =>
             func(
@@ -571,9 +583,15 @@ self.onmessage = (e: MessageEvent<unknown>) => {
               chamfer,
               wrappedSketchOnFace,
               extrude,
+              v01Api.param,
+              v01Api.box,
+              v01Api.cylinder,
+              v01Api.sphere,
             ),
         );
-        const shapes = (Array.isArray(result) ? result : [result]).filter(Boolean);
+        const shapes = (Array.isArray(result) ? result : [result])
+          .map(unwrapV01Shape)
+          .filter(Boolean);
 
         const geometries: GeometryResult[] = [];
         const returnedSketches: SketchGeometry[] = [];
@@ -737,6 +755,8 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           return new SketcherCtor();
         };
 
+        const v01Api = createV01ApiGlobals(replicad);
+
         const func = new Function(
           'replicad',
           'startSketch',
@@ -745,6 +765,10 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           'chamfer',
           'sketchOnFace',
           'extrude',
+          'param',
+          'box',
+          'cylinder',
+          'sphere',
           code,
         ) as unknown as (...args: unknown[]) => unknown;
 
@@ -752,10 +776,23 @@ self.onmessage = (e: MessageEvent<unknown>) => {
           safeReplicad as unknown as { Sketcher: new (plane?: unknown) => SafeSketcher },
         );
 
-        const result = withTemporaryGlobals(userGlobals, () =>
-          func(safeReplicad, wrappedStartSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude),
+        const result = withTemporaryGlobals({ ...userGlobals, ...v01Api }, () =>
+          func(
+            safeReplicad,
+            wrappedStartSketch,
+            makeCompound,
+            fillet,
+            chamfer,
+            sketchOnFace,
+            extrude,
+            v01Api.param,
+            v01Api.box,
+            v01Api.cylinder,
+            v01Api.sphere,
+          ),
         );
-        const shape = Array.isArray(result) ? result[0] : result;
+        const rawResult = Array.isArray(result) ? result[0] : result;
+        const shape = unwrapV01Shape(rawResult);
         if (!shape) throw new Error('No shape returned');
 
         const blobFn = type === 'EXPORT_STEP' ? getFn(shape, 'blobSTEP') : getFn(shape, 'blobSTL');
