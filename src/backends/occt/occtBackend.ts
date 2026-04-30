@@ -155,6 +155,29 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Extrude a rectangle with rounded corners along +Z by `depth`.
+   *
+   * `radius` is auto-clamped to `min(width/2, height/2)` so over-sized radii
+   * don't trigger an OCCT error. Zero radius is treated as a sharp rectangle.
+   *
+   * @throws {Error} If `depth <= 0`.
+   */
+  static extrudeRoundedRect(width: number, height: number, radius: number, depth: number): OcctBackend {
+    if (depth <= 0) {
+      throw new Error(`OcctBackend.extrudeRoundedRect: depth must be positive (got ${depth})`);
+    }
+    // Replicad's drawRoundedRectangle requires r < min(width/2, height/2) when
+    // building symmetric arcs — at the exact maximum the hLine segment becomes
+    // zero-length and the tangentArc call fails. Cap at 99.99 % of the limit.
+    const maxR = Math.min(width / 2, height / 2);
+    const clamped = Math.min(Math.max(0, radius), maxR * 0.9999);
+    const drawing = replicad.drawRoundedRectangle(width, height, clamped);
+    const sketch = drawing.sketchOnPlane('XY');
+    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
+    return new OcctBackend(single.extrude(depth));
+  }
+
+  /**
    * Revolve an axis-aligned rectangular profile around the Z axis.
    * The rect is placed in the XZ plane with its corner at `(offsetX, 0)`,
    * extends `w` in radial X and `h` in axial Z. With `angleDeg = 360`, the
