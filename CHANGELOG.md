@@ -1,3 +1,27 @@
+## v0.11.0-alpha.1 — 2026-04-30
+
+### Added
+- **MCP server** — first agent-first surface (`kernelcad mcp` subcommand, stdio transport)
+  - `evaluate_script(file? | code?)` — run a script, report pass/fail + feature count + diagnostics
+  - `list_features(file? | code?)` — list captured features (kind, id, params, inputs, transform count, suppression)
+  - `get_shape_info(file?, code?, feature_id?)` — volume / surfaceArea / bbox for the resolved feature (defaults to last)
+- `@modelcontextprotocol/sdk` v1.29 dependency
+- `src/mcp/` module with three pure tool functions reusable outside the MCP transport
+- `tests/integration/mcp/spawn.test.ts` — subprocess + JSON-RPC integration test covering both initialize and tools/call
+
+### Changed
+- `EvaluateInput` (in `src/cli/commands/evaluate.ts`) widened to accept `{ code?: string }` for inline source. Existing `kernelcad evaluate <file>` surface unchanged.
+- `vitest.config.ts` — `tests/integration/**` added to include path
+
+### Deferred to v0.11-beta+ / v0.12
+- `get_edges_of(feature_id)`, `get_faces_of(feature_id)` — topology query tools
+- `why_did_this_fail(feature_id)` — guided diagnostic explainer
+- AST-edit tools (deferred to v0.12 per NORTHSTAR)
+- HTTP transport
+- Skill installer (v0.12) — deliver kernelCAD docs as Claude Code / Codex skills
+
+---
+
 ## v0.2.0-alpha.2 — 2026-04-30
 
 ### Added
