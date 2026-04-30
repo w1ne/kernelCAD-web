@@ -3,6 +3,7 @@ import opencascade from 'replicad-opencascadejs';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3 } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
+import type { SketchCommand } from '../../capture/sketch';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -56,9 +57,10 @@ export class OcctBackend implements ShapeBackend {
   readonly target: BackendTarget = 'export-occt';
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
   private shape: ReplicadShape3D;
-  readonly kind?: 'box' | 'cylinder' | 'sphere';
+  readonly kind?: 'box' | 'cylinder' | 'sphere' | 'sketch';
+  private _drawing: replicad.Drawing | null = null;
 
-  constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere') {
+  constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere' | 'sketch') {
     this.shape = shape;
     this.kind = kind;
   }
@@ -205,6 +207,61 @@ export class OcctBackend implements ShapeBackend {
       revolve: (axis?: [number, number, number]) => ReplicadShape3D;
     };
     return new OcctBackend(single.revolve([0, 0, 1]));
+  }
+
+  /**
+   * Build a sketch-tagged OcctBackend from an array of SketchCommands.
+   *
+   * The resulting instance has `kind === 'sketch'` and holds a Replicad Drawing
+   * internally. It cannot be transformed or measured as a 3D solid — only
+   * consumed by `extrudeFromSketch`.
+   *
+   * @throws {Error} If commands is empty, has no close command, or first command is not moveTo.
+   */
+  static fromSketchCommands(commands: SketchCommand[]): OcctBackend {
+    if (commands.length === 0) {
+      throw new Error('OcctBackend.fromSketchCommands: empty commands array.');
+    }
+    const closeIdx = commands.findIndex(c => c.kind === 'close');
+    if (closeIdx === -1) {
+      throw new Error('OcctBackend.fromSketchCommands: missing close command.');
+    }
+    const first = commands[0];
+    if (first.kind !== 'moveTo') {
+      throw new Error('OcctBackend.fromSketchCommands: first command must be moveTo.');
+    }
+    let pen = replicad.draw([first.x, first.y]);
+    for (let i = 1; i < closeIdx; i++) {
+      const c = commands[i];
+      if (c.kind === 'lineTo') {
+        pen = pen.lineTo([c.x, c.y]) as typeof pen;
+      }
+    }
+    const drawing = pen.close();
+    const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
+    back._drawing = drawing;
+    return back;
+  }
+
+  /**
+   * Extrude a sketch-tagged OcctBackend into a 3D solid.
+   *
+   * The input must have `kind === 'sketch'` and a non-null `_drawing`. The
+   * returned OcctBackend is a normal 3D solid with no `kind` tag.
+   *
+   * @throws {Error} If `sketch` is not a sketch-tagged backend.
+   * @throws {Error} If `depth <= 0`.
+   */
+  static extrudeFromSketch(sketch: OcctBackend, depth: number): OcctBackend {
+    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+      throw new Error('OcctBackend.extrudeFromSketch: input is not a sketch.');
+    }
+    if (depth <= 0) {
+      throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
+    }
+    const lifted = sketch._drawing.sketchOnPlane('XY');
+    const single = lifted as unknown as { extrude: (d: number) => ReplicadShape3D };
+    return new OcctBackend(single.extrude(depth));
   }
 
   translate(x: number, y: number, z: number): OcctBackend {
