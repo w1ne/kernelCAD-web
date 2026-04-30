@@ -38,6 +38,26 @@ export class Sketch {
       },
     });
   }
+
+  /**
+   * Revolve the sketch 360° around the Z axis. The path coordinates are
+   * interpreted as `(radial-X, axial-Z)` — first coord = distance from axis,
+   * second coord = height along axis. Profile must stay on x ≥ 0.
+   *
+   * Returns a `Shape` (3D solid). Validation (axis-cross, empty profile)
+   * happens at lowering time and surfaces as `feature.revolve.*` diagnostics.
+   */
+  revolve(): Shape {
+    return this.session.createShape({
+      kind: 'revolve',
+      inputs: {
+        sketch: { kind: 'feature', id: this.id },
+      },
+      params: {
+        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+      },
+    });
+  }
 }
 
 /**
