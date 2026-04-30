@@ -81,4 +81,34 @@ describe('path() builder + Sketch capture', () => {
     const last = result.records[result.records.length - 1];
     expect(r.shapes.get(last.id)!.volume()).toBeCloseTo(500, 1);
   });
+
+  it('captures tangentArc commands', async () => {
+    const code = `
+      const s = path()
+        .moveTo(0, 0)
+        .lineTo(10, 0)
+        .tangentArc(15, 5)
+        .lineTo(15, 15)
+        .lineTo(0, 15)
+        .close();
+      return s.extrude(2);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'tangentArc', x: 15, y: 5 });
+  });
+
+  it('rejects tangentArc as the first command (would have no prior tangent)', async () => {
+    // PathBuilder doesn't enforce this at the type level for v0.13.0-rc.3 — relies on
+    // the lowerer's try/catch. The script should still run; the diagnostic should be
+    // surfaced when the recompute lowers the sketch.
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return path().tangentArc(10, 5).lineTo(10, 0).close().extrude(2);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d => d.severity === 'error')).toBe(true);
+  });
 });

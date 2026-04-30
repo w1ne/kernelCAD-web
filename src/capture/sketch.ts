@@ -6,6 +6,7 @@ import { Shape } from './proxy';
 export type SketchCommand =
   | { kind: 'moveTo'; x: number; y: number }
   | { kind: 'lineTo'; x: number; y: number }
+  | { kind: 'tangentArc'; x: number; y: number }
   | { kind: 'close' };
 
 /**
@@ -61,6 +62,19 @@ export class PathBuilder {
 
   lineTo(x: number, y: number): PathBuilder {
     this.commands.push({ kind: 'lineTo', x, y });
+    return this;
+  }
+
+  /**
+   * Continue tangent from the previous segment to (x, y) along an arc.
+   * The arc's tangent direction at the start equals the previous segment's
+   * end tangent. Replicad's `tangentArcTo` underneath.
+   *
+   * Throws at lowering time (via `feature.sketch.failed` diagnostic) if
+   * called as the first command — there's no prior tangent to consume.
+   */
+  tangentArc(x: number, y: number): PathBuilder {
+    this.commands.push({ kind: 'tangentArc', x, y });
     return this;
   }
 
