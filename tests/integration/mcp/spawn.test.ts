@@ -100,4 +100,28 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     const payload = JSON.parse(text);
     expect(payload.features.map((f: { kind: string }) => f.kind)).toEqual(['box', 'fillet']);
   }, 90000);
+
+  it('responds to list_topology with canonical box face names', async () => {
+    const result = await callTool('list_topology', { code: 'return box(10, 10, 10);' });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.faceNames).toEqual(expect.arrayContaining(['top', 'bottom']));
+  }, 90000);
+
+  it('responds to get_edges_of with 4 edges of the top face of a box', async () => {
+    const result = await callTool('get_edges_of', { code: 'return box(20, 20, 20);', face_name: 'top' });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.edges).toHaveLength(4);
+  }, 90000);
+
+  it('responds to why_did_this_fail with healthy on a clean script', async () => {
+    const result = await callTool('why_did_this_fail', { code: 'return box(10, 10, 10);' });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.health).toBe('healthy');
+  }, 90000);
 });
