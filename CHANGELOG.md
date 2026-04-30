@@ -1,3 +1,26 @@
+## v0.13.0-rc.2 (NORTHSTAR roadmap: v0.4-rc sketch builder, lines-only) — 2026-04-30
+
+### Added
+- **Sketch builder**: `path()` returns a `PathBuilder`; chain `.moveTo(x,y).lineTo(x,y).close()` to get a `Sketch`; `Sketch.extrude(depth)` returns a `Shape`. First architectural step toward Phase 1 of the agent-first feature-parity roadmap. Mirrors ForgeCAD's `path()` API.
+- New `Sketch` capture proxy alongside existing `Shape`. Sketch records are captured with `metadata.commands: SketchCommand[]` array.
+- New OcctBackend factories: `fromSketchCommands(commands)` (returns a sketch-tagged backend with internal Drawing) and `extrudeFromSketch(sketch, depth)`.
+- New lowerer cases: top-level `'sketch'` and `'extrude'` `profileKind === 'sketch'` arm.
+- E2E fixture: `tests/e2e/fixtures/l-bracket.kcad.ts` — agent-friendly demo of path-based 2D construction.
+- New diagnostic codes: `feature.sketch.bad-commands`, `feature.sketch.failed`, `feature.extrude.bad-sketch`.
+
+### Changed
+- `OcctBackend.kind` widened to include `'sketch'` alongside primitive kinds. Sketch-tagged instances cannot be transformed/booleaned directly — only consumed by `extrudeFromSketch`. Future architectural cleanup will split into Solid/Sketch/Curve subtypes.
+
+### Deferred to v0.14+ (per the agent-first geometry roadmap)
+- Arc support (`arcTo`, `tangentArc`, `lineH`, `lineV`, `lineAngled`)
+- Path labels (`.label('name')` for downstream face references)
+- `polygon(points)` and `roundedRect(w, h, r)` as Sketch-returning conveniences (currently flat `extrudePolygon` / `extrudeRoundedRect` remain as released API)
+- Stroke (open polylines)
+- Sketch revolve / sweep
+- Sketch constraints (Phase 2 of the parity roadmap)
+
+---
+
 ## v0.13.0-rc.1 (NORTHSTAR roadmap: v0.12 final remove_feature) — 2026-04-30
 
 ### Added
