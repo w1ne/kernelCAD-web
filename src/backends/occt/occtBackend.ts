@@ -53,9 +53,20 @@ export class OcctBackend implements ShapeBackend {
   readonly target: BackendTarget = 'export-occt';
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
   private shape: ReplicadShape3D;
+  readonly kind?: 'box' | 'cylinder' | 'sphere';
 
-  constructor(shape: ReplicadShape3D) {
+  constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere') {
     this.shape = shape;
+    this.kind = kind;
+  }
+
+  /**
+   * Internal accessor for `edgeSelection.pickEdges` — returns the underlying replicad
+   * shape so the helper can iterate `shape.faces` / `shape.edges`. Treat as
+   * implementation detail; do not export from `index.ts`.
+   */
+  getReplicadShape(): ReplicadShape3D {
+    return this.shape;
   }
 
   static box(x: number, y: number, z: number, centered = false): OcctBackend {
@@ -68,17 +79,17 @@ export class OcctBackend implements ShapeBackend {
     const placed = centered
       ? (b.translate(0, 0, -z / 2) as ReplicadShape3D)
       : (b.translate(x / 2, y / 2, 0) as ReplicadShape3D);
-    return new OcctBackend(placed);
+    return new OcctBackend(placed, 'box');
   }
 
   static cylinder(h: number, r: number): OcctBackend {
     if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    return new OcctBackend(replicad.makeCylinder(r, h) as ReplicadShape3D);
+    return new OcctBackend(replicad.makeCylinder(r, h) as ReplicadShape3D, 'cylinder');
   }
 
   static sphere(r: number): OcctBackend {
     if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    return new OcctBackend(replicad.makeSphere(r) as ReplicadShape3D);
+    return new OcctBackend(replicad.makeSphere(r) as ReplicadShape3D, 'sphere');
   }
 
   /**
