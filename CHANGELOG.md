@@ -1,3 +1,21 @@
+## v0.11.0 — 2026-04-30
+
+### Added
+- **3 new MCP topology tools** completing the v0.11 read-tools surface:
+  - `list_topology(file?, code?, feature_id?)` — canonical face names + edge count for an introspected feature. Returns empty face list and `hasTrackedTopology: false` for non-primitives.
+  - `get_edges_of(file?, code?, feature_id?, face_name)` — boundary edges of a named canonical face. Mirrors ForgeCAD's `edgesOf()`. Returns `[{ index, centroid, length, isClosed }]`. Centroid uses Replicad's parametric `pointAt(0.5)` so it's correct for arcs/circles, not just straight edges.
+  - `why_did_this_fail(file?, code?, feature_id?)` — focused diagnostic view + upstream chain walk + **human-readable hints lookup** (26 entries covering known kernel diagnostic codes — fillet/chamfer/shell failures, face-ref errors, recompute cascade, CLI errors). Improvement over ForgeCAD's pattern, which has no equivalent — ForgeCAD agents read SKILL.md to interpret codes, kernelCAD's MCP returns the suggestion directly.
+- 3 new spawn integration tests covering the new tools (5 total: 2 from alpha + 3 from final).
+
+### Changed
+- v0.11 milestone closed at final (no separate `-beta` tag in the public history). Version progresses 0.11.0-alpha.1 → 0.11.0.
+
+### Deferred to v0.12+
+- AST-edit tools (deferred per NORTHSTAR roadmap)
+- Geometric edge selection (`select_edges` mirroring ForgeCAD's `selectEdges` for non-primitive shapes)
+- HTTP transport (currently stdio-only)
+- Skill installer (`forgecad skill install` equivalent)
+
 ## v0.11.0-alpha.1 — 2026-04-30
 
 ### Added
