@@ -1,3 +1,24 @@
+## v0.12.0-beta.1 — 2026-04-30
+
+### Added
+- **First MCP write tool: `set_param_value`** — edits a `param()` default value in `.kcad.ts` source and returns the modified code plus diagnostics from re-evaluating the result. Side-effect-free; caller persists via standard file tools.
+  - Input: `{ code, param_name, new_value }`
+  - Output: `{ ok, new_code?, diagnostics?, error? }`
+  - Implementation: regex-state-machine in `src/mcp/edits/setParamValue.ts` (handles single/double quotes, optional opts, nested braces in option objects, multi-line calls, multiple-match rejection)
+- 14 new unit tests + 1 spawn integration test (10 primitive cases + 4 tool cases + 1 spawn round-trip)
+
+### Changed
+- None — additive only.
+
+### Deferred to v0.12-rc / v0.12.0
+- `add_feature(code, code_to_insert, position?)` — needs ts-morph or careful AST walker
+- `remove_feature(code, feature_id)` — needs `FeatureRecord.scriptLocation` to map IDs to source lines
+- `suppress_feature(code, feature_id)` — wrap a line in `// @suppress` annotation
+
+The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI — `param()` value tweaks are by far the most common agent edit, and adding more tools should be driven by usage rather than speculation. ForgeCAD has no AST-edit MCP equivalent, so this is novel kernelCAD territory.
+
+---
+
 ## v0.12.0-alpha.1 — 2026-04-30
 
 ### Added

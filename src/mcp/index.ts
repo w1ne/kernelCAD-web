@@ -6,3 +6,4 @@ export { getShapeInfoTool, type GetShapeInfoInput, type GetShapeInfoOutput } fro
 export { listTopologyTool, type ListTopologyInput, type ListTopologyOutput } from './tools/listTopology';
 export { getEdgesOfTool, type GetEdgesOfInput, type GetEdgesOfOutput } from './tools/getEdgesOf';
 export { whyDidThisFailTool, type WhyDidThisFailInput, type WhyDidThisFailOutput } from './tools/whyDidThisFail';
+export { setParamValueTool, type SetParamValueInput, type SetParamValueOutput } from './tools/setParamValue';
