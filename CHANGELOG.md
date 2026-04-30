@@ -1,3 +1,23 @@
+## v0.13.0-rc.4 (NORTHSTAR roadmap: v0.4-rc sketch revolve) — 2026-04-30
+
+### Added
+- **`Sketch.revolve()`** — terminal `.revolve()` on the path builder produces a 360° solid of revolution around the Z axis. Profile coordinates are interpreted as `(radial-X, axial-Z)`. Mirrors `Sketch.extrude(d)` in API shape — no parameters required for the basic case.
+- `OcctBackend.revolveFromSketch(sketch)` — static factory that lifts a sketch-tagged backend's drawing onto the XZ plane and revolves it around `[0, 0, 1]`.
+- `OcctBackend.getSketchCommands()` — accessor for original `SketchCommand[]` on sketch-tagged backends. Used by the lowerer to validate revolve profiles before construction.
+- New diagnostic codes: `feature.revolve.crosses-axis`, `feature.revolve.empty-profile`, `feature.revolve.failed`, `feature.revolve.bad-sketch`. Each has a hint entry in `whyDidThisFail`.
+- E2E fixtures `tests/e2e/fixtures/washer.kcad.ts` and `tests/e2e/fixtures/mug-body.kcad.ts` — washer (rect profile) and tall mug body (tangentArc profile).
+
+### Changed
+- Lowerer's `revolve` arm now dispatches on `profileKind`. The pre-existing `'rect'` branch (`revolveRect`) is unchanged. New `'sketch'` branch validates `x >= 0` for all profile points and rejects empty profiles before calling Replicad.
+
+### Deferred to subsequent rcs / v0.14
+- Partial revolves (`{ angleDeg }`) — needs wedge-boolean implementation.
+- Non-Z axis (`{ axis: 'X' | 'Y' | 'Z' | [x,y,z] }`) — needs plane derivation.
+- Sweep along path (`Sketch.sweep(rail)`) — different feature kind.
+- Sketch labels for downstream face references.
+
+---
+
 ## v0.13.0-rc.3 (NORTHSTAR roadmap: v0.4-rc tangentArc) — 2026-04-30
 
 ### Added
