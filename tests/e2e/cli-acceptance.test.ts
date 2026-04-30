@@ -188,3 +188,19 @@ describe('v0.4-rc L-bracket sketch fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
+
+describe('v0.4-rc3 rounded-L-bracket sketch fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the rounded-L-bracket sketch fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'rounded-l.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/rounded-l-bracket.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});

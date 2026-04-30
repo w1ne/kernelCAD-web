@@ -1,3 +1,24 @@
+## v0.13.0-rc.3 (NORTHSTAR roadmap: v0.4-rc tangentArc) — 2026-04-30
+
+### Added
+- **`PathBuilder.tangentArc(x, y)`** — first curved 2D segment in the path builder. Continues tangent from the previous segment to the target point. Enables rounded corners, smooth gear-tooth profiles, and other curve-between-segment patterns. Mirrors Replicad's `tangentArcTo`.
+- New `SketchCommand` variant `{ kind: 'tangentArc', x, y }`. Stored in sketch metadata alongside existing moveTo/lineTo/close.
+- E2E fixture `tests/e2e/fixtures/rounded-l-bracket.kcad.ts` — L-bracket with a rounded inner corner via tangentArc.
+
+### Changed
+- `OcctBackend.fromSketchCommands` switch now handles tangentArc commands. Calling `tangentArc` as the first segment surfaces a `feature.sketch.failed` diagnostic (Replicad rejects with "You need a previous curve").
+
+### Deferred to subsequent rcs / v0.14
+- `threePointsArc(end, midpoint)` — explicit 3-point arc
+- `sagittaArc` / `bulgeArc` — DXF-style arc specs
+- `bezierTo` / `quadraticBezierTo` / `cubicBezierTo` — bezier curves
+- `lineH` / `lineV` / `lineAngled` / `polarLine` — convenience line variants
+- Path labels (`.label('name')`) — for downstream face references
+- Sketch revolve / sweep
+- Sketch constraints
+
+---
+
 ## v0.13.0-rc.2 (NORTHSTAR roadmap: v0.4-rc sketch builder, lines-only) — 2026-04-30
 
 ### Added
