@@ -1,3 +1,29 @@
+## v0.2.0-alpha.2 — 2026-04-30
+
+### Added
+- **`shell`** — third edge/face feature in v0.2-alpha (`Shape.shell(thickness, { face })`)
+  - Required `face` input (no all-faces default); canonical face only on un-transformed primitives
+  - Wraps OCCT's `BRepOffsetAPI_MakeThickSolid` via Replicad's `Shape3D.shell(thickness, finder)`
+  - Diagnostic codes: `feature.shell.failed`, `feature.shell.no-base`, `feature.shell.no-thickness`, `feature.face-feature.face-required`, `feature.face-feature.face-ref-not-resolvable`, `feature.face-feature.face-ref-not-supported`, `feature.face-feature.face-ref-not-applicable`
+- `pickFace(record, base)` helper in `edgeSelection.ts` — sister of `pickEdges`, returns the canonical face directly for face-features
+- `findCanonicalFace` private helper extracted from prior `canonicalBoxFaceEdges` / `canonicalCylinderEndCapEdges`; both pickEdges and pickFace now share the resolution logic
+- `OcctBackend.shell(face, thickness)` instance method
+- `OcctLowerer 'shell'` switch case
+- `Shape.shell` capture proxy (delegates to `CaptureSession.edgeFeature('shell', ...)`)
+- `tests/e2e/fixtures/hollow-box.kcad.ts` fixture + e2e volume-regression test (shelled volume < 30% of solid equivalent)
+
+### Changed
+- `CaptureSession.edgeFeature()` widened to accept `kind: 'fillet' | 'chamfer' | 'shell'` and `valueParamName: 'radius' | 'distance' | 'thickness'`. No call-site changes for fillet/chamfer.
+
+### Deferred to v0.3+
+- `hole` as a distinct feature (v0.1 already supports `subtract(cylinder)` which covers the geometry; ergonomic wrapper deferred)
+- `cut` as a distinct feature (v0.1 `subtract` already covers it)
+- `draft` (face angle modification) — also a face-feature; same canonical-refs limitation
+- Tracked refs / `NamingHistory`
+- Non-canonical face filters
+
+---
+
 ## v0.2.0-alpha.1 — 2026-04-30
 
 ### Added

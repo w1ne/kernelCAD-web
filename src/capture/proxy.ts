@@ -49,4 +49,8 @@ export class Shape {
   chamfer(distance: number, opts?: { face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
     return this.session.edgeFeature('chamfer', this, 'distance', distance, opts?.face);
   }
+
+  shell(thickness: number, opts: { face: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
+    return this.session.edgeFeature('shell', this, 'thickness', thickness, opts.face);
+  }
 }

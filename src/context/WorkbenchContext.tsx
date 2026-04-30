@@ -85,6 +85,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         // UI context
         viewMode: uiCtx.viewMode,
         setViewMode: uiCtx.setViewMode,
+        layoutMode: uiCtx.layoutMode,
+        setLayoutMode: uiCtx.setLayoutMode,
         viewMode3D: uiCtx.viewMode3D,
         setViewMode3D: uiCtx.setViewMode3D,
         activeDialog: uiCtx.activeDialog,
@@ -167,6 +169,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         codeCtx,
         uiCtx.viewMode,
         uiCtx.setViewMode,
+        uiCtx.layoutMode,
+        uiCtx.setLayoutMode,
         uiCtx.viewMode3D,
         uiCtx.setViewMode3D,
         uiCtx.activeDialog,
