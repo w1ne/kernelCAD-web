@@ -47,13 +47,18 @@ export function StatusBar({
             data-testid="status-bar"
             className="h-6 shrink-0 border-t border-[#2b313c] bg-[#101318] text-[11px] text-gray-400 flex items-center justify-between px-3 select-none"
         >
-            <div className="flex items-center gap-3 min-w-0">
+            <div
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="flex items-center gap-3 min-w-0 flex-1"
+            >
                 <span className={`inline-flex items-center gap-1 font-medium ${error ? 'text-red-300' : isComputing ? 'text-blue-300' : 'text-emerald-300'}`}>
                     {error ? <AlertTriangle size={12} /> : isComputing ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
                     {stateLabel}
                 </span>
                 {activeCommandLabel && (
-                    <span className="text-blue-300">{activeCommandLabel}</span>
+                    <span className="text-blue-300 truncate max-w-[24vw]">{activeCommandLabel}</span>
                 )}
                 {error ? (
                     <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>
@@ -61,7 +66,7 @@ export function StatusBar({
                     <span className="truncate">No diagnostics</span>
                 )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
                 <span>{bodyLabel}</span>
                 <span className="inline-flex items-center gap-1">
                     <MousePointer2 size={12} />

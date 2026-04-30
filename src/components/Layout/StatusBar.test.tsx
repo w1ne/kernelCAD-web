@@ -23,6 +23,9 @@ describe('StatusBar', () => {
         expect(screen.getByText('3 bodies')).toBeDefined();
         expect(screen.getByText('1 selected')).toBeDefined();
         expect(screen.getByText('No diagnostics')).toBeDefined();
+        const liveRegion = screen.getByRole('status');
+        expect(liveRegion.getAttribute('aria-live')).toBe('polite');
+        expect(liveRegion.getAttribute('aria-atomic')).toBe('true');
     });
 
     it('renders computing state', () => {
@@ -58,5 +61,42 @@ describe('StatusBar', () => {
 
         expect(screen.getByText('Error')).toBeDefined();
         expect(screen.getByText(/OpenCascade Error/)).toBeDefined();
+    });
+
+    it('renders only the first line of multi-line errors', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={'OpenCascade Error (Code: 103)\nStack trace line'}
+                geometryCount={0}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="code"
+                activeCommandLabel={null}
+            />
+        );
+
+        expect(screen.getByText('OpenCascade Error (Code: 103)')).toBeDefined();
+        expect(screen.queryByText('Stack trace line')).toBeNull();
+    });
+
+    it('truncates long first-line errors', () => {
+        const firstLine = `OpenCascade Error ${'x'.repeat(100)}`;
+        const expected = `${firstLine.slice(0, 93)}...`;
+
+        render(
+            <StatusBar
+                isComputing={false}
+                error={firstLine}
+                geometryCount={0}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="code"
+                activeCommandLabel={null}
+            />
+        );
+
+        expect(screen.getByText(expected)).toBeDefined();
+        expect(screen.queryByText(firstLine)).toBeNull();
     });
 });
