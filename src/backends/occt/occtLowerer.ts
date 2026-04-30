@@ -206,6 +206,68 @@ export class OcctLowerer implements FeatureLowerer {
             r.params.offsetX.evaluated,
             r.params.angleDeg.evaluated,
           );
+        } else if (profileKind === 'sketch') {
+          const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+          if (!sketchInput) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.revolve.bad-sketch',
+              featureId: r.id,
+              severity: 'error',
+              message: `revolve with profile='sketch' requires an input named 'sketch'.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const commands = sketchInput.getSketchCommands();
+          if (!commands) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.revolve.bad-sketch',
+              featureId: r.id,
+              severity: 'error',
+              message: `revolve sketch input has no command history.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // Empty profile: only moveTo + close (or even less). No segments means
+          // no area to revolve.
+          const segmentCount = commands.filter(c => c.kind === 'lineTo' || c.kind === 'tangentArc').length;
+          if (segmentCount === 0) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.revolve.empty-profile',
+              featureId: r.id,
+              severity: 'error',
+              message: `revolve profile has no line/arc segments — area is zero.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // Axis-cross check: any point with x < 0 means the profile spans the
+          // rotation axis, which yields a self-intersecting revolve.
+          const crossing = commands.find(c => (c.kind === 'moveTo' || c.kind === 'lineTo' || c.kind === 'tangentArc') && c.x < 0);
+          if (crossing) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.revolve.crosses-axis',
+              featureId: r.id,
+              severity: 'error',
+              message: `revolve profile point (x=${(crossing as { x: number }).x}) crosses rotation axis. All points must satisfy x >= 0.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          try {
+            shape = OcctBackend.revolveFromSketch(sketchInput);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.revolve.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT revolve failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
         } else {
           return {
             shape: undefined as unknown as ShapeBackend,

@@ -111,4 +111,90 @@ describe('path() builder + Sketch capture', () => {
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d => d.severity === 'error')).toBe(true);
   });
+
+  it('Sketch.revolve registers a revolve feature with inputs.sketch and profileKind sketch', async () => {
+    const code = `return path().moveTo(10, 0).lineTo(20, 0).lineTo(20, 5).lineTo(10, 5).close().revolve();`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    // Expect 2 features: the sketch + the revolve
+    expect(result.records).toHaveLength(2);
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const revolveRec = result.records.find(r => r.kind === 'revolve')!;
+    expect(revolveRec).toBeDefined();
+    expect(revolveRec.inputs.sketch).toEqual({ kind: 'feature', id: sketchRec.id });
+    expect(revolveRec.params.profileKind.expression).toBe(`'sketch'`);
+  });
+
+  it('Sketch.revolve with tangentArc profile preserves commands on the sketch', async () => {
+    const code = `
+      const s = path()
+        .moveTo(20, 0)
+        .lineTo(20, 60)
+        .tangentArc(25, 80)
+        .lineTo(0, 80)
+        .lineTo(0, 0)
+        .close();
+      return s.revolve();
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'tangentArc', x: 25, y: 80 });
+    expect(result.records.find(r => r.kind === 'revolve')).toBeDefined();
+  });
+
+  it('emits feature.revolve.crosses-axis when profile has x < 0', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      return path()
+        .moveTo(-1, 0)
+        .lineTo(10, 0)
+        .lineTo(10, 5)
+        .lineTo(-1, 5)
+        .close()
+        .revolve();
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d => d.code === 'feature.revolve.crosses-axis' && d.severity === 'error')).toBe(true);
+  });
+
+  it('rejects revolve on a degenerate (no-segment) profile', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // moveTo+close (no line segments) — area is zero. Either the sketch fails
+    // to lower (Replicad rejects degenerate drawing) or the revolve validator
+    // catches it. Both are valid rejection paths for an empty profile.
+    const code = `return path().moveTo(0, 0).close().revolve();`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      (d.code === 'feature.revolve.empty-profile' || d.code === 'feature.sketch.failed')
+      && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('Sketch.revolve produces a valid solid for a washer profile', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      return path()
+        .moveTo(10, 0)
+        .lineTo(20, 0)
+        .lineTo(20, 5)
+        .lineTo(10, 5)
+        .close()
+        .revolve();
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(4500);
+    expect(v).toBeLessThan(4900);
+  });
 });

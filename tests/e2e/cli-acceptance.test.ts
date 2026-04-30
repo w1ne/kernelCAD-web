@@ -204,3 +204,35 @@ describe('v0.4-rc3 rounded-L-bracket sketch fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
+
+describe('v0.4-rc4 washer revolve fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the washer fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'washer.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/washer.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+
+describe('v0.4-rc4 mug-body revolve fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the mug-body fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'mug-body.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/mug-body.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  }, 30000);
+});
