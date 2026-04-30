@@ -11,6 +11,7 @@ export default defineConfig({
             'src/**/*.spec.{ts,tsx}',
             'tests/unit/**/*.test.{ts,tsx}',
             'tests/e2e/**/*.test.ts',
+            'tests/integration/**/*.test.ts',
         ],
         exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**'],
         deps: {

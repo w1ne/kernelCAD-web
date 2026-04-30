@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
+import { mcpCommand } from './commands/mcp';
 
 const program = new Command();
 program
@@ -11,6 +12,7 @@ program
 
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
+program.addCommand(mcpCommand());
 
 program.parseAsync(process.argv).catch(err => {
   console.error(err);
