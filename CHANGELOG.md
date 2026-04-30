@@ -1,3 +1,30 @@
+## v0.12.0-alpha.1 — 2026-04-30
+
+### Added
+- **Skill installer** — second agent-first surface (companion to v0.11's MCP server)
+  - `kernelcad skill install [--dir <path>]` — copies SKILL.md to `<dir>/SKILL.md` (default `~/.agents/skills/kernelcad/`, the joint convention all agents read from per ForgeCAD's pattern at `~/projects/forgecad-pkg/src-recovered/cli/forge-skill.ts`)
+  - `kernelcad skill one-file [<path>]` — emits SKILL.md to a user-specified path (default `./kernelcad-context.md`) for chat-UI agents
+- `src/skill/SKILL.md` (213 lines) — single-file kernelCAD model authoring guide. Hand-authored against the actual codebase (subagent caught and corrected 7 factual errors in the original plan):
+  - API surface (param/box/cylinder/sphere/extrudeRect/extrudeCircle/revolveRect + Shape methods)
+  - Canonical face refs constraint with workarounds
+  - 3 sample scripts (parametric bracket, rounded bracket, hollow box)
+  - 26-entry diagnostic codes table (synced with `whyDidThisFail`'s HINTS)
+  - CLI commands + MCP companion tool reference
+  - Out-of-scope deferred-features list
+- Spawn integration test that drives the built CLI's `skill install` subcommand end-to-end
+
+### Changed
+- `build:cli` now copies `src/skill/SKILL.md` to `dist/cli/SKILL.md` so the runtime can find it (alongside `index.js` and `replicad_single.wasm`)
+- Bundle banner: replaced `fileURLToPath` import (which collided with the same import in `src/cli/commands/skill.ts`) with inline `new URL(import.meta.url).pathname` / `new URL('.', import.meta.url).pathname`
+
+### Deferred to v0.12-beta+ / v0.13+
+- Auto-generated SKILL.md from `src/intent/types.ts` and the actual exported API surface (so the skill stays in sync with code automatically)
+- AST-edit MCP tools (`replace_param_value`, `add_feature`, `remove_feature`)
+- `--dev` flag for SKILL-dev.md (internals + conventions docs) — mirrors ForgeCAD's pattern
+- `Shape.mirror()` method exposure (currently only on `OcctBackend`, not the user-facing capture proxy)
+
+---
+
 ## v0.11.0 — 2026-04-30
 
 ### Added
