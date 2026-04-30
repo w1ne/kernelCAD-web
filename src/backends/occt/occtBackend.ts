@@ -235,6 +235,8 @@ export class OcctBackend implements ShapeBackend {
       const c = commands[i];
       if (c.kind === 'lineTo') {
         pen = pen.lineTo([c.x, c.y]) as typeof pen;
+      } else if (c.kind === 'tangentArc') {
+        pen = pen.tangentArcTo([c.x, c.y]) as typeof pen;
       }
     }
     const drawing = pen.close();
