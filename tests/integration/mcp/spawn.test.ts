@@ -147,4 +147,15 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.ok).toBe(true);
     expect(payload.new_code).toContain(`const hole = cylinder(5, 2)`);
   }, 90000);
+
+  it('responds to remove_feature with edited code + diagnostics', async () => {
+    const result = await callTool('remove_feature', {
+      code: `const base = box(20, 20, 5);\nconst hole = cylinder(5, 2);\nreturn base;`,
+      match: `cylinder(5, 2)`,
+    });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.new_code).not.toContain(`cylinder(5, 2)`);
+  }, 90000);
 });

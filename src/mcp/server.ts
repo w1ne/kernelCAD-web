@@ -10,6 +10,7 @@ import { getEdgesOfTool } from './tools/getEdgesOf';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { setParamValueTool } from './tools/setParamValue';
 import { addFeatureTool } from './tools/addFeature';
+import { removeFeatureTool } from './tools/removeFeature';
 
 const TOOLS = [
   {
@@ -118,6 +119,18 @@ const TOOLS = [
       required: ['code', 'feature_code'],
     },
   },
+  {
+    name: 'remove_feature',
+    description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        code: { type: 'string', description: 'The .kcad.ts source code.' },
+        match: { type: 'string', description: 'A substring that uniquely identifies the line to remove (e.g. `const hole = cylinder(5,`).' },
+      },
+      required: ['code', 'match'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -163,6 +176,9 @@ export function createMcpServer(): Server {
         break;
       case 'add_feature':
         result = await addFeatureTool(input as unknown as Parameters<typeof addFeatureTool>[0]);
+        break;
+      case 'remove_feature':
+        result = await removeFeatureTool(input as unknown as Parameters<typeof removeFeatureTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
