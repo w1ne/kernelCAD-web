@@ -156,3 +156,19 @@ describe('v0.4-alpha triangle-extrusion fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
+
+describe('v0.4-beta rounded-plate fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the rounded-plate fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'rounded-plate.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/rounded-plate.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});

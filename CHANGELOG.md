@@ -1,3 +1,18 @@
+## v0.13.0-beta.1 (NORTHSTAR roadmap: v0.4-beta extrudeRoundedRect) — 2026-04-30
+
+### Added
+- **`extrudeRoundedRect(width, height, radius, depth)`** — second arbitrary-2D-profile primitive after `extrudePolygon`. Auto-clamps `radius` to `min(width/2, height/2)` (with a tiny safety margin for Replicad's exact-half edge case). Zero radius behaves like a sharp rectangle.
+- e2e fixture `tests/e2e/fixtures/rounded-plate.kcad.ts` + acceptance test.
+
+### Changed
+- `extrude` FeatureKind now accepts `profileKind: 'rounded-rect'` in addition to existing `'rect'` / `'circle'` / `'polygon'`.
+
+### Deferred to v0.4-rc / v0.4 final
+- `path()` builder for arbitrary 2D paths
+- Full `Sketch` builder type
+- Sketch revolve / sweep
+- Open polylines (`.stroke(width)`)
+
 ## v0.13.0-alpha.1 (NORTHSTAR roadmap: v0.4-alpha extrudePolygon) — 2026-04-30
 
 ### Added
