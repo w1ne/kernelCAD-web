@@ -85,35 +85,52 @@ function canonicalFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList | 
   return null;
 }
 
-function canonicalBoxFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList | null {
-  // Match face by axis-aligned plane. We use the gap-corrected bounding box to identify which
-  // OCCT face has the appropriate normal + offset, then collect that face's edges.
-  const bb = base.boundingBox();
-  const target = pickFacePlane(bb, face);
-  // Iterate shape.faces; pick the one whose centroid aligns with the target plane.
-  // Face.center returns a Vector with .x, .y, .z properties.
-  const faces: Face[] = base.getReplicadShape().faces;
-  for (const f of faces) {
-    const c = f.center; // Vector with .x, .y, .z
-    const coord = target.axisIndex === 0 ? c.x : target.axisIndex === 1 ? c.y : c.z;
-    if (Math.abs(coord - target.value) < TOL) {
-      // Found the matching face. Return its edges.
-      return f.edges;
+/**
+ * Resolve a canonical face name to the matching Replicad `Face` instance on `base`.
+ *
+ * Returns `null` when the face name is not applicable to the primitive kind
+ * (e.g. 'left' on a cylinder) or when no face centroid matches the expected
+ * bounding-box plane within TOL.
+ *
+ * Private to this module — callers use `pickEdges` or `pickFace`.
+ */
+function findCanonicalFace(base: OcctBackend, face: CanonicalFace): Face | null {
+  if (base.kind === 'box') {
+    const target = pickFacePlane(base.boundingBox(), face);
+    return findFaceByPlane(base.getReplicadShape(), target.axisIndex, target.value);
+  }
+  if (base.kind === 'cylinder') {
+    if (face !== 'top' && face !== 'bottom') return null;
+    const bb = base.boundingBox();
+    const value = face === 'top' ? bb.max[2] : bb.min[2];
+    return findFaceByPlane(base.getReplicadShape(), 2, value);
+  }
+  return null; // sphere has no canonical faces
+}
+
+function findFaceByPlane(
+  shape: import('replicad').Shape3D,
+  axisIndex: 0 | 1 | 2,
+  value: number,
+): Face | null {
+  for (const f of shape.faces) {
+    const c = f.center;
+    const cv = axisIndex === 0 ? c.x : axisIndex === 1 ? c.y : c.z;
+    if (Math.abs(cv - value) < TOL) {
+      return f;
     }
   }
   return null;
 }
 
+function canonicalBoxFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList | null {
+  const f = findCanonicalFace(base, face);
+  return f ? f.edges : null;
+}
+
 function canonicalCylinderEndCapEdges(base: OcctBackend, face: 'top'|'bottom'): EdgeList | null {
-  const bb = base.boundingBox();
-  const targetZ = face === 'top' ? bb.max[2] : bb.min[2];
-  const faces: Face[] = base.getReplicadShape().faces;
-  for (const f of faces) {
-    if (Math.abs(f.center.z - targetZ) < TOL) {
-      return f.edges;
-    }
-  }
-  return null;
+  const f = findCanonicalFace(base, face);
+  return f ? f.edges : null;
 }
 
 interface FacePlane { axisIndex: 0 | 1 | 2; value: number; }
@@ -130,4 +147,73 @@ function pickFacePlane(
     case 'back':   return { axisIndex: 1, value: bb.max[1] };
     case 'front':  return { axisIndex: 1, value: bb.min[1] };
   }
+}
+
+/**
+ * Resolve a canonical face filter to a Replicad `Face` instance.
+ *
+ * For face features (shell) the face IS the operand, not just a hint
+ * for edge selection. Mirrors `pickEdges` but returns the face itself.
+ *
+ * Rules:
+ *   - `inputs.face` must be present (face features cannot operate without one).
+ *   - `base.kind` must be set (un-transformed primitive) to be resolvable.
+ *   - The canonical face name must be applicable to the primitive kind.
+ */
+export function pickFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+): Face | { error: CompilerDiagnostic } {
+  const faceRef = record.inputs.face;
+
+  if (!faceRef) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.face-required',
+        featureId: record.id,
+        severity: 'error',
+        message: `${record.kind} requires a 'face' input.`,
+      },
+    };
+  }
+
+  if (faceRef.kind !== 'face' || faceRef.ref.kind !== 'canonical') {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.face-ref-not-supported',
+        featureId: record.id,
+        severity: 'error',
+        message: `Only canonical face refs are supported in v0.2-alpha.`,
+      },
+    };
+  }
+
+  if (!base.kind) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.face-ref-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
+      },
+    };
+  }
+
+  const face = faceRef.ref.face as CanonicalFace;
+  const f = findCanonicalFace(base, face);
+  if (f === null) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.face-ref-not-applicable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+      },
+    };
+  }
+  return f;
 }
