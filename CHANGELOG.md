@@ -1,3 +1,27 @@
+## v0.2.0-alpha.1 — 2026-04-30
+
+### Added
+- **`fillet` and `chamfer`** — first edge features in the kernelCAD module API
+  - `Shape.fillet(radius, opts?)` and `Shape.chamfer(distance, opts?)` on the capture proxy (`src/capture/proxy.ts`)
+  - Canonical face filter via `opts.face` (`'top'|'bottom'|'left'|'right'|'front'|'back'`) on un-transformed primitives — `box(20,20,5).fillet(2, { face: 'top' })`
+  - Symmetric (45°) chamfer only; asymmetric two-distance variant deferred
+- `pickEdges(record, base)` helper (`src/backends/occt/edgeSelection.ts`) — resolves face filter to OCCT edges via gap-aware bounding-box face matching
+- `OcctBackend` `kind?` tag set by static factories; transforms and booleans drop the tag — used to enforce "canonical face refs require an un-transformed primitive"
+- `OcctBackend.fillet(edges, radius)` / `.chamfer(edges, distance)` instance methods wrapping `BRepFilletAPI_MakeFillet` / `BRepFilletAPI_MakeChamfer`
+- `OcctLowerer` switch arms for `'fillet'` and `'chamfer'` with structured diagnostics (`feature.fillet.failed`, `feature.chamfer.failed`, `feature.edge-feature.face-ref-not-resolvable`, `feature.edge-feature.face-ref-not-applicable`, `feature.edge-feature.face-ref-not-supported`)
+- `CaptureSession.edgeFeature(kind, base, valueParamName, value, face?)` registrar mirroring the `boolean()` pattern
+- `tests/e2e/fixtures/rounded-bracket.kcad.ts` parametric demo + e2e volume-regression test
+
+### Spec deviations
+- One combined error code `feature.edge-feature.face-ref-not-resolvable` covers both "non-primitive base" and "transformed primitive" cases. Splitting them cleanly would require refactoring `FeatureLowerer.lower()` to receive the base FeatureRecord — bigger blast radius than v0.2-alpha warrants.
+
+### Deferred to v0.2 / v0.2-beta
+- `tracked` / `created` / `propagated` FaceRef variants and `NamingHistory` walking
+- Asymmetric (two-distance) chamfer
+- Per-edge variable radii
+- Canonical face refs on transformed primitives
+- shell, hole, cut, draft features
+
 ## v0.1.0 — 2026-04-29
 
 ### Added
