@@ -5,6 +5,7 @@ import type { Vec3 } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 
 type ReplicadEdge = replicad.Edge;
+type ReplicadFace = replicad.Face;
 
 let initialized = false;
 
@@ -205,6 +206,27 @@ export class OcctBackend implements ShapeBackend {
       throw new Error('OcctBackend.chamfer: edge list must not be empty');
     }
     const result = this.shape.chamfer(distance, (f) => f.inList(edges)) as ReplicadShape3D;
+    return new OcctBackend(result);
+  }
+
+  /**
+   * Hollow out the shape by removing `face` and offsetting all remaining
+   * faces inward by `thickness` (mm). The result is a thin-walled shell
+   * with the supplied face left open.
+   *
+   * The returned `OcctBackend` has **no** `kind` tag — once shelled, the
+   * shape is no longer a raw primitive.
+   *
+   * @throws {Error} If `thickness <= 0`.
+   * @throws {Error} If OCCT fails (e.g. thickness exceeds the shape's
+   *   minimum thickness or geometry is degenerate). The lowerer (Task 3)
+   *   catches and emits a `feature.shell.failed` diagnostic.
+   */
+  shell(face: ReplicadFace, thickness: number): OcctBackend {
+    if (thickness <= 0) {
+      throw new Error(`OcctBackend.shell: thickness must be positive (got ${thickness})`);
+    }
+    const result = this.shape.shell(thickness, (f) => f.inList([face])) as ReplicadShape3D;
     return new OcctBackend(result);
   }
 
