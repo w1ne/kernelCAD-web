@@ -13,7 +13,11 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  # Cancel any in-progress run when a new tag pushes a deploy.
+  # The e2e job doesn't gate the deploy job, so cancelling its in-flight
+  # run is a clean trade — saves us from the queue-behind-stale-e2e
+  # blockage we hit on v0.1.0-arch.2 and v0.2.0-alpha.1.
+  cancel-in-progress: true
 
 jobs:
   build:
