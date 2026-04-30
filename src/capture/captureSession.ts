@@ -66,9 +66,9 @@ export class CaptureSession {
   }
 
   edgeFeature(
-    kind: 'fillet' | 'chamfer',
+    kind: 'fillet' | 'chamfer' | 'shell',
     base: Shape,
-    valueParamName: 'radius' | 'distance',
+    valueParamName: 'radius' | 'distance' | 'thickness',
     value: number,
     face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back',
   ): Shape {
