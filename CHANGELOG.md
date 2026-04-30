@@ -1,3 +1,21 @@
+## v0.12.0-rc.1 — 2026-04-30
+
+### Added
+- **Second MCP write tool: `add_feature`** — inserts a single-statement line into a `.kcad.ts` script before the last top-level `return`. Side-effect-free; caller persists via standard file tools.
+  - Input: `{ code, feature_code }`
+  - Output: `{ ok, new_code?, diagnostics?, error? }`
+  - Implementation: state-machine that finds the last brace-depth-0 `return` line (skips inner returns in helper functions / arrow bodies), preserves indentation, respects strings/comments
+- 11 new tests (7 primitive + 3 tool + 1 integration spawn)
+- Live verification: spawned `kernelcad mcp`, sent JSON-RPC `tools/call` for `set_param_value`, confirmed the round-trip works end-to-end as Claude would consume it
+
+### Deferred to v0.12.0 (final) / v0.13+
+- `remove_feature(code, feature_id)` — needs `FeatureRecord.scriptLocation` to be populated by the capture session (currently declared but never set)
+- `suppress_feature(code, feature_id)` — same scriptLocation requirement, plus capture-time `// @suppress` annotation parsing or `.suppress()` modifier method on the Shape proxy
+
+The decision to ship just `add_feature` (without remove/suppress) is driven by the scriptLocation gap — adding source-position tracking to capture is its own architectural change worth a separate plan. v0.12.0 final would land after that work or after additional agent feedback.
+
+---
+
 ## v0.12.0-beta.1 — 2026-04-30
 
 ### Added
