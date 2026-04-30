@@ -14,6 +14,7 @@ export interface KernelCadApi {
   sphere(r: number): Shape;
   extrudeRect(w: number, h: number, height: number): Shape;
   extrudeCircle(r: number, height: number): Shape;
+  extrudePolygon(points: [number, number][], depth: number): Shape;
   revolveRect(w: number, h: number, offsetX: number, angleDeg?: number): Shape;
   union(...shapes: Shape[]): Shape;
   param(name: string, defaultExpr: number | string, opts: ParamOptions): number;
@@ -67,6 +68,17 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           height: mm(height),
         },
         inputs: {},
+      });
+    },
+    extrudePolygon(points, depth) {
+      return session.createShape({
+        kind: 'extrude',
+        inputs: {},
+        params: {
+          profileKind: { expression: "'polygon'", unit: 'unitless', evaluated: 0 },
+          depth: { expression: String(depth), unit: 'mm', evaluated: depth },
+        },
+        metadata: { points },
       });
     },
     revolveRect(w, h, offsetX, angleDeg = 360) {
