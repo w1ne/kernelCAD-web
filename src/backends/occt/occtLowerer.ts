@@ -9,6 +9,7 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
+import { pickEdges } from './edgeSelection';
 
 /**
  * Lowers `FeatureRecord`s to `OcctBackend` shapes.
@@ -31,6 +32,7 @@ export class OcctLowerer implements FeatureLowerer {
     'extrude',
     'revolve',
     'boolean',
+    'fillet',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -127,6 +129,49 @@ export class OcctLowerer implements FeatureLowerer {
           throw new Error(`Unknown boolean op: ${op}`);
         }
         shape = acc;
+        break;
+      }
+      case 'fillet': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.fillet.no-base',
+            featureId: r.id,
+            severity: 'error',
+            message: `fillet requires an input named 'base'.`,
+          });
+          throw new Error('fillet: no base shape');
+        }
+        const radius = r.params.radius?.evaluated;
+        if (radius === undefined) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.fillet.no-radius',
+            featureId: r.id,
+            severity: 'error',
+            message: `fillet requires a 'radius' parameter.`,
+          });
+          throw new Error('fillet: no radius');
+        }
+        const edgesResult = pickEdges(r, base);
+        if ('error' in edgesResult) {
+          diagnostics.push(edgesResult.error);
+          return { shape: base, diagnostics };
+        }
+        try {
+          shape = base.fillet(edgesResult, radius);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.fillet.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT fillet failed: ${msg}`,
+          });
+          return { shape: base, diagnostics };
+        }
         break;
       }
       default:
