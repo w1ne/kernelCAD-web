@@ -236,3 +236,35 @@ describe('v0.4-rc4 mug-body revolve fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   }, 30000);
 });
+
+describe('v0.4-rc5 gear-blank threePointsArc fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the gear-blank fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'gear-blank.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/gear-blank.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+
+describe('v0.4-rc5 cam-profile mixed-arc fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the cam-profile fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'cam-profile.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/cam-profile.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});

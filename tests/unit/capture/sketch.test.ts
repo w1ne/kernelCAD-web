@@ -197,4 +197,52 @@ describe('path() builder + Sketch capture', () => {
     expect(v).toBeGreaterThan(4500);
     expect(v).toBeLessThan(4900);
   });
+
+  it('captures threePointsArc with end and midpoint', async () => {
+    const code = `
+      const s = path().moveTo(0, 0).threePointsArc(20, 0, 10, 5).close();
+      return s.extrude(1);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'threePointsArc', x: 20, y: 0, midX: 10, midY: 5 });
+  });
+
+  it('captures sagittaArc with chord endpoint and bulge', async () => {
+    const code = `return path().moveTo(0, 0).sagittaArc(20, 0, 5).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'sagittaArc', x: 20, y: 0, sagitta: 5 });
+  });
+
+  it('captures bulgeArc with chord endpoint and DXF bulge factor', async () => {
+    const code = `return path().moveTo(0, 0).bulgeArc(20, 0, 0.5).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'bulgeArc', x: 20, y: 0, bulge: 0.5 });
+  });
+
+  it('captures radiusArc with chord endpoint and radius', async () => {
+    const code = `return path().moveTo(0, 0).radiusArc(20, 0, 15).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({ kind: 'radiusArc', x: 20, y: 0, radius: 15 });
+  });
+
+  it('emits feature.sketch.degenerate-arc when radiusArc has invalid radius', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // chord 20, radius 5 → 5 < 10 → degenerate
+    const code = `return path().moveTo(0, 0).radiusArc(20, 0, 5).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.sketch.degenerate-arc' && d.severity === 'error'
+    )).toBe(true);
+  });
 });

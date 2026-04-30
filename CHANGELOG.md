@@ -1,3 +1,27 @@
+## v0.13.0-rc.5 (NORTHSTAR roadmap: v0.4-rc arc vocabulary) — 2026-05-01
+
+### Added
+- **`PathBuilder.threePointsArc(x, y, midX, midY)`** — arc through 3 points (start = current position, mid = via, end = (x,y)). No prior tangent required.
+- **`PathBuilder.sagittaArc(x, y, sagitta)`** — arc by chord + perpendicular bulge height. Sign chooses bulge side (positive = ccw).
+- **`PathBuilder.bulgeArc(x, y, bulge)`** — arc by chord + DXF bulge factor (`tan(includedAngle/4)`). Sign chooses bulge side.
+- **`PathBuilder.radiusArc(x, y, radius)`** — arc by chord + explicit radius. Always minor arc. Sign chooses bulge side. Validates `|radius| >= chord/2` and `chord > 0`.
+- New `SketchCommand` variants: `threePointsArc`, `sagittaArc`, `bulgeArc`, `radiusArc`. Stored in sketch metadata.
+- New diagnostic code: `feature.sketch.degenerate-arc` — fires when `radiusArc` has `|radius| < chord/2` or degenerate chord. Hint entry in `whyDidThisFail`.
+- E2E fixtures: `tests/e2e/fixtures/gear-blank.kcad.ts` (4-arc circle via threePointsArc), `tests/e2e/fixtures/cam-profile.kcad.ts` (mixed lineTo + sagittaArc + radiusArc).
+
+### Changed
+- `OcctBackend.fromSketchCommands` now tracks `currentX`/`currentY` in its replay loop so `radiusArc` can compute chord length. Replicad's `BaseSketcher2d.pointer` is protected; this is the cleanest workaround.
+- `OcctLowerer` `'sketch'` arm narrows caught errors starting with `radiusArc:` to the new `feature.sketch.degenerate-arc` code (was `feature.sketch.failed`).
+
+### Deferred to subsequent rcs
+- Beziers (`quadraticBezierTo`, `cubicBezierTo`, `bezierTo`) — rc.6
+- `centerArc(center, end)` — center+end form
+- Major-arc opt-in for `radiusArc` (use `threePointsArc` for now)
+- Convenience variants (`vSagittaArc`, `hBulgeArc`, etc.)
+- Elliptical arcs
+
+---
+
 ## v0.13.0-rc.4 (NORTHSTAR roadmap: v0.4-rc sketch revolve) — 2026-04-30
 
 ### Added

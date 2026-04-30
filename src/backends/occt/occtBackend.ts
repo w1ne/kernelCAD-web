@@ -241,12 +241,37 @@ export class OcctBackend implements ShapeBackend {
       throw new Error('OcctBackend.fromSketchCommands: first command must be moveTo.');
     }
     let pen = replicad.draw([first.x, first.y]);
+    let currentX = first.x;
+    let currentY = first.y;
     for (let i = 1; i < closeIdx; i++) {
       const c = commands[i];
       if (c.kind === 'lineTo') {
         pen = pen.lineTo([c.x, c.y]) as typeof pen;
       } else if (c.kind === 'tangentArc') {
         pen = pen.tangentArcTo([c.x, c.y]) as typeof pen;
+      } else if (c.kind === 'threePointsArc') {
+        pen = pen.threePointsArcTo([c.x, c.y], [c.midX, c.midY]) as typeof pen;
+      } else if (c.kind === 'sagittaArc') {
+        pen = pen.sagittaArcTo([c.x, c.y], c.sagitta) as typeof pen;
+      } else if (c.kind === 'bulgeArc') {
+        pen = pen.bulgeArcTo([c.x, c.y], c.bulge) as typeof pen;
+      } else if (c.kind === 'radiusArc') {
+        const chord = Math.hypot(c.x - currentX, c.y - currentY);
+        if (chord < 1e-9) {
+          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${c.x}, ${c.y})`);
+        }
+        if (Math.abs(c.radius) < chord / 2) {
+          throw new Error(`radiusArc: radius (${c.radius}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+        }
+        const halfChord = chord / 2;
+        const sagittaMagnitude = Math.abs(c.radius) - Math.sqrt(c.radius * c.radius - halfChord * halfChord);
+        const signedSagitta = Math.sign(c.radius) * sagittaMagnitude;
+        pen = pen.sagittaArcTo([c.x, c.y], signedSagitta) as typeof pen;
+      }
+      // Update position after every non-close command (all have explicit x/y endpoint)
+      if ('x' in c && 'y' in c) {
+        currentX = c.x;
+        currentY = c.y;
       }
     }
     const drawing = pen.close();
