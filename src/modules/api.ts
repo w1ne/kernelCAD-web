@@ -1,5 +1,6 @@
 import type { CaptureSession } from '../capture/captureSession';
 import { Shape } from '../capture/proxy';
+import { makePath, type PathBuilder } from '../capture/sketch';
 import type { ParamRegistry, ParamOptions } from '../compute/paramRegistry';
 import type { Param } from '../intent/types';
 
@@ -19,6 +20,7 @@ export interface KernelCadApi {
   revolveRect(w: number, h: number, offsetX: number, angleDeg?: number): Shape;
   union(...shapes: Shape[]): Shape;
   param(name: string, defaultExpr: number | string, opts: ParamOptions): number;
+  path(): PathBuilder;
 }
 
 const mm = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
@@ -116,6 +118,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const exprStr = typeof defaultExpr === 'number' ? String(defaultExpr) : defaultExpr;
       params.register(name, exprStr, opts);
       return params.get(name).evaluated;
+    },
+    path() {
+      return makePath(session);
     },
   };
 }
