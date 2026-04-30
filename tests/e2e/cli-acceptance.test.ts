@@ -112,6 +112,7 @@ describe('v0.2-alpha hollow-box fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(1000);
   });
 
+
   it('hollow-box has dramatically less volume than the solid equivalent', async () => {
     const { runScript } = await import('../../src/script-runtime/runScript');
     const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
@@ -137,5 +138,21 @@ describe('v0.2-alpha hollow-box fixture', () => {
     const uv = ures.shapes.get(ulast.id)!.volume();
     expect(sv).toBeLessThan(uv * 0.3);
     expect(sv).toBeGreaterThan(0);
+  });
+});
+
+describe('v0.4-alpha triangle-extrusion fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the triangle extrusion fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'triangle.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/triangle-extrusion.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
