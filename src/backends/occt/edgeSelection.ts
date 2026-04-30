@@ -4,6 +4,9 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 
+// Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
+const TOL = 1e-4;
+
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 // EdgeList holds replicad Edge wrappers, which EdgeFinder.inList() accepts.
@@ -82,19 +85,14 @@ function canonicalFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList | 
   return null;
 }
 
-function canonicalBoxFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList {
-  // Match face by axis-aligned plane. We use the shape's bounding box to identify which
+function canonicalBoxFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList | null {
+  // Match face by axis-aligned plane. We use the gap-corrected bounding box to identify which
   // OCCT face has the appropriate normal + offset, then collect that face's edges.
-  const shape = base.getReplicadShape();
-  const bb = shape.boundingBox;
-  // bb.bounds returns [SimplePoint, SimplePoint] where SimplePoint = [x, y, z]
-  const [minP, maxP] = bb.bounds;
-  const bbMinMax = { min: minP, max: maxP };
-  const target = pickFacePlane(bbMinMax, face);
+  const bb = base.boundingBox();
+  const target = pickFacePlane(bb, face);
   // Iterate shape.faces; pick the one whose centroid aligns with the target plane.
   // Face.center returns a Vector with .x, .y, .z properties.
-  const faces: Face[] = shape.faces;
-  const TOL = 0.1;
+  const faces: Face[] = base.getReplicadShape().faces;
   for (const f of faces) {
     const c = f.center; // Vector with .x, .y, .z
     const coord = target.axisIndex === 0 ? c.x : target.axisIndex === 1 ? c.y : c.z;
@@ -103,22 +101,19 @@ function canonicalBoxFaceEdges(base: OcctBackend, face: CanonicalFace): EdgeList
       return f.edges;
     }
   }
-  return [];
+  return null;
 }
 
-function canonicalCylinderEndCapEdges(base: OcctBackend, face: 'top'|'bottom'): EdgeList {
-  const shape = base.getReplicadShape();
-  const bb = shape.boundingBox;
-  const [minP, maxP] = bb.bounds;
-  const targetZ = face === 'top' ? maxP[2] : minP[2];
-  const TOL = 0.1;
-  const faces: Face[] = shape.faces;
+function canonicalCylinderEndCapEdges(base: OcctBackend, face: 'top'|'bottom'): EdgeList | null {
+  const bb = base.boundingBox();
+  const targetZ = face === 'top' ? bb.max[2] : bb.min[2];
+  const faces: Face[] = base.getReplicadShape().faces;
   for (const f of faces) {
     if (Math.abs(f.center.z - targetZ) < TOL) {
       return f.edges;
     }
   }
-  return [];
+  return null;
 }
 
 interface FacePlane { axisIndex: 0 | 1 | 2; value: number; }

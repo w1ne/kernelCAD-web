@@ -68,4 +68,11 @@ describe('pickEdges', () => {
     if (!('error' in result)) throw new Error('expected error, got edges');
     expect(result.error.code).toBe('feature.edge-feature.face-ref-not-applicable');
   });
+
+  it('returns face-ref-not-applicable for sphere with any canonical face', () => {
+    const sphere = OcctBackend.sphere(10);
+    const result = pickEdges(filletWithFace('sphere_1', 'top'), sphere);
+    if (!('error' in result)) throw new Error('expected error, got edges');
+    expect(result.error.code).toBe('feature.edge-feature.face-ref-not-applicable');
+  });
 });
