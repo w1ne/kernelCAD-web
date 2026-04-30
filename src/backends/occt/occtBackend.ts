@@ -59,6 +59,7 @@ export class OcctBackend implements ShapeBackend {
   private shape: ReplicadShape3D;
   readonly kind?: 'box' | 'cylinder' | 'sphere' | 'sketch';
   private _drawing: replicad.Drawing | null = null;
+  private _commands: SketchCommand[] | null = null;
 
   constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere' | 'sketch') {
     this.shape = shape;
@@ -72,6 +73,15 @@ export class OcctBackend implements ShapeBackend {
    */
   getReplicadShape(): ReplicadShape3D {
     return this.shape;
+  }
+
+  /**
+   * Internal accessor — returns the original `SketchCommand[]` if this is a
+   * sketch-tagged backend, else `null`. Consumers (e.g. the revolve lowerer)
+   * use this to validate the profile before calling `revolveFromSketch`.
+   */
+  getSketchCommands(): SketchCommand[] | null {
+    return this._commands;
   }
 
   static box(x: number, y: number, z: number, centered = false): OcctBackend {
@@ -242,6 +252,7 @@ export class OcctBackend implements ShapeBackend {
     const drawing = pen.close();
     const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
     back._drawing = drawing;
+    back._commands = commands;
     return back;
   }
 
@@ -264,6 +275,28 @@ export class OcctBackend implements ShapeBackend {
     const lifted = sketch._drawing.sketchOnPlane('XY');
     const single = lifted as unknown as { extrude: (d: number) => ReplicadShape3D };
     return new OcctBackend(single.extrude(depth));
+  }
+
+  /**
+   * Revolve a sketch-tagged OcctBackend 360° around the Z axis. The sketch's
+   * 2D drawing is lifted onto the XZ plane (so the path's first coord is
+   * radial-X, second coord is axial-Z) and revolved around `[0,0,1]`.
+   *
+   * The returned `OcctBackend` is a normal 3D solid with no `kind` tag.
+   *
+   * @throws {Error} If `sketch.kind !== 'sketch'` or `sketch._drawing` is null.
+   * @throws {Error} If Replicad rejects the geometry (e.g. self-intersecting
+   *   profile). Caller must catch and map to a diagnostic.
+   */
+  static revolveFromSketch(sketch: OcctBackend): OcctBackend {
+    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+      throw new Error('OcctBackend.revolveFromSketch: input is not a sketch.');
+    }
+    const lifted = sketch._drawing.sketchOnPlane('XZ');
+    const single = lifted as unknown as {
+      revolve: (axis?: [number, number, number]) => ReplicadShape3D;
+    };
+    return new OcctBackend(single.revolve([0, 0, 1]));
   }
 
   translate(x: number, y: number, z: number): OcctBackend {
