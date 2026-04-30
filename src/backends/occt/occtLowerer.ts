@@ -99,6 +99,34 @@ export class OcctLowerer implements FeatureLowerer {
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
+        } else if (profileKind === 'rounded-rect') {
+          const width = r.params.width?.evaluated;
+          const height = r.params.height?.evaluated;
+          const radius = r.params.radius?.evaluated;
+          const depth = r.params.depth?.evaluated;
+          if (width === undefined || height === undefined || radius === undefined || depth === undefined) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.bad-params',
+              featureId: r.id,
+              severity: 'error',
+              message: `extrude rounded-rect requires width, height, and radius params (depth always required).`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          try {
+            shape = OcctBackend.extrudeRoundedRect(width, height, radius, depth);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT extrude failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
         } else {
           return {
             shape: undefined as unknown as ShapeBackend,
