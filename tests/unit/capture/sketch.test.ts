@@ -232,4 +232,17 @@ describe('path() builder + Sketch capture', () => {
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
     expect(commands).toContainEqual({ kind: 'radiusArc', x: 20, y: 0, radius: 15 });
   });
+
+  it('emits feature.sketch.degenerate-arc when radiusArc has invalid radius', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // chord 20, radius 5 → 5 < 10 → degenerate
+    const code = `return path().moveTo(0, 0).radiusArc(20, 0, 5).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.sketch.degenerate-arc' && d.severity === 'error'
+    )).toBe(true);
+  });
 });

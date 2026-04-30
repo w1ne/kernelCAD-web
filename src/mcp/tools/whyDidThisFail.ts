@@ -72,6 +72,8 @@ const HINTS: Record<string, string> = {
   'feature.face-feature.face-ref-not-resolvable': "Same constraint as edge features: canonical face refs only work on un-transformed primitives. Apply shell before transforms.",
   'feature.face-feature.face-ref-not-applicable': "That canonical face is not valid for this primitive. Cylinders accept only top/bottom for shell; spheres have no canonical faces.",
   'feature.face-feature.face-ref-not-supported': "Only canonical face refs are supported in v0.2-alpha. Tracked / created / propagated face refs land in v0.2 full.",
+  'feature.sketch.degenerate-arc': "An arc segment has degenerate geometry. For radiusArc: |radius| must be >= chord/2 (where chord is the straight-line distance start→end), and start must not coincide with end. Either pick a larger radius, change the endpoints, or use threePointsArc / sagittaArc.",
+  'feature.sketch.failed': "Sketch construction failed during lowering. Check the diagnostic message for the underlying error from Replicad or our validation.",
   'recompute.input.missing': "An upstream feature failed or was suppressed. Use `why_did_this_fail` on the upstream feature ID to find the root cause.",
   'recompute.lowering.exception': "An exception was raised during lowering. Check the diagnostic message for the OCCT error.",
   'cli.script.exception': "Your script raised an exception during execution. Check the diagnostic message for the JS error.",

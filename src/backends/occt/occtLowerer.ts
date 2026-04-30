@@ -75,9 +75,12 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
+          // Narrow degenerate-arc cases (radiusArc-only for now) to a specific code
+          // so whyDidThisFail can give a more actionable hint.
+          const code = msg.startsWith('radiusArc:') ? 'feature.sketch.degenerate-arc' : 'feature.sketch.failed';
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.sketch.failed',
+            code,
             featureId: r.id,
             severity: 'error',
             message: `sketch construction failed: ${msg}`,
