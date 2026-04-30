@@ -65,6 +65,36 @@ export class CaptureSession {
     });
   }
 
+  edgeFeature(
+    kind: 'fillet' | 'chamfer',
+    base: Shape,
+    valueParamName: 'radius' | 'distance',
+    value: number,
+    face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back',
+  ): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    const inputs: Record<string, FeatureRef> = {
+      base: { kind: 'feature', id: base.id },
+    };
+    if (face) {
+      inputs.face = {
+        kind: 'face',
+        featureId: base.id,
+        ref: { kind: 'canonical', face },
+      };
+    }
+    const valueParam: Param = {
+      expression: String(value), unit: 'mm', evaluated: value,
+    };
+    return this.createShape({
+      kind,
+      params: { [valueParamName]: valueParam },
+      inputs,
+    });
+  }
+
   getRecords(): readonly FeatureRecord[] {
     return this.records;
   }

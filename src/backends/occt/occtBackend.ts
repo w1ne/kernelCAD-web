@@ -4,6 +4,8 @@ import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3 } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 
+type ReplicadEdge = replicad.Edge;
+
 let initialized = false;
 
 /**
@@ -53,9 +55,20 @@ export class OcctBackend implements ShapeBackend {
   readonly target: BackendTarget = 'export-occt';
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
   private shape: ReplicadShape3D;
+  readonly kind?: 'box' | 'cylinder' | 'sphere';
 
-  constructor(shape: ReplicadShape3D) {
+  constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere') {
     this.shape = shape;
+    this.kind = kind;
+  }
+
+  /**
+   * Internal accessor for `edgeSelection.pickEdges` — returns the underlying replicad
+   * shape so the helper can iterate `shape.faces` / `shape.edges`. Treat as
+   * implementation detail; do not export from `index.ts`.
+   */
+  getReplicadShape(): ReplicadShape3D {
+    return this.shape;
   }
 
   static box(x: number, y: number, z: number, centered = false): OcctBackend {
@@ -68,17 +81,17 @@ export class OcctBackend implements ShapeBackend {
     const placed = centered
       ? (b.translate(0, 0, -z / 2) as ReplicadShape3D)
       : (b.translate(x / 2, y / 2, 0) as ReplicadShape3D);
-    return new OcctBackend(placed);
+    return new OcctBackend(placed, 'box');
   }
 
   static cylinder(h: number, r: number): OcctBackend {
     if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    return new OcctBackend(replicad.makeCylinder(r, h) as ReplicadShape3D);
+    return new OcctBackend(replicad.makeCylinder(r, h) as ReplicadShape3D, 'cylinder');
   }
 
   static sphere(r: number): OcctBackend {
     if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    return new OcctBackend(replicad.makeSphere(r) as ReplicadShape3D);
+    return new OcctBackend(replicad.makeSphere(r) as ReplicadShape3D, 'sphere');
   }
 
   /**
@@ -153,6 +166,46 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(
       this.shape.mirror(normal as [number, number, number], [0, 0, 0]) as ReplicadShape3D,
     );
+  }
+
+  /**
+   * Apply a fillet of the given `radius` to all edges in `edges`.
+   *
+   * The returned `OcctBackend` has **no** `kind` tag — the result is no
+   * longer a raw primitive. See `edgeSelection.pickEdges` for how to obtain
+   * the edge list.
+   *
+   * @throws {Error} If `edges` is empty.
+   * @throws {Error} If OCCT fails (e.g. radius too large for the geometry) —
+   *   the original exception is re-thrown so Task 3's lowerer can catch and
+   *   emit a `feature.fillet.failed` diagnostic.
+   */
+  fillet(edges: ReplicadEdge[], radius: number): OcctBackend {
+    if (edges.length === 0) {
+      throw new Error('OcctBackend.fillet: edge list must not be empty');
+    }
+    const result = this.shape.fillet(radius, (f) => f.inList(edges)) as ReplicadShape3D;
+    return new OcctBackend(result);
+  }
+
+  /**
+   * Apply a chamfer of the given `distance` to all edges in `edges`.
+   *
+   * The returned `OcctBackend` has **no** `kind` tag — the result is no
+   * longer a raw primitive. See `edgeSelection.pickEdges` for how to obtain
+   * the edge list.
+   *
+   * @throws {Error} If `edges` is empty.
+   * @throws {Error} If OCCT fails (e.g. distance too large for the geometry) —
+   *   the original exception is re-thrown so Task 3's lowerer can catch and
+   *   emit a `feature.chamfer.failed` diagnostic.
+   */
+  chamfer(edges: ReplicadEdge[], distance: number): OcctBackend {
+    if (edges.length === 0) {
+      throw new Error('OcctBackend.chamfer: edge list must not be empty');
+    }
+    const result = this.shape.chamfer(distance, (f) => f.inList(edges)) as ReplicadShape3D;
+    return new OcctBackend(result);
   }
 
   union(other: ShapeBackend): OcctBackend {

@@ -41,4 +41,12 @@ export class Shape {
   intersect(...others: Shape[]): Shape {
     return this.session.boolean('intersection', this, others);
   }
+
+  fillet(radius: number, opts?: { face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
+    return this.session.edgeFeature('fillet', this, 'radius', radius, opts?.face);
+  }
+
+  chamfer(distance: number, opts?: { face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
+    return this.session.edgeFeature('chamfer', this, 'distance', distance, opts?.face);
+  }
 }
