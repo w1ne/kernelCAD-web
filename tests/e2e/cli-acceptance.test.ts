@@ -96,3 +96,46 @@ describe('v0.2-alpha rounded-bracket fixture', () => {
     expect(fv).toBeLessThan(uv);
   });
 });
+
+describe('v0.2-alpha hollow-box fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the hollow-box fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'hollow.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/hollow-box.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(1000);
+  });
+
+  it('hollow-box has dramatically less volume than the solid equivalent', async () => {
+    const { runScript } = await import('../../src/script-runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { readFile } = await import('node:fs/promises');
+
+    const fixturePath = join(__dirname, 'fixtures/hollow-box.kcad.ts');
+    const shelledCode = await readFile(fixturePath, 'utf8');
+    // Strip the trailing .shell(t, { face: 'top' }) call to get the un-shelled equivalent.
+    const solidCode = shelledCode.replace(/\.shell\([^)]+,\s*\{[^}]+\}\);?$/m, ';');
+
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const shelled = await runScript({ code: shelledCode, fileName: fixturePath });
+    const solid = await runScript({ code: solidCode, fileName: fixturePath });
+
+    const sres = await engine.run(shelled.records);
+    const ures = await engine.run(solid.records);
+
+    const slast = shelled.records[shelled.records.length - 1];
+    const ulast = solid.records[solid.records.length - 1];
+
+    const sv = sres.shapes.get(slast.id)!.volume();
+    const uv = ures.shapes.get(ulast.id)!.volume();
+    expect(sv).toBeLessThan(uv * 0.3);
+    expect(sv).toBeGreaterThan(0);
+  });
+});
