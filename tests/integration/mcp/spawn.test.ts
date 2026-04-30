@@ -76,7 +76,14 @@ async function callTool(toolName: string, args: object): Promise<unknown> {
   return callResp.result;
 }
 
-describe('MCP server (spawn)', () => {
+// Skip the suite when the CLI bundle isn't built (e.g. CI's `npm run qc` job
+// runs vitest before `npm run build:cli`). The integration suite is intended
+// to be run after a build via `npm run test:integration` (or after a manual
+// `npm run build:cli`). When run as part of the unit test suite without a
+// build, treat the test as not-applicable rather than failing.
+const SKIP = !existsSync(CLI_BIN);
+
+describe.skipIf(SKIP)('MCP server (spawn)', () => {
   it('responds to evaluate_script with success on a valid box script', async () => {
     const result = await callTool('evaluate_script', { code: 'return box(10, 10, 10);' });
     const text = (result as { content: { text: string }[] }).content[0].text;
