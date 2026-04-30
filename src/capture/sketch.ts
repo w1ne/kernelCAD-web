@@ -7,6 +7,10 @@ export type SketchCommand =
   | { kind: 'moveTo'; x: number; y: number }
   | { kind: 'lineTo'; x: number; y: number }
   | { kind: 'tangentArc'; x: number; y: number }
+  | { kind: 'threePointsArc'; x: number; y: number; midX: number; midY: number }
+  | { kind: 'sagittaArc'; x: number; y: number; sagitta: number }
+  | { kind: 'bulgeArc'; x: number; y: number; bulge: number }
+  | { kind: 'radiusArc'; x: number; y: number; radius: number }
   | { kind: 'close' };
 
 /**
@@ -95,6 +99,87 @@ export class PathBuilder {
    */
   tangentArc(x: number, y: number): PathBuilder {
     this.commands.push({ kind: 'tangentArc', x, y });
+    return this;
+  }
+
+  /**
+   * Arc through three points (start = current pen position, mid = via, end = (x, y)).
+   * No prior tangent required — can be the first segment of a path.
+   *
+   * Pick this when you know an interior point on the curve (e.g. reverse-engineering
+   * from a CAD reference) or when you need a major arc (>180°) — set the midpoint
+   * on the far side of the chord. No sign convention; midpoint position fully
+   * determines the arc.
+   *
+   * @param x endpoint X
+   * @param y endpoint Y
+   * @param midX midpoint X (any point the arc passes through, not on the chord)
+   * @param midY midpoint Y
+   */
+  threePointsArc(x: number, y: number, midX: number, midY: number): PathBuilder {
+    this.commands.push({ kind: 'threePointsArc', x, y, midX, midY });
+    return this;
+  }
+
+  /**
+   * Arc by chord + perpendicular bulge height (sagitta).
+   * No prior tangent required — can be the first segment of a path.
+   *
+   * Pick this when you know how far the arc bulges from the chord. Replicad-native
+   * (`sagittaArcTo`).
+   *
+   * Sign convention: positive sagitta → arc bulges LEFT of chord direction
+   * (counterclockwise from start to end). Negative → bulges RIGHT (clockwise).
+   *
+   * @param x endpoint X
+   * @param y endpoint Y
+   * @param sagitta perpendicular bulge height (signed)
+   */
+  sagittaArc(x: number, y: number, sagitta: number): PathBuilder {
+    this.commands.push({ kind: 'sagittaArc', x, y, sagitta });
+    return this;
+  }
+
+  /**
+   * Arc by chord + DXF bulge factor (bulge = tan(includedAngle / 4)).
+   * No prior tangent required — can be the first segment of a path.
+   *
+   * Pick this when round-tripping DXF (DXF stores arcs as bulge factors).
+   * Replicad-native (`bulgeArcTo`).
+   *
+   * Sign convention: positive bulge → counterclockwise (left of chord direction).
+   * Negative → clockwise. Magnitude > 1 means included angle > 180°.
+   *
+   * @param x endpoint X
+   * @param y endpoint Y
+   * @param bulge DXF bulge factor (signed)
+   */
+  bulgeArc(x: number, y: number, bulge: number): PathBuilder {
+    this.commands.push({ kind: 'bulgeArc', x, y, bulge });
+    return this;
+  }
+
+  /**
+   * Arc by chord + explicit radius. Always the MINOR arc (<180°). For a major
+   * arc, use threePointsArc with the midpoint on the far side of the chord.
+   * No prior tangent required — can be the first segment of a path.
+   *
+   * Pick this for parametric work where radius is the natural mental model.
+   * Computed via signed sagitta and lowered through `sagittaArcTo`.
+   *
+   * Sign convention: positive radius → arc bulges LEFT of chord direction
+   * (counterclockwise from start to end). Negative → bulges RIGHT.
+   *
+   * Validation (at lowering time):
+   * - `|radius| >= chord/2` — else `feature.sketch.degenerate-arc` diagnostic
+   * - `chord > 0` (start ≠ end) — else `feature.sketch.degenerate-arc`
+   *
+   * @param x endpoint X
+   * @param y endpoint Y
+   * @param radius arc radius (signed)
+   */
+  radiusArc(x: number, y: number, radius: number): PathBuilder {
+    this.commands.push({ kind: 'radiusArc', x, y, radius });
     return this;
   }
 
