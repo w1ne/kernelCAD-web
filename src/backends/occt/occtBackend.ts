@@ -120,6 +120,41 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Extrude a closed polygon along +Z by `depth`.
+   *
+   * `points` is an array of `[x, y]` tuples in millimetres. Winding is normalized
+   * — CW input is silently reversed to CCW before extrusion. The polygon must
+   * have at least 3 distinct points; depth must be positive.
+   *
+   * @throws {Error} If fewer than 3 points or non-positive depth.
+   * @throws {Error} If OCCT fails to construct or extrude (e.g. self-intersection).
+   */
+  static extrudePolygon(points: [number, number][], depth: number): OcctBackend {
+    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
+    if (points.length < 3) {
+      throw new Error(`OcctBackend.extrudePolygon: need at least 3 points (got ${points.length})`);
+    }
+    if (depth <= 0) {
+      throw new Error(`OcctBackend.extrudePolygon: depth must be positive (got ${depth})`);
+    }
+
+    const ccw = ensureCCW(points);
+
+    // Build a 2D drawing using replicad's DrawingPen API — the same pattern
+    // used by revolveRect. draw(start).lineTo(p1)...lineTo(pn-1).close()
+    // returns a Drawing; sketchOnPlane('XY') promotes it to a Sketch; extrude
+    // lifts it to a 3D solid.
+    let pen = replicad.draw(ccw[0]);
+    for (let i = 1; i < ccw.length; i++) {
+      pen = pen.lineTo(ccw[i]) as typeof pen;
+    }
+    const drawing = pen.close();
+    const sketch = drawing.sketchOnPlane('XY');
+    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
+    return new OcctBackend(single.extrude(depth));
+  }
+
+  /**
    * Revolve an axis-aligned rectangular profile around the Z axis.
    * The rect is placed in the XZ plane with its corner at `(offsetX, 0)`,
    * extends `w` in radial X and `h` in axial Z. With `angleDeg = 360`, the
@@ -320,4 +355,20 @@ export class OcctBackend implements ShapeBackend {
       maybeDelete.call(this.shape);
     }
   }
+}
+
+/**
+ * Ensure polygon points are in counter-clockwise winding order.
+ * Uses the shoelace formula: positive signed area => CCW, negative => CW.
+ * CW input is silently reversed.
+ */
+function ensureCCW(points: [number, number][]): [number, number][] {
+  // Shoelace area: positive => CCW, negative => CW
+  let area2 = 0;
+  for (let i = 0; i < points.length; i++) {
+    const [x1, y1] = points[i];
+    const [x2, y2] = points[(i + 1) % points.length];
+    area2 += x1 * y2 - x2 * y1;
+  }
+  return area2 < 0 ? (points.slice().reverse() as [number, number][]) : points;
 }
