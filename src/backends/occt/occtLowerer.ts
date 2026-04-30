@@ -33,6 +33,7 @@ export class OcctLowerer implements FeatureLowerer {
     'revolve',
     'boolean',
     'fillet',
+    'chamfer',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -169,6 +170,49 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id,
             severity: 'error',
             message: `OCCT fillet failed: ${msg}`,
+          });
+          return { shape: base, diagnostics };
+        }
+        break;
+      }
+      case 'chamfer': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.chamfer.no-base',
+            featureId: r.id,
+            severity: 'error',
+            message: `chamfer requires an input named 'base'.`,
+          });
+          throw new Error('chamfer: no base shape');
+        }
+        const distance = r.params.distance?.evaluated;
+        if (distance === undefined) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.chamfer.no-distance',
+            featureId: r.id,
+            severity: 'error',
+            message: `chamfer requires a 'distance' parameter.`,
+          });
+          throw new Error('chamfer: no distance');
+        }
+        const edgesResult = pickEdges(r, base);
+        if ('error' in edgesResult) {
+          diagnostics.push(edgesResult.error);
+          return { shape: base, diagnostics };
+        }
+        try {
+          shape = base.chamfer(edgesResult, distance);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.chamfer.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT chamfer failed: ${msg}`,
           });
           return { shape: base, diagnostics };
         }
