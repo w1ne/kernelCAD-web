@@ -10,7 +10,8 @@ import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 
 export interface EvaluateInput {
-  file: string;
+  file?: string;
+  code?: string;
 }
 
 export interface EvaluateResult {
@@ -21,23 +22,41 @@ export interface EvaluateResult {
 
 export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
   await initOcct();
-  const filePath = resolve(input.file);
+
   let code: string;
-  try {
-    code = await readFile(filePath, 'utf8');
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+  let fileName: string;
+
+  if (input.code !== undefined) {
+    code = input.code;
+    fileName = input.file ?? '<inline>';
+  } else if (input.file !== undefined) {
+    const filePath = resolve(input.file);
+    fileName = filePath;
+    try {
+      code = await readFile(filePath, 'utf8');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return {
+        exitCode: 2, featureCount: 0,
+        diagnostics: [{
+          target: 'export-occt', code: 'cli.file.read', severity: 'error',
+          message: `Cannot read file: ${msg}`,
+        }],
+      };
+    }
+  } else {
     return {
       exitCode: 2, featureCount: 0,
       diagnostics: [{
-        target: 'export-occt', code: 'cli.file.read', severity: 'error',
-        message: `Cannot read file: ${msg}`,
+        target: 'export-occt', code: 'cli.no-input', severity: 'error',
+        message: 'evaluateScript: must provide either { file } or { code }.',
       }],
     };
   }
+
   let run;
   try {
-    run = await runScript({ code, fileName: filePath });
+    run = await runScript({ code, fileName });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
