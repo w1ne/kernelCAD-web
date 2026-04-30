@@ -9,6 +9,7 @@ import { listTopologyTool } from './tools/listTopology';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { setParamValueTool } from './tools/setParamValue';
+import { addFeatureTool } from './tools/addFeature';
 
 const TOOLS = [
   {
@@ -105,6 +106,18 @@ const TOOLS = [
       required: ['code', 'param_name', 'new_value'],
     },
   },
+  {
+    name: 'add_feature',
+    description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        code: { type: 'string', description: 'The .kcad.ts source code.' },
+        feature_code: { type: 'string', description: 'Single-statement source line to insert (e.g. `const hole = cylinder(5, 2).translate(10, 10, -1);`).' },
+      },
+      required: ['code', 'feature_code'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -147,6 +160,9 @@ export function createMcpServer(): Server {
         break;
       case 'set_param_value':
         result = await setParamValueTool(input as unknown as Parameters<typeof setParamValueTool>[0]);
+        break;
+      case 'add_feature':
+        result = await addFeatureTool(input as unknown as Parameters<typeof addFeatureTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

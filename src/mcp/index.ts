@@ -7,3 +7,4 @@ export { listTopologyTool, type ListTopologyInput, type ListTopologyOutput } fro
 export { getEdgesOfTool, type GetEdgesOfInput, type GetEdgesOfOutput } from './tools/getEdgesOf';
 export { whyDidThisFailTool, type WhyDidThisFailInput, type WhyDidThisFailOutput } from './tools/whyDidThisFail';
 export { setParamValueTool, type SetParamValueInput, type SetParamValueOutput } from './tools/setParamValue';
+export { addFeatureTool, type AddFeatureInput, type AddFeatureOutput } from './tools/addFeature';

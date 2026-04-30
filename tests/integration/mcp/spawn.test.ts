@@ -136,4 +136,15 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.ok).toBe(true);
     expect(payload.new_code).toContain(`param('Width', 120,`);
   }, 90000);
+
+  it('responds to add_feature with edited code + diagnostics', async () => {
+    const result = await callTool('add_feature', {
+      code: `const base = box(20, 20, 5);\nreturn base;`,
+      feature_code: `const hole = cylinder(5, 2).translate(10, 10, -1);`,
+    });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.new_code).toContain(`const hole = cylinder(5, 2)`);
+  }, 90000);
 });
