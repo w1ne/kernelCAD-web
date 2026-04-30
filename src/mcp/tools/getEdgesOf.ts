@@ -1,0 +1,108 @@
+// src/mcp/tools/getEdgesOf.ts
+import { runScript } from '../../script-runtime/runScript';
+import { RecomputeEngine } from '../../compute/recomputeEngine';
+import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { initOcct, OcctBackend } from '../../backends/occt/occtBackend';
+import { pickEdges } from '../../backends/occt/edgeSelection';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import type { FeatureRecord } from '../../intent/featureRecord';
+
+export interface GetEdgesOfInput {
+  file?: string;
+  code?: string;
+  feature_id?: string;
+  face_name: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+}
+
+export interface EdgeInfo {
+  index: number;
+  centroid: [number, number, number];
+  length: number;
+  isClosed: boolean;
+}
+
+export interface GetEdgesOfOutput {
+  ok: boolean;
+  edges?: EdgeInfo[];
+  error?: string;
+}
+
+export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOfOutput> {
+  await initOcct();
+
+  if (!input.face_name) {
+    return { ok: false, error: 'face_name is required.' };
+  }
+
+  let code: string;
+  let fileName: string;
+  if (input.code !== undefined) {
+    code = input.code;
+    fileName = input.file ?? '<inline>';
+  } else if (input.file !== undefined) {
+    const filePath = resolve(input.file);
+    fileName = filePath;
+    try {
+      code = await readFile(filePath, 'utf8');
+    } catch (e) {
+      return { ok: false, error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}` };
+    }
+  } else {
+    return { ok: false, error: 'Must provide either { file } or { code }.' };
+  }
+
+  let run;
+  try {
+    run = await runScript({ code, fileName });
+  } catch (e) {
+    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+  }
+
+  if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };
+  const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
+  const targetRecord = run.records.find(r => r.id === targetId);
+  if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
+
+  const engine = new RecomputeEngine(new OcctLowerer());
+  const result = await engine.run(run.records);
+  const shape = result.shapes.get(targetId);
+  if (!shape) return { ok: false, error: `Feature '${targetId}' did not lower successfully.` };
+
+  // Build a synthetic FeatureRecord with a face-input pointing at this feature, so we can
+  // reuse pickEdges. The fields beyond inputs/kind don't matter for edge resolution.
+  const synthetic: FeatureRecord = {
+    id: '<query>',
+    kind: 'fillet',
+    params: { radius: { expression: '0', unit: 'mm', evaluated: 0 } },
+    inputs: {
+      base: { kind: 'feature', id: targetId },
+      face: {
+        kind: 'face',
+        featureId: targetId,
+        ref: { kind: 'canonical', face: input.face_name },
+      },
+    },
+    transforms: [],
+    suppressed: false,
+  };
+
+  const edgesResult = pickEdges(synthetic, shape as OcctBackend);
+  if ('error' in edgesResult) {
+    return { ok: false, error: edgesResult.error.message };
+  }
+
+  // Replicad's _1DShape.pointAt(t∈[0,1]) gives the proper parametric midpoint —
+  // correct for arcs/circles, not just straight edges.
+  const edges: EdgeInfo[] = edgesResult.map((e, i) => {
+    const mid = e.pointAt(0.5);
+    return {
+      index: i,
+      centroid: [mid.x, mid.y, mid.z] as [number, number, number],
+      length: e.length,
+      isClosed: e.isClosed,
+    };
+  });
+
+  return { ok: true, edges };
+}
