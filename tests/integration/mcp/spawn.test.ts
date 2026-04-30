@@ -124,4 +124,16 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.ok).toBe(true);
     expect(payload.health).toBe('healthy');
   }, 90000);
+
+  it('responds to set_param_value with edited code + diagnostics', async () => {
+    const result = await callTool('set_param_value', {
+      code: `const w = param('Width', 60, { unit: 'mm' });\nreturn box(w, 20, 5);`,
+      param_name: 'Width',
+      new_value: 120,
+    });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    expect(payload.ok).toBe(true);
+    expect(payload.new_code).toContain(`param('Width', 120,`);
+  }, 90000);
 });

@@ -8,6 +8,7 @@ import { getShapeInfoTool } from './tools/getShapeInfo';
 import { listTopologyTool } from './tools/listTopology';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
+import { setParamValueTool } from './tools/setParamValue';
 
 const TOOLS = [
   {
@@ -91,6 +92,19 @@ const TOOLS = [
       },
     },
   },
+  {
+    name: 'set_param_value',
+    description: 'Edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        code: { type: 'string', description: 'The .kcad.ts source code.' },
+        param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
+        new_value: { description: 'The new default value — number for numeric params, string for expressions.' },
+      },
+      required: ['code', 'param_name', 'new_value'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -130,6 +144,9 @@ export function createMcpServer(): Server {
         break;
       case 'why_did_this_fail':
         result = await whyDidThisFailTool(input as Parameters<typeof whyDidThisFailTool>[0]);
+        break;
+      case 'set_param_value':
+        result = await setParamValueTool(input as unknown as Parameters<typeof setParamValueTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
