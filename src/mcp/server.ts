@@ -5,6 +5,9 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { listFeaturesTool } from './tools/listFeatures';
 import { getShapeInfoTool } from './tools/getShapeInfo';
+import { listTopologyTool } from './tools/listTopology';
+import { getEdgesOfTool } from './tools/getEdgesOf';
+import { whyDidThisFailTool } from './tools/whyDidThisFail';
 
 const TOOLS = [
   {
@@ -50,6 +53,44 @@ const TOOLS = [
       },
     },
   },
+  {
+    name: 'list_topology',
+    description: 'List the canonical face names available on a feature (top/bottom/left/right/front/back for box; top/bottom for cylinder; none for sphere or non-primitives) plus the total edge count. Pass { file?, code?, feature_id? }.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string' },
+        code: { type: 'string' },
+        feature_id: { type: 'string' },
+      },
+    },
+  },
+  {
+    name: 'get_edges_of',
+    description: "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Mirrors ForgeCAD's edgesOf(). Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string' },
+        code: { type: 'string' },
+        feature_id: { type: 'string' },
+        face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'] },
+      },
+      required: ['face_name'],
+    },
+  },
+  {
+    name: 'why_did_this_fail',
+    description: "Return the focused diagnostic view of one feature — its health, its own diagnostics, the upstream chain (each upstream feature's id/kind/health), and human-readable hints for known diagnostic codes. Use when fillet/chamfer/shell errors and the agent needs the dependency context. Pass { file?, code?, feature_id? }.",
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string' },
+        code: { type: 'string' },
+        feature_id: { type: 'string' },
+      },
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -80,6 +121,15 @@ export function createMcpServer(): Server {
         result = await getShapeInfoTool(
           input as Parameters<typeof getShapeInfoTool>[0],
         );
+        break;
+      case 'list_topology':
+        result = await listTopologyTool(input as Parameters<typeof listTopologyTool>[0]);
+        break;
+      case 'get_edges_of':
+        result = await getEdgesOfTool(input as unknown as Parameters<typeof getEdgesOfTool>[0]);
+        break;
+      case 'why_did_this_fail':
+        result = await whyDidThisFailTool(input as Parameters<typeof whyDidThisFailTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
