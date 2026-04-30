@@ -34,7 +34,8 @@ export class OcctLowerer implements FeatureLowerer {
     'boolean',
     'fillet',
     'chamfer',
-    'shell',     // NEW
+    'shell',
+    'sketch',    // NEW
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -56,6 +57,33 @@ export class OcctLowerer implements FeatureLowerer {
       }
       case 'sphere': {
         shape = OcctBackend.sphere(r.params.r.evaluated);
+        break;
+      }
+      case 'sketch': {
+        const commands = (r.metadata as { commands?: unknown } | undefined)?.commands;
+        if (!Array.isArray(commands) || commands.length === 0) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.sketch.bad-commands',
+            featureId: r.id,
+            severity: 'error',
+            message: `sketch requires metadata.commands: SketchCommand[].`,
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.sketch.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `sketch construction failed: ${msg}`,
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
         break;
       }
       case 'extrude': {
@@ -116,6 +144,32 @@ export class OcctLowerer implements FeatureLowerer {
           }
           try {
             shape = OcctBackend.extrudeRoundedRect(width, height, radius, depth);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT extrude failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+        } else if (profileKind === 'sketch') {
+          const depth = r.params.depth.evaluated;
+          const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+          if (!sketchInput) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.bad-sketch',
+              featureId: r.id,
+              severity: 'error',
+              message: `extrude with profile='sketch' requires an input named 'sketch'.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          try {
+            shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({

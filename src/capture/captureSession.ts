@@ -2,6 +2,7 @@ import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/fea
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureKind, FeatureRef, Param } from '../intent/types';
 import { Shape } from './proxy';
+import { Sketch } from './sketch';
 
 export interface FeatureSpec {
   kind: FeatureKind;
@@ -32,6 +33,11 @@ export class CaptureSession {
   createShape(spec: FeatureSpec): Shape {
     const r = this.register(spec);
     return new Shape(r.id, this);
+  }
+
+  createSketch(spec: FeatureSpec): Sketch {
+    const r = this.register(spec);
+    return new Sketch(r.id, this);
   }
 
   appendTransform(id: string, t: ShapeTransform): void {
