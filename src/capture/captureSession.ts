@@ -7,6 +7,7 @@ export interface FeatureSpec {
   kind: FeatureKind;
   params: Record<string, Param>;
   inputs: Record<string, FeatureRef>;
+  metadata?: Record<string, unknown>;
 }
 
 export class CaptureSession {
@@ -22,6 +23,7 @@ export class CaptureSession {
       inputs: spec.inputs,
       transforms: [],
       suppressed: false,
+      metadata: spec.metadata,
     };
     this.records.push(r);
     return r;

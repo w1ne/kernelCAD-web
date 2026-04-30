@@ -1,3 +1,24 @@
+## v0.13.0-alpha.1 (NORTHSTAR roadmap: v0.4-alpha extrudePolygon) — 2026-04-30
+
+### Added
+- **`extrudePolygon(points, depth)`** — first arbitrary-2D-profile primitive. Takes an array of `[x, y]` points in millimetres and an extrude depth. Auto-normalizes winding (CW input silently reversed to CCW). Closed by default. Minimum 3 points.
+- New diagnostic codes: `feature.extrude.bad-points` (missing/invalid metadata.points), `feature.extrude.failed` (OCCT exception during extrusion).
+- e2e fixture `tests/e2e/fixtures/triangle-extrusion.kcad.ts` + acceptance test.
+- `FeatureSpec.metadata` propagated through `CaptureSession.register()` so feature-specific structured data (like polygon points) can be attached without widening the param shape.
+
+### Changed
+- `extrude` FeatureKind now accepts `profileKind: 'polygon'` in addition to existing `'rect'` and `'circle'`.
+- Lowerer's `'extrude'` case refactored to extract `height` per-profile-arm rather than unconditionally — fixed a latent bug where polygon records (which have no `height` param) would have crashed before reaching the polygon arm.
+
+### Deferred to v0.4-beta+
+- Sketch builder pattern (`sketch.polygon().extrude()`, `sketch.path().lineTo().close()`)
+- `roundedRect` and `circle2d` as Sketch primitives
+- Open polylines (`.stroke(width)`)
+- Sketch revolve / sweep
+- Self-intersection validation
+
+---
+
 ## v0.12.0-rc.1 — 2026-04-30
 
 ### Added

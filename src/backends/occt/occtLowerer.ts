@@ -61,15 +61,44 @@ export class OcctLowerer implements FeatureLowerer {
       case 'extrude': {
         // Profile kind is a quoted string in IR (e.g. "'rect'", "'circle'").
         const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
-        const height = r.params.height.evaluated;
         if (profileKind === 'rect') {
+          const height = r.params.height.evaluated;
           shape = OcctBackend.extrudeRect(
             r.params.w.evaluated,
             r.params.h.evaluated,
             height,
           );
         } else if (profileKind === 'circle') {
+          const height = r.params.height.evaluated;
           shape = OcctBackend.extrudeCircle(r.params.r.evaluated, height);
+        } else if (profileKind === 'polygon') {
+          const depth = r.params.depth.evaluated;
+          const points = (r.metadata as { points?: unknown } | undefined)?.points;
+          if (!Array.isArray(points) || points.length < 3 ||
+              !points.every(p => Array.isArray(p) && p.length === 2 &&
+                                  typeof p[0] === 'number' && typeof p[1] === 'number')) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.bad-points',
+              featureId: r.id,
+              severity: 'error',
+              message: `extrude polygon requires metadata.points: [number, number][] with at least 3 points.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          try {
+            shape = OcctBackend.extrudePolygon(points as [number, number][], depth);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.extrude.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT extrude failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
         } else {
           return {
             shape: undefined as unknown as ShapeBackend,
