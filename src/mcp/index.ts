@@ -8,3 +8,4 @@ export { getEdgesOfTool, type GetEdgesOfInput, type GetEdgesOfOutput } from './t
 export { whyDidThisFailTool, type WhyDidThisFailInput, type WhyDidThisFailOutput } from './tools/whyDidThisFail';
 export { setParamValueTool, type SetParamValueInput, type SetParamValueOutput } from './tools/setParamValue';
 export { addFeatureTool, type AddFeatureInput, type AddFeatureOutput } from './tools/addFeature';
+export { removeFeatureTool, type RemoveFeatureInput, type RemoveFeatureOutput } from './tools/removeFeature';

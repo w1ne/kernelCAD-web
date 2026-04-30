@@ -1,3 +1,22 @@
+## v0.13.0-rc.1 (NORTHSTAR roadmap: v0.12 final remove_feature) — 2026-04-30
+
+### Added
+- **Third MCP write tool: `remove_feature`** — removes a single line from a `.kcad.ts` script by substring match. Side-effect-free; returns `new_code` + re-evaluated diagnostics.
+  - Input: `{ code, match }`
+  - Output: `{ ok, new_code?, diagnostics?, error? }`
+  - Refuses to remove the `return` line (state-machine detects top-level return at brace depth 0)
+  - Errors on 0 or >1 matches (agent must disambiguate)
+- 11 new tests (7 primitive + 4 tool) + 1 integration spawn test
+
+### Why string-match (not feature_id)
+`FeatureRecord.scriptLocation` is declared but never populated; adding source-position tracking is a separate architectural piece. String match mirrors `set_param_value`'s `param_name` — agents already have a reliable identifier (the line they wrote). Once scriptLocation lands later, `feature_id` could be added as an alternative.
+
+### Deferred to v0.14+
+- `suppress_feature` — wraps a line in `// @suppress` annotation
+- `feature_id` alternative for set/remove tools (requires scriptLocation)
+
+---
+
 ## v0.13.0-beta.1 (NORTHSTAR roadmap: v0.4-beta extrudeRoundedRect) — 2026-04-30
 
 ### Added
