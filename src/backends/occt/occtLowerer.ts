@@ -9,7 +9,7 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
-import { pickEdges } from './edgeSelection';
+import { pickEdges, pickFace } from './edgeSelection';
 
 /**
  * Lowers `FeatureRecord`s to `OcctBackend` shapes.
@@ -34,6 +34,7 @@ export class OcctLowerer implements FeatureLowerer {
     'boolean',
     'fillet',
     'chamfer',
+    'shell',     // NEW
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -213,6 +214,49 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id,
             severity: 'error',
             message: `OCCT chamfer failed: ${msg}`,
+          });
+          return { shape: base, diagnostics };
+        }
+        break;
+      }
+      case 'shell': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.shell.no-base',
+            featureId: r.id,
+            severity: 'error',
+            message: `shell requires an input named 'base'.`,
+          });
+          throw new Error('shell: no base shape');
+        }
+        const thickness = r.params.thickness?.evaluated;
+        if (thickness === undefined) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.shell.no-thickness',
+            featureId: r.id,
+            severity: 'error',
+            message: `shell requires a 'thickness' parameter.`,
+          });
+          throw new Error('shell: no thickness');
+        }
+        const faceResult = pickFace(r, base);
+        if ('error' in faceResult) {
+          diagnostics.push(faceResult.error);
+          return { shape: base, diagnostics };
+        }
+        try {
+          shape = base.shell(faceResult, thickness);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.shell.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT shell failed: ${msg}`,
           });
           return { shape: base, diagnostics };
         }
