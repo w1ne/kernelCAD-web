@@ -10,6 +10,7 @@ import { resolveFaceQuery, type FaceQuery } from '../../backends/occt/edgeQuerie
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Face } from 'replicad';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ListFacesInput {
   file?: string;
@@ -31,6 +32,10 @@ export interface ListFacesOutput {
   ok: boolean;
   faces?: FaceSummary[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOutput> {
@@ -57,7 +62,8 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
   if (run.records.length === 0) {
     return { ok: false, error: 'Script returned no features.' };

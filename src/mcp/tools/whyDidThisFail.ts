@@ -7,6 +7,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface WhyDidThisFailInput {
   file?: string;
@@ -30,6 +31,10 @@ export interface WhyDidThisFailOutput {
   /** Human-readable suggestions, one per unique diagnostic code in `diagnostics`. */
   hints?: string[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 /**
@@ -125,7 +130,8 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };

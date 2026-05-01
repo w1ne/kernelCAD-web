@@ -11,6 +11,7 @@ import { initOcct, OcctBackend } from '../../backends/occt/occtBackend';
 import { selectEdges, type EdgeQuery, type EdgeSegment } from '../../backends/occt/edgeQueries';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ListEdgesInput {
   file?: string;
@@ -23,6 +24,10 @@ export interface ListEdgesOutput {
   ok: boolean;
   edges?: EdgeSegment[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOutput> {
@@ -49,7 +54,8 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
   if (run.records.length === 0) {
     return { ok: false, error: 'Script returned no features.' };

@@ -8,6 +8,7 @@ import { OcctLowerer } from '../../backends/occt/occtLowerer';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface EvaluateInput {
   file?: string;
@@ -58,13 +59,10 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const diag = kernelErrorToDiagnostic(e);
     return {
       exitCode: 1, featureCount: 0,
-      diagnostics: [{
-        target: 'export-occt', code: 'cli.script.exception', severity: 'error',
-        message: msg,
-      }],
+      diagnostics: [diag],
     };
   }
   const engine = new RecomputeEngine(new OcctLowerer());

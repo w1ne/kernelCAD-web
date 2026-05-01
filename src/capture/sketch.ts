@@ -2,6 +2,7 @@
 import type { FeatureId } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
+import { KernelError } from '../intent/kernelError';
 
 export type SketchCommand =
   | { kind: 'moveTo'; x: number; y: number }
@@ -202,10 +203,16 @@ export class PathBuilder {
   label(name: string): PathBuilder {
     const last = this.commands[this.commands.length - 1];
     if (!last || last.kind === 'moveTo' || last.kind === 'close') {
-      throw new Error(`label('${name}'): must follow a segment (lineTo or any arc), not moveTo / close / nothing.`);
+      throw new KernelError(
+        'feature.path.label-without-segment',
+        `label('${name}'): must follow a segment (lineTo or any arc), not moveTo / close / nothing.`,
+      );
     }
     if (this.commands.some(c => c !== last && (c as { label?: string }).label === name)) {
-      throw new Error(`label('${name}'): name already used in this sketch — labels must be unique.`);
+      throw new KernelError(
+        'feature.path.duplicate-label',
+        `label('${name}'): name already used in this sketch — labels must be unique.`,
+      );
     }
     (last as { label?: string }).label = name;
     return this;

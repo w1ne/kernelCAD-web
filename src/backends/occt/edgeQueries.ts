@@ -12,6 +12,7 @@
 
 import type { Edge, Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
+import { KernelError } from '../../intent/kernelError';
 
 export type Vec3 = [number, number, number];
 
@@ -322,12 +323,20 @@ export function selectEdges(base: OcctBackend, query: EdgeQuery = {}): EdgeSegme
 
 export function selectEdge(base: OcctBackend, query: EdgeQuery): EdgeSegment {
   const matches = selectEdges(base, query);
-  if (matches.length === 0) throw new Error('selectEdge: no edges matched query (zero results)');
+  if (matches.length === 0) {
+    throw new KernelError(
+      'feature.edge-feature.no-edges-match',
+      'selectEdge: no edges matched query (zero results)',
+    );
+  }
   // When `near` is provided, treat it as a disambiguator: pick the closest
   // match rather than throwing. Otherwise, multiple matches are ambiguous.
   if (matches.length > 1) {
     if (query.near !== undefined) return matches[0];
-    throw new Error(`selectEdge: ambiguous query — ${matches.length} edges matched`);
+    throw new KernelError(
+      'feature.edge-feature.ambiguous-selection',
+      `selectEdge: ambiguous query — ${matches.length} edges matched`,
+    );
   }
   return matches[0];
 }
