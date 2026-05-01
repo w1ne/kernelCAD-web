@@ -36,6 +36,7 @@ export class OcctLowerer implements FeatureLowerer {
     'chamfer',
     'shell',
     'sketch',    // NEW
+    'sweep',     // NEW (v0.13.0-rc.8)
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -284,6 +285,80 @@ export class OcctLowerer implements FeatureLowerer {
                 featureId: r.id,
                 severity: 'error',
                 message: `Profile kind '${profileKind}' not supported in v0.1`,
+              },
+            ],
+          };
+        }
+        break;
+      }
+      case 'sweep': {
+        const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
+        if (profileKind === 'sketch') {
+          const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+          if (!sketchInput) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.sweep.bad-sketch',
+              featureId: r.id,
+              severity: 'error',
+              message: `sweep with profile='sketch' requires an input named 'sketch'.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const rail = (r.metadata as { rail?: unknown } | undefined)?.rail;
+          if (!Array.isArray(rail) || rail.length < 2) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.sweep.invalid-rail',
+              featureId: r.id,
+              severity: 'error',
+              message: `sweep rail must be an array of at least 2 points; got ${Array.isArray(rail) ? `length ${rail.length}` : 'non-array'}.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // Validate every entry is [number, number, number] of finite numbers.
+          for (let i = 0; i < rail.length; i++) {
+            const p = rail[i];
+            if (!Array.isArray(p) || p.length !== 3 ||
+                !p.every(n => typeof n === 'number' && Number.isFinite(n))) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.sweep.invalid-rail',
+                featureId: r.id,
+                severity: 'error',
+                message: `sweep rail point at index ${i} must be a [x, y, z] tuple of finite numbers; got ${JSON.stringify(p)}.`,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          }
+          const frenet = (r.params.frenet?.evaluated ?? 0) > 0.5;
+          try {
+            shape = OcctBackend.sweepFromSketch(
+              sketchInput,
+              rail as [number, number, number][],
+              { frenet },
+            );
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.sweep.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT sweep failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+        } else {
+          return {
+            shape: undefined as unknown as ShapeBackend,
+            diagnostics: [
+              {
+                target: this.target,
+                code: 'feature.sweep.unsupported-profile',
+                featureId: r.id,
+                severity: 'error',
+                message: `Profile kind '${profileKind}' not supported for sweep.`,
               },
             ],
           };
