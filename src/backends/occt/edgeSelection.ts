@@ -4,7 +4,7 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
-import { resolveEdgeQuery, resolveFaceQuery } from './edgeQueries';
+import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
@@ -81,10 +81,31 @@ export function pickEdges(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.label-not-resolvable',
+          code: 'feature.label.unknown-name',
           featureId: record.id,
           severity: 'error',
           message: `Label '${faceRef.ref.name}' resolved to a probe query that matched no edges.`,
+        },
+      };
+    }
+    // Mixed-convexity guard (I6): if the matched edge set has both convex
+    // and concave members, fillet/chamfer will fail with a generic OCCT error.
+    // Surface a specific code so the agent can refine the query.
+    const shape = (base.getReplicadShape() as unknown as { faces: import('replicad').Face[] });
+    let hasConvex = false, hasConcave = false;
+    for (const e of edges) {
+      const d = computeDihedralPublic(shape, e);
+      if (d?.convex === true) hasConvex = true;
+      if (d?.convex === false) hasConcave = true;
+    }
+    if (hasConvex && hasConcave) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.label.mixed-convexity',
+          featureId: record.id,
+          severity: 'error',
+          message: `Label '${faceRef.ref.name}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
         },
       };
     }
@@ -426,7 +447,7 @@ function resolveLabeledFace(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.no-upstream-sketch',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': cannot derive face probe (no within bbox).`,
@@ -449,7 +470,7 @@ function resolveLabeledFace(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}' resolved to a probe bbox that contained no face centroid.`,
@@ -470,10 +491,10 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.no-upstream-sketch',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}' lookup requires lowering records context (internal: records not threaded).`,
+        message: `Label '${label}' lookup requires record context (internal: records not threaded).`,
       },
     };
   }
@@ -483,10 +504,10 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.no-upstream-sketch',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}': upstream sketch not found. Labels work on shapes built from a sketch (extrude/revolve).`,
+        message: `Label '${label}': base shape isn't sketch-derived. Labels work on shapes built from a path() sketch (extrude); apply the label upstream on the sketch.`,
       },
     };
   }
@@ -496,7 +517,7 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': upstream sketch has no commands metadata.`,
@@ -512,10 +533,10 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}' not found on the upstream sketch's segments.`,
+        message: `Label '${label}' not found on the upstream sketch's segments. Use the list_face_labels MCP tool to see available labels.`,
       },
     };
   }
@@ -526,7 +547,7 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': can't determine segment chord (prior command has no endpoint).`,
@@ -539,10 +560,10 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unsupported-base',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}': labels currently support extrude only (revolve labels: rc.7).`,
+        message: `Label '${label}': labels currently support extrude only. Revolve labels are deferred; use an inline query against the geometry as a workaround: {face: {atZ: ...}}.`,
       },
     };
   }

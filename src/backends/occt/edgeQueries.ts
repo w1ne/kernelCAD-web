@@ -241,6 +241,14 @@ function isSameEdge(a: Edge, b: Edge): boolean {
 }
 
 /**
+ * Public re-export of the dihedral helper for label resolvers that need
+ * convexity information without going through the full toEdgeSegment shape.
+ */
+export function computeDihedralPublic(shape: { faces: Face[] }, edge: Edge): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
+  return computeDihedral(shape, edge);
+}
+
+/**
  * Resolve a FaceQuery against an OcctBackend shape. AND-combined.
  */
 export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
