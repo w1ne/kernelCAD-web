@@ -1,5 +1,10 @@
 // src/mcp/server.ts
-import { createRequire } from 'node:module';
+// NOTE: alias `createRequire` to avoid a name collision with the
+// esbuild bundle's banner (which also injects `import { createRequire }
+// from 'module'` for build:cli). Without the alias, ESM rejects the
+// bundled output at load time with "Identifier 'createRequire' has
+// already been declared". (rc.11 hotfix.)
+import { createRequire as createRequireForServer } from 'node:module';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -17,7 +22,7 @@ import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listApiTool } from './tools/listApi';
 
-const requireFromHere = createRequire(import.meta.url);
+const requireFromHere = createRequireForServer(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
 
 const TOOLS = [
