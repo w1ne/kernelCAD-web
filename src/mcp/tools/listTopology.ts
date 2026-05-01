@@ -5,6 +5,7 @@ import { OcctLowerer } from '../../backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../backends/occt/occtBackend';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ListTopologyInput {
   file?: string;
@@ -18,6 +19,10 @@ export interface ListTopologyOutput {
   faceNames?: string[];
   edgeCount?: number;
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 const BOX_FACES = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
@@ -48,7 +53,8 @@ export async function listTopologyTool(input: ListTopologyInput): Promise<ListTo
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };

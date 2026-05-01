@@ -5,6 +5,7 @@ import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport, type ExportFormat } from '../../script-runtime/export';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ExportInput {
   file: string;
@@ -37,12 +38,10 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   try {
     result = await runAndExport({ code, fileName: filePath, format: input.format });
   } catch (e) {
+    const diag = kernelErrorToDiagnostic(e, 'cli.export.exception');
     return {
       exitCode: 1, bytesWritten: 0,
-      diagnostics: [{
-        target: 'export-occt', code: 'cli.export.exception', severity: 'error',
-        message: e instanceof Error ? e.message : String(e),
-      }],
+      diagnostics: [diag],
     };
   }
   const fatal = result.diagnostics.filter(d => d.severity === 'error').length > 0;

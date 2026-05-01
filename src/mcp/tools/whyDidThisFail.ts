@@ -7,6 +7,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface WhyDidThisFailInput {
   file?: string;
@@ -30,6 +31,10 @@ export interface WhyDidThisFailOutput {
   /** Human-readable suggestions, one per unique diagnostic code in `diagnostics`. */
   hints?: string[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 /**
@@ -67,14 +72,19 @@ const HINTS: Record<string, string> = {
   'feature.revolve.bad-sketch': "revolve with profile='sketch' requires a sketch input. This usually means the upstream sketch failed to lower — check its diagnostics first.",
   'feature.edge-feature.face-ref-not-resolvable': "Canonical face refs (e.g. { face: 'top' }) only work on un-transformed primitives. Apply transforms after the fillet/chamfer instead of before, or fillet the primitive first then translate.",
   'feature.edge-feature.face-ref-not-applicable': "That canonical face name is not valid for this primitive. Boxes have all six (top/bottom/left/right/front/back); cylinders have only top/bottom; spheres have none.",
-  'feature.edge-feature.face-ref-not-supported': "Only canonical face refs are supported in v0.2-alpha. Apply fillet/chamfer without a face filter, or use a canonical face name like { face: 'top' }.",
+  'feature.edge-feature.face-ref-not-supported': "Edge / face ref kind not supported on this shape. Use a canonical name ({ face: 'top' }), a label ({ face: 'rim' }), or an inline EdgeQuery ({ atZ: 5, parallel: [0, 0, 1] }) instead. Tracked / created / propagated refs are reserved for v0.5+.",
   'feature.edge-feature.no-edges-match': "The selection matched no edges on this shape. Use the `list_edges` MCP tool to see what's available, or relax the query (larger `tolerance`, fewer keys).",
   'feature.edge-feature.ambiguous-selection': "Multiple edges match this query. Use `selectEdges` (plural) for all matches, or tighten the query — smaller `tolerance`, add a `near:` point to disambiguate.",
   'feature.edge-feature.invalid-query': "Query has contradictory keys, an unknown segment id, or an unsupported ref kind. Check the EdgeQuery type and ensure segment IDs come from a `selectEdges` call against the same shape lowering.",
   'feature.face-feature.face-required': "Shell needs a face to remove. Pass `{ face: 'top' }` (or another canonical face name applicable to the base primitive).",
   'feature.face-feature.face-ref-not-resolvable': "Same constraint as edge features: canonical face refs only work on un-transformed primitives. Apply shell before transforms.",
   'feature.face-feature.face-ref-not-applicable': "That canonical face is not valid for this primitive. Cylinders accept only top/bottom for shell; spheres have no canonical faces.",
-  'feature.face-feature.face-ref-not-supported': "Only canonical face refs are supported in v0.2-alpha. Tracked / created / propagated face refs land in v0.2 full.",
+  'feature.face-feature.face-ref-not-supported': "Face ref kind not supported. Use a canonical name ({face: 'top'}), a label ({face: 'rim'}), or an inline FaceQuery ({face: {atZ: 5}}). Tracked / created / propagated face refs are reserved for v0.5+.",
+  'feature.face-feature.label-not-resolvable': "[Deprecated in v0.13.0-rc.7] This generic code is being split into feature.label.unknown-name, feature.label.no-upstream-sketch, feature.label.unsupported-base, and feature.label.mixed-convexity. If you still see this code, the underlying issue maps to one of those — check the diagnostic message for guidance, and update kernelCAD if you can.",
+  'feature.label.unknown-name': "Label not found on the upstream sketch. Use the `list_face_labels` MCP tool to see available labels on this script.",
+  'feature.label.no-upstream-sketch': "Labels work on shapes built from a path() sketch (currently extrude). For primitives or imported shapes, use a query like {face: {atZ: 5}} instead.",
+  'feature.label.unsupported-base': "Labels are supported for extrude only in this rc. Revolve / sweep labels are deferred. Use an inline query against the geometry as a workaround: {face: {atZ: 5}} or similar.",
+  'feature.label.mixed-convexity': "The labeled segment's probe matched a mix of convex and concave edges (typically a reflex / inside corner). Either split the label across smaller segments, or refine with an inline EdgeQuery that filters by convexity ({face: {label: 'name'}, convex: true} is not yet supported; use {atZ: ..., parallel: [...]} for now).",
   'feature.sketch.degenerate-arc': "An arc segment has degenerate geometry. For radiusArc: |radius| must be >= chord/2 (where chord is the straight-line distance start→end), and start must not coincide with end. Either pick a larger radius, change the endpoints, or use threePointsArc / sagittaArc.",
   'feature.sketch.failed': "Sketch construction failed during lowering. Check the diagnostic message for the underlying error from Replicad or our validation.",
   'feature.path.label-without-segment': "label() must follow a lineTo or arc segment. Calling label() before any segment, after moveTo, or after close has nothing to label.",
@@ -125,7 +135,8 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };

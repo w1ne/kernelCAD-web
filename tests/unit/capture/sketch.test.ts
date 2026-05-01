@@ -405,4 +405,96 @@ describe('path() builder + Sketch capture', () => {
     expect(v).toBeGreaterThan(140);
     expect(v).toBeLessThan(150);
   });
+
+  it('Two concurrent recomputes against different scripts resolve labels correctly (no global-state contamination)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Script A: labeled-rim sketch + fillet by label 'rimA'
+    const codeA = `
+      return path().moveTo(0,0)
+        .lineTo(10,0).label('bottomA')
+        .lineTo(10,5)
+        .lineTo(0,5).label('rimA')
+        .close()
+        .extrude(3)
+        .fillet(1, { face: 'rimA' });
+    `;
+    // Script B: differently-labeled sketch + fillet by 'rimB'
+    const codeB = `
+      return path().moveTo(0,0)
+        .lineTo(20,0).label('bottomB')
+        .lineTo(20,5)
+        .lineTo(0,5).label('rimB')
+        .close()
+        .extrude(2)
+        .fillet(0.5, { face: 'rimB' });
+    `;
+    const [resultA, resultB] = await Promise.all([
+      runScript({ code: codeA, fileName: 'a.kcad.ts' }),
+      runScript({ code: codeB, fileName: 'b.kcad.ts' }),
+    ]);
+    const engineA = new RecomputeEngine(new OcctLowerer());
+    const engineB = new RecomputeEngine(new OcctLowerer());
+    const [rA, rB] = await Promise.all([
+      engineA.run(resultA.records),
+      engineB.run(resultB.records),
+    ]);
+    // Both must succeed with no errors. Shared global state could cause one
+    // to see the other's records and emit unknown-label diagnostics.
+    expect(rA.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    expect(rB.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('I1: buildEdgeFeatureRef rejects unknown EdgeQuery keys at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Add a key that is NOT in the EDGE_QUERY_KEYS whitelist; capture takes it
+    // (the type system can't enforce extra keys at runtime), but lowering should diagnose.
+    const code = `return box(10,10,5).fillet(1, { atZ: 5, foo: true });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.edge-feature.invalid-query' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('I1: valid 14-key EdgeQuery passes through cleanly (regression check)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10,10,5).fillet(1, { atZ: 5, parallel: [1,0,0], tolerance: 0.5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('B1: box.chamfer(0.5, { atZ: 5 }) chamfers top edges', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).chamfer(0.5, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    // Chamfer 0.5 on 4 top edges — small sliver removed per edge.
+    expect(v).toBeGreaterThan(490);
+    expect(v).toBeLessThan(499);
+  });
+
+  it('B1: box.shell(1, { face: { atZ: 5 } }) hollows out leaving the top open', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).shell(1, { face: { atZ: 5 } });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(200);
+    expect(v).toBeLessThan(320);
+  });
 });

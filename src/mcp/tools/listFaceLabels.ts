@@ -8,6 +8,7 @@
 import { runScript } from '../../script-runtime/runScript';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ListFaceLabelsInput {
   file?: string;
@@ -26,6 +27,10 @@ export interface ListFaceLabelsOutput {
   ok: boolean;
   labels?: LabelSummary[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<ListFaceLabelsOutput> {
@@ -50,7 +55,8 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   const labels: LabelSummary[] = [];

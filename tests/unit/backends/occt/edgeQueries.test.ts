@@ -69,6 +69,22 @@ describe('resolveFaceQuery', () => {
     const faces = resolveFaceQuery(box, { parallelTo: 'XY' });
     expect(faces).toHaveLength(2);
   });
+
+  it('I3: FaceQuery.inPlane filters faces correctly (XY plane → 2 faces on a box)', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    const xy = resolveFaceQuery(box, { inPlane: 'XY' });
+    // XY plane normal is Z. Only faces with normal parallel to Z (top + bottom) match.
+    expect(xy).toHaveLength(2);
+    const yz = resolveFaceQuery(box, { inPlane: 'YZ' });
+    expect(yz).toHaveLength(2);
+  });
+
+  it('I3: inPlane combines with atZ to filter by both orientation AND position', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    const top = resolveFaceQuery(box, { inPlane: 'XY', atZ: 5 });
+    expect(top).toHaveLength(1);
+    expect(top[0].center.z).toBeCloseTo(5, 1);
+  });
 });
 
 describe('selectEdges / selectEdge', () => {
@@ -100,5 +116,25 @@ describe('selectEdges / selectEdge', () => {
   it('selectEdge throws when query matches zero edges', () => {
     const box = OcctBackend.box(10, 10, 5);
     expect(() => selectEdge(box, { atZ: 999 })).toThrow(/no edges|zero/i);
+  });
+
+  it('I2: EdgeSegment.normalA and normalB are populated for non-boundary edges', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    const segments = selectEdges(box, { atZ: 5 });
+    for (const seg of segments) {
+      expect(seg.normalA).not.toBeNull();
+      expect(seg.normalB).not.toBeNull();
+      expect(Array.isArray(seg.normalA)).toBe(true);
+      if (seg.normalA) expect(seg.normalA).toHaveLength(3);
+    }
+  });
+
+  it('I2: normalA / normalB on a 90-degree corner edge are perpendicular to each other', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    const seg = selectEdge(box, { atZ: 5, parallel: [1, 0, 0], near: [5, 0, 5] });
+    if (seg.normalA && seg.normalB) {
+      const dot = seg.normalA[0] * seg.normalB[0] + seg.normalA[1] * seg.normalB[1] + seg.normalA[2] * seg.normalB[2];
+      expect(Math.abs(dot)).toBeLessThan(0.01); // perpendicular
+    }
   });
 });

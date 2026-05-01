@@ -68,7 +68,7 @@ export function runIsolated(
   });
 
   const wrapped = opts.wrapReturn
-    ? `__return = (function() { ${code} \n})();`
+    ? `__return = (async function() { ${code} \n})();`
     : code;
 
   const script = new vm.Script(wrapped, { filename: fileName });

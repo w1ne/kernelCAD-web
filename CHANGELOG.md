@@ -1,3 +1,35 @@
+## v0.13.0-rc.7 (NORTHSTAR roadmap: quality pass — close all rc.6 review findings) — 2026-05-01
+
+### Added
+- **`KernelError` class** — kernel throws now carry a structured `code` field that flows through the script-runtime exception path into `CompilerDiagnostic`s. `whyDidThisFail` registers hints that are now actually reachable.
+- **`pickFace` query/label dispatch parity** — `Shape.shell({ face: { atZ: 5 } })` and `Shape.shell({ face: 'rim' })` work end-to-end. Type-vs-runtime mismatch closed.
+- **`selectEdges` / `selectEdge` script-runtime globals** — agents can pre-select edges in `.kcad.ts` files and pass the result back to fillet/chamfer for compose / multi-step refinement.
+- **`Shape.lower()` lazy accessor** — eagerly lowers a captured `Shape` for inspection, used internally by `selectEdges`.
+- **Top-level await support in `.kcad.ts` scripts** — script body now wraps in an async IIFE, so agents can `await selectEdges(shape, ...)` at top level.
+- **5 new diagnostic codes:** `feature.label.unknown-name`, `feature.label.no-upstream-sketch`, `feature.label.unsupported-base`, `feature.label.mixed-convexity` (split from the rc.6 lumped code), and `feature.edge-feature.invalid-query` for unknown EdgeQuery keys.
+- **`FaceQuery.inPlane` implementation** — was silently ignored in rc.6.
+- **`EdgeSegment.normalA` and `normalB` populated** — were typed `Vec3 | null` but always `null` in rc.6.
+- **`EDGE_QUERY_KEYS` whitelist in `buildEdgeFeatureRef`** — replaces structural duck-typing; unknown keys surface a diagnostic at lowering time instead of silently passing through.
+- E2E fixture `tests/e2e/fixtures/preselected-edges.kcad.ts` exercises the `selectEdges → fillet` round-trip.
+- Chamfer + shell integration tests with EdgeQuery / FaceQuery (coverage symmetry with the existing fillet path).
+
+### Changed
+- `ResolvedInputs._allRecords` renamed to `ResolvedInputs.records` — drops the leading underscore.
+- `pickEdges` and `pickFace` signatures now take a third `records` parameter — concurrency-safe, no module-level mutable state in the lowering pipeline.
+- `feature.face-feature.label-not-resolvable` is deprecated; the hint message points to the new specific codes. Will be removed in rc.8.
+- `EdgeQuery.near` JSDoc explicitly documents that it sorts (closest first) but does not filter.
+- The `feature.edge-feature.face-ref-not-supported` and `feature.face-feature.face-ref-not-supported` hint messages updated — previously contained a stale "v0.2-alpha" reference.
+
+### Deferred to subsequent rcs
+- `coalesceEdges()` collinear merge (rc.8)
+- Per-edge variable radius `fillet([{edge, r:1}, {edge, r:2}])` (rc.8)
+- Labels on revolve (rc.8 — needs different probe strategy for axisymmetric faces)
+- Persistent topological IDs across booleans / transforms (v0.5+)
+- Set ops on edge / face selections (rc.8+)
+- Removal of the deprecated `feature.face-feature.label-not-resolvable` code (rc.8)
+
+---
+
 ## v0.13.0-rc.6 (NORTHSTAR roadmap: query-first edge/face selection) — 2026-05-01
 
 ### Added

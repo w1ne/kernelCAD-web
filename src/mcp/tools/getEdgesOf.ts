@@ -7,6 +7,7 @@ import { pickEdges } from '../../backends/occt/edgeSelection';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { FeatureRecord } from '../../intent/featureRecord';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface GetEdgesOfInput {
   file?: string;
@@ -26,6 +27,10 @@ export interface GetEdgesOfOutput {
   ok: boolean;
   edges?: EdgeInfo[];
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
+   *  throws. Only set on `ok=false` from the runScript catch path. */
+  errorCode?: string;
 }
 
 export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOfOutput> {
@@ -56,7 +61,8 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };
@@ -87,7 +93,7 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
     suppressed: false,
   };
 
-  const edgesResult = pickEdges(synthetic, shape as OcctBackend);
+  const edgesResult = pickEdges(synthetic, shape as OcctBackend, undefined);
   if ('error' in edgesResult) {
     return { ok: false, error: edgesResult.error.message };
   }

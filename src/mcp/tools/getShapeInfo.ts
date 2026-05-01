@@ -6,6 +6,7 @@ import { initOcct } from '../../backends/occt/occtBackend';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { FeatureKind } from '../../intent/types';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface GetShapeInfoInput {
   file?: string;
@@ -25,6 +26,11 @@ export interface GetShapeInfoOutput {
   ok: boolean;
   shape?: ShapeInfo;
   error?: string;
+  /** Structured diagnostic code when the underlying script-runtime exception
+   *  was a `KernelError` (e.g. `feature.path.duplicate-label`); otherwise
+   *  `cli.script.exception` for non-kernel throws. Only set on `ok=false` from
+   *  the runScript catch path. */
+  errorCode?: string;
 }
 
 export async function getShapeInfoTool(
@@ -54,7 +60,8 @@ export async function getShapeInfoTool(
   try {
     run = await runScript({ code, fileName });
   } catch (e) {
-    return { ok: false, error: `Script execution failed: ${e instanceof Error ? e.message : String(e)}` };
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, error: diag.message, errorCode: diag.code };
   }
 
   if (run.records.length === 0) {

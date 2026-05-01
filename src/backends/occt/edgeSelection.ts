@@ -4,10 +4,16 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
-import { resolveEdgeQuery, resolveFaceQuery } from './edgeQueries';
+import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
+
+const KNOWN_EDGE_QUERY_KEYS = new Set<string>([
+  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
+  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
+  'tolerance', 'angleTolerance',
+]);
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -18,7 +24,11 @@ export type PickEdgesResult =
   | EdgeList
   | { error: CompilerDiagnostic };
 
-export function pickEdges(record: FeatureRecord, base: OcctBackend): PickEdgesResult {
+export function pickEdges(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
   // 1. Edges by query / segment(s) — resolve via edgeQueries.ts
   const edgesRef = record.inputs.edges;
   if (edgesRef && edgesRef.kind === 'edge') {
@@ -64,17 +74,38 @@ export function pickEdges(record: FeatureRecord, base: OcctBackend): PickEdgesRe
 
   // 4. Face by label → translate to a probe-point query against the upstream sketch.
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
-    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name);
+    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name, records);
     if ('error' in probeQuery) return probeQuery;
     const edges = resolveEdgeQuery(base, probeQuery.query);
     if (edges.length === 0) {
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.label-not-resolvable',
+          code: 'feature.label.unknown-name',
           featureId: record.id,
           severity: 'error',
           message: `Label '${faceRef.ref.name}' resolved to a probe query that matched no edges.`,
+        },
+      };
+    }
+    // Mixed-convexity guard (I6): if the matched edge set has both convex
+    // and concave members, fillet/chamfer will fail with a generic OCCT error.
+    // Surface a specific code so the agent can refine the query.
+    const shape = (base.getReplicadShape() as unknown as { faces: import('replicad').Face[] });
+    let hasConvex = false, hasConcave = false;
+    for (const e of edges) {
+      const d = computeDihedralPublic(shape, e);
+      if (d?.convex === true) hasConvex = true;
+      if (d?.convex === false) hasConcave = true;
+    }
+    if (hasConvex && hasConcave) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.label.mixed-convexity',
+          featureId: record.id,
+          severity: 'error',
+          message: `Label '${faceRef.ref.name}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
         },
       };
     }
@@ -116,6 +147,18 @@ function resolveEdgesRef(
   ref: EdgeRef,
 ): EdgeList | { error: CompilerDiagnostic } {
   if (ref.kind === 'query') {
+    const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
+    if (unknownKeys.length > 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.edge-feature.invalid-query',
+          featureId: record.id,
+          severity: 'error',
+          message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
+        },
+      };
+    }
     return resolveEdgeQuery(base, ref.query);
   }
   if (ref.kind === 'segment') {
@@ -295,6 +338,7 @@ function pickFacePlane(
 export function pickFace(
   record: FeatureRecord,
   base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
 ): Face | { error: CompilerDiagnostic } {
   const faceRef = record.inputs.face;
 
@@ -310,77 +354,160 @@ export function pickFace(
     };
   }
 
-  if (faceRef.kind !== 'face' || faceRef.ref.kind !== 'canonical') {
+  if (faceRef.kind !== 'face') {
     return {
       error: {
         target: 'export-occt',
         code: 'feature.face-feature.face-ref-not-supported',
         featureId: record.id,
         severity: 'error',
-        message: `Only canonical face refs are supported in v0.2-alpha.`,
+        message: `Face ref kind '${faceRef.kind}' not supported.`,
       },
     };
   }
 
-  if (!base.kind) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.face-feature.face-ref-not-resolvable',
-        featureId: record.id,
-        severity: 'error',
-        message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
-      },
-    };
+  // 1. FaceRef.query → resolve via resolveFaceQuery, take first match.
+  if (faceRef.ref.kind === 'query') {
+    const faces = resolveFaceQuery(base, faceRef.ref.query);
+    if (faces.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.edge-feature.no-edges-match',
+          featureId: record.id,
+          severity: 'error',
+          message: `Face query matched zero faces on the input shape.`,
+        },
+      };
+    }
+    return faces[0];
   }
 
-  const face = faceRef.ref.face as CanonicalFace;
-  const f = findCanonicalFace(base, face);
-  if (f === null) {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.face-feature.face-ref-not-applicable',
-        featureId: record.id,
-        severity: 'error',
-        message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
-      },
-    };
+  // 2. FaceRef.label → walk upstream sketch, build face-probe bbox, find face by centroid.
+  if (faceRef.ref.kind === 'label') {
+    const result = resolveLabeledFace(record, base, faceRef.ref.name, records);
+    if ('error' in result) return result;
+    return result.face;
   }
-  return f;
+
+  // 3. FaceRef.canonical → existing canonical resolution.
+  if (faceRef.ref.kind === 'canonical') {
+    if (!base.kind) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-resolvable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
+        },
+      };
+    }
+    const face = faceRef.ref.face as CanonicalFace;
+    const f = findCanonicalFace(base, face);
+    if (f === null) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-applicable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+        },
+      };
+    }
+    return f;
+  }
+
+  // Catch-all for any other ref kinds (tracked, created, propagated).
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.face-feature.face-ref-not-supported',
+      featureId: record.id,
+      severity: 'error',
+      message: `Face ref kind '${(faceRef.ref as { kind: string }).kind}' not supported in this rc.`,
+    },
+  };
 }
 
-let loweringRecords: readonly FeatureRecord[] | null = null;
-export function setLoweringRecords(records: readonly FeatureRecord[] | null): void {
-  loweringRecords = records;
+function resolveLabeledFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+  label: string,
+  records: readonly FeatureRecord[] | undefined,
+): { face: Face } | { error: CompilerDiagnostic } {
+  // Reuse labelToEdgeQuery to compute the probe bbox. Then find the matching
+  // face on the lowered shape: a face whose centroid sits in or near the bbox.
+  const probe = labelToEdgeQuery(record, base, label, records);
+  if ('error' in probe) return probe;
+
+  const w = probe.query.within;
+  if (!w) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.label.no-upstream-sketch',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}': cannot derive face probe (no within bbox).`,
+      },
+    };
+  }
+
+  const allFaces = (base.getReplicadShape() as unknown as { faces: Face[] }).faces;
+  const matched = allFaces.filter(f => {
+    const c = f.center;
+    return (w.xMin === undefined || c.x >= w.xMin) &&
+           (w.xMax === undefined || c.x <= w.xMax) &&
+           (w.yMin === undefined || c.y >= w.yMin) &&
+           (w.yMax === undefined || c.y <= w.yMax) &&
+           (w.zMin === undefined || c.z >= w.zMin) &&
+           (w.zMax === undefined || c.z <= w.zMax);
+  });
+
+  if (matched.length === 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.label.unknown-name',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}' resolved to a probe bbox that contained no face centroid.`,
+      },
+    };
+  }
+
+  return { face: matched[0] };
 }
 
 function labelToEdgeQuery(
   record: FeatureRecord,
   _base: OcctBackend,
   label: string,
+  records: readonly FeatureRecord[] | undefined,
 ): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
-  if (!loweringRecords) {
+  if (!records) {
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.no-upstream-sketch',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}' lookup requires lowering records context (internal: setLoweringRecords not called).`,
+        message: `Label '${label}' lookup requires record context (internal: records not threaded).`,
       },
     };
   }
 
-  const upstreamSketch = findUpstreamSketch(loweringRecords, record);
+  const upstreamSketch = findUpstreamSketch(records, record);
   if (!upstreamSketch) {
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.no-upstream-sketch',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}': upstream sketch not found. Labels work on shapes built from a sketch (extrude/revolve).`,
+        message: `Label '${label}': base shape isn't sketch-derived. Labels work on shapes built from a path() sketch (extrude); apply the label upstream on the sketch.`,
       },
     };
   }
@@ -390,7 +517,7 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': upstream sketch has no commands metadata.`,
@@ -406,10 +533,10 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}' not found on the upstream sketch's segments.`,
+        message: `Label '${label}' not found on the upstream sketch's segments. Use the list_face_labels MCP tool to see available labels.`,
       },
     };
   }
@@ -420,7 +547,7 @@ function labelToEdgeQuery(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unknown-name',
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': can't determine segment chord (prior command has no endpoint).`,
@@ -428,15 +555,15 @@ function labelToEdgeQuery(
     };
   }
 
-  const depth = extractExtrudeDepth(loweringRecords, record);
+  const depth = extractExtrudeDepth(records, record);
   if (depth === null) {
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
+        code: 'feature.label.unsupported-base',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}': labels currently support extrude only (revolve labels: rc.7).`,
+        message: `Label '${label}': labels currently support extrude only. Revolve labels are deferred; use an inline query against the geometry as a workaround: {face: {atZ: ...}}.`,
       },
     };
   }

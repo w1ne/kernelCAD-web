@@ -12,6 +12,7 @@
 
 import type { Edge, Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
+import { KernelError } from '../../intent/kernelError';
 
 export type Vec3 = [number, number, number];
 
@@ -25,6 +26,12 @@ export type EdgeQuery = {
   atZ?: number;
   atX?: number;
   atY?: number;
+  /**
+   * Sort matching edges by distance to this point — closest first.
+   * NOTE: this is a SORT, not a FILTER. `near` alone returns all edges
+   * (sorted); combine with `within`, `tolerance`, or other keys to filter.
+   * `selectEdge` uses `near` to pick a single result from multiple matches.
+   */
   near?: Vec3;
   within?: BoundingRegion;
   parallel?: Vec3;
@@ -190,7 +197,7 @@ export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
 function computeDihedral(
   shape: { faces: Face[] },
   edge: Edge,
-): { angleDeg: number; convex: boolean } | null {
+): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
   // Find faces that contain this edge by walking each face's edge list.
   // Using face.edges (rather than face.outerWire().edges) avoids creating
   // intermediate Wire wrappers whose disposal can invalidate the parent face.
@@ -221,7 +228,7 @@ function computeDihedral(
   const outward: Vec3 = [mid[0] - centroid[0], mid[1] - centroid[1], mid[2] - centroid[2]];
   const sumN: Vec3 = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
   const sign = sumN[0]*outward[0] + sumN[1]*outward[1] + sumN[2]*outward[2];
-  return { angleDeg: 180 - angleDeg, convex: sign >= 0 };
+  return { angleDeg: 180 - angleDeg, convex: sign >= 0, normalA: a, normalB: b };
 }
 
 function isSameEdge(a: Edge, b: Edge): boolean {
@@ -231,6 +238,14 @@ function isSameEdge(a: Edge, b: Edge): boolean {
   const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
     Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
   return (eq(af, bf) && eq(al, bl)) || (eq(af, bl) && eq(al, bf));
+}
+
+/**
+ * Public re-export of the dihedral helper for label resolvers that need
+ * convexity information without going through the full toEdgeSegment shape.
+ */
+export function computeDihedralPublic(shape: { faces: Face[] }, edge: Edge): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
+  return computeDihedral(shape, edge);
 }
 
 /**
@@ -260,6 +275,14 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     faces = faces.filter(f => {
       const n = f.normalAt();
       return isParallel([n.x, n.y, n.z], target, 10);
+    });
+  }
+  if (query.inPlane) {
+    const target = planeNormal(query.inPlane);
+    const angleTol = 10; // degrees
+    faces = faces.filter(f => {
+      const n = f.normalAt();
+      return isParallel([n.x, n.y, n.z], target, angleTol);
     });
   }
   if (query.ofSurfaceType) {
@@ -304,8 +327,8 @@ export function toEdgeSegment(edge: Edge, index: number, shape: { faces: Face[] 
     curveType: (edge as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
     convex: dihedral?.convex ?? null,
     dihedralAngleDeg: dihedral?.angleDeg ?? null,
-    normalA: null,
-    normalB: null,
+    normalA: dihedral?.normalA ?? null,
+    normalB: dihedral?.normalB ?? null,
     boundary: dihedral === null,
   };
 }
@@ -315,19 +338,34 @@ export function selectEdges(base: OcctBackend, query: EdgeQuery = {}): EdgeSegme
   const allEdges: Edge[] = (shape as unknown as { edges: Edge[] }).edges;
   const matched = resolveEdgeQuery(base, query);
   return matched.map(e => {
-    const idx = allEdges.indexOf(e);
+    // Replicad's `.edges` getter materializes new Edge wrappers per access, so
+    // `indexOf` won't find a match by reference. Resolve by geometric identity
+    // (endpoint coincidence) against `allEdges` — this matches how the lowerer
+    // resolves segment IDs back to Edge instances on the next lowering.
+    let idx = allEdges.indexOf(e);
+    if (idx === -1) {
+      idx = allEdges.findIndex(other => isSameEdge(other, e));
+    }
     return toEdgeSegment(e, idx, shape as unknown as { faces: Face[] });
   });
 }
 
 export function selectEdge(base: OcctBackend, query: EdgeQuery): EdgeSegment {
   const matches = selectEdges(base, query);
-  if (matches.length === 0) throw new Error('selectEdge: no edges matched query (zero results)');
+  if (matches.length === 0) {
+    throw new KernelError(
+      'feature.edge-feature.no-edges-match',
+      'selectEdge: no edges matched query (zero results)',
+    );
+  }
   // When `near` is provided, treat it as a disambiguator: pick the closest
   // match rather than throwing. Otherwise, multiple matches are ambiguous.
   if (matches.length > 1) {
     if (query.near !== undefined) return matches[0];
-    throw new Error(`selectEdge: ambiguous query — ${matches.length} edges matched`);
+    throw new KernelError(
+      'feature.edge-feature.ambiguous-selection',
+      `selectEdge: ambiguous query — ${matches.length} edges matched`,
+    );
   }
   return matches[0];
 }

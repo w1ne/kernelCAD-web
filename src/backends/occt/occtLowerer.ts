@@ -9,7 +9,7 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
-import { pickEdges, pickFace, setLoweringRecords } from './edgeSelection';
+import { pickEdges, pickFace } from './edgeSelection';
 
 /**
  * Lowers `FeatureRecord`s to `OcctBackend` shapes.
@@ -42,8 +42,8 @@ export class OcctLowerer implements FeatureLowerer {
     const diagnostics: CompilerDiagnostic[] = [];
     let shape: ShapeBackend;
 
-    // Pass record table to label-resolution path (Task 4 / rc.6).
-    setLoweringRecords(inputs._allRecords ?? null);
+    // Record table for label-resolution path; threaded through pickEdges/pickFace.
+    const allRecords = inputs.records;
 
     switch (r.kind) {
       case 'box': {
@@ -335,7 +335,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('fillet: no radius');
         }
-        const edgesResult = pickEdges(r, base);
+        const edgesResult = pickEdges(r, base, allRecords);
         if ('error' in edgesResult) {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
@@ -378,7 +378,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('chamfer: no distance');
         }
-        const edgesResult = pickEdges(r, base);
+        const edgesResult = pickEdges(r, base, allRecords);
         if ('error' in edgesResult) {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
@@ -421,7 +421,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('shell: no thickness');
         }
-        const faceResult = pickFace(r, base);
+        const faceResult = pickFace(r, base, allRecords);
         if ('error' in faceResult) {
           diagnostics.push(faceResult.error);
           return { shape: base, diagnostics };
