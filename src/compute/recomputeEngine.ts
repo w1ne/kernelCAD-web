@@ -64,7 +64,7 @@ export class RecomputeEngine {
 
       // Lower
       try {
-        const res = await this.lowerer.lower(r, { byKey });
+        const res = await this.lowerer.lower(r, { byKey, _allRecords: records });
         diagnostics.push(...res.diagnostics);
         if (res.diagnostics.some(d => d.severity === 'error')) {
           health.set(r.id, 'error');

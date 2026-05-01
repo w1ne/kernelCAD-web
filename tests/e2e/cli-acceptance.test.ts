@@ -268,3 +268,19 @@ describe('v0.4-rc5 cam-profile mixed-arc fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
+
+describe('v0.4-rc6 tabbed-plate label+fillet fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the tabbed-plate fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'tabbed-plate.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/tabbed-plate.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});

@@ -184,6 +184,34 @@ export class PathBuilder {
   }
 
   /**
+   * Tag the most recent segment with a name. The label persists in the sketch's
+   * metadata.commands and can be referenced later in .fillet/.chamfer/.shell:
+   *
+   *   path().moveTo(0,0).lineTo(10,5).label('rim').close().extrude(3).fillet(1, { face: 'rim' });
+   *
+   * Constraints:
+   * - Must follow a segment (lineTo or any *Arc); throws if called as the first
+   *   command, immediately after moveTo, or after close.
+   * - Each label name must be unique within one sketch.
+   * - Avoid using the canonical face names ('top', 'bottom', 'left', 'right',
+   *   'front', 'back') as labels — those route through canonical face resolution
+   *   instead of label lookup. Use any non-canonical name.
+   *
+   * @param name a label name unique within this path (and not a canonical face name)
+   */
+  label(name: string): PathBuilder {
+    const last = this.commands[this.commands.length - 1];
+    if (!last || last.kind === 'moveTo' || last.kind === 'close') {
+      throw new Error(`label('${name}'): must follow a segment (lineTo or any arc), not moveTo / close / nothing.`);
+    }
+    if (this.commands.some(c => c !== last && (c as { label?: string }).label === name)) {
+      throw new Error(`label('${name}'): name already used in this sketch — labels must be unique.`);
+    }
+    (last as { label?: string }).label = name;
+    return this;
+  }
+
+  /**
    * Close the path and register the sketch FeatureRecord. Returns a `Sketch`
    * proxy whose only method is `.extrude(depth)`.
    */

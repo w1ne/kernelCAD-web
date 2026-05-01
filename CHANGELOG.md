@@ -1,3 +1,31 @@
+## v0.13.0-rc.6 (NORTHSTAR roadmap: query-first edge/face selection) — 2026-05-01
+
+### Added
+- **Query-based edge/face selection** — `Shape.fillet(r, EdgeSelector)` / `Shape.chamfer(d, EdgeSelector)` / `Shape.shell(t, { face: FaceSelector })` accept inline `EdgeQuery` / `FaceQuery`, pre-selected `EdgeSegment` / `EdgeSegment[]`, or canonical face names (existing behavior preserved).
+- **`EdgeQuery` keys:** `atZ`, `atX`, `atY`, `near`, `within`, `parallel`, `perpendicular`, `convex`, `concave`, `minAngle`, `maxAngle`, `ofCurveType`, `tolerance`, `angleTolerance`. Multiple keys are AND-combined.
+- **`FaceQuery` keys:** `atZ`, `atX`, `atY`, `parallelTo`, `inPlane`, `ofSurfaceType`, `containsPoint`, `near`, `tolerance`.
+- **`selectEdges(shape, query)` / `selectEdge(shape, query)`** — pre-select for compose / reuse. `selectEdge` throws when ambiguous (>1 match) or empty.
+- **`PathBuilder.label(name)`** — tag the most recent segment so it can be referenced later as `{ face: 'name' }`. Resolution flows through the same query path under the hood — no duplicate codepath. Pick non-canonical names to avoid collision with canonical face dispatch.
+- **3 new MCP tools** for agent shape introspection: `list_edges` (with optional EdgeQuery filter), `list_faces` (with optional FaceQuery filter), `list_face_labels` (sketch labels with chord endpoints). Total MCP surface: 9 → 12.
+- **5 new diagnostic codes:** `feature.edge-feature.no-edges-match`, `feature.edge-feature.ambiguous-selection`, `feature.edge-feature.invalid-query`, `feature.path.label-without-segment`, `feature.path.duplicate-label`. Each has a `whyDidThisFail` hint.
+- E2E fixture `tests/e2e/fixtures/tabbed-plate.kcad.ts` — labeled rectangular plate with fillet on a labeled side via `{ face: 'tab-side' }`.
+
+### Changed
+- `FaceRef` and `EdgeRef` unions widened with new variants: `query`, `label`, `segment`, `segments`. Existing `canonical` / `tracked` / `created` / `propagated` variants unchanged.
+- `Shape.fillet/chamfer/shell` arg-2 type widened from canonical-face-string-only to `EdgeSelector` / `FaceSelector`. Calling `.fillet(2, { face: 'top' })` on a box still works (canonical fast-path preserved).
+- `OcctLowerer` `pickEdges` now dispatches on the ref kind (`canonical` / `query` / `label` / `segment` / `segments`). Canonical resolution path is unchanged.
+- `ResolvedInputs` gains an optional `_allRecords` field so the lowerer can resolve labels by walking the upstream sketch.
+
+### Deferred to subsequent rcs
+- `coalesceEdges()` — collinear-segment merge (rc.7)
+- Per-edge variable radius `fillet([{edge, r:1}, {edge, r:2}])` — rc.7
+- Labels on revolve (rc.7 — needs different probe strategy for axisymmetric faces)
+- Persistent topological IDs across booleans / transforms — separate "named topology" problem (v0.5+)
+- Set ops on edge/face selections — rc.7+
+- Custom JS predicates `{ predicate: (e) => ... }` — agent-hostile, MCP can't introspect functions
+
+---
+
 ## v0.13.0-rc.5 (NORTHSTAR roadmap: v0.4-rc arc vocabulary) — 2026-05-01
 
 ### Added

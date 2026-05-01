@@ -245,4 +245,164 @@ describe('path() builder + Sketch capture', () => {
       d.code === 'feature.sketch.degenerate-arc' && d.severity === 'error'
     )).toBe(true);
   });
+
+  it('Shape.fillet captures EdgeQuery as edge ref (kind: query)', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.edges).toEqual({
+      kind: 'edge',
+      featureId: expect.any(String),
+      ref: { kind: 'query', query: { atZ: 5 } },
+    });
+  });
+
+  it('Shape.fillet captures multi-key EdgeQuery faithfully', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5, parallel: [1, 0, 0] });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const ref = filletRec.inputs.edges as { kind: 'edge'; ref: { kind: 'query'; query: unknown } };
+    expect(ref.ref.query).toEqual({ atZ: 5, parallel: [1, 0, 0] });
+  });
+
+  it('Shape.fillet captures { face: "topRim" } as label face ref', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { face: 'topRim' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.face).toEqual({
+      kind: 'face',
+      featureId: expect.any(String),
+      ref: { kind: 'label', name: 'topRim' },
+    });
+  });
+
+  it('Shape.fillet still captures canonical face refs unchanged for canonical names', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { face: 'top' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.face).toEqual({
+      kind: 'face',
+      featureId: expect.any(String),
+      ref: { kind: 'canonical', face: 'top' },
+    });
+  });
+
+  it('box.fillet(1, { atZ: 5 }) produces a filleted solid (volume reduced from 500)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    // Original 10x10x5 = 500; fillet on 4 top edges removes ~ 4 × ((1×1) − π/4) × 10 ≈ 8.6 mm³
+    expect(v).toBeGreaterThan(490);
+    expect(v).toBeLessThan(499);
+  });
+
+  it('box.fillet(1, { atZ: 999 }) emits feature.edge-feature.no-edges-match', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 999 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.edge-feature.no-edges-match' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('box.fillet(1, { face: "top" }) (canonical) still works after EdgeSelector widening', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { face: 'top' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    expect(r.shapes.get(last.id)!.volume()).toBeGreaterThan(490);
+  });
+
+  it('PathBuilder.label() records label on the previous segment', async () => {
+    const code = `
+      const s = path().moveTo(0,0).lineTo(10, 0).label('bottom').close();
+      return s.extrude(2);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: Array<{ kind: string; label?: string }> }).commands;
+    const lineToCmd = commands.find(c => c.kind === 'lineTo');
+    expect(lineToCmd?.label).toBe('bottom');
+  });
+
+  it('PathBuilder.label() works after tangentArc / arc commands', async () => {
+    const code = `
+      const s = path().moveTo(0,0).lineTo(10,0).tangentArc(15,5).label('curve').close();
+      return s.extrude(2);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: Array<{ kind: string; label?: string }> }).commands;
+    const arc = commands.find(c => c.kind === 'tangentArc');
+    expect(arc?.label).toBe('curve');
+  });
+
+  it('PathBuilder.label() throws when called as the first command (no segment)', async () => {
+    const code = `return path().label('orphan').moveTo(0,0).lineTo(5,0).close().extrude(1);`;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/label.*must follow a segment/i);
+  });
+
+  it('PathBuilder.label() throws when called immediately after moveTo', async () => {
+    const code = `return path().moveTo(0,0).label('orphan').lineTo(5,0).close().extrude(1);`;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/label.*must follow a segment/i);
+  });
+
+  it('PathBuilder.label() throws on duplicate label name within one sketch', async () => {
+    const code = `
+      return path().moveTo(0,0)
+        .lineTo(5,0).label('side')
+        .lineTo(5,5).label('side')
+        .lineTo(0,5).close().extrude(1);
+    `;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/already used/i);
+  });
+
+  it('Sketch extrude + fillet by non-canonical label produces correct filleted solid', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Use a non-canonical label name ('topRim') so it doesn't collide with canonical 'top'.
+    const code = `
+      return path().moveTo(0,0)
+        .lineTo(10,0).label('bottomEdge')
+        .lineTo(10,5)
+        .lineTo(0,5).label('topRim')
+        .close()
+        .extrude(3)
+        .fillet(1, { face: 'topRim' });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    // Original area = 10x5 = 50, depth 3 -> volume 150. Fillet reduces.
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(140);
+    expect(v).toBeLessThan(150);
+  });
 });

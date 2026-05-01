@@ -11,6 +11,9 @@ import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { setParamValueTool } from './tools/setParamValue';
 import { addFeatureTool } from './tools/addFeature';
 import { removeFeatureTool } from './tools/removeFeature';
+import { listEdgesTool } from './tools/listEdges';
+import { listFacesTool } from './tools/listFaces';
+import { listFaceLabelsTool } from './tools/listFaceLabels';
 
 const TOOLS = [
   {
@@ -131,6 +134,47 @@ const TOOLS = [
       required: ['code', 'match'],
     },
   },
+  {
+    name: 'list_edges',
+    description:
+      'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, and boundary status. Use this to discover what edges are available before calling fillet/chamfer. Pass either { file } or { code }; query is an optional EdgeQuery object.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
+        query: { type: 'object', description: 'Optional EdgeQuery filter (atZ, parallel, convex, ofCurveType, etc).' },
+      },
+    },
+  },
+  {
+    name: 'list_faces',
+    description:
+      'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id, centroid, normal, surfaceType, area, and label. Use for face introspection before shell/face references. Pass either { file } or { code }; query is an optional FaceQuery object.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
+        query: { type: 'object', description: 'Optional FaceQuery filter (atZ, parallelTo, ofSurfaceType, etc).' },
+      },
+    },
+  },
+  {
+    name: 'list_face_labels',
+    description:
+      'List user-applied path labels on a script\'s sketches. Returns labels with their sketch FeatureId and segment chord endpoints. Useful for discovering what labels are available to use in fillet/chamfer/shell calls. Pass either { file } or { code }.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        feature_id: { type: 'string', description: 'Optional sketch FeatureId; defaults to scanning all sketches.' },
+      },
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -179,6 +223,15 @@ export function createMcpServer(): Server {
         break;
       case 'remove_feature':
         result = await removeFeatureTool(input as unknown as Parameters<typeof removeFeatureTool>[0]);
+        break;
+      case 'list_edges':
+        result = await listEdgesTool(input as Parameters<typeof listEdgesTool>[0]);
+        break;
+      case 'list_faces':
+        result = await listFacesTool(input as Parameters<typeof listFacesTool>[0]);
+        break;
+      case 'list_face_labels':
+        result = await listFaceLabelsTool(input as Parameters<typeof listFaceLabelsTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

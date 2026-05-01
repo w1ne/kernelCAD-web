@@ -1,5 +1,19 @@
 import type { FeatureId } from '../intent/types';
 import type { CaptureSession } from './captureSession';
+import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
+
+type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+
+export type EdgeSelector =
+  | EdgeQuery
+  | EdgeSegment
+  | EdgeSegment[]
+  | { face: CanonicalFace | string }
+  | undefined;
+
+export type FaceSelector =
+  | FaceQuery
+  | { face: CanonicalFace | string };
 
 export class Shape {
   readonly id: FeatureId;
@@ -42,15 +56,15 @@ export class Shape {
     return this.session.boolean('intersection', this, others);
   }
 
-  fillet(radius: number, opts?: { face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
-    return this.session.edgeFeature('fillet', this, 'radius', radius, opts?.face);
+  fillet(radius: number, edges?: EdgeSelector): Shape {
+    return this.session.edgeFeature('fillet', this, 'radius', radius, edges);
   }
 
-  chamfer(distance: number, opts?: { face?: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
-    return this.session.edgeFeature('chamfer', this, 'distance', distance, opts?.face);
+  chamfer(distance: number, edges?: EdgeSelector): Shape {
+    return this.session.edgeFeature('chamfer', this, 'distance', distance, edges);
   }
 
-  shell(thickness: number, opts: { face: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back' }): Shape {
-    return this.session.edgeFeature('shell', this, 'thickness', thickness, opts.face);
+  shell(thickness: number, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+    return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
 }
