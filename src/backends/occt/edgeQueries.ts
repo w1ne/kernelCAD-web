@@ -231,8 +231,20 @@ function computeDihedral(
   return { angleDeg: 180 - angleDeg, convex: sign >= 0, normalA: a, normalB: b };
 }
 
-function isSameEdge(a: Edge, b: Edge): boolean {
-  // Heuristic: edges are the same if both endpoints match within 1e-6.
+/**
+ * Geometric edge identity check via endpoint comparison.
+ *
+ * Two edges are considered the same if their endpoints match (in either
+ * orientation) within an absolute tolerance of 1e-6. This is mm-scale
+ * (1e-6 mm = 1 nanometer) — appropriate for all kernelCAD work today,
+ * which operates exclusively in millimeters. Callers working at radically
+ * different scales would need a parameterized tolerance.
+ *
+ * Used to identify "the same edge" across separate Replicad shape wrappers,
+ * because Replicad allocates fresh Edge objects on each `.edges` access
+ * (no stable identity between iterations).
+ */
+export function isSameEdge(a: Edge, b: Edge): boolean {
   const af = a.startPoint, al = a.endPoint;
   const bf = b.startPoint, bl = b.endPoint;
   const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
