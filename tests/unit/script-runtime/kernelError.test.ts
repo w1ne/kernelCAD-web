@@ -22,9 +22,13 @@ describe('KernelError', () => {
     expect(isKernelError(null)).toBe(false);
   });
 
-  it('isKernelError handles cross-realm structural shape (vm sandbox throws)', () => {
+  it('isKernelError no longer matches plain object structural shape (rc.9 cleanup)', () => {
+    // Cross-realm structural fallback was removed in rc.9 — the scenario it
+    // covered (KernelError thrown across vm sandbox boundary) doesn't occur
+    // in current code paths because KernelError is not injected into the
+    // sandbox. Re-introduce when KernelError becomes a sandbox-visible class.
     const crossRealmShape = { name: 'KernelError', code: 'feature.x.y', message: 'msg' };
-    expect(isKernelError(crossRealmShape)).toBe(true);
+    expect(isKernelError(crossRealmShape)).toBe(false);
   });
 });
 

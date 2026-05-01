@@ -325,6 +325,31 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Lift a sketch-tagged backend's drawing onto a plane and return access to
+   * its profile face. Centralizes the cast pattern + multi-face check used
+   * by `sweepFromSketch`. The `SWEEP_MULTI_FACE_PROFILE:` prefix is matched
+   * by the lowerer's diagnostic discriminator and surfaces as
+   * `feature.sweep.multi-face-profile`.
+   *
+   * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
+   * @throws {Error} If the drawing produces multiple faces (Sketches plural).
+   */
+  private static liftSketchToFace(
+    sketch: OcctBackend,
+    plane: 'XY' | 'XZ' | 'YZ',
+  ): { face: () => { outerWire: () => replicad.Wire } } {
+    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+      throw new Error('OcctBackend.liftSketchToFace: input is not a sketch.');
+    }
+    const lifted = sketch._drawing.sketchOnPlane(plane);
+    if (typeof (lifted as { face?: unknown }).face !== 'function') {
+      throw new Error('SWEEP_MULTI_FACE_PROFILE: profile drawing produces multiple faces; sweep accepts a single closed loop');
+    }
+    const liftedSketch = lifted as unknown as { face: () => { outerWire: () => replicad.Wire } };
+    return { face: liftedSketch.face.bind(liftedSketch) };
+  }
+
+  /**
    * Sweep a sketch-tagged OcctBackend's profile along a 3D polyline rail.
    *
    * The profile is the sketch's outer wire lifted onto the XY plane. The rail
@@ -346,9 +371,8 @@ export class OcctBackend implements ShapeBackend {
     rail: [number, number, number][],
     opts: { frenet?: boolean } = {},
   ): OcctBackend {
-    if (sketch.kind !== 'sketch' || !sketch._drawing) {
-      throw new Error('OcctBackend.sweepFromSketch: input is not a sketch.');
-    }
+    // The kind/_drawing check is now inside liftSketchToFace; keep the
+    // explicit message for the rail check (different concern).
     if (rail.length < 2) {
       throw new Error(`OcctBackend.sweepFromSketch: rail needs at least 2 points (got ${rail.length}).`);
     }
@@ -363,10 +387,9 @@ export class OcctBackend implements ShapeBackend {
       ));
     }
     const spineWire = replicad.assembleWire(edges);
-    // Lift the sketch's drawing to a profile wire on the XY plane.
-    const lifted = sketch._drawing.sketchOnPlane('XY');
-    const liftedSketch = lifted as unknown as { face: () => { outerWire: () => replicad.Wire } };
-    const profileWire = liftedSketch.face().outerWire();
+    // Lift via the shared helper (handles sketch-kind check + multi-face guard).
+    const { face } = OcctBackend.liftSketchToFace(sketch, 'XY');
+    const profileWire = face().outerWire();
     // Sweep.
     const swept = replicad.genericSweep(profileWire, spineWire, { frenet: opts.frenet ?? false });
     return new OcctBackend(swept);

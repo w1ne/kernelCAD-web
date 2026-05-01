@@ -6,6 +6,8 @@
 // API addition (this file is the single source of truth for "what can a
 // .kcad.ts script call?").
 
+import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../backends/occt/queryKeys';
+
 export type ListApiInput = Record<string, never>;
 
 export interface ApiEntry {
@@ -20,8 +22,8 @@ export interface ListApiOutput {
   shapeMethods?: ApiEntry[];
   sketchMethods?: ApiEntry[];
   pathBuilderMethods?: ApiEntry[];
-  edgeQueryKeys?: string[];
-  faceQueryKeys?: string[];
+  edgeQueryKeys?: readonly string[];
+  faceQueryKeys?: readonly string[];
   error?: string;
 }
 
@@ -29,6 +31,11 @@ const GLOBALS: ApiEntry[] = [
   { name: 'box', signature: '(x, y, z, centered?) => Shape', description: 'Axis-aligned box. `centered: true` centers on the origin.' },
   { name: 'cylinder', signature: '(h, r) => Shape', description: 'Z-axis cylinder; bottom on the XY plane, height h, radius r.' },
   { name: 'sphere', signature: '(r) => Shape', description: 'Sphere centered at the origin, radius r.' },
+  { name: 'extrudeRect', signature: '(w, h, height) => Shape', description: 'Extrude a w-by-h rectangle (XY) by `height` along Z.' },
+  { name: 'extrudeCircle', signature: '(r, height) => Shape', description: 'Extrude a radius-r circle (XY) by `height` along Z.' },
+  { name: 'extrudePolygon', signature: '(points, depth) => Shape', description: 'Extrude a 2D polygon (array of [x, y] points) by `depth` along Z.' },
+  { name: 'extrudeRoundedRect', signature: '(width, height, radius, depth) => Shape', description: 'Extrude a rounded rectangle (corner radius) by `depth` along Z.' },
+  { name: 'revolveRect', signature: '(w, h, offsetX, angleDeg?) => Shape', description: 'Revolve a w-by-h rectangle around Z, offset by `offsetX` from the axis. Default 360 degrees.' },
   { name: 'path', signature: '() => PathBuilder', description: 'Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch.' },
   { name: 'param', signature: "(name, default, opts) => number", description: 'Declare a script parameter with a default and units. `opts: { unit, min?, max? }`.' },
   { name: 'union', signature: '(...shapes) => Shape', description: 'Boolean union of two or more shapes.' },
@@ -66,17 +73,6 @@ const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'radiusArc', signature: '(x, y, radius) => PathBuilder', description: 'Arc by chord + explicit radius. Always minor arc; sign chooses bulge side.' },
   { name: 'label', signature: '(name) => PathBuilder', description: 'Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`.' },
   { name: 'close', signature: '() => Sketch', description: 'Close the path; returns a Sketch that can be extruded/revolved/swept.' },
-];
-
-const EDGE_QUERY_KEYS = [
-  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
-  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
-  'tolerance', 'angleTolerance',
-];
-
-const FACE_QUERY_KEYS = [
-  'atZ', 'atX', 'atY', 'parallelTo', 'inPlane', 'ofSurfaceType',
-  'containsPoint', 'near', 'tolerance',
 ];
 
 export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutput> {

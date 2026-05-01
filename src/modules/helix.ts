@@ -14,7 +14,8 @@ export interface HelixOptions {
   startAngle?: number;     // radians; default 0
 }
 
-export type RailPoint = [number, number, number];
+import type { Vec3 } from '../intent/types';
+export type RailPoint = Vec3;
 
 /**
  * Generate a polyline approximation of a helix curve.

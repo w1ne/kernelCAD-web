@@ -5,15 +5,12 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
+import { EDGE_QUERY_KEYS } from './queryKeys';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
 
-const KNOWN_EDGE_QUERY_KEYS = new Set<string>([
-  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
-  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
-  'tolerance', 'angleTolerance',
-]);
+const KNOWN_EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS);
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 

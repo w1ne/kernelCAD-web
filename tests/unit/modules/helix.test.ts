@@ -30,6 +30,13 @@ describe('helix', () => {
     const pts = helix({ radius: 5, pitch: 2, turns: 2, pointsPerTurn: 8 });
     expect(pts).toHaveLength(17);
   });
+
+  it('startAngle: π/2 puts first point at (0, radius, 0) on Z axis', () => {
+    const pts = helix({ radius: 10, pitch: 5, turns: 1, startAngle: Math.PI / 2 });
+    expect(pts[0][0]).toBeCloseTo(0, 5);
+    expect(pts[0][1]).toBeCloseTo(10, 5);
+    expect(pts[0][2]).toBeCloseTo(0, 5);
+  });
 });
 
 describe('helix script-runtime registration', () => {

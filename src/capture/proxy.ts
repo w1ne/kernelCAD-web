@@ -19,6 +19,13 @@ export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
 
+  // Lazy lowered backend — cached per-Shape so consecutive selectEdges /
+  // selectEdge calls don't re-run RecomputeEngine.run() against the full
+  // record list. Invalidated by record-count growth (capture is append-only,
+  // so length growth is the only signal we need today).
+  private _loweredBackend?: import('../backends/occt/occtBackend').OcctBackend;
+  private _loweredAtRecordCount?: number;
+
   constructor(id: FeatureId, session: CaptureSession) {
     this.id = id;
     this.session = session;
@@ -77,12 +84,15 @@ export class Shape {
    * agent calls `selectEdges(myShape, ...)` from a `.kcad.ts` script.
    */
   async lower(): Promise<import('../backends/occt/occtBackend').OcctBackend> {
+    const records = this.session.getRecords();
+    if (this._loweredBackend && this._loweredAtRecordCount === records.length) {
+      return this._loweredBackend;
+    }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { OcctLowerer } = await import('../backends/occt/occtLowerer');
     const { OcctBackend, initOcct } = await import('../backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(new OcctLowerer());
-    const records = this.session.getRecords();
     const r = await engine.run(records as readonly import('../intent/featureRecord').FeatureRecord[]);
     const shape = r.shapes.get(this.id);
     if (!shape) {
@@ -91,6 +101,8 @@ export class Shape {
     if (!(shape instanceof OcctBackend)) {
       throw new Error(`Shape.lower(): shape '${this.id}' is not an OcctBackend.`);
     }
+    this._loweredBackend = shape;
+    this._loweredAtRecordCount = records.length;
     return shape;
   }
 }

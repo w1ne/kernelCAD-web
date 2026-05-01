@@ -316,6 +316,16 @@ export class OcctLowerer implements FeatureLowerer {
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
+          if (rail.length > 5000) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.sweep.invalid-rail',
+              featureId: r.id,
+              severity: 'error',
+              message: `sweep rail has ${rail.length} points (cap is 5000). For helices, reduce \`pointsPerTurn\` or \`turns\`. For polylines, simplify the path.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
           // Validate every entry is [number, number, number] of finite numbers.
           for (let i = 0; i < rail.length; i++) {
             const p = rail[i];
@@ -340,9 +350,24 @@ export class OcctLowerer implements FeatureLowerer {
             );
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
+            // Discriminate sweep failures into specific codes for actionable
+            // agent feedback. The `SWEEP_MULTI_FACE_PROFILE:` prefix comes
+            // from `liftSketchToFace`; the regexes match probable Replicad/OCCT
+            // error wording for the other two cases. Unmatched cases fall
+            // through to the generic `feature.sweep.failed`.
+            let code: string;
+            if (msg.startsWith('SWEEP_MULTI_FACE_PROFILE:')) {
+              code = 'feature.sweep.multi-face-profile';
+            } else if (/curvature|too small|profile.*radius/i.test(msg)) {
+              code = 'feature.sweep.profile-too-large';
+            } else if (/self.intersect|self-intersection/i.test(msg)) {
+              code = 'feature.sweep.spine-self-intersection';
+            } else {
+              code = 'feature.sweep.failed';
+            }
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.sweep.failed',
+              code,
               featureId: r.id,
               severity: 'error',
               message: `OCCT sweep failed: ${msg}`,

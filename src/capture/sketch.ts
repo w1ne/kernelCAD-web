@@ -1,5 +1,5 @@
 // src/capture/sketch.ts
-import type { FeatureId } from '../intent/types';
+import type { FeatureId, Vec3 } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 import { KernelError } from '../intent/kernelError';
@@ -81,7 +81,7 @@ export class Sketch {
    * Returns a `Shape` (3D solid). Validation (rail length, finite values)
    * happens at lowering time and surfaces as `feature.sweep.*` diagnostics.
    */
-  sweep(rail: [number, number, number][], opts: { frenet?: boolean } = {}): Shape {
+  sweep(rail: Vec3[], opts: { frenet?: boolean } = {}): Shape {
     return this.session.createShape({
       kind: 'sweep',
       inputs: {

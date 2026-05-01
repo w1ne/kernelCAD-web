@@ -19,9 +19,10 @@ export interface ListTopologyOutput {
   faceNames?: string[];
   edgeCount?: number;
   error?: string;
-  /** Structured diagnostic code when the underlying script-runtime exception
-   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
-   *  throws. Only set on `ok=false` from the runScript catch path. */
+  /** Structured diagnostic code on `ok=false`. Set on both failure paths:
+   *  (1) script-runtime exception → `KernelError` code or
+   *  `cli.script.exception` for non-kernel throws; (2) lowering-error path →
+   *  the first error diagnostic's `code`. */
   errorCode?: string;
 }
 
@@ -67,7 +68,16 @@ export async function listTopologyTool(input: ListTopologyInput): Promise<ListTo
   const engine = new RecomputeEngine(new OcctLowerer());
   const result = await engine.run(run.records);
   const shape = result.shapes.get(targetId);
-  if (!shape) return { ok: false, error: `Feature '${targetId}' did not lower successfully.` };
+  if (!shape) {
+    const fatal = result.diagnostics.find(d => d.featureId === targetId && d.severity === 'error');
+    return {
+      ok: false,
+      error: fatal
+        ? `Feature '${targetId}' did not lower successfully: ${fatal.message}`
+        : `Feature '${targetId}' did not lower successfully.`,
+      errorCode: fatal?.code,
+    };
+  }
 
   const occt = shape as OcctBackend;
   let faceNames: string[];

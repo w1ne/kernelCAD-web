@@ -22,6 +22,19 @@ describe('OcctBackend.sweepFromSketch', () => {
     const v = swept.volume();
     expect(v).toBeGreaterThan(190);
     expect(v).toBeLessThan(210);
+    // Verify the swept solid actually has the expected spatial extent — not
+    // just the right volume (a wrong-axis or wrong-origin sweep can still
+    // produce volume 200 but be the wrong shape).
+    const replicadShape = swept.getReplicadShape() as unknown as {
+      boundingBox: { bounds: [[number, number, number], [number, number, number]] };
+    };
+    const [min, max] = replicadShape.boundingBox.bounds;
+    expect(min[0]).toBeCloseTo(-1, 1);
+    expect(min[1]).toBeCloseTo(-1, 1);
+    expect(min[2]).toBeCloseTo(0, 1);
+    expect(max[0]).toBeCloseTo(1, 1);
+    expect(max[1]).toBeCloseTo(1, 1);
+    expect(max[2]).toBeCloseTo(50, 1);
   });
 
   it('L-bend pipe: square along 3-point planar polyline rail → positive volume', () => {
@@ -29,6 +42,14 @@ describe('OcctBackend.sweepFromSketch', () => {
     const rail: [number, number, number][] = [[0, 0, 0], [0, 0, 30], [30, 0, 30]];
     const swept = OcctBackend.sweepFromSketch(sketch, rail);
     expect(swept.volume()).toBeGreaterThan(0);
+    // L-bend rail spans (0,0,0) → (0,0,30) → (30,0,30). Profile is 2x2.
+    // Expected: max.x and max.z both reach ~30 (within tolerance).
+    const replicadShape = swept.getReplicadShape() as unknown as {
+      boundingBox: { bounds: [[number, number, number], [number, number, number]] };
+    };
+    const [, max] = replicadShape.boundingBox.bounds;
+    expect(max[0]).toBeGreaterThan(28);
+    expect(max[2]).toBeGreaterThan(28);
   });
 
   it('helix sweep with frenet=true produces a positive-volume spring', () => {

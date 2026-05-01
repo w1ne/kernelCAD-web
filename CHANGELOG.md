@@ -1,3 +1,37 @@
+## v0.13.0-rc.9 (NORTHSTAR roadmap: quality pass v2 — close all rc.8 review + rc.7 deferred) — 2026-05-01
+
+### Added
+- **`src/backends/occt/queryKeys.ts`** — single source of truth for `EDGE_QUERY_KEYS` / `FACE_QUERY_KEYS`. Imported by capture-side dispatch, lowerer-side validation, and MCP `list_api`. `keyof` type-level test catches drift.
+- **`list_api` drift sentinel test** — verifies `GLOBALS.map(g => g.name)` matches `Object.keys(createApi(ctx))`; same for `SHAPE_METHODS` against `Shape.prototype` and `SKETCH_METHODS` / `PATH_BUILDER_METHODS`. The first run of this sentinel found 5 globals (`extrudeRect`, `extrudeCircle`, `extrudePolygon`, `extrudeRoundedRect`, `revolveRect`) that were public API but missing from `list_api` — agents now discover them.
+- **3 new sweep diagnostic codes** split out from `feature.sweep.failed`:
+  - `feature.sweep.multi-face-profile` — profile drawing produces multiple faces (forward-looking; activates when text/boolean-composed sketches land in rc.10+)
+  - `feature.sweep.profile-too-large` — profile cross-section exceeds rail's tightest curvature radius
+  - `feature.sweep.spine-self-intersection` — rail self-intersects when extruded
+- Each new code has a `whyDidThisFail` hint with concrete recovery actions.
+- Soft cap on `rail.length` (5000); over-cap emits `feature.sweep.invalid-rail` with a hint to reduce `pointsPerTurn`. Prevents runaway helix-resolution from silently consuming minutes of CPU.
+- `Shape.lower()` lazy cache — repeated calls (common in scripts that use `selectEdges` multiple times) return the cached lowered backend instead of re-running `RecomputeEngine.run()`. Invalidated by record-count growth.
+- `OcctBackend.liftSketchToFace` — private static helper that consolidates the `sketch._drawing.sketchOnPlane(plane).face().outerWire()` cast pattern + multi-face check.
+- `helix()` `startAngle` parameter test (was an API-surface-without-regression-guard gap).
+- Sweep bounding-box assertions on pipe + L-bend tests — catches the wrong-shape regression class where OCCT returns a valid-but-wrong solid.
+
+### Changed
+- `EDGE_QUERY_KEYS` / `FACE_QUERY_KEYS` no longer duplicated across 4 files; all consumers import from `queryKeys.ts`.
+- `Vec3` is the canonical type alias for `[number, number, number]`. The duplicate in `edgeQueries.ts` re-exports from `intent/types`. `RailPoint` in `helix.ts` becomes a re-export of `Vec3`.
+- `Sketch.sweep` rail parameter type: `[number, number, number][]` → `Vec3[]` (alias change; runtime identical).
+- All 7 MCP tools that wrap `runScript` now set `errorCode` on the lowering-error path (was only on the `runScript` catch path in rc.7). Uniform structured-failure protocol regardless of where the failure occurred. The lowering-path failures use `diagnostics.find(d => d.featureId === targetId && d.severity === 'error')` to surface the error from the actual failing feature.
+- `listFeatures` no longer silently returns `{ features: [] }` on script error; emits `error` and `errorCode` like its sibling tools. File-read failure and missing-input return paths also now use the structured shape.
+- `feature.sweep.failed` is now a fallback code; the discriminator in the lowerer prefers the 3 specific codes above.
+- `isKernelError` no longer accepts plain objects with structural `KernelError` shape — the cross-realm scenario it guarded doesn't exist in current code paths. Reintroduce when `KernelError` is exposed to the vm sandbox.
+
+### Deferred to subsequent rcs
+- Loft / closed-rail sweep / 3D path builder — rc.10 (the next geometric feature milestone)
+- Persistent topological IDs across booleans / transforms — v0.5+
+- Variable-radius fillet/chamfer per edge — rc.11+
+- Custom sweep options (`auxiliarySpine`, `withContact`, transition modes) — rc.11+
+- Removal of deprecated `feature.face-feature.label-not-resolvable` — rc.10 (one rc grace, scheduled)
+
+---
+
 ## v0.13.0-rc.8 (NORTHSTAR roadmap: sketch sweep + bundled quality fixes) — 2026-05-01
 
 ### Added

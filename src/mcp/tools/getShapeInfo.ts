@@ -26,10 +26,11 @@ export interface GetShapeInfoOutput {
   ok: boolean;
   shape?: ShapeInfo;
   error?: string;
-  /** Structured diagnostic code when the underlying script-runtime exception
-   *  was a `KernelError` (e.g. `feature.path.duplicate-label`); otherwise
-   *  `cli.script.exception` for non-kernel throws. Only set on `ok=false` from
-   *  the runScript catch path. */
+  /** Structured diagnostic code on `ok=false`. Set on both failure paths:
+   *  (1) script-runtime exception → `KernelError` code (e.g.
+   *  `feature.path.duplicate-label`) or `cli.script.exception` for non-kernel
+   *  throws; (2) lowering-error path → the first error diagnostic's `code`
+   *  (e.g. `feature.edge-feature.no-edges-match`). */
   errorCode?: string;
 }
 
@@ -84,6 +85,7 @@ export async function getShapeInfoTool(
       error: fatal
         ? `Feature '${targetId}' did not lower successfully: ${fatal.message}`
         : `Feature '${targetId}' was not lowered.`,
+      errorCode: fatal?.code,
     };
   }
 
