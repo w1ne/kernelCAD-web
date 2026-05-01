@@ -23,14 +23,19 @@ export type FaceRef =
   | { kind: 'canonical'; face: 'top'|'bottom'|'left'|'right'|'front'|'back' }
   | { kind: 'tracked'; faceName: string }
   | { kind: 'created'; rewriteId: RewriteId; slot: string }
-  | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef };
+  | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef }
+  | { kind: 'label'; name: string }
+  | { kind: 'query'; query: import('../backends/occt/edgeQueries').FaceQuery };
 
 export type EdgeRef =
   | { kind: 'tracked'; edgeName: string; selector: 'edge'|'start'|'end'|'midpoint' }
   | { kind: 'created'; rewriteId: RewriteId; slot: string;
       selector: 'edge'|'start'|'end'|'midpoint' }
   | { kind: 'propagated'; rewriteId: RewriteId; source: EdgeRef;
-      selector: 'edge'|'start'|'end'|'midpoint' };
+      selector: 'edge'|'start'|'end'|'midpoint' }
+  | { kind: 'query'; query: import('../backends/occt/edgeQueries').EdgeQuery }
+  | { kind: 'segment'; segmentId: string }
+  | { kind: 'segments'; segmentIds: string[] };
 
 export type VertexRef =
   | { kind: 'tracked'; vertexName: string }

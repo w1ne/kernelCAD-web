@@ -245,4 +245,45 @@ describe('path() builder + Sketch capture', () => {
       d.code === 'feature.sketch.degenerate-arc' && d.severity === 'error'
     )).toBe(true);
   });
+
+  it('Shape.fillet captures EdgeQuery as edge ref (kind: query)', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.edges).toEqual({
+      kind: 'edge',
+      featureId: expect.any(String),
+      ref: { kind: 'query', query: { atZ: 5 } },
+    });
+  });
+
+  it('Shape.fillet captures multi-key EdgeQuery faithfully', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5, parallel: [1, 0, 0] });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const ref = filletRec.inputs.edges as { kind: 'edge'; ref: { kind: 'query'; query: unknown } };
+    expect(ref.ref.query).toEqual({ atZ: 5, parallel: [1, 0, 0] });
+  });
+
+  it('Shape.fillet captures { face: "topRim" } as label face ref', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { face: 'topRim' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.face).toEqual({
+      kind: 'face',
+      featureId: expect.any(String),
+      ref: { kind: 'label', name: 'topRim' },
+    });
+  });
+
+  it('Shape.fillet still captures canonical face refs unchanged for canonical names', async () => {
+    const code = `return box(10, 10, 5).fillet(1, { face: 'top' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    expect(filletRec.inputs.face).toEqual({
+      kind: 'face',
+      featureId: expect.any(String),
+      ref: { kind: 'canonical', face: 'top' },
+    });
+  });
 });
