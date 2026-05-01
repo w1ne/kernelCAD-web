@@ -1,3 +1,31 @@
+## v0.13.0-rc.12 — quality pass v3 (2026-05-01)
+
+A pure quality milestone: closes the rc.11 review punch list and clears pre-existing competitor-reference debt. No new user-facing API.
+
+### Tooling + bundle hardening
+- New non-skippable `tests/integration/cli-bundle/startup.test.ts` boots the bundled CLI and asserts a JSON-RPC initialize response. Closes the silent-skip gap that let the rc.11 bundle crash sail past `npm test`.
+- The `qc` script now runs `build:cli` before tests, ensuring the pre-merge gate always exercises a fresh artifact.
+- esbuild banner aligned to `'node:module'` (matching the source convention used everywhere). The rc.11 hotfix alias in `src/mcp/server.ts` is reverted; future `createRequire from 'node:module'` imports won't recur the duplicate-binding crash.
+
+### Refactors (no behavior change)
+- `isSameEdge` is now exported from `src/backends/occt/edgeQueries.ts` with a documenting JSDoc covering the 1e-6 mm-scale tolerance. The backend's `filletVariable` and `chamferVariable` methods replace inline endpoint-comparison logic with calls to the helper.
+- `applyVariableEdgeFeature` extracted in `src/backends/occt/occtLowerer.ts`. The `case 'fillet':` and `case 'chamfer':` arms — previously ~80 lines of duplicated synthetic-FeatureRecord plumbing — now share a single helper. Each arm's variable branch shrinks to ~10 lines.
+
+### Test coverage
+- `tests/e2e/fixtures/bracket-bevels.kcad.ts` exercises the variable-distance chamfer array form end-to-end.
+- `tests/integration/backends/occt/variableFilletFaceWrapper.test.ts` asserts geometric correctness of `Shape.fillet([{edges: {face: 'top'}, radius}])` — the previously untested face-wrapper resolution branch.
+
+### Diagnostic surface
+- `whyDidThisFail` hints now carry a `reachable` classification: `'engine-path'` (most codes, fires through normal recompute), `'direct-lowerer-only'` (`feature.loft.bad-sketch` and `feature.sweep.multi-face-profile`, which the recompute engine short-circuits before reaching), or `'reserved'`. Agents can filter by reachability when ranking diagnostics.
+- New `tests/unit/mcp/whyDidThisFailReachability.test.ts` sentinel ensures every hint entry carries a classification.
+- `WhyDidThisFailOutput.hints` wire format changes from `string[]` to `Array<{ code, hint, reachable }>`. Consumers that unpacked `hints[0]` as a string need to read `hints[0].hint`.
+
+### Documentation
+- New position memo at `docs/superpowers/specs/2026-05-01-error-attribution-policy.md` captures the architectural trade-off between root-cause-first and feature-specific error attribution. Sets interim policy for forward-looking diagnostic codes; rc.13+ revisits the engine-side question.
+- Repo-wide native-framing sweep across source and CHANGELOG.
+
+---
+
 ## v0.13.0-rc.11 (NORTHSTAR roadmap: variable-radius blends + bundled rc.10 fixes) — 2026-05-01
 
 ### Added
