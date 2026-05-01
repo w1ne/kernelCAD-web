@@ -22,6 +22,16 @@ export type SketchCommand =
  * type level — `Sketch.extrude()` is the only method, and you can only get a
  * `Sketch` by closing a `PathBuilder`.
  */
+/**
+ * IMPORTANT — drift sentinel contract:
+ * Adding a public method to `Sketch`, `PathBuilder`, or `Shape` requires
+ * also updating `src/mcp/tools/listApi.ts` (in `SKETCH_METHODS`,
+ * `PATH_BUILDER_METHODS`, or `SHAPE_METHODS` respectively). The drift
+ * sentinel test at `tests/integration/mcp/listApi.driftSentinel.test.ts`
+ * fails CI when `Object.getOwnPropertyNames(<Class>.prototype)` doesn't
+ * match the advertised array. This guards agent discoverability — methods
+ * not in `list_api` are invisible to MCP clients.
+ */
 export class Sketch {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -161,6 +171,16 @@ export class Sketch {
  *
  * `arcTo` / `lineH` / `lineV` / `lineAngled` / `label` / `stroke` are deferred to
  * v0.4-rc.2+. Constraints (`fix`, `coincident`, `horizontal`, etc.) are v0.5+.
+ */
+/**
+ * IMPORTANT — drift sentinel contract:
+ * Adding a public method to `Sketch`, `PathBuilder`, or `Shape` requires
+ * also updating `src/mcp/tools/listApi.ts` (in `SKETCH_METHODS`,
+ * `PATH_BUILDER_METHODS`, or `SHAPE_METHODS` respectively). The drift
+ * sentinel test at `tests/integration/mcp/listApi.driftSentinel.test.ts`
+ * fails CI when `Object.getOwnPropertyNames(<Class>.prototype)` doesn't
+ * match the advertised array. This guards agent discoverability — methods
+ * not in `list_api` are invisible to MCP clients.
  */
 export class PathBuilder {
   private session: CaptureSession;

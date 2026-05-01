@@ -15,6 +15,16 @@ export type FaceSelector =
   | FaceQuery
   | { face: CanonicalFace | string };
 
+/**
+ * IMPORTANT — drift sentinel contract:
+ * Adding a public method to `Sketch`, `PathBuilder`, or `Shape` requires
+ * also updating `src/mcp/tools/listApi.ts` (in `SKETCH_METHODS`,
+ * `PATH_BUILDER_METHODS`, or `SHAPE_METHODS` respectively). The drift
+ * sentinel test at `tests/integration/mcp/listApi.driftSentinel.test.ts`
+ * fails CI when `Object.getOwnPropertyNames(<Class>.prototype)` doesn't
+ * match the advertised array. This guards agent discoverability — methods
+ * not in `list_api` are invisible to MCP clients.
+ */
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;

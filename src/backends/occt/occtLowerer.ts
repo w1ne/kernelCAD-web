@@ -412,10 +412,10 @@ export class OcctLowerer implements FeatureLowerer {
             if (!s) {
               diagnostics.push({
                 target: 'export-occt',
-                code: 'feature.loft.failed',
+                code: 'feature.loft.bad-sketch',
                 featureId: r.id,
                 severity: 'error',
-                message: `loft missing input sketch_${i}.`,
+                message: `loft missing input sketch_${i} — upstream sketch did not lower successfully.`,
               });
               return { shape: undefined as unknown as ShapeBackend, diagnostics };
             }
