@@ -18,7 +18,11 @@ export type PickEdgesResult =
   | EdgeList
   | { error: CompilerDiagnostic };
 
-export function pickEdges(record: FeatureRecord, base: OcctBackend): PickEdgesResult {
+export function pickEdges(
+  record: FeatureRecord,
+  base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
   // 1. Edges by query / segment(s) — resolve via edgeQueries.ts
   const edgesRef = record.inputs.edges;
   if (edgesRef && edgesRef.kind === 'edge') {
@@ -64,7 +68,7 @@ export function pickEdges(record: FeatureRecord, base: OcctBackend): PickEdgesRe
 
   // 4. Face by label → translate to a probe-point query against the upstream sketch.
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
-    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name);
+    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name, records);
     if ('error' in probeQuery) return probeQuery;
     const edges = resolveEdgeQuery(base, probeQuery.query);
     if (edges.length === 0) {
@@ -295,7 +299,11 @@ function pickFacePlane(
 export function pickFace(
   record: FeatureRecord,
   base: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
 ): Face | { error: CompilerDiagnostic } {
+  // `records` is reserved for label face refs (rc.7+); current canonical-only
+  // path doesn't need it but keeps the signature symmetric with pickEdges.
+  void records;
   const faceRef = record.inputs.face;
 
   if (!faceRef) {
@@ -350,29 +358,25 @@ export function pickFace(
   return f;
 }
 
-let loweringRecords: readonly FeatureRecord[] | null = null;
-export function setLoweringRecords(records: readonly FeatureRecord[] | null): void {
-  loweringRecords = records;
-}
-
 function labelToEdgeQuery(
   record: FeatureRecord,
   _base: OcctBackend,
   label: string,
+  records: readonly FeatureRecord[] | undefined,
 ): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
-  if (!loweringRecords) {
+  if (!records) {
     return {
       error: {
         target: 'export-occt',
         code: 'feature.face-feature.label-not-resolvable',
         featureId: record.id,
         severity: 'error',
-        message: `Label '${label}' lookup requires lowering records context (internal: setLoweringRecords not called).`,
+        message: `Label '${label}' lookup requires lowering records context (internal: records not threaded).`,
       },
     };
   }
 
-  const upstreamSketch = findUpstreamSketch(loweringRecords, record);
+  const upstreamSketch = findUpstreamSketch(records, record);
   if (!upstreamSketch) {
     return {
       error: {
@@ -428,7 +432,7 @@ function labelToEdgeQuery(
     };
   }
 
-  const depth = extractExtrudeDepth(loweringRecords, record);
+  const depth = extractExtrudeDepth(records, record);
   if (depth === null) {
     return {
       error: {

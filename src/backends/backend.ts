@@ -32,11 +32,11 @@ export interface ShapeBackend {
 export interface ResolvedInputs {
   byKey: Record<string, ShapeBackend>;
   /**
-   * Full record list for lowerers that need upstream graph context (e.g. label
-   * resolution that walks from a fillet record back to a sketch). Optional;
-   * lowerers that don't need it ignore the field.
+   * Read-only access to the full record list. Used by lowerers that need to
+   * walk upstream features (e.g. label resolution that walks back to the
+   * sketch). Optional because lowerers without that need don't pay for it.
    */
-  _allRecords?: readonly FeatureRecord[];
+  records?: readonly FeatureRecord[];
 }
 
 export interface LowerResult {

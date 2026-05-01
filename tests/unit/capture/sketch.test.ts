@@ -405,4 +405,43 @@ describe('path() builder + Sketch capture', () => {
     expect(v).toBeGreaterThan(140);
     expect(v).toBeLessThan(150);
   });
+
+  it('Two concurrent recomputes against different scripts resolve labels correctly (no global-state contamination)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Script A: labeled-rim sketch + fillet by label 'rimA'
+    const codeA = `
+      return path().moveTo(0,0)
+        .lineTo(10,0).label('bottomA')
+        .lineTo(10,5)
+        .lineTo(0,5).label('rimA')
+        .close()
+        .extrude(3)
+        .fillet(1, { face: 'rimA' });
+    `;
+    // Script B: differently-labeled sketch + fillet by 'rimB'
+    const codeB = `
+      return path().moveTo(0,0)
+        .lineTo(20,0).label('bottomB')
+        .lineTo(20,5)
+        .lineTo(0,5).label('rimB')
+        .close()
+        .extrude(2)
+        .fillet(0.5, { face: 'rimB' });
+    `;
+    const [resultA, resultB] = await Promise.all([
+      runScript({ code: codeA, fileName: 'a.kcad.ts' }),
+      runScript({ code: codeB, fileName: 'b.kcad.ts' }),
+    ]);
+    const engineA = new RecomputeEngine(new OcctLowerer());
+    const engineB = new RecomputeEngine(new OcctLowerer());
+    const [rA, rB] = await Promise.all([
+      engineA.run(resultA.records),
+      engineB.run(resultB.records),
+    ]);
+    // Both must succeed with no errors. Shared global state could cause one
+    // to see the other's records and emit unknown-label diagnostics.
+    expect(rA.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    expect(rB.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
 });

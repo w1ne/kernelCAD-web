@@ -26,21 +26,21 @@ describe('pickEdges', () => {
 
   it('returns ALL edges when no face filter is set (un-transformed box)', () => {
     const box = OcctBackend.box(20, 20, 20);
-    const result = pickEdges(filletNoFilter('box_1'), box);
+    const result = pickEdges(filletNoFilter('box_1'), box, undefined);
     if ('error' in result) throw new Error(`expected edges, got error: ${result.error.message}`);
     expect(result.length).toBe(12); // a box has 12 edges
   });
 
   it('returns 4 edges for canonical "top" face on a box', () => {
     const box = OcctBackend.box(20, 20, 20);
-    const result = pickEdges(filletWithFace('box_1', 'top'), box);
+    const result = pickEdges(filletWithFace('box_1', 'top'), box, undefined);
     if ('error' in result) throw new Error(`expected edges, got error: ${result.error.message}`);
     expect(result.length).toBe(4);
   });
 
   it('returns 1 edge for canonical "top" face on a cylinder', () => {
     const cyl = OcctBackend.cylinder(20, 5);
-    const result = pickEdges(filletWithFace('cyl_1', 'top'), cyl);
+    const result = pickEdges(filletWithFace('cyl_1', 'top'), cyl, undefined);
     if ('error' in result) throw new Error(`expected edges, got error: ${result.error.message}`);
     expect(result.length).toBe(1); // cylinder top is one circular edge
   });
@@ -49,7 +49,7 @@ describe('pickEdges', () => {
     const box = OcctBackend.box(20, 20, 20);
     const cyl = OcctBackend.cylinder(20, 5).translate(10, 10, -1);
     const bool = box.subtract(cyl); // result has no kind tag
-    const result = pickEdges(filletWithFace('bool_1', 'top'), bool);
+    const result = pickEdges(filletWithFace('bool_1', 'top'), bool, undefined);
     if (!('error' in result)) throw new Error('expected error, got edges');
     expect(result.error.code).toBe('feature.edge-feature.face-ref-not-resolvable');
     expect(result.error.severity).toBe('error');
@@ -57,21 +57,21 @@ describe('pickEdges', () => {
 
   it('returns error when face filter is on a transformed primitive', () => {
     const box = OcctBackend.box(20, 20, 20).translate(5, 0, 0); // transform drops kind tag
-    const result = pickEdges(filletWithFace('box_1', 'top'), box);
+    const result = pickEdges(filletWithFace('box_1', 'top'), box, undefined);
     if (!('error' in result)) throw new Error('expected error, got edges');
     expect(result.error.code).toBe('feature.edge-feature.face-ref-not-resolvable');
   });
 
   it('returns error when canonical face is not applicable to this primitive', () => {
     const cyl = OcctBackend.cylinder(20, 5);
-    const result = pickEdges(filletWithFace('cyl_1', 'left'), cyl);
+    const result = pickEdges(filletWithFace('cyl_1', 'left'), cyl, undefined);
     if (!('error' in result)) throw new Error('expected error, got edges');
     expect(result.error.code).toBe('feature.edge-feature.face-ref-not-applicable');
   });
 
   it('returns face-ref-not-applicable for sphere with any canonical face', () => {
     const sphere = OcctBackend.sphere(10);
-    const result = pickEdges(filletWithFace('sphere_1', 'top'), sphere);
+    const result = pickEdges(filletWithFace('sphere_1', 'top'), sphere, undefined);
     if (!('error' in result)) throw new Error('expected error, got edges');
     expect(result.error.code).toBe('feature.edge-feature.face-ref-not-applicable');
   });

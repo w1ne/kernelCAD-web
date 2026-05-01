@@ -93,7 +93,7 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
     suppressed: false,
   };
 
-  const edgesResult = pickEdges(synthetic, shape as OcctBackend);
+  const edgesResult = pickEdges(synthetic, shape as OcctBackend, undefined);
   if ('error' in edgesResult) {
     return { ok: false, error: edgesResult.error.message };
   }

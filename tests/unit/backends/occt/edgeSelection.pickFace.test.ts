@@ -26,7 +26,7 @@ describe('pickFace', () => {
 
   it('returns the canonical "top" face on a box', () => {
     const box = OcctBackend.box(20, 20, 20);
-    const result = pickFace(shellWithFace('box_1', 'top'), box);
+    const result = pickFace(shellWithFace('box_1', 'top'), box, undefined);
     if ('error' in result) throw new Error(`expected face, got error: ${result.error.message}`);
     // We can't easily assert face identity without exposing replicad internals; assert it's truthy.
     expect(result).toBeTruthy();
@@ -35,21 +35,21 @@ describe('pickFace', () => {
 
   it('returns the canonical "bottom" face on a cylinder', () => {
     const cyl = OcctBackend.cylinder(20, 5);
-    const result = pickFace(shellWithFace('cyl_1', 'bottom'), cyl);
+    const result = pickFace(shellWithFace('cyl_1', 'bottom'), cyl, undefined);
     if ('error' in result) throw new Error(`expected face, got error: ${result.error.message}`);
     expect(result).toBeTruthy();
   });
 
   it('returns face-required when no face filter is set', () => {
     const box = OcctBackend.box(20, 20, 20);
-    const result = pickFace(shellNoFilter('box_1'), box);
+    const result = pickFace(shellNoFilter('box_1'), box, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
     expect(result.error.code).toBe('feature.face-feature.face-required');
   });
 
   it('returns face-ref-not-resolvable on a transformed primitive', () => {
     const box = OcctBackend.box(20, 20, 20).translate(5, 0, 0);
-    const result = pickFace(shellWithFace('box_1', 'top'), box);
+    const result = pickFace(shellWithFace('box_1', 'top'), box, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
     expect(result.error.code).toBe('feature.face-feature.face-ref-not-resolvable');
   });
@@ -58,14 +58,14 @@ describe('pickFace', () => {
     const box = OcctBackend.box(20, 20, 20);
     const cyl = OcctBackend.cylinder(20, 5).translate(10, 10, -1);
     const bool = box.subtract(cyl);
-    const result = pickFace(shellWithFace('bool_1', 'top'), bool);
+    const result = pickFace(shellWithFace('bool_1', 'top'), bool, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
     expect(result.error.code).toBe('feature.face-feature.face-ref-not-resolvable');
   });
 
   it('returns face-ref-not-applicable for cylinder side face', () => {
     const cyl = OcctBackend.cylinder(20, 5);
-    const result = pickFace(shellWithFace('cyl_1', 'left'), cyl);
+    const result = pickFace(shellWithFace('cyl_1', 'left'), cyl, undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
     expect(result.error.code).toBe('feature.face-feature.face-ref-not-applicable');
   });
