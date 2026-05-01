@@ -13,8 +13,8 @@
 import type { Edge, Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { KernelError } from '../../intent/kernelError';
-
-export type Vec3 = [number, number, number];
+import type { Vec3 } from '../../intent/types';
+export type { Vec3 };
 
 export type BoundingRegion = {
   xMin?: number; xMax?: number;
