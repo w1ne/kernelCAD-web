@@ -63,6 +63,37 @@ export class Sketch {
       },
     });
   }
+
+  /**
+   * Sweep this profile along a 3D polyline rail to produce a 3D solid.
+   *
+   * Path coordinates of the profile are interpreted in the XY plane (the
+   * profile's local frame). Rail is a `[number, number, number][]` polyline
+   * in world coordinates with ≥ 2 entries.
+   *
+   * Pick `opts.frenet`:
+   * - `false` (default): profile keeps a fixed world-up vector — best for
+   *   straight pipes, planar polyline rails, and L-bends.
+   * - `true`: profile rotates with the rail's tangent + curvature — needed
+   *   for helices, twisted rails, and any non-planar curve where you want
+   *   the profile to track the rail (springs, threads).
+   *
+   * Returns a `Shape` (3D solid). Validation (rail length, finite values)
+   * happens at lowering time and surfaces as `feature.sweep.*` diagnostics.
+   */
+  sweep(rail: [number, number, number][], opts: { frenet?: boolean } = {}): Shape {
+    return this.session.createShape({
+      kind: 'sweep',
+      inputs: {
+        sketch: { kind: 'feature', id: this.id },
+      },
+      params: {
+        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+        frenet: { expression: String(opts.frenet ?? false), unit: 'unitless', evaluated: opts.frenet ? 1 : 0 },
+      },
+      metadata: { rail },
+    });
+  }
 }
 
 /**

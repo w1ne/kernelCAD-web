@@ -373,7 +373,7 @@ export function pickFace(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.edge-feature.no-edges-match',
+          code: 'feature.face-feature.no-match',
           featureId: record.id,
           severity: 'error',
           message: `Face query matched zero faces on the input shape.`,

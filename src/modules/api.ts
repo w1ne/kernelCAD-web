@@ -9,6 +9,7 @@ import {
   type EdgeQuery,
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
+import { helix, type RailPoint, type HelixOptions } from './helix';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -27,6 +28,7 @@ export interface KernelCadApi {
   union(...shapes: Shape[]): Shape;
   param(name: string, defaultExpr: number | string, opts: ParamOptions): number;
   path(): PathBuilder;
+  helix(opts: HelixOptions): RailPoint[];
   selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
   selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;
 }
@@ -130,6 +132,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     path() {
       return makePath(session);
     },
+    helix,
     selectEdges: async (shape, query = {}) => {
       const lowered = await shape.lower();
       return selectEdgesBackend(lowered, query);

@@ -497,4 +497,102 @@ describe('path() builder + Sketch capture', () => {
     expect(v).toBeGreaterThan(200);
     expect(v).toBeLessThan(320);
   });
+
+  it('Sketch.sweep registers a sweep feature with inputs.sketch + metadata.rail', async () => {
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0], [0,0,10]]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const sweepRec = result.records.find(r => r.kind === 'sweep')!;
+    expect(sweepRec).toBeDefined();
+    expect(sweepRec.inputs.sketch).toEqual({ kind: 'feature', id: sketchRec.id });
+    expect(sweepRec.params.profileKind.expression).toBe(`'sketch'`);
+    const rail = (sweepRec.metadata as { rail: unknown }).rail;
+    expect(rail).toEqual([[0,0,0], [0,0,10]]);
+  });
+
+  it('Sketch.sweep with { frenet: true } records params.frenet.evaluated === 1', async () => {
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0], [0,0,10]], { frenet: true });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sweepRec = result.records.find(r => r.kind === 'sweep')!;
+    expect(sweepRec.params.frenet.evaluated).toBeGreaterThan(0.5);
+  });
+
+  it('Sketch.sweep with default opts → frenet evaluated === 0', async () => {
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0], [0,0,10]]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sweepRec = result.records.find(r => r.kind === 'sweep')!;
+    expect(sweepRec.params.frenet.evaluated).toBeLessThan(0.5);
+  });
+
+  it('Sketch.sweep end-to-end pipe via RecomputeEngine produces a valid solid (volume ≈ 4 × 50 = 200)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0], [0,0,50]]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(190);
+    expect(v).toBeLessThan(210);
+  });
+
+  it('Sketch.sweep with rail of 1 point → feature.sweep.invalid-rail diagnostic', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0]]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('Sketch.sweep with NaN in rail → feature.sweep.invalid-rail', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep([[0,0,0], [0, NaN, 10]]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('Sketch.sweep with helix rail and frenet=true produces a valid spring solid', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const rail = helix({ radius: 8, pitch: 4, turns: 2, pointsPerTurn: 16 });
+      const profile = path().moveTo(-0.5,-0.5).lineTo(0.5,-0.5).lineTo(0.5,0.5).lineTo(-0.5,0.5).close();
+      return profile.sweep(rail, { frenet: true });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    expect(r.shapes.get(last.id)!.volume()).toBeGreaterThan(0);
+  });
 });

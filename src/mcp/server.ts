@@ -14,6 +14,7 @@ import { removeFeatureTool } from './tools/removeFeature';
 import { listEdgesTool } from './tools/listEdges';
 import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { listApiTool } from './tools/listApi';
 
 const TOOLS = [
   {
@@ -175,6 +176,15 @@ const TOOLS = [
       },
     },
   },
+  {
+    name: 'list_api',
+    description:
+      'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, and EdgeQuery/FaceQuery key sets. Use this to discover what is callable from a .kcad.ts script.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -232,6 +242,9 @@ export function createMcpServer(): Server {
         break;
       case 'list_face_labels':
         result = await listFaceLabelsTool(input as Parameters<typeof listFaceLabelsTool>[0]);
+        break;
+      case 'list_api':
+        result = await listApiTool(input as Parameters<typeof listApiTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
