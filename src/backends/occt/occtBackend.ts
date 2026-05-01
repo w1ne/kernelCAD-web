@@ -324,6 +324,54 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(single.revolve([0, 0, 1]));
   }
 
+  /**
+   * Sweep a sketch-tagged OcctBackend's profile along a 3D polyline rail.
+   *
+   * The profile is the sketch's outer wire lifted onto the XY plane. The rail
+   * is assembled from sequential straight edges between rail points. Replicad's
+   * `genericSweep` produces the swept Shape3D.
+   *
+   * @param sketch sketch-tagged backend (built via `fromSketchCommands`)
+   * @param rail polyline of 3D points; must have ≥ 2 entries
+   * @param opts.frenet if true, profile rotates with the rail's tangent + curvature
+   *   (use for helices, twisted rails); if false (default), profile keeps fixed
+   *   world-up vector (use for straight pipes, planar polyline rails)
+   *
+   * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
+   * @throws {Error} If `rail.length < 2`.
+   * @throws {Error} If Replicad rejects the sweep (caller maps to diagnostic).
+   */
+  static sweepFromSketch(
+    sketch: OcctBackend,
+    rail: [number, number, number][],
+    opts: { frenet?: boolean } = {},
+  ): OcctBackend {
+    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+      throw new Error('OcctBackend.sweepFromSketch: input is not a sketch.');
+    }
+    if (rail.length < 2) {
+      throw new Error(`OcctBackend.sweepFromSketch: rail needs at least 2 points (got ${rail.length}).`);
+    }
+    // Build the spine wire from rail edges (consecutive line segments).
+    const edges: replicad.Edge[] = [];
+    for (let i = 1; i < rail.length; i++) {
+      const a = rail[i - 1];
+      const b = rail[i];
+      edges.push(replicad.makeLine(
+        a as unknown as Parameters<typeof replicad.makeLine>[0],
+        b as unknown as Parameters<typeof replicad.makeLine>[1],
+      ));
+    }
+    const spineWire = replicad.assembleWire(edges);
+    // Lift the sketch's drawing to a profile wire on the XY plane.
+    const lifted = sketch._drawing.sketchOnPlane('XY');
+    const liftedSketch = lifted as unknown as { face: () => { outerWire: () => replicad.Wire } };
+    const profileWire = liftedSketch.face().outerWire();
+    // Sweep.
+    const swept = replicad.genericSweep(profileWire, spineWire, { frenet: opts.frenet ?? false });
+    return new OcctBackend(swept);
+  }
+
   translate(x: number, y: number, z: number): OcctBackend {
     return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
   }
