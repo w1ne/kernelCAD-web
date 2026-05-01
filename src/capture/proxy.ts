@@ -25,6 +25,7 @@ export class Shape {
   // so length growth is the only signal we need today).
   private _loweredBackend?: import('../backends/occt/occtBackend').OcctBackend;
   private _loweredAtRecordCount?: number;
+  private _loweredAtTransformCount?: number;
 
   constructor(id: FeatureId, session: CaptureSession) {
     this.id = id;
@@ -85,7 +86,18 @@ export class Shape {
    */
   async lower(): Promise<import('../backends/occt/occtBackend').OcctBackend> {
     const records = this.session.getRecords();
-    if (this._loweredBackend && this._loweredAtRecordCount === records.length) {
+    // C1 fix: cache invalidates on either record-count growth OR a transform
+    // appended to THIS shape. `appendTransform` mutates `record.transforms`
+    // in place — `records.length` is unchanged after Shape.translate/rotate/scale.
+    // Without the transform-count check, the cache returns the un-transformed
+    // backend after a transform, producing silent incorrect results.
+    const ownRecord = records.find(r => r.id === this.id);
+    const transformCount = ownRecord?.transforms.length ?? 0;
+    if (
+      this._loweredBackend &&
+      this._loweredAtRecordCount === records.length &&
+      this._loweredAtTransformCount === transformCount
+    ) {
       return this._loweredBackend;
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
@@ -103,6 +115,7 @@ export class Shape {
     }
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
+    this._loweredAtTransformCount = transformCount;
     return shape;
   }
 }
