@@ -192,6 +192,13 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
 - `why_did_this_fail({ file? code?, feature_id? })` — focused diagnostics + upstream chain + human-readable hints
 
+Each hint in the `hints` array includes a `reachable` classification:
+- `'engine-path'` — the code fires during normal recompute and is the standard agent-facing diagnostic.
+- `'direct-lowerer-only'` — the code is reachable only if the lowerer is invoked directly; through the standard MCP path, agents will see `recompute.input.missing` from an upstream feature instead.
+- `'reserved'` — forward-looking infrastructure with no current trigger.
+
+Use the classification when filtering or ranking hints — `'engine-path'` codes are highest-signal for typical agent workflows.
+
 ## Out of Scope (v0.2-alpha)
 
 These return errors today; do not generate code that uses them:

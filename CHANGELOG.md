@@ -1,3 +1,31 @@
+## v0.13.0-rc.12 — quality pass v3 (2026-05-01)
+
+A pure quality milestone: closes the rc.11 review punch list and clears pre-existing competitor-reference debt. No new user-facing API.
+
+### Tooling + bundle hardening
+- New non-skippable `tests/integration/cli-bundle/startup.test.ts` boots the bundled CLI and asserts a JSON-RPC initialize response. Closes the silent-skip gap that let the rc.11 bundle crash sail past `npm test`.
+- The `qc` script now runs `build:cli` before tests, ensuring the pre-merge gate always exercises a fresh artifact.
+- esbuild banner aligned to `'node:module'` (matching the source convention used everywhere). The rc.11 hotfix alias in `src/mcp/server.ts` is reverted; future `createRequire from 'node:module'` imports won't recur the duplicate-binding crash.
+
+### Refactors (no behavior change)
+- `isSameEdge` is now exported from `src/backends/occt/edgeQueries.ts` with a documenting JSDoc covering the 1e-6 mm-scale tolerance. The backend's `filletVariable` and `chamferVariable` methods replace inline endpoint-comparison logic with calls to the helper.
+- `applyVariableEdgeFeature` extracted in `src/backends/occt/occtLowerer.ts`. The `case 'fillet':` and `case 'chamfer':` arms — previously ~80 lines of duplicated synthetic-FeatureRecord plumbing — now share a single helper. Each arm's variable branch shrinks to ~10 lines.
+
+### Test coverage
+- `tests/e2e/fixtures/bracket-bevels.kcad.ts` exercises the variable-distance chamfer array form end-to-end.
+- `tests/integration/backends/occt/variableFilletFaceWrapper.test.ts` asserts geometric correctness of `Shape.fillet([{edges: {face: 'top'}, radius}])` — the previously untested face-wrapper resolution branch.
+
+### Diagnostic surface
+- `whyDidThisFail` hints now carry a `reachable` classification: `'engine-path'` (most codes, fires through normal recompute), `'direct-lowerer-only'` (`feature.loft.bad-sketch` and `feature.sweep.multi-face-profile`, which the recompute engine short-circuits before reaching), or `'reserved'`. Agents can filter by reachability when ranking diagnostics.
+- New `tests/unit/mcp/whyDidThisFailReachability.test.ts` sentinel ensures every hint entry carries a classification.
+- `WhyDidThisFailOutput.hints` wire format changes from `string[]` to `Array<{ code, hint, reachable }>`. Consumers that unpacked `hints[0]` as a string need to read `hints[0].hint`.
+
+### Documentation
+- New position memo at `docs/superpowers/specs/2026-05-01-error-attribution-policy.md` captures the architectural trade-off between root-cause-first and feature-specific error attribution. Sets interim policy for forward-looking diagnostic codes; rc.13+ revisits the engine-side question.
+- Repo-wide native-framing sweep across source and CHANGELOG.
+
+---
+
 ## v0.13.0-rc.11 (NORTHSTAR roadmap: variable-radius blends + bundled rc.10 fixes) — 2026-05-01
 
 ### Added
@@ -232,7 +260,7 @@
 ## v0.13.0-rc.2 (NORTHSTAR roadmap: v0.4-rc sketch builder, lines-only) — 2026-04-30
 
 ### Added
-- **Sketch builder**: `path()` returns a `PathBuilder`; chain `.moveTo(x,y).lineTo(x,y).close()` to get a `Sketch`; `Sketch.extrude(depth)` returns a `Shape`. First architectural step toward Phase 1 of the agent-first feature-parity roadmap. Mirrors ForgeCAD's `path()` API.
+- **Sketch builder**: `path()` returns a `PathBuilder`; chain `.moveTo(x,y).lineTo(x,y).close()` to get a `Sketch`; `Sketch.extrude(depth)` returns a `Shape`. First architectural step toward Phase 1 of the agent-first feature-parity roadmap.
 - New `Sketch` capture proxy alongside existing `Shape`. Sketch records are captured with `metadata.commands: SketchCommand[]` array.
 - New OcctBackend factories: `fromSketchCommands(commands)` (returns a sketch-tagged backend with internal Drawing) and `extrudeFromSketch(sketch, depth)`.
 - New lowerer cases: top-level `'sketch'` and `'extrude'` `profileKind === 'sketch'` arm.
@@ -342,7 +370,7 @@ The decision to ship just `add_feature` (without remove/suppress) is driven by t
 - `remove_feature(code, feature_id)` — needs `FeatureRecord.scriptLocation` to map IDs to source lines
 - `suppress_feature(code, feature_id)` — wrap a line in `// @suppress` annotation
 
-The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI — `param()` value tweaks are by far the most common agent edit, and adding more tools should be driven by usage rather than speculation. ForgeCAD has no AST-edit MCP equivalent, so this is novel kernelCAD territory.
+The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI — `param()` value tweaks are by far the most common agent edit, and adding more tools should be driven by usage rather than speculation.
 
 ---
 
@@ -350,7 +378,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 
 ### Added
 - **Skill installer** — second agent-first surface (companion to v0.11's MCP server)
-  - `kernelcad skill install [--dir <path>]` — copies SKILL.md to `<dir>/SKILL.md` (default `~/.agents/skills/kernelcad/`, the joint convention all agents read from per ForgeCAD's pattern at `~/projects/forgecad-pkg/src-recovered/cli/forge-skill.ts`)
+  - `kernelcad skill install [--dir <path>]` — copies SKILL.md to `<dir>/SKILL.md` (default `~/.agents/skills/kernelcad/`, the conventional location agent skill discovery reads from)
   - `kernelcad skill one-file [<path>]` — emits SKILL.md to a user-specified path (default `./kernelcad-context.md`) for chat-UI agents
 - `src/skill/SKILL.md` (213 lines) — single-file kernelCAD model authoring guide. Hand-authored against the actual codebase (subagent caught and corrected 7 factual errors in the original plan):
   - API surface (param/box/cylinder/sphere/extrudeRect/extrudeCircle/revolveRect + Shape methods)
@@ -368,7 +396,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 ### Deferred to v0.12-beta+ / v0.13+
 - Auto-generated SKILL.md from `src/intent/types.ts` and the actual exported API surface (so the skill stays in sync with code automatically)
 - AST-edit MCP tools (`replace_param_value`, `add_feature`, `remove_feature`)
-- `--dev` flag for SKILL-dev.md (internals + conventions docs) — mirrors ForgeCAD's pattern
+- `--dev` flag for SKILL-dev.md (internals + conventions docs)
 - `Shape.mirror()` method exposure (currently only on `OcctBackend`, not the user-facing capture proxy)
 
 ---
@@ -378,8 +406,8 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 ### Added
 - **3 new MCP topology tools** completing the v0.11 read-tools surface:
   - `list_topology(file?, code?, feature_id?)` — canonical face names + edge count for an introspected feature. Returns empty face list and `hasTrackedTopology: false` for non-primitives.
-  - `get_edges_of(file?, code?, feature_id?, face_name)` — boundary edges of a named canonical face. Mirrors ForgeCAD's `edgesOf()`. Returns `[{ index, centroid, length, isClosed }]`. Centroid uses Replicad's parametric `pointAt(0.5)` so it's correct for arcs/circles, not just straight edges.
-  - `why_did_this_fail(file?, code?, feature_id?)` — focused diagnostic view + upstream chain walk + **human-readable hints lookup** (26 entries covering known kernel diagnostic codes — fillet/chamfer/shell failures, face-ref errors, recompute cascade, CLI errors). Improvement over ForgeCAD's pattern, which has no equivalent — ForgeCAD agents read SKILL.md to interpret codes, kernelCAD's MCP returns the suggestion directly.
+  - `get_edges_of(file?, code?, feature_id?, face_name)` — boundary edges of a named canonical face. Returns `[{ index, centroid, length, isClosed }]`. Centroid uses Replicad's parametric `pointAt(0.5)` so it's correct for arcs/circles, not just straight edges.
+  - `why_did_this_fail(file?, code?, feature_id?)` — focused diagnostic view + upstream chain walk + **human-readable hints lookup** (26 entries covering known kernel diagnostic codes — fillet/chamfer/shell failures, face-ref errors, recompute cascade, CLI errors). Returns the suggestion directly inline so agents don't have to consult skill docs to interpret codes.
 - 3 new spawn integration tests covering the new tools (5 total: 2 from alpha + 3 from final).
 
 ### Changed
@@ -387,7 +415,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 
 ### Deferred to v0.12+
 - AST-edit tools (deferred per NORTHSTAR roadmap)
-- Geometric edge selection (`select_edges` mirroring ForgeCAD's `selectEdges` for non-primitive shapes)
+- Geometric edge selection (`select_edges` for non-primitive shapes)
 - HTTP transport (currently stdio-only)
 - Skill installer (`forgecad skill install` equivalent)
 
@@ -829,7 +857,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2026-01-25
 ### Added
--   **Scene Browser**: Fusion 360-style feature tree listing all objects (`box1`, `cyl2`) with "Jump to Code" functionality.
+-   **Scene Browser**: feature tree listing all objects (`box1`, `cyl2`) with "Jump to Code" functionality.
 -   **Workbench Architecture**: Complete refactor of `App.tsx` into a modular context-based system.
 -   **GUI Mode**: Dedicated Design view with Toolbar and Browser sidebar.
 -   **Smart Insert**: Context-aware code insertion that respects scopes and return statements.

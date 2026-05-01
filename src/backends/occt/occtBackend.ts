@@ -4,6 +4,7 @@ import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3 } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../capture/sketch';
+import { isSameEdge } from './edgeQueries';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -524,15 +525,9 @@ export class OcctBackend implements ShapeBackend {
       return new OcctBackend(this.shape);  // no-op
     }
     const radiusFn = (e: ReplicadEdge): number | null => {
-      const ef = e.startPoint, el = e.endPoint;
-      const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
-        Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
       for (const g of groups) {
         for (const ge of g.edges) {
-          const gf = ge.startPoint, gl = ge.endPoint;
-          if ((eq(ef, gf) && eq(el, gl)) || (eq(ef, gl) && eq(el, gf))) {
-            return g.radius;
-          }
+          if (isSameEdge(e, ge)) return g.radius;
         }
       }
       return null;
@@ -549,15 +544,9 @@ export class OcctBackend implements ShapeBackend {
       return new OcctBackend(this.shape);  // no-op
     }
     const distanceFn = (e: ReplicadEdge): number | null => {
-      const ef = e.startPoint, el = e.endPoint;
-      const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
-        Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
       for (const g of groups) {
         for (const ge of g.edges) {
-          const gf = ge.startPoint, gl = ge.endPoint;
-          if ((eq(ef, gf) && eq(el, gl)) || (eq(ef, gl) && eq(el, gf))) {
-            return g.distance;
-          }
+          if (isSameEdge(e, ge)) return g.distance;
         }
       }
       return null;

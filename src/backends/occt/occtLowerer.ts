@@ -11,6 +11,142 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
 
+// ---------------------------------------------------------------------------
+// Shared helper: variable-radius fillet / variable-distance chamfer
+// ---------------------------------------------------------------------------
+
+type VariableEdgeKind = 'fillet' | 'chamfer';
+
+interface ApplyVariableEdgeFeatureResult {
+  shape?: OcctBackend;
+  diagnostics: CompilerDiagnostic[];
+}
+
+/**
+ * Apply a variable-radius fillet or variable-distance chamfer.
+ *
+ * Both forms share the same plumbing: per-group synthetic FeatureRecord
+ * construction, edge resolution via pickEdges, validation of the per-group
+ * scalar (radius for fillet, distance for chamfer), and backend dispatch
+ * to the corresponding *Variable method.
+ *
+ * Callers are the `case 'fillet':` and `case 'chamfer':` arms of the lower
+ * function; both pass `kind` to disambiguate the value key, the backend
+ * method, and the diagnostic-code prefix.
+ *
+ * Returns either `{ shape, diagnostics }` (success) or `{ diagnostics }`
+ * (failure — caller falls through to its own error handling).
+ */
+function applyVariableEdgeFeature(
+  kind: VariableEdgeKind,
+  base: OcctBackend,
+  feature: FeatureRecord,
+  allRecords: readonly FeatureRecord[] | undefined,
+): ApplyVariableEdgeFeatureResult {
+  const diagnostics: CompilerDiagnostic[] = [];
+
+  const meta = feature.metadata as {
+    variable?: boolean;
+    groups?: Array<{ radius?: number; distance?: number }>;
+  } | undefined;
+
+  const groups = meta?.groups ?? [];
+  const valueKey: 'radius' | 'distance' = kind === 'fillet' ? 'radius' : 'distance';
+  const codePrefix = `feature.${kind}` as const;
+
+  if (groups.length === 0) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: `${codePrefix}.empty-groups`,
+      featureId: feature.id,
+      severity: 'error',
+      message: kind === 'fillet'
+        ? `variable-radius fillet has no groups.`
+        : `variable-distance chamfer has no groups.`,
+    });
+    return { shape: base, diagnostics };
+  }
+
+  // Per-group resolution loop. Build a synthetic one-input FeatureRecord
+  // per group so we can reuse pickEdges' canonical/label/query/segments
+  // dispatch — same behavior as single-radius edge selection.
+  const filletGroups: Array<{ edges: import('replicad').Edge[]; radius: number }> = [];
+  const chamferGroups: Array<{ edges: import('replicad').Edge[]; distance: number }> = [];
+
+  for (let i = 0; i < groups.length; i++) {
+    const g = groups[i];
+    const value = g[valueKey];
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: `${codePrefix}.invalid-group`,
+        featureId: feature.id,
+        severity: 'error',
+        message: `${kind} group ${i} has invalid ${valueKey} ${value}; must be a positive finite number.`,
+      });
+      return { shape: base, diagnostics };
+    }
+
+    const rawRef = feature.inputs[`edge_group_${i}`] as unknown;
+    // Synthesize a one-input record so pickEdges can resolve it.
+    const synth: FeatureRecord = {
+      id: feature.id,
+      kind: feature.kind,
+      params: {},
+      inputs: {
+        base: { kind: 'feature', id: (feature.inputs.base as { id: string }).id },
+        ...(rawRef && (rawRef as { kind?: string }).kind === 'edge'
+          ? { edges: rawRef as import('../../intent/types').FeatureRef }
+          : {}),
+        ...(rawRef && (rawRef as { kind?: string }).kind === 'face'
+          ? { face: rawRef as import('../../intent/types').FeatureRef }
+          : {}),
+      },
+      transforms: [],
+      suppressed: false,
+    };
+
+    const edgesResult = pickEdges(synth, base, allRecords);
+    if ('error' in edgesResult) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: `${codePrefix}.invalid-group`,
+        featureId: feature.id,
+        severity: 'error',
+        message: `${kind} group ${i} edge resolution failed: ${edgesResult.error.message}`,
+      });
+      return { shape: base, diagnostics };
+    }
+
+    if (kind === 'fillet') {
+      filletGroups.push({ edges: edgesResult, radius: value });
+    } else {
+      chamferGroups.push({ edges: edgesResult, distance: value });
+    }
+  }
+
+  let shape: OcctBackend;
+  try {
+    shape = kind === 'fillet'
+      ? base.filletVariable(filletGroups)
+      : base.chamferVariable(chamferGroups);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    diagnostics.push({
+      target: 'export-occt',
+      code: `${codePrefix}.failed`,
+      featureId: feature.id,
+      severity: 'error',
+      message: kind === 'fillet'
+        ? `OCCT variable fillet failed: ${msg}`
+        : `OCCT variable chamfer failed: ${msg}`,
+    });
+    return { shape: base, diagnostics };
+  }
+
+  return { shape, diagnostics };
+}
+
 /**
  * Lowers `FeatureRecord`s to `OcctBackend` shapes.
  *
@@ -515,85 +651,15 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('fillet: no base shape');
         }
-        // rc.11: variable-radius form (metadata.variable === true).
-        const meta = r.metadata as {
-          variable?: boolean;
-          groups?: Array<{ radius?: number; distance?: number }>;
-        } | undefined;
+        // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
+        const meta = r.metadata as { variable?: boolean } | undefined;
         if (meta?.variable === true) {
-          const groups = meta.groups ?? [];
-          if (groups.length === 0) {
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.fillet.empty-groups',
-              featureId: r.id,
-              severity: 'error',
-              message: `variable-radius fillet has no groups.`,
-            });
+          const result = applyVariableEdgeFeature('fillet', base, r, allRecords);
+          diagnostics.push(...result.diagnostics);
+          if (result.diagnostics.some(d => d.severity === 'error')) {
             return { shape: base, diagnostics };
           }
-          // Resolve each group's edges. Construct a synthetic FeatureRecord
-          // per group with the right inputs.face / inputs.edges shape and pass
-          // it to pickEdges. This reuses all the existing dispatch (canonical,
-          // label, query, segment, segments).
-          const resolvedGroups: Array<{ edges: import('replicad').Edge[]; radius: number }> = [];
-          for (let i = 0; i < groups.length; i++) {
-            const g = groups[i];
-            const radius = g.radius;
-            if (typeof radius !== 'number' || !Number.isFinite(radius) || radius <= 0) {
-              diagnostics.push({
-                target: 'export-occt',
-                code: 'feature.fillet.invalid-group',
-                featureId: r.id,
-                severity: 'error',
-                message: `fillet group ${i} has invalid radius ${radius}; must be a positive finite number.`,
-              });
-              return { shape: base, diagnostics };
-            }
-            const rawRef = r.inputs[`edge_group_${i}`] as unknown;
-            // Synthesize a one-input record so pickEdges can resolve it.
-            const synth: FeatureRecord = {
-              id: r.id,
-              kind: r.kind,
-              params: {},
-              inputs: {
-                base: { kind: 'feature', id: (r.inputs.base as { id: string }).id },
-                ...(rawRef && (rawRef as { kind?: string }).kind === 'edge'
-                  ? { edges: rawRef as import('../../intent/types').FeatureRef }
-                  : {}),
-                ...(rawRef && (rawRef as { kind?: string }).kind === 'face'
-                  ? { face: rawRef as import('../../intent/types').FeatureRef }
-                  : {}),
-              },
-              transforms: [],
-              suppressed: false,
-            };
-            const edgesResult = pickEdges(synth, base, allRecords);
-            if ('error' in edgesResult) {
-              diagnostics.push({
-                target: 'export-occt',
-                code: 'feature.fillet.invalid-group',
-                featureId: r.id,
-                severity: 'error',
-                message: `fillet group ${i} edge resolution failed: ${edgesResult.error.message}`,
-              });
-              return { shape: base, diagnostics };
-            }
-            resolvedGroups.push({ edges: edgesResult, radius });
-          }
-          try {
-            shape = base.filletVariable(resolvedGroups);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.fillet.failed',
-              featureId: r.id,
-              severity: 'error',
-              message: `OCCT variable fillet failed: ${msg}`,
-            });
-            return { shape: base, diagnostics };
-          }
+          shape = result.shape!;
           break;
         }
         const radius = r.params.radius?.evaluated;
@@ -639,80 +705,15 @@ export class OcctLowerer implements FeatureLowerer {
           });
           throw new Error('chamfer: no base shape');
         }
-        // rc.11: variable-distance form (metadata.variable === true).
-        const meta = r.metadata as {
-          variable?: boolean;
-          groups?: Array<{ radius?: number; distance?: number }>;
-        } | undefined;
+        // rc.12: variable-distance form is delegated to applyVariableEdgeFeature.
+        const meta = r.metadata as { variable?: boolean } | undefined;
         if (meta?.variable === true) {
-          const groups = meta.groups ?? [];
-          if (groups.length === 0) {
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.chamfer.empty-groups',
-              featureId: r.id,
-              severity: 'error',
-              message: `variable-distance chamfer has no groups.`,
-            });
+          const result = applyVariableEdgeFeature('chamfer', base, r, allRecords);
+          diagnostics.push(...result.diagnostics);
+          if (result.diagnostics.some(d => d.severity === 'error')) {
             return { shape: base, diagnostics };
           }
-          const resolvedGroups: Array<{ edges: import('replicad').Edge[]; distance: number }> = [];
-          for (let i = 0; i < groups.length; i++) {
-            const g = groups[i];
-            const distance = g.distance;
-            if (typeof distance !== 'number' || !Number.isFinite(distance) || distance <= 0) {
-              diagnostics.push({
-                target: 'export-occt',
-                code: 'feature.chamfer.invalid-group',
-                featureId: r.id,
-                severity: 'error',
-                message: `chamfer group ${i} has invalid distance ${distance}; must be a positive finite number.`,
-              });
-              return { shape: base, diagnostics };
-            }
-            const rawRef = r.inputs[`edge_group_${i}`] as unknown;
-            const synth: FeatureRecord = {
-              id: r.id,
-              kind: r.kind,
-              params: {},
-              inputs: {
-                base: { kind: 'feature', id: (r.inputs.base as { id: string }).id },
-                ...(rawRef && (rawRef as { kind?: string }).kind === 'edge'
-                  ? { edges: rawRef as import('../../intent/types').FeatureRef }
-                  : {}),
-                ...(rawRef && (rawRef as { kind?: string }).kind === 'face'
-                  ? { face: rawRef as import('../../intent/types').FeatureRef }
-                  : {}),
-              },
-              transforms: [],
-              suppressed: false,
-            };
-            const edgesResult = pickEdges(synth, base, allRecords);
-            if ('error' in edgesResult) {
-              diagnostics.push({
-                target: 'export-occt',
-                code: 'feature.chamfer.invalid-group',
-                featureId: r.id,
-                severity: 'error',
-                message: `chamfer group ${i} edge resolution failed: ${edgesResult.error.message}`,
-              });
-              return { shape: base, diagnostics };
-            }
-            resolvedGroups.push({ edges: edgesResult, distance });
-          }
-          try {
-            shape = base.chamferVariable(resolvedGroups);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.chamfer.failed',
-              featureId: r.id,
-              severity: 'error',
-              message: `OCCT variable chamfer failed: ${msg}`,
-            });
-            return { shape: base, diagnostics };
-          }
+          shape = result.shape!;
           break;
         }
         const distance = r.params.distance?.evaluated;

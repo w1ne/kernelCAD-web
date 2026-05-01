@@ -43,6 +43,6 @@ describe('whyDidThisFailTool', () => {
   it('returns hints for known diagnostic codes', async () => {
     const result = await whyDidThisFailTool({ code: `return box(10, 10, 10).fillet(100);` });
     expect(result.ok).toBe(true);
-    expect(result.hints).toEqual(expect.arrayContaining([expect.stringMatching(/smaller radius/i)]));
+    expect(result.hints).toEqual(expect.arrayContaining([expect.objectContaining({ hint: expect.stringMatching(/smaller radius/i) })]));
   });
 });
