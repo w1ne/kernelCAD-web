@@ -4,6 +4,7 @@ import { initOcct } from '../../backends/occt/occtBackend';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { FeatureKind, Param } from '../../intent/types';
+import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ListFeaturesInput {
   file?: string;
@@ -20,7 +21,17 @@ export interface FeatureSummary {
 }
 
 export interface ListFeaturesOutput {
+  /** Optional success flag. Set to `false` on error paths so callers can
+   *  branch on shape uniformly with the rest of the MCP surface. The success
+   *  return omits `ok` for backwards compatibility (treat undefined as ok). */
+  ok?: boolean;
   features: FeatureSummary[];
+  error?: string;
+  /** Structured diagnostic code on `ok=false`. Set on the script-runtime
+   *  exception path: `KernelError` code (e.g. `feature.path.duplicate-label`)
+   *  or `cli.script.exception` for non-kernel throws. (This tool walks records
+   *  without lowering, so there's no lowering-error path.) */
+  errorCode?: string;
 }
 
 export async function listFeaturesTool(
@@ -36,16 +47,25 @@ export async function listFeaturesTool(
   } else if (input.file !== undefined) {
     const filePath = resolve(input.file);
     fileName = filePath;
-    code = await readFile(filePath, 'utf8');
+    try {
+      code = await readFile(filePath, 'utf8');
+    } catch (e) {
+      return {
+        ok: false,
+        features: [],
+        error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
   } else {
-    return { features: [] };
+    return { ok: false, features: [], error: 'Must provide either { file } or { code }.' };
   }
 
   let run;
   try {
     run = await runScript({ code, fileName });
-  } catch {
-    return { features: [] };
+  } catch (e) {
+    const diag = kernelErrorToDiagnostic(e);
+    return { ok: false, features: [], error: diag.message, errorCode: diag.code };
   }
 
   const features: FeatureSummary[] = run.records.map(r => ({

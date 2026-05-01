@@ -27,9 +27,10 @@ export interface ListFaceLabelsOutput {
   ok: boolean;
   labels?: LabelSummary[];
   error?: string;
-  /** Structured diagnostic code when the underlying script-runtime exception
-   *  was a `KernelError`; otherwise `cli.script.exception` for non-kernel
-   *  throws. Only set on `ok=false` from the runScript catch path. */
+  /** Structured diagnostic code on `ok=false`. Set on the script-runtime
+   *  exception path: `KernelError` code (e.g. `feature.path.duplicate-label`)
+   *  or `cli.script.exception` for non-kernel throws. (This tool walks records
+   *  without lowering, so there's no lowering-error path here.) */
   errorCode?: string;
 }
 
