@@ -325,4 +325,84 @@ describe('path() builder + Sketch capture', () => {
     const last = result.records[result.records.length - 1];
     expect(r.shapes.get(last.id)!.volume()).toBeGreaterThan(490);
   });
+
+  it('PathBuilder.label() records label on the previous segment', async () => {
+    const code = `
+      const s = path().moveTo(0,0).lineTo(10, 0).label('bottom').close();
+      return s.extrude(2);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: Array<{ kind: string; label?: string }> }).commands;
+    const lineToCmd = commands.find(c => c.kind === 'lineTo');
+    expect(lineToCmd?.label).toBe('bottom');
+  });
+
+  it('PathBuilder.label() works after tangentArc / arc commands', async () => {
+    const code = `
+      const s = path().moveTo(0,0).lineTo(10,0).tangentArc(15,5).label('curve').close();
+      return s.extrude(2);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: Array<{ kind: string; label?: string }> }).commands;
+    const arc = commands.find(c => c.kind === 'tangentArc');
+    expect(arc?.label).toBe('curve');
+  });
+
+  it('PathBuilder.label() throws when called as the first command (no segment)', async () => {
+    const code = `return path().label('orphan').moveTo(0,0).lineTo(5,0).close().extrude(1);`;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/label.*must follow a segment/i);
+  });
+
+  it('PathBuilder.label() throws when called immediately after moveTo', async () => {
+    const code = `return path().moveTo(0,0).label('orphan').lineTo(5,0).close().extrude(1);`;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/label.*must follow a segment/i);
+  });
+
+  it('PathBuilder.label() throws on duplicate label name within one sketch', async () => {
+    const code = `
+      return path().moveTo(0,0)
+        .lineTo(5,0).label('side')
+        .lineTo(5,5).label('side')
+        .lineTo(0,5).close().extrude(1);
+    `;
+    let caught: unknown;
+    try {
+      await runScript({ code, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/already used/i);
+  });
+
+  it('Sketch extrude + fillet by non-canonical label produces correct filleted solid', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Use a non-canonical label name ('topRim') so it doesn't collide with canonical 'top'.
+    const code = `
+      return path().moveTo(0,0)
+        .lineTo(10,0).label('bottomEdge')
+        .lineTo(10,5)
+        .lineTo(0,5).label('topRim')
+        .close()
+        .extrude(3)
+        .fillet(1, { face: 'topRim' });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    // Original area = 10x5 = 50, depth 3 -> volume 150. Fillet reduces.
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(140);
+    expect(v).toBeLessThan(150);
+  });
 });

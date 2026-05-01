@@ -9,7 +9,7 @@ import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
-import { pickEdges, pickFace } from './edgeSelection';
+import { pickEdges, pickFace, setLoweringRecords } from './edgeSelection';
 
 /**
  * Lowers `FeatureRecord`s to `OcctBackend` shapes.
@@ -41,6 +41,9 @@ export class OcctLowerer implements FeatureLowerer {
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
     let shape: ShapeBackend;
+
+    // Pass record table to label-resolution path (Task 4 / rc.6).
+    setLoweringRecords(inputs._allRecords ?? null);
 
     switch (r.kind) {
       case 'box': {

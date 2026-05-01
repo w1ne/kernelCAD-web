@@ -62,17 +62,23 @@ export function pickEdges(record: FeatureRecord, base: OcctBackend): PickEdgesRe
     return collectFaceEdges(faces);
   }
 
-  // 4. Face by label → STUB until Task 4 wires real resolution.
+  // 4. Face by label → translate to a probe-point query against the upstream sketch.
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
-    return {
-      error: {
-        target: 'export-occt',
-        code: 'feature.face-feature.label-not-resolvable',
-        featureId: record.id,
-        severity: 'error',
-        message: `Label '${faceRef.ref.name}' resolution is not implemented yet (Task 4).`,
-      },
-    };
+    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name);
+    if ('error' in probeQuery) return probeQuery;
+    const edges = resolveEdgeQuery(base, probeQuery.query);
+    if (edges.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.label-not-resolvable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Label '${faceRef.ref.name}' resolved to a probe query that matched no edges.`,
+        },
+      };
+    }
+    return edges;
   }
 
   // 5. Existing canonical face dispatch (UNCHANGED behavior).
@@ -342,4 +348,143 @@ export function pickFace(
     };
   }
   return f;
+}
+
+let loweringRecords: readonly FeatureRecord[] | null = null;
+export function setLoweringRecords(records: readonly FeatureRecord[] | null): void {
+  loweringRecords = records;
+}
+
+function labelToEdgeQuery(
+  record: FeatureRecord,
+  _base: OcctBackend,
+  label: string,
+): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
+  if (!loweringRecords) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}' lookup requires lowering records context (internal: setLoweringRecords not called).`,
+      },
+    };
+  }
+
+  const upstreamSketch = findUpstreamSketch(loweringRecords, record);
+  if (!upstreamSketch) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}': upstream sketch not found. Labels work on shapes built from a sketch (extrude/revolve).`,
+      },
+    };
+  }
+
+  const commands = (upstreamSketch.metadata as { commands?: Array<{ kind: string; x?: number; y?: number; label?: string }> } | undefined)?.commands;
+  if (!commands) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}': upstream sketch has no commands metadata.`,
+      },
+    };
+  }
+
+  let labeledIdx = -1;
+  for (let i = 0; i < commands.length; i++) {
+    if (commands[i].label === label) { labeledIdx = i; break; }
+  }
+  if (labeledIdx < 0) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}' not found on the upstream sketch's segments.`,
+      },
+    };
+  }
+
+  const segment = commands[labeledIdx];
+  const prev = commands[labeledIdx - 1];
+  if (!prev || prev.x === undefined || prev.y === undefined || segment.x === undefined || segment.y === undefined) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}': can't determine segment chord (prior command has no endpoint).`,
+      },
+    };
+  }
+
+  const depth = extractExtrudeDepth(loweringRecords, record);
+  if (depth === null) {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-feature.label-not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Label '${label}': labels currently support extrude only (revolve labels: rc.7).`,
+      },
+    };
+  }
+
+  // The labeled segment maps to one side face of the extruded solid. That side
+  // face has 4 outer-wire edges: two horizontal (at z=0 and z=depth, running
+  // along the segment chord) and two vertical (at the segment's endpoints, both
+  // running 0..depth). Build a `within` bounding region that brackets exactly
+  // these four edges' midpoints — collapsed in any axis where the segment is
+  // axis-parallel, expanded by `tol` to absorb floating-point noise.
+  const tol = 1e-3;
+  const xMin = Math.min(prev.x, segment.x) - tol;
+  const xMax = Math.max(prev.x, segment.x) + tol;
+  const yMin = Math.min(prev.y, segment.y) - tol;
+  const yMax = Math.max(prev.y, segment.y) + tol;
+  return {
+    query: {
+      within: {
+        xMin, xMax,
+        yMin, yMax,
+        zMin: -tol,
+        zMax: depth + tol,
+      },
+    },
+  };
+}
+
+function findUpstreamSketch(records: readonly FeatureRecord[], record: FeatureRecord): FeatureRecord | null {
+  // Walk from this record's `base` input → if the base is an extrude/revolve,
+  // follow its `sketch` input → return the sketch record.
+  const baseRef = record.inputs.base;
+  if (!baseRef || baseRef.kind !== 'feature') return null;
+  const base = records.find(r => r.id === baseRef.id);
+  if (!base) return null;
+  if (base.kind === 'sketch') return base;
+  if (base.kind === 'extrude' || base.kind === 'revolve') {
+    const sketchRef = base.inputs.sketch;
+    if (sketchRef && sketchRef.kind === 'feature') {
+      return records.find(r => r.id === sketchRef.id) ?? null;
+    }
+  }
+  return null;
+}
+
+function extractExtrudeDepth(records: readonly FeatureRecord[], record: FeatureRecord): number | null {
+  const baseRef = record.inputs.base;
+  if (!baseRef || baseRef.kind !== 'feature') return null;
+  const base = records.find(r => r.id === baseRef.id);
+  if (!base || base.kind !== 'extrude') return null;
+  return base.params.depth?.evaluated ?? null;
 }
