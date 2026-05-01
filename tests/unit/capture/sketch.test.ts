@@ -286,4 +286,43 @@ describe('path() builder + Sketch capture', () => {
       ref: { kind: 'canonical', face: 'top' },
     });
   });
+
+  it('box.fillet(1, { atZ: 5 }) produces a filleted solid (volume reduced from 500)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    // Original 10x10x5 = 500; fillet on 4 top edges removes ~ 4 × ((1×1) − π/4) × 10 ≈ 8.6 mm³
+    expect(v).toBeGreaterThan(490);
+    expect(v).toBeLessThan(499);
+  });
+
+  it('box.fillet(1, { atZ: 999 }) emits feature.edge-feature.no-edges-match', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { atZ: 999 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.edge-feature.no-edges-match' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('box.fillet(1, { face: "top" }) (canonical) still works after EdgeSelector widening', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet(1, { face: 'top' });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    expect(r.shapes.get(last.id)!.volume()).toBeGreaterThan(490);
+  });
 });
