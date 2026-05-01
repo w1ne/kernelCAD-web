@@ -78,7 +78,7 @@ const TOOLS = [
   },
   {
     name: 'get_edges_of',
-    description: "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Mirrors ForgeCAD's edgesOf(). Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
+    description: "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
     inputSchema: {
       type: 'object' as const,
       properties: {
