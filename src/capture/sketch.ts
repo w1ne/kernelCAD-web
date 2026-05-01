@@ -1,5 +1,5 @@
 // src/capture/sketch.ts
-import type { FeatureId, Vec3 } from '../intent/types';
+import type { FeatureId, FeatureRef, Vec3 } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 import { KernelError } from '../intent/kernelError';
@@ -92,6 +92,65 @@ export class Sketch {
         frenet: { expression: String(opts.frenet ?? false), unit: 'unitless', evaluated: opts.frenet ? 1 : 0 },
       },
       metadata: { rail },
+    });
+  }
+
+  /**
+   * Loft this profile through one or more additional profiles to produce a
+   * 3D solid that smoothly interpolates between sections.
+   *
+   * Use cases: nozzles (round-to-square), wings/airfoils (varying-cross-section
+   * ribs), fairings, transition pieces between mismatched flanges, gear teeth
+   * varying along thickness.
+   *
+   * Section positioning:
+   * - Default / `opts.spacing: number`: z-stack the sections axially. THIS
+   *   profile sits at z=0; subsequent profiles at z=spacing, 2*spacing, etc.
+   *   Default spacing is 10 mm.
+   * - `opts.planes: PlaneSpec[]`: explicit per-section placement. Length must
+   *   equal the total section count (1 + (Array.isArray(other) ? other.length : 1)).
+   *   Takes precedence over `spacing` if both provided. The first PlaneSpec
+   *   positions THIS sketch; remaining entries position `other` in order.
+   *
+   * Other options:
+   * - `opts.ruled: true` produces sharp (faceted) transitions instead of
+   *   smooth interpolation — use for polyhedral / faceted lofts.
+   * - `opts.startPoint` / `opts.endPoint` optionally extend the loft past the
+   *   first / last section to a single point (cone-like terminations).
+   *
+   * Returns a `Shape` (3D solid). Validation (section count, planes length)
+   * happens at lowering and surfaces as `feature.loft.*` diagnostics.
+   */
+  loft(
+    other: Sketch | Sketch[],
+    opts: {
+      spacing?: number;
+      planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
+      ruled?: boolean;
+      startPoint?: [number, number, number];
+      endPoint?: [number, number, number];
+    } = {},
+  ): Shape {
+    const others = Array.isArray(other) ? other : [other];
+    const allSketches = [this, ...others];
+    const inputs: Record<string, FeatureRef> = {};
+    for (let i = 0; i < allSketches.length; i++) {
+      inputs[`sketch_${i}`] = { kind: 'feature', id: allSketches[i].id };
+    }
+    return this.session.createShape({
+      kind: 'loft',
+      inputs,
+      params: {
+        profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+        spacing: { expression: String(opts.spacing ?? 10), unit: 'mm', evaluated: opts.spacing ?? 10 },
+        ruled: { expression: String(opts.ruled ?? false), unit: 'unitless', evaluated: opts.ruled ? 1 : 0 },
+        sectionCount: { expression: String(allSketches.length), unit: 'unitless', evaluated: allSketches.length },
+      },
+      metadata: {
+        planes: opts.planes,
+        startPoint: opts.startPoint,
+        endPoint: opts.endPoint,
+      },
     });
   }
 }

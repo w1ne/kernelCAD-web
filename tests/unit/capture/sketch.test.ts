@@ -613,4 +613,114 @@ describe('path() builder + Sketch capture', () => {
       d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
     )).toBe(true);
   });
+
+  it('Sketch.loft(other) registers a loft feature with sectionCount=2 + sketch_0/sketch_1 inputs', async () => {
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      return s1.loft(s2, { spacing: 30 });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketches = result.records.filter(r => r.kind === 'sketch');
+    const loftRec = result.records.find(r => r.kind === 'loft')!;
+    expect(loftRec).toBeDefined();
+    expect(loftRec.params.profileKind.expression).toBe(`'sketch'`);
+    expect(loftRec.params.sectionCount.evaluated).toBe(2);
+    expect(loftRec.params.spacing.evaluated).toBe(30);
+    expect(loftRec.inputs.sketch_0).toEqual({ kind: 'feature', id: sketches[0].id });
+    expect(loftRec.inputs.sketch_1).toEqual({ kind: 'feature', id: sketches[1].id });
+  });
+
+  it('Sketch.loft([s1, s2, s3]) flattens array, sectionCount=4 (this + 3 others)', async () => {
+    const code = `
+      const root = path().moveTo(-3,-3).lineTo(3,-3).lineTo(3,3).lineTo(-3,3).close();
+      const r1 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      const r2 = path().moveTo(-1.5,-1.5).lineTo(1.5,-1.5).lineTo(1.5,1.5).lineTo(-1.5,1.5).close();
+      const tip = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return root.loft([r1, r2, tip], { spacing: 25 });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const loftRec = result.records.find(r => r.kind === 'loft')!;
+    expect(loftRec.params.sectionCount.evaluated).toBe(4);
+    expect(loftRec.inputs.sketch_3).toBeDefined();
+  });
+
+  it('Sketch.loft with { ruled: true } records params.ruled.evaluated === 1', async () => {
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      return s1.loft(s2, { spacing: 30, ruled: true });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const loftRec = result.records.find(r => r.kind === 'loft')!;
+    expect(loftRec.params.ruled.evaluated).toBeGreaterThan(0.5);
+  });
+
+  it('Sketch.loft with { planes: [...] } records metadata.planes', async () => {
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      return s1.loft(s2, {
+        planes: [
+          { plane: 'XY', origin: [0, 0, 0] },
+          { plane: 'XY', origin: [0, 0, 50] },
+        ],
+      });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const loftRec = result.records.find(r => r.kind === 'loft')!;
+    const planes = (loftRec.metadata as { planes?: unknown[] } | undefined)?.planes;
+    expect(Array.isArray(planes)).toBe(true);
+    expect(planes).toHaveLength(2);
+  });
+
+  it('Sketch.loft end-to-end via RecomputeEngine: 2-square frustum produces volume in [260, 300]', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      return s1.loft(s2, { spacing: 30 });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(260);
+    expect(v).toBeLessThan(300);
+  });
+
+  it('Sketch.loft([]) (empty array) → feature.loft.empty-sections', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return s1.loft([]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.loft.empty-sections' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('opts.planes length mismatch → feature.loft.invalid-planes', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      // Two sketches, but only one plane spec — mismatch.
+      return s1.loft(s2, { planes: [{ plane: 'XY', origin: [0, 0, 0] }] });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.loft.invalid-planes' && d.severity === 'error'
+    )).toBe(true);
+  });
 });
