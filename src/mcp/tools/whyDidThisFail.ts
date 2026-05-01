@@ -79,7 +79,7 @@ const HINTS: Record<string, string> = {
   'feature.face-feature.face-required': "Shell needs a face to remove. Pass `{ face: 'top' }` (or another canonical face name applicable to the base primitive).",
   'feature.face-feature.face-ref-not-resolvable': "Same constraint as edge features: canonical face refs only work on un-transformed primitives. Apply shell before transforms.",
   'feature.face-feature.face-ref-not-applicable': "That canonical face is not valid for this primitive. Cylinders accept only top/bottom for shell; spheres have no canonical faces.",
-  'feature.face-feature.face-ref-not-supported': "Only canonical face refs are supported in v0.2-alpha. Tracked / created / propagated face refs land in v0.2 full.",
+  'feature.face-feature.face-ref-not-supported': "Face ref kind not supported. Use a canonical name ({face: 'top'}), a label ({face: 'rim'}), or an inline FaceQuery ({face: {atZ: 5}}). Tracked / created / propagated face refs are reserved for v0.5+.",
   'feature.sketch.degenerate-arc': "An arc segment has degenerate geometry. For radiusArc: |radius| must be >= chord/2 (where chord is the straight-line distance start→end), and start must not coincide with end. Either pick a larger radius, change the endpoints, or use threePointsArc / sagittaArc.",
   'feature.sketch.failed': "Sketch construction failed during lowering. Check the diagnostic message for the underlying error from Replicad or our validation.",
   'feature.path.label-without-segment': "label() must follow a lineTo or arc segment. Calling label() before any segment, after moveTo, or after close has nothing to label.",

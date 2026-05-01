@@ -301,9 +301,6 @@ export function pickFace(
   base: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
 ): Face | { error: CompilerDiagnostic } {
-  // `records` is reserved for label face refs (rc.7+); current canonical-only
-  // path doesn't need it but keeps the signature symmetric with pickEdges.
-  void records;
   const faceRef = record.inputs.face;
 
   if (!faceRef) {
@@ -318,44 +315,131 @@ export function pickFace(
     };
   }
 
-  if (faceRef.kind !== 'face' || faceRef.ref.kind !== 'canonical') {
+  if (faceRef.kind !== 'face') {
     return {
       error: {
         target: 'export-occt',
         code: 'feature.face-feature.face-ref-not-supported',
         featureId: record.id,
         severity: 'error',
-        message: `Only canonical face refs are supported in v0.2-alpha.`,
+        message: `Face ref kind '${faceRef.kind}' not supported.`,
       },
     };
   }
 
-  if (!base.kind) {
+  // 1. FaceRef.query → resolve via resolveFaceQuery, take first match.
+  if (faceRef.ref.kind === 'query') {
+    const faces = resolveFaceQuery(base, faceRef.ref.query);
+    if (faces.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.edge-feature.no-edges-match',
+          featureId: record.id,
+          severity: 'error',
+          message: `Face query matched zero faces on the input shape.`,
+        },
+      };
+    }
+    return faces[0];
+  }
+
+  // 2. FaceRef.label → walk upstream sketch, build face-probe bbox, find face by centroid.
+  if (faceRef.ref.kind === 'label') {
+    const result = resolveLabeledFace(record, base, faceRef.ref.name, records);
+    if ('error' in result) return result;
+    return result.face;
+  }
+
+  // 3. FaceRef.canonical → existing canonical resolution.
+  if (faceRef.ref.kind === 'canonical') {
+    if (!base.kind) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-resolvable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
+        },
+      };
+    }
+    const face = faceRef.ref.face as CanonicalFace;
+    const f = findCanonicalFace(base, face);
+    if (f === null) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-applicable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+        },
+      };
+    }
+    return f;
+  }
+
+  // Catch-all for any other ref kinds (tracked, created, propagated).
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.face-feature.face-ref-not-supported',
+      featureId: record.id,
+      severity: 'error',
+      message: `Face ref kind '${(faceRef.ref as { kind: string }).kind}' not supported in this rc.`,
+    },
+  };
+}
+
+function resolveLabeledFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+  label: string,
+  records: readonly FeatureRecord[] | undefined,
+): { face: Face } | { error: CompilerDiagnostic } {
+  // Reuse labelToEdgeQuery to compute the probe bbox. Then find the matching
+  // face on the lowered shape: a face whose centroid sits in or near the bbox.
+  const probe = labelToEdgeQuery(record, base, label, records);
+  if ('error' in probe) return probe;
+
+  const w = probe.query.within;
+  if (!w) {
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.face-ref-not-resolvable',
+        code: 'feature.face-feature.label-not-resolvable',
         featureId: record.id,
         severity: 'error',
-        message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
+        message: `Label '${label}': cannot derive face probe (no within bbox).`,
       },
     };
   }
 
-  const face = faceRef.ref.face as CanonicalFace;
-  const f = findCanonicalFace(base, face);
-  if (f === null) {
+  const allFaces = (base.getReplicadShape() as unknown as { faces: Face[] }).faces;
+  const matched = allFaces.filter(f => {
+    const c = f.center;
+    return (w.xMin === undefined || c.x >= w.xMin) &&
+           (w.xMax === undefined || c.x <= w.xMax) &&
+           (w.yMin === undefined || c.y >= w.yMin) &&
+           (w.yMax === undefined || c.y <= w.yMax) &&
+           (w.zMin === undefined || c.z >= w.zMin) &&
+           (w.zMax === undefined || c.z <= w.zMax);
+  });
+
+  if (matched.length === 0) {
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.face-ref-not-applicable',
+        code: 'feature.face-feature.label-not-resolvable',
         featureId: record.id,
         severity: 'error',
-        message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+        message: `Label '${label}' resolved to a probe bbox that contained no face centroid.`,
       },
     };
   }
-  return f;
+
+  return { face: matched[0] };
 }
 
 function labelToEdgeQuery(
