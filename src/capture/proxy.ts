@@ -15,6 +15,16 @@ export type FaceSelector =
   | FaceQuery
   | { face: CanonicalFace | string };
 
+/**
+ * IMPORTANT — drift sentinel contract:
+ * Adding a public method to `Sketch`, `PathBuilder`, or `Shape` requires
+ * also updating `src/mcp/tools/listApi.ts` (in `SKETCH_METHODS`,
+ * `PATH_BUILDER_METHODS`, or `SHAPE_METHODS` respectively). The drift
+ * sentinel test at `tests/integration/mcp/listApi.driftSentinel.test.ts`
+ * fails CI when `Object.getOwnPropertyNames(<Class>.prototype)` doesn't
+ * match the advertised array. This guards agent discoverability — methods
+ * not in `list_api` are invisible to MCP clients.
+ */
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -64,12 +74,32 @@ export class Shape {
     return this.session.boolean('intersection', this, others);
   }
 
-  fillet(radius: number, edges?: EdgeSelector): Shape {
-    return this.session.edgeFeature('fillet', this, 'radius', radius, edges);
+  // Single-radius form (rc.6 — unchanged).
+  fillet(radius: number, edges?: EdgeSelector): Shape;
+  // Variable-radius form (rc.11).
+  fillet(groups: Array<{ edges: EdgeSelector; radius: number }>): Shape;
+  fillet(
+    radiusOrGroups: number | Array<{ edges: EdgeSelector; radius: number }>,
+    edges?: EdgeSelector,
+  ): Shape {
+    if (typeof radiusOrGroups === 'number') {
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges);
+    }
+    return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
 
-  chamfer(distance: number, edges?: EdgeSelector): Shape {
-    return this.session.edgeFeature('chamfer', this, 'distance', distance, edges);
+  // Single-distance form (rc.6 — unchanged).
+  chamfer(distance: number, edges?: EdgeSelector): Shape;
+  // Variable-distance form (rc.11).
+  chamfer(groups: Array<{ edges: EdgeSelector; distance: number }>): Shape;
+  chamfer(
+    distanceOrGroups: number | Array<{ edges: EdgeSelector; distance: number }>,
+    edges?: EdgeSelector,
+  ): Shape {
+    if (typeof distanceOrGroups === 'number') {
+      return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
+    }
+    return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
   shell(thickness: number, opts: { face: FaceSelector | CanonicalFace | string }): Shape {

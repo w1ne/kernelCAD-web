@@ -104,6 +104,50 @@ export class CaptureSession {
     });
   }
 
+  /**
+   * Variable-radius / variable-distance edge feature (rc.11).
+   * Each group's `edges` becomes a FeatureRef under `inputs.edge_group_${i}`;
+   * the `radius` (or `distance`) is stored in `metadata.groups[i]`. The lowerer
+   * resolves each group's edges via `pickEdges`-style dispatch and builds a
+   * Replicad function-form RadiusConfig.
+   */
+  variableEdgeFeature(
+    kind: 'fillet' | 'chamfer',
+    base: Shape,
+    valueKey: 'radius' | 'distance',
+    groups: Array<{ edges: import('./proxy').EdgeSelector; radius?: number; distance?: number }>,
+  ): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    const inputs: Record<string, FeatureRef> = {
+      base: { kind: 'feature', id: base.id },
+    };
+    const metadataGroups: Array<{ radius?: number; distance?: number }> = [];
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      const ref = buildEdgeFeatureRef(base.id, g.edges);
+      // The buildEdgeFeatureRef helper returns either { key: 'face', value }
+      // (for canonical/label/query face wrappers) or { key: 'edges', value }
+      // (for direct edge selectors). For variable-radius, we always store
+      // under `edge_group_${i}` — the lowerer reads ref.kind to dispatch.
+      inputs[`edge_group_${i}`] = ref.value;
+      const value = g[valueKey];
+      metadataGroups.push({ [valueKey]: value });
+    }
+    return this.createShape({
+      kind,
+      params: {
+        // Empty params block — lowerer reads metadata.groups for radii/distances.
+      },
+      inputs,
+      metadata: {
+        variable: true,
+        groups: metadataGroups,
+      },
+    });
+  }
+
   getRecords(): readonly FeatureRecord[] {
     return this.records;
   }

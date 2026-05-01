@@ -723,4 +723,161 @@ describe('path() builder + Sketch capture', () => {
       d.code === 'feature.loft.invalid-planes' && d.severity === 'error'
     )).toBe(true);
   });
+
+  it('I-B: loft with missing upstream sketch input emits feature.loft.bad-sketch', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Construct a script that produces an upstream sketch that fails to lower
+    // (lineTo as first command violates the moveTo-first invariant), so when
+    // the loft tries to read sketch_1, it's absent from inputs.byKey.
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      // Invalid: missing moveTo. fromSketchCommands rejects this so sketch_2
+      // emits feature.sketch.failed and never registers as a loft input.
+      const s2 = path().lineTo(1, 1).close();
+      return s1.loft(s2, { spacing: 30 });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    // Either the upstream sketch fails first (feature.sketch.failed) AND the
+    // loft surfaces feature.loft.bad-sketch for the missing input — both are
+    // valid agent-actionable signals. Pre-rc.11 the latter was lumped under
+    // generic feature.loft.failed.
+    expect(r.diagnostics.some(d =>
+      (d.code === 'feature.loft.bad-sketch' || d.code === 'feature.sketch.failed')
+      && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('I-A: loft success path with explicit { planes: [...] } at axial origins', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      return s1.loft(s2, {
+        planes: [
+          { plane: 'XY', origin: [0, 0, 0] },
+          { plane: 'XY', origin: [0, 0, 30] },
+        ],
+      });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    // Same frustum as the spacing-path test: h/3 × (4 + 16 + 8) = 280
+    expect(v).toBeGreaterThan(260);
+    expect(v).toBeLessThan(300);
+  });
+
+  it('I-A: loft success path with non-axial planes origin', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
+      // Same frustum geometry but shifted +X by 10. Volume identical.
+      return s1.loft(s2, {
+        planes: [
+          { plane: 'XY', origin: [10, 0, 0] },
+          { plane: 'XY', origin: [10, 0, 30] },
+        ],
+      });
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(260);
+    expect(v).toBeLessThan(300);
+  });
+
+  it('Shape.fillet([{edges, radius}]) (single group) records metadata.variable=true + group radius + edge_group_0 input', async () => {
+    const code = `return box(10, 10, 5).fillet([{ edges: { atZ: 5 }, radius: 2 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const meta = filletRec.metadata as { variable?: boolean; groups?: Array<{ radius: number }> };
+    expect(meta.variable).toBe(true);
+    expect(meta.groups).toHaveLength(1);
+    expect(meta.groups![0].radius).toBe(2);
+    // edge_group_0 input must reference the correct edges via FeatureRef.
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+    expect(filletRec.inputs.edge_group_0.kind).toBe('edge');
+  });
+
+  it('Shape.fillet([g1, g2]) (two groups) records both groups with separate edge_group_${i} inputs', async () => {
+    const code = `
+      return box(10, 10, 5).fillet([
+        { edges: { atZ: 5 }, radius: 2 },
+        { edges: { atZ: 0 }, radius: 0.5 },
+      ]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const meta = filletRec.metadata as { groups: Array<{ radius: number }> };
+    expect(meta.groups).toHaveLength(2);
+    expect(meta.groups[0].radius).toBe(2);
+    expect(meta.groups[1].radius).toBe(0.5);
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+    expect(filletRec.inputs.edge_group_1).toBeDefined();
+  });
+
+  it('Shape.fillet([{ edges: { face: "top" }, radius: 1 }]) accepts canonical-face wrapper as edges', async () => {
+    const code = `return box(10, 10, 5).fillet([{ edges: { face: 'top' }, radius: 1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    // The face wrapper produces a face-typed FeatureRef rather than edge-typed.
+    // Capture stores it under inputs.edge_group_0 (same slot regardless of
+    // ref kind — lowerer dispatches based on ref.kind).
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+  });
+
+  it('Shape.chamfer([{edges, distance}]) (array form) records metadata.variable=true + distance', async () => {
+    const code = `return box(10, 10, 5).chamfer([{ edges: { atZ: 5 }, distance: 1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const chamferRec = result.records.find(r => r.kind === 'chamfer')!;
+    const meta = chamferRec.metadata as { variable?: boolean; groups?: Array<{ distance: number }> };
+    expect(meta.variable).toBe(true);
+    expect(meta.groups![0].distance).toBe(1);
+  });
+
+  it('Shape.fillet(2, { atZ: 5 }) (existing single-radius form) still records old shape unchanged', async () => {
+    const code = `return box(10, 10, 5).fillet(2, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    // Old form: params.radius set, no metadata.variable.
+    expect(filletRec.params.radius?.evaluated).toBe(2);
+    const meta = filletRec.metadata as { variable?: boolean } | undefined;
+    expect(meta?.variable).toBeFalsy();
+  });
+
+  it('Shape.fillet([{edges, radius: -1}]) → feature.fillet.invalid-group at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet([{ edges: { atZ: 5 }, radius: -1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.fillet.invalid-group' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('Shape.fillet([]) (empty array) → feature.fillet.empty-groups at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet([]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.fillet.empty-groups' && d.severity === 'error'
+    )).toBe(true);
+  });
 });

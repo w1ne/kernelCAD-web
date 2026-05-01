@@ -511,6 +511,62 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Variable-radius fillet: each group has its own radius. Edges that don't
+   * match any group pass through unfilleted (Replicad's natural behavior
+   * when the RadiusConfig function returns null). Uses geometric matching
+   * (`isSameEdge`-style endpoint comparison) so per-group edge sets that
+   * came from a separate `.edges` access on the same shape still match.
+   *
+   * @throws {Error} If Replicad rejects the geometry.
+   */
+  filletVariable(groups: Array<{ edges: ReplicadEdge[]; radius: number }>): OcctBackend {
+    if (groups.length === 0) {
+      return new OcctBackend(this.shape);  // no-op
+    }
+    const radiusFn = (e: ReplicadEdge): number | null => {
+      const ef = e.startPoint, el = e.endPoint;
+      const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
+        Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
+      for (const g of groups) {
+        for (const ge of g.edges) {
+          const gf = ge.startPoint, gl = ge.endPoint;
+          if ((eq(ef, gf) && eq(el, gl)) || (eq(ef, gl) && eq(el, gf))) {
+            return g.radius;
+          }
+        }
+      }
+      return null;
+    };
+    const result = this.shape.fillet(radiusFn) as ReplicadShape3D;
+    return new OcctBackend(result);
+  }
+
+  /**
+   * Variable-distance chamfer — same shape as `filletVariable` but for chamfers.
+   */
+  chamferVariable(groups: Array<{ edges: ReplicadEdge[]; distance: number }>): OcctBackend {
+    if (groups.length === 0) {
+      return new OcctBackend(this.shape);  // no-op
+    }
+    const distanceFn = (e: ReplicadEdge): number | null => {
+      const ef = e.startPoint, el = e.endPoint;
+      const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
+        Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
+      for (const g of groups) {
+        for (const ge of g.edges) {
+          const gf = ge.startPoint, gl = ge.endPoint;
+          if ((eq(ef, gf) && eq(el, gl)) || (eq(ef, gl) && eq(el, gf))) {
+            return g.distance;
+          }
+        }
+      }
+      return null;
+    };
+    const result = this.shape.chamfer(distanceFn) as ReplicadShape3D;
+    return new OcctBackend(result);
+  }
+
+  /**
    * Hollow out the shape by removing `face` and offsetting all remaining
    * faces inward by `thickness` (mm). The result is a thin-walled shell
    * with the supplied face left open.

@@ -1,4 +1,5 @@
 // src/mcp/server.ts
+import { createRequire } from 'node:module';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -15,6 +16,9 @@ import { listEdgesTool } from './tools/listEdges';
 import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listApiTool } from './tools/listApi';
+
+const requireFromHere = createRequire(import.meta.url);
+const pkg = requireFromHere('../../package.json') as { version: string };
 
 const TOOLS = [
   {
@@ -189,7 +193,7 @@ const TOOLS = [
 
 export function createMcpServer(): Server {
   const server = new Server(
-    { name: 'kernelcad', version: '0.11.0-alpha.1' },
+    { name: 'kernelcad', version: pkg.version },
     { capabilities: { tools: {} } },
   );
 
