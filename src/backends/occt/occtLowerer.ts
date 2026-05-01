@@ -37,6 +37,7 @@ export class OcctLowerer implements FeatureLowerer {
     'shell',
     'sketch',    // NEW
     'sweep',     // NEW (v0.13.0-rc.8)
+    'loft',      // NEW (v0.13.0-rc.10)
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -384,6 +385,96 @@ export class OcctLowerer implements FeatureLowerer {
                 featureId: r.id,
                 severity: 'error',
                 message: `Profile kind '${profileKind}' not supported for sweep.`,
+              },
+            ],
+          };
+        }
+        break;
+      }
+      case 'loft': {
+        const profileKind = String(r.params.profileKind.expression).replace(/'/g, '');
+        if (profileKind === 'sketch') {
+          const sectionCount = r.params.sectionCount?.evaluated ?? 0;
+          if (sectionCount < 2) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.loft.empty-sections',
+              featureId: r.id,
+              severity: 'error',
+              message: `loft needs at least 2 sketches (sectionCount=${sectionCount}).`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // Collect sketch_0 through sketch_{N-1} from inputs.byKey
+          const sketches: OcctBackend[] = [];
+          for (let i = 0; i < sectionCount; i++) {
+            const s = inputs.byKey[`sketch_${i}`] as OcctBackend | undefined;
+            if (!s) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.loft.failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `loft missing input sketch_${i}.`,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+            sketches.push(s);
+          }
+          // Resolve planes: explicit metadata.planes wins; else z-stack with spacing.
+          const meta = r.metadata as {
+            planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
+            startPoint?: [number, number, number];
+            endPoint?: [number, number, number];
+          } | undefined;
+          let planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>;
+          if (Array.isArray(meta?.planes)) {
+            if (meta.planes.length !== sectionCount) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.loft.invalid-planes',
+                featureId: r.id,
+                severity: 'error',
+                message: `loft planes length ${meta.planes.length} does not match section count ${sectionCount}.`,
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+            planes = meta.planes;
+          } else {
+            const spacing = r.params.spacing?.evaluated ?? 10;
+            planes = sketches.map((_, i) => ({
+              plane: 'XY' as const,
+              origin: [0, 0, i * spacing] as [number, number, number],
+            }));
+          }
+          const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
+          try {
+            shape = OcctBackend.loftFromSketches(sketches, planes, {
+              ruled,
+              startPoint: meta?.startPoint,
+              endPoint: meta?.endPoint,
+            });
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.loft.failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT loft failed: ${msg}`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+        } else {
+          return {
+            shape: undefined as unknown as ShapeBackend,
+            diagnostics: [
+              {
+                target: this.target,
+                code: 'feature.loft.failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `loft profile kind '${profileKind}' not supported.`,
               },
             ],
           };

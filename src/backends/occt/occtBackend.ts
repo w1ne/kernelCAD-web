@@ -395,6 +395,61 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(swept);
   }
 
+  /**
+   * Loft a sequence of sketch-tagged backends into a single solid by
+   * interpolating between them. Each input sketch is lifted onto its target
+   * plane (per the `planes` array, in order), then Replicad's `loftWith`
+   * builds the swept-surface solid through all sections.
+   *
+   * @param sketches in order: first section through last section. Length ≥ 2.
+   * @param planes per-section plane specifications. Length must equal sketches.length.
+   * @param opts.ruled if true, transitions between sections are STRAIGHT
+   *   (ruled surface) rather than smoothly interpolated. Use for polyhedral lofts.
+   * @param opts.startPoint optional explicit start point before first section.
+   * @param opts.endPoint optional explicit end point after last section.
+   *
+   * @throws {Error} If fewer than 2 sketches.
+   * @throws {Error} If planes.length !== sketches.length.
+   * @throws {Error} If any sketch.kind !== 'sketch' or _drawing is null.
+   * @throws {Error} If Replicad rejects the loft (caller maps to diagnostic).
+   */
+  static loftFromSketches(
+    sketches: OcctBackend[],
+    planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>,
+    opts: {
+      ruled?: boolean;
+      startPoint?: [number, number, number];
+      endPoint?: [number, number, number];
+    } = {},
+  ): OcctBackend {
+    if (sketches.length < 2) {
+      throw new Error(`OcctBackend.loftFromSketches: need at least 2 sketches (got ${sketches.length}).`);
+    }
+    if (planes.length !== sketches.length) {
+      throw new Error(`OcctBackend.loftFromSketches: planes count ${planes.length} must equal sketches count ${sketches.length}.`);
+    }
+    // Lift each sketch onto its target plane.
+    const lifted: unknown[] = [];
+    for (let i = 0; i < sketches.length; i++) {
+      const s = sketches[i];
+      if (s.kind !== 'sketch' || !s._drawing) {
+        throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
+      }
+      const p = planes[i];
+      lifted.push(s._drawing.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof s._drawing.sketchOnPlane>[1]));
+    }
+    // Replicad's Sketch.loftWith expects the receiver as the first section
+    // and an array (or one) of "other" sections.
+    const [first, ...rest] = lifted;
+    const loftConfig: { ruled?: boolean; startPoint?: unknown; endPoint?: unknown } = {};
+    if (opts.ruled !== undefined) loftConfig.ruled = opts.ruled;
+    if (opts.startPoint) loftConfig.startPoint = opts.startPoint;
+    if (opts.endPoint) loftConfig.endPoint = opts.endPoint;
+    const lofted = (first as { loftWith: (others: unknown[], cfg: typeof loftConfig) => ReplicadShape3D })
+      .loftWith(rest, loftConfig);
+    return new OcctBackend(lofted);
+  }
+
   translate(x: number, y: number, z: number): OcctBackend {
     return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
   }

@@ -5,9 +5,10 @@
 // `list_api`) import from here so a future addition to `EdgeQuery` /
 // `FaceQuery` only requires updating these arrays once.
 //
-// The arrays are typed `ReadonlyArray<keyof EdgeQuery>` (etc) so a key not
-// in the type fails at compile time. The drift guard is a runtime test
-// that checks length matches.
+// The arrays are typed `ReadonlyArray<keyof EdgeQuery>` (etc) so an INVALID
+// key in the array fails at compile time. The Exclude-extends-never check
+// below also catches the REVERSE direction: a key added to the type but
+// missing from the array (rc.9 review I1).
 import type { EdgeQuery, FaceQuery } from './edgeQueries';
 
 export const EDGE_QUERY_KEYS: ReadonlyArray<keyof EdgeQuery> = [
@@ -16,7 +17,18 @@ export const EDGE_QUERY_KEYS: ReadonlyArray<keyof EdgeQuery> = [
   'tolerance', 'angleTolerance',
 ];
 
+// Compile-time exhaustiveness: if a future rc adds `EdgeQuery.spiralRate`
+// without updating EDGE_QUERY_KEYS, `Exclude<keyof EdgeQuery, ...listed>`
+// becomes `'spiralRate'` (not `never`), and the assignment below fails to compile.
+type _EdgeQueryKeysMissing = Exclude<keyof EdgeQuery, typeof EDGE_QUERY_KEYS[number]>;
+const _edgeKeysExhaustive: [_EdgeQueryKeysMissing] extends [never] ? true : false = true;
+void _edgeKeysExhaustive;
+
 export const FACE_QUERY_KEYS: ReadonlyArray<keyof FaceQuery> = [
   'atZ', 'atX', 'atY', 'parallelTo', 'inPlane', 'ofSurfaceType',
   'containsPoint', 'near', 'tolerance',
 ];
+
+type _FaceQueryKeysMissing = Exclude<keyof FaceQuery, typeof FACE_QUERY_KEYS[number]>;
+const _faceKeysExhaustive: [_FaceQueryKeysMissing] extends [never] ? true : false = true;
+void _faceKeysExhaustive;

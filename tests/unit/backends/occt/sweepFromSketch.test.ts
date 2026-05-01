@@ -42,14 +42,23 @@ describe('OcctBackend.sweepFromSketch', () => {
     const rail: [number, number, number][] = [[0, 0, 0], [0, 0, 30], [30, 0, 30]];
     const swept = OcctBackend.sweepFromSketch(sketch, rail);
     expect(swept.volume()).toBeGreaterThan(0);
-    // L-bend rail spans (0,0,0) → (0,0,30) → (30,0,30). Profile is 2x2.
-    // Expected: max.x and max.z both reach ~30 (within tolerance).
+    // L-bend rail (0,0,0) → (0,0,30) → (30,0,30); profile 2x2 centered on rail.
+    // Measured bbox: x ∈ [-1, 30], y ∈ [-1, 1], z ∈ [0, 31].
+    // The sweep does not overshoot the rail at its start endpoints (matches the
+    // rc.8 straight-pipe behavior: z starts at 0, x ends at 30) but the profile
+    // half-width does extend the bbox by ±1 perpendicular to the rail's
+    // direction along each leg, and past the trailing corner along the second
+    // leg's start direction (z extends to 31).
     const replicadShape = swept.getReplicadShape() as unknown as {
       boundingBox: { bounds: [[number, number, number], [number, number, number]] };
     };
-    const [, max] = replicadShape.boundingBox.bounds;
-    expect(max[0]).toBeGreaterThan(28);
-    expect(max[2]).toBeGreaterThan(28);
+    const [min, max] = replicadShape.boundingBox.bounds;
+    expect(min[0]).toBeCloseTo(-1, 1);
+    expect(max[0]).toBeCloseTo(30, 1);
+    expect(min[1]).toBeCloseTo(-1, 1);
+    expect(max[1]).toBeCloseTo(1, 1);
+    expect(min[2]).toBeCloseTo(0, 1);
+    expect(max[2]).toBeCloseTo(31, 1);
   });
 
   it('helix sweep with frenet=true produces a positive-volume spring', () => {

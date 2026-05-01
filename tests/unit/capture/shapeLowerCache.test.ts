@@ -41,4 +41,26 @@ describe('Shape.lower() lazy cache (rc.7 I-6)', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     expect(result.records.length).toBeGreaterThan(0);
   });
+
+  it('cache invalidates on transform — selectEdges → translate → selectEdges returns post-translate frame', async () => {
+    const code = `
+      const shape = box(10, 10, 5);
+      // First selectEdges lowers and caches the box at z=5 (top edges).
+      const edges1 = await selectEdges(shape, { atZ: 5 });
+      if (edges1.length !== 4) throw new Error('expected 4 top edges, got ' + edges1.length);
+      // Translate the SAME shape — appendTransform mutates record.transforms;
+      // records.length is unchanged. Pre-rc.10 cache returned stale backend.
+      shape.translate(0, 0, 100);
+      // Now top edges are at z=105. If cache invalidated correctly, this query finds them.
+      const edges2 = await selectEdges(shape, { atZ: 105 });
+      if (edges2.length !== 4) throw new Error('expected 4 top edges at z=105, got ' + edges2.length);
+      // And the OLD plane (z=5) should now have 0 matches (the cube has moved up).
+      const edges3 = await selectEdges(shape, { atZ: 5 });
+      if (edges3.length !== 0) throw new Error('expected 0 edges at z=5 after translate, got ' + edges3.length);
+      return shape;
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    // The script throws if any assertion fails — reaching here means all 3 cache states are correct.
+    expect(result.records.length).toBeGreaterThan(0);
+  });
 });

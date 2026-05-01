@@ -1,3 +1,28 @@
+## v0.13.0-rc.10 (NORTHSTAR roadmap: sketch loft + bundled rc.9 fixes) — 2026-05-01
+
+### Added
+- **`Sketch.loft(other, opts?)`** — loft a profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. Use for nozzles (round-to-square), wings/airfoils (varying-cross-section ribs), fairings, transition pieces, gear teeth varying along thickness. `other` accepts either a single `Sketch` or `Sketch[]` for N-section lofts.
+- **Loft section positioning:** `opts.spacing: number` z-stacks axially (default 10 mm); `opts.planes: PlaneSpec[]` provides explicit per-section placement and takes precedence.
+- **Loft surface options:** `opts.ruled: true` produces straight (faceted) transitions; `opts.startPoint` / `opts.endPoint` extend the loft past the first / last section to a single point.
+- **`OcctBackend.loftFromSketches(sketches, planes, opts?)`** — backend factory using Replicad's `Sketch.loftWith(others, loftConfig)`. Frustum volume measured at exactly the analytic 280 mm³ for the canonical 2x2 → 4x4 frustum at h=30.
+- **3 new diagnostic codes:** `feature.loft.empty-sections`, `feature.loft.invalid-planes`, `feature.loft.failed`. Each has a `whyDidThisFail` hint.
+- E2E fixtures: `tests/e2e/fixtures/nozzle.kcad.ts` (circle-to-square loft), `tests/e2e/fixtures/airfoil.kcad.ts` (4-rib wing).
+- `loft` advertised in `list_api`'s `sketchMethods`.
+
+### Changed
+- **`Shape.lower()` cache invalidates on transform-count change** in addition to record-count growth (rc.9 review C1 fix). The previous cache returned stale geometry after `Shape.translate/rotate/scale` because `appendTransform` mutates `record.transforms` in place without changing `records.length`. Agents calling `selectEdges` after a transform now get edges from the post-transform frame.
+- **`EDGE_QUERY_KEYS` and `FACE_QUERY_KEYS`** now have a true compile-time exhaustiveness check via `Exclude<keyof T, typeof KEYS[number]> extends never` (rc.9 review I1 fix). Adding a key to `EdgeQuery`/`FaceQuery` without updating the array produces a TypeScript compile error. The runtime magic-number length test was dropped — TS catches the regression.
+- New **`tests/integration/mcp/serverToolDispatch.test.ts`** enforces parity between `server.ts:TOOLS` and the call-handler switch (rc.9 review I2 fix). Source-text-parse comparison; same shape as the `list_api` drift sentinel that paid off in rc.9.
+- **L-bend sweep bounding-box assertion** tightened from 2 loose checks (`max[0] > 28`, `max[2] > 28`) to a strict 6-bound assertion covering both `min` and `max` for x/y/z (rc.9 review I5 fix). The asymmetric rule was discovered empirically: profile half-width extends ±1 perpendicular to each leg's direction but NOT along rail-end tangent. Documented inline.
+
+### Deferred to subsequent rcs
+- Closed-rail sweep (torus-like) — rc.11
+- 3D path builder (`path3d()`) — rc.11+ (or never; agents have `helix()` and raw polylines)
+- Other rc.9 review items (I3 sweep-discriminator regression test, I4 multi-face guard for extrude/revolve, I6 RailPoint cleanup, all 5 rc.9 nits) — rc.11 quality pass
+- Persistent topological IDs across booleans/transforms — v0.5+
+
+---
+
 ## v0.13.0-rc.9 (NORTHSTAR roadmap: quality pass v2 — close all rc.8 review + rc.7 deferred) — 2026-05-01
 
 ### Added
