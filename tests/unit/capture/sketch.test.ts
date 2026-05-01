@@ -797,4 +797,87 @@ describe('path() builder + Sketch capture', () => {
     expect(v).toBeGreaterThan(260);
     expect(v).toBeLessThan(300);
   });
+
+  it('Shape.fillet([{edges, radius}]) (single group) records metadata.variable=true + group radius + edge_group_0 input', async () => {
+    const code = `return box(10, 10, 5).fillet([{ edges: { atZ: 5 }, radius: 2 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const meta = filletRec.metadata as { variable?: boolean; groups?: Array<{ radius: number }> };
+    expect(meta.variable).toBe(true);
+    expect(meta.groups).toHaveLength(1);
+    expect(meta.groups![0].radius).toBe(2);
+    // edge_group_0 input must reference the correct edges via FeatureRef.
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+    expect(filletRec.inputs.edge_group_0.kind).toBe('edge');
+  });
+
+  it('Shape.fillet([g1, g2]) (two groups) records both groups with separate edge_group_${i} inputs', async () => {
+    const code = `
+      return box(10, 10, 5).fillet([
+        { edges: { atZ: 5 }, radius: 2 },
+        { edges: { atZ: 0 }, radius: 0.5 },
+      ]);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    const meta = filletRec.metadata as { groups: Array<{ radius: number }> };
+    expect(meta.groups).toHaveLength(2);
+    expect(meta.groups[0].radius).toBe(2);
+    expect(meta.groups[1].radius).toBe(0.5);
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+    expect(filletRec.inputs.edge_group_1).toBeDefined();
+  });
+
+  it('Shape.fillet([{ edges: { face: "top" }, radius: 1 }]) accepts canonical-face wrapper as edges', async () => {
+    const code = `return box(10, 10, 5).fillet([{ edges: { face: 'top' }, radius: 1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    // The face wrapper produces a face-typed FeatureRef rather than edge-typed.
+    // Capture stores it under inputs.edge_group_0 (same slot regardless of
+    // ref kind — lowerer dispatches based on ref.kind).
+    expect(filletRec.inputs.edge_group_0).toBeDefined();
+  });
+
+  it('Shape.chamfer([{edges, distance}]) (array form) records metadata.variable=true + distance', async () => {
+    const code = `return box(10, 10, 5).chamfer([{ edges: { atZ: 5 }, distance: 1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const chamferRec = result.records.find(r => r.kind === 'chamfer')!;
+    const meta = chamferRec.metadata as { variable?: boolean; groups?: Array<{ distance: number }> };
+    expect(meta.variable).toBe(true);
+    expect(meta.groups![0].distance).toBe(1);
+  });
+
+  it('Shape.fillet(2, { atZ: 5 }) (existing single-radius form) still records old shape unchanged', async () => {
+    const code = `return box(10, 10, 5).fillet(2, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const filletRec = result.records.find(r => r.kind === 'fillet')!;
+    // Old form: params.radius set, no metadata.variable.
+    expect(filletRec.params.radius?.evaluated).toBe(2);
+    const meta = filletRec.metadata as { variable?: boolean } | undefined;
+    expect(meta?.variable).toBeFalsy();
+  });
+
+  it('Shape.fillet([{edges, radius: -1}]) → feature.fillet.invalid-group at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet([{ edges: { atZ: 5 }, radius: -1 }]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.fillet.invalid-group' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('Shape.fillet([]) (empty array) → feature.fillet.empty-groups at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).fillet([]);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.fillet.empty-groups' && d.severity === 'error'
+    )).toBe(true);
+  });
 });
