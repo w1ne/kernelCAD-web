@@ -9,6 +9,12 @@ import { resolveEdgeQuery, resolveFaceQuery } from './edgeQueries';
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
 
+const KNOWN_EDGE_QUERY_KEYS = new Set<string>([
+  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
+  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
+  'tolerance', 'angleTolerance',
+]);
+
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 // EdgeList holds replicad Edge wrappers, which EdgeFinder.inList() accepts.
@@ -120,6 +126,18 @@ function resolveEdgesRef(
   ref: EdgeRef,
 ): EdgeList | { error: CompilerDiagnostic } {
   if (ref.kind === 'query') {
+    const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
+    if (unknownKeys.length > 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.edge-feature.invalid-query',
+          featureId: record.id,
+          severity: 'error',
+          message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
+        },
+      };
+    }
     return resolveEdgeQuery(base, ref.query);
   }
   if (ref.kind === 'segment') {

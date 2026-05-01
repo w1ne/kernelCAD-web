@@ -444,4 +444,28 @@ describe('path() builder + Sketch capture', () => {
     expect(rA.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
     expect(rB.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
   });
+
+  it('I1: buildEdgeFeatureRef rejects unknown EdgeQuery keys at lowering', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    // Add a key that is NOT in the EDGE_QUERY_KEYS whitelist; capture takes it
+    // (the type system can't enforce extra keys at runtime), but lowering should diagnose.
+    const code = `return box(10,10,5).fillet(1, { atZ: 5, foo: true });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.edge-feature.invalid-query' && d.severity === 'error'
+    )).toBe(true);
+  });
+
+  it('I1: valid 14-key EdgeQuery passes through cleanly (regression check)', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10,10,5).fillet(1, { atZ: 5, parallel: [1,0,0], tolerance: 0.5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
 });

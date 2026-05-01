@@ -115,6 +115,12 @@ export class CaptureSession {
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);
 
+const EDGE_QUERY_KEYS = new Set<string>([
+  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
+  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
+  'tolerance', 'angleTolerance',
+]);
+
 /**
  * Translate the user-facing EdgeSelector (or face wrapper) into either an
  * `inputs.face` or `inputs.edges` FeatureRef. The lowerer (Task 3) dispatches
@@ -133,8 +139,9 @@ function buildEdgeFeatureRef(
   selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
 ): { key: 'face' | 'edges'; value: FeatureRef } {
   // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
-  // property and NOT having `id` (which would mark it as an EdgeSegment).
-  if (typeof selector === 'object' && selector !== null && 'face' in selector && !('id' in selector)) {
+  // property and NOT having the EdgeSegment full-schema markers.
+  if (typeof selector === 'object' && selector !== null && 'face' in selector &&
+      !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
     const faceVal = (selector as { face: unknown }).face;
     if (typeof faceVal === 'string') {
       if (CANONICAL_FACES.has(faceVal)) {
@@ -167,8 +174,9 @@ function buildEdgeFeatureRef(
       },
     };
   }
-  // Case 4: EdgeSegment (object with id + midpoint)
-  if (typeof selector === 'object' && selector !== null && 'id' in selector && 'midpoint' in selector) {
+  // Case 4: EdgeSegment (object with id + midpoint + direction + curveType — full schema)
+  if (typeof selector === 'object' && selector !== null &&
+      'id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector) {
     return {
       key: 'edges',
       value: {
@@ -190,13 +198,40 @@ function buildEdgeFeatureRef(
       },
     };
   }
-  // Case 6: EdgeQuery (any other object with EdgeQuery keys)
+  // Case 6: EdgeQuery — verify all keys are in the whitelist. If any keys are
+  // unknown we still build a query ref so the lowerer can diagnose with the
+  // `feature.edge-feature.invalid-query` code; that keeps the error path on
+  // the lowering side where diagnostics are aggregated.
+  if (typeof selector === 'object' && selector !== null) {
+    const keys = Object.keys(selector);
+    if (keys.length > 0 && keys.every(k => EDGE_QUERY_KEYS.has(k))) {
+      return {
+        key: 'edges',
+        value: {
+          kind: 'edge',
+          featureId: baseId,
+          ref: { kind: 'query', query: selector as import('../backends/occt/edgeQueries').EdgeQuery },
+        },
+      };
+    }
+    // Unknown shape — store as a query so the lowerer can diagnose
+    // `feature.edge-feature.invalid-query` against it.
+    return {
+      key: 'edges',
+      value: {
+        kind: 'edge',
+        featureId: baseId,
+        ref: { kind: 'query', query: selector as import('../backends/occt/edgeQueries').EdgeQuery },
+      },
+    };
+  }
+  // Empty or non-object selector — fall through to the existing default.
   return {
     key: 'edges',
     value: {
       kind: 'edge',
       featureId: baseId,
-      ref: { kind: 'query', query: selector as import('../backends/occt/edgeQueries').EdgeQuery },
+      ref: { kind: 'query', query: selector as unknown as import('../backends/occt/edgeQueries').EdgeQuery },
     },
   };
 }

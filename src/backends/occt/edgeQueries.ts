@@ -26,6 +26,12 @@ export type EdgeQuery = {
   atZ?: number;
   atX?: number;
   atY?: number;
+  /**
+   * Sort matching edges by distance to this point — closest first.
+   * NOTE: this is a SORT, not a FILTER. `near` alone returns all edges
+   * (sorted); combine with `within`, `tolerance`, or other keys to filter.
+   * `selectEdge` uses `near` to pick a single result from multiple matches.
+   */
   near?: Vec3;
   within?: BoundingRegion;
   parallel?: Vec3;
@@ -191,7 +197,7 @@ export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
 function computeDihedral(
   shape: { faces: Face[] },
   edge: Edge,
-): { angleDeg: number; convex: boolean } | null {
+): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
   // Find faces that contain this edge by walking each face's edge list.
   // Using face.edges (rather than face.outerWire().edges) avoids creating
   // intermediate Wire wrappers whose disposal can invalidate the parent face.
@@ -222,7 +228,7 @@ function computeDihedral(
   const outward: Vec3 = [mid[0] - centroid[0], mid[1] - centroid[1], mid[2] - centroid[2]];
   const sumN: Vec3 = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
   const sign = sumN[0]*outward[0] + sumN[1]*outward[1] + sumN[2]*outward[2];
-  return { angleDeg: 180 - angleDeg, convex: sign >= 0 };
+  return { angleDeg: 180 - angleDeg, convex: sign >= 0, normalA: a, normalB: b };
 }
 
 function isSameEdge(a: Edge, b: Edge): boolean {
@@ -261,6 +267,14 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     faces = faces.filter(f => {
       const n = f.normalAt();
       return isParallel([n.x, n.y, n.z], target, 10);
+    });
+  }
+  if (query.inPlane) {
+    const target = planeNormal(query.inPlane);
+    const angleTol = 10; // degrees
+    faces = faces.filter(f => {
+      const n = f.normalAt();
+      return isParallel([n.x, n.y, n.z], target, angleTol);
     });
   }
   if (query.ofSurfaceType) {
@@ -305,8 +319,8 @@ export function toEdgeSegment(edge: Edge, index: number, shape: { faces: Face[] 
     curveType: (edge as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
     convex: dihedral?.convex ?? null,
     dihedralAngleDeg: dihedral?.angleDeg ?? null,
-    normalA: null,
-    normalB: null,
+    normalA: dihedral?.normalA ?? null,
+    normalB: dihedral?.normalB ?? null,
     boundary: dihedral === null,
   };
 }
