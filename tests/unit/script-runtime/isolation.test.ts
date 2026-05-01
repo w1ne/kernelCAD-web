@@ -14,8 +14,10 @@ describe('runIsolated', () => {
       .toThrow();
   });
 
-  it('captures the script return value via wrapReturn', () => {
+  it('captures the script return value via wrapReturn', async () => {
+    // Script body is wrapped in an async IIFE to support top-level await,
+    // so returnValue is a Promise that callers await (runScript does this).
     const result = runIsolated('return 42;', 'test.kcad.ts', {}, { wrapReturn: true });
-    expect(result.returnValue).toBe(42);
+    expect(await (result.returnValue as Promise<unknown>)).toBe(42);
   });
 });

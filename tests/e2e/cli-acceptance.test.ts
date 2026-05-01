@@ -284,3 +284,20 @@ describe('v0.4-rc6 tabbed-plate label+fillet fixture', () => {
     expect(statSync(out).size).toBeGreaterThan(500);
   });
 });
+
+describe('v0.4-rc7 preselected-edges round-trip fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('selectEdges → fillet round-trip produces valid STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'preselected-edges.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/preselected-edges.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+

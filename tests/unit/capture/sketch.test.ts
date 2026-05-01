@@ -468,4 +468,33 @@ describe('path() builder + Sketch capture', () => {
     const r = await engine.run(result.records);
     expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
   });
+
+  it('B1: box.chamfer(0.5, { atZ: 5 }) chamfers top edges', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).chamfer(0.5, { atZ: 5 });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    // Chamfer 0.5 on 4 top edges — small sliver removed per edge.
+    expect(v).toBeGreaterThan(490);
+    expect(v).toBeLessThan(499);
+  });
+
+  it('B1: box.shell(1, { face: { atZ: 5 } }) hollows out leaving the top open', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `return box(10, 10, 5).shell(1, { face: { atZ: 5 } });`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const last = result.records[result.records.length - 1];
+    const v = r.shapes.get(last.id)!.volume();
+    expect(v).toBeGreaterThan(200);
+    expect(v).toBeLessThan(320);
+  });
 });

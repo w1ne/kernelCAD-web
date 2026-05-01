@@ -42,9 +42,14 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
     { wrapReturn: true },
   );
 
+  // The script body is wrapped in an async IIFE — returnValue may be a Promise.
+  let returnValue = result.returnValue;
+  if (returnValue && typeof (returnValue as { then?: unknown }).then === 'function') {
+    returnValue = await (returnValue as Promise<unknown>);
+  }
   return {
     records: session.getRecords(),
     params,
-    returnValue: result.returnValue,
+    returnValue,
   };
 }

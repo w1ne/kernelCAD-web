@@ -67,4 +67,30 @@ export class Shape {
   shell(thickness: number, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
+
+  /**
+   * Lower this Shape eagerly — runs recompute against the records up to and
+   * including this Shape, returns the resulting OcctBackend so script-runtime
+   * helpers like `selectEdges` can introspect the lowered geometry.
+   *
+   * Most agents won't call this directly. It's invoked implicitly when an
+   * agent calls `selectEdges(myShape, ...)` from a `.kcad.ts` script.
+   */
+  async lower(): Promise<import('../backends/occt/occtBackend').OcctBackend> {
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { OcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { OcctBackend, initOcct } = await import('../backends/occt/occtBackend');
+    await initOcct();
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const records = this.session.getRecords();
+    const r = await engine.run(records as readonly import('../intent/featureRecord').FeatureRecord[]);
+    const shape = r.shapes.get(this.id);
+    if (!shape) {
+      throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
+    }
+    if (!(shape instanceof OcctBackend)) {
+      throw new Error(`Shape.lower(): shape '${this.id}' is not an OcctBackend.`);
+    }
+    return shape;
+  }
 }

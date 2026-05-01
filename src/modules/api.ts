@@ -3,6 +3,12 @@ import { Shape } from '../capture/proxy';
 import { makePath, type PathBuilder } from '../capture/sketch';
 import type { ParamRegistry, ParamOptions } from '../compute/paramRegistry';
 import type { Param } from '../intent/types';
+import {
+  selectEdges as selectEdgesBackend,
+  selectEdge as selectEdgeBackend,
+  type EdgeQuery,
+  type EdgeSegment,
+} from '../backends/occt/edgeQueries';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -21,6 +27,8 @@ export interface KernelCadApi {
   union(...shapes: Shape[]): Shape;
   param(name: string, defaultExpr: number | string, opts: ParamOptions): number;
   path(): PathBuilder;
+  selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
+  selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;
 }
 
 const mm = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
@@ -121,6 +129,14 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     },
     path() {
       return makePath(session);
+    },
+    selectEdges: async (shape, query = {}) => {
+      const lowered = await shape.lower();
+      return selectEdgesBackend(lowered, query);
+    },
+    selectEdge: async (shape, query) => {
+      const lowered = await shape.lower();
+      return selectEdgeBackend(lowered, query);
     },
   };
 }

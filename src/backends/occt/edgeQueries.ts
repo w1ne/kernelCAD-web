@@ -338,7 +338,14 @@ export function selectEdges(base: OcctBackend, query: EdgeQuery = {}): EdgeSegme
   const allEdges: Edge[] = (shape as unknown as { edges: Edge[] }).edges;
   const matched = resolveEdgeQuery(base, query);
   return matched.map(e => {
-    const idx = allEdges.indexOf(e);
+    // Replicad's `.edges` getter materializes new Edge wrappers per access, so
+    // `indexOf` won't find a match by reference. Resolve by geometric identity
+    // (endpoint coincidence) against `allEdges` — this matches how the lowerer
+    // resolves segment IDs back to Edge instances on the next lowering.
+    let idx = allEdges.indexOf(e);
+    if (idx === -1) {
+      idx = allEdges.findIndex(other => isSameEdge(other, e));
+    }
     return toEdgeSegment(e, idx, shape as unknown as { faces: Face[] });
   });
 }
