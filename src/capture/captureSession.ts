@@ -3,6 +3,7 @@ import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureKind, FeatureRef, Param } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
+import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
 
 export interface FeatureSpec {
   kind: FeatureKind;
@@ -115,11 +116,7 @@ export class CaptureSession {
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);
 
-const EDGE_QUERY_KEYS = new Set<string>([
-  'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',
-  'convex', 'concave', 'minAngle', 'maxAngle', 'ofCurveType',
-  'tolerance', 'angleTolerance',
-]);
+const EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS_ARR);
 
 /**
  * Translate the user-facing EdgeSelector (or face wrapper) into either an
