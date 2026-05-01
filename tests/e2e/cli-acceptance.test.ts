@@ -381,3 +381,19 @@ describe('v0.4-rc11 bracket-blends variable-radius fixture', () => {
   });
 });
 
+describe('v0.4-rc12 bracket-bevels variable-distance chamfer fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the bracket-bevels fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'bracket-bevels.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/bracket-bevels.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+
