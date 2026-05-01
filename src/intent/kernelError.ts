@@ -16,7 +16,9 @@ export class KernelError extends Error {
 }
 
 export function isKernelError(e: unknown): e is KernelError {
-  return e instanceof KernelError || (
-    typeof e === 'object' && e !== null && 'code' in e && (e as { name?: string }).name === 'KernelError'
-  );
+  // The structural-shape fallback was removed in rc.9 — KernelError is not
+  // injected into the vm sandbox API surface, so cross-realm throws of
+  // KernelError-shaped objects don't occur in current code paths. Reintroduce
+  // the fallback when KernelError becomes a sandbox-visible class.
+  return e instanceof KernelError;
 }

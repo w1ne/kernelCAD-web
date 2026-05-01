@@ -595,4 +595,22 @@ describe('path() builder + Sketch capture', () => {
     const last = result.records[result.records.length - 1];
     expect(r.shapes.get(last.id)!.volume()).toBeGreaterThan(0);
   });
+
+  it('rail.length > 5000 emits feature.sweep.invalid-rail with hint to reduce pointsPerTurn', async () => {
+    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const code = `
+      // Synthesize a 5001-point rail directly (faster than helix(...) at high resolution).
+      const rail = [];
+      for (let i = 0; i < 5001; i++) rail.push([0, 0, i * 0.01]);
+      const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
+      return profile.sweep(rail);
+    `;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(result.records);
+    expect(r.diagnostics.some(d =>
+      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+    )).toBe(true);
+  });
 });
