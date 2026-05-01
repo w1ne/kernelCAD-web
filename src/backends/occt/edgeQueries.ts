@@ -204,8 +204,9 @@ function computeDihedral(
   }
   if (adjacent.length < 2) return null;
   const mid = edgeMidpoint(edge);
-  const nA = adjacent[0].normalAt({ x: mid[0], y: mid[1], z: mid[2] });
-  const nB = adjacent[1].normalAt({ x: mid[0], y: mid[1], z: mid[2] });
+  const midPoint = { x: mid[0], y: mid[1], z: mid[2] } as unknown as Parameters<Face['normalAt']>[0];
+  const nA = adjacent[0].normalAt(midPoint);
+  const nB = adjacent[1].normalAt(midPoint);
   const a: Vec3 = [nA.x, nA.y, nA.z];
   const b: Vec3 = [nB.x, nB.y, nB.z];
   const cosAng = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
@@ -268,7 +269,7 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     const p = query.containsPoint;
     faces = faces.filter(f => {
       try {
-        f.uvCoordinates({ x: p[0], y: p[1], z: p[2] });
+        f.uvCoordinates({ x: p[0], y: p[1], z: p[2] } as unknown as Parameters<Face['uvCoordinates']>[0]);
         return true;
       } catch {
         return false;
