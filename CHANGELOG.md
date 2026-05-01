@@ -1,3 +1,26 @@
+## v0.13.0-rc.8 (NORTHSTAR roadmap: sketch sweep + bundled quality fixes) — 2026-05-01
+
+### Added
+- **`Sketch.sweep(rail, opts?)`** — sweep a closed profile along a 3D polyline rail. `opts.frenet: true` for helices and curved rails (profile rotates with tangent + curvature); default `false` for straight pipes and planar polyline rails (profile keeps fixed world-up vector). Returns a `Shape` (3D solid).
+- **`helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? })`** — pure function returning a polyline approximation of a helix curve, ready to pass to `Sketch.sweep`. Default 32 points per turn; agents tune for tight threads.
+- **`OcctBackend.sweepFromSketch(sketch, rail, opts?)`** — backend factory that lifts the profile sketch's drawing onto XY, assembles the rail polyline into a spine wire, and calls the kernel's generic sweep.
+- **4 new diagnostic codes:** `feature.sweep.invalid-rail`, `feature.sweep.failed`, `feature.sweep.bad-sketch`, `feature.sweep.unsupported-profile`. Each has a `whyDidThisFail` hint.
+- **`list_api` MCP tool** — advertises the script-runtime surface (globals, Shape methods, Sketch methods, PathBuilder methods, EdgeQuery/FaceQuery key sets) so agents can discover the API via MCP without reading source. Closes rc.7 review finding I-3. Total MCP surface: 12 → 13 tools.
+- E2E fixtures `tests/e2e/fixtures/pipe.kcad.ts` (square-profile pipe) and `tests/e2e/fixtures/spring.kcad.ts` (helical spring with `frenet: true`).
+
+### Changed
+- **`pickFace` query-mismatch diagnostic namespace fixed** — was `feature.edge-feature.no-edges-match`, now `feature.face-feature.no-match`. Closes rc.7 review finding I-1. Agents pattern-matching `feature.face-feature.*` now correctly receive face-feature errors from `Shape.shell({face: query})` calls.
+- New hint entry for `feature.face-feature.no-match`.
+
+### Deferred to subsequent rcs
+- Closed-rail sweep (torus-like) — rc.9
+- Variable-profile loft — rc.9+ (separate feature kind)
+- Custom sweep options (`auxiliarySpine`, `withContact`, transition modes) — rc.9+
+- 3D path builder (`path3d()`) — rc.9 if needed
+- Other rc.7 review findings (I-2 EDGE_QUERY_KEYS DRY, I-4 errorCode lowering path, I-5 listFeatures gap, I-6 perf, I-7 cross-realm) — rc.9 quality pass
+
+---
+
 ## v0.13.0-rc.7 (NORTHSTAR roadmap: quality pass — close all rc.6 review findings) — 2026-05-01
 
 ### Added

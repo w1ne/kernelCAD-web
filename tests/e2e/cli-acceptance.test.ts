@@ -301,3 +301,35 @@ describe('v0.4-rc7 preselected-edges round-trip fixture', () => {
   });
 });
 
+describe('v0.4-rc8 pipe sweep fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the pipe fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'pipe.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/pipe.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+
+describe('v0.4-rc8 spring sweep fixture (helix + frenet)', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the spring fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'spring.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/spring.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  }, 30000); // larger timeout — helix tessellation is expensive
+});
+
