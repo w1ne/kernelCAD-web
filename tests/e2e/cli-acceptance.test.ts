@@ -333,3 +333,35 @@ describe('v0.4-rc8 spring sweep fixture (helix + frenet)', () => {
   }, 30000); // larger timeout — helix tessellation is expensive
 });
 
+describe('v0.4-rc10 nozzle loft fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the nozzle fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'nozzle.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/nozzle.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+});
+
+describe('v0.4-rc10 airfoil loft fixture (4-rib wing)', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the airfoil fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'airfoil.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/airfoil.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  }, 30000);  // larger timeout — 4-section loft tessellates more than 2-section
+});
+
