@@ -1,3 +1,27 @@
+## v0.13.0-rc.11 (NORTHSTAR roadmap: variable-radius blends + bundled rc.10 fixes) — 2026-05-01
+
+### Added
+- **`Shape.fillet([{edges, radius}, ...])`** — variable-radius fillet via array overload. Each group specifies an `EdgeSelector` (canonical face, label, query, segments) and a per-group radius. Edges that don't match any group pass through unfilleted (opt-in semantics). Distinguished from existing `fillet(2, edges)` by first-arg type.
+- **`Shape.chamfer([{edges, distance}, ...])`** — same shape for chamfer.
+- **`OcctBackend.filletVariable(groups)` / `chamferVariable(groups)`** — backend instance methods using Replicad's `RadiusConfig` function form `(e: Edge) => number | null`. Per-edge geometric matching via endpoint comparison (~1e-6 tolerance) handles Replicad's per-iteration `Edge` instance churn. Mixed-radius fillet on a 10×10×5 box (top r=2, bottom r=0.5) measured at 466.63 mm³ (analytic ~463).
+- **`CaptureSession.variableEdgeFeature`** — capture helper that registers a `'fillet'` or `'chamfer'` FeatureRecord with `metadata.variable: true` + per-group `metadata.groups[i]` radius/distance + `inputs.edge_group_${i}` FeatureRef.
+- **4 new diagnostic codes:** `feature.fillet.empty-groups`, `feature.fillet.invalid-group`, `feature.chamfer.empty-groups`, `feature.chamfer.invalid-group`. Each has a `whyDidThisFail` hint.
+- E2E fixture `tests/e2e/fixtures/bracket-blends.kcad.ts` — mounting plate with `topRadius=2.0` on top edges and `bottomRadius=0.5` on bottom edges.
+
+### Changed
+- **MCP `serverInfo.version` derived from `package.json`** (rc.10 review I-C). Pre-rc.11 the value was hardcoded `'0.11.0-alpha.1'` — agents reading the MCP `initialize` response saw stale version data and couldn't tell which kernel features were available. New version drift sentinel test (`tests/integration/mcp/serverInfoVersion.test.ts`) prevents regression.
+- **`feature.loft.failed` split for missing-input case** (rc.10 review I-B). When `inputs.byKey['sketch_${i}']` is missing, the lowerer now emits `feature.loft.bad-sketch` with a hint pointing to the upstream `feature.sketch.failed` diagnostic. Replicad-thrown errors continue to use the catch-all `feature.loft.failed`. Note: the engine path's `recompute.input.missing` short-circuit means agents currently see the upstream sketch diagnostic + recompute-input-missing rather than `feature.loft.bad-sketch` — same forward-looking infrastructure pattern as rc.10's `feature.sweep.multi-face-profile`.
+- **Loft `planes` success path test coverage** added (rc.10 review I-A). Two new tests covering axial origin and non-axial origin variants. The lowerer's explicit-planes branch is now end-to-end tested.
+- **Drift sentinel contract documentation** (rc.10 review I-D). Added header comments above `Sketch`, `PathBuilder`, and `Shape` class declarations explaining that adding a public method requires updating `src/mcp/tools/listApi.ts` or the drift sentinel test fails.
+
+### Deferred to subsequent rcs
+- Closed-rail sweep (torus-like) — rc.12
+- 3D path builder (`path3d()`) — rc.12+ (or never; agents have `helix()` and raw polylines)
+- Text/embossing primitives — rc.12+ (would activate dormant `feature.sweep.multi-face-profile` code path)
+- Other rc.10 nits (N-1..N-10) — rc.12 quality pass
+
+---
+
 ## v0.13.0-rc.10 (NORTHSTAR roadmap: sketch loft + bundled rc.9 fixes) — 2026-05-01
 
 ### Added
