@@ -38,7 +38,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   try {
     result = await runAndExport({ code, fileName: filePath, format: input.format });
   } catch (e) {
-    const diag = kernelErrorToDiagnostic(e);
+    const diag = kernelErrorToDiagnostic(e, 'cli.export.exception');
     return {
       exitCode: 1, bytesWritten: 0,
       diagnostics: [diag],
