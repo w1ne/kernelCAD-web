@@ -6,7 +6,8 @@ import type {
   ShapeBackend,
 } from '../backend';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind } from '../../intent/types';
+import type { FeatureKind, PlaneSpec } from '../../intent/types';
+import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
@@ -174,6 +175,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sketch',    // NEW
     'sweep',     // NEW (v0.13.0-rc.8)
     'loft',      // NEW (v0.13.0-rc.10)
+    'mirror',    // NEW (v0.13.0-rc.13)
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -785,6 +787,45 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id,
             severity: 'error',
             message: `OCCT shell failed: ${msg}`,
+          });
+          return { shape: base, diagnostics };
+        }
+        break;
+      }
+      case 'mirror': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.mirror.no-base',
+            featureId: r.id,
+            severity: 'error',
+            message: `mirror requires an input named 'base'.`,
+          });
+          throw new Error('mirror: no base shape');
+        }
+        const meta = r.metadata as { plane?: PlaneSpec } | undefined;
+        const plane = meta?.plane;
+        if (!isValidPlaneSpec(plane)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.mirror.invalid-plane',
+            featureId: r.id,
+            severity: 'error',
+            message: `mirror requires a valid plane spec; got ${JSON.stringify(plane)}.`,
+          });
+          return { shape: base, diagnostics };
+        }
+        try {
+          shape = base.mirror(plane);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.mirror.failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT mirror union failed: ${msg}`,
           });
           return { shape: base, diagnostics };
         }

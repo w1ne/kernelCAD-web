@@ -465,10 +465,47 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(this.shape.scale(factor) as ReplicadShape3D);
   }
 
-  mirror(normal: Vec3): OcctBackend {
-    return new OcctBackend(
-      this.shape.mirror(normal as [number, number, number], [0, 0, 0]) as ReplicadShape3D,
-    );
+  mirror(normal: Vec3): OcctBackend;
+  /**
+   * Boolean union of the source and its reflection — the symmetric-part
+   * shortcut. Equivalent to `this.union(this.reflect(plane))` but exposed
+   * as a single method so the user-facing API and the lowerer can each
+   * call it directly.
+   *
+   * For pure reflection without union, use `reflect(plane)`.
+   *
+   * NOTE: Replicad's transform primitives destroy the original OCCT shape
+   * after returning the transformed copy. To safely produce the union of
+   * the source and its reflection we must clone the source shape before
+   * reflecting, so the original OCCT object stays alive for the fuse call.
+   *
+   * @throws {Error} If Replicad's boolean union fails (typically because
+   *   the source touches the mirror plane, producing zero-thickness
+   *   intersections).
+   */
+  mirror(plane: PlaneSpec): OcctBackend;
+  mirror(normalOrPlane: Vec3 | PlaneSpec): OcctBackend {
+    // Distinguish Vec3 (array) from PlaneSpec (string or object with .plane).
+    if (Array.isArray(normalOrPlane)) {
+      // Vec3 form — pure transform-based mirror (legacy/transform path).
+      return new OcctBackend(
+        this.shape.mirror(normalOrPlane as [number, number, number], [0, 0, 0]) as ReplicadShape3D,
+      );
+    }
+    // PlaneSpec form — boolean union of source + reflection.
+    //
+    // Replicad's shape-level transforms (mirror, translate, rotate, …) call
+    // `this.wrapped.delete()` on the original shape after producing the
+    // transformed copy. Calling `this.reflect(plane)` therefore destroys
+    // `this.shape`, making it unavailable for the subsequent `union` call.
+    //
+    // Fix: clone `this.shape` before reflecting so the clone remains valid
+    // as the first operand of the fuse, while the reflect call consumes the
+    // original (now-deleted) shape reference.
+    const originalClone = (this.shape as unknown as { clone: () => ReplicadShape3D }).clone();
+    const originalForUnion = new OcctBackend(originalClone);
+    const reflected = this.reflect(normalOrPlane);
+    return originalForUnion.union(reflected);
   }
 
   /**

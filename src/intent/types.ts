@@ -59,6 +59,8 @@ export type FeatureKind =
   | 'boolean'
   // edge/face features (v0.2+)
   | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'cut' | 'draft'
+  // symmetric (v0.13+)
+  | 'mirror'
   // imports (v0.3+)
   | 'importedMesh' | 'importedStep'
   // sketch (v0.2+)
@@ -67,3 +69,26 @@ export type FeatureKind =
   | 'assemblyPart' | 'assemblyJoint' | 'assemblyConnect'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sdf';
+
+/**
+ * Runtime guard for PlaneSpec. Returns true for cardinal strings
+ * ('xy' | 'xz' | 'yz') and for offset-plane objects
+ * `{ plane: CardinalPlane; offset: number }` where offset is finite.
+ * Rejects everything else.
+ */
+export function isValidPlaneSpec(value: unknown): value is PlaneSpec {
+  if (typeof value === 'string') {
+    return value === 'xy' || value === 'xz' || value === 'yz';
+  }
+  if (typeof value === 'object' && value !== null) {
+    const v = value as Record<string, unknown>;
+    const plane = v['plane'];
+    const offset = v['offset'];
+    return (
+      (plane === 'xy' || plane === 'xz' || plane === 'yz') &&
+      typeof offset === 'number' &&
+      Number.isFinite(offset)
+    );
+  }
+  return false;
+}

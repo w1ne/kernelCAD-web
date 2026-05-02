@@ -869,6 +869,16 @@ describe('path() builder + Sketch capture', () => {
     )).toBe(true);
   });
 
+  it('Shape.mirror(plane) creates a mirror feature with metadata.plane', async () => {
+    const code = `return box(10, 5, 5).translate(5, 0, 0).mirror('yz');`;
+    const run = await runScript({ code, fileName: '<test>' });
+    expect(run.records).toHaveLength(2);  // box + mirror
+    const mirror = run.records[1];
+    expect(mirror.kind).toBe('mirror');
+    expect(mirror.inputs.base).toMatchObject({ kind: 'feature' });
+    expect(mirror.metadata).toMatchObject({ plane: 'yz' });
+  });
+
   it('Shape.fillet([]) (empty array) → feature.fillet.empty-groups at lowering', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
     const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');

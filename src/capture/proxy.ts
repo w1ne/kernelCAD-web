@@ -67,6 +67,10 @@ export class Shape {
     return this;
   }
 
+  mirror(plane: PlaneSpec): Shape {
+    return this.session.mirrorFeature(this, plane);
+  }
+
   subtract(...others: Shape[]): Shape {
     return this.session.boolean('difference', this, others);
   }
