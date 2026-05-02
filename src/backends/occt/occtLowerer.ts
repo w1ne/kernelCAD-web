@@ -18,10 +18,9 @@ import { pickEdges, pickFace } from './edgeSelection';
 
 type VariableEdgeKind = 'fillet' | 'chamfer';
 
-interface ApplyVariableEdgeFeatureResult {
-  shape?: OcctBackend;
-  diagnostics: CompilerDiagnostic[];
-}
+type ApplyVariableEdgeFeatureResult =
+  | { ok: true; shape: OcctBackend; diagnostics: CompilerDiagnostic[] }
+  | { ok: false; diagnostics: CompilerDiagnostic[] };
 
 /**
  * Apply a variable-radius fillet or variable-distance chamfer.
@@ -38,7 +37,7 @@ interface ApplyVariableEdgeFeatureResult {
  * Returns either `{ shape, diagnostics }` (success) or `{ diagnostics }`
  * (failure — caller falls through to its own error handling).
  */
-function applyVariableEdgeFeature(
+export function applyVariableEdgeFeature(
   kind: VariableEdgeKind,
   base: OcctBackend,
   feature: FeatureRecord,
@@ -65,8 +64,22 @@ function applyVariableEdgeFeature(
         ? `variable-radius fillet has no groups.`
         : `variable-distance chamfer has no groups.`,
     });
-    return { shape: base, diagnostics };
+    return { ok: false, diagnostics };
   }
+
+  // N3 fix: runtime-narrow inputs.base to a 'feature' ref before extracting id.
+  const baseRef = feature.inputs.base as import('../../intent/types').FeatureRef | undefined;
+  if (!baseRef || (baseRef as { kind?: string }).kind !== 'feature') {
+    diagnostics.push({
+      target: 'export-occt',
+      code: `${codePrefix}.no-base`,
+      featureId: feature.id,
+      severity: 'error',
+      message: `${kind} input 'base' must be a feature ref; got ${JSON.stringify(baseRef)}.`,
+    });
+    return { ok: false, diagnostics };
+  }
+  const narrowedBase: import('../../intent/types').FeatureRef = baseRef as { kind: 'feature'; id: import('../../intent/types').FeatureId };
 
   // Per-group resolution loop. Build a synthetic one-input FeatureRecord
   // per group so we can reuse pickEdges' canonical/label/query/segments
@@ -85,24 +98,55 @@ function applyVariableEdgeFeature(
         severity: 'error',
         message: `${kind} group ${i} has invalid ${valueKey} ${value}; must be a positive finite number.`,
       });
-      return { shape: base, diagnostics };
+      return { ok: false, diagnostics };
     }
 
-    const rawRef = feature.inputs[`edge_group_${i}`] as unknown;
+    // I1 fix: replace silent-drop conditional spreads with an explicit kind switch.
+    const ref = feature.inputs[`edge_group_${i}`] as import('../../intent/types').FeatureRef | undefined;
+    const synthInputs: Record<string, import('../../intent/types').FeatureRef> = {
+      base: narrowedBase,
+    };
+    if (ref) {
+      switch (ref.kind) {
+        case 'edge':
+          synthInputs.edges = ref;
+          break;
+        case 'face':
+          synthInputs.face = ref;
+          break;
+        case 'feature':
+        case 'vertex': {
+          // Unexpected ref kind for an edge_group input.
+          diagnostics.push({
+            target: 'export-occt',
+            code: `${codePrefix}.invalid-edge-ref`,
+            featureId: feature.id,
+            severity: 'error',
+            message: `${kind} group ${i} edge_group_${i} ref kind '${ref.kind}' is not supported (expected 'edge' or 'face').`,
+          });
+          return { ok: false, diagnostics };
+        }
+        default: {
+          // Exhaustiveness guard: catches any future FeatureRef kinds added to the union.
+          const _exhaustive: never = ref;
+          diagnostics.push({
+            target: 'export-occt',
+            code: `${codePrefix}.invalid-edge-ref`,
+            featureId: feature.id,
+            severity: 'error',
+            message: `${kind} group ${i} edge_group_${i} ref kind '${(_exhaustive as { kind?: string }).kind ?? '<unknown>'}' is not supported (expected 'edge' or 'face').`,
+          });
+          return { ok: false, diagnostics };
+        }
+      }
+    }
+
     // Synthesize a one-input record so pickEdges can resolve it.
     const synth: FeatureRecord = {
       id: feature.id,
       kind: feature.kind,
       params: {},
-      inputs: {
-        base: { kind: 'feature', id: (feature.inputs.base as { id: string }).id },
-        ...(rawRef && (rawRef as { kind?: string }).kind === 'edge'
-          ? { edges: rawRef as import('../../intent/types').FeatureRef }
-          : {}),
-        ...(rawRef && (rawRef as { kind?: string }).kind === 'face'
-          ? { face: rawRef as import('../../intent/types').FeatureRef }
-          : {}),
-      },
+      inputs: synthInputs,
       transforms: [],
       suppressed: false,
     };
@@ -116,7 +160,7 @@ function applyVariableEdgeFeature(
         severity: 'error',
         message: `${kind} group ${i} edge resolution failed: ${edgesResult.error.message}`,
       });
-      return { shape: base, diagnostics };
+      return { ok: false, diagnostics };
     }
 
     if (kind === 'fillet') {
@@ -142,10 +186,10 @@ function applyVariableEdgeFeature(
         ? `OCCT variable fillet failed: ${msg}`
         : `OCCT variable chamfer failed: ${msg}`,
     });
-    return { shape: base, diagnostics };
+    return { ok: false, diagnostics };
   }
 
-  return { shape, diagnostics };
+  return { ok: true, shape, diagnostics };
 }
 
 /**
@@ -658,10 +702,10 @@ export class OcctLowerer implements FeatureLowerer {
         if (meta?.variable === true) {
           const result = applyVariableEdgeFeature('fillet', base, r, allRecords);
           diagnostics.push(...result.diagnostics);
-          if (result.diagnostics.some(d => d.severity === 'error')) {
+          if (!result.ok) {
             return { shape: base, diagnostics };
           }
-          shape = result.shape!;
+          shape = result.shape;
           break;
         }
         const radius = r.params.radius?.evaluated;
@@ -712,10 +756,10 @@ export class OcctLowerer implements FeatureLowerer {
         if (meta?.variable === true) {
           const result = applyVariableEdgeFeature('chamfer', base, r, allRecords);
           diagnostics.push(...result.diagnostics);
-          if (result.diagnostics.some(d => d.severity === 'error')) {
+          if (!result.ok) {
             return { shape: base, diagnostics };
           }
-          shape = result.shape!;
+          shape = result.shape;
           break;
         }
         const distance = r.params.distance?.evaluated;
