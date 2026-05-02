@@ -11,6 +11,13 @@ import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
+import * as replicad from 'replicad';
+import {
+  cutWithHistory,
+  fuseWithHistory,
+  intersectWithHistory,
+  mergeBooleanHistory,
+} from './historyAwareBooleans';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -668,19 +675,28 @@ export class OcctLowerer implements FeatureLowerer {
         const op = String(r.params.op.expression).replace(/'/g, '');
         const base = inputs.byKey['base'];
         if (!base) throw new Error(`Boolean ${r.id} missing 'base' input`);
-        let acc = base;
+        let acc: OcctBackend = base as OcctBackend;
         const cutters = Object.entries(inputs.byKey)
           .filter(([k]) => k.startsWith('cutter_'))
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([, v]) => v);
-        if (op === 'difference') {
-          for (const c of cutters) acc = acc.subtract(c);
-        } else if (op === 'union') {
-          for (const c of cutters) acc = acc.union(c);
-        } else if (op === 'intersection') {
-          for (const c of cutters) acc = acc.intersect(c);
-        } else {
-          throw new Error(`Unknown boolean op: ${op}`);
+          .map(([, v]) => v as OcctBackend);
+        const opFn =
+          op === 'difference' ? cutWithHistory :
+          op === 'union' ? fuseWithHistory :
+          op === 'intersection' ? intersectWithHistory :
+          null;
+        if (!opFn) throw new Error(`Unknown boolean op: ${op}`);
+        for (const c of cutters) {
+          const result = opFn(acc, c);
+          const newMap = mergeBooleanHistory(acc.historyMap, c.historyMap, result);
+          // Wrap the result TopoDS_Shape back into a Replicad Shape3D using
+          // replicad.cast(), which downcasts the raw shape to the correct
+          // OCCT subtype (Solid or Compound) and wraps it in the matching
+          // Replicad class. The cast result is AnyShape; boolean ops always
+          // yield a 3D solid or compound, so the cast to Shape3D is safe.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(result.shape as any) as replicad.Shape3D;
+          acc = new OcctBackend(wrapped, undefined, newMap);
         }
         shape = acc;
         break;

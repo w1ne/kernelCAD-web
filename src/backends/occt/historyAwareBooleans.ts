@@ -17,7 +17,7 @@
 
 import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
-import type { FaceHash, EdgeHash } from '../../naming/evolutionRecord';
+import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
 
 export interface BooleanHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -206,4 +206,43 @@ export function fuseWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHi
 export function intersectWithHistory(body: OcctBackend, tool: OcctBackend): BooleanHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return runBooleanWithHistory(body, tool, (getOC() as any).BRepAlgoAPI_Common_3);
+}
+
+/**
+ * Merge two input HistoryMaps with the OCCT history of a boolean operation.
+ *
+ * - Skip entries whose input hash is in deletedFaces.
+ * - For each input face: if it has children in result.faceHistory, copy lineage
+ *   to each child hash. If no entry exists, the face is unchanged — copy lineage
+ *   to the same hash in output.
+ * - When multiple input lineages map to the same child hash, keep the first
+ *   (lineages with the same canonicalName are equivalent for resolver purposes).
+ */
+export function mergeBooleanHistory(
+  bodyMap: HistoryMap | undefined,
+  toolMap: HistoryMap | undefined,
+  result: BooleanHistoryResult,
+): HistoryMap {
+  const out: HistoryMap = new Map();
+  const addContribution = (
+    inputMap: HistoryMap | undefined,
+    deletedSet: Set<FaceHash>,
+  ) => {
+    if (!inputMap) return;
+    for (const [inputHash, lineage] of inputMap.entries()) {
+      if (deletedSet.has(inputHash)) continue;
+      const children = result.faceHistory.get(inputHash);
+      if (children && children.length > 0) {
+        for (const childHash of children) {
+          if (!out.has(childHash)) out.set(childHash, lineage);
+        }
+      } else {
+        // No history entry → face unchanged → same hash in output
+        if (!out.has(inputHash)) out.set(inputHash, lineage);
+      }
+    }
+  };
+  addContribution(bodyMap, result.deletedFaces);
+  addContribution(toolMap, result.deletedFaces);
+  return out;
 }
