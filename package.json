@@ -10,6 +10,11 @@
   "bin": {
     "kernelcad": "./dist/cli/index.js"
   },
+  "files": [
+    "dist/cli",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
