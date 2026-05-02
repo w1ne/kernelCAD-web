@@ -869,6 +869,16 @@ describe('path() builder + Sketch capture', () => {
     )).toBe(true);
   });
 
+  it('Shape.mirror(plane) creates a mirror feature with metadata.plane', async () => {
+    const code = `return box(10, 5, 5).translate(5, 0, 0).mirror('yz');`;
+    const run = await runScript({ code, fileName: '<test>' });
+    expect(run.records).toHaveLength(2);  // box + mirror
+    const mirror = run.records[1];
+    expect(mirror.kind).toBe('mirror');
+    expect(mirror.inputs.base).toMatchObject({ kind: 'feature' });
+    expect(mirror.metadata).toMatchObject({ plane: 'yz' });
+  });
+
   it('Shape.fillet([]) (empty array) → feature.fillet.empty-groups at lowering', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
     const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
@@ -879,5 +889,123 @@ describe('path() builder + Sketch capture', () => {
     expect(r.diagnostics.some(d =>
       d.code === 'feature.fillet.empty-groups' && d.severity === 'error'
     )).toBe(true);
+  });
+
+  describe('Sketch.reflect(axis)', () => {
+    it('reflects line segments across the x-axis', async () => {
+      const code = `
+        const sketch = path()
+          .moveTo(0, 0)
+          .lineTo(10, 0)
+          .lineTo(10, 5)
+          .lineTo(0, 5)
+          .close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const result = await runScript({ code, fileName: 'test.kcad.ts' });
+      // There are 3 records: original sketch, reflected sketch, extrude
+      const sketches = result.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(2);
+      const reflectedSketch = sketches[1];
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: number; y?: number }> }).commands;
+      expect(cmds[0]).toMatchObject({ kind: 'moveTo', x: 0, y: 0 });
+      expect(cmds[1]).toMatchObject({ kind: 'lineTo', x: 10, y: 0 });
+      expect(cmds[2]).toMatchObject({ kind: 'lineTo', x: 10, y: -5 });
+      expect(cmds[3]).toMatchObject({ kind: 'lineTo', x: 0, y: -5 });
+    });
+
+    it('reflects across the y-axis with offset', async () => {
+      // axis: y, offset: 5 → x' = 2*5 - x = 10 - x
+      const code = `
+        const sketch = path().moveTo(8, 0).lineTo(13, 5).close();
+        return sketch.reflect({ axis: 'y', offset: 5 }).extrude(1);
+      `;
+      const result = await runScript({ code, fileName: 'test.kcad.ts' });
+      const sketches = result.records.filter(r => r.kind === 'sketch');
+      const reflectedSketch = sketches[1];
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: number; y?: number }> }).commands;
+      expect(cmds[0]).toMatchObject({ kind: 'moveTo', x: 2, y: 0 });
+      expect(cmds[1]).toMatchObject({ kind: 'lineTo', x: -3, y: 5 });
+    });
+
+    it('negates sagitta sign on sagittaArc (winding inversion)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).sagittaArc(20, 0, 5).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const result = await runScript({ code, fileName: 'test.kcad.ts' });
+      const sketches = result.records.filter(r => r.kind === 'sketch');
+      const reflectedSketch = sketches[1];
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; sagitta?: number }> }).commands;
+      const arcCmd = cmds.find(c => c.kind === 'sagittaArc');
+      expect(arcCmd).toBeDefined();
+      expect(arcCmd!.sagitta).toBe(-5);
+    });
+
+    it('negates radius sign on radiusArc (winding inversion)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).radiusArc(20, 0, 15).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const result = await runScript({ code, fileName: 'test.kcad.ts' });
+      const sketches = result.records.filter(r => r.kind === 'sketch');
+      const reflectedSketch = sketches[1];
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; radius?: number }> }).commands;
+      const arcCmd = cmds.find(c => c.kind === 'radiusArc');
+      expect(arcCmd).toBeDefined();
+      expect(arcCmd!.radius).toBe(-15);
+    });
+
+    it('preserves labels on their corresponding segments', async () => {
+      const code = `
+        const sketch = path()
+          .moveTo(0, 0)
+          .lineTo(10, 0)
+          .label('rim')
+          .lineTo(10, 5)
+          .close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const result = await runScript({ code, fileName: 'test.kcad.ts' });
+      const sketches = result.records.filter(r => r.kind === 'sketch');
+      const reflectedSketch = sketches[1];
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; label?: string }> }).commands;
+      const labeledCmd = cmds.find(c => (c as { label?: string }).label === 'rim');
+      expect(labeledCmd).toBeDefined();
+      expect(labeledCmd!.kind).toBe('lineTo');
+    });
+
+    it('rejects malformed axis with feature.sketch.reflect.invalid-axis', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
+        return sketch.reflect('z').extrude(1);
+      `;
+      let caught: unknown;
+      try {
+        await runScript({ code, fileName: 'test.kcad.ts' });
+      } catch (e) { caught = e; }
+      expect(String(caught)).toMatch(/invalid-axis|axis must be/i);
+    });
+
+    it('reflected sketch extrudes to a valid solid with the same volume as the original', async () => {
+      const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+      const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+      // 10x5 rectangle extruded by 2 = volume 100
+      const codeOriginal = `return path().moveTo(0,0).lineTo(10,0).lineTo(10,5).lineTo(0,5).close().extrude(2);`;
+      const codeReflected = `return path().moveTo(0,0).lineTo(10,0).lineTo(10,5).lineTo(0,5).close().reflect('x').extrude(2);`;
+
+      const runAndGetVolume = async (code: string) => {
+        const run = await runScript({ code, fileName: '<test>' });
+        const engine = new RecomputeEngine(new OcctLowerer());
+        const r = await engine.run(run.records);
+        expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+        const last = run.records[run.records.length - 1];
+        return r.shapes.get(last.id)!.volume();
+      };
+
+      const vOriginal = await runAndGetVolume(codeOriginal);
+      const vReflected = await runAndGetVolume(codeReflected);
+      expect(vReflected).toBeCloseTo(vOriginal, 1);
+    });
   });
 });

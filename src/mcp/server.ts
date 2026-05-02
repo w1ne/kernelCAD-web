@@ -20,7 +20,7 @@ import { listApiTool } from './tools/listApi';
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
 
-const TOOLS = [
+export const TOOLS = [
   {
     name: 'evaluate_script',
     description:

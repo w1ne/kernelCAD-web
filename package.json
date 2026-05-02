@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": true,
-  "version": "0.13.0-rc.12",
+  "version": "0.13.0-rc.13",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"const require=createRequire(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
+    "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",

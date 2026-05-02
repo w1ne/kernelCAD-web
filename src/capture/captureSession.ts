@@ -1,6 +1,6 @@
 import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureKind, FeatureRef, Param } from '../intent/types';
+import type { FeatureKind, FeatureRef, Param, PlaneSpec } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
@@ -71,6 +71,21 @@ export class CaptureSession {
       kind: 'boolean',
       params: { op: opLabel },
       inputs,
+    });
+  }
+
+  mirrorFeature(base: Shape, plane: PlaneSpec): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`mirror: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    const inputs: Record<string, FeatureRef> = {
+      base: { kind: 'feature', id: base.id },
+    };
+    return this.createShape({
+      kind: 'mirror',
+      params: {},
+      inputs,
+      metadata: { plane },
     });
   }
 

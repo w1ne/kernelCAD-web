@@ -1,6 +1,8 @@
 // tests/unit/backends/occt/variableFillet.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
+import { applyVariableEdgeFeature } from '../../../../src/backends/occt/occtLowerer';
+import type { FeatureRecord } from '../../../../src/intent/featureRecord';
 
 describe('OcctBackend.filletVariable / chamferVariable', () => {
   beforeAll(async () => { await initOcct(); });
@@ -73,5 +75,48 @@ describe('OcctBackend.filletVariable / chamferVariable', () => {
     // chamfer geometry differs slightly from the analytic estimate).
     expect(v).toBeGreaterThan(475);
     expect(v).toBeLessThan(500);
+  });
+});
+
+describe('applyVariableEdgeFeature diagnostics', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('feature.fillet.invalid-edge-ref fires when edge_group_0 has kind: feature', () => {
+    const base = OcctBackend.box(10, 10, 10);
+    const feature: FeatureRecord = {
+      id: 'fillet-1',
+      kind: 'fillet',
+      params: {},
+      inputs: {
+        base: { kind: 'feature', id: 'box-1' },
+        edge_group_0: { kind: 'feature', id: 'box-1' }, // wrong kind — should be edge or face
+      },
+      metadata: { variable: true, groups: [{ radius: 1 }] },
+      transforms: [],
+      suppressed: false,
+    };
+    const result = applyVariableEdgeFeature('fillet', base, feature, undefined);
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.map(d => d.code)).toContain('feature.fillet.invalid-edge-ref');
+  });
+
+  it('feature.chamfer.invalid-edge-ref fires when edge_group_0 has kind: vertex', () => {
+    const base = OcctBackend.box(10, 10, 10);
+    const feature: FeatureRecord = {
+      id: 'chamfer-1',
+      kind: 'chamfer',
+      params: {},
+      inputs: {
+        base: { kind: 'feature', id: 'box-1' },
+        // vertex ref is not a valid edge_group slot — cast to satisfy TS since VertexRef shape is complex
+        edge_group_0: { kind: 'vertex', featureId: 'box-1', ref: { kind: 'tracked', vertexName: 'v0' } },
+      },
+      metadata: { variable: true, groups: [{ distance: 1 }] },
+      transforms: [],
+      suppressed: false,
+    };
+    const result = applyVariableEdgeFeature('chamfer', base, feature, undefined);
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.map(d => d.code)).toContain('feature.chamfer.invalid-edge-ref');
   });
 });

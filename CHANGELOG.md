@@ -1,3 +1,40 @@
+## v0.13.0-rc.13 — mirror+reflect + rc.12 review closure (2026-05-01)
+
+A bundled feature + quality milestone. Adds three symmetric-construction primitives to the agent-facing API and closes the rc.12 review punch list (6 Important + 1 Nit).
+
+### Feature surface
+- `Shape.reflect(plane)` — pure reflection across a plane, treated as a transform alongside `translate`/`rotate`. Volume preserved; canonical face refs become unresolvable after reflect (same rule as other transforms). Plane spec accepts `'xy' | 'xz' | 'yz'` or `{ plane: '<cardinal>', offset: number }`.
+- `Shape.mirror(plane)` — boolean union of source + reflection, the symmetric-part shortcut. Lives as a new `'mirror'` `FeatureKind` in the lowerer; dispatches to `OcctBackend.mirror(plane)` which composes existing `union` + `reflect`. Mirror result is a non-primitive composite; canonical face refs unresolvable.
+- `Sketch.reflect(axis)` — 2D path reflection. Walks the sketch command list, reflecting `(x, y)` coordinates per the axis spec. Arc winding inverts via the existing sign-encoded scalar params (`sagitta`, `bulge`, `radius`). Labels preserved on their original segments. Sketches do not get a `mirror()` method because there is no boolean union at the sketch level.
+
+### Diagnostic surface
+- New diagnostic codes (all `reachable: 'engine-path'`):
+  - `feature.mirror.no-base`
+  - `feature.mirror.invalid-plane`
+  - `feature.mirror.failed`
+  - `feature.sketch.reflect.invalid-axis`
+- New `feature.fillet.invalid-edge-ref` and `feature.chamfer.invalid-edge-ref` for the variable-edge-feature helper's tightened ref-kind handling.
+- HINTS table now has 64 entries.
+
+### Refactor + hardening
+- `applyVariableEdgeFeature` (rc.12 lowerer helper) now uses an explicit kind switch for the synth-record builder (replaces the silent-drop conditional spreads); a runtime-narrowed `inputs.base` check (replaces the loose `as { id: string }` cast); and a discriminated-union return type `{ ok: true; shape; diagnostics } | { ok: false; diagnostics }` (removes `?.shape!` non-null assertions at callers).
+- The reachability sentinel for `whyDidThisFail` is now a runtime-import test (replaces the brittle source-text parser that forced an undocumented field-ordering convention). Field ordering inside HINTS entries is no longer load-bearing.
+- esbuild banner is now self-contained: `import{createRequire as __bcr}from'node:module';` plus `const require=__bcr(import.meta.url);`. The `__bcr` alias dodges the duplicate-binding crash that hit rc.11 because the source-level import in `server.ts` uses the un-aliased name. Removing source-level `createRequire` imports no longer breaks the bundle.
+
+### Tests
+- New `tests/e2e/fixtures/symmetric-bracket.kcad.ts` exercises `Shape.mirror({ plane: 'yz' })` end-to-end on a parameterized U-bracket with bolt holes.
+- New `tests/unit/backends/occt/reflect.test.ts` (volume preservation, canonical-face-ref unresolvable after reflect, offset-plane form).
+- New `tests/unit/backends/occt/mirror.test.ts` (2× volume on non-overlapping mirror, degenerate plane-on-shape behavior, face-ref unresolvable after mirror).
+- New `tests/unit/skill/skillToolCountDrift.test.ts` — drift sentinel ensures SKILL.md's documented MCP tool count matches the actual `TOOLS` array.
+
+### Documentation
+- `CHANGELOG.md` rc.12 entry's banner-fix description updated to describe what actually shipped.
+- Repo-wide native-framing sweep extended to catch case-sensitivity and missing-comparator-name regex misses (3 hits removed: lowercase `forgecad`, no-space `Fusion360`, `CATIA`/`NX` references).
+- `tests/integration/mcp/spawn.test.ts` skip-rationale comment updated to reflect rc.12's `qc`-runs-`build:cli`-first invariant.
+- `src/skill/SKILL.md` updated from "6 tools" to the correct 13 tools, with all names listed.
+
+---
+
 ## v0.13.0-rc.12 — quality pass v3 (2026-05-01)
 
 A pure quality milestone: closes the rc.11 review punch list and clears pre-existing competitor-reference debt. No new user-facing API.
@@ -5,7 +42,7 @@ A pure quality milestone: closes the rc.11 review punch list and clears pre-exis
 ### Tooling + bundle hardening
 - New non-skippable `tests/integration/cli-bundle/startup.test.ts` boots the bundled CLI and asserts a JSON-RPC initialize response. Closes the silent-skip gap that let the rc.11 bundle crash sail past `npm test`.
 - The `qc` script now runs `build:cli` before tests, ensuring the pre-merge gate always exercises a fresh artifact.
-- esbuild banner aligned to `'node:module'` (matching the source convention used everywhere). The rc.11 hotfix alias in `src/mcp/server.ts` is reverted; future `createRequire from 'node:module'` imports won't recur the duplicate-binding crash.
+- Removed the `createRequire` import from the esbuild banner entirely; the bundle's `const require=createRequire(...)` line now relies on the source-level `import { createRequire } from 'node:module'` in `src/mcp/server.ts` (hoisted by ESM). The rc.11 hotfix alias is reverted. (rc.13 follows up with a banner-internal `__bcr` alias to make the bundle fully self-contained.)
 
 ### Refactors (no behavior change)
 - `isSameEdge` is now exported from `src/backends/occt/edgeQueries.ts` with a documenting JSDoc covering the 1e-6 mm-scale tolerance. The backend's `filletVariable` and `chamferVariable` methods replace inline endpoint-comparison logic with calls to the helper.
@@ -417,7 +454,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 - AST-edit tools (deferred per NORTHSTAR roadmap)
 - Geometric edge selection (`select_edges` for non-primitive shapes)
 - HTTP transport (currently stdio-only)
-- Skill installer (`forgecad skill install` equivalent)
+- Skill installer (`kernelcad skill install`)
 
 ## v0.11.0-alpha.1 — 2026-04-30
 
@@ -766,7 +803,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.0] - 2026-01-26
 ### Added - CAD-Style View Modes
-- **3 Professional View Modes** matching CATIA/Fusion360/NX standards:
+- **3 Professional View Modes** for engineering CAD viewport conventions:
   - **Shaded with Edges** (Default) - Flat-shaded surfaces with black edge lines
   - **Wireframe** - Clean geometric edges only (NOT mesh tessellation)
   - **Shaded** - Smooth surfaces without edges
@@ -821,7 +858,7 @@ All notable changes to this project will be documented in this file.
 - **Simplified Insertion**: `useCodeInsertion.ts` now exclusively uses AST Command Pattern for shape insertions.
 
 ### Documentation
-- **Updated Roadmap**: Added comprehensive ROADMAP 3.0 aligned with CATIA/Fusion360/NX workflows.
+- **Updated Roadmap**: Added comprehensive ROADMAP 3.0 with industry-standard CAD workflows.
 - **CAD Workflow Comparison**: New document comparing current state with professional CAD systems.
 - **Phase Planning**: Detailed phases for Sketching (v0.3), View Modes (v0.4), and Advanced Features (v0.5).
 

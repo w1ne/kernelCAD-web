@@ -1,5 +1,6 @@
 // src/capture/sketch.ts
-import type { FeatureId, FeatureRef, Vec3 } from '../intent/types';
+import type { FeatureId, FeatureRef, Vec3, AxisSpec } from '../intent/types';
+import { isValidAxisSpec } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 import { KernelError } from '../intent/kernelError';
@@ -161,6 +162,101 @@ export class Sketch {
         startPoint: opts.startPoint,
         endPoint: opts.endPoint,
       },
+    });
+  }
+
+  /**
+   * Reflect this sketch's path across an axis. Returns a new Sketch with
+   * reflected coordinates; the source is unchanged.
+   *
+   * Each coordinate is transformed per the axis spec:
+   * - `'x'`  — reflects across the x-axis: y' = -y
+   * - `'y'`  — reflects across the y-axis: x' = -x
+   * - `{ axis: 'x', offset }` — reflects across y = offset: y' = 2*offset - y
+   * - `{ axis: 'y', offset }` — reflects across x = offset: x' = 2*offset - x
+   *
+   * Arc segments with a sign-encoded direction (sagittaArc, bulgeArc, radiusArc)
+   * have their sign negated, because reflection inverts path winding.
+   *
+   * @param axis 'x' | 'y' (axis through origin) or { axis, offset } for a
+   *             parallel axis at the given offset.
+   *
+   * @example
+   *   path().moveTo(0,0).lineTo(10,5).close().reflect('x')
+   *   // = path().moveTo(0,0).lineTo(10,-5).close()
+   */
+  reflect(axis: AxisSpec): Sketch {
+    if (!isValidAxisSpec(axis)) {
+      throw new KernelError(
+        'feature.sketch.reflect.invalid-axis',
+        `Sketch.reflect: axis must be 'x', 'y', or { axis, offset }; got ${JSON.stringify(axis)}.`,
+      );
+    }
+
+    // Normalize -0 to 0 so reflected coordinates are well-formed.
+    const norm = (n: number): number => n === 0 ? 0 : n;
+
+    const reflectXY = (x: number, y: number): [number, number] => {
+      if (axis === 'x') return [norm(x), norm(-y)];
+      if (axis === 'y') return [norm(-x), norm(y)];
+      if (axis.axis === 'x') return [norm(x), norm(2 * axis.offset - y)];
+      return [norm(2 * axis.offset - x), norm(y)]; // axis.axis === 'y'
+    };
+
+    // Arc sign-flip: reflection inverts winding. For arcs whose direction is
+    // encoded as a sign on a scalar (sagitta, bulge, radius), negate the sign.
+    // tangentArc has no explicit direction parameter — the tangent is inherited
+    // from the prior segment, which will also be reflected, so no flip needed.
+    // threePointsArc is fully determined by three reflected points — no flip needed.
+    const record = this.session.getRecords().find(r => r.id === this.id);
+    const commands: SketchCommand[] = (record?.metadata as { commands?: SketchCommand[] })?.commands ?? [];
+
+    const newCommands: SketchCommand[] = commands.map(cmd => {
+      switch (cmd.kind) {
+        case 'moveTo': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y };
+        }
+        case 'lineTo': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y };
+        }
+        case 'tangentArc': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y };
+        }
+        case 'threePointsArc': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          const [midX, midY] = reflectXY(cmd.midX, cmd.midY);
+          return { ...cmd, x, y, midX, midY };
+        }
+        case 'sagittaArc': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y, sagitta: -cmd.sagitta };
+        }
+        case 'bulgeArc': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y, bulge: -cmd.bulge };
+        }
+        case 'radiusArc': {
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y, radius: -cmd.radius };
+        }
+        case 'close':
+          return cmd;
+        default: {
+          // exhaustiveness guard
+          const _exhaustive: never = cmd;
+          return _exhaustive;
+        }
+      }
+    });
+
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: {},
+      params: {},
+      metadata: { commands: newCommands },
     });
   }
 }

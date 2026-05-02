@@ -47,6 +47,21 @@ export type FeatureRef =
   | { kind: 'edge'; featureId: FeatureId; ref: EdgeRef }
   | { kind: 'vertex'; featureId: FeatureId; ref: VertexRef };
 
+export type CardinalPlane = 'xy' | 'xz' | 'yz';
+export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset?: number };
+
+export type SketchAxis = 'x' | 'y';
+export type AxisSpec = SketchAxis | { axis: SketchAxis; offset: number };
+
+export function isValidAxisSpec(v: unknown): v is AxisSpec {
+  if (v === 'x' || v === 'y') return true;
+  if (typeof v === 'object' && v !== null) {
+    const o = v as { axis?: unknown; offset?: unknown };
+    return (o.axis === 'x' || o.axis === 'y') && typeof o.offset === 'number' && Number.isFinite(o.offset);
+  }
+  return false;
+}
+
 export type FeatureKind =
   // primitives
   | 'box' | 'cylinder' | 'sphere' | 'torus'
@@ -56,6 +71,8 @@ export type FeatureKind =
   | 'boolean'
   // edge/face features (v0.2+)
   | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'cut' | 'draft'
+  // symmetric (v0.13+)
+  | 'mirror'
   // imports (v0.3+)
   | 'importedMesh' | 'importedStep'
   // sketch (v0.2+)
@@ -64,3 +81,25 @@ export type FeatureKind =
   | 'assemblyPart' | 'assemblyJoint' | 'assemblyConnect'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sdf';
+
+/**
+ * Runtime guard for PlaneSpec. Returns true for cardinal strings
+ * ('xy' | 'xz' | 'yz') and for offset-plane objects
+ * `{ plane: CardinalPlane; offset: number }` where offset is finite.
+ * Rejects everything else.
+ */
+export function isValidPlaneSpec(value: unknown): value is PlaneSpec {
+  if (typeof value === 'string') {
+    return value === 'xy' || value === 'xz' || value === 'yz';
+  }
+  if (typeof value === 'object' && value !== null) {
+    const v = value as Record<string, unknown>;
+    const plane = v['plane'];
+    const offset = v['offset'];
+    if (!(plane === 'xy' || plane === 'xz' || plane === 'yz')) return false;
+    // offset is optional; if present it must be a finite number.
+    if (offset !== undefined && !(typeof offset === 'number' && Number.isFinite(offset))) return false;
+    return true;
+  }
+  return false;
+}

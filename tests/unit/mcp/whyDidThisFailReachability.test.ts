@@ -1,58 +1,53 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve as resolvePath, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { HINTS, type HintReachability } from '../../../src/mcp/tools/whyDidThisFail';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SRC = readFileSync(
-  resolvePath(__dirname, '../../../src/mcp/tools/whyDidThisFail.ts'),
-  'utf8',
-);
+const ALLOWED_REACHABILITY: ReadonlySet<HintReachability> = new Set([
+  'engine-path',
+  'direct-lowerer-only',
+  'reserved',
+] as const);
+
+const KNOWN_DIRECT_LOWERER_ONLY = [
+  'feature.loft.bad-sketch',
+  'feature.sweep.multi-face-profile',
+] as const;
 
 describe('whyDidThisFail HINTS table reachability classification', () => {
-  it('every HINTS entry has an explicit reachable field', () => {
-    const startMarker = 'const HINTS: Record<string, HintEntry> = {';
-    const startIdx = SRC.indexOf(startMarker);
-    expect(startIdx).toBeGreaterThan(-1);
+  it('every HINTS entry has a reachable field that is one of the three allowed values', () => {
+    const entries = Object.entries(HINTS);
+    expect(entries.length).toBeGreaterThanOrEqual(30);
 
-    const tableStart = startIdx + startMarker.length;
-    const tableEnd = SRC.indexOf('\n};', tableStart);
-    expect(tableEnd).toBeGreaterThan(tableStart);
-
-    const tableBody = SRC.slice(tableStart, tableEnd);
-
-    const entryLineRegex = /^\s*'[^']+'\s*:\s*\{/gm;
-    let m: RegExpExecArray | null;
-    let entryCount = 0;
-    while ((m = entryLineRegex.exec(tableBody)) !== null) {
-      entryCount += 1;
-      const tail = tableBody.slice(m.index);
-      const closeIdx = tail.indexOf('}');
-      expect(closeIdx).toBeGreaterThan(-1);
-      const entryBody = tail.slice(0, closeIdx);
+    for (const [code, entry] of entries) {
+      expect(entry.reachable, `HINTS entry '${code}' is missing 'reachable'`).toBeDefined();
       expect(
-        /reachable\s*:/.test(entryBody),
-        `HINTS entry near offset ${m.index} is missing 'reachable:'. Body: ${entryBody.slice(0, 200)}`,
+        ALLOWED_REACHABILITY.has(entry.reachable),
+        `HINTS entry '${code}' has invalid reachable value '${entry.reachable}'`,
       ).toBe(true);
+      expect(typeof entry.hint, `HINTS entry '${code}' is missing 'hint'`).toBe('string');
+      expect(entry.hint.length, `HINTS entry '${code}' has empty hint`).toBeGreaterThan(0);
     }
-
-    expect(entryCount).toBeGreaterThanOrEqual(30);
   });
 
-  it('reachable values are only the three allowed enum values', () => {
-    const allowed = new Set(["'engine-path'", "'direct-lowerer-only'", "'reserved'"]);
-    const reachableValueRegex = /reachable\s*:\s*('[^']+')/g;
-    let m: RegExpExecArray | null;
-    let count = 0;
-    while ((m = reachableValueRegex.exec(SRC)) !== null) {
-      count += 1;
-      expect(allowed.has(m[1]), `Unknown reachable value: ${m[1]}`).toBe(true);
+  it('feature.loft.bad-sketch and feature.sweep.multi-face-profile are classified as direct-lowerer-only', () => {
+    for (const code of KNOWN_DIRECT_LOWERER_ONLY) {
+      expect(HINTS[code], `Expected HINTS entry for '${code}' to exist`).toBeDefined();
+      expect(
+        HINTS[code]!.reachable,
+        `Expected '${code}' to be classified 'direct-lowerer-only', got '${HINTS[code]!.reachable}'`,
+      ).toBe('direct-lowerer-only');
     }
-    expect(count).toBeGreaterThanOrEqual(30);
   });
 
-  it('feature.loft.bad-sketch and feature.sweep.multi-face-profile are direct-lowerer-only', () => {
-    expect(SRC).toMatch(/'feature\.loft\.bad-sketch'\s*:\s*\{[^}]*reachable\s*:\s*'direct-lowerer-only'/);
-    expect(SRC).toMatch(/'feature\.sweep\.multi-face-profile'\s*:\s*\{[^}]*reachable\s*:\s*'direct-lowerer-only'/);
+  it('the direct-lowerer-only set matches the documented forward-looking codes', () => {
+    // Codes classified as direct-lowerer-only must be in the documented set.
+    // Adding a new direct-lowerer-only code requires updating this test AND
+    // citing docs/superpowers/specs/2026-05-01-error-attribution-policy.md
+    // per the rc.12 error-attribution policy memo.
+    const directLowererOnly = Object.entries(HINTS)
+      .filter(([, entry]) => entry.reachable === 'direct-lowerer-only')
+      .map(([code]) => code)
+      .sort();
+    const expected = [...KNOWN_DIRECT_LOWERER_ONLY].sort();
+    expect(directLowererOnly).toEqual(expected);
   });
 });

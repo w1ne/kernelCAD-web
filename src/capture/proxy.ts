@@ -1,4 +1,4 @@
-import type { FeatureId } from '../intent/types';
+import type { FeatureId, PlaneSpec } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
 
@@ -60,6 +60,15 @@ export class Shape {
       sz: sz ?? sx,
     });
     return this;
+  }
+
+  reflect(plane: PlaneSpec): Shape {
+    this.session.appendTransform(this.id, { op: 'reflect', plane });
+    return this;
+  }
+
+  mirror(plane: PlaneSpec): Shape {
+    return this.session.mirrorFeature(this, plane);
   }
 
   subtract(...others: Shape[]): Shape {
