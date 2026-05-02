@@ -60,6 +60,9 @@ export class OcctBackend implements ShapeBackend {
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
   private shape: ReplicadShape3D;
   readonly kind?: 'box' | 'cylinder' | 'sphere' | 'sketch';
+  /** v0.2: per-shape face/edge identity tracking. Undefined for shapes that don't
+   *  participate in history walks (legacy paths that don't construct lineage). */
+  readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
 
