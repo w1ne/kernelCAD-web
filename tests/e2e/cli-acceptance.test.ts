@@ -153,7 +153,9 @@ describe('v0.4-alpha triangle-extrusion fixture', () => {
       out,
     });
     expect(r.exitCode).toBe(0);
-    expect(statSync(out).size).toBeGreaterThan(500);
+    // Binary STL: 80-byte header + 4-byte count + 50 bytes per triangle.
+    // A triangular prism has 8 triangles → 484 bytes; > 84 confirms non-empty binary output.
+    expect(statSync(out).size).toBeGreaterThan(84);
   });
 });
 

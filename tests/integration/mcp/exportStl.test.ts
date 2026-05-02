@@ -5,9 +5,6 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { exportStlTool } from '../../../src/mcp/tools/exportStl';
 
-// NOTE: Replicad's blobSTL() returns ASCII STL (not binary). The round-trip
-// tests below validate ASCII STL structure accordingly.
-
 beforeAll(async () => {
   const { initOcct } = await import('../../../src/backends/occt/occtBackend');
   await initOcct();
@@ -36,15 +33,26 @@ describe('export_stl MCP tool', () => {
     expect(result.feature_count).toBe(1);
     expect(existsSync(outputPath)).toBe(true);
 
-    // Validate STL content — Replicad produces ASCII STL
+    // Validate binary STL structure.
+    // Format: 80-byte header + 4-byte uint32 triangle count + 50 bytes per triangle.
+    // A box has 12 triangles (2 per face × 6 faces) → 80 + 4 + 12 × 50 = 684 bytes.
     const buf = readFileSync(outputPath);
-    expect(buf.length).toBeGreaterThan(0);
-    const text = buf.toString('utf8');
-    // ASCII STL starts with "solid" keyword and contains "facet normal" entries
-    expect(text).toMatch(/^solid\b/i);
-    expect(text).toContain('facet normal');
-    expect(text).toContain('vertex');
-    // byte_count in receipt must match what's on disk
+    expect(buf.length).toBeGreaterThanOrEqual(84);
+
+    // Triangle count at byte 80 (uint32 LE).
+    const triangleCount = buf.readUInt32LE(80);
+    // A box has exactly 12 triangles.
+    expect(triangleCount).toBe(12);
+
+    // Total size must be exactly 80 + 4 + 12 × 50 = 684 bytes.
+    expect(buf.length).toBe(684);
+
+    // Header must NOT start with "solid" — that prefix signals ASCII format to
+    // lenient parsers.
+    const headerPrefix = buf.subarray(0, 5).toString('ascii');
+    expect(headerPrefix).not.toBe('solid');
+
+    // byte_count in receipt must match what's on disk.
     expect(result.byte_count).toBe(buf.length);
   }, 60000);
 
