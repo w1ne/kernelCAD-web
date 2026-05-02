@@ -38,7 +38,7 @@ If we can't measure agent surface quality, we can't deliberately improve it.
 The intended flow:
 
 1. Author edits `kernelCAD-web/src/skill/SKILL.md` (or a tool description, or a HINTS entry).
-2. Author runs `pnpm eval`.
+2. Author runs `npm run eval`.
 3. Author reads `runs/<latest>/<failing-task>/transcript.md`.
 4. Author sees where the agent flailed.
 5. Author edits the surface, repeats.
@@ -68,14 +68,14 @@ kernelCAD-web/eval/
             └── score.json        # Machine-readable result
 ```
 
-A new `pnpm eval` script is added to `package.json`. Default config is hard-coded in `run.ts`:
+A new `npm run eval` script is added to `package.json`. Default config is hard-coded in `run.ts`:
 
 - Model: `claude-sonnet-4-6` (overridable via `EVAL_MODEL` env var).
 - Mode: CLI single-shot (only mode in v1).
 - Retry cap: 3 (agent gets up to 3 generation attempts per task; diagnostics fed back between attempts).
 - API key: `ANTHROPIC_API_KEY` from env. Missing key ⇒ runner exits 1 with a clear message before any work.
 - `kernelcad` CLI: must be resolvable on `PATH`. Missing binary ⇒ runner exits 1 with a clear message before any work. (Local development typically uses `npm link` from the kernelCAD-web checkout.)
-- Tasks: every folder under `eval/tasks/` is a task. `pnpm eval <task-id>` runs one; bare `pnpm eval` runs all.
+- Tasks: every folder under `eval/tasks/` is a task. `npm run eval -- <task-id>` runs one; bare `npm run eval` runs all.
 
 ---
 
@@ -349,7 +349,7 @@ In v1, the human reads the transcript and notices these patterns by eye. The aut
 
 In v1, two runs are two folders under `runs/`. To diff: `diff -r runs/<a> runs/<b>` or `git diff` if the runs folder is committed.
 
-When this gets old: a `pnpm eval:promote <run-id>` symlinks `runs/baseline` to that run, and `pnpm eval` writes a `runs/<latest>/delta.md` comparing each task's `score.json` to the baseline's. No machinery beyond file-diffing in v1.
+When this gets old: a `npm run eval:promote -- <run-id>` symlinks `runs/baseline` to that run, and `npm run eval` writes a `runs/<latest>/delta.md` comparing each task's `score.json` to the baseline's. No machinery beyond file-diffing in v1.
 
 ### Parallelism
 
@@ -375,12 +375,12 @@ For tasks where deterministic gates can't capture quality (e.g. "is this enclosu
 
 The harness is shippable when:
 
-1. `pnpm eval bracket-holes` runs end-to-end against the live Anthropic API and produces:
+1. `npm run eval -- bracket-holes` runs end-to-end against the live Anthropic API and produces:
    - `runs/<ts>/bracket-holes/transcript.md` that a human can read.
    - `runs/<ts>/bracket-holes/output.kcad.ts` that `kernelcad evaluate` accepts.
    - `runs/<ts>/bracket-holes/score.json` with the documented shape.
-2. `pnpm eval` (no arg) runs all tasks in `tasks/` and prints the summary table.
-3. `pnpm eval --mock` replays the golden fixture and produces byte-identical artifacts (CI gate).
-4. The author can edit one section of `src/skill/SKILL.md`, re-run `pnpm eval`, and observe the score and transcript change accordingly.
+2. `npm run eval` (no arg) runs all tasks in `tasks/` and prints the summary table.
+3. `npm run eval -- --mock` replays the golden fixture and produces byte-identical artifacts (CI gate).
+4. The author can edit one section of `src/skill/SKILL.md`, re-run `npm run eval`, and observe the score and transcript change accordingly.
 
 That's it. v1 is one entry point, one oracle wrapper, one seed task, one mode, one model. Every other axis is deferred behind a clear extension point.
