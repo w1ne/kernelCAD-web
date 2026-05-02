@@ -324,7 +324,7 @@ A task folder containing `reference.stl` + `reference.meta.json` (instead of `ha
 - Calls a Python subprocess (`trimesh` + `scikit-image` for voxelization) to compute volume ratio, bbox IoU, chamfer distance (normalized), voxel IoU at 64³.
 - Returns the same `HarnessResult` shape with composite-quality gates and per-metric scored entries.
 
-Tier-2 tasks are seeded by a one-shot import script that pulls from a real CAD library (DeepCAD, Fusion 360 Gallery), renders multi-view, and uses an LLM to generate the prompt from the renders + dimensions. The import script outputs into `tasks/` exactly like a hand-written task; the runner doesn't know the difference.
+Tier-2 tasks are seeded by a one-shot import script that pulls from a public CAD model dataset, renders multi-view, and uses an LLM to generate the prompt from the renders + dimensions. The import script outputs into `tasks/` exactly like a hand-written task; the runner doesn't know the difference.
 
 ### MCP-mode agent loop
 
