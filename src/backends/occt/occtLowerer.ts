@@ -18,6 +18,7 @@ import {
   intersectWithHistory,
   mergeBooleanHistory,
 } from './historyAwareBooleans';
+import { propagateTransformHistory } from '../../naming/evolutionRecord';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -876,6 +877,8 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: base, diagnostics };
         }
+        const mirrorInputHashes = base.faceHashes();
+        const mirrorInputMap = base.historyMap;
         try {
           shape = base.mirror(plane);
         } catch (e) {
@@ -888,6 +891,20 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT mirror union failed: ${msg}`,
           });
           return { shape: base, diagnostics };
+        }
+        // Mirror is a union internally; face count may change if faces on the
+        // mirror plane merge. Only propagate historyMap when face count matches.
+        if (mirrorInputMap !== undefined) {
+          const mirrorOutputBackend = shape as OcctBackend;
+          const mirrorOutputHashes = mirrorOutputBackend.faceHashes();
+          if (mirrorOutputHashes.length === mirrorInputHashes.length) {
+            const newMap = propagateTransformHistory(mirrorInputMap, mirrorInputHashes, mirrorOutputHashes);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const wrapped = (mirrorOutputBackend.getReplicadShape() as any);
+            shape = new OcctBackend(wrapped, undefined, newMap);
+          }
+          // else: face count mismatch due to mirror-plane face merging — leave shape
+          // without historyMap; resolver will return face-ref-not-resolvable.
         }
         break;
       }
@@ -908,6 +925,9 @@ export class OcctLowerer implements FeatureLowerer {
 
     // Apply post-hoc transforms in declared order.
     for (const t of r.transforms) {
+      const inputBackend = shape as OcctBackend;
+      const inputHashes = inputBackend.faceHashes();
+      const inputMap = inputBackend.historyMap;
       switch (t.op) {
         case 'translate':
           shape = shape.translate(t.x, t.y, t.z);
@@ -929,8 +949,22 @@ export class OcctLowerer implements FeatureLowerer {
             });
             break; // skip applying the transform; preserve the prior shape
           }
-          shape = (shape as import('./occtBackend').OcctBackend).reflect(t.plane);
+          shape = (shape as OcctBackend).reflect(t.plane);
           break;
+      }
+      // Propagate historyMap if input had one. All four transform ops (translate,
+      // rotateAxis, scale, reflect) preserve topology (face count invariant).
+      if (inputMap !== undefined) {
+        const outputBackend = shape as OcctBackend;
+        const outputHashes = outputBackend.faceHashes();
+        if (outputHashes.length === inputHashes.length) {
+          const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = (outputBackend.getReplicadShape() as any);
+          shape = new OcctBackend(wrapped, undefined, newMap);
+        }
+        // else: defensive path — face count mismatch (unexpected for these ops).
+        // Leave shape without historyMap; resolver returns face-ref-not-resolvable.
       }
     }
 
