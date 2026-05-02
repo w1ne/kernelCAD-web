@@ -15,7 +15,7 @@
 
 import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
-import type { FaceHash, EdgeHash } from '../../naming/evolutionRecord';
+import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
 
 export interface EdgeFeatureHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -300,13 +300,14 @@ export function shellWithHistory(
     builder.MakeThickSolidByJoin(
       bodyShape,
       facesToRemoveList,
-      thickness,
+      -thickness,  // OCCT convention: negative offset = inward (hollow); mirrors Replicad's own shell() impl
       1e-3,
       oc.BRepOffset_Mode.BRepOffset_Skin,
       false,
       false,
       oc.GeomAbs_JoinType.GeomAbs_Arc,
       false,
+      progress,  // theRange — required 10th argument for BRepOffsetAPI_MakeThickSolid::MakeThickSolidByJoin
     );
     builder.Build(progress);
     if (!builder.IsDone()) {
@@ -328,4 +329,36 @@ export function shellWithHistory(
     builder.delete();
     progress.delete();
   }
+}
+
+/**
+ * Merge the history from a single-input edge feature (fillet, chamfer, shell)
+ * into a new HistoryMap. Edge features modify exactly one body; there is no
+ * tool operand, so this is the single-input variant of mergeBooleanHistory.
+ *
+ * For each input face tracked in `bodyMap`:
+ *   - If the face was deleted by the operation, drop it.
+ *   - If the operation produced child faces for it, map each child hash to the
+ *     same lineage entry (1-to-many mapping for split/modified faces).
+ *   - Otherwise the face is unchanged; retain its hash and lineage.
+ */
+export function mergeEdgeFeatureHistory(
+  bodyMap: HistoryMap | undefined,
+  result: EdgeFeatureHistoryResult,
+): HistoryMap {
+  if (!bodyMap) return new Map();
+  const out: HistoryMap = new Map();
+  for (const [inputHash, lineage] of bodyMap.entries()) {
+    if (result.deletedFaces.has(inputHash)) continue;
+    const children = result.faceHistory.get(inputHash);
+    if (children && children.length > 0) {
+      for (const childHash of children) {
+        if (!out.has(childHash)) out.set(childHash, lineage);
+      }
+    } else {
+      // No history entry → face unchanged → same hash in output
+      if (!out.has(inputHash)) out.set(inputHash, lineage);
+    }
+  }
+  return out;
 }

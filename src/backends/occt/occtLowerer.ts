@@ -18,6 +18,13 @@ import {
   intersectWithHistory,
   mergeBooleanHistory,
 } from './historyAwareBooleans';
+import {
+  filletWithHistory,
+  chamferWithHistory,
+  shellWithHistory,
+  mergeEdgeFeatureHistory,
+  type EdgeRefForFilleting,
+} from './historyAwareEdgeFeatures';
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
 
 // ---------------------------------------------------------------------------
@@ -742,7 +749,17 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         try {
-          shape = base.fillet(edgesResult, radius);
+          // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
+          // edge's underlying TopoDS_Edge handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+            hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
+          }));
+          const filletResult = filletWithHistory(base, edgeRefs, radius);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, filletResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
@@ -796,7 +813,17 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         try {
-          shape = base.chamfer(edgesResult, distance);
+          // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
+          // edge's underlying TopoDS_Edge handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+            hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
+          }));
+          const chamferResult = chamferWithHistory(base, edgeRefs, distance);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, chamferResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(chamferResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
@@ -839,7 +866,14 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         try {
-          shape = base.shell(faceResult, thickness);
+          // Convert replicad Face → { hash: FaceHash } by hashing the
+          // underlying TopoDS_Face handle.
+          const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
+          const shellResult = shellWithHistory(base, [{ hash: faceHash }], thickness);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, shellResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(shellResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
