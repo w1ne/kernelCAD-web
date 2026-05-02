@@ -1089,5 +1089,35 @@ describe('path() builder + Sketch capture', () => {
       // must emit recompute.input.missing because its inputs.source is absent.
       expect(codes).toContain('recompute.input.missing');
     });
+
+    it('Sketch.reflect is its own inverse — reflect twice produces the original geometry (cardinal axis)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      // Records: original sketch, first reflect sketch, second reflect sketch, extrude
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(3);
+      const originalCmds = (sketches[0].metadata as { commands: unknown[] }).commands;
+      const twiceCmds = (sketches[2].metadata as { commands: unknown[] }).commands;
+      // For cardinal axis 'x', -(-y) = y exactly. Commands should match.
+      expect(twiceCmds).toEqual(originalCmds);
+    });
+
+    it('Sketch.reflect involution holds for axes with offset', async () => {
+      const code = `
+        const sketch = path().moveTo(8, 0).lineTo(13, 5).close();
+        return sketch.reflect({ axis: 'y', offset: 5 }).reflect({ axis: 'y', offset: 5 }).extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      // Records: original sketch, first reflect sketch, second reflect sketch, extrude
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(3);
+      const originalCmds = (sketches[0].metadata as { commands: unknown[] }).commands;
+      const twiceCmds = (sketches[2].metadata as { commands: unknown[] }).commands;
+      // 2*offset - (2*offset - x) = x — exact in floating-point for integer offset.
+      expect(twiceCmds).toEqual(originalCmds);
+    });
   });
 });
