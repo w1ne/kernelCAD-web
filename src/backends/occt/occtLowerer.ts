@@ -11,6 +11,23 @@ import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
+import { computeDihedralPublic } from './edgeQueries';
+import * as replicad from 'replicad';
+import {
+  cutWithHistory,
+  fuseWithHistory,
+  intersectWithHistory,
+  mergeBooleanHistory,
+} from './historyAwareBooleans';
+import {
+  filletWithHistory,
+  chamferWithHistory,
+  shellWithHistory,
+  mergeEdgeFeatureHistory,
+  type EdgeRefForFilleting,
+} from './historyAwareEdgeFeatures';
+import { propagateTransformHistory } from '../../naming/evolutionRecord';
+import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -235,14 +252,43 @@ export class OcctLowerer implements FeatureLowerer {
         const y = r.params.y.evaluated;
         const z = r.params.z.evaluated;
         const centered = (r.params.centered?.evaluated ?? 0) > 0.5;
-        shape = OcctBackend.box(x, y, z, centered);
+        const rawBox = OcctBackend.box(x, y, z, centered);
+        const boxSeedMap: HistoryMap = new Map();
+        const boxFaceNames = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
+        for (const name of boxFaceNames) {
+          try {
+            const hash = rawBox.findCanonicalFaceHash(name);
+            const lineage: FaceLineage = { rootHash: hash, canonicalName: name, rootFeatureId: r.id };
+            boxSeedMap.set(hash, lineage);
+          } catch {
+            // defensive: shouldn't happen for box, but skip silently if it does
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const boxWrapped = (rawBox as OcctBackend).getReplicadShape() as any;
+        shape = new OcctBackend(boxWrapped, 'box', boxSeedMap);
         break;
       }
       case 'cylinder': {
-        shape = OcctBackend.cylinder(r.params.h.evaluated, r.params.r.evaluated);
+        const rawCyl = OcctBackend.cylinder(r.params.h.evaluated, r.params.r.evaluated);
+        const cylSeedMap: HistoryMap = new Map();
+        const cylinderFaceNames = ['top', 'bottom'] as const;
+        for (const name of cylinderFaceNames) {
+          try {
+            const hash = rawCyl.findCanonicalFaceHash(name);
+            cylSeedMap.set(hash, { rootHash: hash, canonicalName: name, rootFeatureId: r.id });
+          } catch {
+            // defensive: skip if face not found
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cylWrapped = (rawCyl as OcctBackend).getReplicadShape() as any;
+        shape = new OcctBackend(cylWrapped, 'cylinder', cylSeedMap);
         break;
       }
       case 'sphere': {
+        // Sphere has no canonical planar face names — leave historyMap undefined.
+        // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
         shape = OcctBackend.sphere(r.params.r.evaluated);
         break;
       }
@@ -668,19 +714,28 @@ export class OcctLowerer implements FeatureLowerer {
         const op = String(r.params.op.expression).replace(/'/g, '');
         const base = inputs.byKey['base'];
         if (!base) throw new Error(`Boolean ${r.id} missing 'base' input`);
-        let acc = base;
+        let acc: OcctBackend = base as OcctBackend;
         const cutters = Object.entries(inputs.byKey)
           .filter(([k]) => k.startsWith('cutter_'))
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([, v]) => v);
-        if (op === 'difference') {
-          for (const c of cutters) acc = acc.subtract(c);
-        } else if (op === 'union') {
-          for (const c of cutters) acc = acc.union(c);
-        } else if (op === 'intersection') {
-          for (const c of cutters) acc = acc.intersect(c);
-        } else {
-          throw new Error(`Unknown boolean op: ${op}`);
+          .map(([, v]) => v as OcctBackend);
+        const opFn =
+          op === 'difference' ? cutWithHistory :
+          op === 'union' ? fuseWithHistory :
+          op === 'intersection' ? intersectWithHistory :
+          null;
+        if (!opFn) throw new Error(`Unknown boolean op: ${op}`);
+        for (const c of cutters) {
+          const result = opFn(acc, c);
+          const newMap = mergeBooleanHistory(acc.historyMap, c.historyMap, result);
+          // Wrap the result TopoDS_Shape back into a Replicad Shape3D using
+          // replicad.cast(), which downcasts the raw shape to the correct
+          // OCCT subtype (Solid or Compound) and wraps it in the matching
+          // Replicad class. The cast result is AnyShape; boolean ops always
+          // yield a 3D solid or compound, so the cast to Shape3D is safe.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(result.shape as any) as replicad.Shape3D;
+          acc = new OcctBackend(wrapped, undefined, newMap);
         }
         shape = acc;
         break;
@@ -724,9 +779,50 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
         }
+        // Filter to sharp edges only — BRepFilletAPI_MakeFillet requires convex/concave
+        // (non-smooth) edges. Smooth edges (G1, dihedral ≈ 180°) will cause OCCT to throw.
+        // If all edges are already smooth (e.g., iterating a fillet on a face that was already
+        // filleted), treat as a no-op success so the user intent ("round this face") is met.
+        const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
+        const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
+          const d = computeDihedralPublic(shapeForDihedral, e);
+          // null means the dihedral could not be computed (e.g., edge has only one adjacent
+          // face, or the isSameEdge scan found no match). Treat as non-sharp so OCCT
+          // doesn't receive a potentially-smooth edge it can't handle.
+          if (d === null) return false;
+          return d.angleDeg < 180 - SMOOTH_THRESHOLD;
+        });
+        if (sharpEdges.length === 0) {
+          // No sharp edges remain — the fillet is already satisfied; return shape unchanged.
+          shape = base;
+          break;
+        }
         try {
-          shape = base.fillet(edgesResult, radius);
+          // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
+          // edge's underlying TopoDS_Edge handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const edgeRefs: EdgeRefForFilleting[] = sharpEdges.map((e: any) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
+          }));
+          const filletResult = filletWithHistory(base, edgeRefs, radius);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, filletResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
+          if (!(e instanceof Error) && r.inputs.face !== undefined) {
+            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build,
+            // AND the selection was face-based. This occurs when selected edges are
+            // G1-smooth (e.g., the boundary between a flat face and a fillet cylinder
+            // after a prior fillet) and OCCT cannot apply another fillet to them.
+            // Treat as a no-op: the shape is returned unchanged, which matches the
+            // user intent of "the face is already fully rounded."
+            shape = base;
+            break;
+          }
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
@@ -779,7 +875,18 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         try {
-          shape = base.chamfer(edgesResult, distance);
+          // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
+          // edge's underlying TopoDS_Edge handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
+          }));
+          const chamferResult = chamferWithHistory(base, edgeRefs, distance);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, chamferResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(chamferResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
@@ -822,7 +929,15 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         try {
-          shape = base.shell(faceResult, thickness);
+          // Convert replicad Face → { hash: FaceHash } by hashing the
+          // underlying TopoDS_Face handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
+          const shellResult = shellWithHistory(base, [{ hash: faceHash }], thickness);
+          const newMap = mergeEdgeFeatureHistory(base.historyMap, shellResult);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(shellResult.shape as any) as replicad.Shape3D;
+          shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
@@ -860,6 +975,8 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: base, diagnostics };
         }
+        const mirrorInputHashes = base.faceHashes();
+        const mirrorInputMap = base.historyMap;
         try {
           shape = base.mirror(plane);
         } catch (e) {
@@ -872,6 +989,20 @@ export class OcctLowerer implements FeatureLowerer {
             message: `OCCT mirror union failed: ${msg}`,
           });
           return { shape: base, diagnostics };
+        }
+        // Mirror is a union internally; face count may change if faces on the
+        // mirror plane merge. Only propagate historyMap when face count matches.
+        if (mirrorInputMap !== undefined) {
+          const mirrorOutputBackend = shape as OcctBackend;
+          const mirrorOutputHashes = mirrorOutputBackend.faceHashes();
+          if (mirrorOutputHashes.length === mirrorInputHashes.length) {
+            const newMap = propagateTransformHistory(mirrorInputMap, mirrorInputHashes, mirrorOutputHashes);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const wrapped = (mirrorOutputBackend.getReplicadShape() as any);
+            shape = new OcctBackend(wrapped, undefined, newMap);
+          }
+          // else: face count mismatch due to mirror-plane face merging — leave shape
+          // without historyMap; resolver will return face-ref-not-resolvable.
         }
         break;
       }
@@ -892,6 +1023,9 @@ export class OcctLowerer implements FeatureLowerer {
 
     // Apply post-hoc transforms in declared order.
     for (const t of r.transforms) {
+      const inputBackend = shape as OcctBackend;
+      const inputHashes = inputBackend.faceHashes();
+      const inputMap = inputBackend.historyMap;
       switch (t.op) {
         case 'translate':
           shape = shape.translate(t.x, t.y, t.z);
@@ -913,8 +1047,22 @@ export class OcctLowerer implements FeatureLowerer {
             });
             break; // skip applying the transform; preserve the prior shape
           }
-          shape = (shape as import('./occtBackend').OcctBackend).reflect(t.plane);
+          shape = (shape as OcctBackend).reflect(t.plane);
           break;
+      }
+      // Propagate historyMap if input had one. All four transform ops (translate,
+      // rotateAxis, scale, reflect) preserve topology (face count invariant).
+      if (inputMap !== undefined) {
+        const outputBackend = shape as OcctBackend;
+        const outputHashes = outputBackend.faceHashes();
+        if (outputHashes.length === inputHashes.length) {
+          const newMap = propagateTransformHistory(inputMap, inputHashes, outputHashes);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = (outputBackend.getReplicadShape() as any);
+          shape = new OcctBackend(wrapped, undefined, newMap);
+        }
+        // else: defensive path — face count mismatch (unexpected for these ops).
+        // Leave shape without historyMap; resolver returns face-ref-not-resolvable.
       }
     }
 

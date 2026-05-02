@@ -72,13 +72,14 @@ describe('Shape.reflect(plane)', () => {
     expect(result.shapes.get(id)!.volume()).toBeCloseTo(1000, 1);
   }, 60000);
 
-  it('canonical face refs become unresolvable after reflect', async () => {
+  it('canonical face refs resolve after reflect (v0.2: historyMap propagated through transforms)', async () => {
+    // v0.2 seeds historyMap on primitives and propagates it through transforms
+    // (including reflect). A canonical face ref after reflect now resolves correctly.
     const code = `return box(10, 10, 10).reflect('yz').fillet(2, { face: 'top' });`;
     const run = await runScript({ code, fileName: '<test>' });
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(run.records);
-    const codes = result.diagnostics.map(d => d.code);
-    expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
   }, 60000);
 
   it('Shape.reflect composition — reflect twice preserves volume', async () => {
@@ -94,15 +95,14 @@ describe('Shape.reflect(plane)', () => {
     expect(shape.volume()).toBeCloseTo(1000, 1);
   }, 60000);
 
-  it('Shape.reflect composition — canonical face refs remain unresolvable after two reflects', async () => {
-    // Two transforms still means transforms applied. Canonical face refs
-    // should fail with face-ref-not-resolvable, same as after one transform.
+  it('Shape.reflect composition — canonical face refs resolve after two reflects (v0.2)', async () => {
+    // v0.2 propagates historyMap through every transform step, including multiple
+    // consecutive reflects. Canonical face refs resolve correctly.
     const code = `return box(10, 10, 10).reflect('yz').reflect('yz').fillet(2, { face: 'top' });`;
     const run = await runScript({ code, fileName: '<test>' });
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(run.records);
-    const codes = result.diagnostics.map(d => d.code);
-    expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
   }, 60000);
 
   it('feature.transform.invalid-plane fires when a reflect transform has a malformed plane spec', async () => {

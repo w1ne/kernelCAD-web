@@ -157,25 +157,16 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
 
-## Canonical Face Refs — Critical Constraint
+## Face refs through operations
 
-The `{ face }` option on fillet/chamfer/shell only works on **un-transformed primitives** (raw `box(...)`, `cylinder(...)`, `sphere(...)`). Once you apply any transform (`.translate`, `.rotate`, `.scale`) or a boolean (`.subtract`, `.union`, `.intersect`), the canonical name resolution becomes ambiguous and the lowerer rejects the face filter with `feature.edge-feature.face-ref-not-resolvable`.
+Canonical face refs (`{ face: 'top' }`, etc.) work transparently across transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and unambiguous booleans (`.subtract`, `.union`, `.intersect`). The kernel walks each face's lineage back to its originating primitive and forward through history.
 
-**Workaround:** apply the edge feature *before* transforms.
+Two cases produce explicit diagnostics:
 
-```typescript
-// ❌ Fails — canonical face ref on a transformed primitive
-return box(20, 20, 20).translate(5, 0, 0).fillet(2, { face: 'top' });
+- `feature.edge-feature.face-ref-ambiguous-after-split` — an upstream boolean split the named face into multiple children (e.g., a divider cut splits `top` into two halves). Geometry-fallback disambiguation is planned for a future release; current workaround: apply the edge feature before the splitting operation, or use a query-based selector.
+- `feature.edge-feature.face-ref-removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 
-// ✅ Works — fillet first, then translate
-return box(20, 20, 20).fillet(2, { face: 'top' }).translate(5, 0, 0);
-
-// ✅ Works on raw primitives:
-return box(20, 20, 20).fillet(2, { face: 'top' });
-
-// ✅ Works on boolean results — but no face filter (rounds all edges):
-return box(20, 20, 5).subtract(cylinder(10, 4)).fillet(1);
-```
+(`face-feature.*` parallel codes apply to `.shell()`.)
 
 Per-primitive canonical face applicability:
 - Box: all six (`top` / `bottom` / `left` / `right` / `front` / `back`).
@@ -368,6 +359,8 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.edge-feature.face-ref-not-resolvable` | Canonical face refs only work on un-transformed primitives. Apply transforms after the fillet/chamfer, or fillet the primitive first then translate. |
 | `feature.edge-feature.face-ref-not-applicable` | That canonical face name is not valid for this primitive. Boxes have all six; cylinders have only top/bottom; spheres have none. |
 | `feature.edge-feature.face-ref-not-supported` | Edge/face ref kind not supported on this shape. Use a canonical name, a label, or an inline EdgeQuery instead. |
+| `feature.edge-feature.face-ref-ambiguous-after-split` | Named face was split by an upstream boolean. Geometry-fallback planned for future release. |
+| `feature.edge-feature.face-ref-removed` | Named face was removed by an upstream boolean. Reference a different face. |
 | `feature.edge-feature.no-edges-match` | The selection matched no edges. Use the `list_edges` MCP tool to see what's available, or relax the query. |
 | `feature.edge-feature.ambiguous-selection` | Multiple edges match this query. Use `selectEdges` (plural) for all matches, or tighten the query. |
 | `feature.edge-feature.invalid-query` | Query has contradictory keys, an unknown segment id, or an unsupported ref kind. Check the EdgeQuery type. |
@@ -380,6 +373,8 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.face-feature.face-ref-not-resolvable` | Canonical face refs only work on un-transformed primitives. Apply shell before transforms. |
 | `feature.face-feature.face-ref-not-applicable` | That canonical face is not valid for this primitive. Cylinders accept only top/bottom for shell; spheres have no canonical faces. |
 | `feature.face-feature.face-ref-not-supported` | Face ref kind not supported. Use a canonical name, a label, or an inline FaceQuery. |
+| `feature.face-feature.face-ref-ambiguous-after-split` | Named face was split by an upstream boolean. Geometry-fallback planned for future release. |
+| `feature.face-feature.face-ref-removed` | Named face was removed by an upstream boolean. Reference a different face. |
 | `feature.face-feature.no-match` | The face query matched no faces. Use the `list_faces` MCP tool to see what's available, or relax the query. |
 | `feature.face-feature.label-not-resolvable` | *(Deprecated)* Generic label resolution failure. See `feature.label.*` codes for the specific cause. |
 

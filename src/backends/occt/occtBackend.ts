@@ -1,4 +1,5 @@
 import * as replicad from 'replicad';
+import { getOC } from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../intent/types';
@@ -60,12 +61,20 @@ export class OcctBackend implements ShapeBackend {
   // erasableSyntaxOnly forbids constructor parameter properties — declare explicitly.
   private shape: ReplicadShape3D;
   readonly kind?: 'box' | 'cylinder' | 'sphere' | 'sketch';
+  /** v0.2: per-shape face/edge identity tracking. Undefined for shapes that don't
+   *  participate in history walks (legacy paths that don't construct lineage). */
+  readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
 
-  constructor(shape: ReplicadShape3D, kind?: 'box' | 'cylinder' | 'sphere' | 'sketch') {
+  constructor(
+    shape: ReplicadShape3D,
+    kind?: 'box' | 'cylinder' | 'sphere' | 'sketch',
+    historyMap?: import('../../naming/evolutionRecord').HistoryMap,
+  ) {
     this.shape = shape;
     this.kind = kind;
+    this.historyMap = historyMap;
   }
 
   /**
@@ -731,6 +740,153 @@ export class OcctBackend implements ShapeBackend {
     const blob = this.shape.blobSTEP();
     const buf = await blob.arrayBuffer();
     return new Uint8Array(buf);
+  }
+
+  /**
+   * Enumerate all faces of this shape via TopExp_Explorer and return their
+   * OCCT hash codes as hex strings. Stable within a single WASM session.
+   *
+   * Used by history-tracking machinery to establish face identity before and
+   * after operations (transforms, booleans, edge features).
+   */
+  faceHashes(): string[] {
+    const oc = getOC();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const explorer = new (oc as any).TopExp_Explorer_2(
+      wrapped,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_SHAPE,
+    );
+    const hashes: string[] = [];
+    try {
+      while (explorer.More()) {
+        const sub = explorer.Current();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        hashes.push((sub as any).HashCode(2147483647).toString(16));
+        explorer.Next();
+      }
+    } finally {
+      explorer.delete();
+    }
+    return hashes;
+  }
+
+  /**
+   * Enumerate all edges of this shape via TopExp_Explorer and return their
+   * OCCT hash codes as hex strings. Stable within a single WASM session.
+   */
+  edgeHashes(): string[] {
+    const oc = getOC();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const explorer = new (oc as any).TopExp_Explorer_2(
+      wrapped,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_EDGE,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_SHAPE,
+    );
+    const hashes: string[] = [];
+    try {
+      while (explorer.More()) {
+        const sub = explorer.Current();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        hashes.push((sub as any).HashCode(2147483647).toString(16));
+        explorer.Next();
+      }
+    } finally {
+      explorer.delete();
+    }
+    return hashes;
+  }
+
+  /**
+   * Find the canonical face by name on a primitive shape and return its
+   * OCCT hash code as a hex string.
+   *
+   * Uses face centroid matching against the bounding box — the same heuristic
+   * as `edgeSelection.ts:findCanonicalFace`. Only valid on box/cylinder/sphere
+   * primitives (requires `kind` to be set).
+   *
+   * For boxes: all 6 cardinal directions (top/bottom/left/right/front/back).
+   * For cylinders: top and bottom only.
+   * For spheres: throws on any name (no canonical planar faces).
+   *
+   * @throws {Error} If called on a non-primitive shape (kind unset).
+   * @throws {Error} If the face name is not applicable to this primitive.
+   * @throws {Error} If no matching face is found within tolerance.
+   */
+  findCanonicalFaceHash(face: 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back'): string {
+    const TOL = 1e-4;
+    if (!this.kind) {
+      throw new Error('findCanonicalFaceHash: only valid on primitives (box/cylinder/sphere); kind is unset');
+    }
+    if (this.kind === 'sphere') {
+      throw new Error('findCanonicalFaceHash: spheres have no canonical planar face names');
+    }
+    if (this.kind === 'cylinder' && face !== 'top' && face !== 'bottom') {
+      throw new Error(`findCanonicalFaceHash: '${face}' is not applicable to cylinder (only top/bottom)`);
+    }
+
+    const bb = this.boundingBox();
+    let axisIndex: 0 | 1 | 2;
+    let value: number;
+    switch (face) {
+      case 'top':    axisIndex = 2; value = bb.max[2]; break;
+      case 'bottom': axisIndex = 2; value = bb.min[2]; break;
+      case 'right':  axisIndex = 0; value = bb.max[0]; break;
+      case 'left':   axisIndex = 0; value = bb.min[0]; break;
+      case 'back':   axisIndex = 1; value = bb.max[1]; break;
+      case 'front':  axisIndex = 1; value = bb.min[1]; break;
+    }
+
+    // Walk faces via replicad's .faces accessor (they have .center with x/y/z),
+    // find the matching face, then hash its underlying OCCT subshape.
+    const oc = getOC();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const explorer = new (oc as any).TopExp_Explorer_2(
+      wrapped,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (oc as any).TopAbs_ShapeEnum.TopAbs_SHAPE,
+    );
+
+    // Collect all faces with their hashes, then match against replicad face centroids
+    const replicadFaces = this.shape.faces;  // replicad Face[] with .center
+    const facesByIdx: string[] = [];
+    try {
+      while (explorer.More()) {
+        const sub = explorer.Current();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        facesByIdx.push((sub as any).HashCode(2147483647).toString(16));
+        explorer.Next();
+      }
+    } finally {
+      explorer.delete();
+    }
+
+    // Match by centroid in the same order TopExp_Explorer visits them.
+    // replicad's shape.faces and TopExp_Explorer traverse in the same order
+    // for simple primitives, so index i in facesByIdx corresponds to replicadFaces[i].
+    for (let i = 0; i < replicadFaces.length && i < facesByIdx.length; i++) {
+      const c = replicadFaces[i].center;
+      const cv = axisIndex === 0 ? c.x : axisIndex === 1 ? c.y : c.z;
+      if (Math.abs(cv - value) < TOL) {
+        return facesByIdx[i];
+      }
+    }
+
+    throw new Error(
+      `findCanonicalFaceHash: could not find canonical face '${face}' on ${this.kind} within tolerance ${TOL}`,
+    );
   }
 
   dispose(): void {

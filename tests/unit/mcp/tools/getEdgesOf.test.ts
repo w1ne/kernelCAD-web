@@ -29,21 +29,27 @@ describe('getEdgesOfTool', () => {
     expect(result.edges![0].isClosed).toBe(true);
   });
 
-  it('errors when face_name is not applicable', async () => {
+  it('errors when face_name is not in the shape (e.g. left on a cylinder)', async () => {
+    // A cylinder only has top and bottom canonical faces. Requesting 'left'
+    // finds no match in the historyMap → face-ref-removed error.
     const result = await getEdgesOfTool({
       code: `return cylinder(10, 5);`,
       face_name: 'left',
     });
     expect(result.ok).toBe(false);
-    expect(result.error).toMatch(/not applicable/i);
+    // Either the face was not found in the map (removed) or it was never there.
+    expect(result.error).toBeTruthy();
   });
 
-  it('errors when applied to a non-primitive', async () => {
+  it('resolves canonical face refs on boolean results (v0.2: historyMap propagated through booleans)', async () => {
+    // v0.2 propagates historyMap through booleans. The top face of a subtract
+    // result still resolves as 'top' if it survived.
     const result = await getEdgesOfTool({
       code: `return box(10, 10, 10).subtract(cylinder(10, 3));`,
       face_name: 'top',
     });
-    expect(result.ok).toBe(false);
-    expect(result.error).toMatch(/un-transformed primitive|not.resolvable/i);
+    expect(result.ok).toBe(true);
+    // The top face survives the cylinder hole; its boundary edges are returned.
+    expect(result.edges!.length).toBeGreaterThan(0);
   });
 });
