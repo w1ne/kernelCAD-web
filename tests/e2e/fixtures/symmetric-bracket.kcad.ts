@@ -7,7 +7,7 @@ const boltDiameter = param('BoltDiameter', 4, { unit: 'mm', min: 2, max: 8 });
 // Build the right half: an L-bracket with a bolt hole on the depth-axis arm.
 const rightHalf = box(halfWidth, depth, thickness)
   .subtract(
-    cylinder(boltDiameter / 2, thickness)
+    cylinder(thickness, boltDiameter / 2)
       .translate(halfWidth - 5, depth - boltSpacing, 0),
   );
 

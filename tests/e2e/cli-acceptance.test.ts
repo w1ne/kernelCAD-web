@@ -426,12 +426,11 @@ describe('v0.4-rc13 symmetric-bracket mirror fixture', () => {
     const last = run.records[run.records.length - 1];
     const shape = result.shapes.get(last.id)!;
 
-    // cylinder(boltDiameter/2, thickness) maps to the API cylinder(h, r) signature,
-    // so h = boltDiameter/2 = 2 mm and r = thickness = 5 mm.
+    // cylinder(thickness, boltDiameter/2) — height = 5 mm, radius = 2 mm.
     // Analytic: 2 * (halfWidth*depth*thickness - π*r²*h)
     // With defaults (halfWidth=20, depth=30, thickness=5, boltDiameter=4):
-    // 2 * (20*30*5 - π*5²*2) ≈ 2 * (3000 - 157.08) ≈ 5685.84 mm³
-    const expected = 2 * (20 * 30 * 5 - Math.PI * Math.pow(5, 2) * 2);
+    // 2 * (20*30*5 - π*2²*5) ≈ 2 * (3000 - 62.83) ≈ 5874.34 mm³
+    const expected = 2 * (20 * 30 * 5 - Math.PI * Math.pow(2, 2) * 5);
     expect(shape.volume()).toBeGreaterThan(expected - 50);
     expect(shape.volume()).toBeLessThan(expected + 50);
   });
