@@ -5,6 +5,7 @@ const ALLOWED_REACHABILITY: ReadonlySet<HintReachability> = new Set([
   'engine-path',
   'direct-lowerer-only',
   'reserved',
+  'cli-path',
 ] as const);
 
 const KNOWN_DIRECT_LOWERER_ONLY = [
@@ -13,8 +14,15 @@ const KNOWN_DIRECT_LOWERER_ONLY = [
   'feature.transform.invalid-plane',
 ] as const;
 
+const KNOWN_CLI_PATH = [
+  'cli.script.exception',
+  'cli.file.read',
+  'cli.no-input',
+  'cli.export.exception',
+] as const;
+
 describe('whyDidThisFail HINTS table reachability classification', () => {
-  it('every HINTS entry has a reachable field that is one of the three allowed values', () => {
+  it('every HINTS entry has a reachable field that is one of the four allowed values', () => {
     const entries = Object.entries(HINTS);
     expect(entries.length).toBeGreaterThanOrEqual(30);
 
@@ -52,6 +60,18 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
     expect(
       directLowererOnly,
       `Adding a new direct-lowerer-only code requires (1) updating KNOWN_DIRECT_LOWERER_ONLY in this test, AND (2) citing docs/superpowers/specs/2026-05-01-error-attribution-policy.md in the introducing PR per the error-attribution policy.`,
+    ).toEqual(expected);
+  });
+
+  it('the cli-path set matches the documented CLI codes', () => {
+    const cliPath = Object.entries(HINTS)
+      .filter(([, entry]) => entry.reachable === 'cli-path')
+      .map(([code]) => code)
+      .sort();
+    const expected = [...KNOWN_CLI_PATH].sort();
+    expect(
+      cliPath,
+      `Adding a new cli-path code requires updating KNOWN_CLI_PATH in this test.`,
     ).toEqual(expected);
   });
 });

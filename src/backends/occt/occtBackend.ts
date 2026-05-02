@@ -498,7 +498,7 @@ export class OcctBackend implements ShapeBackend {
    * with its reflection — does NOT perform a boolean union with the source).
    * kernelCAD's user-facing `Shape.mirror()` is a separate higher-level
    * method that does perform the union (the symmetric-part shortcut);
-   * see the mirror() implementation in Task 2. Different verbs, different
+   * see `Shape.mirror` in `src/capture/proxy.ts`. Different verbs, different
    * layers — both names appear in our API for clarity.
    *
    * For offset planes (e.g. `{ plane: 'yz', offset: 5 }`) we decompose:
@@ -552,7 +552,7 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If `edges` is empty.
    * @throws {Error} If OCCT fails (e.g. radius too large for the geometry) —
-   *   the original exception is re-thrown so Task 3's lowerer can catch and
+   *   the original exception is re-thrown so the lowerer can catch and
    *   emit a `feature.fillet.failed` diagnostic.
    */
   fillet(edges: ReplicadEdge[], radius: number): OcctBackend {
@@ -572,7 +572,7 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If `edges` is empty.
    * @throws {Error} If OCCT fails (e.g. distance too large for the geometry) —
-   *   the original exception is re-thrown so Task 3's lowerer can catch and
+   *   the original exception is re-thrown so the lowerer can catch and
    *   emit a `feature.chamfer.failed` diagnostic.
    */
   chamfer(edges: ReplicadEdge[], distance: number): OcctBackend {
@@ -637,8 +637,8 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If `thickness <= 0`.
    * @throws {Error} If OCCT fails (e.g. thickness exceeds the shape's
-   *   minimum thickness or geometry is degenerate). The lowerer (Task 3)
-   *   catches and emits a `feature.shell.failed` diagnostic.
+   *   minimum thickness or geometry is degenerate). The lowerer catches
+   *   and emits a `feature.shell.failed` diagnostic.
    */
   shell(face: ReplicadFace, thickness: number): OcctBackend {
     if (thickness <= 0) {
