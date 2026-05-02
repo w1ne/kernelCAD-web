@@ -78,7 +78,7 @@ interface HintEntry {
   reachable: HintReachability;
 }
 
-const HINTS: Record<string, HintEntry> = {
+export const HINTS: Record<string, HintEntry> = {
   'feature.fillet.failed': { reachable: 'engine-path', hint: "OCCT could not apply that fillet. Try a smaller radius — typically less than half of the smallest face dimension." },
   'feature.fillet.no-base': { reachable: 'engine-path', hint: "Fillet has no base shape. Ensure the fillet is chained onto a solid shape (e.g. box(10, 10, 10).fillet(1))." },
   'feature.fillet.no-radius': { reachable: 'engine-path', hint: "Fillet is missing a radius parameter. Pass a positive number as the first argument (e.g. .fillet(2))." },
