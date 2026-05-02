@@ -58,7 +58,7 @@ export interface WhyDidThisFailOutput {
  * feature.extrude.unsupported-profile, feature.revolve.unsupported-profile,
  * cli.no-input, cli.export.exception, export.no-shape, export.shape-not-lowered.
  */
-export type HintReachability = 'engine-path' | 'direct-lowerer-only' | 'reserved' | 'cli-path';
+export type HintReachability = 'engine-path' | 'direct-lowerer-only' | 'reserved' | 'tool-error-field';
 
 interface HintEntry {
   /** One-line human-readable suggestion. Pasted into agent chat. */
@@ -73,9 +73,10 @@ interface HintEntry {
    *   `recompute.input.missing` before the lowerer's branch runs, so
    *   agents won't see this code through normal MCP usage. See
    *   docs/superpowers/specs/2026-05-01-error-attribution-policy.md.
-   * - 'cli-path': fires from the CLI command-handlers (file I/O, script
-   *   exceptions, export errors). Agents using the MCP server may see
-   *   these via tool result error fields rather than diagnostic chains.
+   * - 'tool-error-field': the code appears in MCP tool results' `error` /
+   *   `errorCode` field rather than the `diagnostics[]` array. Agents see
+   *   these as top-level tool failures (file I/O, script exceptions, export
+   *   errors).
    * - 'reserved': forward-looking infrastructure with no current trigger.
    */
   reachable: HintReachability;
@@ -145,10 +146,10 @@ export const HINTS: Record<string, HintEntry> = {
   'feature.path.duplicate-label': { reachable: 'engine-path', hint: "Each sketch label must be unique. Pick a different name or remove the duplicate label() call." },
   'recompute.input.missing': { reachable: 'engine-path', hint: "An upstream feature failed or was suppressed. Use why_did_this_fail on the upstream feature ID to find the root cause." },
   'recompute.lowering.exception': { reachable: 'engine-path', hint: "An exception was raised during lowering. Check the diagnostic message for the OCCT error." },
-  'cli.script.exception': { reachable: 'cli-path', hint: "Your script raised an exception during execution. Check the diagnostic message for the JS error." },
-  'cli.file.read': { reachable: 'cli-path', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
-  'cli.no-input': { reachable: 'cli-path', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
-  'cli.export.exception': { reachable: 'cli-path', hint: "An exception occurred during export. Check the diagnostic message for details." },
+  'cli.script.exception': { reachable: 'tool-error-field', hint: "Your script raised an exception during execution. Check the diagnostic message for the JS error." },
+  'cli.file.read': { reachable: 'tool-error-field', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
+  'cli.no-input': { reachable: 'tool-error-field', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
+  'cli.export.exception': { reachable: 'tool-error-field', hint: "An exception occurred during export. Check the diagnostic message for details." },
   'export.no-shape': { reachable: 'engine-path', hint: "The script did not return a shape. Ensure your script ends with return <shape>." },
   'export.shape-not-lowered': { reachable: 'engine-path', hint: "The returned shape could not be lowered to OCCT. Check for upstream errors in the feature tree." },
 };

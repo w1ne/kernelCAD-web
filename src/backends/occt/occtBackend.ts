@@ -5,6 +5,7 @@ import type { Vec3, PlaneSpec, CardinalPlane } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../capture/sketch';
 import { isSameEdge } from './edgeQueries';
+import { encodeBinaryStl } from '../../script-runtime/exportStlBinary';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -715,9 +716,9 @@ export class OcctBackend implements ShapeBackend {
   }
 
   async exportSTLAsync(): Promise<Uint8Array> {
-    const blob = this.shape.blobSTL();
-    const buf = await blob.arrayBuffer();
-    return new Uint8Array(buf);
+    const mesh = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
+    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
   }
 
   exportSTEP(): Uint8Array {

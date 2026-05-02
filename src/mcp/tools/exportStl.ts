@@ -4,6 +4,7 @@ import { dirname, isAbsolute, resolve as resolvePath } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 
 export interface ExportStlInput {
   file?: string;
@@ -16,6 +17,7 @@ export interface ExportStlOutput {
   ok: boolean;
   output_path?: string;
   byte_count?: number;
+  /** Total features in the script, not the count contributing to the exported shape. */
   feature_count?: number;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
@@ -82,7 +84,13 @@ export async function exportStlTool(input: ExportStlInput): Promise<ExportStlOut
     };
   }
 
-  const finalPath = isAbsolute(output_path) ? output_path : resolvePath(output_path);
+  // Validate output_path before any write.
+  const pathCheck = validateOutputPath(output_path);
+  if (!pathCheck.ok) {
+    return { ok: false, error: pathCheck.error };
+  }
+  const finalPath = pathCheck.resolved!;
+
   try {
     await mkdir(dirname(finalPath), { recursive: true });
     await writeFile(finalPath, Buffer.from(result.bytes));

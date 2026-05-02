@@ -5,7 +5,7 @@ const ALLOWED_REACHABILITY: ReadonlySet<HintReachability> = new Set([
   'engine-path',
   'direct-lowerer-only',
   'reserved',
-  'cli-path',
+  'tool-error-field',
 ] as const);
 
 const KNOWN_DIRECT_LOWERER_ONLY = [
@@ -14,7 +14,7 @@ const KNOWN_DIRECT_LOWERER_ONLY = [
   'feature.transform.invalid-plane',
 ] as const;
 
-const KNOWN_CLI_PATH = [
+const KNOWN_TOOL_ERROR_FIELD = [
   'cli.script.exception',
   'cli.file.read',
   'cli.no-input',
@@ -63,15 +63,15 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
     ).toEqual(expected);
   });
 
-  it('the cli-path set matches the documented CLI codes', () => {
-    const cliPath = Object.entries(HINTS)
-      .filter(([, entry]) => entry.reachable === 'cli-path')
+  it('the tool-error-field set matches the documented tool-error codes', () => {
+    const toolErrorField = Object.entries(HINTS)
+      .filter(([, entry]) => entry.reachable === 'tool-error-field')
       .map(([code]) => code)
       .sort();
-    const expected = [...KNOWN_CLI_PATH].sort();
+    const expected = [...KNOWN_TOOL_ERROR_FIELD].sort();
     expect(
-      cliPath,
-      `Adding a new cli-path code requires updating KNOWN_CLI_PATH in this test.`,
+      toolErrorField,
+      `Adding a new tool-error-field code requires updating KNOWN_TOOL_ERROR_FIELD in this test.`,
     ).toEqual(expected);
   });
 });

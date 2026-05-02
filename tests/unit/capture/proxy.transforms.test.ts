@@ -65,6 +65,14 @@ describe('Shape transform validators (capture-time)', () => {
     expect(String(caught)).toMatch(/invalid-rotate|finite/i);
   });
 
+  it('rotate error message preserves NaN degrees value', async () => {
+    let caught: unknown;
+    try {
+      await runScript({ code: `return box(10, 10, 10).rotate([0, 0, 1], NaN);`, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/NaN/);
+  });
+
   it('rotate does not throw for valid axis and degrees', async () => {
     const result = await runScript({ code: `return box(5, 5, 5).rotate([0, 0, 1], 90);`, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(1);
@@ -101,6 +109,14 @@ describe('Shape transform validators (capture-time)', () => {
     expect(String(caught)).toMatch(/invalid-scale|positive/i);
   });
 
+  it('scale error message preserves NaN value', async () => {
+    let caught: unknown;
+    try {
+      await runScript({ code: `return box(10, 10, 10).scale(NaN);`, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/NaN/);
+  });
+
   it('scale does not throw for valid positive factor', async () => {
     const result = await runScript({ code: `return box(5, 5, 5).scale(2);`, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(1);
@@ -133,6 +149,14 @@ describe('Shape transform validators (capture-time)', () => {
     expect(diag.code).toBe('feature.transform.invalid-reflect');
   });
 
+  it('reflect error message preserves Infinity in offset', async () => {
+    let caught: unknown;
+    try {
+      await runScript({ code: `return box(10, 10, 10).reflect({ plane: 'yz', offset: Infinity });`, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/Infinity/);
+  });
+
   it('reflect does not throw for valid cardinal plane', async () => {
     const result = await runScript({ code: `return box(5, 5, 5).reflect('xy');`, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(1);
@@ -152,6 +176,14 @@ describe('Shape transform validators (capture-time)', () => {
     expect(diag.code).toBe('feature.mirror.invalid-plane');
     expect(diag.featureId).toBeDefined();
     expect(typeof diag.featureId).toBe('string');
+  });
+
+  it('mirror error message preserves NaN in offset', async () => {
+    let caught: unknown;
+    try {
+      await runScript({ code: `return box(10, 10, 10).mirror({ plane: 'yz', offset: NaN });`, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/NaN/);
   });
 
   it('mirror does not throw for valid cardinal plane', async () => {

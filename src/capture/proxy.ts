@@ -1,5 +1,5 @@
 import type { FeatureId, PlaneSpec } from '../intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec } from '../intent/types';
+import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, formatScalarForError } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
 import type { CaptureSession } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
@@ -60,14 +60,14 @@ export class Shape {
     if (!isValidVec3(axis) || typeof degrees !== 'number' || !Number.isFinite(degrees)) {
       throw new KernelError(
         'feature.transform.invalid-rotate',
-        `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${JSON.stringify(axis)}, degrees=${degrees}.`,
+        `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${formatScalarForError(axis)}, degrees=${formatScalarForError(degrees)}.`,
         this.id,
       );
     }
     if (pivot !== undefined && !isValidVec3(pivot)) {
       throw new KernelError(
         'feature.transform.invalid-rotate',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${JSON.stringify(pivot)}.`,
+        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
         this.id,
       );
     }
@@ -82,7 +82,7 @@ export class Shape {
     if (!isValidScaleSpec(scaleSpec)) {
       throw new KernelError(
         'feature.transform.invalid-scale',
-        `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${JSON.stringify(scaleSpec)}.`,
+        `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
         this.id,
       );
     }
@@ -99,7 +99,7 @@ export class Shape {
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.transform.invalid-reflect',
-        `Reflect plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${JSON.stringify(plane)}.`,
+        `Reflect plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${formatScalarForError(plane)}.`,
         this.id,
       );
     }
@@ -111,7 +111,7 @@ export class Shape {
     if (!isValidPlaneSpec(plane)) {
       throw new KernelError(
         'feature.mirror.invalid-plane',
-        `Mirror plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${JSON.stringify(plane)}.`,
+        `Mirror plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${formatScalarForError(plane)}.`,
         this.id,
       );
     }

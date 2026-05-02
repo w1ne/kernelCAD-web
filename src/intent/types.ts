@@ -105,6 +105,32 @@ export function isValidScaleSpec(v: unknown): v is ScaleSpec {
   return false;
 }
 
+/**
+ * Format a scalar value for inclusion in an error message.
+ *
+ * JSON.stringify drops NaN/Infinity to "null" — the worst diagnostic
+ * outcome. This helper preserves them as readable strings; falls back
+ * to JSON.stringify for other types.
+ */
+export function formatScalarForError(v: unknown): string {
+  if (typeof v === 'number') {
+    if (Number.isNaN(v)) return 'NaN';
+    if (v === Infinity) return 'Infinity';
+    if (v === -Infinity) return '-Infinity';
+    return String(v);
+  }
+  if (Array.isArray(v)) {
+    return `[${v.map((x) => formatScalarForError(x)).join(', ')}]`;
+  }
+  if (typeof v === 'object' && v !== null) {
+    const entries = Object.entries(v).map(
+      ([k, val]) => `${JSON.stringify(k)}: ${formatScalarForError(val)}`,
+    );
+    return `{ ${entries.join(', ')} }`;
+  }
+  return JSON.stringify(v);
+}
+
 export function isValidPlaneSpec(value: unknown): value is PlaneSpec {
   if (typeof value === 'string') {
     return value === 'xy' || value === 'xz' || value === 'yz';
