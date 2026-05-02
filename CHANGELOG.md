@@ -3,7 +3,7 @@
 A bundled feature + quality milestone. Upgrades `export_stl` from ASCII to true binary STL output (the rc.15 contract was right; the implementation finally matches). Closes the rc.15 review punch list (2 Critical + 6 Important + 2 Nits) plus a new "deviation propagation" discipline memory entry.
 
 ### Feature surface
-- **`export_stl` now emits true binary STL.** rc.15 shipped ASCII despite the contract claiming binary; this milestone implements direct binary encoding via Replicad's mesh primitives. Files are ~3-5× smaller (684 bytes for a 12-triangle box vs ~3052 ASCII bytes). Format: 80-byte header + uint32 LE triangle count + 50 bytes per triangle (3× float32 normal + 9× float32 vertices + uint16 attribute count). Encoder lives at `src/script-runtime/exportStlBinary.ts`; integrated into `runAndExport`.
+- **`export_stl` now emits true binary STL.** rc.15 shipped ASCII despite the contract claiming binary; this milestone implements direct binary encoding via Replicad's mesh primitives. Files are ~4-5× smaller (684 bytes for a 12-triangle box vs ~3052 ASCII bytes). Format: 80-byte header + uint32 LE triangle count + 50 bytes per triangle (3× float32 normal + 9× float32 vertices + uint16 attribute count). Encoder lives at `src/script-runtime/exportStlBinary.ts`; integrated into `runAndExport`.
 - All three agent-readable description surfaces (SKILL.md, MCP tool description, JSDoc) now match what ships.
 
 ### Path validation

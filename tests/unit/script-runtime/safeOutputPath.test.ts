@@ -182,3 +182,41 @@ describe('validateOutputPath — canonical path in resolved field', () => {
     expect(r.resolved).not.toMatch(/\/\//);
   });
 });
+
+describe('validateOutputPath — credential-dir patterns', () => {
+  it('rejects ~/.kube/config', () => {
+    const r = validateOutputPath('~/.kube/config');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/protected/);
+  });
+
+  it('rejects ~/.docker/config.json', () => {
+    const r = validateOutputPath('~/.docker/config.json');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.npmrc', () => {
+    const r = validateOutputPath('~/.npmrc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.netrc', () => {
+    const r = validateOutputPath('~/.netrc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.pypirc', () => {
+    const r = validateOutputPath('~/.pypirc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.gitconfig', () => {
+    const r = validateOutputPath('~/.gitconfig');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.git-credentials', () => {
+    const r = validateOutputPath('~/.git-credentials');
+    expect(r.ok).toBe(false);
+  });
+});

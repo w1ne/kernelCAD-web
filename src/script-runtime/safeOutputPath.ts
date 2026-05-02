@@ -41,6 +41,13 @@ const DANGEROUS_USER_CONFIG_PATTERNS: RegExp[] = [
   /\/\.gnupg\//,
   /\/\.aws\//,
   /\/\.gcp\//,
+  /\/\.kube\//,
+  /\/\.docker\//,
+  /\/\.npmrc$/,
+  /\/\.netrc$/,
+  /\/\.pypirc$/,
+  /\/\.gitconfig$/,
+  /\/\.git-credentials$/,
 ];
 
 export function validateOutputPath(rawPath: string): ValidateOutputPathResult {

@@ -73,6 +73,9 @@ export function encodeBinaryStl(
   headerBytes.copy(buf, 0);
 
   // Triangle count at byte 80 (LE uint32).
+  if (triangleCount > 0xFFFFFFFF) {
+    throw new Error(`Triangle count ${triangleCount} exceeds binary STL uint32 max (4294967295)`);
+  }
   buf.writeUInt32LE(triangleCount, HEADER_SIZE);
 
   // Per-triangle records starting at byte 84.

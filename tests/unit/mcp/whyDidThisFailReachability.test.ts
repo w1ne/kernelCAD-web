@@ -17,8 +17,11 @@ const KNOWN_DIRECT_LOWERER_ONLY = [
 const KNOWN_TOOL_ERROR_FIELD = [
   'cli.script.exception',
   'cli.file.read',
-  'cli.no-input',
   'cli.export.exception',
+] as const;
+
+const KNOWN_RESERVED = [
+  'cli.no-input',
 ] as const;
 
 describe('whyDidThisFail HINTS table reachability classification', () => {
@@ -72,6 +75,28 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
     expect(
       toolErrorField,
       `Adding a new tool-error-field code requires updating KNOWN_TOOL_ERROR_FIELD in this test.`,
+    ).toEqual(expected);
+  });
+
+  it('known reserved codes are classified as reserved', () => {
+    for (const code of KNOWN_RESERVED) {
+      expect(HINTS[code], `Expected HINTS entry for '${code}' to exist`).toBeDefined();
+      expect(
+        HINTS[code]!.reachable,
+        `Expected '${code}' to be classified 'reserved', got '${HINTS[code]!.reachable}'`,
+      ).toBe('reserved');
+    }
+  });
+
+  it('the reserved set matches the documented reserved codes', () => {
+    const reserved = Object.entries(HINTS)
+      .filter(([, entry]) => entry.reachable === 'reserved')
+      .map(([code]) => code)
+      .sort();
+    const expected = [...KNOWN_RESERVED].sort();
+    expect(
+      reserved,
+      `Adding a new reserved code requires updating KNOWN_RESERVED in this test.`,
     ).toEqual(expected);
   });
 });

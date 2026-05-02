@@ -148,7 +148,7 @@ export const HINTS: Record<string, HintEntry> = {
   'recompute.lowering.exception': { reachable: 'engine-path', hint: "An exception was raised during lowering. Check the diagnostic message for the OCCT error." },
   'cli.script.exception': { reachable: 'tool-error-field', hint: "Your script raised an exception during execution. Check the diagnostic message for the JS error." },
   'cli.file.read': { reachable: 'tool-error-field', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
-  'cli.no-input': { reachable: 'tool-error-field', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
+  'cli.no-input': { reachable: 'reserved', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
   'cli.export.exception': { reachable: 'tool-error-field', hint: "An exception occurred during export. Check the diagnostic message for details." },
   'export.feature-not-found': { reachable: 'engine-path', hint: "The feature_id passed to export_stl wasn't found in the script's features. Run list_features first to see available feature IDs, or omit feature_id to export the last feature (the script's return value)." },
   'export.no-shape': { reachable: 'engine-path', hint: "The script did not return a shape. Ensure your script ends with return <shape>." },
