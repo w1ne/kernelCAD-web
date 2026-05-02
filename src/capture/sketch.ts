@@ -199,8 +199,9 @@ export class Sketch {
     const reflectXY = (x: number, y: number): [number, number] => {
       if (axis === 'x') return [norm(x), norm(-y)];
       if (axis === 'y') return [norm(-x), norm(y)];
-      if (axis.axis === 'x') return [norm(x), norm(2 * axis.offset - y)];
-      return [norm(2 * axis.offset - x), norm(y)]; // axis.axis === 'y'
+      const off = axis.offset ?? 0;
+      if (axis.axis === 'x') return [norm(x), norm(2 * off - y)];
+      return [norm(2 * off - x), norm(y)]; // axis.axis === 'y'
     };
 
     // Arc sign-flip: reflection inverts winding. For arcs whose direction is

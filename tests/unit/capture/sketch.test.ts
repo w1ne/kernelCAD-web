@@ -975,6 +975,54 @@ describe('path() builder + Sketch capture', () => {
       expect(labeledCmd!.kind).toBe('lineTo');
     });
 
+    it('Sketch.reflect({ axis: "x" }) is equivalent to Sketch.reflect("x") (offset defaults to 0)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        const stringForm = sketch.reflect('x');
+        const objectForm = sketch.reflect({ axis: 'x' });
+        // Return both as extrudes so we can inspect the sketch records
+        return objectForm.extrude(1);
+      `;
+      // We compare by running both forms and checking their commands match.
+      const codeString = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const codeObject = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect({ axis: 'x' }).extrude(1);
+      `;
+      const [resString, resObject] = await Promise.all([
+        runScript({ code: codeString, fileName: 'test.kcad.ts' }),
+        runScript({ code: codeObject, fileName: 'test.kcad.ts' }),
+      ]);
+      const getReflectedCmds = (res: typeof resString) => {
+        const sketches = res.records.filter(r => r.kind === 'sketch');
+        return (sketches[1].metadata as { commands: unknown[] }).commands;
+      };
+      expect(getReflectedCmds(resObject)).toEqual(getReflectedCmds(resString));
+    });
+
+    it('Sketch.reflect({ axis: "y" }) is equivalent to Sketch.reflect("y") (offset defaults to 0)', async () => {
+      const codeString = `
+        const sketch = path().moveTo(3, 0).lineTo(10, 5).close();
+        return sketch.reflect('y').extrude(1);
+      `;
+      const codeObject = `
+        const sketch = path().moveTo(3, 0).lineTo(10, 5).close();
+        return sketch.reflect({ axis: 'y' }).extrude(1);
+      `;
+      const [resString, resObject] = await Promise.all([
+        runScript({ code: codeString, fileName: 'test.kcad.ts' }),
+        runScript({ code: codeObject, fileName: 'test.kcad.ts' }),
+      ]);
+      const getReflectedCmds = (res: typeof resString) => {
+        const sketches = res.records.filter(r => r.kind === 'sketch');
+        return (sketches[1].metadata as { commands: unknown[] }).commands;
+      };
+      expect(getReflectedCmds(resObject)).toEqual(getReflectedCmds(resString));
+    });
+
     it('rejects malformed axis with feature.sketch.reflect.invalid-axis', async () => {
       const code = `
         const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
