@@ -1,3 +1,5 @@
+import type { Diagnostic } from './types';
+
 const FENCED_LANGS = ['typescript', 'ts', 'kcad', ''];
 
 export function extractScript(text: string): string | null {
@@ -15,4 +17,15 @@ export function extractScript(text: string): string | null {
 
   // No matching fence — return the whole text trimmed.
   return text.trim();
+}
+
+export function formatDiagnostics(diagnostics: Diagnostic[]): string {
+  return diagnostics
+    .map((d) => {
+      let line = `- \`${d.code}\` — ${d.message}`;
+      if (d.featureId) line += ` (feature: ${d.featureId})`;
+      if (d.hint) line += `\n  Hint: ${d.hint}`;
+      return line;
+    })
+    .join('\n');
 }
