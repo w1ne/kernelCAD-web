@@ -7,7 +7,7 @@ A bundled feature + quality milestone. New `export_stl` MCP tool closes the agen
 - Tool count goes from 13 to 14; SKILL.md updated; drift sentinels green.
 
 ### Capture-time validation
-- `Shape.translate`, `Shape.rotate`, `Shape.scale`, `Shape.reflect`, `Shape.mirror` now validate their arguments at capture time and throw `KernelError` with feature-namespaced codes if invalid. Five new diagnostic codes: `feature.transform.invalid-translate`, `feature.transform.invalid-rotate`, `feature.transform.invalid-scale`, `feature.transform.invalid-reflect` (mirror reuses the existing `feature.mirror.invalid-plane`).
+- `Shape.translate`, `Shape.rotate`, `Shape.scale`, `Shape.reflect`, `Shape.mirror` now validate their arguments at capture time and throw `KernelError` with feature-namespaced codes if invalid. Four new diagnostic codes: `feature.transform.invalid-translate`, `feature.transform.invalid-rotate`, `feature.transform.invalid-scale`, `feature.transform.invalid-reflect` (mirror reuses the existing `feature.mirror.invalid-plane`).
 - Agents now get script-line precision in stack traces for malformed transform arguments, matching the `Sketch.reflect` precedent.
 - The lowering-time `feature.transform.invalid-plane` gate from rc.14 stays as forward-looking infrastructure (reclassified to `'direct-lowerer-only'`).
 

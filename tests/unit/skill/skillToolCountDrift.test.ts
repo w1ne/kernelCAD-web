@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TOOLS } from '../../../src/mcp/server';
-import { escapeRegExp } from './_helpers';
+import { assertEveryNameInSKILL } from './_helpers';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILL_MD = readFileSync(
@@ -35,14 +35,7 @@ describe('SKILL.md tool count drift sentinel', () => {
     // once. Catches the case where TOOLS adds a new entry but SKILL.md
     // doesn't get updated to describe it. Word-boundary regex avoids
     // false-positives when a tool name is a substring of a longer identifier.
-    const missing: string[] = [];
-    for (const tool of TOOLS) {
-      const name = (tool as { name: string }).name;
-      const regex = new RegExp(`\\b${escapeRegExp(name)}\\b`);
-      if (!regex.test(SKILL_MD)) {
-        missing.push(name);
-      }
-    }
-    expect(missing, `Tools missing from SKILL.md: ${missing.join(', ')}`).toEqual([]);
+    const names = TOOLS.map((tool) => (tool as { name: string }).name);
+    assertEveryNameInSKILL(SKILL_MD, names, 'MCP tools');
   });
 });

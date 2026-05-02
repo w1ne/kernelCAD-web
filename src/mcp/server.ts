@@ -196,6 +196,7 @@ export const TOOLS = [
       'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
       'Optional { feature_id } selects which feature to export (default: last). ' +
       'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
+      'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
       'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
     inputSchema: {
       type: 'object' as const,

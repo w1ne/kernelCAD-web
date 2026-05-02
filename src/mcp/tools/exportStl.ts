@@ -17,6 +17,7 @@ export interface ExportStlOutput {
   ok: boolean;
   output_path?: string;
   byte_count?: number;
+  /** Total features in the script, not the count contributing to the exported shape. */
   feature_count?: number;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
