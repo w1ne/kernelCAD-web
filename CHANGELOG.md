@@ -1,3 +1,33 @@
+## v0.13.0-rc.15 — export_stl + rc.14 review closure (2026-05-01)
+
+A bundled feature + quality milestone. New `export_stl` MCP tool closes the agent output-workflow gap; closes the rc.14 review punch list (6 Important + 2 Nits).
+
+### Feature surface
+- New `export_stl({ file? | code?, output_path, feature_id? })` MCP tool — server-side write of STL geometry. Required `output_path`; optional `feature_id` selects which feature to export (default: last). Returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. Five error paths covered: missing file/code, missing output_path, script lowering failure, file-write failure, unknown feature_id. Existing CLI export pipeline (`src/script-runtime/export.ts`) reused — both CLI command and MCP tool call the same helper.
+- Tool count goes from 13 to 14; SKILL.md updated; drift sentinels green.
+
+### Capture-time validation
+- `Shape.translate`, `Shape.rotate`, `Shape.scale`, `Shape.reflect`, `Shape.mirror` now validate their arguments at capture time and throw `KernelError` with feature-namespaced codes if invalid. Five new diagnostic codes: `feature.transform.invalid-translate`, `feature.transform.invalid-rotate`, `feature.transform.invalid-scale`, `feature.transform.invalid-reflect` (mirror reuses the existing `feature.mirror.invalid-plane`).
+- Agents now get script-line precision in stack traces for malformed transform arguments, matching the `Sketch.reflect` precedent.
+- The lowering-time `feature.transform.invalid-plane` gate from rc.14 stays as forward-looking infrastructure (reclassified to `'direct-lowerer-only'`).
+
+### Error attribution
+- `KernelError.featureId` is now a `readonly` constructor-injected field. Throw sites pass it as the third constructor arg instead of mutating after construction. Seven throw sites collapsed to single-line construction.
+- `kernelErrorToDiagnostic` drops its optional `featureId` parameter; reads solely from `e.featureId`. No more catch-side-overrides-throw-site precedence ambiguity.
+
+### Drift sentinel coverage
+- New sentinels for `GLOBALS` (14 entries) and `PATH_BUILDER_METHODS` (9 entries) parallel the existing four. Six sentinels total cover the full agent-discoverable surface.
+- `escapeRegExp` factored into `tests/unit/skill/_helpers.ts`; previously duplicated across 4 sentinels.
+
+### Diagnostic surface
+- `HintReachability` gains a fourth value: `'cli-path'`. Four `cli.*` codes (cli.script.exception, cli.file.read, cli.no-input, cli.export.exception) reclassified from `'engine-path'` to `'cli-path'`. `KNOWN_CLI_PATH` exact-match assertion added to the reachability sentinel.
+- SKILL.md's reachability classification paragraph documents the fourth value.
+
+### Backend documentation
+- `OcctBackend.mirror`/`reflect`/`fillet`/`chamfer`/`shell` JSDoc references to ephemeral plan-task numbers ("Task 2", "Task 3") replaced with stable cross-references and descriptive text.
+
+---
+
 ## v0.13.0-rc.14 — quality pass v4 (2026-05-01)
 
 A pure quality milestone: closes the rc.13 review punch list (1 Critical + 6 Important + 7 Nits). No new user-facing API.

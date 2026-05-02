@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": true,
-  "version": "0.13.0-rc.14",
+  "version": "0.13.0-rc.15",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
