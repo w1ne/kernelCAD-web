@@ -50,6 +50,18 @@ export type FeatureRef =
 export type CardinalPlane = 'xy' | 'xz' | 'yz';
 export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset: number };
 
+export type SketchAxis = 'x' | 'y';
+export type AxisSpec = SketchAxis | { axis: SketchAxis; offset: number };
+
+export function isValidAxisSpec(v: unknown): v is AxisSpec {
+  if (v === 'x' || v === 'y') return true;
+  if (typeof v === 'object' && v !== null) {
+    const o = v as { axis?: unknown; offset?: unknown };
+    return (o.axis === 'x' || o.axis === 'y') && typeof o.offset === 'number' && Number.isFinite(o.offset);
+  }
+  return false;
+}
+
 export type FeatureKind =
   // primitives
   | 'box' | 'cylinder' | 'sphere' | 'torus'
