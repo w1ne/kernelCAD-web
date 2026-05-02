@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
-  "private": true,
-  "version": "0.13.0-rc.17",
+  "private": false,
+  "version": "0.1.0",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -10,6 +10,11 @@
   "bin": {
     "kernelcad": "./dist/cli/index.js"
   },
+  "files": [
+    "dist/cli",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

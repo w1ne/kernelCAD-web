@@ -9,6 +9,15 @@ Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` file
 
 This skill is the one-shot authoring companion to the kernelCAD MCP server (`kernelcad mcp`). Use this skill to write scripts; use the MCP server when you need to introspect a running model dynamically (volume, edge counts, why a feature failed).
 
+## Installation
+
+```bash
+npm install -g kernelcad
+kernelcad evaluate path/to/script.kcad.ts
+```
+
+Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
+
 ## Coordinate System
 
 - **Z-up**, right-handed.
