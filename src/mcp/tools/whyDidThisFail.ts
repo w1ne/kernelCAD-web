@@ -94,6 +94,7 @@ export const HINTS: Record<string, HintEntry> = {
   'feature.mirror.no-base': { reachable: 'engine-path', hint: "Mirror has no base shape. Ensure mirror is chained onto a solid shape (e.g. box(10,10,10).mirror({ plane: 'yz' }))." },
   'feature.mirror.invalid-plane': { reachable: 'engine-path', hint: "Mirror plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset: <number> }. Check the plane argument." },
   'feature.mirror.failed': { reachable: 'engine-path', hint: "OCCT could not union the source with its reflection. The most common cause is the source shape touching the mirror plane, which produces zero-thickness intersections. Translate the source away from the plane, or use a plane offset." },
+  'feature.transform.invalid-plane': { reachable: 'engine-path', hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }. Check the plane argument on the Shape.reflect call." },
   'feature.shell.failed': { reachable: 'engine-path', hint: "OCCT could not shell that solid. Try a thinner wall or a different open face. Thickness must be smaller than the shape's minimum thickness." },
   'feature.shell.no-base': { reachable: 'engine-path', hint: "Shell has no base shape. Ensure the shell is chained onto a solid shape." },
   'feature.shell.no-thickness': { reachable: 'engine-path', hint: "Shell is missing a thickness parameter. Pass a positive number as the first argument (e.g. .shell(1))." },

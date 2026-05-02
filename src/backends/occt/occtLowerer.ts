@@ -903,6 +903,16 @@ export class OcctLowerer implements FeatureLowerer {
           shape = shape.scale([t.sx, t.sy, t.sz]);
           break;
         case 'reflect':
+          if (!isValidPlaneSpec(t.plane)) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.transform.invalid-plane',
+              featureId: r.id,
+              severity: 'error',
+              message: `reflect transform has invalid plane spec: ${JSON.stringify(t.plane)}.`,
+            });
+            break; // skip applying the transform; preserve the prior shape
+          }
           shape = (shape as import('./occtBackend').OcctBackend).reflect(t.plane);
           break;
       }

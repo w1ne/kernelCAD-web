@@ -80,4 +80,32 @@ describe('Shape.reflect(plane)', () => {
     const codes = result.diagnostics.map(d => d.code);
     expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
   }, 60000);
+
+  it('feature.transform.invalid-plane fires when a reflect transform has a malformed plane spec', async () => {
+    // Construct a feature record manually with a malformed reflect transform.
+    // Shape.reflect() validates at capture time, so malformed specs can only
+    // arrive via direct IR construction. This test exercises the lowerer's
+    // transform-loop validation gate directly.
+    const records: import('../../../../src/intent/featureRecord').FeatureRecord[] = [
+      {
+        id: 'box-1',
+        kind: 'box',
+        params: {
+          x: { expression: '10', unit: 'mm', evaluated: 10 },
+          y: { expression: '10', unit: 'mm', evaluated: 10 },
+          z: { expression: '10', unit: 'mm', evaluated: 10 },
+        },
+        inputs: {},
+        transforms: [
+          // Malformed: 'invalid' is not a valid CardinalPlane
+          { op: 'reflect', plane: 'invalid' as never },
+        ],
+        suppressed: false,
+      },
+    ];
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const result = await engine.run(records);
+    const codes = result.diagnostics.map(d => d.code);
+    expect(codes).toContain('feature.transform.invalid-plane');
+  }, 60000);
 });

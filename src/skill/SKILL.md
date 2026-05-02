@@ -282,6 +282,12 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.mirror.invalid-plane` | Mirror plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset: <number> }`. |
 | `feature.mirror.failed` | OCCT could not union the source with its reflection. Common cause: source shape touching the mirror plane (zero-thickness intersection). Translate the source away from the plane, or use a plane offset. |
 
+### feature.transform.*
+
+| Code | Meaning |
+|---|---|
+| `feature.transform.invalid-plane` | Reflect transform plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the plane argument on the `Shape.reflect` call. |
+
 ### feature.shell.*
 
 | Code | Meaning |
