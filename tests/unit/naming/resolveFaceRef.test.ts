@@ -53,14 +53,15 @@ describe('resolveFaceRef', () => {
   });
 
   it('emits face-feature-prefixed code when surface is face-feature', () => {
-    const map: HistoryMap = new Map();
+    // Pass undefined historyMap to trigger the face-ref-not-resolvable path.
+    // (An empty map is valid and produces face-ref-removed when no face matches.)
     const result = resolveFaceRef(
       { kind: 'canonical', face: 'top' },
-      { currentShape: makeStub(map), featureId: 'shell-3', surface: 'face-feature' },
+      { currentShape: makeStub(undefined), featureId: 'shell-3', surface: 'face-feature' },
     );
     expect(result.ok).toBe(false);
     const diag = (result as { ok: false; diagnostic: { code: string } }).diagnostic;
-    expect(diag.code).toBe('feature.face-feature.face-ref-not-resolvable');  // empty map = no historyMap branch
+    expect(diag.code).toBe('feature.face-feature.face-ref-not-resolvable');
   });
 
   it('returns face-ref-not-resolvable when historyMap is undefined', () => {

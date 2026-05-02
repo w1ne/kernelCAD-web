@@ -54,10 +54,9 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
   //   - Count distinct currentShape face hashes that resolve to this canonical name.
 
   const map = ctx.currentShape.historyMap;
-  if (!map || map.size === 0) {
-    // No history: must be an un-transformed primitive. Fall back to the existing
-    // canonical resolver path. (This branch maintains backward compat: existing
-    // behavior on raw box/cylinder/sphere is unchanged.)
+  if (map === undefined) {
+    // No history: historyMap was never seeded (e.g. sphere, which has no canonical
+    // planar face names). Caller should have dispatched to the legacy path.
     return {
       ok: false,
       diagnostic: {
@@ -69,6 +68,8 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
       },
     };
   }
+  // An empty map (map.size === 0) is valid: all faces were removed by an upstream
+  // boolean. Proceed to the matches loop; it will find 0 matches → face-ref-removed.
 
   const matches: FaceHash[] = [];
   for (const [currentHash, lineage] of map.entries()) {

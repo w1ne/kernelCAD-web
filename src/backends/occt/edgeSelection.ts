@@ -1,6 +1,5 @@
 // src/backends/occt/edgeSelection.ts
 import type { Edge, Face } from 'replicad';
-import { getOC } from 'replicad';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { EdgeRef } from '../../intent/types';
@@ -125,9 +124,11 @@ export function pickEdges(
   }
 
   // Canonical face filter — use resolveFaceRef for shapes with a historyMap
-  // (transformed or boolean'd shapes), or fall back to the centroid heuristic
-  // for raw un-transformed primitives (historyMap absent).
-  if (base.historyMap && base.historyMap.size > 0) {
+  // (seeded on primitives, propagated through transforms and booleans), or fall
+  // back to the centroid heuristic for shapes without lineage data (sphere, legacy).
+  // NOTE: an empty historyMap (size === 0) still enters this path so that
+  //       face-ref-removed is emitted when all faces were deleted by a boolean.
+  if (base.historyMap !== undefined) {
     const resolved = resolveFaceRef(faceRef.ref, {
       currentShape: base,
       featureId: record.id,
@@ -245,39 +246,20 @@ function collectFaceEdges(faces: Face[]): EdgeList {
  *   when the caller holds a resolver-guaranteed hash).
  */
 function faceByHash(base: OcctBackend, faceHash: string): Face {
-  const oc = getOC();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrapped = (base.getReplicadShape() as unknown as { wrapped: unknown }).wrapped;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explorer = new (oc as any).TopExp_Explorer_2(
-    wrapped,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (oc as any).TopAbs_ShapeEnum.TopAbs_SHAPE,
-  );
-  let foundIdx = -1;
-  let idx = 0;
-  try {
-    while (explorer.More()) {
-      const sub = explorer.Current();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const h = (sub as any).HashCode(2147483647).toString(16);
-      if (h === faceHash) {
-        foundIdx = idx;
-        break;
-      }
-      idx++;
-      explorer.Next();
-    }
-  } finally {
-    explorer.delete();
-  }
-  if (foundIdx === -1) {
-    throw new Error(`edgeSelection.faceByHash: face hash '${faceHash}' not found on shape`);
-  }
+  // Iterate replicad's own .faces array and match by OCCT HashCode.
+  // Using replicad's .faces (which deduplicates by hash) ensures the returned
+  // Face wrapper has the same iteration origin as any caller that enumerates
+  // faces via shape.faces — avoiding index skew caused by hash collisions in
+  // the raw TopExp_Explorer.
   const replicadFaces = base.getReplicadShape().faces;
-  return replicadFaces[foundIdx];
+  for (const face of replicadFaces) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const h = ((face as any).wrapped as any).HashCode(2147483647).toString(16);
+    if (h === faceHash) {
+      return face;
+    }
+  }
+  throw new Error(`edgeSelection.faceByHash: face hash '${faceHash}' not found on shape`);
 }
 
 /**
@@ -462,10 +444,12 @@ export function pickFace(
   }
 
   // 3. FaceRef.canonical → use resolveFaceRef for shapes with a historyMap
-  // (transformed or boolean'd shapes), or fall back to the centroid heuristic
-  // for raw un-transformed primitives (historyMap absent).
+  // (seeded on primitives, propagated through transforms and booleans), or fall
+  // back to the centroid heuristic for shapes without lineage data (sphere, legacy).
+  // NOTE: an empty historyMap (size === 0) still enters this path so that
+  //       face-ref-removed is emitted when all faces were deleted by a boolean.
   if (faceRef.ref.kind === 'canonical') {
-    if (base.historyMap && base.historyMap.size > 0) {
+    if (base.historyMap !== undefined) {
       const resolved = resolveFaceRef(faceRef.ref, {
         currentShape: base,
         featureId: record.id,

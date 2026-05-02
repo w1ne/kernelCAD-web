@@ -24,8 +24,10 @@ describe('whyDidThisFailTool', () => {
   });
 
   it('walks upstream chain when downstream cascades', async () => {
+    // Use a radius-too-large fillet so the lowering fails, then verify the upstream
+    // box node is reported as healthy in the chain.
     const result = await whyDidThisFailTool({
-      code: `return box(10, 10, 10).translate(5, 0, 0).fillet(2, { face: 'top' });`,
+      code: `return box(10, 10, 10).fillet(100);`,
     });
     expect(result.ok).toBe(true);
     expect(result.health).toBe('error');

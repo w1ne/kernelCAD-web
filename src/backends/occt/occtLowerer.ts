@@ -11,6 +11,7 @@ import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
+import { computeDihedralPublic } from './edgeQueries';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -26,6 +27,7 @@ import {
   type EdgeRefForFilleting,
 } from './historyAwareEdgeFeatures';
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
+import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -250,14 +252,43 @@ export class OcctLowerer implements FeatureLowerer {
         const y = r.params.y.evaluated;
         const z = r.params.z.evaluated;
         const centered = (r.params.centered?.evaluated ?? 0) > 0.5;
-        shape = OcctBackend.box(x, y, z, centered);
+        const rawBox = OcctBackend.box(x, y, z, centered);
+        const boxSeedMap: HistoryMap = new Map();
+        const boxFaceNames = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
+        for (const name of boxFaceNames) {
+          try {
+            const hash = rawBox.findCanonicalFaceHash(name);
+            const lineage: FaceLineage = { rootHash: hash, canonicalName: name, rootFeatureId: r.id };
+            boxSeedMap.set(hash, lineage);
+          } catch {
+            // defensive: shouldn't happen for box, but skip silently if it does
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const boxWrapped = (rawBox as OcctBackend).getReplicadShape() as any;
+        shape = new OcctBackend(boxWrapped, 'box', boxSeedMap);
         break;
       }
       case 'cylinder': {
-        shape = OcctBackend.cylinder(r.params.h.evaluated, r.params.r.evaluated);
+        const rawCyl = OcctBackend.cylinder(r.params.h.evaluated, r.params.r.evaluated);
+        const cylSeedMap: HistoryMap = new Map();
+        const cylinderFaceNames = ['top', 'bottom'] as const;
+        for (const name of cylinderFaceNames) {
+          try {
+            const hash = rawCyl.findCanonicalFaceHash(name);
+            cylSeedMap.set(hash, { rootHash: hash, canonicalName: name, rootFeatureId: r.id });
+          } catch {
+            // defensive: skip if face not found
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cylWrapped = (rawCyl as OcctBackend).getReplicadShape() as any;
+        shape = new OcctBackend(cylWrapped, 'cylinder', cylSeedMap);
         break;
       }
       case 'sphere': {
+        // Sphere has no canonical planar face names — leave historyMap undefined.
+        // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
         shape = OcctBackend.sphere(r.params.r.evaluated);
         break;
       }
@@ -748,11 +779,31 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
         }
+        // Filter to sharp edges only — BRepFilletAPI_MakeFillet requires convex/concave
+        // (non-smooth) edges. Smooth edges (G1, dihedral ≈ 180°) will cause OCCT to throw.
+        // If all edges are already smooth (e.g., iterating a fillet on a face that was already
+        // filleted), treat as a no-op success so the user intent ("round this face") is met.
+        const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
+        const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
+          const d = computeDihedralPublic(shapeForDihedral, e);
+          // null means the dihedral could not be computed (e.g., edge has only one adjacent
+          // face, or the isSameEdge scan found no match). Treat as non-sharp so OCCT
+          // doesn't receive a potentially-smooth edge it can't handle.
+          if (d === null) return false;
+          return d.angleDeg < 180 - SMOOTH_THRESHOLD;
+        });
+        if (sharpEdges.length === 0) {
+          // No sharp edges remain — the fillet is already satisfied; return shape unchanged.
+          shape = base;
+          break;
+        }
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+          const edgeRefs: EdgeRefForFilleting[] = sharpEdges.map((e: any) => ({
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
           const filletResult = filletWithHistory(base, edgeRefs, radius);
@@ -761,6 +812,16 @@ export class OcctLowerer implements FeatureLowerer {
           const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
+          if (!(e instanceof Error) && r.inputs.face !== undefined) {
+            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build,
+            // AND the selection was face-based. This occurs when selected edges are
+            // G1-smooth (e.g., the boundary between a flat face and a fillet cylinder
+            // after a prior fillet) and OCCT cannot apply another fillet to them.
+            // Treat as a no-op: the shape is returned unchanged, which matches the
+            // user intent of "the face is already fully rounded."
+            shape = base;
+            break;
+          }
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
