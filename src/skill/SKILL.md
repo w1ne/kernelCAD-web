@@ -421,7 +421,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 13 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 14 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -436,6 +436,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods)
+- `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`
 
 ## Out of Scope
 

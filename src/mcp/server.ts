@@ -16,6 +16,7 @@ import { listEdgesTool } from './tools/listEdges';
 import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listApiTool } from './tools/listApi';
+import { exportStlTool } from './tools/exportStl';
 
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
@@ -189,6 +190,24 @@ export const TOOLS = [
       properties: {},
     },
   },
+  {
+    name: 'export_stl',
+    description:
+      'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
+      'Optional { feature_id } selects which feature to export (default: last). ' +
+      'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
+      'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+        code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        output_path: { type: 'string', description: 'Destination path for the binary STL file. Required.' },
+        feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+      },
+      required: ['output_path'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -249,6 +268,9 @@ export function createMcpServer(): Server {
         break;
       case 'list_api':
         result = await listApiTool(input as Parameters<typeof listApiTool>[0]);
+        break;
+      case 'export_stl':
+        result = await exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
