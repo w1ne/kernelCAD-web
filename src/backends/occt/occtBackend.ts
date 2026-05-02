@@ -465,7 +465,6 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(this.shape.scale(factor) as ReplicadShape3D);
   }
 
-  mirror(normal: Vec3): OcctBackend;
   /**
    * Boolean union of the source and its reflection — the symmetric-part
    * shortcut. Equivalent to `this.union(this.reflect(plane))` but exposed
@@ -483,28 +482,10 @@ export class OcctBackend implements ShapeBackend {
    *   the source touches the mirror plane, producing zero-thickness
    *   intersections).
    */
-  mirror(plane: PlaneSpec): OcctBackend;
-  mirror(normalOrPlane: Vec3 | PlaneSpec): OcctBackend {
-    // Distinguish Vec3 (array) from PlaneSpec (string or object with .plane).
-    if (Array.isArray(normalOrPlane)) {
-      // Vec3 form — pure transform-based mirror (legacy/transform path).
-      return new OcctBackend(
-        this.shape.mirror(normalOrPlane as [number, number, number], [0, 0, 0]) as ReplicadShape3D,
-      );
-    }
-    // PlaneSpec form — boolean union of source + reflection.
-    //
-    // Replicad's shape-level transforms (mirror, translate, rotate, …) call
-    // `this.wrapped.delete()` on the original shape after producing the
-    // transformed copy. Calling `this.reflect(plane)` therefore destroys
-    // `this.shape`, making it unavailable for the subsequent `union` call.
-    //
-    // Fix: clone `this.shape` before reflecting so the clone remains valid
-    // as the first operand of the fuse, while the reflect call consumes the
-    // original (now-deleted) shape reference.
-    const originalClone = (this.shape as unknown as { clone: () => ReplicadShape3D }).clone();
+  mirror(plane: PlaneSpec): OcctBackend {
+    const originalClone = this.shape.clone();
     const originalForUnion = new OcctBackend(originalClone);
-    const reflected = this.reflect(normalOrPlane);
+    const reflected = this.reflect(plane);
     return originalForUnion.union(reflected);
   }
 

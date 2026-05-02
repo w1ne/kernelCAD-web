@@ -187,10 +187,12 @@ export class Sketch {
    */
   reflect(axis: AxisSpec): Sketch {
     if (!isValidAxisSpec(axis)) {
-      throw new KernelError(
+      const err = new KernelError(
         'feature.sketch.reflect.invalid-axis',
         `Sketch.reflect: axis must be 'x', 'y', or { axis, offset }; got ${JSON.stringify(axis)}.`,
       );
+      err.featureId = this.id;
+      throw err;
     }
 
     // Normalize -0 to 0 so reflected coordinates are well-formed.
@@ -199,8 +201,9 @@ export class Sketch {
     const reflectXY = (x: number, y: number): [number, number] => {
       if (axis === 'x') return [norm(x), norm(-y)];
       if (axis === 'y') return [norm(-x), norm(y)];
-      if (axis.axis === 'x') return [norm(x), norm(2 * axis.offset - y)];
-      return [norm(2 * axis.offset - x), norm(y)]; // axis.axis === 'y'
+      const off = axis.offset ?? 0;
+      if (axis.axis === 'x') return [norm(x), norm(2 * off - y)];
+      return [norm(2 * off - x), norm(y)]; // axis.axis === 'y'
     };
 
     // Arc sign-flip: reflection inverts winding. For arcs whose direction is
@@ -254,7 +257,7 @@ export class Sketch {
 
     return this.session.createSketch({
       kind: 'sketch',
-      inputs: {},
+      inputs: { source: { kind: 'feature', id: this.id } },
       params: {},
       metadata: { commands: newCommands },
     });

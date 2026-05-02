@@ -48,6 +48,9 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
       .map(([code]) => code)
       .sort();
     const expected = [...KNOWN_DIRECT_LOWERER_ONLY].sort();
-    expect(directLowererOnly).toEqual(expected);
+    expect(
+      directLowererOnly,
+      `Adding a new direct-lowerer-only code requires (1) updating KNOWN_DIRECT_LOWERER_ONLY in this test, AND (2) citing docs/superpowers/specs/2026-05-01-error-attribution-policy.md in the introducing PR per the error-attribution policy.`,
+    ).toEqual(expected);
   });
 });

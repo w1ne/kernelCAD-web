@@ -7,7 +7,6 @@ export type ShapeTransform =
   | { op: 'translate'; x: number; y: number; z: number }
   | { op: 'rotateAxis'; axis: Vec3; degrees: number; pivot?: Vec3 }
   | { op: 'scale'; sx: number; sy: number; sz: number }
-  | { op: 'mirror'; normal: Vec3 }
   | { op: 'reflect'; plane: PlaneSpec };
 
 export interface FeatureRecord {

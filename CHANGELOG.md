@@ -1,3 +1,32 @@
+## v0.13.0-rc.14 — quality pass v4 (2026-05-01)
+
+A pure quality milestone: closes the rc.13 review punch list (1 Critical + 6 Important + 7 Nits). No new user-facing API.
+
+### Skill doc + drift prevention
+- `src/skill/SKILL.md` aggressively overhauled to match the current kernel state. Stale claims removed (no more `// v0.2-alpha` markers; no more "lofts/sweeps deferred" when both shipped). Shape methods, Sketch methods, and PathBuilder methods now match `listApi.ts` source-of-truth. Diagnostic codes table expanded from 18 to 64 entries to match the current HINTS table. Sample scripts refreshed to use the current API (sketch+extrude pipeline, variable-radius blend, mirror-based symmetric part).
+- New drift sentinels (`tests/unit/skill/skillShapeMethodsDrift.test.ts`, `skillSketchMethodsDrift.test.ts`, `skillDiagnosticCodesDrift.test.ts`) import the canonical source-of-truth arrays and assert SKILL.md mentions every entry. Word-boundary regex matching (closes rc.13 review N2). Together with the existing `skillToolCountDrift` sentinel, the rc.6→rc.13 drift class can no longer accumulate silently.
+
+### API surface refinements
+- `OcctBackend.mirror(Vec3)` legacy overload deleted along with `ShapeBackend.mirror`, `ShapeTransform`'s `op: 'mirror'` arm, and the lowerer's transform-loop `case 'mirror':` block. The remaining `OcctBackend.mirror(plane: PlaneSpec)` is the single canonical form. User-facing `Shape.mirror` unchanged.
+- `feature.transform.invalid-plane` validation now fires at the lowerer's transform-loop `case 'reflect':` site. Previously, the mirror feature path validated PlaneSpec but the reflect transform path didn't — same input, two paths, only one validates.
+- `AxisSpec.offset` is now optional (matches `PlaneSpec` convention). `Sketch.reflect({ axis: 'x' })` is equivalent to `Sketch.reflect('x')`.
+
+### Diagnostics + error attribution
+- `Sketch.reflect` now captures `inputs.source: { kind: 'feature', id: <upstream-sketch-id> }` so `recompute.input.missing` cascades correctly when the upstream sketch fails to lower.
+- `feature.mirror.failed` hint refreshed to describe the actual unreliable failure mode (boolean union sometimes accepts coplanar configurations, sometimes throws — the hint now guides agents toward translation/offset workarounds without overpromising).
+- `KernelError.featureId` field added; `kernelErrorToDiagnostic` propagates it. The `feature.sketch.reflect.invalid-axis` diagnostic now carries the source sketch's FeatureId so `why_did_this_fail`'s upstream walker can anchor it.
+- Reachability sentinel's `KNOWN_DIRECT_LOWERER_ONLY` exact-match assertion now produces an actionable failure message pointing to both the constant in this test and the error-attribution policy memo.
+
+### Backend correctness
+- `OcctBackend.mirror`'s `clone()` call no longer requires the `as unknown as { clone: () => ReplicadShape3D }` double-cast. Replicad publicly types `Shape<Type>.clone(): this`; a direct call works without any cast.
+- `applyVariableEdgeFeature` synth-record builder now uses an explicit kind switch (replaces silent-drop conditional spreads); a runtime-narrowed `inputs.base` check (replaces the loose `as { id: string }` cast); and a discriminated-union return type. New diagnostic codes `feature.fillet.invalid-edge-ref` and `feature.chamfer.invalid-edge-ref` cover the unsupported ref-kind case.
+
+### Documentation cleanup
+- Lineage prose stripped from rc.12 and rc.13 spec/plan files (per `feedback_no_competitor_refs_in_repo`). New `tests/unit/docs/specsPlansCompetitorRefs.test.ts` sentinel greps committed spec/plan markdown for competitor names; backtick code spans + fenced blocks are excluded from the search.
+- `tests/integration/mcp/spawn.test.ts` skip-rationale comment refreshed to reflect the rc.12 invariant (qc runs `build:cli` before tests; the skip only triggers for inner-loop runs).
+
+---
+
 ## v0.13.0-rc.13 — mirror+reflect + rc.12 review closure (2026-05-01)
 
 A bundled feature + quality milestone. Adds three symmetric-construction primitives to the agent-facing API and closes the rc.12 review punch list (6 Important + 1 Nit).

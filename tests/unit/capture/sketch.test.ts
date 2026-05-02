@@ -975,6 +975,54 @@ describe('path() builder + Sketch capture', () => {
       expect(labeledCmd!.kind).toBe('lineTo');
     });
 
+    it('Sketch.reflect({ axis: "x" }) is equivalent to Sketch.reflect("x") (offset defaults to 0)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        const stringForm = sketch.reflect('x');
+        const objectForm = sketch.reflect({ axis: 'x' });
+        // Return both as extrudes so we can inspect the sketch records
+        return objectForm.extrude(1);
+      `;
+      // We compare by running both forms and checking their commands match.
+      const codeString = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const codeObject = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect({ axis: 'x' }).extrude(1);
+      `;
+      const [resString, resObject] = await Promise.all([
+        runScript({ code: codeString, fileName: 'test.kcad.ts' }),
+        runScript({ code: codeObject, fileName: 'test.kcad.ts' }),
+      ]);
+      const getReflectedCmds = (res: typeof resString) => {
+        const sketches = res.records.filter(r => r.kind === 'sketch');
+        return (sketches[1].metadata as { commands: unknown[] }).commands;
+      };
+      expect(getReflectedCmds(resObject)).toEqual(getReflectedCmds(resString));
+    });
+
+    it('Sketch.reflect({ axis: "y" }) is equivalent to Sketch.reflect("y") (offset defaults to 0)', async () => {
+      const codeString = `
+        const sketch = path().moveTo(3, 0).lineTo(10, 5).close();
+        return sketch.reflect('y').extrude(1);
+      `;
+      const codeObject = `
+        const sketch = path().moveTo(3, 0).lineTo(10, 5).close();
+        return sketch.reflect({ axis: 'y' }).extrude(1);
+      `;
+      const [resString, resObject] = await Promise.all([
+        runScript({ code: codeString, fileName: 'test.kcad.ts' }),
+        runScript({ code: codeObject, fileName: 'test.kcad.ts' }),
+      ]);
+      const getReflectedCmds = (res: typeof resString) => {
+        const sketches = res.records.filter(r => r.kind === 'sketch');
+        return (sketches[1].metadata as { commands: unknown[] }).commands;
+      };
+      expect(getReflectedCmds(resObject)).toEqual(getReflectedCmds(resString));
+    });
+
     it('rejects malformed axis with feature.sketch.reflect.invalid-axis', async () => {
       const code = `
         const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
@@ -985,6 +1033,23 @@ describe('path() builder + Sketch capture', () => {
         await runScript({ code, fileName: 'test.kcad.ts' });
       } catch (e) { caught = e; }
       expect(String(caught)).toMatch(/invalid-axis|axis must be/i);
+    });
+
+    it('feature.sketch.reflect.invalid-axis diagnostic carries featureId when caught from a sketch context', async () => {
+      const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
+        return sketch.reflect('z').extrude(1);
+      `;
+      let caught: unknown;
+      try {
+        await runScript({ code, fileName: 'test.kcad.ts' });
+      } catch (e) { caught = e; }
+      expect(caught).toBeDefined();
+      const diag = kernelErrorToDiagnostic(caught);
+      expect(diag.code).toBe('feature.sketch.reflect.invalid-axis');
+      expect(diag.featureId).toBeDefined();
+      expect(typeof diag.featureId).toBe('string');
     });
 
     it('reflected sketch extrudes to a valid solid with the same volume as the original', async () => {
@@ -1006,6 +1071,70 @@ describe('path() builder + Sketch capture', () => {
       const vOriginal = await runAndGetVolume(codeOriginal);
       const vReflected = await runAndGetVolume(codeReflected);
       expect(vReflected).toBeCloseTo(vOriginal, 1);
+    });
+
+    it('I4: Sketch.reflect registers inputs.source referencing the upstream sketch', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(2);
+      const [upstream, reflected] = sketches;
+      // The reflected sketch must reference the upstream via inputs.source.
+      expect(reflected.inputs.source).toEqual({ kind: 'feature', id: upstream.id });
+    });
+
+    it('I4: upstream sketch failure cascades to reflected sketch via recompute.input.missing', async () => {
+      const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+      const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+      // The upstream sketch is invalid (lineTo without moveTo first), so it
+      // fails to lower and is never added to the shapes map. The reflected
+      // sketch has inputs.source pointing at the upstream; the engine detects
+      // the upstream is missing and emits recompute.input.missing on the
+      // reflected sketch — proving the cascade works.
+      const code = `
+        const bad = path().lineTo(1, 1).close();
+        return bad.reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      const engine = new RecomputeEngine(new OcctLowerer());
+      const r = await engine.run(run.records);
+      const codes = r.diagnostics.map(d => d.code);
+      // Upstream emits feature.sketch.failed (or similar); reflected sketch
+      // must emit recompute.input.missing because its inputs.source is absent.
+      expect(codes).toContain('recompute.input.missing');
+    });
+
+    it('Sketch.reflect is its own inverse — reflect twice produces the original geometry (cardinal axis)', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      // Records: original sketch, first reflect sketch, second reflect sketch, extrude
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(3);
+      const originalCmds = (sketches[0].metadata as { commands: unknown[] }).commands;
+      const twiceCmds = (sketches[2].metadata as { commands: unknown[] }).commands;
+      // For cardinal axis 'x', -(-y) = y exactly. Commands should match.
+      expect(twiceCmds).toEqual(originalCmds);
+    });
+
+    it('Sketch.reflect involution holds for axes with offset', async () => {
+      const code = `
+        const sketch = path().moveTo(8, 0).lineTo(13, 5).close();
+        return sketch.reflect({ axis: 'y', offset: 5 }).reflect({ axis: 'y', offset: 5 }).extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      // Records: original sketch, first reflect sketch, second reflect sketch, extrude
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(3);
+      const originalCmds = (sketches[0].metadata as { commands: unknown[] }).commands;
+      const twiceCmds = (sketches[2].metadata as { commands: unknown[] }).commands;
+      // 2*offset - (2*offset - x) = x — exact in floating-point for integer offset.
+      expect(twiceCmds).toEqual(originalCmds);
     });
   });
 });

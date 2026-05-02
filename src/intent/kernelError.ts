@@ -7,6 +7,7 @@
 
 export class KernelError extends Error {
   readonly code: string;
+  featureId?: string;
 
   constructor(code: string, message: string) {
     super(message);

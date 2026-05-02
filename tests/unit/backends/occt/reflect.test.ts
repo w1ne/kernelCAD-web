@@ -80,4 +80,56 @@ describe('Shape.reflect(plane)', () => {
     const codes = result.diagnostics.map(d => d.code);
     expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
   }, 60000);
+
+  it('Shape.reflect composition — reflect twice preserves volume', async () => {
+    // box(10,10,10).reflect('yz').reflect('yz') should preserve volume = 1000.
+    // Two reflect transforms compose; the result is geometrically identical to the source.
+    const code = `return box(10, 10, 10).reflect('yz').reflect('yz');`;
+    const run = await runScript({ code, fileName: '<test>' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const result = await engine.run(run.records);
+    expect(result.diagnostics).toEqual([]);
+    const id = run.records[run.records.length - 1].id;
+    const shape = result.shapes.get(id)!;
+    expect(shape.volume()).toBeCloseTo(1000, 1);
+  }, 60000);
+
+  it('Shape.reflect composition — canonical face refs remain unresolvable after two reflects', async () => {
+    // Two transforms still means transforms applied. Canonical face refs
+    // should fail with face-ref-not-resolvable, same as after one transform.
+    const code = `return box(10, 10, 10).reflect('yz').reflect('yz').fillet(2, { face: 'top' });`;
+    const run = await runScript({ code, fileName: '<test>' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const result = await engine.run(run.records);
+    const codes = result.diagnostics.map(d => d.code);
+    expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
+  }, 60000);
+
+  it('feature.transform.invalid-plane fires when a reflect transform has a malformed plane spec', async () => {
+    // Construct a feature record manually with a malformed reflect transform.
+    // Shape.reflect() validates at capture time, so malformed specs can only
+    // arrive via direct IR construction. This test exercises the lowerer's
+    // transform-loop validation gate directly.
+    const records: import('../../../../src/intent/featureRecord').FeatureRecord[] = [
+      {
+        id: 'box-1',
+        kind: 'box',
+        params: {
+          x: { expression: '10', unit: 'mm', evaluated: 10 },
+          y: { expression: '10', unit: 'mm', evaluated: 10 },
+          z: { expression: '10', unit: 'mm', evaluated: 10 },
+        },
+        inputs: {},
+        transforms: [
+          // Malformed: 'invalid' is not a valid CardinalPlane
+          { op: 'reflect', plane: 'invalid' as never },
+        ],
+        suppressed: false,
+      },
+    ];
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const result = await engine.run(records);
+    const codes = result.diagnostics.map(d => d.code);
+    expect(codes).toContain('feature.transform.invalid-plane');
+  }, 60000);
 });
