@@ -32,11 +32,14 @@ describe('SKILL.md tool count drift sentinel', () => {
   it('every TOOLS entry is mentioned by name somewhere in SKILL.md', () => {
     // Soft check: every tool's name should appear in SKILL.md at least
     // once. Catches the case where TOOLS adds a new entry but SKILL.md
-    // doesn't get updated to describe it.
+    // doesn't get updated to describe it. Word-boundary regex avoids
+    // false-positives when a tool name is a substring of a longer identifier.
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const missing: string[] = [];
     for (const tool of TOOLS) {
       const name = (tool as { name: string }).name;
-      if (!SKILL_MD.includes(name)) {
+      const regex = new RegExp(`\\b${escapeRegExp(name)}\\b`);
+      if (!regex.test(SKILL_MD)) {
         missing.push(name);
       }
     }

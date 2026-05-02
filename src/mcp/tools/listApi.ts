@@ -27,7 +27,7 @@ export interface ListApiOutput {
   error?: string;
 }
 
-const GLOBALS: ApiEntry[] = [
+export const GLOBALS: ApiEntry[] = [
   { name: 'box', signature: '(x, y, z, centered?) => Shape', description: 'Axis-aligned box. `centered: true` centers on the origin.' },
   { name: 'cylinder', signature: '(h, r) => Shape', description: 'Z-axis cylinder; bottom on the XY plane, height h, radius r.' },
   { name: 'sphere', signature: '(r) => Shape', description: 'Sphere centered at the origin, radius r.' },
@@ -44,7 +44,7 @@ const GLOBALS: ApiEntry[] = [
   { name: 'selectEdge', signature: '(shape, query) => Promise<EdgeSegment>', description: 'Like selectEdges but throws if zero or multiple edges match. Use for unambiguous single-edge selection.' },
 ];
 
-const SHAPE_METHODS: ApiEntry[] = [
+export const SHAPE_METHODS: ApiEntry[] = [
   { name: 'translate', signature: '(x, y, z) => Shape', description: 'Translate by (x, y, z).' },
   { name: 'rotate', signature: '(axis, degrees, pivot?) => Shape', description: 'Rotate `degrees` around `axis` (vector); pivot defaults to origin.' },
   { name: 'scale', signature: '(sx, sy?, sz?) => Shape', description: 'Scale uniformly (single arg) or per-axis. Note: kernel currently uses uniform scale internally.' },
@@ -59,7 +59,7 @@ const SHAPE_METHODS: ApiEntry[] = [
   { name: 'lower', signature: '() => Promise<OcctBackend>', description: 'Eagerly lower this Shape for inspection. Used internally by selectEdges; agents rarely call directly.' },
 ];
 
-const SKETCH_METHODS: ApiEntry[] = [
+export const SKETCH_METHODS: ApiEntry[] = [
   { name: 'extrude', signature: '(depth) => Shape', description: 'Extrude this closed sketch normal to its plane by `depth` (mm).' },
   { name: 'revolve', signature: '() => Shape', description: 'Revolve 360 degrees around the Z axis. Profile coords are (radial-X, axial-Z); all x >= 0.' },
   { name: 'sweep', signature: '(rail, opts?: { frenet? }) => Shape', description: 'Sweep this profile along a 3D polyline rail. `frenet: true` for helices/curves; default false for straight/L-bend rails.' },
@@ -67,7 +67,7 @@ const SKETCH_METHODS: ApiEntry[] = [
   { name: 'reflect', signature: `(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: number }) => Sketch`, description: "Reflect this sketch's path across an axis, returning a new Sketch. 'x' negates y-coords; 'y' negates x-coords; { axis, offset } reflects across the parallel axis at the given offset. Arc winding (signed sagitta/bulge/radius) is inverted automatically. Labels are preserved." },
 ];
 
-const PATH_BUILDER_METHODS: ApiEntry[] = [
+export const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'moveTo', signature: '(x, y) => PathBuilder', description: 'Start the path at (x, y). Required first call.' },
   { name: 'lineTo', signature: '(x, y) => PathBuilder', description: 'Add a straight line segment to (x, y).' },
   { name: 'tangentArc', signature: '(x, y) => PathBuilder', description: 'Arc continuing tangent from the previous segment to (x, y). Requires a prior segment.' },
