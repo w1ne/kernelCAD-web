@@ -1,0 +1,20 @@
+{
+  "gates": {
+    "evaluates clean": true,
+    "non-empty solid": true
+  },
+  "scored": {
+    "L-shape (2 axes > 10mm)": true,
+    "has holes (vol < 70% bbox)": true,
+    "not paper-thin (min dim > 2mm)": true
+  },
+  "gate_pass": true,
+  "score": 1,
+  "attempts": 2,
+  "tokens": {
+    "input": 9032,
+    "output": 350,
+    "total": 9382
+  },
+  "time_ms": 0
+}
