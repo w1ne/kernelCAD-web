@@ -17,61 +17,47 @@
  -   **Standard Exports**: STEP/STL generation.
  -   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
   
-## Getting Started
+## Get Started
 
-### Prerequisites
+```bash
+npm install -g kernelcad
+```
 
--   Node.js (v22.12.0+)
--   npm
+Drop this in `bracket.kcad.ts`:
 
-### Installation
+```typescript
+const w = param('Width', 60, { unit: 'mm' });
+const h = param('Height', 40, { unit: 'mm' });
+const t = param('Thickness', 5, { unit: 'mm' });
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/w1ne/kernelCAD.git
-    cd kernelCAD
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-4.  Open [http://localhost:5173](http://localhost:5173) in your browser.
+const base = box(w, h, t);
+const hole = cylinder(t + 2, 4).translate(w / 2, h / 2, -1);
+return base.subtract(hole).fillet(1);
+```
 
-## Usage
+Run it:
 
-1.  **Write Code**: Use the editor on the left to define your shape.
-    ```javascript
-    const { Sketcher } = replicad;
-    const base = new Sketcher().hLine(50).vLine(50).hLine(-50).close().extrude(20);
-    return base.fillet(5);
-    ```
-2.  **View**: The 3D view updates automatically when you stop typing or save.
-3.  **Export**: Click the download icons in the top-right to export STEP or STL files.
+```bash
+kernelcad evaluate bracket.kcad.ts
+kernelcad export stl bracket.kcad.ts -o bracket.stl
+```
 
-## Architecture
+That's it. For agents: `kernelcad mcp` runs an MCP server with 13 introspection tools. See `SKILL.md` (bundled with the install) for the full API surface and authoring guide.
 
-kernelCAD consists of three main parts:
-1.  **Editor**: Monaco-based code editor.
-2.  **Viewer**: Three.js/React-Three-Fiber viewport.
-3.  **Engine**: A Web Worker that runs Replicad/OpenCASCADE to compute geometry asynchronously.
+## Contributing
 
-### Documentation Index
+Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:
 
-- **[Architecture](./doc/ARCHITECTURE.md)**: High-level system design and component overview.
-- **[Refactoring Analysis](./doc/REFACTORING_ANALYSIS.md)**: Root-cause flow/logic gaps and staged refactor plan.
-- **[CAD Engineering Standards](./doc/CAD_ENGINEERING_STANDARDS.md)**: Best-in-class CAD practices translated into kernelCAD implementation standards.
-- **[Implementation Details](./doc/IMPLEMENTATION_DETAILS.md)**: Deep dive into the Visual Feedback System, Solver, and Code Generation.
-- **[Interfaces & APIs](./doc/INTERFACES.md)**: Detailed API references for Extensibility.
-- **[Roadmap](./doc/ROADMAP.md)**: Future plans and current status.
-- **[Keyboard Shortcuts](./doc/KEYBOARD_SHORTCUTS.md)**: Speed up your workflow.
-- **[CAD Query Guide](./doc/CAD_QUERY_GUIDE.md)**: Guide to robust selector-based modeling.
-- **[Core Workflows](./doc/CORE_WORKFLOWS.md)**: Step-by-step user interaction references.
-- **[Competitive Analysis](./doc/COMPETITIVE_ANALYSIS.md)**: Comparison with CascadeStudio and Chilli3D.
+```bash
+git clone https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
+npm install
+npm run dev          # web visual debugger at localhost:5173
+npm run build:cli    # build the CLI bundle into dist/cli/
+npm run test         # full vitest suite
+npm run qc           # quick quality gate (lint + typecheck + tests)
+```
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
