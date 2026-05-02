@@ -544,7 +544,9 @@ export class OcctBackend implements ShapeBackend {
 
     // Offset form: reflect across a cardinal plane translated by `offset` along
     // its normal axis. Normal axes: xy → Z, xz → Y, yz → X.
-    const { plane: cardinal, offset } = plane;
+    // offset is optional; treat a missing value as 0 (mirror through the origin plane).
+    const { plane: cardinal, offset: rawOffset } = plane;
+    const offset = rawOffset ?? 0;
     const replicadPlane = cardinalToReplicad[cardinal];
 
     // Determine the translation needed to shift the shape so that the offset

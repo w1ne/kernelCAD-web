@@ -397,3 +397,43 @@ describe('v0.4-rc12 bracket-bevels variable-distance chamfer fixture', () => {
   });
 });
 
+describe('v0.4-rc13 symmetric-bracket mirror fixture', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('runs end-to-end on the symmetric-bracket fixture and produces STL', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-acc-'));
+    const out = join(tmp, 'symmetric-bracket.stl');
+    const r = await exportScript({
+      file: join(__dirname, 'fixtures/symmetric-bracket.kcad.ts'),
+      format: 'stl',
+      out,
+    });
+    expect(r.exitCode).toBe(0);
+    expect(statSync(out).size).toBeGreaterThan(500);
+  });
+
+  it('symmetric-bracket volume matches analytic prediction within tolerance', async () => {
+    const { runScript } = await import('../../src/script-runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { readFile } = await import('node:fs/promises');
+
+    const fixturePath = join(__dirname, 'fixtures/symmetric-bracket.kcad.ts');
+    const code = await readFile(fixturePath, 'utf8');
+    const run = await runScript({ code, fileName: fixturePath });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const result = await engine.run(run.records);
+    const last = run.records[run.records.length - 1];
+    const shape = result.shapes.get(last.id)!;
+
+    // cylinder(boltDiameter/2, thickness) maps to the API cylinder(h, r) signature,
+    // so h = boltDiameter/2 = 2 mm and r = thickness = 5 mm.
+    // Analytic: 2 * (halfWidth*depth*thickness - π*r²*h)
+    // With defaults (halfWidth=20, depth=30, thickness=5, boltDiameter=4):
+    // 2 * (20*30*5 - π*5²*2) ≈ 2 * (3000 - 157.08) ≈ 5685.84 mm³
+    const expected = 2 * (20 * 30 * 5 - Math.PI * Math.pow(5, 2) * 2);
+    expect(shape.volume()).toBeGreaterThan(expected - 50);
+    expect(shape.volume()).toBeLessThan(expected + 50);
+  });
+});
+

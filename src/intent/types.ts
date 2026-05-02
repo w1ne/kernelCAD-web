@@ -48,7 +48,7 @@ export type FeatureRef =
   | { kind: 'vertex'; featureId: FeatureId; ref: VertexRef };
 
 export type CardinalPlane = 'xy' | 'xz' | 'yz';
-export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset: number };
+export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset?: number };
 
 export type SketchAxis = 'x' | 'y';
 export type AxisSpec = SketchAxis | { axis: SketchAxis; offset: number };
@@ -96,11 +96,10 @@ export function isValidPlaneSpec(value: unknown): value is PlaneSpec {
     const v = value as Record<string, unknown>;
     const plane = v['plane'];
     const offset = v['offset'];
-    return (
-      (plane === 'xy' || plane === 'xz' || plane === 'yz') &&
-      typeof offset === 'number' &&
-      Number.isFinite(offset)
-    );
+    if (!(plane === 'xy' || plane === 'xz' || plane === 'yz')) return false;
+    // offset is optional; if present it must be a finite number.
+    if (offset !== undefined && !(typeof offset === 'number' && Number.isFinite(offset))) return false;
+    return true;
   }
   return false;
 }
