@@ -702,7 +702,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 - Canonical face refs on transformed primitives
 - shell, hole, cut, draft features
 
-## v0.1.0 — 2026-04-29
+## v0.1.0 (internal architecture milestone, never published) — 2026-04-29
 
 ### Added
 - New flat feature-graph IR (`src/intent/`)
