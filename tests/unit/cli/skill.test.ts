@@ -14,7 +14,7 @@ describe('skill commands', () => {
     expect(existsSync(target)).toBe(true);
     const content = readFileSync(target, 'utf8');
     expect(content).toMatch(/^---\nname: kernelcad/);
-    expect(content).toMatch(/Canonical Face Refs/); // a unique-enough section heading
+    expect(content).toMatch(/Face refs through operations/); // a unique-enough section heading
   });
 
   it('installSkill creates the directory if missing', () => {
