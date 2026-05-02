@@ -718,7 +718,7 @@ export class OcctBackend implements ShapeBackend {
   async exportSTLAsync(): Promise<Uint8Array> {
     const mesh = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
-    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+    return Uint8Array.from(buf);
   }
 
   exportSTEP(): Uint8Array {

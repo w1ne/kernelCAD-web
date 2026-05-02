@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
+import { formatScalarForError } from '../../../src/intent/types';
 
 describe('Shape transform validators (capture-time)', () => {
   beforeAll(async () => { await initOcct(); });
@@ -190,5 +191,42 @@ describe('Shape transform validators (capture-time)', () => {
     const result = await runScript({ code: `return box(5, 5, 5).mirror('yz');`, fileName: 'test.kcad.ts' });
     // mirror creates a new feature record
     expect(result.records.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('formatScalarForError robustness', () => {
+  it('handles circular objects without crashing', () => {
+    const o: { self?: unknown } = {};
+    o.self = o;
+    expect(formatScalarForError(o)).toMatch(/<circular>/);
+  });
+
+  it('handles BigInt without throwing', () => {
+    expect(formatScalarForError(BigInt(123))).toBe('123n');
+  });
+
+  it('handles Symbol without throwing', () => {
+    const sym = Symbol('test');
+    expect(formatScalarForError(sym)).toMatch(/Symbol\(test\)/);
+  });
+
+  it('handles undefined gracefully', () => {
+    // JSON.stringify(undefined) returns undefined (not a string), which
+    // could cause downstream issues; verify the helper produces something
+    // string-shaped.
+    const result = formatScalarForError(undefined);
+    expect(typeof result).toBe('string');
+  });
+
+  it('handles deep nesting without stack overflow', () => {
+    // Deeply nested but non-circular — should still work.
+    const deep: any = {};
+    let cur = deep;
+    for (let i = 0; i < 100; i++) {
+      cur.next = {};
+      cur = cur.next;
+    }
+    // Should not throw RangeError.
+    expect(() => formatScalarForError(deep)).not.toThrow();
   });
 });

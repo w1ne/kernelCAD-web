@@ -122,6 +122,37 @@ describe('export_stl MCP tool', () => {
   });
 });
 
+describe('binary STL header forensic stamps', () => {
+  it('binary STL header starts with "kernelcad "', async () => {
+    const outputPath = join(tmpDir, 'header-check.stl');
+    const result = await exportStlTool({
+      code: 'return box(10, 10, 10);',
+      output_path: outputPath,
+    });
+    expect(result.ok).toBe(true);
+
+    const buf = readFileSync(outputPath);
+    // First 80 bytes are the header (ASCII text or zeros).
+    // Should start with "kernelcad " (10 chars).
+    const headerPrefix = buf.subarray(0, 10).toString('ascii');
+    expect(headerPrefix).toBe('kernelcad ');
+  }, 60000);
+
+  it('binary STL header is exactly 80 bytes (triangle count at byte 80)', async () => {
+    const outputPath = join(tmpDir, 'header-size.stl');
+    const result = await exportStlTool({
+      code: 'return box(10, 10, 10);',
+      output_path: outputPath,
+    });
+    expect(result.ok).toBe(true);
+
+    const buf = readFileSync(outputPath);
+    // After 80-byte header is the uint32 LE triangle count.
+    // For a box: 12 triangles, so bytes [80..83] = 12 (little-endian).
+    expect(buf.readUInt32LE(80)).toBe(12);
+  }, 60000);
+});
+
 describe('export_stl feature_id paths', () => {
   it('successfully exports with explicit feature_id', async () => {
     const code = 'return box(10, 10, 10);';

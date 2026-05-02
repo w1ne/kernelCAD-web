@@ -109,26 +109,36 @@ export function isValidScaleSpec(v: unknown): v is ScaleSpec {
  * Format a scalar value for inclusion in an error message.
  *
  * JSON.stringify drops NaN/Infinity to "null" — the worst diagnostic
- * outcome. This helper preserves them as readable strings; falls back
- * to JSON.stringify for other types.
+ * outcome. This helper preserves them as readable strings. Also handles
+ * BigInt, Symbol, circular references, and other unrepresentable values
+ * without throwing.
  */
-export function formatScalarForError(v: unknown): string {
+export function formatScalarForError(v: unknown, _seen?: WeakSet<object>): string {
   if (typeof v === 'number') {
     if (Number.isNaN(v)) return 'NaN';
     if (v === Infinity) return 'Infinity';
     if (v === -Infinity) return '-Infinity';
     return String(v);
   }
-  if (Array.isArray(v)) {
-    return `[${v.map((x) => formatScalarForError(x)).join(', ')}]`;
-  }
-  if (typeof v === 'object' && v !== null) {
+  if (typeof v === 'bigint') return `${v}n`;
+  if (typeof v === 'symbol') return String(v);
+  if (Array.isArray(v) || (typeof v === 'object' && v !== null)) {
+    const seen = _seen ?? new WeakSet<object>();
+    if (seen.has(v)) return '<circular>';
+    seen.add(v);
+    if (Array.isArray(v)) {
+      return `[${v.map((x) => formatScalarForError(x, seen)).join(', ')}]`;
+    }
     const entries = Object.entries(v).map(
-      ([k, val]) => `${JSON.stringify(k)}: ${formatScalarForError(val)}`,
+      ([k, val]) => `${JSON.stringify(k)}: ${formatScalarForError(val, seen)}`,
     );
     return `{ ${entries.join(', ')} }`;
   }
-  return JSON.stringify(v);
+  try {
+    return JSON.stringify(v) ?? '<unrepresentable>';
+  } catch {
+    return '<unrepresentable>';
+  }
 }
 
 export function isValidPlaneSpec(value: unknown): value is PlaneSpec {

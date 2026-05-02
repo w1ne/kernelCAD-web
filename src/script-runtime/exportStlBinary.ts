@@ -1,4 +1,9 @@
 // src/script-runtime/exportStlBinary.ts
+import { createRequire } from 'node:module';
+
+const requireFromHere = createRequire(import.meta.url);
+const pkg = requireFromHere('../../package.json') as { version: string };
+const KERNELCAD_VERSION = pkg.version;
 
 const HEADER_SIZE = 80;
 const TRIANGLE_COUNT_SIZE = 4;
@@ -34,13 +39,18 @@ export interface MeshData {
  *
  * @param mesh    Vertex/index mesh data
  * @param header  Up to 80 ASCII characters written to the header field.
- *                Defaults to "kernelcad binary stl". The header MUST NOT
- *                start with "solid" — some lenient parsers use the prefix
- *                to detect ASCII vs binary format.
+ *                Defaults to "kernelcad <version> <YYYY-MM-DD>". The header
+ *                MUST NOT start with "solid" — some lenient parsers use the
+ *                prefix to detect ASCII vs binary format.
  */
+function buildDefaultHeader(): string {
+  const isoDate = new Date().toISOString().slice(0, 10);
+  return `kernelcad ${KERNELCAD_VERSION} ${isoDate}`;
+}
+
 export function encodeBinaryStl(
   mesh: MeshData,
-  header = 'kernelcad binary stl',
+  header: string = buildDefaultHeader(),
 ): Buffer {
   const { vertices, triangles } = mesh;
   const triangleCount = Math.floor(triangles.length / 3);
@@ -50,11 +60,22 @@ export function encodeBinaryStl(
 
   // Header — write ASCII text, padded with zeros already from alloc.
   // Ensure it does not start with "solid" (would confuse format sniffers).
-  const safeHeader = header.startsWith('solid') ? 'binary-stl ' + header : header;
+  let safeHeader = header.startsWith('solid') ? 'binary-stl ' + header : header;
+  if (safeHeader.length > HEADER_SIZE) {
+    console.warn(
+      `Binary STL header exceeds 80 bytes (was ${safeHeader.length}); truncating with <truncated> marker.`,
+    );
+    const TRUNCATED_MARKER = '<truncated>';
+    const keepLength = HEADER_SIZE - TRUNCATED_MARKER.length;
+    safeHeader = safeHeader.slice(0, keepLength) + TRUNCATED_MARKER;
+  }
   const headerBytes = Buffer.from(safeHeader.slice(0, HEADER_SIZE), 'ascii');
   headerBytes.copy(buf, 0);
 
   // Triangle count at byte 80 (LE uint32).
+  if (triangleCount > 0xFFFFFFFF) {
+    throw new Error(`Triangle count ${triangleCount} exceeds binary STL uint32 max (4294967295)`);
+  }
   buf.writeUInt32LE(triangleCount, HEADER_SIZE);
 
   // Per-triangle records starting at byte 84.

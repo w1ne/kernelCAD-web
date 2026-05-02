@@ -6,13 +6,17 @@
 //
 // Rules:
 // 1. Reject paths containing `..` segments (path traversal).
-// 2. Reject absolute paths under /etc/, /proc/, /sys/, /dev/, /root/.
-// 3. Reject user-config paths: ~/.bashrc, ~/.zshrc, ~/.ssh/, ~/.gnupg/, etc.
-// 4. Allow: relative paths within cwd, /tmp/* paths, paths within $HOME
+// 2. Reject ~user/... (other-user home) — unsupported, reject explicitly.
+// 3. Reject absolute paths under /etc/, /proc/, /sys/, /dev/, /root/.
+// 4. Reject user-config paths: ~/.bashrc, ~/.zshrc, ~/.ssh/, ~/.gnupg/, etc.
+// 5. Allow: relative paths within cwd, /tmp/* paths, paths within $HOME
 //    not matching the above patterns.
+// 6. Symlink resolution: canonicalize via parent-chain realpath before
+//    deny-list checks, so symlinks pointing at dangerous targets are caught.
 
-import { resolve as resolvePath, isAbsolute } from 'node:path';
+import { resolve as resolvePath, isAbsolute, dirname } from 'node:path';
 import { homedir } from 'node:os';
+import { realpathSync, existsSync } from 'node:fs';
 
 export interface ValidateOutputPathResult {
   ok: boolean;
@@ -37,6 +41,13 @@ const DANGEROUS_USER_CONFIG_PATTERNS: RegExp[] = [
   /\/\.gnupg\//,
   /\/\.aws\//,
   /\/\.gcp\//,
+  /\/\.kube\//,
+  /\/\.docker\//,
+  /\/\.npmrc$/,
+  /\/\.netrc$/,
+  /\/\.pypirc$/,
+  /\/\.gitconfig$/,
+  /\/\.git-credentials$/,
 ];
 
 export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
@@ -44,7 +55,7 @@ export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
     return { ok: false, error: 'output_path must be a non-empty string.' };
   }
 
-  // Reject path traversal (.. segments).
+  // Reject path traversal (.. segments) on the LITERAL path.
   // Splitting on '/' or '\\' to handle both posix and Windows paths.
   const segments = rawPath.split(/[/\\]/);
   if (segments.some((seg) => seg === '..')) {
@@ -54,16 +65,32 @@ export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
     };
   }
 
+  // Detect ~user/... (other-user home) — reject explicitly.
+  // Resolving other-user homes is OS-specific and rarely needed.
+  const userTildeMatch = /^~([^/]+)\//.exec(rawPath);
+  if (userTildeMatch) {
+    return {
+      ok: false,
+      error: `Refusing to write to ${rawPath}: ~user/ tilde expansion not supported. Use an absolute path or a path under your own home (~/).`,
+    };
+  }
+
   // Resolve tilde to homedir if present.
   let expanded = rawPath;
   if (rawPath.startsWith('~/') || rawPath === '~') {
     expanded = rawPath === '~' ? homedir() : `${homedir()}/${rawPath.slice(2)}`;
   }
 
-  // Resolve to absolute (relative paths get resolved against cwd).
-  const resolved = isAbsolute(expanded) ? expanded : resolvePath(expanded);
+  // Resolve to absolute path. This collapses any embedded . or encoded ..
+  // segments (defense in depth — even though we rejected literal .. earlier).
+  const resolvedAbsolute = isAbsolute(expanded) ? resolvePath(expanded) : resolvePath(expanded);
 
-  // Reject dangerous system prefixes.
+  // Symlink resolution: walk the parent chain to find the deepest existing
+  // ancestor, realpath it, then append the remaining suffix. This catches
+  // the case where ~/safe-link symlinks to /etc/passwd.
+  const resolved = canonicalize(resolvedAbsolute);
+
+  // Check resolved path against deny-list patterns.
   for (const prefix of DANGEROUS_SYSTEM_PREFIXES) {
     if (resolved === prefix.slice(0, -1) || resolved.startsWith(prefix)) {
       return {
@@ -84,4 +111,31 @@ export function validateOutputPath(rawPath: string): ValidateOutputPathResult {
   }
 
   return { ok: true, resolved };
+}
+
+/**
+ * Walk the parent chain to the deepest existing ancestor; realpath it;
+ * append the remaining (not-yet-existing) suffix. Handles the legitimate
+ * case where the agent specifies a path inside a tree that hasn't been
+ * created yet (mkdir -p will create it later).
+ */
+function canonicalize(absolutePath: string): string {
+  if (existsSync(absolutePath)) {
+    return realpathSync(absolutePath);
+  }
+  // Walk UP until we find an existing ancestor.
+  let current = absolutePath;
+  const trailingParts: string[] = [];
+  while (current !== '/' && current !== '.' && !existsSync(current)) {
+    const parent = dirname(current);
+    if (parent === current) break; // reached root
+    trailingParts.unshift(current.slice(parent.length + 1)); // segment after parent's slash
+    current = parent;
+  }
+  if (existsSync(current)) {
+    const realParent = realpathSync(current);
+    return trailingParts.length > 0 ? `${realParent}/${trailingParts.join('/')}` : realParent;
+  }
+  // No existing ancestor found; fallback to the input (should not happen on a real FS).
+  return absolutePath;
 }

@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { homedir } from 'node:os';
+import { tmpdir } from 'node:os';
+import { mkdtempSync, symlinkSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { validateOutputPath } from '../../../src/script-runtime/safeOutputPath';
 
 describe('validateOutputPath', () => {
@@ -114,5 +117,106 @@ describe('validateOutputPath', () => {
       const r = validateOutputPath('/etc/foo.stl');
       expect(r.error).toMatch(/safe path|\/tmp\/|project/i);
     });
+  });
+});
+
+describe('validateOutputPath — symlink resolution', () => {
+  let tmpRoot: string;
+
+  beforeEach(() => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'safe-output-symlink-'));
+  });
+
+  afterEach(() => {
+    if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('rejects a path that resolves through a symlink to a dangerous system dir', () => {
+    // Create a symlink pointing at /etc — common attack vector.
+    const linkPath = join(tmpRoot, 'evil-link');
+    symlinkSync('/etc', linkPath);
+
+    const r = validateOutputPath(`${linkPath}/passwd`);
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/system path|protected/);
+  });
+
+  it('canonicalizes /tmp paths to themselves on Linux (or /private/tmp on macOS)', () => {
+    const r = validateOutputPath('/tmp/test-canonical.stl');
+    expect(r.ok).toBe(true);
+    // On Linux /tmp realpath is /tmp; on macOS it is /private/tmp.
+    expect(r.resolved).toMatch(/\/tmp\/test-canonical\.stl$|\/private\/tmp\/test-canonical\.stl$/);
+  });
+});
+
+describe('validateOutputPath — resolved-path recheck', () => {
+  it('rejects encoded path traversal that resolves under a deny-list prefix', () => {
+    // The literal .. check catches this path; the resolved-path recheck is
+    // defense-in-depth for any future bypass that reaches that stage.
+    const r = validateOutputPath('/tmp/foo/../etc/passwd');
+    expect(r.ok).toBe(false);
+    // Either the literal-.. check or the resolved-path recheck rejection is fine.
+    expect(r.error).toBeTruthy();
+  });
+});
+
+describe('validateOutputPath — ~user rejection', () => {
+  it('rejects ~root/ tilde expansion with clear error', () => {
+    const r = validateOutputPath('~root/foo.stl');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/~user.*tilde|not supported/);
+  });
+
+  it('rejects ~someoneelse/ with clear error', () => {
+    const r = validateOutputPath('~someoneelse/file.stl');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/~user.*tilde|not supported/);
+  });
+});
+
+describe('validateOutputPath — canonical path in resolved field', () => {
+  it('returns canonical path that has no redundant separators', () => {
+    // path.resolve collapses redundant slashes.
+    const r = validateOutputPath('/tmp//foo///bar.stl');
+    expect(r.ok).toBe(true);
+    expect(r.resolved).not.toMatch(/\/\//);
+  });
+});
+
+describe('validateOutputPath — credential-dir patterns', () => {
+  it('rejects ~/.kube/config', () => {
+    const r = validateOutputPath('~/.kube/config');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/protected/);
+  });
+
+  it('rejects ~/.docker/config.json', () => {
+    const r = validateOutputPath('~/.docker/config.json');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.npmrc', () => {
+    const r = validateOutputPath('~/.npmrc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.netrc', () => {
+    const r = validateOutputPath('~/.netrc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.pypirc', () => {
+    const r = validateOutputPath('~/.pypirc');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.gitconfig', () => {
+    const r = validateOutputPath('~/.gitconfig');
+    expect(r.ok).toBe(false);
+  });
+
+  it('rejects ~/.git-credentials', () => {
+    const r = validateOutputPath('~/.git-credentials');
+    expect(r.ok).toBe(false);
   });
 });
