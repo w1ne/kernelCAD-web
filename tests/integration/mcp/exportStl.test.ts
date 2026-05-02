@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { exportStlTool } from '../../../src/mcp/tools/exportStl';
+import { runScript } from '../../../src/script-runtime/runScript';
 
 beforeAll(async () => {
   const { initOcct } = await import('../../../src/backends/occt/occtBackend');
@@ -119,4 +120,62 @@ describe('export_stl MCP tool', () => {
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/path-traversal/);
   });
+});
+
+describe('export_stl feature_id paths', () => {
+  it('successfully exports with explicit feature_id', async () => {
+    const code = 'return box(10, 10, 10);';
+    const run = await runScript({ code, fileName: '<test>' });
+    const lastId = run.records[run.records.length - 1].id;
+
+    const outputPath = join(tmpDir, 'box-by-id.stl');
+    const result = await exportStlTool({
+      code,
+      output_path: outputPath,
+      feature_id: lastId,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.byte_count).toBeGreaterThan(0);
+    expect(existsSync(outputPath)).toBe(true);
+  }, 60000);
+
+  it('exports an intermediate feature (box, not the filleted result)', async () => {
+    const code = 'return box(10, 10, 10).fillet(2);';
+    const run = await runScript({ code, fileName: '<test>' });
+    // The first record is the box; the fillet is the second (last) record.
+    const boxId = run.records[0].id;
+
+    const outputPath = join(tmpDir, 'box-only.stl');
+    const result = await exportStlTool({
+      code,
+      output_path: outputPath,
+      feature_id: boxId,
+    });
+
+    expect(result.ok).toBe(true);
+
+    // A plain box has exactly 12 triangles → 80 + 4 + 12*50 = 684 bytes.
+    // A filleted box has many more triangles.
+    const buf = readFileSync(outputPath);
+    const triangleCount = buf.readUInt32LE(80);
+    expect(triangleCount).toBe(12);
+    expect(buf.length).toBe(684);
+  }, 60000);
+
+  it('returns ok: false when feature_id is not found', async () => {
+    const code = 'return box(10, 10, 10);';
+    const outputPath = join(tmpDir, 'nope.stl');
+    const result = await exportStlTool({
+      code,
+      output_path: outputPath,
+      feature_id: 'feature-id-that-does-not-exist',
+    });
+
+    expect(result.ok).toBe(false);
+    // The export.feature-not-found diagnostic surfaces in result.diagnostics[].message.
+    const message = result.error ?? result.diagnostics?.[0]?.message ?? '';
+    expect(message).toMatch(/not found/i);
+    expect(existsSync(outputPath)).toBe(false);
+  }, 60000);
 });
