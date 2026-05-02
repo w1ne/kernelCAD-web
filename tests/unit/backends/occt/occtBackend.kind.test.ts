@@ -23,7 +23,7 @@ describe('OcctBackend kind tag', () => {
   });
 
   it('mirror drops kind tag', () => {
-    expect(OcctBackend.box(10, 10, 10).mirror([1, 0, 0]).kind).toBeUndefined();
+    expect(OcctBackend.box(10, 10, 10).translate(20, 0, 0).mirror('yz').kind).toBeUndefined();
   });
 
   it('union drops kind tag', () => {

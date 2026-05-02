@@ -13,7 +13,6 @@ export interface ShapeBackend {
   translate(x: number, y: number, z: number): ShapeBackend;
   rotate(axis: Vec3, degrees: number, pivot?: Vec3): ShapeBackend;
   scale(s: number | Vec3): ShapeBackend;
-  mirror(normal: Vec3): ShapeBackend;
   union(other: ShapeBackend): ShapeBackend;
   subtract(other: ShapeBackend): ShapeBackend;
   intersect(other: ShapeBackend): ShapeBackend;
