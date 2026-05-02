@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractScript, formatDiagnostics } from './lib';
+import { extractScript, formatDiagnostics, computeScore } from './lib';
 import type { Diagnostic } from './types';
 
 describe('extractScript', () => {
@@ -85,5 +85,52 @@ describe('formatDiagnostics', () => {
 
   it('returns empty string for empty input', () => {
     expect(formatDiagnostics([])).toBe('');
+  });
+});
+
+describe('computeScore', () => {
+  const meta = { attempts: 1, tokens_in: 100, tokens_out: 50, time_ms: 5000 };
+
+  it('returns 0 when any gate fails', () => {
+    const s = computeScore(
+      { gates: { a: true, b: false }, scored: { x: true, y: true } },
+      meta,
+    );
+    expect(s.gate_pass).toBe(false);
+    expect(s.score).toBe(0);
+  });
+
+  it('returns passed/total when all gates pass and scored has entries', () => {
+    const s = computeScore(
+      { gates: { a: true }, scored: { x: true, y: true, z: false } },
+      meta,
+    );
+    expect(s.gate_pass).toBe(true);
+    expect(s.score).toBeCloseTo(2 / 3);
+  });
+
+  it('returns 1.0 when all gates pass and scored is empty (gates-only success)', () => {
+    const s = computeScore({ gates: { a: true, b: true }, scored: {} }, meta);
+    expect(s.gate_pass).toBe(true);
+    expect(s.score).toBe(1);
+  });
+
+  it('returns 0 when gates is empty (no gates ⇒ vacuously true ⇒ scored math applies)', () => {
+    // Empty gates: no false gates, so gate_pass = true; scored carries the weight.
+    const s = computeScore({ gates: {}, scored: { x: true } }, meta);
+    expect(s.gate_pass).toBe(true);
+    expect(s.score).toBe(1);
+  });
+
+  it('passes through metadata', () => {
+    const s = computeScore({ gates: { a: true }, scored: {} }, {
+      attempts: 3,
+      tokens_in: 1000,
+      tokens_out: 500,
+      time_ms: 30000,
+    });
+    expect(s.attempts).toBe(3);
+    expect(s.tokens).toEqual({ input: 1000, output: 500, total: 1500 });
+    expect(s.time_ms).toBe(30000);
   });
 });
