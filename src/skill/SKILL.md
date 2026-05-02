@@ -404,7 +404,7 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 Each hint in the `hints` array includes a `reachable` classification:
 - `'engine-path'` — fires during normal recompute; highest-signal for typical agent workflows.
 - `'direct-lowerer-only'` — only reachable if the lowerer is invoked directly; through the standard MCP path, agents will see `recompute.input.missing` from an upstream feature instead.
-- `'cli-path'` — fires from the CLI command-handlers (file I/O, script exceptions, export errors); agents using the MCP server may see these via tool result error fields rather than diagnostic chains.
+- `'tool-error-field'` — the code appears in MCP tool results' `error` / `errorCode` field rather than the `diagnostics[]` array. Agents see these as top-level tool failures (file I/O, script exceptions, export errors).
 - `'reserved'` — forward-looking infrastructure with no current trigger.
 
 ## CLI Commands
