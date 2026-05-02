@@ -7,8 +7,7 @@ import type { HistoryMap, FaceLineage } from '../../../src/naming/evolutionRecor
 describe('propagateTransformHistory', () => {
   beforeAll(async () => { await initOcct(); });
 
-  // SKIP: faceHashes() helper added in Task 5; unskip after that task lands.
-  it.skip('maps each input face to the i-th output face after a translate', async () => {
+  it('maps each input face to the i-th output face after a translate', async () => {
     const box = OcctBackend.box(10, 10, 10);  // 6 faces
     // Seed an input historyMap where each of the 6 faces has a canonical name lineage
     const inputMap: HistoryMap = new Map();
@@ -35,8 +34,7 @@ describe('propagateTransformHistory', () => {
     }
   });
 
-  // SKIP: faceHashes() helper added in Task 5; unskip after that task lands.
-  it.skip('preserves rootHash through the transformation (lineage points to original primitive)', async () => {
+  it('preserves rootHash through the transformation (lineage points to original primitive)', async () => {
     const box = OcctBackend.box(10, 10, 10);
     const originalHashes = box.faceHashes();
     const inputMap: HistoryMap = new Map();

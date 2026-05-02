@@ -82,24 +82,29 @@ function collectSubshapeHashes(
 
 /**
  * Read TopTools_ListOfShape (a list of TopoDS_Shape) into an array of hash strings.
+ *
+ * The `begin()`/`end()` STL iterator approach used at OCCT 7.x in native C++ is not
+ * fully bound in the replicad-opencascadejs WASM module (the NCollection_StlIterator
+ * template instantiation for this list type is unregistered). We iterate instead via
+ * a copy of the list and `First_1()` + `RemoveFirst()`.
  */
 function listToHashes(oc: ReturnType<typeof getOC>, list: unknown): string[] {
   const result: string[] = [];
+  // Make a copy so we can destructively iterate without mutating the caller's list.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const it = (list as any).begin();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const end = (list as any).end();
+  const copy = new (oc as any).TopTools_ListOfShape_3(list);
   try {
-    while (!it.equals(end)) {
-      const s = it.value();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    while (!(copy as any).IsEmpty()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const s = (copy as any).First_1();
       result.push(shapeHash(oc, s));
-      it.next();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (copy as any).RemoveFirst();
     }
   } finally {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (it as any).delete();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (end as any).delete();
+    (copy as any).delete();
   }
   return result;
 }

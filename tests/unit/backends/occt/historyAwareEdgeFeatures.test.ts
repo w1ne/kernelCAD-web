@@ -5,8 +5,7 @@ import { filletWithHistory, chamferWithHistory } from '../../../../src/backends/
 describe('historyAwareEdgeFeatures', () => {
   beforeAll(async () => { await initOcct(); });
 
-  // SKIP: faceHashes()/edgeHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('filletWithHistory preserves face identity for non-filleted faces', async () => {
+  it('filletWithHistory preserves face identity for non-filleted faces', async () => {
     const box = OcctBackend.box(20, 20, 20);
     // All 12 edges of the box; produce a fillet on all
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,8 +20,7 @@ describe('historyAwareEdgeFeatures', () => {
     expect(children!.length).toBe(1);
   });
 
-  // SKIP: faceHashes()/edgeHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('chamferWithHistory: same identity-preservation property', async () => {
+  it('chamferWithHistory: same identity-preservation property', async () => {
     const box = OcctBackend.box(20, 20, 20);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allEdges = (box as any).edgeHashes().map((h: string) => ({ hash: h }));

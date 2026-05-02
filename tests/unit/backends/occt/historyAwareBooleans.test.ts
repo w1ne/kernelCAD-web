@@ -5,8 +5,7 @@ import { cutWithHistory, fuseWithHistory, intersectWithHistory } from '../../../
 describe('historyAwareBooleans', () => {
   beforeAll(async () => { await initOcct(); });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('cutWithHistory preserves identity for the body face untouched by the cut', async () => {
+  it('cutWithHistory preserves identity for the body face untouched by the cut', async () => {
     const body = OcctBackend.box(20, 20, 20);
     const tool = OcctBackend.cylinder(50, 3).translate(10, 10, -15);  // pierces top→bottom
     const result = cutWithHistory(body, tool);
@@ -27,8 +26,7 @@ describe('historyAwareBooleans', () => {
     expect(modifiedCount + unchangedCount).toBeGreaterThan(0);
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('cutWithHistory marks the top face as Modified (single child) when cylinder pierces but does not split it', async () => {
+  it('cutWithHistory marks the top face as Modified (single child) when cylinder pierces but does not split it', async () => {
     const body = OcctBackend.box(20, 20, 20);
     const tool = OcctBackend.cylinder(50, 3).translate(10, 10, -15);
     const result = cutWithHistory(body, tool);
@@ -41,8 +39,7 @@ describe('historyAwareBooleans', () => {
     expect(children!.length).toBe(1);
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('cutWithHistory marks the top face as ambiguous (multiple children) when divider splits it', async () => {
+  it('cutWithHistory marks the top face as ambiguous (multiple children) when divider splits it', async () => {
     const body = OcctBackend.box(20, 20, 20);
     // A box-shaped divider that splits the top face into two halves along Y
     const divider = OcctBackend.box(30, 5, 30).translate(-5, 7.5, -5);
@@ -54,8 +51,7 @@ describe('historyAwareBooleans', () => {
     expect(children!.length).toBeGreaterThan(1);  // ambiguous split
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('cutWithHistory marks faces deleted when the boolean removes them entirely', async () => {
+  it('cutWithHistory marks faces deleted when the boolean removes them entirely', async () => {
     const body = OcctBackend.box(10, 10, 10);
     const tool = OcctBackend.box(50, 50, 50).translate(-20, -20, -20);  // engulfs body
     const result = cutWithHistory(body, tool);
@@ -65,8 +61,7 @@ describe('historyAwareBooleans', () => {
     expect(result.deletedFaces.size).toBeGreaterThan(0);
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('fuseWithHistory tracks faces from both inputs', async () => {
+  it('fuseWithHistory tracks faces from both inputs', async () => {
     const a = OcctBackend.box(10, 10, 10);
     const b = OcctBackend.box(10, 10, 10).translate(5, 5, 5);
     const result = fuseWithHistory(a, b);
@@ -82,16 +77,14 @@ describe('historyAwareBooleans', () => {
     expect(aTracked + bTracked).toBeGreaterThan(0);
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('intersectWithHistory returns a valid shape for overlapping inputs', async () => {
+  it('intersectWithHistory returns a valid shape for overlapping inputs', async () => {
     const a = OcctBackend.box(10, 10, 10);
     const b = OcctBackend.box(10, 10, 10).translate(3, 3, 3);
     const result = intersectWithHistory(a, b);
     expect(result.shape).toBeDefined();
   });
 
-  // SKIP: faceHashes()/findCanonicalFaceHash() helpers added in Task 5; unskip after that task lands.
-  it.skip('cutWithHistory throws when builder fails', async () => {
+  it('cutWithHistory throws when builder fails', async () => {
     // Cutting a shape with itself produces empty result; OCCT may or may not
     // throw, but if Build() fails our helper should surface it.
     // (This is a smoke test for the error path — exact behavior depends on OCCT.)

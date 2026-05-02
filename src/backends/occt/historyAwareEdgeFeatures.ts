@@ -60,7 +60,10 @@ function findEdgeByHash(
       const e = explorer.Current();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((e as any).HashCode(HASH_UPPER).toString(16) === hash) {
-        found = e;
+        // Downcast from TopoDS_Shape to TopoDS_Edge — required by BRepFilletAPI_MakeFillet::Add_2
+        // and BRepFilletAPI_MakeChamfer::Add_2. TopExp_Explorer.Current() returns the generic
+        // TopoDS_Shape base; OCCT's binding requires the concrete subtype.
+        found = oc.TopoDS.Edge_1(e);
         break;
       }
       explorer.Next();
@@ -74,24 +77,23 @@ function findEdgeByHash(
 
 /**
  * Read a TopTools_ListOfShape into an array of hex hash strings.
- * Cleans up the iterator handles via try/finally.
+ *
+ * The `begin()`/`end()` STL iterator approach is not bound in the WASM module
+ * (the NCollection_StlIterator template instantiation for this list is unregistered).
+ * Instead we copy the list and iterate destructively via `First_1()` + `RemoveFirst()`.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function listToHashStrings(list: any): string[] {
+function listToHashStrings(oc: any, list: any): string[] {
   const result: string[] = [];
-  const it = list.begin();
-  const end = list.end();
+  const copy = new oc.TopTools_ListOfShape_3(list);
   try {
-    while (!it.equals(end)) {
+    while (!copy.IsEmpty()) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      result.push((it.value() as any).HashCode(HASH_UPPER).toString(16));
-      it.next();
+      result.push((copy.First_1() as any).HashCode(HASH_UPPER).toString(16));
+      copy.RemoveFirst();
     }
   } finally {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (it as any).delete();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (end as any).delete();
+    copy.delete();
   }
   return result;
 }
@@ -123,7 +125,7 @@ function enumerateAndRecord(
       } else {
         const modified = builder.Modified(sub);
         try {
-          const modifiedHashes = listToHashStrings(modified);
+          const modifiedHashes = listToHashStrings(oc, modified);
           if (modifiedHashes.length > 0) {
             history.set(inputHash, modifiedHashes);
           }
