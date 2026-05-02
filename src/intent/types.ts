@@ -47,6 +47,9 @@ export type FeatureRef =
   | { kind: 'edge'; featureId: FeatureId; ref: EdgeRef }
   | { kind: 'vertex'; featureId: FeatureId; ref: VertexRef };
 
+export type CardinalPlane = 'xy' | 'xz' | 'yz';
+export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset: number };
+
 export type FeatureKind =
   // primitives
   | 'box' | 'cylinder' | 'sphere' | 'torus'

@@ -1,7 +1,7 @@
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import type { ShapeBackend, BackendTarget } from '../backend';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3, PlaneSpec, CardinalPlane } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../capture/sketch';
 import { isSameEdge } from './edgeQueries';
@@ -469,6 +469,58 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(
       this.shape.mirror(normal as [number, number, number], [0, 0, 0]) as ReplicadShape3D,
     );
+  }
+
+  /**
+   * Pure reflection across a plane. The result has the same volume as the
+   * source but with handedness flipped.
+   *
+   * Note on naming: this method calls the underlying Replicad `mirror()`
+   * primitive, which is a pure-reflection operation (replaces the shape
+   * with its reflection — does NOT perform a boolean union with the source).
+   * kernelCAD's user-facing `Shape.mirror()` is a separate higher-level
+   * method that does perform the union (the symmetric-part shortcut);
+   * see the mirror() implementation in Task 2. Different verbs, different
+   * layers — both names appear in our API for clarity.
+   *
+   * For offset planes (e.g. `{ plane: 'yz', offset: 5 }`) we decompose:
+   * translate origin to offset → reflect across cardinal plane → translate
+   * back. This is equivalent to reflecting across the plane x = offset,
+   * which maps x' = 2*offset - x.
+   *
+   * @param plane Cardinal plane ('xy' | 'xz' | 'yz') or
+   *              { plane: '<cardinal>', offset: number } for a parallel
+   *              plane at the given offset along the plane's normal axis.
+   */
+  reflect(plane: PlaneSpec): OcctBackend {
+    // Map kernelCAD cardinal names to Replicad's PlaneName (uppercase).
+    const cardinalToReplicad: Record<CardinalPlane, 'XY' | 'XZ' | 'YZ'> = {
+      xy: 'XY',
+      xz: 'XZ',
+      yz: 'YZ',
+    };
+
+    if (typeof plane === 'string') {
+      const replicadPlane = cardinalToReplicad[plane];
+      return new OcctBackend(this.shape.mirror(replicadPlane) as ReplicadShape3D);
+    }
+
+    // Offset form: reflect across a cardinal plane translated by `offset` along
+    // its normal axis. Normal axes: xy → Z, xz → Y, yz → X.
+    const { plane: cardinal, offset } = plane;
+    const replicadPlane = cardinalToReplicad[cardinal];
+
+    // Determine the translation needed to shift the shape so that the offset
+    // plane becomes the origin plane, reflect, then shift back.
+    let tx = 0, ty = 0, tz = 0;
+    if (cardinal === 'yz') tx = -offset;
+    else if (cardinal === 'xz') ty = -offset;
+    else if (cardinal === 'xy') tz = -offset;
+
+    const shifted = this.shape.translate(tx, ty, tz) as ReplicadShape3D;
+    const reflected = shifted.mirror(replicadPlane) as ReplicadShape3D;
+    const restored = reflected.translate(-tx, -ty, -tz) as ReplicadShape3D;
+    return new OcctBackend(restored);
   }
 
   /**

@@ -820,6 +820,9 @@ export class OcctLowerer implements FeatureLowerer {
         case 'mirror':
           shape = shape.mirror(t.normal);
           break;
+        case 'reflect':
+          shape = (shape as import('./occtBackend').OcctBackend).reflect(t.plane);
+          break;
       }
     }
 
