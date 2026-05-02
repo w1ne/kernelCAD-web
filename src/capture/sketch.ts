@@ -187,10 +187,12 @@ export class Sketch {
    */
   reflect(axis: AxisSpec): Sketch {
     if (!isValidAxisSpec(axis)) {
-      throw new KernelError(
+      const err = new KernelError(
         'feature.sketch.reflect.invalid-axis',
         `Sketch.reflect: axis must be 'x', 'y', or { axis, offset }; got ${JSON.stringify(axis)}.`,
       );
+      err.featureId = this.id;
+      throw err;
     }
 
     // Normalize -0 to 0 so reflected coordinates are well-formed.

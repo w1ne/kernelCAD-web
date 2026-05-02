@@ -1035,6 +1035,23 @@ describe('path() builder + Sketch capture', () => {
       expect(String(caught)).toMatch(/invalid-axis|axis must be/i);
     });
 
+    it('feature.sketch.reflect.invalid-axis diagnostic carries featureId when caught from a sketch context', async () => {
+      const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
+        return sketch.reflect('z').extrude(1);
+      `;
+      let caught: unknown;
+      try {
+        await runScript({ code, fileName: 'test.kcad.ts' });
+      } catch (e) { caught = e; }
+      expect(caught).toBeDefined();
+      const diag = kernelErrorToDiagnostic(caught);
+      expect(diag.code).toBe('feature.sketch.reflect.invalid-axis');
+      expect(diag.featureId).toBeDefined();
+      expect(typeof diag.featureId).toBe('string');
+    });
+
     it('reflected sketch extrudes to a valid solid with the same volume as the original', async () => {
       const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
       const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
