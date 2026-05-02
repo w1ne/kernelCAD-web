@@ -1,3 +1,44 @@
+## v0.1.0 — first public release + NORTHSTAR re-baseline (2026-05-02)
+
+The first kernelCAD release published to the npm registry. Install with `npm install -g kernelcad`.
+
+### Re-baseline note
+
+Prior to this release, the repo carried 34 internal tags (`v0.0.1` through `v0.13.0-rc.17`) reflecting iterative development. None were ever published. All have been deleted; this release starts a clean, NORTHSTAR-aligned numbering line where each `v0.N.0` corresponds to one NORTHSTAR module fully delivered.
+
+`v0.1.0` ships NORTHSTAR's v0.1 module ("Foundation"): feature graph, recompute engine, OCCT backend via Replicad, primitives (box/cylinder/sphere), CLI (`evaluate`, `export stl`, `export step`), JSON diagnostics, canonical face refs.
+
+### Bonus surface (NORTHSTAR modules partly delivered out-of-order)
+
+Beyond the v0.1 contract, this release also includes:
+
+- **v0.2 partial** — `.fillet()`, `.chamfer()`, `.shell()`, `path()` builder with `lineTo`/`tangentArc`/`threePointsArc`/`sagittaArc`/`bulgeArc`/`radiusArc`, `.label()`. Tracked face/edge refs across transforms/booleans **deferred to v0.2.0**.
+- **v0.3 partial** — `.shell()` ships. `hole`/`cut`/`draft` as first-class features and `created` face refs **deferred to v0.3.0**.
+- **v0.7** — `.sweep()` and `.loft()` (curves + surfacing).
+- **v0.11** — MCP server with 13 introspection tools (`why_did_this_fail`, `list_topology`, `get_shape_info`, `list_edges`, `list_faces`, `list_face_labels`, `list_features`, `list_api`, `evaluate_script`, `get_edges_of`, `set_param_value`, `add_feature`, `remove_feature`).
+- **v0.12 partial** — MCP AST-edit tools (`add_feature`, `remove_feature`, `set_param_value`). Skill installer and one-file context bundler **deferred to v0.12.0**.
+
+### Symmetry features (not on the NORTHSTAR module roadmap, additive)
+
+- `.mirror(plane)` / `.reflect(plane)` for symmetric parts.
+- Binary STL export (`kernelcad export stl ...` and `export_stl` MCP tool).
+- Variable-radius fillet/chamfer.
+- Edge/face query selectors (`selectEdges`, `selectEdge`, `EdgeQuery`, `FaceQuery`).
+
+### Diagnostic surface
+
+53 documented diagnostic codes across feature/recompute/cli/export categories, each with a HINTS entry, structurally enforced by a CI sentinel.
+
+### Positioning
+
+kernelCAD is the open, MCP-native, AST-edit-primacy CAD kernel for iterative agent workflows. Source is on GitHub. Diagnostics are structured and hint-rich. The MCP server lets an agent introspect a live model across many queries in one session instead of re-running the script per question.
+
+### License
+
+MIT License.
+
+---
+
 ## v0.13.0-rc.17 — quality pass v5 (2026-05-01)
 
 A pure quality milestone closing the rc.16 review punch list (1 Critical + 5 Important + 8 Nits) plus a structural backstop for the entire "diagnostic emitted but no hint" failure class.
