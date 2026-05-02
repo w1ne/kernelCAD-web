@@ -1,3 +1,38 @@
+## v0.2.0 — tracked face/edge refs across transforms + booleans (2026-05-03)
+
+Closes the SKILL.md "Critical Constraint" section. Canonical face refs (`{ face: 'top' }`) now work transparently across every transform (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and every unambiguous boolean (`.subtract`, `.union`, `.intersect`). The previous workaround "apply edge feature BEFORE transforms" still works; scripts that previously failed with `feature.edge-feature.face-ref-not-resolvable` after a transform or boolean now succeed with no syntax change.
+
+### Mechanism
+
+Per-shape `historyMap: Map<FaceHash, FaceLineage>` on `OcctBackend`. Boolean and edge-feature operations bypass Replicad's wrappers to read OCCT's `BRepAlgoAPI_*::Generated/Modified/IsDeleted` callbacks directly. Transforms preserve identity 1:1 via parallel `TopExp_Explorer` walks. Resolution walks back to the originating primitive, resolves the canonical name there, then walks forward through history.
+
+### New diagnostic codes
+
+- `feature.edge-feature.face-ref-ambiguous-after-split` — upstream operation split the named face into multiple children. Geometry-fallback disambiguation is planned for a future release.
+- `feature.edge-feature.face-ref-removed` — upstream operation removed the named face entirely.
+- `feature.face-feature.face-ref-ambiguous-after-split` and `feature.face-feature.face-ref-removed` — same, for `.shell()`.
+
+### Updated hints
+
+- `face-ref-not-resolvable`: drops the obsolete "apply transforms after fillet/chamfer" workaround language.
+- `face-ref-not-supported` for `tracked` / `created` / `propagated`: reclassified from "v0.5+ reserved" to "internal-only / planned for future versions".
+
+### What's NOT in v0.2.0 (planned, not shipped)
+
+- Geometry-snapshot fallback for ambiguous splits — planned for a future release. Today, ambiguous cases produce a clear diagnostic with the workaround language.
+- `created` face refs (script-side API for naming faces newly introduced by booleans) — planned for a future release.
+- `propagated` face refs (script-side API for explicit cross-feature face naming) — planned for a future release.
+
+### Project status
+
+This release is part of an ongoing prototype effort. The kernel surface is growing; the agent layer (eval harness, agent loop) remains the weakest part of the project and is the priority for upcoming work.
+
+### License
+
+MIT License (unchanged).
+
+---
+
 ## v0.1.0 — first public release + NORTHSTAR re-baseline (2026-05-02)
 
 The first kernelCAD release published to the npm registry. Install with `npm install -g kernelcad`.

@@ -804,6 +804,7 @@ export class OcctLowerer implements FeatureLowerer {
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const edgeRefs: EdgeRefForFilleting[] = sharpEdges.map((e: any) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
           const filletResult = filletWithHistory(base, edgeRefs, radius);
@@ -878,6 +879,7 @@ export class OcctLowerer implements FeatureLowerer {
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
           const chamferResult = chamferWithHistory(base, edgeRefs, distance);
@@ -929,6 +931,7 @@ export class OcctLowerer implements FeatureLowerer {
         try {
           // Convert replicad Face → { hash: FaceHash } by hashing the
           // underlying TopoDS_Face handle.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
           const shellResult = shellWithHistory(base, [{ hash: faceHash }], thickness);
           const newMap = mergeEdgeFeatureHistory(base.historyMap, shellResult);
