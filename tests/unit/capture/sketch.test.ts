@@ -1055,5 +1055,39 @@ describe('path() builder + Sketch capture', () => {
       const vReflected = await runAndGetVolume(codeReflected);
       expect(vReflected).toBeCloseTo(vOriginal, 1);
     });
+
+    it('I4: Sketch.reflect registers inputs.source referencing the upstream sketch', async () => {
+      const code = `
+        const sketch = path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close();
+        return sketch.reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      const sketches = run.records.filter(r => r.kind === 'sketch');
+      expect(sketches).toHaveLength(2);
+      const [upstream, reflected] = sketches;
+      // The reflected sketch must reference the upstream via inputs.source.
+      expect(reflected.inputs.source).toEqual({ kind: 'feature', id: upstream.id });
+    });
+
+    it('I4: upstream sketch failure cascades to reflected sketch via recompute.input.missing', async () => {
+      const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
+      const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+      // The upstream sketch is invalid (lineTo without moveTo first), so it
+      // fails to lower and is never added to the shapes map. The reflected
+      // sketch has inputs.source pointing at the upstream; the engine detects
+      // the upstream is missing and emits recompute.input.missing on the
+      // reflected sketch — proving the cascade works.
+      const code = `
+        const bad = path().lineTo(1, 1).close();
+        return bad.reflect('x').extrude(1);
+      `;
+      const run = await runScript({ code, fileName: '<test>' });
+      const engine = new RecomputeEngine(new OcctLowerer());
+      const r = await engine.run(run.records);
+      const codes = r.diagnostics.map(d => d.code);
+      // Upstream emits feature.sketch.failed (or similar); reflected sketch
+      // must emit recompute.input.missing because its inputs.source is absent.
+      expect(codes).toContain('recompute.input.missing');
+    });
   });
 });

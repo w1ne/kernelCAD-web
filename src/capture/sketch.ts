@@ -255,7 +255,7 @@ export class Sketch {
 
     return this.session.createSketch({
       kind: 'sketch',
-      inputs: {},
+      inputs: { source: { kind: 'feature', id: this.id } },
       params: {},
       metadata: { commands: newCommands },
     });
