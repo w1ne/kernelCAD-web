@@ -5,7 +5,7 @@ A pure quality milestone: closes the rc.11 review punch list and clears pre-exis
 ### Tooling + bundle hardening
 - New non-skippable `tests/integration/cli-bundle/startup.test.ts` boots the bundled CLI and asserts a JSON-RPC initialize response. Closes the silent-skip gap that let the rc.11 bundle crash sail past `npm test`.
 - The `qc` script now runs `build:cli` before tests, ensuring the pre-merge gate always exercises a fresh artifact.
-- esbuild banner aligned to `'node:module'` (matching the source convention used everywhere). The rc.11 hotfix alias in `src/mcp/server.ts` is reverted; future `createRequire from 'node:module'` imports won't recur the duplicate-binding crash.
+- Removed the `createRequire` import from the esbuild banner entirely; the bundle's `const require=createRequire(...)` line now relies on the source-level `import { createRequire } from 'node:module'` in `src/mcp/server.ts` (hoisted by ESM). The rc.11 hotfix alias is reverted. (rc.13 follows up with a banner-internal `__bcr` alias to make the bundle fully self-contained.)
 
 ### Refactors (no behavior change)
 - `isSameEdge` is now exported from `src/backends/occt/edgeQueries.ts` with a documenting JSDoc covering the 1e-6 mm-scale tolerance. The backend's `filletVariable` and `chamferVariable` methods replace inline endpoint-comparison logic with calls to the helper.
@@ -417,7 +417,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI â
 - AST-edit tools (deferred per NORTHSTAR roadmap)
 - Geometric edge selection (`select_edges` for non-primitive shapes)
 - HTTP transport (currently stdio-only)
-- Skill installer (`forgecad skill install` equivalent)
+- Skill installer (`kernelcad skill install`)
 
 ## v0.11.0-alpha.1 â€” 2026-04-30
 
@@ -766,7 +766,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.0] - 2026-01-26
 ### Added - CAD-Style View Modes
-- **3 Professional View Modes** matching CATIA/Fusion360/NX standards:
+- **3 Professional View Modes** for engineering CAD viewport conventions:
   - **Shaded with Edges** (Default) - Flat-shaded surfaces with black edge lines
   - **Wireframe** - Clean geometric edges only (NOT mesh tessellation)
   - **Shaded** - Smooth surfaces without edges
@@ -821,7 +821,7 @@ All notable changes to this project will be documented in this file.
 - **Simplified Insertion**: `useCodeInsertion.ts` now exclusively uses AST Command Pattern for shape insertions.
 
 ### Documentation
-- **Updated Roadmap**: Added comprehensive ROADMAP 3.0 aligned with CATIA/Fusion360/NX workflows.
+- **Updated Roadmap**: Added comprehensive ROADMAP 3.0 with industry-standard CAD workflows.
 - **CAD Workflow Comparison**: New document comparing current state with professional CAD systems.
 - **Phase Planning**: Detailed phases for Sketching (v0.3), View Modes (v0.4), and Advanced Features (v0.5).
 

@@ -76,11 +76,12 @@ async function callTool(toolName: string, args: object): Promise<unknown> {
   return callResp.result;
 }
 
-// Skip the suite when the CLI bundle isn't built (e.g. CI's `npm run qc` job
-// runs vitest before `npm run build:cli`). The integration suite is intended
-// to be run after a build via `npm run test:integration` (or after a manual
-// `npm run build:cli`). When run as part of the unit test suite without a
-// build, treat the test as not-applicable rather than failing.
+// Skip the suite when the CLI bundle isn't built. As of rc.12, `npm run qc`
+// runs `npm run build:cli` BEFORE vitest, so the bundle is always present in
+// the pre-merge gate. The skipIf only triggers for inner-loop developer runs
+// (e.g. `npm test` directly without a prior build) — that case is non-failing
+// because the dedicated bundle-startup sentinel at
+// `tests/integration/cli-bundle/startup.test.ts` enforces presence at the gate.
 const SKIP = !existsSync(CLI_BIN);
 
 describe.skipIf(SKIP)('MCP server (spawn)', () => {
