@@ -11,34 +11,59 @@ export interface ExportInput {
   code: string;
   fileName: string;
   format: ExportFormat;
+  /** Optional: which feature to export. Defaults to the returned value or last captured feature. */
+  feature_id?: string;
 }
 
 export interface ExportResult {
   bytes: Uint8Array;
+  featureCount: number;
   diagnostics: CompilerDiagnostic[];
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
-  const { code, fileName, format } = input;
+  const { code, fileName, format, feature_id } = input;
   const run = await runScript({ code, fileName });
   const engine = new RecomputeEngine(new OcctLowerer());
   const r = await engine.run(run.records);
 
+  const featureCount = run.records.length;
+
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {
-    return { bytes: new Uint8Array(), diagnostics: r.diagnostics };
+    return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
   }
 
-  const ret = run.returnValue;
   let targetId: string | undefined;
-  if (ret instanceof Shape) {
-    targetId = ret.id;
-  } else if (run.records.length > 0) {
-    targetId = run.records[run.records.length - 1].id;
+  if (feature_id !== undefined) {
+    // Explicit feature_id: verify it exists in captured records
+    const record = run.records.find(rec => rec.id === feature_id);
+    if (!record) {
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.feature-not-found',
+          featureId: feature_id,
+          severity: 'error',
+          message: `feature_id '${feature_id}' not found in script's features.`,
+        }],
+      };
+    }
+    targetId = feature_id;
+  } else {
+    const ret = run.returnValue;
+    if (ret instanceof Shape) {
+      targetId = ret.id;
+    } else if (run.records.length > 0) {
+      targetId = run.records[run.records.length - 1].id;
+    }
   }
   if (!targetId) {
     return {
       bytes: new Uint8Array(),
+      featureCount,
       diagnostics: [...r.diagnostics, {
         target: 'export-occt',
         code: 'export.no-shape',
@@ -52,6 +77,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (!shape) {
     return {
       bytes: new Uint8Array(),
+      featureCount,
       diagnostics: [...r.diagnostics, {
         target: 'export-occt',
         code: 'export.shape-not-lowered',
@@ -66,5 +92,5 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     ? await shape.exportSTLAsync()
     : await shape.exportSTEPAsync();
 
-  return { bytes, diagnostics: r.diagnostics };
+  return { bytes, featureCount, diagnostics: r.diagnostics };
 }

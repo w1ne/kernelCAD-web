@@ -286,7 +286,11 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 
 | Code | Meaning |
 |---|---|
-| `feature.transform.invalid-plane` | Reflect transform plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the plane argument on the `Shape.reflect` call. |
+| `feature.transform.invalid-translate` | Translate Vec3 must be three finite numbers. Check the (x, y, z) arguments to `.translate()`. |
+| `feature.transform.invalid-rotate` | Rotate axis must be a finite Vec3 and degrees must be a finite number. Check the arguments to `.rotate(axis, degrees, pivot?)`. |
+| `feature.transform.invalid-scale` | Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers. Check the argument to `.scale()`. |
+| `feature.transform.invalid-reflect` | Reflect plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the argument to `.reflect()`. |
+| `feature.transform.invalid-plane` | Reflect transform plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the plane argument on the `Shape.reflect` call. (Forward-looking infrastructure gate; agents see `feature.transform.invalid-reflect` at capture time first.) |
 
 ### feature.shell.*
 
@@ -400,6 +404,7 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 Each hint in the `hints` array includes a `reachable` classification:
 - `'engine-path'` — fires during normal recompute; highest-signal for typical agent workflows.
 - `'direct-lowerer-only'` — only reachable if the lowerer is invoked directly; through the standard MCP path, agents will see `recompute.input.missing` from an upstream feature instead.
+- `'cli-path'` — fires from the CLI command-handlers (file I/O, script exceptions, export errors); agents using the MCP server may see these via tool result error fields rather than diagnostic chains.
 - `'reserved'` — forward-looking infrastructure with no current trigger.
 
 ## CLI Commands
@@ -421,7 +426,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 13 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 14 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -436,6 +441,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods)
+- `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`
 
 ## Out of Scope
 

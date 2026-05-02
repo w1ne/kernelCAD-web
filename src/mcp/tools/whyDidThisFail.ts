@@ -58,7 +58,7 @@ export interface WhyDidThisFailOutput {
  * feature.extrude.unsupported-profile, feature.revolve.unsupported-profile,
  * cli.no-input, cli.export.exception, export.no-shape, export.shape-not-lowered.
  */
-export type HintReachability = 'engine-path' | 'direct-lowerer-only' | 'reserved';
+export type HintReachability = 'engine-path' | 'direct-lowerer-only' | 'reserved' | 'cli-path';
 
 interface HintEntry {
   /** One-line human-readable suggestion. Pasted into agent chat. */
@@ -73,6 +73,9 @@ interface HintEntry {
    *   `recompute.input.missing` before the lowerer's branch runs, so
    *   agents won't see this code through normal MCP usage. See
    *   docs/superpowers/specs/2026-05-01-error-attribution-policy.md.
+   * - 'cli-path': fires from the CLI command-handlers (file I/O, script
+   *   exceptions, export errors). Agents using the MCP server may see
+   *   these via tool result error fields rather than diagnostic chains.
    * - 'reserved': forward-looking infrastructure with no current trigger.
    */
   reachable: HintReachability;
@@ -94,7 +97,11 @@ export const HINTS: Record<string, HintEntry> = {
   'feature.mirror.no-base': { reachable: 'engine-path', hint: "Mirror has no base shape. Ensure mirror is chained onto a solid shape (e.g. box(10,10,10).mirror({ plane: 'yz' }))." },
   'feature.mirror.invalid-plane': { reachable: 'engine-path', hint: "Mirror plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset: <number> }. Check the plane argument." },
   'feature.mirror.failed': { reachable: 'engine-path', hint: "OCCT rejected the boolean union of source and reflection. Common cause: source touches the mirror plane, producing zero-thickness intersections — translate the source away or use { plane, offset }. Note: some coplanar configurations succeed without throwing; if mirror returned a shape with unexpected volume, check the input geometry." },
-  'feature.transform.invalid-plane': { reachable: 'engine-path', hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }. Check the plane argument on the Shape.reflect call." },
+  'feature.transform.invalid-translate': { reachable: 'engine-path', hint: "Translate Vec3 must be three finite numbers. Check the (x, y, z) arguments to .translate()." },
+  'feature.transform.invalid-rotate': { reachable: 'engine-path', hint: "Rotate axis must be a finite Vec3 and degrees must be a finite number. Check the arguments to .rotate(axis, degrees, pivot?)." },
+  'feature.transform.invalid-scale': { reachable: 'engine-path', hint: "Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers. Check the argument to .scale()." },
+  'feature.transform.invalid-reflect': { reachable: 'engine-path', hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }. Check the argument to .reflect()." },
+  'feature.transform.invalid-plane': { reachable: 'direct-lowerer-only', hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }. Check the plane argument on the Shape.reflect call." },
   'feature.shell.failed': { reachable: 'engine-path', hint: "OCCT could not shell that solid. Try a thinner wall or a different open face. Thickness must be smaller than the shape's minimum thickness." },
   'feature.shell.no-base': { reachable: 'engine-path', hint: "Shell has no base shape. Ensure the shell is chained onto a solid shape." },
   'feature.shell.no-thickness': { reachable: 'engine-path', hint: "Shell is missing a thickness parameter. Pass a positive number as the first argument (e.g. .shell(1))." },
@@ -138,10 +145,10 @@ export const HINTS: Record<string, HintEntry> = {
   'feature.path.duplicate-label': { reachable: 'engine-path', hint: "Each sketch label must be unique. Pick a different name or remove the duplicate label() call." },
   'recompute.input.missing': { reachable: 'engine-path', hint: "An upstream feature failed or was suppressed. Use why_did_this_fail on the upstream feature ID to find the root cause." },
   'recompute.lowering.exception': { reachable: 'engine-path', hint: "An exception was raised during lowering. Check the diagnostic message for the OCCT error." },
-  'cli.script.exception': { reachable: 'engine-path', hint: "Your script raised an exception during execution. Check the diagnostic message for the JS error." },
-  'cli.file.read': { reachable: 'engine-path', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
-  'cli.no-input': { reachable: 'engine-path', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
-  'cli.export.exception': { reachable: 'engine-path', hint: "An exception occurred during export. Check the diagnostic message for details." },
+  'cli.script.exception': { reachable: 'cli-path', hint: "Your script raised an exception during execution. Check the diagnostic message for the JS error." },
+  'cli.file.read': { reachable: 'cli-path', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
+  'cli.no-input': { reachable: 'cli-path', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
+  'cli.export.exception': { reachable: 'cli-path', hint: "An exception occurred during export. Check the diagnostic message for details." },
   'export.no-shape': { reachable: 'engine-path', hint: "The script did not return a shape. Ensure your script ends with return <shape>." },
   'export.shape-not-lowered': { reachable: 'engine-path', hint: "The returned shape could not be lowered to OCCT. Check for upstream errors in the feature tree." },
 };
