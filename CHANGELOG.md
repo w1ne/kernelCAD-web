@@ -1,3 +1,36 @@
+## v0.13.0-rc.16 — binary STL + rc.15 review closure (2026-05-01)
+
+A bundled feature + quality milestone. Upgrades `export_stl` from ASCII to true binary STL output (the rc.15 contract was right; the implementation finally matches). Closes the rc.15 review punch list (2 Critical + 6 Important + 2 Nits) plus a new "deviation propagation" discipline memory entry.
+
+### Feature surface
+- **`export_stl` now emits true binary STL.** rc.15 shipped ASCII despite the contract claiming binary; this milestone implements direct binary encoding via Replicad's mesh primitives. Files are ~3-5× smaller (684 bytes for a 12-triangle box vs ~3052 ASCII bytes). Format: 80-byte header + uint32 LE triangle count + 50 bytes per triangle (3× float32 normal + 9× float32 vertices + uint16 attribute count). Encoder lives at `src/script-runtime/exportStlBinary.ts`; integrated into `runAndExport`.
+- All three agent-readable description surfaces (SKILL.md, MCP tool description, JSDoc) now match what ships.
+
+### Path validation
+- New `validateOutputPath` helper at `src/script-runtime/safeOutputPath.ts`. `export_stl` rejects: paths containing `..` segments, dangerous absolute paths (`/etc/`, `/proc/`, `/sys/`, `/dev/`, `/root/`), and user-config paths (`~/.bashrc`, `~/.zshrc`, `~/.ssh/`, `~/.gnupg/`, `~/.aws/`, `~/.gcp/`). Allowed: relative paths within cwd, `/tmp/`, paths within `$HOME` not matching the protected patterns. 19 unit tests + 2 integration tests cover the policy.
+- First MCP tool with file-write side-effects sets the precedent for future writers (thumbnail, STEP-export, etc.).
+
+### Diagnostic surface
+- `HintReachability` value `'cli-path'` renamed to `'tool-error-field'`. Describes the actual axis: where in the wire format the code appears (in tool result's `error`/`errorCode` field, not `diagnostics[]`). Four `cli.*` codes reclassified accordingly.
+- `formatScalarForError` helper added to `src/intent/types.ts`. Preserves `NaN` / `Infinity` / `-Infinity` in error messages instead of letting `JSON.stringify` drop them to `null`. Used in five transform validators (rotate, scale, reflect, mirror; translate's template-literal form already preserved).
+- `feature.mirror.invalid-plane` reachability classification noted accurately.
+
+### Test coverage
+- 3 new `feature_id`-path integration tests for `export_stl`: explicit-id success, intermediate-feature export, feature-not-found error path. Exercises `export.feature-not-found` diagnostic that was previously dead by tests.
+- 4 new NaN/Infinity preservation assertions for transform validators.
+- 19 new unit tests for `validateOutputPath`.
+
+### Documentation + tooling
+- `feature_count` semantics clarified across three surfaces (MCP description, JSDoc, SKILL.md): "total features in the script, not the count contributing to the exported shape."
+- 6 SKILL.md drift sentinels refactored to call shared `assertEveryNameInSKILL` from `tests/unit/skill/_helpers.ts` (the helper was created in rc.15 but had no callers).
+- rc.15 CHANGELOG entry corrected: "Five new diagnostic codes" → "Four" (the fifth — `feature.mirror.invalid-plane` — was reused, not new).
+- Five `OcctBackend` methods' JSDocs had ephemeral plan-task references already stripped in rc.15 Task 7.
+
+### Discipline
+- New memory entry `feedback_propagate_implementer_deviations.md` codifies the rule: when a subagent implementer reports a spec deviation, the controller MUST audit all agent-readable surfaces (SKILL.md, MCP descriptions, JSDoc, CHANGELOG, lineage memory) and verify they match what shipped, not the spec's original claim. The rc.15 ASCII-STL gap surfaced this rule's necessity.
+
+---
+
 ## v0.13.0-rc.15 — export_stl + rc.14 review closure (2026-05-01)
 
 A bundled feature + quality milestone. New `export_stl` MCP tool closes the agent output-workflow gap; closes the rc.14 review punch list (6 Important + 2 Nits).
