@@ -1,11 +1,13 @@
 // src/backends/occt/edgeSelection.ts
 import type { Edge, Face } from 'replicad';
+import { getOC } from 'replicad';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from './queryKeys';
+import { resolveFaceRef } from '../../naming/resolveFaceRef';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
@@ -122,7 +124,22 @@ export function pickEdges(
     };
   }
 
-  // Canonical face filter → must be on an un-transformed primitive (kind tag set).
+  // Canonical face filter — use resolveFaceRef for shapes with a historyMap
+  // (transformed or boolean'd shapes), or fall back to the centroid heuristic
+  // for raw un-transformed primitives (historyMap absent).
+  if (base.historyMap && base.historyMap.size > 0) {
+    const resolved = resolveFaceRef(faceRef.ref, {
+      currentShape: base,
+      featureId: record.id,
+      surface: 'edge-feature',
+    });
+    if (!resolved.ok) {
+      return { error: resolved.diagnostic };
+    }
+    return edgesOfFaceByHash(base, resolved.faceHash);
+  }
+
+  // No historyMap → must be an un-transformed primitive (kind tag set).
   if (!base.kind) {
     return {
       error: {
@@ -215,6 +232,62 @@ function collectFaceEdges(faces: Face[]): EdgeList {
     out.push(...faceEdges);
   }
   return out;
+}
+
+/**
+ * Find the replicad `Face` wrapper whose OCCT hash equals `faceHash`.
+ *
+ * Uses `TopExp_Explorer_2` to enumerate faces in the same order as
+ * `shape.faces`, then returns the replicad wrapper at the matching index.
+ * WASM handles are `.delete()`-ed via try/finally.
+ *
+ * @throws {Error} If no face with the given hash is found (should not happen
+ *   when the caller holds a resolver-guaranteed hash).
+ */
+function faceByHash(base: OcctBackend, faceHash: string): Face {
+  const oc = getOC();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = (base.getReplicadShape() as unknown as { wrapped: unknown }).wrapped;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const explorer = new (oc as any).TopExp_Explorer_2(
+    wrapped,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (oc as any).TopAbs_ShapeEnum.TopAbs_SHAPE,
+  );
+  let foundIdx = -1;
+  let idx = 0;
+  try {
+    while (explorer.More()) {
+      const sub = explorer.Current();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const h = (sub as any).HashCode(2147483647).toString(16);
+      if (h === faceHash) {
+        foundIdx = idx;
+        break;
+      }
+      idx++;
+      explorer.Next();
+    }
+  } finally {
+    explorer.delete();
+  }
+  if (foundIdx === -1) {
+    throw new Error(`edgeSelection.faceByHash: face hash '${faceHash}' not found on shape`);
+  }
+  const replicadFaces = base.getReplicadShape().faces;
+  return replicadFaces[foundIdx];
+}
+
+/**
+ * Find the boundary edges of the face identified by `faceHash`.
+ *
+ * Finds the replicad `Face` via `faceByHash`, then returns its `.edges`.
+ */
+function edgesOfFaceByHash(base: OcctBackend, faceHash: string): EdgeList {
+  const face = faceByHash(base, faceHash);
+  return (face as unknown as { edges?: Edge[] }).edges ?? [];
 }
 
 function canonicalFaceEdgesOrError(
@@ -329,7 +402,8 @@ function pickFacePlane(
  *
  * Rules:
  *   - `inputs.face` must be present (face features cannot operate without one).
- *   - `base.kind` must be set (un-transformed primitive) to be resolvable.
+ *   - Canonical refs: resolved via historyMap on transformed/boolean shapes,
+ *     or via centroid heuristic on raw un-transformed primitives.
  *   - The canonical face name must be applicable to the primitive kind.
  */
 export function pickFace(
@@ -387,8 +461,23 @@ export function pickFace(
     return result.face;
   }
 
-  // 3. FaceRef.canonical → existing canonical resolution.
+  // 3. FaceRef.canonical → use resolveFaceRef for shapes with a historyMap
+  // (transformed or boolean'd shapes), or fall back to the centroid heuristic
+  // for raw un-transformed primitives (historyMap absent).
   if (faceRef.ref.kind === 'canonical') {
+    if (base.historyMap && base.historyMap.size > 0) {
+      const resolved = resolveFaceRef(faceRef.ref, {
+        currentShape: base,
+        featureId: record.id,
+        surface: 'face-feature',
+      });
+      if (!resolved.ok) {
+        return { error: resolved.diagnostic };
+      }
+      return faceByHash(base, resolved.faceHash);
+    }
+
+    // No historyMap → must be an un-transformed primitive (kind tag set).
     if (!base.kind) {
       return {
         error: {
