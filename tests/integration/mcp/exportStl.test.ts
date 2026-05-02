@@ -81,15 +81,15 @@ describe('export_stl MCP tool', () => {
     expect(existsSync(outputPath)).toBe(false);
   }, 60000);
 
-  it('returns ok: false on unwritable path', async () => {
-    // Use a path inside a non-existent root directory that cannot be created
-    // (/root is not writable by unprivileged users)
+  it('returns ok: false on dangerous path (/root/)', async () => {
+    // /root/ is a protected system path — rejected by path validation before
+    // any write is attempted.
     const result = await exportStlTool({
       code: 'return box(10, 10, 10);',
       output_path: '/root/kernelcad-test-unwritable/box.stl',
     });
     expect(result.ok).toBe(false);
-    expect(result.error).toMatch(/Cannot write/);
+    expect(result.error).toMatch(/Refusing to write|system path/);
   }, 60000);
 
   it('creates parent directories if they do not exist', async () => {
@@ -101,4 +101,22 @@ describe('export_stl MCP tool', () => {
     expect(result.ok).toBe(true);
     expect(existsSync(outputPath)).toBe(true);
   }, 60000);
+
+  it('rejects dangerous output_path with kernelCAD-level validation', async () => {
+    const result = await exportStlTool({
+      code: 'return box(10, 10, 10);',
+      output_path: '/etc/cannot-write-here.stl',
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/Refusing to write|system path/);
+  });
+
+  it('rejects path with traversal segments', async () => {
+    const result = await exportStlTool({
+      code: 'return box(10, 10, 10);',
+      output_path: '/tmp/../etc/escape.stl',
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/path-traversal/);
+  });
 });
