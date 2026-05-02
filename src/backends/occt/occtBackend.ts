@@ -483,7 +483,7 @@ export class OcctBackend implements ShapeBackend {
    *   intersections).
    */
   mirror(plane: PlaneSpec): OcctBackend {
-    const originalClone = (this.shape as unknown as { clone: () => ReplicadShape3D }).clone();
+    const originalClone = this.shape.clone();
     const originalForUnion = new OcctBackend(originalClone);
     const reflected = this.reflect(plane);
     return originalForUnion.union(reflected);
