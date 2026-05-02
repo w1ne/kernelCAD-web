@@ -150,8 +150,14 @@ export const HINTS: Record<string, HintEntry> = {
   'cli.file.read': { reachable: 'tool-error-field', hint: "kernelCAD could not read the script file at that path. Check the file exists and is readable." },
   'cli.no-input': { reachable: 'tool-error-field', hint: "No input provided to the CLI command. Pass either a file path or inline code." },
   'cli.export.exception': { reachable: 'tool-error-field', hint: "An exception occurred during export. Check the diagnostic message for details." },
+  'export.feature-not-found': { reachable: 'engine-path', hint: "The feature_id passed to export_stl wasn't found in the script's features. Run list_features first to see available feature IDs, or omit feature_id to export the last feature (the script's return value)." },
   'export.no-shape': { reachable: 'engine-path', hint: "The script did not return a shape. Ensure your script ends with return <shape>." },
   'export.shape-not-lowered': { reachable: 'engine-path', hint: "The returned shape could not be lowered to OCCT. Check for upstream errors in the feature tree." },
+  'feature.extrude.bad-sketch': { reachable: 'engine-path', hint: "extrude with profile='sketch' requires an upstream sketch input. Ensure the extrude is chained from a path()...close() sketch: `path().moveTo(...).close().extrude(depth)`." },
+  'feature.extrude.bad-points': { reachable: 'engine-path', hint: "extrudePolygon requires at least 3 points, each a [number, number] pair of finite numbers. Check that the points array is correctly formed." },
+  'feature.extrude.bad-params': { reachable: 'engine-path', hint: "extrudeRoundedRect requires width, height, radius, and depth parameters. Ensure all four are provided as positive finite numbers." },
+  'feature.extrude.failed': { reachable: 'engine-path', hint: "OCCT could not extrude that profile. Common causes: profile is self-intersecting, polygon points are not in a consistent winding order, or rounded-rect radius exceeds half of width/height. Try simplifying the profile." },
+  'feature.sketch.bad-commands': { reachable: 'engine-path', hint: "Sketch has no path commands. This usually indicates an internal error — ensure the sketch was constructed via path().moveTo(...).lineTo(...).close() rather than created directly." },
 };
 
 function buildHints(diagnostics: readonly CompilerDiagnostic[]): Array<{ code: string; hint: string; reachable: HintReachability }> {

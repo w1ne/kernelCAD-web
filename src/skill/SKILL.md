@@ -305,6 +305,10 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | Code | Meaning |
 |---|---|
 | `feature.extrude.unsupported-profile` | The extrude profile is not a supported 2D sketch type. Ensure you pass a sketch or closed wire as the profile. |
+| `feature.extrude.bad-sketch` | extrude with profile='sketch' requires an upstream sketch input. Ensure the extrude is chained from a `path()...close()` sketch. |
+| `feature.extrude.bad-points` | extrudePolygon requires at least 3 points, each a `[number, number]` pair. Check that the points array is correctly formed. |
+| `feature.extrude.bad-params` | extrudeRoundedRect requires width, height, radius, and depth parameters. Ensure all four are provided as positive finite numbers. |
+| `feature.extrude.failed` | OCCT could not extrude that profile. Common causes: self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height. |
 | `feature.revolve.unsupported-profile` | The revolve profile is not a supported 2D sketch type. Ensure you pass a sketch or closed wire as the profile. |
 | `feature.revolve.crosses-axis` | A revolve profile must stay on one side of the rotation axis. Ensure all path coordinates have x >= 0. |
 | `feature.revolve.empty-profile` | A revolve profile needs at least one lineTo or arc segment. A path with only moveTo + close has zero area. |
@@ -339,6 +343,7 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.sketch.degenerate-arc` | An arc segment has degenerate geometry. For `radiusArc`: `|radius|` must be >= chord/2, and start must not coincide with end. Try a larger radius, different endpoints, `threePointsArc`, or `sagittaArc`. |
 | `feature.sketch.reflect.invalid-axis` | Sketch reflection axis must be `'x'`, `'y'`, or `{ axis: 'x' | 'y', offset: <number> }`. |
 | `feature.sketch.failed` | Sketch construction failed during lowering. Check the diagnostic message for the underlying error. |
+| `feature.sketch.bad-commands` | Sketch has no path commands. Ensure the sketch was constructed via `path().moveTo(...).lineTo(...).close()` rather than created directly. |
 
 ### feature.path.*
 
@@ -398,6 +403,7 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 
 | Code | Meaning |
 |---|---|
+| `export.feature-not-found` | The feature_id passed to export_stl wasn't found. Use list_features to see available feature IDs. |
 | `export.no-shape` | The script did not return a shape. Ensure your script ends with `return <shape>`. |
 | `export.shape-not-lowered` | The returned shape could not be lowered to OCCT. Check for upstream errors in the feature tree. |
 
