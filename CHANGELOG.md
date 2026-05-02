@@ -1,3 +1,42 @@
+## v0.13.0-rc.17 — quality pass v5 (2026-05-01)
+
+A pure quality milestone closing the rc.16 review punch list (1 Critical + 5 Important + 8 Nits) plus a structural backstop for the entire "diagnostic emitted but no hint" failure class.
+
+### Structural HINTS-coverage sentinel
+- New `tests/unit/mcp/hintsCoverage.test.ts` walks the kernel's diagnostic-emitting source files (`script-runtime/export.ts`, `compute/recomputeEngine.ts`, `backends/occt/occtLowerer.ts`, `backends/occt/edgeSelection.ts`, `capture/proxy.ts`, `capture/sketch.ts`, `intent/kernelError.ts`), extracts every `code: '...'` literal, and asserts each has a HINTS entry OR is on a documented allowlist.
+- The sentinel's first run discovered **5 silent gaps** that had accumulated across rcs: `feature.extrude.bad-sketch`, `feature.extrude.bad-points`, `feature.extrude.bad-params`, `feature.extrude.failed`, `feature.sketch.bad-commands`. All emitted diagnostic codes that gave agents no hint when fired through `why_did_this_fail`. Each got a HINTS entry plus a SKILL.md row.
+- `export.feature-not-found` (rc.16 C1) gets its missing entry too.
+- Future regressions of this class are now caught at CI time, not at review time.
+
+### Path validator hardening
+- `validateOutputPath` walks the parent directory chain to the deepest existing ancestor and `realpathSync`-canonicalizes it before deny-list check. Closes a bypass where a user-created symlink (e.g. `~/safe-link → /etc/passwd`) could route a write through the deny-list.
+- The deny-list runs against both the literal-path and the resolved-path, defense-in-depth against encoded path traversal.
+- `~user/...` (other-user home) tilde patterns now reject explicitly with a clear error.
+- The `resolved` field returned to callers is the canonical realpath-resolved path (handles macOS `/tmp → /private/tmp` transparently).
+
+### Path validator deny-list extensions
+- Seven new credential-dir patterns: `~/.kube/`, `~/.docker/`, `~/.npmrc`, `~/.netrc`, `~/.pypirc`, `~/.gitconfig`, `~/.git-credentials`. Together with rc.16's `.bashrc/.zshrc/.ssh/.gnupg/.aws/.gcp/` set, the validator now covers the most common credential foot-guns.
+
+### `formatScalarForError` robustness
+- The capture-time error-message helper now handles circular objects (`<circular>`), BigInts (`123n`), Symbols (`Symbol(name)`), and stringification-failures (`<unrepresentable>`) without crashing the validation pipeline. Capture-time validators run on agent-supplied input; an agent passing `1n` to `.scale()` no longer crashes the validation pipeline.
+
+### Binary STL header forensic stamping
+- Default header now reads `kernelcad <version> <iso-date>` (e.g. `kernelcad 0.13.0-rc.17 2026-05-01`) instead of static text. STLs that show up later in slicer logs or downstream-tool failure reports now self-identify which kernelCAD version + date produced them.
+- 80-byte header truncation is now `console.warn`-loud with `<truncated>` marker (was silent slice).
+
+### Diagnostic surface
+- `cli.no-input` reclassified from `'tool-error-field'` to `'reserved'` — it's CLI-only and not reachable through MCP. `KNOWN_RESERVED` constant + exact-match assertion added to the reachability sentinel (mirrors `KNOWN_DIRECT_LOWERER_ONLY`).
+
+### Documentation + discipline
+- `feedback_propagate_implementer_deviations.md` memory rule sharpened with a new trigger: when an implementer mentions a diagnostic code surfacing through a new path, controller MUST audit HINTS + SKILL.md. The rc.17 Task 1 structural sentinel automates this at CI time; the discipline rule remains valuable as a controller-side checkpoint.
+- rc.16 CHANGELOG cosmetic correction: "3-5×" → "4-5×" (actual ratio 3052/684 ≈ 4.46×).
+
+### Misc
+- `OcctBackend` Buffer-view conversion now uses `Uint8Array.from(buf)` instead of `new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength)`. The latter is a view; the former copies. Avoids Buffer-pool lifetime concerns if the buffer were ever held across a tick.
+- Binary STL encoder now guards against triangle-count overflow (`uint32` max 4.29B); throws clear error if the mesh exceeds the format limit.
+
+---
+
 ## v0.13.0-rc.16 — binary STL + rc.15 review closure (2026-05-01)
 
 A bundled feature + quality milestone. Upgrades `export_stl` from ASCII to true binary STL output (the rc.15 contract was right; the implementation finally matches). Closes the rc.15 review punch list (2 Critical + 6 Important + 2 Nits) plus a new "deviation propagation" discipline memory entry.

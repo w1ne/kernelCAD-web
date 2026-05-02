@@ -34,7 +34,7 @@ const EMITTING_FILES = [
 
 function extractEmittedCodes(content: string): string[] {
   // Match: code: 'string-with-dots-and-dashes' OR code: "string-..."
-  const pattern = /\bcode\s*:\s*['"]([a-z][\w.\-]*)['"]/g;
+  const pattern = /\bcode\s*:\s*['"]([a-z][\w.-]*)['"]/g;
   const codes: string[] = [];
   let m;
   while ((m = pattern.exec(content)) !== null) {
