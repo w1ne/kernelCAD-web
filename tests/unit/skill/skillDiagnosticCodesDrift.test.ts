@@ -3,14 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HINTS } from '../../../src/mcp/tools/whyDidThisFail';
+import { escapeRegExp } from './_helpers';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILL_MD = readFileSync(
   resolvePath(__dirname, '../../../src/skill/SKILL.md'),
   'utf8',
 );
-
-const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 describe('SKILL.md diagnostic codes drift sentinel', () => {
   it('every HINTS code appears in SKILL.md (word-boundary match)', () => {
