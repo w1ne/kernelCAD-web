@@ -91,6 +91,20 @@ export type FeatureKind =
  * `{ plane: CardinalPlane; offset: number }` where offset is finite.
  * Rejects everything else.
  */
+export type ScaleSpec = number | [number, number, number];
+
+export function isValidVec3(v: unknown): v is Vec3 {
+  return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+export function isValidScaleSpec(v: unknown): v is ScaleSpec {
+  if (typeof v === 'number') return Number.isFinite(v) && v > 0;
+  if (Array.isArray(v) && v.length === 3) {
+    return v.every((n) => typeof n === 'number' && Number.isFinite(n) && n > 0);
+  }
+  return false;
+}
+
 export function isValidPlaneSpec(value: unknown): value is PlaneSpec {
   if (typeof value === 'string') {
     return value === 'xy' || value === 'xz' || value === 'yz';

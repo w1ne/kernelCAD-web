@@ -10,6 +10,7 @@ const ALLOWED_REACHABILITY: ReadonlySet<HintReachability> = new Set([
 const KNOWN_DIRECT_LOWERER_ONLY = [
   'feature.loft.bad-sketch',
   'feature.sweep.multi-face-profile',
+  'feature.transform.invalid-plane',
 ] as const;
 
 describe('whyDidThisFail HINTS table reachability classification', () => {
@@ -28,7 +29,7 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
     }
   });
 
-  it('feature.loft.bad-sketch and feature.sweep.multi-face-profile are classified as direct-lowerer-only', () => {
+  it('known direct-lowerer-only codes are classified as direct-lowerer-only', () => {
     for (const code of KNOWN_DIRECT_LOWERER_ONLY) {
       expect(HINTS[code], `Expected HINTS entry for '${code}' to exist`).toBeDefined();
       expect(

@@ -286,7 +286,11 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 
 | Code | Meaning |
 |---|---|
-| `feature.transform.invalid-plane` | Reflect transform plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the plane argument on the `Shape.reflect` call. |
+| `feature.transform.invalid-translate` | Translate Vec3 must be three finite numbers. Check the (x, y, z) arguments to `.translate()`. |
+| `feature.transform.invalid-rotate` | Rotate axis must be a finite Vec3 and degrees must be a finite number. Check the arguments to `.rotate(axis, degrees, pivot?)`. |
+| `feature.transform.invalid-scale` | Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers. Check the argument to `.scale()`. |
+| `feature.transform.invalid-reflect` | Reflect plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the argument to `.reflect()`. |
+| `feature.transform.invalid-plane` | Reflect transform plane must be `'xy'`, `'xz'`, `'yz'`, or `{ plane: '<cardinal>', offset?: number }`. Check the plane argument on the `Shape.reflect` call. (Forward-looking infrastructure gate; agents see `feature.transform.invalid-reflect` at capture time first.) |
 
 ### feature.shell.*
 
