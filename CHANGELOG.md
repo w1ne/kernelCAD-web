@@ -1,3 +1,40 @@
+## v0.13.0-rc.13 — mirror+reflect + rc.12 review closure (2026-05-01)
+
+A bundled feature + quality milestone. Adds three symmetric-construction primitives to the agent-facing API and closes the rc.12 review punch list (6 Important + 1 Nit).
+
+### Feature surface
+- `Shape.reflect(plane)` — pure reflection across a plane, treated as a transform alongside `translate`/`rotate`. Volume preserved; canonical face refs become unresolvable after reflect (same rule as other transforms). Plane spec accepts `'xy' | 'xz' | 'yz'` or `{ plane: '<cardinal>', offset: number }`.
+- `Shape.mirror(plane)` — boolean union of source + reflection, the symmetric-part shortcut. Lives as a new `'mirror'` `FeatureKind` in the lowerer; dispatches to `OcctBackend.mirror(plane)` which composes existing `union` + `reflect`. Mirror result is a non-primitive composite; canonical face refs unresolvable.
+- `Sketch.reflect(axis)` — 2D path reflection. Walks the sketch command list, reflecting `(x, y)` coordinates per the axis spec. Arc winding inverts via the existing sign-encoded scalar params (`sagitta`, `bulge`, `radius`). Labels preserved on their original segments. Sketches do not get a `mirror()` method because there is no boolean union at the sketch level.
+
+### Diagnostic surface
+- New diagnostic codes (all `reachable: 'engine-path'`):
+  - `feature.mirror.no-base`
+  - `feature.mirror.invalid-plane`
+  - `feature.mirror.failed`
+  - `feature.sketch.reflect.invalid-axis`
+- New `feature.fillet.invalid-edge-ref` and `feature.chamfer.invalid-edge-ref` for the variable-edge-feature helper's tightened ref-kind handling.
+- HINTS table now has 64 entries.
+
+### Refactor + hardening
+- `applyVariableEdgeFeature` (rc.12 lowerer helper) now uses an explicit kind switch for the synth-record builder (replaces the silent-drop conditional spreads); a runtime-narrowed `inputs.base` check (replaces the loose `as { id: string }` cast); and a discriminated-union return type `{ ok: true; shape; diagnostics } | { ok: false; diagnostics }` (removes `?.shape!` non-null assertions at callers).
+- The reachability sentinel for `whyDidThisFail` is now a runtime-import test (replaces the brittle source-text parser that forced an undocumented field-ordering convention). Field ordering inside HINTS entries is no longer load-bearing.
+- esbuild banner is now self-contained: `import{createRequire as __bcr}from'node:module';` plus `const require=__bcr(import.meta.url);`. The `__bcr` alias dodges the duplicate-binding crash that hit rc.11 because the source-level import in `server.ts` uses the un-aliased name. Removing source-level `createRequire` imports no longer breaks the bundle.
+
+### Tests
+- New `tests/e2e/fixtures/symmetric-bracket.kcad.ts` exercises `Shape.mirror({ plane: 'yz' })` end-to-end on a parameterized U-bracket with bolt holes.
+- New `tests/unit/backends/occt/reflect.test.ts` (volume preservation, canonical-face-ref unresolvable after reflect, offset-plane form).
+- New `tests/unit/backends/occt/mirror.test.ts` (2× volume on non-overlapping mirror, degenerate plane-on-shape behavior, face-ref unresolvable after mirror).
+- New `tests/unit/skill/skillToolCountDrift.test.ts` — drift sentinel ensures SKILL.md's documented MCP tool count matches the actual `TOOLS` array.
+
+### Documentation
+- `CHANGELOG.md` rc.12 entry's banner-fix description updated to describe what actually shipped.
+- Repo-wide native-framing sweep extended to catch case-sensitivity and missing-comparator-name regex misses (3 hits removed: lowercase `forgecad`, no-space `Fusion360`, `CATIA`/`NX` references).
+- `tests/integration/mcp/spawn.test.ts` skip-rationale comment updated to reflect rc.12's `qc`-runs-`build:cli`-first invariant.
+- `src/skill/SKILL.md` updated from "6 tools" to the correct 13 tools, with all names listed.
+
+---
+
 ## v0.13.0-rc.12 — quality pass v3 (2026-05-01)
 
 A pure quality milestone: closes the rc.11 review punch list and clears pre-existing competitor-reference debt. No new user-facing API.
