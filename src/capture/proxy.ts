@@ -46,12 +46,11 @@ export class Shape {
 
   translate(x: number, y: number, z: number): Shape {
     if (!isValidVec3([x, y, z])) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.transform.invalid-translate',
         `Translate vector must be three finite numbers; got [${x}, ${y}, ${z}].`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     this.session.appendTransform(this.id, { op: 'translate', x, y, z });
     return this;
@@ -59,20 +58,18 @@ export class Shape {
 
   rotate(axis: [number, number, number], degrees: number, pivot?: [number, number, number]): Shape {
     if (!isValidVec3(axis) || typeof degrees !== 'number' || !Number.isFinite(degrees)) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.transform.invalid-rotate',
         `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${JSON.stringify(axis)}, degrees=${degrees}.`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     if (pivot !== undefined && !isValidVec3(pivot)) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.transform.invalid-rotate',
         `Rotate pivot (when provided) must be a finite Vec3; got ${JSON.stringify(pivot)}.`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     this.session.appendTransform(this.id, { op: 'rotateAxis', axis, degrees, pivot });
     return this;
@@ -83,12 +80,11 @@ export class Shape {
       ? [sx, sy ?? sx, sz ?? sx] as [number, number, number]
       : sx;
     if (!isValidScaleSpec(scaleSpec)) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.transform.invalid-scale',
         `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${JSON.stringify(scaleSpec)}.`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     this.session.appendTransform(this.id, {
       op: 'scale',
@@ -101,12 +97,11 @@ export class Shape {
 
   reflect(plane: PlaneSpec): Shape {
     if (!isValidPlaneSpec(plane)) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.transform.invalid-reflect',
         `Reflect plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${JSON.stringify(plane)}.`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     this.session.appendTransform(this.id, { op: 'reflect', plane });
     return this;
@@ -114,12 +109,11 @@ export class Shape {
 
   mirror(plane: PlaneSpec): Shape {
     if (!isValidPlaneSpec(plane)) {
-      const err = new KernelError(
+      throw new KernelError(
         'feature.mirror.invalid-plane',
         `Mirror plane must be 'xy' | 'xz' | 'yz' or { plane: '<cardinal>', offset?: number }; got ${JSON.stringify(plane)}.`,
+        this.id,
       );
-      err.featureId = this.id;
-      throw err;
     }
     return this.session.mirrorFeature(this, plane);
   }

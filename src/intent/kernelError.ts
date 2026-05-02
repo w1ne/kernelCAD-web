@@ -7,11 +7,12 @@
 
 export class KernelError extends Error {
   readonly code: string;
-  featureId?: string;
+  readonly featureId?: string;
 
-  constructor(code: string, message: string) {
+  constructor(code: string, message: string, featureId?: string) {
     super(message);
     this.code = code;
+    this.featureId = featureId;
     this.name = 'KernelError';
   }
 }
