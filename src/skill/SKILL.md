@@ -183,7 +183,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 6 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 13 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -191,6 +191,13 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
 - `why_did_this_fail({ file? code?, feature_id? })` — focused diagnostics + upstream chain + human-readable hints
+- `set_param_value({ file? code?, param_name, value })` — override a param and recompute
+- `add_feature({ file? code?, kind, ... })` — append a new feature to the script's feature tree
+- `remove_feature({ file? code?, feature_id })` — suppress/remove a feature by id
+- `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
+- `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
+- `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
+- `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods)
 
 Each hint in the `hints` array includes a `reachable` classification:
 - `'engine-path'` — the code fires during normal recompute and is the standard agent-facing diagnostic.
