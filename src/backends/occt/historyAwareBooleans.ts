@@ -89,10 +89,17 @@ function listToHashes(oc: ReturnType<typeof getOC>, list: unknown): string[] {
   const it = (list as any).begin();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const end = (list as any).end();
-  while (!it.equals(end)) {
-    const s = it.value();
-    result.push(shapeHash(oc, s));
-    it.next();
+  try {
+    while (!it.equals(end)) {
+      const s = it.value();
+      result.push(shapeHash(oc, s));
+      it.next();
+    }
+  } finally {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (it as any).delete();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (end as any).delete();
   }
   return result;
 }
@@ -142,11 +149,16 @@ function runBooleanWithHistory(
       return;
     }
     const modified = builder.Modified(inputSub);
-    const modifiedHashes = listToHashes(oc, modified);
-    if (modifiedHashes.length > 0) {
-      faceHistory.set(inputHash, modifiedHashes);
+    try {
+      const modifiedHashes = listToHashes(oc, modified);
+      if (modifiedHashes.length > 0) {
+        faceHistory.set(inputHash, modifiedHashes);
+      }
+      // No entry = unchanged; resolver treats absence as "same hash in output"
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (modified as any).delete();
     }
-    // No entry = unchanged; resolver treats absence as "same hash in output"
   };
   const recordEdge = (inputHash: string, inputSub: unknown) => {
     if (builder.IsDeleted(inputSub)) {
@@ -154,9 +166,14 @@ function runBooleanWithHistory(
       return;
     }
     const modified = builder.Modified(inputSub);
-    const modifiedHashes = listToHashes(oc, modified);
-    if (modifiedHashes.length > 0) {
-      edgeHistory.set(inputHash, modifiedHashes);
+    try {
+      const modifiedHashes = listToHashes(oc, modified);
+      if (modifiedHashes.length > 0) {
+        edgeHistory.set(inputHash, modifiedHashes);
+      }
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (modified as any).delete();
     }
   };
 
