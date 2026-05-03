@@ -4,7 +4,7 @@ import type { FeatureRecord } from '../intent/featureRecord';
 import type { FaceGeometry } from '../lib/workerTypes';
 import type { ShapeBackend } from '../backends/backend';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
-import { OcctBackend } from '../backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../backends/occt/meshing';
 
@@ -42,6 +42,7 @@ export interface MeshFeaturesResult {
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
 ): Promise<MeshFeaturesResult> {
+  await initOcct();
   const engine = new RecomputeEngine(new OcctLowerer());
   const features: FeatureMesh[] = [];
   const failedFeatureIds: FeatureId[] = [];
