@@ -1,5 +1,8 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import type { EvaluateResult, ShapeInfo } from '../types';
+
+const LOCAL_BUILD = './dist/cli/index.js';
 
 function getBin(): { cmd: string; baseArgs: string[] } {
   const override = process.env.KERNELCAD_BIN;
@@ -9,6 +12,12 @@ function getBin(): { cmd: string; baseArgs: string[] } {
       return { cmd: 'node', baseArgs: [override] };
     }
     return { cmd: override, baseArgs: [] };
+  }
+  // Fallback to the in-repo build if it exists. Lets CI work without setting
+  // KERNELCAD_BIN as long as `npm run build:cli` ran first (which `npm run qc`
+  // does). Local dev can still override via KERNELCAD_BIN or use `npm link`.
+  if (existsSync(LOCAL_BUILD)) {
+    return { cmd: 'node', baseArgs: [LOCAL_BUILD] };
   }
   return { cmd: 'kernelcad', baseArgs: [] };
 }
