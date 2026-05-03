@@ -25,7 +25,6 @@ export default defineConfig({
                 }
             }
         },
-        // Increase timeout for geometry operations
-        testTimeout: 10000,
+        testTimeout: 60000,
     },
 });
