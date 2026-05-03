@@ -14,6 +14,7 @@ export class CameraController {
   private rotateDurationMs = 0;
   private rotateRadius = 200;
   private rotateY = 80;
+  private rotateStartAngle = 0;
 
   constructor(camera: THREE.PerspectiveCamera, scene: THREE.Scene) {
     this.camera = camera;
@@ -45,7 +46,9 @@ export class CameraController {
   startRotate(durationMs: number, currentMs: number): void {
     this.rotateStartMs = currentMs;
     this.rotateDurationMs = durationMs;
-    this.rotateRadius = this.camera.position.length();
+    this.rotateRadius = Math.hypot(this.camera.position.x, this.camera.position.z);
+    this.rotateStartAngle = Math.atan2(this.camera.position.z, this.camera.position.x);
+    this.rotateY = this.camera.position.y;
   }
 
   update(currentMs: number): void {
@@ -61,7 +64,7 @@ export class CameraController {
     }
     if (this.rotateStartMs >= 0 && currentMs >= this.rotateStartMs) {
       const t = (currentMs - this.rotateStartMs) / this.rotateDurationMs;
-      const angle = easeInOut(Math.min(1, t)) * Math.PI * 2;
+      const angle = this.rotateStartAngle + easeInOut(Math.min(1, t)) * Math.PI * 2;
       this.camera.position.set(
         Math.cos(angle) * this.rotateRadius,
         this.rotateY,
