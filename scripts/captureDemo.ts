@@ -85,6 +85,51 @@ async function main(): Promise<void> {
 
   console.log('demo-player ready');
 
+  if (args.rotateOnly) {
+    const existingPacing = JSON.parse(readFileSync(join(args.output, 'pacing.json'), 'utf8'));
+    // Replay script silently to populate scene state.
+    let scriptPath2: string;
+    if (args.task) {
+      const runsBase = resolve(__dirname, '../eval/runs');
+      const runDirs = require('node:fs').readdirSync(runsBase).sort();
+      const latest = runDirs[runDirs.length - 1];
+      scriptPath2 = join(runsBase, latest, args.task, 'output.kcad.ts');
+    } else {
+      scriptPath2 = resolve(args.script!);
+    }
+    const loaded2 = await loadScriptFeatures(scriptPath2);
+    for (const f of loaded2.features) {
+      await page.evaluate(
+        (e) => window.__demoPlayer!.onEvent(e),
+        {
+          kind: 'feature.compiled',
+          featureId: f.id,
+          featureKind: f.kind,
+          predecessors: [],
+          diagnostics: [],
+          health: 'healthy',
+          shape: null,
+        } as never,
+      );
+      await page.evaluate((dt: number) => window.__demoPlayer!.advance(dt), 800);
+    }
+    const ffmpeg = new FfmpegPipeline();
+    const mp4Path = join(args.output, 'demo.mp4');
+    ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
+    await page.evaluate((d) => window.__demoPlayer!.setRotatePhase(d), existingPacing.rotateDurationMs);
+    const frameMs = 1000 / 30;
+    const rotateFrames = Math.floor(existingPacing.rotateDurationMs / frameMs);
+    for (let i = 0; i < rotateFrames; i++) {
+      await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
+      const buf = await page.screenshot({ type: 'png' });
+      await ffmpeg.pushFrame(buf);
+    }
+    await ffmpeg.finalize();
+    await browser.close();
+    vite.stop();
+    return;
+  }
+
   // Resolve script path + prompt + score.
   let scriptPath: string;
   let promptText: string;
