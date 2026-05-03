@@ -5,6 +5,15 @@ import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
 
+function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
+  if (!expr) return undefined;
+  const stripped = expr.replace(/^['"]|['"]$/g, '');
+  if (stripped === 'difference') return 'subtract';
+  if (stripped === 'union') return 'union';
+  if (stripped === 'intersection') return 'intersect';
+  return undefined;
+}
+
 export interface RecomputeResult {
   shapes: Map<FeatureId, ShapeBackend>;
   diagnostics: CompilerDiagnostic[];
@@ -107,6 +116,9 @@ export class RecomputeEngine {
           health.set(r.id, featureHealth);
           shapes.set(r.id, res.shape);
           if (onEvent) {
+            const op = r.kind === 'boolean'
+              ? normalizeBooleanOp((r.params.op as { expression?: string } | undefined)?.expression)
+              : undefined;
             onEvent({
               kind: 'feature.compiled',
               featureId: r.id,
@@ -115,6 +127,7 @@ export class RecomputeEngine {
               predecessors: predecessorsOf.get(r.id) ?? [],
               diagnostics: featureDiags,
               health: featureHealth,
+              op,
             });
             emittedCount++;
           }
