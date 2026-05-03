@@ -114,7 +114,81 @@ export class AnimationEngine {
       });
     }
 
-    // Other transitions added in later tasks; for now treat as instant settle.
+    if (cls === 'boolean.fuse') {
+      mesh.material.transparent = true;
+      mesh.material.opacity = 0;
+      const predMats: { mat: THREE.MeshStandardMaterial; orig: THREE.Color }[] = [];
+      for (const pid of event.predecessors) {
+        const pm = this.scene.getObjectByName(pid) as THREE.Mesh | undefined;
+        if (pm && pm.material instanceof THREE.MeshStandardMaterial) {
+          predMats.push({ mat: pm.material, orig: pm.material.color.clone() });
+        }
+      }
+      return new Promise<void>((resolve) => {
+        this.active.push({
+          startMs,
+          durationMs: 500,
+          resolve,
+          step: (t) => {
+            const elapsed = t * 500;
+            // 0–150ms: predecessors glow yellow
+            for (const { mat, orig } of predMats) {
+              if (elapsed < 150) mat.color.setRGB(1, 0.9, 0.4);
+              else mat.color.copy(orig);
+            }
+            // 150–500ms: unified mesh fades in (ease-out)
+            if (elapsed > 150) {
+              const f = easeOutCubic(Math.min(1, (elapsed - 150) / 350));
+              (mesh.material as THREE.MeshStandardMaterial).opacity = f;
+            }
+            if (t >= 1) (mesh.material as THREE.MeshStandardMaterial).opacity = 1;
+          },
+        });
+      });
+    }
+
+    if (cls === 'modifier') {
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+      const originalColor = mat.color.clone();
+      return new Promise<void>((resolve) => {
+        this.active.push({
+          startMs,
+          durationMs: 400,
+          resolve,
+          step: (t) => {
+            const elapsed = t * 400;
+            // 0–150ms: cyan glow
+            if (elapsed < 150) {
+              mat.color.setRGB(0.4, 0.9, 1);
+            } else {
+              // 150–400ms: alpha-flash decay back to original
+              const f = (elapsed - 150) / 250;
+              mat.color.copy(originalColor);
+              mat.transparent = true;
+              mat.opacity = 0.7 + 0.3 * f;
+            }
+            if (t >= 1) mat.opacity = 1;
+          },
+        });
+      });
+    }
+
+    if (cls === 'transform') {
+      mesh.material.transparent = true;
+      mesh.material.opacity = 0;
+      return new Promise<void>((resolve) => {
+        this.active.push({
+          startMs,
+          durationMs: 500,
+          resolve,
+          step: (t) => {
+            const e = easeOutCubic(t);
+            (mesh.material as THREE.MeshStandardMaterial).opacity = e;
+          },
+        });
+      });
+    }
+
     return Promise.resolve();
   }
 

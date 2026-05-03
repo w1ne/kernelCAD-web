@@ -88,3 +88,69 @@ describe('AnimationEngine — boolean.cut transition', () => {
     expect(cutter.material.opacity).toBeCloseTo(0, 1);
   });
 });
+
+describe('AnimationEngine — boolean.fuse transition', () => {
+  it('glows predecessors yellow then fades unified mesh in', () => {
+    const { engine, scene } = makeEngine();
+    const a = makeMesh('box-1');
+    const b = makeMesh('box-2');
+    const fused = makeMesh('bool-1');
+    scene.add(a, b, fused);
+    engine.enqueue({
+      kind: 'feature.compiled',
+      featureId: 'bool-1',
+      featureKind: 'boolean',
+      shape: { __op: 'union' } as any,
+      predecessors: ['box-1', 'box-2'],
+      diagnostics: [],
+      health: 'healthy',
+    });
+    engine.advance(0);
+    expect(fused.material.opacity).toBeCloseTo(0, 1);
+    engine.advance(500);
+    expect(fused.material.opacity).toBeCloseTo(1, 1);
+  });
+});
+
+describe('AnimationEngine — modifier transition', () => {
+  it('flashes affected mesh cyan then settles to normal', () => {
+    const { engine, scene } = makeEngine();
+    const mesh = makeMesh('fillet-1');
+    scene.add(mesh);
+    const originalColor = mesh.material.color.clone();
+    engine.enqueue({
+      kind: 'feature.compiled',
+      featureId: 'fillet-1',
+      featureKind: 'fillet',
+      shape: {} as any,
+      predecessors: [],
+      diagnostics: [],
+      health: 'healthy',
+    });
+    engine.advance(50);
+    // During flash, color is cyan-ish (not original)
+    engine.advance(400);
+    expect(mesh.material.color.r).toBeCloseTo(originalColor.r, 1);
+  });
+});
+
+describe('AnimationEngine — transform transition', () => {
+  it('mirror feature fades in over 500ms', () => {
+    const { engine, scene } = makeEngine();
+    const mesh = makeMesh('mirror-1');
+    scene.add(mesh);
+    engine.enqueue({
+      kind: 'feature.compiled',
+      featureId: 'mirror-1',
+      featureKind: 'mirror',
+      shape: {} as any,
+      predecessors: [],
+      diagnostics: [],
+      health: 'healthy',
+    });
+    engine.advance(0);
+    expect(mesh.material.opacity).toBeCloseTo(0, 1);
+    engine.advance(500);
+    expect(mesh.material.opacity).toBeCloseTo(1, 1);
+  });
+});
