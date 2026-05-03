@@ -9,8 +9,8 @@ keywords:
 when_to_use: After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part.
 ---
 
-````typescript
+```typescript
 const plate = box(50, 50, 8);
 const hole = cylinder(10, 6).translate(25, 25, -1);
 return plate.subtract(hole).fillet(1.5, { face: 'top' });
-````
+```

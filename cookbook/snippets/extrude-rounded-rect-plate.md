@@ -9,6 +9,6 @@ keywords:
 when_to_use: You want a flat plate with rounded corners; use the dedicated rounded-rect extrude rather than building corners by hand.
 ---
 
-````typescript
+```typescript
 return extrudeRoundedRect(60, 40, 5, 8);
-````
+```

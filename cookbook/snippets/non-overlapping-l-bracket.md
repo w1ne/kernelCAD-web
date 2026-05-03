@@ -9,9 +9,9 @@ keywords:
 when_to_use: You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint.
 ---
 
-````typescript
+```typescript
 const t = 8;
 const horiz = box(40, 30, t);
 const vert = box(t, 30, 40).translate(0, 0, t);
 return horiz.union(vert);
-````
+```

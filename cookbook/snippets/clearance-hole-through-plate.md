@@ -9,10 +9,10 @@ keywords:
 when_to_use: You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous.
 ---
 
-````typescript
+```typescript
 const t = 8;
 const boltDiam = 5;
 const plate = box(40, 40, t);
 const hole = cylinder(t + 2, (boltDiam + 0.5) / 2).translate(20, 20, -1);
 return plate.subtract(hole);
-````
+```

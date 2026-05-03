@@ -9,6 +9,6 @@ keywords:
 when_to_use: You want a thin cylindrical wall, ring, or tube — revolve a rectangle around Z with an offset from the axis equal to the inner radius.
 ---
 
-````typescript
+```typescript
 return revolveRect(2, 20, 15, 360);
-````
+```

@@ -9,6 +9,6 @@ keywords:
 when_to_use: You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate).
 ---
 
-````typescript
+```typescript
 return box(40, 30, 10).translate(5, 7, 0).fillet(2, { face: 'top' });
-````
+```
