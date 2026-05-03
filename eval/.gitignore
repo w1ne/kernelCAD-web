@@ -1,0 +1,3 @@
+# Live runs are not committed; only golden fixtures (runs/golden-*) are.
+runs/*
+!runs/golden-*/

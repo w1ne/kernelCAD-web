@@ -19,6 +19,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
+    "eval": "npx tsx eval/run.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
@@ -30,6 +31,7 @@
     "qc:full": "npm run qc && npm run test:e2e && npm run build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.92.0",
     "@babel/generator": "^7.28.6",
     "@babel/parser": "^7.28.6",
     "@babel/traverse": "^7.28.6",
