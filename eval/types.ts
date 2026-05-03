@@ -53,6 +53,7 @@ export type TranscriptEvent =
       ms: number;
     }
   | { kind: 'evaluate'; attempt: number; ok: boolean; diagnostics: Diagnostic[] }
+  | { kind: 'cookbook_inject'; query: string; hits: Array<{ id: string; score: number }> }
   | { kind: 'score'; gates: Record<string, boolean>; scored: Record<string, boolean> };
 
 // Agent client abstraction — lets us swap in a MockAgentClient for tests.
