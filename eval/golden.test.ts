@@ -12,6 +12,13 @@ let kernelcadAvailable = false;
 
 beforeAll(async () => {
   kernelcadAvailable = await isKernelcadAvailable();
+  // In CI we must fail loudly rather than silently skip — a green build with
+  // zero golden coverage is worse than a red one. Local dev still gets the skip.
+  if (!kernelcadAvailable && process.env.CI) {
+    throw new Error(
+      'kernelcad CLI not available in CI. Set KERNELCAD_BIN=./dist/cli/index.js after `npm run build:cli`, or `npm link`.',
+    );
+  }
 });
 
 describe('golden mock replay', () => {

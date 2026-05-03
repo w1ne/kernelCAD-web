@@ -10,6 +10,13 @@ let tmpDir: string;
 beforeAll(async () => {
   kernelcadAvailable = await isKernelcadAvailable();
   if (!kernelcadAvailable) {
+    // In CI we must fail loudly rather than silently skip — a green build with
+    // zero kernelcad-client coverage is worse than a red one. Local dev still gets the skip.
+    if (process.env.CI) {
+      throw new Error(
+        'kernelcad CLI not available in CI. Set KERNELCAD_BIN=./dist/cli/index.js after `npm run build:cli`, or `npm link`.',
+      );
+    }
     console.warn(
       'kernelcad CLI not found on PATH and KERNELCAD_BIN not set — skipping kernelcad-client smoke tests. Run `npm run build:cli` and set KERNELCAD_BIN=./dist/cli/index.js, or `npm link`.',
     );
