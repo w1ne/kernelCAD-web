@@ -22,7 +22,7 @@
               "src/diagnostics/**/*",
               "src/lib/geometryHelpers.ts", "src/lib/safeSketch.ts",
               "src/lib/userGlobals.ts", "src/lib/withTemporaryGlobals.ts", "src/lib/workerTypes.ts",
-              "src/modules/**/*", "src/naming/**/*"],
+              "src/cookbook/**/*", "src/modules/**/*", "src/naming/**/*"],
   "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
               "src/backends/occt/worker.ts",
               "tests/**/*", "**/*.test.ts"]
