@@ -1,0 +1,32 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 6400,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 16400,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_1": {
+      "startAtMs": 1600,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "boolean_1": {
+      "startAtMs": 3200,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "fillet_1": {
+      "startAtMs": 4900,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}
