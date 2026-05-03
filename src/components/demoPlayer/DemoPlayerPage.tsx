@@ -11,6 +11,8 @@ import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 
+export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
+
 export interface DemoPlayerWindow {
   isFrameReady(): boolean;
   onEvent(event: FeatureEvent): void;
@@ -147,7 +149,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         const scene = sceneRef.current.scene;
         // Clear any prior groups (re-load support).
         for (const child of [...scene.children]) {
-          if (child instanceof THREE.Group && child.userData.kCadFeatureGroup) {
+          if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
             scene.remove(child);
             child.traverse((o) => {
               if (o instanceof THREE.Mesh) {
@@ -163,7 +165,7 @@ export function DemoPlayerPage(): React.JSX.Element {
           const fm = rehydrateFromBridge(ser);
           const group = new THREE.Group();
           group.name = fm.featureId;
-          group.userData.kCadFeatureGroup = true;
+          group.userData[KCAD_FEATURE_GROUP_KEY] = true;
           group.userData.featureKind = fm.featureKind;
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
@@ -176,19 +178,21 @@ export function DemoPlayerPage(): React.JSX.Element {
           groupCount++;
         }
 
-        // Center & camera-fit using supplied bounds.
-        const [minX, minY, minZ] = bounds.min;
-        const [maxX, maxY, maxZ] = bounds.max;
-        const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
-        for (const child of scene.children) {
-          if (child instanceof THREE.Group && child.userData.kCadFeatureGroup) {
-            child.position.set(-cx, -cy, -cz);
+        // Center & camera-fit using supplied bounds (skip if nothing was loaded).
+        if (perFeature.length > 0) {
+          const [minX, minY, minZ] = bounds.min;
+          const [maxX, maxY, maxZ] = bounds.max;
+          const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
+          for (const child of scene.children) {
+            if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
+              child.position.set(-cx, -cy, -cz);
+            }
           }
+          fitCameraToBounds(sceneRef.current.camera, {
+            min: [minX - cx, minY - cy, minZ - cz],
+            max: [maxX - cx, maxY - cy, maxZ - cz],
+          });
         }
-        fitCameraToBounds(sceneRef.current.camera, {
-          min: [minX - cx, minY - cy, minZ - cz],
-          max: [maxX - cx, maxY - cy, maxZ - cz],
-        });
 
         return { groupCount };
       },

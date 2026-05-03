@@ -1,7 +1,6 @@
 // src/components/demoPlayer/DemoPlayerPage.test.tsx
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as THREE from 'three';
 
 // Mock WebGLRenderer since jsdom has no WebGL support.
 vi.mock('three', async () => {
@@ -50,7 +49,7 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     expect(result.groupCount).toBe(2);
 
     const dump = window.__demoPlayer!.dumpScene();
-    // 2 groups + their children meshes (2 + 1) = 3 meshes total
+    // 3 face meshes total (box_1 has 2 faces, cylinder_1 has 1)
     expect(dump.meshCount).toBe(3);
   });
 });
