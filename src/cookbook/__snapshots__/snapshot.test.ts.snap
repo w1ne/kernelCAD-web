@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`cookbook snapshot — top-3 IDs per query > ranks: "build an L-bracket from two perpendicular plates" 1`] = `
+[
+  "non-overlapping-l-bracket",
+  "mirror-half-part",
+  "union-of-stacked-primitives",
+]
+`;
+
+exports[`cookbook snapshot — top-3 IDs per query > ranks: "fillet the top edge after a subtract" 1`] = `
+[
+  "fillet-face-after-subtract",
+  "fillet-translated-shape",
+  "subtract-then-fillet-rim",
+]
+`;
+
+exports[`cookbook snapshot — top-3 IDs per query > ranks: "pocket cut into the top face" 1`] = `
+[
+  "blind-pocket-from-top",
+  "fillet-face-after-subtract",
+  "fillet-translated-shape",
+]
+`;
+
+exports[`cookbook snapshot — top-3 IDs per query > ranks: "symmetric part using mirror" 1`] = `
+[
+  "mirror-half-part",
+  "parametric-bolt-pattern-skeleton",
+  "fillet-face-after-subtract",
+]
+`;
+
+exports[`cookbook snapshot — top-3 IDs per query > ranks: "through-hole for a bolt with clearance" 1`] = `
+[
+  "clearance-hole-through-plate",
+  "parametric-bolt-pattern-skeleton",
+  "subtract-then-fillet-rim",
+]
+`;
