@@ -1,5 +1,23 @@
 ## [Unreleased]
 
+### Added — v0.21 synchronized live-build demo automation
+
+- **Kernel feature-event stream** (`FeatureEvent`/`FeatureEventSink`) emitted from `RecomputeEngine.run()` per topo-ordered feature.
+- **`/demo-player` route** with chrome-free split-screen + `window.__demoPlayer` driver API.
+- **Tier-2 kind-specific animation engine** (5 transitions: add / boolean.cut / boolean.fuse / modifier / transform).
+- **Adaptive pacing engine** with caps + per-feature override (`--pacing <override.json>`).
+- **`scripts/captureDemo.ts` orchestrator** — Vite + Playwright + ffmpeg pipeline producing 1920×1080 30fps H.264 MP4 ≤30s + sharp 4-quadrant H11 static panel.
+- **`scripts/lint-demos.ts` CI gate** enforcing per-module-ship demo set presence + non-`TODO:` `whats-new.md`.
+
+### Changed
+
+- **H11 amended** in v0.2-to-v1.0 gap-closure roadmap spec: GIF dropped, MP4-only, synchronized live-build narrative locked.
+- **Workstream #21 row** in roadmap inventory: renamed "Synchronized live-build demos (visual verifier deferred to v0.21.1 follow-up)".
+
+### Deferred
+
+- Visual verifier loop (`render_views`, `compare_to_intent`, VLM-critique) → v0.21.1 follow-up workstream.
+
 ### Added — Eval corpus
 
 - **3 v0.2 tracked-refs tasks under `eval/tasks/`** (`fillet-translated-box`, `subtract-then-fillet-rim`, `chamfer-rotated-wedge`). Each exercises the v0.2 capability of canonical face refs surviving transforms or unambiguous booleans (the natural-form cases that previously needed the "apply edge feature before transforms" workaround). Expert solutions verified to score 100% via `eval/corpus-v0.2.test.ts`. Per the gap-closure roadmap §Corpus design, this is the first slice of workstream #19 (corpus expansion).
