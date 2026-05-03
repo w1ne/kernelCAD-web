@@ -137,6 +137,29 @@ describe('RecomputeEngine event emission', () => {
     expect(compiled!.op).toBe('intersect');
   });
 
+  it('leaves op undefined for boolean feature with no op param', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      {
+        id: 'bool-no-op',
+        kind: 'boolean',
+        inputs: {},
+        params: {},
+        transforms: [],
+        suppressed: false,
+      } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await expect(engine.run(records, { onEvent: (e) => events.push(e) })).resolves.toBeDefined();
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled).toBeDefined();
+    expect(compiled!.op).toBeUndefined();
+  });
+
   it('leaves op undefined for non-boolean features', async () => {
     const engine = new RecomputeEngine(mockLowerer);
     const records: FeatureRecord[] = [

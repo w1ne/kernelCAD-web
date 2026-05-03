@@ -117,7 +117,7 @@ export class RecomputeEngine {
           shapes.set(r.id, res.shape);
           if (onEvent) {
             const op = r.kind === 'boolean'
-              ? normalizeBooleanOp((r.params.op as { expression?: string } | undefined)?.expression)
+              ? normalizeBooleanOp(r.params.op?.expression)
               : undefined;
             onEvent({
               kind: 'feature.compiled',
