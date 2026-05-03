@@ -13,6 +13,9 @@ export interface FaceGeometrySerialized {
 
 export interface FeatureMeshSerialized {
   featureId: string;
+  /** Widened from FeatureKind union to plain string to survive JSON across the
+   *  Playwright bridge. The cast in rehydrateFromBridge re-asserts the union;
+   *  a malformed payload would silently produce a wrong-typed FeatureMesh. */
   featureKind: string;
   predecessors: string[];
   op?: 'subtract' | 'union' | 'intersect';
@@ -44,7 +47,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
   return {
     featureId: s.featureId as FeatureMesh['featureId'],
     featureKind: s.featureKind as FeatureMesh['featureKind'],
-    predecessors: s.predecessors as FeatureMesh['predecessors'],
+    predecessors: [...s.predecessors] as FeatureMesh['predecessors'],
     op: s.op,
     faces: s.faces.map((f) => ({
       vertices: new Float32Array(f.vertices),

@@ -71,6 +71,18 @@ describe('featureMeshSerialize', () => {
     expect(restored.predecessors).not.toBe(original.predecessors);
   });
 
+  it('rehydrateFromBridge clones predecessors (not aliased)', () => {
+    const serialized: import('./featureMeshSerialize').FeatureMeshSerialized = {
+      featureId: 'box_1',
+      featureKind: 'box',
+      predecessors: ['a', 'b'],
+      faces: [],
+    };
+    const restored = rehydrateFromBridge(serialized);
+    expect(restored.predecessors).not.toBe(serialized.predecessors);
+    expect(restored.predecessors).toEqual(['a', 'b']);
+  });
+
   it('round-trips plane and cylinder metadata on faces', () => {
     const original: FeatureMesh = {
       featureId: 'box_2',
