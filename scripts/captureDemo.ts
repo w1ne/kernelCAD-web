@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 // scripts/captureDemo.ts
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { resolve, join, basename } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, join, basename, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { chromium, type Browser, type Page } from 'playwright';
 import { loadScriptFeatures } from './lib/scriptLoader';
 import { computeTimeline, type PacingOverride } from './lib/pacingEngine';
@@ -91,7 +95,7 @@ async function main(): Promise<void> {
     let scriptPath2: string;
     if (args.task) {
       const runsBase = resolve(__dirname, '../eval/runs');
-      const runDirs = require('node:fs').readdirSync(runsBase).sort();
+      const runDirs = readdirSync(runsBase).sort();
       const latest = runDirs[runDirs.length - 1];
       scriptPath2 = join(runsBase, latest, args.task, 'output.kcad.ts');
     } else {
@@ -137,7 +141,7 @@ async function main(): Promise<void> {
   if (args.task) {
     // Find latest run dir.
     const runsBase = resolve(__dirname, '../eval/runs');
-    const runDirs = require('node:fs').readdirSync(runsBase).sort();
+    const runDirs = readdirSync(runsBase).sort();
     const latest = runDirs[runDirs.length - 1];
     const taskDir = join(runsBase, latest, args.task);
     scriptPath = join(taskDir, 'output.kcad.ts');
