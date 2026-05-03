@@ -49,7 +49,7 @@ export class AnimationEngine {
     if (event.kind !== 'feature.compiled') {
       return Promise.resolve();
     }
-    const cls = classify(event.featureKind, (event.shape as any)?.__op);
+    const cls = classify(event.featureKind, (event.shape as { __op?: string } | null | undefined)?.__op);
     const mesh = this.scene.getObjectByName(event.featureId) as THREE.Mesh | undefined;
     if (!mesh || !(mesh.material instanceof THREE.MeshStandardMaterial)) {
       return Promise.resolve();
