@@ -185,7 +185,12 @@ self.onmessage = (e: MessageEvent<unknown>) => {
               if (DEBUG) console.log(`Worker: Shape ${shapeIndex} successfully meshed. Vol: ${result.volume}, Edges: ${result.edges?.length ? (result.edges.length / 3) + ' pts' : 'none'}`);
               geometries.push(result);
             } else {
-              console.warn(`Worker: Shape ${shapeIndex} has no valid face geometries`);
+              const isDeletedShape = isRecord(shape) && shape.isDeleted;
+              console.warn(
+                isDeletedShape
+                  ? `Worker: Shape ${shapeIndex} is marked as deleted!`
+                  : `Worker: Shape ${shapeIndex} has no valid face geometries`
+              );
             }
 
             const wire = getWire(shape);
