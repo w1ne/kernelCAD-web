@@ -5,10 +5,11 @@ import { TerminalPane } from './TerminalPane';
 import { TitleCard } from './TitleCard';
 import { AnimationEngine } from './AnimationEngine';
 import { CameraController } from './CameraController';
-import { geometryEngine } from '../../lib/geometryEngine';
 import type { FeatureEvent } from '../../compute/featureEvents';
 import type { TerminalLine } from './TerminalPane';
 import type { FaceGeometry } from '../../lib/workerTypes';
+import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
+import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 
 export interface DemoPlayerWindow {
   isFrameReady(): boolean;
@@ -20,10 +21,11 @@ export interface DemoPlayerWindow {
   advance(dtMs: number): void;
   /** Set kernelCAD module version string for watermark, e.g. "v0.21". */
   setVersion(v: string): void;
-  /** Load + render a script's final geometry into the scene. Faces start invisible; revealed via revealFaces(). */
-  loadScript(source: string): Promise<{ faceCount: number; bounds: { min: [number, number, number]; max: [number, number, number] } }>;
-  /** Fade in the next `count` invisible face meshes over `durationMs`. Returns the number actually started. */
-  revealFaces(count: number, durationMs: number): number;
+  /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
+  loadFeatureMeshes(
+    perFeature: FeatureMeshSerialized[],
+    bounds: { min: [number, number, number]; max: [number, number, number] },
+  ): { groupCount: number };
   /** Debug: dump scene state. */
   dumpScene(): {
     childCount: number;
@@ -32,13 +34,6 @@ export interface DemoPlayerWindow {
     cameraLookingAt: [number, number, number];
     sampleOpacities: number[];
   };
-}
-
-interface RevealAnim {
-  mesh: THREE.Mesh;
-  mat: THREE.MeshPhongMaterial;
-  startMs: number;
-  durationMs: number;
 }
 
 declare global {
@@ -104,9 +99,6 @@ export function DemoPlayerPage(): React.JSX.Element {
   const cameraCtrlRef = useRef<CameraController | null>(null);
   const elapsedMsRef = useRef(0);
   const terminalOriginRef = useRef(0);
-  const faceMeshesRef = useRef<THREE.Mesh[]>([]);
-  const nextRevealIdxRef = useRef(0);
-  const revealAnimsRef = useRef<RevealAnim[]>([]);
   const [version, setVersion] = useState('v0.21');
   const [terminalLines, setTerminalLines] = useState<readonly TerminalLine[]>([]);
   const [titleCard, setTitleCard] = useState<{ title: string; tagline: string; durationMs: number } | null>(
@@ -123,9 +115,7 @@ export function DemoPlayerPage(): React.JSX.Element {
     if (!animEngineRef.current || !cameraCtrlRef.current) return;
     window.__demoPlayer = {
       isFrameReady: () => {
-        const animOk = !!animEngineRef.current?.isFrameReady();
-        const revealOk = revealAnimsRef.current.length === 0;
-        return animOk && revealOk;
+        return !!animEngineRef.current?.isFrameReady();
       },
       onEvent: (event) => {
         animEngineRef.current?.enqueue(event);
@@ -145,17 +135,6 @@ export function DemoPlayerPage(): React.JSX.Element {
         elapsedMsRef.current += dtMs;
         animEngineRef.current?.advance(dtMs);
         cameraCtrlRef.current?.update(elapsedMsRef.current);
-        // Tick reveal animations.
-        const now = elapsedMsRef.current;
-        const stillActive: RevealAnim[] = [];
-        for (const a of revealAnimsRef.current) {
-          const t = Math.min(1, (now - a.startMs) / a.durationMs);
-          const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
-          a.mat.opacity = e;
-          if (t < 1) stillActive.push(a);
-          else a.mat.opacity = 1;
-        }
-        revealAnimsRef.current = stillActive;
         // Force render so subsequent page.screenshot() captures the updated state.
         // (Headless Chromium can throttle rAF; we drive renderer explicitly here.)
         if (sceneRef.current) {
@@ -163,53 +142,55 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
       },
       setVersion: (v) => setVersion(v),
-      loadScript: async (source) => {
+      loadFeatureMeshes: (perFeature, bounds) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
-        await geometryEngine.initialize();
-        const result = await geometryEngine.executeCode(source);
         const scene = sceneRef.current.scene;
-        // Clear any existing face meshes from a prior load.
-        for (const m of faceMeshesRef.current) {
-          scene.remove(m);
-          m.geometry.dispose();
-          (m.material as THREE.Material).dispose();
-        }
-        faceMeshesRef.current = [];
-        nextRevealIdxRef.current = 0;
-        let faceCount = 0;
-        let minX = Infinity, minY = Infinity, minZ = Infinity;
-        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-        for (let gi = 0; gi < result.geometries.length; gi++) {
-          const geom = result.geometries[gi];
-          for (const face of geom.faces) {
-            const mesh = buildMeshFromFace(face, `face-${gi}-${face.faceId}`);
-            scene.add(mesh);
-            faceMeshesRef.current.push(mesh);
-            faceCount++;
-            for (let i = 0; i < face.vertices.length; i += 3) {
-              const x = face.vertices[i], y = face.vertices[i + 1], z = face.vertices[i + 2];
-              if (x < minX) minX = x; if (x > maxX) maxX = x;
-              if (y < minY) minY = y; if (y > maxY) maxY = y;
-              if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
-            }
+        // Clear any prior groups (re-load support).
+        for (const child of [...scene.children]) {
+          if (child instanceof THREE.Group && child.userData.kCadFeatureGroup) {
+            scene.remove(child);
+            child.traverse((o) => {
+              if (o instanceof THREE.Mesh) {
+                o.geometry.dispose();
+                (o.material as THREE.Material).dispose();
+              }
+            });
           }
         }
-        const bounds: { min: [number, number, number]; max: [number, number, number] } = {
-          min: [minX, minY, minZ],
-          max: [maxX, maxY, maxZ],
-        };
-        // Center the model at origin so camera rotation orbits around it.
-        if (faceCount > 0) {
-          const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
-          for (const m of faceMeshesRef.current) {
-            m.position.set(-cx, -cy, -cz);
+
+        let groupCount = 0;
+        for (const ser of perFeature) {
+          const fm = rehydrateFromBridge(ser);
+          const group = new THREE.Group();
+          group.name = fm.featureId;
+          group.userData.kCadFeatureGroup = true;
+          group.userData.featureKind = fm.featureKind;
+          group.userData.predecessors = fm.predecessors;
+          group.userData.op = fm.op;
+          group.visible = true;
+          for (const face of fm.faces) {
+            const mesh = buildMeshFromFace(face, `${fm.featureId}-face-${face.faceId}`);
+            group.add(mesh);
           }
-          fitCameraToBounds(sceneRef.current.camera, {
-            min: [minX - cx, minY - cy, minZ - cz],
-            max: [maxX - cx, maxY - cy, maxZ - cz],
-          });
+          scene.add(group);
+          groupCount++;
         }
-        return { faceCount, bounds };
+
+        // Center & camera-fit using supplied bounds.
+        const [minX, minY, minZ] = bounds.min;
+        const [maxX, maxY, maxZ] = bounds.max;
+        const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
+        for (const child of scene.children) {
+          if (child instanceof THREE.Group && child.userData.kCadFeatureGroup) {
+            child.position.set(-cx, -cy, -cz);
+          }
+        }
+        fitCameraToBounds(sceneRef.current.camera, {
+          min: [minX - cx, minY - cy, minZ - cz],
+          max: [maxX - cx, maxY - cy, maxZ - cz],
+        });
+
+        return { groupCount };
       },
       dumpScene: () => {
         const scene = sceneRef.current?.scene;
@@ -245,21 +226,6 @@ export function DemoPlayerPage(): React.JSX.Element {
           cameraLookingAt: lookAt,
           sampleOpacities,
         };
-      },
-      revealFaces: (count, durationMs) => {
-        const meshes = faceMeshesRef.current;
-        let started = 0;
-        const startMs = elapsedMsRef.current;
-        for (let i = 0; i < count && nextRevealIdxRef.current < meshes.length; i++) {
-          const mesh = meshes[nextRevealIdxRef.current];
-          const mat = mesh.material as THREE.MeshPhongMaterial;
-          mat.transparent = true;
-          mat.opacity = 0;
-          revealAnimsRef.current.push({ mesh, mat, startMs, durationMs });
-          nextRevealIdxRef.current++;
-          started++;
-        }
-        return started;
       },
     };
     return () => {
