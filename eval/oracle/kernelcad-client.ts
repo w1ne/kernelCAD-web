@@ -95,8 +95,12 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
         throw new Error(`get_shape_info returned no text content: ${JSON.stringify(result)}`);
       }
       const shapeJson = JSON.parse(text);
-      // The MCP tool returns { ok: boolean, shape: { volume, surfaceArea, bbox: { min, max } } }
-      const shape = shapeJson.shape ?? shapeJson;
+      // Contract: the MCP tool returns { ok: boolean, shape: { volume, surfaceArea, bbox: { min, max } } }.
+      // If the producer ever changes this shape, fail loudly here so the eval harness doesn't silently produce nonsense.
+      if (typeof shapeJson !== 'object' || shapeJson === null || typeof shapeJson.shape !== 'object' || shapeJson.shape === null) {
+        throw new Error(`get_shape_info returned unexpected envelope (expected { ok, shape: {...} }): ${text}`);
+      }
+      const shape = shapeJson.shape;
       if (
         typeof shape.volume !== 'number' ||
         typeof shape.surfaceArea !== 'number' ||
@@ -104,7 +108,7 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
         !Array.isArray(shape.bbox.min) ||
         !Array.isArray(shape.bbox.max)
       ) {
-        throw new Error(`get_shape_info returned unexpected shape: ${text}`);
+        throw new Error(`get_shape_info returned unexpected shape body: ${text}`);
       }
       return {
         volume: shape.volume,
