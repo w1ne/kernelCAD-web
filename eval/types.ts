@@ -71,6 +71,7 @@ export interface AgentResponse {
 export interface AgentClient {
   generate(opts: {
     system: string;
+    systemAddendum?: string;   // NEW — gets its own cache_control block
     messages: AgentMessage[];
     model: string;
     max_tokens: number;

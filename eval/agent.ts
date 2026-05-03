@@ -3,6 +3,7 @@ import type { AgentClient, AgentMessage, AgentResponse } from './types';
 
 interface GenerateArgs {
   system: string;
+  systemAddendum?: string;
   messages: AgentMessage[];
   model: string;
   max_tokens: number;
@@ -33,17 +34,24 @@ export class AnthropicAgentClient implements AgentClient {
   }
 
   async generate(args: GenerateArgs): Promise<AgentResponse> {
+    // Build the system blocks. Always one block for SKILL.md (cached). When
+    // a cookbook addendum is present, it's a separate ephemeral cache block
+    // so it can vary per task without invalidating the SKILL.md cache.
+    const systemBlocks: Anthropic.TextBlockParam[] = [
+      { type: 'text', text: args.system, cache_control: { type: 'ephemeral' } },
+    ];
+    if (args.systemAddendum && args.systemAddendum.length > 0) {
+      systemBlocks.push({
+        type: 'text',
+        text: args.systemAddendum,
+        cache_control: { type: 'ephemeral' },
+      });
+    }
+
     const resp = await this.client.messages.create({
       model: args.model,
       max_tokens: args.max_tokens,
-      // Cache the system prompt — SKILL.md is large and reused across every task.
-      system: [
-        {
-          type: 'text',
-          text: args.system,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
+      system: systemBlocks,
       messages: args.messages.map((m) => ({ role: m.role, content: m.content })),
     });
 
