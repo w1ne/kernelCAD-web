@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import type { AgentClient, AgentMessage, TranscriptEvent, TaskResult, HarnessResult } from './types';
 import { extractScript, formatDiagnostics, computeScore, renderTranscript } from './lib';
 import { evaluateScript } from './oracle/kernelcad-client';
+import type { CookbookInjection } from './cookbook-injector';
 
 const MAX_ATTEMPTS = 3;
 const MAX_TOKENS = 8000;
@@ -14,6 +15,7 @@ export interface RunTaskArgs {
   model: string;
   skillMd: string;
   startedAt: string;          // ISO timestamp string (filesystem-safe), used for transcript header
+  cookbook?: CookbookInjection;   // optional — when set, injects cookbook snippets into the system prompt
 }
 
 export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
@@ -32,6 +34,14 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   events.push({ kind: 'system_prompt', chars: args.skillMd.length });
   events.push({ kind: 'user_prompt', content: prompt });
 
+  if (args.cookbook) {
+    events.push({
+      kind: 'cookbook_inject',
+      query: args.cookbook.query,
+      hits: args.cookbook.hits,
+    });
+  }
+
   const messages: AgentMessage[] = [{ role: 'user', content: prompt }];
   let attempts = 0;
   let totalIn = 0;
@@ -46,6 +56,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     const turnStart = Date.now();
     const resp = await args.agent.generate({
       system: args.skillMd,
+      systemAddendum: args.cookbook?.systemPromptAddendum,
       messages,
       model: args.model,
       max_tokens: MAX_TOKENS,
