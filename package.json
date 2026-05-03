@@ -22,6 +22,7 @@
     "eval": "npx tsx eval/run.ts",
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
+    "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",

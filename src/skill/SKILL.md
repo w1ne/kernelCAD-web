@@ -463,6 +463,28 @@ These return errors today; do not generate code that uses them:
 - Assemblies / joints — deferred
 - BOM, dimensions, BREP, multi-view PDF — deferred
 
+<!-- COOKBOOK:START -->
+## Cookbook (snippet index)
+
+When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to fetch the full body of a snippet. The IDs and triggers below are the full v1 inventory; query by intent, not by ID.
+
+| ID | Trigger |
+|---|---|
+| blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
+| chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
+| clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous. |
+| extrude-rounded-rect-plate | You want a flat plate with rounded corners; use the dedicated rounded-rect extrude rather than building corners by hand. |
+| fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
+| fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
+| mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
+| non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
+| parametric-bolt-pattern-skeleton | You want a part whose dimensions all derive from a single bolt-diameter parameter; thickness, plate size, hole clearance all scale together. |
+| revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — revolve a rectangle around Z with an offset from the axis equal to the inner radius. |
+| subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
+| union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
+
+<!-- COOKBOOK:END -->
+
 ## Conventions
 
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
