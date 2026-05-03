@@ -1,3 +1,11 @@
+## [Unreleased]
+
+### Added — Eval corpus
+
+- **3 v0.2 tracked-refs tasks under `eval/tasks/`** (`fillet-translated-box`, `subtract-then-fillet-rim`, `chamfer-rotated-wedge`). Each exercises the v0.2 capability of canonical face refs surviving transforms or unambiguous booleans (the natural-form cases that previously needed the "apply edge feature before transforms" workaround). Expert solutions verified to score 100% via `eval/corpus-v0.2.test.ts`. Per the gap-closure roadmap §Corpus design, this is the first slice of workstream #19 (corpus expansion).
+
+---
+
 ## v0.2.0 — tracked face/edge refs across transforms + booleans (2026-05-03)
 
 Closes the SKILL.md "Critical Constraint" section. Canonical face refs (`{ face: 'top' }`) now work transparently across every transform (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and every unambiguous boolean (`.subtract`, `.union`, `.intersect`). The previous workaround "apply edge feature BEFORE transforms" still works; scripts that previously failed with `feature.edge-feature.face-ref-not-resolvable` after a transform or boolean now succeed with no syntax change.
