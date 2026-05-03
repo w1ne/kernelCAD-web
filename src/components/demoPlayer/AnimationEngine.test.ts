@@ -215,10 +215,11 @@ describe('AnimationEngine — group-aware transitions (v0.21.1)', () => {
       health: 'healthy',
     });
     engine.advance(80);
-    // Cyan flash on the modified group
+    // Cyan flash on the modified group — Fix 1: opacity must be > 0 so the flash is visible
     for (const m of filleted.mats) {
       expect(m.color.b).toBeGreaterThan(0.9);
       expect(m.color.r).toBeLessThan(0.5);
+      expect(m.opacity).toBeGreaterThan(0);
     }
     engine.advance(400);
     await promise;

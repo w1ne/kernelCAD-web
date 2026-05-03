@@ -57,6 +57,20 @@ function findGroup(scene: THREE.Scene, name: string): GroupRefs | null {
   return { group: obj, meshes, mats, origColors };
 }
 
+// Fix 5: DRY predecessor collection; Fix 3: warn on missing predecessor
+function collectPredGroups(scene: THREE.Scene, ids: readonly string[]): GroupRefs[] {
+  const out: GroupRefs[] = [];
+  for (const id of ids) {
+    const g = findGroup(scene, id);
+    if (g) {
+      out.push(g);
+    } else {
+      console.warn(`AnimationEngine: predecessor group '${id}' not found in scene`);
+    }
+  }
+  return out;
+}
+
 function setOpacity(refs: GroupRefs, value: number): void {
   for (const m of refs.mats) {
     m.transparent = true;
@@ -92,10 +106,11 @@ export class AnimationEngine {
 
     const startMs = this.elapsedMs;
 
-    if (cls === 'add' || cls === 'fallback' || cls === 'transform') {
+    // Fix 4: scale tween only for 'add'
+    if (cls === 'add') {
       setOpacity(target, 0);
       target.group.scale.setScalar(0.85);
-      const dur = cls === 'add' ? 500 : (cls === 'transform' ? 500 : 400);
+      const dur = 500;
       return new Promise<void>((resolve) => {
         this.active.push({
           startMs, durationMs: dur, resolve,
@@ -108,16 +123,31 @@ export class AnimationEngine {
       });
     }
 
-    if (cls === 'boolean.cut') {
+    // Fix 4: transform/fallback fade in without scale tween
+    if (cls === 'transform' || cls === 'fallback') {
       setOpacity(target, 0);
-      const predGroups = event.predecessors
-        .map((pid) => findGroup(this.scene, pid))
-        .filter((g): g is GroupRefs => g !== null);
+      const dur = cls === 'transform' ? 500 : 400;
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs, durationMs: 600, resolve,
+          startMs, durationMs: dur, resolve,
           step: (t) => {
-            const elapsed = t * 600;
+            setOpacity(target, easeOutCubic(t));
+          },
+        });
+      });
+    }
+
+    if (cls === 'boolean.cut') {
+      setOpacity(target, 0);
+      // Fix 5: use helper; Fix 3: warn logged inside helper
+      const predGroups = collectPredGroups(this.scene, event.predecessors);
+      // Fix 2: capture dur to keep durationMs and step closure in sync
+      const dur = 600;
+      return new Promise<void>((resolve) => {
+        this.active.push({
+          startMs, durationMs: dur, resolve,
+          step: (t) => {
+            const elapsed = t * dur;
             // 0–150ms: cutters flash red
             if (elapsed < 150) {
               for (const pg of predGroups) setColor(pg, 1, 0.3, 0.3);
@@ -141,14 +171,15 @@ export class AnimationEngine {
 
     if (cls === 'boolean.fuse') {
       setOpacity(target, 0);
-      const predGroups = event.predecessors
-        .map((pid) => findGroup(this.scene, pid))
-        .filter((g): g is GroupRefs => g !== null);
+      // Fix 5: use helper; Fix 3: warn logged inside helper
+      const predGroups = collectPredGroups(this.scene, event.predecessors);
+      // Fix 2: capture dur to keep durationMs and step closure in sync
+      const dur = 500;
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs, durationMs: 500, resolve,
+          startMs, durationMs: dur, resolve,
           step: (t) => {
-            const elapsed = t * 500;
+            const elapsed = t * dur;
             if (elapsed < 150) {
               for (const pg of predGroups) setColor(pg, 1, 0.9, 0.4);
             } else {
@@ -169,15 +200,17 @@ export class AnimationEngine {
     }
 
     if (cls === 'modifier') {
-      setOpacity(target, 0);
-      const predGroups = event.predecessors
-        .map((pid) => findGroup(this.scene, pid))
-        .filter((g): g is GroupRefs => g !== null);
+      // Fix 1: start at 0.7 opacity so the 0–150ms cyan flash is visible
+      setOpacity(target, 0.7);
+      // Fix 5: use helper; Fix 3: warn logged inside helper
+      const predGroups = collectPredGroups(this.scene, event.predecessors);
+      // Fix 2: capture dur to keep durationMs and step closure in sync
+      const dur = 400;
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs, durationMs: 400, resolve,
+          startMs, durationMs: dur, resolve,
           step: (t) => {
-            const elapsed = t * 400;
+            const elapsed = t * dur;
             if (elapsed < 150) {
               setColor(target, 0.4, 0.9, 1);
             } else {
