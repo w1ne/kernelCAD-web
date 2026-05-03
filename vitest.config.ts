@@ -8,6 +8,7 @@ export default defineConfig({
         globals: false,
         include: [
             'src/**/*.test.{ts,tsx}',
+            'scripts/**/*.test.ts',
             'src/**/*.spec.{ts,tsx}',
             'tests/unit/**/*.test.{ts,tsx}',
             'tests/e2e/**/*.test.ts',

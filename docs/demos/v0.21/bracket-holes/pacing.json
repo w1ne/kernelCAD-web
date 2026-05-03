@@ -1,0 +1,50 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 11500,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 21500,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_1": {
+      "startAtMs": 1600,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "boolean_1": {
+      "startAtMs": 3200,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "box_2": {
+      "startAtMs": 4900,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_2": {
+      "startAtMs": 6500,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "boolean_2": {
+      "startAtMs": 8100,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "boolean_3": {
+      "startAtMs": 9800,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}

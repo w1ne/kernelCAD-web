@@ -28,7 +28,12 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "qc": "npm run lint && npm run typecheck && npm run build:cli && npm test",
-    "qc:full": "npm run qc && npm run test:e2e && npm run build"
+    "qc:full": "npm run qc && npm run test:e2e && npm run build",
+    "capture-demo": "npx tsx scripts/captureDemo.ts",
+    "capture-demo:hero": "npx tsx scripts/captureDemo.ts --task bracket-holes --module v0.21 --output docs/demos/v0.21/bracket-holes/",
+    "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/",
+    "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/",
+    "lint-demos": "npx tsx scripts/lint-demos.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
@@ -55,6 +60,8 @@
     "react-markdown": "^10.1.0",
     "replicad": "^0.20.5",
     "replicad-opencascadejs": "^0.20.2",
+    "sharp": "^0.33.5",
+    "shiki": "^1.29.2",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
     "ts-morph": "^27.0.2",

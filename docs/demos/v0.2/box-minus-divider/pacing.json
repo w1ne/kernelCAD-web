@@ -1,0 +1,26 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 4900,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 14900,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "box_2": {
+      "startAtMs": 1600,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "boolean_1": {
+      "startAtMs": 3200,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}
