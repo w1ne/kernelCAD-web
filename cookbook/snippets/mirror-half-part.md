@@ -10,6 +10,6 @@ when_to_use: The part is symmetric across a cardinal plane; build only one half 
 ---
 
 ```typescript
-const half = box(20, 30, 10).translate(0, 0, 0);
+const half = box(20, 30, 10);
 return half.mirror('yz');
 ```
