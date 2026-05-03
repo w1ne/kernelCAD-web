@@ -117,6 +117,27 @@ async function main(): Promise<void> {
       { feats: serialized2, b: bounds2 },
     );
     console.log(`rotate-only: loaded ${serialized2.length} feature groups`);
+
+    // Replay all events instantly to drive AnimationEngine to its settled state.
+    // Without this, groups are loaded at opacity 0 and the rotate phase shows a black scene.
+    for (const fm of featureMeshes2) {
+      await page.evaluate(
+        (e) => window.__demoPlayer!.onEvent(e),
+        {
+          kind: 'feature.compiled',
+          featureId: fm.featureId,
+          featureKind: fm.featureKind,
+          predecessors: fm.predecessors,
+          diagnostics: [],
+          health: 'healthy',
+          shape: null,
+          op: fm.op,
+        } as never,
+      );
+    }
+    // One large advance to settle all in-flight tweens (max anim duration is 600ms).
+    await page.evaluate((dt: number) => window.__demoPlayer!.advance(dt), 2000);
+
     const ffmpeg = new FfmpegPipeline();
     const mp4Path = join(args.output, 'demo.mp4');
     ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
@@ -214,8 +235,15 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
+  const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
   const sortedEvents = loaded.features
-    .map((f, idx) => ({ feature: f, t: pacing.features.get(f.id)!, mesh: featureMeshes[idx] }))
+    .map((f) => {
+      const mesh = meshById.get(f.id);
+      if (!mesh) {
+        throw new Error(`captureDemo: feature '${f.id}' has no mesh — likely a meshFeaturesPerFeature bug`);
+      }
+      return { feature: f, t: pacing.features.get(f.id)!, mesh };
+    })
     .sort((a, b) => a.t.startAtMs - b.t.startAtMs);
   let nextEventIdx = 0;
 
