@@ -435,10 +435,11 @@ This is a multi-version roadmap, ordered by dependency. **Do not interpret as v1
 | Version | Module(s) | What it adds |
 |---|---|---|
 | **v0.1** (4-6 wk) | Foundation | Feature graph, recompute, OCCT backend, primitives (box/cyl/sphere/extrude/revolve/boolean), STL+STEP export, CLI evaluate/export, mesh preview, JSON diagnostics. Canonical face refs only. No fillet/chamfer/shell/hole. |
-| v0.2 | Edge features + sketch baseline | fillet, chamfer, basic 2D sketches (rect/circle/path), `tracked` face/edge refs, NamingHistory walking. |
+| v0.2 | Edge features + sketch baseline | fillet, chamfer, basic 2D sketches (rect/circle/path), `tracked` face/edge refs, NamingHistory walking. **Shipped 2026-05-03 as PR #53 (tracked refs + history machinery).** |
 | v0.3 | Shell + hole + cut | shell, hole, cut. `created` face refs. Geometry-fallback for ambiguous splits. |
 | v0.4 | Constrained sketches | constrainedSketch with GS-warmup-then-NR pipeline. Reuse existing TS solver from kernelCAD-web. |
 | v0.5 | Studio UI | First UI commands (per-feature CADCommand layer, undo stack, AST edits). Param sliders bound to recompute. |
+| v0.5.5 | Patterns | Linear / circular / grid feature arrays (bolt patterns, hole grids, gear teeth). User-space sequencing semantic; benefits from v0.6 grouping when assemblies land. |
 | v0.6 | Assemblies | Parts, joints (revolute/prismatic/fixed), connectors, FK solve. |
 | v0.7 | Curves + surfacing | NURBS curves, lofts, sweeps. |
 | v0.8 | Output extras | BOM, dimensions, BREP export, multi-view PDF. |
@@ -449,6 +450,8 @@ This is a multi-version roadmap, ordered by dependency. **Do not interpret as v1
 | v0.13 | Sheet metal | Bends, K-factor, flat-pattern unfolding. |
 | v0.14 | SDF | Smooth booleans, TPMS, organic. |
 | v0.15 | Wood | Wood-specific helpers. |
+| v0.16 | Vision | Image-to-CAD: sketch extraction + extrude inference. Single-view, frontier-VLM-driven, no fine-tuning. Gated by Phase 0 spike (see gap-closure roadmap §Vision spike). |
+| v0.17 | GCode / CAM | 2.5D pocket toolpaths, vase mode, parametric face mill, post-processor abstraction. |
 | **v1.0** | Polish + docs | Full module surface. Public release. |
 
 Manifold backend: not on this roadmap. Tracked separately as a v2 proposal once OCCT-only preview latency is measured against real models.
@@ -542,6 +545,7 @@ These belong in the v0.1 implementation plan (writing-plans skill output):
 - CI gating per check.
 - Distribution: npm package name, CLI binary packaging.
 - Public release cadence: commit to v0.1 ship date.
+- **2026-05-03 update:** v0.1 acceptance demo, distribution, public release cadence — all closed by `2026-05-02-v0.1.0-northstar-rebaseline-design.md`. The full v0.2 → v1.0 sequencing now lives in `2026-05-03-v0.2-to-v1.0-gap-closure-roadmap-design.md`; per-module brainstorms produce per-module specs in this folder as each workstream begins.
 
 ---
 
