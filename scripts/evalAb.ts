@@ -35,10 +35,13 @@ function runEval(extraArgs: string[]): string {
 }
 
 function main(): void {
+  // Forward argv from `npm run eval:ab -- <args>` so callers can pin to a
+  // single task or use --mock. ON gets the same args plus --cookbook.
+  const sharedArgs = process.argv.slice(2);
   console.log('\n=== A/B eval — cookbook OFF ===\n');
-  const offRun = runEval([]);
+  const offRun = runEval(sharedArgs);
   console.log('\n=== A/B eval — cookbook ON ===\n');
-  const onRun = runEval(['--cookbook']);
+  const onRun = runEval([...sharedArgs, '--cookbook']);
 
   const off = readScores(offRun);
   const on = readScores(onRun);
