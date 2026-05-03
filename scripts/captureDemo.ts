@@ -18,14 +18,10 @@ interface CaptureDemoOptions {
   output: string;
 }
 
-export async function captureDemo(_options: CaptureDemoOptions): Promise<void> {
+export async function captureDemo(options: CaptureDemoOptions): Promise<void> {
   throw new Error(
-    "captureDemo: pending workstream #21 (visual verifier loop) implementation. " +
-      "See docs/superpowers/specs/2026-05-03-v0.2-to-v1.0-gap-closure-roadmap-design.md §H12."
+    `captureDemo: pending workstream #21 (visual verifier loop) implementation. ` +
+      `Called with task=${options.task || '(unset)'}, output=${options.output || '(unset)'}. ` +
+      `See docs/superpowers/specs/2026-05-03-v0.2-to-v1.0-gap-closure-roadmap-design.md §H12.`
   );
-}
-
-if (require.main === module) {
-  // Argv parsing arrives with the workstream #21 implementation.
-  void captureDemo({ task: "", output: "" });
 }
