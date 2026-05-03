@@ -5,6 +5,7 @@ import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
 import { useEffect, useState } from 'react';
 import { parseCode } from './lib/ast';
+import { DemoPlayerPage } from './components/demoPlayer/DemoPlayerPage';
 
 function isCodeParsable(code: string): boolean {
   try {
@@ -65,7 +66,16 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   return isDevLab ? <DevLab /> : <WorkbenchLayout />;
 }
 
+function isDemoPlayerRoute(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.location.pathname === '/demo-player';
+}
+
 export default function App() {
+  if (isDemoPlayerRoute()) {
+    return <DemoPlayerPage />;
+  }
+
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
   const initialCode = isDevLab ? (devLabScenarios[0]?.code ?? undefined) : undefined;
 
