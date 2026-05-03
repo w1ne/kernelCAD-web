@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { ViewerPane } from './ViewerPane';
 import { TerminalPane } from './TerminalPane';
@@ -47,11 +47,11 @@ export function DemoPlayerPage(): React.JSX.Element {
     null,
   );
 
-  const handleSceneReady = (ctx: NonNullable<typeof sceneRef.current>) => {
+  const handleSceneReady = useCallback((ctx: NonNullable<typeof sceneRef.current>) => {
     sceneRef.current = ctx;
     animEngineRef.current = new AnimationEngine(ctx.scene);
     cameraCtrlRef.current = new CameraController(ctx.camera, ctx.scene);
-  };
+  }, []);
 
   useEffect(() => {
     if (!animEngineRef.current || !cameraCtrlRef.current) return;
