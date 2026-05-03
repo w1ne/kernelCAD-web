@@ -1,5 +1,5 @@
 import { scoreBM25 } from './bm25';
-import { loadSnippets, type Snippet } from './loader';
+import type { Snippet } from './loader';
 
 export type { Snippet } from './loader';
 export { loadSnippets } from './loader';

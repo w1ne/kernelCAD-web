@@ -30,7 +30,7 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "qc": "npm run lint && npm run typecheck && npm run build:cli && npm test",
+    "qc": "npm run lint && npm run typecheck && npm run build:cli && npm run cookbook:validate && npm run cookbook:evaluate && npm run cookbook:build && git diff --exit-code src/skill/SKILL.md && npm test",
     "qc:full": "npm run qc && npm run test:e2e && npm run build",
     "capture-demo": "npx tsx scripts/captureDemo.ts",
     "capture-demo:hero": "npx tsx scripts/captureDemo.ts --task bracket-holes --module v0.21 --output docs/demos/v0.21/bracket-holes/",
