@@ -61,3 +61,30 @@ describe('AnimationEngine — add transition', () => {
     expect(engine.isFrameReady()).toBe(true);
   });
 });
+
+describe('AnimationEngine — boolean.cut transition', () => {
+  it('flashes cutter mesh red then fades it out while carved result fades in', () => {
+    const { engine, scene } = makeEngine();
+    const cutter = makeMesh('cyl-1');
+    const carved = makeMesh('bool-1');
+    scene.add(cutter, carved);
+    engine.enqueue({
+      kind: 'feature.compiled',
+      featureId: 'bool-1',
+      featureKind: 'boolean',
+      shape: { __op: 'subtract' } as any,
+      predecessors: ['cyl-1'],
+      diagnostics: [],
+      health: 'healthy',
+    });
+    engine.advance(0);
+    expect(carved.material.opacity).toBeCloseTo(0, 1);
+    engine.advance(150); // end of red flash on cutter
+    engine.advance(400); // mid fade
+    expect(carved.material.opacity).toBeGreaterThan(0);
+    expect(cutter.material.opacity).toBeLessThan(1);
+    engine.advance(200); // end (total 600ms +)
+    expect(carved.material.opacity).toBeCloseTo(1, 1);
+    expect(cutter.material.opacity).toBeCloseTo(0, 1);
+  });
+});
