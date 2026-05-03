@@ -6,8 +6,11 @@ import { initFeatures } from './features/init'
 
 initFeatures();
 
+// /demo-player skips StrictMode: it owns a singleton WebGL renderer/canvas whose
+// lifecycle doesn't tolerate the double-mount StrictMode triggers in dev.
+const isDemoPlayer =
+  typeof window !== 'undefined' && window.location.pathname === '/demo-player';
+
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  isDemoPlayer ? <App /> : <StrictMode><App /></StrictMode>,
 )

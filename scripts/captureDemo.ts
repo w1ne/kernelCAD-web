@@ -178,6 +178,15 @@ async function main(): Promise<void> {
   await page.evaluate((lines) => window.__demoPlayer!.setTerminalLines(lines), terminalLines);
   await page.evaluate((origin) => window.__demoPlayer!.startTerminalClock(origin), pacing.preRollMs);
 
+  // Load the script in the page — runs OCCT lowering, builds invisible face meshes, fits camera.
+  const loadResult = await page.evaluate(
+    async (source: string) => window.__demoPlayer!.loadScript(source),
+    loaded.source,
+  );
+  console.log(`loaded script: ${loadResult.faceCount} faces, bounds=[${loadResult.bounds.min.map((v) => v.toFixed(1)).join(',')}]→[${loadResult.bounds.max.map((v) => v.toFixed(1)).join(',')}]`);
+  // Per-feature face budget for progressive reveal.
+  const facesPerEvent = Math.max(1, Math.ceil(loadResult.faceCount / Math.max(1, loaded.features.length)));
+
   // Title card if needed.
   if (pacing.preRollMs > 0) {
     await page.evaluate(
@@ -223,6 +232,13 @@ async function main(): Promise<void> {
           health: 'healthy',
           shape: null,
         } as never,
+      );
+      // Reveal this feature's share of faces (synced to AnimationEngine transition window).
+      const isLast = nextEventIdx === sortedEvents.length - 1;
+      const count = isLast ? Number.MAX_SAFE_INTEGER : facesPerEvent;
+      await page.evaluate(
+        ({ c, d }: { c: number; d: number }) => window.__demoPlayer!.revealFaces(c, d),
+        { c: count, d: item.t.durationMs },
       );
       nextEventIdx++;
     }
