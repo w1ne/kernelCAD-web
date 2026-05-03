@@ -116,17 +116,37 @@ async function main(): Promise<void> {
     fail(taskArg ? `No task named '${taskArg}' under ${TASKS_DIR}` : `No tasks found under ${TASKS_DIR}`);
   }
 
+  // Mock-mode pre-flight: validate the fixture file exists and parses cleanly,
+  // and that the v1 single-fixture format isn't being asked to drive multiple
+  // tasks (each would consume the same canned queue — wrong). Multi-task mock
+  // mode needs a per-task fixture map; until that lands, fail clearly here
+  // rather than producing nonsense scores.
+  let fixtureResponses: AgentResponse[] | null = null;
+  if (isMock) {
+    if (!existsSync(fixturePath)) {
+      fail(`Fixture file not found: ${fixturePath}\nPass --fixture <path> or commit a fixture at the default path.`);
+    }
+    try {
+      fixtureResponses = loadFixture(fixturePath);
+    } catch (err) {
+      fail(`Could not load fixture ${fixturePath}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    if (tasks.length > 1) {
+      fail(
+        `--mock with ${tasks.length} tasks is not supported in v1 — the flat fixture format would feed all tasks the same responses.\n` +
+        `Pass a single task argument: npm run eval -- --mock <task-id>`,
+      );
+    }
+  }
+
   const startedAt = timestamp();
   const runRoot = join(RUNS_DIR, isMock ? `_mock-${startedAt}` : startedAt);
 
   const results: TaskResult[] = [];
   for (const task of tasks) {
-    let agent: AgentClient;
-    if (isMock) {
-      agent = new MockAgentClient(loadFixture(fixturePath));
-    } else {
-      agent = new AnthropicAgentClient(process.env.ANTHROPIC_API_KEY!);
-    }
+    const agent: AgentClient = isMock
+      ? new MockAgentClient(fixtureResponses!)
+      : new AnthropicAgentClient(process.env.ANTHROPIC_API_KEY!);
     try {
       const r = await runTask({
         taskDir: join(TASKS_DIR, task),
