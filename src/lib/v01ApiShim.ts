@@ -119,6 +119,12 @@ function bboxOf(shape: unknown): { min: [number, number, number]; max: [number, 
       }
     }
   }
+  if (minX === Infinity) {
+    throw new Error(
+      'v01 shim: cannot compute bounding box for shape — neither boundingBox nor face mesh is available. ' +
+      'This typically means the shape is degenerate or uses an unsupported Replicad type.'
+    );
+  }
   return { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] };
 }
 
@@ -269,8 +275,9 @@ function wrap(raw: unknown, meta: WrapMeta = { rotated: false }): unknown {
 }
 
 function unwrap(maybeProxy: unknown): unknown {
-  if (maybeProxy && typeof maybeProxy === 'object' && '__v01Raw__' in (maybeProxy as Record<string, unknown>)) {
-    return (maybeProxy as Record<string, unknown>).__v01Raw__;
+  if (maybeProxy && typeof maybeProxy === 'object') {
+    const raw = (maybeProxy as Record<string, unknown>).__v01Raw__;
+    if (raw !== undefined) return raw;
   }
   return maybeProxy;
 }

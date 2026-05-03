@@ -47,4 +47,20 @@ describe('v01ApiShim — fillet/chamfer face refs', () => {
       .fillet(1, finder);
     expect(countFaces(shape)).toBeGreaterThanOrEqual(6);
   });
+
+  it('box(50,50,8).chamfer(2, { face: "top" }) produces chamfered top edges (≥ 10 faces)', () => {
+    const { box } = createV01ApiGlobals(replicad);
+    const shape = (box(50, 50, 8) as { chamfer: (d: number, f: { face: string }) => unknown })
+      .chamfer(2, { face: 'top' });
+    expect(countFaces(shape)).toBeGreaterThanOrEqual(10);
+  });
+
+  it('subtract with rotated operand propagates rotated flag', () => {
+    const { box } = createV01ApiGlobals(replicad);
+    const unrotated = box(20, 20, 20) as { subtract: (s: unknown) => unknown };
+    const rotatedHole = (box(5, 5, 30) as { rotate: (axis: number[], deg: number) => unknown })
+      .rotate([0, 1, 0], 45);
+    const result = unrotated.subtract(rotatedHole) as { fillet: (r: number, f: { face: string }) => unknown };
+    expect(() => result.fillet(1, { face: 'top' })).toThrow(/canonical face refs.*rotated.*deferred/i);
+  });
 });
