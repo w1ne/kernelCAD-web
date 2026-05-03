@@ -53,4 +53,38 @@ describe('meshFeaturesPerFeature', () => {
     expect(bounds.max[1] - bounds.min[1]).toBeCloseTo(30, 0);
     expect(bounds.max[2] - bounds.min[2]).toBeCloseTo(40, 0);
   });
+
+  it('captures failed feature IDs in failedFeatureIds', async () => {
+    // Record A = valid box (no inputs, succeeds). Record B = sketch with no
+    // commands, which the lowerer rejects with an error diagnostic and emits
+    // feature.failed. Both nodes must appear in the records array so
+    // DependencyGraph can register them before addEdge is called.
+    const recA: import('../intent/featureRecord').FeatureRecord = {
+      id: 'feat-a',
+      kind: 'box',
+      inputs: {},
+      params: {
+        x: { expression: '10', evaluated: 10 },
+        y: { expression: '10', evaluated: 10 },
+        z: { expression: '10', evaluated: 10 },
+      },
+      transforms: [],
+      suppressed: false,
+    };
+    const recB: import('../intent/featureRecord').FeatureRecord = {
+      id: 'feat-b',
+      kind: 'sketch',
+      // references recA so the edge is registered; but the lowerer will fail
+      // because metadata.commands is empty — emitting feature.failed for feat-b
+      inputs: { base: { kind: 'feature', id: 'feat-a' } },
+      params: {},
+      transforms: [],
+      suppressed: false,
+      metadata: { commands: [] },   // empty → lowerer error diagnostic
+    };
+    const { features, failedFeatureIds } = await meshFeaturesPerFeature([recA, recB]);
+    expect(failedFeatureIds).toContain('feat-b');
+    // feat-a compiled successfully — should appear in features
+    expect(features.some(f => f.featureId === 'feat-a')).toBe(true);
+  });
 });

@@ -13,7 +13,9 @@ function extractRawShape(backend: ShapeBackend): unknown {
   if (backend instanceof OcctBackend) {
     return backend.getReplicadShape();
   }
-  return backend;
+  throw new Error(
+    `meshFeaturesPerFeature: unsupported backend target '${backend.target}' — only OcctBackend is supported`
+  );
 }
 
 export interface FeatureMesh {
@@ -34,6 +36,7 @@ export interface Bounds {
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
+  failedFeatureIds: FeatureId[];  // empty array if no failures
 }
 
 export async function meshFeaturesPerFeature(
@@ -41,11 +44,16 @@ export async function meshFeaturesPerFeature(
 ): Promise<MeshFeaturesResult> {
   const engine = new RecomputeEngine(new OcctLowerer());
   const features: FeatureMesh[] = [];
+  const failedFeatureIds: FeatureId[] = [];
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
   await engine.run(records, {
     onEvent: (event) => {
+      if (event.kind === 'feature.failed') {
+        failedFeatureIds.push(event.featureId);
+        return;
+      }
       if (event.kind !== 'feature.compiled') return;
       const meshed = meshShape(extractRawShape(event.shape));
       if (!meshed) return;
@@ -77,5 +85,5 @@ export async function meshFeaturesPerFeature(
     max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
-  return { features, bounds };
+  return { features, bounds, failedFeatureIds };
 }
