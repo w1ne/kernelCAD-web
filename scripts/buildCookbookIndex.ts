@@ -15,7 +15,7 @@ export function renderCookbookSection(snippets: Snippet[]): string {
   );
   lines.push('');
   if (snippets.length === 0) {
-    lines.push('_(empty — no snippets in `cookbook/snippets/` yet)_');
+    lines.push('_(empty)_');
     lines.push('');
     return lines.join('\n');
   }
