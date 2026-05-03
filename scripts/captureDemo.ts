@@ -46,10 +46,36 @@ function parseArgs(argv: string[]): Args {
   return a as Args;
 }
 
+async function ensureViteRunning(): Promise<{ stop: () => void }> {
+  // Try to reach existing dev server first.
+  try {
+    const res = await fetch('http://127.0.0.1:5173/');
+    if (res.ok) return { stop: () => {} };
+  } catch { /* not running, will start */ }
+  const { spawn } = await import('node:child_process');
+  const proc = spawn('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5173'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false,
+  });
+  // Wait for ready signal.
+  await new Promise<void>((resolveReady, rejectReady) => {
+    const t = setTimeout(() => rejectReady(new Error('vite did not start within 30s')), 30000);
+    proc.stdout.on('data', (d: Buffer) => {
+      if (d.toString().includes('Local:')) {
+        clearTimeout(t);
+        resolveReady();
+      }
+    });
+  });
+  return { stop: () => proc.kill('SIGTERM') };
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  // Suppress unused-import warnings at scaffold stage — Tasks 18-20 consume all imports.
-  void (mkdirSync as unknown);
+  console.log(`captureDemo: module=${args.module}, output=${args.output}`);
+  mkdirSync(args.output, { recursive: true });
+
+  // Suppress still-unused imports until Tasks 19-20 consume them.
   void (readFileSync as unknown);
   void (writeFileSync as unknown);
   void (existsSync as unknown);
@@ -57,18 +83,28 @@ async function main(): Promise<void> {
   void (join as unknown);
   void (basename as unknown);
   void (execSync as unknown);
-  void (chromium as unknown);
-  void ({} as Browser);
-  void ({} as Page);
+  void ({} as PacingOverride);
   void (loadScriptFeatures as unknown);
   void (computeTimeline as unknown);
-  void ({} as PacingOverride);
   void (FfmpegPipeline as unknown);
   void (composeStaticPanel as unknown);
   void (whatsNewTemplate as unknown);
   void (writeWhatsNewIfMissing as unknown);
-  console.log(`captureDemo: module=${args.module}, output=${args.output}`);
-  // Subsequent tasks fill the body.
+
+  const vite = await ensureViteRunning();
+  const browser: Browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const page: Page = await context.newPage();
+  await page.goto('http://127.0.0.1:5173/demo-player');
+  await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
+  await page.evaluate((v) => window.__demoPlayer!.setVersion(v), args.module);
+
+  console.log('demo-player ready');
+
+  // Subsequent tasks: load script, run replay, capture frames, ffmpeg.
+
+  await browser.close();
+  vite.stop();
 }
 
 main().catch((e) => {
