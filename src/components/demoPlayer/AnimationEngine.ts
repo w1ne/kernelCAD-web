@@ -5,7 +5,7 @@ import type { FeatureKind } from '../../intent/types';
 
 type TransitionKind = 'add' | 'boolean.cut' | 'boolean.fuse' | 'modifier' | 'transform' | 'fallback';
 
-function classify(kind: FeatureKind, op?: string): TransitionKind {
+function classify(kind: FeatureKind, op?: 'subtract' | 'union' | 'intersect'): TransitionKind {
   switch (kind) {
     case 'box': case 'cylinder': case 'sphere': case 'torus':
     case 'extrude': case 'revolve': case 'loft': case 'sweep':
@@ -20,7 +20,7 @@ function classify(kind: FeatureKind, op?: string): TransitionKind {
     case 'mirror':
       return 'transform';
     case 'sketch': case 'constrainedSketch':
-      return 'add'; // Tier 1 fallback per spec — fade-in
+      return 'add';
     default:
       return 'fallback';
   }
@@ -35,6 +35,45 @@ interface ActiveAnim {
   step(elapsedNorm: number): void;
 }
 
+interface GroupRefs {
+  group: THREE.Group;
+  meshes: THREE.Mesh[];
+  mats: THREE.MeshPhongMaterial[];
+  origColors: THREE.Color[];
+}
+
+function findGroup(scene: THREE.Scene, name: string): GroupRefs | null {
+  const obj = scene.getObjectByName(name);
+  if (!(obj instanceof THREE.Group)) return null;
+  const meshes = obj.children.filter((c): c is THREE.Mesh => c instanceof THREE.Mesh);
+  const mats: THREE.MeshPhongMaterial[] = [];
+  const origColors: THREE.Color[] = [];
+  for (const m of meshes) {
+    if (m.material instanceof THREE.MeshPhongMaterial) {
+      mats.push(m.material);
+      origColors.push(m.material.color.clone());
+    }
+  }
+  return { group: obj, meshes, mats, origColors };
+}
+
+function setOpacity(refs: GroupRefs, value: number): void {
+  for (const m of refs.mats) {
+    m.transparent = true;
+    m.opacity = value;
+  }
+}
+
+function setColor(refs: GroupRefs, r: number, g: number, b: number): void {
+  for (const m of refs.mats) m.color.setRGB(r, g, b);
+}
+
+function restoreColors(refs: GroupRefs): void {
+  for (let i = 0; i < refs.mats.length; i++) {
+    refs.mats[i].color.copy(refs.origColors[i]);
+  }
+}
+
 export class AnimationEngine {
   private scene: THREE.Scene;
   private active: ActiveAnim[] = [];
@@ -46,68 +85,54 @@ export class AnimationEngine {
 
   /** Returns a Promise that resolves when this event's transition has settled. */
   enqueue(event: FeatureEvent): Promise<void> {
-    if (event.kind !== 'feature.compiled') {
-      return Promise.resolve();
-    }
-    const cls = classify(event.featureKind, (event.shape as { __op?: string } | null | undefined)?.__op);
-    const mesh = this.scene.getObjectByName(event.featureId) as THREE.Mesh | undefined;
-    if (!mesh || !(mesh.material instanceof THREE.MeshStandardMaterial)) {
-      return Promise.resolve();
-    }
+    if (event.kind !== 'feature.compiled') return Promise.resolve();
+    const cls = classify(event.featureKind, event.op);
+    const target = findGroup(this.scene, event.featureId);
+    if (!target) return Promise.resolve();
+
     const startMs = this.elapsedMs;
 
-    if (cls === 'add' || cls === 'fallback') {
-      mesh.material.transparent = true;
-      mesh.material.opacity = 0;
-      mesh.scale.setScalar(0.85);
+    if (cls === 'add' || cls === 'fallback' || cls === 'transform') {
+      setOpacity(target, 0);
+      target.group.scale.setScalar(0.85);
+      const dur = cls === 'add' ? 500 : (cls === 'transform' ? 500 : 400);
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs,
-          durationMs: cls === 'add' ? 500 : 400,
-          resolve,
+          startMs, durationMs: dur, resolve,
           step: (t) => {
             const e = easeOutCubic(t);
-            (mesh.material as THREE.MeshStandardMaterial).opacity = e;
-            mesh.scale.setScalar(0.85 + 0.15 * e);
+            setOpacity(target, e);
+            target.group.scale.setScalar(0.85 + 0.15 * e);
           },
         });
       });
     }
 
     if (cls === 'boolean.cut') {
-      mesh.material.transparent = true;
-      mesh.material.opacity = 0;
-      const cutterMesh = event.predecessors
-        .map((pid) => this.scene.getObjectByName(pid) as THREE.Mesh | undefined)
-        .find((m): m is THREE.Mesh => !!m && m.material instanceof THREE.MeshStandardMaterial);
-      const cutterMat = cutterMesh?.material as THREE.MeshStandardMaterial | undefined;
-      const originalColor = cutterMat ? cutterMat.color.clone() : null;
-      if (cutterMat) cutterMat.transparent = true;
+      setOpacity(target, 0);
+      const predGroups = event.predecessors
+        .map((pid) => findGroup(this.scene, pid))
+        .filter((g): g is GroupRefs => g !== null);
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs,
-          durationMs: 600,
-          resolve,
+          startMs, durationMs: 600, resolve,
           step: (t) => {
             const elapsed = t * 600;
-            // 0–150ms: cutter red flash
-            if (cutterMat && originalColor) {
-              if (elapsed < 150) {
-                cutterMat.color.setRGB(1, 0.3, 0.3);
-              } else {
-                cutterMat.color.copy(originalColor);
-              }
+            // 0–150ms: cutters flash red
+            if (elapsed < 150) {
+              for (const pg of predGroups) setColor(pg, 1, 0.3, 0.3);
+            } else {
+              for (const pg of predGroups) restoreColors(pg);
             }
-            // 150–400ms: cutter fades out, carved fades in
+            // 150–400ms: cutters fade out, carved fades in
             if (elapsed > 150) {
               const f = Math.min(1, (elapsed - 150) / 250);
-              if (cutterMat) cutterMat.opacity = 1 - f;
-              (mesh.material as THREE.MeshStandardMaterial).opacity = f;
+              for (const pg of predGroups) setOpacity(pg, 1 - f);
+              setOpacity(target, f);
             }
-            // 400–600ms: hold at settled state
             if (t >= 1) {
-              if (cutterMat) cutterMat.opacity = 0;
-              (mesh.material as THREE.MeshStandardMaterial).opacity = 1;
+              for (const pg of predGroups) setOpacity(pg, 0);
+              setOpacity(target, 1);
             }
           },
         });
@@ -115,75 +140,58 @@ export class AnimationEngine {
     }
 
     if (cls === 'boolean.fuse') {
-      mesh.material.transparent = true;
-      mesh.material.opacity = 0;
-      const predMats: { mat: THREE.MeshStandardMaterial; orig: THREE.Color }[] = [];
-      for (const pid of event.predecessors) {
-        const pm = this.scene.getObjectByName(pid) as THREE.Mesh | undefined;
-        if (pm && pm.material instanceof THREE.MeshStandardMaterial) {
-          predMats.push({ mat: pm.material, orig: pm.material.color.clone() });
-        }
-      }
+      setOpacity(target, 0);
+      const predGroups = event.predecessors
+        .map((pid) => findGroup(this.scene, pid))
+        .filter((g): g is GroupRefs => g !== null);
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs,
-          durationMs: 500,
-          resolve,
+          startMs, durationMs: 500, resolve,
           step: (t) => {
             const elapsed = t * 500;
-            // 0–150ms: predecessors glow yellow
-            for (const { mat, orig } of predMats) {
-              if (elapsed < 150) mat.color.setRGB(1, 0.9, 0.4);
-              else mat.color.copy(orig);
+            if (elapsed < 150) {
+              for (const pg of predGroups) setColor(pg, 1, 0.9, 0.4);
+            } else {
+              for (const pg of predGroups) restoreColors(pg);
             }
-            // 150–500ms: unified mesh fades in (ease-out)
             if (elapsed > 150) {
               const f = easeOutCubic(Math.min(1, (elapsed - 150) / 350));
-              (mesh.material as THREE.MeshStandardMaterial).opacity = f;
+              for (const pg of predGroups) setOpacity(pg, 1 - f);
+              setOpacity(target, f);
             }
-            if (t >= 1) (mesh.material as THREE.MeshStandardMaterial).opacity = 1;
+            if (t >= 1) {
+              for (const pg of predGroups) setOpacity(pg, 0);
+              setOpacity(target, 1);
+            }
           },
         });
       });
     }
 
     if (cls === 'modifier') {
-      const mat = mesh.material as THREE.MeshStandardMaterial;
-      const originalColor = mat.color.clone();
+      setOpacity(target, 0);
+      const predGroups = event.predecessors
+        .map((pid) => findGroup(this.scene, pid))
+        .filter((g): g is GroupRefs => g !== null);
       return new Promise<void>((resolve) => {
         this.active.push({
-          startMs,
-          durationMs: 400,
-          resolve,
+          startMs, durationMs: 400, resolve,
           step: (t) => {
             const elapsed = t * 400;
-            // 0–150ms: cyan glow
             if (elapsed < 150) {
-              mat.color.setRGB(0.4, 0.9, 1);
+              setColor(target, 0.4, 0.9, 1);
             } else {
-              // 150–400ms: alpha-flash decay back to original
-              const f = (elapsed - 150) / 250;
-              mat.color.copy(originalColor);
-              mat.transparent = true;
-              mat.opacity = 0.7 + 0.3 * f;
+              restoreColors(target);
             }
-            if (t >= 1) mat.opacity = 1;
-          },
-        });
-      });
-    }
-
-    if (cls === 'transform') {
-      mesh.material.transparent = true;
-      mesh.material.opacity = 0;
-      return new Promise<void>((resolve) => {
-        this.active.push({
-          startMs,
-          durationMs: 500,
-          resolve,
-          step: (t) => {
-            const e = easeOutCubic(t);
-            (mesh.material as THREE.MeshStandardMaterial).opacity = e;
+            if (elapsed > 150) {
+              const f = (elapsed - 150) / 250;
+              setOpacity(target, 0.7 + 0.3 * f);
+              for (const pg of predGroups) setOpacity(pg, 1 - f);
+            }
+            if (t >= 1) {
+              setOpacity(target, 1);
+              for (const pg of predGroups) setOpacity(pg, 0);
+            }
           },
         });
       });
@@ -199,11 +207,8 @@ export class AnimationEngine {
     for (const a of this.active) {
       const t = Math.min(1, (this.elapsedMs - a.startMs) / a.durationMs);
       a.step(t);
-      if (t >= 1) {
-        a.resolve();
-      } else {
-        stillActive.push(a);
-      }
+      if (t >= 1) a.resolve();
+      else stillActive.push(a);
     }
     this.active = stillActive;
   }
