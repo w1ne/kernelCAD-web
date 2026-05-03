@@ -20,6 +20,10 @@
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
     "eval": "npx tsx eval/run.ts",
+    "eval:ab": "npx tsx scripts/evalAb.ts",
+    "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
+    "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
+    "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
@@ -27,7 +31,7 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "qc": "npm run lint && npm run typecheck && npm run build:cli && npm test",
+    "qc": "npm run lint && npm run typecheck && npm run build:cli && npm run cookbook:validate && npm run cookbook:evaluate && npm run cookbook:build && git diff --exit-code src/skill/SKILL.md && npm test",
     "qc:full": "npm run qc && npm run test:e2e && npm run build",
     "capture-demo": "npx tsx scripts/captureDemo.ts",
     "capture-demo:hero": "npx tsx scripts/captureDemo.ts --task bracket-holes --module v0.21 --output docs/demos/v0.21/bracket-holes/",
@@ -65,6 +69,7 @@
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
     "ts-morph": "^27.0.2",
+    "yaml": "^2.8.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {

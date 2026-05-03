@@ -18,6 +18,20 @@
 
 - Visual verifier loop (`render_views`, `compare_to_intent`, VLM-critique) → v0.21.1 follow-up workstream.
 
+### Added — Cookbook v1 (workstream #22)
+
+- **12 curated `.kcad.ts` pattern snippets under `cookbook/snippets/`** covering edge features, booleans, holes, sketches, symmetry, and parameters. Each snippet is a markdown file with YAML frontmatter (`id`, `title`, `tags`, `keywords`, `when_to_use`) plus a fenced TypeScript body. Tag whitelist at `cookbook/tags.json`.
+- **Pure BM25 retrieval module at `src/cookbook/`** — `search(query, snippets, k=3)` ranks over `title + tags + keywords + when_to_use` (body excluded), score floor 0.5, k clamped to [1, 5]. ~60 LoC pure TS, no external deps. Snapshot test locks ranking on 5 hand-picked queries.
+- **MCP tool `lookup_cookbook(query, k?)`** — registered alongside the 14 existing tools. Returns `{ ok, hits[] }`; empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
+- **SKILL.md cookbook index** — build-generated section between `<!-- COOKBOOK:START -->` / `<!-- COOKBOOK:END -->` markers. CI gate: `npm run cookbook:build && git diff --exit-code src/skill/SKILL.md`.
+- **Eval `--cookbook` flag** — pre-injects top-3 retrieval results into a separate `cache_control` block on the system prompt; emits a `cookbook_inject` `TranscriptEvent` per task. A/B golden test (`eval/cookbook.test.ts`) locks deterministic ranking against the bracket-holes prompt.
+- **`npm run eval:ab`** convenience script — runs the suite twice (off then on) and prints the per-task score / token delta.
+- **CI gates wired into `npm run qc`**: `cookbook:validate` (frontmatter + tag whitelist), `cookbook:evaluate` (every body must `kernelcad evaluate` clean), `cookbook:build` + diff-check.
+
+Continuous growth contract per spec §"Continuous": same-PR additions; eval-driven additions; snapshot-test gate on ranking shifts; tag whitelist gate on vocabulary growth.
+
+Per the gap-closure roadmap §I4 / first-wave dispatch doc, this is workstream #22.
+
 ### Added — Eval corpus
 
 - **3 v0.2 tracked-refs tasks under `eval/tasks/`** (`fillet-translated-box`, `subtract-then-fillet-rim`, `chamfer-rotated-wedge`). Each exercises the v0.2 capability of canonical face refs surviving transforms or unambiguous booleans (the natural-form cases that previously needed the "apply edge feature before transforms" workaround). Expert solutions verified to score 100% via `eval/corpus-v0.2.test.ts`. Per the gap-closure roadmap §Corpus design, this is the first slice of workstream #19 (corpus expansion).

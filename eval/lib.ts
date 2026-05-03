@@ -106,6 +106,18 @@ export function renderTranscript(args: RenderTranscriptArgs): string {
         lines.push(formatDiagnostics(ev.diagnostics));
       }
       lines.push('');
+    } else if (ev.kind === 'cookbook_inject') {
+      lines.push(`## Cookbook injection`);
+      lines.push(`- query: "${ev.query}"`);
+      if (ev.hits.length === 0) {
+        lines.push('- hits: (no match above floor)');
+      } else {
+        lines.push(`- hits:`);
+        for (const h of ev.hits) {
+          lines.push(`  - ${h.id} (score ${h.score.toFixed(2)})`);
+        }
+      }
+      lines.push('');
     } else if (ev.kind === 'score') {
       // Score block is rendered at end from the score arg, not from this event.
     }

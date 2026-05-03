@@ -17,6 +17,7 @@ import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listApiTool } from './tools/listApi';
 import { exportStlTool } from './tools/exportStl';
+import { lookupCookbookTool } from './tools/lookupCookbook';
 
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
@@ -209,6 +210,33 @@ export const TOOLS = [
       required: ['output_path'],
     },
   },
+  {
+    name: 'lookup_cookbook',
+    description:
+      'Search the kernelCAD cookbook for canonical pattern snippets. ' +
+      'Returns top-k snippets matching the natural-language query, ' +
+      'ranked by BM25 over title/tags/keywords/trigger. ' +
+      'Use when you need a canonical pattern for fillet-after-subtract, ' +
+      'non-overlapping booleans, sketch-to-extrude flows, etc. ' +
+      'Returns empty if no snippet scores above the relevance floor — ' +
+      'proceed without cookbook help in that case.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        query: {
+          type: 'string',
+          description:
+            'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket").',
+        },
+        k: {
+          type: 'number',
+          description: 'Max snippets to return. Default 3, max 5.',
+          default: 3,
+        },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -272,6 +300,9 @@ export function createMcpServer(): Server {
         break;
       case 'export_stl':
         result = await exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]);
+        break;
+      case 'lookup_cookbook':
+        result = await lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

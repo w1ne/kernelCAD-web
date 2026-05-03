@@ -244,3 +244,36 @@ describe('renderTranscript', () => {
     expect(md).toContain('- Attempts: 2');
   });
 });
+
+describe('renderTranscript — cookbook_inject', () => {
+  const baseScore: Score = {
+    gates: { 'evaluates clean': true },
+    scored: {},
+    gate_pass: true,
+    score: 1,
+    attempts: 1,
+    tokens: { input: 0, output: 0, total: 0 },
+    time_ms: 0,
+  };
+
+  it('renders a non-empty cookbook_inject as a Cookbook section', () => {
+    const events: TranscriptEvent[] = [
+      { kind: 'cookbook_inject', query: 'fillet after subtract', hits: [{ id: 'fillet-face-after-subtract', score: 1.42 }] },
+    ];
+    const out = renderTranscript({ task: 't', model: 'm', started_at: 's', events, score: baseScore });
+    expect(out).toContain('## Cookbook injection');
+    expect(out).toContain('query: "fillet after subtract"');
+    expect(out).toContain('fillet-face-after-subtract');
+    expect(out).toContain('1.42');
+  });
+
+  it('renders an empty cookbook_inject as a no-match line', () => {
+    const events: TranscriptEvent[] = [
+      { kind: 'cookbook_inject', query: 'xyzzy', hits: [] },
+    ];
+    const out = renderTranscript({ task: 't', model: 'm', started_at: 's', events, score: baseScore });
+    expect(out).toContain('## Cookbook injection');
+    expect(out).toContain('query: "xyzzy"');
+    expect(out).toMatch(/no match above floor/i);
+  });
+});

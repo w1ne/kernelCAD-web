@@ -88,6 +88,7 @@ function loadFixture(fixturePath: string): AgentResponse[] {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const isMock = args.includes('--mock');
+  const useCookbook = args.includes('--cookbook');
   const taskArg = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--fixture');
 
   // --mock fixture path (optional; defaults to runs/golden-2026-05-02-bracket-holes)
@@ -111,6 +112,13 @@ async function main(): Promise<void> {
   }
 
   const skillMd = readFileSync(SKILL_PATH, 'utf8');
+
+  // Lazy-load the injector only when --cookbook is enabled to avoid the
+  // cookbook IO/parse cost in the default code path.
+  const inject = useCookbook
+    ? (await import('./cookbook-injector')).injectCookbook
+    : null;
+
   const tasks = discoverTasks(taskArg);
   if (tasks.length === 0) {
     fail(taskArg ? `No task named '${taskArg}' under ${TASKS_DIR}` : `No tasks found under ${TASKS_DIR}`);
@@ -148,6 +156,9 @@ async function main(): Promise<void> {
       ? new MockAgentClient(fixtureResponses!)
       : new AnthropicAgentClient(process.env.ANTHROPIC_API_KEY!);
     try {
+      const cookbookInjection = inject
+        ? inject(readFileSync(join(TASKS_DIR, task, 'prompt.md'), 'utf8'))
+        : undefined;
       const r = await runTask({
         taskDir: join(TASKS_DIR, task),
         runDir: join(runRoot, task),
@@ -155,6 +166,7 @@ async function main(): Promise<void> {
         model: isMock ? 'mock-model' : MODEL,
         skillMd,
         startedAt,
+        cookbook: cookbookInjection,
       });
       results.push(r);
     } catch (err) {

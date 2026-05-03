@@ -37,3 +37,17 @@ describe('MockAgentClient', () => {
     expect(client.calls[0].messages[0].content).toBe('hello');
   });
 });
+
+describe('MockAgentClient — systemAddendum', () => {
+  it('records systemAddendum on the call object', async () => {
+    const client = new MockAgentClient([{ text: 'r', tokens_in: 1, tokens_out: 1 }]);
+    await client.generate({
+      system: 'sys',
+      systemAddendum: 'addendum',
+      messages: [],
+      model: 'm',
+      max_tokens: 1,
+    });
+    expect(client.calls[0].systemAddendum).toBe('addendum');
+  });
+});
