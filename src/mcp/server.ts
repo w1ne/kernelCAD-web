@@ -172,13 +172,13 @@ export const TOOLS = [
   {
     name: 'list_face_labels',
     description:
-      'List user-applied path labels on a script\'s sketches. Returns labels with their sketch FeatureId and segment chord endpoints. Useful for discovering what labels are available to use in fillet/chamfer/shell calls. Pass either { file } or { code }.',
+      'List user-applied labels visible in a script: both sketch-segment labels (path().label(\'rim\')) and creating-op faceLabels (box(..., { faceLabels: { ... } })). Each result includes its source so the agent can disambiguate. Lets agents discover the label vocabulary on a shape before referencing labels in fillet/chamfer/shell.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        feature_id: { type: 'string', description: 'Optional sketch FeatureId; defaults to scanning all sketches.' },
+        feature_id: { type: 'string', description: 'Optional FeatureId; defaults to scanning all features.' },
       },
     },
   },
