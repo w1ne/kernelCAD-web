@@ -16,6 +16,13 @@ export interface ApiEntry {
   signature: string;
 }
 
+export interface FeatureKindFaceLabels {
+  /** Primitive/extrude kinds that accept an `opts.faceLabels` map. */
+  acceptingKinds: readonly string[];
+  /** Description of the faceLabels option: value types and intended use. */
+  description: string;
+}
+
 export interface ListApiOutput {
   ok: boolean;
   globals?: ApiEntry[];
@@ -24,18 +31,20 @@ export interface ListApiOutput {
   pathBuilderMethods?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
+  /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
+  featureKindFaceLabels?: FeatureKindFaceLabels;
   error?: string;
 }
 
 export const GLOBALS: ApiEntry[] = [
-  { name: 'box', signature: '(x, y, z, centered?) => Shape', description: 'Axis-aligned box. `centered: true` centers on the origin.' },
-  { name: 'cylinder', signature: '(h, r) => Shape', description: 'Z-axis cylinder; bottom on the XY plane, height h, radius r.' },
-  { name: 'sphere', signature: '(r) => Shape', description: 'Sphere centered at the origin, radius r.' },
-  { name: 'extrudeRect', signature: '(w, h, height) => Shape', description: 'Extrude a w-by-h rectangle (XY) by `height` along Z.' },
-  { name: 'extrudeCircle', signature: '(r, height) => Shape', description: 'Extrude a radius-r circle (XY) by `height` along Z.' },
-  { name: 'extrudePolygon', signature: '(points, depth) => Shape', description: 'Extrude a 2D polygon (array of [x, y] points) by `depth` along Z.' },
-  { name: 'extrudeRoundedRect', signature: '(width, height, radius, depth) => Shape', description: 'Extrude a rounded rectangle (corner radius) by `depth` along Z.' },
-  { name: 'revolveRect', signature: '(w, h, offsetX, angleDeg?) => Shape', description: 'Revolve a w-by-h rectangle around Z, offset by `offsetX` from the axis. Default 360 degrees.' },
+  { name: 'box', signature: '(x, y, z, centered?, opts?) => Shape', description: 'Axis-aligned box. `centered: true` centers on the origin. `opts.faceLabels` maps user label names to canonical face names (top/bottom/left/right/front/back) or FaceQuery descriptors for later fillet/chamfer/shell reference.' },
+  { name: 'cylinder', signature: '(h, r, segments?, opts?) => Shape', description: 'Z-axis cylinder; bottom on the XY plane, height h, radius r. `opts.faceLabels` maps user label names to canonical face names (top/bottom) or FaceQuery descriptors.' },
+  { name: 'sphere', signature: '(r) => Shape', description: 'Sphere centered at the origin, radius r. No canonical face names; does not accept an opts map with label entries.' },
+  { name: 'extrudeRect', signature: '(w, h, height, opts?) => Shape', description: 'Extrude a w-by-h rectangle (XY) by `height` along Z. `opts.faceLabels` maps user label names to canonical face names (top/bottom/left/right/front/back) or FaceQuery descriptors.' },
+  { name: 'extrudeCircle', signature: '(r, height, opts?) => Shape', description: 'Extrude a radius-r circle (XY) by `height` along Z. `opts.faceLabels` maps user label names to canonical face names (top/bottom) or FaceQuery descriptors.' },
+  { name: 'extrudePolygon', signature: '(points, depth, opts?) => Shape', description: 'Extrude a 2D polygon (array of [x, y] points) by `depth` along Z. `opts.faceLabels` maps user label names to canonical face names or FaceQuery descriptors.' },
+  { name: 'extrudeRoundedRect', signature: '(width, height, radius, depth, opts?) => Shape', description: 'Extrude a rounded rectangle (corner radius) by `depth` along Z. `opts.faceLabels` maps user label names to canonical face names (top/bottom/left/right/front/back) or FaceQuery descriptors.' },
+  { name: 'revolveRect', signature: '(w, h, offsetX, angleDeg?, opts?) => Shape', description: 'Revolve a w-by-h rectangle around Z, offset by `offsetX` from the axis. Default 360 degrees. `opts.faceLabels` maps user label names to canonical face names (top/bottom) or FaceQuery descriptors.' },
   { name: 'path', signature: '() => PathBuilder', description: 'Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch.' },
   { name: 'param', signature: "(name, default, opts) => number", description: 'Declare a script parameter with a default and units. `opts: { unit, min?, max? }`.' },
   { name: 'union', signature: '(...shapes) => Shape', description: 'Boolean union of two or more shapes.' },
@@ -79,6 +88,27 @@ export const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'close', signature: '() => Sketch', description: 'Close the path; returns a Sketch that can be extruded/revolved/swept.' },
 ];
 
+/** Which global primitive/extrude functions accept an opts.faceLabels map,
+ *  and the description of valid values for that map. */
+export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
+  acceptingKinds: [
+    'box',
+    'cylinder',
+    'extrudeRect',
+    'extrudeCircle',
+    'extrudePolygon',
+    'extrudeRoundedRect',
+    'revolveRect',
+  ] as const,
+  description:
+    'Pass `opts.faceLabels` as a plain object map from user-chosen label name to either a canonical face name ' +
+    '(one of: top, bottom, left, right, front, back) or a FaceQuery descriptor object. ' +
+    'Example: `box(10, 10, 5, false, { faceLabels: { lid: \'top\', floor: \'bottom\' } })`. ' +
+    'Labels declared here are resolved later by fillet/chamfer/shell via `{ face: \'<label>\' }`. ' +
+    'Use `list_face_labels` to inspect labels on an existing script. ' +
+    'Sphere does not accept faceLabels (no canonical face names; no meaningful FaceQuery targets).',
+};
+
 export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutput> {
   void input;
   return {
@@ -89,5 +119,6 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     pathBuilderMethods: PATH_BUILDER_METHODS,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
+    featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
   };
 }
