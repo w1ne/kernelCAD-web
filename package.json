@@ -32,7 +32,7 @@
     "site:dev": "npx tsx site/scripts/build-demo.ts && cd site && for f in public/*; do ln -sf \"$f\" \"$(basename \"$f\")\"; done && python3 -m http.server 8000",
     "site:build": "npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs",
     "site:render-brand": "node site/scripts/render-brand.mjs",
-    "site:test": "npx tsx --test scripts/lib/selectHeroDemo.test.ts",
+    "site:test": "vitest run scripts/lib/selectHeroDemo.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "qc:lint": "npm run lint && npm run cookbook:validate",

@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { test, expect } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -18,10 +17,10 @@ test('happy path — picks the catalog-conformant task for v0.21', () => {
   writeFileSync(path.join(root, 'v0.21', 'hero-task', 'demo.mp4'), 'fake');
 
   const result = selectHeroDemo({ packageVersion: '0.21.0', demosRoot: root });
-  assert.equal(result.task, 'hero-task');
-  assert.equal(result.heroArtifact, v021Slug);
-  assert.equal(result.mp4Path, path.join(root, 'v0.21', 'hero-task', 'demo.mp4'));
-  assert.equal(result.iterationKey, 'v0.21');
+  expect(result.task).toBe('hero-task');
+  expect(result.heroArtifact).toBe(v021Slug);
+  expect(result.mp4Path).toBe(path.join(root, 'v0.21', 'hero-task', 'demo.mp4'));
+  expect(result.iterationKey).toBe('v0.21');
 
   rmSync(root, { recursive: true, force: true });
 });
@@ -38,17 +37,16 @@ test('patch reuse — 0.21.1 maps to v0.21 too', () => {
   writeFileSync(path.join(root, 'v0.21', 'hero-task', 'demo.mp4'), 'fake');
 
   const result = selectHeroDemo({ packageVersion: '0.21.1', demosRoot: root });
-  assert.equal(result.iterationKey, 'v0.21');
+  expect(result.iterationKey).toBe('v0.21');
 
   rmSync(root, { recursive: true, force: true });
 });
 
 test('missing iteration dir — throws', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
-  assert.throws(
+  expect(
     () => selectHeroDemo({ packageVersion: '0.99.0', demosRoot: root }),
-    /no demo dir/i,
-  );
+  ).toThrow(/no demo dir/i);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -61,10 +59,9 @@ test('non-grandfathered, no catalog match — throws', () => {
   );
   writeFileSync(path.join(root, 'v0.21', 'random', 'demo.mp4'), 'fake');
 
-  assert.throws(
+  expect(
     () => selectHeroDemo({ packageVersion: '0.21.0', demosRoot: root }),
-    /no task .* heroArtifact in catalog/i,
-  );
+  ).toThrow(/no task .* heroArtifact in catalog/i);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -78,8 +75,8 @@ test('grandfathered v0.2 single-task fallback', () => {
   writeFileSync(path.join(root, 'v0.2', 'subtract-then-fillet-rim', 'demo.mp4'), 'fake');
 
   const result = selectHeroDemo({ packageVersion: '0.2.1', demosRoot: root });
-  assert.equal(result.task, 'subtract-then-fillet-rim');
-  assert.equal(result.heroArtifact, null);
+  expect(result.task).toBe('subtract-then-fillet-rim');
+  expect(result.heroArtifact).toBeNull();
 
   rmSync(root, { recursive: true, force: true });
 });
@@ -109,8 +106,8 @@ test('grandfathered multi-task picks the unique override-null hero', () => {
   writeFileSync(path.join(root, 'v0.2', 'pre-policy', 'demo.mp4'), 'fake');
 
   const result = selectHeroDemo({ packageVersion: '0.2.1', demosRoot: root });
-  assert.equal(result.task, 'primary');
-  assert.equal(result.heroArtifact, 'primary-slug');
+  expect(result.task).toBe('primary');
+  expect(result.heroArtifact).toBe('primary-slug');
 
   rmSync(root, { recursive: true, force: true });
 });
@@ -130,10 +127,9 @@ test('grandfathered multi-task with multiple primary candidates — throws', () 
   );
   writeFileSync(path.join(root, 'v0.2', 'b', 'demo.mp4'), 'fake');
 
-  assert.throws(
+  expect(
     () => selectHeroDemo({ packageVersion: '0.2.1', demosRoot: root }),
-    /grandfathered v0\.2 cannot auto-pick hero/i,
-  );
+  ).toThrow(/grandfathered v0\.2 cannot auto-pick hero/i);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -153,10 +149,9 @@ test('multiple catalog matches — throws ambiguity', () => {
     JSON.stringify({ heroArtifact: candidates[1].slug }));
   writeFileSync(path.join(root, 'v0.21', 'b', 'demo.mp4'), 'fake');
 
-  assert.throws(
+  expect(
     () => selectHeroDemo({ packageVersion: '0.21.0', demosRoot: root }),
-    /ambiguous hero/i,
-  );
+  ).toThrow(/ambiguous hero/i);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -170,9 +165,8 @@ test('hero task missing demo.mp4 — throws', () => {
     JSON.stringify({ heroArtifact: slug }),
   );
 
-  assert.throws(
+  expect(
     () => selectHeroDemo({ packageVersion: '0.21.0', demosRoot: root }),
-    /missing demo\.mp4/i,
-  );
+  ).toThrow(/missing demo\.mp4/i);
   rmSync(root, { recursive: true, force: true });
 });
