@@ -2,7 +2,7 @@
 import type { Edge, Face } from 'replicad';
 import type { FeatureRecord, FaceLabelsMap } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import type { EdgeRef } from '../../intent/types';
+import type { CanonicalFace, EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
@@ -13,8 +13,6 @@ import { resolveFaceRef } from '../../naming/resolveFaceRef';
 const TOL = 1e-4;
 
 const KNOWN_EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS);
-
-type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 // EdgeList holds replicad Edge wrappers, which EdgeFinder.inList() accepts.
 export type EdgeList = Edge[];
@@ -532,13 +530,11 @@ export function pickFace(
 
 // ─── Task 4: faceLabels metadata resolution helpers ───────────────────────────
 
-type CanonicalFaceAlias = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-
 interface MetadataLabelHit {
   /** The originating feature whose metadata.faceLabels declared this label. */
   origin: FeatureRecord;
   /** The resolved value: a canonical face name or a FaceQuery descriptor. */
-  resolved: CanonicalFaceAlias | FaceQuery;
+  resolved: CanonicalFace | FaceQuery;
 }
 
 /**
@@ -559,7 +555,7 @@ function findFaceLabelInMetadata(
     const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
     if (fl && Object.prototype.hasOwnProperty.call(fl, label)) {
       const resolved = fl[label];
-      hits.push({ origin: rec, resolved: resolved as CanonicalFaceAlias | FaceQuery });
+      hits.push({ origin: rec, resolved: resolved as CanonicalFace | FaceQuery });
     }
   }
   if (hits.length === 0) return { miss: true };
@@ -594,7 +590,7 @@ function resolveFromMetadataHit(
 
   if (typeof resolved === 'string') {
     // Canonical alias — same resolution machinery as the canonical FaceRef path.
-    const face = resolved as CanonicalFaceAlias;
+    const face = resolved as CanonicalFace;
     if (base.historyMap !== undefined) {
       const result = resolveFaceRef(
         { kind: 'canonical', face },
@@ -633,13 +629,14 @@ function resolveFromMetadataHit(
   // FaceQuery — resolve against the consumer's current shape.
   const matched = resolveFaceQuery(base, resolved as FaceQuery);
   if (matched.length === 0) {
+    const allFaces = (base.getReplicadShape() as unknown as { faces: Face[] }).faces;
     return {
       error: {
         target: 'export-occt',
         code: 'feature.label.query-no-match',
         featureId: consumer.id,
         severity: 'error',
-        message: `Label '${hit.origin.id}.faceLabels' query matched zero faces at the consumer. Query: ${JSON.stringify(resolved)}.`,
+        message: `Label declared on '${hit.origin.id}.faceLabels' matched zero faces at the consumer (${allFaces.length} faces available on the consumer shape). Query: ${JSON.stringify(resolved)}. Use list_face_labels or list_faces to inspect candidates.`,
       },
     };
   }
