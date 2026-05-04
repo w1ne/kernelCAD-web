@@ -38,6 +38,42 @@ Per the gap-closure roadmap §I4 / first-wave dispatch doc, this is workstream #
 
 ---
 
+## v0.21.1 — demo-quality patch (2026-05-03)
+
+### Added
+
+- **Per-feature mesh organization in demo player.** Reveal order now matches the feature graph (was OCCT iteration order). Each feature becomes a named `THREE.Group` built Node-side via `meshFeaturesPerFeature` (uses `RecomputeEngine` + `OcctLowerer` — same path as eval). Bridge serialization (`serializeForBridge` / `rehydrateFromBridge`) handles TypedArray transport over the Playwright `page.evaluate` boundary.
+- **AnimationEngine color-flash transitions fire.** `boolean.cut` (red on cutter), `boolean.fuse` (yellow glow), and `modifier` (cyan flash on fillet/chamfer) now actually run because the per-feature `THREE.Group` lookup succeeds. Predecessors fade out as the carved/fused/modified result fades in. Material aligned to `MeshPhongMaterial` (matches `buildMeshFromFace`) — pre-existing `MeshStandardMaterial` probe was a silent no-op since v0.21.
+- **Browser worker `{ face: 'top'|'bottom'|'left'|'right'|'front'|'back' }` parity.** `v01ApiShim` lowers canonical face refs to a Replicad `EdgeFinder` via axis-aligned bbox lookup. Closes the v0.2 syntax gap that previously forced demo fallback to `box-minus-divider`. Live-editor verified: `box(50,50,8).subtract(cyl).fillet(r, { face: 'top' })` produces 7→12 faces (fillet adds 5).
+- **Shared meshing helpers** at `src/backends/occt/meshing.ts` — both browser worker and Node-side capture use the same face/edge extraction code.
+- **`FeatureEvent.op`** field — explicit `'subtract' | 'union' | 'intersect'` populated Node-side (replaces the implicit `shape.__op` probe in AnimationEngine).
+- **`MeshFeaturesResult.failedFeatureIds`** surfaces partial-failure state from `meshFeaturesPerFeature` so `captureDemo` can abort with a clear error instead of producing a broken scene.
+
+### Changed
+
+- **v0.2 demo re-captured** with the original `subtract-then-fillet-rim` intent — square plate, through-hole, fillet on top edges (perimeter + hole rim, both belonging to the same `top` face after the boolean). Replaces `box-minus-divider/` fallback (git-removed; history preserved via the v0.21 ship commit).
+- **v0.21 hero demo re-captured** to verify color-flash transitions fire end-to-end.
+
+### Fixed (bugs surfaced during integration)
+
+- **`v01ApiShim.unwrap()`** used the `in` operator which fires the Proxy `has` trap (undefined → always false), so it was effectively a no-op. Tests passed because Replicad accepted the proxy via transparent get-forwarding. Switched to property access which fires the `get` trap correctly.
+- **`meshFeaturesPerFeature` missing `await initOcct()`** — every feature failed with "OCCT not initialized" in production paths; unit tests passed because of `beforeAll(initOcct)`.
+- **`CameraController.nudgeTo`** cast scene objects to `THREE.Mesh` (worked pre-v0.21.1 when scenes held meshes named by featureId; broken after Task 5's `THREE.Group` refactor). Now uses `THREE.Box3().setFromObject()` which works on any `Object3D`.
+- **Camera rotation hard-cut to `(rotateRadius, 80, 0)`** at t=0 and ended there at t=1, producing edge-on hero frames for flat geometry (e.g., the v0.2 plate). Now orbits from the camera's current iso angle and returns to it.
+- **`bboxOf` degenerate fallback** silently returned `Infinity` bounds when neither `boundingBox` nor face-mesh was available; now throws a clear diagnostic.
+- **Material `transparent: true` left set** by `AnimationEngine.setOpacity` even at full opacity, causing `MeshPhongMaterial + DoubleSide` depth-sort artifacts (ghost geometry visible through front faces). Added `setOpaque()` helper.
+
+### Known limitations
+
+- **Rotated/transformed canonical face refs** in the browser worker still throw a clear deferred-feature error (matches Node `findCanonicalFaceHash` is the source of truth). Tracking deferred to a future workstream.
+- **`captureDemo`'s "latest run" picker** resolves to the alphabetically-last `eval/runs/` dir — if multiple runs exist for different tasks, the wrong dir may be picked. Workaround: use explicit `--script`/`--prompt` flags. Pre-existing latent bug, not blocking v0.21.1.
+
+### Reframed
+
+- **Visual verifier loop** (`render_views`, `compare_to_intent`, VLM-critique) — was tagged for v0.21.1 in the v0.21 design; reframed to **v0.22** (separate workstream).
+
+---
+
 ## v0.2.0 — tracked face/edge refs across transforms + booleans (2026-05-03)
 
 Closes the SKILL.md "Critical Constraint" section. Canonical face refs (`{ face: 'top' }`) now work transparently across every transform (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and every unambiguous boolean (`.subtract`, `.union`, `.intersect`). The previous workaround "apply edge feature BEFORE transforms" still works; scripts that previously failed with `feature.edge-feature.face-ref-not-resolvable` after a transform or boolean now succeed with no syntax change.
