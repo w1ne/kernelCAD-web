@@ -38,8 +38,8 @@ const EMITTING_FILES = [
 ];
 
 // Match `code: '<value>'` and `new KernelError('<code>', ...)`.
-const CODE_LITERAL_RE = /\bcode:\s*['"]([\w.\-]+)['"]/g;
-const KERNEL_ERR_RE = /new\s+KernelError\(\s*['"]([\w.\-]+)['"]/g;
+const CODE_LITERAL_RE = /\bcode:\s*['"]([\w.-]+)['"]/g;
+const KERNEL_ERR_RE = /new\s+KernelError\(\s*['"]([\w.-]+)['"]/g;
 
 function emittedCodes(): Set<string> {
   const codes = new Set<string>();

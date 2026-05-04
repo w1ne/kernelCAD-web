@@ -118,12 +118,17 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.edges).toHaveLength(4);
   }, 90000);
 
-  it('responds to why_did_this_fail with healthy on a clean script', async () => {
+  it('responds to why_did_this_fail with chain entry for a clean script', async () => {
     const result = await callTool('why_did_this_fail', { code: 'return box(10, 10, 10);' });
     const text = (result as { content: { text: string }[] }).content[0].text;
     const payload = JSON.parse(text);
     expect(payload.ok).toBe(true);
-    expect(payload.health).toBe('healthy');
+    expect(payload.chain).toBeDefined();
+    expect(payload.chain.length).toBeGreaterThan(0);
+    const last = payload.chain[payload.chain.length - 1];
+    expect(last.kind).toBe('box');
+    expect(last.health).toBe('healthy');
+    expect(last.diagnostics).toEqual([]);
   }, 90000);
 
   it('responds to set_param_value with edited code + diagnostics', async () => {

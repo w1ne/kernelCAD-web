@@ -19,6 +19,7 @@ export interface ListDiagnosticCodesOutput {
 }
 
 export async function listDiagnosticCodesTool(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _input: ListDiagnosticCodesInput,
 ): Promise<ListDiagnosticCodesOutput> {
   return {
