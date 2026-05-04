@@ -47,6 +47,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
+      # cli-bundle and eval/* integration tests require the bundled CLI at
+      # dist/cli/index.js; rebuild here because build-and-checks runs on a
+      # separate runner. Shared build cache keeps this fast (~10-15s on hit).
+      - name: Build CLI bundle (required by integration tests)
+        run: npm run build:cli
       - name: QC — vitest
         run: npm run qc:test
 
