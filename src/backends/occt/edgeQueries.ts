@@ -325,7 +325,12 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
   // v0.2-finish additions ------------------------------------------------
   if (query.byNormal !== undefined) {
     const axisVec = signedAxisVec(query.byNormal);
-    const normalTol = 0.01; // 1 - tolerance for dot product
+    // byNormal uses a fixed cosine threshold (0.01 ≈ 8°) rather than honoring
+    // query.tolerance because the latter is documented as a position tolerance
+    // in millimetres (default 1.0 — see top of FaceQuery type), not a unit-vector
+    // threshold. Conflating units would let `tolerance: 1.0` mean "accept any
+    // front-hemisphere face" (dot > 0).
+    const normalTol = 0.01;
     faces = faces.filter(f => {
       const n = f.normalAt();
       const dot = n.x * axisVec[0] + n.y * axisVec[1] + n.z * axisVec[2];
