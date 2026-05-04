@@ -17,6 +17,12 @@ export interface CatalogEntry {
   candidates: CatalogCandidate[];
 }
 
+// Pre-policy iteration versions that were already shipped before this policy
+// landed. Their legacy fields (gitSha/capturedAt/taskId) still get checked,
+// but heroArtifact/catalogSource/overrideApprovedBy + catalog match are
+// skipped per §1 non-goals of the memorable-builds policy spec.
+export const GRANDFATHERED_VERSIONS = new Set<string>(['v0.1', 'v0.2']);
+
 export const ALL_VERSIONS = [
   'v0.21',
   'v0.3', 'v0.4', 'v0.5', 'v0.6', 'v0.7', 'v0.8', 'v0.9',

@@ -4,6 +4,7 @@ import {
   isCatalogSlug,
   GENERIC_PRIMITIVE_DENYLIST,
   ALL_VERSIONS,
+  GRANDFATHERED_VERSIONS,
 } from './memorableBuildsCatalog';
 
 describe('memorableBuildsCatalog', () => {
@@ -58,5 +59,10 @@ describe('memorableBuildsCatalog', () => {
         expect(c.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       }
     }
+  });
+
+  it('GRANDFATHERED_VERSIONS contains v0.1 and v0.2 (pre-policy iterations)', () => {
+    expect(GRANDFATHERED_VERSIONS.has('v0.1')).toBe(true);
+    expect(GRANDFATHERED_VERSIONS.has('v0.2')).toBe(true);
   });
 });
