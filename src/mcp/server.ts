@@ -16,6 +16,7 @@ import { listEdgesTool } from './tools/listEdges';
 import { listFacesTool } from './tools/listFaces';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listApiTool } from './tools/listApi';
+import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { exportStlTool } from './tools/exportStl';
 import { lookupCookbookTool } from './tools/lookupCookbook';
 
@@ -94,7 +95,7 @@ export const TOOLS = [
   },
   {
     name: 'why_did_this_fail',
-    description: "Return the focused diagnostic view of one feature — its health, its own diagnostics, the upstream chain (each upstream feature's id/kind/health), and human-readable hints for known diagnostic codes. Use when fillet/chamfer/shell errors and the agent needs the dependency context. Pass { file?, code?, feature_id? }.",
+    description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call list_diagnostic_codes for the full catalogue. Pass { file?, code?, feature_id? }.",
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -186,6 +187,18 @@ export const TOOLS = [
     name: 'list_api',
     description:
       'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
+    name: 'list_diagnostic_codes',
+    description:
+      'Return the kernelCAD 24-code diagnostic catalogue with hint templates. ' +
+      'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
+      'retry strategies. Hints are also inline on every emitted diagnostic — ' +
+      'this tool just gives you the canonical list up front.',
     inputSchema: {
       type: 'object' as const,
       properties: {},
@@ -297,6 +310,9 @@ export function createMcpServer(): Server {
         break;
       case 'list_api':
         result = await listApiTool(input as Parameters<typeof listApiTool>[0]);
+        break;
+      case 'list_diagnostic_codes':
+        result = await listDiagnosticCodesTool(input as Parameters<typeof listDiagnosticCodesTool>[0]);
         break;
       case 'export_stl':
         result = await exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]);
