@@ -1,7 +1,7 @@
 // scripts/lib/memorableBuildsCatalog.ts
 //
 // Machine-readable mirror of §2 of
-// docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md.
+// memorable-builds-policy spec (in kernelCAD-private).
 //
 // When the spec catalog is amended, update this file in the same commit.
 // The denylist below is intentionally extensible — add primitive names

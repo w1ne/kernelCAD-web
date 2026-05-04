@@ -53,7 +53,7 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
   it('the direct-lowerer-only set matches the documented forward-looking codes', () => {
     // Codes classified as direct-lowerer-only must be in the documented set.
     // Adding a new direct-lowerer-only code requires updating this test AND
-    // citing docs/superpowers/specs/2026-05-01-error-attribution-policy.md
+    // citing error-attribution-policy (in kernelCAD-private)
     // per the rc.12 error-attribution policy memo.
     const directLowererOnly = Object.entries(HINTS)
       .filter(([, entry]) => entry.reachable === 'direct-lowerer-only')
@@ -62,7 +62,7 @@ describe('whyDidThisFail HINTS table reachability classification', () => {
     const expected = [...KNOWN_DIRECT_LOWERER_ONLY].sort();
     expect(
       directLowererOnly,
-      `Adding a new direct-lowerer-only code requires (1) updating KNOWN_DIRECT_LOWERER_ONLY in this test, AND (2) citing docs/superpowers/specs/2026-05-01-error-attribution-policy.md in the introducing PR per the error-attribution policy.`,
+      `Adding a new direct-lowerer-only code requires (1) updating KNOWN_DIRECT_LOWERER_ONLY in this test, AND (2) citing error-attribution-policy (in kernelCAD-private) in the introducing PR per the error-attribution policy.`,
     ).toEqual(expected);
   });
 

@@ -54,7 +54,7 @@ function parseArgs(argv: string[]): Args {
     process.exit(2);
   }
   if (!a.heroArtifact && !a.rotateOnly) {
-    console.error('Missing --hero-artifact <slug>. See docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md §2 for the catalog.');
+    console.error('Missing --hero-artifact <slug>. See memorable-builds-policy §2 (in kernelCAD-private) for the catalog.');
     process.exit(2);
   }
   // rotate-only re-renders cached output and never writes meta.json or whats-new.md;

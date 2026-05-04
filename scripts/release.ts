@@ -34,16 +34,56 @@ const getCurrentVersion = () => {
 
 // --- Main Script ---
 const args = process.argv.slice(2);
-const versionType = args[0] as 'major' | 'minor' | 'patch' | undefined;
+const firstArg = args[0];
 const fullQC = args.includes('--full');
 
-if (!versionType || !['major', 'minor', 'patch'].includes(versionType)) {
-    console.error('Usage: npm run release -- [major|minor|patch] [--full]');
+const SEMVER_RE = /^\d+\.\d+\.\d+$/;
+const KEYWORDS = ['major', 'minor', 'patch'] as const;
+type Keyword = (typeof KEYWORDS)[number];
+type VersionMode = { kind: 'keyword'; value: Keyword } | { kind: 'explicit'; value: string };
+
+let versionMode: VersionMode;
+if (firstArg && KEYWORDS.includes(firstArg as Keyword)) {
+    versionMode = { kind: 'keyword', value: firstArg as Keyword };
+} else if (firstArg && SEMVER_RE.test(firstArg)) {
+    versionMode = { kind: 'explicit', value: firstArg };
+} else {
+    console.error('Usage: npm run release -- [major|minor|patch | X.Y.Z] [--full]');
     process.exit(1);
 }
 
-console.log(`🚀 Starting Release Process for ${versionType} version...`);
+function computeNextVersion(current: string, mode: VersionMode): string {
+    if (mode.kind === 'explicit') return mode.value;
+    const [maj, min, patch] = current.split('.').map(Number);
+    if (mode.value === 'major') return `${maj + 1}.0.0`;
+    if (mode.value === 'minor') return `${maj}.${min + 1}.0`;
+    return `${maj}.${min}.${patch + 1}`;
+}
+
+const projectedVersion = computeNextVersion(getCurrentVersion(), versionMode);
+const projectedLabel = versionMode.kind === 'keyword'
+    ? `${versionMode.value} (→ ${projectedVersion})`
+    : projectedVersion;
+console.log(`🚀 Starting Release Process for ${projectedLabel}...`);
 console.log(`🔎 QC Mode: ${fullQC ? 'full (qc:full)' : 'quick (qc)'}`);
+
+// 0. Demo pre-flight (skip on patch bumps — patches reuse the iteration's hero)
+const projectedPatch = Number(projectedVersion.split('.')[2]);
+if (projectedPatch === 0) {
+    console.log('\n🎬 Pre-flight: validating demo for new iteration...');
+    try {
+        const { selectHeroDemo } = await import('./lib/selectHeroDemo.js');
+        const result = selectHeroDemo({
+            packageVersion: projectedVersion,
+            demosRoot: resolve(process.cwd(), 'docs/demos'),
+        });
+        console.log(`   ✓ ${result.iterationKey}/${result.task} ready (heroArtifact: ${result.heroArtifact ?? '<grandfathered>'})`);
+    } catch (err) {
+        console.error(`❌ Demo pre-flight failed: ${(err as Error).message}`);
+        console.error('   Capture or fix the hero demo before releasing.');
+        process.exit(1);
+    }
+}
 
 // 1. Quality Checks
 console.log('\n🔍 Running Quality Checks...');
@@ -61,12 +101,15 @@ console.log('\n📝 Generating Release Notes...');
 const lastTag = getOutput('git describe --tags --abbrev=0');
 const commitLog = getOutput(`git log ${lastTag}..HEAD --pretty=format:"- %s (%h)"`);
 
-// 4. Bump Version (this updates package.json and creates a git commit/tag)
-// We use --no-git-tag-version first to update compilation files if needed, 
-// then we will manually commit and tag to include the release notes.
+// 4. Bump Version (this updates package.json; we tag manually after release notes).
 console.log('\n📦 Bumping Version...');
-run(`npm version ${versionType} --no-git-tag-version`, 'Version bump failed.');
+const npmArg = versionMode.value;  // npm version accepts both keywords and X.Y.Z literals
+run(`npm version ${npmArg} --no-git-tag-version`, 'Version bump failed.');
 const newVersion = getCurrentVersion();
+if (newVersion !== projectedVersion) {
+    console.error(`❌ Version mismatch: projected ${projectedVersion} but package.json now says ${newVersion}`);
+    process.exit(1);
+}
 
 // 5. Create Release Notes File
 const date = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';

@@ -22,7 +22,7 @@ docs/demos/
 - **Per coverage-gate transition** also adds an aggregate reel under `docs/demos/gates/G<N>/`.
 - **Captured during a real harness run, not staged.** The agent loop must be visible in the terminal capture.
 - **Embedded in:** GitHub release notes (mandatory), CHANGELOG entries (markdown image embed), public-benchmark submission notes, the public examples gallery.
-- **Hero artifact must be drawn from the catalog in [`docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md`](../superpowers/specs/2026-05-04-memorable-builds-policy-design.md)** (or have a non-null `meta.json.overrideApprovedBy` recording controller approval). Generic primitives (box, bracket, plate, cylinder, cube, sphere) are denylisted by `scripts/lint-demos.ts`. No catalog-conformant artifact, no `v0.X.0` tag.
+- **Hero artifact must be drawn from the catalog in the memorable-builds policy spec (in kernelCAD-private)** (or have a non-null `meta.json.overrideApprovedBy` recording controller approval). Generic primitives (box, bracket, plate, cylinder, cube, sphere) are denylisted by `scripts/lint-demos.ts`. No catalog-conformant artifact, no `v0.X.0` tag.
 
 ## Authoring
 

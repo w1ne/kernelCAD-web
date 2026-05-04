@@ -16,7 +16,7 @@ ${opts.heroArtifact}
 
 ## Why memorable
 
-<!-- TODO: Replace each bullet's content (after the colon) with a 1-line answer. Required by docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md §1. -->
+<!-- TODO: Replace each bullet's content (after the colon) with a 1-line answer. Required by memorable-builds-policy spec (in kernelCAD-private) §1. -->
 
 - Recognizable in one second: TODO:
 - New tool central: TODO:
