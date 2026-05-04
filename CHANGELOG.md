@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+### Changed — CI parallelization (~40-45% wall-clock reduction)
+
+- **`ci.yml` and `deploy.yml` refactored** into three parallel QC jobs (`lint`, `build-and-checks`, `test`) plus a `web-build` job in `deploy.yml` for the Pages bundle. Estimated wall-clock reduction from ~3:30 to ~1:30 (≈45%).
+- **New composite action** `.github/actions/setup-cad/action.yml` shares setup steps (setup-node + caches + conditional `npm ci`) across all jobs.
+- **Three caches added**: `node_modules` keyed on `package-lock.json`, build artefacts (`.tsbuildinfo` + `node_modules/.cache` + `node_modules/.vite`) keyed on TS/vite source hashes, plus the existing `~/.npm` cache from `actions/setup-node`.
+- **`package.json` scripts split**: new `qc:lint` / `qc:build` / `qc:test` sub-scripts; existing `qc` becomes the meta-script `npm run qc:lint && npm run qc:build && npm run qc:test`. Local-dev workflow unchanged — `npm run qc` still runs the full chain.
+- **`Build` step removed from `ci.yml`**: it was redundant with `qc:build`'s `typecheck + build:cli`. The Vite production build still runs in `deploy.yml`'s `web-build` job for Pages upload.
+- **`e2e` job in both workflows** now `needs: [lint, build-and-checks, test]` (gates on all three QC jobs being green).
+
+See `docs/superpowers/specs/2026-05-04-ci-acceleration-design.md` for design rationale.
+
 ### Added — v0.21 synchronized live-build demo automation
 
 - **Kernel feature-event stream** (`FeatureEvent`/`FeatureEventSink`) emitted from `RecomputeEngine.run()` per topo-ordered feature.
