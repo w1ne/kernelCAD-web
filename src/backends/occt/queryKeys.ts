@@ -27,6 +27,7 @@ void _edgeKeysExhaustive;
 export const FACE_QUERY_KEYS: ReadonlyArray<keyof FaceQuery> = [
   'atZ', 'atX', 'atY', 'parallelTo', 'inPlane', 'ofSurfaceType',
   'containsPoint', 'near', 'tolerance',
+  'byNormal', 'minArea', 'maxArea', 'boundingBoxIn',
 ];
 
 type _FaceQueryKeysMissing = Exclude<keyof FaceQuery, typeof FACE_QUERY_KEYS[number]>;

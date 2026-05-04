@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, selectEdges, selectEdge } from '../../../../src/backends/occt/edgeQueries';
+import * as replicad from 'replicad';
 
 describe('resolveEdgeQuery', () => {
   beforeAll(async () => { await initOcct(); });
@@ -136,5 +137,126 @@ describe('selectEdges / selectEdge', () => {
       const dot = seg.normalA[0] * seg.normalB[0] + seg.normalA[1] * seg.normalB[1] + seg.normalA[2] * seg.normalB[2];
       expect(Math.abs(dot)).toBeLessThan(0.01); // perpendicular
     }
+  });
+});
+
+describe('resolveFaceQuery — v0.2-finish polish keys', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  // byNormal ---------------------------------------------------------------
+
+  it('byNormal: "Z" returns only the +Z face on a 10x10x10 box', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { byNormal: 'Z' });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.z).toBeCloseTo(1, 2);
+  });
+
+  it('byNormal: "-Z" returns only the -Z face on a 10x10x10 box', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { byNormal: '-Z' });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.z).toBeCloseTo(-1, 2);
+  });
+
+  it('byNormal: "X" returns only the +X face', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { byNormal: 'X' });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.x).toBeCloseTo(1, 2);
+  });
+
+  it('byNormal: "-X" returns only the -X face', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { byNormal: '-X' });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.x).toBeCloseTo(-1, 2);
+  });
+
+  it('byNormal: rejects invalid axis string at runtime', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    // Cast to any to simulate an agent sending an invalid key
+    expect(() => resolveFaceQuery(box, { byNormal: 'Q' as never })).toThrow();
+  });
+
+  // minArea ----------------------------------------------------------------
+
+  it('minArea: filters out faces below threshold on a 20x10x5 box', () => {
+    // top/bottom = 200mm², side-Y faces = 100mm², side-X faces = 50mm²
+    // minArea: 150 should keep top+bottom only (2 faces)
+    const box = OcctBackend.box(20, 10, 5);
+    const faces = resolveFaceQuery(box, { minArea: 150 });
+    expect(faces).toHaveLength(2);
+    for (const f of faces) {
+      expect(replicad.measureArea(f)).toBeGreaterThanOrEqual(150);
+    }
+  });
+
+  it('minArea: 0 returns all faces', () => {
+    const box = OcctBackend.box(20, 10, 5);
+    const faces = resolveFaceQuery(box, { minArea: 0 });
+    expect(faces).toHaveLength(6);
+  });
+
+  // maxArea ----------------------------------------------------------------
+
+  it('maxArea: filters out faces above threshold on a 20x10x5 box', () => {
+    // maxArea: 75 should keep only side-X faces (50mm²) = 2 faces
+    const box = OcctBackend.box(20, 10, 5);
+    const faces = resolveFaceQuery(box, { maxArea: 75 });
+    expect(faces).toHaveLength(2);
+    for (const f of faces) {
+      expect(replicad.measureArea(f)).toBeLessThanOrEqual(75);
+    }
+  });
+
+  // minArea + maxArea AND-combined -----------------------------------------
+
+  it('minArea + maxArea AND-combined keeps only faces in the area range', () => {
+    // 20x10x5 box: top/bottom=200, sideY=100, sideX=50
+    // minArea:75, maxArea:150 → only sideY faces (100mm²) = 2 faces
+    const box = OcctBackend.box(20, 10, 5);
+    const faces = resolveFaceQuery(box, { minArea: 75, maxArea: 150 });
+    expect(faces).toHaveLength(2);
+    for (const f of faces) {
+      const a = replicad.measureArea(f);
+      expect(a).toBeGreaterThanOrEqual(75);
+      expect(a).toBeLessThanOrEqual(150);
+    }
+  });
+
+  // boundingBoxIn ----------------------------------------------------------
+
+  it('boundingBoxIn: { zMin: 9.5, zMax: 10.5 } returns only the top face of a 10mm cube', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { boundingBoxIn: { zMin: 9.5, zMax: 10.5 } });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.z).toBeCloseTo(1, 1);
+  });
+
+  it('boundingBoxIn: { zMin: -0.5, zMax: 0.5 } returns only the bottom face of a 10mm cube', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { boundingBoxIn: { zMin: -0.5, zMax: 0.5 } });
+    expect(faces).toHaveLength(1);
+    const n = faces[0].normalAt();
+    expect(n.z).toBeCloseTo(-1, 1);
+  });
+
+  it('boundingBoxIn: rejects faces partially outside the region', () => {
+    // { zMin: 3, zMax: 7 } — no face on a 10mm cube has its bbox fully inside this z range
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { boundingBoxIn: { zMin: 3, zMax: 7 } });
+    expect(faces).toHaveLength(0);
+  });
+
+  it('boundingBoxIn: combines with byNormal to select a specific face', () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = resolveFaceQuery(box, { byNormal: 'Z', boundingBoxIn: { zMin: 9.5, zMax: 10.5 } });
+    expect(faces).toHaveLength(1);
   });
 });
