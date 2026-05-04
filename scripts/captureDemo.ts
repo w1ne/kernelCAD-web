@@ -13,6 +13,8 @@ import { computeTimeline, type PacingOverride } from './lib/pacingEngine';
 import { FfmpegPipeline } from './lib/ffmpegPipeline';
 import { composeStaticPanel } from './lib/staticPanel';
 import { whatsNewTemplate, writeWhatsNewIfMissing } from './lib/whatsNewTemplate';
+import { meshFeaturesPerFeature } from '../src/capture/featureMeshing';
+import { serializeForBridge } from '../src/capture/featureMeshSerialize';
 
 interface Args {
   task?: string;
@@ -91,7 +93,7 @@ async function main(): Promise<void> {
 
   if (args.rotateOnly) {
     const existingPacing = JSON.parse(readFileSync(join(args.output, 'pacing.json'), 'utf8'));
-    // Replay script silently to populate scene state.
+    // Mesh scene Node-side and ship to browser — same path as the main capture.
     let scriptPath2: string;
     if (args.task) {
       const runsBase = resolve(__dirname, '../eval/runs');
@@ -102,21 +104,40 @@ async function main(): Promise<void> {
       scriptPath2 = resolve(args.script!);
     }
     const loaded2 = await loadScriptFeatures(scriptPath2);
-    for (const f of loaded2.features) {
+    const { features: featureMeshes2, bounds: bounds2, failedFeatureIds: failedIds2 } =
+      await meshFeaturesPerFeature(loaded2.features.map((f) => f.record));
+    if (failedIds2.length > 0) {
+      console.error(`captureDemo: ${failedIds2.length} feature(s) failed to compile: ${failedIds2.join(', ')}`);
+      console.error('Aborting capture — partial scene would produce a broken demo.');
+      process.exit(1);
+    }
+    const serialized2 = featureMeshes2.map(serializeForBridge);
+    await page.evaluate(
+      ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
+      { feats: serialized2, b: bounds2 },
+    );
+    console.log(`rotate-only: loaded ${serialized2.length} feature groups`);
+
+    // Replay all events instantly to drive AnimationEngine to its settled state.
+    // Without this, groups are loaded at opacity 0 and the rotate phase shows a black scene.
+    for (const fm of featureMeshes2) {
       await page.evaluate(
         (e) => window.__demoPlayer!.onEvent(e),
         {
           kind: 'feature.compiled',
-          featureId: f.id,
-          featureKind: f.kind,
-          predecessors: [],
+          featureId: fm.featureId,
+          featureKind: fm.featureKind,
+          predecessors: fm.predecessors,
           diagnostics: [],
           health: 'healthy',
           shape: null,
+          op: fm.op,
         } as never,
       );
-      await page.evaluate((dt: number) => window.__demoPlayer!.advance(dt), 800);
     }
+    // One large advance to settle all in-flight tweens (max anim duration is 600ms).
+    await page.evaluate((dt: number) => window.__demoPlayer!.advance(dt), 2000);
+
     const ffmpeg = new FfmpegPipeline();
     const mp4Path = join(args.output, 'demo.mp4');
     ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
@@ -169,6 +190,22 @@ async function main(): Promise<void> {
   );
   console.log(`pacing: total=${pacing.totalDurationMs}ms preRoll=${pacing.preRollMs}ms rotate=${pacing.rotateDurationMs}ms truncated=${pacing.truncated}`);
 
+  // Node-side per-feature meshing: builds the scene authoritative source of truth.
+  const { features: featureMeshes, bounds, failedFeatureIds } = await meshFeaturesPerFeature(
+    loaded.features.map((f) => f.record),
+  );
+  if (failedFeatureIds.length > 0) {
+    console.error(`captureDemo: ${failedFeatureIds.length} feature(s) failed to compile: ${failedFeatureIds.join(', ')}`);
+    console.error('Aborting capture — partial scene would produce a broken demo.');
+    process.exit(1);
+  }
+  const serialized = featureMeshes.map(serializeForBridge);
+  await page.evaluate(
+    ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
+    { feats: serialized, b: bounds },
+  );
+  console.log(`loaded ${serialized.length} feature groups, bounds=[${bounds.min.map(v => v.toFixed(1)).join(',')}]→[${bounds.max.map(v => v.toFixed(1)).join(',')}]`);
+
   // Drive terminal lines (statements as a rough proxy — split source by newline).
   const sourceLines = loaded.source.split('\n').filter((l) => l.trim().length > 0);
   const terminalLines = loaded.features.map((f, i) => {
@@ -177,15 +214,6 @@ async function main(): Promise<void> {
   });
   await page.evaluate((lines) => window.__demoPlayer!.setTerminalLines(lines), terminalLines);
   await page.evaluate((origin) => window.__demoPlayer!.startTerminalClock(origin), pacing.preRollMs);
-
-  // Load the script in the page — runs OCCT lowering, builds invisible face meshes, fits camera.
-  const loadResult = await page.evaluate(
-    async (source: string) => window.__demoPlayer!.loadScript(source),
-    loaded.source,
-  );
-  console.log(`loaded script: ${loadResult.faceCount} faces, bounds=[${loadResult.bounds.min.map((v) => v.toFixed(1)).join(',')}]→[${loadResult.bounds.max.map((v) => v.toFixed(1)).join(',')}]`);
-  // Per-feature face budget for progressive reveal.
-  const facesPerEvent = Math.max(1, Math.ceil(loadResult.faceCount / Math.max(1, loaded.features.length)));
 
   // Title card if needed.
   if (pacing.preRollMs > 0) {
@@ -207,8 +235,15 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
+  const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
   const sortedEvents = loaded.features
-    .map((f) => ({ feature: f, t: pacing.features.get(f.id)! }))
+    .map((f) => {
+      const mesh = meshById.get(f.id);
+      if (!mesh) {
+        throw new Error(`captureDemo: feature '${f.id}' has no mesh — likely a meshFeaturesPerFeature bug`);
+      }
+      return { feature: f, t: pacing.features.get(f.id)!, mesh };
+    })
     .sort((a, b) => a.t.startAtMs - b.t.startAtMs);
   let nextEventIdx = 0;
 
@@ -227,18 +262,12 @@ async function main(): Promise<void> {
           kind: 'feature.compiled',
           featureId: item.feature.id,
           featureKind: item.feature.kind,
-          predecessors: [],
+          predecessors: item.mesh.predecessors,
           diagnostics: [],
           health: 'healthy',
           shape: null,
+          op: item.mesh.op,
         } as never,
-      );
-      // Reveal this feature's share of faces (synced to AnimationEngine transition window).
-      const isLast = nextEventIdx === sortedEvents.length - 1;
-      const count = isLast ? Number.MAX_SAFE_INTEGER : facesPerEvent;
-      await page.evaluate(
-        ({ c, d }: { c: number; d: number }) => window.__demoPlayer!.revealFaces(c, d),
-        { c: count, d: item.t.durationMs },
       );
       nextEventIdx++;
     }

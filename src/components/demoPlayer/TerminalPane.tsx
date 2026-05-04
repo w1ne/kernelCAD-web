@@ -53,11 +53,12 @@ export function TerminalPane({ lines, width, height, getElapsedMs }: TerminalPan
         background: '#0c0c12',
         color: '#e6e6e6',
         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-        fontSize: 24,
-        lineHeight: '36px',
+        fontSize: 20,
+        lineHeight: '30px',
         padding: 32,
         overflow: 'hidden',
-        whiteSpace: 'pre',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
         boxSizing: 'border-box',
       }}
     >

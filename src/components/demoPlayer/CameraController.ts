@@ -14,6 +14,7 @@ export class CameraController {
   private rotateDurationMs = 0;
   private rotateRadius = 200;
   private rotateY = 80;
+  private rotateStartAngle = 0;
 
   constructor(camera: THREE.PerspectiveCamera, scene: THREE.Scene) {
     this.camera = camera;
@@ -22,13 +23,17 @@ export class CameraController {
 
   /** Nudge camera to keep `featureId` ~40% of viewport diagonal over `durationMs`. */
   nudgeTo(featureId: string, durationMs: number, currentMs: number): void {
-    const mesh = this.scene.getObjectByName(featureId) as THREE.Mesh | undefined;
-    if (!mesh) return;
-    mesh.geometry.computeBoundingSphere();
-    const sphere = mesh.geometry.boundingSphere;
-    if (!sphere) return;
-    const center = sphere.center.clone().add(mesh.position);
-    const radius = sphere.radius;
+    const obj = this.scene.getObjectByName(featureId);
+    if (!obj) return;
+    // Feature objects are THREE.Group (each face is a child Mesh). Use Box3 to
+    // compute the world-space bounding box, then derive a sphere from it.
+    const box = new THREE.Box3().setFromObject(obj);
+    if (box.isEmpty()) return;
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const radius = size.length() / 2;
     const distance = radius / Math.tan((this.camera.fov * Math.PI) / 180 / 2) / 0.4;
     const dir = this.camera.position.clone().sub(center).normalize();
     const target = center.clone().add(dir.multiplyScalar(distance));
@@ -41,7 +46,9 @@ export class CameraController {
   startRotate(durationMs: number, currentMs: number): void {
     this.rotateStartMs = currentMs;
     this.rotateDurationMs = durationMs;
-    this.rotateRadius = this.camera.position.length();
+    this.rotateRadius = Math.hypot(this.camera.position.x, this.camera.position.z);
+    this.rotateStartAngle = Math.atan2(this.camera.position.z, this.camera.position.x);
+    this.rotateY = this.camera.position.y;
   }
 
   update(currentMs: number): void {
@@ -57,7 +64,7 @@ export class CameraController {
     }
     if (this.rotateStartMs >= 0 && currentMs >= this.rotateStartMs) {
       const t = (currentMs - this.rotateStartMs) / this.rotateDurationMs;
-      const angle = easeInOut(Math.min(1, t)) * Math.PI * 2;
+      const angle = this.rotateStartAngle + easeInOut(Math.min(1, t)) * Math.PI * 2;
       this.camera.position.set(
         Math.cos(angle) * this.rotateRadius,
         this.rotateY,

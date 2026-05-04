@@ -12,6 +12,7 @@ export type FeatureEvent =
       predecessors: FeatureId[];
       diagnostics: CompilerDiagnostic[];
       health: 'healthy' | 'warning';
+      op?: 'subtract' | 'union' | 'intersect';
     }
   | {
       kind: 'feature.failed';
