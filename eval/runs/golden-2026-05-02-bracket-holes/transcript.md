@@ -33,7 +33,7 @@ return sphere(5).fillet(1, { face: 'top' });
 ```
 
 ## Evaluate (attempt 1) — FAIL
-- `feature.edge-feature.face-ref-not-applicable` — Canonical face 'top' is not applicable to 'sphere' primitive. (feature: fillet_1)
+- `feature.face-ref.not-applicable` — Canonical face 'top' is not applicable to 'sphere' primitive. (feature: fillet_1)
 
 ## Turn 2 (in: 4,801 tok, out: 290 tok, 0.0s)
 

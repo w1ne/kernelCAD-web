@@ -189,7 +189,7 @@ describe('faceLabels capture-time validation and persistence', () => {
       api.sphere(5, { faceLabels: { skin: 'top' } });
     } catch (e) {
       expect(e instanceof KernelError).toBe(true);
-      expect((e as KernelError).code).toBe('feature.label.unsupported-on-shape');
+      expect((e as KernelError).code).toBe('feature.face-ref.not-applicable');
     }
   });
 
@@ -200,7 +200,7 @@ describe('faceLabels capture-time validation and persistence', () => {
     try {
       api.box(10, 10, 10, false, { faceLabels: 'lid' as never });
     } catch (e) {
-      expect((e as KernelError).code).toBe('capture.faceLabels.invalid-shape');
+      expect((e as KernelError).code).toBe('feature.invalid-args');
     }
   });
 
@@ -210,7 +210,7 @@ describe('faceLabels capture-time validation and persistence', () => {
       api.box(10, 10, 10, false, { faceLabels: { '': 'top' } as never });
     } catch (e) {
       expect(e instanceof KernelError).toBe(true);
-      expect((e as KernelError).code).toBe('capture.faceLabels.invalid-key');
+      expect((e as KernelError).code).toBe('feature.invalid-args');
     }
   });
 
@@ -220,7 +220,7 @@ describe('faceLabels capture-time validation and persistence', () => {
       api.box(10, 10, 10, false, { faceLabels: { lid: 42 as never } });
     } catch (e) {
       expect(e instanceof KernelError).toBe(true);
-      expect((e as KernelError).code).toBe('capture.faceLabels.invalid-value');
+      expect((e as KernelError).code).toBe('feature.invalid-args');
     }
   });
 
@@ -230,7 +230,7 @@ describe('faceLabels capture-time validation and persistence', () => {
       api.box(10, 10, 10, false, { faceLabels: { lid: 'middle' as never } });
     } catch (e) {
       expect(e instanceof KernelError).toBe(true);
-      expect((e as KernelError).code).toBe('capture.faceLabels.invalid-value');
+      expect((e as KernelError).code).toBe('feature.invalid-args');
     }
   });
 });

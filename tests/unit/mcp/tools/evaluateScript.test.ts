@@ -27,7 +27,7 @@ describe('evaluateScriptTool', () => {
   it('rejects when neither file nor code is provided', async () => {
     const result = await evaluateScriptTool({});
     expect(result.ok).toBe(false);
-    expect(result.diagnostics[0].code).toBe('cli.no-input');
+    expect(result.diagnostics[0].code).toBe('cli.invalid-args');
   });
 
   it('handles fillet from v0.2-alpha (round-trip kernel surface)', async () => {

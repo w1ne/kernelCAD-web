@@ -97,7 +97,7 @@ describe('applyVariableEdgeFeature diagnostics', () => {
     };
     const result = applyVariableEdgeFeature('fillet', base, feature, undefined);
     expect(result.ok).toBe(false);
-    expect(result.diagnostics.map(d => d.code)).toContain('feature.fillet.invalid-edge-ref');
+    expect(result.diagnostics.map(d => d.code)).toContain('feature.invalid-args');
   });
 
   it('feature.chamfer.invalid-edge-ref fires when edge_group_0 has kind: vertex', () => {
@@ -117,6 +117,6 @@ describe('applyVariableEdgeFeature diagnostics', () => {
     };
     const result = applyVariableEdgeFeature('chamfer', base, feature, undefined);
     expect(result.ok).toBe(false);
-    expect(result.diagnostics.map(d => d.code)).toContain('feature.chamfer.invalid-edge-ref');
+    expect(result.diagnostics.map(d => d.code)).toContain('feature.invalid-args');
   });
 });

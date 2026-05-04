@@ -55,7 +55,7 @@ describe('OcctLowerer fillet', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.edge-feature.face-ref-not-resolvable');
+    expect(errs[0].code).toBe('feature.face-ref.not-resolvable');
   });
 
   it('emits feature.fillet.failed when OCCT throws (radius too large)', async () => {
@@ -69,6 +69,6 @@ describe('OcctLowerer fillet', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.fillet.failed');
+    expect(errs[0].code).toBe('feature.kernel-failed');
   });
 });

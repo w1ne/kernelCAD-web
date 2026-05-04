@@ -130,6 +130,6 @@ describe('Shape.reflect(plane)', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(records);
     const codes = result.diagnostics.map(d => d.code);
-    expect(codes).toContain('feature.transform.invalid-plane');
+    expect(codes).toContain('feature.invalid-args');
   }, 60000);
 });

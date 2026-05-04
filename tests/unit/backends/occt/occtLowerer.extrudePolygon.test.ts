@@ -36,7 +36,7 @@ describe('OcctLowerer extrude polygon', () => {
     const result = await new OcctLowerer().lower(r, { byKey: {} });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.extrude.bad-points');
+    expect(errs[0].code).toBe('feature.invalid-args');
   });
 
   it('emits feature.extrude.failed when OCCT throws', async () => {

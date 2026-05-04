@@ -171,7 +171,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      (d.code === 'feature.revolve.empty-profile' || d.code === 'feature.sketch.failed')
+      (d.code === 'feature.invalid-args' || d.code === 'feature.kernel-failed')
       && d.severity === 'error'
     )).toBe(true);
   });
@@ -310,7 +310,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.edge-feature.no-edges-match' && d.severity === 'error'
+      d.code === 'feature.selection.no-match' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -455,7 +455,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.edge-feature.invalid-query' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -561,7 +561,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -576,7 +576,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -610,7 +610,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.sweep.invalid-rail' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -703,7 +703,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.loft.empty-sections' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -720,7 +720,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.loft.invalid-planes' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -745,7 +745,7 @@ describe('path() builder + Sketch capture', () => {
     // valid agent-actionable signals. Pre-rc.11 the latter was lumped under
     // generic feature.loft.failed.
     expect(r.diagnostics.some(d =>
-      (d.code === 'feature.loft.bad-sketch' || d.code === 'feature.sketch.failed')
+      (d.code === 'feature.invalid-args' || d.code === 'feature.kernel-failed')
       && d.severity === 'error'
     )).toBe(true);
   });
@@ -865,7 +865,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.fillet.invalid-group' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -887,7 +887,7 @@ describe('path() builder + Sketch capture', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.fillet.empty-groups' && d.severity === 'error'
+      d.code === 'feature.invalid-args' && d.severity === 'error'
     )).toBe(true);
   });
 
@@ -1047,7 +1047,7 @@ describe('path() builder + Sketch capture', () => {
       } catch (e) { caught = e; }
       expect(caught).toBeDefined();
       const diag = kernelErrorToDiagnostic(caught);
-      expect(diag.code).toBe('feature.sketch.reflect.invalid-axis');
+      expect(diag.code).toBe('feature.invalid-args');
       expect(diag.featureId).toBeDefined();
       expect(typeof diag.featureId).toBe('string');
     });
