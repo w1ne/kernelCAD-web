@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { width: 1280px; height: 640px; }
+  .canvas {
+    width: 1280px; height: 640px;
+    background-size: 28px 28px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .content { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .mark { width: 180px; height: 180px; }
+  .wordmark { font-size: 110px; line-height: 1; color: var(--ink); }
+  .tagline { font-size: 60px; line-height: 1; color: var(--blueprint); }
+  .modes { font-size: 22px; color: var(--ink-soft); margin-top: 12px; }
+  .modes .sep { opacity: 0.5; margin: 0 8px; }
+  .url {
+    position: absolute; bottom: 40px; right: 50px;
+    font-size: 22px; color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+  <div class="brand-canvas canvas">
+    <div class="content">
+      <div class="mark">
+        <svg viewBox="0 0 84 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="#0A1628"/>
+        </svg>
+      </div>
+      <div class="serif wordmark">kernel<span class="cad">CAD</span></div>
+      <div class="serif italic tagline">CAD for agents.</div>
+      <div class="mono modes">
+        <span>browser</span><span class="sep">·</span>
+        <span>terminal</span><span class="sep">·</span>
+        <span>MCP</span><span class="sep">·</span>
+        <span>open source</span>
+      </div>
+    </div>
+    <div class="url mono">kernelcad.com</div>
+  </div>
+</body>
+</html>
