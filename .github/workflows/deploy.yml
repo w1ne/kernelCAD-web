@@ -19,55 +19,62 @@ concurrency:
   # blockage we hit on v0.1.0-arch.2 and v0.2.0-alpha.1.
   cancel-in-progress: true
 
+# Same parallel-qc structure as ci.yml plus a web-build job that produces the
+# dist/ Pages bundle. e2e gates on the three qc jobs; deploy gates on qc + web-build.
+# See docs/superpowers/specs/2026-05-04-ci-acceleration-design.md.
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: QC — lint
+        run: npm run qc:lint
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
+  build-and-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: QC — typecheck + build:cli + cookbook + drift check
+        run: npm run qc:build
 
-      - name: Install Dependencies
-        run: npm ci
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: QC — vitest
+        run: npm run qc:test
 
-      - name: QC (lint + typecheck + unit tests)
-        run: npm run qc
-
-      - name: Build
+  web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
+      - name: Build (vite production bundle)
         run: npm run build
-
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, build-and-checks, test]
     continue-on-error: true
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-cad
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-
       - name: E2E tests (Playwright)
         run: npm run test:e2e
-
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -81,7 +88,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [lint, build-and-checks, test, web-build]
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
