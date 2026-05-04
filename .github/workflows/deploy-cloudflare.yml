@@ -10,6 +10,8 @@ on:
       - main
       - develop
       - feat/kernelcad-website
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
@@ -22,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -36,7 +40,7 @@ jobs:
 
       - name: Build demo + brand assets
         run: |
-          node site/scripts/build-demo.mjs
+          npx tsx site/scripts/build-demo.ts
           node site/scripts/render-brand.mjs
 
       - name: Deploy to Cloudflare Pages (kernelcad-marketing)
