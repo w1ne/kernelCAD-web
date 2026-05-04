@@ -86,4 +86,42 @@ describe('validateDemoMeta', () => {
     const errsObj = validateDemoMeta({ ...validBase, heroArtifact: {} as unknown as string }, 'v0.21');
     expect(errsObj.some((e) => e.includes('heroArtifact must be a string'))).toBe(true);
   });
+
+  it('grandfathered versions skip policy checks (no heroArtifact required for v0.1)', () => {
+    const meta = {
+      taskId: 'bracket-with-hole',
+      module: 'v0.1',
+      capturedAt: '2026-05-02T00:00:00Z',
+      durationMs: 21500,
+      truncated: false,
+      gitSha: 'abc123',
+      // No heroArtifact / catalogSource / overrideApprovedBy
+    } as Record<string, unknown>;
+    expect(validateDemoMeta(meta, 'v0.1')).toEqual([]);
+  });
+
+  it('grandfathered versions skip policy checks (no heroArtifact required for v0.2)', () => {
+    const meta = {
+      taskId: 'subtract-then-fillet-rim',
+      module: 'v0.2',
+      capturedAt: '2026-05-03T00:00:00Z',
+      durationMs: 21500,
+      truncated: false,
+      gitSha: 'abc123',
+    } as Record<string, unknown>;
+    expect(validateDemoMeta(meta, 'v0.2')).toEqual([]);
+  });
+
+  it('grandfathered versions still require legacy fields (gitSha/capturedAt/taskId)', () => {
+    const meta = {
+      module: 'v0.1',
+      durationMs: 21500,
+      truncated: false,
+      // Missing taskId, capturedAt, gitSha
+    } as Record<string, unknown>;
+    const errs = validateDemoMeta(meta, 'v0.1');
+    expect(errs.some((e) => e.includes("missing key 'gitSha'"))).toBe(true);
+    expect(errs.some((e) => e.includes("missing key 'capturedAt'"))).toBe(true);
+    expect(errs.some((e) => e.includes("missing key 'taskId'"))).toBe(true);
+  });
 });

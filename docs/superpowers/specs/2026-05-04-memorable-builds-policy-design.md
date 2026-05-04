@@ -20,7 +20,7 @@ The v0.21 synchronized live-build pipeline shipped under a roadmap that called f
 
 ## Non-goals
 
-- Re-authoring demos for already-shipped iterations other than v0.21 (v0.2's `box-minus-divider` is grandfathered as honest tracked-refs content).
+- Re-authoring demos for already-shipped iterations other than v0.21. v0.1 (`bracket-with-hole`) and v0.2 (`subtract-then-fillet-rim`) are grandfathered as honest pre-policy content; their legacy fields (gitSha/capturedAt/taskId) are still enforced by `lint-demos.ts`, but they are exempt from the §1 hero-artifact bar and §3 catalog-match requirements. The grandfathered set is encoded in `scripts/lib/memorableBuildsCatalog.ts` as `GRANDFATHERED_VERSIONS`.
 - Defining new MCP tools, kernel features, or capture-pipeline behavior — the v0.21 pipeline already produces the artifacts; this spec only governs *what* it captures.
 - Style/branding decisions for the rendered output (lighting, materials, color palette) — owned by the v0.21.1+ visual-quality stream.
 - Scheduling daily build-in-public posts — this spec only formalizes the natural coupling; cadence is owned by the build-in-public note.

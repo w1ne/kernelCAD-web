@@ -7,6 +7,7 @@ import {
   getCatalogForVersion,
   isCatalogSlug,
   GENERIC_PRIMITIVE_DENYLIST,
+  GRANDFATHERED_VERSIONS,
 } from './memorableBuildsCatalog';
 
 const REQUIRED_PRE_EXISTING = ['gitSha', 'capturedAt', 'taskId'] as const;
@@ -18,6 +19,11 @@ export function validateDemoMeta(meta: Record<string, unknown>, version: string)
   for (const k of REQUIRED_PRE_EXISTING) {
     if (!meta[k]) errors.push(`meta.json missing key '${k}'`);
   }
+  // Pre-policy versions: legacy fields suffice; no policy enforcement.
+  if (GRANDFATHERED_VERSIONS.has(version)) {
+    return errors;
+  }
+
   for (const k of REQUIRED_NEW) {
     // overrideApprovedBy may be null, but the key must be present.
     if (!(k in meta)) errors.push(`meta.json missing key '${k}'`);
