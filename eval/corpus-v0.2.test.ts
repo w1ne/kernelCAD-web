@@ -28,6 +28,7 @@ const tasks: Array<{ id: string; dir: string }> = [
   { id: 'fillet-translated-box', dir: './eval/tasks/fillet-translated-box' },
   { id: 'subtract-then-fillet-rim', dir: './eval/tasks/subtract-then-fillet-rim' },
   { id: 'chamfer-rotated-wedge', dir: './eval/tasks/chamfer-rotated-wedge' },
+  { id: 'labeled-bracket-fillet', dir: './eval/tasks/labeled-bracket-fillet' },
 ];
 
 describe('v0.2 tracked-refs corpus — expert solutions score 100%', () => {
