@@ -32,10 +32,6 @@ Continuous growth contract per spec §"Continuous": same-PR additions; eval-driv
 
 Per the gap-closure roadmap §I4 / first-wave dispatch doc, this is workstream #22.
 
-### Added — Eval corpus
-
-- **3 v0.2 tracked-refs tasks under `eval/tasks/`** (`fillet-translated-box`, `subtract-then-fillet-rim`, `chamfer-rotated-wedge`). Each exercises the v0.2 capability of canonical face refs surviving transforms or unambiguous booleans (the natural-form cases that previously needed the "apply edge feature before transforms" workaround). Expert solutions verified to score 100% via `eval/corpus-v0.2.test.ts`. Per the gap-closure roadmap §Corpus design, this is the first slice of workstream #19 (corpus expansion).
-
 ---
 
 ## v0.21.1 — demo-quality patch (2026-05-03)
@@ -74,38 +70,63 @@ Per the gap-closure roadmap §I4 / first-wave dispatch doc, this is workstream #
 
 ---
 
-## v0.2.0 — tracked face/edge refs across transforms + booleans (2026-05-03)
+## [0.2.0] — 2026-05-04
 
-Closes the SKILL.md "Critical Constraint" section. Canonical face refs (`{ face: 'top' }`) now work transparently across every transform (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and every unambiguous boolean (`.subtract`, `.union`, `.intersect`). The previous workaround "apply edge feature BEFORE transforms" still works; scripts that previously failed with `feature.edge-feature.face-ref-not-resolvable` after a transform or boolean now succeed with no syntax change.
+Closes workstream #1 (v0.2 finish). Delivers a complete face-reference story: canonical tracked refs across transforms and booleans (PR #53, already on `develop`), user-named face labels via `faceLabels` on creating ops, `FaceQuery` polish with four new filter keys, two new label-driven eval tasks, and expanded MCP introspection. No npm publish.
 
-### Mechanism
+### Added
 
-Per-shape `historyMap: Map<FaceHash, FaceLineage>` on `OcctBackend`. Boolean and edge-feature operations bypass Replicad's wrappers to read OCCT's `BRepAlgoAPI_*::Generated/Modified/IsDeleted` callbacks directly. Transforms preserve identity 1:1 via parallel `TopExp_Explorer` walks. Resolution walks back to the originating primitive, resolves the canonical name there, then walks forward through history.
+- **Tracked face/edge refs** through every transform (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and every unambiguous boolean (`.subtract`, `.union`, `.intersect`). PR #53. Per-shape `historyMap: Map<FaceHash, FaceLineage>` on `OcctBackend`; resolution walks back to the originating primitive via OCCT `BRepAlgoAPI_*::Generated/Modified/IsDeleted` callbacks, then forward through history. Scripts that previously required "apply edge feature before transforms" now work with no syntax change.
 
-### New diagnostic codes
+- **`faceLabels` API** on `box`, `cylinder`, `extrudeRect`, `extrudeCircle`, `extrudePolygon`, `extrudeRoundedRect`, `revolveRect`, and sketch-derived `Sketch.extrude` / `Sketch.revolve` / `Sketch.sweep` / `Sketch.loft`. Option arg is `Record<string, CanonicalFace | FaceQuery>`: keys are user-chosen labels; values are either a canonical face alias (`'top'`, `'bottom'`, etc.) or a `FaceQuery` descriptor. Labels survive transforms and unambiguous booleans via the same lineage walker as canonical refs. `sphere` rejects `faceLabels` with `feature.label.unsupported-on-shape`.
 
-- `feature.edge-feature.face-ref-ambiguous-after-split` — upstream operation split the named face into multiple children. Geometry-fallback disambiguation is planned for a future release.
-- `feature.edge-feature.face-ref-removed` — upstream operation removed the named face entirely.
-- `feature.face-feature.face-ref-ambiguous-after-split` and `feature.face-feature.face-ref-removed` — same, for `.shell()`.
+- **`FaceQuery` polish** — four new filter keys:
+  - `byNormal: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z'` — signed-axis normal selector; rejects invalid axis strings with `feature.face-query.invalid-axis`.
+  - `minArea` / `maxArea` — face-area filters in mm².
+  - `boundingBoxIn: BoundingRegion` — face bbox containment filter, symmetric with `EdgeQuery.within`.
+
+- **Diagnostic codes** — all with HINTS entries:
+  - `feature.label.collision` — two upstream features declare the same label visible to a consumer.
+  - `feature.label.query-no-match` — a query-based label resolves to zero faces at the consumer site.
+  - `feature.label.unsupported-on-shape` — `sphere` rejects `faceLabels`.
+  - `feature.face-query.invalid-axis` — `byNormal` received an unrecognized axis string.
+  - Capture-time codes: `capture.faceLabels.invalid-shape`, `capture.faceLabels.invalid-key`, `capture.faceLabels.invalid-value` — malformed `faceLabels` option arg.
+  - `feature.edge-feature.face-ref-ambiguous-after-split` and `feature.edge-feature.face-ref-removed` — from PR #53 tracked-refs work.
+  - `feature.face-feature.face-ref-ambiguous-after-split` and `feature.face-feature.face-ref-removed` — same, for `.shell()`.
+
+- **`list_face_labels` MCP tool extended** to surface `faceLabels`-declared labels alongside existing sketch-segment labels. Each `LabelSummary` gains a `source` discriminator (`'faceLabels'` vs `'sketch-segment'`).
+
+- **`list_api` MCP tool** advertises `faceLabels` per accepting feature kind via a new `featureKindFaceLabels` section in tool output.
+
+- **Eval corpus** — five tasks total, all verified via `eval/corpus-v0.2.test.ts` at 100% expert score:
+  - `fillet-translated-box`, `subtract-then-fillet-rim`, `chamfer-rotated-wedge` — three v0.2 tracked-refs tasks (canonical face refs surviving transforms/booleans).
+  - `labeled-bracket-fillet`, `labeled-cylinder-shell` — two new label-driven tasks exercising `faceLabels` declaration + consumption.
+
+- **SKILL.md** — "Labels" subsection added documenting `faceLabels` syntax, lineage rules, and one sample script. Per-op signature lines updated to include `faceLabels?` for all six accepting ops.
 
 ### Updated hints
 
-- `face-ref-not-resolvable`: drops the obsolete "apply transforms after fillet/chamfer" workaround language.
+- `face-ref-not-resolvable`: drops the obsolete "apply transforms after fillet/chamfer" workaround language (no longer needed).
 - `face-ref-not-supported` for `tracked` / `created` / `propagated`: reclassified from "v0.5+ reserved" to "internal-only / planned for future versions".
 
-### What's NOT in v0.2.0 (planned, not shipped)
+### Added — Demos
 
-- Geometry-snapshot fallback for ambiguous splits — planned for a future release. Today, ambiguous cases produce a clear diagnostic with the workaround language.
-- `created` face refs (script-side API for naming faces newly introduced by booleans) — planned for a future release.
-- `propagated` face refs (script-side API for explicit cross-feature face naming) — planned for a future release.
+- **`docs/demos/v0.2/labeled-extrude-bracket/`** — 60×30×12 mm bracket built via `extrudeRect` with a query-based `faceLabels: { rim: { atZ: 12, parallelTo: 'XY' } }`, then filleted by label name.
+- **`docs/demos/v0.2/labeled-cylinder-cap/`** — hollow cylinder with canonical-alias `faceLabels: { cap: 'top' }`, shelled through the labeled face, then translated. Exercises label survival across transforms.
+- **`docs/demos/v0.2/subtract-then-fillet-rim/`** — refreshed `whats-new.md` to the three-section memorable-builds-policy format. Existing demo content unchanged.
+
+All three pass `npm run lint-demos`. v0.2 is grandfathered in the memorable-builds-policy catalog, so the `heroArtifact` slug isn't enforced.
+
+### What's NOT in this release
+
+- `edgeLabels` (symmetric `Record<userLabel, CanonicalEdge | EdgeQuery>`) — deferred to v0.3 alongside `hole()` / `cut()`.
+- Geometry-snapshot fallback for ambiguous face splits — planned for a future release. Ambiguous cases produce a clear diagnostic with workaround language.
+- `created` face refs and `propagated` face refs — planned for future releases.
+- npm publish — explicitly deferred (README polish + smoke-tested install path not yet ready).
 
 ### Project status
 
-This release is part of an ongoing prototype effort. The kernel surface is growing; the agent layer (eval harness, agent loop) remains the weakest part of the project and is the priority for upcoming work.
-
-### License
-
-MIT License (unchanged).
+This release is part of an ongoing prototype effort. The kernel surface is growing; the agent layer (eval harness, agent loop) remains the priority for upcoming work.
 
 ---
 

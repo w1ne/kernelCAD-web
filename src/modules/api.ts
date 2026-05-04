@@ -1,4 +1,5 @@
 import type { CaptureSession } from '../capture/captureSession';
+import { validateFaceLabels } from '../capture/faceLabels';
 import { Shape } from '../capture/proxy';
 import { makePath, type PathBuilder } from '../capture/sketch';
 import type { ParamRegistry, ParamOptions } from '../compute/paramRegistry';
@@ -10,21 +11,27 @@ import {
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import { KernelError } from '../intent/kernelError';
+import type { FaceLabelsMap } from '../intent/featureRecord';
 
 export interface ApiContext {
   session: CaptureSession;
   params: ParamRegistry;
 }
 
+export interface FaceLabelOpts {
+  faceLabels?: FaceLabelsMap;
+}
+
 export interface KernelCadApi {
-  box(x: number, y: number, z: number, centered?: boolean): Shape;
-  cylinder(h: number, r: number, segments?: number): Shape;
-  sphere(r: number): Shape;
-  extrudeRect(w: number, h: number, height: number): Shape;
-  extrudeCircle(r: number, height: number): Shape;
-  extrudePolygon(points: [number, number][], depth: number): Shape;
-  extrudeRoundedRect(width: number, height: number, radius: number, depth: number): Shape;
-  revolveRect(w: number, h: number, offsetX: number, angleDeg?: number): Shape;
+  box(x: number, y: number, z: number, centered?: boolean, opts?: FaceLabelOpts): Shape;
+  cylinder(h: number, r: number, segments?: number, opts?: FaceLabelOpts): Shape;
+  sphere(r: number, opts?: FaceLabelOpts): Shape;
+  extrudeRect(w: number, h: number, height: number, opts?: FaceLabelOpts): Shape;
+  extrudeCircle(r: number, height: number, opts?: FaceLabelOpts): Shape;
+  extrudePolygon(points: [number, number][], depth: number, opts?: FaceLabelOpts): Shape;
+  extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: FaceLabelOpts): Shape;
+  revolveRect(w: number, h: number, offsetX: number, angleDeg?: number, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
   param(name: string, defaultExpr: number | string, opts: ParamOptions): number;
   path(): PathBuilder;
@@ -40,28 +47,40 @@ const deg = (n: number): Param => ({ expression: String(n), unit: 'deg', evaluat
 export function createApi(ctx: ApiContext): KernelCadApi {
   const { session, params } = ctx;
   return {
-    box(x, y, z, centered = false) {
+    box(x, y, z, centered = false, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
         kind: 'box',
         params: { x: mm(x), y: mm(y), z: mm(z), centered: ul(centered ? 1 : 0) },
         inputs: {},
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
-    cylinder(h, r) {
+    cylinder(h, r, _segments, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'cylinder');
       return session.createShape({
         kind: 'cylinder',
         params: { h: mm(h), r: mm(r) },
         inputs: {},
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
-    sphere(r) {
+    sphere(r, opts) {
+      if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
+        throw new KernelError(
+          'feature.label.unsupported-on-shape',
+          'sphere does not support faceLabels (no canonical face names; query targets undefined). Use a different primitive if labels are needed.',
+          'sphere',
+        );
+      }
       return session.createShape({
         kind: 'sphere',
         params: { r: mm(r) },
         inputs: {},
       });
     },
-    extrudeRect(w, h, height) {
+    extrudeRect(w, h, height, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
       return session.createShape({
         kind: 'extrude',
         params: {
@@ -70,9 +89,11 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           height: mm(height),
         },
         inputs: {},
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
-    extrudeCircle(r, height) {
+    extrudeCircle(r, height, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
       return session.createShape({
         kind: 'extrude',
         params: {
@@ -81,9 +102,11 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           height: mm(height),
         },
         inputs: {},
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
-    extrudePolygon(points, depth) {
+    extrudePolygon(points, depth, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
       return session.createShape({
         kind: 'extrude',
         inputs: {},
@@ -91,10 +114,11 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           profileKind: { expression: "'polygon'", unit: 'unitless', evaluated: 0 },
           depth: { expression: String(depth), unit: 'mm', evaluated: depth },
         },
-        metadata: { points },
+        metadata: { points, ...(faceLabels ? { faceLabels } : {}) },
       });
     },
-    extrudeRoundedRect(width, height, radius, depth) {
+    extrudeRoundedRect(width, height, radius, depth, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
       return session.createShape({
         kind: 'extrude',
         inputs: {},
@@ -105,9 +129,11 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           radius: { expression: String(radius), unit: 'mm', evaluated: radius },
           depth: { expression: String(depth), unit: 'mm', evaluated: depth },
         },
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
-    revolveRect(w, h, offsetX, angleDeg = 360) {
+    revolveRect(w, h, offsetX, angleDeg = 360, opts) {
+      const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
       return session.createShape({
         kind: 'revolve',
         params: {
@@ -117,6 +143,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           angleDeg: deg(angleDeg),
         },
         inputs: {},
+        metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
     union(...shapes) {

@@ -1,10 +1,11 @@
 // src/backends/occt/edgeSelection.ts
 import type { Edge, Face } from 'replicad';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord, FaceLabelsMap } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import type { EdgeRef } from '../../intent/types';
+import type { CanonicalFace, EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
+import type { FaceQuery } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from './queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 
@@ -12,8 +13,6 @@ import { resolveFaceRef } from '../../naming/resolveFaceRef';
 const TOL = 1e-4;
 
 const KNOWN_EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS);
-
-type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 // EdgeList holds replicad Edge wrappers, which EdgeFinder.inList() accepts.
 export type EdgeList = Edge[];
@@ -70,9 +69,37 @@ export function pickEdges(
     return collectFaceEdges(faces);
   }
 
-  // 4. Face by label → translate to a probe-point query against the upstream sketch.
+  // 4. Face by label → check upstream metadata first (Task 4), then fall back
+  //    to the sketch-segment probe-query path.
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
-    const probeQuery = labelToEdgeQuery(record, base, faceRef.ref.name, records);
+    const labelName = faceRef.ref.name;
+
+    // (4a) New: metadata.faceLabels lookup.
+    if (records) {
+      const meta = findFaceLabelInMetadata(records, record, labelName);
+      if ('collision' in meta) return { error: meta.collision };
+      if ('hit' in meta) {
+        const faceResult = resolveFromMetadataHit(record, base, meta.hit);
+        if ('error' in faceResult) return faceResult;
+        const faceEdges = collectFaceEdges([faceResult.face]);
+        if (faceEdges.length === 0) {
+          return {
+            error: {
+              target: 'export-occt',
+              code: 'feature.label.query-no-match',
+              featureId: record.id,
+              severity: 'error',
+              message: `Label '${labelName}' resolved to a face with no edges.`,
+            },
+          };
+        }
+        return faceEdges;
+      }
+      // 'miss' falls through to the sketch-segment path.
+    }
+
+    // (4b) Existing: sketch-segment probe-query path.
+    const probeQuery = labelToEdgeQuery(record, base, labelName, records);
     if ('error' in probeQuery) return probeQuery;
     const edges = resolveEdgeQuery(base, probeQuery.query);
     if (edges.length === 0) {
@@ -82,7 +109,7 @@ export function pickEdges(
           code: 'feature.label.unknown-name',
           featureId: record.id,
           severity: 'error',
-          message: `Label '${faceRef.ref.name}' resolved to a probe query that matched no edges.`,
+          message: `Label '${labelName}' resolved to a probe query that matched no edges.`,
         },
       };
     }
@@ -103,7 +130,7 @@ export function pickEdges(
           code: 'feature.label.mixed-convexity',
           featureId: record.id,
           severity: 'error',
-          message: `Label '${faceRef.ref.name}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
+          message: `Label '${labelName}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
         },
       };
     }
@@ -501,12 +528,142 @@ export function pickFace(
   };
 }
 
+// ─── Task 4: faceLabels metadata resolution helpers ───────────────────────────
+
+interface MetadataLabelHit {
+  /** The originating feature whose metadata.faceLabels declared this label. */
+  origin: FeatureRecord;
+  /** The resolved value: a canonical face name or a FaceQuery descriptor. */
+  resolved: CanonicalFace | FaceQuery;
+}
+
+/**
+ * Walk upstream records and look for any `metadata.faceLabels` entry that
+ * declares `label`. Returns a three-way discriminated union:
+ *   - `{ hit }` — exactly one upstream source found.
+ *   - `{ collision }` — two or more upstream sources conflict (fatal).
+ *   - `{ miss }` — no upstream source found (fall through to sketch path).
+ */
+function findFaceLabelInMetadata(
+  records: readonly FeatureRecord[],
+  consumer: FeatureRecord,
+  label: string,
+): { hit: MetadataLabelHit } | { collision: CompilerDiagnostic } | { miss: true } {
+  const hits: MetadataLabelHit[] = [];
+  for (const rec of records) {
+    if (rec.id === consumer.id) break; // only upstream
+    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
+    if (fl && Object.prototype.hasOwnProperty.call(fl, label)) {
+      const resolved = fl[label];
+      hits.push({ origin: rec, resolved: resolved as CanonicalFace | FaceQuery });
+    }
+  }
+  if (hits.length === 0) return { miss: true };
+  if (hits.length > 1) {
+    return {
+      collision: {
+        target: 'export-occt',
+        code: 'feature.label.collision',
+        featureId: consumer.id,
+        severity: 'error',
+        message: `Label '${label}' is declared by multiple upstream features: ${hits.map(h => h.origin.id).join(', ')}. Each label must be unique within the scope a consumer sees.`,
+      },
+    };
+  }
+  return { hit: hits[0] };
+}
+
+/**
+ * Resolve a metadata label hit to the matching `Face` on the consumer's
+ * current lowered shape (`base`).
+ *
+ * - Canonical alias: route through `resolveFaceRef` (historyMap) or the
+ *   centroid heuristic (`findCanonicalFace`) when no history is present.
+ * - FaceQuery: call `resolveFaceQuery`; error on zero matches.
+ */
+function resolveFromMetadataHit(
+  consumer: FeatureRecord,
+  base: OcctBackend,
+  hit: MetadataLabelHit,
+): { face: Face } | { error: CompilerDiagnostic } {
+  const { resolved } = hit;
+
+  if (typeof resolved === 'string') {
+    // Canonical alias — same resolution machinery as the canonical FaceRef path.
+    const face = resolved as CanonicalFace;
+    if (base.historyMap !== undefined) {
+      const result = resolveFaceRef(
+        { kind: 'canonical', face },
+        { currentShape: base, featureId: consumer.id, surface: 'face-feature' },
+      );
+      if (!result.ok) return { error: result.diagnostic };
+      return { face: faceByHash(base, result.faceHash) };
+    }
+    // No historyMap — fall back to centroid heuristic (un-transformed primitive).
+    if (!base.kind) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-resolvable',
+          featureId: consumer.id,
+          severity: 'error',
+          message: `Label '${face}' (canonical alias): the shape has no lineage data. Apply transforms after the face feature, not before.`,
+        },
+      };
+    }
+    const found = findCanonicalFace(base, face);
+    if (found === null) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-feature.face-ref-not-applicable',
+          featureId: consumer.id,
+          severity: 'error',
+          message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+        },
+      };
+    }
+    return { face: found };
+  }
+
+  // FaceQuery — resolve against the consumer's current shape.
+  const matched = resolveFaceQuery(base, resolved as FaceQuery);
+  if (matched.length === 0) {
+    const allFaces = (base.getReplicadShape() as unknown as { faces: Face[] }).faces;
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.label.query-no-match',
+        featureId: consumer.id,
+        severity: 'error',
+        message: `Label declared on '${hit.origin.id}.faceLabels' matched zero faces at the consumer (${allFaces.length} faces available on the consumer shape). Query: ${JSON.stringify(resolved)}. Use list_face_labels or list_faces to inspect candidates.`,
+      },
+    };
+  }
+  return { face: matched[0] };
+}
+
+// ─── End Task 4 helpers ────────────────────────────────────────────────────────
+
 function resolveLabeledFace(
   record: FeatureRecord,
   base: OcctBackend,
   label: string,
   records: readonly FeatureRecord[] | undefined,
 ): { face: Face } | { error: CompilerDiagnostic } {
+  // (1) New: check upstream feature metadata.faceLabels first.
+  if (records) {
+    const meta = findFaceLabelInMetadata(records, record, label);
+    if ('hit' in meta) {
+      return resolveFromMetadataHit(record, base, meta.hit);
+    }
+    if ('collision' in meta) {
+      return { error: meta.collision };
+    }
+    // 'miss' falls through to the existing sketch-segment path below.
+  }
+
+  // (2) Existing: sketch-segment path via labelToEdgeQuery.
   // Reuse labelToEdgeQuery to compute the probe bbox. Then find the matching
   // face on the lowered shape: a face whose centroid sits in or near the bbox.
   const probe = labelToEdgeQuery(record, base, label, records);

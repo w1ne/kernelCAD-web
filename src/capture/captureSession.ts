@@ -5,6 +5,8 @@ import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
 
+export { validateFaceLabels } from './faceLabels';
+
 export interface FeatureSpec {
   kind: FeatureKind;
   params: Record<string, Param>;

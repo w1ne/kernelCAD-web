@@ -1,6 +1,6 @@
 // tests/integration/mcp/listApi.test.ts
 import { describe, it, expect } from 'vitest';
-import { listApiTool } from '../../../src/mcp/tools/listApi';
+import { listApiTool, GLOBALS } from '../../../src/mcp/tools/listApi';
 
 describe('list_api MCP tool', () => {
   it('returns globals including box, path, selectEdges, helix', async () => {
@@ -43,5 +43,40 @@ describe('list_api MCP tool', () => {
     expect(r.faceQueryKeys).toContain('atZ');
     expect(r.faceQueryKeys).toContain('parallelTo');
     expect(r.faceQueryKeys).toContain('inPlane');
+  });
+
+  it('globals signatures for faceLabels-accepting kinds mention opts and faceLabels', () => {
+    const FACE_LABEL_KINDS = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect', 'revolveRect'];
+    for (const kind of FACE_LABEL_KINDS) {
+      const entry = GLOBALS.find(g => g.name === kind);
+      expect(entry, `GLOBALS entry for ${kind} should exist`).toBeDefined();
+      expect(entry!.signature, `${kind}.signature should mention opts`).toContain('opts');
+      expect(entry!.description, `${kind}.description should mention faceLabels`).toContain('faceLabels');
+    }
+  });
+
+  it('sphere global does NOT advertise faceLabels in its description', () => {
+    const sphereEntry = GLOBALS.find(g => g.name === 'sphere');
+    expect(sphereEntry).toBeDefined();
+    expect(sphereEntry!.description).not.toContain('faceLabels');
+  });
+
+  it('list_api output includes featureKindFaceLabels with accepting kinds and FaceQuery description', async () => {
+    const r = await listApiTool({});
+    expect(r.featureKindFaceLabels).toBeDefined();
+    const fkfl = r.featureKindFaceLabels!;
+
+    // All seven accepting kinds present
+    const acceptingKinds = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect', 'revolveRect'];
+    for (const kind of acceptingKinds) {
+      expect(fkfl.acceptingKinds, `acceptingKinds should include ${kind}`).toContain(kind);
+    }
+
+    // sphere NOT in accepting kinds
+    expect(fkfl.acceptingKinds).not.toContain('sphere');
+
+    // description mentions canonical face names AND FaceQuery
+    expect(fkfl.description).toMatch(/top|bottom|left|right|front|back/);
+    expect(fkfl.description).toContain('FaceQuery');
   });
 });

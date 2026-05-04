@@ -42,18 +42,18 @@ param(name: string, defaultValue: number | string, opts: {
 }): number;
 
 // Primitives. Each returns a Shape.
-box(x: number, y: number, z: number, centered?: boolean): Shape;
-cylinder(h: number, r: number): Shape;
-sphere(r: number): Shape;
+box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+cylinder(h: number, r: number, segments?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonical faces
 
 // Extrusion helpers — profile defined inline, extruded along Z.
-extrudeRect(w: number, h: number, height: number): Shape;
-extrudeCircle(r: number, height: number): Shape;
-extrudePolygon(points: [number, number][], depth: number): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number): Shape;
+extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+extrudePolygon(points: [number, number][], depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 
 // Revolve helper — rectangular profile revolved around Z (offset from axis by offsetX).
-revolveRect(w: number, h: number, offsetX: number, angleDeg?: number): Shape;
+revolveRect(w: number, h: number, offsetX: number, angleDeg?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch.
 path(): PathBuilder;
@@ -172,6 +172,30 @@ Per-primitive canonical face applicability:
 - Box: all six (`top` / `bottom` / `left` / `right` / `front` / `back`).
 - Cylinder: only `top` and `bottom` (the disc end-caps). Side faces have no canonical name.
 - Sphere: none. Sphere with any `{ face }` filter → error.
+
+## Labels — naming faces at creation time
+
+Declare a label on a creating op via the `faceLabels` option. The value map accepts two kinds of entries:
+
+**Canonical alias** — give a custom name to a canonical face:
+
+```typescript
+box([10, 10, 5], { faceLabels: { lid: 'top', base: 'bottom' } })
+  .fillet(2, { face: 'lid' });
+```
+
+**Query-based label** — name a face that has no canonical name, via `FaceQuery`:
+
+```typescript
+extrudeRect(20, 10, 5, { faceLabels: { rim: { atZ: 5, parallelTo: 'XY' } } })
+  .shell(1, { face: 'rim' });
+```
+
+Labels survive transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and unambiguous booleans (`.subtract`, `.union`, `.intersect`) — the same lineage rules as canonical face refs. Splitting booleans emit `feature.edge-feature.face-ref-ambiguous-after-split`.
+
+`sphere` does not accept `faceLabels` (no canonical face names; query targets undefined). Use a different primitive if labels are needed.
+
+Discover labels on a script with the `list_face_labels` MCP tool — it surfaces both `faceLabels`-declared labels (creating-op metadata) and sketch-segment labels (`path().label('rim')`).
 
 ## Sample Scripts
 
@@ -386,6 +410,23 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.label.no-upstream-sketch` | Labels work on shapes built from a `path()` sketch. For primitives or imported shapes, use an inline face query instead. |
 | `feature.label.unsupported-base` | Labels are supported for extrude only. Revolve/sweep labels are deferred. Use an inline query as a workaround. |
 | `feature.label.mixed-convexity` | The labeled segment's probe matched a mix of convex and concave edges. Split the label across smaller segments, or refine with an inline EdgeQuery filtering by convexity. |
+| `feature.label.collision` | Two or more upstream features declared the same `faceLabels` name. Each label must be unique within the scope visible to the consumer. Rename one of the conflicting `faceLabels` entries. |
+| `feature.label.query-no-match` | A query-based `faceLabel` matched zero faces at the consumer site. Check the query (e.g. `atZ` value) against the actual shape geometry with `list_faces`. |
+| `feature.label.unsupported-on-shape` | `faceLabels` is not accepted on this primitive (sphere has no canonical face names and no meaningful query targets). Use a different primitive (box/cylinder/extrude) or a sketch-derived shape. |
+
+### feature.face-query.*
+
+| Code | Meaning |
+|---|---|
+| `feature.face-query.invalid-axis` | `FaceQuery.byNormal` got an invalid axis string. Allowed: `'X'`, `'-X'`, `'Y'`, `'-Y'`, `'Z'`, `'-Z'`. |
+
+### capture.*
+
+| Code | Meaning |
+|---|---|
+| `capture.faceLabels.invalid-shape` | `faceLabels` must be a plain object map. Arrays, primitives, and null are not accepted. |
+| `capture.faceLabels.invalid-key` | `faceLabels` keys must be non-empty strings. |
+| `capture.faceLabels.invalid-value` | Each `faceLabels` value must be either a canonical face name (`top`/`bottom`/`left`/`right`/`front`/`back`) or a `FaceQuery` descriptor object. |
 
 ### recompute.*
 

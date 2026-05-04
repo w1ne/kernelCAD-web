@@ -11,6 +11,7 @@
 //     (label translates to probe-point query in occtLowerer.ts)
 
 import type { Edge, Face } from 'replicad';
+import { measureArea } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { KernelError } from '../../intent/kernelError';
 import type { Vec3 } from '../../intent/types';
@@ -55,6 +56,11 @@ export type FaceQuery = {
   containsPoint?: Vec3;
   near?: Vec3;
   tolerance?: number;
+  // v0.2-finish additions
+  byNormal?: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z';
+  minArea?: number;
+  maxArea?: number;
+  boundingBoxIn?: BoundingRegion;
 };
 
 export type EdgeSegment = {
@@ -316,6 +322,43 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     faces.sort((a, b) => distance(vec(a.center), p) - distance(vec(b.center), p));
   }
 
+  // v0.2-finish additions ------------------------------------------------
+  if (query.byNormal !== undefined) {
+    const axisVec = signedAxisVec(query.byNormal);
+    // byNormal uses a fixed cosine threshold (0.01 ≈ 8°) rather than honoring
+    // query.tolerance because the latter is documented as a position tolerance
+    // in millimetres (default 1.0 — see top of FaceQuery type), not a unit-vector
+    // threshold. Conflating units would let `tolerance: 1.0` mean "accept any
+    // front-hemisphere face" (dot > 0).
+    const normalTol = 0.01;
+    faces = faces.filter(f => {
+      const n = f.normalAt();
+      const dot = n.x * axisVec[0] + n.y * axisVec[1] + n.z * axisVec[2];
+      return dot > 1 - normalTol;
+    });
+  }
+  if (query.minArea !== undefined) {
+    const min = query.minArea;
+    faces = faces.filter(f => measureArea(f) >= min);
+  }
+  if (query.maxArea !== undefined) {
+    const max = query.maxArea;
+    faces = faces.filter(f => measureArea(f) <= max);
+  }
+  if (query.boundingBoxIn !== undefined) {
+    const r = query.boundingBoxIn;
+    faces = faces.filter(f => {
+      const [minP, maxP] = f.boundingBox.bounds;
+      if (r.xMin !== undefined && minP[0] < r.xMin) return false;
+      if (r.xMax !== undefined && maxP[0] > r.xMax) return false;
+      if (r.yMin !== undefined && minP[1] < r.yMin) return false;
+      if (r.yMax !== undefined && maxP[1] > r.yMax) return false;
+      if (r.zMin !== undefined && minP[2] < r.zMin) return false;
+      if (r.zMax !== undefined && maxP[2] > r.zMax) return false;
+      return true;
+    });
+  }
+
   return faces;
 }
 
@@ -323,6 +366,22 @@ function planeNormal(name: 'XY' | 'YZ' | 'XZ'): Vec3 {
   if (name === 'XY') return [0, 0, 1];
   if (name === 'YZ') return [1, 0, 0];
   return [0, 1, 0];
+}
+
+function signedAxisVec(axis: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z'): Vec3 {
+  switch (axis) {
+    case 'X':  return [1, 0, 0];
+    case '-X': return [-1, 0, 0];
+    case 'Y':  return [0, 1, 0];
+    case '-Y': return [0, -1, 0];
+    case 'Z':  return [0, 0, 1];
+    case '-Z': return [0, 0, -1];
+    default:
+      throw new KernelError(
+        'feature.face-query.invalid-axis',
+        `byNormal: invalid axis string "${axis}" — expected 'X'|'-X'|'Y'|'-Y'|'Z'|'-Z'`,
+      );
+  }
 }
 
 /**

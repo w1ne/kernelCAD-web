@@ -119,7 +119,7 @@ export const TOOLS = [
   },
   {
     name: 'add_feature',
-    description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free.',
+    description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect, revolveRect) can receive `opts.faceLabels` in the inserted code — use `list_api` to see `featureKindFaceLabels` for the full value schema.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -172,20 +172,20 @@ export const TOOLS = [
   {
     name: 'list_face_labels',
     description:
-      'List user-applied path labels on a script\'s sketches. Returns labels with their sketch FeatureId and segment chord endpoints. Useful for discovering what labels are available to use in fillet/chamfer/shell calls. Pass either { file } or { code }.',
+      'List user-applied labels visible in a script: both sketch-segment labels (path().label(\'rim\')) and creating-op faceLabels (box(..., { faceLabels: { ... } })). Each result includes its source so the agent can disambiguate. Lets agents discover the label vocabulary on a shape before referencing labels in fillet/chamfer/shell.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        feature_id: { type: 'string', description: 'Optional sketch FeatureId; defaults to scanning all sketches.' },
+        feature_id: { type: 'string', description: 'Optional FeatureId; defaults to scanning all features.' },
       },
     },
   },
   {
     name: 'list_api',
     description:
-      'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, and EdgeQuery/FaceQuery key sets. Use this to discover what is callable from a .kcad.ts script.',
+      'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
     inputSchema: {
       type: 'object' as const,
       properties: {},

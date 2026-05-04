@@ -1,14 +1,18 @@
 // src/mcp/tools/listFaceLabels.ts
 //
-// MCP tool: list user-applied path labels on a script's sketches. Returns
-// labels with their sketch FeatureId and segment chord endpoints. Lets agents
-// discover the label vocabulary on a shape before referencing labels in
-// fillet/chamfer/shell.
+// MCP tool: list user-applied labels visible in a script — both sketch-segment
+// labels (path().label('rim')) and creating-op faceLabels
+// (box(..., { faceLabels: { ... } })). Returns labels with their source kind
+// so agents can disambiguate. Lets agents discover the label vocabulary on a
+// shape before referencing labels in fillet/chamfer/shell.
 
 import { runScript } from '../../script-runtime/runScript';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import type { CanonicalFace } from '../../intent/types';
+import type { FaceQuery } from '../../backends/occt/edgeQueries';
+import type { FaceLabelsMap } from '../../intent/featureRecord';
 
 export interface ListFaceLabelsInput {
   file?: string;
@@ -16,12 +20,23 @@ export interface ListFaceLabelsInput {
   feature_id?: string;
 }
 
-export interface LabelSummary {
-  name: string;
-  sketchId: string;
-  segmentKind: string;
-  chord: { startX: number; startY: number; endX: number; endY: number };
-}
+export type LabelSummary =
+  | {
+      name: string;
+      source: 'sketch-segment';
+      sketchId: string;
+      segmentKind: string;
+      chord: { startX: number; startY: number; endX: number; endY: number };
+    }
+  | {
+      name: string;
+      source: 'faceLabels';
+      featureId: string;
+      featureKind: string;
+      // exactly one of these is set:
+      canonical?: CanonicalFace;
+      query?: FaceQuery;
+    };
 
 export interface ListFaceLabelsOutput {
   ok: boolean;
@@ -61,6 +76,8 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
   }
 
   const labels: LabelSummary[] = [];
+
+  // ── Sketch-segment labels ──────────────────────────────────────────────────
   for (const rec of run.records) {
     if (rec.kind !== 'sketch') continue;
     if (input.feature_id && rec.id !== input.feature_id) continue;
@@ -72,6 +89,7 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
       const prev = commands[i - 1];
       labels.push({
         name: c.label,
+        source: 'sketch-segment',
         sketchId: rec.id,
         segmentKind: c.kind,
         chord: {
@@ -83,5 +101,32 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
       });
     }
   }
+
+  // ── faceLabels from creating-op metadata ──────────────────────────────────
+  for (const rec of run.records) {
+    if (input.feature_id && rec.id !== input.feature_id) continue;
+    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
+    if (!fl) continue;
+    for (const [name, value] of Object.entries(fl)) {
+      if (typeof value === 'string') {
+        labels.push({
+          name,
+          source: 'faceLabels',
+          featureId: rec.id,
+          featureKind: rec.kind,
+          canonical: value,
+        });
+      } else {
+        labels.push({
+          name,
+          source: 'faceLabels',
+          featureId: rec.id,
+          featureKind: rec.kind,
+          query: value,
+        });
+      }
+    }
+  }
+
   return { ok: true, labels };
 }

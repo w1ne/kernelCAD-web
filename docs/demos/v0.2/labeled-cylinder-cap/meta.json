@@ -1,0 +1,11 @@
+{
+  "taskId": "labeled-cylinder-cap",
+  "module": "v0.2",
+  "capturedAt": "2026-05-04T15:09:30.182Z",
+  "durationMs": 19100,
+  "truncated": false,
+  "gitSha": "aa60406aa73439640c68e4f5e2617c5e46122993",
+  "heroArtifact": "labeled-cylinder-cap",
+  "catalogSource": "memorable-builds-policy/v0.2",
+  "overrideApprovedBy": null
+}
