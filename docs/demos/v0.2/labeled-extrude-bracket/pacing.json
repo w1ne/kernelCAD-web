@@ -1,0 +1,20 @@
+{
+  "preRollMs": 2000,
+  "rotateStartMs": 5100,
+  "rotateDurationMs": 12000,
+  "totalDurationMs": 19100,
+  "features": {
+    "extrude_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "fillet_1": {
+      "startAtMs": 1600,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}

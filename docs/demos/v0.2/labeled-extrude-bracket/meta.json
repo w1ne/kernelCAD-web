@@ -1,0 +1,11 @@
+{
+  "taskId": "build.kcad.ts",
+  "module": "v0.2",
+  "capturedAt": "2026-05-04T15:04:46.879Z",
+  "durationMs": 19100,
+  "truncated": false,
+  "gitSha": "0866b5236f0d0a577fac8f9aca1ac5d033be77ed",
+  "heroArtifact": "labeled-extrude-bracket",
+  "catalogSource": "memorable-builds-policy/v0.2",
+  "overrideApprovedBy": "grandfathered: v0.2 faceLabels demo"
+}
