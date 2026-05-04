@@ -84,6 +84,59 @@ test('grandfathered v0.2 single-task fallback', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('grandfathered multi-task picks the unique override-null hero', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+  mkdirSync(path.join(root, 'v0.2', 'primary'), { recursive: true });
+  mkdirSync(path.join(root, 'v0.2', 'override'), { recursive: true });
+  mkdirSync(path.join(root, 'v0.2', 'pre-policy'), { recursive: true });
+
+  writeFileSync(
+    path.join(root, 'v0.2', 'primary', 'meta.json'),
+    JSON.stringify({ heroArtifact: 'primary-slug', overrideApprovedBy: null }),
+  );
+  writeFileSync(path.join(root, 'v0.2', 'primary', 'demo.mp4'), 'fake');
+
+  writeFileSync(
+    path.join(root, 'v0.2', 'override', 'meta.json'),
+    JSON.stringify({ heroArtifact: 'override-slug', overrideApprovedBy: 'reason' }),
+  );
+  writeFileSync(path.join(root, 'v0.2', 'override', 'demo.mp4'), 'fake');
+
+  writeFileSync(
+    path.join(root, 'v0.2', 'pre-policy', 'meta.json'),
+    JSON.stringify({ taskId: 'pre-policy' }),
+  );
+  writeFileSync(path.join(root, 'v0.2', 'pre-policy', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.2.1', demosRoot: root });
+  assert.equal(result.task, 'primary');
+  assert.equal(result.heroArtifact, 'primary-slug');
+
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('grandfathered multi-task with multiple primary candidates — throws', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+  mkdirSync(path.join(root, 'v0.2', 'a'), { recursive: true });
+  mkdirSync(path.join(root, 'v0.2', 'b'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.2', 'a', 'meta.json'),
+    JSON.stringify({ heroArtifact: 'slug-a', overrideApprovedBy: null }),
+  );
+  writeFileSync(path.join(root, 'v0.2', 'a', 'demo.mp4'), 'fake');
+  writeFileSync(
+    path.join(root, 'v0.2', 'b', 'meta.json'),
+    JSON.stringify({ heroArtifact: 'slug-b', overrideApprovedBy: null }),
+  );
+  writeFileSync(path.join(root, 'v0.2', 'b', 'demo.mp4'), 'fake');
+
+  assert.throws(
+    () => selectHeroDemo({ packageVersion: '0.2.1', demosRoot: root }),
+    /grandfathered v0\.2 cannot auto-pick hero/i,
+  );
+  rmSync(root, { recursive: true, force: true });
+});
+
 test('multiple catalog matches — throws ambiguity', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
   const candidates = getCatalogForVersion('v0.21')!.candidates;

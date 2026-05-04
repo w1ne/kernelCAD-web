@@ -10,7 +10,9 @@ export interface HeroDemoResult {
   iterationDir: string;
 }
 
-function readMeta(metaPath: string): { heroArtifact?: string } | null {
+function readMeta(
+  metaPath: string,
+): { heroArtifact?: string; overrideApprovedBy?: string | null } | null {
   if (!existsSync(metaPath)) return null;
   try {
     return JSON.parse(readFileSync(metaPath, 'utf8'));
@@ -60,10 +62,24 @@ export function selectHeroDemo(opts: {
     throw new Error(
       `ambiguous hero: ${catalogTasks.length} tasks in ${iterationKey} have catalog-conformant heroArtifact (${catalogTasks.join(', ')})`,
     );
-  } else if (GRANDFATHERED_VERSIONS.has(iterationKey) && tasks.length === 1) {
-    task = tasks[0];
-    heroArtifact =
-      readMeta(path.join(iterationDir, task, 'meta.json'))?.heroArtifact ?? null;
+  } else if (GRANDFATHERED_VERSIONS.has(iterationKey)) {
+    const primaryCandidates = tasks.filter((t) => {
+      const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
+      return !!meta?.heroArtifact && (meta.overrideApprovedBy ?? null) === null;
+    });
+    if (primaryCandidates.length === 1) {
+      task = primaryCandidates[0];
+      heroArtifact =
+        readMeta(path.join(iterationDir, task, 'meta.json'))?.heroArtifact ?? null;
+    } else if (primaryCandidates.length === 0 && tasks.length === 1) {
+      task = tasks[0];
+      heroArtifact =
+        readMeta(path.join(iterationDir, task, 'meta.json'))?.heroArtifact ?? null;
+    } else {
+      throw new Error(
+        `grandfathered ${iterationKey} cannot auto-pick hero: ${primaryCandidates.length} primary candidates, ${tasks.length} total tasks`,
+      );
+    }
   } else {
     throw new Error(
       `no task in ${iterationKey} has heroArtifact in catalog (and version is not single-task grandfathered)`,
