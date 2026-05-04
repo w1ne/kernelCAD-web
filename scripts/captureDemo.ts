@@ -53,10 +53,13 @@ function parseArgs(argv: string[]): Args {
     console.error('Must specify either --task or both --script and --prompt');
     process.exit(2);
   }
-  if (!a.heroArtifact) {
+  if (!a.heroArtifact && !a.rotateOnly) {
     console.error('Missing --hero-artifact <slug>. See docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md §2 for the catalog.');
     process.exit(2);
   }
+  // rotate-only re-renders cached output and never writes meta.json or whats-new.md;
+  // a slug isn't required for that path.
+  if (!a.heroArtifact) a.heroArtifact = '';
   if (!a.overrideApprovedBy) a.overrideApprovedBy = null;
   return a as Args;
 }
