@@ -13,7 +13,7 @@ export interface CatalogCandidate {
 }
 
 export interface CatalogEntry {
-  version: string;
+  version: CatalogVersion;
   candidates: CatalogCandidate[];
 }
 
