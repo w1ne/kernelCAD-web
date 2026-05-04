@@ -33,3 +33,8 @@ playwright/.cache/
 # Demo artifacts
 site/public/demo.mp4
 site/public/demo.json
+
+# Local dev symlinks (mirror public/ into site/ root for python http.server)
+site/demo.mp4
+site/demo.json
+site/favicon.svg
