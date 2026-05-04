@@ -1,0 +1,20 @@
+# site/wrangler.toml
+#
+# Cloudflare Pages config for the kernelCAD marketing site (kernelcad.com).
+# The site itself is built static via `npm run site:build`; this file is
+# read by Cloudflare Pages Functions for runtime bindings (D1, env vars,
+# etc.).
+#
+# IMPORTANT: the database_id below is filled in by the one-time
+# .github/workflows/setup-user-tracking.yml workflow on first run. Until
+# then, the placeholder produces a clear "binding missing" error in the
+# Pages Function logs, which is preferable to silent misroute.
+
+name = "kernelcad-web"
+compatibility_date = "2026-04-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kernelcad-subscribers"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"

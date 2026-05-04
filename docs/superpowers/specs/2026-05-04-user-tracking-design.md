@@ -4,9 +4,9 @@
 
 **Goal:** Stand up the smallest privacy-respecting pipeline that tells us who visits `kernelcad.com`, who downloads the project, and who opts into a release-notes email list — using the existing Cloudflare Pages stack with one new vendor (Resend) for email storage. No analytics on user code, no telemetry phoning home from the CLI, no third-party JS embedded in the kernel.
 
-**Architecture:** Three independent signals, each captured at the outer perimeter. (1) **Cloudflare Web Analytics** — drop-in beacon snippet on `site/index.html`, captures pageviews + uniques without cookies; dashboard inside the existing Cloudflare account. (2) **Email opt-in form** on `kernelcad.com` posts to a Pages Function (`site/functions/api/subscribe.ts`) that forwards to **Resend Audiences API**; emails live in Resend's dashboard, no DB to maintain. (3) **Daily-cron dashboard** — GitHub Action runs `gh api .../traffic/clones`, `.../traffic/views`, plus `npm view kernelcad downloads` once published, appends a row to a checked-in markdown table at `docs/usage/daily.md`. No DB, no third-party analytics service, no cookies.
+**Architecture:** Three independent signals, each captured at the outer perimeter. (1) **Cloudflare Web Analytics** — drop-in beacon snippet on `site/index.html`, captures pageviews + uniques without cookies; dashboard inside the existing Cloudflare account. (2) **Email opt-in form** on `kernelcad.com` posts to a Pages Function (`site/functions/api/subscribe.ts`) that inserts into a **Cloudflare D1** database (sqlite, free tier), schema `subscribers (email PRIMARY KEY, source, created_at, ip_country)`. (3) **Daily-cron dashboard** — GitHub Action runs `gh api .../traffic/clones`, `.../traffic/views`, plus `npm view kernelcad downloads` once published, appends a row to a checked-in markdown table at `docs/usage/daily.md`. **Pivot from Resend to D1**: keeps everything inside Cloudflare (no third-party signup), gives full control of the email list, exportable to CSV anytime via wrangler.
 
-**Tech Stack:** Cloudflare Web Analytics (free tier, drop-in snippet); Cloudflare Pages Functions (existing — site already deploys there); Resend Audiences API (free up to 1k contacts; dashboard + dedup + later campaign sends); GitHub Actions (existing) for the daily cron. No new local tooling beyond editing `site/`. No `wrangler` install required for the form path; the Pages Function is just a TypeScript file in `site/functions/` that Cloudflare's Pages build picks up automatically.
+**Tech Stack:** Cloudflare Web Analytics (free tier, drop-in snippet); Cloudflare Pages Functions (existing); Cloudflare D1 (free tier — 5M rows, 5GB total); GitHub Actions for the daily cron; one-time setup workflow (`workflow_dispatch`) that uses the existing `CLOUDFLARE_API_TOKEN` GH secret to provision D1, run schema migration, and create the Web Analytics site. No third-party signups, no Resend, no separate vendors.
 
 ---
 
@@ -48,17 +48,24 @@ Cloudflare's Web Analytics is free, privacy-respecting (no cookies, no IP storag
 
 Cost of switching later if the dashboard limits us: replace one `<script>` tag.
 
-### A2 — Resend Audiences, not D1 / sqlite / self-host
+### A2 — Cloudflare D1, not Resend (revised after stack audit)
 
-D1 + a custom admin endpoint adds: schema migration, wrangler config, a UI to view + export emails, an unsubscribe handler, and email-sending plumbing. Resend gives you all of that for free up to 1k contacts. The form's POST handler becomes a single `fetch('https://api.resend.com/audiences/...').` call. Dedup, unsubscribe links, and the campaign-send pathway are Resend's problem.
+Original design used Resend Audiences for storage. Pivoted to D1 because: (a) Resend requires a separate user-driven account creation that breaks "fully self-setup", (b) D1 is in the same Cloudflare account that already runs the site, (c) D1's free tier (5M rows / 5GB) is comically over-provisioned for an email list, (d) zero new vendors. Schema is intentionally minimal: `subscribers (email TEXT PRIMARY KEY, source TEXT, created_at INTEGER, ip_country TEXT)`. Dedup is handled by `INSERT OR IGNORE` on the email PK. Export is `wrangler d1 execute kernelcad-subscribers --command "SELECT * FROM subscribers"` to CSV any time.
 
-Trade-off: vendor lock-in on the contact list. Mitigation: Resend has a CSV export. If we ever need to migrate, dump to CSV, import into the next thing. Until you have >1k contacts, the lock-in is invisible.
+When the project later needs newsletter-grade send infrastructure (drip campaigns, templates, deliverability), import the D1 export into Resend / ConvertKit / Buttondown then. For "collect emails to remember interested users", D1 is sufficient.
 
-### A3 — `RESEND_API_KEY` is a Cloudflare Pages env var, not a GitHub secret
+### A3 — One-time setup workflow uses existing GitHub secrets
 
-The Pages Function reads `RESEND_API_KEY` from its runtime environment at request time. Cloudflare Pages has a per-project env-vars panel in the dashboard. The user adds the key there once; it's never in the repo, never in GitHub Actions logs, never sent to a build runner.
+Setup is a manual `workflow_dispatch` GitHub Action at `.github/workflows/setup-user-tracking.yml`. It uses the existing `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` repo secrets to:
+1. Install wrangler.
+2. Create the D1 database `kernelcad-subscribers` if missing.
+3. Run the schema migration.
+4. Create a Cloudflare Web Analytics site for `kernelcad.com` if missing; capture the site token.
+5. Update `site/index.html` with the actual Web Analytics token (find-and-replace on the placeholder).
+6. Update `wrangler.toml` with the D1 `database_id`.
+7. Commit + push the changes to the same branch (so the PR re-runs CI).
 
-The existing `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` GitHub secrets stay scoped to the deploy job; they don't need access to Resend.
+The user clicks **"Run workflow"** once on the GitHub Actions page; setup is done. No local CLI install, no terminal env-var juggling, no token paste.
 
 ### A4 — Form is no-JS-fallback friendly
 
