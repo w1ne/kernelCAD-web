@@ -43,7 +43,7 @@ param(name: string, defaultValue: number | string, opts: {
 
 // Primitives. Each returns a Shape.
 box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-cylinder(h: number, r: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+cylinder(h: number, r: number, segments?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonical faces
 
 // Extrusion helpers — profile defined inline, extruded along Z.
