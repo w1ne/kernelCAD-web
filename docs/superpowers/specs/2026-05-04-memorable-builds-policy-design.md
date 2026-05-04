@@ -206,7 +206,7 @@ Lint failure blocks the per-module ship gate, identical to existing v0.21 ship-g
 
 ### 3.4 — `whats-new.md` template additions
 
-Extend `scripts/demo-template/whats-new.md` with three required sections:
+Extend the template body returned by `scripts/lib/whatsNewTemplate.ts` (`whatsNewTemplate()`) with three required sections, and strengthen `whatsNewIsFilled()` in the same module to verify they're filled:
 
 ```markdown
 ## Hero artifact
@@ -263,7 +263,7 @@ This spec is a meta-policy, not a code change. Components added:
 | 7th demo rule | `docs/demos/README.md` | follow-up plan |
 | `meta.json` schema | `docs/demos/v0.X/meta.json` (per iteration) | follow-up plan |
 | Lint gate | `scripts/lint-demos.ts` | follow-up plan |
-| `whats-new.md` template | `scripts/demo-template/whats-new.md` | follow-up plan |
+| `whats-new.md` template | `scripts/lib/whatsNewTemplate.ts` | follow-up plan |
 | Roadmap §H11 update | gap-closure roadmap design doc | follow-up plan |
 | Reviewer-agent prompt update | reviewer-agent definition | follow-up plan |
 | Per-module brainstorm protocol | inherited by all v0.3 → v1.0 specs | follow-up plan |
