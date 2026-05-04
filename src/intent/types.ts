@@ -19,8 +19,12 @@ export interface Param {
   evaluated: number;        // canonical: mm for length, deg for angle
 }
 
+// Single source of truth for the six axis-aligned canonical face names.
+// Used by FaceRef (kind: 'canonical') and FaceLabelsMap (featureRecord.ts).
+export type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+
 export type FaceRef =
-  | { kind: 'canonical'; face: 'top'|'bottom'|'left'|'right'|'front'|'back' }
+  | { kind: 'canonical'; face: CanonicalFace }
   | { kind: 'tracked'; faceName: string }
   | { kind: 'created'; rewriteId: RewriteId; slot: string }
   | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef }

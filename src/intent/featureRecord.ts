@@ -1,7 +1,10 @@
 import type {
-  FeatureId, FeatureKind, FeatureRef, Param, PlaneSpec, ScriptLocation,
+  CanonicalFace, FeatureId, FeatureKind, FeatureRef, Param, PlaneSpec, ScriptLocation,
   Vec3,
 } from './types';
+// Re-export so consumers can import CanonicalFace from the same module as FaceLabelsMap.
+export type { CanonicalFace };
+import type { FaceQuery } from '../backends/occt/edgeQueries';
 
 export type ShapeTransform =
   | { op: 'translate'; x: number; y: number; z: number }
@@ -19,3 +22,8 @@ export interface FeatureRecord {
   suppressed: boolean;
   metadata?: Record<string, unknown>;
 }
+
+/** Map of user-chosen label → resolution target. Stored under
+ *  FeatureRecord.metadata.faceLabels for kinds that accept it (box, cylinder,
+ *  extrude, revolve, sweep, loft). Sphere rejects this key at capture time. */
+export type FaceLabelsMap = Record<string, CanonicalFace | FaceQuery>;
