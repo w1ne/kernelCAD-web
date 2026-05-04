@@ -112,6 +112,24 @@ describe('validateDemoMeta', () => {
     expect(validateDemoMeta(meta, 'v0.2')).toEqual([]);
   });
 
+  it('grandfathered version silently accepts stray policy fields (denylist not enforced)', () => {
+    // Documenting intentional behavior: pre-policy versions are exempt from
+    // §3 enforcement entirely. Even a denylisted heroArtifact on a v0.1 demo
+    // is accepted — the policy simply does not apply to grandfathered versions.
+    const meta = {
+      taskId: 'bracket-with-hole',
+      module: 'v0.1',
+      capturedAt: '2026-05-02T00:00:00Z',
+      durationMs: 21500,
+      truncated: false,
+      gitSha: 'abc123',
+      heroArtifact: 'box', // would be denylisted on a policy-enforced version
+      catalogSource: 'memorable-builds-policy/v0.1',
+      overrideApprovedBy: null,
+    } as Record<string, unknown>;
+    expect(validateDemoMeta(meta, 'v0.1')).toEqual([]);
+  });
+
   it('grandfathered versions still require legacy fields (gitSha/capturedAt/taskId)', () => {
     const meta = {
       module: 'v0.1',
