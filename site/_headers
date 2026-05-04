@@ -1,0 +1,12 @@
+/*.png
+  Cache-Control: public, max-age=86400
+/*.svg
+  Cache-Control: public, max-age=86400
+/demo.mp4
+  Cache-Control: public, max-age=300
+/demo.json
+  Cache-Control: public, max-age=60
+/style.css
+  Cache-Control: public, max-age=3600
+/og-image.png
+  Cache-Control: public, max-age=86400

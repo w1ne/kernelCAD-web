@@ -1,0 +1,73 @@
+name: Deploy to Cloudflare Pages
+
+# Auto-deploys two Cloudflare Pages projects on every push:
+#   - kernelcad-marketing  ← site/ (kernelcad.com)
+#   - kernelcad-app        ← dist/ (app.kernelcad.com, Vite build with base=/)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feat/kernelcad-website
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  marketing:
+    name: Deploy marketing site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium (for brand asset rendering)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build demo + brand assets
+        run: |
+          node site/scripts/build-demo.mjs
+          node site/scripts/render-brand.mjs
+
+      - name: Deploy to Cloudflare Pages (kernelcad-marketing)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=kernelcad-marketing --branch=main --commit-dirty=true
+
+  app:
+    name: Deploy visual debugger app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app (root-rooted base path for app.kernelcad.com)
+        env:
+          VITE_BASE_PATH: /
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages (kernelcad-app)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=kernelcad-app --branch=main --commit-dirty=true

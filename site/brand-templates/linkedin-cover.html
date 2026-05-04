@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { width: 1128px; height: 191px; }
+  .canvas {
+    width: 1128px; height: 191px;
+    background-size: 22px 22px;
+    position: relative;
+  }
+  .content {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 38px 0 180px;
+  }
+  .text { display: flex; align-items: baseline; gap: 22px; }
+  .wordmark { font-size: 50px; line-height: 1; color: var(--ink); }
+  .tagline { font-size: 30px; line-height: 1; color: var(--blueprint); }
+  .right { text-align: right; line-height: 1.4; }
+  .url-line { font-size: 18px; color: var(--ink); font-weight: 500; }
+  .modes-line { font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="brand-canvas canvas">
+    <div class="content">
+      <div class="text">
+        <span class="serif wordmark">kernel<span class="cad">CAD</span></span>
+        <span class="serif italic tagline">CAD for agents.</span>
+      </div>
+      <div class="right">
+        <div class="mono url-line">kernelcad.com</div>
+        <div class="mono modes-line">browser · terminal · MCP</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

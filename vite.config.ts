@@ -26,7 +26,7 @@ function getGitCommitHashShort(): string {
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/kernelCAD-web/' : '/',
+  base: process.env.VITE_BASE_PATH ?? (command === 'build' ? '/kernelCAD-web/' : '/'),
   plugins: [
     react(),
     tailwindcss(),
