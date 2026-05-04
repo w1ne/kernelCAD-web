@@ -34,9 +34,9 @@
     "qc": "npm run lint && npm run typecheck && npm run build:cli && npm run cookbook:validate && npm run cookbook:evaluate && npm run cookbook:build && git diff --exit-code src/skill/SKILL.md && npm test",
     "qc:full": "npm run qc && npm run test:e2e && npm run build",
     "capture-demo": "npx tsx scripts/captureDemo.ts",
-    "capture-demo:hero": "npx tsx scripts/captureDemo.ts --task bracket-holes --module v0.21 --output docs/demos/v0.21/bracket-holes/",
-    "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/",
-    "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/",
+    "capture-demo:hero": "npx tsx scripts/captureDemo.ts --task bracket-holes --module v0.21 --output docs/demos/v0.21/bracket-holes/ --hero-artifact bracket-holes --override-approved-by 'pre-Task-10: bracket-holes scheduled for replacement by donut'",
+    "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/ --hero-artifact bracket-with-hole --override-approved-by 'grandfathered: pre-policy v0.1 retro capture'",
+    "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/ --hero-artifact subtract-then-fillet-rim --override-approved-by 'grandfathered: pre-policy v0.2 retro capture'",
     "lint-demos": "npx tsx scripts/lint-demos.ts"
   },
   "dependencies": {
