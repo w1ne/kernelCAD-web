@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+### Added — User-tracking pipeline (kernelcad.com + daily stats)
+
+- **Cloudflare Web Analytics** anonymous beacon snippet on `site/index.html` and `site/thanks.html` — pageviews + uniques without cookies, no IP storage. Token wired in by `.github/workflows/setup-user-tracking.yml` on first run.
+- **Email opt-in form** on the landing page → POST to `site/functions/api/subscribe.ts` (Cloudflare Pages Function) → INSERT OR IGNORE into `subscribers` D1 table. Form is no-JS-fallback friendly (303 redirect on success or `?error=...` on failure). Source attribution via `?ref=hn` URL params.
+- **`/thanks` success page** at `site/thanks.html`.
+- **D1 schema** at `site/migrations/0001_subscribers.sql`: `subscribers (email PK, source, ip_country, created_at)`.
+- **`site/wrangler.toml`** with D1 binding template (database_id filled by setup workflow).
+- **`scripts/setup-user-tracking.sh`** — one-time local provisioning script. Creates D1, applies schema migration, provisions Web Analytics site (if `CLOUDFLARE_API_TOKEN` env var is set), patches `site/wrangler.toml` + `site/index.html` + `site/thanks.html` with the actual IDs/tokens. Run once with `bash scripts/setup-user-tracking.sh` after `npx wrangler login`. Idempotent — re-runs detect existing resources and skip.
+- **`.github/workflows/usage-stats.yml`** — daily cron (03:30 UTC) pulling GitHub traffic + repo stats + npm download counts; appends/updates a row in `docs/usage/daily.md` and auto-commits to develop.
+- **7 vitest tests** for the subscribe Pages Function at `site/functions/api/subscribe.test.ts` covering happy path, malformed email, missing email, source fallback, D1 failure, and dedup.
+
+Spec: `docs/superpowers/specs/2026-05-04-user-tracking-design.md`.
+
 ### Changed — CI parallelization (~40-45% wall-clock reduction)
 
 - **`ci.yml` and `deploy.yml` refactored** into three parallel QC jobs (`lint`, `build-and-checks`, `test`) plus a `web-build` job in `deploy.yml` for the Pages bundle. Estimated wall-clock reduction from ~3:30 to ~1:30 (≈45%).

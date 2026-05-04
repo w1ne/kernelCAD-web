@@ -1,0 +1,110 @@
+name: Usage stats daily report
+
+# Pulls GitHub traffic + npm download counts daily and appends a row to
+# docs/usage/daily.md. Auto-commits to develop. Idempotent: re-running on
+# the same day overwrites the most recent row for that date.
+
+on:
+  schedule:
+    # 03:30 UTC daily — well after midnight in UTC, before working hours
+    # in EU; gives GitHub time to finalize the prior day's traffic counts.
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Collect signals
+        id: stats
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          today=$(date -u +%Y-%m-%d)
+          repo="${GITHUB_REPOSITORY}"
+
+          clones_json=$(gh api "repos/$repo/traffic/clones" 2>/dev/null || echo '{"count":0,"uniques":0}')
+          views_json=$(gh api "repos/$repo/traffic/views" 2>/dev/null || echo '{"count":0,"uniques":0}')
+          repo_json=$(gh api "repos/$repo" 2>/dev/null || echo '{"stargazers_count":0,"forks_count":0,"subscribers_count":0}')
+
+          clones=$(echo "$clones_json" | jq -r '.count // 0')
+          clones_uniq=$(echo "$clones_json" | jq -r '.uniques // 0')
+          views=$(echo "$views_json" | jq -r '.count // 0')
+          views_uniq=$(echo "$views_json" | jq -r '.uniques // 0')
+          stars=$(echo "$repo_json" | jq -r '.stargazers_count // 0')
+          forks=$(echo "$repo_json" | jq -r '.forks_count // 0')
+          watchers=$(echo "$repo_json" | jq -r '.subscribers_count // 0')
+
+          # npm — only meaningful once published. 404 is "not yet published"; report 0.
+          npm_dl=$(curl -sf "https://api.npmjs.org/downloads/point/last-day/kernelcad" 2>/dev/null \
+            | jq -r '.downloads // 0' || echo 0)
+
+          echo "today=$today" >> "$GITHUB_OUTPUT"
+          echo "clones=$clones" >> "$GITHUB_OUTPUT"
+          echo "clones_uniq=$clones_uniq" >> "$GITHUB_OUTPUT"
+          echo "views=$views" >> "$GITHUB_OUTPUT"
+          echo "views_uniq=$views_uniq" >> "$GITHUB_OUTPUT"
+          echo "stars=$stars" >> "$GITHUB_OUTPUT"
+          echo "forks=$forks" >> "$GITHUB_OUTPUT"
+          echo "watchers=$watchers" >> "$GITHUB_OUTPUT"
+          echo "npm_dl=$npm_dl" >> "$GITHUB_OUTPUT"
+
+      - name: Append row to docs/usage/daily.md
+        env:
+          TODAY: ${{ steps.stats.outputs.today }}
+          CLONES: ${{ steps.stats.outputs.clones }}
+          CLONES_UNIQ: ${{ steps.stats.outputs.clones_uniq }}
+          VIEWS: ${{ steps.stats.outputs.views }}
+          VIEWS_UNIQ: ${{ steps.stats.outputs.views_uniq }}
+          STARS: ${{ steps.stats.outputs.stars }}
+          FORKS: ${{ steps.stats.outputs.forks }}
+          WATCHERS: ${{ steps.stats.outputs.watchers }}
+          NPM_DL: ${{ steps.stats.outputs.npm_dl }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs/usage
+          file=docs/usage/daily.md
+          if [ ! -f "$file" ]; then
+            cat > "$file" <<'EOF'
+          # kernelCAD daily usage stats
+
+          Auto-collected by `.github/workflows/usage-stats.yml` daily at 03:30 UTC.
+          GitHub traffic counts cover the last 14 days (rolling). npm downloads cover the prior calendar day.
+
+          | Date | Clones (uniq) | Views (uniq) | Stars | Forks | Watchers | npm DL |
+          |---|---|---|---|---|---|---|
+          EOF
+          fi
+
+          row="| $TODAY | $CLONES ($CLONES_UNIQ) | $VIEWS ($VIEWS_UNIQ) | $STARS | $FORKS | $WATCHERS | $NPM_DL |"
+
+          # Idempotency: if today's row exists, replace it; else append.
+          if grep -q "^| $TODAY |" "$file"; then
+            sed -i "s|^| $TODAY |.*|$row|" "$file"
+          else
+            echo "$row" >> "$file"
+          fi
+
+      - name: Commit + push if changed
+        run: |
+          set -euo pipefail
+          git config user.email "14119286+w1ne@users.noreply.github.com"
+          git config user.name "w1ne"
+          if git diff --quiet docs/usage/daily.md; then
+            echo "No change in daily stats."
+            exit 0
+          fi
+          git add docs/usage/daily.md
+          git commit -m "chore(usage): daily stats for ${{ steps.stats.outputs.today }}"
+          git push origin develop

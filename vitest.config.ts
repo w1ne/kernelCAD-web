@@ -15,6 +15,7 @@ export default defineConfig({
             'tests/integration/**/*.test.ts',
             'eval/**/*.test.ts',
             'scripts/**/*.test.ts',
+            'site/functions/**/*.test.ts',
         ],
         exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**'],
         deps: {

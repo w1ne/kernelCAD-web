@@ -15,6 +15,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
   <title>kernelCAD — CAD for agents</title>
+  <!--
+    Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
+    The token is the public site-token from the Cloudflare Web Analytics
+    dashboard. Replace REPLACE_WITH_CF_WEB_ANALYTICS_TOKEN once-only after
+    enabling Web Analytics for kernelcad.com in the Cloudflare account.
+  -->
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "REPLACE_WITH_CF_WEB_ANALYTICS_TOKEN"}'></script>
 </head>
 <body>
   <div class="page-wrap">
@@ -68,6 +75,29 @@
       </div>
     </section>
 
+    <section class="signup" id="signup">
+      <h2 class="signup-headline">Get notified when we ship</h2>
+      <p class="signup-sub">~1 email per release. No spam. Unsubscribe anytime.</p>
+      <form class="signup-form" action="/api/subscribe" method="POST">
+        <input
+          type="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+          aria-label="Email address"
+        />
+        <input type="hidden" name="source" id="source-input" value="direct" />
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <p class="signup-status" id="signup-status" role="status" aria-live="polite"></p>
+      <p class="signup-privacy">
+        We use Cloudflare Web Analytics for visitor counts — no cookies, no IP storage.
+        Your email is stored in our Cloudflare D1 database; we'll only email you when a major version ships.
+        See our <a href="https://github.com/w1ne/kernelCAD-web">source</a> for details.
+      </p>
+    </section>
+
     <footer class="footer">
       <div>kernelCAD · MIT</div>
       <div class="footer-links">
@@ -99,6 +129,23 @@
       copy.textContent = 'copied';
       setTimeout(() => { copy.textContent = orig; }, 1200);
     });
+
+    // Source attribution: ?ref=hn → hidden field on signup form
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) document.getElementById('source-input').value = ref;
+
+    // Inline error display from ?error=... (no-JS users see the unstyled URL param)
+    const err = params.get('error');
+    if (err) {
+      const status = document.getElementById('signup-status');
+      const messages = {
+        invalid_email: 'Please enter a valid email address.',
+        temporary: 'Something went wrong on our end. Please try again in a moment.',
+      };
+      status.textContent = messages[err] || 'Could not subscribe — please try again.';
+      status.classList.add('error');
+    }
   </script>
 </body>
 </html>
