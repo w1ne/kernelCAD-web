@@ -37,7 +37,7 @@ A demo's hero artifact passes if and only if every rule below is true. Rules 1�
 
 ## §2 — Catalog (16 hero artifacts, v0.21 + v0.3 → v1.0)
 
-Format: ★ = recommended pick. Each entry names the artifact, asserts the new tool is central, and ties to §1 rule 2. v0.2 (`box-minus-divider`) is grandfathered. v0.21 is re-shot under this policy as the launch artifact.
+Format: ★ = recommended pick. Each entry names the artifact, asserts the new tool is central, and ties to §1 rule 2. v0.2 (`subtract-then-fillet-rim`) is grandfathered. v0.21 is re-shot under this policy as the launch artifact.
 
 ### v0.21 — Synchronized live-build pipeline (re-shoot, replaces `bracket-holes`)
 
