@@ -7,6 +7,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { validateDemoMeta } from './lib/demoMetaValidator';
 
 const _dirname = dirname(fileURLToPath(import.meta.url));
 const DEMOS_ROOT = resolve(_dirname, '../docs/demos');
@@ -57,8 +58,8 @@ function lintModule(moduleSlug: string): string[] {
     if (existsSync(metaPath)) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
-        for (const k of ['gitSha', 'capturedAt', 'taskId']) {
-          if (!meta[k]) errors.push(`${moduleSlug}/${taskName}: meta.json missing key '${k}'`);
+        for (const err of validateDemoMeta(meta, moduleSlug)) {
+          errors.push(`${moduleSlug}/${taskName}: ${err}`);
         }
       } catch (e) {
         errors.push(`${moduleSlug}/${taskName}: meta.json parse failed: ${(e as Error).message}`);
