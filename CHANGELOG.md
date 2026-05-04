@@ -70,7 +70,7 @@ Per the gap-closure roadmap §I4 / first-wave dispatch doc, this is workstream #
 
 ---
 
-## [0.2.0] — 2026-05-04
+## [0.2.1] — 2026-05-04
 
 Closes workstream #1 (v0.2 finish). Delivers a complete face-reference story: canonical tracked refs across transforms and booleans (PR #53, already on `develop`), user-named face labels via `faceLabels` on creating ops, `FaceQuery` polish with four new filter keys, two new label-driven eval tasks, and expanded MCP introspection. No npm publish.
 
