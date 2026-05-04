@@ -14,7 +14,7 @@ interface Env {
 }
 
 const RFC5322_LITE =
-  /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 function redirect(url: string): Response {
   return new Response(null, {
@@ -32,7 +32,7 @@ function isValidEmail(email: string): boolean {
 function isValidSource(source: unknown): boolean {
   if (typeof source !== 'string') return false;
   if (source.length === 0 || source.length > 32) return false;
-  return /^[a-zA-Z0-9_\-]+$/.test(source);
+  return /^[a-zA-Z0-9_-]+$/.test(source);
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

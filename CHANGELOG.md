@@ -7,7 +7,7 @@
 - **`/thanks` success page** at `site/thanks.html`.
 - **D1 schema** at `site/migrations/0001_subscribers.sql`: `subscribers (email PK, source, ip_country, created_at)`.
 - **`site/wrangler.toml`** with D1 binding template (database_id filled by setup workflow).
-- **`.github/workflows/setup-user-tracking.yml`** — one-time `workflow_dispatch` setup. Provisions D1 + Web Analytics site via the existing `CLOUDFLARE_API_TOKEN` GH secret, applies schema migration, patches `site/wrangler.toml` + `site/index.html` + `site/thanks.html` with the actual IDs/tokens, commits back to the calling branch. Idempotent — re-runs detect existing resources and skip.
+- **`scripts/setup-user-tracking.sh`** — one-time local provisioning script. Creates D1, applies schema migration, provisions Web Analytics site (if `CLOUDFLARE_API_TOKEN` env var is set), patches `site/wrangler.toml` + `site/index.html` + `site/thanks.html` with the actual IDs/tokens. Run once with `bash scripts/setup-user-tracking.sh` after `npx wrangler login`. Idempotent — re-runs detect existing resources and skip.
 - **`.github/workflows/usage-stats.yml`** — daily cron (03:30 UTC) pulling GitHub traffic + repo stats + npm download counts; appends/updates a row in `docs/usage/daily.md` and auto-commits to develop.
 - **7 vitest tests** for the subscribe Pages Function at `site/functions/api/subscribe.test.ts` covering happy path, malformed email, missing email, source fallback, D1 failure, and dedup.
 
