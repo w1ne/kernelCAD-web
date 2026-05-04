@@ -109,9 +109,16 @@ Closes workstream #1 (v0.2 finish). Delivers a complete face-reference story: ca
 - `face-ref-not-resolvable`: drops the obsolete "apply transforms after fillet/chamfer" workaround language (no longer needed).
 - `face-ref-not-supported` for `tracked` / `created` / `propagated`: reclassified from "v0.5+ reserved" to "internal-only / planned for future versions".
 
+### Added — Demos
+
+- **`docs/demos/v0.2/labeled-extrude-bracket/`** — 60×30×12 mm bracket built via `extrudeRect` with a query-based `faceLabels: { rim: { atZ: 12, parallelTo: 'XY' } }`, then filleted by label name.
+- **`docs/demos/v0.2/labeled-cylinder-cap/`** — hollow cylinder with canonical-alias `faceLabels: { cap: 'top' }`, shelled through the labeled face, then translated. Exercises label survival across transforms.
+- **`docs/demos/v0.2/subtract-then-fillet-rim/`** — refreshed `whats-new.md` to the three-section memorable-builds-policy format. Existing demo content unchanged.
+
+All three pass `npm run lint-demos`. v0.2 is grandfathered in the memorable-builds-policy catalog, so the `heroArtifact` slug isn't enforced.
+
 ### What's NOT in this release
 
-- Demo set (`docs/demos/v0.2/`) — blocked on memorable-builds-policy PR landing first; demo entries will be added in a follow-up commit when that prerequisite merges.
 - `edgeLabels` (symmetric `Record<userLabel, CanonicalEdge | EdgeQuery>`) — deferred to v0.3 alongside `hole()` / `cut()`.
 - Geometry-snapshot fallback for ambiguous face splits — planned for a future release. Ambiguous cases produce a clear diagnostic with workaround language.
 - `created` face refs and `propagated` face refs — planned for future releases.
