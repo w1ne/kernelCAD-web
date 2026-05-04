@@ -96,14 +96,14 @@ body {
 /* DEMO */
 .demo-block { margin: 0 -20px 100px; }
 .demo-frame {
-  aspect-ratio: 16/10;
+  aspect-ratio: 16/9;
   background: linear-gradient(180deg, #06101F 0%, #0A1628 100%);
   border-radius: 14px; position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 30px 80px -30px rgba(10,22,40,0.30);
   margin-top: 10px;
 }
-.demo-frame video { width: 100%; height: 100%; object-fit: cover; }
+.demo-frame video { width: 100%; height: 100%; object-fit: contain; }
 .demo-meta {
   display: flex; justify-content: space-between; align-items: center;
   font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
