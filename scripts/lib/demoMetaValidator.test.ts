@@ -19,8 +19,12 @@ describe('validateDemoMeta', () => {
   });
 
   it('rejects missing pre-existing fields (gitSha/capturedAt/taskId)', () => {
-    const errs = validateDemoMeta({ ...validBase, gitSha: undefined as unknown as string }, 'v0.21');
-    expect(errs.some((e) => e.includes("missing key 'gitSha'"))).toBe(true);
+    for (const key of ['gitSha', 'capturedAt', 'taskId'] as const) {
+      const meta = { ...validBase } as Record<string, unknown>;
+      delete meta[key];
+      const errs = validateDemoMeta(meta, 'v0.21');
+      expect(errs.some((e) => e.includes(`missing key '${key}'`))).toBe(true);
+    }
   });
 
   it('rejects missing heroArtifact', () => {
@@ -73,5 +77,13 @@ describe('validateDemoMeta', () => {
   it('rejects unknown module version (no catalog entry)', () => {
     const errs = validateDemoMeta(validBase, 'v9.9');
     expect(errs.some((e) => e.includes('no catalog entry for v9.9'))).toBe(true);
+  });
+
+  it('rejects non-string heroArtifact (e.g. number, object, boolean)', () => {
+    const errsNum = validateDemoMeta({ ...validBase, heroArtifact: 42 as unknown as string }, 'v0.21');
+    expect(errsNum.some((e) => e.includes('heroArtifact must be a string'))).toBe(true);
+
+    const errsObj = validateDemoMeta({ ...validBase, heroArtifact: {} as unknown as string }, 'v0.21');
+    expect(errsObj.some((e) => e.includes('heroArtifact must be a string'))).toBe(true);
   });
 });
