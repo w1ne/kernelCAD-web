@@ -38,3 +38,8 @@ site/public/demo.json
 site/demo.mp4
 site/demo.json
 site/favicon.svg
+
+# Brand renderer artifacts
+site/public/brand/
+site/public/og-image.png
+site/og-image.png
