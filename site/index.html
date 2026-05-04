@@ -68,18 +68,6 @@
       </div>
     </section>
 
-    <section class="code-block">
-      <div class="code-label">the agent writes this</div>
-      <pre class="code"><span class="com">// bracket.kcad.ts</span>
-<span class="kw">const</span> w = <span class="fn">param</span>(<span class="str">'Width'</span>, <span class="num">60</span>, { unit: <span class="str">'mm'</span> });
-<span class="kw">const</span> h = <span class="fn">param</span>(<span class="str">'Height'</span>, <span class="num">40</span>, { unit: <span class="str">'mm'</span> });
-<span class="kw">const</span> t = <span class="fn">param</span>(<span class="str">'Thickness'</span>, <span class="num">5</span>, { unit: <span class="str">'mm'</span> });
-
-<span class="kw">const</span> base = <span class="fn">box</span>(w, h, t);
-<span class="kw">const</span> hole = <span class="fn">cylinder</span>(t + <span class="num">2</span>, <span class="num">4</span>).<span class="fn">translate</span>(w/<span class="num">2</span>, h/<span class="num">2</span>, -<span class="num">1</span>);
-<span class="kw">return</span> base.<span class="fn">subtract</span>(hole).<span class="fn">fillet</span>(<span class="num">1</span>);</pre>
-    </section>
-
     <footer class="footer">
       <div>kernelCAD · MIT</div>
       <div class="footer-links">
