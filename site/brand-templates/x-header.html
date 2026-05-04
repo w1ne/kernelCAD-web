@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { width: 1500px; height: 500px; }
+  .canvas {
+    width: 1500px; height: 500px;
+    background-size: 28px 28px;
+    position: relative;
+  }
+  .content {
+    position: absolute; inset: 0;
+    display: flex; align-items: center;
+    padding: 0 105px;
+  }
+  .content-inner {
+    margin-left: 330px;
+    display: flex; align-items: center; gap: 75px;
+  }
+  .mark { width: 270px; height: 270px; }
+  .mark svg { width: 100%; height: 100%; }
+  .text { display: flex; flex-direction: column; gap: 8px; }
+  .wordmark { font-size: 96px; line-height: 1; color: var(--ink); }
+  .tagline { font-size: 50px; line-height: 1; color: var(--blueprint); margin-top: 6px; }
+  .modes { font-size: 22px; color: var(--ink-soft); margin-top: 16px; }
+  .modes span.sep { opacity: 0.5; margin: 0 6px; }
+  .url {
+    position: absolute; top: 30px; right: 50px;
+    font-size: 20px; color: var(--ink-soft);
+  }
+  .dim {
+    position: absolute; bottom: 40px; right: 50px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 18px; color: var(--ink-soft);
+  }
+  .dim .line { width: 80px; height: 1px; background: currentColor; }
+  .dim .tick { width: 1px; height: 8px; background: currentColor; }
+</style>
+</head>
+<body>
+  <div class="brand-canvas canvas">
+    <div class="url mono">kernelcad.com</div>
+    <div class="content">
+      <div class="content-inner">
+        <div class="mark">
+          <svg viewBox="0 0 84 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="#0A1628"/>
+            <g stroke="#1E5FA8" stroke-width="0.6" fill="#1E5FA8">
+              <line x1="34" y1="42" x2="78" y2="42"/>
+              <text x="80" y="40" font-family="JetBrains Mono, monospace" font-size="6" stroke="none" text-anchor="end">R 2</text>
+            </g>
+          </svg>
+        </div>
+        <div class="text">
+          <div class="serif wordmark">kernel<span class="cad">CAD</span></div>
+          <div class="serif italic tagline">CAD for agents.</div>
+          <div class="mono modes">
+            <span>browser</span><span class="sep">·</span>
+            <span>terminal</span><span class="sep">·</span>
+            <span>MCP</span><span class="sep">·</span>
+            <span>open source</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dim mono">
+      <span class="tick"></span><span class="line"></span>
+      <span>v0.21</span>
+      <span class="line"></span><span class="tick"></span>
+    </div>
+  </div>
+</body>
+</html>
