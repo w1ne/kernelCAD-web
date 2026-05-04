@@ -25,6 +25,8 @@ interface Args {
   pacing?: string;
   titleCardSvg?: string;
   rotateOnly: boolean;
+  heroArtifact: string;
+  overrideApprovedBy: string | null;
 }
 
 function parseArgs(argv: string[]): Args {
@@ -40,15 +42,25 @@ function parseArgs(argv: string[]): Args {
     else if (arg === '--pacing') { a.pacing = next; i++; }
     else if (arg === '--title-card-svg') { a.titleCardSvg = next; i++; }
     else if (arg === '--rotate-only') { a.rotateOnly = true; }
+    else if (arg === '--hero-artifact') { a.heroArtifact = next; i++; }
+    else if (arg === '--override-approved-by') { a.overrideApprovedBy = next; i++; }
   }
   if (!a.module || !a.output) {
-    console.error('Usage: captureDemo --module v0.X --output <dir> (--task <id> | --script <path> --prompt <path>)');
+    console.error('Usage: captureDemo --module v0.X --output <dir> --hero-artifact <slug> (--task <id> | --script <path> --prompt <path>) [--override-approved-by "<name>: <reason>"]');
     process.exit(2);
   }
   if (!a.task && !(a.script && a.prompt)) {
     console.error('Must specify either --task or both --script and --prompt');
     process.exit(2);
   }
+  if (!a.heroArtifact && !a.rotateOnly) {
+    console.error('Missing --hero-artifact <slug>. See docs/superpowers/specs/2026-05-04-memorable-builds-policy-design.md §2 for the catalog.');
+    process.exit(2);
+  }
+  // rotate-only re-renders cached output and never writes meta.json or whats-new.md;
+  // a slug isn't required for that path.
+  if (!a.heroArtifact) a.heroArtifact = '';
+  if (!a.overrideApprovedBy) a.overrideApprovedBy = null;
   return a as Args;
 }
 
@@ -306,7 +318,7 @@ async function main(): Promise<void> {
   const partName = args.task ?? basename(scriptPath, '.kcad.ts');
   writeWhatsNewIfMissing(
     join(args.output, 'whats-new.md'),
-    whatsNewTemplate({ module: args.module, partName }),
+    whatsNewTemplate({ module: args.module, partName, heroArtifact: args.heroArtifact }),
   );
 
   // Metadata.
@@ -319,6 +331,9 @@ async function main(): Promise<void> {
       durationMs: pacing.totalDurationMs,
       truncated: pacing.truncated,
       gitSha: execSync('git rev-parse HEAD').toString().trim(),
+      heroArtifact: args.heroArtifact,
+      catalogSource: `memorable-builds-policy/${args.module}`,
+      overrideApprovedBy: args.overrideApprovedBy,
     }, null, 2),
   );
   writeFileSync(
