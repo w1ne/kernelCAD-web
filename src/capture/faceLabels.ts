@@ -17,26 +17,29 @@ export function validateFaceLabels(
   if (raw === undefined) return undefined;
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new KernelError(
-      'capture.faceLabels.invalid-shape',
+      'feature.invalid-args',
       `faceLabels must be an object map; got ${Array.isArray(raw) ? 'array' : typeof raw}`,
       featureKind,
+      'Pass faceLabels as a plain object map; arrays, primitives, and null are not accepted.',
     );
   }
   const result: FaceLabelsMap = {};
   for (const [label, value] of Object.entries(raw)) {
     if (typeof label !== 'string' || label.length === 0) {
       throw new KernelError(
-        'capture.faceLabels.invalid-key',
+        'feature.invalid-args',
         `faceLabels keys must be non-empty strings; got '${label}'`,
         featureKind,
+        'Use non-empty string keys in the faceLabels map.',
       );
     }
     if (typeof value === 'string') {
       if (!(CANONICAL_FACES as readonly string[]).includes(value)) {
         throw new KernelError(
-          'capture.faceLabels.invalid-value',
+          'feature.invalid-args',
           `faceLabels['${label}'] = '${value}' is not a canonical face name. Allowed: ${CANONICAL_FACES.join(', ')}.`,
           featureKind,
+          `Use a canonical face name (${CANONICAL_FACES.join('/')}) or a FaceQuery descriptor.`,
         );
       }
       result[label] = value as FaceLabelsMap[string];
@@ -45,9 +48,10 @@ export function validateFaceLabels(
       result[label] = value as FaceLabelsMap[string];
     } else {
       throw new KernelError(
-        'capture.faceLabels.invalid-value',
+        'feature.invalid-args',
         `faceLabels['${label}'] must be a canonical face name or a FaceQuery descriptor; got ${typeof value}`,
         featureKind,
+        'Each faceLabels value must be a canonical face name or a FaceQuery descriptor.',
       );
     }
   }

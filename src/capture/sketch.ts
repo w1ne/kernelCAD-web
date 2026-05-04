@@ -198,9 +198,10 @@ export class Sketch {
   reflect(axis: AxisSpec): Sketch {
     if (!isValidAxisSpec(axis)) {
       throw new KernelError(
-        'feature.sketch.reflect.invalid-axis',
+        'feature.invalid-args',
         `Sketch.reflect: axis must be 'x', 'y', or { axis, offset }; got ${JSON.stringify(axis)}.`,
         this.id,
+        "Pass 'x', 'y', or { axis: 'x' | 'y', offset: <number> } to Sketch.reflect.",
       );
     }
 
@@ -422,14 +423,18 @@ export class PathBuilder {
     const last = this.commands[this.commands.length - 1];
     if (!last || last.kind === 'moveTo' || last.kind === 'close') {
       throw new KernelError(
-        'feature.path.label-without-segment',
+        'feature.invalid-args',
         `label('${name}'): must follow a segment (lineTo or any arc), not moveTo / close / nothing.`,
+        undefined,
+        'Place .label(...) immediately after a lineTo or arc segment.',
       );
     }
     if (this.commands.some(c => c !== last && (c as { label?: string }).label === name)) {
       throw new KernelError(
-        'feature.path.duplicate-label',
+        'feature.invalid-args',
         `label('${name}'): name already used in this sketch — labels must be unique.`,
+        undefined,
+        'Pick a unique label name within this sketch.',
       );
     }
     (last as { label?: string }).label = name;

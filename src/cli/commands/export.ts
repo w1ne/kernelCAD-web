@@ -29,8 +29,9 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     return {
       exitCode: 2, bytesWritten: 0,
       diagnostics: [{
-        target: 'export-occt', code: 'cli.file.read', severity: 'error',
+        target: 'export-occt', code: 'cli.file-read', severity: 'error',
         message: e instanceof Error ? e.message : String(e),
+        hint: 'Check that the file path exists and is readable.',
       }],
     };
   }
@@ -38,7 +39,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   try {
     result = await runAndExport({ code, fileName: filePath, format: input.format });
   } catch (e) {
-    const diag = kernelErrorToDiagnostic(e, 'cli.export.exception');
+    const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
     return {
       exitCode: 1, bytesWritten: 0,
       diagnostics: [diag],

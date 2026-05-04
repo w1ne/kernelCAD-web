@@ -378,7 +378,7 @@ function signedAxisVec(axis: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z'): Vec3 {
     case '-Z': return [0, 0, -1];
     default:
       throw new KernelError(
-        'feature.face-query.invalid-axis',
+        'feature.invalid-args',
         `byNormal: invalid axis string "${axis}" — expected 'X'|'-X'|'Y'|'-Y'|'Z'|'-Z'`,
       );
   }
@@ -425,7 +425,7 @@ export function selectEdge(base: OcctBackend, query: EdgeQuery): EdgeSegment {
   const matches = selectEdges(base, query);
   if (matches.length === 0) {
     throw new KernelError(
-      'feature.edge-feature.no-edges-match',
+      'feature.selection.no-match',
       'selectEdge: no edges matched query (zero results)',
     );
   }
@@ -434,7 +434,7 @@ export function selectEdge(base: OcctBackend, query: EdgeQuery): EdgeSegment {
   if (matches.length > 1) {
     if (query.near !== undefined) return matches[0];
     throw new KernelError(
-      'feature.edge-feature.ambiguous-selection',
+      'feature.selection.ambiguous',
       `selectEdge: ambiguous query — ${matches.length} edges matched`,
     );
   }

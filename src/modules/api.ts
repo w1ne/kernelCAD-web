@@ -68,9 +68,10 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     sphere(r, opts) {
       if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
         throw new KernelError(
-          'feature.label.unsupported-on-shape',
+          'feature.face-ref.not-applicable',
           'sphere does not support faceLabels (no canonical face names; query targets undefined). Use a different primitive if labels are needed.',
           'sphere',
+          'Use a different primitive (box / cylinder / extrude / sketch-derived shape) when faceLabels are needed.',
         );
       }
       return session.createShape({

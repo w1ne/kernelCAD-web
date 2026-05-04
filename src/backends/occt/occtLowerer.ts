@@ -69,17 +69,19 @@ export function applyVariableEdgeFeature(
 
   const groups = meta?.groups ?? [];
   const valueKey: 'radius' | 'distance' = kind === 'fillet' ? 'radius' : 'distance';
-  const codePrefix = `feature.${kind}` as const;
 
   if (groups.length === 0) {
     diagnostics.push({
       target: 'export-occt',
-      code: `${codePrefix}.empty-groups`,
+      code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
       message: kind === 'fillet'
         ? `variable-radius fillet has no groups.`
         : `variable-distance chamfer has no groups.`,
+      hint: kind === 'fillet'
+        ? 'Pass [{ edges: ..., radius: ... }, ...] with one entry per intended blend region.'
+        : 'Pass [{ edges: ..., distance: ... }, ...] with one entry per intended bevel region.',
     });
     return { ok: false, diagnostics };
   }
@@ -89,10 +91,11 @@ export function applyVariableEdgeFeature(
   if (!baseRef || (baseRef as { kind?: string }).kind !== 'feature') {
     diagnostics.push({
       target: 'export-occt',
-      code: `${codePrefix}.no-base`,
+      code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
       message: `${kind} input 'base' must be a feature ref; got ${JSON.stringify(baseRef)}.`,
+      hint: 'Chain the variable-radius/distance feature onto a solid shape.',
     });
     return { ok: false, diagnostics };
   }
@@ -110,10 +113,11 @@ export function applyVariableEdgeFeature(
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
       diagnostics.push({
         target: 'export-occt',
-        code: `${codePrefix}.invalid-group`,
+        code: 'feature.invalid-args',
         featureId: feature.id,
         severity: 'error',
         message: `${kind} group ${i} has invalid ${valueKey} ${value}; must be a positive finite number.`,
+        hint: `Each group needs a positive finite ${valueKey}.`,
       });
       return { ok: false, diagnostics };
     }
@@ -136,10 +140,11 @@ export function applyVariableEdgeFeature(
           // Unexpected ref kind for an edge_group input.
           diagnostics.push({
             target: 'export-occt',
-            code: `${codePrefix}.invalid-edge-ref`,
+            code: 'feature.invalid-args',
             featureId: feature.id,
             severity: 'error',
             message: `${kind} group ${i} edge_group_${i} ref kind '${ref.kind}' is not supported (expected 'edge' or 'face').`,
+            hint: 'Use an EdgeSelector or canonical face name in the edge_group slot.',
           });
           return { ok: false, diagnostics };
         }
@@ -148,10 +153,11 @@ export function applyVariableEdgeFeature(
           const _exhaustive: never = ref;
           diagnostics.push({
             target: 'export-occt',
-            code: `${codePrefix}.invalid-edge-ref`,
+            code: 'feature.invalid-args',
             featureId: feature.id,
             severity: 'error',
             message: `${kind} group ${i} edge_group_${i} ref kind '${(_exhaustive as { kind?: string }).kind ?? '<unknown>'}' is not supported (expected 'edge' or 'face').`,
+            hint: 'Use an EdgeSelector or canonical face name in the edge_group slot.',
           });
           return { ok: false, diagnostics };
         }
@@ -170,12 +176,12 @@ export function applyVariableEdgeFeature(
 
     const edgesResult = pickEdges(synth, base, allRecords);
     if ('error' in edgesResult) {
+      // Forward the underlying selection diagnostic verbatim — its code
+      // (feature.face-ref.* / feature.selection.*) is more specific than a
+      // generic invalid-args.
       diagnostics.push({
-        target: 'export-occt',
-        code: `${codePrefix}.invalid-group`,
-        featureId: feature.id,
-        severity: 'error',
-        message: `${kind} group ${i} edge resolution failed: ${edgesResult.error.message}`,
+        ...edgesResult.error,
+        message: `${kind} group ${i}: ${edgesResult.error.message}`,
       });
       return { ok: false, diagnostics };
     }
@@ -196,12 +202,15 @@ export function applyVariableEdgeFeature(
     const msg = e instanceof Error ? e.message : String(e);
     diagnostics.push({
       target: 'export-occt',
-      code: `${codePrefix}.failed`,
+      code: 'feature.kernel-failed',
       featureId: feature.id,
       severity: 'error',
       message: kind === 'fillet'
         ? `OCCT variable fillet failed: ${msg}`
         : `OCCT variable chamfer failed: ${msg}`,
+      hint: kind === 'fillet'
+        ? 'OCCT could not apply that variable fillet — try smaller per-group radii or a coarser group split.'
+        : 'OCCT could not apply that variable chamfer — try smaller per-group distances or a coarser group split.',
     });
     return { ok: false, diagnostics };
   }
@@ -297,10 +306,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!Array.isArray(commands) || commands.length === 0) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.sketch.bad-commands',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `sketch requires metadata.commands: SketchCommand[].`,
+            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close().',
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -308,15 +318,21 @@ export class OcctLowerer implements FeatureLowerer {
           shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          // Narrow degenerate-arc cases (radiusArc-only for now) to a specific code
-          // so whyDidThisFail can give a more actionable hint.
-          const code = msg.startsWith('radiusArc:') ? 'feature.sketch.degenerate-arc' : 'feature.sketch.failed';
+          // Narrow degenerate-arc cases (radiusArc-only for now) to the kept
+          // specific code; everything else collapses into the generic
+          // kernel-failed bucket.
+          const isDegenerateArc = msg.startsWith('radiusArc:');
+          const code = isDegenerateArc ? 'feature.sketch.degenerate-arc' : 'feature.kernel-failed';
+          const hint = isDegenerateArc
+            ? 'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor (threePointsArc/sagittaArc).'
+            : 'Sketch construction failed — read the diagnostic message for the underlying error.';
           diagnostics.push({
             target: 'export-occt',
             code,
             featureId: r.id,
             severity: 'error',
             message: `sketch construction failed: ${msg}`,
+            hint,
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -343,10 +359,11 @@ export class OcctLowerer implements FeatureLowerer {
                                   typeof p[0] === 'number' && typeof p[1] === 'number')) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.bad-points',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `extrude polygon requires metadata.points: [number, number][] with at least 3 points.`,
+              hint: 'Pass at least 3 [x, y] number pairs as the polygon points.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -356,10 +373,11 @@ export class OcctLowerer implements FeatureLowerer {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.failed',
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT extrude failed: ${msg}`,
+              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -371,10 +389,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (width === undefined || height === undefined || radius === undefined || depth === undefined) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.bad-params',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
-              message: `extrude rounded-rect requires width, height, and radius params (depth always required).`,
+              message: `extrude rounded-rect requires width, height, radius, and depth params (positive finite numbers).`,
+              hint: 'Pass width, height, radius, and depth as positive finite numbers.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -384,10 +403,11 @@ export class OcctLowerer implements FeatureLowerer {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.failed',
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT extrude failed: ${msg}`,
+              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -397,10 +417,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (!sketchInput) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.bad-sketch',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `extrude with profile='sketch' requires an input named 'sketch'.`,
+              hint: 'Chain extrude from a path()...close() sketch.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -410,10 +431,11 @@ export class OcctLowerer implements FeatureLowerer {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.extrude.failed',
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT extrude failed: ${msg}`,
+              hint: 'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -423,10 +445,11 @@ export class OcctLowerer implements FeatureLowerer {
             diagnostics: [
               {
                 target: this.target,
-                code: 'feature.extrude.unsupported-profile',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
-                message: `Profile kind '${profileKind}' not supported in v0.1`,
+                message: `extrude profile kind '${profileKind}' not supported. Use 'rect', 'circle', 'polygon', 'rounded-rect', or 'sketch'.`,
+                hint: "Use a supported profile kind: 'rect', 'circle', 'polygon', 'rounded-rect', or 'sketch'.",
               },
             ],
           };
@@ -447,10 +470,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (!sketchInput) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.revolve.bad-sketch',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `revolve with profile='sketch' requires an input named 'sketch'.`,
+              hint: 'Chain revolve from a path()...close() sketch.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -458,10 +482,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (!commands) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.revolve.bad-sketch',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `revolve sketch input has no command history.`,
+              hint: 'Chain revolve from a path()...close() sketch (the sketch must carry its command history).',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -471,10 +496,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (segmentCount === 0) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.revolve.empty-profile',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `revolve profile has no line/arc segments — area is zero.`,
+              hint: 'Add at least one lineTo or arc segment to the path before close.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -488,6 +514,7 @@ export class OcctLowerer implements FeatureLowerer {
               featureId: r.id,
               severity: 'error',
               message: `revolve profile point (x=${(crossing as { x: number }).x}) crosses rotation axis. All points must satisfy x >= 0.`,
+              hint: 'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -497,10 +524,11 @@ export class OcctLowerer implements FeatureLowerer {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.revolve.failed',
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT revolve failed: ${msg}`,
+              hint: 'OCCT could not revolve — the profile may self-intersect or be degenerate.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -510,10 +538,11 @@ export class OcctLowerer implements FeatureLowerer {
             diagnostics: [
               {
                 target: this.target,
-                code: 'feature.revolve.unsupported-profile',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
-                message: `Profile kind '${profileKind}' not supported in v0.1`,
+                message: `revolve profile kind '${profileKind}' not supported. Use 'rect' or 'sketch'.`,
+                hint: "Use a supported revolve profile kind: 'rect' or 'sketch'.",
               },
             ],
           };
@@ -527,10 +556,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (!sketchInput) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.sweep.bad-sketch',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `sweep with profile='sketch' requires an input named 'sketch'.`,
+              hint: 'Chain sweep from a path()...close() sketch.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -538,20 +568,22 @@ export class OcctLowerer implements FeatureLowerer {
           if (!Array.isArray(rail) || rail.length < 2) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.sweep.invalid-rail',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `sweep rail must be an array of at least 2 points; got ${Array.isArray(rail) ? `length ${rail.length}` : 'non-array'}.`,
+              hint: 'Pass a rail array of [x, y, z] tuples (≥2 points). Use helix(...) for helical rails.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
           if (rail.length > 5000) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.sweep.invalid-rail',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `sweep rail has ${rail.length} points (cap is 5000). For helices, reduce \`pointsPerTurn\` or \`turns\`. For polylines, simplify the path.`,
+              hint: 'Reduce rail point count to ≤ 5000. For helices, lower pointsPerTurn or turns.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -562,10 +594,11 @@ export class OcctLowerer implements FeatureLowerer {
                 !p.every(n => typeof n === 'number' && Number.isFinite(n))) {
               diagnostics.push({
                 target: 'export-occt',
-                code: 'feature.sweep.invalid-rail',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
                 message: `sweep rail point at index ${i} must be a [x, y, z] tuple of finite numbers; got ${JSON.stringify(p)}.`,
+                hint: 'Each rail point must be a [x, y, z] tuple of finite numbers.',
               });
               return { shape: undefined as unknown as ShapeBackend, diagnostics };
             }
@@ -579,27 +612,17 @@ export class OcctLowerer implements FeatureLowerer {
             );
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            // Discriminate sweep failures into specific codes for actionable
-            // agent feedback. The `SWEEP_MULTI_FACE_PROFILE:` prefix comes
-            // from `liftSketchToFace`; the regexes match probable Replicad/OCCT
-            // error wording for the other two cases. Unmatched cases fall
-            // through to the generic `feature.sweep.failed`.
-            let code: string;
-            if (msg.startsWith('SWEEP_MULTI_FACE_PROFILE:')) {
-              code = 'feature.sweep.multi-face-profile';
-            } else if (/curvature|too small|profile.*radius/i.test(msg)) {
-              code = 'feature.sweep.profile-too-large';
-            } else if (/self.intersect|self-intersection/i.test(msg)) {
-              code = 'feature.sweep.spine-self-intersection';
-            } else {
-              code = 'feature.sweep.failed';
-            }
+            // All sweep failure modes (multi-face profile, profile too large,
+            // spine self-intersection, generic) collapse into kernel-failed.
+            // The message preserves the underlying cause string from OCCT/
+            // Replicad; the hint is generic to the sweep recovery class.
             diagnostics.push({
               target: 'export-occt',
-              code,
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT sweep failed: ${msg}`,
+              hint: 'OCCT could not sweep — common causes: profile larger than rail curvature, sharp corners causing self-intersection, multi-face profile, or non-planar profile.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -609,10 +632,11 @@ export class OcctLowerer implements FeatureLowerer {
             diagnostics: [
               {
                 target: this.target,
-                code: 'feature.sweep.unsupported-profile',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
-                message: `Profile kind '${profileKind}' not supported for sweep.`,
+                message: `sweep profile kind '${profileKind}' not supported. Use 'sketch'.`,
+                hint: "Use profileKind 'sketch' for sweep.",
               },
             ],
           };
@@ -626,10 +650,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (sectionCount < 2) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.loft.empty-sections',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `loft needs at least 2 sketches (sectionCount=${sectionCount}).`,
+              hint: 'Pass at least 2 sketches; e.g. s1.loft(s2).',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -640,10 +665,11 @@ export class OcctLowerer implements FeatureLowerer {
             if (!s) {
               diagnostics.push({
                 target: 'export-occt',
-                code: 'feature.loft.bad-sketch',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
                 message: `loft missing input sketch_${i} — upstream sketch did not lower successfully.`,
+                hint: 'Loft requires every upstream sketch input to lower successfully — check upstream sketch diagnostics first.',
               });
               return { shape: undefined as unknown as ShapeBackend, diagnostics };
             }
@@ -660,10 +686,11 @@ export class OcctLowerer implements FeatureLowerer {
             if (meta.planes.length !== sectionCount) {
               diagnostics.push({
                 target: 'export-occt',
-                code: 'feature.loft.invalid-planes',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
                 message: `loft planes length ${meta.planes.length} does not match section count ${sectionCount}.`,
+                hint: 'If you pass opts.planes, its length must equal the section count. Or omit planes and use opts.spacing.',
               });
               return { shape: undefined as unknown as ShapeBackend, diagnostics };
             }
@@ -686,10 +713,11 @@ export class OcctLowerer implements FeatureLowerer {
             const msg = e instanceof Error ? e.message : String(e);
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.loft.failed',
+              code: 'feature.kernel-failed',
               featureId: r.id,
               severity: 'error',
               message: `OCCT loft failed: ${msg}`,
+              hint: 'OCCT could not loft these sections — try ruled: true for sharp transitions, or use sections with similar vertex counts and orientation.',
             });
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
@@ -699,10 +727,11 @@ export class OcctLowerer implements FeatureLowerer {
             diagnostics: [
               {
                 target: this.target,
-                code: 'feature.loft.failed',
+                code: 'feature.invalid-args',
                 featureId: r.id,
                 severity: 'error',
-                message: `loft profile kind '${profileKind}' not supported.`,
+                message: `loft profile kind '${profileKind}' not supported. Use 'sketch'.`,
+                hint: "Use profileKind 'sketch' for loft.",
               },
             ],
           };
@@ -745,10 +774,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!base) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.fillet.no-base',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `fillet requires an input named 'base'.`,
+            hint: 'Chain fillet onto a solid shape, e.g. box(10, 10, 10).fillet(1).',
           });
           throw new Error('fillet: no base shape');
         }
@@ -767,10 +797,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (radius === undefined) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.fillet.no-radius',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `fillet requires a 'radius' parameter.`,
+            hint: 'Pass a positive finite number as the first argument, e.g. .fillet(2).',
           });
           throw new Error('fillet: no radius');
         }
@@ -826,10 +857,11 @@ export class OcctLowerer implements FeatureLowerer {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.fillet.failed',
+            code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `OCCT fillet failed: ${msg}`,
+            hint: 'OCCT could not apply that fillet — try a smaller radius (typically less than half of the smallest face dimension).',
           });
           return { shape: base, diagnostics };
         }
@@ -840,10 +872,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!base) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.chamfer.no-base',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `chamfer requires an input named 'base'.`,
+            hint: 'Chain chamfer onto a solid shape, e.g. box(10, 10, 10).chamfer(1).',
           });
           throw new Error('chamfer: no base shape');
         }
@@ -862,10 +895,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (distance === undefined) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.chamfer.no-distance',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `chamfer requires a 'distance' parameter.`,
+            hint: 'Pass a positive finite number as the first argument, e.g. .chamfer(2).',
           });
           throw new Error('chamfer: no distance');
         }
@@ -891,10 +925,11 @@ export class OcctLowerer implements FeatureLowerer {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.chamfer.failed',
+            code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `OCCT chamfer failed: ${msg}`,
+            hint: 'OCCT could not apply that chamfer — try a smaller distance (typically less than half of the smallest face dimension).',
           });
           return { shape: base, diagnostics };
         }
@@ -905,10 +940,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!base) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.shell.no-base',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `shell requires an input named 'base'.`,
+            hint: 'Chain shell onto a solid shape.',
           });
           throw new Error('shell: no base shape');
         }
@@ -916,10 +952,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (thickness === undefined) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.shell.no-thickness',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `shell requires a 'thickness' parameter.`,
+            hint: 'Pass a positive finite number as the first argument, e.g. .shell(1, { face: \'top\' }).',
           });
           throw new Error('shell: no thickness');
         }
@@ -942,10 +979,11 @@ export class OcctLowerer implements FeatureLowerer {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.shell.failed',
+            code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `OCCT shell failed: ${msg}`,
+            hint: 'OCCT could not shell that solid — try a thinner wall or a different open face. Thickness must be smaller than the shape\'s minimum thickness.',
           });
           return { shape: base, diagnostics };
         }
@@ -956,10 +994,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!base) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.mirror.no-base',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `mirror requires an input named 'base'.`,
+            hint: "Chain mirror onto a solid shape, e.g. box(10,10,10).mirror({ plane: 'yz' }).",
           });
           throw new Error('mirror: no base shape');
         }
@@ -968,10 +1007,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!isValidPlaneSpec(plane)) {
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.mirror.invalid-plane',
+            code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
             message: `mirror requires a valid plane spec; got ${JSON.stringify(plane)}.`,
+            hint: "Pass 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset: <number> }.",
           });
           return { shape: base, diagnostics };
         }
@@ -983,10 +1023,11 @@ export class OcctLowerer implements FeatureLowerer {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
             target: 'export-occt',
-            code: 'feature.mirror.failed',
+            code: 'feature.kernel-failed',
             featureId: r.id,
             severity: 'error',
             message: `OCCT mirror union failed: ${msg}`,
+            hint: 'OCCT rejected the mirror union — translate the source away from the mirror plane, or use { plane, offset }.',
           });
           return { shape: base, diagnostics };
         }
@@ -1012,10 +1053,11 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics: [
             {
               target: this.target,
-              code: `feature.${r.kind}.unsupported-in-v0.1`,
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
-              message: `Feature kind '${r.kind}' is not supported in v0.1.`,
+              message: `Feature kind '${r.kind}' is not supported.`,
+              hint: 'Use a documented feature kind.',
             },
           ],
         };
@@ -1040,10 +1082,11 @@ export class OcctLowerer implements FeatureLowerer {
           if (!isValidPlaneSpec(t.plane)) {
             diagnostics.push({
               target: 'export-occt',
-              code: 'feature.transform.invalid-plane',
+              code: 'feature.invalid-args',
               featureId: r.id,
               severity: 'error',
               message: `reflect transform has invalid plane spec: ${JSON.stringify(t.plane)}.`,
+              hint: "Reflect plane must be 'xy', 'xz', 'yz', or { plane: '<cardinal>', offset?: number }.",
             });
             break; // skip applying the transform; preserve the prior shape
           }

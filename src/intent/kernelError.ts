@@ -2,17 +2,22 @@
 //
 // `KernelError` is the kernelCAD-thrown exception type. Carrying a structured
 // `code` field lets the script-runtime exception path emit a `CompilerDiagnostic`
-// with the same code that `whyDidThisFail` registers a hint for, instead of
-// the generic `cli.script.exception` fallback.
+// with the same code that the catalogue registers a hint for, instead of
+// the generic `cli.script-exception` fallback.
+
+import type { DiagnosticCode } from '../diagnostics/codes';
 
 export class KernelError extends Error {
-  readonly code: string;
+  readonly code: DiagnosticCode;
   readonly featureId?: string;
+  /** Optional hint override; if absent, conversion falls back to HINT_TEMPLATES[code]. */
+  readonly hint?: string;
 
-  constructor(code: string, message: string, featureId?: string) {
+  constructor(code: DiagnosticCode, message: string, featureId?: string, hint?: string) {
     super(message);
     this.code = code;
     this.featureId = featureId;
+    this.hint = hint;
     this.name = 'KernelError';
   }
 }

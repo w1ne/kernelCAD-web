@@ -72,6 +72,7 @@ export class RecomputeEngine {
             featureId: r.id,
             severity: 'error',
             message: `Input '${key}' references missing/failed feature '${upstreamId}'`,
+            hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
           });
           break;
         }
@@ -140,6 +141,7 @@ export class RecomputeEngine {
           featureId: r.id,
           severity: 'error',
           message: msg,
+          hint: 'An exception was raised during lowering; read the message for the underlying error.',
         };
         diagnostics.push(failDiag);
         health.set(r.id, 'error');

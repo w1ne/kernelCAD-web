@@ -338,9 +338,9 @@ export class OcctBackend implements ShapeBackend {
   /**
    * Lift a sketch-tagged backend's drawing onto a plane and return access to
    * its profile face. Centralizes the cast pattern + multi-face check used
-   * by `sweepFromSketch`. The `SWEEP_MULTI_FACE_PROFILE:` prefix is matched
-   * by the lowerer's diagnostic discriminator and surfaces as
-   * `feature.sweep.multi-face-profile`.
+   * by `sweepFromSketch`. The `SWEEP_MULTI_FACE_PROFILE:` prefix is preserved
+   * in the message that surfaces in the `feature.kernel-failed` diagnostic
+   * for sweep, so agents can still discriminate cause via the message.
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If the drawing produces multiple faces (Sketches plural).
@@ -563,7 +563,7 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If `edges` is empty.
    * @throws {Error} If OCCT fails (e.g. radius too large for the geometry) —
    *   the original exception is re-thrown so the lowerer can catch and
-   *   emit a `feature.fillet.failed` diagnostic.
+   *   emit a `feature.kernel-failed` diagnostic.
    */
   fillet(edges: ReplicadEdge[], radius: number): OcctBackend {
     if (edges.length === 0) {
@@ -583,7 +583,7 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If `edges` is empty.
    * @throws {Error} If OCCT fails (e.g. distance too large for the geometry) —
    *   the original exception is re-thrown so the lowerer can catch and
-   *   emit a `feature.chamfer.failed` diagnostic.
+   *   emit a `feature.kernel-failed` diagnostic.
    */
   chamfer(edges: ReplicadEdge[], distance: number): OcctBackend {
     if (edges.length === 0) {
@@ -648,7 +648,7 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If `thickness <= 0`.
    * @throws {Error} If OCCT fails (e.g. thickness exceeds the shape's
    *   minimum thickness or geometry is degenerate). The lowerer catches
-   *   and emits a `feature.shell.failed` diagnostic.
+   *   and emits a `feature.kernel-failed` diagnostic.
    */
   shell(face: ReplicadFace, thickness: number): OcctBackend {
     if (thickness <= 0) {
