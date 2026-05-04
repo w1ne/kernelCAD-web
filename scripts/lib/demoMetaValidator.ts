@@ -29,6 +29,10 @@ export function validateDemoMeta(meta: Record<string, unknown>, version: string)
   }
 
   const heroArtifact = meta.heroArtifact;
+  if (heroArtifact !== undefined && typeof heroArtifact !== 'string') {
+    errors.push(`heroArtifact must be a string, got ${typeof heroArtifact}`);
+    return errors;
+  }
   if (typeof heroArtifact === 'string' && GENERIC_PRIMITIVE_DENYLIST.has(heroArtifact)) {
     errors.push(`heroArtifact '${heroArtifact}' is denylisted (generic primitive)`);
   }
