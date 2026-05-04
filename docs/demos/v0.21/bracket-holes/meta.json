@@ -1,8 +1,8 @@
 {
   "taskId": "bracket-holes",
   "module": "v0.21",
-  "capturedAt": "2026-05-03T23:49:32.426Z",
+  "capturedAt": "2026-05-04T00:06:38.181Z",
   "durationMs": 21500,
   "truncated": false,
-  "gitSha": "683b37ae0de09684e090db921bdfaa34b7124789"
+  "gitSha": "a3d176d333a2742a8a21baf118789084e65402f6"
 }

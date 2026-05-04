@@ -78,6 +78,14 @@ function setOpacity(refs: GroupRefs, value: number): void {
   }
 }
 
+function setOpaque(refs: GroupRefs): void {
+  for (const m of refs.mats) {
+    m.transparent = false;
+    m.opacity = 1;
+    m.needsUpdate = true;
+  }
+}
+
 function setColor(refs: GroupRefs, r: number, g: number, b: number): void {
   for (const m of refs.mats) m.color.setRGB(r, g, b);
 }
@@ -118,6 +126,7 @@ export class AnimationEngine {
             const e = easeOutCubic(t);
             setOpacity(target, e);
             target.group.scale.setScalar(0.85 + 0.15 * e);
+            if (t >= 1) setOpaque(target);
           },
         });
       });
@@ -132,6 +141,7 @@ export class AnimationEngine {
           startMs, durationMs: dur, resolve,
           step: (t) => {
             setOpacity(target, easeOutCubic(t));
+            if (t >= 1) setOpaque(target);
           },
         });
       });
@@ -162,7 +172,7 @@ export class AnimationEngine {
             }
             if (t >= 1) {
               for (const pg of predGroups) setOpacity(pg, 0);
-              setOpacity(target, 1);
+              setOpaque(target);
             }
           },
         });
@@ -192,7 +202,7 @@ export class AnimationEngine {
             }
             if (t >= 1) {
               for (const pg of predGroups) setOpacity(pg, 0);
-              setOpacity(target, 1);
+              setOpaque(target);
             }
           },
         });
@@ -222,7 +232,7 @@ export class AnimationEngine {
               for (const pg of predGroups) setOpacity(pg, 1 - f);
             }
             if (t >= 1) {
-              setOpacity(target, 1);
+              setOpaque(target);
               for (const pg of predGroups) setOpacity(pg, 0);
             }
           },

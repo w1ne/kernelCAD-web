@@ -1,8 +1,8 @@
 {
-  "taskId": "subtract-then-fillet-rim",
+  "taskId": "output.kcad.ts",
   "module": "v0.2",
-  "capturedAt": "2026-05-03T23:37:10.231Z",
+  "capturedAt": "2026-05-04T00:02:42.295Z",
   "durationMs": 16400,
   "truncated": false,
-  "gitSha": "8f29e82b93bce5c24595b4887cfb3f0ac8b4c236"
+  "gitSha": "a3d176d333a2742a8a21baf118789084e65402f6"
 }
