@@ -386,6 +386,8 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.label.no-upstream-sketch` | Labels work on shapes built from a `path()` sketch. For primitives or imported shapes, use an inline face query instead. |
 | `feature.label.unsupported-base` | Labels are supported for extrude only. Revolve/sweep labels are deferred. Use an inline query as a workaround. |
 | `feature.label.mixed-convexity` | The labeled segment's probe matched a mix of convex and concave edges. Split the label across smaller segments, or refine with an inline EdgeQuery filtering by convexity. |
+| `feature.label.collision` | Two or more upstream features declared the same `faceLabels` name. Each label must be unique within the scope visible to the consumer. Rename one of the conflicting `faceLabels` entries. |
+| `feature.label.query-no-match` | A query-based `faceLabel` matched zero faces at the consumer site. Check the query (e.g. `atZ` value) against the actual shape geometry with `list_faces`. |
 
 ### recompute.*
 
