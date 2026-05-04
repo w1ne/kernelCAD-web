@@ -70,6 +70,111 @@ describe('RecomputeEngine event emission', () => {
     expect(events[0].kind).toBe('feature.failed');
   });
 
+  it('populates op === "subtract" for boolean feature with difference param', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      {
+        id: 'bool-1',
+        kind: 'boolean',
+        inputs: {},
+        params: { op: { expression: "'difference'", unit: 'unitless', evaluated: 0 } },
+        transforms: [],
+        suppressed: false,
+      } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await engine.run(records, { onEvent: (e) => events.push(e) });
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled).toBeDefined();
+    expect(compiled!.op).toBe('subtract');
+  });
+
+  it('populates op === "union" for boolean feature with union param', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      {
+        id: 'bool-2',
+        kind: 'boolean',
+        inputs: {},
+        params: { op: { expression: "'union'", unit: 'unitless', evaluated: 0 } },
+        transforms: [],
+        suppressed: false,
+      } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await engine.run(records, { onEvent: (e) => events.push(e) });
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled!.op).toBe('union');
+  });
+
+  it('populates op === "intersect" for boolean feature with intersection param', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      {
+        id: 'bool-3',
+        kind: 'boolean',
+        inputs: {},
+        params: { op: { expression: "'intersection'", unit: 'unitless', evaluated: 0 } },
+        transforms: [],
+        suppressed: false,
+      } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await engine.run(records, { onEvent: (e) => events.push(e) });
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled!.op).toBe('intersect');
+  });
+
+  it('leaves op undefined for boolean feature with no op param', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      {
+        id: 'bool-no-op',
+        kind: 'boolean',
+        inputs: {},
+        params: {},
+        transforms: [],
+        suppressed: false,
+      } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await expect(engine.run(records, { onEvent: (e) => events.push(e) })).resolves.toBeDefined();
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled).toBeDefined();
+    expect(compiled!.op).toBeUndefined();
+  });
+
+  it('leaves op undefined for non-boolean features', async () => {
+    const engine = new RecomputeEngine(mockLowerer);
+    const records: FeatureRecord[] = [
+      { id: 'box-1', kind: 'box', inputs: {}, params: {}, transforms: [], suppressed: false } as FeatureRecord,
+    ];
+    const events: FeatureEvent[] = [];
+    await engine.run(records, { onEvent: (e) => events.push(e) });
+
+    const compiled = events.find((e) => e.kind === 'feature.compiled') as Extract<
+      FeatureEvent,
+      { kind: 'feature.compiled' }
+    > | undefined;
+    expect(compiled!.op).toBeUndefined();
+  });
+
   it('omits emission when no sink provided (back-compat)', async () => {
     const engine = new RecomputeEngine(mockLowerer);
     const records: FeatureRecord[] = [
