@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   whatsNewTemplate,
   whatsNewIsFilled,
 } from './whatsNewTemplate';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -29,8 +29,16 @@ describe('whatsNewTemplate', () => {
 });
 
 describe('whatsNewIsFilled', () => {
+  const dirsToClean: string[] = [];
+  afterEach(() => {
+    for (const d of dirsToClean.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+
   function writeTmp(content: string): string {
     const dir = mkdtempSync(join(tmpdir(), 'kcad-whats-new-'));
+    dirsToClean.push(dir);
     const path = join(dir, 'whats-new.md');
     writeFileSync(path, content, 'utf8');
     return path;
