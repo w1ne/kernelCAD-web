@@ -4,7 +4,7 @@
 **Status:** Draft (spec)
 **Scope:** Meta-policy binding the per-module visual-demo discipline (§H11) of the v0.2 → v1.0 gap-closure roadmap. Constrains how every per-module brainstorm picks its demo hero artifact through v1.0.
 **Supersedes:** Implicit "promo-grade MP4" guidance under gap-closure roadmap §H11.
-**Goal:** Replace utilitarian demo defaults (`bracket-holes`, `box-minus-divider`-style outputs) with recognizable, scroll-stopping hero artifacts that make the new tool central to the build, doubling as build-in-public assets without extra authoring effort.
+**Goal:** Replace utilitarian demo defaults (`bracket-holes`, `subtract-then-fillet-rim`-style outputs) with recognizable, scroll-stopping hero artifacts that make the new tool central to the build, doubling as build-in-public assets without extra authoring effort.
 
 ## Why this milestone
 
