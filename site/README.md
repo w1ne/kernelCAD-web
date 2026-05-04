@@ -5,7 +5,7 @@ Single-page marketing site for kernelCAD. Plain HTML + CSS, zero framework.
 ## Develop
 
 ```bash
-node site/scripts/build-demo.mjs       # generate demo.mp4 + demo.json into public/
+npx tsx site/scripts/build-demo.ts   # generate demo.mp4 + demo.json into public/
 cd site && for f in public/*; do ln -sf "$f" "$(basename "$f")"; done
 python3 -m http.server 8000
 # open http://localhost:8000
@@ -16,12 +16,12 @@ The symlinks alias `public/demo.mp4`, `public/demo.json`, `public/favicon.svg` i
 ## Build (run before deploy)
 
 ```bash
-node site/scripts/build-demo.mjs       # pulls latest demo MP4 from ../docs/demos/v*/
+npx tsx site/scripts/build-demo.ts   # pulls hero demo MP4 for current package.json.version from ../docs/demos/
 node site/scripts/render-brand.mjs     # renders PNG brand assets
 ```
 
 ## Deploy
 
-Cloudflare Pages, build dir = `site/`, build command = `node site/scripts/build-demo.mjs && node site/scripts/render-brand.mjs`.
+Cloudflare Pages, build dir = `site/`, build command = `npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs`.
 
 Spec: `../docs/superpowers/specs/2026-05-04-kernelcad-website-design.md`
