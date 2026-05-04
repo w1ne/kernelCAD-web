@@ -1,5 +1,5 @@
-// src/components/demoPlayer/DemoPlayerPage.test.tsx
 // @vitest-environment jsdom
+// src/components/demoPlayer/DemoPlayerPage.test.tsx
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock WebGLRenderer since jsdom has no WebGL support.
