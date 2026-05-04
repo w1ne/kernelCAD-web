@@ -2,8 +2,10 @@
 import type { FeatureId, FeatureRef, Vec3, AxisSpec } from '../intent/types';
 import { isValidAxisSpec } from '../intent/types';
 import type { CaptureSession } from './captureSession';
+import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../intent/kernelError';
+import type { FaceLabelsMap } from '../intent/featureRecord';
 
 export type SketchCommand =
   | { kind: 'moveTo'; x: number; y: number }
@@ -42,7 +44,8 @@ export class Sketch {
     this.session = session;
   }
 
-  extrude(depth: number): Shape {
+  extrude(depth: number, opts?: { faceLabels?: FaceLabelsMap }): Shape {
+    const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
     return this.session.createShape({
       kind: 'extrude',
       inputs: {
@@ -52,6 +55,7 @@ export class Sketch {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
         depth: { expression: String(depth), unit: 'mm', evaluated: depth },
       },
+      metadata: faceLabels ? { faceLabels } : undefined,
     });
   }
 
@@ -63,7 +67,8 @@ export class Sketch {
    * Returns a `Shape` (3D solid). Validation (axis-cross, empty profile)
    * happens at lowering time and surfaces as `feature.revolve.*` diagnostics.
    */
-  revolve(): Shape {
+  revolve(opts?: { faceLabels?: FaceLabelsMap }): Shape {
+    const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
@@ -72,6 +77,7 @@ export class Sketch {
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
       },
+      metadata: faceLabels ? { faceLabels } : undefined,
     });
   }
 
@@ -92,7 +98,8 @@ export class Sketch {
    * Returns a `Shape` (3D solid). Validation (rail length, finite values)
    * happens at lowering time and surfaces as `feature.sweep.*` diagnostics.
    */
-  sweep(rail: Vec3[], opts: { frenet?: boolean } = {}): Shape {
+  sweep(rail: Vec3[], opts: { frenet?: boolean; faceLabels?: FaceLabelsMap } = {}): Shape {
+    const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -102,7 +109,7 @@ export class Sketch {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
         frenet: { expression: String(opts.frenet ?? false), unit: 'unitless', evaluated: opts.frenet ? 1 : 0 },
       },
-      metadata: { rail },
+      metadata: { rail, ...(faceLabels ? { faceLabels } : {}) },
     });
   }
 
@@ -140,8 +147,10 @@ export class Sketch {
       ruled?: boolean;
       startPoint?: [number, number, number];
       endPoint?: [number, number, number];
+      faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
+    const faceLabels = validateFaceLabels(opts?.faceLabels, 'loft');
     const others = Array.isArray(other) ? other : [other];
     const allSketches = [this, ...others];
     const inputs: Record<string, FeatureRef> = {};
@@ -161,6 +170,7 @@ export class Sketch {
         planes: opts.planes,
         startPoint: opts.startPoint,
         endPoint: opts.endPoint,
+        ...(faceLabels ? { faceLabels } : {}),
       },
     });
   }
