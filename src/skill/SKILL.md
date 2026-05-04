@@ -388,6 +388,21 @@ When the kernel rejects a feature, it emits a `CompilerDiagnostic` with one of t
 | `feature.label.mixed-convexity` | The labeled segment's probe matched a mix of convex and concave edges. Split the label across smaller segments, or refine with an inline EdgeQuery filtering by convexity. |
 | `feature.label.collision` | Two or more upstream features declared the same `faceLabels` name. Each label must be unique within the scope visible to the consumer. Rename one of the conflicting `faceLabels` entries. |
 | `feature.label.query-no-match` | A query-based `faceLabel` matched zero faces at the consumer site. Check the query (e.g. `atZ` value) against the actual shape geometry with `list_faces`. |
+| `feature.label.unsupported-on-shape` | `faceLabels` is not accepted on this primitive (sphere has no canonical face names and no meaningful query targets). Use a different primitive (box/cylinder/extrude) or a sketch-derived shape. |
+
+### feature.face-query.*
+
+| Code | Meaning |
+|---|---|
+| `feature.face-query.invalid-axis` | `FaceQuery.byNormal` got an invalid axis string. Allowed: `'X'`, `'-X'`, `'Y'`, `'-Y'`, `'Z'`, `'-Z'`. |
+
+### capture.*
+
+| Code | Meaning |
+|---|---|
+| `capture.faceLabels.invalid-shape` | `faceLabels` must be a plain object map. Arrays, primitives, and null are not accepted. |
+| `capture.faceLabels.invalid-key` | `faceLabels` keys must be non-empty strings. |
+| `capture.faceLabels.invalid-value` | Each `faceLabels` value must be either a canonical face name (`top`/`bottom`/`left`/`right`/`front`/`back`) or a `FaceQuery` descriptor object. |
 
 ### recompute.*
 
