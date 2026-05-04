@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 # Three independent QC jobs run in parallel; e2e (master-only) gates on all
-# three being green. See docs/superpowers/specs/2026-05-04-ci-acceleration-design.md.
+# three being green. See ci-acceleration-design (in kernelCAD-private).
 jobs:
   lint:
     runs-on: ubuntu-latest

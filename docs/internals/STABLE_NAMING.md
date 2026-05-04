@@ -1,5 +1,5 @@
 > **Ported from `kernelCAD-private` research; revised for v0.1+ implementation.**
-> See `docs/superpowers/specs/2026-04-29-kernelcad-NORTHSTAR.md` for current architecture.
+> See the kernelcad-NORTHSTAR architecture spec (in kernelCAD-private) for current architecture.
 
 # Stable Entity Naming System — Full Blueprint
 

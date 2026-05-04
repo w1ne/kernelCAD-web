@@ -72,7 +72,7 @@ interface HintEntry {
    *   directly. The recompute engine short-circuits with
    *   `recompute.input.missing` before the lowerer's branch runs, so
    *   agents won't see this code through normal MCP usage. See
-   *   docs/superpowers/specs/2026-05-01-error-attribution-policy.md.
+   *   error-attribution-policy spec (in kernelCAD-private).
    * - 'tool-error-field': the code appears in MCP tool results' `error` /
    *   `errorCode` field rather than the `diagnostics[]` array. Agents see
    *   these as top-level tool failures (file I/O, script exceptions, export

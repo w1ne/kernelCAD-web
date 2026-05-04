@@ -24,4 +24,4 @@ node site/scripts/render-brand.mjs     # renders PNG brand assets
 
 Cloudflare Pages, build dir = `site/`, build command = `npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs`.
 
-Spec: `../docs/superpowers/specs/2026-05-04-kernelcad-website-design.md`
+Spec: kernelcad-website-design (in kernelCAD-private)

@@ -7,7 +7,7 @@
 // flow. Inline JS on the home page reads ?error=... after the redirect to
 // surface an error message.
 //
-// Spec: docs/superpowers/specs/2026-05-04-user-tracking-design.md §A2.
+// Spec: user-tracking-design §A2 (in kernelCAD-private).
 
 interface Env {
   DB: D1Database;

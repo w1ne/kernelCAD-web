@@ -21,7 +21,7 @@ concurrency:
 
 # Same parallel-qc structure as ci.yml plus a web-build job that produces the
 # dist/ Pages bundle. e2e gates on the three qc jobs; deploy gates on qc + web-build.
-# See docs/superpowers/specs/2026-05-04-ci-acceleration-design.md.
+# See ci-acceleration-design (in kernelCAD-private).
 jobs:
   lint:
     runs-on: ubuntu-latest

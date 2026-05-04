@@ -11,7 +11,7 @@
 - **`.github/workflows/usage-stats.yml`** — daily cron (03:30 UTC) pulling GitHub traffic + repo stats + npm download counts; appends/updates a row in `docs/usage/daily.md` and auto-commits to develop.
 - **7 vitest tests** for the subscribe Pages Function at `site/functions/api/subscribe.test.ts` covering happy path, malformed email, missing email, source fallback, D1 failure, and dedup.
 
-Spec: `docs/superpowers/specs/2026-05-04-user-tracking-design.md`.
+Spec: user-tracking-design (in kernelCAD-private).
 
 ### Changed — CI parallelization (~40-45% wall-clock reduction)
 
@@ -22,7 +22,7 @@ Spec: `docs/superpowers/specs/2026-05-04-user-tracking-design.md`.
 - **`Build` step removed from `ci.yml`**: it was redundant with `qc:build`'s `typecheck + build:cli`. The Vite production build still runs in `deploy.yml`'s `web-build` job for Pages upload.
 - **`e2e` job in both workflows** now `needs: [lint, build-and-checks, test]` (gates on all three QC jobs being green).
 
-See `docs/superpowers/specs/2026-05-04-ci-acceleration-design.md` for design rationale.
+See ci-acceleration-design (in kernelCAD-private) for design rationale.
 
 ### Added — v0.21 synchronized live-build demo automation
 
@@ -386,7 +386,7 @@ A pure quality milestone: closes the rc.11 review punch list and clears pre-exis
 - `WhyDidThisFailOutput.hints` wire format changes from `string[]` to `Array<{ code, hint, reachable }>`. Consumers that unpacked `hints[0]` as a string need to read `hints[0].hint`.
 
 ### Documentation
-- New position memo at `docs/superpowers/specs/2026-05-01-error-attribution-policy.md` captures the architectural trade-off between root-cause-first and feature-specific error attribution. Sets interim policy for forward-looking diagnostic codes; rc.13+ revisits the engine-side question.
+- New position memo at the error-attribution-policy spec (in kernelCAD-private) captures the architectural trade-off between root-cause-first and feature-specific error attribution. Sets interim policy for forward-looking diagnostic codes; rc.13+ revisits the engine-side question.
 - Repo-wide native-framing sweep across source and CHANGELOG.
 
 ---
@@ -882,7 +882,7 @@ The decision to ship just `set_param_value` for v0.12-beta is deliberate YAGNI �
 - `NamingHistory` walking + geometry-snapshot fallback
 
 ### Documentation
-- New NORTHSTAR architecture spec (`docs/superpowers/specs/2026-04-29-kernelcad-NORTHSTAR.md`)
+- New NORTHSTAR architecture spec (in kernelCAD-private)
 - Ported internal docs from `kernelCAD-private` into `docs/internals/`
 - Added clean-room IP boundary clause to `CONTRIBUTING.md`
 - Archived 22 obsolete docs to `archive/doc/`
