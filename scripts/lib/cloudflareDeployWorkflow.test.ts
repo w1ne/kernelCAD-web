@@ -14,8 +14,9 @@ describe('Cloudflare Pages deploy workflow', () => {
       step.name?.includes('Deploy to Cloudflare Pages'),
     );
 
+    expect(deployStep?.with?.workingDirectory).toBe('site');
     expect(deployStep?.with?.command).toBe(
-      'pages deploy . --cwd=site --project-name=kernelcad-marketing --branch=main --commit-dirty=true',
+      'pages deploy . --project-name=kernelcad-marketing --branch=main --commit-dirty=true',
     );
   });
 });
