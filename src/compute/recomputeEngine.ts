@@ -29,6 +29,10 @@ export interface RecomputeOptions {
    *  the lowerer. Optional — slice-1/2 records have no paramRefs and work
    *  with table omitted. */
   paramTable?: ParamTable;
+  /** Slice-3: pre-populated shape map. Records whose id is already in
+   *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
+   *  unchanged earlier records' lowered output. */
+  seedShapes?: Map<FeatureId, ShapeBackend>;
 }
 
 export class RecomputeEngine {
@@ -36,7 +40,7 @@ export class RecomputeEngine {
   constructor(lowerer: FeatureLowerer) { this.lowerer = lowerer; }
 
   async run(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
-    const shapes = new Map<FeatureId, ShapeBackend>();
+    const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();
     const onEvent = opts?.onEvent;
@@ -64,6 +68,12 @@ export class RecomputeEngine {
     for (const id of order) {
       const r = idToRecord.get(id)!;
       if (r.suppressed) continue;
+      // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
+      // Skip lowering; mark healthy.
+      if (opts?.seedShapes && opts.seedShapes.has(id)) {
+        health.set(id, 'healthy');
+        continue;
+      }
 
       // Resolve inputs
       const byKey: Record<string, ShapeBackend> = {};

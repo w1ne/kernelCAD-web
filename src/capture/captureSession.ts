@@ -7,6 +7,8 @@ import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKe
 import { ParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
 import { collectParamRefs } from '../runtime/resolveParams';
+import type { ShapeBackend } from '../backends/backend';
+import { KernelError } from '../intent/kernelError';
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -56,6 +58,23 @@ export interface FeatureSpec {
   metadata?: Record<string, unknown>;
 }
 
+/** Slice-3: input + result of `session.params.update`. See spec §E.6. */
+export interface ParamUpdateEdit {
+  name: string;
+  value: number | boolean;
+}
+
+export interface ParamUpdateResult {
+  /** The final shape after re-lower. */
+  shape: ShapeBackend;
+  /** Records re-lowered (their cached output became stale and was regenerated). */
+  relowered: string[];
+  /** Records skipped (their cached output reused; nothing they depend on changed). */
+  skipped: string[];
+  /** Soft warnings produced by this update call (gated-feature lineage refs etc.). */
+  warnings: SoftWarning[];
+}
+
 export class CaptureSession {
   private idGen: FeatureIdGenerator = createFeatureIdGenerator();
   private records: FeatureRecord[] = [];
@@ -63,6 +82,10 @@ export class CaptureSession {
   readonly paramTable: ParamTable = new ParamTable();
   /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
   readonly warnings: SoftWarning[] = [];
+  /** Slice-3: per-record cached lowered shape from the most recent build,
+   *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
+   *  to skip re-lowering records before the first affected one. */
+  readonly cachedShapes: Map<string, ShapeBackend> = new Map();
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
@@ -239,6 +262,140 @@ export class CaptureSession {
     const out = this.warnings.slice();
     this.warnings.length = 0;
     return out;
+  }
+
+  /** Slice-3 namespace: edit-after-build operations.
+   *  See spec §E.6, §F.1, §F.2. */
+  readonly params = {
+    list: (): import('../runtime/paramTable').ParamEntry[] => this.paramTable.list(),
+
+    update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
+  };
+
+  /** Internal — implementation backing `params.update`. Validates atomically,
+   *  applies edits, finds the first-affected record by index, re-lowers
+   *  from there forward, reuses cached output for earlier records.
+   *  See spec §E.6. */
+  private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
+    // Step 1 — validate every edit BEFORE applying any (atomic).
+    for (const edit of edits) {
+      const entry = this.paramTable.get(edit.name); // throws unknown-name
+      if (typeof edit.value !== entry.type) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `params.update: param '${edit.name}' is ${entry.type}, got ${typeof edit.value}.`,
+          undefined,
+          `invalid-args.param.type-mismatch — param '${edit.name}' is ${entry.type}, got ${typeof edit.value}`,
+        );
+      }
+      if (entry.type === 'number' && entry.meta) {
+        const v = edit.value as number;
+        if (entry.meta.min !== undefined && v < entry.meta.min) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `params.update: param '${edit.name}' value ${v} below min ${entry.meta.min}.`,
+            undefined,
+            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} below min ${entry.meta.min}`,
+          );
+        }
+        if (entry.meta.max !== undefined && v > entry.meta.max) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `params.update: param '${edit.name}' value ${v} above max ${entry.meta.max}.`,
+            undefined,
+            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} above max ${entry.meta.max}`,
+          );
+        }
+      }
+    }
+    // Step 2 — apply edits atomically.
+    const editedNames = new Set<string>();
+    for (const edit of edits) {
+      this.paramTable.set(edit.name, edit.value);
+      editedNames.add(edit.name);
+    }
+
+    // Step 3 — find first affected record index. Records BEFORE it reuse
+    // their cached lowered output; records AT-OR-AFTER re-lower fresh
+    // (their inputs may have changed downstream of the edit).
+    let firstAffected = -1;
+    for (let i = 0; i < this.records.length; i++) {
+      const refs = (this.records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
+      if (refs.some(n => editedNames.has(n))) {
+        firstAffected = i;
+        break;
+      }
+    }
+
+    const relowered: string[] = [];
+    const skipped: string[] = [];
+
+    // Build the seedShapes map of cached outputs for records BEFORE firstAffected.
+    const seedShapes = new Map<string, ShapeBackend>();
+    if (firstAffected === -1) {
+      // No record references any edited name — nothing to re-lower.
+      // Still need to provide a shape — return last record's cached shape if any.
+      for (const r of this.records) {
+        skipped.push(r.id);
+        const cached = this.cachedShapes.get(r.id);
+        if (cached) seedShapes.set(r.id, cached);
+      }
+    } else {
+      for (let i = 0; i < this.records.length; i++) {
+        const r = this.records[i];
+        if (i < firstAffected) {
+          skipped.push(r.id);
+          const cached = this.cachedShapes.get(r.id);
+          if (cached) seedShapes.set(r.id, cached);
+        } else {
+          relowered.push(r.id);
+        }
+      }
+    }
+
+    // Step 4 — recompute. Use lazy import to avoid a top-level circular dep
+    // (proxy.ts uses the same lazy-import trick).
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { OcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../backends/occt/occtBackend');
+    await initOcct();
+    const engine = new RecomputeEngine(new OcctLowerer());
+
+    // Capture warnings emitted during this update call (Phase 4 wires
+    // emissions; here we just snapshot before/after to compute the delta).
+    const warningsBefore = this.warnings.length;
+    const result = await engine.run(this.records, {
+      paramTable: this.paramTable,
+      seedShapes,
+    });
+    const callWarnings = this.warnings.slice(warningsBefore).map(w => ({ ...w, phase: 'update' as const }));
+    // Mark the appended ones with phase: 'update'.
+    for (let i = warningsBefore; i < this.warnings.length; i++) {
+      this.warnings[i] = { ...this.warnings[i], phase: 'update' };
+    }
+
+    // Refresh the per-record cache with the latest lowered outputs.
+    for (const [id, shape] of result.shapes) {
+      this.cachedShapes.set(id, shape);
+    }
+
+    // Pick the final-shape: the last (chain-tail) record's lowered shape.
+    const tailId = this.records.length > 0 ? this.records[this.records.length - 1].id : undefined;
+    const tailShape = tailId ? result.shapes.get(tailId) : undefined;
+    if (!tailShape) {
+      throw new KernelError(
+        'recompute.lowering.exception',
+        'params.update: no shape produced for the chain tail; check upstream diagnostics.',
+        tailId,
+      );
+    }
+
+    return {
+      shape: tailShape,
+      relowered,
+      skipped,
+      warnings: callWarnings,
+    };
   }
 }
 

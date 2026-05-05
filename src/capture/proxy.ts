@@ -320,6 +320,12 @@ export class Shape {
       records as readonly import('../intent/featureRecord').FeatureRecord[],
       { paramTable: this.session.paramTable },
     );
+    // Slice-3: populate per-record cache so `session.params.update` can
+    // reuse earlier records' lowered output. Only stores successful records;
+    // failed records are absent from `r.shapes` so we don't pollute the cache.
+    for (const [id, sh] of r.shapes) {
+      this.session.cachedShapes.set(id, sh);
+    }
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
