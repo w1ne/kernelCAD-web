@@ -39,7 +39,8 @@ const CATALOG: Record<CatalogVersion, CatalogCandidate[]> = {
     { slug: 'rubber-duck-silhouette', recommended: false },
   ],
   'v0.3': [
-    { slug: 'espresso-cup', recommended: true },
+    { slug: 'service-panel-plate', recommended: true },
+    { slug: 'espresso-cup', recommended: false },
     { slug: 'tiny-pumpkin', recommended: false },
     { slug: 'watering-can', recommended: false },
   ],

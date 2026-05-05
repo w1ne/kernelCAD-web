@@ -11,7 +11,7 @@ function classify(kind: FeatureKind, op?: 'subtract' | 'union' | 'intersect'): T
     case 'extrude': case 'revolve': case 'loft': case 'sweep':
     case 'importedMesh': case 'importedStep':
       return 'add';
-    case 'hole': case 'cut':
+    case 'hole': case 'holes': case 'cutout':
       return 'boolean.cut';
     case 'boolean':
       return op === 'subtract' ? 'boolean.cut' : 'boolean.fuse';

@@ -173,6 +173,46 @@ Per-primitive canonical face applicability:
 - Cylinder: only `top` and `bottom` (the disc end-caps). Side faces have no canonical name.
 - Sphere: none. Sphere with any `{ face }` filter → error.
 
+## Hole and cutout vocabulary
+
+Three subtractive features ship with hard-coded **created face refs** so chained `.fillet()` / `.shell()` / further `.hole()` / `.cutout()` calls can address the new geometry by name without queries.
+
+```typescript
+// Single counterbored bolt hole through a plate
+plate.hole('top', {
+  u: 10, v: 10,
+  diameter: 6, depth: 'through',
+  counterbore: { diameter: 11, depth: 4 },
+});
+
+// Bolt pattern — 4 holes, one feature record, one editable unit
+plate.holes('top', {
+  positions: [{u: -20, v: -20}, {u: 20, v: -20}, {u: -20, v: 20}, {u: 20, v: 20}],
+  diameter: 5, depth: 'through',
+});
+
+// D-shaped slot via cutout (irregular shape hole() can't express)
+plate.cutout(
+  path().moveTo(-5, 0).lineTo(5, 0).threePointsArc(-5, 0, 0, 10).close(),
+  { face: 'top', depth: 6 },
+);
+```
+
+Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
+
+| Ref | Emitted when |
+|---|---|
+| `wall` | always (cylindrical bore wall, or cutout side walls) |
+| `floor` | blind only (no `'through'`, no `upToFace`) |
+| `wall-back` | through (`'through'` set OR `upToFace` set) |
+| `counterbore-wall` | hole/holes with `counterbore: {...}` |
+| `counterbore-floor` | hole/holes with `counterbore: {...}` |
+| `countersink-cone` | hole/holes with `countersink: {...}` |
+
+Resolution rule when names collide with canonical face names: created refs always win on the result Shape. After `box.hole('top', ...)`, both `'wall'` (the new bore) and `'top'` (the remaining annular planar region of the original top face) resolve. The canonical name survives because the original face wasn't fully consumed.
+
+`holes(...)`'s bare `'wall'` selector is collective sugar — `.fillet(0.2, { face: 'wall' })` rounds every bore lip in one call. Per-instance positional access (`hole1.wall`, `hole2.wall`) lands in slice 2.
+
 ## Labels — naming faces at creation time
 
 Declare a label on a creating op via the `faceLabels` option. The value map accepts two kinds of entries:
@@ -358,7 +398,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 ## Conventions
 
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
-- Prefer `subtract(cylinder)` for through-holes until a dedicated `hole` feature ships.
+- Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.

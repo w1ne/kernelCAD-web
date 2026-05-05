@@ -76,6 +76,23 @@ export function pickEdges(
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
     const labelName = faceRef.ref.name;
 
+    // (4a-pre) v0.3 slice 1: created-face refs declared by hole/holes/cutout
+    // attach `labelName` directly to the result historyMap. Created refs win
+    // over upstream metadata.faceLabels (per spec §C.4).
+    if (base.historyMap !== undefined) {
+      const matchingHashes: string[] = [];
+      for (const [hash, lineage] of base.historyMap.entries()) {
+        if (lineage.labelName === labelName) matchingHashes.push(hash);
+      }
+      if (matchingHashes.length > 0) {
+        const faces: Face[] = [];
+        for (const h of matchingHashes) {
+          try { faces.push(faceByHash(base, h)); } catch { /* skip stale hashes */ }
+        }
+        if (faces.length > 0) return collectFaceEdges(faces);
+      }
+    }
+
     // (4a) New: metadata.faceLabels lookup.
     if (records) {
       const meta = findFaceLabelInMetadata(records, record, labelName);
@@ -478,9 +495,21 @@ export function pickFace(
     return faces[0];
   }
 
-  // 2. FaceRef.label → walk upstream sketch, build face-probe bbox, find face by centroid.
+  // 2. FaceRef.label → check created refs first (v0.3 slice-1), then walk
+  //    upstream sketch.
   if (faceRef.ref.kind === 'label') {
-    const result = resolveLabeledFace(record, base, faceRef.ref.name, records);
+    const labelName = faceRef.ref.name;
+    if (base.historyMap !== undefined) {
+      for (const [hash, lineage] of base.historyMap.entries()) {
+        if (lineage.labelName === labelName) {
+          // Return first match. Multi-face created refs (e.g. 'wall' on a
+          // holes batch) collapse to the first face for callers needing one
+          // — pickEdges path correctly aggregates all matching faces.
+          try { return faceByHash(base, hash); } catch { /* fallthrough */ }
+        }
+      }
+    }
+    const result = resolveLabeledFace(record, base, labelName, records);
     if ('error' in result) return result;
     return result.face;
   }

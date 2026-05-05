@@ -1,5 +1,54 @@
 ## [Unreleased]
 
+### Added — v0.3 slice 1: hole + holes + cutout + per-feature created refs
+
+Three new methods on `Shape` that turn the v0.2 face-ref system into the
+agent-vocabulary primitives used in real engineered parts:
+
+- `target.hole(face, opts)` — single bore with optional `counterbore` (wider
+  shoulder) or `countersink` (cone), `depth: number | 'through'`, optional
+  `upToFace`.
+- `target.holes(face, opts)` — batched bolt patterns: one feature record,
+  one editable unit, `'wall'` collective sugar for fillet-all-bore-lips.
+- `target.cutout(profile, opts)` — sketch-driven subtractive extrude for
+  irregular shapes (slots, D-pockets, keyholes); accepts a closed `Sketch`
+  or a bare `PathBuilder` (auto-closed); supports `'blind'` / `'symmetric'`
+  / `'through'` depth modes.
+
+Each emits hard-coded **created face refs** addressable downstream via
+`{ face: '<name>' }` without a query:
+
+| Ref | Emitted when |
+|---|---|
+| `wall` | always (cylindrical bore wall, or cutout side walls) |
+| `floor` | blind only |
+| `wall-back` | through (or `upToFace` set) |
+| `counterbore-wall` | hole/holes with `counterbore: {...}` |
+| `counterbore-floor` | hole/holes with `counterbore: {...}` |
+| `countersink-cone` | hole/holes with `countersink: {...}` |
+
+Created refs win over upstream `metadata.faceLabels` on collisions
+(spec §C.4). Repeat `.hole()` calls in slice 1 collapse all walls under
+the bare `'wall'` selector — per-instance positional refs (`hole1.wall`)
+land in slice 2.
+
+Five new eval-corpus tasks (`single-counterbored-hole`, `bolt-pattern-4`,
+`mixed-fastener-plate`, `keyhole-cutout`, `through-slot`) plus
+`eval/corpus-v0.3.test.ts`. Hero artifact at
+`docs/demos/v0.3/service-panel-plate/`.
+
+Discipline gate: zero new diagnostic codes added vs the milestone-C
+catalog. All script-time validation collapses to `feature.invalid-args`,
+all OCCT-stage failures to `feature.kernel-failed` /
+`feature.face-ref.*`, with per-trigger recovery in the mandatory `hint`
+field (the structural sentinel `emittedCodesAreCatalogued` enforces this
+at CI).
+
+The v0.3.0 tag is **not** cut by this slice. Slices 2 (generalized
+created-refs subsystem + geometry-snapshot fallback + repeat-`.hole()`
+positional disambiguation) and 3 (param lifecycle / unit inheritance)
+ship before the tag.
+
 ### Changed — diagnostic vocabulary collapse (milestone C)
 
 The kernel-emitted diagnostic surface shrinks from ~80 codes (12 namespaces)

@@ -989,6 +989,73 @@ export class OcctLowerer implements FeatureLowerer {
         }
         break;
       }
+      case 'hole': {
+        const target = inputs.byKey.target as OcctBackend | undefined;
+        if (!target) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `hole requires an input named 'target'.`,
+            hint: 'Chain .hole() onto a solid shape, e.g. box(20, 20, 20).hole("top", { u: 0, v: 0, diameter: 4, depth: 5 }).',
+          });
+          throw new Error('hole: no target shape');
+        }
+        const { lowerHole } = await import('./holeLowerer');
+        const res = lowerHole(r, target, allRecords);
+        diagnostics.push(...res.diagnostics);
+        if (res.diagnostics.some(d => d.severity === 'error')) {
+          return { shape: target, diagnostics };
+        }
+        shape = res.backend;
+        break;
+      }
+      case 'holes': {
+        const target = inputs.byKey.target as OcctBackend | undefined;
+        if (!target) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `holes requires an input named 'target'.`,
+            hint: 'Chain .holes() onto a solid shape with at least one position.',
+          });
+          throw new Error('holes: no target shape');
+        }
+        const { lowerHoles } = await import('./holeLowerer');
+        const res = lowerHoles(r, target, allRecords);
+        diagnostics.push(...res.diagnostics);
+        if (res.diagnostics.some(d => d.severity === 'error')) {
+          return { shape: target, diagnostics };
+        }
+        shape = res.backend;
+        break;
+      }
+      case 'cutout': {
+        const target = inputs.byKey.target as OcctBackend | undefined;
+        if (!target) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `cutout requires an input named 'target'.`,
+            hint: 'Chain .cutout() onto a solid shape, passing a closed sketch profile.',
+          });
+          throw new Error('cutout: no target shape');
+        }
+        const profile = inputs.byKey.profile as OcctBackend | undefined;
+        const { lowerCutout } = await import('./cutoutLowerer');
+        const res = lowerCutout(r, target, profile, allRecords);
+        diagnostics.push(...res.diagnostics);
+        if (res.diagnostics.some(d => d.severity === 'error')) {
+          return { shape: target, diagnostics };
+        }
+        shape = res.backend;
+        break;
+      }
       case 'mirror': {
         const base = inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
