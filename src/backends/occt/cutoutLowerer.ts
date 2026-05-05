@@ -27,9 +27,17 @@ import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
-import type { FaceHash, HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
+import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../capture/sketch';
-import { classifyCutoutFace, type CutoutFrame, type CreatedRefName } from './createdFaceTracker';
+import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
+import {
+  applyCreatedRefs,
+  captureAllFaceSnapshots,
+  refreshSnapshots,
+  faceHashOf,
+  type CreatedRefSpec,
+} from './createdRefs';
+import type { FeatureKind } from '../../intent/types';
 
 export interface CutoutLowerResult {
   backend: OcctBackend;
@@ -231,35 +239,36 @@ function buildPrismTool(
   return sketch.extrude(-totalDepth) as replicad.Shape3D;
 }
 
-function faceHash(face: Face): FaceHash {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = (face as any).wrapped ?? (face as any)._wrapped ?? face;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((w as any).HashCode(2147483647) as number).toString(16);
-}
-
 function attachCreatedRefs(
   result: { shape: unknown; faceHistory: Map<FaceHash, FaceHash[]>; deletedFaces: Set<FaceHash> },
   resultBackend: OcctBackend,
   frame: CutoutFrame,
   baseHistoryMap: HistoryMap | undefined,
   featureId: string,
+  featureKind: FeatureKind,
+  featureName: string | undefined,
+  featureOrdinal: number | undefined,
 ): HistoryMap {
-  const merged = mergeBooleanHistory(baseHistoryMap, undefined, result as Parameters<typeof mergeBooleanHistory>[2]);
+  const merged = mergeBooleanHistory(
+    baseHistoryMap,
+    undefined,
+    result as Parameters<typeof mergeBooleanHistory>[2],
+  );
   const allFaces = resultBackend.getReplicadShape().faces;
+  const snapshots = captureAllFaceSnapshots(allFaces);
+
+  const refs: CreatedRefSpec[] = [];
   for (const face of allFaces) {
-    const h = faceHash(face);
+    const h = faceHashOf(face);
     if (merged.has(h)) continue;
-    const cls: CreatedRefName | null = classifyCutoutFace(face, frame);
+    const cls: CutoutRefName | null = classifyCutoutFace(face, frame);
     if (cls !== null) {
-      const lineage: FaceLineage = {
-        rootHash: h,
-        rootFeatureId: featureId,
-        labelName: cls,
-      };
-      merged.set(h, lineage);
+      refs.push({ faceHash: h, refName: cls, snapshot: snapshots.get(h)! });
     }
   }
+
+  applyCreatedRefs(merged, refs, featureId, featureKind, featureName, featureOrdinal);
+  refreshSnapshots(merged, allFaces);
   return merged;
 }
 
@@ -399,7 +408,10 @@ export function lowerCutout(
     through,
     profileBoundingBoxRadius: pBboxR,
   };
-  const newHistoryMap = attachCreatedRefs(cutResult, intermediate, frame, target.historyMap, feature.id);
+  const newHistoryMap = attachCreatedRefs(
+    cutResult, intermediate, frame, target.historyMap,
+    feature.id, feature.kind, undefined, undefined,
+  );
 
   return {
     backend: new OcctBackend(wrapped, undefined, newHistoryMap),
