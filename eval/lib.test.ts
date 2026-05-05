@@ -46,23 +46,23 @@ describe('extractScript', () => {
 describe('formatDiagnostics', () => {
   it('renders a single diagnostic with code and message', () => {
     const diags: Diagnostic[] = [
-      { code: 'feature.fillet.failed', message: 'OCCT could not apply that fillet.' },
+      { code: 'feature.kernel-failed', message: 'OCCT could not apply that fillet.' },
     ];
     expect(formatDiagnostics(diags)).toBe(
-      '- `feature.fillet.failed` — OCCT could not apply that fillet.',
+      '- `feature.kernel-failed` — OCCT could not apply that fillet.',
     );
   });
 
   it('appends hint on a new indented line when present', () => {
     const diags: Diagnostic[] = [
       {
-        code: 'feature.edge-feature.face-ref-not-resolvable',
+        code: 'feature.face-ref.not-resolvable',
         message: 'Canonical face refs only work on un-transformed primitives.',
         hint: 'Apply transforms after the fillet/chamfer.',
       },
     ];
     expect(formatDiagnostics(diags)).toBe(
-      '- `feature.edge-feature.face-ref-not-resolvable` — Canonical face refs only work on un-transformed primitives.\n  Hint: Apply transforms after the fillet/chamfer.',
+      '- `feature.face-ref.not-resolvable` — Canonical face refs only work on un-transformed primitives.\n  Hint: Apply transforms after the fillet/chamfer.',
     );
   });
 
@@ -201,7 +201,7 @@ describe('renderTranscript', () => {
         ok: false,
         diagnostics: [
           {
-            code: 'feature.edge-feature.face-ref-not-resolvable',
+            code: 'feature.face-ref.not-resolvable',
             message: 'Canonical face refs only work on un-transformed primitives.',
             hint: 'Apply transforms after the fillet/chamfer.',
           },
@@ -237,7 +237,7 @@ describe('renderTranscript', () => {
     });
 
     expect(md).toContain('## Evaluate (attempt 1) — FAIL');
-    expect(md).toContain('- `feature.edge-feature.face-ref-not-resolvable`');
+    expect(md).toContain('- `feature.face-ref.not-resolvable`');
     expect(md).toContain('Hint: Apply transforms after the fillet/chamfer.');
     expect(md).toContain('## Turn 2 (in: 4,500 tok, out: 60 tok, 3.5s)');
     expect(md).toContain('## Evaluate (attempt 2) — OK');

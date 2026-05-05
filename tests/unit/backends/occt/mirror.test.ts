@@ -43,9 +43,9 @@ describe('Shape.mirror(plane)', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(run.records);
     const codes = result.diagnostics.map(d => d.code);
-    if (codes.includes('feature.mirror.failed')) {
+    if (codes.includes('feature.kernel-failed')) {
       // Expected: Replicad rejected the degenerate union → diagnostic emitted.
-      expect(codes).toContain('feature.mirror.failed');
+      expect(codes).toContain('feature.kernel-failed');
     } else {
       // Replicad accepted the coplanar union. Result volume should equal the
       // original (union of two identical overlapping shapes = one shape).
@@ -66,6 +66,6 @@ describe('Shape.mirror(plane)', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(run.records);
     const codes = result.diagnostics.map(d => d.code);
-    expect(codes).toContain('feature.edge-feature.face-ref-not-resolvable');
+    expect(codes).toContain('feature.face-ref.not-resolvable');
   }, 60000);
 });

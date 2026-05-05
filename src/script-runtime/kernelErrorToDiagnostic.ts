@@ -1,19 +1,24 @@
 // src/script-runtime/kernelErrorToDiagnostic.ts
 //
 // Converts a script-runtime exception into a `CompilerDiagnostic`. KernelError
-// carries its own diagnostic code; everything else falls through to a caller-
-// supplied `defaultCode` (e.g. `cli.script.exception` for evaluate, or
-// `cli.export.exception` for export — preserves the existing per-command
-// fallback semantics).
+// carries its own diagnostic code (and optional hint override); everything else
+// falls through to a caller-supplied `defaultCode` (e.g. `cli.script-exception`
+// for evaluate, `cli.export-exception` for export — preserves the existing
+// per-command fallback semantics).
+//
+// `hint` is mandatory on every diagnostic. If KernelError doesn't supply one,
+// we look up the catalogue template; for `defaultCode` we always use the template.
 //
 // featureId flows one direction: throw site → KernelError constructor →
 // diagnostic. No caller override needed or possible.
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import type { DiagnosticCode } from '../diagnostics/codes';
+import { HINT_TEMPLATES } from '../diagnostics/codes';
 import { isKernelError } from '../intent/kernelError';
 
 export function kernelErrorToDiagnostic(
   e: unknown,
-  defaultCode: string = 'cli.script.exception',
+  defaultCode: DiagnosticCode = 'cli.script-exception',
 ): CompilerDiagnostic {
   if (isKernelError(e)) {
     return {
@@ -21,6 +26,7 @@ export function kernelErrorToDiagnostic(
       code: e.code,
       severity: 'error',
       message: e instanceof Error ? e.message : String(e),
+      hint: e.hint ?? HINT_TEMPLATES[e.code].template,
       ...(e.featureId !== undefined ? { featureId: e.featureId } : {}),
     };
   }
@@ -30,5 +36,6 @@ export function kernelErrorToDiagnostic(
     code: defaultCode,
     severity: 'error',
     message: msg,
+    hint: HINT_TEMPLATES[defaultCode].template,
   };
 }

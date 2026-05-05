@@ -54,7 +54,7 @@ export async function evaluateScript(scriptPath: string): Promise<EvaluateResult
       ok: false,
       diagnostics: [
         {
-          code: 'cli.script.exception',
+          code: 'cli.script-exception',
           message: `kernelcad evaluate exited with code ${r.code}: ${r.stderr.trim() || r.stdout.trim() || '(no output)'}`,
         },
       ],

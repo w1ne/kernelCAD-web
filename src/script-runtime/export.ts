@@ -48,6 +48,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
           featureId: feature_id,
           severity: 'error',
           message: `feature_id '${feature_id}' not found in script's features.`,
+          hint: 'Use list_features to see available IDs, or omit feature_id to export the script\'s return value.',
         }],
       };
     }
@@ -69,6 +70,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         code: 'export.no-shape',
         severity: 'error',
         message: 'Script produced no shapes to export.',
+        hint: 'End the script with `return <shape>`.',
       }],
     };
   }
@@ -80,10 +82,11 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       featureCount,
       diagnostics: [...r.diagnostics, {
         target: 'export-occt',
-        code: 'export.shape-not-lowered',
+        code: 'recompute.input.missing',
         featureId: targetId,
         severity: 'error',
         message: `Target shape '${targetId}' did not lower successfully.`,
+        hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
       }],
     };
   }

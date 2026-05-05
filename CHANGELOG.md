@@ -1,5 +1,122 @@
 ## [Unreleased]
 
+### Changed — diagnostic vocabulary collapse (milestone C)
+
+The kernel-emitted diagnostic surface shrinks from ~80 codes (12 namespaces)
+to **24** (8 namespaces). Every remaining code corresponds to a distinct
+agent recovery action. `hint` is now a mandatory field on every
+`CompilerDiagnostic`; the parallel `hints[]` array previously returned by
+`why_did_this_fail` is retired (per-code hints now live inline on every
+diagnostic). The `reachable` meta-classification (`engine-path` /
+`direct-lowerer-only` / `tool-error-field` / `reserved`) is dropped entirely.
+
+`why_did_this_fail` is reshaped to a pure upstream-walk tool: returns
+`chain[]` of `{ feature_id, kind, health, diagnostics }` in topological
+order, with the requested feature last. New MCP tool `list_diagnostic_codes`
+enumerates the 24-code catalogue with hint templates (15 → 16 MCP tools).
+
+`SKILL.md` shrinks from 537 → 365 lines (the ~150-line `## Diagnostic Codes`
+section is replaced by an 8-line `## When something fails` block).
+
+Pre-1.0 hard rename — no aliases, no deprecation period. Migration table
+(every emitted code on `develop` before this change → its replacement):
+
+```
+OLD CODE                                              → NEW CODE
+feature.fillet.no-base                                → feature.invalid-args
+feature.fillet.no-radius                              → feature.invalid-args
+feature.fillet.empty-groups                           → feature.invalid-args
+feature.fillet.invalid-group                          → feature.invalid-args
+feature.fillet.invalid-edge-ref                       → feature.invalid-args
+feature.fillet.failed                                 → feature.kernel-failed
+feature.chamfer.no-base                               → feature.invalid-args
+feature.chamfer.no-distance                           → feature.invalid-args
+feature.chamfer.empty-groups                          → feature.invalid-args
+feature.chamfer.invalid-group                         → feature.invalid-args
+feature.chamfer.invalid-edge-ref                      → feature.invalid-args
+feature.chamfer.failed                                → feature.kernel-failed
+feature.shell.no-base                                 → feature.invalid-args
+feature.shell.no-thickness                            → feature.invalid-args
+feature.shell.failed                                  → feature.kernel-failed
+feature.mirror.no-base                                → feature.invalid-args
+feature.mirror.invalid-plane                          → feature.invalid-args
+feature.mirror.failed                                 → feature.kernel-failed
+feature.transform.invalid-translate                   → feature.invalid-args
+feature.transform.invalid-rotate                      → feature.invalid-args
+feature.transform.invalid-scale                       → feature.invalid-args
+feature.transform.invalid-reflect                     → feature.invalid-args
+feature.transform.invalid-plane                       → feature.invalid-args (folded for safety)
+feature.extrude.unsupported-profile                   → feature.invalid-args
+feature.extrude.bad-sketch                            → feature.invalid-args
+feature.extrude.bad-points                            → feature.invalid-args
+feature.extrude.bad-params                            → feature.invalid-args
+feature.extrude.failed                                → feature.kernel-failed
+feature.revolve.unsupported-profile                   → feature.invalid-args
+feature.revolve.crosses-axis                          → feature.revolve.crosses-axis  (kept)
+feature.revolve.empty-profile                         → feature.invalid-args
+feature.revolve.failed                                → feature.kernel-failed
+feature.revolve.bad-sketch                            → feature.invalid-args
+feature.sweep.invalid-rail                            → feature.invalid-args
+feature.sweep.failed                                  → feature.kernel-failed
+feature.sweep.multi-face-profile                      → feature.kernel-failed
+feature.sweep.profile-too-large                       → feature.kernel-failed
+feature.sweep.spine-self-intersection                 → feature.kernel-failed
+feature.sweep.bad-sketch                              → feature.invalid-args
+feature.sweep.unsupported-profile                     → feature.invalid-args
+feature.loft.empty-sections                           → feature.invalid-args
+feature.loft.invalid-planes                           → feature.invalid-args
+feature.loft.failed                                   → feature.kernel-failed
+feature.loft.bad-sketch                               → feature.invalid-args
+feature.sketch.degenerate-arc                         → feature.sketch.degenerate-arc  (kept)
+feature.sketch.reflect.invalid-axis                   → feature.invalid-args
+feature.sketch.failed                                 → feature.kernel-failed
+feature.sketch.bad-commands                           → feature.invalid-args
+feature.path.label-without-segment                    → feature.invalid-args
+feature.path.duplicate-label                          → feature.invalid-args
+feature.edge-feature.face-ref-not-resolvable          → feature.face-ref.not-resolvable
+feature.edge-feature.face-ref-not-applicable          → feature.face-ref.not-applicable
+feature.edge-feature.face-ref-not-supported           → feature.face-ref.not-supported
+feature.edge-feature.face-ref-ambiguous-after-split   → feature.face-ref.ambiguous-after-split
+feature.edge-feature.face-ref-removed                 → feature.face-ref.removed
+feature.edge-feature.no-edges-match                   → feature.selection.no-match
+feature.edge-feature.ambiguous-selection              → feature.selection.ambiguous
+feature.edge-feature.invalid-query                    → feature.invalid-args
+feature.face-feature.face-required                    → feature.invalid-args
+feature.face-feature.face-ref-not-resolvable          → feature.face-ref.not-resolvable
+feature.face-feature.face-ref-not-applicable          → feature.face-ref.not-applicable
+feature.face-feature.face-ref-not-supported           → feature.face-ref.not-supported
+feature.face-feature.face-ref-ambiguous-after-split   → feature.face-ref.ambiguous-after-split
+feature.face-feature.face-ref-removed                 → feature.face-ref.removed
+feature.face-feature.no-match                         → feature.selection.no-match
+feature.face-feature.label-not-resolvable             → DROPPED (already deprecated)
+feature.label.unknown-name                            → feature.label.unknown-name  (kept)
+feature.label.no-upstream-sketch                      → feature.label.no-upstream-sketch  (kept)
+feature.label.unsupported-base                        → feature.label.unsupported-base  (kept)
+feature.label.mixed-convexity                         → feature.label.mixed-convexity  (kept)
+feature.label.collision                               → feature.label.collision  (kept)
+feature.label.query-no-match                          → feature.selection.no-match
+feature.label.unsupported-on-shape                    → feature.face-ref.not-applicable
+feature.face-query.invalid-axis                       → feature.invalid-args
+capture.faceLabels.invalid-shape                      → feature.invalid-args
+capture.faceLabels.invalid-key                        → feature.invalid-args
+capture.faceLabels.invalid-value                      → feature.invalid-args
+recompute.input.missing                               → recompute.input.missing  (kept)
+recompute.lowering.exception                          → recompute.lowering.exception  (kept)
+cli.script.exception                                  → cli.script-exception
+cli.file.read                                         → cli.file-read
+cli.no-input                                          → cli.invalid-args
+cli.export.exception                                  → cli.export-exception
+export.feature-not-found                              → export.feature-not-found  (kept)
+export.no-shape                                       → export.no-shape  (kept)
+export.shape-not-lowered                              → recompute.input.missing
+```
+
+The CLI codes change from dotted (`cli.script.exception`) to dashed
+(`cli.script-exception`) for namespace consistency.
+
+Spec: diagnostic-vocabulary-milestone-c-design (in kernelCAD-private).
+Plan: 2026-05-05-diagnostic-vocabulary-milestone-c (in kernelCAD-private).
+
 ### Added — User-tracking pipeline (kernelcad.com + daily stats)
 
 - **Cloudflare Web Analytics** anonymous beacon snippet on `site/index.html` and `site/thanks.html` — pageviews + uniques without cookies, no IP storage. Token wired in by `.github/workflows/setup-user-tracking.yml` on first run.

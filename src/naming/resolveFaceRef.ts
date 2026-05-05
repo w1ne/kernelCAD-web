@@ -24,7 +24,12 @@ export interface ResolveContext {
   currentShape: OcctBackend;
   /** The feature ID of the operation being lowered (used for diagnostic.featureId). */
   featureId: string;
-  /** Surface for diagnostic codes — 'edge-feature' for fillet/chamfer; 'face-feature' for shell. */
+  /**
+   * Surface for diagnostic context — 'edge-feature' for fillet/chamfer;
+   * 'face-feature' for shell. Codes are now identical across surfaces
+   * (feature.face-ref.*); the surface is preserved here only because the
+   * resolver may use it to specialize messages in the future.
+   */
   surface: 'edge-feature' | 'face-feature';
 }
 
@@ -37,10 +42,11 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
       ok: false,
       diagnostic: {
         target: 'export-occt',
-        code: `feature.${ctx.surface}.face-ref-not-resolvable`,
+        code: 'feature.face-ref.not-resolvable',
         featureId: ctx.featureId,
         severity: 'error',
         message: `resolveFaceRef called with non-canonical ref kind '${ref.kind}'; this is a controller bug.`,
+        hint: 'Dispatch on ref.kind before calling resolveFaceRef; canonical refs only.',
       },
     };
   }
@@ -61,15 +67,16 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
       ok: false,
       diagnostic: {
         target: 'export-occt',
-        code: `feature.${ctx.surface}.face-ref-not-resolvable`,
+        code: 'feature.face-ref.not-resolvable',
         featureId: ctx.featureId,
         severity: 'error',
         message: `historyMap not initialized on shape kind '${ctx.currentShape.kind ?? 'unknown'}'; resolver expected lineage data.`,
+        hint: 'Apply this feature before any transform, or fillet/shell the primitive first then translate.',
       },
     };
   }
   // An empty map (map.size === 0) is valid: all faces were removed by an upstream
-  // boolean. Proceed to the matches loop; it will find 0 matches → face-ref-removed.
+  // boolean. Proceed to the matches loop; it will find 0 matches → face-ref.removed.
 
   const matches: FaceHash[] = [];
   for (const [currentHash, lineage] of map.entries()) {
@@ -86,10 +93,11 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
       ok: false,
       diagnostic: {
         target: 'export-occt',
-        code: `feature.${ctx.surface}.face-ref-removed`,
+        code: 'feature.face-ref.removed',
         featureId: ctx.featureId,
         severity: 'error',
         message: `Face '${ref.face}' was removed by an upstream operation. Reference a different face that still exists in the current shape.`,
+        hint: 'Reference a face that still exists, or apply this feature before the removing boolean.',
       },
     };
   }
@@ -98,10 +106,11 @@ export function resolveFaceRef(ref: FaceRef, ctx: ResolveContext): ResolveResult
     ok: false,
     diagnostic: {
       target: 'export-occt',
-      code: `feature.${ctx.surface}.face-ref-ambiguous-after-split`,
+      code: 'feature.face-ref.ambiguous-after-split',
       featureId: ctx.featureId,
       severity: 'error',
       message: `Face '${ref.face}' was split into ${matches.length} children by an upstream operation. Geometry-fallback disambiguation ships in v0.3.0; for now, apply this feature before the splitting operation, or use a query-based selector.`,
+      hint: 'Apply this feature before the splitting boolean, or use a query-based selector.',
     },
   };
 }

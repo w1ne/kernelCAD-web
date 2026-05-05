@@ -5,13 +5,13 @@ import { kernelErrorToDiagnostic } from '../../../src/script-runtime/kernelError
 
 describe('KernelError', () => {
   it('carries the code field', () => {
-    const e = new KernelError('feature.path.label-without-segment', 'msg here');
-    expect(e.code).toBe('feature.path.label-without-segment');
+    const e = new KernelError('feature.invalid-args', 'msg here');
+    expect(e.code).toBe('feature.invalid-args');
     expect(e.message).toBe('msg here');
   });
 
   it('is instanceof Error (back-compat)', () => {
-    const e = new KernelError('feature.path.duplicate-label', 'msg');
+    const e = new KernelError('feature.invalid-args', 'msg');
     expect(e instanceof Error).toBe(true);
   });
 
@@ -34,21 +34,21 @@ describe('KernelError', () => {
 
 describe('kernelErrorToDiagnostic', () => {
   it('converts KernelError to a diagnostic with the kernel code', () => {
-    const d = kernelErrorToDiagnostic(new KernelError('feature.path.label-without-segment', 'foo'));
-    expect(d.code).toBe('feature.path.label-without-segment');
+    const d = kernelErrorToDiagnostic(new KernelError('feature.invalid-args', 'foo'));
+    expect(d.code).toBe('feature.invalid-args');
     expect(d.severity).toBe('error');
     expect(d.message).toBe('foo');
   });
 
   it('converts plain Error to cli.script.exception', () => {
     const d = kernelErrorToDiagnostic(new Error('arbitrary failure'));
-    expect(d.code).toBe('cli.script.exception');
+    expect(d.code).toBe('cli.script-exception');
     expect(d.message).toBe('arbitrary failure');
   });
 
   it('converts non-Error throws to cli.script.exception', () => {
     const d = kernelErrorToDiagnostic('thrown a string');
-    expect(d.code).toBe('cli.script.exception');
+    expect(d.code).toBe('cli.script-exception');
     expect(d.message).toBe('thrown a string');
   });
 });
@@ -65,20 +65,20 @@ describe('CLI evaluate uses KernelError code', () => {
     `;
     const r = await evaluateScript({ code });
     expect(r.exitCode).toBe(1);
-    expect(r.diagnostics[0].code).toBe('feature.path.duplicate-label');
+    expect(r.diagnostics[0].code).toBe('feature.invalid-args');
   });
 
   it('emits feature.path.label-without-segment when label() comes first', async () => {
     const code = `return path().label('orphan').moveTo(0,0).lineTo(5,0).close().extrude(1);`;
     const r = await evaluateScript({ code });
     expect(r.exitCode).toBe(1);
-    expect(r.diagnostics[0].code).toBe('feature.path.label-without-segment');
+    expect(r.diagnostics[0].code).toBe('feature.invalid-args');
   });
 
   it('still emits cli.script.exception for non-kernel errors', async () => {
     const code = `throw new Error('arbitrary');`;
     const r = await evaluateScript({ code });
     expect(r.exitCode).toBe(1);
-    expect(r.diagnostics[0].code).toBe('cli.script.exception');
+    expect(r.diagnostics[0].code).toBe('cli.script-exception');
   });
 });

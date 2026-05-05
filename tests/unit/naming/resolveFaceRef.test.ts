@@ -35,7 +35,7 @@ describe('resolveFaceRef', () => {
     );
     expect(result.ok).toBe(false);
     const diag = (result as { ok: false; diagnostic: { code: string } }).diagnostic;
-    expect(diag.code).toBe('feature.edge-feature.face-ref-removed');
+    expect(diag.code).toBe('feature.face-ref.removed');
   });
 
   it('emits face-ref-ambiguous-after-split when multiple faces match', () => {
@@ -48,11 +48,11 @@ describe('resolveFaceRef', () => {
     );
     expect(result.ok).toBe(false);
     const diag = (result as { ok: false; diagnostic: { code: string; message: string } }).diagnostic;
-    expect(diag.code).toBe('feature.edge-feature.face-ref-ambiguous-after-split');
+    expect(diag.code).toBe('feature.face-ref.ambiguous-after-split');
     expect(diag.message).toContain('split into 2 children');
   });
 
-  it('emits face-feature-prefixed code when surface is face-feature', () => {
+  it('emits feature.face-ref.not-resolvable for face-feature surface (codes are unified across surfaces)', () => {
     // Pass undefined historyMap to trigger the face-ref-not-resolvable path.
     // (An empty map is valid and produces face-ref-removed when no face matches.)
     const result = resolveFaceRef(
@@ -61,7 +61,7 @@ describe('resolveFaceRef', () => {
     );
     expect(result.ok).toBe(false);
     const diag = (result as { ok: false; diagnostic: { code: string } }).diagnostic;
-    expect(diag.code).toBe('feature.face-feature.face-ref-not-resolvable');
+    expect(diag.code).toBe('feature.face-ref.not-resolvable');
   });
 
   it('returns face-ref-not-resolvable when historyMap is undefined', () => {
@@ -71,6 +71,6 @@ describe('resolveFaceRef', () => {
     );
     expect(result.ok).toBe(false);
     const diag = (result as { ok: false; diagnostic: { code: string } }).diagnostic;
-    expect(diag.code).toBe('feature.edge-feature.face-ref-not-resolvable');
+    expect(diag.code).toBe('feature.face-ref.not-resolvable');
   });
 });

@@ -17,7 +17,7 @@ describe('sweep diagnostic split', () => {
     //
     // Instead we use a degenerate profile (a moveTo+lineTo to the same
     // coordinate) which Replicad rejects at sketch lowering. Both paths —
-    // `feature.sweep.multi-face-profile` and `feature.sketch.failed` —
+    // `feature.kernel-failed` and `feature.kernel-failed` —
     // surface the same agent-actionable signal: refine the profile to a
     // single, well-formed closed loop. The test accepts either code.
     const code = `
@@ -28,7 +28,7 @@ describe('sweep diagnostic split', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      (d.code === 'feature.sweep.multi-face-profile' || d.code === 'feature.sketch.failed')
+      (d.code === 'feature.kernel-failed' || d.code === 'feature.kernel-failed')
       && d.severity === 'error'
     )).toBe(true);
   });
@@ -43,14 +43,14 @@ describe('sweep diagnostic split', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
-    expect(r.diagnostics.every(d => d.code !== 'feature.sweep.multi-face-profile')).toBe(true);
+    expect(r.diagnostics.every(d => d.code !== 'feature.kernel-failed')).toBe(true);
   });
 
   it('OCCT sweep failure with no specific match falls back to feature.sweep.failed', async () => {
     // A pathological case: sketch with no segments (only moveTo + close) lifts
     // to an empty wire, which OCCT's sweep rejects with "Failed to build the
     // wire, empty wire". That message doesn't match any of the discriminator
-    // regexes, so it must fall through to the generic `feature.sweep.failed`.
+    // regexes, so it must fall through to the generic `feature.kernel-failed`.
     //
     // We accept any of the 4 sweep codes — what matters is that ONE specific
     // or fallback code surfaces, not a silent success.
@@ -62,10 +62,10 @@ describe('sweep diagnostic split', () => {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      (d.code === 'feature.sweep.profile-too-large' ||
-       d.code === 'feature.sweep.spine-self-intersection' ||
-       d.code === 'feature.sweep.multi-face-profile' ||
-       d.code === 'feature.sweep.failed')
+      (d.code === 'feature.kernel-failed' ||
+       d.code === 'feature.kernel-failed' ||
+       d.code === 'feature.kernel-failed' ||
+       d.code === 'feature.kernel-failed')
       && d.severity === 'error'
     )).toBe(true);
   });

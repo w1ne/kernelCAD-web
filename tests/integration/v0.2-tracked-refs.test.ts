@@ -132,7 +132,7 @@ describe('v0.2.0 tracked face/edge refs — integration matrix', () => {
         const body = box(20, 20, 20);
         const divider = box(30, 5, 30).translate(-5, 7.5, -5);
         return body.subtract(divider).fillet(1, { face: 'top' });
-      `, 'feature.edge-feature.face-ref-ambiguous-after-split');
+      `, 'feature.face-ref.ambiguous-after-split');
     });
   });
 
@@ -145,7 +145,7 @@ describe('v0.2.0 tracked face/edge refs — integration matrix', () => {
         const body = box(10, 10, 10);
         const tool = box(50, 50, 50).translate(-20, -20, -20);
         return body.subtract(tool).fillet(0.5, { face: 'top' });
-      `, 'feature.edge-feature.face-ref-removed');
+      `, 'feature.face-ref.removed');
     });
   });
 

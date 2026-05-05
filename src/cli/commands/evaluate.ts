@@ -40,8 +40,9 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
       return {
         exitCode: 2, featureCount: 0,
         diagnostics: [{
-          target: 'export-occt', code: 'cli.file.read', severity: 'error',
+          target: 'export-occt', code: 'cli.file-read', severity: 'error',
           message: `Cannot read file: ${msg}`,
+          hint: 'Check that the file path exists and is readable.',
         }],
       };
     }
@@ -49,8 +50,9 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
     return {
       exitCode: 2, featureCount: 0,
       diagnostics: [{
-        target: 'export-occt', code: 'cli.no-input', severity: 'error',
+        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
         message: 'evaluateScript: must provide either { file } or { code }.',
+        hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
       }],
     };
   }

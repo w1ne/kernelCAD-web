@@ -37,7 +37,7 @@ describe('OcctLowerer shell', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.face-feature.face-required');
+    expect(errs[0].code).toBe('feature.invalid-args');
   });
 
   it('emits feature.face-feature.face-ref-not-resolvable for transformed primitive', async () => {
@@ -54,7 +54,7 @@ describe('OcctLowerer shell', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.face-feature.face-ref-not-resolvable');
+    expect(errs[0].code).toBe('feature.face-ref.not-resolvable');
   });
 
   it('emits feature.shell.failed when thickness is too large', async () => {
@@ -71,6 +71,6 @@ describe('OcctLowerer shell', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.shell.failed');
+    expect(errs[0].code).toBe('feature.kernel-failed');
   });
 });

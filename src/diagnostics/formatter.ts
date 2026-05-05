@@ -9,6 +9,6 @@ export function formatHuman(diags: readonly CompilerDiagnostic[]): string {
     const where = d.scriptLocation
       ? `${d.scriptLocation.file}:${d.scriptLocation.line}:${d.scriptLocation.column}`
       : (d.featureId ?? '<unknown>');
-    return `${d.severity.toUpperCase()} [${d.code}] ${where}: ${d.message}`;
+    return `${d.severity.toUpperCase()} [${d.code}] ${where}: ${d.message}\n  Hint: ${d.hint}`;
   }).join('\n');
 }

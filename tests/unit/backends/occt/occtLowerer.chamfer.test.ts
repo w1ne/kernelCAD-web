@@ -50,6 +50,6 @@ describe('OcctLowerer chamfer', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.chamfer.failed');
+    expect(errs[0].code).toBe('feature.kernel-failed');
   });
 });

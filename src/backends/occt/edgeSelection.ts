@@ -35,10 +35,11 @@ export function pickEdges(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.edge-feature.no-edges-match',
+          code: 'feature.selection.no-match',
           featureId: record.id,
           severity: 'error',
           message: `Edge query / segment selector matched zero edges on the input shape.`,
+          hint: 'Inspect available edges with list_edges, or relax the query.',
         },
       };
     }
@@ -59,10 +60,11 @@ export function pickEdges(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.edge-feature.no-edges-match',
+          code: 'feature.selection.no-match',
           featureId: record.id,
           severity: 'error',
           message: `Face query matched zero faces.`,
+          hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
         },
       };
     }
@@ -86,10 +88,11 @@ export function pickEdges(
           return {
             error: {
               target: 'export-occt',
-              code: 'feature.label.query-no-match',
+              code: 'feature.selection.no-match',
               featureId: record.id,
               severity: 'error',
               message: `Label '${labelName}' resolved to a face with no edges.`,
+              hint: 'Inspect available labels with list_face_labels, or use a different label.',
             },
           };
         }
@@ -110,6 +113,7 @@ export function pickEdges(
           featureId: record.id,
           severity: 'error',
           message: `Label '${labelName}' resolved to a probe query that matched no edges.`,
+          hint: 'Call list_face_labels to see available labels on this shape.',
         },
       };
     }
@@ -131,6 +135,7 @@ export function pickEdges(
           featureId: record.id,
           severity: 'error',
           message: `Label '${labelName}': probe matched ${edges.length} edges with mixed convexity (both convex and concave). Filleting mixed selections fails inside the kernel; either split the label upstream, or refine with a more specific query like {atZ: ...}.`,
+          hint: 'Split the label across smaller segments, or refine with an EdgeQuery filtering by convexity (e.g. { convex: true }).',
         },
       };
     }
@@ -142,10 +147,11 @@ export function pickEdges(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.edge-feature.face-ref-not-supported',
+        code: 'feature.face-ref.not-supported',
         featureId: record.id,
         severity: 'error',
         message: `Only canonical face refs, queries, and labels are supported; got '${faceRef.kind === 'face' ? faceRef.ref.kind : faceRef.kind}'.`,
+        hint: 'Use a canonical face name, a label, or an inline FaceQuery / EdgeQuery.',
       },
     };
   }
@@ -172,10 +178,11 @@ export function pickEdges(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.edge-feature.face-ref-not-resolvable',
+        code: 'feature.face-ref.not-resolvable',
         featureId: record.id,
         severity: 'error',
         message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after fillet/chamfer instead of before.`,
+        hint: 'Apply edge/face features before any transform, or fillet/chamfer the primitive first then translate.',
       },
     };
   }
@@ -194,10 +201,11 @@ function resolveEdgesRef(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.edge-feature.invalid-query',
+          code: 'feature.invalid-args',
           featureId: record.id,
           severity: 'error',
           message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
+          hint: 'Drop unknown keys from the EdgeQuery; check the EdgeQuery type for the valid key set.',
         },
       };
     }
@@ -211,10 +219,11 @@ function resolveEdgesRef(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.edge-feature.invalid-query',
+          code: 'feature.invalid-args',
           featureId: record.id,
           severity: 'error',
           message: `Invalid segment id '${ref.segmentId}' — segment IDs are stable only within one shape lowering.`,
+          hint: 'Re-derive segment IDs from the current shape; segment IDs from earlier lowerings are not stable.',
         },
       };
     }
@@ -229,10 +238,11 @@ function resolveEdgesRef(
         return {
           error: {
             target: 'export-occt',
-            code: 'feature.edge-feature.invalid-query',
+            code: 'feature.invalid-args',
             featureId: record.id,
             severity: 'error',
             message: `Invalid segment id '${sid}'.`,
+            hint: 'Re-derive segment IDs from the current shape.',
           },
         };
       }
@@ -243,10 +253,11 @@ function resolveEdgesRef(
   return {
     error: {
       target: 'export-occt',
-      code: 'feature.edge-feature.face-ref-not-supported',
+      code: 'feature.face-ref.not-supported',
       featureId: record.id,
       severity: 'error',
       message: `Edge ref kind '${(ref as { kind: string }).kind}' not supported.`,
+      hint: 'Use a query, segment, or segments edge ref.',
     },
   };
 }
@@ -309,10 +320,11 @@ function canonicalFaceEdgesOrError(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.edge-feature.face-ref-not-applicable',
+        code: 'feature.face-ref.not-applicable',
         featureId: record.id,
         severity: 'error',
         message: `Canonical face '${face}' is not applicable to '${base.kind}' primitive.`,
+        hint: "That canonical face doesn't exist on this primitive (sphere has no canonical faces; cylinder has only top/bottom).",
       },
     };
   }
@@ -426,10 +438,11 @@ export function pickFace(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.face-required',
+        code: 'feature.invalid-args',
         featureId: record.id,
         severity: 'error',
         message: `${record.kind} requires a 'face' input.`,
+        hint: "Pass { face: 'top' } (or another canonical face name / label / FaceQuery).",
       },
     };
   }
@@ -438,10 +451,11 @@ export function pickFace(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.face-feature.face-ref-not-supported',
+        code: 'feature.face-ref.not-supported',
         featureId: record.id,
         severity: 'error',
         message: `Face ref kind '${faceRef.kind}' not supported.`,
+        hint: 'Use a face-typed ref (canonical, label, or query).',
       },
     };
   }
@@ -453,10 +467,11 @@ export function pickFace(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.no-match',
+          code: 'feature.selection.no-match',
           featureId: record.id,
           severity: 'error',
           message: `Face query matched zero faces on the input shape.`,
+          hint: 'Inspect available faces with list_faces, or relax the FaceQuery.',
         },
       };
     }
@@ -493,10 +508,11 @@ export function pickFace(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.face-ref-not-resolvable',
+          code: 'feature.face-ref.not-resolvable',
           featureId: record.id,
           severity: 'error',
           message: `Canonical face refs require an un-transformed primitive (box, cylinder, or sphere). Apply transforms after the face feature instead of before.`,
+          hint: 'Apply the face feature (e.g. shell) before transforms; or use a label / FaceQuery instead of a canonical face name.',
         },
       };
     }
@@ -506,10 +522,11 @@ export function pickFace(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.face-ref-not-applicable',
+          code: 'feature.face-ref.not-applicable',
           featureId: record.id,
           severity: 'error',
           message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+          hint: "That canonical face doesn't exist on this primitive (sphere has no canonical faces; cylinder has only top/bottom).",
         },
       };
     }
@@ -520,10 +537,11 @@ export function pickFace(
   return {
     error: {
       target: 'export-occt',
-      code: 'feature.face-feature.face-ref-not-supported',
+      code: 'feature.face-ref.not-supported',
       featureId: record.id,
       severity: 'error',
-      message: `Face ref kind '${(faceRef.ref as { kind: string }).kind}' not supported in this rc.`,
+      message: `Face ref kind '${(faceRef.ref as { kind: string }).kind}' not supported.`,
+      hint: 'Use a canonical face name, a label, or an inline FaceQuery.',
     },
   };
 }
@@ -567,6 +585,7 @@ function findFaceLabelInMetadata(
         featureId: consumer.id,
         severity: 'error',
         message: `Label '${label}' is declared by multiple upstream features: ${hits.map(h => h.origin.id).join(', ')}. Each label must be unique within the scope a consumer sees.`,
+        hint: 'Rename one of the conflicting faceLabels entries upstream so the consumer sees a unique name.',
       },
     };
   }
@@ -604,10 +623,11 @@ function resolveFromMetadataHit(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.face-ref-not-resolvable',
+          code: 'feature.face-ref.not-resolvable',
           featureId: consumer.id,
           severity: 'error',
           message: `Label '${face}' (canonical alias): the shape has no lineage data. Apply transforms after the face feature, not before.`,
+          hint: 'Apply this feature before any transform, or use a label / FaceQuery instead of a canonical alias.',
         },
       };
     }
@@ -616,10 +636,11 @@ function resolveFromMetadataHit(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.face-feature.face-ref-not-applicable',
+          code: 'feature.face-ref.not-applicable',
           featureId: consumer.id,
           severity: 'error',
           message: `Canonical face '${face}' is not applicable to ${base.kind}.`,
+          hint: "That canonical face doesn't exist on this primitive (sphere has no canonical faces; cylinder has only top/bottom).",
         },
       };
     }
@@ -633,10 +654,11 @@ function resolveFromMetadataHit(
     return {
       error: {
         target: 'export-occt',
-        code: 'feature.label.query-no-match',
+        code: 'feature.selection.no-match',
         featureId: consumer.id,
         severity: 'error',
         message: `Label declared on '${hit.origin.id}.faceLabels' matched zero faces at the consumer (${allFaces.length} faces available on the consumer shape). Query: ${JSON.stringify(resolved)}. Use list_face_labels or list_faces to inspect candidates.`,
+        hint: 'Inspect candidates with list_face_labels or list_faces, then refine the FaceQuery.',
       },
     };
   }
@@ -678,6 +700,7 @@ function resolveLabeledFace(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': cannot derive face probe (no within bbox).`,
+        hint: 'Labels work on shapes built from a path() sketch (extrude). Use an inline FaceQuery for primitives or imported shapes.',
       },
     };
   }
@@ -701,6 +724,7 @@ function resolveLabeledFace(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}' resolved to a probe bbox that contained no face centroid.`,
+        hint: 'Call list_face_labels to see available labels on this shape.',
       },
     };
   }
@@ -722,6 +746,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}' lookup requires record context (internal: records not threaded).`,
+        hint: 'Internal error — record context was not threaded into the lowerer.',
       },
     };
   }
@@ -735,6 +760,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': base shape isn't sketch-derived. Labels work on shapes built from a path() sketch (extrude); apply the label upstream on the sketch.`,
+        hint: 'Apply the label on the sketch, or use an inline FaceQuery (e.g. { atZ: ... }) for primitives.',
       },
     };
   }
@@ -748,6 +774,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': upstream sketch has no commands metadata.`,
+        hint: 'Construct sketches via path().moveTo(...).lineTo(...).label(...).close() so the commands are persisted.',
       },
     };
   }
@@ -764,6 +791,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}' not found on the upstream sketch's segments. Use the list_face_labels MCP tool to see available labels.`,
+        hint: 'Call list_face_labels to see available labels on this shape.',
       },
     };
   }
@@ -778,6 +806,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': can't determine segment chord (prior command has no endpoint).`,
+        hint: 'Place .label(...) immediately after a lineTo or arc segment with an endpoint.',
       },
     };
   }
@@ -791,6 +820,7 @@ function labelToEdgeQuery(
         featureId: record.id,
         severity: 'error',
         message: `Label '${label}': labels currently support extrude only. Revolve labels are deferred; use an inline query against the geometry as a workaround: {face: {atZ: ...}}.`,
+        hint: 'Use an inline FaceQuery (e.g. { atZ: ... }) as a workaround for non-extrude bases.',
       },
     };
   }

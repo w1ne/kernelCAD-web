@@ -17,7 +17,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.transform.invalid-translate');
+    expect(diag.code).toBe('feature.invalid-args');
     expect(diag.featureId).toBeDefined();
     expect(typeof diag.featureId).toBe('string');
   });
@@ -46,7 +46,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.transform.invalid-rotate');
+    expect(diag.code).toBe('feature.invalid-args');
     expect(diag.featureId).toBeDefined();
   });
 
@@ -90,7 +90,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.transform.invalid-scale');
+    expect(diag.code).toBe('feature.invalid-args');
     expect(diag.featureId).toBeDefined();
   });
 
@@ -134,7 +134,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.transform.invalid-reflect');
+    expect(diag.code).toBe('feature.invalid-args');
     expect(diag.featureId).toBeDefined();
     expect(typeof diag.featureId).toBe('string');
   });
@@ -147,7 +147,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.transform.invalid-reflect');
+    expect(diag.code).toBe('feature.invalid-args');
   });
 
   it('reflect error message preserves Infinity in offset', async () => {
@@ -174,7 +174,7 @@ describe('Shape transform validators (capture-time)', () => {
     } catch (e) { caught = e; }
     expect(caught).toBeDefined();
     const diag = kernelErrorToDiagnostic(caught);
-    expect(diag.code).toBe('feature.mirror.invalid-plane');
+    expect(diag.code).toBe('feature.invalid-args');
     expect(diag.featureId).toBeDefined();
     expect(typeof diag.featureId).toBe('string');
   });

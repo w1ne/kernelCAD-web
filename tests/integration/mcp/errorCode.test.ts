@@ -20,7 +20,7 @@ describe('MCP tools — errorCode on lowering-error path (rc.7 I-4)', () => {
     const code = `return box(10, 10, 5).fillet(1, { atZ: 999 });`;
     const r = await getShapeInfoTool({ code });
     expect(r.ok).toBe(false);
-    expect(r.errorCode).toBe('feature.edge-feature.no-edges-match');
+    expect(r.errorCode).toBe('feature.selection.no-match');
   });
 
   it('listFeatures emits error + errorCode on script error (rc.7 I-5)', async () => {
@@ -42,6 +42,6 @@ describe('MCP tools — errorCode on lowering-error path (rc.7 I-4)', () => {
     const code = `return box(10, 10, 5).fillet(1, { atZ: 999 });`;
     const r = await listTopologyTool({ code });
     expect(r.ok).toBe(false);
-    expect(r.errorCode).toBe('feature.edge-feature.no-edges-match');
+    expect(r.errorCode).toBe('feature.selection.no-match');
   });
 });

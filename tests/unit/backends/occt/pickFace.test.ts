@@ -35,16 +35,16 @@ describe('pickFace query dispatch (shell with FaceQuery)', () => {
     expect(v).toBeLessThan(320);
   });
 
-  it('box.shell(1, { face: { atZ: 999 } }) emits feature.face-feature.no-match (not edge-feature namespace)', async () => {
+  it('box.shell(1, { face: { atZ: 999 } }) emits feature.selection.no-match', async () => {
+    // Post-vocabulary-collapse (milestone C), shell + fillet share the
+    // unified feature.selection.no-match code (no per-surface namespace).
     const code = `return box(10, 10, 5).shell(1, { face: { atZ: 999 } });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(result.records);
     expect(r.diagnostics.some(d =>
-      d.code === 'feature.face-feature.no-match' && d.severity === 'error'
+      d.code === 'feature.selection.no-match' && d.severity === 'error'
     )).toBe(true);
-    // And NOT the wrong-namespace edge-feature code (rc.6 regression).
-    expect(r.diagnostics.every(d => d.code !== 'feature.edge-feature.no-edges-match')).toBe(true);
   });
 
   it('canonical shell still works after pickFace widening (regression)', async () => {

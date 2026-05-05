@@ -86,7 +86,7 @@ describe('faceLabels resolution from upstream feature metadata (Task 4)', () => 
     const errorCodes = r.diagnostics
       .filter(d => d.severity === 'error')
       .map(d => d.code);
-    expect(errorCodes).toContain('feature.label.query-no-match');
+    expect(errorCodes).toContain('feature.selection.no-match');
   });
 
   // ── F. Label survives translate ────────────────────────────────────────────
