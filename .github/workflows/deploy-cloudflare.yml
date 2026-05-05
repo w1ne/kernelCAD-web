@@ -48,7 +48,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=kernelcad-marketing --branch=main --commit-dirty=true
+          command: pages deploy . --cwd=site --project-name=kernelcad-marketing --branch=main --commit-dirty=true
 
   app:
     name: Deploy visual debugger app
