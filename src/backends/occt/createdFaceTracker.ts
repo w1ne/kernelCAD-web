@@ -132,7 +132,7 @@ function faceNormal(face: Face): Vec3 | null {
   if (typeof fn !== 'function') return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const n = (face as any).normalAt() as { x?: number; y?: number; z?: number } | undefined;
-  if (!n || typeof n.x !== 'number') return null;
+  if (!n || typeof n.x !== 'number' || typeof n.y !== 'number') return null;
   return normalize([n.x, n.y, n.z ?? 0]);
 }
 

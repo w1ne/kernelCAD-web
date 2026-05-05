@@ -1033,6 +1033,29 @@ export class OcctLowerer implements FeatureLowerer {
         shape = res.backend;
         break;
       }
+      case 'cutout': {
+        const target = inputs.byKey.target as OcctBackend | undefined;
+        if (!target) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `cutout requires an input named 'target'.`,
+            hint: 'Chain .cutout() onto a solid shape, passing a closed sketch profile.',
+          });
+          throw new Error('cutout: no target shape');
+        }
+        const profile = inputs.byKey.profile as OcctBackend | undefined;
+        const { lowerCutout } = await import('./cutoutLowerer');
+        const res = lowerCutout(r, target, profile, allRecords);
+        diagnostics.push(...res.diagnostics);
+        if (res.diagnostics.some(d => d.severity === 'error')) {
+          return { shape: target, diagnostics };
+        }
+        shape = res.backend;
+        break;
+      }
       case 'mirror': {
         const base = inputs.byKey.base as OcctBackend | undefined;
         if (!base) {
