@@ -318,7 +318,12 @@ export class Shape {
     const engine = new RecomputeEngine(new OcctLowerer());
     const r = await engine.run(
       records as readonly import('../intent/featureRecord').FeatureRecord[],
-      { paramTable: this.session.paramTable },
+      {
+        paramTable: this.session.paramTable,
+        warningSink: (warning) => this.session.warnings.push(warning),
+        warningPhase: 'build',
+        gatedFeatureNames: this.session.gatedFeatureNames,
+      },
     );
     // Slice-3: populate per-record cache so `session.params.update` can
     // reuse earlier records' lowered output. Only stores successful records;
@@ -406,4 +411,3 @@ function nextOrdinalForKindOnChain(
   }
   return count + 1;
 }
-

@@ -6,6 +6,7 @@ import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
 import type { ParamTable } from '../runtime/paramTable';
 import { resolveParams } from '../runtime/resolveParams';
+import type { SoftWarningPhase, SoftWarningSink } from '../runtime/softWarning';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -14,6 +15,65 @@ function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'i
   if (stripped === 'union') return 'union';
   if (stripped === 'intersection') return 'intersect';
   return undefined;
+}
+
+function isParamLike(v: unknown): v is { evaluated: number; paramRef?: string } {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    typeof (v as { evaluated?: unknown }).evaluated === 'number'
+  );
+}
+
+function enabledGateParamName(record: FeatureRecord): string | undefined {
+  const enabled = (record.metadata as { enabled?: unknown } | undefined)?.enabled;
+  return isParamLike(enabled) ? enabled.paramRef : undefined;
+}
+
+function isEnabledFalse(record: FeatureRecord): boolean {
+  const enabled = (record.metadata as { enabled?: unknown } | undefined)?.enabled;
+  return isParamLike(enabled) && enabled.evaluated === 0;
+}
+
+function registerGatedName(
+  record: FeatureRecord,
+  gatedFeatureNames: Map<string, string | undefined> | undefined,
+  paramName: string | undefined,
+): void {
+  const name = (record.metadata as { name?: unknown } | undefined)?.name;
+  if (typeof name === 'string') gatedFeatureNames?.set(name, paramName);
+}
+
+function passthroughShape(byKey: Record<string, ShapeBackend>): ShapeBackend | undefined {
+  return byKey.target ?? byKey.base ?? Object.values(byKey)[0];
+}
+
+function selectorRoot(label: string): string {
+  const bracket = label.indexOf('[');
+  const dot = label.indexOf('.');
+  const end = [bracket, dot].filter(i => i >= 0).sort((a, b) => a - b)[0];
+  return end === undefined ? label : label.slice(0, end);
+}
+
+function findGatedLineageWarning(
+  record: FeatureRecord,
+  opts: RecomputeOptions | undefined,
+): import('../runtime/softWarning').SoftWarning | undefined {
+  const faceRef = record.inputs.face;
+  if (!faceRef || faceRef.kind !== 'face' || faceRef.ref.kind !== 'label') return undefined;
+  const featureName = selectorRoot(faceRef.ref.name);
+  if (!opts?.gatedFeatureNames?.has(featureName)) return undefined;
+  const paramName = opts.gatedFeatureNames.get(featureName);
+  return {
+    code: 'feature.face-ref.not-resolvable',
+    hint: 'face-ref.skipped-by-param',
+    message: paramName
+      ? `feature '${featureName}' gated off by param '${paramName}' (=false); ${record.kind} on '${faceRef.ref.name}' became a passthrough.`
+      : `feature '${featureName}' is gated off; ${record.kind} on '${faceRef.ref.name}' became a passthrough.`,
+    recordId: record.id,
+    paramName,
+    phase: opts.warningPhase ?? 'build',
+  };
 }
 
 export interface RecomputeResult {
@@ -33,6 +93,12 @@ export interface RecomputeOptions {
    *  seedShapes are skipped (cache hit) — used by `params.update` to reuse
    *  unchanged earlier records' lowered output. */
   seedShapes?: Map<FeatureId, ShapeBackend>;
+  /** Slice-3 Phase 4: append non-fatal warnings produced during lowering. */
+  warningSink?: SoftWarningSink;
+  /** Phase tag attached to warnings emitted in this run. */
+  warningPhase?: SoftWarningPhase;
+  /** Current run's gated named-feature index, keyed by feature metadata.name. */
+  gatedFeatureNames?: Map<string, string | undefined>;
 }
 
 export class RecomputeEngine {
@@ -44,6 +110,7 @@ export class RecomputeEngine {
     const diagnostics: CompilerDiagnostic[] = [];
     const health = new Map<FeatureId, 'healthy' | 'warning' | 'error'>();
     const onEvent = opts?.onEvent;
+    opts?.gatedFeatureNames?.clear();
 
     // Build dep graph
     const graph = new DependencyGraph();
@@ -68,6 +135,16 @@ export class RecomputeEngine {
     for (const id of order) {
       const r = idToRecord.get(id)!;
       if (r.suppressed) continue;
+      const recordForLower: FeatureRecord = opts?.paramTable
+        ? resolveParams(r, opts.paramTable) as FeatureRecord
+        : r;
+      const gatedParamName = enabledGateParamName(r);
+      const isGatedOff = isEnabledFalse(recordForLower);
+
+      if (isGatedOff) {
+        registerGatedName(recordForLower, opts?.gatedFeatureNames, gatedParamName);
+      }
+
       // Slice-3: cache hit — record's lowered output was seeded by `params.update`.
       // Skip lowering; mark healthy.
       if (opts?.seedShapes && opts.seedShapes.has(id)) {
@@ -110,16 +187,25 @@ export class RecomputeEngine {
         continue;
       }
 
-      // Slice-3: pre-resolve any Param with paramRef anywhere in the record
-      // (params + metadata) against the session's param table BEFORE
-      // dispatching to the lowerer. Lowerer signatures stay slice-2-stable;
-      // they always see resolved Params. resolveParams walks recursively
-      // and only rewrites Param-shaped objects with `paramRef` set; inputs
-      // (FeatureRefs), face selector strings, and non-Param scalars pass
-      // through untouched.
-      const recordForLower: FeatureRecord = opts?.paramTable
-        ? resolveParams(r, opts.paramTable) as FeatureRecord
-        : r;
+      const gatedLineage = findGatedLineageWarning(recordForLower, opts);
+      if (gatedLineage) {
+        opts?.warningSink?.(gatedLineage);
+        const passthrough = passthroughShape(byKey);
+        if (passthrough) {
+          shapes.set(r.id, passthrough);
+          health.set(r.id, 'warning');
+          continue;
+        }
+      }
+
+      if (isGatedOff) {
+        const passthrough = passthroughShape(byKey);
+        if (passthrough) {
+          shapes.set(r.id, passthrough);
+          health.set(r.id, 'healthy');
+          continue;
+        }
+      }
 
       // Lower
       try {

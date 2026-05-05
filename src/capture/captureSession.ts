@@ -82,6 +82,9 @@ export class CaptureSession {
   readonly paramTable: ParamTable = new ParamTable();
   /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
   readonly warnings: SoftWarning[] = [];
+  /** Slice-3 Phase 4: current run's gated named features.
+   *  Keyed by feature `metadata.name`; value is the param name that gated it. */
+  readonly gatedFeatureNames: Map<string, string | undefined> = new Map();
   /** Slice-3: per-record cached lowered shape from the most recent build,
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
@@ -254,6 +257,7 @@ export class CaptureSession {
     this.idGen.reset();
     this.paramTable.clear();
     this.warnings.length = 0;
+    this.gatedFeatureNames.clear();
   }
 
   /** Slice-3: drain the warning log. Returns the accumulated warnings and
@@ -367,12 +371,11 @@ export class CaptureSession {
     const result = await engine.run(this.records, {
       paramTable: this.paramTable,
       seedShapes,
+      warningSink: (warning) => this.warnings.push(warning),
+      warningPhase: 'update',
+      gatedFeatureNames: this.gatedFeatureNames,
     });
-    const callWarnings = this.warnings.slice(warningsBefore).map(w => ({ ...w, phase: 'update' as const }));
-    // Mark the appended ones with phase: 'update'.
-    for (let i = warningsBefore; i < this.warnings.length; i++) {
-      this.warnings[i] = { ...this.warnings[i], phase: 'update' };
-    }
+    const callWarnings = this.warnings.slice(warningsBefore);
 
     // Refresh the per-record cache with the latest lowered outputs.
     for (const [id, shape] of result.shapes) {

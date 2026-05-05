@@ -19,3 +19,5 @@ export interface SoftWarning {
   paramName?: string;
   phase: SoftWarningPhase;
 }
+
+export type SoftWarningSink = (warning: SoftWarning) => void;
