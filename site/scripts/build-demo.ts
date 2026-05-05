@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Picks the catalog-conformant hero demo for the current package.json.version,
-// copies its mp4 into site/public/demo.mp4, and writes site/public/demo.json.
+// Picks the hero demo for the current package.json release, copies its mp4
+// into site/public/demo.mp4, and writes site/public/demo.json.
 
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -23,7 +23,8 @@ function main() {
   copyFileSync(result.mp4Path, path.join(PUBLIC_DIR, 'demo.mp4'));
 
   const meta = {
-    version: result.iterationKey,
+    version: `v${pkg.version}`,
+    demoIteration: result.iterationKey,
     task: result.task,
     heroArtifact: result.heroArtifact,
     source: path.relative(REPO_ROOT, result.mp4Path),
