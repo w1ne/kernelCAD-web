@@ -23,6 +23,10 @@ export interface HoleOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  /** Optional agent-chosen feature name. When set, downstream selectors can
+   *  address the bore as `<name>.wall`, `<name>.floor`, etc. Validated
+   *  against `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/` in Phase 4. */
+  name?: string;
 }
 
 export interface HolesOpts {
@@ -32,10 +36,31 @@ export interface HolesOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  /** Optional agent-chosen feature name. Selectors: `<name>.wall` (collective)
+   *  or `<name>[i].wall` (instance). */
+  name?: string;
 }
 
 const MAX_DIAMETER_MM = 1000;
 const DEFAULT_CSK_ANGLE_DEG = 90;
+
+/** Slice-2 feature-name regex: starts with a letter, then letters/digits/
+ *  underscores/hyphens, max 32 chars total. */
+export const FEATURE_NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/;
+
+export function validateFeatureName(
+  name: string,
+  featureId: FeatureId | undefined,
+): void {
+  if (!FEATURE_NAME_REGEX.test(name)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `feature name '${name}' is invalid.`,
+      featureId,
+      `Feature name must start with a letter and contain only letters, digits, underscores, or hyphens (max 32 chars).`,
+    );
+  }
+}
 
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
@@ -144,6 +169,7 @@ export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefine
       `Hole position {u, v} must be finite numbers.`,
     );
   }
+  if (opts.name !== undefined) validateFeatureName(opts.name, featureId);
   validateCommonHoleFields(opts, featureId);
 }
 
@@ -172,6 +198,7 @@ export function validateHolesOpts(opts: HolesOpts, featureId: FeatureId | undefi
       );
     }
   }
+  if (opts.name !== undefined) validateFeatureName(opts.name, featureId);
   validateCommonHoleFields(opts, featureId);
 }
 
@@ -235,6 +262,7 @@ export function serializeHoleParams(_face: FaceSelector, opts: HoleOpts): Serial
   }
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
+  if (opts.name !== undefined) metadata.name = opts.name;
   return { params, metadata };
 }
 
@@ -261,5 +289,6 @@ export function serializeHolesParams(_face: FaceSelector, opts: HolesOpts): Seri
     positions: opts.positions,
   };
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
+  if (opts.name !== undefined) metadata.name = opts.name;
   return { params, metadata };
 }

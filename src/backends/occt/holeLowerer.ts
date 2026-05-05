@@ -24,8 +24,16 @@ import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
-import type { FaceHash, HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
-import { classifyHoleFace, type BoreFrame, type CreatedRefName } from './createdFaceTracker';
+import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
+import { classifyHoleFace, type BoreFrame, type HoleRefName } from './holeClassifier';
+import {
+  applyCreatedRefs,
+  captureAllFaceSnapshots,
+  refreshSnapshots,
+  faceHashOf,
+  type CreatedRefSpec,
+} from './createdRefs';
+import type { FeatureKind } from '../../intent/types';
 
 export interface HoleLowerResult {
   backend: OcctBackend;
@@ -330,46 +338,49 @@ function buildConeTool(
   }
 }
 
-/** Hash a single replicad face via its underlying TopoDS handle. */
-function faceHash(face: Face): FaceHash {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = (face as any).wrapped ?? (face as any)._wrapped ?? face;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((w as any).HashCode(2147483647) as number).toString(16);
-}
-
-/** Apply the post-cut classification: identify NEW faces, classify each,
- *  and merge labelName entries into the result historyMap. */
+/** Apply the post-cut classification via the slice-2 generic propagator.
+ *  Identifies NEW faces, classifies each, builds CreatedRefSpec[], and
+ *  routes through `applyCreatedRefs` + `refreshSnapshots` to populate the
+ *  full set of slice-2 lineage fields (labelName + snapshot + featureId
+ *  + featureKind, plus featureName/featureOrdinal when supplied). */
 function attachCreatedRefs(
   result: { shape: unknown; faceHistory: Map<FaceHash, FaceHash[]>; deletedFaces: Set<FaceHash> },
   resultBackend: OcctBackend,
   bores: BoreFrame[],
   baseHistoryMap: HistoryMap | undefined,
   featureId: string,
+  featureKind: FeatureKind,
+  featureName: string | undefined,
+  featureOrdinal: number | undefined,
 ): HistoryMap {
-  // Start with the merged history (carries forward target's lineage —
-  // including unchanged target faces and split children of target faces).
-  const merged = mergeBooleanHistory(baseHistoryMap, undefined, result as Parameters<typeof mergeBooleanHistory>[2]);
-  // Any result face NOT in `merged` came from the tool (bore wall, floor,
-  // cb wall/floor, csk cone) — classify and tag with `labelName`.
+  const merged = mergeBooleanHistory(
+    baseHistoryMap,
+    undefined,
+    result as Parameters<typeof mergeBooleanHistory>[2],
+  );
   const allFaces = resultBackend.getReplicadShape().faces;
+  const snapshots = captureAllFaceSnapshots(allFaces);
+
+  // Any result face NOT in `merged` came from the tool (bore wall, floor,
+  // cb wall/floor, csk cone). Classify each; emit a CreatedRefSpec.
+  const refs: CreatedRefSpec[] = [];
   for (const face of allFaces) {
-    const h = faceHash(face);
+    const h = faceHashOf(face);
     if (merged.has(h)) continue;
-    let cls: CreatedRefName | null = null;
+    let cls: HoleRefName | null = null;
     for (const bore of bores) {
       cls = classifyHoleFace(face, bore);
       if (cls !== null) break;
     }
     if (cls !== null) {
-      const lineage: FaceLineage = {
-        rootHash: h,
-        rootFeatureId: featureId,
-        labelName: cls,
-      };
-      merged.set(h, lineage);
+      refs.push({ faceHash: h, refName: cls, snapshot: snapshots.get(h)! });
     }
   }
+
+  applyCreatedRefs(merged, refs, featureId, featureKind, featureName, featureOrdinal);
+  // Populate snapshots for carried-over target faces too — the geometry
+  // resolver in Phase 4 will read these when topology lookup falls through.
+  refreshSnapshots(merged, allFaces);
   return merged;
 }
 
@@ -416,7 +427,8 @@ export function lowerHole(
     entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
   );
 
-  return runCutAndClassify(target, [built.tool], [built.bore], feature.id, diagnostics);
+  const meta = feature.metadata as { name?: string; ordinal?: number } | undefined;
+  return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
 }
 
 export function lowerHoles(
@@ -484,7 +496,8 @@ export function lowerHoles(
     fused = (fused as any).fuse(tools[i]) as replicad.Shape3D;
   }
 
-  return runCutAndClassify(target, [fused], bores, feature.id, diagnostics);
+  const meta2 = feature.metadata as { name?: string; ordinal?: number } | undefined;
+  return runCutAndClassify(target, [fused], bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
 }
 
 function runCutAndClassify(
@@ -492,6 +505,9 @@ function runCutAndClassify(
   tools: replicad.Shape3D[],
   bores: BoreFrame[],
   featureId: string,
+  featureKind: FeatureKind,
+  featureName: string | undefined,
+  featureOrdinal: number | undefined,
   diagnostics: CompilerDiagnostic[],
 ): HoleLowerResult {
   // Wrap the (single) fused tool into an OcctBackend so we can call
@@ -532,8 +548,12 @@ function runCutAndClassify(
     return { backend: target, diagnostics };
   }
 
-  // Build the result historyMap with created-ref labelName entries.
-  const newHistoryMap = attachCreatedRefs(cutResult, intermediate, bores, target.historyMap, featureId);
+  // Build the result historyMap with created-ref labelName + snapshot entries
+  // via the slice-2 generic propagator.
+  const newHistoryMap = attachCreatedRefs(
+    cutResult, intermediate, bores, target.historyMap,
+    featureId, featureKind, featureName, featureOrdinal,
+  );
 
   return {
     backend: new OcctBackend(wrapped, undefined, newHistoryMap),

@@ -24,6 +24,21 @@ export interface FaceLineage {
   labelName?: string;
   /** Originating primitive feature ID. */
   rootFeatureId: string;
+  // --- slice-2 additions (additive; existing entries unaffected) ---
+  /** Geometric fingerprint captured at face creation. The geometry-snapshot
+   *  resolver matches against this when topology lookup returns zero hits. */
+  snapshot?: import('../backends/occt/createdRefs').FaceSnapshot;
+  /** ID of the feature whose lowerer created or labelled this face. Distinct
+   *  from `rootFeatureId` (which always points to the originating primitive). */
+  featureId?: string;
+  /** Agent-chosen feature name (`hole(face, { ..., name: 'mountingBolt' })`).
+   *  Enables `<name>.<ref>` selector resolution. */
+  featureName?: string;
+  /** 1-based ordinal among unnamed features of the same kind in the chain.
+   *  Enables `<kind><N>.<ref>` (e.g., `hole1.wall`) selector resolution. */
+  featureOrdinal?: number;
+  /** Feature kind that emitted this label. Needed for ordinal resolution. */
+  featureKind?: import('../intent/types').FeatureKind;
 }
 
 export interface EdgeLineage {
@@ -36,6 +51,23 @@ export interface EdgeLineage {
 export type HistoryMap = Map<FaceHash, FaceLineage>;
 export type EdgeHistoryMap = Map<EdgeHash, EdgeLineage>;
 
+/** Optional snapshot-aware transform callbacks for `propagateTransformHistory`.
+ *  When supplied, the lineage is deep-copied and the snapshot's centroid +
+ *  normal are run through the supplied functions. When omitted, lineage is
+ *  shared by reference (slice-1 behavior preserved).
+ *
+ *  - `pointTransform`: applies the transform's matrix to a 3D point (centroid).
+ *  - `vectorTransform`: applies the transform's matrix to a 3D vector (normal).
+ *    For rigid transforms, this is identical to the rotation portion.
+ *  - `clearSnapshot`: when true, the propagator drops the snapshot field
+ *    entirely (used for non-rigid transforms — det != 1 — where area would
+ *    no longer match). Mutually exclusive with the transform fns. */
+export interface SnapshotTransform {
+  pointTransform?: (p: readonly [number, number, number]) => [number, number, number];
+  vectorTransform?: (v: readonly [number, number, number]) => [number, number, number];
+  clearSnapshot?: boolean;
+}
+
 /**
  * Map an input HistoryMap through a topology-preserving transform (translate,
  * rotate, scale, reflect, mirror).
@@ -47,11 +79,18 @@ export type EdgeHistoryMap = Map<EdgeHash, EdgeLineage>;
  *
  * Length mismatch indicates the operation was not topology-preserving — throw
  * (caller bug; transforms should never split or merge faces).
+ *
+ * `snapshotTransform` (optional, slice-2): when provided, transforms each
+ * lineage's `snapshot` field via the supplied callbacks. When omitted, lineage
+ * is shared by reference; the snapshot stays attached to its pre-transform
+ * coordinates and may match worse against post-transform geometry — that is
+ * the correct conservative failure mode (the topology path takes precedence).
  */
 export function propagateTransformHistory(
   inputMap: HistoryMap,
   inputHashes: readonly FaceHash[],
   outputHashes: readonly FaceHash[],
+  snapshotTransform?: SnapshotTransform,
 ): HistoryMap {
   if (inputHashes.length !== outputHashes.length) {
     throw new Error(
@@ -61,9 +100,32 @@ export function propagateTransformHistory(
   const out: HistoryMap = new Map();
   for (let i = 0; i < inputHashes.length; i++) {
     const inputLineage = inputMap.get(inputHashes[i]);
-    if (inputLineage) {
-      out.set(outputHashes[i], inputLineage);  // lineage shared by reference; FaceLineage is immutable by convention
+    if (!inputLineage) continue;
+    if (!snapshotTransform || !inputLineage.snapshot) {
+      // Slice-1 path: share lineage by reference. Lineage is treated as
+      // immutable by convention.
+      out.set(outputHashes[i], inputLineage);
+      continue;
     }
+    // Slice-2 path: deep-copy lineage to avoid mutating shared reference,
+    // then transform the snapshot.
+    const cloned = { ...inputLineage };
+    if (snapshotTransform.clearSnapshot) {
+      delete cloned.snapshot;
+    } else if (inputLineage.snapshot) {
+      const c = inputLineage.snapshot.centroid;
+      const n = inputLineage.snapshot.normal;
+      cloned.snapshot = {
+        centroid: snapshotTransform.pointTransform
+          ? snapshotTransform.pointTransform(c)
+          : [c[0], c[1], c[2]],
+        normal: snapshotTransform.vectorTransform
+          ? snapshotTransform.vectorTransform(n)
+          : [n[0], n[1], n[2]],
+        area: inputLineage.snapshot.area,
+      };
+    }
+    out.set(outputHashes[i], cloned);
   }
   return out;
 }

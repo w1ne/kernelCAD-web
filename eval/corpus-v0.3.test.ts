@@ -28,6 +28,10 @@ const tasks: Array<{ id: string; dir: string }> = [
   { id: 'mixed-fastener-plate',     dir: './eval/tasks/mixed-fastener-plate' },
   { id: 'keyhole-cutout',           dir: './eval/tasks/keyhole-cutout' },
   { id: 'through-slot',             dir: './eval/tasks/through-slot' },
+  // slice 2 — named features + ordinal fallback + snapshot fallback
+  { id: 'named-feature-disambiguation',     dir: './eval/tasks/named-feature-disambiguation' },
+  { id: 'ordinal-feature-fallback',         dir: './eval/tasks/ordinal-feature-fallback' },
+  { id: 'named-bore-survives-transform',     dir: './eval/tasks/named-bore-survives-transform' },
 ];
 
 describe('v0.3 hole + cutout corpus — expert solutions score 100%', () => {

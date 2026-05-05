@@ -211,7 +211,43 @@ Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 
 Resolution rule when names collide with canonical face names: created refs always win on the result Shape. After `box.hole('top', ...)`, both `'wall'` (the new bore) and `'top'` (the remaining annular planar region of the original top face) resolve. The canonical name survives because the original face wasn't fully consumed.
 
-`holes(...)`'s bare `'wall'` selector is collective sugar — `.fillet(0.2, { face: 'wall' })` rounds every bore lip in one call. Per-instance positional access (`hole1.wall`, `hole2.wall`) lands in slice 2.
+`holes(...)`'s bare `'wall'` selector is collective sugar — `.fillet(0.2, { face: 'wall' })` rounds every bore lip in one call.
+
+### Naming features (slice 2)
+
+When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:
+
+```typescript
+plate
+  .hole('top', { u: -20, v: 0, diameter: 5, depth: 'through', name: 'mountFront' })
+  .hole('top', { u:  20, v: 0, diameter: 5, depth: 'through', name: 'mountBack'  })
+  .fillet(0.4, { face: 'mountFront.wall' })   // only the front bore lip
+  .fillet(0.8, { face: 'mountBack.wall'  });  // only the back bore lip (deeper fillet)
+```
+
+Names are the durable interface. Use them when the chain order may change or when the disambiguation matters semantically.
+
+For lazy chains where naming each feature is overhead, the **ordinal fallback** form `<kind><N>.<ref>` works without any opt change:
+
+```typescript
+plate
+  .hole('top', { u: -20, v: 0, diameter: 5, depth: 'through' })   // hole1
+  .hole('top', { u:  20, v: 0, diameter: 5, depth: 'through' })   // hole2
+  .fillet(0.4, { face: 'hole1.wall' })
+  .fillet(0.8, { face: 'hole2.wall' });
+```
+
+Ordinals count chain-call order among **unnamed** same-kind features only — named features never consume an ordinal slot. If you insert a new unnamed `.hole()` between two existing unnamed ones, the ordinals shift; for stable references, use `name:`.
+
+The resolver tries lineage matching first (canonical → label → named → ordinal), then falls back to a geometric snapshot match (centroid + normal + area) when topology lookup returns zero hits and a fallback snapshot is available. The snapshot path is implicit — agents don't see it as a separate selector form; it just makes named/ordinal references survive ops that would otherwise lose the topology link. Multi-match snapshot results emit `feature.face-ref.ambiguous-after-split`.
+
+Selector parse rules:
+- `<ref>`              — collective; matches all faces with that label.
+- `<name>.<ref>`       — feature name match; resolves to that feature's faces only.
+- `<name>[i].<ref>`    — indexed access into a batched named feature (forward-compatible; slice-2 minimal collapses to `<name>.<ref>`).
+- `<kind><N>.<ref>`    — ordinal among unnamed same-kind features.
+
+Names must match `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/` and must be unique within a chain. Both rules emit `feature.invalid-args` at script time with hints calling out the violation.
 
 ## Labels — naming faces at creation time
 
