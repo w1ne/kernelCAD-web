@@ -104,6 +104,26 @@ export function captureAllFaceSnapshots(faces: readonly Face[]): Map<FaceHash, F
   return out;
 }
 
+/** Refresh the `snapshot` field of every lineage entry in `resultMap` whose
+ *  face hash maps to a face in `faces`. Used as a post-op capture site so
+ *  every lineage entry on the result Shape carries a snapshot reflecting
+ *  current geometry — the geometry-fallback resolver in Phase 4 reads these
+ *  entries when the topology path returns zero hits.
+ *
+ *  Lineage entries are deep-copied before mutation so that any input map
+ *  sharing the same lineage by reference (slice-1 path) is not affected. */
+export function refreshSnapshots(
+  resultMap: HistoryMap,
+  faces: readonly Face[],
+): void {
+  const fresh = captureAllFaceSnapshots(faces);
+  for (const [hash, snap] of fresh) {
+    const lineage = resultMap.get(hash);
+    if (!lineage) continue;
+    resultMap.set(hash, { ...lineage, snapshot: snap });
+  }
+}
+
 /** Write a list of CreatedRefSpec entries into a result HistoryMap. For
  *  each spec, attach the labelName + snapshot to the existing FaceLineage
  *  if one exists, or create a new lineage rooted at the feature id.
