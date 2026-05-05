@@ -17,6 +17,13 @@ export interface Param {
   expression: string;       // e.g. 'width / 2 + 5 mm'
   unit: Unit;
   evaluated: number;        // canonical: mm for length, deg for angle
+  /**
+   * Slice-3: when set, this Param is a symbolic reference into the session's
+   * ParamTable. The dispatcher pre-resolves at lower time and refreshes
+   * `evaluated` from `paramTable.get(paramRef).value`. Lowerers never see this
+   * field set — they always operate on resolved Params.
+   */
+  paramRef?: string;
 }
 
 // Single source of truth for the six axis-aligned canonical face names.

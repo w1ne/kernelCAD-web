@@ -4,6 +4,8 @@ import type { FeatureKind, FeatureRef, Param, PlaneSpec } from '../intent/types'
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
+import { ParamTable } from '../runtime/paramTable';
+import type { SoftWarning } from '../runtime/softWarning';
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -56,6 +58,10 @@ export interface FeatureSpec {
 export class CaptureSession {
   private idGen: FeatureIdGenerator = createFeatureIdGenerator();
   private records: FeatureRecord[] = [];
+  /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
+  readonly paramTable: ParamTable = new ParamTable();
+  /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
+  readonly warnings: SoftWarning[] = [];
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
@@ -211,6 +217,16 @@ export class CaptureSession {
   reset(): void {
     this.records = [];
     this.idGen.reset();
+    this.paramTable.clear();
+    this.warnings.length = 0;
+  }
+
+  /** Slice-3: drain the warning log. Returns the accumulated warnings and
+   *  clears the buffer. Used by tooling that wants a one-shot snapshot. */
+  consumeWarnings(): SoftWarning[] {
+    const out = this.warnings.slice();
+    this.warnings.length = 0;
+    return out;
   }
 }
 
