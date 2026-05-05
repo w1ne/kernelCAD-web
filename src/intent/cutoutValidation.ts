@@ -18,6 +18,9 @@ export interface CutoutOpts {
   depth?: number | 'through';
   upToFace?: FaceRef;
   depthMode?: CutoutDepthMode;
+  /** Optional agent-chosen feature name. Enables `<name>.wall`,
+   *  `<name>.floor`, `<name>.wall-back` selectors downstream. */
+  name?: string;
 }
 
 function isFiniteNumber(n: unknown): n is number {

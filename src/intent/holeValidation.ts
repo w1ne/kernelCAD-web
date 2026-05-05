@@ -23,6 +23,10 @@ export interface HoleOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  /** Optional agent-chosen feature name. When set, downstream selectors can
+   *  address the bore as `<name>.wall`, `<name>.floor`, etc. Validated
+   *  against `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/` in Phase 4. */
+  name?: string;
 }
 
 export interface HolesOpts {
@@ -32,6 +36,9 @@ export interface HolesOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
+  /** Optional agent-chosen feature name. Selectors: `<name>.wall` (collective)
+   *  or `<name>[i].wall` (instance). */
+  name?: string;
 }
 
 const MAX_DIAMETER_MM = 1000;

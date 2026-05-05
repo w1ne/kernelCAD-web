@@ -24,6 +24,21 @@ export interface FaceLineage {
   labelName?: string;
   /** Originating primitive feature ID. */
   rootFeatureId: string;
+  // --- slice-2 additions (additive; existing entries unaffected) ---
+  /** Geometric fingerprint captured at face creation. The geometry-snapshot
+   *  resolver matches against this when topology lookup returns zero hits. */
+  snapshot?: import('../backends/occt/createdRefs').FaceSnapshot;
+  /** ID of the feature whose lowerer created or labelled this face. Distinct
+   *  from `rootFeatureId` (which always points to the originating primitive). */
+  featureId?: string;
+  /** Agent-chosen feature name (`hole(face, { ..., name: 'mountingBolt' })`).
+   *  Enables `<name>.<ref>` selector resolution. */
+  featureName?: string;
+  /** 1-based ordinal among unnamed features of the same kind in the chain.
+   *  Enables `<kind><N>.<ref>` (e.g., `hole1.wall`) selector resolution. */
+  featureOrdinal?: number;
+  /** Feature kind that emitted this label. Needed for ordinal resolution. */
+  featureKind?: import('../intent/types').FeatureKind;
 }
 
 export interface EdgeLineage {
