@@ -8,6 +8,12 @@ import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edg
 import type { FaceQuery } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from './queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
+import {
+  parseFaceSelector,
+  findLineageMatches,
+  findFallbackSnapshot,
+  resolveBySnapshot,
+} from '../../runtime/selectorParser';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
@@ -76,20 +82,53 @@ export function pickEdges(
   if (faceRef.kind === 'face' && faceRef.ref.kind === 'label') {
     const labelName = faceRef.ref.name;
 
-    // (4a-pre) v0.3 slice 1: created-face refs declared by hole/holes/cutout
-    // attach `labelName` directly to the result historyMap. Created refs win
-    // over upstream metadata.faceLabels (per spec §C.4).
+    // (4a-pre) v0.3 slice 1+2: created-face refs declared by hole/holes/cutout
+    // attach labelName + (slice-2) featureName/featureOrdinal/snapshot to the
+    // result HistoryMap. Created refs win over upstream metadata.faceLabels.
     if (base.historyMap !== undefined) {
-      const matchingHashes: string[] = [];
-      for (const [hash, lineage] of base.historyMap.entries()) {
-        if (lineage.labelName === labelName) matchingHashes.push(hash);
-      }
+      const parsed = parseFaceSelector(labelName);
+      const matchingHashes = findLineageMatches(base.historyMap, parsed);
       if (matchingHashes.length > 0) {
         const faces: Face[] = [];
         for (const h of matchingHashes) {
           try { faces.push(faceByHash(base, h)); } catch { /* skip stale hashes */ }
         }
         if (faces.length > 0) return collectFaceEdges(faces);
+      }
+      // Slice-2 snapshot fallback for named/ordinal selectors.
+      if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
+        const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
+        if (fallbackSnap) {
+          const snapMatches = resolveBySnapshot(base.historyMap, fallbackSnap);
+          if (snapMatches.length === 1) {
+            try {
+              const faces = [faceByHash(base, snapMatches[0])];
+              return collectFaceEdges(faces);
+            } catch { /* fallthrough */ }
+          }
+          if (snapMatches.length > 1) {
+            return {
+              error: {
+                target: 'export-occt',
+                code: 'feature.face-ref.ambiguous-after-split',
+                featureId: record.id,
+                severity: 'error',
+                message: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces.`,
+                hint: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces. Tighten the snapshot query or pick by a downstream feature ref.`,
+              },
+            };
+          }
+        }
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.face-ref.not-resolvable',
+            featureId: record.id,
+            severity: 'error',
+            message: `'${labelName}' did not resolve.`,
+            hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
+          },
+        };
       }
     }
 
@@ -495,18 +534,50 @@ export function pickFace(
     return faces[0];
   }
 
-  // 2. FaceRef.label → check created refs first (v0.3 slice-1), then walk
+  // 2. FaceRef.label → parse via slice-2 selector parser; check created refs
+  //    (v0.3 slice 1 + slice 2's named/ordinal/snapshot paths), then walk
   //    upstream sketch.
   if (faceRef.ref.kind === 'label') {
     const labelName = faceRef.ref.name;
     if (base.historyMap !== undefined) {
-      for (const [hash, lineage] of base.historyMap.entries()) {
-        if (lineage.labelName === labelName) {
-          // Return first match. Multi-face created refs (e.g. 'wall' on a
-          // holes batch) collapse to the first face for callers needing one
-          // — pickEdges path correctly aggregates all matching faces.
-          try { return faceByHash(base, hash); } catch { /* fallthrough */ }
+      const parsed = parseFaceSelector(labelName);
+      const matches = findLineageMatches(base.historyMap, parsed);
+      if (matches.length > 0) {
+        try { return faceByHash(base, matches[0]); } catch { /* fallthrough */ }
+      }
+      // Slice-2 snapshot fallback: only when topology returned 0 AND the
+      // selector references a named/ordinal feature whose lineage stored a
+      // snapshot at creation time.
+      if (parsed.kind === 'named' || parsed.kind === 'ordinal') {
+        const fallbackSnap = findFallbackSnapshot(base.historyMap, parsed);
+        if (fallbackSnap) {
+          const snapMatches = resolveBySnapshot(base.historyMap, fallbackSnap);
+          if (snapMatches.length === 1) {
+            try { return faceByHash(base, snapMatches[0]); } catch { /* fallthrough */ }
+          }
+          if (snapMatches.length > 1) {
+            return {
+              error: {
+                target: 'export-occt',
+                code: 'feature.face-ref.ambiguous-after-split',
+                featureId: record.id,
+                severity: 'error',
+                message: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces.`,
+                hint: `'${labelName}' resolved to 0 faces by lineage; geometry snapshot matched ${snapMatches.length} faces. Tighten the snapshot query or pick by a downstream feature ref.`,
+              },
+            };
+          }
         }
+        return {
+          error: {
+            target: 'export-occt',
+            code: 'feature.face-ref.not-resolvable',
+            featureId: record.id,
+            severity: 'error',
+            message: `'${labelName}' did not resolve.`,
+            hint: `'${labelName}' did not resolve. The face may have been consumed by an upstream op, or the snapshot drifted by transform/scale.`,
+          },
+        };
       }
     }
     const result = resolveLabeledFace(record, base, labelName, records);

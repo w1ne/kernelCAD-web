@@ -10,6 +10,7 @@ import { KernelError } from './kernelError';
 import type { FeatureId, FaceRef, Param } from './types';
 import type { FaceSelector } from '../capture/proxy';
 import type { SketchCommand } from '../capture/sketch';
+import { validateFeatureName } from './holeValidation';
 
 export type CutoutDepthMode = 'blind' | 'symmetric';
 
@@ -111,6 +112,7 @@ export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | unde
       "cutout depthMode must be 'blind' or 'symmetric'; defaults to 'blind'.",
     );
   }
+  if (opts.name !== undefined) validateFeatureName(opts.name, featureId);
 }
 
 /** Verify the captured Sketch's commands contain a 'close' marker and the
@@ -172,5 +174,6 @@ export function serializeCutoutParams(_face: FaceSelector, opts: CutoutOpts): Se
   }
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
+  if (opts.name !== undefined) metadata.name = opts.name;
   return { params, metadata };
 }

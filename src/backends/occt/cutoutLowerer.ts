@@ -408,9 +408,10 @@ export function lowerCutout(
     through,
     profileBoundingBoxRadius: pBboxR,
   };
+  const featMeta = feature.metadata as { name?: string; ordinal?: number } | undefined;
   const newHistoryMap = attachCreatedRefs(
     cutResult, intermediate, frame, target.historyMap,
-    feature.id, feature.kind, undefined, undefined,
+    feature.id, feature.kind, featMeta?.name, featMeta?.ordinal,
   );
 
   return {

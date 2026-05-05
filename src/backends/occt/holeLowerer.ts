@@ -427,7 +427,8 @@ export function lowerHole(
     entry, u, v, diameter, numericDepth, through, throughDepth, counterbore, countersink,
   );
 
-  return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, undefined, undefined, diagnostics);
+  const meta = feature.metadata as { name?: string; ordinal?: number } | undefined;
+  return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
 }
 
 export function lowerHoles(
@@ -495,7 +496,8 @@ export function lowerHoles(
     fused = (fused as any).fuse(tools[i]) as replicad.Shape3D;
   }
 
-  return runCutAndClassify(target, [fused], bores, feature.id, feature.kind, undefined, undefined, diagnostics);
+  const meta2 = feature.metadata as { name?: string; ordinal?: number } | undefined;
+  return runCutAndClassify(target, [fused], bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
 }
 
 function runCutAndClassify(

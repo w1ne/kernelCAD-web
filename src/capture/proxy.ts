@@ -192,6 +192,11 @@ export class Shape {
     validateHoleOpts(opts, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHoleParams(faceSel, opts);
+    if (opts.name !== undefined) {
+      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
+    } else {
+      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'hole');
+    }
     const inputs: Record<string, FeatureRef> = {
       target: { kind: 'feature', id: this.id },
       face: buildFaceInputRef(this.id, faceSel),
@@ -217,6 +222,11 @@ export class Shape {
     validateHolesOpts(opts, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHolesParams(faceSel, opts);
+    if (opts.name !== undefined) {
+      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
+    } else {
+      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'holes');
+    }
     const inputs: Record<string, FeatureRef> = {
       target: { kind: 'feature', id: this.id },
       face: buildFaceInputRef(this.id, faceSel),
@@ -251,6 +261,11 @@ export class Shape {
     validateCutoutProfile(commands, this.id);
     const faceSel = normalizeFaceSelector(opts.face);
     const { params, metadata } = serializeCutoutParams(faceSel, opts);
+    if (opts.name !== undefined) {
+      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
+    } else {
+      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'cutout');
+    }
     const inputs: Record<string, FeatureRef> = {
       target: { kind: 'feature', id: this.id },
       profile: { kind: 'feature', id: sketch.id },
@@ -312,4 +327,65 @@ export class Shape {
  *  FaceSelector shape so hole/holes/cutout can accept either form. */
 function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
   return typeof face === 'string' ? { face } : face;
+}
+
+/** Walk records back from `targetId` via `inputs.target` (slice-2 chain
+ *  semantics). Returns records in chain order (oldest first). */
+function chainRecordsFrom(
+  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
+  targetId: string,
+): typeof records[number][] {
+  const byId = new Map<string, typeof records[number]>();
+  for (const r of records) byId.set(r.id, r);
+  const out: typeof records[number][] = [];
+  let cur: string | undefined = targetId;
+  const seen = new Set<string>();
+  while (cur && !seen.has(cur)) {
+    seen.add(cur);
+    const r = byId.get(cur);
+    if (!r) break;
+    out.unshift(r);
+    const target = r.inputs?.target;
+    cur = target && target.kind === 'feature' ? target.id : undefined;
+  }
+  return out;
+}
+
+/** Throw `feature.invalid-args` if any prior feature in the chain ending
+ *  at `targetId` already used the given `name`. */
+function assertFeatureNameUniqueOnChain(
+  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
+  targetId: string,
+  name: string,
+): void {
+  const chain = chainRecordsFrom(records, targetId);
+  for (const r of chain) {
+    const prev = (r.metadata as { name?: unknown } | undefined)?.name;
+    if (typeof prev === 'string' && prev === name) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `feature name '${name}' is already used in this chain.`,
+        undefined,
+        `Feature name '${name}' already used in this chain. Names must be unique per chain; for variations use suffixes ('${name}-front', '${name}-back').`,
+      );
+    }
+  }
+}
+
+/** 1-based ordinal among unnamed features of the given `kind` in the chain
+ *  ending at `targetId`. */
+function nextOrdinalForKindOnChain(
+  records: ReadonlyArray<{ id: string; kind: string; inputs?: Record<string, { kind: string; id?: string }>; metadata?: Record<string, unknown> }>,
+  targetId: string,
+  kind: string,
+): number {
+  const chain = chainRecordsFrom(records, targetId);
+  let count = 0;
+  for (const r of chain) {
+    if (r.kind !== kind) continue;
+    const meta = r.metadata as { name?: unknown } | undefined;
+    if (typeof meta?.name === 'string') continue;  // named features don't consume an ordinal slot
+    count++;
+  }
+  return count + 1;
 }
