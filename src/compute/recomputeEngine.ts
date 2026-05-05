@@ -4,6 +4,8 @@ import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
+import type { ParamTable } from '../runtime/paramTable';
+import { resolveParams } from '../runtime/resolveParams';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -22,6 +24,11 @@ export interface RecomputeResult {
 
 export interface RecomputeOptions {
   onEvent?: FeatureEventSink;
+  /** Slice-3: when records contain symbolic param refs (`Param.paramRef` set),
+   *  the engine pre-resolves them against this table before dispatching to
+   *  the lowerer. Optional — slice-1/2 records have no paramRefs and work
+   *  with table omitted. */
+  paramTable?: ParamTable;
 }
 
 export class RecomputeEngine {
@@ -93,9 +100,20 @@ export class RecomputeEngine {
         continue;
       }
 
+      // Slice-3: pre-resolve any Param with paramRef anywhere in the record
+      // (params + metadata) against the session's param table BEFORE
+      // dispatching to the lowerer. Lowerer signatures stay slice-2-stable;
+      // they always see resolved Params. resolveParams walks recursively
+      // and only rewrites Param-shaped objects with `paramRef` set; inputs
+      // (FeatureRefs), face selector strings, and non-Param scalars pass
+      // through untouched.
+      const recordForLower: FeatureRecord = opts?.paramTable
+        ? resolveParams(r, opts.paramTable) as FeatureRecord
+        : r;
+
       // Lower
       try {
-        const res = await this.lowerer.lower(r, { byKey, records });
+        const res = await this.lowerer.lower(recordForLower, { byKey, records });
         diagnostics.push(...res.diagnostics);
         const featureDiags = res.diagnostics;
         if (featureDiags.some((d) => d.severity === 'error')) {

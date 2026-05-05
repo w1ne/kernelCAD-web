@@ -1,5 +1,5 @@
-const size = param('Size', 10, { unit: 'mm', min: 5, max: 50 });
-const filletRadius = param('FilletRadius', 1, { unit: 'mm', min: 0.5, max: 3 });
+const size = 10;
+const filletRadius = 1;
 
 // Round-trip: build a shape, query its edges, pass the EdgeSegment[] back to fillet.
 // This is the agent-facing flow for compose / multi-step refinement / cross-shape

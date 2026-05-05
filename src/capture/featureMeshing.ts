@@ -41,6 +41,7 @@ export interface MeshFeaturesResult {
 
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
+  paramTable?: import('../runtime/paramTable').ParamTable,
 ): Promise<MeshFeaturesResult> {
   await initOcct();
   const engine = new RecomputeEngine(new OcctLowerer());
@@ -50,6 +51,7 @@ export async function meshFeaturesPerFeature(
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
   await engine.run(records, {
+    paramTable,
     onEvent: (event) => {
       if (event.kind === 'feature.failed') {
         failedFeatureIds.push(event.featureId);

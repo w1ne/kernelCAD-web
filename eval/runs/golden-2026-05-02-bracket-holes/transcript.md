@@ -5,10 +5,10 @@
 > 
 > Build an L-shaped mounting bracket that works for different bolt sizes.
 > 
-> The script must accept this parameter (verbatim — name and unit matter):
+> The script must accept this parameter (verbatim — name matters):
 > 
 > ```typescript
-> const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 10 });
+> const boltDiam = param('boltDiam', 5, { min: 3, max: 10 });
 > ```
 > 
 > Functional requirements:
@@ -41,7 +41,7 @@ return sphere(5).fillet(1, { face: 'top' });
 I see — sphere doesn't accept a { face } filter. Here's the proper L-bracket per the prompt:
 
 ```typescript
-const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 10 });
+const boltDiam = 5;
 
 const t = 2 * boltDiam;       // wall thickness
 const w = 4 * boltDiam;       // plate width/length (>= 3 * boltDiam)

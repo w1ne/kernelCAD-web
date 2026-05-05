@@ -1,6 +1,6 @@
-const armLength = param('ArmLength', 20, { unit: 'mm', min: 10, max: 50 });
-const armWidth = param('ArmWidth', 10, { unit: 'mm', min: 5, max: 25 });
-const thickness = param('Thickness', 5, { unit: 'mm', min: 2, max: 15 });
+const armLength = 20;
+const armWidth = 10;
+const thickness = 5;
 
 return path()
   .moveTo(0, 0)

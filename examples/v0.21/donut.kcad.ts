@@ -8,18 +8,18 @@
 //
 // Per memorable-builds policy spec §2 (v0.21 catalog entry).
 
-const bodyInnerR = param('Hole radius', 12, { unit: 'mm', min: 8, max: 20 });
-const bodyOuterR = param('Outer radius', 35, { unit: 'mm', min: 25, max: 50 });
-const bodyHeight = param('Body height', 18, { unit: 'mm', min: 12, max: 24 });
-const bodyFillet = param('Body fillet', 7, { unit: 'mm', min: 3, max: 12 });
+const bodyInnerR = 12;
+const bodyOuterR = 35;
+const bodyHeight = 18;
+const bodyFillet = 7;
 
-const glazeOverhang = param('Glaze overhang', 1, { unit: 'mm', min: 0, max: 4 });
-const glazeInset = param('Glaze inset', 1, { unit: 'mm', min: 0, max: 4 });
-const glazeHeight = param('Glaze height', 5, { unit: 'mm', min: 2, max: 8 });
-const glazeFillet = param('Glaze fillet', 1.5, { unit: 'mm', min: 0.5, max: 3 });
+const glazeOverhang = 1;
+const glazeInset = 1;
+const glazeHeight = 5;
+const glazeFillet = 1.5;
 
-const sprinkleR = param('Sprinkle radius', 1, { unit: 'mm', min: 0.5, max: 2 });
-const sprinkleH = param('Sprinkle height', 3, { unit: 'mm', min: 1.5, max: 5 });
+const sprinkleR = 1;
+const sprinkleH = 3;
 
 const body = revolveRect(
   bodyOuterR - bodyInnerR,

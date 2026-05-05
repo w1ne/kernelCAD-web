@@ -1,4 +1,4 @@
-const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 10 });
+const boltDiam = 5;
 
 const t = 2 * boltDiam;       // wall thickness
 const w = 4 * boltDiam;       // plate width/length (>= 3 * boltDiam)

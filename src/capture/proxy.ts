@@ -6,11 +6,13 @@ import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
-  type HoleOpts, type HolesOpts,
+  resolveHoleOpts, resolveHolesOpts,
+  type EditableHoleOpts, type EditableHolesOpts,
 } from '../intent/holeValidation';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
-  type CutoutOpts,
+  resolveCutoutOpts,
+  type EditableCutoutOpts,
 } from '../intent/cutoutValidation';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
@@ -188,8 +190,12 @@ export class Shape {
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
-  hole(face: FaceSelector | CanonicalFace | string, opts: HoleOpts): Shape {
-    validateHoleOpts(opts, this.id);
+  hole(face: FaceSelector | CanonicalFace | string, opts: EditableHoleOpts): Shape {
+    // Slice-3: validate against the resolved-at-capture-time numeric view, but
+    // serialize from the original Editable opts so symbolic ParamRefs survive
+    // into the FeatureRecord for later edit-after-build.
+    const resolved = resolveHoleOpts(opts, this.session.paramTable);
+    validateHoleOpts(resolved, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHoleParams(faceSel, opts);
     if (opts.name !== undefined) {
@@ -218,8 +224,9 @@ export class Shape {
    * collectively — `.fillet(0.2, { face: 'wall' })` rounds every lip in one
    * call. Indexed access (e.g. `holes[0].wall`) is slice-2.
    */
-  holes(face: FaceSelector | CanonicalFace | string, opts: HolesOpts): Shape {
-    validateHolesOpts(opts, this.id);
+  holes(face: FaceSelector | CanonicalFace | string, opts: EditableHolesOpts): Shape {
+    const resolved = resolveHolesOpts(opts, this.session.paramTable);
+    validateHolesOpts(resolved, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHolesParams(faceSel, opts);
     if (opts.name !== undefined) {
@@ -247,8 +254,9 @@ export class Shape {
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
    */
-  cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: CutoutOpts): Shape {
-    validateCutoutOpts(opts, this.id);
+  cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: EditableCutoutOpts): Shape {
+    const resolved = resolveCutoutOpts(opts, this.session.paramTable);
+    validateCutoutOpts(resolved, this.id);
     // Auto-close a bare PathBuilder. Duck-type on `.close` to avoid pulling
     // PathBuilder/Sketch class identifiers from sketch.ts (which imports Shape
     // from this module — would create a top-level circular dep).
@@ -308,7 +316,10 @@ export class Shape {
     const { OcctBackend, initOcct } = await import('../backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(new OcctLowerer());
-    const r = await engine.run(records as readonly import('../intent/featureRecord').FeatureRecord[]);
+    const r = await engine.run(
+      records as readonly import('../intent/featureRecord').FeatureRecord[],
+      { paramTable: this.session.paramTable },
+    );
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
@@ -389,3 +400,4 @@ function nextOrdinalForKindOnChain(
   }
   return count + 1;
 }
+

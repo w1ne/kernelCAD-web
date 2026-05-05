@@ -1,5 +1,5 @@
-const radius = param('Radius', 20, { unit: 'mm', min: 5, max: 100 });
-const thickness = param('Thickness', 5, { unit: 'mm', min: 1, max: 20 });
+const radius = 20;
+const thickness = 5;
 
 // Circular blank built from 4 quarter-arcs via threePointsArc.
 // Each quarter-arc spans 90°. Midpoint is at 45° angle on the circle.

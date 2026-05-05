@@ -11,9 +11,36 @@
 import { KernelError } from './kernelError';
 import type { FeatureId, FaceRef, Param } from './types';
 import type { FaceSelector } from '../capture/proxy';
+import type { Editable } from '../runtime/paramRef';
+import { currentValue, currentBool } from '../runtime/editableHelpers';
+import type { ParamTable } from '../runtime/paramTable';
 
+// User-facing opts allow Editable<number> for editable numeric fields. The
+// validator + serializer machinery internally splits into a "resolved" view
+// (numbers only, for validation) and the original Editable view (for the
+// serializer that writes symbolic refs into Param records).
+
+export interface EditableHoleCounterbore { diameter: Editable<number>; depth: Editable<number> }
+export interface EditableHoleCountersink { diameter: Editable<number>; angleDeg?: Editable<number> }
 export interface HoleCounterbore { diameter: number; depth: number }
 export interface HoleCountersink { diameter: number; angleDeg?: number }
+
+export interface EditableHoleOpts {
+  u: Editable<number>;
+  v: Editable<number>;
+  diameter: Editable<number>;
+  depth?: Editable<number> | 'through';
+  upToFace?: FaceRef;
+  counterbore?: EditableHoleCounterbore;
+  countersink?: EditableHoleCountersink;
+  /** Optional agent-chosen feature name. When set, downstream selectors can
+   *  address the bore as `<name>.wall`, `<name>.floor`, etc. Validated
+   *  against `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/`. */
+  name?: string;
+  /** Slice-3: when set, the lowerer treats this record as a passthrough on
+   *  `false`. Ships in Phase 4. */
+  enabled?: Editable<boolean>;
+}
 
 export interface HoleOpts {
   u: number;
@@ -23,10 +50,19 @@ export interface HoleOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
-  /** Optional agent-chosen feature name. When set, downstream selectors can
-   *  address the bore as `<name>.wall`, `<name>.floor`, etc. Validated
-   *  against `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/` in Phase 4. */
   name?: string;
+  enabled?: boolean;
+}
+
+export interface EditableHolesOpts {
+  positions: Array<{ u: Editable<number>; v: Editable<number> }>;
+  diameter: Editable<number>;
+  depth?: Editable<number> | 'through';
+  upToFace?: FaceRef;
+  counterbore?: EditableHoleCounterbore;
+  countersink?: EditableHoleCountersink;
+  name?: string;
+  enabled?: Editable<boolean>;
 }
 
 export interface HolesOpts {
@@ -36,9 +72,76 @@ export interface HolesOpts {
   upToFace?: FaceRef;
   counterbore?: HoleCounterbore;
   countersink?: HoleCountersink;
-  /** Optional agent-chosen feature name. Selectors: `<name>.wall` (collective)
-   *  or `<name>[i].wall` (instance). */
   name?: string;
+  enabled?: boolean;
+}
+
+/** Resolve every Editable field in EditableHoleOpts to its current numeric/
+ *  boolean value at capture time, using the session's param table for symbolic
+ *  refs. Used to feed the strict-typed validator (and to detect bound errors
+ *  early — at declare/edit time rather than deferring to lower). */
+export function resolveHoleOpts(opts: EditableHoleOpts, table: ParamTable): HoleOpts {
+  const out: HoleOpts = {
+    u: currentValue(opts.u, table),
+    v: currentValue(opts.v, table),
+    diameter: currentValue(opts.diameter, table),
+    name: opts.name,
+  };
+  if (opts.depth !== undefined) {
+    out.depth = opts.depth === 'through' ? 'through' : currentValue(opts.depth, table);
+  }
+  if (opts.upToFace !== undefined) out.upToFace = opts.upToFace;
+  if (opts.counterbore !== undefined) {
+    out.counterbore = {
+      diameter: currentValue(opts.counterbore.diameter, table),
+      depth: currentValue(opts.counterbore.depth, table),
+    };
+  }
+  if (opts.countersink !== undefined) {
+    out.countersink = {
+      diameter: currentValue(opts.countersink.diameter, table),
+      angleDeg: opts.countersink.angleDeg !== undefined
+        ? currentValue(opts.countersink.angleDeg, table)
+        : undefined,
+    };
+  }
+  if (opts.enabled !== undefined) {
+    out.enabled = currentBool(opts.enabled, table);
+  }
+  return out;
+}
+
+export function resolveHolesOpts(opts: EditableHolesOpts, table: ParamTable): HolesOpts {
+  const out: HolesOpts = {
+    positions: opts.positions.map((p) => ({
+      u: currentValue(p.u, table),
+      v: currentValue(p.v, table),
+    })),
+    diameter: currentValue(opts.diameter, table),
+    name: opts.name,
+  };
+  if (opts.depth !== undefined) {
+    out.depth = opts.depth === 'through' ? 'through' : currentValue(opts.depth, table);
+  }
+  if (opts.upToFace !== undefined) out.upToFace = opts.upToFace;
+  if (opts.counterbore !== undefined) {
+    out.counterbore = {
+      diameter: currentValue(opts.counterbore.diameter, table),
+      depth: currentValue(opts.counterbore.depth, table),
+    };
+  }
+  if (opts.countersink !== undefined) {
+    out.countersink = {
+      diameter: currentValue(opts.countersink.diameter, table),
+      angleDeg: opts.countersink.angleDeg !== undefined
+        ? currentValue(opts.countersink.angleDeg, table)
+        : undefined,
+    };
+  }
+  if (opts.enabled !== undefined) {
+    out.enabled = currentBool(opts.enabled, table);
+  }
+  return out;
 }
 
 const MAX_DIAMETER_MM = 1000;
@@ -218,12 +321,17 @@ export interface SerializedHoleCapture {
   metadata: Record<string, unknown>;
 }
 
-function paramMm(value: number): Param {
-  return { expression: String(value), unit: 'mm', evaluated: value };
+// Slice-3: paramMm/Deg accept Editable<number>; toParam() handles the symbolic
+// ParamRef case by emitting a Param with `paramRef` set. Pre-resolve at the
+// dispatcher substitutes `evaluated` at lower time.
+import { toParam, toBoolParam } from '../runtime/editableHelpers';
+
+function paramMm(value: Editable<number>): Param {
+  return toParam(value, 'mm');
 }
 
-function paramDeg(value: number): Param {
-  return { expression: String(value), unit: 'deg', evaluated: value };
+function paramDeg(value: Editable<number>): Param {
+  return toParam(value, 'deg');
 }
 
 function paramUnitless(value: string | number): Param {
@@ -241,14 +349,14 @@ function paramUnitless(value: string | number): Param {
 // so it lives under metadata for now.
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function serializeHoleParams(_face: FaceSelector, opts: HoleOpts): SerializedHoleCapture {
+export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     u: paramMm(opts.u),
     v: paramMm(opts.v),
     diameter: paramMm(opts.diameter),
   };
-  if (typeof opts.depth === 'number') {
-    params.depth = paramMm(opts.depth);
+  if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
+    params.depth = paramMm(opts.depth as Editable<number>);
   } else if (opts.depth === 'through') {
     params.depthMode = paramUnitless('through');
   }
@@ -263,17 +371,22 @@ export function serializeHoleParams(_face: FaceSelector, opts: HoleOpts): Serial
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   if (opts.name !== undefined) metadata.name = opts.name;
+  // `enabled` is captured under metadata so the dispatcher can read it after
+  // pre-resolve. Symbolic ParamRef<boolean> is preserved via `toParam`.
+  if (opts.enabled !== undefined) {
+    metadata.enabled = toBoolParam(opts.enabled);
+  }
   return { params, metadata };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function serializeHolesParams(_face: FaceSelector, opts: HolesOpts): SerializedHoleCapture {
+export function serializeHolesParams(_face: FaceSelector, opts: EditableHolesOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     diameter: paramMm(opts.diameter),
     positionCount: paramUnitless(opts.positions.length),
   };
-  if (typeof opts.depth === 'number') {
-    params.depth = paramMm(opts.depth);
+  if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
+    params.depth = paramMm(opts.depth as Editable<number>);
   } else if (opts.depth === 'through') {
     params.depthMode = paramUnitless('through');
   }
@@ -285,10 +398,19 @@ export function serializeHolesParams(_face: FaceSelector, opts: HolesOpts): Seri
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
+  // Positions: preserve the Editable shape under metadata; emit each u/v as
+  // a Param so the pre-resolver substitutes paramRefs at lower time.
+  const positionParams = opts.positions.map((p) => ({
+    u: paramMm(p.u),
+    v: paramMm(p.v),
+  }));
   const metadata: Record<string, unknown> = {
-    positions: opts.positions,
+    positions: positionParams,
   };
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   if (opts.name !== undefined) metadata.name = opts.name;
+  if (opts.enabled !== undefined) {
+    metadata.enabled = toBoolParam(opts.enabled);
+  }
   return { params, metadata };
 }

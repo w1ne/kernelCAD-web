@@ -68,7 +68,7 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
     };
   }
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(run.records);
+  const r = await engine.run(run.records, { paramTable: run.paramTable });
   const fatal = r.diagnostics.filter(d => d.severity === 'error').length > 0;
   return {
     exitCode: fatal ? 1 : 0,

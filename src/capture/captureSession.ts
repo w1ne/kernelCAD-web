@@ -6,6 +6,7 @@ import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
 import { ParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
+import { collectParamRefs } from '../runtime/resolveParams';
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -74,6 +75,17 @@ export class CaptureSession {
       suppressed: false,
       metadata: spec.metadata,
     };
+    // Slice-3: populate metadata.paramRefs (the dependency index Phase 3
+    // uses to find the first-affected record on `params.update`). Walks
+    // params + metadata for any Param-shaped object with `paramRef` set.
+    const refs = new Set<string>();
+    for (const refName of collectParamRefs(r.params)) refs.add(refName);
+    if (r.metadata !== undefined) {
+      for (const refName of collectParamRefs(r.metadata)) refs.add(refName);
+    }
+    if (refs.size > 0) {
+      r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(refs) };
+    }
     this.records.push(r);
     return r;
   }

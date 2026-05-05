@@ -1,4 +1,4 @@
-const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 8 });
+const boltDiam = 5;
 
 return box(80, 80, 6)
   .holes('top', {

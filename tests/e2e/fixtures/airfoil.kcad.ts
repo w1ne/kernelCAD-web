@@ -1,6 +1,6 @@
-const span = param('Span', 200, { unit: 'mm', min: 50, max: 1000 });
-const rootChord = param('RootChord', 80, { unit: 'mm', min: 20, max: 200 });
-const tipChord = param('TipChord', 20, { unit: 'mm', min: 5, max: 100 });
+const span = 200;
+const rootChord = 80;
+const tipChord = 20;
 
 // Simple swept wing: 4 ribs interpolated along the span. Ribs are
 // rectangular for simplicity (real airfoils use sagittaArc / radiusArc
