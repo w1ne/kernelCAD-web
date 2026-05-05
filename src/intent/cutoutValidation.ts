@@ -155,7 +155,10 @@ function paramUnitless(value: string | number): Param {
   };
 }
 
-export function serializeCutoutParams(face: FaceSelector, opts: CutoutOpts): SerializedCutoutCapture {
+// `face` is captured under inputs.face by the proxy; metadata only carries
+// upToFace (when set) and any future per-cutout state.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function serializeCutoutParams(_face: FaceSelector, opts: CutoutOpts): SerializedCutoutCapture {
   const params: Record<string, Param> = {
     depthMode: paramUnitless(opts.depthMode ?? 'blind'),
   };
@@ -164,7 +167,7 @@ export function serializeCutoutParams(face: FaceSelector, opts: CutoutOpts): Ser
   } else if (opts.depth === 'through') {
     params.depthMode = paramUnitless('through');
   }
-  const metadata: Record<string, unknown> = { face };
+  const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   return { params, metadata };
 }

@@ -7,6 +7,45 @@ import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKe
 
 export { validateFaceLabels } from './faceLabels';
 
+/** Build an `inputs.face` FeatureRef from a FaceSelector. Mirrors the
+ *  face-handling branches of `buildEdgeFeatureRef` but specialized to
+ *  callers (hole/holes/cutout) that always want a face ref, never an
+ *  edges ref. */
+export function buildFaceInputRef(
+  baseId: import('../intent/types').FeatureId,
+  face: import('./proxy').FaceSelector | string,
+): FeatureRef {
+  // `{ face: <something> }` wrapper form
+  if (typeof face === 'object' && face !== null && 'face' in face) {
+    const faceVal = (face as { face: unknown }).face;
+    if (typeof faceVal === 'string') {
+      if (CANONICAL_FACES.has(faceVal)) {
+        return {
+          kind: 'face',
+          featureId: baseId,
+          ref: { kind: 'canonical', face: faceVal as 'top' },
+        };
+      }
+      return {
+        kind: 'face',
+        featureId: baseId,
+        ref: { kind: 'label', name: faceVal },
+      };
+    }
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: { kind: 'query', query: faceVal as import('../backends/occt/edgeQueries').FaceQuery },
+    };
+  }
+  // Bare FaceQuery object (no { face: ... } wrapper)
+  return {
+    kind: 'face',
+    featureId: baseId,
+    ref: { kind: 'query', query: face as import('../backends/occt/edgeQueries').FaceQuery },
+  };
+}
+
 export interface FeatureSpec {
   kind: FeatureKind;
   params: Record<string, Param>;

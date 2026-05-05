@@ -207,7 +207,14 @@ function paramUnitless(value: string | number): Param {
   };
 }
 
-export function serializeHoleParams(face: FaceSelector, opts: HoleOpts): SerializedHoleCapture {
+// `face` is captured under inputs.face by the proxy via buildFaceInputRef
+// (so pickFace can resolve it the same way shell/fillet/chamfer do); it is
+// intentionally absent from metadata to avoid the two-source-of-truth trap.
+// `upToFace` is only used by the lowerer when 'through' is not the trigger,
+// so it lives under metadata for now.
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function serializeHoleParams(_face: FaceSelector, opts: HoleOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     u: paramMm(opts.u),
     v: paramMm(opts.v),
@@ -226,12 +233,13 @@ export function serializeHoleParams(face: FaceSelector, opts: HoleOpts): Seriali
     params.countersinkDiameter = paramMm(opts.countersink.diameter);
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
-  const metadata: Record<string, unknown> = { face };
+  const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   return { params, metadata };
 }
 
-export function serializeHolesParams(face: FaceSelector, opts: HolesOpts): SerializedHoleCapture {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function serializeHolesParams(_face: FaceSelector, opts: HolesOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     diameter: paramMm(opts.diameter),
     positionCount: paramUnitless(opts.positions.length),
@@ -250,7 +258,6 @@ export function serializeHolesParams(face: FaceSelector, opts: HolesOpts): Seria
     params.countersinkAngleDeg = paramDeg(opts.countersink.angleDeg ?? DEFAULT_CSK_ANGLE_DEG);
   }
   const metadata: Record<string, unknown> = {
-    face,
     positions: opts.positions,
   };
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;

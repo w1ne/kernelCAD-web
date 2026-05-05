@@ -25,18 +25,22 @@ async function runAndCatch(code: string): Promise<unknown> {
 describe('Shape.hole capture', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('registers a hole record with target input and u/v/diameter/depth params', async () => {
+  it('registers a hole record with target+face inputs and u/v/diameter/depth params', async () => {
     const code = `return box(20, 20, 20).hole('top', { u: 5, v: 5, diameter: 4, depth: 6 });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(2);
     const hole = result.records[1];
     expect(hole.kind).toBe('hole');
     expect(hole.inputs.target).toEqual({ kind: 'feature', id: result.records[0].id });
+    expect(hole.inputs.face).toEqual({
+      kind: 'face',
+      featureId: result.records[0].id,
+      ref: { kind: 'canonical', face: 'top' },
+    });
     expect(hole.params.u.evaluated).toBe(5);
     expect(hole.params.v.evaluated).toBe(5);
     expect(hole.params.diameter.evaluated).toBe(4);
     expect(hole.params.depth.evaluated).toBe(6);
-    expect((hole.metadata as { face?: unknown }).face).toEqual({ face: 'top' });
   });
 
   it('captures a through-hole as depthMode=through (no numeric depth)', async () => {

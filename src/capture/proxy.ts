@@ -2,6 +2,7 @@ import type { FeatureId, PlaneSpec, FeatureRef } from '../intent/types';
 import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, formatScalarForError } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
 import type { CaptureSession } from './captureSession';
+import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
@@ -191,9 +192,13 @@ export class Shape {
     validateHoleOpts(opts, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHoleParams(faceSel, opts);
+    const inputs: Record<string, FeatureRef> = {
+      target: { kind: 'feature', id: this.id },
+      face: buildFaceInputRef(this.id, faceSel),
+    };
     return this.session.createShape({
       kind: 'hole',
-      inputs: { target: { kind: 'feature', id: this.id } },
+      inputs,
       params,
       metadata,
     });
@@ -212,9 +217,13 @@ export class Shape {
     validateHolesOpts(opts, this.id);
     const faceSel = normalizeFaceSelector(face);
     const { params, metadata } = serializeHolesParams(faceSel, opts);
+    const inputs: Record<string, FeatureRef> = {
+      target: { kind: 'feature', id: this.id },
+      face: buildFaceInputRef(this.id, faceSel),
+    };
     return this.session.createShape({
       kind: 'holes',
-      inputs: { target: { kind: 'feature', id: this.id } },
+      inputs,
       params,
       metadata,
     });
@@ -245,6 +254,7 @@ export class Shape {
     const inputs: Record<string, FeatureRef> = {
       target: { kind: 'feature', id: this.id },
       profile: { kind: 'feature', id: sketch.id },
+      face: buildFaceInputRef(this.id, faceSel),
     };
     return this.session.createShape({
       kind: 'cutout',
