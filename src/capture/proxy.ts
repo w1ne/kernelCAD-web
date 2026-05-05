@@ -1,8 +1,16 @@
-import type { FeatureId, PlaneSpec } from '../intent/types';
+import type { FeatureId, PlaneSpec, FeatureRef } from '../intent/types';
 import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, formatScalarForError } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
 import type { CaptureSession } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
+import {
+  validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
+  type HoleOpts, type HolesOpts,
+} from '../intent/holeValidation';
+import {
+  validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
+  type CutoutOpts,
+} from '../intent/cutoutValidation';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -169,6 +177,84 @@ export class Shape {
   }
 
   /**
+   * Drill a single hole through this Shape. Position is face-local 2D
+   * (`u`, `v` in mm). Use `depth: 'through'` to clip at the back face.
+   * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
+   * two are mutually exclusive on a single hole.
+   *
+   * Created face refs (resolvable downstream as `{ face: '<name>' }`):
+   *   `wall` (always), `floor` (blind), `wall-back` (through),
+   *   `counterbore-wall` / `counterbore-floor` (with cb),
+   *   `countersink-cone` (with csk).
+   */
+  hole(face: FaceSelector | CanonicalFace | string, opts: HoleOpts): Shape {
+    validateHoleOpts(opts, this.id);
+    const faceSel = normalizeFaceSelector(face);
+    const { params, metadata } = serializeHoleParams(faceSel, opts);
+    return this.session.createShape({
+      kind: 'hole',
+      inputs: { target: { kind: 'feature', id: this.id } },
+      params,
+      metadata,
+    });
+  }
+
+  /**
+   * Drill N holes in a single feature record. All holes share diameter,
+   * depth, and optional counterbore/countersink. Use `.hole()` chained
+   * calls if you need mixed specs.
+   *
+   * The bare `'wall'` selector on the result resolves to *all* bore walls
+   * collectively — `.fillet(0.2, { face: 'wall' })` rounds every lip in one
+   * call. Indexed access (e.g. `holes[0].wall`) is slice-2.
+   */
+  holes(face: FaceSelector | CanonicalFace | string, opts: HolesOpts): Shape {
+    validateHolesOpts(opts, this.id);
+    const faceSel = normalizeFaceSelector(face);
+    const { params, metadata } = serializeHolesParams(faceSel, opts);
+    return this.session.createShape({
+      kind: 'holes',
+      inputs: { target: { kind: 'feature', id: this.id } },
+      params,
+      metadata,
+    });
+  }
+
+  /**
+   * Sketch-driven subtractive extrude. Useful for irregular shapes hole()
+   * can't express (slots, D-shapes, keyhole pockets). Profile coords are
+   * in face-local 2D; direction is always *into* the body.
+   *
+   * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
+   * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
+   */
+  cutout(profile: import('./sketch').PathBuilder | import('./sketch').Sketch, opts: CutoutOpts): Shape {
+    validateCutoutOpts(opts, this.id);
+    // Auto-close a bare PathBuilder. Duck-type on `.close` to avoid pulling
+    // PathBuilder/Sketch class identifiers from sketch.ts (which imports Shape
+    // from this module — would create a top-level circular dep).
+    const isPathBuilder = typeof (profile as { close?: unknown }).close === 'function';
+    const sketch: import('./sketch').Sketch = isPathBuilder
+      ? (profile as import('./sketch').PathBuilder).close()
+      : (profile as import('./sketch').Sketch);
+    const sketchRecord = this.session.getRecords().find(r => r.id === sketch.id);
+    const commands = (sketchRecord?.metadata as { commands?: import('./sketch').SketchCommand[] })?.commands ?? [];
+    validateCutoutProfile(commands, this.id);
+    const faceSel = normalizeFaceSelector(opts.face);
+    const { params, metadata } = serializeCutoutParams(faceSel, opts);
+    const inputs: Record<string, FeatureRef> = {
+      target: { kind: 'feature', id: this.id },
+      profile: { kind: 'feature', id: sketch.id },
+    };
+    return this.session.createShape({
+      kind: 'cutout',
+      inputs,
+      params,
+      metadata,
+    });
+  }
+
+  /**
    * Lower this Shape eagerly — runs recompute against the records up to and
    * including this Shape, returns the resulting OcctBackend so script-runtime
    * helpers like `selectEdges` can introspect the lowered geometry.
@@ -210,4 +296,10 @@ export class Shape {
     this._loweredAtTransformCount = transformCount;
     return shape;
   }
+}
+
+/** Wrap a bare canonical-face / label string into the `{ face: <s> }`
+ *  FaceSelector shape so hole/holes/cutout can accept either form. */
+function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
+  return typeof face === 'string' ? { face } : face;
 }

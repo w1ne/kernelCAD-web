@@ -358,7 +358,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 ## Conventions
 
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
-- Prefer `subtract(cylinder)` for through-holes until a dedicated `hole` feature ships.
+- Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
