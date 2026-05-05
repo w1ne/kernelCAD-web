@@ -1,5 +1,93 @@
 ## [Unreleased]
 
+### Added — v0.3 slice 2: generalized created-refs + geometry-snapshot fallback + named features
+
+Three internal subsystems that compose to make repeat-call disambiguation
+agent-friendly without bloating the user-facing API.
+
+**Generalized created-refs subsystem.** The slice-1 `createdFaceTracker.ts`
+(a single shared classifier file with arms for `hole` / `cutout`) is
+deleted. Each lowerer now owns its classifier inline (`holeClassifier.ts`,
+`cutoutClassifier.ts`) and routes through the generic propagator
+`applyCreatedRefs(map, refs, featureId, kind, name?, ordinal?)` in
+`createdRefs.ts`. Future feature kinds (boss, rib, sweep, draft) add a
+lowerer + classifier file; no central switch.
+
+**Geometry-snapshot fallback.** Every face on every result Shape now
+carries a snapshot (centroid + normal + area) on its lineage entry, captured
+at feature creation. When topology resolution returns zero hits AND the
+selector references a named/ordinal feature whose lineage stored a snapshot,
+the resolver matches against current geometry within tolerance (default 0.5
+mm centroid, 0.9999 dot, 5% area). Single-match → success;
+multi-match → `feature.face-ref.ambiguous-after-split`; zero-match →
+`feature.face-ref.not-resolvable`. No new codes; the closed 24-code catalog
+from milestone C is preserved.
+
+**Named features + ordinal fallback.** New optional `name?: string` opt on
+`hole` / `holes` / `cutout`:
+
+```typescript
+plate
+  .hole('top', { u: -20, v: 0, diameter: 5, depth: 'through', name: 'mountFront' })
+  .hole('top', { u:  20, v: 0, diameter: 5, depth: 'through', name: 'mountBack' })
+  .fillet(0.4, { face: 'mountFront.wall' })
+  .fillet(0.8, { face: 'mountBack.wall' });
+```
+
+Names match `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/`, must be unique within a
+chain (uniqueness check walks the parent chain via `inputs.target`), and
+emit `feature.invalid-args` with the spec hints on violation.
+
+For lazy chains, the **ordinal fallback** form `<kind><N>.<ref>` works
+without any opt change:
+
+```typescript
+plate
+  .hole('top', { u: -20, v: 0, diameter: 5, depth: 'through' })  // hole1
+  .hole('top', { u:  20, v: 0, diameter: 5, depth: 'through' })  // hole2
+  .fillet(0.4, { face: 'hole1.wall' });
+```
+
+Ordinals count chain-call order among unnamed same-kind features only;
+named features never consume an ordinal slot.
+
+The slice-1 collective `'wall'` selector is preserved unchanged — used as
+sugar for fillet-all-bore-lips.
+
+**FaceLineage extension** (`src/naming/evolutionRecord.ts`): five new
+optional fields (`snapshot`, `featureId`, `featureName`, `featureOrdinal`,
+`featureKind`). Existing v0.2 / slice-1 entries are unaffected; all
+slice-1 tests pass without modification.
+
+**`propagateTransformHistory`** gains an optional `SnapshotTransform`
+parameter (`pointTransform`, `vectorTransform`, `clearSnapshot`). When
+omitted, lineage shares by reference (slice-1 behavior). When supplied,
+the lineage is deep-copied and the snapshot is rewritten — used by
+transform sites that have access to the matrix. Non-rigid scale clears
+the snapshot; the resolver then degrades to "no snapshot match" rather
+than mismatching.
+
+**Selector parser** (`src/runtime/selectorParser.ts`): exposes
+`parseFaceSelector(s)`, `findLineageMatches(map, parsed)`,
+`findFallbackSnapshot(map, parsed)`, and `resolveBySnapshot(map, query, tol?)`.
+Recognizes `<ref>` / `<name>.<ref>` / `<name>[i].<ref>` /
+`<kind><N>.<ref>`. Both `pickFace` and `pickEdges` route their label
+paths through this parser.
+
+Three new eval-corpus tasks under `eval/tasks/`:
+`named-feature-disambiguation`, `ordinal-feature-fallback`,
+`named-bore-survives-transform`. `eval/corpus-v0.3.test.ts` now runs 8
+tasks (5 from slice 1 + 3 new), all scoring 100%.
+
+The hero artifact at `docs/demos/v0.3/service-panel-plate/` gets a
+"## Slice 2 additions" section in `whats-new.md` and its
+`solution.kcad.ts` is rewritten to use `name:` opts (functionally
+unchanged; reads as a documented build). MP4 + panel.png recording is
+still deferred to a follow-up recording pass before any v0.3.0 tag.
+
+The v0.3.0 tag is **not** cut by this slice. Slice 3 (param lifecycle /
+unit inheritance) follows.
+
 ### Added — v0.3 slice 1: hole + holes + cutout + per-feature created refs
 
 Three new methods on `Shape` that turn the v0.2 face-ref system into the

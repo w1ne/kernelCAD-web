@@ -46,3 +46,28 @@ Slice 1 limitations (lifted in slice 2 / 3):
 - Param lifecycle (user-parameter vs model-parameter) and unit inheritance are slice 3.
 
 The v0.3.0 tag is **not** cut by this slice. Tag waits for slice 2 + slice 3.
+
+## Slice 2 additions
+
+The slice-2 PR generalizes the created-refs subsystem (no more central classifier file), adds a geometry-snapshot fallback for post-split lineage, and introduces agent-chosen feature names. The hero artifact's `solution.kcad.ts` is rewritten to use `name:` opts so the chained call reads as a documented build:
+
+```typescript
+return box(120, 80, 10)
+  .holes('top', { positions: corners, diameter: 5, depth: 'through', name: 'cornerBolts' })
+  .holes('top', { positions: panelMounts, diameter: 6, depth: 'through',
+                  counterbore: { diameter: 11, depth: 4 }, name: 'panelMounts' })
+  .hole('top',  { u: 50, v: 0, diameter: 4, depth: 'through',
+                  countersink: { diameter: 8, angleDeg: 90 }, name: 'groundStud' })
+  .cutout(panelCableProfile, { face: 'top', depth: 'through', name: 'cablePort' })
+  .fillet(0.2, { face: 'cornerBolts.wall' })
+  .fillet(0.3, { face: 'panelMounts.wall' });
+```
+
+Each `name:` lets a downstream `.fillet()` / `.shell()` address its bore wall individually (`cornerBolts.wall` vs `panelMounts.wall`). The collective `'wall'` selector still works for round-everything-in-one-call ergonomics.
+
+Slice 2 also adds:
+- Ordinal fallback `hole1.wall`, `hole2.wall`, `cutout1.wall` for chains that didn't bother to name (chain-order based; named features don't consume an ordinal slot).
+- Geometry-snapshot fallback: when topology returns zero hits AND a snapshot reference exists, the resolver matches by centroid + normal + area within tolerance. Single-match → success; multi-match → `feature.face-ref.ambiguous-after-split`.
+- Generalized propagator (`applyCreatedRefs` + `refreshSnapshots`): future feature kinds (boss, rib, sweep) add a lowerer + classifier file; no central switch.
+
+Slice 2 preserves slice 1's behavior — every slice-1 test passes unchanged. The recording of `demo.mp4` + `panel.png` for this hero artifact is still deferred to a follow-up recording pass before any v0.3.0 tag.
