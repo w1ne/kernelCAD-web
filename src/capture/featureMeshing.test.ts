@@ -87,4 +87,22 @@ describe('meshFeaturesPerFeature', () => {
     // feat-a compiled successfully — should appear in features
     expect(features.some(f => f.featureId === 'feat-a')).toBe(true);
   });
+
+  it('does not fail valid renderless sketch profiles used by cutouts', async () => {
+    const code = `
+      const profile = path()
+        .moveTo(-8, -6)
+        .lineTo(8, -6)
+        .threePointsArc(-8, -6, 0, 6)
+        .close();
+      return box(40, 30, 5).cutout(profile, { face: 'top', depth: 'through' });
+    `;
+    const { records } = await runScript({ code, fileName: 'cutout-profile.kcad.ts' });
+    const { features, failedFeatureIds } = await meshFeaturesPerFeature(records);
+
+    expect(failedFeatureIds).toEqual([]);
+    expect(features.map((f) => f.featureKind)).toContain('box');
+    expect(features.map((f) => f.featureKind)).toContain('cutout');
+    expect(features.map((f) => f.featureKind)).not.toContain('sketch');
+  });
 });

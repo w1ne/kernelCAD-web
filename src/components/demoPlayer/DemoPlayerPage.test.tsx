@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // src/components/demoPlayer/DemoPlayerPage.test.tsx
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Mock WebGLRenderer since jsdom has no WebGL support.
 vi.mock('three', async () => {
@@ -18,12 +18,17 @@ vi.mock('three', async () => {
   return { ...actual, WebGLRenderer: FakeWebGLRenderer };
 });
 
-import { render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { DemoPlayerPage } from './DemoPlayerPage';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 
 describe('DemoPlayerPage.loadFeatureMeshes', () => {
   beforeEach(() => {
+    delete (window as { __demoPlayer?: unknown }).__demoPlayer;
+  });
+
+  afterEach(() => {
+    cleanup();
     delete (window as { __demoPlayer?: unknown }).__demoPlayer;
   });
 
