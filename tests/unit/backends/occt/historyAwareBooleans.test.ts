@@ -11,7 +11,6 @@ describe('historyAwareBooleans', () => {
     const result = cutWithHistory(body, tool);
     expect(result.shape).toBeDefined();
     // The body's left face (x=0) is untouched — should appear in faceHistory with 1 child = itself
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bodyFaceHashes = (body as any).faceHashes();
     let modifiedCount = 0;
     let unchangedCount = 0;
@@ -31,7 +30,6 @@ describe('historyAwareBooleans', () => {
     const tool = OcctBackend.cylinder(50, 3).translate(10, 10, -15);
     const result = cutWithHistory(body, tool);
     // Find the top face on the body (hash of face with normal +Z)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const topHash = (body as any).findCanonicalFaceHash('top');  // helper added in Task 5
     const children = result.faceHistory.get(topHash);
     // Modified by the cut (annular face), single child — unambiguous
@@ -44,7 +42,6 @@ describe('historyAwareBooleans', () => {
     // A box-shaped divider that splits the top face into two halves along Y
     const divider = OcctBackend.box(30, 5, 30).translate(-5, 7.5, -5);
     const result = cutWithHistory(body, divider);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const topHash = (body as any).findCanonicalFaceHash('top');
     const children = result.faceHistory.get(topHash);
     expect(children).toBeDefined();
@@ -55,7 +52,6 @@ describe('historyAwareBooleans', () => {
     const body = OcctBackend.box(10, 10, 10);
     const tool = OcctBackend.box(50, 50, 50).translate(-20, -20, -20);  // engulfs body
     const result = cutWithHistory(body, tool);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (body as any).faceHashes();
     // At least some body faces should be deleted (engulfing cut removes most or all)
     expect(result.deletedFaces.size).toBeGreaterThan(0);
@@ -67,9 +63,7 @@ describe('historyAwareBooleans', () => {
     const result = fuseWithHistory(a, b);
     expect(result.faceHistory.size).toBeGreaterThan(0);
     // Both inputs contribute faces to the fused result
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const aHashes = (a as any).faceHashes();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bHashes = (b as any).faceHashes();
     let aTracked = 0, bTracked = 0;
     for (const h of aHashes) if (result.faceHistory.has(h)) aTracked++;

@@ -14,6 +14,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
 
   useEffect(() => {
     if (!mountRef.current) return;
+    const mount = mountRef.current;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0a0a);
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
@@ -22,7 +23,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1); // capture deterministic
-    mountRef.current.appendChild(renderer.domElement);
+    mount.appendChild(renderer.domElement);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
     const dir = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -41,7 +42,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     return () => {
       cancelAnimationFrame(raf);
       renderer.dispose();
-      mountRef.current?.removeChild(renderer.domElement);
+      mount.removeChild(renderer.domElement);
     };
   }, [onSceneReady, width, height]);
 

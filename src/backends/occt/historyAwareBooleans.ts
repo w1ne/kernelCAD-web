@@ -36,7 +36,6 @@ export interface BooleanHistoryResult {
  * Hash a TopoDS_Shape via OCCT's HashCode. Stable within a single WASM session.
  * Returns a hex string.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function shapeHash(_oc: ReturnType<typeof getOC>, shape: unknown): string {
   // OCCT TopoDS_Shape::HashCode(Standard_Integer Upper) — Upper is a hash bound
   // (we use a large prime). Returns Standard_Integer. Convert to hex string.
@@ -55,7 +54,6 @@ function collectSubshapeHashes(
   shape: unknown,
   shapeType: 'face' | 'edge',
 ): { hashes: string[]; subshapes: unknown[] } {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const enumValue = shapeType === 'face'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? (oc as any).TopAbs_ShapeEnum.TopAbs_FACE

@@ -27,7 +27,6 @@ async function expectError(script: string, expectedCode: string): Promise<void> 
   if (result.exitCode === 0) {
     throw new Error(`Expected failure with code ${expectedCode} but got success`);
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const codes = result.diagnostics.map((d: any) => d.code);
   if (!codes.includes(expectedCode)) {
     throw new Error(`Expected diagnostic code ${expectedCode}, got: ${codes.join(', ')}`);
