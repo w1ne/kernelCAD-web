@@ -32,9 +32,12 @@ const tasks: Array<{ id: string; dir: string }> = [
   { id: 'named-feature-disambiguation',     dir: './eval/tasks/named-feature-disambiguation' },
   { id: 'ordinal-feature-fallback',         dir: './eval/tasks/ordinal-feature-fallback' },
   { id: 'named-bore-survives-transform',     dir: './eval/tasks/named-bore-survives-transform' },
+  // slice 3 — symbolic params + edit-after-build replay
+  { id: 'param-edit-bolt-diameter',         dir: './eval/tasks/param-edit-bolt-diameter' },
+  { id: 'param-gate-cable-port',            dir: './eval/tasks/param-gate-cable-port' },
 ];
 
-describe('v0.3 hole + cutout corpus — expert solutions score 100%', () => {
+describe('v0.3 corpus — expert solutions score 100%', () => {
   for (const t of tasks) {
     it(`${t.id} — expert solution scores 100%`, async (ctx) => {
       if (!kernelcadAvailable) return ctx.skip();
