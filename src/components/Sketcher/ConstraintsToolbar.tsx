@@ -1,6 +1,6 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
 import type { ConstraintType } from '../../lib/constraints/types';
-import { Anchor, ArrowLeftRight, MoveHorizontal, MoveVertical, Circle, Ruler, Equal } from 'lucide-react';
+import { Anchor, ArrowLeftRight, MoveHorizontal, MoveVertical, Circle, Ruler, Equal, CircleDot, FlipHorizontal2 } from 'lucide-react';
 
 export function ConstraintsToolbar() {
     const {
@@ -36,6 +36,16 @@ export function ConstraintsToolbar() {
         } else if (type === 'EQUAL_LENGTH') {
             if (selectedEntityIds.length !== 2) {
                 alert("Select exactly 2 lines");
+                return;
+            }
+        } else if (type === 'CONCENTRIC') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 circles");
+                return;
+            }
+        } else if (type === 'SYMMETRIC') {
+            if (selectedEntityIds.length !== 3) {
+                alert("Select 2 points and 1 mirror line");
                 return;
             }
         } else if (type === 'DISTANCE') {
@@ -121,6 +131,22 @@ export function ConstraintsToolbar() {
                 title="Equal"
             >
                 <Equal size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('CONCENTRIC')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Concentric"
+            >
+                <CircleDot size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('SYMMETRIC')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Symmetric"
+            >
+                <FlipHorizontal2 size={16} />
             </button>
 
             {/* Debug Info */}

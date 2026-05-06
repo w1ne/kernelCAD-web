@@ -34,7 +34,9 @@ export type ConstraintType =
     | 'EQUAL_LENGTH'
     | 'TANGENT'
     | 'RADIUS'
-    | 'ANGLE';
+    | 'ANGLE'
+    | 'CONCENTRIC'
+    | 'SYMMETRIC';
 
 export interface Constraint {
     id: string;

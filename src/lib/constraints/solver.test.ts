@@ -228,4 +228,45 @@ describe('ConstraintSolver', () => {
         // L1 is fixed at 10. L2 should grow to 10.
         expect(len2).toBeCloseTo(10);
     });
+
+    it('should solve CONCENTRIC constraint', () => {
+        state.entities.set('c1_center', { id: 'c1_center', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('c1', { id: 'c1', type: 'CIRCLE', center: 'c1_center', radius: 8 });
+
+        state.entities.set('c2_center', { id: 'c2_center', type: 'POINT', x: 12, y: -6, fixed: false });
+        state.entities.set('c2', { id: 'c2', type: 'CIRCLE', center: 'c2_center', radius: 3 });
+
+        state.constraints.push({
+            id: 'concentric',
+            type: 'CONCENTRIC',
+            entities: ['c1', 'c2']
+        });
+
+        solver.solve(state);
+
+        const center = asPoint(state.entities.get('c2_center'));
+        expect(center.x).toBeCloseTo(0);
+        expect(center.y).toBeCloseTo(0);
+    });
+
+    it('should solve SYMMETRIC point constraint across a line', () => {
+        state.entities.set('axis_p1', { id: 'axis_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+        state.entities.set('axis_p2', { id: 'axis_p2', type: 'POINT', x: 0, y: 10, fixed: true });
+        state.entities.set('axis', { id: 'axis', type: 'LINE', p1: 'axis_p1', p2: 'axis_p2' });
+
+        state.entities.set('left', { id: 'left', type: 'POINT', x: -10, y: 4, fixed: true });
+        state.entities.set('right', { id: 'right', type: 'POINT', x: 6, y: 1, fixed: false });
+
+        state.constraints.push({
+            id: 'symmetric',
+            type: 'SYMMETRIC',
+            entities: ['left', 'right', 'axis']
+        });
+
+        solver.solve(state);
+
+        const right = asPoint(state.entities.get('right'));
+        expect(right.x).toBeCloseTo(10);
+        expect(right.y).toBeCloseTo(4);
+    });
 });

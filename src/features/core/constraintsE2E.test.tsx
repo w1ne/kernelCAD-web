@@ -152,4 +152,71 @@ describe('Constraints E2E Integration (via SketchingContext)', () => {
             expect(Math.abs(Math.abs(center.y) - 10)).toBeLessThan(1.0);
         }, { timeout: 2000 });
     });
+
+    it('should solve CONCENTRIC constraint in context', async () => {
+        let capturedEntities: Map<string, SketchEntity> = new Map();
+
+        render(
+            <SketchingProvider>
+                <TestRunner setup={(ctx) => {
+                    ctx.addEntity({ id: 'c1_center', type: 'POINT', x: 0, y: 0, fixed: true });
+                    ctx.addEntity({ id: 'c1', type: 'CIRCLE', center: 'c1_center', radius: 10 });
+
+                    ctx.addEntity({ id: 'c2_center', type: 'POINT', x: 9, y: -3, fixed: false });
+                    ctx.addEntity({ id: 'c2', type: 'CIRCLE', center: 'c2_center', radius: 4 });
+
+                    ctx.addConstraint({
+                        id: 'concentric',
+                        type: 'CONCENTRIC',
+                        entities: ['c1', 'c2']
+                    });
+                }} />
+                <StateCapturer onUpdate={(ents) => capturedEntities = ents} />
+            </SketchingProvider>
+        );
+
+        await waitFor(() => {
+            const center = capturedEntities.get('c2_center');
+            if (!center || center.type !== 'POINT') {
+                throw new Error('Circle center not found');
+            }
+
+            expect(center.x).toBeCloseTo(0);
+            expect(center.y).toBeCloseTo(0);
+        }, { timeout: 2000 });
+    });
+
+    it('should solve SYMMETRIC point constraint in context', async () => {
+        let capturedEntities: Map<string, SketchEntity> = new Map();
+
+        render(
+            <SketchingProvider>
+                <TestRunner setup={(ctx) => {
+                    ctx.addEntity({ id: 'axis_p1', type: 'POINT', x: 0, y: 0, fixed: true });
+                    ctx.addEntity({ id: 'axis_p2', type: 'POINT', x: 0, y: 20, fixed: true });
+                    ctx.addEntity({ id: 'axis', type: 'LINE', p1: 'axis_p1', p2: 'axis_p2' });
+
+                    ctx.addEntity({ id: 'left', type: 'POINT', x: -8, y: 5, fixed: true });
+                    ctx.addEntity({ id: 'right', type: 'POINT', x: 3, y: 0, fixed: false });
+
+                    ctx.addConstraint({
+                        id: 'symmetric',
+                        type: 'SYMMETRIC',
+                        entities: ['left', 'right', 'axis']
+                    });
+                }} />
+                <StateCapturer onUpdate={(ents) => capturedEntities = ents} />
+            </SketchingProvider>
+        );
+
+        await waitFor(() => {
+            const right = capturedEntities.get('right');
+            if (!right || right.type !== 'POINT') {
+                throw new Error('Right point not found');
+            }
+
+            expect(right.x).toBeCloseTo(8);
+            expect(right.y).toBeCloseTo(5);
+        }, { timeout: 2000 });
+    });
 });
