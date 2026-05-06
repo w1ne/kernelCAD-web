@@ -32,6 +32,34 @@ const getCurrentVersion = () => {
     return pkg.version;
 };
 
+const formatReleaseChanges = (log: string): string => {
+    if (!log) return '- No significant changes captured in git log.';
+
+    const groups = [
+        { heading: 'Features', prefixes: ['feat'] },
+        { heading: 'Fixes', prefixes: ['fix'] },
+        { heading: 'Quality And Robustness', prefixes: ['test', 'refactor', 'perf'] },
+        { heading: 'Documentation And Demos', prefixes: ['docs'] },
+    ];
+    const lines = log.split('\n').filter(Boolean);
+    const used = new Set<number>();
+
+    const sections = groups.flatMap((group) => {
+        const matches = lines.filter((line, index) => {
+            const normalized = line.replace(/^- /, '');
+            const hit = group.prefixes.some((prefix) => normalized.startsWith(`${prefix}:`) || normalized.startsWith(`${prefix}(`));
+            if (hit) used.add(index);
+            return hit;
+        });
+        return matches.length ? [`### ${group.heading}\n\n${matches.join('\n')}`] : [];
+    });
+
+    const other = lines.filter((_, index) => !used.has(index));
+    if (other.length) sections.push(`### Other Changes\n\n${other.join('\n')}`);
+
+    return sections.join('\n\n');
+};
+
 // --- Main Script ---
 const args = process.argv.slice(2);
 const firstArg = args[0];
@@ -113,64 +141,47 @@ if (newVersion !== projectedVersion) {
 
 // 5. Create Release Notes File
 const date = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-const releaseNotes = `# 🚀 kernelCAD v${newVersion}
+const releaseChanges = formatReleaseChanges(commitLog);
+const releaseNotes = `# kernelCAD v${newVersion}
 
-**Modern Programmable CAD for the Web**
+## Summary
 
----
+This release contains the changes merged since ${lastTag || 'the previous tag'}. For milestone releases, keep this summary focused on the main user-facing workflow and link the release demo or assets below.
 
-## 📋 What's New
+## Highlights
 
-${commitLog || '- No significant changes captured in git log.'}
+${releaseChanges}
 
----
+## Demo Or Assets
 
-## ✅ Test Results (Automated)
+Release assets are attached separately when a version has a demo capture, static panel, or source reference that should be linked from GitHub Releases.
 
-- **QC Check**: Passed (Linting & Build)
-- **Unit Tests**: Ran successfully
-- **E2E Tests**: Manual verification recommended
+## Quality Gates
 
----
+- Release QC: passed via \`${fullQC ? 'npm run qc:full' : 'npm run qc'}\`.
+- Build date: ${date}.
+- Platform: ${process.platform}.
 
-## 📦 Build Information
-
-- **Version**: ${newVersion}
-- **Build Date**: ${date}
-- **Platform**: Web / ${process.platform}
-
-## 🎯 Supported Features
-
-kernelCAD v${newVersion} supports:
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Sketcher | 2D constraint solver | Stable |
-| Extrude | 3D extrusion from faces | Stable |
-| Fillet/Chamfer | Edge modifications | Beta |
-| STEP Export | CNC/CAM compatibility | Stable |
-
----
-
-## 📥 Installation
-
-### Use Online
-Visit [kernelcad.com](https://kernelcad.com).
-
-### Run Locally
+## Install And Upgrade
 
 \`\`\`bash
-git clone https://github.com/w1ne/kernelCAD.git
-cd kernelCAD
+npm install -g kernelcad@${newVersion}
+\`\`\`
+
+For repo development:
+
+\`\`\`bash
+git clone https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
 git checkout v${newVersion}
 npm install
 npm run dev
 \`\`\`
 
----
+## Links
 
-## 🐛 Report Issues
-Found a bug? [Open an issue](https://github.com/w1ne/kernelCAD/issues)
+- Web app: https://kernelcad.com
+- Issues: https://github.com/w1ne/kernelCAD-web/issues
 `;
 
 writeFileSync(RELEASE_NOTES_PATH, releaseNotes);
