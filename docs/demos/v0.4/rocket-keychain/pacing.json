@@ -1,0 +1,86 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 13400,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 23400,
+  "features": {
+    "sketch_1": {
+      "startAtMs": 0,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "extrude_1": {
+      "startAtMs": 900,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_1": {
+      "startAtMs": 1900,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_2": {
+      "startAtMs": 2900,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_3": {
+      "startAtMs": 3900,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_1": {
+      "startAtMs": 4900,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_4": {
+      "startAtMs": 6000,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_5": {
+      "startAtMs": 7000,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_2": {
+      "startAtMs": 8000,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_6": {
+      "startAtMs": 9100,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_3": {
+      "startAtMs": 10100,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_4": {
+      "startAtMs": 11200,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_5": {
+      "startAtMs": 12300,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    }
+  }
+}

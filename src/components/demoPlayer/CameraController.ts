@@ -37,6 +37,7 @@ export class CameraController {
     const distance = radius / Math.tan((this.camera.fov * Math.PI) / 180 / 2) / 0.4;
     const dir = this.camera.position.clone().sub(center).normalize();
     const currentDistance = this.camera.position.distanceTo(center);
+    if (distance < currentDistance) return;
     const target = center.clone().add(dir.multiplyScalar(Math.min(distance, currentDistance)));
     this.nudgeFromPos = this.camera.position.clone();
     this.nudgeToPos = target;
