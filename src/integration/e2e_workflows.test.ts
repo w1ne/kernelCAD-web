@@ -61,9 +61,7 @@ describeE2E('Core Workflows E2E', () => {
     });
 
     describe('2. The Constraint-Solve Workflow', () => {
-        it.skip('should solve constraints (SKIPPING - Feature Missing)', () => {
-            // Placeholder: a 2D constraint solver is not integrated yet.
-        });
+        it.todo('should solve constraints through the legacy E2E workflow');
     });
 
     describe('3. The Extrude-Solid Workflow', () => {

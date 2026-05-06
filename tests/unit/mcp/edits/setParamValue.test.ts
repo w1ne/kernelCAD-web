@@ -1,6 +1,11 @@
 // tests/unit/mcp/edits/setParamValue.test.ts
 import { describe, it, expect } from 'vitest';
 import { setParamValue } from '../../../../src/mcp/edits/setParamValue';
+import { parseCode } from '../../../../src/lib/ast';
+
+function expectParseable(code: string): void {
+  expect(() => parseCode(code)).not.toThrow();
+}
 
 describe('setParamValue (regex AST-edit primitive)', () => {
   it('replaces a numeric default with a number', () => {
@@ -8,6 +13,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Width', 120);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param('Width', 120, { unit: 'mm' });`);
+    expectParseable(r.new_code);
   });
 
   it('replaces a numeric default with an expression string', () => {
@@ -15,6 +21,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Width', 'h * 2');
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param('Width', 'h * 2', { unit: 'mm' });`);
+    expectParseable(r.new_code);
   });
 
   it('handles param without an opts object', () => {
@@ -22,6 +29,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Width', 120);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param('Width', 120);`);
+    expectParseable(r.new_code);
   });
 
   it('handles double-quoted param name', () => {
@@ -29,6 +37,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Width', 120);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param("Width", 120, { unit: "mm" });`);
+    expectParseable(r.new_code);
   });
 
   it('preserves nested option objects', () => {
@@ -36,6 +45,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Width', 120);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param('Width', 120, { unit: 'mm', range: { min: 30, max: 200 } });`);
+    expectParseable(r.new_code);
   });
 
   it('only replaces the matching name (leaves other params alone)', () => {
@@ -47,6 +57,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     expect(r.ok).toBe(true);
     expect(r.new_code).toContain(`param('Width', 120, { unit: 'mm' })`);
     expect(r.new_code).toContain(`param('Height', 40, { unit: 'mm' })`);
+    expectParseable(r.new_code);
   });
 
   it('returns error when param name is not found', () => {
@@ -71,6 +82,7 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     const r = setParamValue(code, 'Height', 50);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const h = param('Height', 50, { unit: 'mm' });`);
+    expectParseable(r.new_code);
   });
 
   it('handles multi-line param() calls', () => {
@@ -81,5 +93,6 @@ describe('setParamValue (regex AST-edit primitive)', () => {
     // value must change.
     expect(r.new_code).toContain(`120`);
     expect(r.new_code).not.toContain(`60`);
+    expectParseable(r.new_code);
   });
 });
