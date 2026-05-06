@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
-import { buildModel, buildModelFromFile } from '../../kernel/buildModel';
+import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
 
 export interface EvaluateInput {
   file?: string;
@@ -16,16 +16,21 @@ export interface EvaluateResult {
   diagnostics: CompilerDiagnostic[];
 }
 
-export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
+export interface EvaluateAndBuildResult {
+  evaluation: EvaluateResult;
+  model?: BuiltModel;
+}
+
+export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
   if (input.code === undefined && input.file === undefined) {
-    return {
+    return { evaluation: {
       exitCode: 2, featureCount: 0,
       diagnostics: [{
         target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
         message: 'evaluateScript: must provide either { file } or { code }.',
         hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
       }],
-    };
+    } };
   }
 
   let model;
@@ -37,26 +42,34 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
     if (isFileReadError(e)) {
       const msg = e instanceof Error ? e.message : String(e);
       return {
-        exitCode: 2, featureCount: 0,
-        diagnostics: [{
-          target: 'export-occt', code: 'cli.file-read', severity: 'error',
-          message: `Cannot read file: ${msg}`,
-          hint: 'Check that the file path exists and is readable.',
-        }],
+        evaluation: {
+          exitCode: 2, featureCount: 0,
+          diagnostics: [{
+            target: 'export-occt', code: 'cli.file-read', severity: 'error',
+            message: `Cannot read file: ${msg}`,
+            hint: 'Check that the file path exists and is readable.',
+          }],
+        },
       };
     }
     const diag = kernelErrorToDiagnostic(e);
     return {
-      exitCode: 1, featureCount: 0,
-      diagnostics: [diag],
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag] },
     };
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
   return {
-    exitCode: fatal ? 1 : 0,
-    featureCount: model.records.length,
-    diagnostics: model.diagnostics,
+    evaluation: {
+      exitCode: fatal ? 1 : 0,
+      featureCount: model.records.length,
+      diagnostics: model.diagnostics,
+    },
+    model,
   };
+}
+
+export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
+  return (await evaluateAndBuildScript(input)).evaluation;
 }
 
 function isFileReadError(e: unknown): boolean {
