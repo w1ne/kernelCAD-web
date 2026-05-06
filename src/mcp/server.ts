@@ -19,6 +19,8 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { exportStlTool } from './tools/exportStl';
 import { lookupCookbookTool } from './tools/lookupCookbook';
+import { paramsListTool } from './tools/paramsList';
+import { paramsUpdateTool } from './tools/paramsUpdate';
 
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
@@ -250,6 +252,37 @@ export const TOOLS = [
       required: ['query'],
     },
   },
+  {
+    name: 'params_list',
+    description:
+      'List all parameters declared on the active session, with current values, defaults, and metadata. Read-only.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
+    name: 'params_update',
+    description:
+      'Edit one or more session parameters and re-lower the affected records. Validates every edit before applying any (atomic). Returns the updated shape, the list of records that re-lowered, and any soft warnings (e.g., named feature refs that became passthroughs because a boolean param gated their feature off).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        edits: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              value: {},
+            },
+            required: ['name', 'value'],
+          },
+        },
+      },
+      required: ['edits'],
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -319,6 +352,12 @@ export function createMcpServer(): Server {
         break;
       case 'lookup_cookbook':
         result = await lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]);
+        break;
+      case 'params_list':
+        result = await paramsListTool(input as Parameters<typeof paramsListTool>[0]);
+        break;
+      case 'params_update':
+        result = await paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

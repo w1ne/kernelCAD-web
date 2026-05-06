@@ -4,7 +4,7 @@ import type { FeatureKind, FeatureRef, Param, PlaneSpec } from '../intent/types'
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
-import { ParamTable } from '../runtime/paramTable';
+import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
 import { collectParamRefs } from '../runtime/resolveParams';
 import type { ShapeBackend } from '../backends/backend';
@@ -73,6 +73,12 @@ export interface ParamUpdateResult {
   skipped: string[];
   /** Soft warnings produced by this update call (gated-feature lineage refs etc.). */
   warnings: SoftWarning[];
+}
+
+export interface SerializedSession {
+  schemaVersion?: number;
+  params?: SerializedParamTable;
+  records: readonly FeatureRecord[];
 }
 
 export class CaptureSession {
@@ -252,6 +258,45 @@ export class CaptureSession {
     return this.records;
   }
 
+  exportSession(): SerializedSession & { schemaVersion: 3; params: SerializedParamTable } {
+    return {
+      schemaVersion: 3,
+      params: this.paramTable.serialize(),
+      records: cloneJson(this.records),
+    };
+  }
+
+  static importSession(data: SerializedSession): CaptureSession {
+    const session = new CaptureSession();
+    const schemaVersion = data.schemaVersion ?? 1;
+    session.records = cloneJson(Array.from(data.records ?? []));
+    session.paramTable.replaceWith(
+      schemaVersion >= 3 ? ParamTable.deserialize(data.params) : new ParamTable(),
+    );
+
+    if (schemaVersion >= 3) {
+      for (const record of session.records) {
+        const refs = new Set<string>();
+        for (const name of collectParamRefs(record.params)) refs.add(name);
+        if (record.metadata !== undefined) {
+          for (const name of collectParamRefs(record.metadata)) refs.add(name);
+        }
+        for (const name of refs) {
+          if (!session.paramTable.has(name)) {
+            throw new KernelError(
+              'feature.invalid-args',
+              `importSession: unknown param ref '${name}' in record '${record.id}'.`,
+              record.id,
+              `invalid-args.session.unknown-param-ref — unknown param ref '${name}' in record '${record.id}'`,
+            );
+          }
+        }
+      }
+    }
+
+    return session;
+  }
+
   reset(): void {
     this.records = [];
     this.idGen.reset();
@@ -400,6 +445,10 @@ export class CaptureSession {
       warnings: callWarnings,
     };
   }
+}
+
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);

@@ -136,6 +136,19 @@ export class ParamTable {
     this.entries.clear();
   }
 
+  replaceWith(other: ParamTable): void {
+    this.entries.clear();
+    for (const entry of other.list()) {
+      this.entries.set(entry.name, {
+        name: entry.name,
+        type: entry.type,
+        value: entry.value,
+        defaultValue: entry.defaultValue,
+        meta: entry.meta ? { ...entry.meta } : undefined,
+      });
+    }
+  }
+
   serialize(): SerializedParamTable {
     const out: SerializedParamTable = {};
     for (const entry of this.entries.values()) {

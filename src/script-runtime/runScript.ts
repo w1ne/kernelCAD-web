@@ -12,6 +12,9 @@ export interface RunScriptInput {
 
 export interface RunScriptResult {
   records: readonly FeatureRecord[];
+  /** Capture session that owns the records and ParamTable. MCP keeps this as
+   *  the active session for post-build params.list / params.update. */
+  session: CaptureSession;
   /** Slice-3: the session's param table, populated by `kcad.param()` /
    *  `kcad.params()` declarations during script execution. Threaded into
    *  RecomputeEngine so symbolic FeatureRecord params resolve at lower time. */
@@ -51,6 +54,7 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
   }
   return {
     records: session.getRecords(),
+    session,
     paramTable: session.paramTable,
     returnValue,
   };

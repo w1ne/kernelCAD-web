@@ -9,3 +9,5 @@ export { whyDidThisFailTool, type WhyDidThisFailInput, type WhyDidThisFailOutput
 export { setParamValueTool, type SetParamValueInput, type SetParamValueOutput } from './tools/setParamValue';
 export { addFeatureTool, type AddFeatureInput, type AddFeatureOutput } from './tools/addFeature';
 export { removeFeatureTool, type RemoveFeatureInput, type RemoveFeatureOutput } from './tools/removeFeature';
+export { paramsListTool, type ParamsListInput, type ParamsListOutput } from './tools/paramsList';
+export { paramsUpdateTool, type ParamsUpdateInput, type ParamsUpdateOutput } from './tools/paramsUpdate';

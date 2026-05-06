@@ -380,7 +380,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 16 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 18 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -398,6 +398,8 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_diagnostic_codes({})` — return the 24-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
+- `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
 
 ## Out of Scope
 
