@@ -1,26 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConstraintSolver } from './solver';
 import type { SolverState, SketchEntity, Point } from './types';
+import {
+    createRocketConstraintState,
+    lineAngleDeg,
+    pointDistance,
+    pointLineDistance as distanceToLine,
+} from '../../../tests/fixtures/rocketConstraintSketch';
 
 function asPoint(e: SketchEntity | undefined): Point {
     if (!e || e.type !== 'POINT') {
         throw new Error(`Entity is not a point: ${JSON.stringify(e)}`);
     }
     return e;
-}
-
-function distance(a: Point, b: Point): number {
-    return Math.hypot(b.x - a.x, b.y - a.y);
-}
-
-function angleDeg(a: Point, b: Point): number {
-    return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
-}
-
-function pointLineDistance(point: Point, a: Point, b: Point): number {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    return Math.abs(dy * point.x - dx * point.y + b.x * a.y - b.y * a.x) / Math.hypot(dx, dy);
 }
 
 describe('ConstraintSolver', () => {
@@ -285,40 +277,7 @@ describe('ConstraintSolver', () => {
     });
 
     it('solves a rocket-keychain sketch using v0.4 constraint families together', () => {
-        state.entities.set('axis_bottom', { id: 'axis_bottom', type: 'POINT', x: 0, y: -55, fixed: true });
-        state.entities.set('axis_top', { id: 'axis_top', type: 'POINT', x: 0, y: 70, fixed: true });
-        state.entities.set('axis', { id: 'axis', type: 'LINE', p1: 'axis_bottom', p2: 'axis_top' });
-
-        state.entities.set('nose', { id: 'nose', type: 'POINT', x: 0, y: 58, fixed: true });
-        state.entities.set('left_shoulder', { id: 'left_shoulder', type: 'POINT', x: -24, y: 34, fixed: true });
-        state.entities.set('right_shoulder', { id: 'right_shoulder', type: 'POINT', x: 17, y: 28, fixed: false });
-        state.entities.set('left_fin_tip', { id: 'left_fin_tip', type: 'POINT', x: -54.2, y: -42.1, fixed: true });
-        state.entities.set('left_fin_root', { id: 'left_fin_root', type: 'POINT', x: -22, y: -22, fixed: true });
-        state.entities.set('right_fin_tip', { id: 'right_fin_tip', type: 'POINT', x: 30, y: -46, fixed: false });
-        state.entities.set('right_fin_root', { id: 'right_fin_root', type: 'POINT', x: 18, y: -19, fixed: false });
-
-        state.entities.set('left_fin_edge', { id: 'left_fin_edge', type: 'LINE', p1: 'left_fin_root', p2: 'left_fin_tip' });
-        state.entities.set('right_fin_edge', { id: 'right_fin_edge', type: 'LINE', p1: 'right_fin_root', p2: 'right_fin_tip' });
-        state.entities.set('body_section', { id: 'body_section', type: 'LINE', p1: 'axis_bottom', p2: 'axis_top' });
-
-        state.entities.set('window_center', { id: 'window_center', type: 'POINT', x: 7, y: 24, fixed: false });
-        state.entities.set('outer_window', { id: 'outer_window', type: 'CIRCLE', center: 'window_center', radius: 8 });
-        state.entities.set('inner_window_center', { id: 'inner_window_center', type: 'POINT', x: 11, y: 20, fixed: false });
-        state.entities.set('inner_window', { id: 'inner_window', type: 'CIRCLE', center: 'inner_window_center', radius: 4 });
-
-        state.entities.set('skin_center', { id: 'skin_center', type: 'POINT', x: -19, y: 34, fixed: false });
-        state.entities.set('nose_skin', { id: 'nose_skin', type: 'CIRCLE', center: 'skin_center', radius: 10 });
-        state.entities.set('nose_tangent', { id: 'nose_tangent', type: 'LINE', p1: 'left_shoulder', p2: 'nose' });
-
-        state.constraints.push(
-            { id: 'right_shoulder_sym', type: 'SYMMETRIC', entities: ['left_shoulder', 'right_shoulder', 'axis'] },
-            { id: 'right_fin_tip_sym', type: 'SYMMETRIC', entities: ['left_fin_tip', 'right_fin_tip', 'axis'] },
-            { id: 'right_fin_root_sym', type: 'SYMMETRIC', entities: ['left_fin_root', 'right_fin_root', 'axis'] },
-            { id: 'window_distance_from_nose', type: 'DISTANCE', entities: ['axis_top', 'window_center'], value: 46 },
-            { id: 'window_rings', type: 'CONCENTRIC', entities: ['outer_window', 'inner_window'] },
-            { id: 'fin_angle', type: 'ANGLE', entities: ['right_fin_edge'], value: -32 },
-            { id: 'nose_tangent_skin', type: 'TANGENT', entities: ['nose_skin', 'nose_tangent'] },
-        );
+        state = createRocketConstraintState();
 
         solver.solve(state);
 
@@ -337,12 +296,12 @@ describe('ConstraintSolver', () => {
         expect(rightFinTip.y).toBeCloseTo(-42.1, 1);
         expect(rightFinRoot.x).toBeCloseTo(22, 2);
         expect(rightFinRoot.y).toBeCloseTo(-22, 2);
-        expect(distance(windowCenter, asPoint(state.entities.get('axis_top')))).toBeCloseTo(46, 1);
+        expect(pointDistance(windowCenter, asPoint(state.entities.get('axis_top')))).toBeCloseTo(46, 1);
         expect(innerWindowCenter.x).toBeCloseTo(windowCenter.x, 2);
         expect(innerWindowCenter.y).toBeCloseTo(windowCenter.y, 2);
 
-        const finAngle = angleDeg(rightFinRoot, rightFinTip);
+        const finAngle = lineAngleDeg(rightFinRoot, rightFinTip);
         expect(finAngle).toBeCloseTo(-32, 1);
-        expect(pointLineDistance(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
+        expect(distanceToLine(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
     });
 });

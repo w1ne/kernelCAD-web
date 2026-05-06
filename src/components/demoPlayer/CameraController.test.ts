@@ -3,6 +3,26 @@ import * as THREE from 'three';
 import { CameraController } from './CameraController';
 
 describe('CameraController', () => {
+  it('preserves fitted full-artifact distance when nudging to a small feature', () => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.1, 5000);
+    camera.position.set(140, 85, 140);
+    camera.lookAt(0, 0, 0);
+
+    const group = new THREE.Group();
+    group.name = 'porthole';
+    group.position.set(0, 24, 3);
+    group.add(new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshPhongMaterial()));
+    scene.add(group);
+
+    const before = camera.position.length();
+    const controller = new CameraController(camera, scene);
+    controller.nudgeTo('porthole', 300, 0);
+    controller.update(300);
+
+    expect(camera.position.length()).toBeCloseTo(before, 6);
+  });
+
   it('does not zoom farther out when nudging to a large feature', () => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.1, 5000);

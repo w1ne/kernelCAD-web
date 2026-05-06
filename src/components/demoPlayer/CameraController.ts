@@ -21,7 +21,7 @@ export class CameraController {
     this.scene = scene;
   }
 
-  /** Nudge camera to keep `featureId` ~40% of viewport diagonal over `durationMs`. */
+  /** Nudge camera to keep large feature callouts readable without cropping the full artifact. */
   nudgeTo(featureId: string, durationMs: number, currentMs: number): void {
     const obj = this.scene.getObjectByName(featureId);
     if (!obj) return;
@@ -37,8 +37,8 @@ export class CameraController {
     const distance = radius / Math.tan((this.camera.fov * Math.PI) / 180 / 2) / 0.4;
     const dir = this.camera.position.clone().sub(center).normalize();
     const currentDistance = this.camera.position.distanceTo(center);
-    if (distance < currentDistance) return;
-    const target = center.clone().add(dir.multiplyScalar(Math.min(distance, currentDistance)));
+    if (distance <= currentDistance) return;
+    const target = center.clone().add(dir.multiplyScalar(currentDistance));
     this.nudgeFromPos = this.camera.position.clone();
     this.nudgeToPos = target;
     this.nudgeStartMs = currentMs;
