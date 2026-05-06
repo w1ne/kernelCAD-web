@@ -11,3 +11,15 @@ export { addFeatureTool, type AddFeatureInput, type AddFeatureOutput } from './t
 export { removeFeatureTool, type RemoveFeatureInput, type RemoveFeatureOutput } from './tools/removeFeature';
 export { paramsListTool, type ParamsListInput, type ParamsListOutput } from './tools/paramsList';
 export { paramsUpdateTool, type ParamsUpdateInput, type ParamsUpdateOutput } from './tools/paramsUpdate';
+export {
+  addConstraintTool,
+  listConstraintsTool,
+  solveSketchTool,
+  SUPPORTED_CONSTRAINT_TYPES,
+  type AddConstraintInput,
+  type AddConstraintOutput,
+  type ListConstraintsInput,
+  type ListConstraintsOutput,
+  type SolveSketchInput,
+  type SolveSketchOutput,
+} from './tools/constraints';

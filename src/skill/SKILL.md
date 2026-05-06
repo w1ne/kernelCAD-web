@@ -416,7 +416,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 18 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 21 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -436,6 +436,9 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 - `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
 - `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
+- `solve_sketch({ entities, constraints })` — solve a 2D POINT/LINE/CIRCLE sketch constraint set; returns `{ ok, entities, constraints }` or validation errors. Side-effect-free.
+- `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
+- `list_constraints({ constraints? })` — list supported sketch constraint types and echo the provided constraint list.
 
 ## Out of Scope
 

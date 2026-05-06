@@ -21,6 +21,7 @@ import { exportStlTool } from './tools/exportStl';
 import { lookupCookbookTool } from './tools/lookupCookbook';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
+import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
@@ -283,6 +284,51 @@ export const TOOLS = [
       required: ['edits'],
     },
   },
+  {
+    name: 'solve_sketch',
+    description:
+      'Solve a 2D sketch constraint set. Side-effect-free: pass { entities, constraints } and receive solved entities plus the original constraints. Entities are POINT, LINE, and CIRCLE records; constraints use the kernelCAD constraint vocabulary.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        entities: {
+          type: 'array',
+          description: 'Sketch entities to solve. Lines reference point ids; circles reference a center point id.',
+          items: { type: 'object' },
+        },
+        constraints: {
+          type: 'array',
+          description: 'Constraints to apply to the entities.',
+          items: { type: 'object' },
+        },
+      },
+      required: ['entities', 'constraints'],
+    },
+  },
+  {
+    name: 'add_constraint',
+    description:
+      'Append one validated sketch constraint to a constraint list. Side-effect-free: pass { constraints, constraint } and receive the updated list.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        constraints: { type: 'array', items: { type: 'object' } },
+        constraint: { type: 'object' },
+      },
+      required: ['constraint'],
+    },
+  },
+  {
+    name: 'list_constraints',
+    description:
+      'List supported sketch constraint types and echo the provided constraint list. Use before add_constraint or solve_sketch to discover the vocabulary.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        constraints: { type: 'array', items: { type: 'object' } },
+      },
+    },
+  },
 ];
 
 export function createMcpServer(): Server {
@@ -358,6 +404,15 @@ export function createMcpServer(): Server {
         break;
       case 'params_update':
         result = await paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]);
+        break;
+      case 'solve_sketch':
+        result = await solveSketchTool(input as unknown as Parameters<typeof solveSketchTool>[0]);
+        break;
+      case 'add_constraint':
+        result = await addConstraintTool(input as unknown as Parameters<typeof addConstraintTool>[0]);
+        break;
+      case 'list_constraints':
+        result = await listConstraintsTool(input as unknown as Parameters<typeof listConstraintsTool>[0]);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

@@ -164,4 +164,21 @@ describe.skipIf(SKIP)('MCP server (spawn)', () => {
     expect(payload.ok).toBe(true);
     expect(payload.new_code).not.toContain(`cylinder(5, 2)`);
   }, 90000);
+
+  it('responds to solve_sketch with solved constraint entities', async () => {
+    const result = await callTool('solve_sketch', {
+      entities: [
+        { id: 'p1', type: 'POINT', x: 0, y: 0, fixed: true },
+        { id: 'p2', type: 'POINT', x: 10, y: 0, fixed: false },
+      ],
+      constraints: [
+        { id: 'c1', type: 'DISTANCE', entities: ['p1', 'p2'], value: 20 },
+      ],
+    });
+    const text = (result as { content: { text: string }[] }).content[0].text;
+    const payload = JSON.parse(text);
+    const p2 = payload.entities.find((entity: { id: string }) => entity.id === 'p2');
+    expect(payload.ok).toBe(true);
+    expect(p2.x).toBeCloseTo(20, 3);
+  }, 90000);
 });
