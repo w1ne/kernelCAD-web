@@ -7,6 +7,8 @@
 // .kcad.ts script call?").
 
 import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../backends/occt/queryKeys';
+import { SUPPORTED_CONSTRAINT_TYPES } from './constraints';
+import type { ConstraintType } from '../../lib/constraints/types';
 
 export type ListApiInput = Record<string, never>;
 
@@ -23,6 +25,13 @@ export interface FeatureKindFaceLabels {
   description: string;
 }
 
+export interface ConstraintCapability {
+  /** MCP tools that operate on side-effect-free sketch constraint payloads. */
+  tools: readonly string[];
+  /** Constraint type vocabulary accepted by list_constraints/add_constraint/solve_sketch. */
+  supportedTypes: readonly ConstraintType[];
+}
+
 export interface ListApiOutput {
   ok: boolean;
   globals?: ApiEntry[];
@@ -33,6 +42,8 @@ export interface ListApiOutput {
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
   featureKindFaceLabels?: FeatureKindFaceLabels;
+  /** Constrained-sketch MCP capability: discovery tools and supported constraint vocabulary. */
+  constraints?: ConstraintCapability;
   error?: string;
 }
 
@@ -113,6 +124,11 @@ export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
     'Sphere does not accept faceLabels (no canonical face names; no meaningful FaceQuery targets).',
 };
 
+export const CONSTRAINT_CAPABILITY: ConstraintCapability = {
+  tools: ['list_constraints', 'add_constraint', 'solve_sketch'] as const,
+  supportedTypes: SUPPORTED_CONSTRAINT_TYPES,
+};
+
 export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutput> {
   void input;
   return {
@@ -124,5 +140,6 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
+    constraints: CONSTRAINT_CAPABILITY,
   };
 }
