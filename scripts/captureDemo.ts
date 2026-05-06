@@ -15,6 +15,7 @@ import { composeStaticPanel } from './lib/staticPanel';
 import { whatsNewTemplate, writeWhatsNewIfMissing } from './lib/whatsNewTemplate';
 import { meshFeaturesPerFeature } from '../src/capture/featureMeshing';
 import { serializeForBridge } from '../src/capture/featureMeshSerialize';
+import { demoDisplayName } from './lib/demoDisplayName';
 
 interface Args {
   task?: string;
@@ -129,7 +130,7 @@ async function main(): Promise<void> {
   mkdirSync(args.output, { recursive: true });
 
   const vite = await ensureViteRunning();
-  const browser: Browser = await chromium.launch();
+  const browser: Browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   const page: Page = await context.newPage();
   await page.goto('http://127.0.0.1:5173/demo-player');
@@ -231,6 +232,11 @@ async function main(): Promise<void> {
   }
 
   const loaded = await loadScriptFeatures(scriptPath);
+  const displayName = demoDisplayName({
+    task: args.task,
+    heroArtifact: args.heroArtifact,
+    scriptPath,
+  });
   const override: PacingOverride = args.pacing
     ? JSON.parse(readFileSync(resolve(args.pacing), 'utf8'))
     : {};
@@ -270,7 +276,7 @@ async function main(): Promise<void> {
   if (pacing.preRollMs > 0) {
     await page.evaluate(
       (spec) => window.__demoPlayer!.setTitleCard(spec),
-      { title: `${args.module} — ${args.task ?? basename(scriptPath, '.kcad.ts')}`, tagline: 'synchronized live-build demo', durationMs: pacing.preRollMs },
+      { title: `${args.module} — ${displayName}`, tagline: 'synchronized live-build demo', durationMs: pacing.preRollMs },
     );
   }
 
@@ -361,7 +367,7 @@ async function main(): Promise<void> {
   });
 
   // whats-new.md (only if missing).
-  const partName = args.task ?? basename(scriptPath, '.kcad.ts');
+  const partName = displayName;
   writeWhatsNewIfMissing(
     join(args.output, 'whats-new.md'),
     whatsNewTemplate({ module: args.module, partName, heroArtifact: args.heroArtifact }),
