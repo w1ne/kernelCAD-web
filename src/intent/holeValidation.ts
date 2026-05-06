@@ -348,7 +348,6 @@ function paramUnitless(value: string | number): Param {
 // `upToFace` is only used by the lowerer when 'through' is not the trigger,
 // so it lives under metadata for now.
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     u: paramMm(opts.u),
@@ -379,7 +378,6 @@ export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts)
   return { params, metadata };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function serializeHolesParams(_face: FaceSelector, opts: EditableHolesOpts): SerializedHoleCapture {
   const params: Record<string, Param> = {
     diameter: paramMm(opts.diameter),

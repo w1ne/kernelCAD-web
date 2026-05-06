@@ -8,12 +8,10 @@ describe('historyAwareEdgeFeatures', () => {
   it('filletWithHistory preserves face identity for non-filleted faces', async () => {
     const box = OcctBackend.box(20, 20, 20);
     // All 12 edges of the box; produce a fillet on all
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allEdges = (box as any).edgeHashes().map((h: string) => ({ hash: h }));  // helper added in Task 5
     const result = filletWithHistory(box, allEdges, 1);
     expect(result.shape).toBeDefined();
     // Top face should map to a single child (modified — corners rounded but face survives)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const topHash = (box as any).findCanonicalFaceHash('top');
     const children = result.faceHistory.get(topHash);
     expect(children).toBeDefined();
@@ -22,7 +20,6 @@ describe('historyAwareEdgeFeatures', () => {
 
   it('chamferWithHistory: same identity-preservation property', async () => {
     const box = OcctBackend.box(20, 20, 20);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allEdges = (box as any).edgeHashes().map((h: string) => ({ hash: h }));
     const result = chamferWithHistory(box, allEdges, 0.5);
     expect(result.shape).toBeDefined();
