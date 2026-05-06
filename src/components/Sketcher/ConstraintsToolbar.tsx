@@ -1,6 +1,19 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
 import type { ConstraintType } from '../../lib/constraints/types';
-import { Anchor, ArrowLeftRight, MoveHorizontal, MoveVertical, Circle, Ruler, Equal, CircleDot, FlipHorizontal2 } from 'lucide-react';
+import {
+    Anchor,
+    ArrowLeftRight,
+    MoveHorizontal,
+    MoveVertical,
+    Circle,
+    Ruler,
+    Equal,
+    CircleDot,
+    FlipHorizontal2,
+    Rows2,
+    SquareFunction,
+    Tangent,
+} from 'lucide-react';
 
 export function ConstraintsToolbar() {
     const {
@@ -36,6 +49,21 @@ export function ConstraintsToolbar() {
         } else if (type === 'EQUAL_LENGTH') {
             if (selectedEntityIds.length !== 2) {
                 alert("Select exactly 2 lines");
+                return;
+            }
+        } else if (type === 'PARALLEL') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 lines");
+                return;
+            }
+        } else if (type === 'PERPENDICULAR') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 lines");
+                return;
+            }
+        } else if (type === 'TANGENT') {
+            if (selectedEntityIds.length !== 2) {
+                alert("Select exactly 2 entities");
                 return;
             }
         } else if (type === 'CONCENTRIC') {
@@ -105,6 +133,30 @@ export function ConstraintsToolbar() {
                 title="Vertical"
             >
                 <MoveVertical size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('PARALLEL')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Parallel"
+            >
+                <Rows2 size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('PERPENDICULAR')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Perpendicular"
+            >
+                <SquareFunction size={16} />
+            </button>
+
+            <button
+                onClick={() => handleAddConstraint('TANGENT')}
+                className="p-1.5 hover:bg-[#333] rounded text-gray-300 hover:text-white flex items-center gap-2"
+                title="Tangent"
+            >
+                <Tangent size={16} />
             </button>
 
             <div className="h-px bg-[#444] my-1" />
