@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildModel, buildModelFromFile } from '../../../src/kernel/buildModel';
+import { buildModel, buildModelFromFile, updateModelParams } from '../../../src/kernel/buildModel';
 
 describe('buildModel', () => {
   it('builds source into a session, records, shapes, tail shape, and cache', async () => {
@@ -65,5 +65,24 @@ describe('buildModel', () => {
 
     expect(model.warnings.some(w => w.hint === 'face-ref.skipped-by-param')).toBe(true);
     expect(model.session.warnings.some(w => w.hint === 'face-ref.skipped-by-param')).toBe(true);
+  });
+
+  it('updates params through the headless boundary and preserves relower metadata', async () => {
+    const model = await buildModel({
+      fileName: 'edit.kcad.ts',
+      code: `
+        const w = param('w', 20);
+        const plate = box(w, 10, 2);
+        const rounded = plate.fillet(0.5);
+        return rounded;
+      `,
+    });
+
+    const updated = await updateModelParams(model, [{ name: 'w', value: 30 }]);
+
+    expect(updated.model.session).toBe(model.session);
+    expect(updated.result.shape).toBe(updated.model.tailShape);
+    expect(updated.result.relowered.length).toBeGreaterThan(0);
+    expect(updated.model.session.paramTable.get('w').value).toBe(30);
   });
 });

@@ -324,129 +324,26 @@ export class CaptureSession {
     update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
   };
 
-  /** Internal — implementation backing `params.update`. Validates atomically,
-   *  applies edits, finds the first-affected record by index, re-lowers
-   *  from there forward, reuses cached output for earlier records.
-   *  See spec §E.6. */
+  /** Compatibility facade for `params.update`. Recompute orchestration lives
+   *  in `src/kernel/buildModel.ts` so CLI, MCP, and direct session updates
+   *  share the same cache/warning/tail-shape policy. */
   private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
-    // Step 1 — validate every edit BEFORE applying any (atomic).
-    for (const edit of edits) {
-      const entry = this.paramTable.get(edit.name); // throws unknown-name
-      if (typeof edit.value !== entry.type) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `params.update: param '${edit.name}' is ${entry.type}, got ${typeof edit.value}.`,
-          undefined,
-          `invalid-args.param.type-mismatch — param '${edit.name}' is ${entry.type}, got ${typeof edit.value}`,
-        );
-      }
-      if (entry.type === 'number' && entry.meta) {
-        const v = edit.value as number;
-        if (entry.meta.min !== undefined && v < entry.meta.min) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `params.update: param '${edit.name}' value ${v} below min ${entry.meta.min}.`,
-            undefined,
-            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} below min ${entry.meta.min}`,
-          );
-        }
-        if (entry.meta.max !== undefined && v > entry.meta.max) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `params.update: param '${edit.name}' value ${v} above max ${entry.meta.max}.`,
-            undefined,
-            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} above max ${entry.meta.max}`,
-          );
-        }
-      }
-    }
-    // Step 2 — apply edits atomically.
-    const editedNames = new Set<string>();
-    for (const edit of edits) {
-      this.paramTable.set(edit.name, edit.value);
-      editedNames.add(edit.name);
-    }
-
-    // Step 3 — find first affected record index. Records BEFORE it reuse
-    // their cached lowered output; records AT-OR-AFTER re-lower fresh
-    // (their inputs may have changed downstream of the edit).
-    let firstAffected = -1;
-    for (let i = 0; i < this.records.length; i++) {
-      const refs = (this.records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
-      if (refs.some(n => editedNames.has(n))) {
-        firstAffected = i;
-        break;
-      }
-    }
-
-    const relowered: string[] = [];
-    const skipped: string[] = [];
-
-    // Build the seedShapes map of cached outputs for records BEFORE firstAffected.
-    const seedShapes = new Map<string, ShapeBackend>();
-    if (firstAffected === -1) {
-      // No record references any edited name — nothing to re-lower.
-      // Still need to provide a shape — return last record's cached shape if any.
-      for (const r of this.records) {
-        skipped.push(r.id);
-        const cached = this.cachedShapes.get(r.id);
-        if (cached) seedShapes.set(r.id, cached);
-      }
-    } else {
-      for (let i = 0; i < this.records.length; i++) {
-        const r = this.records[i];
-        if (i < firstAffected) {
-          skipped.push(r.id);
-          const cached = this.cachedShapes.get(r.id);
-          if (cached) seedShapes.set(r.id, cached);
-        } else {
-          relowered.push(r.id);
-        }
-      }
-    }
-
-    // Step 4 — recompute. Use lazy import to avoid a top-level circular dep
-    // (proxy.ts uses the same lazy-import trick).
-    const { RecomputeEngine } = await import('../compute/recomputeEngine');
-    const { OcctLowerer } = await import('../backends/occt/occtLowerer');
-    const { initOcct } = await import('../backends/occt/occtBackend');
-    await initOcct();
-    const engine = new RecomputeEngine(new OcctLowerer());
-
-    // Capture warnings emitted during this update call (Phase 4 wires
-    // emissions; here we just snapshot before/after to compute the delta).
-    const warningsBefore = this.warnings.length;
-    const result = await engine.run(this.records, {
-      paramTable: this.paramTable,
-      seedShapes,
-      warningSink: (warning) => this.warnings.push(warning),
-      warningPhase: 'update',
-      gatedFeatureNames: this.gatedFeatureNames,
-    });
-    const callWarnings = this.warnings.slice(warningsBefore);
-
-    // Refresh the per-record cache with the latest lowered outputs.
-    for (const [id, shape] of result.shapes) {
-      this.cachedShapes.set(id, shape);
-    }
-
-    // Pick the final-shape: the last (chain-tail) record's lowered shape.
-    const tailId = this.records.length > 0 ? this.records[this.records.length - 1].id : undefined;
-    const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-    if (!tailShape) {
-      throw new KernelError(
-        'recompute.lowering.exception',
-        'params.update: no shape produced for the chain tail; check upstream diagnostics.',
-        tailId,
-      );
-    }
-
-    return {
-      shape: tailShape,
-      relowered,
-      skipped,
-      warnings: callWarnings,
-    };
+    const { updateModelParams } = await import('../kernel/buildModel');
+    const records = this.getRecords();
+    const shapes = new Map<string, ShapeBackend>();
+    for (const [id, shape] of this.cachedShapes) shapes.set(id, shape);
+    const tailId = records.length > 0 ? records[records.length - 1].id : undefined;
+    const { result } = await updateModelParams({
+      session: this,
+      records,
+      shapes,
+      diagnostics: [],
+      health: new Map(),
+      warnings: [],
+      tailId,
+      tailShape: tailId ? this.cachedShapes.get(tailId) : undefined,
+    }, edits);
+    return result;
   }
 }
 
