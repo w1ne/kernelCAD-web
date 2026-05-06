@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
 import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CLI_BIN = resolvePath(__dirname, '../../../dist/cli/index.js');
@@ -17,6 +17,26 @@ const CLI_BIN = resolvePath(__dirname, '../../../dist/cli/index.js');
 describe('CLI bundle startup', () => {
   it('the bundle artifact exists at dist/cli/index.js', () => {
     expect(existsSync(CLI_BIN)).toBe(true);
+  });
+
+  it('reports the package version', async () => {
+    const pkg = JSON.parse(readFileSync(resolvePath(__dirname, '../../../package.json'), 'utf8')) as { version: string };
+    const child = spawn('node', [CLI_BIN, '--version'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdoutBuf = '';
+    let stderrBuf = '';
+    child.stdout!.on('data', (chunk) => { stdoutBuf += chunk.toString(); });
+    child.stderr!.on('data', (chunk) => { stderrBuf += chunk.toString(); });
+
+    const code = await new Promise<number | null>((resolve) => {
+      child.on('exit', resolve);
+    });
+
+    expect(code).toBe(0);
+    expect(stderrBuf).toBe('');
+    expect(stdoutBuf.trim()).toBe(pkg.version);
   });
 
   it('the bundle boots without crashing and answers a JSON-RPC initialize', async () => {

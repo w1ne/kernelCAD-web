@@ -1,15 +1,19 @@
 // src/cli/index.ts
 import { Command } from 'commander';
+import { createRequire } from 'node:module';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
 import { mcpCommand } from './commands/mcp';
 import { skillCommand } from './commands/skill';
 
+const requireFromHere = createRequire(import.meta.url);
+const pkg = requireFromHere('../../package.json') as { version: string };
+
 const program = new Command();
 program
   .name('kernelcad')
-  .description('kernelCAD — agent-first parametric CAD CLI (v0.1)')
-  .version('0.1.0');
+  .description('kernelCAD — agent-first parametric CAD CLI')
+  .version(pkg.version);
 
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
