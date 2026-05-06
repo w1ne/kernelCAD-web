@@ -13,6 +13,24 @@ function entity<T extends SketchEntity>(entities: SketchEntity[], id: string): T
   return found as T;
 }
 
+function distance(a: { x: number; y: number }, b: { x: number; y: number }): number {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+function angleDeg(a: { x: number; y: number }, b: { x: number; y: number }): number {
+  return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+}
+
+function pointLineDistance(
+  point: { x: number; y: number },
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  return Math.abs(dy * point.x - dx * point.y + b.x * a.y - b.y * a.x) / Math.hypot(dx, dy);
+}
+
 describe('MCP constraint tools', () => {
   it('solves a distance constraint and returns serializable entities', async () => {
     const result = await solveSketchTool({
@@ -145,5 +163,66 @@ describe('MCP constraint tools', () => {
       'SYMMETRIC',
     ]);
     expect(result.constraints).toHaveLength(1);
+  });
+
+  it('adds, lists, and solves the rocket-keychain constraint vocabulary', async () => {
+    let constraints: Array<{ id: string; type: ConstraintType; entities: string[]; value?: number }> = [];
+
+    for (const constraint of [
+      { id: 'sym', type: 'SYMMETRIC' as const, entities: ['left', 'right', 'axis'] },
+      { id: 'rings', type: 'CONCENTRIC' as const, entities: ['outer_window', 'inner_window'] },
+      { id: 'fin_angle', type: 'ANGLE' as const, entities: ['fin'], value: -32 },
+      { id: 'tangent', type: 'TANGENT' as const, entities: ['skin', 'nose_line'] },
+      { id: 'section', type: 'DISTANCE' as const, entities: ['axis_top', 'window_center'], value: 46 },
+    ]) {
+      const added = await addConstraintTool({ constraints, constraint });
+      expect(added.ok).toBe(true);
+      constraints = added.constraints;
+    }
+
+    const listed = await listConstraintsTool({ constraints });
+    expect(listed.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
+    expect(listed.constraints.map(c => c.type)).toEqual(['SYMMETRIC', 'CONCENTRIC', 'ANGLE', 'TANGENT', 'DISTANCE']);
+
+    const solved = await solveSketchTool({
+      entities: [
+        { id: 'axis_bottom', type: 'POINT', x: 0, y: -55, fixed: true },
+        { id: 'axis_top', type: 'POINT', x: 0, y: 70, fixed: true },
+        { id: 'axis', type: 'LINE', p1: 'axis_bottom', p2: 'axis_top' },
+        { id: 'left', type: 'POINT', x: -24, y: 34, fixed: true },
+        { id: 'right', type: 'POINT', x: 14, y: 31, fixed: false },
+        { id: 'window_center', type: 'POINT', x: 7, y: 24, fixed: false },
+        { id: 'inner_window_center', type: 'POINT', x: 9, y: 21, fixed: false },
+        { id: 'outer_window', type: 'CIRCLE', center: 'window_center', radius: 8 },
+        { id: 'inner_window', type: 'CIRCLE', center: 'inner_window_center', radius: 4 },
+        { id: 'fin_root', type: 'POINT', x: 22, y: -22, fixed: true },
+        { id: 'fin_tip', type: 'POINT', x: 30, y: -46, fixed: false },
+        { id: 'fin', type: 'LINE', p1: 'fin_root', p2: 'fin_tip' },
+        { id: 'skin_center', type: 'POINT', x: -19, y: 34, fixed: false },
+        { id: 'skin', type: 'CIRCLE', center: 'skin_center', radius: 10 },
+        { id: 'nose', type: 'POINT', x: 0, y: 58, fixed: true },
+        { id: 'left_shoulder', type: 'POINT', x: -24, y: 34, fixed: true },
+        { id: 'nose_line', type: 'LINE', p1: 'left_shoulder', p2: 'nose' },
+      ],
+      constraints,
+    });
+
+    expect(solved.ok).toBe(true);
+    const right = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'right');
+    const windowCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'window_center');
+    const innerWindowCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'inner_window_center');
+    const axisTop = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'axis_top');
+    const finRoot = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'fin_root');
+    const finTip = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'fin_tip');
+    const skinCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'skin_center');
+    const leftShoulder = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'left_shoulder');
+    const nose = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'nose');
+
+    expect(right.x).toBeCloseTo(24, 2);
+    expect(distance(axisTop, windowCenter)).toBeCloseTo(46, 1);
+    expect(innerWindowCenter.x).toBeCloseTo(windowCenter.x, 2);
+    expect(innerWindowCenter.y).toBeCloseTo(windowCenter.y, 2);
+    expect(angleDeg(finRoot, finTip)).toBeCloseTo(-32, 1);
+    expect(pointLineDistance(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
   });
 });
