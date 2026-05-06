@@ -50,6 +50,10 @@ export function selectHeroDemo(opts: {
     const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
     return !!meta?.heroArtifact && isCatalogSlug(meta.heroArtifact, iterationKey);
   });
+  const overrideTasks = tasks.filter((t) => {
+    const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
+    return !!meta?.heroArtifact && typeof meta.overrideApprovedBy === 'string' && meta.overrideApprovedBy.length > 0;
+  });
 
   let task: string;
   let heroArtifact: string | null;
@@ -80,9 +84,17 @@ export function selectHeroDemo(opts: {
         `grandfathered ${iterationKey} cannot auto-pick hero: ${primaryCandidates.length} primary candidates, ${tasks.length} total tasks`,
       );
     }
+  } else if (overrideTasks.length === 1) {
+    task = overrideTasks[0];
+    heroArtifact =
+      readMeta(path.join(iterationDir, task, 'meta.json'))?.heroArtifact ?? null;
+  } else if (overrideTasks.length > 1) {
+    throw new Error(
+      `ambiguous override hero: ${overrideTasks.length} tasks in ${iterationKey} have overrideApprovedBy (${overrideTasks.join(', ')})`,
+    );
   } else {
     throw new Error(
-      `no task in ${iterationKey} has heroArtifact in catalog (and version is not single-task grandfathered)`,
+      `no task in ${iterationKey} has heroArtifact in catalog or an approved override (and version is not single-task grandfathered)`,
     );
   }
 

@@ -1,0 +1,11 @@
+{
+  "taskId": "rocket-keychain",
+  "module": "v0.4",
+  "capturedAt": "2026-05-06T23:38:36.700Z",
+  "durationMs": 23400,
+  "truncated": false,
+  "gitSha": "2a1096451aebea549c07140622145182af00f085",
+  "heroArtifact": "rocket-keychain",
+  "catalogSource": "memorable-builds-policy/v0.4",
+  "overrideApprovedBy": "controller: user rejected the v0.4 catalog guitar-pick direction and selected a CC0 rocket keychain reference"
+}
