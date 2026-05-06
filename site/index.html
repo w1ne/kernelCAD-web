@@ -117,7 +117,8 @@
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
-        document.getElementById('demo-video').src = '/demo.mp4';
+        const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
+        document.getElementById('demo-video').src = `/demo.mp4?v=${demoCacheKey}`;
         document.getElementById('demo-version').textContent = d.version;
       });
 

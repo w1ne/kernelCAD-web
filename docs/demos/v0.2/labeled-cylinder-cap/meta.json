@@ -7,5 +7,5 @@
   "gitSha": "aa60406aa73439640c68e4f5e2617c5e46122993",
   "heroArtifact": "labeled-cylinder-cap",
   "catalogSource": "memorable-builds-policy/v0.2",
-  "overrideApprovedBy": null
+  "overrideApprovedBy": "broken-3d-pane: 3D viewport rendered black during May-04 capture; demote until re-recorded with the fixed pipeline."
 }
