@@ -35,6 +35,10 @@ export class ConstraintSolver {
                 return this.solveRadius(constraint, entities);
             case 'ANGLE':
                 return this.solveAngle(constraint, entities);
+            case 'CONCENTRIC':
+                return this.solveConcentric(constraint, entities);
+            case 'SYMMETRIC':
+                return this.solveSymmetric(constraint, entities);
             case 'EQUAL_LENGTH':
                 return this.solveConnect(constraint, entities); // Equal length logic
             default:
@@ -468,6 +472,42 @@ export class ConstraintSolver {
         return Math.abs(err);
     }
 
+    private solveConcentric(c: Constraint, entities: Map<string, SketchEntity>): number {
+        if (c.entities.length !== 2) return 0;
+        const c1 = this.getCircle(c.entities[0], entities);
+        const c2 = this.getCircle(c.entities[1], entities);
+        if (!c1 || !c2) return 0;
+
+        return this.movePointsTogether(c1.center, c2.center);
+    }
+
+    private solveSymmetric(c: Constraint, entities: Map<string, SketchEntity>): number {
+        if (c.entities.length !== 3) return 0;
+        const p1 = this.getPoint(c.entities[0], entities);
+        const p2 = this.getPoint(c.entities[1], entities);
+        const axis = this.getLine(c.entities[2], entities);
+        if (!p1 || !p2 || !axis) return 0;
+
+        const reflectedP1 = this.reflectPointAcrossLine(p1, axis);
+        const reflectedP2 = this.reflectPointAcrossLine(p2, axis);
+        const errorToP2 = this.distanceBetween(p2, reflectedP1);
+        const errorToP1 = this.distanceBetween(p1, reflectedP2);
+
+        if (errorToP1 < 0.0001 && errorToP2 < 0.0001) return 0;
+        if (p1.fixed && p2.fixed) return errorToP1 + errorToP2;
+
+        if (p1.fixed) {
+            this.movePointTo(p2, reflectedP1);
+        } else if (p2.fixed) {
+            this.movePointTo(p1, reflectedP2);
+        } else {
+            this.movePointHalfwayTo(p1, reflectedP2);
+            this.movePointHalfwayTo(p2, reflectedP1);
+        }
+
+        return errorToP1 + errorToP2;
+    }
+
     private solveAngle(c: Constraint, entities: Map<string, SketchEntity>): number {
         // Absolute Angle (Single Line relative to X-axis)
         if (c.entities.length === 1 && c.value !== undefined) {
@@ -584,6 +624,69 @@ export class ConstraintSolver {
         }
     }
 
+    private movePointsTogether(p1: Point, p2: Point): number {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const error = Math.sqrt(dx * dx + dy * dy);
+
+        if (error < 0.0001) return 0;
+
+        if (!p1.fixed && !p2.fixed) {
+            p1.x += dx * 0.5;
+            p1.y += dy * 0.5;
+            p2.x -= dx * 0.5;
+            p2.y -= dy * 0.5;
+        } else if (!p1.fixed) {
+            p1.x += dx;
+            p1.y += dy;
+        } else if (!p2.fixed) {
+            p2.x -= dx;
+            p2.y -= dy;
+        }
+
+        return error;
+    }
+
+    private reflectPointAcrossLine(
+        point: Point,
+        axis: { line: Line, p1: Point, p2: Point }
+    ): { x: number; y: number } {
+        const dx = axis.p2.x - axis.p1.x;
+        const dy = axis.p2.y - axis.p1.y;
+        const lenSq = dx * dx + dy * dy;
+
+        if (lenSq < 0.000001) {
+            return { x: point.x, y: point.y };
+        }
+
+        const t = ((point.x - axis.p1.x) * dx + (point.y - axis.p1.y) * dy) / lenSq;
+        const projX = axis.p1.x + t * dx;
+        const projY = axis.p1.y + t * dy;
+
+        return {
+            x: 2 * projX - point.x,
+            y: 2 * projY - point.y
+        };
+    }
+
+    private distanceBetween(p: Point, target: { x: number; y: number }): number {
+        const dx = target.x - p.x;
+        const dy = target.y - p.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    private movePointTo(p: Point, target: { x: number; y: number }) {
+        if (p.fixed) return;
+        p.x = target.x;
+        p.y = target.y;
+    }
+
+    private movePointHalfwayTo(p: Point, target: { x: number; y: number }) {
+        if (p.fixed) return;
+        p.x += (target.x - p.x) * 0.5;
+        p.y += (target.y - p.y) * 0.5;
+    }
+
     private solveConnect(c: Constraint, entities: Map<string, SketchEntity>): number {
         // Equal Length
         if (c.entities.length !== 2) return 0;
@@ -652,4 +755,3 @@ export class ConstraintSolver {
         }
     }
 }
-
