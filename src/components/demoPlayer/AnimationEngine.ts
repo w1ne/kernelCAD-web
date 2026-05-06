@@ -164,11 +164,13 @@ export class AnimationEngine {
             } else {
               for (const pg of predGroups) restoreColors(pg);
             }
-            // 150–400ms: cutters fade out, carved fades in
+            // Avoid z-fighting in recorded demos: cut results occupy the same
+            // space as their predecessors, and transparent CAD solids expose
+            // internal triangulation/backfaces. Flash the old solid, then
+            // swap directly to the opaque cut result.
             if (elapsed > 150) {
-              const f = Math.min(1, (elapsed - 150) / 250);
-              for (const pg of predGroups) setOpacity(pg, 1 - f);
-              setOpacity(target, f);
+              for (const pg of predGroups) setOpacity(pg, 0);
+              setOpaque(target);
             }
             if (t >= 1) {
               for (const pg of predGroups) setOpacity(pg, 0);

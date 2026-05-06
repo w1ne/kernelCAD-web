@@ -81,8 +81,9 @@ function fitCameraToBounds(
   const dz = bounds.max[2] - bounds.min[2];
   const maxExtent = Math.max(dx, dy, dz);
   const fov = camera.fov * (Math.PI / 180);
-  // Tighter framing — model fills ~70% of viewport.
-  const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 1.05;
+  // Tighter framing for mobile-readable videos: the viewer is letterboxed next
+  // to the terminal, so the model should fill the 3D pane without clipping.
+  const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
   // Canonical CAD-isometric-ish viewing angle (azimuth ~35°, elevation ~25°).
   camera.position.set(distance * 0.78, distance * 0.5, distance * 0.78);
   camera.lookAt(0, 0, 0);
@@ -248,24 +249,19 @@ export function DemoPlayerPage(): React.JSX.Element {
         overflow: 'hidden',
       }}
     >
-      {titleCard ? (
-        <TitleCard title={titleCard.title} tagline={titleCard.tagline} />
-      ) : (
-        <>
-          <TerminalPane
-            lines={terminalLines}
-            width={TERMINAL_W}
-            height={TERMINAL_H}
-            getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
-          />
-          <ViewerPane
-            version={version}
-            width={VIEWER_W}
-            height={VIEWER_H}
-            onSceneReady={handleSceneReady}
-          />
-        </>
-      )}
+      <TerminalPane
+        lines={terminalLines}
+        width={TERMINAL_W}
+        height={TERMINAL_H}
+        getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
+      />
+      <ViewerPane
+        version={version}
+        width={VIEWER_W}
+        height={VIEWER_H}
+        onSceneReady={handleSceneReady}
+      />
+      {titleCard ? <TitleCard title={titleCard.title} tagline={titleCard.tagline} /> : null}
     </div>
   );
 }

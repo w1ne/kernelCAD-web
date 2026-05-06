@@ -57,4 +57,47 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     // 3 face meshes total (box_1 has 2 faces, cylinder_1 has 1)
     expect(dump.meshCount).toBe(3);
   });
+
+  it('fits loaded geometry tighter for mobile-readable demo videos', async () => {
+    render(<DemoPlayerPage />);
+    await new Promise((r) => setTimeout(r, 50));
+
+    const fakeFace = {
+      vertices: [0, 0, 0, 120, 0, 0, 0, 80, 10],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    window.__demoPlayer!.loadFeatureMeshes(
+      [{ featureId: 'plate_1', featureKind: 'box', predecessors: [], faces: [fakeFace] }],
+      { min: [0, 0, 0], max: [120, 80, 10] },
+    );
+
+    const dump = window.__demoPlayer!.dumpScene();
+    const distance = Math.hypot(...dump.cameraPos);
+    expect(distance).toBeLessThan(175);
+  });
+
+  it('keeps loaded geometry mounted while the title card is shown', async () => {
+    render(<DemoPlayerPage />);
+    await new Promise((r) => setTimeout(r, 50));
+
+    const fakeFace = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    window.__demoPlayer!.loadFeatureMeshes(
+      [{ featureId: 'box_1', featureKind: 'box', predecessors: [], faces: [fakeFace] }],
+      { min: [0, 0, 0], max: [1, 1, 1] },
+    );
+
+    window.__demoPlayer!.setTitleCard({ title: 'v0.3', tagline: 'demo', durationMs: 1000 });
+    await new Promise((r) => setTimeout(r, 50));
+    window.__demoPlayer!.setTitleCard(null);
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
+  });
 });
