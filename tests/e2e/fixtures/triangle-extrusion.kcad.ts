@@ -1,5 +1,5 @@
-const w = param('Width', 30, { unit: 'mm', min: 10, max: 80 });
-const t = param('Thickness', 5, { unit: 'mm', min: 1, max: 20 });
+const w = 30;
+const t = 5;
 
 // Equilateral triangle, base = w
 const h = w * Math.sqrt(3) / 2;

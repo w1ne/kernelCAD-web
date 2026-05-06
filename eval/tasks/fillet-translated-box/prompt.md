@@ -2,15 +2,15 @@
 
 Build a rectangular box positioned at a given offset, with all of its top edges filleted.
 
-The script must accept these parameters (verbatim — names and units matter):
+The script must accept these parameters (verbatim — names matter):
 
 ```typescript
-const w = param("Width", 40, { unit: 'mm', min: 10, max: 100 });
-const h = param("Height", 30, { unit: 'mm', min: 10, max: 100 });
-const t = param("Thickness", 10, { unit: 'mm', min: 2, max: 30 });
-const ox = param("Offset X", 5, { unit: 'mm' });
-const oy = param("Offset Y", 7, { unit: 'mm' });
-const r = param("Fillet Radius", 2, { unit: 'mm', min: 0.5, max: 5 });
+const w = param('width', 40, { min: 10, max: 100 });
+const h = param('height', 30, { min: 10, max: 100 });
+const t = param('thickness', 10, { min: 2, max: 30 });
+const ox = param('offsetX', 5);
+const oy = param('offsetY', 7);
+const r = param('filletRadius', 2, { min: 0.5, max: 5 });
 ```
 
 Functional requirements:

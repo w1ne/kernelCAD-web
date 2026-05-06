@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
-import { ParamRegistry } from '../../../src/compute/paramRegistry';
 import { KernelError } from '../../../src/intent/kernelError';
 
 describe('CaptureSession', () => {
@@ -76,8 +75,7 @@ describe('CaptureSession', () => {
 
 function makeApi() {
   const session = new CaptureSession();
-  const params = new ParamRegistry();
-  const api = createApi({ session, params });
+  const api = createApi({ session });
   return { session, api };
 }
 

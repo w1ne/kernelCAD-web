@@ -1,7 +1,7 @@
 import { CaptureSession } from '../capture/captureSession';
-import { ParamRegistry } from '../compute/paramRegistry';
 import { createApi } from '../modules/api';
 import type { FeatureRecord } from '../intent/featureRecord';
+import type { ParamTable } from '../runtime/paramTable';
 import { transpileTs } from './transpile';
 import { runIsolated } from './isolation';
 
@@ -12,7 +12,13 @@ export interface RunScriptInput {
 
 export interface RunScriptResult {
   records: readonly FeatureRecord[];
-  params: ParamRegistry;
+  /** Capture session that owns the records and ParamTable. MCP keeps this as
+   *  the active session for post-build params.list / params.update. */
+  session: CaptureSession;
+  /** Slice-3: the session's param table, populated by `kcad.param()` /
+   *  `kcad.params()` declarations during script execution. Threaded into
+   *  RecomputeEngine so symbolic FeatureRecord params resolve at lower time. */
+  paramTable: ParamTable;
   returnValue: unknown;
 }
 
@@ -21,7 +27,7 @@ export interface RunScriptResult {
  *   1. transpile TypeScript → ES2022 JavaScript,
  *   2. run inside an isolated `vm` context with the kernelCAD API injected
  *      as the only mutable globals, and
- *   3. return the captured `FeatureRecord`s, the populated `ParamRegistry`,
+ *   3. return the captured `FeatureRecord`s, the session's `ParamTable`,
  *      and whatever the script `return`ed (typically the root `Shape`).
  *
  * The script's top-level `return` is captured via `wrapReturn` — the script
@@ -30,8 +36,7 @@ export interface RunScriptResult {
 export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
   const { code, fileName } = input;
   const session = new CaptureSession();
-  const params = new ParamRegistry();
-  const api = createApi({ session, params });
+  const api = createApi({ session });
 
   const transpiled = transpileTs(code, fileName);
 
@@ -49,7 +54,8 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
   }
   return {
     records: session.getRecords(),
-    params,
+    session,
+    paramTable: session.paramTable,
     returnValue,
   };
 }

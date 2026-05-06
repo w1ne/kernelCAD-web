@@ -1,6 +1,6 @@
 ---
 name: kernelcad
-description: kernelCAD model authoring guide for `.kcad.ts` scripts — primitives, transforms, booleans, edge features (fillet/chamfer/shell), face features, sketches with arbitrary profiles, sketch operations (extrude/revolve/sweep/loft/reflect), path builder, mirror/reflect, parameters with units, exports. Use when writing or modifying kernelCAD geometry from a coding agent context.
+description: kernelCAD model authoring guide for `.kcad.ts` scripts — primitives, transforms, booleans, edge features (fillet/chamfer/shell), face features, sketches with arbitrary profiles, sketch operations (extrude/revolve/sweep/loft/reflect), path builder, mirror/reflect, editable parameters, exports. Use when writing or modifying kernelCAD geometry from a coding agent context.
 ---
 
 # kernelCAD
@@ -32,14 +32,19 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 ### Top-level functions
 
 ```typescript
-// Parameters with units and bounds. Returned value is a number; the param() call
-// also registers a UI slider when the script is run interactively.
-param(name: string, defaultValue: number | string, opts: {
-  unit: 'mm' | 'in' | 'm' | 'deg' | 'rad' | 'unitless';
+// Editable symbolic parameters. Returned value is a ParamRef accepted anywhere
+// the API expects an editable number or boolean. Edit post-build with
+// params_update via MCP / session.params.update in runtime code.
+param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   min?: number;
   max?: number;
   description?: string;
-}): number;
+}): ParamRef<T>;
+
+params({ width: 60, addCablePort: true }): {
+  width: ParamRef<number>;
+  addCablePort: ParamRef<boolean>;
+};
 
 // Primitives. Each returns a Shape.
 box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
@@ -213,6 +218,36 @@ Resolution rule when names collide with canonical face names: created refs alway
 
 `holes(...)`'s bare `'wall'` selector is collective sugar — `.fillet(0.2, { face: 'wall' })` rounds every bore lip in one call.
 
+## Editable parameters
+
+Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it. If a derived value should be editable, declare it as its own param. If it is incidental, compute it from literals before the chain.
+
+```typescript
+const boltDia = param('boltDia', 5, { min: 3, max: 10, description: 'bolt hole diameter' });
+const addCablePort = param('addCablePort', true, { description: 'include cable pass-through' });
+
+return box(80, 50, 6)
+  .holes('top', {
+    positions: [{ u: -30, v: -20 }, { u: 30, v: -20 }],
+    diameter: boltDia,
+    depth: 'through',
+    name: 'mountBolts',
+  })
+  .cutout(
+    path().moveTo(-8, -5).lineTo(8, -5).lineTo(8, 5).lineTo(-8, 5).close(),
+    { face: 'top', depth: 'through', name: 'cablePort', enabled: addCablePort },
+  );
+```
+
+The batched declaration form is useful for compact top-of-file param blocks:
+
+```typescript
+const p = params({ plateW: 80, plateD: 50, plateT: 6 });
+return box(p.plateW, p.plateD, p.plateT);
+```
+
+For post-build edits, use MCP `params_list({})` to inspect the active evaluated session, then `params_update({ edits: [{ name: 'boltDia', value: 6 }] })`. Updates validate atomically, re-lower only affected records plus their downstream dependents, and return soft warnings when a boolean-gated feature makes a named downstream reference become a passthrough.
+
 ### Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:
@@ -278,12 +313,13 @@ Discover labels on a script with the `list_face_labels` MCP tool — it surfaces
 ### Parametric bracket with hole
 
 ```typescript
-const w = param('Width', 60, { unit: 'mm', min: 30, max: 200 });
-const h = param('Height', 40, { unit: 'mm', min: 20, max: 120 });
-const t = param('Thickness', 5, { unit: 'mm', min: 2, max: 15 });
+const w = param('width', 60, { min: 30, max: 200 });
+const h = param('height', 40, { min: 20, max: 120 });
+const t = param('thickness', 5, { min: 2, max: 15 });
+const holeRadius = param('holeRadius', 4, { min: 1.5, max: 10 });
 
 const base = box(w, h, t);
-const hole = cylinder(t + 2, 4).translate(w / 2, h / 2, -1);
+const hole = cylinder(8, holeRadius).translate(30, 20, -1);
 return base.subtract(hole);
 ```
 
@@ -291,7 +327,7 @@ return base.subtract(hole);
 
 ```typescript
 // Arbitrary 2D profile via path builder, then extruded.
-const depth = param('Depth', 10, { unit: 'mm' });
+const depth = param('depth', 10, { min: 1, max: 40 });
 
 const profile = path()
   .moveTo(0, 0)
@@ -334,9 +370,9 @@ return half.mirror('yz');
 
 ```typescript
 // Swept circular profile along a helix — basic coil.
-const coilRadius = param('CoilRadius', 15, { unit: 'mm' });
-const wireRadius = param('WireRadius', 1.5, { unit: 'mm' });
-const turns = param('Turns', 4, { unit: 'unitless' });
+const coilRadius = 15;
+const wireRadius = 1.5;
+const turns = 4;
 
 const rail = helix({ radius: coilRadius, pitch: wireRadius * 3, turns });
 const profile = path()
@@ -380,7 +416,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 16 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 18 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -398,6 +434,8 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_diagnostic_codes({})` — return the 24-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
+- `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
 
 ## Out of Scope
 
@@ -424,7 +462,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
 | mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
 | non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
-| parametric-bolt-pattern-skeleton | You want a part whose dimensions all derive from a single bolt-diameter parameter; thickness, plate size, hole clearance all scale together. |
+| parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |
 | revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — revolve a rectangle around Z with an offset from the axis equal to the inner radius. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
 | union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |

@@ -7,15 +7,18 @@ describe('runScript', () => {
 
   it('runs a script and returns captured features', async () => {
     const code = `
-      const w = param('Width', 10, { unit: 'mm' });
+      const w = param('width', 10, { min: 1, max: 100 });
       const b = box(w, 20, 30);
       return b;
     `;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(1);
     expect(result.records[0].kind).toBe('box');
-    expect(result.records[0].params.x.evaluated).toBe(10);
-    expect(result.params.list()).toContain('Width');
+    // x is now a symbolic Param (paramRef='width'), evaluated populated
+    // by the dispatcher pre-resolve — but capture-time evaluated holds 0
+    // (placeholder) since pre-resolve runs only at lower time.
+    expect(result.records[0].params.x.paramRef).toBe('width');
+    expect(result.paramTable.list().map(e => e.name)).toContain('width');
   });
 
   it('captures multi-feature scripts in order', async () => {

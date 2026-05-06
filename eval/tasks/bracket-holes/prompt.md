@@ -2,10 +2,10 @@
 
 Build an L-shaped mounting bracket that works for different bolt sizes.
 
-The script must accept this parameter (verbatim — name and unit matter):
+The script must accept this parameter (verbatim — name matters):
 
 ```typescript
-const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 10 });
+const boltDiam = param('boltDiam', 5, { min: 3, max: 10 });
 ```
 
 Functional requirements:

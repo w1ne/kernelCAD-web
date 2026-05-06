@@ -1,5 +1,36 @@
 ## [Unreleased]
 
+### Added — v0.3 slice 3: symbolic params + edit-after-build replay
+
+Slice 3 adds the first durable param lifecycle: `param()` and `params({...})`
+now return symbolic `ParamRef<T>` values that can be captured into feature
+records, serialized with the session, and edited after the first build.
+
+- `CaptureSession.params.list()` returns current params with values,
+  defaults, types, and metadata.
+- `CaptureSession.params.update([{ name, value }])` validates edits
+  atomically, applies them to the session param table, re-lowers from the
+  first affected record forward, and returns `{ shape, relowered, skipped,
+  warnings }`.
+- `enabled?: ParamRef<boolean>` on record-emitting features gates optional
+  features. Downstream refs to a gated named feature become passthroughs and
+  return a soft warning with `feature.face-ref.not-resolvable` /
+  `face-ref.skipped-by-param`.
+- MCP adds `params_list({})` and `params_update({ edits })` for the active
+  evaluated session. `evaluate_script` now establishes that active session
+  when the script evaluates cleanly.
+- Session export/import now writes `schemaVersion: 3`, embeds the param
+  table, accepts legacy sessions with no params as empty tables, and rejects
+  corrupt records whose symbolic refs are missing from the table.
+- Two new eval-corpus tasks, `param-edit-bolt-diameter` and
+  `param-gate-cable-port`, bring `eval/corpus-v0.3.test.ts` to 10 tasks,
+  all expected to score 100% expert.
+- The v0.3 service-panel hero script is rewritten with a top-of-file param
+  block and an optional `addCablePort` boolean gate.
+
+Deferred: units, expressions/derived params, MCP-side declaration, param
+metadata editing, deletion, and templated import overrides.
+
 ### Added — v0.3 slice 2: generalized created-refs + geometry-snapshot fallback + named features
 
 Three internal subsystems that compose to make repeat-call disambiguation

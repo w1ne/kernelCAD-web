@@ -11,17 +11,45 @@ import type { FeatureId, FaceRef, Param } from './types';
 import type { FaceSelector } from '../capture/proxy';
 import type { SketchCommand } from '../capture/sketch';
 import { validateFeatureName } from './holeValidation';
+import type { Editable } from '../runtime/paramRef';
+import { currentValue, currentBool, toParam, toBoolParam } from '../runtime/editableHelpers';
+import type { ParamTable } from '../runtime/paramTable';
 
 export type CutoutDepthMode = 'blind' | 'symmetric';
+
+export interface EditableCutoutOpts {
+  face: FaceSelector;
+  depth?: Editable<number> | 'through';
+  upToFace?: FaceRef;
+  depthMode?: CutoutDepthMode;
+  /** Optional agent-chosen feature name. */
+  name?: string;
+  /** Slice-3: gating param. Phase 4 wires the lowerer side. */
+  enabled?: Editable<boolean>;
+}
 
 export interface CutoutOpts {
   face: FaceSelector;
   depth?: number | 'through';
   upToFace?: FaceRef;
   depthMode?: CutoutDepthMode;
-  /** Optional agent-chosen feature name. Enables `<name>.wall`,
-   *  `<name>.floor`, `<name>.wall-back` selectors downstream. */
   name?: string;
+  enabled?: boolean;
+}
+
+/** Resolve EditableCutoutOpts → numeric/boolean view for validation. */
+export function resolveCutoutOpts(opts: EditableCutoutOpts, table: ParamTable): CutoutOpts {
+  const out: CutoutOpts = {
+    face: opts.face,
+    name: opts.name,
+    depthMode: opts.depthMode,
+  };
+  if (opts.depth !== undefined) {
+    out.depth = opts.depth === 'through' ? 'through' : currentValue(opts.depth, table);
+  }
+  if (opts.upToFace !== undefined) out.upToFace = opts.upToFace;
+  if (opts.enabled !== undefined) out.enabled = currentBool(opts.enabled, table);
+  return out;
 }
 
 function isFiniteNumber(n: unknown): n is number {
@@ -148,8 +176,8 @@ export interface SerializedCutoutCapture {
   metadata: Record<string, unknown>;
 }
 
-function paramMm(value: number): Param {
-  return { expression: String(value), unit: 'mm', evaluated: value };
+function paramMm(value: Editable<number>): Param {
+  return toParam(value, 'mm');
 }
 
 function paramUnitless(value: string | number): Param {
@@ -163,17 +191,18 @@ function paramUnitless(value: string | number): Param {
 // `face` is captured under inputs.face by the proxy; metadata only carries
 // upToFace (when set) and any future per-cutout state.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function serializeCutoutParams(_face: FaceSelector, opts: CutoutOpts): SerializedCutoutCapture {
+export function serializeCutoutParams(_face: FaceSelector, opts: EditableCutoutOpts): SerializedCutoutCapture {
   const params: Record<string, Param> = {
     depthMode: paramUnitless(opts.depthMode ?? 'blind'),
   };
-  if (typeof opts.depth === 'number') {
-    params.depth = paramMm(opts.depth);
+  if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
+    params.depth = paramMm(opts.depth as Editable<number>);
   } else if (opts.depth === 'through') {
     params.depthMode = paramUnitless('through');
   }
   const metadata: Record<string, unknown> = {};
   if (opts.upToFace !== undefined) metadata.upToFace = opts.upToFace;
   if (opts.name !== undefined) metadata.name = opts.name;
+  if (opts.enabled !== undefined) metadata.enabled = toBoolParam(opts.enabled);
   return { params, metadata };
 }

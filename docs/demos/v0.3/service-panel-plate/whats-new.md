@@ -70,4 +70,42 @@ Slice 2 also adds:
 - Geometry-snapshot fallback: when topology returns zero hits AND a snapshot reference exists, the resolver matches by centroid + normal + area within tolerance. Single-match → success; multi-match → `feature.face-ref.ambiguous-after-split`.
 - Generalized propagator (`applyCreatedRefs` + `refreshSnapshots`): future feature kinds (boss, rib, sweep) add a lowerer + classifier file; no central switch.
 
-Slice 2 preserves slice 1's behavior — every slice-1 test passes unchanged. The recording of `demo.mp4` + `panel.png` for this hero artifact is still deferred to a follow-up recording pass before any v0.3.0 tag.
+Slice 2 preserves slice 1's behavior — every slice-1 test passes unchanged.
+
+## Slice 3 additions
+
+Slice 3 turns the same service-panel script into a parametric design. The top
+of `solution.kcad.ts` now declares symbolic params for the plate dimensions,
+fastener diameters, counterbore dimensions, countersink diameter, and optional
+cable-port gate:
+
+```typescript
+const plateW = param('plateW', 120, { min: 80, max: 180 });
+const cornerBoltDia = param('cornerBoltDia', 5, { min: 3, max: 8 });
+const addCablePort = param('addCablePort', true);
+```
+
+Those refs flow directly into the chain:
+
+```typescript
+return box(plateW, plateD, plateT)
+  .holes('top', { positions: corners, diameter: cornerBoltDia, depth: 'through', name: 'cornerBolts' })
+  .cutout(panelCableProfile, { face: 'top', depth: 'through', name: 'cablePort', enabled: addCablePort });
+```
+
+After the first build, an agent can inspect and edit the active session with
+MCP:
+
+```typescript
+params_list({});
+params_update({ edits: [{ name: 'cornerBoltDia', value: 6 }] });
+params_update({ edits: [{ name: 'addCablePort', value: false }] });
+```
+
+Numeric edits re-lower the first affected feature and its downstream
+dependents. Boolean edits can gate optional features off; downstream refs like
+`cablePort.wall` become passthroughs and return a soft warning instead of
+aborting the rebuild.
+
+MP4 + panel.png recording is still deferred to a follow-up recording pass
+before any v0.3.0 tag.

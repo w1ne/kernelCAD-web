@@ -444,8 +444,16 @@ export function lowerHoles(
   }
   const entry = entryRes;
 
-  const meta = feature.metadata as { positions?: Array<{ u: number; v: number }> } | undefined;
-  const positions = meta?.positions ?? [];
+  // Slice-3: positions are stored as Array<{u: Param, v: Param}> so that any
+  // symbolic ParamRef survives capture and gets pre-resolved at lower time.
+  // Read .evaluated for the resolved numeric value (post-dispatcher pre-resolve).
+  type PositionEntry = { u: { evaluated: number } | number; v: { evaluated: number } | number };
+  const meta = feature.metadata as { positions?: PositionEntry[] } | undefined;
+  const rawPositions = meta?.positions ?? [];
+  const positions = rawPositions.map((p) => ({
+    u: typeof p.u === 'number' ? p.u : p.u.evaluated,
+    v: typeof p.v === 'number' ? p.v : p.v.evaluated,
+  }));
   if (positions.length === 0) {
     diagnostics.push({
       target: 'export-occt',

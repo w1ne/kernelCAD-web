@@ -1,8 +1,8 @@
-const length = param('Length', 30, { unit: 'mm', min: 10, max: 100 });
-const width = param('Width', 20, { unit: 'mm', min: 10, max: 60 });
-const tabSize = param('TabSize', 5, { unit: 'mm', min: 1, max: 15 });
-const thickness = param('Thickness', 5, { unit: 'mm', min: 1, max: 15 });
-const filletRadius = param('FilletRadius', 1, { unit: 'mm', min: 0.5, max: 3 });
+const length = 30;
+const width = 20;
+const tabSize = 5;
+const thickness = 5;
+const filletRadius = 1;
 
 // Rectangular plate with a tab sticking out on +x, vertically centered.
 // The tab's outer face is labeled 'tab-side' and gets filleted via the label.

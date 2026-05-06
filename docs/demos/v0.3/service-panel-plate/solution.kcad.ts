@@ -1,35 +1,42 @@
 // Service-panel mounting plate — v0.3 hero artifact.
-//
-// 120 × 80 × 10 mm aluminum plate carrying every new v0.3 capability,
-// with slice-2 named features for self-documenting downstream selectors:
-//   - 4× M5 corner bolt holes (through) — cornerBolts
-//   - 2× M6 counterbored mounting holes (cb Ø11, depth 4) — panelMountFront / panelMountBack
-//   - 1× M4 countersunk grounding screw hole — groundStud
-//   - 1× D-shaped cable cutout — cablePort
-// All in a single chained agent call.
+// Slice 3 makes the model parametric: dimensions, fastener diameters, and the
+// optional cable port survive capture as symbolic params and can be edited
+// post-build with params_update/session.params.update.
 
-const plate = box(120, 80, 10);
+const plateW = param('plateW', 120, { min: 80, max: 180, description: 'overall plate width' });
+const plateD = param('plateD', 80, { min: 50, max: 120, description: 'overall plate depth' });
+const plateT = param('plateT', 10, { min: 4, max: 18, description: 'plate thickness' });
+const cornerBoltDia = param('cornerBoltDia', 5, { min: 3, max: 8 });
+const panelMountDia = param('panelMountDia', 6, { min: 4, max: 10 });
+const panelCounterboreDia = param('panelCounterboreDia', 11, { min: 8, max: 16 });
+const panelCounterboreDepth = param('panelCounterboreDepth', 4, { min: 1, max: 8 });
+const groundStudDia = param('groundStudDia', 4, { min: 2, max: 6 });
+const groundCountersinkDia = param('groundCountersinkDia', 8, { min: 5, max: 12 });
+const addCablePort = param('addCablePort', true, { description: 'include the optional cable pass-through' });
 
-return plate
+return box(plateW, plateD, plateT)
   .holes('top', {
     positions: [
       { u: -50, v: -30 }, { u:  50, v: -30 },
       { u: -50, v:  30 }, { u:  50, v:  30 },
     ],
-    diameter: 5, depth: 'through',
+    diameter: cornerBoltDia, depth: 'through',
     name: 'cornerBolts',
   })
   .hole('top', {
-    u: -20, v: 0, diameter: 6, depth: 'through',
-    counterbore: { diameter: 11, depth: 4 }, name: 'panelMountFront',
+    u: -20, v: 0, diameter: panelMountDia, depth: 'through',
+    counterbore: { diameter: panelCounterboreDia, depth: panelCounterboreDepth },
+    name: 'panelMountFront',
   })
   .hole('top', {
-    u: 20, v: 0, diameter: 6, depth: 'through',
-    counterbore: { diameter: 11, depth: 4 }, name: 'panelMountBack',
+    u: 20, v: 0, diameter: panelMountDia, depth: 'through',
+    counterbore: { diameter: panelCounterboreDia, depth: panelCounterboreDepth },
+    name: 'panelMountBack',
   })
   .hole('top', {
-    u: 40, v: 20, diameter: 4, depth: 'through',
-    countersink: { diameter: 8 }, name: 'groundStud',
+    u: 40, v: 20, diameter: groundStudDia, depth: 'through',
+    countersink: { diameter: groundCountersinkDia },
+    name: 'groundStud',
   })
   .cutout(
     path()
@@ -37,5 +44,5 @@ return plate
       .lineTo( 8, -6)
       .threePointsArc(-8, -6, 0, 6)
       .close(),
-    { face: 'top', depth: 'through', name: 'cablePort' },
+    { face: 'top', depth: 'through', name: 'cablePort', enabled: addCablePort },
   );

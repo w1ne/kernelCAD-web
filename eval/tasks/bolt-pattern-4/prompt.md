@@ -5,7 +5,7 @@ Drill a 4-position bolt pattern through a square mounting plate using a single b
 The script must accept this parameter:
 
 ```typescript
-const boltDiam = param("Bolt Diameter", 5, { unit: 'mm', min: 3, max: 8 });
+const boltDiam = param('boltDiam', 5, { min: 3, max: 8 });
 ```
 
 Functional requirements:

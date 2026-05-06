@@ -1,5 +1,5 @@
-const profileSize = param('ProfileSize', 2, { unit: 'mm', min: 0.5, max: 10 });
-const length = param('Length', 50, { unit: 'mm', min: 5, max: 200 });
+const profileSize = 2;
+const length = 50;
 
 // Square-profile pipe along a straight Z rail.
 const profile = path()

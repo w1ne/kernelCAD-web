@@ -85,7 +85,7 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
 
   const engine = new RecomputeEngine(new OcctLowerer());
-  const result = await engine.run(run.records);
+  const result = await engine.run(run.records, { paramTable: run.paramTable });
 
   // Collect upstream feature ids reachable from the target via input edges.
   // The walk is BFS so every transitive predecessor is included; the final

@@ -2,10 +2,10 @@
 
 Drill one counterbored bolt hole through a flat aluminum plate.
 
-The script must accept this parameter (verbatim — name and unit matter):
+The script must accept this parameter (verbatim — name matters):
 
 ```typescript
-const boltDiam = param("Bolt Diameter", 6, { unit: 'mm', min: 3, max: 12 });
+const boltDiam = param('boltDiam', 6, { min: 3, max: 12 });
 ```
 
 Functional requirements:

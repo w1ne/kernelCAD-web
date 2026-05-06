@@ -2,13 +2,13 @@
 
 Build a square plate with a single concentric through-hole, with a fillet applied to all top edges (the outer perimeter and the rim of the hole, both belonging to the plate's top face after the hole is cut).
 
-The script must accept these parameters (verbatim — names and units matter):
+The script must accept these parameters (verbatim — names matter):
 
 ```typescript
-const s = param("Plate Size", 50, { unit: 'mm', min: 20, max: 200 });
-const t = param("Plate Thickness", 8, { unit: 'mm', min: 2, max: 30 });
-const d = param("Hole Diameter", 12, { unit: 'mm', min: 3, max: 30 });
-const r = param("Fillet Radius", 1.5, { unit: 'mm', min: 0.2, max: 5 });
+const s = param('s', 50, { min: 20, max: 200 });
+const t = param('t', 8, { min: 2, max: 30 });
+const d = param('d', 12, { min: 3, max: 30 });
+const r = param('r', 1.5, { min: 0.2, max: 5 });
 ```
 
 Functional requirements:

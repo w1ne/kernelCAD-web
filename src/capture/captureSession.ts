@@ -4,6 +4,13 @@ import type { FeatureKind, FeatureRef, Param, PlaneSpec } from '../intent/types'
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
+import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
+import type { SoftWarning } from '../runtime/softWarning';
+import { collectParamRefs } from '../runtime/resolveParams';
+import { toParam } from '../runtime/editableHelpers';
+import type { Editable } from '../runtime/paramRef';
+import type { ShapeBackend } from '../backends/backend';
+import { KernelError } from '../intent/kernelError';
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -53,9 +60,43 @@ export interface FeatureSpec {
   metadata?: Record<string, unknown>;
 }
 
+/** Slice-3: input + result of `session.params.update`. See spec §E.6. */
+export interface ParamUpdateEdit {
+  name: string;
+  value: number | boolean;
+}
+
+export interface ParamUpdateResult {
+  /** The final shape after re-lower. */
+  shape: ShapeBackend;
+  /** Records re-lowered (their cached output became stale and was regenerated). */
+  relowered: string[];
+  /** Records skipped (their cached output reused; nothing they depend on changed). */
+  skipped: string[];
+  /** Soft warnings produced by this update call (gated-feature lineage refs etc.). */
+  warnings: SoftWarning[];
+}
+
+export interface SerializedSession {
+  schemaVersion?: number;
+  params?: SerializedParamTable;
+  records: readonly FeatureRecord[];
+}
+
 export class CaptureSession {
   private idGen: FeatureIdGenerator = createFeatureIdGenerator();
   private records: FeatureRecord[] = [];
+  /** Slice-3: session-owned param table populated by `kcad.param()`/`kcad.params()`. */
+  readonly paramTable: ParamTable = new ParamTable();
+  /** Slice-3: append-only soft-warning log. Drained via `consumeWarnings()`. */
+  readonly warnings: SoftWarning[] = [];
+  /** Slice-3 Phase 4: current run's gated named features.
+   *  Keyed by feature `metadata.name`; value is the param name that gated it. */
+  readonly gatedFeatureNames: Map<string, string | undefined> = new Map();
+  /** Slice-3: per-record cached lowered shape from the most recent build,
+   *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
+   *  to skip re-lowering records before the first affected one. */
+  readonly cachedShapes: Map<string, ShapeBackend> = new Map();
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
@@ -68,6 +109,17 @@ export class CaptureSession {
       suppressed: false,
       metadata: spec.metadata,
     };
+    // Slice-3: populate metadata.paramRefs (the dependency index Phase 3
+    // uses to find the first-affected record on `params.update`). Walks
+    // params + metadata for any Param-shaped object with `paramRef` set.
+    const refs = new Set<string>();
+    for (const refName of collectParamRefs(r.params)) refs.add(refName);
+    if (r.metadata !== undefined) {
+      for (const refName of collectParamRefs(r.metadata)) refs.add(refName);
+    }
+    if (refs.size > 0) {
+      r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(refs) };
+    }
     this.records.push(r);
     return r;
   }
@@ -134,7 +186,7 @@ export class CaptureSession {
     kind: 'fillet' | 'chamfer' | 'shell',
     base: Shape,
     valueParamName: 'radius' | 'distance' | 'thickness',
-    value: number,
+    value: Editable<number>,
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
@@ -150,12 +202,9 @@ export class CaptureSession {
       if (ref.key === 'edges') inputs.edges = ref.value;
     }
 
-    const valueParam: Param = {
-      expression: String(value), unit: 'mm', evaluated: value,
-    };
     return this.createShape({
       kind,
-      params: { [valueParamName]: valueParam },
+      params: { [valueParamName]: toParam(value, 'mm') },
       inputs,
     });
   }
@@ -171,7 +220,11 @@ export class CaptureSession {
     kind: 'fillet' | 'chamfer',
     base: Shape,
     valueKey: 'radius' | 'distance',
-    groups: Array<{ edges: import('./proxy').EdgeSelector; radius?: number; distance?: number }>,
+    groups: Array<{
+      edges: import('./proxy').EdgeSelector;
+      radius?: Editable<number>;
+      distance?: Editable<number>;
+    }>,
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
@@ -208,10 +261,197 @@ export class CaptureSession {
     return this.records;
   }
 
+  exportSession(): SerializedSession & { schemaVersion: 3; params: SerializedParamTable } {
+    return {
+      schemaVersion: 3,
+      params: this.paramTable.serialize(),
+      records: cloneJson(this.records),
+    };
+  }
+
+  static importSession(data: SerializedSession): CaptureSession {
+    const session = new CaptureSession();
+    const schemaVersion = data.schemaVersion ?? 1;
+    session.records = cloneJson(Array.from(data.records ?? []));
+    session.paramTable.replaceWith(
+      schemaVersion >= 3 ? ParamTable.deserialize(data.params) : new ParamTable(),
+    );
+
+    if (schemaVersion >= 3) {
+      for (const record of session.records) {
+        const refs = new Set<string>();
+        for (const name of collectParamRefs(record.params)) refs.add(name);
+        if (record.metadata !== undefined) {
+          for (const name of collectParamRefs(record.metadata)) refs.add(name);
+        }
+        for (const name of refs) {
+          if (!session.paramTable.has(name)) {
+            throw new KernelError(
+              'feature.invalid-args',
+              `importSession: unknown param ref '${name}' in record '${record.id}'.`,
+              record.id,
+              `invalid-args.session.unknown-param-ref — unknown param ref '${name}' in record '${record.id}'`,
+            );
+          }
+        }
+      }
+    }
+
+    return session;
+  }
+
   reset(): void {
     this.records = [];
     this.idGen.reset();
+    this.paramTable.clear();
+    this.warnings.length = 0;
+    this.gatedFeatureNames.clear();
   }
+
+  /** Slice-3: drain the warning log. Returns the accumulated warnings and
+   *  clears the buffer. Used by tooling that wants a one-shot snapshot. */
+  consumeWarnings(): SoftWarning[] {
+    const out = this.warnings.slice();
+    this.warnings.length = 0;
+    return out;
+  }
+
+  /** Slice-3 namespace: edit-after-build operations.
+   *  See spec §E.6, §F.1, §F.2. */
+  readonly params = {
+    list: (): import('../runtime/paramTable').ParamEntry[] => this.paramTable.list(),
+
+    update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
+  };
+
+  /** Internal — implementation backing `params.update`. Validates atomically,
+   *  applies edits, finds the first-affected record by index, re-lowers
+   *  from there forward, reuses cached output for earlier records.
+   *  See spec §E.6. */
+  private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
+    // Step 1 — validate every edit BEFORE applying any (atomic).
+    for (const edit of edits) {
+      const entry = this.paramTable.get(edit.name); // throws unknown-name
+      if (typeof edit.value !== entry.type) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `params.update: param '${edit.name}' is ${entry.type}, got ${typeof edit.value}.`,
+          undefined,
+          `invalid-args.param.type-mismatch — param '${edit.name}' is ${entry.type}, got ${typeof edit.value}`,
+        );
+      }
+      if (entry.type === 'number' && entry.meta) {
+        const v = edit.value as number;
+        if (entry.meta.min !== undefined && v < entry.meta.min) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `params.update: param '${edit.name}' value ${v} below min ${entry.meta.min}.`,
+            undefined,
+            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} below min ${entry.meta.min}`,
+          );
+        }
+        if (entry.meta.max !== undefined && v > entry.meta.max) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `params.update: param '${edit.name}' value ${v} above max ${entry.meta.max}.`,
+            undefined,
+            `invalid-args.param.value-out-of-range — param '${edit.name}' value ${v} above max ${entry.meta.max}`,
+          );
+        }
+      }
+    }
+    // Step 2 — apply edits atomically.
+    const editedNames = new Set<string>();
+    for (const edit of edits) {
+      this.paramTable.set(edit.name, edit.value);
+      editedNames.add(edit.name);
+    }
+
+    // Step 3 — find first affected record index. Records BEFORE it reuse
+    // their cached lowered output; records AT-OR-AFTER re-lower fresh
+    // (their inputs may have changed downstream of the edit).
+    let firstAffected = -1;
+    for (let i = 0; i < this.records.length; i++) {
+      const refs = (this.records[i].metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
+      if (refs.some(n => editedNames.has(n))) {
+        firstAffected = i;
+        break;
+      }
+    }
+
+    const relowered: string[] = [];
+    const skipped: string[] = [];
+
+    // Build the seedShapes map of cached outputs for records BEFORE firstAffected.
+    const seedShapes = new Map<string, ShapeBackend>();
+    if (firstAffected === -1) {
+      // No record references any edited name — nothing to re-lower.
+      // Still need to provide a shape — return last record's cached shape if any.
+      for (const r of this.records) {
+        skipped.push(r.id);
+        const cached = this.cachedShapes.get(r.id);
+        if (cached) seedShapes.set(r.id, cached);
+      }
+    } else {
+      for (let i = 0; i < this.records.length; i++) {
+        const r = this.records[i];
+        if (i < firstAffected) {
+          skipped.push(r.id);
+          const cached = this.cachedShapes.get(r.id);
+          if (cached) seedShapes.set(r.id, cached);
+        } else {
+          relowered.push(r.id);
+        }
+      }
+    }
+
+    // Step 4 — recompute. Use lazy import to avoid a top-level circular dep
+    // (proxy.ts uses the same lazy-import trick).
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { OcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../backends/occt/occtBackend');
+    await initOcct();
+    const engine = new RecomputeEngine(new OcctLowerer());
+
+    // Capture warnings emitted during this update call (Phase 4 wires
+    // emissions; here we just snapshot before/after to compute the delta).
+    const warningsBefore = this.warnings.length;
+    const result = await engine.run(this.records, {
+      paramTable: this.paramTable,
+      seedShapes,
+      warningSink: (warning) => this.warnings.push(warning),
+      warningPhase: 'update',
+      gatedFeatureNames: this.gatedFeatureNames,
+    });
+    const callWarnings = this.warnings.slice(warningsBefore);
+
+    // Refresh the per-record cache with the latest lowered outputs.
+    for (const [id, shape] of result.shapes) {
+      this.cachedShapes.set(id, shape);
+    }
+
+    // Pick the final-shape: the last (chain-tail) record's lowered shape.
+    const tailId = this.records.length > 0 ? this.records[this.records.length - 1].id : undefined;
+    const tailShape = tailId ? result.shapes.get(tailId) : undefined;
+    if (!tailShape) {
+      throw new KernelError(
+        'recompute.lowering.exception',
+        'params.update: no shape produced for the chain tail; check upstream diagnostics.',
+        tailId,
+      );
+    }
+
+    return {
+      shape: tailShape,
+      relowered,
+      skipped,
+      warnings: callWarnings,
+    };
+  }
+}
+
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);

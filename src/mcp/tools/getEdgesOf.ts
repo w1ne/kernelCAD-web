@@ -72,7 +72,7 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
 
   const engine = new RecomputeEngine(new OcctLowerer());
-  const result = await engine.run(run.records);
+  const result = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = result.shapes.get(targetId);
   if (!shape) {
     const fatal = result.diagnostics.find(d => d.featureId === targetId && d.severity === 'error');

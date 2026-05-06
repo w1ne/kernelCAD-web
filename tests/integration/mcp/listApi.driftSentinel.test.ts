@@ -6,13 +6,12 @@ import { describe, it, expect } from 'vitest';
 import { listApiTool } from '../../../src/mcp/tools/listApi';
 import { createApi } from '../../../src/modules/api';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { ParamRegistry } from '../../../src/compute/paramRegistry';
 import { Shape } from '../../../src/capture/proxy';
 import { Sketch, PathBuilder } from '../../../src/capture/sketch';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {
-    const ctx = { session: new CaptureSession(), params: new ParamRegistry() };
+    const ctx = { session: new CaptureSession() };
     const api = createApi(ctx);
     const apiKeys = Object.keys(api).sort();
 

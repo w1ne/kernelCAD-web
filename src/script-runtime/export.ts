@@ -25,7 +25,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const { code, fileName, format, feature_id } = input;
   const run = await runScript({ code, fileName });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(run.records);
+  const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const featureCount = run.records.length;
 

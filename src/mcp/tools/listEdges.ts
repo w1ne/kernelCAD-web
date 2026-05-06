@@ -63,7 +63,7 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
   }
 
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(run.records);
+  const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
   const shape = r.shapes.get(targetId);
