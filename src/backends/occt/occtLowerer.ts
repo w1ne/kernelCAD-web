@@ -816,7 +816,6 @@ export class OcctLowerer implements FeatureLowerer {
         // filleted), treat as a no-op success so the user intent ("round this face") is met.
         const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
         const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
           const d = computeDihedralPublic(shapeForDihedral, e);
           // null means the dihedral could not be computed (e.g., edge has only one adjacent

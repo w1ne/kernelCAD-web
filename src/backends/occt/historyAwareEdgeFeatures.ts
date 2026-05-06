@@ -48,7 +48,6 @@ function findEdgeByHash(
   bodyShape: unknown,
   hash: EdgeHash,
 ): unknown {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const explorer = new oc.TopExp_Explorer_2(
     bodyShape,
     oc.TopAbs_ShapeEnum.TopAbs_EDGE,
@@ -274,7 +273,6 @@ export function shellWithHistory(
   // and matching by hash.
   const facesToRemoveList = new oc.TopTools_ListOfShape_1();
   const hashSet = new Set(facesToRemove.map(f => f.hash));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const faceExplorer = new oc.TopExp_Explorer_2(
     bodyShape,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,

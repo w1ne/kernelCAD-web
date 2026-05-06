@@ -29,7 +29,6 @@
     "src/**/*.test.*",
     "src/**/*.spec.*",
     "src/**/__tests__/**",
-    "src/ast-v2-browser-test.ts",
     "src/cli/**",
     "src/integration/**",
     "src/test/**",

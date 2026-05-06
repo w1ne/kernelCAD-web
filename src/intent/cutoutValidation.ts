@@ -190,7 +190,6 @@ function paramUnitless(value: string | number): Param {
 
 // `face` is captured under inputs.face by the proxy; metadata only carries
 // upToFace (when set) and any future per-cutout state.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function serializeCutoutParams(_face: FaceSelector, opts: EditableCutoutOpts): SerializedCutoutCapture {
   const params: Record<string, Param> = {
     depthMode: paramUnitless(opts.depthMode ?? 'blind'),
