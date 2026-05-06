@@ -88,6 +88,27 @@ describe('AnimationEngine — boolean.cut transition', () => {
     expect(carvedMat.opacity).toBeCloseTo(1, 1);
     expect(cutterMat.opacity).toBeCloseTo(0, 1);
   });
+
+  it('does not overlap predecessor and carved result after the flash', () => {
+    const { engine, scene } = makeEngine();
+    const predecessorMat = buildSingleMeshGroup(scene, 'box-1');
+    const carvedMat = buildSingleMeshGroup(scene, 'hole-1');
+    engine.enqueue({
+      kind: 'feature.compiled',
+      featureId: 'hole-1',
+      featureKind: 'hole',
+      shape: {} as any,
+      predecessors: ['box-1'],
+      diagnostics: [],
+      health: 'healthy',
+    });
+
+    engine.advance(160);
+
+    expect(predecessorMat.opacity).toBe(0);
+    expect(carvedMat.opacity).toBe(1);
+    expect(carvedMat.transparent).toBe(false);
+  });
 });
 
 describe('AnimationEngine — boolean.fuse transition', () => {

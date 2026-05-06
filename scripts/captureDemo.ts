@@ -3,7 +3,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, join, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+import { execSync, type ChildProcessWithoutNullStreams } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,16 +64,16 @@ function parseArgs(argv: string[]): Args {
   return a as Args;
 }
 
-async function ensureViteRunning(): Promise<{ stop: () => void }> {
+async function ensureViteRunning(): Promise<{ stop: () => Promise<void> }> {
   // Try to reach existing dev server first.
   try {
     const res = await fetch('http://127.0.0.1:5173/');
-    if (res.ok) return { stop: () => {} };
+    if (res.ok) return { stop: async () => {} };
   } catch { /* not running, will start */ }
   const { spawn } = await import('node:child_process');
-  const proc = spawn('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5173'], {
+  const proc: ChildProcessWithoutNullStreams = spawn('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5173'], {
     stdio: ['ignore', 'pipe', 'pipe'],
-    detached: false,
+    detached: true,
   });
   // Wait for ready signal.
   await new Promise<void>((resolveReady, rejectReady) => {
@@ -85,7 +85,30 @@ async function ensureViteRunning(): Promise<{ stop: () => void }> {
       }
     });
   });
-  return { stop: () => proc.kill('SIGTERM') };
+  return {
+    stop: async () => {
+      if (proc.exitCode !== null || proc.signalCode !== null) return;
+      const signalVite = (signal: NodeJS.Signals): void => {
+        if (!proc.pid) return;
+        try {
+          process.kill(-proc.pid, signal);
+        } catch {
+          proc.kill(signal);
+        }
+      };
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          signalVite('SIGKILL');
+          resolve();
+        }, 5000);
+        proc.once('exit', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+        signalVite('SIGTERM');
+      });
+    },
+  };
 }
 
 async function closeBrowserWithTimeout(browser: Browser): Promise<void> {
@@ -176,9 +199,9 @@ async function main(): Promise<void> {
       const buf = await page.screenshot({ type: 'png' });
       await ffmpeg.pushFrame(buf);
     }
-    vite.stop();
     await ffmpeg.finalize();
     await closeBrowserWithTimeout(browser);
+    await vite.stop();
     return;
   }
 
@@ -370,8 +393,8 @@ async function main(): Promise<void> {
     }, null, 2),
   );
 
-  vite.stop();
   await closeBrowserWithTimeout(browser);
+  await vite.stop();
 }
 
 main().catch((e) => {
