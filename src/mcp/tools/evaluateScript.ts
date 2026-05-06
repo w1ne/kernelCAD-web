@@ -1,7 +1,7 @@
 // src/mcp/tools/evaluateScript.ts
-import { evaluateScript, type EvaluateInput, type EvaluateResult } from '../../cli/commands/evaluate';
+import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { clearActiveMcpSession, establishActiveMcpSession } from '../activeSession';
+import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -25,9 +25,13 @@ export interface EvaluateScriptOutput {
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
-  const r: EvaluateResult = await evaluateScript(input as EvaluateInput);
+  const { evaluation: r, model } = await evaluateAndBuildScript(input as EvaluateInput);
   if (r.exitCode === 0) {
-    await establishActiveMcpSession(input);
+    setActiveMcpSession({
+      session: model!.session,
+      tailId: model!.tailId,
+      tailShape: model!.tailShape,
+    });
   } else {
     clearActiveMcpSession();
   }

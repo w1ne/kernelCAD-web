@@ -1,14 +1,9 @@
 // src/cli/commands/evaluate.ts
 import { Command } from 'commander';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { runScript } from '../../script-runtime/runScript';
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
-import { initOcct } from '../../backends/occt/occtBackend';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
 
 export interface EvaluateInput {
   file?: string;
@@ -21,60 +16,70 @@ export interface EvaluateResult {
   diagnostics: CompilerDiagnostic[];
 }
 
-export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
-  await initOcct();
+export interface EvaluateAndBuildResult {
+  evaluation: EvaluateResult;
+  model?: BuiltModel;
+}
 
-  let code: string;
-  let fileName: string;
-
-  if (input.code !== undefined) {
-    code = input.code;
-    fileName = input.file ?? '<inline>';
-  } else if (input.file !== undefined) {
-    const filePath = resolve(input.file);
-    fileName = filePath;
-    try {
-      code = await readFile(filePath, 'utf8');
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      return {
-        exitCode: 2, featureCount: 0,
-        diagnostics: [{
-          target: 'export-occt', code: 'cli.file-read', severity: 'error',
-          message: `Cannot read file: ${msg}`,
-          hint: 'Check that the file path exists and is readable.',
-        }],
-      };
-    }
-  } else {
-    return {
+export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
+  if (input.code === undefined && input.file === undefined) {
+    return { evaluation: {
       exitCode: 2, featureCount: 0,
       diagnostics: [{
         target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
         message: 'evaluateScript: must provide either { file } or { code }.',
         hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
       }],
-    };
+    } };
   }
 
-  let run;
+  let model;
   try {
-    run = await runScript({ code, fileName });
+    model = input.code !== undefined
+      ? await buildModel({ code: input.code, fileName: input.file ?? '<inline>' })
+      : await buildModelFromFile({ file: input.file! });
   } catch (e) {
+    if (isFileReadError(e)) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return {
+        evaluation: {
+          exitCode: 2, featureCount: 0,
+          diagnostics: [{
+            target: 'export-occt', code: 'cli.file-read', severity: 'error',
+            message: `Cannot read file: ${msg}`,
+            hint: 'Check that the file path exists and is readable.',
+          }],
+        },
+      };
+    }
     const diag = kernelErrorToDiagnostic(e);
     return {
-      exitCode: 1, featureCount: 0,
-      diagnostics: [diag],
+      evaluation: { exitCode: 1, featureCount: 0, diagnostics: [diag] },
     };
   }
-  const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(run.records, { paramTable: run.paramTable });
-  const fatal = r.diagnostics.filter(d => d.severity === 'error').length > 0;
+  const fatal = model.diagnostics.some(d => d.severity === 'error');
   return {
-    exitCode: fatal ? 1 : 0,
-    featureCount: run.records.length,
-    diagnostics: r.diagnostics,
+    evaluation: {
+      exitCode: fatal ? 1 : 0,
+      featureCount: model.records.length,
+      diagnostics: model.diagnostics,
+    },
+    model,
   };
+}
+
+export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResult> {
+  return (await evaluateAndBuildScript(input)).evaluation;
+}
+
+function isFileReadError(e: unknown): boolean {
+  return (
+    typeof e === 'object' &&
+    e !== null &&
+    'code' in e &&
+    typeof (e as { code?: unknown }).code === 'string' &&
+    ['ENOENT', 'EACCES', 'EPERM', 'EISDIR', 'ENOTDIR'].includes((e as { code: string }).code)
+  );
 }
 
 export function evaluateCommand(): Command {
