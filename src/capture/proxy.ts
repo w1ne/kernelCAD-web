@@ -14,6 +14,7 @@ import {
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../intent/cutoutValidation';
+import { isParamRef, type Editable } from '../runtime/paramRef';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -148,34 +149,34 @@ export class Shape {
   }
 
   // Single-radius form (rc.6 — unchanged).
-  fillet(radius: number, edges?: EdgeSelector): Shape;
+  fillet(radius: Editable<number>, edges?: EdgeSelector): Shape;
   // Variable-radius form (rc.11).
-  fillet(groups: Array<{ edges: EdgeSelector; radius: number }>): Shape;
+  fillet(groups: Array<{ edges: EdgeSelector; radius: Editable<number> }>): Shape;
   fillet(
-    radiusOrGroups: number | Array<{ edges: EdgeSelector; radius: number }>,
+    radiusOrGroups: Editable<number> | Array<{ edges: EdgeSelector; radius: Editable<number> }>,
     edges?: EdgeSelector,
   ): Shape {
-    if (typeof radiusOrGroups === 'number') {
+    if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
       return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges);
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }
 
   // Single-distance form (rc.6 — unchanged).
-  chamfer(distance: number, edges?: EdgeSelector): Shape;
+  chamfer(distance: Editable<number>, edges?: EdgeSelector): Shape;
   // Variable-distance form (rc.11).
-  chamfer(groups: Array<{ edges: EdgeSelector; distance: number }>): Shape;
+  chamfer(groups: Array<{ edges: EdgeSelector; distance: Editable<number> }>): Shape;
   chamfer(
-    distanceOrGroups: number | Array<{ edges: EdgeSelector; distance: number }>,
+    distanceOrGroups: Editable<number> | Array<{ edges: EdgeSelector; distance: Editable<number> }>,
     edges?: EdgeSelector,
   ): Shape {
-    if (typeof distanceOrGroups === 'number') {
+    if (typeof distanceOrGroups === 'number' || isParamRef(distanceOrGroups)) {
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
-  shell(thickness: number, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+  shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
 

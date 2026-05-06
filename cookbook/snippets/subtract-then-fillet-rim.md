@@ -10,11 +10,12 @@ when_to_use: You want a parametric plate, drill a through-hole, and round the ri
 ---
 
 ```typescript
-const s = param('Plate Size', 50, { unit: 'mm', min: 20, max: 200 });
-const t = param('Plate Thickness', 8, { unit: 'mm', min: 2, max: 30 });
-const d = param('Hole Diameter', 12, { unit: 'mm', min: 3, max: 30 });
-const r = param('Fillet Radius', 1.5, { unit: 'mm', min: 0.2, max: 5 });
-const plate = box(s, s, t);
-const hole = cylinder(t + 2, d / 2).translate(s / 2, s / 2, -1);
-return plate.subtract(hole).fillet(r, { face: 'top' });
+const plateSize = param('plateSize', 50, { min: 20, max: 200 });
+const plateThickness = param('plateThickness', 8, { min: 2, max: 30 });
+const holeDia = param('holeDia', 12, { min: 3, max: 30 });
+const filletRadius = param('filletRadius', 1.5, { min: 0.2, max: 5 });
+
+return box(plateSize, plateSize, plateThickness)
+  .hole('top', { u: 0, v: 0, diameter: holeDia, depth: 'through', name: 'centerHole' })
+  .fillet(filletRadius, { face: 'centerHole.wall' });
 ```

@@ -7,6 +7,8 @@ import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKe
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
 import { collectParamRefs } from '../runtime/resolveParams';
+import { toParam } from '../runtime/editableHelpers';
+import type { Editable } from '../runtime/paramRef';
 import type { ShapeBackend } from '../backends/backend';
 import { KernelError } from '../intent/kernelError';
 
@@ -184,7 +186,7 @@ export class CaptureSession {
     kind: 'fillet' | 'chamfer' | 'shell',
     base: Shape,
     valueParamName: 'radius' | 'distance' | 'thickness',
-    value: number,
+    value: Editable<number>,
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
@@ -200,12 +202,9 @@ export class CaptureSession {
       if (ref.key === 'edges') inputs.edges = ref.value;
     }
 
-    const valueParam: Param = {
-      expression: String(value), unit: 'mm', evaluated: value,
-    };
     return this.createShape({
       kind,
-      params: { [valueParamName]: valueParam },
+      params: { [valueParamName]: toParam(value, 'mm') },
       inputs,
     });
   }
@@ -221,7 +220,11 @@ export class CaptureSession {
     kind: 'fillet' | 'chamfer',
     base: Shape,
     valueKey: 'radius' | 'distance',
-    groups: Array<{ edges: import('./proxy').EdgeSelector; radius?: number; distance?: number }>,
+    groups: Array<{
+      edges: import('./proxy').EdgeSelector;
+      radius?: Editable<number>;
+      distance?: Editable<number>;
+    }>,
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);

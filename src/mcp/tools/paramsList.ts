@@ -1,6 +1,6 @@
 import { getActiveMcpSession } from '../activeSession';
 
-export interface ParamsListInput {}
+export type ParamsListInput = object;
 
 export interface ParamsListEntry {
   name: string;
@@ -16,7 +16,7 @@ export interface ParamsListOutput {
   params: ParamsListEntry[];
 }
 
-export async function paramsListTool(_input: ParamsListInput = {}): Promise<ParamsListOutput> {
+export async function paramsListTool(): Promise<ParamsListOutput> {
   const active = getActiveMcpSession();
   if (!active) return { params: [] };
   return {

@@ -354,7 +354,7 @@ export function createMcpServer(): Server {
         result = await lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]);
         break;
       case 'params_list':
-        result = await paramsListTool(input as Parameters<typeof paramsListTool>[0]);
+        result = await paramsListTool();
         break;
       case 'params_update':
         result = await paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]);
