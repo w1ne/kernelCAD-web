@@ -1,12 +1,11 @@
 {
   "taskId": "service-panel-plate",
   "module": "v0.3",
-  "heroArtifact": "service-panel-plate",
-  "catalogSource": "v0.3:service-panel-plate",
-  "overrideApprovedBy": null,
-  "capturedAt": null,
-  "durationMs": null,
+  "capturedAt": "2026-05-06T09:23:56.182Z",
+  "durationMs": 11300,
   "truncated": false,
-  "gitSha": null,
-  "notes": "demo.mp4 + panel.png + hero-frame.png + pacing.json deferred to a follow-up recording pass. solution.kcad.ts + whats-new.md + meta.json land with the slice-1 PR; the recording pipeline rerun produces the visual assets ahead of any v0.3.0 tag."
+  "gitSha": "1b7c014671b0a7bca9b317bf90ccdc9f01816b42",
+  "heroArtifact": "service-panel-plate",
+  "catalogSource": "memorable-builds-policy/v0.3",
+  "overrideApprovedBy": null
 }

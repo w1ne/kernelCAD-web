@@ -1,0 +1,50 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 6300,
+  "rotateDurationMs": 3000,
+  "totalDurationMs": 11300,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "holes_1": {
+      "startAtMs": 900,
+      "durationMs": 400,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "hole_1": {
+      "startAtMs": 1700,
+      "durationMs": 600,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "hole_2": {
+      "startAtMs": 2700,
+      "durationMs": 600,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "hole_3": {
+      "startAtMs": 3700,
+      "durationMs": 600,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "sketch_1": {
+      "startAtMs": 4700,
+      "durationMs": 400,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    },
+    "cutout_1": {
+      "startAtMs": 5500,
+      "durationMs": 400,
+      "pauseMsAfter": 100,
+      "cameraNudgeMs": 300
+    }
+  }
+}

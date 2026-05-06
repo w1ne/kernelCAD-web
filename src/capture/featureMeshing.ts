@@ -60,6 +60,9 @@ export async function meshFeaturesPerFeature(
       if (event.kind !== 'feature.compiled') return;
       const meshed = meshShape(extractRawShape(event.shape));
       if (!meshed) {
+        if (event.featureKind === 'sketch') {
+          return;
+        }
         // Compiled but un-meshable (e.g., empty face iterable, all faces failed
         // to mesh). Surface as a failure so captureDemo aborts instead of
         // silently producing a scene with a missing feature group.

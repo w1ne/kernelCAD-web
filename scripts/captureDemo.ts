@@ -88,6 +88,18 @@ async function ensureViteRunning(): Promise<{ stop: () => void }> {
   return { stop: () => proc.kill('SIGTERM') };
 }
 
+async function closeBrowserWithTimeout(browser: Browser): Promise<void> {
+  await Promise.race([
+    browser.close(),
+    new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.warn('captureDemo: browser.close timed out; continuing after artifact write');
+        resolve();
+      }, 5000);
+    }),
+  ]);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   console.log(`captureDemo: module=${args.module}, output=${args.output}`);
@@ -117,7 +129,10 @@ async function main(): Promise<void> {
     }
     const loaded2 = await loadScriptFeatures(scriptPath2);
     const { features: featureMeshes2, bounds: bounds2, failedFeatureIds: failedIds2 } =
-      await meshFeaturesPerFeature(loaded2.features.map((f) => f.record));
+      await meshFeaturesPerFeature(
+        loaded2.features.map((f) => f.record),
+        loaded2.paramTable,
+      );
     if (failedIds2.length > 0) {
       console.error(`captureDemo: ${failedIds2.length} feature(s) failed to compile: ${failedIds2.join(', ')}`);
       console.error('Aborting capture — partial scene would produce a broken demo.');
@@ -161,9 +176,9 @@ async function main(): Promise<void> {
       const buf = await page.screenshot({ type: 'png' });
       await ffmpeg.pushFrame(buf);
     }
-    await ffmpeg.finalize();
-    await browser.close();
     vite.stop();
+    await ffmpeg.finalize();
+    await closeBrowserWithTimeout(browser);
     return;
   }
 
@@ -205,6 +220,7 @@ async function main(): Promise<void> {
   // Node-side per-feature meshing: builds the scene authoritative source of truth.
   const { features: featureMeshes, bounds, failedFeatureIds } = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
+    loaded.paramTable,
   );
   if (failedFeatureIds.length > 0) {
     console.error(`captureDemo: ${failedFeatureIds.length} feature(s) failed to compile: ${failedFeatureIds.join(', ')}`);
@@ -249,6 +265,7 @@ async function main(): Promise<void> {
 
   const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
   const sortedEvents = loaded.features
+    .filter((f) => meshById.has(f.id))
     .map((f) => {
       const mesh = meshById.get(f.id);
       if (!mesh) {
@@ -260,6 +277,9 @@ async function main(): Promise<void> {
   let nextEventIdx = 0;
 
   for (let frameIdx = 0; frameIdx * frameMs <= pacing.totalDurationMs - pacing.rotateDurationMs; frameIdx++) {
+    if (frameIdx > 0 && frameIdx % 60 === 0) {
+      console.log(`captureDemo: build frame ${frameIdx}`);
+    }
     const elapsedMs = frameIdx * frameMs;
     // Clear title card after preRoll.
     if (pacing.preRollMs > 0 && elapsedMs >= pacing.preRollMs && elapsedMs < pacing.preRollMs + frameMs) {
@@ -292,6 +312,9 @@ async function main(): Promise<void> {
   await page.evaluate((d) => window.__demoPlayer!.setRotatePhase(d), pacing.rotateDurationMs);
   const rotateFrames = Math.floor(pacing.rotateDurationMs / frameMs);
   for (let i = 0; i < rotateFrames; i++) {
+    if (i > 0 && i % 60 === 0) {
+      console.log(`captureDemo: rotate frame ${i}/${rotateFrames}`);
+    }
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
     const buf = await page.screenshot({ type: 'png' });
     await ffmpeg.pushFrame(buf);
@@ -325,7 +348,7 @@ async function main(): Promise<void> {
   writeFileSync(
     join(args.output, 'meta.json'),
     JSON.stringify({
-      taskId: args.task ?? basename(scriptPath),
+      taskId: args.task ?? basename(resolve(args.output)),
       module: args.module,
       capturedAt: new Date().toISOString(),
       durationMs: pacing.totalDurationMs,
@@ -347,8 +370,8 @@ async function main(): Promise<void> {
     }, null, 2),
   );
 
-  await browser.close();
   vite.stop();
+  await closeBrowserWithTimeout(browser);
 }
 
 main().catch((e) => {
