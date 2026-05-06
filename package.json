@@ -33,6 +33,7 @@
     "site:build": "npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs",
     "site:render-brand": "node site/scripts/render-brand.mjs",
     "site:test": "vitest run scripts/lib/selectHeroDemo.test.ts",
+    "site:verify-production": "npx tsx scripts/verifyProductionSite.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "qc:lint": "npm run lint && npm run cookbook:validate",
