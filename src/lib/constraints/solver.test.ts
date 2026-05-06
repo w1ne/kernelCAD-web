@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConstraintSolver } from './solver';
 import type { SolverState, SketchEntity, Point } from './types';
+import {
+    createRocketConstraintState,
+    lineAngleDeg,
+    pointDistance,
+    pointLineDistance as distanceToLine,
+} from '../../../tests/fixtures/rocketConstraintSketch';
 
 function asPoint(e: SketchEntity | undefined): Point {
     if (!e || e.type !== 'POINT') {
@@ -268,5 +274,34 @@ describe('ConstraintSolver', () => {
         const right = asPoint(state.entities.get('right'));
         expect(right.x).toBeCloseTo(10);
         expect(right.y).toBeCloseTo(4);
+    });
+
+    it('solves a rocket-keychain sketch using v0.4 constraint families together', () => {
+        state = createRocketConstraintState();
+
+        solver.solve(state);
+
+        const rightShoulder = asPoint(state.entities.get('right_shoulder'));
+        const rightFinTip = asPoint(state.entities.get('right_fin_tip'));
+        const rightFinRoot = asPoint(state.entities.get('right_fin_root'));
+        const windowCenter = asPoint(state.entities.get('window_center'));
+        const innerWindowCenter = asPoint(state.entities.get('inner_window_center'));
+        const skinCenter = asPoint(state.entities.get('skin_center'));
+        const leftShoulder = asPoint(state.entities.get('left_shoulder'));
+        const nose = asPoint(state.entities.get('nose'));
+
+        expect(rightShoulder.x).toBeCloseTo(24, 2);
+        expect(rightShoulder.y).toBeCloseTo(34, 2);
+        expect(rightFinTip.x).toBeCloseTo(54.2, 1);
+        expect(rightFinTip.y).toBeCloseTo(-42.1, 1);
+        expect(rightFinRoot.x).toBeCloseTo(22, 2);
+        expect(rightFinRoot.y).toBeCloseTo(-22, 2);
+        expect(pointDistance(windowCenter, asPoint(state.entities.get('axis_top')))).toBeCloseTo(46, 1);
+        expect(innerWindowCenter.x).toBeCloseTo(windowCenter.x, 2);
+        expect(innerWindowCenter.y).toBeCloseTo(windowCenter.y, 2);
+
+        const finAngle = lineAngleDeg(rightFinRoot, rightFinTip);
+        expect(finAngle).toBeCloseTo(-32, 1);
+        expect(distanceToLine(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
     });
 });

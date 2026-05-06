@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Command } from 'cmdk';
+import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command as CommandIcon } from 'lucide-react';
 import { useCommandRegistry } from '../../hooks/useCommandRegistry';
@@ -70,7 +71,10 @@ export function CommandPalette() {
                             transition={{ type: "spring", bounce: 0.3, duration: 0.3 }}
                             className="relative w-full max-w-xl overflow-hidden rounded-xl border border-white/10 bg-zinc-900/90 shadow-2xl backdrop-blur-xl"
                         >
-                            <span role="heading" aria-level={2} className="sr-only">Command Palette</span>
+                            <DialogTitle className="sr-only">Command Palette</DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Search and run available kernelCAD commands.
+                            </DialogDescription>
 
                             <div className="flex items-center border-b border-white/10 px-4">
                                 <Search className="mr-2 h-5 w-5 text-zinc-500" />

@@ -6,6 +6,13 @@ import {
   solveSketchTool,
   SUPPORTED_CONSTRAINT_TYPES,
 } from '../../../../src/mcp/tools/constraints';
+import {
+  cloneRocketConstraintEntities,
+  cloneRocketConstraintList,
+  lineAngleDeg,
+  pointDistance,
+  pointLineDistance,
+} from '../../../fixtures/rocketConstraintSketch';
 
 function entity<T extends SketchEntity>(entities: SketchEntity[], id: string): T {
   const found = entities.find(e => e.id === id);
@@ -145,5 +152,51 @@ describe('MCP constraint tools', () => {
       'SYMMETRIC',
     ]);
     expect(result.constraints).toHaveLength(1);
+  });
+
+  it('adds, lists, and solves the rocket-keychain constraint vocabulary', async () => {
+    let constraints: Array<{ id: string; type: ConstraintType; entities: string[]; value?: number }> = [];
+
+    for (const constraint of cloneRocketConstraintList()) {
+      const added = await addConstraintTool({ constraints, constraint });
+      expect(added.ok).toBe(true);
+      constraints = added.constraints;
+    }
+
+    const listed = await listConstraintsTool({ constraints });
+    expect(listed.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
+    expect(listed.constraints.map(c => c.type)).toEqual([
+      'SYMMETRIC',
+      'SYMMETRIC',
+      'SYMMETRIC',
+      'DISTANCE',
+      'CONCENTRIC',
+      'ANGLE',
+      'TANGENT',
+    ]);
+
+    const solved = await solveSketchTool({
+      entities: cloneRocketConstraintEntities(),
+      constraints,
+    });
+
+    expect(solved.ok).toBe(true);
+    const rightShoulder = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'right_shoulder');
+    const windowCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'window_center');
+    const innerWindowCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'inner_window_center');
+    const axisTop = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'axis_top');
+    const rightFinRoot = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'right_fin_root');
+    const rightFinTip = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'right_fin_tip');
+    const skinCenter = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'skin_center');
+    const leftShoulder = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'left_shoulder');
+    const nose = entity<{ x: number; y: number; type: 'POINT' }>(solved.entities, 'nose');
+
+    expect(rightShoulder.x).toBeCloseTo(24, 2);
+    expect(rightShoulder.y).toBeCloseTo(34, 2);
+    expect(pointDistance(axisTop, windowCenter)).toBeCloseTo(46, 1);
+    expect(innerWindowCenter.x).toBeCloseTo(windowCenter.x, 2);
+    expect(innerWindowCenter.y).toBeCloseTo(windowCenter.y, 2);
+    expect(lineAngleDeg(rightFinRoot, rightFinTip)).toBeCloseTo(-32, 1);
+    expect(pointLineDistance(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
   });
 });

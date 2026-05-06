@@ -1,6 +1,11 @@
 // tests/unit/mcp/edits/addFeature.test.ts
 import { describe, it, expect } from 'vitest';
 import { addFeature } from '../../../../src/mcp/edits/addFeature';
+import { parseCode } from '../../../../src/lib/ast';
+
+function expectParseable(code: string): void {
+  expect(() => parseCode(code)).not.toThrow();
+}
 
 describe('addFeature primitive', () => {
   it('inserts a feature before the last return statement', () => {
@@ -17,6 +22,7 @@ describe('addFeature primitive', () => {
       `const hole = cylinder(5, 2);`,
       `return base;`,
     ].join('\n'));
+    expectParseable(r.new_code);
   });
 
   it('preserves indentation of the surrounding lines', () => {
@@ -27,6 +33,7 @@ describe('addFeature primitive', () => {
     const r = addFeature(code, `const h = param('Height', 30);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toContain(`  const h = param('Height', 30);\n  return box(w, 20, 5);`);
+    expectParseable(r.new_code);
   });
 
   it('inserts before the LAST return when multiple returns exist (e.g., in helpers)', () => {
@@ -40,6 +47,7 @@ describe('addFeature primitive', () => {
     // The helper's return is preserved; insertion is before the top-level return.
     expect(r.new_code).toContain(`function helper() { return 5; }`);
     expect(r.new_code).toContain(`const t = 3;\nreturn box(w, 20, 5);`);
+    expectParseable(r.new_code);
   });
 
   it('handles return with multi-line expression', () => {
@@ -53,6 +61,7 @@ describe('addFeature primitive', () => {
     expect(r.ok).toBe(true);
     // Insert before the line containing 'return' — multi-line return is preserved.
     expect(r.new_code).toContain(`const b = cylinder(3, 1);\nreturn a`);
+    expectParseable(r.new_code);
   });
 
   it('errors when no return statement is found', () => {
@@ -67,6 +76,7 @@ describe('addFeature primitive', () => {
     const r = addFeature(code, `const w = param('Width', 60);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = param('Width', 60);\nreturn box(10, 10, 10);`);
+    expectParseable(r.new_code);
   });
 
   it('preserves trailing newline in source', () => {
@@ -74,5 +84,6 @@ describe('addFeature primitive', () => {
     const r = addFeature(code, `const h = box(2, 2, 2);`);
     expect(r.ok).toBe(true);
     expect(r.new_code).toBe(`const w = box(1, 1, 1);\nconst h = box(2, 2, 2);\nreturn w;\n`);
+    expectParseable(r.new_code);
   });
 });

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { insertShape, getDeclaredVariablesAST } from '../lib/ast';
+import { insertShape, getDeclaredVariablesAST, parseCode } from '../lib/ast';
+
+function expectParseable(code: string): void {
+    expect(() => parseCode(code)).not.toThrow();
+}
 
 describe('Integration - Shape Insertion Workflow', () => {
     it('should insert Box and auto-update return array', () => {
@@ -16,6 +20,7 @@ export default function main() {
 
         expect(codeAfterBox).toContain('const box');
         expect(codeAfterBox).toContain('return [box]');
+        expectParseable(codeAfterBox);
     });
 
     it('should insert multiple shapes and maintain return array order', () => {
@@ -36,6 +41,7 @@ export default function main() {
         expect(codeWithBoth).toContain('const box');
         expect(codeWithBoth).toContain('const cylinder');
         expect(codeWithBoth).toContain('return [box, cylinder]');
+        expectParseable(codeWithBoth);
     });
 
     it('should handle Cylinder insertion workflow', () => {
@@ -52,6 +58,7 @@ export default function main() {
 
         expect(newCode).toContain('const cylinder');
         expect(newCode).toContain('return [cylinder]');
+        expectParseable(newCode);
     });
 
     it('should insert Sphere correctly', () => {
@@ -68,6 +75,7 @@ export default function main() {
 
         expect(newCode).toContain('const sphere');
         expect(newCode).toContain('return [sphere]');
+        expectParseable(newCode);
     });
 
     it('should work with default template (non-array return)', () => {
@@ -89,6 +97,7 @@ export default function main() {
         expect(newCode).toContain('const box');
         // Non-array return won't be auto-updated (expected behavior)
         expect(newCode).toContain('const filleted = rounded.cut(cyl);');
+        expectParseable(newCode);
     });
 
     it('should handle multiple sequential insertions', () => {
@@ -108,6 +117,7 @@ export default function main() {
 
         code = insertShape(code, 'const sphere = replicad.makeSphere(15);');
         expect(code).toContain('return [box, cylinder, sphere]');
+        expectParseable(code);
     });
 });
 
@@ -128,6 +138,7 @@ export default function main() {
         expect(newCode).toContain('const box ');
         expect(newCode).toContain('const box1');
         expect(newCode).toContain('return [box, box1]');
+        expectParseable(newCode);
     });
 
     it('should maintain variable naming consistency', () => {
@@ -144,6 +155,7 @@ export default function main() {
         const newCode = insertShape(code, 'const myShape3 = replicad.makeSphere(15);');
 
         expect(newCode).toContain('return [myShape1, myShape2, myShape3]');
+        expectParseable(newCode);
     });
 
     it('should extract all declared variables correctly', () => {
@@ -168,7 +180,7 @@ export default function main() {
 });
 
 describe('Integration - Regression Tests (Regex Bugs)', () => {
-    it('should NOT corrupt comments containing "return"', () => {
+    it('should ignore "return" text inside comments when updating code', () => {
         const codeWithComment = `
 export default function main() {
     function drawPart() {
@@ -181,10 +193,9 @@ export default function main() {
 
         const newCode = insertShape(codeWithComment, 'const cylinder = replicad.makeCylinder(10, 30);');
 
-        // Verify comment is NOT corrupted (this was a real bug with Regex)
-
-        // Verify actual return is correct
+        // Verify the actual return is updated, not the comment text.
         expect(newCode).toContain('return [box, cylinder]');
+        expectParseable(newCode);
     });
 
     it('should NOT match "return" in string literals', () => {
@@ -205,6 +216,7 @@ export default function main() {
 
         // Real return should be updated
         expect(newCode).toContain('return [box, cylinder]');
+        expectParseable(newCode);
     });
 
     it('should handle nested return statements correctly', () => {
@@ -220,8 +232,10 @@ export default function main() {
 
         const newCode = insertShape(codeWithNested, 'const cylinder = replicad.makeCylinder(10, 30);');
 
-        // Should only update drawPart's return, not the arrow function
+        // Should only update drawPart's return, not the arrow function.
+        expect(newCode).toContain('return [];');
         expect(newCode).toContain('return [box, cylinder]');
+        expectParseable(newCode);
     });
 });
 

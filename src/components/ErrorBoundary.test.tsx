@@ -2,7 +2,12 @@
 import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ErrorBoundary } from './ErrorBoundary';
-import { WorkbenchProvider } from '../context/WorkbenchContext';
+
+const useWorkbench = vi.fn(() => ({ code: 'return [];' }));
+
+vi.mock('../context/WorkbenchContext', () => ({
+    useWorkbench: () => useWorkbench(),
+}));
 
 // Mock clipboard
 const mockWriteText = vi.fn();
@@ -14,19 +19,6 @@ Object.defineProperty(navigator, 'clipboard', {
     configurable: true
 });
 
-// Mock Geometry Engine
-vi.mock('../lib/geometryEngine', () => {
-    return {
-        defaultCode: 'return [];',
-        GeometryEngine: {
-            getInstance: () => ({
-                initialize: vi.fn().mockResolvedValue(true),
-                executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),
-            })
-        }
-    };
-});
-
 // Component that throws error
 const Torpedo = () => {
     throw new Error("Boom!");
@@ -34,14 +26,12 @@ const Torpedo = () => {
 
 // Test wrapper
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <WorkbenchProvider>
-        <ErrorBoundary>
-            {children}
-        </ErrorBoundary>
-    </WorkbenchProvider>
+    <ErrorBoundary>
+        {children}
+    </ErrorBoundary>
 );
 
-describe.skip('ErrorBoundary', () => {
+describe('ErrorBoundary', () => {
     // Suppress console.error for expected errors
     const consoleError = console.error;
     beforeAll(() => {
@@ -53,6 +43,7 @@ describe.skip('ErrorBoundary', () => {
     afterEach(() => {
         cleanup();
         mockWriteText.mockClear();
+        useWorkbench.mockReturnValue({ code: 'return [];' });
     });
 
     it('should render children normally', () => {
@@ -75,18 +66,13 @@ describe.skip('ErrorBoundary', () => {
         expect(screen.getByText('Code Rescue')).toBeDefined();
     });
 
-    it('should allow copying code', async () => {
-        // We need to set code state before crashing.
-        // Since Torpedo crashes immediately, we might not set code in time if we do it inside.
-        // But ErrorFallback reads from Provider. 
-        // Let's rely on provider default code or pre-set it.
+    it('should allow copying code', () => {
+        useWorkbench.mockReturnValue({ code: 'const robust = true;' });
 
         render(
-            <WorkbenchProvider initialCode="const robust = true;">
-                <ErrorBoundary>
-                    <Torpedo />
-                </ErrorBoundary>
-            </WorkbenchProvider>
+            <Wrapper>
+                <Torpedo />
+            </Wrapper>
         );
 
         const copyBtn = screen.getByText('Copy Code');

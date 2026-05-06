@@ -162,6 +162,28 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
 
+### Constrained sketches (v0.4 MCP)
+
+The script `path()` API remains the way to author production geometry. The v0.4 constrained-sketch MCP tools are for side-effect-free sketch solving and agent discovery: pass explicit `POINT`, `LINE`, and `CIRCLE` entity records plus a constraint list, then use the returned coordinates to author or adjust a script.
+
+Supported constraint types:
+
+`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`
+
+Minimal tool flow:
+
+- `list_constraints({ constraints? })` — discover the supported types and echo the current constraint list.
+- `add_constraint({ constraints?, constraint })` — validate one constraint and return a new list; no session state is mutated.
+- `solve_sketch({ entities, constraints })` — solve a 2D constraint set and return `{ ok, entities, constraints }` or validation errors; no script is modified.
+
+Entity and selection recovery:
+
+- If a constraint references a missing id, list the entity ids you are passing and fix the `entities` array before solving.
+- If a `LINE` references non-POINT endpoints or a `CIRCLE` references a non-POINT center, replace the referenced id with a `POINT`.
+- If a constraint reports the wrong entity count, check the type arity: most types use 2 entities; `RADIUS` uses 1, `ANGLE` uses 1 or 2, and `SYMMETRIC` uses 3.
+- If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
+- If the type is unsupported, call `list_constraints({})` or `list_api({})` and choose one of the supported types above.
+
 ## Face refs through operations
 
 Canonical face refs (`{ face: 'top' }`, etc.) work transparently across transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and unambiguous booleans (`.subtract`, `.union`, `.intersect`). The kernel walks each face's lineage back to its originating primitive and forward through history.
@@ -430,7 +452,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
-- `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods)
+- `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `list_diagnostic_codes({})` — return the 24-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
@@ -438,7 +460,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `params_update({ edits })` — edit one or more active-session params atomically and re-lower affected records; returns a shape preview, skipped/relowered record ids, and soft warnings.
 - `solve_sketch({ entities, constraints })` — solve a 2D POINT/LINE/CIRCLE sketch constraint set; returns `{ ok, entities, constraints }` or validation errors. Side-effect-free.
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
-- `list_constraints({ constraints? })` — list supported sketch constraint types and echo the provided constraint list.
+- `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
 
 ## Out of Scope
 

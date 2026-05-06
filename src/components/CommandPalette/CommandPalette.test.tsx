@@ -62,6 +62,25 @@ describe('CommandPalette', () => {
         expect(await screen.findByPlaceholderText('Type a command or search...')).toBeDefined();
     });
 
+    it('opens without Radix dialog accessibility warnings', async () => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        try {
+            render(<CommandPalette />);
+
+            fireEvent.keyDown(document, { key: 'k', metaKey: true });
+            expect(await screen.findByPlaceholderText('Type a command or search...')).toBeDefined();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+
+            expect(consoleError).not.toHaveBeenCalled();
+            expect(consoleWarn).not.toHaveBeenCalled();
+        } finally {
+            consoleError.mockRestore();
+            consoleWarn.mockRestore();
+        }
+    });
+
     it('should display registered commands', async () => {
         render(<CommandPalette />);
         fireEvent.keyDown(document, { key: 'k', metaKey: true });

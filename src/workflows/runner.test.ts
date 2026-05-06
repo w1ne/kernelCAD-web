@@ -30,9 +30,9 @@ describe('Headless Workflow Validation', () => {
 
     const activeWorkflows = getWorkflows();
 
-    if (activeWorkflows.length === 0) {
-        test.skip('No workflows registered', () => { });
-    }
+    test('registers workflow definitions', () => {
+        expect(activeWorkflows.length).toBeGreaterThan(0);
+    });
 
     activeWorkflows.forEach((workflow) => {
         const timeoutMs = workflow.expected.timeoutMs ?? 30_000;

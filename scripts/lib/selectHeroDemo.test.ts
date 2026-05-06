@@ -65,6 +65,25 @@ test('non-grandfathered, no catalog match — throws', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('non-grandfathered approved override can be selected when catalog has no match', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+  mkdirSync(path.join(root, 'v0.4', 'rocket-keychain'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.4', 'rocket-keychain', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'rocket-keychain',
+      overrideApprovedBy: 'controller: user selected this reference',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.4', 'rocket-keychain', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.4.0', demosRoot: root });
+  expect(result.task).toBe('rocket-keychain');
+  expect(result.heroArtifact).toBe('rocket-keychain');
+
+  rmSync(root, { recursive: true, force: true });
+});
+
 test('grandfathered v0.2 single-task fallback', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
   mkdirSync(path.join(root, 'v0.2', 'subtract-then-fillet-rim'), { recursive: true });

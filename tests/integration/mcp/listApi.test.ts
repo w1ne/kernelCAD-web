@@ -1,6 +1,7 @@
 // tests/integration/mcp/listApi.test.ts
 import { describe, it, expect } from 'vitest';
 import { listApiTool, GLOBALS } from '../../../src/mcp/tools/listApi';
+import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/mcp/tools/constraints';
 
 describe('list_api MCP tool', () => {
   it('returns globals including box, path, selectEdges, helix', async () => {
@@ -78,5 +79,12 @@ describe('list_api MCP tool', () => {
     // description mentions canonical face names AND FaceQuery
     expect(fkfl.description).toMatch(/top|bottom|left|right|front|back/);
     expect(fkfl.description).toContain('FaceQuery');
+  });
+
+  it('returns constrained-sketch MCP tool discovery with supported constraint types', async () => {
+    const r = await listApiTool({});
+    expect(r.constraints).toBeDefined();
+    expect(r.constraints!.tools).toEqual(['list_constraints', 'add_constraint', 'solve_sketch']);
+    expect(r.constraints!.supportedTypes).toEqual(SUPPORTED_CONSTRAINT_TYPES);
   });
 });
