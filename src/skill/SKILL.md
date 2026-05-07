@@ -66,6 +66,10 @@ path(): PathBuilder;
 // Boolean union of two or more shapes (top-level alternative to .union()).
 union(...shapes: Shape[]): Shape;
 
+// Inspectable mechanical assembly intent. Captures parts and joints as records;
+// v0.6 assembly records lower as geometry pass-throughs, not as a kinematic solver.
+assembly(name?: string): Assembly;
+
 // Polyline helix rail for Sketch.sweep.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
@@ -116,6 +120,33 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 `EdgeSelector = EdgeQuery | EdgeSegment[] | { face: string | FaceQuery } | undefined`
 `FaceSelector = CanonicalFace | string (label) | FaceQuery`
 `CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back'`
+
+### Assembly intent
+
+Use `assembly()` when the model needs named mechanical parts and joint metadata that a human or agent can inspect later. Keep returning/exporting real Shape geometry separately; assembly records are part/joint intent, not a full motion solve yet.
+
+```typescript
+const arm = assembly('two-link arm');
+const base = arm.part('base', box(30, 30, 8), { at: [0, 0, 0] });
+const link = arm.part('link', box(80, 12, 8), { at: [0, 0, 8] });
+
+arm.revolute('shoulder', base, link, {
+  axis: [0, 0, 1],
+  origin: [0, 0, 8],
+  limitsDeg: [-90, 90],
+});
+```
+
+```typescript
+interface Assembly {
+  part(name: string, shape: Shape, opts?: { at?: [number, number, number] }): AssemblyPartRef;
+  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {
+    axis: [number, number, number];
+    origin: [number, number, number];
+    limitsDeg?: [number, number];
+  }): AssemblyJointRef;
+}
+```
 
 ### Sketch methods
 

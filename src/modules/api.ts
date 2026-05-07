@@ -1,5 +1,6 @@
 import type { CaptureSession } from '../capture/captureSession';
 import { validateFaceLabels } from '../capture/faceLabels';
+import { makeAssembly, type Assembly } from '../capture/assembly';
 import { Shape } from '../capture/proxy';
 import { makePath, type PathBuilder } from '../capture/sketch';
 import type { Param } from '../intent/types';
@@ -34,6 +35,7 @@ export interface KernelCadApi {
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   revolveRect(w: Editable<number>, h: Editable<number>, offsetX: Editable<number>, angleDeg?: Editable<number>, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
+  assembly(name?: string): Assembly;
 
   // Slice-3 symbolic params (replaces slice-1's number-returning param()).
   // See spec §E.1, §E.2.
@@ -154,6 +156,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       if (shapes.length < 2) throw new Error('union() requires at least 2 shapes');
       const [first, ...rest] = shapes;
       return first.union(...rest);
+    },
+    assembly(name) {
+      return makeAssembly(name, session);
     },
     param(name, defaultValue, meta) {
       // Prevent re-wrapping if the agent accidentally passes a ParamRef
