@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
+import { ConstraintSolver } from '../lib/constraints/solver';
+import type { SolverState, SketchEntity } from '../lib/constraints/types';
 
 const runE2E = process.env.KERNELCAD_E2E === '1';
 const describeE2E = runE2E ? describe : describe.skip;
@@ -61,7 +63,25 @@ describeE2E('Core Workflows E2E', () => {
     });
 
     describe('2. The Constraint-Solve Workflow', () => {
-        it.todo('should solve constraints through the legacy E2E workflow');
+        it('should solve constraints through the kernel constraint solver', () => {
+            const solver = new ConstraintSolver();
+            const state: SolverState = {
+                entities: new Map<string, SketchEntity>([
+                    ['fixed', { id: 'fixed', type: 'POINT', x: 0, y: 0, fixed: true }],
+                    ['moving', { id: 'moving', type: 'POINT', x: 7, y: 0, fixed: false }],
+                ]),
+                constraints: [
+                    { id: 'distance', type: 'DISTANCE', entities: ['fixed', 'moving'], value: 20 },
+                ],
+            };
+
+            solver.solve(state);
+
+            const moving = state.entities.get('moving');
+            if (!moving || moving.type !== 'POINT') throw new Error('moving point missing');
+            expect(moving.x).toBeCloseTo(20);
+            expect(moving.y).toBeCloseTo(0);
+        });
     });
 
     describe('3. The Extrude-Solid Workflow', () => {

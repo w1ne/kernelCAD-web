@@ -6,7 +6,7 @@ import type {
   ShapeBackend,
 } from '../backend';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind, PlaneSpec } from '../../intent/types';
+import type { FeatureKind, PatternSpec, PlaneSpec } from '../../intent/types';
 import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
@@ -246,6 +246,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sweep',     // NEW (v0.13.0-rc.8)
     'loft',      // NEW (v0.13.0-rc.10)
     'mirror',    // NEW (v0.13.0-rc.13)
+    'pattern',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -1110,6 +1111,48 @@ export class OcctLowerer implements FeatureLowerer {
           }
           // else: face count mismatch due to mirror-plane face merging — leave shape
           // without historyMap; resolver will return face-ref-not-resolvable.
+        }
+        break;
+      }
+      case 'pattern': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `pattern base input is missing or failed.`,
+            hint: 'Pattern features must reference a successfully lowered base shape.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const pattern = (r.metadata as { pattern?: PatternSpec } | undefined)?.pattern;
+        if (!pattern) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: 'pattern feature is missing pattern metadata.',
+            hint: 'Create patterns through .patternLinear(...) or .patternCircular(...).',
+          });
+          return { shape: base, diagnostics };
+        }
+
+        shape = base.clone();
+        for (let i = 1; i < pattern.count; i++) {
+          let instance: OcctBackend;
+          if (pattern.kind === 'linear') {
+            instance = base.clone().translate(
+              pattern.direction[0] * pattern.spacing * i,
+              pattern.direction[1] * pattern.spacing * i,
+              pattern.direction[2] * pattern.spacing * i,
+            );
+          } else {
+            instance = base.clone().rotate(pattern.axis, (pattern.angleDeg / pattern.count) * i);
+          }
+          shape = shape.union(instance);
         }
         break;
       }

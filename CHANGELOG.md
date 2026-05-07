@@ -60,6 +60,17 @@ npm run dev
 
 ## [Unreleased]
 
+### Added — foundation + mechanical core preparation
+
+- Added an executable test-quality audit so focused tests and `it.todo` cases
+  cannot be mistaken for release proof.
+- Added the first Patterns contract with `.patternLinear(...)` and
+  `.patternCircular(...)` shape methods, captured as canonical `.kcad.ts`
+  model intent and advertised through MCP `list_api`.
+- Added a focused foundation proof script covering typecheck, test-quality
+  audit, constraints, diagnostics, release-note template checks, MCP API drift,
+  and pattern capture/lowering behavior.
+
 ### Added — v0.3 slice 3: symbolic params + edit-after-build replay
 
 Slice 3 adds the first durable param lifecycle: `param()` and `params({...})`

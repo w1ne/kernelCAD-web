@@ -1,6 +1,6 @@
 ---
 name: kernelcad
-description: kernelCAD model authoring guide for `.kcad.ts` scripts — primitives, transforms, booleans, edge features (fillet/chamfer/shell), face features, sketches with arbitrary profiles, sketch operations (extrude/revolve/sweep/loft/reflect), path builder, mirror/reflect, editable parameters, exports. Use when writing or modifying kernelCAD geometry from a coding agent context.
+description: kernelCAD model authoring guide for `.kcad.ts` scripts — primitives, transforms, booleans, patterns, edge features (fillet/chamfer/shell), face features, sketches with arbitrary profiles, sketch operations (extrude/revolve/sweep/loft/reflect), path builder, mirror/reflect, editable parameters, exports. Use when writing or modifying kernelCAD geometry from a coding agent context.
 ---
 
 # kernelCAD
@@ -104,6 +104,10 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 .reflect(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
 // Boolean union of the source and its reflection — produces a symmetric part:
 .mirror(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }): Shape
+
+// Mechanical patterns:
+.patternLinear({ count, direction, spacing }: { count: number; direction: [number, number, number]; spacing: number }): Shape
+.patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
 
 // Eager lowering (for inspection; rarely called by agents directly):
 .lower(): Promise<OcctBackend>

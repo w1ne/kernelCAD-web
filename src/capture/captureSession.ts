@@ -1,6 +1,6 @@
 import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureKind, FeatureRef, Param, PlaneSpec } from '../intent/types';
+import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
@@ -179,6 +179,20 @@ export class CaptureSession {
       params: {},
       inputs,
       metadata: { plane },
+    });
+  }
+
+  patternFeature(base: Shape, pattern: PatternSpec): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`pattern: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    return this.createShape({
+      kind: 'pattern',
+      params: {},
+      inputs: {
+        base: { kind: 'feature', id: base.id },
+      },
+      metadata: { pattern },
     });
   }
 
