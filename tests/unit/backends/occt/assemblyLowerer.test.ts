@@ -51,4 +51,30 @@ describe('OCCT assembly lowerer', () => {
     const stl = await (shape as OcctBackend).exportSTLAsync();
     expect(stl.byteLength).toBeGreaterThan(0);
   });
+
+  it('lowers connector-placed parts at the computed fixed placement', async () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const assembly = kcad.assembly('connector assembly');
+    const base = assembly.part('base', kcad.box(20, 20, 8), {
+      at: [0, 0, 0],
+      connectors: { mount: { origin: [10, 0, 8] } },
+    });
+    assembly.part('link', kcad.box(60, 8, 6), {
+      connectors: { root: { origin: [-30, 0, 0] } },
+      connect: { connector: 'root', to: base.connector('mount') },
+    });
+    const model = assembly.model();
+
+    const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
+
+    expect(result.diagnostics).toEqual([]);
+    const shape = result.shapes.get(model.id);
+    expect(shape).toBeDefined();
+    if (!shape) throw new Error('assembly model did not lower');
+    const bbox = shape.boundingBox();
+    expect(bbox.min[0]).toBeCloseTo(0, 5);
+    expect(bbox.max[0]).toBeCloseTo(100, 5);
+    expect(bbox.max[2]).toBeCloseTo(14, 5);
+  });
 });

@@ -3,7 +3,12 @@ import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
-import type { AssemblyPartOpts, AssemblyPartRef, RevoluteJointOpts } from './assembly';
+import type {
+  AssemblyConnectorRef,
+  AssemblyPartOpts,
+  AssemblyPartRef,
+  RevoluteJointOpts,
+} from './assembly';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
@@ -197,7 +202,12 @@ export class CaptureSession {
     });
   }
 
-  assemblyPart(assemblyName: string, partName: string, shape: Shape, opts: AssemblyPartOpts = {}): FeatureRecord {
+  assemblyPart(
+    assemblyName: string,
+    partName: string,
+    shape: Shape,
+    opts: Pick<AssemblyPartOpts, 'at' | 'connectors'> & { placedBy?: AssemblyPartOpts['connect'] } = {},
+  ): FeatureRecord {
     if (!this.records.some(r => r.id === shape.id)) {
       throw new Error(`assembly.part: shape '${shape.id}' is not from this CaptureSession`);
     }
@@ -211,6 +221,58 @@ export class CaptureSession {
         assemblyName,
         partName,
         ...(opts.at !== undefined ? { at: opts.at } : {}),
+        ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
+        ...(opts.placedBy !== undefined ? {
+          placedBy: {
+            connector: opts.placedBy.connector,
+            to: {
+              partId: opts.placedBy.to.partId,
+              partName: opts.placedBy.to.partName,
+              connector: opts.placedBy.to.connector,
+            },
+          },
+        } : {}),
+      },
+    });
+  }
+
+  assemblyConnect(
+    assemblyName: string,
+    connectName: string,
+    a: AssemblyConnectorRef,
+    b: AssemblyConnectorRef,
+  ): FeatureRecord {
+    for (const connector of [a, b]) {
+      const record = this.records.find(r => r.id === connector.partId);
+      if (!record || record.kind !== 'assemblyPart') {
+        throw new Error(`assembly.connect: part '${connector.partId}' is not an assembly part in this CaptureSession`);
+      }
+    }
+    return this.register({
+      kind: 'assemblyConnect',
+      params: {},
+      inputs: {
+        a: { kind: 'feature', id: a.partId },
+        b: { kind: 'feature', id: b.partId },
+      },
+      metadata: {
+        assemblyName,
+        connectName,
+        kind: 'fixed',
+        a: {
+          partName: a.partName,
+          connector: a.connector,
+          origin: a.origin,
+          worldOrigin: a.worldOrigin,
+          ...(a.axis !== undefined ? { axis: a.axis } : {}),
+        },
+        b: {
+          partName: b.partName,
+          connector: b.connector,
+          origin: b.origin,
+          worldOrigin: b.worldOrigin,
+          ...(b.axis !== undefined ? { axis: b.axis } : {}),
+        },
       },
     });
   }

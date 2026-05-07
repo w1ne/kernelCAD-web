@@ -102,4 +102,125 @@ describe('assembly capture contract', () => {
       origin: [0, 0, 0],
     })).toThrow(/revolute joint axis must be a finite Vec3/);
   });
+
+  it('captures named connector frames and fixed placement between parts', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const arm = kcad.assembly('connector arm');
+    const base = arm.part('base', kcad.box(20, 20, 8), {
+      at: [0, 0, 0],
+      connectors: {
+        shoulder: { origin: [10, 0, 8], axis: [0, 0, 1] },
+      },
+    });
+    const link = arm.part('link', kcad.box(60, 8, 6), {
+      connectors: {
+        root: { origin: [-30, 0, 0], axis: [0, 0, 1] },
+      },
+      connect: {
+        connector: 'root',
+        to: base.connector('shoulder'),
+        name: 'shoulder-fixed',
+      },
+    });
+
+    const records = session.getRecords();
+    expect(records.find(r => r.id === base.id)).toMatchObject({
+      kind: 'assemblyPart',
+      metadata: {
+        assemblyName: 'connector arm',
+        partName: 'base',
+        at: [0, 0, 0],
+        connectors: {
+          shoulder: { origin: [10, 0, 8], axis: [0, 0, 1] },
+        },
+      },
+    });
+    expect(records.find(r => r.id === link.id)).toMatchObject({
+      kind: 'assemblyPart',
+      metadata: {
+        assemblyName: 'connector arm',
+        partName: 'link',
+        at: [40, 0, 8],
+        connectors: {
+          root: { origin: [-30, 0, 0], axis: [0, 0, 1] },
+        },
+        placedBy: {
+          connector: 'root',
+          to: { partId: base.id, partName: 'base', connector: 'shoulder' },
+        },
+      },
+    });
+    expect(records.at(-1)).toMatchObject({
+      kind: 'assemblyConnect',
+      inputs: {
+        a: { kind: 'feature', id: base.id },
+        b: { kind: 'feature', id: link.id },
+      },
+      metadata: {
+        assemblyName: 'connector arm',
+        connectName: 'shoulder-fixed',
+        kind: 'fixed',
+        a: { partName: 'base', connector: 'shoulder' },
+        b: { partName: 'link', connector: 'root' },
+      },
+    });
+  });
+
+  it('captures explicit fixed connector records between already placed parts', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const hinge = kcad.assembly('hinge');
+    const leafA = hinge.part('leafA', kcad.box(30, 10, 3), {
+      connectors: { pin: { origin: [15, 0, 1.5], axis: [0, 1, 0] } },
+    });
+    const leafB = hinge.part('leafB', kcad.box(30, 10, 3), {
+      at: [30, 0, 0],
+      connectors: { pin: { origin: [-15, 0, 1.5], axis: [0, 1, 0] } },
+    });
+
+    const connection = hinge.connect('pin-fixed', leafA.connector('pin'), leafB.connector('pin'));
+
+    expect(connection.id).toMatch(/^assemblyConnect_/);
+    expect(session.getRecords().at(-1)).toMatchObject({
+      kind: 'assemblyConnect',
+      inputs: {
+        a: { kind: 'feature', id: leafA.id },
+        b: { kind: 'feature', id: leafB.id },
+      },
+      metadata: {
+        assemblyName: 'hinge',
+        connectName: 'pin-fixed',
+        kind: 'fixed',
+        a: { partName: 'leafA', connector: 'pin', worldOrigin: [15, 0, 1.5] },
+        b: { partName: 'leafB', connector: 'pin', worldOrigin: [15, 0, 1.5] },
+      },
+    });
+  });
+
+  it('rejects connector placement when the local connector is missing', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('bad connector');
+    const base = arm.part('base', kcad.box(20, 20, 8), {
+      connectors: { shoulder: { origin: [0, 0, 8] } },
+    });
+
+    expect(() => arm.part('link', kcad.box(60, 8, 6), {
+      connectors: { root: { origin: [-30, 0, 0] } },
+      connect: { connector: 'missing', to: base.connector('shoulder') },
+    })).toThrow(/assembly.part connector 'missing' is not defined on part 'link'/);
+  });
+
+  it('rejects invalid connector frame vectors before capture', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('bad frame');
+
+    expect(() => arm.part('base', kcad.box(20, 20, 8), {
+      connectors: { shoulder: { origin: [0, Number.NaN, 8] } },
+    })).toThrow(/assembly connector 'shoulder' on part 'base' origin must be a finite Vec3/);
+  });
 });
