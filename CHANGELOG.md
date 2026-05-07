@@ -69,14 +69,14 @@ npm run dev
   model intent and advertised through MCP `list_api`.
 - Added the first v0.6 Assembly contract with `assembly(name).part(...)` and
   `.revolute(...)` intent capture for named mechanical parts and joints.
-  Assembly records are executable geometry pass-throughs for now, so scripts
-  can preserve inspectable assembly metadata without implying a kinematic
-  solver exists yet.
+  `assembly.model()` returns one fused/exportable Shape containing every placed
+  part while preserving joint records as inspectable metadata; full kinematic
+  solving is not implied yet.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.
 - Added `proof:assembly-contract` to verify foundation gates plus assembly
-  capture, assembly lowerer pass-through, and SKILL global discoverability.
+  capture, static assembly model lowering, and SKILL global discoverability.
 
 ### Added — v0.3 slice 3: symbolic params + edit-after-build replay
 

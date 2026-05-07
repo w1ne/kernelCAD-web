@@ -247,6 +247,30 @@ export class CaptureSession {
     });
   }
 
+  assemblyModel(assemblyName: string, parts: readonly AssemblyPartRef[]): Shape {
+    if (parts.length === 0) {
+      throw new Error('assembly.model requires at least one part');
+    }
+    const inputs: Record<string, FeatureRef> = {};
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const record = this.records.find(r => r.id === part.id);
+      if (!record || record.kind !== 'assemblyPart') {
+        throw new Error(`assembly.model: part '${part.id}' is not an assembly part in this CaptureSession`);
+      }
+      inputs[`part_${i}`] = { kind: 'feature', id: part.id };
+    }
+    return this.createShape({
+      kind: 'assemblyModel',
+      params: {},
+      inputs,
+      metadata: {
+        assemblyName,
+        partIds: parts.map(part => part.id),
+      },
+    });
+  }
+
   edgeFeature(
     kind: 'fillet' | 'chamfer' | 'shell',
     base: Shape,

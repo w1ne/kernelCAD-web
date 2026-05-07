@@ -28,6 +28,7 @@ export interface RevoluteJointOpts {
 export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
+  private readonly parts: AssemblyPartRef[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -44,7 +45,9 @@ export class Assembly {
       );
     }
     const record = this.session.assemblyPart(this.name, name, shape, opts);
-    return { id: record.id, name };
+    const part = { id: record.id, name };
+    this.parts.push(part);
+    return part;
   }
 
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
@@ -74,6 +77,18 @@ export class Assembly {
     }
     const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, opts);
     return { id: record.id, name, kind: 'revolute' };
+  }
+
+  model(): Shape {
+    if (this.parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.model requires at least one part.',
+        undefined,
+        'Call assembly.part(name, shape, opts?) before assembly.model().',
+      );
+    }
+    return this.session.assemblyModel(this.name, this.parts);
   }
 }
 
