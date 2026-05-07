@@ -11,6 +11,11 @@ import {
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import {
+  makeRobotArmKit,
+  type RobotArmKitDesign,
+  type RobotArmKitIntent,
+} from './robotArmKit';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../runtime/paramRef';
@@ -36,6 +41,7 @@ export interface KernelCadApi {
   revolveRect(w: Editable<number>, h: Editable<number>, offsetX: Editable<number>, angleDeg?: Editable<number>, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
+  robotArmKit(intent?: RobotArmKitIntent): RobotArmKitDesign;
 
   // Slice-3 symbolic params (replaces slice-1's number-returning param()).
   // See spec §E.1, §E.2.
@@ -54,7 +60,7 @@ const deg = (n: Editable<number>): Param => toParam(n, 'deg');
 
 export function createApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
-  return {
+  const api: KernelCadApi = {
     box(x, y, z, centered = false, opts) {
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
@@ -160,6 +166,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     assembly(name) {
       return makeAssembly(name, session);
     },
+    robotArmKit(intent) {
+      return makeRobotArmKit(api, intent);
+    },
     param(name, defaultValue, meta) {
       // Prevent re-wrapping if the agent accidentally passes a ParamRef
       // (would otherwise silently shadow a previously declared name).
@@ -197,4 +206,5 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       return selectEdgeBackend(lowered, query);
     },
   };
+  return api;
 }

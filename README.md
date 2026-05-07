@@ -52,7 +52,9 @@ kernelcad evaluate bracket.kcad.ts
 kernelcad export stl bracket.kcad.ts -o bracket.stl
 ```
 
-That's it. For agents: `kernelcad mcp` runs an MCP server with 13 introspection tools. See `SKILL.md` (bundled with the install) for the full API surface and authoring guide.
+That's it. For agents: `kernelcad mcp` runs an MCP server with dynamic model
+introspection tools. See `SKILL.md` (bundled with the install) for the full API
+surface and authoring guide.
 
 ## Contributing
 
