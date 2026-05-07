@@ -1144,6 +1144,21 @@ export class OcctLowerer implements FeatureLowerer {
         }
 
         shape = base.clone();
+        if (pattern.kind === 'grid') {
+          for (let x = 0; x < pattern.x.count; x++) {
+            for (let y = 0; y < pattern.y.count; y++) {
+              if (x === 0 && y === 0) continue;
+              const instance = base.clone().translate(
+                pattern.x.direction[0] * pattern.x.spacing * x + pattern.y.direction[0] * pattern.y.spacing * y,
+                pattern.x.direction[1] * pattern.x.spacing * x + pattern.y.direction[1] * pattern.y.spacing * y,
+                pattern.x.direction[2] * pattern.x.spacing * x + pattern.y.direction[2] * pattern.y.spacing * y,
+              );
+              shape = shape.union(instance);
+            }
+          }
+          break;
+        }
+
         for (let i = 1; i < pattern.count; i++) {
           let instance: OcctBackend;
           if (pattern.kind === 'linear') {

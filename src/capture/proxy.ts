@@ -178,6 +178,20 @@ export class Shape {
     return this.session.patternFeature(this, pattern);
   }
 
+  patternGrid(opts: {
+    x: { count: number; direction: [number, number, number]; spacing: number };
+    y: { count: number; direction: [number, number, number]; spacing: number };
+  }): Shape {
+    validateGridPatternAxis('patternGrid.x', opts.x, this.id);
+    validateGridPatternAxis('patternGrid.y', opts.y, this.id);
+    const pattern: PatternSpec = {
+      kind: 'grid',
+      x: opts.x,
+      y: opts.y,
+    };
+    return this.session.patternFeature(this, pattern);
+  }
+
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
     if (!Number.isInteger(opts.count) || opts.count < 2) {
       throw new KernelError(
@@ -420,6 +434,37 @@ export class Shape {
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;
     return shape;
+  }
+}
+
+function validateGridPatternAxis(
+  label: 'patternGrid.x' | 'patternGrid.y',
+  axis: { count: number; direction: [number, number, number]; spacing: number },
+  featureId: FeatureId,
+): void {
+  if (!Number.isInteger(axis.count) || axis.count < 2) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${label} count must be an integer >= 2.`,
+      featureId,
+      'Pass count: 2 or greater for both grid axes.',
+    );
+  }
+  if (!isValidVec3(axis.direction)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${label} direction must be a finite Vec3; got ${formatScalarForError(axis.direction)}.`,
+      featureId,
+      'Pass direction: [x, y, z] for both grid axes.',
+    );
+  }
+  if (typeof axis.spacing !== 'number' || !Number.isFinite(axis.spacing) || axis.spacing === 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${label} spacing must be a non-zero finite number; got ${formatScalarForError(axis.spacing)}.`,
+      featureId,
+      'Pass a non-zero finite spacing for both grid axes.',
+    );
   }
 }
 

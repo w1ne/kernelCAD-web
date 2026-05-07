@@ -123,6 +123,18 @@ export interface LinearPatternSpec {
   spacing: number;
 }
 
+export interface GridPatternAxisSpec {
+  count: number;
+  direction: Vec3;
+  spacing: number;
+}
+
+export interface GridPatternSpec {
+  kind: 'grid';
+  x: GridPatternAxisSpec;
+  y: GridPatternAxisSpec;
+}
+
 export interface CircularPatternSpec {
   kind: 'circular';
   count: number;
@@ -130,7 +142,7 @@ export interface CircularPatternSpec {
   angleDeg: number;
 }
 
-export type PatternSpec = LinearPatternSpec | CircularPatternSpec;
+export type PatternSpec = LinearPatternSpec | CircularPatternSpec | GridPatternSpec;
 
 /**
  * Format a scalar value for inclusion in an error message.

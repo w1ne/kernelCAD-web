@@ -82,6 +82,7 @@ export const SHAPE_METHODS: ApiEntry[] = [
   { name: 'reflect', signature: `(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }) => Shape`, description: 'Reflect (pure rigid-body transformation) across a cardinal plane or an offset parallel plane. Volume is unchanged; handedness is flipped.' },
   { name: 'mirror', signature: `(plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset: number }) => Shape`, description: 'Boolean union of the source and its reflection across a cardinal plane. Produces a symmetric part. For pure reflection without union, use reflect().' },
   { name: 'patternLinear', signature: '({ count, direction, spacing }) => Shape', description: 'Repeat this shape in a linear array. `count` is >= 2, `direction` is a Vec3, and `spacing` is the distance between instances.' },
+  { name: 'patternGrid', signature: '({ x: { count, direction, spacing }, y: { count, direction, spacing } }) => Shape', description: 'Repeat this shape in a two-axis grid. Each axis count is >= 2; directions are Vec3s and spacing is the distance between neighbors on that axis.' },
   { name: 'patternCircular', signature: '({ count, axis, angleDeg? }) => Shape', description: 'Repeat this shape around an axis. `count` is >= 2 and `angleDeg` defaults to 360 degrees.' },
   { name: 'lower', signature: '() => Promise<OcctBackend>', description: 'Eagerly lower this Shape for inspection. Used internally by selectEdges; agents rarely call directly.' },
 ];
