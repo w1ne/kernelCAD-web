@@ -28,6 +28,7 @@
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:e2e": "playwright test",
     "site:dev": "npx tsx site/scripts/build-demo.ts && cd site && for f in public/*; do ln -sf \"$f\" \"$(basename \"$f\")\"; done && python3 -m http.server 8000",
     "site:build": "npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs",
