@@ -499,9 +499,9 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic).
-- `set_param_value({ file? code?, param_name, value })` — override a param and recompute
-- `add_feature({ file? code?, kind, ... })` — append a new feature to the script's feature tree
-- `remove_feature({ file? code?, feature_id })` — suppress/remove a feature by id
+- `set_param_value({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
+- `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
+- `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
