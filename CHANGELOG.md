@@ -81,6 +81,8 @@ npm run dev
 - Added the first robot-arm intent workflow with `robotArmKit(intent)`, which
   generates named kit parts, validation metadata, a manifest, revolute joint
   records, and one static fused assembly model from a bounded mechanical intent.
+- Added `robotArmKit(intent).exportPackage()` to produce `manifest.json` plus
+  deterministic per-part `.kcad.ts` source files for individual part export.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.

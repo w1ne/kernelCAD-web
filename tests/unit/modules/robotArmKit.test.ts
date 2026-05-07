@@ -75,6 +75,43 @@ describe('robotArmKit intent workflow', () => {
     });
   });
 
+  it('packages a manifest and deterministic per-part source files for export', async () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const kit = kcad.robotArmKit({
+      name: 'desktop arm',
+      linkLengths: [72, 58, 34],
+      plateThickness: 4,
+      linkWidth: 18,
+      pivotDiameter: 5,
+      screwPattern: { x: 24, y: 12, diameter: 3 },
+    });
+
+    const pkg = kit.exportPackage();
+
+    expect(pkg.manifestFile).toBe('manifest.json');
+    expect(pkg.files.map(file => file.path)).toEqual([
+      'manifest.json',
+      'parts/base-plate.kcad.ts',
+      'parts/shoulder-link.kcad.ts',
+      'parts/elbow-link.kcad.ts',
+      'parts/wrist-link.kcad.ts',
+      'parts/tool-placeholder.kcad.ts',
+    ]);
+    const manifest = JSON.parse(pkg.files[0].contents);
+    expect(manifest).toMatchObject({
+      kind: 'robot-arm-kit',
+      name: 'desktop arm',
+    });
+    expect(manifest.parts[0]).toMatchObject({
+      name: 'base-plate',
+      sourceFile: 'parts/base-plate.kcad.ts',
+      exportFile: 'parts/base-plate.stl',
+    });
+    expect(pkg.files[1].contents).toContain("return kit.part('base-plate');");
+  });
+
   it('rejects invalid mechanical intent before creating geometry', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
