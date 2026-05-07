@@ -25,8 +25,7 @@ CAD source, feature history, diagnostics, validation, variants, and human review
 -   **Review Cockpit**: Browser-based 3D preview for inspecting generated designs and validation results.
 -   **Standard Exports**: STEP/STL generation.
 -   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
--   **Product Plan**: See [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md) for the north star and v0.5 direction.
-  
+
 ## Get Started
 
 ```bash
