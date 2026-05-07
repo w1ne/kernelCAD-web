@@ -86,6 +86,10 @@ export class OcctBackend implements ShapeBackend {
     return this.shape;
   }
 
+  clone(): OcctBackend {
+    return new OcctBackend(this.shape.clone() as ReplicadShape3D, this.kind, this.historyMap);
+  }
+
   /**
    * Internal accessor — returns the original `SketchCommand[]` if this is a
    * sketch-tagged backend, else `null`. Consumers (e.g. the revolve lowerer)

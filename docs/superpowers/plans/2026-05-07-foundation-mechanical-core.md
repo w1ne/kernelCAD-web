@@ -462,9 +462,9 @@ describe('OCCT pattern lowerer', () => {
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
 
     expect(result.diagnostics).toEqual([]);
-    const pattern = result.results.get('pattern_1');
-    expect(pattern?.ok).toBe(true);
-    if (!pattern || !pattern.ok) throw new Error('pattern did not lower');
+    const pattern = result.shapes.get('pattern_1');
+    expect(pattern).toBeDefined();
+    if (!pattern) throw new Error('pattern did not lower');
     const bbox = pattern.shape.boundingBox();
     expect(bbox.max[0] - bbox.min[0]).toBeGreaterThan(9);
   });
