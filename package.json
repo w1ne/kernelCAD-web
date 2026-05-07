@@ -34,6 +34,7 @@
     "test:package": "npx tsx scripts/packageReleaseAudit.ts",
     "proof:foundation": "npm run typecheck && npm run test:audit && npm run test:hygiene && npm run test:package && npm test -- src/lib/constraints/solver.test.ts src/lib/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts tests/integration/examples/patternExamples.test.ts",
     "proof:assembly-contract": "npm run proof:foundation && npm test -- tests/unit/assemblies/assemblyCapture.test.ts tests/unit/backends/occt/assemblyLowerer.test.ts tests/integration/examples/assemblyExamples.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
+    "proof:robot-arm-kit": "npm run proof:assembly-contract && npm test -- tests/unit/modules/robotArmKit.test.ts tests/integration/examples/robotArmKitExample.test.ts tests/unit/skill/readmeMcpToolCountTruth.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
     "test:e2e": "playwright test",
     "site:dev": "npx tsx site/scripts/build-demo.ts && cd site && for f in public/*; do ln -sf \"$f\" \"$(basename \"$f\")\"; done && python3 -m http.server 8000",
     "site:build": "npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs",

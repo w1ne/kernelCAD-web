@@ -78,6 +78,9 @@ npm run dev
 - Added MCP `list_assemblies` so agents can query captured assembly parts,
   connector frames, fixed connections, joints, and aggregate models from a
   `.kcad.ts` script.
+- Added the first robot-arm intent workflow with `robotArmKit(intent)`, which
+  generates named kit parts, validation metadata, a manifest, revolute joint
+  records, and one static fused assembly model from a bounded mechanical intent.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.
