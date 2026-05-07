@@ -59,6 +59,37 @@ describe('assembly capture contract', () => {
     });
   });
 
+  it('captures assembly.model() as one aggregate feature over all placed parts', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const lamp = kcad.assembly('desk lamp');
+    const base = lamp.part('base', kcad.box(40, 40, 6), { at: [0, 0, 0] });
+    const arm = lamp.part('arm', kcad.box(80, 8, 8), { at: [35, 16, 20] });
+
+    const model = lamp.model();
+
+    expect(model.id).toMatch(/^assemblyModel_/);
+    expect(session.getRecords().at(-1)).toMatchObject({
+      kind: 'assemblyModel',
+      inputs: {
+        part_0: { kind: 'feature', id: base.id },
+        part_1: { kind: 'feature', id: arm.id },
+      },
+      metadata: {
+        assemblyName: 'desk lamp',
+        partIds: [base.id, arm.id],
+      },
+    });
+  });
+
+  it('rejects assembly.model() when no parts have been captured', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    expect(() => kcad.assembly('empty').model()).toThrow(/assembly.model requires at least one part/);
+  });
+
   it('rejects invalid revolute joint axes before capture', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

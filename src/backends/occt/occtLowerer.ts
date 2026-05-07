@@ -249,6 +249,7 @@ export class OcctLowerer implements FeatureLowerer {
     'pattern',
     'assemblyPart',
     'assemblyJoint',
+    'assemblyModel',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -1196,6 +1197,28 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         shape = partA.clone();
+        break;
+      }
+      case 'assemblyModel': {
+        const partEntries = Object.entries(inputs.byKey)
+          .filter(([key]) => key.startsWith('part_'))
+          .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+        if (partEntries.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assembly model has no part inputs.`,
+            hint: 'Call assembly.part(...) at least once before assembly.model().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const [, firstPart] = partEntries[0];
+        shape = (firstPart as OcctBackend).clone();
+        for (const [, part] of partEntries.slice(1)) {
+          shape = shape.union((part as OcctBackend).clone());
+        }
         break;
       }
       default:
