@@ -84,7 +84,7 @@ export type FeatureKind =
   // boolean
   | 'boolean'
   // edge/face features (v0.2+)
-  | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft'
+  | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'pattern'
   // symmetric (v0.13+)
   | 'mirror'
   // imports (v0.3+)
@@ -115,6 +115,22 @@ export function isValidScaleSpec(v: unknown): v is ScaleSpec {
   }
   return false;
 }
+
+export interface LinearPatternSpec {
+  kind: 'linear';
+  count: number;
+  direction: Vec3;
+  spacing: number;
+}
+
+export interface CircularPatternSpec {
+  kind: 'circular';
+  count: number;
+  axis: Vec3;
+  angleDeg: number;
+}
+
+export type PatternSpec = LinearPatternSpec | CircularPatternSpec;
 
 /**
  * Format a scalar value for inclusion in an error message.

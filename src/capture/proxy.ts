@@ -1,4 +1,4 @@
-import type { FeatureId, PlaneSpec, FeatureRef } from '../intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef } from '../intent/types';
 import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, formatScalarForError } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
 import type { CaptureSession } from './captureSession';
@@ -134,6 +134,75 @@ export class Shape {
       );
     }
     return this.session.mirrorFeature(this, plane);
+  }
+
+  patternLinear(opts: { count: number; direction: [number, number, number]; spacing: number }): Shape {
+    if (!Number.isInteger(opts.count) || opts.count < 2) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'patternLinear count must be an integer >= 2.',
+        this.id,
+        'Pass count: 2 or greater.',
+      );
+    }
+    if (!isValidVec3(opts.direction)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `patternLinear direction must be a finite Vec3; got ${formatScalarForError(opts.direction)}.`,
+        this.id,
+        'Pass direction: [x, y, z].',
+      );
+    }
+    if (typeof opts.spacing !== 'number' || !Number.isFinite(opts.spacing) || opts.spacing === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `patternLinear spacing must be a non-zero finite number; got ${formatScalarForError(opts.spacing)}.`,
+        this.id,
+        'Pass a non-zero finite spacing.',
+      );
+    }
+    const pattern: PatternSpec = {
+      kind: 'linear',
+      count: opts.count,
+      direction: opts.direction,
+      spacing: opts.spacing,
+    };
+    return this.session.patternFeature(this, pattern);
+  }
+
+  patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
+    if (!Number.isInteger(opts.count) || opts.count < 2) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'patternCircular count must be an integer >= 2.',
+        this.id,
+        'Pass count: 2 or greater.',
+      );
+    }
+    if (!isValidVec3(opts.axis)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `patternCircular axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
+        this.id,
+        'Pass axis: [x, y, z].',
+      );
+    }
+    const angleDeg = opts.angleDeg ?? 360;
+    if (typeof angleDeg !== 'number' || !Number.isFinite(angleDeg) || angleDeg === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `patternCircular angleDeg must be a non-zero finite number; got ${formatScalarForError(angleDeg)}.`,
+        this.id,
+        'Pass a non-zero finite angleDeg.',
+      );
+    }
+    const pattern: PatternSpec = {
+      kind: 'circular',
+      count: opts.count,
+      axis: opts.axis,
+      angleDeg,
+    };
+    return this.session.patternFeature(this, pattern);
   }
 
   subtract(...others: Shape[]): Shape {
