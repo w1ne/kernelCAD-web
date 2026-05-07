@@ -1,21 +1,31 @@
-# kernelCAD - Agentic CAD Platform
+# kernelCAD - AI-Native CAD Workbench
 
-**kernelCAD** is a **Headless-First CAD Platform** designed for AI Agents.
+**kernelCAD** turns mechanical intent into validated, editable, manufacturable
+design artifacts.
 
-It provides a robust, scriptable API for agents to generate, analyze, and modify 3D geometry using the OpenCASCADE kernel. A web-based "Visual Debugger" allows human engineers to verify and tweak the agent's output.
+The core loop is: intent -> generated `.kcad.ts` -> rendered model ->
+validation checks -> guided revision -> export package.
+
+kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks,
+and it is not just a Replicad wrapper. Replicad/OpenCASCADE are the kernel
+layer. kernelCAD is the agent-first workflow layer above the kernel: deterministic
+CAD source, feature history, diagnostics, validation, variants, and human review.
 
 ## Philosophy
-1.  **Agent-Driven**: The primary interface is the `AgentAPI` (Node.js/TS), not the mouse.
-2.  **Verifiable**: Geometry is produced by deterministic code, not manual clicks.
-3.  **Visual Debugging**: Humans trust what they can see. The Web App acts as a high-fidelity viewer for the headless core.
+
+1.  **Agent-First**: The primary interface is `.kcad.ts`, CLI, and MCP. The UI reviews and steers generated designs.
+2.  **Verifiable**: Geometry is deterministic source code with explicit feature history and diagnostics.
+3.  **Validation-Centered**: Useful CAD output needs checks for constraints, hardware fit, clearances, and exportability.
+4.  **Workflow Over Primitives**: Product progress is measured by intent-level workflows, not by copying every traditional CAD button.
 
 ## Features
 
 -   **Headless Core**: Run CAD operations in Node.js or Web Workers without a DOM.
 -   **Agent API**: JSON-serializable commands, introspection, and feedback loops.
--   **Visual Debugger**: Real-time 3D preview powered by React Three Fiber.
+-   **Review Cockpit**: Browser-based 3D preview for inspecting generated designs and validation results.
 -   **Standard Exports**: STEP/STL generation.
 -   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
+-   **Product Plan**: See [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md) for the north star and v0.5 direction.
   
 ## Get Started
 
