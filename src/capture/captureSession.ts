@@ -3,6 +3,7 @@ import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
+import type { AssemblyPartOpts, AssemblyPartRef, RevoluteJointOpts } from './assembly';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
@@ -193,6 +194,56 @@ export class CaptureSession {
         base: { kind: 'feature', id: base.id },
       },
       metadata: { pattern },
+    });
+  }
+
+  assemblyPart(assemblyName: string, partName: string, shape: Shape, opts: AssemblyPartOpts = {}): FeatureRecord {
+    if (!this.records.some(r => r.id === shape.id)) {
+      throw new Error(`assembly.part: shape '${shape.id}' is not from this CaptureSession`);
+    }
+    return this.register({
+      kind: 'assemblyPart',
+      params: {},
+      inputs: {
+        shape: { kind: 'feature', id: shape.id },
+      },
+      metadata: {
+        assemblyName,
+        partName,
+        ...(opts.at !== undefined ? { at: opts.at } : {}),
+      },
+    });
+  }
+
+  assemblyJoint(
+    assemblyName: string,
+    jointName: string,
+    jointKind: 'revolute',
+    a: AssemblyPartRef,
+    b: AssemblyPartRef,
+    opts: RevoluteJointOpts,
+  ): FeatureRecord {
+    for (const part of [a, b]) {
+      const record = this.records.find(r => r.id === part.id);
+      if (!record || record.kind !== 'assemblyPart') {
+        throw new Error(`assembly.${jointKind}: part '${part.id}' is not an assembly part in this CaptureSession`);
+      }
+    }
+    return this.register({
+      kind: 'assemblyJoint',
+      params: {},
+      inputs: {
+        a: { kind: 'feature', id: a.id },
+        b: { kind: 'feature', id: b.id },
+      },
+      metadata: {
+        assemblyName,
+        jointName,
+        jointKind,
+        axis: opts.axis,
+        origin: opts.origin,
+        ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+      },
     });
   }
 

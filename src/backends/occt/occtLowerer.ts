@@ -247,6 +247,8 @@ export class OcctLowerer implements FeatureLowerer {
     'loft',      // NEW (v0.13.0-rc.10)
     'mirror',    // NEW (v0.13.0-rc.13)
     'pattern',
+    'assemblyPart',
+    'assemblyJoint',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -1154,6 +1156,46 @@ export class OcctLowerer implements FeatureLowerer {
           }
           shape = shape.union(instance);
         }
+        break;
+      }
+      case 'assemblyPart': {
+        const base = inputs.byKey.shape as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assembly part shape input is missing or failed.`,
+            hint: 'Assembly parts must wrap a successfully lowered source shape.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = base.clone();
+        const at = (r.metadata as { at?: unknown } | undefined)?.at;
+        if (Array.isArray(at)) {
+          shape = shape.translate(
+            Number(at[0]),
+            Number(at[1]),
+            Number(at[2]),
+          );
+        }
+        break;
+      }
+      case 'assemblyJoint': {
+        const partA = inputs.byKey.a as OcctBackend | undefined;
+        if (!partA) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assembly joint input 'a' is missing or failed.`,
+            hint: 'Assembly joints must reference successfully lowered assembly parts.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = partA.clone();
         break;
       }
       default:
