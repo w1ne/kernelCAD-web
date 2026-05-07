@@ -29,7 +29,7 @@
     "release": "npx tsx scripts/release.ts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
-    "proof:foundation": "npm run typecheck && npm run test:audit && npm test -- src/lib/constraints/solver.test.ts src/lib/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts",
+    "proof:foundation": "npm run typecheck && npm run test:audit && npm test -- src/lib/constraints/solver.test.ts src/lib/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts",
     "test:e2e": "playwright test",
     "site:dev": "npx tsx site/scripts/build-demo.ts && cd site && for f in public/*; do ln -sf \"$f\" \"$(basename \"$f\")\"; done && python3 -m http.server 8000",
     "site:build": "npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs",
