@@ -124,6 +124,22 @@ describe('Shape transform validators (capture-time)', () => {
     expect(result.records[0].transforms).toHaveLength(1);
   });
 
+  it('scale rejects non-uniform factors instead of silently applying uniform scale', async () => {
+    let caught: unknown;
+    try {
+      await runScript({ code: `return box(10, 10, 10).scale(2, 3, 4);`, fileName: 'test.kcad.ts' });
+    } catch (e) { caught = e; }
+    expect(String(caught)).toMatch(/non-uniform scale is not supported/i);
+  });
+
+  it('scale accepts explicit per-axis args only when they are uniform', async () => {
+    const result = await runScript({ code: `return box(5, 5, 5).scale(2, 2, 2);`, fileName: 'test.kcad.ts' });
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0].transforms).toEqual([
+      { op: 'scale', sx: 2, sy: 2, sz: 2 },
+    ]);
+  });
+
   // reflect ------------------------------------------------------------------
 
   it('reflect throws feature.transform.invalid-reflect when plane is malformed', async () => {

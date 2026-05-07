@@ -78,6 +78,13 @@ npm run dev
 - Added `proof:assembly-contract` to verify foundation gates plus assembly
   capture, static assembly model lowering, and SKILL global discoverability.
 
+### Fixed — tech debt
+
+- Rejected non-uniform `.scale(sx, sy, sz)` at capture time instead of silently
+  collapsing it to uniform scale in the OCCT backend. Agents now get a clear
+  diagnostic and must use explicit primitive dimensions for non-uniform sizing
+  until true non-uniform transforms are implemented.
+
 ### Added — v0.3 slice 3: symbolic params + edit-after-build replay
 
 Slice 3 adds the first durable param lifecycle: `param()` and `params({...})`

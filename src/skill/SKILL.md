@@ -84,7 +84,7 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 // Transforms (mutate-then-return-this; chain freely):
 .translate(x: number, y: number, z: number): Shape
 .rotate(axis: [number, number, number], degrees: number, pivot?: [number, number, number]): Shape
-.scale(sx: number, sy?: number, sz?: number): Shape
+.scale(s: number): Shape  // uniform only; non-uniform sx/sy/sz is rejected
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
 .union(...others: Shape[]): Shape
