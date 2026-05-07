@@ -521,8 +521,8 @@ These return errors today; do not generate code that uses them:
 
 - Tracked face/edge refs (only canonical refs and inline queries work) — deferred
 - Asymmetric chamfer (only symmetric 45° supported) — deferred
-- Hole / cut / draft as distinct features (use `subtract(cylinder)` etc.) — deferred
-- Assemblies / joints — deferred
+- Draft features — deferred
+- Dynamic assembly solving / motion simulation — deferred; static assembly parts, fixed connector placement, revolute joint metadata, and fused `assembly.model()` output are supported.
 - BOM, dimensions, BREP, multi-view PDF — deferred
 
 <!-- COOKBOOK:START -->
