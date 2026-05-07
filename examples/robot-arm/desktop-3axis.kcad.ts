@@ -22,7 +22,9 @@ const intent = {
 
 const kit = robotArmKit(intent);
 const manifest = kit.manifest();
+const exportPackage = kit.exportPackage();
 
 void manifest;
+void exportPackage;
 
 return kit.model();

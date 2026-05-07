@@ -171,7 +171,7 @@ interface Assembly {
 
 ### Robot arm kit intent
 
-Use `robotArmKit(intent)` when you need a bounded desktop 3-axis robot arm kit instead of primitive-first modeling. It validates link lengths, plate thickness, pivot diameter, screw pattern fit, clearance, and revolute joint limits before creating geometry. The returned design exposes `.parts()`, `.manifest()`, `.validations()`, and `.model()`. Call `.model()` to capture named assembly parts, fixed connector placements, revolute joint metadata, and one fused/exportable assembly `Shape`.
+Use `robotArmKit(intent)` when you need a bounded desktop 3-axis robot arm kit instead of primitive-first modeling. It validates link lengths, plate thickness, pivot diameter, screw pattern fit, clearance, and revolute joint limits before creating geometry. The returned design exposes `.part(name)`, `.parts()`, `.manifest()`, `.validations()`, `.exportPackage()`, and `.model()`. Call `.model()` to capture named assembly parts, fixed connector placements, revolute joint metadata, and one fused/exportable assembly `Shape`. Call `.exportPackage()` when you need `manifest.json` plus deterministic per-part `.kcad.ts` files that can be exported individually.
 
 ```typescript
 const intent = {
