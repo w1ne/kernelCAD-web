@@ -19,6 +19,28 @@ describe('MCP server tool registry', () => {
     });
   });
 
+  it('dispatches assembly inspection through the advertised registry', async () => {
+    await expect(callMcpTool('list_assemblies', {
+      code: `
+        const hinge = assembly('registry hinge');
+        hinge.part('leafA', box(20, 8, 2));
+        hinge.part('leafB', box(20, 8, 2), { at: [20, 0, 0] });
+        return hinge.model();
+      `,
+    })).resolves.toMatchObject({
+      assemblies: [
+        {
+          name: 'registry hinge',
+          parts: [
+            expect.objectContaining({ name: 'leafA' }),
+            expect.objectContaining({ name: 'leafB' }),
+          ],
+          models: [expect.objectContaining({ partIds: expect.any(Array) })],
+        },
+      ],
+    });
+  });
+
   it('keeps unknown tool errors explicit', async () => {
     await expect(callMcpTool('missing_tool', {})).rejects.toThrow('Unknown tool: missing_tool');
   });

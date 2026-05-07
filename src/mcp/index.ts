@@ -2,6 +2,7 @@
 export { createMcpServer } from './server';
 export { evaluateScriptTool, type EvaluateScriptInput, type EvaluateScriptOutput } from './tools/evaluateScript';
 export { listFeaturesTool, type ListFeaturesInput, type ListFeaturesOutput } from './tools/listFeatures';
+export { listAssembliesTool, type ListAssembliesInput, type ListAssembliesOutput } from './tools/listAssemblies';
 export { getShapeInfoTool, type GetShapeInfoInput, type GetShapeInfoOutput } from './tools/getShapeInfo';
 export { listTopologyTool, type ListTopologyInput, type ListTopologyOutput } from './tools/listTopology';
 export { getEdgesOfTool, type GetEdgesOfInput, type GetEdgesOfOutput } from './tools/getEdgesOf';

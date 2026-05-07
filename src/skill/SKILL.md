@@ -124,7 +124,7 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 
 ### Assembly intent
 
-Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return one fused/exportable `Shape` containing every placed part. Connector and joint records remain metadata for now; `.model()` does not solve motion.
+Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return one fused/exportable `Shape` containing every placed part. Connector and joint records remain metadata for now; `.model()` does not solve motion. Use MCP `list_assemblies({ file? code? })` to inspect the captured assembly intent without recomputing topology.
 
 ```typescript
 const arm = assembly('two-link arm');
@@ -490,10 +490,11 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 21 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 22 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
+- `list_assemblies({ file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
 - `get_shape_info({ file? code?, feature_id? })` — volume/surfaceArea/bbox of a feature (default: last)
 - `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
