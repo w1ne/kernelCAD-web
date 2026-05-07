@@ -249,6 +249,7 @@ export class OcctLowerer implements FeatureLowerer {
     'pattern',
     'assemblyPart',
     'assemblyJoint',
+    'assemblyConnect',
     'assemblyModel',
   ]);
 
@@ -1208,6 +1209,22 @@ export class OcctLowerer implements FeatureLowerer {
             severity: 'error',
             message: `assembly joint input 'a' is missing or failed.`,
             hint: 'Assembly joints must reference successfully lowered assembly parts.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = partA.clone();
+        break;
+      }
+      case 'assemblyConnect': {
+        const partA = inputs.byKey.a as OcctBackend | undefined;
+        if (!partA) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assembly connect input 'a' is missing or failed.`,
+            hint: 'Assembly connect records must reference successfully lowered assembly parts.',
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }

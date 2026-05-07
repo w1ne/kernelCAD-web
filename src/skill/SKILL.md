@@ -124,12 +124,20 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 
 ### Assembly intent
 
-Use `assembly()` when the model needs named mechanical parts and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return one fused/exportable `Shape` containing every placed part. Joint records remain metadata for now; `.model()` does not solve motion.
+Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return one fused/exportable `Shape` containing every placed part. Connector and joint records remain metadata for now; `.model()` does not solve motion.
 
 ```typescript
 const arm = assembly('two-link arm');
-const base = arm.part('base', box(30, 30, 8), { at: [0, 0, 0] });
-const link = arm.part('link', box(80, 12, 8), { at: [0, 0, 8] });
+const base = arm.part('base', box(30, 30, 8), {
+  at: [0, 0, 0],
+  connectors: { shoulder: { origin: [15, 15, 8], axis: [0, 0, 1] } },
+});
+const link = arm.part('link', box(80, 12, 8), {
+  connectors: { root: { origin: [0, 6, 4], axis: [0, 0, 1] } },
+  connect: { connector: 'root', to: base.connector('shoulder') },
+});
+
+arm.connect('shoulder-fixed', base.connector('shoulder'), link.connector('root'));
 
 arm.revolute('shoulder', base, link, {
   axis: [0, 0, 1],
@@ -142,7 +150,12 @@ return arm.model();
 
 ```typescript
 interface Assembly {
-  part(name: string, shape: Shape, opts?: { at?: [number, number, number] }): AssemblyPartRef;
+  part(name: string, shape: Shape, opts?: {
+    at?: [number, number, number];
+    connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
+    connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
+  }): AssemblyPartRef;
+  connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {
     axis: [number, number, number];
     origin: [number, number, number];

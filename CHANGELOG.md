@@ -72,6 +72,9 @@ npm run dev
   `assembly.model()` returns one fused/exportable Shape containing every placed
   part while preserving joint records as inspectable metadata; full kinematic
   solving is not implied yet.
+- Added v0.6 assembly connector frames: parts can declare named local connector
+  origins, place a new part by aligning one connector to another, and capture
+  fixed `assemblyConnect` records for later agent inspection.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.
