@@ -2,15 +2,12 @@
 //
 // MCP tool: list faces of a kernelCAD shape with optional FaceQuery filter.
 
-import { runScript } from '../../script-runtime/runScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import { OcctLowerer } from '../../backends/occt/occtLowerer';
-import { initOcct, OcctBackend } from '../../backends/occt/occtBackend';
+import { OcctBackend } from '../../backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../backends/occt/edgeQueries';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { Face } from 'replicad';
-import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import { runMcpScript } from '../runMcpScript';
 
 export interface ListFacesInput {
   file?: string;
@@ -40,32 +37,9 @@ export interface ListFacesOutput {
 }
 
 export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOutput> {
-  await initOcct();
-
-  let code: string;
-  let fileName: string;
-  if (input.code !== undefined) {
-    code = input.code;
-    fileName = input.file ?? '<inline>';
-  } else if (input.file !== undefined) {
-    const filePath = resolve(input.file);
-    fileName = filePath;
-    try {
-      code = await readFile(filePath, 'utf8');
-    } catch (e) {
-      return { ok: false, error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}` };
-    }
-  } else {
-    return { ok: false, error: 'Must provide either { file } or { code }.' };
-  }
-
-  let run;
-  try {
-    run = await runScript({ code, fileName });
-  } catch (e) {
-    const diag = kernelErrorToDiagnostic(e);
-    return { ok: false, error: diag.message, errorCode: diag.code };
-  }
+  const script = await runMcpScript(input);
+  if (!script.ok) return script;
+  const { run } = script;
   if (run.records.length === 0) {
     return { ok: false, error: 'Script returned no features.' };
   }

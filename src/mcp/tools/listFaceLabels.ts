@@ -6,13 +6,10 @@
 // so agents can disambiguate. Lets agents discover the label vocabulary on a
 // shape before referencing labels in fillet/chamfer/shell.
 
-import { runScript } from '../../script-runtime/runScript';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import type { CanonicalFace } from '../../intent/types';
 import type { FaceQuery } from '../../backends/occt/edgeQueries';
 import type { FaceLabelsMap } from '../../intent/featureRecord';
+import { runMcpScript } from '../runMcpScript';
 
 export interface ListFaceLabelsInput {
   file?: string;
@@ -50,30 +47,9 @@ export interface ListFaceLabelsOutput {
 }
 
 export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<ListFaceLabelsOutput> {
-  let code: string;
-  let fileName: string;
-  if (input.code !== undefined) {
-    code = input.code;
-    fileName = input.file ?? '<inline>';
-  } else if (input.file !== undefined) {
-    const filePath = resolve(input.file);
-    fileName = filePath;
-    try {
-      code = await readFile(filePath, 'utf8');
-    } catch (e) {
-      return { ok: false, error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}` };
-    }
-  } else {
-    return { ok: false, error: 'Must provide either { file } or { code }.' };
-  }
-
-  let run;
-  try {
-    run = await runScript({ code, fileName });
-  } catch (e) {
-    const diag = kernelErrorToDiagnostic(e);
-    return { ok: false, error: diag.message, errorCode: diag.code };
-  }
+  const result = await runMcpScript(input);
+  if (!result.ok) return result;
+  const { run } = result;
 
   const labels: LabelSummary[] = [];
 

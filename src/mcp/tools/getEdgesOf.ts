@@ -1,13 +1,10 @@
 // src/mcp/tools/getEdgesOf.ts
-import { runScript } from '../../script-runtime/runScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import { OcctLowerer } from '../../backends/occt/occtLowerer';
-import { initOcct, OcctBackend } from '../../backends/occt/occtBackend';
+import { OcctBackend } from '../../backends/occt/occtBackend';
 import { pickEdges } from '../../backends/occt/edgeSelection';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import { runMcpScript } from '../runMcpScript';
 
 export interface GetEdgesOfInput {
   file?: string;
@@ -35,36 +32,13 @@ export interface GetEdgesOfOutput {
 }
 
 export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOfOutput> {
-  await initOcct();
-
   if (!input.face_name) {
     return { ok: false, error: 'face_name is required.' };
   }
 
-  let code: string;
-  let fileName: string;
-  if (input.code !== undefined) {
-    code = input.code;
-    fileName = input.file ?? '<inline>';
-  } else if (input.file !== undefined) {
-    const filePath = resolve(input.file);
-    fileName = filePath;
-    try {
-      code = await readFile(filePath, 'utf8');
-    } catch (e) {
-      return { ok: false, error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}` };
-    }
-  } else {
-    return { ok: false, error: 'Must provide either { file } or { code }.' };
-  }
-
-  let run;
-  try {
-    run = await runScript({ code, fileName });
-  } catch (e) {
-    const diag = kernelErrorToDiagnostic(e);
-    return { ok: false, error: diag.message, errorCode: diag.code };
-  }
+  const script = await runMcpScript(input);
+  if (!script.ok) return script;
+  const { run } = script;
 
   if (run.records.length === 0) return { ok: false, error: 'Script produced no features.' };
   const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
