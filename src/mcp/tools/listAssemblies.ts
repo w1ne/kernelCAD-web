@@ -1,10 +1,6 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { initOcct } from '../../backends/occt/occtBackend';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../intent/types';
-import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
-import { runScript } from '../../script-runtime/runScript';
+import { runMcpScript } from '../runMcpScript';
 
 export interface ListAssembliesInput {
   file?: string;
@@ -62,38 +58,10 @@ export interface ListAssembliesOutput {
 export async function listAssembliesTool(
   input: ListAssembliesInput,
 ): Promise<ListAssembliesOutput> {
-  await initOcct();
-  let code: string;
-  let fileName: string;
+  const result = await runMcpScript(input);
+  if (!result.ok) return { ok: false, assemblies: [], error: result.error, errorCode: result.errorCode };
 
-  if (input.code !== undefined) {
-    code = input.code;
-    fileName = input.file ?? '<inline>';
-  } else if (input.file !== undefined) {
-    const filePath = resolve(input.file);
-    fileName = filePath;
-    try {
-      code = await readFile(filePath, 'utf8');
-    } catch (e) {
-      return {
-        ok: false,
-        assemblies: [],
-        error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-  } else {
-    return { ok: false, assemblies: [], error: 'Must provide either { file } or { code }.' };
-  }
-
-  let run;
-  try {
-    run = await runScript({ code, fileName });
-  } catch (e) {
-    const diag = kernelErrorToDiagnostic(e);
-    return { ok: false, assemblies: [], error: diag.message, errorCode: diag.code };
-  }
-
-  return { assemblies: summarizeAssemblies(run.records) };
+  return { assemblies: summarizeAssemblies(result.run.records) };
 }
 
 function summarizeAssemblies(records: readonly FeatureRecord[]): AssemblySummary[] {

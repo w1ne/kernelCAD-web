@@ -1,10 +1,11 @@
 // src/mcp/tools/exportStl.ts
-import { writeFile, mkdir, readFile as readFileFs } from 'node:fs/promises';
-import { dirname, isAbsolute, resolve as resolvePath } from 'node:path';
+import { writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
+import { loadMcpScriptSource } from '../runMcpScript';
 
 export interface ExportStlInput {
   file?: string;
@@ -36,38 +37,25 @@ export interface ExportStlOutput {
  * Returns a JSON receipt: `{ ok, output_path, byte_count, feature_count, diagnostics }`.
  */
 export async function exportStlTool(input: ExportStlInput): Promise<ExportStlOutput> {
-  const { file, code, output_path, feature_id } = input;
+  const { output_path, feature_id } = input;
 
   if (!output_path || typeof output_path !== 'string') {
     return { ok: false, error: 'Required: output_path' };
   }
 
-  let scriptCode: string;
-  let fileName: string;
-
-  if (code !== undefined) {
-    scriptCode = code;
-    fileName = file ?? '<inline>';
-  } else if (file !== undefined) {
-    const filePath = isAbsolute(file) ? file : resolvePath(file);
-    fileName = filePath;
-    try {
-      scriptCode = await readFileFs(filePath, 'utf8');
-    } catch (e) {
-      return {
-        ok: false,
-        error: `Cannot read file: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-  } else {
-    return { ok: false, error: 'Must provide either { file } or { code }.' };
-  }
+  const source = await loadMcpScriptSource(input);
+  if (!source.ok) return source;
 
   await initOcct();
 
   let result;
   try {
-    result = await runAndExport({ code: scriptCode, fileName, format: 'stl', feature_id });
+    result = await runAndExport({
+      code: source.code,
+      fileName: source.fileName,
+      format: 'stl',
+      feature_id,
+    });
   } catch (e) {
     return {
       ok: false,
