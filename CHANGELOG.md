@@ -75,6 +75,9 @@ npm run dev
 - Added v0.6 assembly connector frames: parts can declare named local connector
   origins, place a new part by aligning one connector to another, and capture
   fixed `assemblyConnect` records for later agent inspection.
+- Added MCP `list_assemblies` so agents can query captured assembly parts,
+  connector frames, fixed connections, joints, and aggregate models from a
+  `.kcad.ts` script.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.

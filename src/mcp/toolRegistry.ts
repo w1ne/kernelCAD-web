@@ -8,6 +8,7 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
 import { listTopologyTool } from './tools/listTopology';
@@ -67,6 +68,22 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listFeaturesTool(input as Parameters<typeof listFeaturesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'list_assemblies',
+      description:
+        'List assembly intent captured by a kernelCAD script: assemblies, parts, named connectors, ' +
+        'fixed connections, joints, and aggregate assembly models. Pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        },
+      },
+    },
+    handler: input => listAssembliesTool(input as Parameters<typeof listAssembliesTool>[0]),
   },
   {
     definition: {
