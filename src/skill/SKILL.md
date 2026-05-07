@@ -70,10 +70,6 @@ union(...shapes: Shape[]): Shape;
 // Call .model() to return one fused/exportable Shape of all placed parts.
 assembly(name?: string): Assembly;
 
-// Intent-level desktop robot arm workflow: generated parts, validations,
-// manifest metadata, and a static inspectable assembly model.
-robotArmKit(intent?: RobotArmKitIntent): RobotArmKitDesign;
-
 // Polyline helix rail for Sketch.sweep.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
@@ -167,31 +163,6 @@ interface Assembly {
   }): AssemblyJointRef;
   model(): Shape;
 }
-```
-
-### Robot arm kit intent
-
-Use `robotArmKit(intent)` when you need a bounded desktop 3-axis robot arm kit instead of primitive-first modeling. It validates link lengths, plate thickness, pivot diameter, screw pattern fit, clearance, and revolute joint limits before creating geometry. The returned design exposes `.part(name)`, `.parts()`, `.manifest()`, `.validations()`, `.exportPackage()`, and `.model()`. Call `.model()` to capture named assembly parts, fixed connector placements, revolute joint metadata, and one fused/exportable assembly `Shape`. Call `.exportPackage()` when you need `manifest.json` plus deterministic per-part `.kcad.ts` files that can be exported individually.
-
-```typescript
-const intent = {
-  name: 'desktop robot arm kit',
-  linkLengths: [72, 58, 34],
-  plateThickness: 4,
-  linkWidth: 18,
-  pivotDiameter: 5,
-  screwPattern: { x: 24, y: 12, diameter: 3 },
-  jointLimitsDeg: {
-    base: [-120, 120],
-    shoulder: [-45, 135],
-    elbow: [-120, 120],
-    wrist: [-90, 90],
-  },
-};
-
-const kit = robotArmKit(intent);
-const manifest = kit.manifest();
-return kit.model();
 ```
 
 ### Sketch methods
