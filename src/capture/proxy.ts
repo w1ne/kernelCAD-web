@@ -102,6 +102,14 @@ export class Shape {
         'Pass a positive finite number (uniform) or three positive finite numbers (per-axis) to .scale().',
       );
     }
+    if (Array.isArray(scaleSpec) && (scaleSpec[0] !== scaleSpec[1] || scaleSpec[0] !== scaleSpec[2])) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Non-uniform scale is not supported by the OCCT backend; got ${formatScalarForError(scaleSpec)}.`,
+        this.id,
+        'Pass one positive finite factor, or pass equal sx/sy/sz values. Use explicit dimensions on primitives when you need non-uniform sizing.',
+      );
+    }
     this.session.appendTransform(this.id, {
       op: 'scale',
       sx,
