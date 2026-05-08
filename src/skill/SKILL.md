@@ -57,10 +57,9 @@ extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, Ca
 extrudePolygon(points: [number, number][], depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 
-// Revolve helper — rectangular profile revolved around Z (offset from axis by offsetX).
-revolveRect(w: number, h: number, offsetX: number, angleDeg?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-
-// Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch.
+// Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
+// revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
+// via path() and call .revolve() on the resulting Sketch.
 path(): PathBuilder;
 
 // Boolean union of two or more shapes (top-level alternative to .union()).
@@ -203,16 +202,18 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 `path()` returns a `PathBuilder`. Chain these calls; finish with `.close()` to get a `Sketch`.
 
 ```typescript
-.moveTo(x: number, y: number): PathBuilder      // Required first call — sets the start point.
-.lineTo(x: number, y: number): PathBuilder      // Straight segment to (x, y).
-.tangentArc(x: number, y: number): PathBuilder  // Arc continuing tangent from prior segment.
-.threePointsArc(x: number, y: number, midX: number, midY: number): PathBuilder  // Arc through start, mid, end.
-.sagittaArc(x: number, y: number, sagitta: number): PathBuilder  // Arc by chord + perpendicular bulge. Sign chooses side.
-.bulgeArc(x: number, y: number, bulge: number): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
-.radiusArc(x: number, y: number, radius: number): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
+.moveTo(x: Editable<number>, y: Editable<number>): PathBuilder      // Required first call — sets the start point.
+.lineTo(x: Editable<number>, y: Editable<number>): PathBuilder      // Straight segment to (x, y).
+.tangentArc(x: Editable<number>, y: Editable<number>): PathBuilder  // Arc continuing tangent from prior segment.
+.threePointsArc(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>): PathBuilder  // Arc through start, mid, end.
+.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>): PathBuilder  // Arc by chord + perpendicular bulge. Sign chooses side.
+.bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
+.radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
 .label(name: string): PathBuilder               // Tag the prior segment for fillet/chamfer/shell by name.
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
+
+Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
 
 ### Constrained sketches (v0.4 MCP)
 

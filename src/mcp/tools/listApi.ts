@@ -56,7 +56,6 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'extrudeCircle', signature: '(r, height, opts?) => Shape', description: 'Extrude a radius-r circle (XY) by `height` along Z. `opts.faceLabels` maps user label names to canonical face names (top/bottom) or FaceQuery descriptors.' },
   { name: 'extrudePolygon', signature: '(points, depth, opts?) => Shape', description: 'Extrude a 2D polygon (array of [x, y] points) by `depth` along Z. `opts.faceLabels` maps user label names to canonical face names or FaceQuery descriptors.' },
   { name: 'extrudeRoundedRect', signature: '(width, height, radius, depth, opts?) => Shape', description: 'Extrude a rounded rectangle (corner radius) by `depth` along Z. `opts.faceLabels` maps user label names to canonical face names (top/bottom/left/right/front/back) or FaceQuery descriptors.' },
-  { name: 'revolveRect', signature: '(w, h, offsetX, angleDeg?, opts?) => Shape', description: 'Revolve a w-by-h rectangle around Z, offset by `offsetX` from the axis. Default 360 degrees. `opts.faceLabels` maps user label names to canonical face names (top/bottom) or FaceQuery descriptors.' },
   { name: 'path', signature: '() => PathBuilder', description: 'Start a 2D path: chain moveTo / lineTo / arcs / .close() to get a Sketch.' },
   { name: 'param', signature: "(name, defaultValue, meta?) => ParamRef", description: 'Declare a symbolic editable parameter. Returns a ParamRef the chain ops accept anywhere a number is expected. Edit post-build via `kcad.params.update`. `meta?: { min?, max?, description? }`.' },
   { name: 'params', signature: "(decl) => { [name]: ParamRef }", description: 'Batched form of `param()` — declare many params at once. Returns an object of ParamRefs keyed by name.' },
@@ -105,14 +104,14 @@ export const PARAM_REF_METHODS: ApiEntry[] = [
 ];
 
 export const PATH_BUILDER_METHODS: ApiEntry[] = [
-  { name: 'moveTo', signature: '(x, y) => PathBuilder', description: 'Start the path at (x, y). Required first call.' },
-  { name: 'lineTo', signature: '(x, y) => PathBuilder', description: 'Add a straight line segment to (x, y).' },
-  { name: 'tangentArc', signature: '(x, y) => PathBuilder', description: 'Arc continuing tangent from the previous segment to (x, y). Requires a prior segment.' },
-  { name: 'threePointsArc', signature: '(x, y, midX, midY) => PathBuilder', description: 'Arc through start, midpoint, and end. No prior tangent required.' },
-  { name: 'sagittaArc', signature: '(x, y, sagitta) => PathBuilder', description: 'Arc by chord + perpendicular bulge height. Sign chooses bulge side.' },
-  { name: 'bulgeArc', signature: '(x, y, bulge) => PathBuilder', description: 'Arc by chord + DXF bulge factor (tan(angle/4)).' },
-  { name: 'radiusArc', signature: '(x, y, radius) => PathBuilder', description: 'Arc by chord + explicit radius. Always minor arc; sign chooses bulge side.' },
-  { name: 'label', signature: '(name) => PathBuilder', description: 'Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`.' },
+  { name: 'moveTo', signature: '(x: Editable<number>, y: Editable<number>) => PathBuilder', description: 'Start the path at (x, y). Required first call. Coords accept ParamRef for parametric authoring.' },
+  { name: 'lineTo', signature: '(x: Editable<number>, y: Editable<number>) => PathBuilder', description: 'Add a straight line segment to (x, y). Coords accept ParamRef for parametric authoring.' },
+  { name: 'tangentArc', signature: '(x: Editable<number>, y: Editable<number>) => PathBuilder', description: 'Arc continuing tangent from the previous segment to (x, y). Requires a prior segment. Coords accept ParamRef for parametric authoring.' },
+  { name: 'threePointsArc', signature: '(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>) => PathBuilder', description: 'Arc through start, midpoint, and end. No prior tangent required. Coords accept ParamRef for parametric authoring.' },
+  { name: 'sagittaArc', signature: '(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder', description: 'Arc by chord + perpendicular bulge height. Sign chooses bulge side. All scalars accept ParamRef for parametric authoring.' },
+  { name: 'bulgeArc', signature: '(x: Editable<number>, y: Editable<number>, bulge: Editable<number>) => PathBuilder', description: 'Arc by chord + DXF bulge factor (tan(angle/4)). All scalars accept ParamRef for parametric authoring.' },
+  { name: 'radiusArc', signature: '(x: Editable<number>, y: Editable<number>, radius: Editable<number>) => PathBuilder', description: 'Arc by chord + explicit radius. Always minor arc; sign chooses bulge side. All scalars accept ParamRef for parametric authoring.' },
+  { name: 'label', signature: '(name: string) => PathBuilder', description: 'Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`.' },
   { name: 'close', signature: '() => Sketch', description: 'Close the path; returns a Sketch that can be extruded/revolved/swept.' },
 ];
 
@@ -126,7 +125,6 @@ export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
     'extrudeCircle',
     'extrudePolygon',
     'extrudeRoundedRect',
-    'revolveRect',
   ] as const,
   description:
     'Pass `opts.faceLabels` as a plain object map from user-chosen label name to either a canonical face name ' +
