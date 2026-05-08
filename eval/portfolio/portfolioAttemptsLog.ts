@@ -30,6 +30,14 @@ function validate(a: PortfolioAttempt): void {
   if (a.diagnosticCode !== null && !(DIAGNOSTIC_CODES as readonly string[]).includes(a.diagnosticCode)) {
     throw new Error(`portfolioAttempt: bad diagnosticCode '${a.diagnosticCode}'`);
   }
+  if (a.failureMode !== null && a.failureMode.startsWith('diagnostic_')) {
+    const expected = a.failureMode.slice('diagnostic_'.length);
+    if (a.diagnosticCode !== expected) {
+      throw new Error(`portfolioAttempt: failureMode '${a.failureMode}' implies diagnosticCode '${expected}', got '${a.diagnosticCode}'`);
+    }
+  } else if (a.failureMode !== null && a.diagnosticCode !== null) {
+    throw new Error(`portfolioAttempt: non-diagnostic failureMode '${a.failureMode}' requires diagnosticCode=null`);
+  }
   if (!ISO_RE.test(a.date)) throw new Error(`portfolioAttempt: date must be ISO 8601 UTC, got '${a.date}'`);
 }
 

@@ -51,4 +51,16 @@ describe('portfolioAttemptsLog', () => {
     const bad = { schemaVersion: 1, slug: 's', attemptN: 1, status: 'built', failureMode: 'tool_gap', diagnosticCode: null, model: 'm', date: '2026-05-08T12:00:00Z', notes: '' };
     expect(() => appendPortfolioAttempt(log, bad as unknown as PortfolioAttempt)).toThrow(/built.*failureMode/);
   });
+
+  it('rejects mismatched diagnostic-tag and diagnosticCode', () => {
+    const log = join(dir, 'attempts.jsonl');
+    const bad = { schemaVersion: 1, slug: 's', attemptN: 1, status: 'failed', failureMode: 'diagnostic_feature.kernel-failed', diagnosticCode: 'cli.invalid-args', model: 'm', date: '2026-05-08T12:00:00Z', notes: '' };
+    expect(() => appendPortfolioAttempt(log, bad as PortfolioAttempt)).toThrow(/implies diagnosticCode/);
+  });
+
+  it('rejects non-diagnostic failureMode with non-null diagnosticCode', () => {
+    const log = join(dir, 'attempts.jsonl');
+    const bad = { schemaVersion: 1, slug: 's', attemptN: 1, status: 'failed', failureMode: 'tool_gap', diagnosticCode: 'feature.kernel-failed', model: 'm', date: '2026-05-08T12:00:00Z', notes: '' };
+    expect(() => appendPortfolioAttempt(log, bad as PortfolioAttempt)).toThrow(/non-diagnostic failureMode/);
+  });
 });
