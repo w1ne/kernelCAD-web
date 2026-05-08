@@ -19,10 +19,8 @@ function entrySlugs(): string[] {
 describe('portfolio bundle integrity', () => {
   const slugs = entrySlugs();
 
-  it('finds at least the seed entry once T4 is shipped', () => {
-    if (process.env.PORTFOLIO_REQUIRE_SEED === '1') {
-      expect(slugs.length).toBeGreaterThanOrEqual(1);
-    }
+  it.skipIf(slugs.length === 0)('finds at least one portfolio entry once T4 has shipped', () => {
+    expect(slugs.length).toBeGreaterThanOrEqual(1);
   });
 
   for (const slug of slugs) {

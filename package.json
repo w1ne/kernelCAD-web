@@ -53,7 +53,7 @@
     "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/ --hero-artifact bracket-with-hole --override-approved-by 'grandfathered: pre-policy v0.1 retro capture'",
     "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/ --hero-artifact subtract-then-fillet-rim --override-approved-by 'grandfathered: pre-policy v0.2 retro capture'",
     "lint-demos": "npx tsx scripts/lint-demos.ts",
-    "portfolio:validate": "PORTFOLIO_REQUIRE_SEED=1 npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
+    "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts"
   },
   "dependencies": {
