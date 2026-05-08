@@ -194,6 +194,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // Reflect this sketch's path across an axis, returning a new Sketch.
 // 'x' negates y-coords; 'y' negates x-coords; { axis, offset } reflects across a parallel axis.
 // Arc winding is inverted automatically. Labels are preserved.
+// Limitation: any ParamRef coords in the source path are resolved to numeric
+// values at reflect time, so the reflected sketch does not track param edits
+// for the reflected coords. Author the reflected path directly (or split into
+// halves and union them) when you need full param tracking on both halves.
 .reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: number }): Sketch
 ```
 

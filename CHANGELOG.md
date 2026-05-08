@@ -104,6 +104,12 @@ npm run dev
   `bulgeArc` factor wraps as `'unitless'`; everything else is `'mm'`.
   Advertised through `list_api`'s `pathBuilderMethods` and SKILL.md.
 
+  Limitation: `Sketch.reflect(axis)` collapses any symbolic ParamRef coords
+  to their current numeric values at reflect time. The reflected sketch
+  does not track param edits for the reflected coords. Author the reflected
+  path directly when you need full param tracking on both halves. Tracked
+  in the api-ergonomic-gaps backlog.
+
 ### Changed — example demonstrations
 
 - Rewrote `examples/v0.21/donut.kcad.ts` (the v0.21 hero artifact) to
