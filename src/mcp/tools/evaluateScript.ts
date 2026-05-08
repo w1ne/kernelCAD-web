@@ -39,9 +39,10 @@ export async function evaluateScriptTool(
   return {
     ok: r.exitCode === 0,
     featureCount: r.featureCount,
-    // Defense-in-depth: enrich at the wire boundary even if upstream
-    // already populated `nextAction`. Idempotent — `withNextActions`
-    // leaves any explicitly-set value in place.
+    // Idempotent re-enrichment guard. evaluateAndBuildScript already
+    // populates nextAction on every return path; this wrap is a no-op
+    // today but ensures the contract holds if a future caller bypasses
+    // the eval helper.
     diagnostics: withNextActions(r.diagnostics),
   };
 }

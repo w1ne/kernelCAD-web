@@ -3,6 +3,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import { NEXT_ACTIONS } from '../diagnostics/nextAction';
 import { Shape } from '../capture/proxy';
 
 export type ExportFormat = 'stl' | 'step';
@@ -49,6 +50,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
           severity: 'error',
           message: `feature_id '${feature_id}' not found in script's features.`,
           hint: 'Use list_features to see available IDs, or omit feature_id to export the script\'s return value.',
+          nextAction: NEXT_ACTIONS['export.feature-not-found'],
         }],
       };
     }
@@ -71,6 +73,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         severity: 'error',
         message: 'Script produced no shapes to export.',
         hint: 'End the script with `return <shape>`.',
+        nextAction: NEXT_ACTIONS['export.no-shape'],
       }],
     };
   }
@@ -87,6 +90,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         severity: 'error',
         message: `Target shape '${targetId}' did not lower successfully.`,
         hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
+        nextAction: NEXT_ACTIONS['recompute.input.missing'],
       }],
     };
   }

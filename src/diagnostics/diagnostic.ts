@@ -25,10 +25,13 @@ export interface CompilerDiagnostic {
 }
 
 /**
- * Fill `nextAction` from `NEXT_ACTIONS[code]` if not already set. The
- * standard emit path constructs diagnostic literals without `nextAction`
- * (lower-touch than per-site updates); this helper applies the per-code
- * default at the wire boundary, leaving any explicitly-set value in place.
+ * Fill `nextAction` from `NEXT_ACTIONS[code]` if not already set. Most
+ * emit paths construct diagnostic literals without `nextAction` and rely
+ * on this helper to apply the per-code default at the wire boundary.
+ * Some emit sites are now construction-site-enriched (e.g. `runAndExport`
+ * in `src/script-runtime/export.ts` populates `nextAction` directly on
+ * every literal); for those, this helper is a true defense-in-depth
+ * identity-op, leaving the explicitly-set value in place.
  */
 export function withNextAction(d: CompilerDiagnostic): CompilerDiagnostic {
   if (d.nextAction !== undefined) return d;
