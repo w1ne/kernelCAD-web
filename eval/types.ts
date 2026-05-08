@@ -37,6 +37,14 @@ export interface Score {
   attempts: number; // 1..3
   tokens: { input: number; output: number; total: number };
   time_ms: number;
+  /**
+   * First non-OK diagnostic code observed during the agent loop, if any.
+   * Used by downstream tooling (e.g. portfolio attempt classifier) to
+   * tag a failed run with the diagnostic that surfaced first. `undefined`
+   * when the run never produced a diagnostic (e.g. clean pass, or only
+   * synthetic `eval.no-script-extracted` fallbacks).
+   */
+  firstFailureCode?: string;
 }
 
 // Transcript events — captured during a run, rendered to markdown afterward.
