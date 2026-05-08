@@ -1281,12 +1281,12 @@ export class OcctLowerer implements FeatureLowerer {
       const inputMap = inputBackend.historyMap;
       switch (t.op) {
         case 'translate':
-          shape = shape.translate(t.x.evaluated, t.y.evaluated, t.z.evaluated);
+          shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
           break;
         case 'rotateAxis': {
-          const ax: Vec3 = [t.axis[0].evaluated, t.axis[1].evaluated, t.axis[2].evaluated];
+          const ax: Vec3 = [t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated];
           const pv: Vec3 | undefined = t.pivot
-            ? [t.pivot[0].evaluated, t.pivot[1].evaluated, t.pivot[2].evaluated]
+            ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated]
             : undefined;
           shape = shape.rotate(ax, t.degrees.evaluated, pv);
           break;
