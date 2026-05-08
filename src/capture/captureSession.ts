@@ -145,6 +145,16 @@ export class CaptureSession {
     const r = this.records.find(x => x.id === id);
     if (!r) throw new Error(`Feature '${id}' not registered`);
     r.transforms.push(t);
+    // Slice-5: Param-typed translate/rotateAxis transforms can carry ParamRefs.
+    // Merge any new refs into metadata.paramRefs so `params.update`'s
+    // first-affected scan invalidates this record when the named param edits.
+    const newRefs = collectParamRefs(t);
+    if (newRefs.size > 0) {
+      const existing = (r.metadata as { paramRefs?: string[] } | undefined)?.paramRefs ?? [];
+      const merged = new Set<string>(existing);
+      for (const name of newRefs) merged.add(name);
+      r.metadata = { ...(r.metadata ?? {}), paramRefs: Array.from(merged) };
+    }
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {

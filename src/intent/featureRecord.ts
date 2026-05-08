@@ -1,14 +1,13 @@
 import type {
   CanonicalFace, FeatureId, FeatureKind, FeatureRef, Param, PlaneSpec, ScriptLocation,
-  Vec3,
 } from './types';
 // Re-export so consumers can import CanonicalFace from the same module as FaceLabelsMap.
 export type { CanonicalFace };
 import type { FaceQuery } from '../backends/occt/edgeQueries';
 
 export type ShapeTransform =
-  | { op: 'translate'; x: number; y: number; z: number }
-  | { op: 'rotateAxis'; axis: Vec3; degrees: number; pivot?: Vec3 }
+  | { op: 'translate'; x: Param; y: Param; z: Param }
+  | { op: 'rotateAxis'; axis: [Param, Param, Param]; degrees: Param; pivot?: [Param, Param, Param] }
   | { op: 'scale'; sx: number; sy: number; sz: number }
   | { op: 'reflect'; plane: PlaneSpec };
 

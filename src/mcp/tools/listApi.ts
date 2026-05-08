@@ -67,8 +67,8 @@ export const GLOBALS: ApiEntry[] = [
 ];
 
 export const SHAPE_METHODS: ApiEntry[] = [
-  { name: 'translate', signature: '(x, y, z) => Shape', description: 'Translate by (x, y, z).' },
-  { name: 'rotate', signature: '(axis, degrees, pivot?) => Shape', description: 'Rotate `degrees` around `axis` (vector); pivot defaults to origin.' },
+  { name: 'translate', signature: '(x: Editable<number>, y: Editable<number>, z: Editable<number>) => Shape', description: 'Translate by (x, y, z). Each coordinate accepts a number or a `ParamRef<number>` so translations stay editable post-build.' },
+  { name: 'rotate', signature: '(axis: [Editable<number>, Editable<number>, Editable<number>], degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape', description: 'Rotate `degrees` around `axis` (vector); pivot defaults to origin. Axis components, degrees, and pivot all accept `ParamRef<number>`.' },
   { name: 'scale', signature: '(s) => Shape', description: 'Scale uniformly by one positive finite factor. Passing sy/sz is accepted only when all three factors are equal; non-uniform scale is rejected because the OCCT backend cannot honor it yet.' },
   { name: 'union', signature: '(...others) => Shape', description: 'Boolean union with one or more shapes.' },
   { name: 'subtract', signature: '(...others) => Shape', description: 'Boolean difference (this minus others).' },

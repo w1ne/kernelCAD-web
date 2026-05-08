@@ -15,6 +15,7 @@ import {
   type EditableCutoutOpts,
 } from '../intent/cutoutValidation';
 import { isParamRef, type Editable } from '../runtime/paramRef';
+import { toParam } from '../runtime/editableHelpers';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -56,21 +57,28 @@ export class Shape {
     this.session = session;
   }
 
-  translate(x: number, y: number, z: number): Shape {
-    if (!isValidVec3([x, y, z])) {
+  translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
+    const px = toParam(x, 'mm');
+    const py = toParam(y, 'mm');
+    const pz = toParam(z, 'mm');
+    if (!isValidVec3([px.evaluated, py.evaluated, pz.evaluated])) {
       throw new KernelError(
         'feature.invalid-args',
-        `Translate vector must be three finite numbers; got [${x}, ${y}, ${z}].`,
+        `Translate vector must be three finite numbers; got [${px.evaluated}, ${py.evaluated}, ${pz.evaluated}].`,
         this.id,
         'Pass three finite numbers (x, y, z) to .translate().',
       );
     }
-    this.session.appendTransform(this.id, { op: 'translate', x, y, z });
+    this.session.appendTransform(this.id, { op: 'translate', x: px, y: py, z: pz });
     return this;
   }
 
-  rotate(axis: [number, number, number], degrees: number, pivot?: [number, number, number]): Shape {
-    if (!isValidVec3(axis) || typeof degrees !== 'number' || !Number.isFinite(degrees)) {
+  rotate(
+    axis: [Editable<number>, Editable<number>, Editable<number>],
+    degrees: Editable<number>,
+    pivot?: [Editable<number>, Editable<number>, Editable<number>],
+  ): Shape {
+    if (!Array.isArray(axis) || axis.length !== 3) {
       throw new KernelError(
         'feature.invalid-args',
         `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${formatScalarForError(axis)}, degrees=${formatScalarForError(degrees)}.`,
@@ -78,15 +86,47 @@ export class Shape {
         'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
       );
     }
-    if (pivot !== undefined && !isValidVec3(pivot)) {
+    const ax = toParam(axis[0], 'unitless');
+    const ay = toParam(axis[1], 'unitless');
+    const az = toParam(axis[2], 'unitless');
+    const deg = toParam(degrees, 'deg');
+    if (!isValidVec3([ax.evaluated, ay.evaluated, az.evaluated]) || !Number.isFinite(deg.evaluated)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${formatScalarForError(axis)}, degrees=${formatScalarForError(degrees)}.`,
         this.id,
-        'Pass a finite Vec3 as the pivot, or omit it.',
+        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
       );
     }
-    this.session.appendTransform(this.id, { op: 'rotateAxis', axis, degrees, pivot });
+    let pivotParams: [import('../intent/types').Param, import('../intent/types').Param, import('../intent/types').Param] | undefined;
+    if (pivot !== undefined) {
+      if (!Array.isArray(pivot) || pivot.length !== 3) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+          this.id,
+          'Pass a finite Vec3 as the pivot, or omit it.',
+        );
+      }
+      const px = toParam(pivot[0], 'mm');
+      const py = toParam(pivot[1], 'mm');
+      const pz = toParam(pivot[2], 'mm');
+      if (!isValidVec3([px.evaluated, py.evaluated, pz.evaluated])) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+          this.id,
+          'Pass a finite Vec3 as the pivot, or omit it.',
+        );
+      }
+      pivotParams = [px, py, pz];
+    }
+    this.session.appendTransform(this.id, {
+      op: 'rotateAxis',
+      axis: [ax, ay, az],
+      degrees: deg,
+      pivot: pivotParams,
+    });
     return this;
   }
 

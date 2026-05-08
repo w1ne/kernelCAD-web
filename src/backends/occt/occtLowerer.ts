@@ -6,7 +6,7 @@ import type {
   ShapeBackend,
 } from '../backend';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind, PatternSpec, PlaneSpec } from '../../intent/types';
+import type { FeatureKind, PatternSpec, PlaneSpec, Vec3 } from '../../intent/types';
 import { isValidPlaneSpec } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
@@ -1281,11 +1281,16 @@ export class OcctLowerer implements FeatureLowerer {
       const inputMap = inputBackend.historyMap;
       switch (t.op) {
         case 'translate':
-          shape = shape.translate(t.x, t.y, t.z);
+          shape = shape.translate(t.x.evaluated, t.y.evaluated, t.z.evaluated);
           break;
-        case 'rotateAxis':
-          shape = shape.rotate(t.axis, t.degrees, t.pivot);
+        case 'rotateAxis': {
+          const ax: Vec3 = [t.axis[0].evaluated, t.axis[1].evaluated, t.axis[2].evaluated];
+          const pv: Vec3 | undefined = t.pivot
+            ? [t.pivot[0].evaluated, t.pivot[1].evaluated, t.pivot[2].evaluated]
+            : undefined;
+          shape = shape.rotate(ax, t.degrees.evaluated, pv);
           break;
+        }
         case 'scale':
           shape = shape.scale([t.sx, t.sy, t.sz]);
           break;

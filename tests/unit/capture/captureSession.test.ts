@@ -47,7 +47,12 @@ describe('CaptureSession', () => {
     shape.translate(5, 0, 0);
     const records = s.getRecords();
     expect(records[0].transforms).toEqual([
-      { op: 'translate', x: 5, y: 0, z: 0 },
+      {
+        op: 'translate',
+        x: { expression: '5', unit: 'mm', evaluated: 5 },
+        y: { expression: '0', unit: 'mm', evaluated: 0 },
+        z: { expression: '0', unit: 'mm', evaluated: 0 },
+      },
     ]);
   });
 
