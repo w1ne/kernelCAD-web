@@ -6,7 +6,7 @@ import type { CanonicalFace, EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
-import { EDGE_QUERY_KEYS } from './queryKeys';
+import { EDGE_QUERY_KEYS } from '../../intent/queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 import {
   parseFaceSelector,

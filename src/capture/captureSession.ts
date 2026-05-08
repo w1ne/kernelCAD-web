@@ -9,7 +9,7 @@ import type {
   AssemblyPartRef,
   RevoluteJointOpts,
 } from './assembly';
-import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../backends/occt/queryKeys';
+import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../intent/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
 import { collectParamRefs } from '../runtime/resolveParams';

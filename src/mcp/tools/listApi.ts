@@ -6,7 +6,7 @@
 // API addition (this file is the single source of truth for "what can a
 // .kcad.ts script call?").
 
-import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../backends/occt/queryKeys';
+import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../intent/queryKeys';
 import { SUPPORTED_CONSTRAINT_TYPES } from './constraints';
 import type { ConstraintType } from '../../lib/constraints/types';
 
