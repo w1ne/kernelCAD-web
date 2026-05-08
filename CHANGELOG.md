@@ -78,11 +78,6 @@ npm run dev
 - Added MCP `list_assemblies` so agents can query captured assembly parts,
   connector frames, fixed connections, joints, and aggregate models from a
   `.kcad.ts` script.
-- Added the first robot-arm intent workflow with `robotArmKit(intent)`, which
-  generates named kit parts, validation metadata, a manifest, revolute joint
-  records, and one static fused assembly model from a bounded mechanical intent.
-- Added `robotArmKit(intent).exportPackage()` to produce `manifest.json` plus
-  deterministic per-part `.kcad.ts` source files for individual part export.
 - Added a focused foundation proof script covering typecheck, test-quality
   audit, constraints, diagnostics, release-note template checks, MCP API drift,
   and pattern capture/lowering behavior.
@@ -95,6 +90,20 @@ npm run dev
   collapsing it to uniform scale in the OCCT backend. Agents now get a clear
   diagnostic and must use explicit primitive dimensions for non-uniform sizing
   until true non-uniform transforms are implemented.
+
+### Removed — vertical-template demotion
+
+- Removed the `robotArmKit` script global, type re-exports,
+  `proof:robot-arm-kit` proof script, and the `list_api` / `SKILL.md`
+  advertisements. The kit productized vertical-specific scaffolding into
+  the kernel surface and inverted the agent-first goal: agents should
+  compose multi-part mechanical assemblies from generic primitives +
+  assemblies + constraints, not call canned vertical templates.
+- The 3-axis desktop robot arm remains as a worked example
+  (`examples/robot-arm/desktop-3axis.kcad.ts`), rewritten to use only
+  generic primitives, assemblies, and revolute joints. Use it via
+  `lookup_cookbook("multi-part mechanical assembly")` or
+  `evaluate_script({ file: "examples/robot-arm/desktop-3axis.kcad.ts" })`.
 
 ### Added — v0.3 slice 3: symbolic params + edit-after-build replay
 
