@@ -6,7 +6,16 @@ export type Mat4 = number[]; // 16 elements, column-major
  *  whose components may be ParamRefs. Mirrors the inline `{x, y, z}` triple
  *  that translate/rotate already use; promoted to a named contract so
  *  assembly + transforms share one shape. Lower time walks each field
- *  through the resolver. */
+ *  through the resolver.
+ *
+ *  Note: `Vec3Param` is intentionally a per-coord struct, not a Vec3 class
+ *  with arithmetic methods. There is no `Vec3.add(other)` / `.scale(factor)`
+ *  / `.normalize()`. To compose Vec3-shaped expressions, work per coord with
+ *  the existing `ParamRef.add` / `.subtract` / `.multiply` / `.divide` /
+ *  `.negate` methods — e.g. `worldOrigin = at + frame.origin` is built as
+ *  `{ x: addParams(at.x, frame.origin.x), y: ..., z: ... }`. Vec3-level
+ *  operations would require a parallel vector-expression algebra on top of
+ *  the scalar `ParamRefExpr`; YAGNI today. */
 export interface Vec3Param {
   x: Param;
   y: Param;
