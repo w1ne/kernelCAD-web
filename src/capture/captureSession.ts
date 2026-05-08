@@ -585,7 +585,7 @@ function buildEdgeFeatureRef(
   }
   // Case 6: EdgeQuery — verify all keys are in the whitelist. If any keys are
   // unknown we still build a query ref so the lowerer can diagnose with the
-  // `feature.edge-feature.invalid-query` code; that keeps the error path on
+  // `feature.invalid-args` code; that keeps the error path on
   // the lowering side where diagnostics are aggregated.
   if (typeof selector === 'object' && selector !== null) {
     const keys = Object.keys(selector);
@@ -600,7 +600,7 @@ function buildEdgeFeatureRef(
       };
     }
     // Unknown shape — store as a query so the lowerer can diagnose
-    // `feature.edge-feature.invalid-query` against it.
+    // `feature.invalid-args` against it.
     return {
       key: 'edges',
       value: {

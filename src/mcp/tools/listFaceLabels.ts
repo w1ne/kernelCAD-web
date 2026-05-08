@@ -40,8 +40,8 @@ export interface ListFaceLabelsOutput {
   labels?: LabelSummary[];
   error?: string;
   /** Structured diagnostic code on `ok=false`. Set on the script-runtime
-   *  exception path: `KernelError` code (e.g. `feature.path.duplicate-label`)
-   *  or `cli.script.exception` for non-kernel throws. (This tool walks records
+   *  exception path: `KernelError` code (e.g. `feature.invalid-args`)
+   *  or `cli.script-exception` for non-kernel throws. (This tool walks records
    *  without lowering, so there's no lowering-error path here.) */
   errorCode?: string;
 }

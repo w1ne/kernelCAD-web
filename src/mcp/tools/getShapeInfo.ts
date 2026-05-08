@@ -24,9 +24,9 @@ export interface GetShapeInfoOutput {
   error?: string;
   /** Structured diagnostic code on `ok=false`. Set on both failure paths:
    *  (1) script-runtime exception → `KernelError` code (e.g.
-   *  `feature.path.duplicate-label`) or `cli.script.exception` for non-kernel
+   *  `feature.invalid-args`) or `cli.script-exception` for non-kernel
    *  throws; (2) lowering-error path → the first error diagnostic's `code`
-   *  (e.g. `feature.edge-feature.no-edges-match`). */
+   *  (e.g. `feature.selection.no-match`). */
   errorCode?: string;
 }
 
