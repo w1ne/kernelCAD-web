@@ -63,6 +63,7 @@ npm run dev
 ### Added
 
 - Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
+- Assembly Vec3 surfaces (`assembly.part({ at, connectors })`, `assembly.revolute({ axis, origin })`) accept `Editable<number>` per coord. Underlying intent uses a unified `Vec3Param` shape shared with `translate`/`rotate`. `AssemblyConnectorRef.worldOrigin` is symbolic — a parametric `at` plus parametric connector `origin` produces a `worldOrigin` whose components are composed `ParamRef` expressions, and the public input types accept that `Vec3Param` directly so an agent can write `arm.revolute({ origin: parent.connector('tip').worldOrigin })`. A single `setParamValue` re-lowers the part dimensions, dependent connector frames, and any joint built on those frames in one pass. Axis vectors normalize at lower time; an axis that resolves to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
 
 ## [0.4.1] — 2026-05-08
 
