@@ -863,17 +863,30 @@ export class OcctLowerer implements FeatureLowerer {
           const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
-          if (!(e instanceof Error) && r.inputs.face !== undefined) {
-            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build,
-            // AND the selection was face-based. This occurs when selected edges are
-            // G1-smooth (e.g., the boundary between a flat face and a fillet cylinder
-            // after a prior fillet) and OCCT cannot apply another fillet to them.
-            // Treat as a no-op: the shape is returned unchanged, which matches the
-            // user intent of "the face is already fully rounded."
-            shape = base;
-            break;
+          if (!(e instanceof Error)) {
+            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build.
+            // String(e) on a raw WASM pointer leaks an unhelpful integer ("8479736"),
+            // so we never include it in the diagnostic message regardless of path.
+            if (r.inputs.face !== undefined) {
+              // Pre-existing silent no-op: face-based fillet on already-G1-smooth
+              // boundary (the fillet-of-fillet case) — the user intent of
+              // "the face is already fully rounded" is met by returning unchanged.
+              shape = base;
+              break;
+            }
+            // Edge-based or default selection: OCCT genuinely rejected. Emit a
+            // clean diagnostic without leaking the raw pointer.
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.kernel-failed',
+              featureId: r.id,
+              severity: 'error',
+              message: 'OCCT fillet failed (non-Error C++ exception during Build)',
+              hint: 'OCCT could not apply that fillet — try a smaller radius, a different edge selection, or check whether the target edges are already G1-smooth.',
+            });
+            return { shape: base, diagnostics };
           }
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = e.message;
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
