@@ -218,8 +218,18 @@ function computeDihedral(
   if (adjacent.length < 2) return null;
   const mid = edgeMidpoint(edge);
   const midPoint = { x: mid[0], y: mid[1], z: mid[2] } as unknown as Parameters<Face['normalAt']>[0];
-  const nA = adjacent[0].normalAt(midPoint);
-  const nB = adjacent[1].normalAt(midPoint);
+  let nA: ReturnType<Face['normalAt']>;
+  let nB: ReturnType<Face['normalAt']>;
+  try {
+    nA = adjacent[0].normalAt(midPoint);
+    nB = adjacent[1].normalAt(midPoint);
+  } catch {
+    // OCCT/replicad throws non-Error C++ Standard_Failure (raw WASM pointer)
+    // when normalAt is called on a CYLINDRE/CONE/SPHERE face at a point on
+    // its parametric U-seam. Cylinder cap edge midpoints sit exactly on the
+    // seam. Treat as "dihedral undetermined" — return null.
+    return null;
+  }
   const a: Vec3 = [nA.x, nA.y, nA.z];
   const b: Vec3 = [nB.x, nB.y, nB.z];
   const cosAng = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
