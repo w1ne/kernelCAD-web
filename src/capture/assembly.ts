@@ -65,10 +65,40 @@ export interface RevoluteJointOpts {
   limitsDeg?: [number, number];
 }
 
+/** Internal storage shape for parts. Extends the public AssemblyPartRef
+ *  with references that solve() needs:
+ *  - originalShape: the Shape captured by box()/etc., before any assembly
+ *    placement. solve() rebuilds the model by translating + rotating each
+ *    original shape, so it needs this reference.
+ *  - atParam: the zero-pose at-translation (Vec3Param). solve() applies
+ *    this as the first transform, then layers joint rotations on top.
+ *  - connectParentId: when a part was placed via `connect: { to }`, the
+ *    parent part's id. Used by partJointChain to walk through fixed
+ *    connect-relationships when looking for ancestor joints (e.g. the
+ *    tool placeholder is connected to the wrist; its joint ancestry is
+ *    inherited from wrist's chain).
+ */
+interface AssemblyPartStored extends AssemblyPartRef {
+  readonly originalShape: Shape;
+  readonly atParam: Vec3Param;
+  readonly connectParentId?: FeatureId;
+}
+
+/** Internal storage for joints. solve() walks these by childPartId. */
+interface AssemblyJointStored {
+  readonly name: string;
+  readonly parentPartId: FeatureId;
+  readonly childPartId: FeatureId;
+  readonly axis: Vec3Param;
+  readonly origin: Vec3Param;
+  readonly limitsDeg?: [number, number];
+}
+
 export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
-  private readonly parts: AssemblyPartRef[] = [];
+  private readonly parts: AssemblyPartStored[] = [];
+  private readonly joints: AssemblyJointStored[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -88,7 +118,13 @@ export class Assembly {
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
     const part = makePartRef(this.name, record.id, name, at, connectors);
-    this.parts.push(part);
+    const stored: AssemblyPartStored = {
+      ...part,
+      originalShape: shape,
+      atParam: at,
+      ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
+    };
+    this.parts.push(stored);
     if (opts.connect) {
       this.session.assemblyConnect(
         this.name,
@@ -125,12 +161,20 @@ export class Assembly {
         'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
       );
     }
-    const stored = {
+    const stored: { axis: Vec3Param; origin: Vec3Param; limitsDeg?: [number, number] } = {
       axis: toVec3Param(opts.axis, 'unitless'),
       origin: toVec3Param(opts.origin, 'mm'),
       ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
     };
     const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, stored);
+    this.joints.push({
+      name,
+      parentPartId: a.id,
+      childPartId: b.id,
+      axis: stored.axis,
+      origin: stored.origin,
+      ...(stored.limitsDeg !== undefined ? { limitsDeg: stored.limitsDeg } : {}),
+    });
     return { id: record.id, name, kind: 'revolute' };
   }
 
