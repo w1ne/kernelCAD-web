@@ -2,7 +2,14 @@ import { KernelError } from '../intent/kernelError';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../intent/types';
 import { toVec3Param } from '../runtime/editableHelpers';
-import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
+import {
+  isParamRef,
+  makeParamRef,
+  paramExprToDebugString,
+  wrapParamRefExpr,
+  type Editable,
+  type ParamRefExpr,
+} from '../runtime/paramRef';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 
@@ -185,6 +192,105 @@ export class Assembly {
     return { id: record.id, name, kind: 'fixed' };
   }
 
+  /**
+   * Build a posed model. Each part's geometry is rotated by the supplied pose
+   * angles about every ancestor joint in its kinematic chain (inner-to-outer
+   * composition).
+   *
+   * @param poses Map of joint name → rotation in degrees about the joint's
+   *   axis. Editable<number>: a ParamRef makes the pose reactive to
+   *   setParamValue. Joints not listed default to 0 (kinematic-zero).
+   *   Unknown joint names raise feature.invalid-args.
+   *
+   * @returns Shape — the union of every part with its kinematic-zero
+   *   placement plus the cumulative joint rotations applied.
+   */
+  solve(poses: Record<string, Editable<number>>): Shape {
+    // Validate joint names.
+    for (const name of Object.keys(poses)) {
+      if (!this.joints.find(j => j.name === name)) {
+        const known = this.joints.map(j => j.name);
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: unknown joint '${name}'. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+          undefined,
+          'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute(...).',
+        );
+      }
+    }
+
+    // Validate pose values: finite numbers or ParamRef<number>.
+    for (const [name, val] of Object.entries(poses)) {
+      if (typeof val === 'number') {
+        if (!Number.isFinite(val)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solve pose '${name}' must be a finite number; got ${formatScalarForError(val)}.`,
+            undefined,
+            'invalid-args.solve.bad-pose — pass a finite number or ParamRef<number>.',
+          );
+        }
+      } else if (!isParamRef(val)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve pose '${name}' must be a number or ParamRef<number>; got ${formatScalarForError(val)}.`,
+          undefined,
+          'invalid-args.solve.bad-pose — pass a finite number or ParamRef<number>.',
+        );
+      }
+    }
+
+    // Empty assembly is an authoring error.
+    if (this.parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.solve requires at least one part.',
+        undefined,
+        'Call assembly.part(name, shape, opts?) before assembly.solve(poses).',
+      );
+    }
+
+    // Build the posed model.
+    let model: Shape | undefined;
+    for (const part of this.parts) {
+      // Start from the bare original shape.
+      let posed = part.originalShape;
+
+      // Apply zero-pose at-translation. Reads atParam scalar values; the
+      // Vec3Param's .x/.y/.z are Param objects whose evaluated field is the
+      // current numeric value (paramRef carries the symbolic AST for live
+      // re-resolution). Shape.translate accepts Editable<number>; we pass
+      // the param's evaluated number for the literal case OR the bound
+      // param name when the param is symbolic.
+      posed = posed.translate(
+        paramToEditable(part.atParam.x),
+        paramToEditable(part.atParam.y),
+        paramToEditable(part.atParam.z),
+      );
+
+      // Apply joint rotations from inner to outer.
+      for (const joint of this.partJointChain(part.id)) {
+        const poseDeg = poses[joint.name] ?? 0;
+        posed = posed.rotate(
+          [
+            paramToEditable(joint.axis.x),
+            paramToEditable(joint.axis.y),
+            paramToEditable(joint.axis.z),
+          ],
+          poseDeg,
+          [
+            paramToEditable(joint.origin.x),
+            paramToEditable(joint.origin.y),
+            paramToEditable(joint.origin.z),
+          ],
+        );
+      }
+
+      model = model === undefined ? posed : model.union(posed);
+    }
+    return model!;
+  }
+
   model(): Shape {
     if (this.parts.length === 0) {
       throw new KernelError(
@@ -195,6 +301,32 @@ export class Assembly {
       );
     }
     return this.session.assemblyModel(this.name, this.parts);
+  }
+
+  /** Walk the part's joint ancestry. Returns ancestor joints in inner-to-outer
+   *  order: the joint directly above this part first, its parent's joint
+   *  second, etc. Walks through `connectParentId` for parts placed via
+   *  `connect: { to }` so a fixed-attached part inherits the kinematic chain
+   *  of the part it's attached to. Cycle-guarded for defense in depth. */
+  private partJointChain(partId: FeatureId): AssemblyJointStored[] {
+    const chain: AssemblyJointStored[] = [];
+    let cur: FeatureId | undefined = partId;
+    const visited = new Set<FeatureId>();
+    while (cur !== undefined && !visited.has(cur)) {
+      visited.add(cur);
+      const joint = this.joints.find(j => j.childPartId === cur);
+      if (joint) {
+        chain.push(joint);
+        cur = joint.parentPartId;
+        continue;
+      }
+      // No joint above this part. Walk through the connect-parent chain
+      // to inherit ancestor joints (e.g. tool placeholder uses connect:
+      // to wrist, inherits wrist's joint chain).
+      const part = this.parts.find(p => p.id === cur);
+      cur = part?.connectParentId;
+    }
+    return chain;
   }
 }
 
@@ -391,4 +523,16 @@ function validateConnectorAssembly(assemblyName: string, connector: AssemblyConn
       'Only connect parts within the same assembly.',
     );
   }
+}
+
+/** Convert a stored `Param` back into an `Editable<number>` so it can be
+ *  passed to chain methods like `Shape.translate` / `Shape.rotate`. Preserves
+ *  symbolic reactivity: a leaf `paramRef: 'x'` round-trips to
+ *  `makeParamRef('x', 'number')`; a composed AST `paramRef: ParamRefExpr`
+ *  round-trips via `wrapParamRefExpr`; a literal Param (no `paramRef`)
+ *  returns its `evaluated` numeric value. */
+function paramToEditable(p: Param): Editable<number> {
+  if (p.paramRef === undefined) return p.evaluated;
+  if (typeof p.paramRef === 'string') return makeParamRef(p.paramRef, 'number');
+  return wrapParamRefExpr(p.paramRef);
 }

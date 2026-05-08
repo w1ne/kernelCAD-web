@@ -153,3 +153,13 @@ export function makeParamRef<T extends number | boolean>(
 ): ParamRef<T> {
   return new ParamRef<T>({ kind: 'param', name }, type);
 }
+
+/** Round-trip a stored `ParamRefExpr` AST back into a `ParamRef<number>`
+ *  instance. Used by sites that read a Param's `paramRef` (composed AST) off
+ *  internal storage and need to feed it back into a chain method that takes
+ *  `Editable<number>`. The wrapped instance shares the original expression
+ *  by reference — equality semantics intentionally match `_expr ===` checks
+ *  on the resolver side. */
+export function wrapParamRefExpr(expr: ParamRefExpr): ParamRef<number> {
+  return new ParamRef<number>(expr, 'number');
+}
