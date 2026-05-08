@@ -21,6 +21,14 @@ function readMeta(
   }
 }
 
+function hasTaskSubdirs(dir: string): boolean {
+  try {
+    return readdirSync(dir, { withFileTypes: true }).some((d) => d.isDirectory());
+  } catch {
+    return false;
+  }
+}
+
 export function selectHeroDemo(opts: {
   packageVersion: string;
   demosRoot: string;
@@ -30,13 +38,29 @@ export function selectHeroDemo(opts: {
   if (parts.length < 2) {
     throw new Error(`invalid package version: ${packageVersion}`);
   }
-  const [maj, min] = parts;
-  const iterationKey = `v${maj}.${min}`;
-  const iterationDir = path.join(demosRoot, iterationKey);
+  const [maj, min, patch] = parts;
+  const minorKey = `v${maj}.${min}`;
+  const patchKey = patch !== undefined ? `v${maj}.${min}.${patch}` : undefined;
 
-  if (!existsSync(iterationDir)) {
-    throw new Error(`no demo dir at ${iterationDir} for ${iterationKey}`);
+  // Patch dir takes precedence: a v0.4.1 release that ships a refreshed hero
+  // distinct from v0.4.0 lands in docs/demos/v0.4.1/ and selectHeroDemo picks
+  // it before falling back to v0.4/. If no patch dir exists, behavior is
+  // identical to before (minor-key only).
+  const candidateDirs: Array<{ key: string; dir: string }> = [];
+  if (patchKey !== undefined) {
+    const patchDir = path.join(demosRoot, patchKey);
+    if (existsSync(patchDir) && hasTaskSubdirs(patchDir)) {
+      candidateDirs.push({ key: patchKey, dir: patchDir });
+    }
   }
+  candidateDirs.push({ key: minorKey, dir: path.join(demosRoot, minorKey) });
+
+  const picked = candidateDirs.find(({ dir }) => existsSync(dir));
+  if (!picked) {
+    throw new Error(`no demo dir at ${candidateDirs.map(c => c.dir).join(' or ')} for ${minorKey}`);
+  }
+  const iterationKey = picked.key;
+  const iterationDir = picked.dir;
 
   const tasks = readdirSync(iterationDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
@@ -48,7 +72,7 @@ export function selectHeroDemo(opts: {
 
   const catalogTasks = tasks.filter((t) => {
     const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
-    return !!meta?.heroArtifact && isCatalogSlug(meta.heroArtifact, iterationKey);
+    return !!meta?.heroArtifact && isCatalogSlug(meta.heroArtifact, minorKey);
   });
   const overrideTasks = tasks.filter((t) => {
     const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
@@ -66,7 +90,7 @@ export function selectHeroDemo(opts: {
     throw new Error(
       `ambiguous hero: ${catalogTasks.length} tasks in ${iterationKey} have catalog-conformant heroArtifact (${catalogTasks.join(', ')})`,
     );
-  } else if (GRANDFATHERED_VERSIONS.has(iterationKey)) {
+  } else if (GRANDFATHERED_VERSIONS.has(minorKey)) {
     const primaryCandidates = tasks.filter((t) => {
       const meta = readMeta(path.join(iterationDir, t, 'meta.json'));
       return !!meta?.heroArtifact && (meta.overrideApprovedBy ?? null) === null;
@@ -81,7 +105,7 @@ export function selectHeroDemo(opts: {
         readMeta(path.join(iterationDir, task, 'meta.json'))?.heroArtifact ?? null;
     } else {
       throw new Error(
-        `grandfathered ${iterationKey} cannot auto-pick hero: ${primaryCandidates.length} primary candidates, ${tasks.length} total tasks`,
+        `grandfathered ${minorKey} cannot auto-pick hero: ${primaryCandidates.length} primary candidates, ${tasks.length} total tasks`,
       );
     }
   } else if (overrideTasks.length === 1) {

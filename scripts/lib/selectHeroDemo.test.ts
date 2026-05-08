@@ -174,6 +174,103 @@ test('multiple catalog matches — throws ambiguity', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('patch dir takes precedence over minor dir when both exist', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+
+  // Minor dir has the v0.4 rocket-keychain (override-approved)
+  mkdirSync(path.join(root, 'v0.4', 'rocket-keychain'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.4', 'rocket-keychain', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'rocket-keychain',
+      overrideApprovedBy: 'pre-policy v0.4 retro',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.4', 'rocket-keychain', 'demo.mp4'), 'fake');
+
+  // Patch dir has a refresh hero
+  mkdirSync(path.join(root, 'v0.4.1', 'donut'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.4.1', 'donut', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'donut',
+      overrideApprovedBy: 'controller: parametric closure refresh',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.4.1', 'donut', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.4.1', demosRoot: root });
+  expect(result.iterationKey).toBe('v0.4.1');
+  expect(result.task).toBe('donut');
+  expect(result.heroArtifact).toBe('donut');
+
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('falls back to minor dir when patch dir is absent', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+
+  mkdirSync(path.join(root, 'v0.4', 'rocket-keychain'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.4', 'rocket-keychain', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'rocket-keychain',
+      overrideApprovedBy: 'pre-policy v0.4 retro',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.4', 'rocket-keychain', 'demo.mp4'), 'fake');
+
+  // No v0.4.1 dir
+  const result = selectHeroDemo({ packageVersion: '0.4.1', demosRoot: root });
+  expect(result.iterationKey).toBe('v0.4');
+  expect(result.task).toBe('rocket-keychain');
+
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('falls back to minor dir when patch dir exists but has no task subdirs', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+
+  mkdirSync(path.join(root, 'v0.4.1'), { recursive: true });
+  // empty patch dir — no task subdirs
+
+  mkdirSync(path.join(root, 'v0.4', 'rocket-keychain'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.4', 'rocket-keychain', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'rocket-keychain',
+      overrideApprovedBy: 'pre-policy v0.4 retro',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.4', 'rocket-keychain', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.4.1', demosRoot: root });
+  expect(result.iterationKey).toBe('v0.4');
+
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('catalog lookup uses minor key even when patch dir is selected', () => {
+  // A catalog-conformant hero can land in a patch dir; the catalog is keyed
+  // on minor, so the lookup must use minor regardless of which dir was picked.
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+  const v021Slug = getCatalogForVersion('v0.21')!.candidates[0].slug;
+
+  mkdirSync(path.join(root, 'v0.21.1', 'hero-task'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.21.1', 'hero-task', 'meta.json'),
+    JSON.stringify({ heroArtifact: v021Slug }),
+  );
+  writeFileSync(path.join(root, 'v0.21.1', 'hero-task', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.21.1', demosRoot: root });
+  expect(result.iterationKey).toBe('v0.21.1');
+  expect(result.task).toBe('hero-task');
+  expect(result.heroArtifact).toBe(v021Slug);
+
+  rmSync(root, { recursive: true, force: true });
+});
+
 test('hero task missing demo.mp4 — throws', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
   const slug = getCatalogForVersion('v0.21')!.candidates[0].slug;
