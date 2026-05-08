@@ -10,7 +10,7 @@
 // `paramRef` name reached. Used at capture time to populate
 // `FeatureRecord.metadata.paramRefs` for the dependency index.
 //
-// As of v0.5 a Param's `paramRef` may be either a plain string (leaf-name
+// As of v0.4.1 a Param's `paramRef` may be either a plain string (leaf-name
 // shorthand for back-compat) or a structured `ParamRefExpr` AST produced by
 // the arithmetic methods on `ParamRef<number>`. Both shapes are walked here.
 //

@@ -1,4 +1,4 @@
-# v0.5 — parametric authoring closure
+# v0.4.1 — parametric authoring closure
 
 ## Hero artifact
 

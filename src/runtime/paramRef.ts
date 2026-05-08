@@ -6,7 +6,7 @@
 // `params` blob (via `Param.paramRef`); at lower time the dispatcher pre-resolves
 // the ref through the session's ParamTable.
 //
-// As of v0.5 ParamRef<number> exposes arithmetic methods (.add, .subtract,
+// As of v0.4.1 ParamRef<number> exposes arithmetic methods (.add, .subtract,
 // .multiply, .divide, .negate) that build a structured expression AST. The
 // expression is stored on `_expr` and resolved against the ParamTable at lower
 // time. This lets agents write `param('r', 5).divide(2)` instead of being
