@@ -2,6 +2,41 @@ export type Vec3 = [number, number, number];
 export type Vec2 = [number, number];
 export type Mat4 = number[]; // 16 elements, column-major
 
+/** Three named Param fields. Used for any Vec3 surface in the capture intent
+ *  whose components may be ParamRefs. Mirrors the inline `{x, y, z}` triple
+ *  that translate/rotate already use; promoted to a named contract so
+ *  assembly + transforms share one shape. Lower time walks each field
+ *  through the resolver.
+ *
+ *  Note: `Vec3Param` is intentionally a per-coord struct, not a Vec3 class
+ *  with arithmetic methods. There is no `Vec3.add(other)` / `.scale(factor)`
+ *  / `.normalize()`. To compose Vec3-shaped expressions, work per coord with
+ *  the existing `ParamRef.add` / `.subtract` / `.multiply` / `.divide` /
+ *  `.negate` methods — e.g. `worldOrigin = at + frame.origin` is built as
+ *  `{ x: addParams(at.x, frame.origin.x), y: ..., z: ... }`. Vec3-level
+ *  operations would require a parallel vector-expression algebra on top of
+ *  the scalar `ParamRefExpr`; YAGNI today. */
+export interface Vec3Param {
+  x: Param;
+  y: Param;
+  z: Param;
+}
+
+/** Script-facing Vec3 input. Accepts:
+ *  - a 3-tuple of `Editable<number>` (number or ParamRef per coord), OR
+ *  - a `Vec3Param` (named struct). The Vec3Param branch lets agents pass
+ *    `connector.worldOrigin` directly into another assembly input without
+ *    rebuilding the tuple.
+ *  A plain `[number, number, number]` is structurally compatible with the
+ *  tuple branch, so existing examples keep working without edit. */
+export type EditableVec3 =
+  | [
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+    ]
+  | Vec3Param;
+
 export type FeatureId = string;
 export type RewriteId = string;
 
@@ -108,6 +143,37 @@ export type ScaleSpec = number | [number, number, number];
 
 export function isValidVec3(v: unknown): v is Vec3 {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+/** Vec3 input validator that accepts numbers or ParamRef<number> per coord.
+ *  Use at every capture-time entry point that takes an EditableVec3 (assembly
+ *  surfaces, transforms). Composes with `formatScalarForError` for diagnostics. */
+export function isValidEditableVec3(v: unknown): v is EditableVec3 {
+  // Vec3Param branch: object with x/y/z Param fields.
+  if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+    const o = v as { x?: unknown; y?: unknown; z?: unknown };
+    return isParamShape(o.x) && isParamShape(o.y) && isParamShape(o.z);
+  }
+  // Tuple branch: existing logic.
+  if (!Array.isArray(v) || v.length !== 3) return false;
+  for (const c of v) {
+    if (typeof c === 'number') {
+      if (!Number.isFinite(c)) return false;
+      continue;
+    }
+    if (typeof c !== 'object' || c === null) return false;
+    const o = c as { _brand?: unknown; _type?: unknown };
+    if (o._brand !== 'ParamRef' || o._type !== 'number') return false;
+  }
+  return true;
+}
+
+function isParamShape(p: unknown): boolean {
+  if (typeof p !== 'object' || p === null) return false;
+  const o = p as { evaluated?: unknown; unit?: unknown };
+  return typeof o.evaluated === 'number'
+      && Number.isFinite(o.evaluated)
+      && typeof o.unit === 'string';
 }
 
 export function isValidScaleSpec(v: unknown): v is ScaleSpec {

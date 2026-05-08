@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
 
+// Vec3Param assertion helper: assembly Vec3 surfaces store as
+// { x: Param, y: Param, z: Param } since Task 5 widened them to EditableVec3.
+// Tests just want to read evaluated numbers, so flatten back to a Vec3 tuple.
+function evaluatedXYZ(v: unknown): [number, number, number] {
+  const o = v as { x: { evaluated: number }; y: { evaluated: number }; z: { evaluated: number } };
+  return [o.x.evaluated, o.y.evaluated, o.z.evaluated];
+}
+
 describe('assembly capture contract', () => {
   it('captures named parts and a revolute joint as inspectable intent records', () => {
     const session = new CaptureSession();
@@ -24,25 +32,30 @@ describe('assembly capture contract', () => {
     expect(shoulder.id).toMatch(/^assemblyJoint_/);
 
     const records = session.getRecords();
-    expect(records.find(r => r.id === base.id)).toMatchObject({
+    const baseRecord = records.find(r => r.id === base.id);
+    expect(baseRecord).toMatchObject({
       kind: 'assemblyPart',
       inputs: { shape: { kind: 'feature', id: baseShape.id } },
       metadata: {
         assemblyName: 'two-link arm',
         partName: 'base',
-        at: [0, 0, 0],
       },
     });
-    expect(records.find(r => r.id === link.id)).toMatchObject({
+    expect(evaluatedXYZ((baseRecord!.metadata as { at: unknown }).at)).toEqual([0, 0, 0]);
+
+    const linkRecord = records.find(r => r.id === link.id);
+    expect(linkRecord).toMatchObject({
       kind: 'assemblyPart',
       inputs: { shape: { kind: 'feature', id: linkShape.id } },
       metadata: {
         assemblyName: 'two-link arm',
         partName: 'link',
-        at: [0, 0, 8],
       },
     });
-    expect(records.find(r => r.id === shoulder.id)).toMatchObject({
+    expect(evaluatedXYZ((linkRecord!.metadata as { at: unknown }).at)).toEqual([0, 0, 8]);
+
+    const shoulderRecord = records.find(r => r.id === shoulder.id);
+    expect(shoulderRecord).toMatchObject({
       kind: 'assemblyJoint',
       inputs: {
         a: { kind: 'feature', id: base.id },
@@ -52,11 +65,12 @@ describe('assembly capture contract', () => {
         assemblyName: 'two-link arm',
         jointName: 'shoulder',
         jointKind: 'revolute',
-        axis: [0, 0, 1],
-        origin: [0, 0, 8],
         limitsDeg: [-90, 90],
       },
     });
+    const shoulderMeta = shoulderRecord!.metadata as { axis: unknown; origin: unknown };
+    expect(evaluatedXYZ(shoulderMeta.axis)).toEqual([0, 0, 1]);
+    expect(evaluatedXYZ(shoulderMeta.origin)).toEqual([0, 0, 8]);
   });
 
   it('captures assembly.model() as one aggregate feature over all placed parts', () => {
@@ -126,32 +140,42 @@ describe('assembly capture contract', () => {
     });
 
     const records = session.getRecords();
-    expect(records.find(r => r.id === base.id)).toMatchObject({
+    const baseRecord = records.find(r => r.id === base.id);
+    expect(baseRecord).toMatchObject({
       kind: 'assemblyPart',
       metadata: {
         assemblyName: 'connector arm',
         partName: 'base',
-        at: [0, 0, 0],
-        connectors: {
-          shoulder: { origin: [10, 0, 8], axis: [0, 0, 1] },
-        },
       },
     });
-    expect(records.find(r => r.id === link.id)).toMatchObject({
+    const baseMeta = baseRecord!.metadata as {
+      at: unknown;
+      connectors: { shoulder: { origin: unknown; axis: unknown } };
+    };
+    expect(evaluatedXYZ(baseMeta.at)).toEqual([0, 0, 0]);
+    expect(evaluatedXYZ(baseMeta.connectors.shoulder.origin)).toEqual([10, 0, 8]);
+    expect(evaluatedXYZ(baseMeta.connectors.shoulder.axis)).toEqual([0, 0, 1]);
+
+    const linkRecord = records.find(r => r.id === link.id);
+    expect(linkRecord).toMatchObject({
       kind: 'assemblyPart',
       metadata: {
         assemblyName: 'connector arm',
         partName: 'link',
-        at: [40, 0, 8],
-        connectors: {
-          root: { origin: [-30, 0, 0], axis: [0, 0, 1] },
-        },
         placedBy: {
           connector: 'root',
           to: { partId: base.id, partName: 'base', connector: 'shoulder' },
         },
       },
     });
+    const linkMeta = linkRecord!.metadata as {
+      at: unknown;
+      connectors: { root: { origin: unknown; axis: unknown } };
+    };
+    expect(evaluatedXYZ(linkMeta.at)).toEqual([40, 0, 8]);
+    expect(evaluatedXYZ(linkMeta.connectors.root.origin)).toEqual([-30, 0, 0]);
+    expect(evaluatedXYZ(linkMeta.connectors.root.axis)).toEqual([0, 0, 1]);
+
     expect(records.at(-1)).toMatchObject({
       kind: 'assemblyConnect',
       inputs: {
@@ -184,7 +208,8 @@ describe('assembly capture contract', () => {
     const connection = hinge.connect('pin-fixed', leafA.connector('pin'), leafB.connector('pin'));
 
     expect(connection.id).toMatch(/^assemblyConnect_/);
-    expect(session.getRecords().at(-1)).toMatchObject({
+    const connectRecord = session.getRecords().at(-1)!;
+    expect(connectRecord).toMatchObject({
       kind: 'assemblyConnect',
       inputs: {
         a: { kind: 'feature', id: leafA.id },
@@ -194,10 +219,16 @@ describe('assembly capture contract', () => {
         assemblyName: 'hinge',
         connectName: 'pin-fixed',
         kind: 'fixed',
-        a: { partName: 'leafA', connector: 'pin', worldOrigin: [15, 0, 1.5] },
-        b: { partName: 'leafB', connector: 'pin', worldOrigin: [15, 0, 1.5] },
+        a: { partName: 'leafA', connector: 'pin' },
+        b: { partName: 'leafB', connector: 'pin' },
       },
     });
+    const connectMeta = connectRecord.metadata as {
+      a: { worldOrigin: unknown };
+      b: { worldOrigin: unknown };
+    };
+    expect(evaluatedXYZ(connectMeta.a.worldOrigin)).toEqual([15, 0, 1.5]);
+    expect(evaluatedXYZ(connectMeta.b.worldOrigin)).toEqual([15, 0, 1.5]);
   });
 
   it('rejects connector placement when the local connector is missing', () => {

@@ -6,8 +6,9 @@ import type {
   ShapeBackend,
 } from '../backend';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind, PatternSpec, PlaneSpec, Vec3 } from '../../intent/types';
+import type { FeatureKind, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../intent/types';
 import { isValidPlaneSpec } from '../../intent/types';
+import { KernelError } from '../../intent/kernelError';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
@@ -28,6 +29,38 @@ import {
 } from './historyAwareEdgeFeatures';
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
+
+// ---------------------------------------------------------------------------
+// Shared helpers: Vec3Param resolution + axis normalization
+// ---------------------------------------------------------------------------
+
+/** Read a Vec3Param to a numeric Vec3 by picking the `evaluated` field of each
+ *  component. The recompute engine pre-resolves every Param-shaped node in the
+ *  record (params + metadata + transforms) against the live ParamTable before
+ *  invoking the lowerer, so `evaluated` already reflects the current value
+ *  for any ParamRef-bearing component. Lowerers therefore never touch the
+ *  ParamTable directly — they only read `.evaluated`. */
+function readVec3Param(v: Vec3Param): [number, number, number] {
+  return [v.x.evaluated, v.y.evaluated, v.z.evaluated];
+}
+
+/** Normalize an axis vector to unit length. Throws `feature.invalid-args` with
+ *  hint `invalid-args.axis.zero` when the resolved vector is zero or contains
+ *  non-finite components. The throw lets a ParamRef edit that produces a
+ *  zero-axis surface as a structured diagnostic via the dispatcher's
+ *  exception path rather than producing a silently-broken transform. */
+export function normalizeAxis(v: [number, number, number]): [number, number, number] {
+  const len = Math.hypot(v[0], v[1], v[2]);
+  if (len === 0 || !Number.isFinite(len)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `axis must be non-zero; resolved to [${v[0]}, ${v[1]}, ${v[2]}].`,
+      undefined,
+      'invalid-args.axis.zero — provide a non-zero direction; ParamRefs may have resolved to zero.',
+    );
+  }
+  return [v[0] / len, v[1] / len, v[2] / len];
+}
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -1194,13 +1227,10 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         shape = base.clone();
-        const at = (r.metadata as { at?: unknown } | undefined)?.at;
-        if (Array.isArray(at)) {
-          shape = shape.translate(
-            Number(at[0]),
-            Number(at[1]),
-            Number(at[2]),
-          );
+        const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
+        if (at !== undefined) {
+          const [tx, ty, tz] = readVec3Param(at);
+          shape = shape.translate(tx, ty, tz);
         }
         break;
       }
@@ -1216,6 +1246,18 @@ export class OcctLowerer implements FeatureLowerer {
             hint: 'Assembly joints must reference successfully lowered assembly parts.',
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Resolve metadata Vec3Params even though the visible joint shape is
+        // currently a passthrough. Reading `origin` exercises the
+        // pre-resolved values; calling `normalizeAxis` validates that an
+        // axis ParamRef hasn't been edited to zero. Both throws surface as
+        // structured diagnostics via the dispatcher's exception path.
+        const jointMeta = r.metadata as { origin?: Vec3Param; axis?: Vec3Param } | undefined;
+        if (jointMeta?.origin !== undefined) {
+          readVec3Param(jointMeta.origin);
+        }
+        if (jointMeta?.axis !== undefined) {
+          normalizeAxis(readVec3Param(jointMeta.axis));
         }
         shape = partA.clone();
         break;
@@ -1281,12 +1323,12 @@ export class OcctLowerer implements FeatureLowerer {
       const inputMap = inputBackend.historyMap;
       switch (t.op) {
         case 'translate':
-          shape = shape.translate(t.x.evaluated, t.y.evaluated, t.z.evaluated);
+          shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
           break;
         case 'rotateAxis': {
-          const ax: Vec3 = [t.axis[0].evaluated, t.axis[1].evaluated, t.axis[2].evaluated];
+          const ax: Vec3 = [t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated];
           const pv: Vec3 | undefined = t.pivot
-            ? [t.pivot[0].evaluated, t.pivot[1].evaluated, t.pivot[2].evaluated]
+            ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated]
             : undefined;
           shape = shape.rotate(ax, t.degrees.evaluated, pv);
           break;

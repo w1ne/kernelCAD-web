@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 
@@ -67,7 +68,7 @@ export async function exportStlTool(input: ExportStlInput): Promise<ExportStlOut
   if (errorDiagnostics.length > 0) {
     return {
       ok: false,
-      diagnostics: result.diagnostics,
+      diagnostics: withNextActions(result.diagnostics),
       feature_count: result.featureCount,
     };
   }
@@ -94,6 +95,6 @@ export async function exportStlTool(input: ExportStlInput): Promise<ExportStlOut
     output_path: finalPath,
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
-    diagnostics: result.diagnostics,
+    diagnostics: withNextActions(result.diagnostics),
   };
 }

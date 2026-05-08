@@ -1,6 +1,7 @@
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef } from '../intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, formatScalarForError } from '../intent/types';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../intent/types';
+import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../intent/types';
 import { KernelError } from '../intent/kernelError';
+import type { ShapeTransform } from '../intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../backends/occt/edgeQueries';
@@ -15,7 +16,7 @@ import {
   type EditableCutoutOpts,
 } from '../intent/cutoutValidation';
 import { isParamRef, type Editable } from '../runtime/paramRef';
-import { toParam } from '../runtime/editableHelpers';
+import { toParam, toVec3Param } from '../runtime/editableHelpers';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -58,75 +59,59 @@ export class Shape {
   }
 
   translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape {
-    const px = toParam(x, 'mm');
-    const py = toParam(y, 'mm');
-    const pz = toParam(z, 'mm');
-    if (!isValidVec3([px.evaluated, py.evaluated, pz.evaluated])) {
+    if (!isValidEditableVec3([x, y, z])) {
       throw new KernelError(
         'feature.invalid-args',
-        `Translate vector must be three finite numbers; got [${px.evaluated}, ${py.evaluated}, ${pz.evaluated}].`,
+        `Translate vector must be three finite numbers (or ParamRef<number>); got [${formatScalarForError(x)}, ${formatScalarForError(y)}, ${formatScalarForError(z)}].`,
         this.id,
         'Pass three finite numbers (x, y, z) to .translate().',
       );
     }
-    this.session.appendTransform(this.id, { op: 'translate', x: px, y: py, z: pz });
+    this.session.appendTransform(this.id, { op: 'translate', vec: toVec3Param([x, y, z], 'mm') });
     return this;
   }
 
   rotate(
-    axis: [Editable<number>, Editable<number>, Editable<number>],
+    axis: EditableVec3,
     degrees: Editable<number>,
-    pivot?: [Editable<number>, Editable<number>, Editable<number>],
+    pivot?: EditableVec3,
   ): Shape {
-    if (!Array.isArray(axis) || axis.length !== 3) {
+    if (!isValidEditableVec3(axis)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${formatScalarForError(axis)}, degrees=${formatScalarForError(degrees)}.`,
+        `Rotate axis must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(axis)}.`,
         this.id,
         'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
       );
     }
-    const ax = toParam(axis[0], 'unitless');
-    const ay = toParam(axis[1], 'unitless');
-    const az = toParam(axis[2], 'unitless');
-    const deg = toParam(degrees, 'deg');
-    if (!isValidVec3([ax.evaluated, ay.evaluated, az.evaluated]) || !Number.isFinite(deg.evaluated)) {
+    if (typeof degrees !== 'number' && !isParamRef(degrees)) {
       throw new KernelError(
         'feature.invalid-args',
-        `Rotate axis must be a finite Vec3 and degrees must be a finite number; got axis=${formatScalarForError(axis)}, degrees=${formatScalarForError(degrees)}.`,
+        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
         this.id,
         'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
       );
     }
-    let pivotParams: [import('../intent/types').Param, import('../intent/types').Param, import('../intent/types').Param] | undefined;
-    if (pivot !== undefined) {
-      if (!Array.isArray(pivot) || pivot.length !== 3) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
-          this.id,
-          'Pass a finite Vec3 as the pivot, or omit it.',
-        );
-      }
-      const px = toParam(pivot[0], 'mm');
-      const py = toParam(pivot[1], 'mm');
-      const pz = toParam(pivot[2], 'mm');
-      if (!isValidVec3([px.evaluated, py.evaluated, pz.evaluated])) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
-          this.id,
-          'Pass a finite Vec3 as the pivot, or omit it.',
-        );
-      }
-      pivotParams = [px, py, pz];
+    if (typeof degrees === 'number' && !Number.isFinite(degrees)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Rotate degrees must be a finite number or ParamRef; got ${formatScalarForError(degrees)}.`,
+        this.id,
+        'Pass a finite Vec3 axis and a finite number of degrees to .rotate(axis, degrees, pivot?).',
+      );
     }
-    this.session.appendTransform(this.id, {
-      op: 'rotateAxis',
-      axis: [ax, ay, az],
-      degrees: deg,
-      pivot: pivotParams,
-    });
+    if (pivot !== undefined && !isValidEditableVec3(pivot)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Rotate pivot (when provided) must be a finite Vec3; got ${formatScalarForError(pivot)}.`,
+        this.id,
+        'Pass a finite Vec3 as the pivot, or omit it.',
+      );
+    }
+    const transform: ShapeTransform = pivot === undefined
+      ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
+      : { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg'), pivot: toVec3Param(pivot, 'mm') };
+    this.session.appendTransform(this.id, transform);
     return this;
   }
 

@@ -38,7 +38,7 @@ describe('OcctLowerer', () => {
       id: 'box_1', kind: 'box',
       params: { x: mm(10), y: mm(10), z: mm(10), centered: ul(0) },
       inputs: {},
-      transforms: [{ op: 'translate', x: mm(5), y: mm(0), z: mm(0) }],
+      transforms: [{ op: 'translate', vec: { x: mm(5), y: mm(0), z: mm(0) } }],
       suppressed: false,
     };
     const lowerer = new OcctLowerer();
@@ -57,7 +57,7 @@ describe('OcctLowerer', () => {
       id: 'cyl_1', kind: 'cylinder',
       params: { h: mm(20), r: mm(5) },
       inputs: {},
-      transforms: [{ op: 'translate', x: mm(10), y: mm(10), z: mm(0) }],
+      transforms: [{ op: 'translate', vec: { x: mm(10), y: mm(10), z: mm(0) } }],
       suppressed: false,
     };
     const baseRes = await lowerer.lower(baseRec, { byKey: {} });

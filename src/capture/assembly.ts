@@ -1,6 +1,8 @@
 import { KernelError } from '../intent/kernelError';
-import type { FeatureId, Vec3 } from '../intent/types';
-import { formatScalarForError, isValidVec3 } from '../intent/types';
+import type { EditableVec3, FeatureId, Param, Unit, Vec3Param } from '../intent/types';
+import { formatScalarForError, isValidEditableVec3 } from '../intent/types';
+import { toVec3Param } from '../runtime/editableHelpers';
+import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 
@@ -8,8 +10,8 @@ export interface AssemblyPartRef {
   id: FeatureId;
   name: string;
   assemblyName: string;
-  at: Vec3;
-  connectors: Record<string, AssemblyConnectorFrame>;
+  at: Vec3Param;
+  connectors: Record<string, AssemblyConnectorFrameStored>;
   connector(name: string): AssemblyConnectorRef;
 }
 
@@ -20,7 +22,7 @@ export interface AssemblyJointRef {
 }
 
 export interface AssemblyPartOpts {
-  at?: Vec3;
+  at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
   connect?: {
     connector: string;
@@ -29,9 +31,16 @@ export interface AssemblyPartOpts {
   };
 }
 
+/** Script-facing input: each coord may be a number or ParamRef<number>. */
 export interface AssemblyConnectorFrame {
-  origin: Vec3;
-  axis?: Vec3;
+  origin: EditableVec3;
+  axis?: EditableVec3;
+}
+
+/** Intent-side normalized shape after toVec3Param. */
+export interface AssemblyConnectorFrameStored {
+  origin: Vec3Param;
+  axis?: Vec3Param;
 }
 
 export interface AssemblyConnectorRef {
@@ -39,9 +48,9 @@ export interface AssemblyConnectorRef {
   partId: FeatureId;
   partName: string;
   connector: string;
-  origin: Vec3;
-  worldOrigin: Vec3;
-  axis?: Vec3;
+  origin: Vec3Param;
+  worldOrigin: Vec3Param;
+  axis?: Vec3Param;
 }
 
 export interface AssemblyConnectRef {
@@ -51,8 +60,8 @@ export interface AssemblyConnectRef {
 }
 
 export interface RevoluteJointOpts {
-  axis: Vec3;
-  origin: Vec3;
+  axis: EditableVec3;
+  origin: EditableVec3;
   limitsDeg?: [number, number];
 }
 
@@ -67,12 +76,12 @@ export class Assembly {
   }
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
-    if (opts.at !== undefined && !isValidVec3(opts.at)) {
+    if (opts.at !== undefined && !isValidEditableVec3(opts.at)) {
       throw new KernelError(
         'feature.invalid-args',
         `assembly part placement must be a finite Vec3; got ${formatScalarForError(opts.at)}.`,
         shape.id,
-        'Pass at: [x, y, z], or omit it.',
+        'Pass at: [x, y, z], or omit it; coords may be number or ParamRef.',
       );
     }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
@@ -92,20 +101,20 @@ export class Assembly {
   }
 
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
-    if (!isValidVec3(opts.axis)) {
+    if (!isValidEditableVec3(opts.axis)) {
       throw new KernelError(
         'feature.invalid-args',
         `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
         undefined,
-        'Pass axis: [x, y, z].',
+        'Pass axis: [x, y, z]; coords may be number or ParamRef.',
       );
     }
-    if (!isValidVec3(opts.origin)) {
+    if (!isValidEditableVec3(opts.origin)) {
       throw new KernelError(
         'feature.invalid-args',
         `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
         undefined,
-        'Pass origin: [x, y, z].',
+        'Pass origin: [x, y, z]; coords may be number or ParamRef.',
       );
     }
     if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
@@ -116,7 +125,12 @@ export class Assembly {
         'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
       );
     }
-    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, opts);
+    const stored = {
+      axis: toVec3Param(opts.axis, 'unitless'),
+      origin: toVec3Param(opts.origin, 'mm'),
+      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    };
+    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, stored);
     return { id: record.id, name, kind: 'revolute' };
   }
 
@@ -157,41 +171,92 @@ function normalizeConnectors(
   partName: string,
   featureId: FeatureId,
   connectors: Record<string, AssemblyConnectorFrame> | undefined,
-): Record<string, AssemblyConnectorFrame> {
-  const normalized: Record<string, AssemblyConnectorFrame> = {};
+): Record<string, AssemblyConnectorFrameStored> {
+  const normalized: Record<string, AssemblyConnectorFrameStored> = {};
   for (const [name, frame] of Object.entries(connectors ?? {})) {
-    if (!isValidVec3(frame.origin)) {
+    if (!isValidEditableVec3(frame.origin)) {
       throw new KernelError(
         'feature.invalid-args',
-        `assembly connector '${name}' on part '${partName}' origin must be a finite Vec3; got ${formatScalarForError(frame.origin)}.`,
+        `assembly connector '${name}' on part '${partName}' origin must be a finite Vec3 (numbers or ParamRef<number>); got ${formatScalarForError(frame.origin)}.`,
         featureId,
-        'Pass connector frames as { origin: [x, y, z], axis?: [x, y, z] }.',
+        'Pass connector frames as { origin: [x, y, z], axis?: [x, y, z] }; coords may be number or ParamRef.',
       );
     }
-    if (frame.axis !== undefined && !isValidVec3(frame.axis)) {
+    if (frame.axis !== undefined && !isValidEditableVec3(frame.axis)) {
       throw new KernelError(
         'feature.invalid-args',
         `assembly connector '${name}' on part '${partName}' axis must be a finite Vec3; got ${formatScalarForError(frame.axis)}.`,
         featureId,
-        'Pass connector axis as [x, y, z], or omit it.',
+        'Pass connector axis as [x, y, z], or omit it; coords may be number or ParamRef.',
       );
     }
     normalized[name] = frame.axis === undefined
-      ? { origin: frame.origin }
-      : { origin: frame.origin, axis: frame.axis };
+      ? { origin: toVec3Param(frame.origin, 'mm') }
+      : { origin: toVec3Param(frame.origin, 'mm'), axis: toVec3Param(frame.axis, 'unitless') };
   }
   return normalized;
+}
+
+function paramToExpr(p: Param): ParamRefExpr {
+  if (p.paramRef === undefined) {
+    return { kind: 'lit', value: p.evaluated };
+  }
+  if (typeof p.paramRef === 'string') {
+    return { kind: 'param', name: p.paramRef };
+  }
+  return p.paramRef;
+}
+
+function paramFromExpr(expr: ParamRefExpr, unit: Unit, evaluatedSnapshot: number): Param {
+  return {
+    expression: `{$paramExpr:${paramExprToDebugString(expr)}}`,
+    unit,
+    evaluated: evaluatedSnapshot,
+    paramRef: expr,
+  };
+}
+
+function addParams(a: Param, b: Param): Param {
+  if (a.paramRef === undefined && b.paramRef === undefined) {
+    return {
+      expression: `(${a.expression} + ${b.expression})`,
+      unit: a.unit,
+      evaluated: a.evaluated + b.evaluated,
+    };
+  }
+  return paramFromExpr(
+    { kind: 'binop', op: '+', left: paramToExpr(a), right: paramToExpr(b) },
+    a.unit,
+    a.evaluated + b.evaluated,
+  );
+}
+
+function subtractParams(a: Param, b: Param): Param {
+  if (a.paramRef === undefined && b.paramRef === undefined) {
+    return {
+      expression: `(${a.expression} - ${b.expression})`,
+      unit: a.unit,
+      evaluated: a.evaluated - b.evaluated,
+    };
+  }
+  return paramFromExpr(
+    { kind: 'binop', op: '-', left: paramToExpr(a), right: paramToExpr(b) },
+    a.unit,
+    a.evaluated - b.evaluated,
+  );
 }
 
 function resolvePartPlacement(
   assemblyName: string,
   partName: string,
   featureId: FeatureId,
-  explicitAt: Vec3 | undefined,
-  connectors: Record<string, AssemblyConnectorFrame>,
+  explicitAt: EditableVec3 | undefined,
+  connectors: Record<string, AssemblyConnectorFrameStored>,
   connect: AssemblyPartOpts['connect'],
-): Vec3 {
-  if (!connect) return explicitAt ?? [0, 0, 0];
+): Vec3Param {
+  if (!connect) {
+    return toVec3Param(explicitAt ?? [0, 0, 0], 'mm');
+  }
   const local = connectors[connect.connector];
   if (!local) {
     throw new KernelError(
@@ -225,19 +290,19 @@ function resolvePartPlacement(
       'Use either at: [x, y, z] or connect: { connector, to }, not both.',
     );
   }
-  return [
-    connect.to.worldOrigin[0] - local.origin[0],
-    connect.to.worldOrigin[1] - local.origin[1],
-    connect.to.worldOrigin[2] - local.origin[2],
-  ];
+  return {
+    x: subtractParams(connect.to.worldOrigin.x, local.origin.x),
+    y: subtractParams(connect.to.worldOrigin.y, local.origin.y),
+    z: subtractParams(connect.to.worldOrigin.z, local.origin.z),
+  };
 }
 
 function makePartRef(
   assemblyName: string,
   id: FeatureId,
   name: string,
-  at: Vec3,
-  connectors: Record<string, AssemblyConnectorFrame>,
+  at: Vec3Param,
+  connectors: Record<string, AssemblyConnectorFrameStored>,
 ): AssemblyPartRef {
   return {
     id,
@@ -255,17 +320,18 @@ function makePartRef(
           'Use one of the connector names declared in assembly.part(..., { connectors }).',
         );
       }
+      const worldOrigin: Vec3Param = {
+        x: addParams(at.x, frame.origin.x),
+        y: addParams(at.y, frame.origin.y),
+        z: addParams(at.z, frame.origin.z),
+      };
       return {
         assemblyName,
         partId: id,
         partName: name,
         connector: connectorName,
         origin: frame.origin,
-        worldOrigin: [
-          at[0] + frame.origin[0],
-          at[1] + frame.origin[1],
-          at[2] + frame.origin[2],
-        ],
+        worldOrigin,
         ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
       };
     },

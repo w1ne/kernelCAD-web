@@ -5,6 +5,7 @@ import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport, type ExportFormat } from '../../script-runtime/export';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ExportInput {
@@ -28,11 +29,11 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   } catch (e) {
     return {
       exitCode: 2, bytesWritten: 0,
-      diagnostics: [{
+      diagnostics: withNextActions([{
         target: 'export-occt', code: 'cli.file-read', severity: 'error',
         message: e instanceof Error ? e.message : String(e),
         hint: 'Check that the file path exists and is readable.',
-      }],
+      }]),
     };
   }
   let result;
@@ -47,11 +48,11 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   }
   const fatal = result.diagnostics.filter(d => d.severity === 'error').length > 0;
   if (fatal || result.bytes.length === 0) {
-    return { exitCode: 1, bytesWritten: 0, diagnostics: result.diagnostics };
+    return { exitCode: 1, bytesWritten: 0, diagnostics: withNextActions(result.diagnostics) };
   }
   const outPath = resolve(input.out);
   await writeFile(outPath, result.bytes);
-  return { exitCode: 0, bytesWritten: result.bytes.length, diagnostics: result.diagnostics };
+  return { exitCode: 0, bytesWritten: result.bytes.length, diagnostics: withNextActions(result.diagnostics) };
 }
 
 export function exportCommand(): Command {

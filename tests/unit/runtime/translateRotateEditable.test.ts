@@ -41,10 +41,10 @@ describe('Shape.translate accepts Editable<number> — per-coord capture', () =>
     expect(ts).toHaveLength(1);
     const t = ts[0] as Extract<ShapeTransform, { op: 'translate' }>;
     expect(t.op).toBe('translate');
-    expect(t.x.paramRef).toBe('x');
-    expect(t.y.paramRef).toBeUndefined();
-    expect(t.z.paramRef).toBeUndefined();
-    expect(t.x.unit).toBe('mm');
+    expect(t.vec.x.paramRef).toBe('x');
+    expect(t.vec.y.paramRef).toBeUndefined();
+    expect(t.vec.z.paramRef).toBeUndefined();
+    expect(t.vec.x.unit).toBe('mm');
   });
 
   it('translate stores ParamRef on y and z too', () => {
@@ -55,8 +55,8 @@ describe('Shape.translate accepts Editable<number> — per-coord capture', () =>
     api.box(10, 10, 10).translate(0, y, z);
     const ts = transformsOf(session);
     const t = ts[0] as Extract<ShapeTransform, { op: 'translate' }>;
-    expect(t.y.paramRef).toBe('y');
-    expect(t.z.paramRef).toBe('z');
+    expect(t.vec.y.paramRef).toBe('y');
+    expect(t.vec.z.paramRef).toBe('z');
   });
 });
 
@@ -81,8 +81,8 @@ describe('Shape.rotate accepts Editable<number> — per-component capture', () =
     api.box(10, 10, 10).rotate([0, 0, az], 45);
     const ts = transformsOf(session);
     const t = ts[0] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    expect(t.axis[2].paramRef).toBe('az');
-    expect(t.axis[2].unit).toBe('unitless');
+    expect(t.axis.z.paramRef).toBe('az');
+    expect(t.axis.z.unit).toBe('unitless');
   });
 
   it('rotate pivot accepts ParamRef on each component (mm)', () => {
@@ -93,9 +93,9 @@ describe('Shape.rotate accepts Editable<number> — per-component capture', () =
     const ts = transformsOf(session);
     const t = ts[0] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
     expect(t.pivot).toBeDefined();
-    expect(t.pivot![0].paramRef).toBe('px');
-    expect(t.pivot![0].unit).toBe('mm');
-    expect(t.pivot![1].paramRef).toBeUndefined();
+    expect(t.pivot!.x.paramRef).toBe('px');
+    expect(t.pivot!.x.unit).toBe('mm');
+    expect(t.pivot!.y.paramRef).toBeUndefined();
   });
 });
 

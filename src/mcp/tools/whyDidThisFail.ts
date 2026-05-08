@@ -12,6 +12,7 @@ import { RecomputeEngine } from '../../compute/recomputeEngine';
 import { OcctLowerer } from '../../backends/occt/occtLowerer';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';
 
 export interface WhyDidThisFailInput {
@@ -95,7 +96,7 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
       feature_id: rec.id,
       kind: rec.kind,
       health: result.health.get(rec.id) ?? (result.shapes.has(rec.id) ? 'healthy' : 'unknown'),
-      diagnostics: featureDiags,
+      diagnostics: withNextActions(featureDiags),
     });
   }
 

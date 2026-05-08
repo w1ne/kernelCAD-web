@@ -2,8 +2,10 @@ import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureId } from '../intent/types';
 import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import { HINT_TEMPLATES } from '../diagnostics/codes';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
+import { KernelError } from '../intent/kernelError';
 import type { ParamTable } from '../runtime/paramTable';
 import { resolveParams } from '../runtime/resolveParams';
 import type { SoftWarningPhase, SoftWarningSink } from '../runtime/softWarning';
@@ -252,15 +254,28 @@ export class RecomputeEngine {
           }
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        const failDiag: CompilerDiagnostic = {
-          target: this.lowerer.target,
-          code: 'recompute.lowering.exception',
-          featureId: r.id,
-          severity: 'error',
-          message: msg,
-          hint: 'An exception was raised during lowering; read the message for the underlying error.',
-        };
+        // Preserve `KernelError.code`/`.hint` so e.g. `normalizeAxis` raising
+        // `feature.invalid-args` with hint `invalid-args.axis.zero` surfaces as
+        // a structured diagnostic instead of being flattened to the generic
+        // `recompute.lowering.exception` shape. Non-KernelError throws still
+        // fall through to the generic path.
+        const failDiag: CompilerDiagnostic = e instanceof KernelError
+          ? {
+              target: this.lowerer.target,
+              code: e.code,
+              featureId: e.featureId ?? r.id,
+              severity: 'error',
+              message: e.message,
+              hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+            }
+          : {
+              target: this.lowerer.target,
+              code: 'recompute.lowering.exception',
+              featureId: r.id,
+              severity: 'error',
+              message: e instanceof Error ? e.message : String(e),
+              hint: 'An exception was raised during lowering; read the message for the underlying error.',
+            };
         diagnostics.push(failDiag);
         health.set(r.id, 'error');
         if (onEvent) {

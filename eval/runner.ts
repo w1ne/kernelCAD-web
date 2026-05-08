@@ -48,6 +48,10 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   let totalOut = 0;
   let lastEvaluateOk = false;
   let finalScript: string | null = null;
+  // First non-OK diagnostic code observed across the loop. Set once, never
+  // overwritten — downstream classifiers (portfolio attempt logger) use this
+  // to tag a failed run with the diagnostic that surfaced first.
+  let firstFailureCode: string | undefined;
 
   const start = Date.now();
 
@@ -100,6 +104,10 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     const ev = await evaluateScript(outputScriptPath);
     events.push({ kind: 'evaluate', attempt, ok: ev.ok, diagnostics: ev.diagnostics });
 
+    if (!ev.ok && firstFailureCode === undefined && ev.diagnostics.length > 0) {
+      firstFailureCode = ev.diagnostics[0].code;
+    }
+
     if (ev.ok) {
       lastEvaluateOk = true;
       break;
@@ -141,6 +149,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     tokens_in: totalIn,
     tokens_out: totalOut,
     time_ms: Date.now() - start,
+    firstFailureCode,
   });
 
   writeFileSync(scorePath, JSON.stringify(score, null, 2));

@@ -331,6 +331,29 @@ return box(p.plateW, p.plateD, p.plateT);
 
 For post-build edits, use MCP `params_list({})` to inspect the active evaluated session, then `params_update({ edits: [{ name: 'boltDia', value: 6 }] })`. Updates validate atomically, re-lower only affected records plus their downstream dependents, and return soft warnings when a boolean-gated feature makes a named downstream reference become a passthrough.
 
+### Parametric assembly frames
+
+Every Vec3 surface in the assembly API accepts `Editable<number>` per coord, so connector frames and joint frames can be built from `param()` values. Beyond plain tuples, the `worldOrigin` of a connector is itself a symbolic Vec3 that can be passed back into another assembly input — when downstream consumers read it (e.g. a joint origin = `parent.connector('tip').worldOrigin`), edits to the underlying params propagate live through the chain.
+
+```typescript
+const baseX = param('baseX', 70);
+const plate = box(baseX, 46, 4);
+const arm = assembly('arm');
+const base = arm.part('base', plate, {
+  connectors: { pivot: { origin: [baseX.divide(2), 23, 4], axis: [0, 0, 1] } },
+});
+const shoulder = arm.part('shoulder', shoulderLink, {
+  connectors: { root: { origin: [0, 9, 2], axis: [0, 1, 0] } },
+  connect: { connector: 'root', to: base.connector('pivot'), name: 'base-to-shoulder' },
+});
+arm.revolute('yaw', base, shoulder, {
+  origin: base.connector('pivot').worldOrigin,
+  axis: [0, 0, 1],
+});
+```
+
+`setParamValue('baseX', 100)` reactively rebuilds the plate AND the connector frame AND the joint origin AND the dependent shoulder placement — all in one re-lower. Axis vectors normalize at lower time; an axis whose components resolve to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
+
 ### Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:

@@ -21,6 +21,7 @@
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
+    "portfolio:attempt": "npx tsx scripts/portfolioAttempt.ts",
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts",
@@ -32,7 +33,7 @@
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:hygiene": "npm test -- scripts/repoHygieneAudit.test.ts",
     "test:package": "npx tsx scripts/packageReleaseAudit.ts",
-    "proof:foundation": "npm run typecheck && npm run test:audit && npm run test:hygiene && npm run test:package && npm test -- src/lib/constraints/solver.test.ts src/lib/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts tests/integration/examples/patternExamples.test.ts",
+    "proof:foundation": "npm run typecheck && npm run test:audit && npm run test:hygiene && npm run test:package && npm test -- src/lib/constraints/solver.test.ts src/lib/constraints/advanced_constraints.test.ts tests/integration/diagnostics/hint-mandatory.test.ts tests/integration/diagnostics/next-action-mandatory.test.ts scripts/lib/whatsNewTemplate.test.ts tests/integration/mcp/listApi.driftSentinel.test.ts tests/unit/skill/skillShapeMethodsDrift.test.ts tests/unit/patterns/patternCapture.test.ts tests/unit/backends/occt/patternLowerer.test.ts tests/integration/examples/patternExamples.test.ts",
     "proof:assembly-contract": "npm run proof:foundation && npm test -- tests/unit/assemblies/assemblyCapture.test.ts tests/unit/backends/occt/assemblyLowerer.test.ts tests/integration/examples/assemblyExamples.test.ts tests/unit/skill/skillGlobalsDrift.test.ts",
     "test:e2e": "playwright test",
     "site:dev": "npx tsx site/scripts/build-demo.ts && cd site && for f in public/*; do ln -sf \"$f\" \"$(basename \"$f\")\"; done && python3 -m http.server 8000",
@@ -52,7 +53,9 @@
     "capture-demo:donut": "npx tsx scripts/captureDemo.ts --script examples/v0.21/donut.kcad.ts --prompt scripts/demo-prompts/v0.21-donut.md --module v0.21 --output docs/demos/v0.21/donut/ --hero-artifact donut",
     "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/ --hero-artifact bracket-with-hole --override-approved-by 'grandfathered: pre-policy v0.1 retro capture'",
     "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/ --hero-artifact subtract-then-fillet-rim --override-approved-by 'grandfathered: pre-policy v0.2 retro capture'",
-    "lint-demos": "npx tsx scripts/lint-demos.ts"
+    "lint-demos": "npx tsx scripts/lint-demos.ts",
+    "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
+    "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

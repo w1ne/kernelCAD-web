@@ -32,7 +32,7 @@ export function formatDiagnostics(diagnostics: Diagnostic[]): string {
 
 export function computeScore(
   result: HarnessResult,
-  meta: { attempts: number; tokens_in: number; tokens_out: number; time_ms: number },
+  meta: { attempts: number; tokens_in: number; tokens_out: number; time_ms: number; firstFailureCode?: string },
 ): Score {
   const gateValues = Object.values(result.gates);
   const gate_pass = gateValues.every((v) => v);
@@ -51,7 +51,7 @@ export function computeScore(
     }
   }
 
-  return {
+  const out: Score = {
     gates: result.gates,
     scored: result.scored,
     gate_pass,
@@ -60,6 +60,8 @@ export function computeScore(
     tokens: { input: meta.tokens_in, output: meta.tokens_out, total: meta.tokens_in + meta.tokens_out },
     time_ms: meta.time_ms,
   };
+  if (meta.firstFailureCode !== undefined) out.firstFailureCode = meta.firstFailureCode;
+  return out;
 }
 
 export interface RenderTranscriptArgs {

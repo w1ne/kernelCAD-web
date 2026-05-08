@@ -1,6 +1,7 @@
 // src/mcp/tools/evaluateScript.ts
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface EvaluateScriptInput {
@@ -38,6 +39,10 @@ export async function evaluateScriptTool(
   return {
     ok: r.exitCode === 0,
     featureCount: r.featureCount,
-    diagnostics: r.diagnostics,
+    // Idempotent re-enrichment guard. evaluateAndBuildScript already
+    // populates nextAction on every return path; this wrap is a no-op
+    // today but ensures the contract holds if a future caller bypasses
+    // the eval helper.
+    diagnostics: withNextActions(r.diagnostics),
   };
 }

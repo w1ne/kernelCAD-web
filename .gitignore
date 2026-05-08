@@ -48,3 +48,6 @@ site/public/brand/
 site/public/og-image.png
 site/og-image.png
 site/brand
+
+# Portfolio attempt log (append-only, not source-controlled)
+eval/portfolio-attempts.jsonl
