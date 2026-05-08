@@ -60,7 +60,9 @@ npm run dev
 
 ## [Unreleased]
 
-## [0.5.0] — 2026-05-08
+## [0.4.1] — 2026-05-08
+
+> **Versioning note (2026-05-08):** This release was originally tagged `v0.5.0`. The `v0.5.0` tag and GitHub release were withdrawn the same day to keep the `v0.5` minor reserved for the thin adaptive UI workstream per the gap-closure roadmap (Phase 4). The work itself — parametric authoring closure, fillet-on-revolved fix, diagnostic-vocab milestone C, Patterns + assembly contract foundations — ships unchanged as `v0.4.1`. No code changes between the withdrawn `v0.5.0` and this `v0.4.1`.
 
 ### Added — foundation + mechanical core preparation
 
