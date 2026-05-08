@@ -12,6 +12,7 @@
 // featureId flows one direction: throw site → KernelError constructor →
 // diagnostic. No caller override needed or possible.
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import { withNextAction } from '../diagnostics/diagnostic';
 import type { DiagnosticCode } from '../diagnostics/codes';
 import { HINT_TEMPLATES } from '../diagnostics/codes';
 import { isKernelError } from '../intent/kernelError';
@@ -21,21 +22,21 @@ export function kernelErrorToDiagnostic(
   defaultCode: DiagnosticCode = 'cli.script-exception',
 ): CompilerDiagnostic {
   if (isKernelError(e)) {
-    return {
+    return withNextAction({
       target: 'export-occt',
       code: e.code,
       severity: 'error',
       message: e instanceof Error ? e.message : String(e),
       hint: e.hint ?? HINT_TEMPLATES[e.code].template,
       ...(e.featureId !== undefined ? { featureId: e.featureId } : {}),
-    };
+    });
   }
   const msg = e instanceof Error ? e.message : String(e);
-  return {
+  return withNextAction({
     target: 'export-occt',
     code: defaultCode,
     severity: 'error',
     message: msg,
     hint: HINT_TEMPLATES[defaultCode].template,
-  };
+  });
 }

@@ -60,6 +60,10 @@ npm run dev
 
 ## [Unreleased]
 
+### Added
+
+- Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
+
 ## [0.4.1] — 2026-05-08
 
 > **Versioning note (2026-05-08):** This release was originally tagged `v0.5.0`. The `v0.5.0` tag and GitHub release were withdrawn the same day to keep the `v0.5` minor reserved for the thin adaptive UI workstream per the gap-closure roadmap (Phase 4). The work itself — parametric authoring closure, fillet-on-revolved fix, diagnostic-vocab milestone C, Patterns + assembly contract foundations — ships unchanged as `v0.4.1`. No code changes between the withdrawn `v0.5.0` and this `v0.4.1`.
