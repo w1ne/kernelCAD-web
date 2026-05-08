@@ -821,24 +821,39 @@ export class OcctLowerer implements FeatureLowerer {
         // filleted), treat as a no-op success so the user intent ("round this face") is met.
         const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
         const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
+        let nullCount = 0;
         const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
           const d = computeDihedralPublic(shapeForDihedral, e);
-          // null means the dihedral could not be computed (e.g., edge has only one adjacent
-          // face, or the isSameEdge scan found no match). Treat as non-sharp so OCCT
-          // doesn't receive a potentially-smooth edge it can't handle.
-          if (d === null) return false;
+          // null means the dihedral could not be computed — either the edge has only one
+          // adjacent face, isSameEdge found no match, or normalAt threw a non-Error C++
+          // exception (typical for cylinder cap edges sitting on the parametric U-seam
+          // of a CYLINDRE/CONE/SPHERE face). Track and inspect after the filter.
+          if (d === null) {
+            nullCount++;
+            return false;
+          }
           return d.angleDeg < 180 - SMOOTH_THRESHOLD;
         });
+        let edgesForFillet: import('replicad').Edge[];
         if (sharpEdges.length === 0) {
-          // No sharp edges remain — the fillet is already satisfied; return shape unchanged.
-          shape = base;
-          break;
+          if (nullCount === 0) {
+            // Genuinely all G1-smooth — fillet already satisfied, return shape unchanged.
+            shape = base;
+            break;
+          }
+          // All edges had unknown dihedral (e.g., cylinder cap edges on the
+          // parametric seam where normalAt throws). OCCT can fillet circular
+          // cap edges directly — trust it with the original edge set. The
+          // non-Error catch below handles any genuine OCCT rejection cleanly.
+          edgesForFillet = edgesResult as import('replicad').Edge[];
+        } else {
+          edgesForFillet = sharpEdges;
         }
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const edgeRefs: EdgeRefForFilleting[] = sharpEdges.map((e: any) => ({
+          const edgeRefs: EdgeRefForFilleting[] = edgesForFillet.map((e: any) => ({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
