@@ -2,6 +2,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
+import { toParam } from '../../../../src/runtime/editableHelpers';
+
+const mm = (n: number) => toParam(n, 'mm');
 
 describe('OcctBackend.revolveFromSketch', () => {
   beforeAll(async () => { await initOcct(); });
@@ -10,10 +13,10 @@ describe('OcctBackend.revolveFromSketch', () => {
     // Washer: inner radius 10, outer radius 20, height 5
     // Volume = π × (20² − 10²) × 5 = 1500π ≈ 4712.39
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 10, y: 0 },
-      { kind: 'lineTo', x: 20, y: 0 },
-      { kind: 'lineTo', x: 20, y: 5 },
-      { kind: 'lineTo', x: 10, y: 5 },
+      { kind: 'moveTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(5) },
+      { kind: 'lineTo', x: mm(10), y: mm(5) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -28,10 +31,10 @@ describe('OcctBackend.revolveFromSketch', () => {
     // Solid cylinder: radius 10, height 20
     // Volume = π × 10² × 20 = 2000π ≈ 6283.19
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
-      { kind: 'lineTo', x: 10, y: 20 },
-      { kind: 'lineTo', x: 0, y: 20 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(20) },
+      { kind: 'lineTo', x: mm(0), y: mm(20) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -43,11 +46,11 @@ describe('OcctBackend.revolveFromSketch', () => {
 
   it('revolves a tangentArc profile (mug body) into a positive-volume solid', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 20, y: 0 },
-      { kind: 'lineTo', x: 20, y: 60 },
-      { kind: 'tangentArc', x: 25, y: 80 },
-      { kind: 'lineTo', x: 0, y: 80 },
-      { kind: 'lineTo', x: 0, y: 0 },
+      { kind: 'moveTo', x: mm(20), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(60) },
+      { kind: 'tangentArc', x: mm(25), y: mm(80) },
+      { kind: 'lineTo', x: mm(0), y: mm(80) },
+      { kind: 'lineTo', x: mm(0), y: mm(0) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -62,9 +65,9 @@ describe('OcctBackend.revolveFromSketch', () => {
 
   it('exposes the original commands on a sketch-tagged backend', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 5, y: 0 },
-      { kind: 'lineTo', x: 5, y: 5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(5), y: mm(0) },
+      { kind: 'lineTo', x: mm(5), y: mm(5) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);

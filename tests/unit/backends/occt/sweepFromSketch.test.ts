@@ -3,12 +3,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
 import { helix } from '../../../../src/modules/helix';
+import { toParam } from '../../../../src/runtime/editableHelpers';
 
+const mm = (n: number) => toParam(n, 'mm');
 const square2x2: SketchCommand[] = [
-  { kind: 'moveTo', x: -1, y: -1 },
-  { kind: 'lineTo', x: 1, y: -1 },
-  { kind: 'lineTo', x: 1, y: 1 },
-  { kind: 'lineTo', x: -1, y: 1 },
+  { kind: 'moveTo', x: mm(-1), y: mm(-1) },
+  { kind: 'lineTo', x: mm(1), y: mm(-1) },
+  { kind: 'lineTo', x: mm(1), y: mm(1) },
+  { kind: 'lineTo', x: mm(-1), y: mm(1) },
   { kind: 'close' },
 ];
 

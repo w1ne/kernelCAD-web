@@ -2,16 +2,20 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
+import { toParam } from '../../../../src/runtime/editableHelpers';
+
+const mm = (n: number) => toParam(n, 'mm');
+const ul = (n: number) => toParam(n, 'unitless');
 
 describe('OcctBackend sketch + extrudeSketch', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('builds a sketch shape from line commands and extrudes it', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
-      { kind: 'lineTo', x: 10, y: 10 },
-      { kind: 'lineTo', x: 0, y: 10 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(10) },
+      { kind: 'lineTo', x: mm(0), y: mm(10) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -27,16 +31,16 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('throws when no close command is present', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(0) },
     ];
     expect(() => OcctBackend.fromSketchCommands(commands)).toThrow(/close/);
   });
 
   it('throws on extrudeFromSketch with non-positive depth', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 }, { kind: 'lineTo', x: 1, y: 0 },
-      { kind: 'lineTo', x: 1, y: 1 }, { kind: 'close' },
+      { kind: 'moveTo', x: mm(0), y: mm(0) }, { kind: 'lineTo', x: mm(1), y: mm(0) },
+      { kind: 'lineTo', x: mm(1), y: mm(1) }, { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
     expect(() => OcctBackend.extrudeFromSketch(sketch, 0)).toThrow(/positive/);
@@ -44,13 +48,13 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('builds and extrudes a sketch with a tangentArc segment', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 20, y: 0 },
-      { kind: 'lineTo', x: 20, y: 10 },
-      { kind: 'tangentArc', x: 15, y: 15 },
-      { kind: 'lineTo', x: 10, y: 15 },
-      { kind: 'lineTo', x: 10, y: 20 },
-      { kind: 'lineTo', x: 0, y: 20 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(0) },
+      { kind: 'lineTo', x: mm(20), y: mm(10) },
+      { kind: 'tangentArc', x: mm(15), y: mm(15) },
+      { kind: 'lineTo', x: mm(10), y: mm(15) },
+      { kind: 'lineTo', x: mm(10), y: mm(20) },
+      { kind: 'lineTo', x: mm(0), y: mm(20) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -65,8 +69,8 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('threePointsArc produces a non-zero-area extrusion', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'threePointsArc', x: 20, y: 0, midX: 10, midY: 5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'threePointsArc', x: mm(20), y: mm(0), midX: mm(10), midY: mm(5) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -78,13 +82,13 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('sagittaArc with positive vs negative sagitta produces equal-magnitude volumes (sign = bulge side)', () => {
     const cmdsPos: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'sagittaArc', x: 20, y: 0, sagitta: 5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'sagittaArc', x: mm(20), y: mm(0), sagitta: mm(5) },
       { kind: 'close' },
     ];
     const cmdsNeg: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'sagittaArc', x: 20, y: 0, sagitta: -5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'sagittaArc', x: mm(20), y: mm(0), sagitta: mm(-5) },
       { kind: 'close' },
     ];
     const vPos = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(cmdsPos), 1).volume();
@@ -96,13 +100,13 @@ describe('OcctBackend sketch + extrudeSketch', () => {
   it('bulgeArc and sagittaArc produce equivalent shapes when sagitta = bulge × halfChord (within 5%)', () => {
     // Replicad bulge = tan(theta/4); for chord 20 / sagitta 5, expected bulge ≈ 0.5.
     const cmdsSag: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'sagittaArc', x: 20, y: 0, sagitta: 5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'sagittaArc', x: mm(20), y: mm(0), sagitta: mm(5) },
       { kind: 'close' },
     ];
     const cmdsBulge: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'bulgeArc', x: 20, y: 0, bulge: 0.5 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'bulgeArc', x: mm(20), y: mm(0), bulge: ul(0.5) },
       { kind: 'close' },
     ];
     const vSag = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(cmdsSag), 1).volume();
@@ -116,8 +120,8 @@ describe('OcctBackend sketch + extrudeSketch', () => {
     // chord 20, radius 15 → theta = 2·asin(2/3) ≈ 1.4595 rad
     // segment area = R²(theta − sin theta)/2 ≈ 225 × (1.4595 − 0.9938)/2 ≈ 52.4
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'radiusArc', x: 20, y: 0, radius: 15 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'radiusArc', x: mm(20), y: mm(0), radius: mm(15) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);
@@ -128,8 +132,8 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('radiusArc throws when |radius| < chord/2', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'radiusArc', x: 20, y: 0, radius: 9 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'radiusArc', x: mm(20), y: mm(0), radius: mm(9) },
       { kind: 'close' },
     ];
     expect(() => OcctBackend.fromSketchCommands(commands))
@@ -138,8 +142,8 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('radiusArc throws when chord is degenerate (start ≈ end)', () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 5, y: 5 },
-      { kind: 'radiusArc', x: 5, y: 5, radius: 10 },
+      { kind: 'moveTo', x: mm(5), y: mm(5) },
+      { kind: 'radiusArc', x: mm(5), y: mm(5), radius: mm(10) },
       { kind: 'close' },
     ];
     expect(() => OcctBackend.fromSketchCommands(commands))
@@ -148,13 +152,13 @@ describe('OcctBackend sketch + extrudeSketch', () => {
 
   it('radiusArc with positive vs negative radius produces equal-magnitude volumes (sign = bulge side)', () => {
     const cmdsPos: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'radiusArc', x: 20, y: 0, radius: 15 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'radiusArc', x: mm(20), y: mm(0), radius: mm(15) },
       { kind: 'close' },
     ];
     const cmdsNeg: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'radiusArc', x: 20, y: 0, radius: -15 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'radiusArc', x: mm(20), y: mm(0), radius: mm(-15) },
       { kind: 'close' },
     ];
     const vPos = OcctBackend.extrudeFromSketch(OcctBackend.fromSketchCommands(cmdsPos), 1).volume();

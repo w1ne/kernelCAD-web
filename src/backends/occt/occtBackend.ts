@@ -255,38 +255,41 @@ export class OcctBackend implements ShapeBackend {
     if (first.kind !== 'moveTo') {
       throw new Error('OcctBackend.fromSketchCommands: first command must be moveTo.');
     }
-    let pen = replicad.draw([first.x, first.y]);
-    let currentX = first.x;
-    let currentY = first.y;
+    let pen = replicad.draw([first.x.evaluated, first.y.evaluated]);
+    let currentX = first.x.evaluated;
+    let currentY = first.y.evaluated;
     for (let i = 1; i < closeIdx; i++) {
       const c = commands[i];
       if (c.kind === 'lineTo') {
-        pen = pen.lineTo([c.x, c.y]) as typeof pen;
+        pen = pen.lineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
       } else if (c.kind === 'tangentArc') {
-        pen = pen.tangentArcTo([c.x, c.y]) as typeof pen;
+        pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
       } else if (c.kind === 'threePointsArc') {
-        pen = pen.threePointsArcTo([c.x, c.y], [c.midX, c.midY]) as typeof pen;
+        pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]) as typeof pen;
       } else if (c.kind === 'sagittaArc') {
-        pen = pen.sagittaArcTo([c.x, c.y], c.sagitta) as typeof pen;
+        pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as typeof pen;
       } else if (c.kind === 'bulgeArc') {
-        pen = pen.bulgeArcTo([c.x, c.y], c.bulge) as typeof pen;
+        pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as typeof pen;
       } else if (c.kind === 'radiusArc') {
-        const chord = Math.hypot(c.x - currentX, c.y - currentY);
+        const cx = c.x.evaluated;
+        const cy = c.y.evaluated;
+        const cr = c.radius.evaluated;
+        const chord = Math.hypot(cx - currentX, cy - currentY);
         if (chord < 1e-9) {
-          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${c.x}, ${c.y})`);
+          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
         }
-        if (Math.abs(c.radius) < chord / 2) {
-          throw new Error(`radiusArc: radius (${c.radius}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+        if (Math.abs(cr) < chord / 2) {
+          throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
         }
         const halfChord = chord / 2;
-        const sagittaMagnitude = Math.abs(c.radius) - Math.sqrt(c.radius * c.radius - halfChord * halfChord);
-        const signedSagitta = Math.sign(c.radius) * sagittaMagnitude;
-        pen = pen.sagittaArcTo([c.x, c.y], signedSagitta) as typeof pen;
+        const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
+        const signedSagitta = Math.sign(cr) * sagittaMagnitude;
+        pen = pen.sagittaArcTo([cx, cy], signedSagitta) as typeof pen;
       }
       // Update position after every non-close command (all have explicit x/y endpoint)
       if ('x' in c && 'y' in c) {
-        currentX = c.x;
-        currentY = c.y;
+        currentX = c.x.evaluated;
+        currentY = c.y.evaluated;
       }
     }
     const drawing = pen.close();
