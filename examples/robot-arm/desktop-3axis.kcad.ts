@@ -1,41 +1,53 @@
 // Desktop 3-axis robot arm — worked example.
 //
-// Demonstrates how to compose a fully-parametric multi-part mechanical
-// assembly out of generic kernelCAD primitives + the assembly API. The
+// Composes a recognizable robot arm out of generic kernelCAD primitives. The
 // kernel does NOT ship a robot-arm template; this example exists to show an
-// agent how to build one (or any analogous multi-part artifact) from the
-// lean generic toolset.
+// agent how to build one from the lean generic toolset.
 //
-// Every dimension is a param() call. Connector origins, joint frames, and
-// derived dimensions all participate in ParamRef arithmetic, so a single
-// setParamValue('baseX', 90) re-lowers the entire assembly: the basePlate
-// width grows, the connector frame at the plate center moves to match, and
-// the dependent revolute joint relocates with it. Worked example for the
-// agent-first parametric authoring story (kernelCAD v0.4.1+).
+// Each link plate is constructed with its real-world orientation BAKED into
+// the part — the shoulder is vertical (long axis +Z), the elbow extends
+// forward (+X), the wrist extends forward (+X) at the end of the elbow, the
+// tool placeholder hangs forward at the wrist tip. This lets the kinematic-
+// zero pose render as a recognizable arm silhouette without a joint-pose API.
+//
+// Every dimension is a param() call. Connector frames, derived dimensions,
+// and joint origins all participate in ParamRef arithmetic, so a single
+// setParamValue('shoulderHeight', 80) re-lowers the entire assembly: the
+// shoulder grows taller, the elbow + wrist + tool ride up with it via the
+// reactive worldOrigin chain. Worked example for the parametric assembly
+// closure that landed in v0.4.1 (PR #122).
 
 const baseX = param('baseX', 70);
 const baseY = param('baseY', 46);
 const plateThickness = param('plateThickness', 4);
-const linkWidth = param('linkWidth', 18);
+const linkThickness = param('linkThickness', 5);
+const linkWidth = param('linkWidth', 16);
 const pivotDiameter = param('pivotDiameter', 5);
 
-const shoulderLength = param('shoulderLength', 72);
-const elbowLength = param('elbowLength', 58);
-const wristLength = param('wristLength', 34);
+// Vertical shoulder column.
+const shoulderHeight = param('shoulderHeight', 60);
+// Forward-reaching upper arm.
+const elbowLength = param('elbowLength', 70);
+// Forward-reaching forearm.
+const wristLength = param('wristLength', 50);
+// End-effector size.
+const toolLength = param('toolLength', 22);
+const toolDiameter = param('toolDiameter', 10);
 
 const screwSpacingX = param('screwSpacingX', 24);
 const screwSpacingY = param('screwSpacingY', 12);
 const screwDiameter = param('screwDiameter', 3);
 
-// Derived dimensions stay symbolic via ParamRef arithmetic.
 const screwHalfX = screwSpacingX.divide(2);
 const screwHalfY = screwSpacingY.divide(2);
-const wristWidth = linkWidth.multiply(0.85);
-const toolWidth = linkWidth.multiply(0.7);
-const toolLength = param('toolLength', 18);
+const halfBaseX = baseX.divide(2);
+const halfBaseY = baseY.divide(2);
+const halfLinkW = linkWidth.divide(2);
+const halfLinkT = linkThickness.divide(2);
 
 // --- parts ----------------------------------------------------------------
 
+// Base plate: horizontal, lies on the table. Pivot at top center.
 const basePlate = box(baseX, baseY, plateThickness)
   .holes('top', {
     positions: [
@@ -56,35 +68,52 @@ const basePlate = box(baseX, baseY, plateThickness)
     name: 'basePivot',
   });
 
-// linkPlate factory: a parametric link with two pivot holes.
-//
-// `pad` is the inset of the pivot from each end. The original design used
-// `Math.max(width/2, pivotDiameter)` as a safety floor; under the realistic
-// param ranges we actually run (linkWidth ≥ 16, pivotDiameter ≤ 6) the
-// width-half always dominates, so we use width.divide(2) directly. If a
-// future variant needs the floor back, lift it into its own `param('pad',
-// ...)`. We skip it here to keep the example flow simple.
-function linkPlate(length, width, thickness, holeName) {
-  const halfL = length.divide(2);
-  const pad = width.divide(2);
-  return box(length, width, thickness).holes('top', {
-    positions: [
-      { u: halfL.subtract(pad).negate(), v: 0 },
-      { u: halfL.subtract(pad),          v: 0 },
-    ],
+// Shoulder column: tall, vertical. Long axis = Z.
+// box(width, thickness, height). Root at the bottom-center, tip at top.
+const shoulderColumn = box(linkWidth, linkThickness, shoulderHeight);
+
+// Elbow upper arm: horizontal, extends forward (+X). Long axis = X.
+// box(length, width, thickness). Root at one end, tip at the other.
+const elbowArm = box(elbowLength, linkWidth, linkThickness)
+  .hole('top', {
+    u: elbowLength.divide(-2).add(halfLinkW),
+    v: 0,
     diameter: pivotDiameter,
     depth: 'through',
-    name: holeName,
+    name: 'elbowPivotRoot',
+  })
+  .hole('top', {
+    u: elbowLength.divide(2).subtract(halfLinkW),
+    v: 0,
+    diameter: pivotDiameter,
+    depth: 'through',
+    name: 'elbowPivotTip',
   });
-}
 
-const shoulderLink = linkPlate(shoulderLength, linkWidth,  plateThickness, 'shoulderPivots');
-const elbowLink    = linkPlate(elbowLength,    linkWidth,  plateThickness, 'elbowPivots');
-const wristLink    = linkPlate(wristLength,    wristWidth, plateThickness, 'wristPivots');
+// Wrist forearm: horizontal forward, slimmer than the elbow.
+const wristWidth = linkWidth.multiply(0.85);
+const halfWristW = wristWidth.divide(2);
+const wristArm = box(wristLength, wristWidth, linkThickness)
+  .hole('top', {
+    u: wristLength.divide(-2).add(halfWristW),
+    v: 0,
+    diameter: pivotDiameter,
+    depth: 'through',
+    name: 'wristPivotRoot',
+  })
+  .hole('top', {
+    u: wristLength.divide(2).subtract(halfWristW),
+    v: 0,
+    diameter: pivotDiameter,
+    depth: 'through',
+    name: 'wristPivotTip',
+  });
 
+// Tool placeholder: a flat tab + a small finger cylinder at the end.
+const toolWidth = linkWidth.multiply(0.7);
 const toolPlaceholder = union(
-  box(toolLength, toolWidth, plateThickness),
-  cylinder(plateThickness, pivotDiameter.divide(2).add(1)).translate(0, toolWidth.divide(2), 0),
+  box(toolLength, toolWidth, linkThickness),
+  cylinder(linkThickness, toolDiameter.divide(2)).translate(toolLength.divide(2), 0, 0),
 );
 
 // --- assembly -------------------------------------------------------------
@@ -94,46 +123,55 @@ const arm = assembly('desktop 3-axis robot arm');
 const base = arm.part('base-plate', basePlate, {
   at: [0, 0, 0],
   connectors: {
-    pivot: { origin: [baseX.divide(2), baseY.divide(2), plateThickness], axis: [0, 0, 1] },
+    pivot: { origin: [halfBaseX, halfBaseY, plateThickness], axis: [0, 0, 1] },
   },
 });
 
-const shoulder = arm.part('shoulder-link', shoulderLink, {
+// Shoulder column stands vertically on the base. Its local root connector
+// is at the bottom-center; tip is at the top-center.
+const shoulder = arm.part('shoulder-column', shoulderColumn, {
   connectors: {
-    root: { origin: [0,              linkWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
-    tip:  { origin: [shoulderLength, linkWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
+    root: { origin: [0, 0, shoulderHeight.divide(-2).add(halfLinkT)], axis: [0, 0, 1] },
+    tip:  { origin: [0, 0, shoulderHeight.divide(2).subtract(halfLinkT)], axis: [0, 1, 0] },
   },
   connect: { connector: 'root', to: base.connector('pivot'), name: 'base-to-shoulder' },
 });
 
-const elbow = arm.part('elbow-link', elbowLink, {
+// Elbow extends forward (+X) from the top of the shoulder. Its local root is
+// at one end, tip at the other.
+const elbow = arm.part('elbow-arm', elbowArm, {
   connectors: {
-    root: { origin: [0,           linkWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
-    tip:  { origin: [elbowLength, linkWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
+    root: { origin: [elbowLength.divide(-2).add(halfLinkW), 0, halfLinkT], axis: [0, 1, 0] },
+    tip:  { origin: [elbowLength.divide(2).subtract(halfLinkW),  0, halfLinkT], axis: [0, 1, 0] },
   },
   connect: { connector: 'root', to: shoulder.connector('tip'), name: 'shoulder-to-elbow' },
 });
 
-const wrist = arm.part('wrist-link', wristLink, {
+// Wrist extends forward from the tip of the elbow.
+const wrist = arm.part('wrist-arm', wristArm, {
   connectors: {
-    root: { origin: [0,           wristWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
-    tip:  { origin: [wristLength, wristWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
+    root: { origin: [wristLength.divide(-2).add(halfWristW), 0, halfLinkT], axis: [0, 1, 0] },
+    tip:  { origin: [wristLength.divide(2).subtract(halfWristW), 0, halfLinkT], axis: [0, 1, 0] },
   },
   connect: { connector: 'root', to: elbow.connector('tip'), name: 'elbow-to-wrist' },
 });
 
+// Tool placeholder hangs at the wrist tip, extending forward.
 arm.part('tool-placeholder', toolPlaceholder, {
   connectors: {
-    mount: { origin: [0, toolWidth.divide(2), plateThickness.divide(2)], axis: [0, 1, 0] },
+    mount: { origin: [toolLength.divide(-2), 0, halfLinkT], axis: [0, 1, 0] },
   },
   connect: { connector: 'mount', to: wrist.connector('tip'), name: 'wrist-to-tool' },
 });
 
 // --- joints ---------------------------------------------------------------
-
-// Joint origins are the parent connector's worldOrigin — passing the
-// symbolic Vec3Param directly, so editing baseX/shoulderLength/etc.
-// reactively moves the joint frames alongside the connector frames.
+//
+// Joints define DOF (which axis each link CAN rotate about, with limits).
+// At kinematic-zero pose the assembly renders straight-through; a future
+// joint-pose API will let `setParamValue('shoulderPitch', 30)` bend it.
+//
+// Joint origins are read from the parent's worldOrigin (symbolic Vec3Param),
+// so a setParamValue on any base dimension reactively re-positions the joint.
 
 arm.revolute('base-yaw', base, shoulder, {
   axis: [0, 0, 1],

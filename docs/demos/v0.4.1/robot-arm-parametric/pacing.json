@@ -1,0 +1,164 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 20000,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 30000,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "holes_1": {
+      "startAtMs": 800,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "hole_1": {
+      "startAtMs": 1500,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "box_2": {
+      "startAtMs": 2400,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "box_3": {
+      "startAtMs": 3200,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "hole_2": {
+      "startAtMs": 4000,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "hole_3": {
+      "startAtMs": 4900,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "box_4": {
+      "startAtMs": 5800,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "hole_4": {
+      "startAtMs": 6600,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "hole_5": {
+      "startAtMs": 7500,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "box_5": {
+      "startAtMs": 8400,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "cylinder_1": {
+      "startAtMs": 9200,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "boolean_1": {
+      "startAtMs": 10000,
+      "durationMs": 600,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyPart_1": {
+      "startAtMs": 10900,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyPart_2": {
+      "startAtMs": 11600,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyConnect_1": {
+      "startAtMs": 12300,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyPart_3": {
+      "startAtMs": 13000,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyConnect_2": {
+      "startAtMs": 13700,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyPart_4": {
+      "startAtMs": 14400,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyConnect_3": {
+      "startAtMs": 15100,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyPart_5": {
+      "startAtMs": 15800,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyConnect_4": {
+      "startAtMs": 16500,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyJoint_1": {
+      "startAtMs": 17200,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyJoint_2": {
+      "startAtMs": 17900,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyJoint_3": {
+      "startAtMs": 18600,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    },
+    "assemblyModel_1": {
+      "startAtMs": 19300,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 100
+    }
+  }
+}

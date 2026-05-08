@@ -1,0 +1,11 @@
+{
+  "taskId": "robot-arm-parametric",
+  "module": "v0.4.1",
+  "capturedAt": "2026-05-08T23:28:44.959Z",
+  "durationMs": 30000,
+  "truncated": false,
+  "gitSha": "0a9ed97bd855c7bd25e3e97e79187e52a1f235ea",
+  "heroArtifact": "robot-arm-parametric",
+  "catalogSource": "memorable-builds-policy/v0.4.1",
+  "overrideApprovedBy": "controller: parametric closure refresh for v0.4.1 retag"
+}
