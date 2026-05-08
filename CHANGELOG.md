@@ -110,17 +110,33 @@ npm run dev
   path directly when you need full param tracking on both halves. Tracked
   in the api-ergonomic-gaps backlog.
 
+### Changed — Shape transforms accept editable parameters
+
+- Widened `Shape.translate(x, y, z)` and `Shape.rotate(axis, degrees, pivot?)`
+  so every coordinate, axis component, the rotation angle, and every pivot
+  component accepts `Editable<number>` (`number | ParamRef<number>`).
+  `ShapeTransform` now stores `Param` objects (with `mm` units for
+  translations and pivots, `deg` for rotation angle, `unitless` for axis
+  direction components) instead of bare numbers, and the OCCT lowerer
+  reads `.evaluated` after the dispatcher's pre-resolve substitutes any
+  symbolic ParamRef. After this slice, every editable dimension in the
+  public surface accepts `ParamRef<number>`. Advertised through
+  `list_api`'s `SHAPE_METHODS` and SKILL.md.
+- `CaptureSession.appendTransform` now merges any ParamRefs found in
+  the transform body into `record.metadata.paramRefs`, so
+  `params.update`'s first-affected scan correctly invalidates records
+  whose only param dependency lives in transforms (e.g. a translated
+  glaze whose Z follows a `bodyHeight` param).
+
 ### Changed — example demonstrations
 
-- Rewrote `examples/v0.21/donut.kcad.ts` (the v0.21 hero artifact) to
-  exercise the just-shipped capabilities end-to-end: 7 of its 9 dimensions
-  are now declared via `param()`; glaze inner/outer radii derive from body
-  via `.add` / `.subtract`; body and glaze profiles authored via
-  `path()...close().revolve()` so every revolution coord is a ParamRef.
-  Body and glaze fillets compose via the fillet-on-revolved fix.
-  Body/glaze heights stay literal because `.translate(x, y, z)` does not
-  accept `ParamRef` today (sprinkle Z is computed from those literals).
-  Total: 15 features, builds clean from a fresh evaluate.
+- `examples/v0.21/donut.kcad.ts` is now fully parametric end-to-end: every
+  editable dimension is a `param()`. Body/glaze profiles use ParamRef
+  coords through `path()...close().revolve()`; glaze radii derive from
+  body via `.add` / `.subtract`; glaze Z is `bodyHeight` directly; sprinkle
+  Z is `bodyHeight.add(glazeHeight)` (composed ParamRef). Editing any
+  param via `params.update` re-lowers the chain and the donut tracks the
+  edit live. Total: 15 features, builds clean from a fresh evaluate.
 
 ### Fixed — tech debt
 
