@@ -167,10 +167,10 @@ export class OcctBackend implements ShapeBackend {
 
     const ccw = ensureCCW(points);
 
-    // Build a 2D drawing using replicad's DrawingPen API — the same pattern
-    // used by revolveRect. draw(start).lineTo(p1)...lineTo(pn-1).close()
-    // returns a Drawing; sketchOnPlane('XY') promotes it to a Sketch; extrude
-    // lifts it to a 3D solid.
+    // Build a 2D drawing using replicad's DrawingPen API:
+    // draw(start).lineTo(p1)...lineTo(pn-1).close() returns a Drawing;
+    // sketchOnPlane('XY') promotes it to a Sketch; extrude lifts it to a
+    // 3D solid.
     let pen = replicad.draw(ccw[0]);
     for (let i = 1; i < ccw.length; i++) {
       pen = pen.lineTo(ccw[i]) as typeof pen;
@@ -202,36 +202,6 @@ export class OcctBackend implements ShapeBackend {
     const sketch = drawing.sketchOnPlane('XY');
     const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
     return new OcctBackend(single.extrude(depth));
-  }
-
-  /**
-   * Revolve an axis-aligned rectangular profile around the Z axis.
-   * The rect is placed in the XZ plane with its corner at `(offsetX, 0)`,
-   * extends `w` in radial X and `h` in axial Z. With `angleDeg = 360`, the
-   * result is a washer: inner radius `offsetX`, outer radius `offsetX + w`,
-   * height `h`.
-   *
-   * NOTE: `angleDeg` is currently informational — Replicad's `Sketch.revolve`
-   * always sweeps a full turn. Partial revolutions are deferred to v0.2.
-   */
-  static revolveRect(
-    w: number,
-    h: number,
-    offsetX: number,
-    _angleDeg: number, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): OcctBackend {
-    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    const drawing = replicad
-      .draw([offsetX, 0])
-      .hLine(w)
-      .vLine(h)
-      .hLine(-w)
-      .close();
-    const sketch = drawing.sketchOnPlane('XZ');
-    const single = sketch as unknown as {
-      revolve: (axis?: [number, number, number]) => ReplicadShape3D;
-    };
-    return new OcctBackend(single.revolve([0, 0, 1]));
   }
 
   /**

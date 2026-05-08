@@ -33,7 +33,6 @@ export interface KernelCadApi {
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudePolygon(points: [number, number][], depth: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
-  revolveRect(w: Editable<number>, h: Editable<number>, offsetX: Editable<number>, angleDeg?: Editable<number>, opts?: FaceLabelOpts): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -50,7 +49,6 @@ export interface KernelCadApi {
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
-const deg = (n: Editable<number>): Param => toParam(n, 'deg');
 
 export function createApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
@@ -135,20 +133,6 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           profileKind: { expression: "'rounded-rect'", unit: 'unitless', evaluated: 0 },
           width: mm(width), height: mm(height), radius: mm(radius), depth: mm(depth),
         },
-        metadata: faceLabels ? { faceLabels } : undefined,
-      });
-    },
-    revolveRect(w, h, offsetX, angleDeg = 360, opts) {
-      const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
-      return session.createShape({
-        kind: 'revolve',
-        params: {
-          profileKind: { expression: "'rect'", unit: 'unitless', evaluated: 0 },
-          w: mm(w), h: mm(h),
-          offsetX: mm(offsetX),
-          angleDeg: deg(angleDeg),
-        },
-        inputs: {},
         metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
