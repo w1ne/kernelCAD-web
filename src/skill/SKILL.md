@@ -294,7 +294,7 @@ Resolution rule when names collide with canonical face names: created refs alway
 
 ## Editable parameters
 
-Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it. If a derived value should be editable, declare it as its own param. If it is incidental, compute it from literals before the chain.
+Use `param()` for values the user may want to tweak after the first build; use literals for incidental dimensions. A param returns a symbolic `ParamRef`, not a number, so do not do JS arithmetic with it (`paramRef / 2` will NaN-coerce the branded object). For derived dimensions, chain the arithmetic methods on the ParamRef itself: `.add`, `.subtract`, `.multiply`, `.divide`, `.negate` each return a new ParamRef built on a structured expression that re-evaluates whenever the underlying param changes — e.g. `param('r', 5).divide(2)` for a half-radius, or `param('w', 80).subtract(param('margin', 5).multiply(2))` for a derived inset width.
 
 ```typescript
 const boltDia = param('boltDia', 5, { min: 3, max: 10, description: 'bolt hole diameter' });

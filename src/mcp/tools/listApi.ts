@@ -38,6 +38,7 @@ export interface ListApiOutput {
   shapeMethods?: ApiEntry[];
   sketchMethods?: ApiEntry[];
   pathBuilderMethods?: ApiEntry[];
+  paramRefMethods?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
@@ -95,6 +96,14 @@ export const SKETCH_METHODS: ApiEntry[] = [
   { name: 'reflect', signature: `(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: number }) => Sketch`, description: "Reflect this sketch's path across an axis, returning a new Sketch. 'x' negates y-coords; 'y' negates x-coords; { axis, offset } reflects across the parallel axis at the given offset. Arc winding (signed sagitta/bulge/radius) is inverted automatically. Labels are preserved." },
 ];
 
+export const PARAM_REF_METHODS: ApiEntry[] = [
+  { name: 'add', signature: '(other: number | ParamRef<number>) => ParamRef<number>', description: 'Build a ParamRef whose value equals this ParamRef plus `other`. Use this instead of JS `+` (which would NaN-coerce the branded object).' },
+  { name: 'subtract', signature: '(other: number | ParamRef<number>) => ParamRef<number>', description: 'Build a ParamRef whose value equals this ParamRef minus `other`. Use this instead of JS `-`.' },
+  { name: 'multiply', signature: '(other: number | ParamRef<number>) => ParamRef<number>', description: 'Build a ParamRef whose value equals this ParamRef times `other`. Use this instead of JS `*`.' },
+  { name: 'divide', signature: '(other: number | ParamRef<number>) => ParamRef<number>', description: 'Build a ParamRef whose value equals this ParamRef divided by `other`. Division by zero throws at lower time, not at chain time. Use this instead of JS `/`.' },
+  { name: 'negate', signature: '() => ParamRef<number>', description: 'Build a ParamRef whose value equals the unary negation of this ParamRef. Use this instead of JS unary `-`.' },
+];
+
 export const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'moveTo', signature: '(x, y) => PathBuilder', description: 'Start the path at (x, y). Required first call.' },
   { name: 'lineTo', signature: '(x, y) => PathBuilder', description: 'Add a straight line segment to (x, y).' },
@@ -141,6 +150,7 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     shapeMethods: SHAPE_METHODS,
     sketchMethods: SKETCH_METHODS,
     pathBuilderMethods: PATH_BUILDER_METHODS,
+    paramRefMethods: PARAM_REF_METHODS,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
