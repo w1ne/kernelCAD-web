@@ -57,7 +57,7 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
   for (const rec of run.records) {
     if (rec.kind !== 'sketch') continue;
     if (input.feature_id && rec.id !== input.feature_id) continue;
-    const commands = (rec.metadata as { commands?: Array<{ kind: string; x?: number; y?: number; label?: string }> } | undefined)?.commands;
+    const commands = (rec.metadata as { commands?: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string }> } | undefined)?.commands;
     if (!commands) continue;
     for (let i = 0; i < commands.length; i++) {
       const c = commands[i];
@@ -69,10 +69,10 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
         sketchId: rec.id,
         segmentKind: c.kind,
         chord: {
-          startX: prev?.x ?? 0,
-          startY: prev?.y ?? 0,
-          endX: c.x ?? 0,
-          endY: c.y ?? 0,
+          startX: prev?.x?.evaluated ?? 0,
+          startY: prev?.y?.evaluated ?? 0,
+          endX: c.x?.evaluated ?? 0,
+          endY: c.y?.evaluated ?? 0,
         },
       });
     }

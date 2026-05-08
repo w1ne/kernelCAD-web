@@ -865,7 +865,7 @@ function labelToEdgeQuery(
     };
   }
 
-  const commands = (upstreamSketch.metadata as { commands?: Array<{ kind: string; x?: number; y?: number; label?: string }> } | undefined)?.commands;
+  const commands = (upstreamSketch.metadata as { commands?: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number }; label?: string }> } | undefined)?.commands;
   if (!commands) {
     return {
       error: {
@@ -910,6 +910,10 @@ function labelToEdgeQuery(
       },
     };
   }
+  const prevX = prev.x.evaluated;
+  const prevY = prev.y.evaluated;
+  const segX = segment.x.evaluated;
+  const segY = segment.y.evaluated;
 
   const depth = extractExtrudeDepth(records, record);
   if (depth === null) {
@@ -932,10 +936,10 @@ function labelToEdgeQuery(
   // these four edges' midpoints — collapsed in any axis where the segment is
   // axis-parallel, expanded by `tol` to absorb floating-point noise.
   const tol = 1e-3;
-  const xMin = Math.min(prev.x, segment.x) - tol;
-  const xMax = Math.max(prev.x, segment.x) + tol;
-  const yMin = Math.min(prev.y, segment.y) - tol;
-  const yMax = Math.max(prev.y, segment.y) + tol;
+  const xMin = Math.min(prevX, segX) - tol;
+  const xMax = Math.max(prevX, segX) + tol;
+  const yMin = Math.min(prevY, segY) - tol;
+  const yMax = Math.max(prevY, segY) + tol;
   return {
     query: {
       within: {

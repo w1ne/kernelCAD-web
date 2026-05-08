@@ -167,10 +167,10 @@ export class OcctBackend implements ShapeBackend {
 
     const ccw = ensureCCW(points);
 
-    // Build a 2D drawing using replicad's DrawingPen API — the same pattern
-    // used by revolveRect. draw(start).lineTo(p1)...lineTo(pn-1).close()
-    // returns a Drawing; sketchOnPlane('XY') promotes it to a Sketch; extrude
-    // lifts it to a 3D solid.
+    // Build a 2D drawing using replicad's DrawingPen API:
+    // draw(start).lineTo(p1)...lineTo(pn-1).close() returns a Drawing;
+    // sketchOnPlane('XY') promotes it to a Sketch; extrude lifts it to a
+    // 3D solid.
     let pen = replicad.draw(ccw[0]);
     for (let i = 1; i < ccw.length; i++) {
       pen = pen.lineTo(ccw[i]) as typeof pen;
@@ -205,36 +205,6 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
-   * Revolve an axis-aligned rectangular profile around the Z axis.
-   * The rect is placed in the XZ plane with its corner at `(offsetX, 0)`,
-   * extends `w` in radial X and `h` in axial Z. With `angleDeg = 360`, the
-   * result is a washer: inner radius `offsetX`, outer radius `offsetX + w`,
-   * height `h`.
-   *
-   * NOTE: `angleDeg` is currently informational — Replicad's `Sketch.revolve`
-   * always sweeps a full turn. Partial revolutions are deferred to v0.2.
-   */
-  static revolveRect(
-    w: number,
-    h: number,
-    offsetX: number,
-    _angleDeg: number, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): OcctBackend {
-    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
-    const drawing = replicad
-      .draw([offsetX, 0])
-      .hLine(w)
-      .vLine(h)
-      .hLine(-w)
-      .close();
-    const sketch = drawing.sketchOnPlane('XZ');
-    const single = sketch as unknown as {
-      revolve: (axis?: [number, number, number]) => ReplicadShape3D;
-    };
-    return new OcctBackend(single.revolve([0, 0, 1]));
-  }
-
-  /**
    * Build a sketch-tagged OcctBackend from an array of SketchCommands.
    *
    * The resulting instance has `kind === 'sketch'` and holds a Replicad Drawing
@@ -255,38 +225,41 @@ export class OcctBackend implements ShapeBackend {
     if (first.kind !== 'moveTo') {
       throw new Error('OcctBackend.fromSketchCommands: first command must be moveTo.');
     }
-    let pen = replicad.draw([first.x, first.y]);
-    let currentX = first.x;
-    let currentY = first.y;
+    let pen = replicad.draw([first.x.evaluated, first.y.evaluated]);
+    let currentX = first.x.evaluated;
+    let currentY = first.y.evaluated;
     for (let i = 1; i < closeIdx; i++) {
       const c = commands[i];
       if (c.kind === 'lineTo') {
-        pen = pen.lineTo([c.x, c.y]) as typeof pen;
+        pen = pen.lineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
       } else if (c.kind === 'tangentArc') {
-        pen = pen.tangentArcTo([c.x, c.y]) as typeof pen;
+        pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
       } else if (c.kind === 'threePointsArc') {
-        pen = pen.threePointsArcTo([c.x, c.y], [c.midX, c.midY]) as typeof pen;
+        pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]) as typeof pen;
       } else if (c.kind === 'sagittaArc') {
-        pen = pen.sagittaArcTo([c.x, c.y], c.sagitta) as typeof pen;
+        pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as typeof pen;
       } else if (c.kind === 'bulgeArc') {
-        pen = pen.bulgeArcTo([c.x, c.y], c.bulge) as typeof pen;
+        pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as typeof pen;
       } else if (c.kind === 'radiusArc') {
-        const chord = Math.hypot(c.x - currentX, c.y - currentY);
+        const cx = c.x.evaluated;
+        const cy = c.y.evaluated;
+        const cr = c.radius.evaluated;
+        const chord = Math.hypot(cx - currentX, cy - currentY);
         if (chord < 1e-9) {
-          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${c.x}, ${c.y})`);
+          throw new Error(`radiusArc: degenerate chord (start ≈ end) at point (${cx}, ${cy})`);
         }
-        if (Math.abs(c.radius) < chord / 2) {
-          throw new Error(`radiusArc: radius (${c.radius}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
+        if (Math.abs(cr) < chord / 2) {
+          throw new Error(`radiusArc: radius (${cr}) too small for chord length ${chord.toFixed(3)} — needs |radius| >= chord/2`);
         }
         const halfChord = chord / 2;
-        const sagittaMagnitude = Math.abs(c.radius) - Math.sqrt(c.radius * c.radius - halfChord * halfChord);
-        const signedSagitta = Math.sign(c.radius) * sagittaMagnitude;
-        pen = pen.sagittaArcTo([c.x, c.y], signedSagitta) as typeof pen;
+        const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
+        const signedSagitta = Math.sign(cr) * sagittaMagnitude;
+        pen = pen.sagittaArcTo([cx, cy], signedSagitta) as typeof pen;
       }
       // Update position after every non-close command (all have explicit x/y endpoint)
       if ('x' in c && 'y' in c) {
-        currentX = c.x;
-        currentY = c.y;
+        currentX = c.x.evaluated;
+        currentY = c.y.evaluated;
       }
     }
     const drawing = pen.close();

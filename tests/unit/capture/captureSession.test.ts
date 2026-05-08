@@ -123,13 +123,6 @@ describe('faceLabels capture-time validation and persistence', () => {
     expect((rec.metadata as { faceLabels?: unknown }).faceLabels).toEqual({ roof: 'top' });
   });
 
-  it('persists faceLabels on revolveRect', () => {
-    const { session, api } = makeApi();
-    api.revolveRect(5, 10, 2, 360, { faceLabels: { rim: 'right' } });
-    const rec = session.getRecords()[0];
-    expect((rec.metadata as { faceLabels?: unknown }).faceLabels).toEqual({ rim: 'right' });
-  });
-
   it('persists query-based faceLabels on extrude (Sketch.extrude)', () => {
     const { session, api } = makeApi();
     const sketch = api.path().moveTo(0,0).lineTo(10,0).lineTo(10,5).lineTo(0,5).close();

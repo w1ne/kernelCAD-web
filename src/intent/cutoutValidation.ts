@@ -66,7 +66,7 @@ function hasStraightSelfIntersection(commands: readonly SketchCommand[]): boolea
   const pts: Array<[number, number]> = [];
   for (const c of commands) {
     if (c.kind === 'close') break;
-    if ('x' in c && 'y' in c) pts.push([c.x, c.y]);
+    if ('x' in c && 'y' in c) pts.push([c.x.evaluated, c.y.evaluated]);
   }
   // Segments are pts[i] → pts[i+1]; closure adds pts[last] → pts[0].
   if (pts.length < 4) return false;

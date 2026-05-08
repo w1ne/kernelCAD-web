@@ -1,20 +1,22 @@
 // src/capture/sketch.ts
-import type { FeatureId, FeatureRef, Vec3, AxisSpec } from '../intent/types';
+import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../intent/types';
 import { isValidAxisSpec } from '../intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
+import { type Editable } from '../runtime/paramRef';
+import { toParam } from '../runtime/editableHelpers';
 
 export type SketchCommand =
-  | { kind: 'moveTo'; x: number; y: number }
-  | { kind: 'lineTo'; x: number; y: number }
-  | { kind: 'tangentArc'; x: number; y: number }
-  | { kind: 'threePointsArc'; x: number; y: number; midX: number; midY: number }
-  | { kind: 'sagittaArc'; x: number; y: number; sagitta: number }
-  | { kind: 'bulgeArc'; x: number; y: number; bulge: number }
-  | { kind: 'radiusArc'; x: number; y: number; radius: number }
+  | { kind: 'moveTo'; x: Param; y: Param }
+  | { kind: 'lineTo'; x: Param; y: Param }
+  | { kind: 'tangentArc'; x: Param; y: Param }
+  | { kind: 'threePointsArc'; x: Param; y: Param; midX: Param; midY: Param }
+  | { kind: 'sagittaArc'; x: Param; y: Param; sagitta: Param }
+  | { kind: 'bulgeArc'; x: Param; y: Param; bulge: Param }
+  | { kind: 'radiusArc'; x: Param; y: Param; radius: Param }
   | { kind: 'close' };
 
 /**
@@ -208,13 +210,31 @@ export class Sketch {
     // Normalize -0 to 0 so reflected coordinates are well-formed.
     const norm = (n: number): number => n === 0 ? 0 : n;
 
-    const reflectXY = (x: number, y: number): [number, number] => {
-      if (axis === 'x') return [norm(x), norm(-y)];
-      if (axis === 'y') return [norm(-x), norm(y)];
-      const off = axis.offset ?? 0;
-      if (axis.axis === 'x') return [norm(x), norm(2 * off - y)];
-      return [norm(2 * off - x), norm(y)]; // axis.axis === 'y'
+    // Reflection collapses any symbolic ParamRef into its current numeric value:
+    // the reflected coordinate depends on the axis offset and the source coord,
+    // and there's no symbolic-arithmetic path that preserves both. The inputs
+    // are read via `.evaluated` (concrete) and re-wrapped as numeric Params.
+    const reflectXY = (x: Param, y: Param): [Param, Param] => {
+      const xv = x.evaluated;
+      const yv = y.evaluated;
+      let nx: number;
+      let ny: number;
+      if (axis === 'x') {
+        nx = norm(xv); ny = norm(-yv);
+      } else if (axis === 'y') {
+        nx = norm(-xv); ny = norm(yv);
+      } else {
+        const off = axis.offset ?? 0;
+        if (axis.axis === 'x') {
+          nx = norm(xv); ny = norm(2 * off - yv);
+        } else { // axis.axis === 'y'
+          nx = norm(2 * off - xv); ny = norm(yv);
+        }
+      }
+      return [toParam(nx, 'mm'), toParam(ny, 'mm')];
     };
+
+    const negateScalar = (p: Param): Param => toParam(-p.evaluated, p.unit);
 
     // Arc sign-flip: reflection inverts winding. For arcs whose direction is
     // encoded as a sign on a scalar (sagitta, bulge, radius), negate the sign.
@@ -245,15 +265,15 @@ export class Sketch {
         }
         case 'sagittaArc': {
           const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, sagitta: -cmd.sagitta };
+          return { ...cmd, x, y, sagitta: negateScalar(cmd.sagitta) };
         }
         case 'bulgeArc': {
           const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, bulge: -cmd.bulge };
+          return { ...cmd, x, y, bulge: negateScalar(cmd.bulge) };
         }
         case 'radiusArc': {
           const [x, y] = reflectXY(cmd.x, cmd.y);
-          return { ...cmd, x, y, radius: -cmd.radius };
+          return { ...cmd, x, y, radius: negateScalar(cmd.radius) };
         }
         case 'close':
           return cmd;
@@ -299,13 +319,13 @@ export class PathBuilder {
     this.session = session;
   }
 
-  moveTo(x: number, y: number): PathBuilder {
-    this.commands.push({ kind: 'moveTo', x, y });
+  moveTo(x: Editable<number>, y: Editable<number>): PathBuilder {
+    this.commands.push({ kind: 'moveTo', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
     return this;
   }
 
-  lineTo(x: number, y: number): PathBuilder {
-    this.commands.push({ kind: 'lineTo', x, y });
+  lineTo(x: Editable<number>, y: Editable<number>): PathBuilder {
+    this.commands.push({ kind: 'lineTo', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
     return this;
   }
 
@@ -317,8 +337,8 @@ export class PathBuilder {
    * Throws at lowering time (via `feature.sketch.failed` diagnostic) if
    * called as the first command — there's no prior tangent to consume.
    */
-  tangentArc(x: number, y: number): PathBuilder {
-    this.commands.push({ kind: 'tangentArc', x, y });
+  tangentArc(x: Editable<number>, y: Editable<number>): PathBuilder {
+    this.commands.push({ kind: 'tangentArc', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
     return this;
   }
 
@@ -336,8 +356,14 @@ export class PathBuilder {
    * @param midX midpoint X (any point the arc passes through, not on the chord)
    * @param midY midpoint Y
    */
-  threePointsArc(x: number, y: number, midX: number, midY: number): PathBuilder {
-    this.commands.push({ kind: 'threePointsArc', x, y, midX, midY });
+  threePointsArc(x: Editable<number>, y: Editable<number>, midX: Editable<number>, midY: Editable<number>): PathBuilder {
+    this.commands.push({
+      kind: 'threePointsArc',
+      x: toParam(x, 'mm'),
+      y: toParam(y, 'mm'),
+      midX: toParam(midX, 'mm'),
+      midY: toParam(midY, 'mm'),
+    });
     return this;
   }
 
@@ -355,8 +381,13 @@ export class PathBuilder {
    * @param y endpoint Y
    * @param sagitta perpendicular bulge height (signed)
    */
-  sagittaArc(x: number, y: number, sagitta: number): PathBuilder {
-    this.commands.push({ kind: 'sagittaArc', x, y, sagitta });
+  sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>): PathBuilder {
+    this.commands.push({
+      kind: 'sagittaArc',
+      x: toParam(x, 'mm'),
+      y: toParam(y, 'mm'),
+      sagitta: toParam(sagitta, 'mm'),
+    });
     return this;
   }
 
@@ -374,8 +405,13 @@ export class PathBuilder {
    * @param y endpoint Y
    * @param bulge DXF bulge factor (signed)
    */
-  bulgeArc(x: number, y: number, bulge: number): PathBuilder {
-    this.commands.push({ kind: 'bulgeArc', x, y, bulge });
+  bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder {
+    this.commands.push({
+      kind: 'bulgeArc',
+      x: toParam(x, 'mm'),
+      y: toParam(y, 'mm'),
+      bulge: toParam(bulge, 'unitless'),
+    });
     return this;
   }
 
@@ -398,8 +434,13 @@ export class PathBuilder {
    * @param y endpoint Y
    * @param radius arc radius (signed)
    */
-  radiusArc(x: number, y: number, radius: number): PathBuilder {
-    this.commands.push({ kind: 'radiusArc', x, y, radius });
+  radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder {
+    this.commands.push({
+      kind: 'radiusArc',
+      x: toParam(x, 'mm'),
+      y: toParam(y, 'mm'),
+      radius: toParam(radius, 'mm'),
+    });
     return this;
   }
 

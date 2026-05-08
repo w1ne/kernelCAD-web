@@ -5,9 +5,9 @@
 // Standard_Failure (raw WASM pointer) on cylinder cap edge midpoints (which
 // sit exactly on the parametric U-seam of a CYLINDRE/CONE/SPHERE face).
 //
-// Before the fix, all four cases below produced a useless raw-pointer
+// Before the fix, the cases below produced a useless raw-pointer
 // diagnostic (e.g., `OCCT fillet failed: 8479736`). After the fix, fillets
-// on cylinder/extrudeCircle/revolveRect-built shapes succeed.
+// on cylinder/extrudeCircle-built shapes succeed.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
@@ -56,21 +56,6 @@ describe('OcctLowerer fillet on revolved/cylindrical shapes', () => {
     const v = result.shape.volume();
     expect(v).toBeLessThan(baselineVolume);
     expect(v).toBeGreaterThan(baselineVolume * 0.9);
-  });
-
-  it('lowers an all-edges fillet on revolveRect (washer)', async () => {
-    // Washer: inner radius 5, outer radius 15, height 6 — has inner+outer
-    // cylindrical faces and top/bottom annular faces (8 circular cap edges).
-    const base = OcctBackend.revolveRect(10, 6, 5, 360);
-    const baselineVolume = base.volume();
-    const result = await new OcctLowerer().lower(
-      filletRecord('fillet_revrect', 1),
-      { byKey: { base } },
-    );
-    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
-    const v = result.shape.volume();
-    expect(v).toBeLessThan(baselineVolume);
-    expect(v).toBeGreaterThan(baselineVolume * 0.85);
   });
 
   it('still lowers an all-edges fillet on a box (regression check on prismatic shapes)', async () => {

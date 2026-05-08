@@ -14,9 +14,9 @@ describe('OcctLowerer sketch + extrude-from-sketch', () => {
 
   it('lowers a sketch record into an OcctBackend with kind=sketch', async () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
-      { kind: 'lineTo', x: 10, y: 10 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(10) },
       { kind: 'close' },
     ];
     const r: FeatureRecord = {
@@ -31,10 +31,10 @@ describe('OcctLowerer sketch + extrude-from-sketch', () => {
 
   it('lowers an extrude with profile=sketch using the upstream sketch', async () => {
     const commands: SketchCommand[] = [
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
-      { kind: 'lineTo', x: 10, y: 10 },
-      { kind: 'lineTo', x: 0, y: 10 },
+      { kind: 'moveTo', x: mm(0), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(0) },
+      { kind: 'lineTo', x: mm(10), y: mm(10) },
+      { kind: 'lineTo', x: mm(0), y: mm(10) },
       { kind: 'close' },
     ];
     const sketch = OcctBackend.fromSketchCommands(commands);

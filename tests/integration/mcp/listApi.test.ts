@@ -47,7 +47,7 @@ describe('list_api MCP tool', () => {
   });
 
   it('globals signatures for faceLabels-accepting kinds mention opts and faceLabels', () => {
-    const FACE_LABEL_KINDS = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect', 'revolveRect'];
+    const FACE_LABEL_KINDS = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect'];
     for (const kind of FACE_LABEL_KINDS) {
       const entry = GLOBALS.find(g => g.name === kind);
       expect(entry, `GLOBALS entry for ${kind} should exist`).toBeDefined();
@@ -67,8 +67,8 @@ describe('list_api MCP tool', () => {
     expect(r.featureKindFaceLabels).toBeDefined();
     const fkfl = r.featureKindFaceLabels!;
 
-    // All seven accepting kinds present
-    const acceptingKinds = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect', 'revolveRect'];
+    // All accepting kinds present
+    const acceptingKinds = ['box', 'cylinder', 'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect'];
     for (const kind of acceptingKinds) {
       expect(fkfl.acceptingKinds, `acceptingKinds should include ${kind}`).toContain(kind);
     }

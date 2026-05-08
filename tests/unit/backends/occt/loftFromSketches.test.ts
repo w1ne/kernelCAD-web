@@ -2,28 +2,31 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
+import { toParam } from '../../../../src/runtime/editableHelpers';
+
+const mm = (n: number) => toParam(n, 'mm');
 
 const square2x2: SketchCommand[] = [
-  { kind: 'moveTo', x: -1, y: -1 },
-  { kind: 'lineTo', x: 1, y: -1 },
-  { kind: 'lineTo', x: 1, y: 1 },
-  { kind: 'lineTo', x: -1, y: 1 },
+  { kind: 'moveTo', x: mm(-1), y: mm(-1) },
+  { kind: 'lineTo', x: mm(1), y: mm(-1) },
+  { kind: 'lineTo', x: mm(1), y: mm(1) },
+  { kind: 'lineTo', x: mm(-1), y: mm(1) },
   { kind: 'close' },
 ];
 
 const square4x4: SketchCommand[] = [
-  { kind: 'moveTo', x: -2, y: -2 },
-  { kind: 'lineTo', x: 2, y: -2 },
-  { kind: 'lineTo', x: 2, y: 2 },
-  { kind: 'lineTo', x: -2, y: 2 },
+  { kind: 'moveTo', x: mm(-2), y: mm(-2) },
+  { kind: 'lineTo', x: mm(2), y: mm(-2) },
+  { kind: 'lineTo', x: mm(2), y: mm(2) },
+  { kind: 'lineTo', x: mm(-2), y: mm(2) },
   { kind: 'close' },
 ];
 
 const square6x6: SketchCommand[] = [
-  { kind: 'moveTo', x: -3, y: -3 },
-  { kind: 'lineTo', x: 3, y: -3 },
-  { kind: 'lineTo', x: 3, y: 3 },
-  { kind: 'lineTo', x: -3, y: 3 },
+  { kind: 'moveTo', x: mm(-3), y: mm(-3) },
+  { kind: 'lineTo', x: mm(3), y: mm(-3) },
+  { kind: 'lineTo', x: mm(3), y: mm(3) },
+  { kind: 'lineTo', x: mm(-3), y: mm(3) },
   { kind: 'close' },
 ];
 

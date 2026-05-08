@@ -79,7 +79,7 @@ function profileBboxRadius(commands: readonly SketchCommand[]): number {
   let maxR = 0;
   for (const c of commands) {
     if ('x' in c && 'y' in c) {
-      const r = Math.hypot(c.x, c.y);
+      const r = Math.hypot(c.x.evaluated, c.y.evaluated);
       if (r > maxR) maxR = r;
     }
   }
@@ -95,23 +95,26 @@ function drawingFromCommands(commands: readonly SketchCommand[]): replicad.Drawi
   const first = commands[0];
   if (first.kind !== 'moveTo') throw new Error('cutoutLowerer.drawingFromCommands: first command must be moveTo');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let pen: any = replicad.draw([first.x, first.y]);
+  let pen: any = replicad.draw([first.x.evaluated, first.y.evaluated]);
   for (let i = 1; i < closeIdx; i++) {
     const c = commands[i];
-    if (c.kind === 'lineTo') pen = pen.lineTo([c.x, c.y]);
-    else if (c.kind === 'tangentArc') pen = pen.tangentArcTo([c.x, c.y]);
-    else if (c.kind === 'threePointsArc') pen = pen.threePointsArcTo([c.x, c.y], [c.midX, c.midY]);
-    else if (c.kind === 'sagittaArc') pen = pen.sagittaArcTo([c.x, c.y], c.sagitta);
-    else if (c.kind === 'bulgeArc') pen = pen.bulgeArcTo([c.x, c.y], c.bulge);
+    if (c.kind === 'lineTo') pen = pen.lineTo([c.x.evaluated, c.y.evaluated]);
+    else if (c.kind === 'tangentArc') pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]);
+    else if (c.kind === 'threePointsArc') pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]);
+    else if (c.kind === 'sagittaArc') pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
+    else if (c.kind === 'bulgeArc') pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
     else if (c.kind === 'radiusArc') {
       // radius → sagitta conversion (positive bulges left of chord)
-      const dx = c.x - first.x, dy = c.y - first.y;
+      const cx = c.x.evaluated;
+      const cy = c.y.evaluated;
+      const cr = c.radius.evaluated;
+      const dx = cx - first.x.evaluated, dy = cy - first.y.evaluated;
       const chord = Math.hypot(dx, dy);
       const halfChord = chord / 2;
-      const r = Math.abs(c.radius);
+      const r = Math.abs(cr);
       if (r < halfChord) throw new Error(`cutoutLowerer: radiusArc |radius|=${r} < chord/2=${halfChord}`);
-      const sagitta = (c.radius >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
-      pen = pen.sagittaArcTo([c.x, c.y], sagitta);
+      const sagitta = (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
+      pen = pen.sagittaArcTo([cx, cy], sagitta);
     }
   }
   return pen.close();
