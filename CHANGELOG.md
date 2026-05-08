@@ -92,16 +92,29 @@ npm run dev
   underlying param is edited via `params.update`. Advertised through MCP
   `list_api` as a new `paramRefMethods` array.
 
+### Changed — PathBuilder accepts editable parameters
+
+- Widened every `PathBuilder` method (`moveTo`, `lineTo`, `tangentArc`,
+  `threePointsArc`, `sagittaArc`, `bulgeArc`, `radiusArc`) so coords and
+  scalar arguments accept `Editable<number>` (`number | ParamRef<number>`).
+  `SketchCommand` now stores `Param` objects on those positions instead
+  of bare numbers; the dispatcher's pre-resolve substitutes any symbolic
+  ParamRef at lower time, so a `path()...close().revolve()` profile is
+  fully parametric and reactive to `params.update`. The
+  `bulgeArc` factor wraps as `'unitless'`; everything else is `'mm'`.
+  Advertised through `list_api`'s `pathBuilderMethods` and SKILL.md.
+
 ### Changed — example demonstrations
 
 - Rewrote `examples/v0.21/donut.kcad.ts` (the v0.21 hero artifact) to
   exercise the just-shipped capabilities end-to-end: 7 of its 9 dimensions
   are now declared via `param()`; glaze inner/outer radii derive from body
-  via `.add` / `.subtract`; body and glaze rings revolve and fillet via the
-  fillet-on-revolved fix. Body/glaze heights stay literal because
-  `.translate(x, y, z)` does not accept `ParamRef` today (sprinkle Z is
-  computed from those literals). Total: 13 features, builds clean from a
-  fresh evaluate.
+  via `.add` / `.subtract`; body and glaze profiles authored via
+  `path()...close().revolve()` so every revolution coord is a ParamRef.
+  Body and glaze fillets compose via the fillet-on-revolved fix.
+  Body/glaze heights stay literal because `.translate(x, y, z)` does not
+  accept `ParamRef` today (sprinkle Z is computed from those literals).
+  Total: 15 features, builds clean from a fresh evaluate.
 
 ### Fixed — tech debt
 
@@ -142,6 +155,18 @@ npm run dev
   generic primitives, assemblies, and revolute joints. Use it via
   `lookup_cookbook("multi-part mechanical assembly")` or
   `evaluate_script({ file: "examples/robot-arm/desktop-3axis.kcad.ts" })`.
+
+### Removed — duplicative revolved-rect helper
+
+- Removed `revolveRect(w, h, offsetX, angleDeg?, opts?)` from the script
+  global surface, `OcctBackend.revolveRect`, the `list_api` /
+  `SKILL.md` / `featureKindFaceLabels` advertisements, and the
+  `revolve` lowerer's profileKind dispatch. The helper had zero unique
+  capability over `path().moveTo(...).lineTo(...).close().revolve()` —
+  the same washer/donut-body geometry, but every coord is now an
+  `Editable<number>` so authoring stays parametric end-to-end.
+  Pre-1.0; consistent with the `robotArmKit` precedent (no deprecation
+  alias).
 
 ### Added — v0.3 slice 3: symbolic params + edit-after-build replay
 
