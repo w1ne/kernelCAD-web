@@ -81,8 +81,12 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 
 ```typescript
 // Transforms (mutate-then-return-this; chain freely):
-.translate(x: number, y: number, z: number): Shape
-.rotate(axis: [number, number, number], degrees: number, pivot?: [number, number, number]): Shape
+.translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape
+.rotate(
+  axis: [Editable<number>, Editable<number>, Editable<number>],
+  degrees: Editable<number>,
+  pivot?: [Editable<number>, Editable<number>, Editable<number>],
+): Shape
 .scale(s: number): Shape  // uniform only; non-uniform sx/sy/sz is rejected
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
