@@ -23,7 +23,7 @@ export interface ListEdgesOutput {
   error?: string;
   /** Structured diagnostic code on `ok=false`. Set on both failure paths:
    *  (1) script-runtime exception → `KernelError` code or
-   *  `cli.script.exception` for non-kernel throws; (2) lowering-error path →
+   *  `cli.script-exception` for non-kernel throws; (2) lowering-error path →
    *  the first error diagnostic's `code`. */
   errorCode?: string;
 }
