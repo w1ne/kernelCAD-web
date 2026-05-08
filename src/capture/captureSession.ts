@@ -1,13 +1,13 @@
 import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec } from '../intent/types';
+import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3Param } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import type {
+  AssemblyConnectorFrameStored,
   AssemblyConnectorRef,
   AssemblyPartOpts,
   AssemblyPartRef,
-  RevoluteJointOpts,
 } from './assembly';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../intent/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
@@ -216,7 +216,11 @@ export class CaptureSession {
     assemblyName: string,
     partName: string,
     shape: Shape,
-    opts: Pick<AssemblyPartOpts, 'at' | 'connectors'> & { placedBy?: AssemblyPartOpts['connect'] } = {},
+    opts: {
+      at?: Vec3Param;
+      connectors?: Record<string, AssemblyConnectorFrameStored>;
+      placedBy?: AssemblyPartOpts['connect'];
+    } = {},
   ): FeatureRecord {
     if (!this.records.some(r => r.id === shape.id)) {
       throw new Error(`assembly.part: shape '${shape.id}' is not from this CaptureSession`);
@@ -293,7 +297,7 @@ export class CaptureSession {
     jointKind: 'revolute',
     a: AssemblyPartRef,
     b: AssemblyPartRef,
-    opts: RevoluteJointOpts,
+    opts: { axis: Vec3Param; origin: Vec3Param; limitsDeg?: [number, number] },
   ): FeatureRecord {
     for (const part of [a, b]) {
       const record = this.records.find(r => r.id === part.id);
