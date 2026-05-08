@@ -60,6 +60,8 @@ npm run dev
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-05-08
+
 ### Added — foundation + mechanical core preparation
 
 - Added an executable test-quality audit so focused tests and `it.todo` cases
