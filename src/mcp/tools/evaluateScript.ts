@@ -1,6 +1,7 @@
 // src/mcp/tools/evaluateScript.ts
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface EvaluateScriptInput {
@@ -38,6 +39,9 @@ export async function evaluateScriptTool(
   return {
     ok: r.exitCode === 0,
     featureCount: r.featureCount,
-    diagnostics: r.diagnostics,
+    // Defense-in-depth: enrich at the wire boundary even if upstream
+    // already populated `nextAction`. Idempotent — `withNextActions`
+    // leaves any explicitly-set value in place.
+    diagnostics: withNextActions(r.diagnostics),
   };
 }
