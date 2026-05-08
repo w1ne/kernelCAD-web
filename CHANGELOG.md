@@ -90,6 +90,25 @@ npm run dev
   collapsing it to uniform scale in the OCCT backend. Agents now get a clear
   diagnostic and must use explicit primitive dimensions for non-uniform sizing
   until true non-uniform transforms are implemented.
+- `cylinder().fillet(r)` and equivalents on revolved/cylindrical shapes
+  (`extrudeCircle`, `revolveRect`, `path()...close().revolve()`) now succeed
+  cleanly. Previously these silently failed with `recompute.lowering.exception`
+  and a raw WASM pointer as message — caused by replicad's `Face.normalAt`
+  throwing a non-`Error` C++ exception when called on a CYLINDRE/CONE/SPHERE
+  face at a point on its parametric U-seam (cylinder cap edge midpoints sit
+  exactly on the seam). The fix wraps `normalAt` in `computeDihedral` to return
+  `null` on throw, distinguishes "all G1-smooth" from "all unknown dihedral" in
+  the fillet no-op branch (the previously-empty `sharpEdges` case now falls
+  through to OCCT with the original edge set when caused by null-dihedral
+  edges), and widens the non-`Error` catch in the fillet arm so OCCT failures
+  surface as `feature.kernel-failed` with a string message instead of a raw
+  pointer.
+
+### Changed — dependencies
+
+- Bumped `replicad` 0.20.5 → 0.23.1 and `replicad-opencascadejs` 0.20.2 →
+  0.23.0, closing 5 months of upstream staleness. Bump verified independently
+  clean (no test regressions before the fillet fix landed).
 
 ### Removed — vertical-template demotion
 
