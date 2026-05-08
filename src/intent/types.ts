@@ -13,14 +13,20 @@ export interface Vec3Param {
   z: Param;
 }
 
-/** Script-facing Vec3 type that accepts a number or ParamRef per coord.
- *  A plain `[number, number, number]` is structurally an EditableVec3, so
- *  existing examples that pass numeric Vec3 keep working without edit. */
-export type EditableVec3 = [
-  import('../runtime/paramRef').Editable<number>,
-  import('../runtime/paramRef').Editable<number>,
-  import('../runtime/paramRef').Editable<number>,
-];
+/** Script-facing Vec3 input. Accepts:
+ *  - a 3-tuple of `Editable<number>` (number or ParamRef per coord), OR
+ *  - a `Vec3Param` (named struct). The Vec3Param branch lets agents pass
+ *    `connector.worldOrigin` directly into another assembly input without
+ *    rebuilding the tuple.
+ *  A plain `[number, number, number]` is structurally compatible with the
+ *  tuple branch, so existing examples keep working without edit. */
+export type EditableVec3 =
+  | [
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+      import('../runtime/paramRef').Editable<number>,
+    ]
+  | Vec3Param;
 
 export type FeatureId = string;
 export type RewriteId = string;
@@ -134,6 +140,12 @@ export function isValidVec3(v: unknown): v is Vec3 {
  *  Use at every capture-time entry point that takes an EditableVec3 (assembly
  *  surfaces, transforms). Composes with `formatScalarForError` for diagnostics. */
 export function isValidEditableVec3(v: unknown): v is EditableVec3 {
+  // Vec3Param branch: object with x/y/z Param fields.
+  if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+    const o = v as { x?: unknown; y?: unknown; z?: unknown };
+    return isParamShape(o.x) && isParamShape(o.y) && isParamShape(o.z);
+  }
+  // Tuple branch: existing logic.
   if (!Array.isArray(v) || v.length !== 3) return false;
   for (const c of v) {
     if (typeof c === 'number') {
@@ -145,6 +157,14 @@ export function isValidEditableVec3(v: unknown): v is EditableVec3 {
     if (o._brand !== 'ParamRef' || o._type !== 'number') return false;
   }
   return true;
+}
+
+function isParamShape(p: unknown): boolean {
+  if (typeof p !== 'object' || p === null) return false;
+  const o = p as { evaluated?: unknown; unit?: unknown };
+  return typeof o.evaluated === 'number'
+      && Number.isFinite(o.evaluated)
+      && typeof o.unit === 'string';
 }
 
 export function isValidScaleSpec(v: unknown): v is ScaleSpec {

@@ -1,7 +1,7 @@
 // Helpers that bridge user-side `Editable<T>` opts and capture-side `Param`
 // records / numeric validation views. See spec §E.1, §E.3.
 
-import type { Param, Unit, Vec3Param } from '../intent/types';
+import type { EditableVec3, Param, Unit, Vec3Param } from '../intent/types';
 import { isParamRef, paramExprToDebugString, type Editable } from './paramRef';
 import type { ParamTable } from './paramTable';
 import { resolveExpr } from './resolveParams';
@@ -36,13 +36,20 @@ export function toParam(value: Editable<number>, unit: Unit): Param {
  *  (named struct of three Params). Single helper used by all transform +
  *  assembly capture sites. */
 export function toVec3Param(
-  coords: [Editable<number>, Editable<number>, Editable<number>],
+  input: EditableVec3,
   unit: Unit,
 ): Vec3Param {
+  // Vec3Param passthrough: agent passed `connector.worldOrigin` or similar.
+  // Trust the existing Param shapes; do not re-wrap (would lose the
+  // symbolic paramRef chain). Unit override is intentionally ignored on
+  // this path — the input Params already declare their unit.
+  if (!Array.isArray(input)) {
+    return input;
+  }
   return {
-    x: toParam(coords[0], unit),
-    y: toParam(coords[1], unit),
-    z: toParam(coords[2], unit),
+    x: toParam(input[0], unit),
+    y: toParam(input[1], unit),
+    z: toParam(input[2], unit),
   };
 }
 

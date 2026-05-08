@@ -52,3 +52,30 @@ describe('Vec3Param helpers', () => {
     expect(resolveVec3Param(v, t)).toEqual([50, 0, 100]);
   });
 });
+
+describe('Vec3Param-as-input passthrough', () => {
+  it('isValidEditableVec3 accepts a Vec3Param object', () => {
+    const v: Vec3Param = {
+      x: { expression: '1', unit: 'mm', evaluated: 1 },
+      y: { expression: '2', unit: 'mm', evaluated: 2 },
+      z: { expression: '3', unit: 'mm', evaluated: 3 },
+    };
+    expect(isValidEditableVec3(v)).toBe(true);
+  });
+
+  it('toVec3Param passes Vec3Param through unchanged', () => {
+    const x = makeParamRef<number>('x', 'number');
+    const original = toVec3Param([x.divide(2), 0, 0], 'mm');
+    const passedThrough = toVec3Param(original, 'mm');
+    // Same object reference (passthrough preserves the symbolic chain).
+    expect(passedThrough).toBe(original);
+    // ParamRef expression still intact.
+    expect(passedThrough.x.paramRef).toBeDefined();
+  });
+
+  it('isValidEditableVec3 rejects malformed Vec3Param-shaped objects', () => {
+    expect(isValidEditableVec3({ x: 1, y: 2, z: 3 })).toBe(false);  // raw numbers
+    expect(isValidEditableVec3({ x: {}, y: {}, z: {} })).toBe(false);  // missing fields
+    expect(isValidEditableVec3({ x: { evaluated: 1, unit: 'mm' } })).toBe(false);  // missing y, z
+  });
+});
