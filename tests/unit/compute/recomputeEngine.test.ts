@@ -31,7 +31,7 @@ describe('RecomputeEngine', () => {
       { id: 'cyl_1', kind: 'cylinder',
         params: { h: mm(20), r: mm(5) },
         inputs: {},
-        transforms: [{ op: 'translate', x: 10, y: 10, z: 0 }],
+        transforms: [{ op: 'translate', x: mm(10), y: mm(10), z: mm(0) }],
         suppressed: false },
       { id: 'bool_1', kind: 'boolean',
         params: { op: { expression: "'difference'", unit: 'unitless', evaluated: 0 } },
