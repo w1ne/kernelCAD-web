@@ -2,6 +2,7 @@ import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureId } from '../intent/types';
 import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import { HINT_TEMPLATES } from '../diagnostics/codes';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
 import { KernelError } from '../intent/kernelError';
@@ -265,7 +266,7 @@ export class RecomputeEngine {
               featureId: e.featureId ?? r.id,
               severity: 'error',
               message: e.message,
-              hint: e.hint,
+              hint: e.hint ?? HINT_TEMPLATES[e.code].template,
             }
           : {
               target: this.lowerer.target,
