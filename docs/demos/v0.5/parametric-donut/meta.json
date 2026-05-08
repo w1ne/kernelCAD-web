@@ -1,10 +1,10 @@
 {
   "taskId": "parametric-donut",
   "module": "v0.5",
-  "capturedAt": "2026-05-08T13:30:00.000Z",
+  "capturedAt": null,
   "durationMs": null,
   "truncated": false,
-  "gitSha": null,
+  "gitSha": "602c6ba0ad715bf662f1a9546e4a1b691c679569",
   "heroArtifact": "parametric-donut",
   "catalogSource": "memorable-builds-policy/v0.5",
   "overrideApprovedBy": null

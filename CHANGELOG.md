@@ -1463,11 +1463,11 @@ npm run dev
 Found a bug? [Open an issue](https://github.com/w1ne/kernelCAD/issues)
 
 
-# Changelog
+# Legacy changelog (pre-reset)
 
-All notable changes to this project will be documented in this file.
- 
-## [Unreleased]
+This section preserves a separate kernelCAD changelog from before the 2026-05 versioning reset. Entries below describe an earlier prototyping line that ran 0.0.1 → 0.10.0 in Jan-Feb 2026 with a different scope; the canonical project changelog above starts at the 2026-05 cut. Kept here for historical reference; nothing below applies to the current version line.
+
+## [Legacy Unreleased]
 ### Added - Visibility & Selection System
 - **Visibility Persistence**:
     - Implemented `localStorage` persistence for `hiddenIds`.
@@ -1649,7 +1649,7 @@ All notable changes to this project will be documented in this file.
 - **Performance**: 60fps in all modes, no memory leaks on mode switching
 - **Edge Threshold**: 15° for sharp geometric features only
 
-## [0.2.1] - 2026-01-26
+## [Legacy 0.2.1] - 2026-01-26
 ### Fixed
 - **Default Template Array Return**: Changed default template from `return filleted.cut(cyl);` to `return [filleted.cut(cyl)];` to enable AST auto-update of return statements.
 - **Shape Visibility**: Box/Cylinder insertions now correctly appear in 3D view after insertion.

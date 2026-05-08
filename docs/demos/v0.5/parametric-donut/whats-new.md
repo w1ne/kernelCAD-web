@@ -22,4 +22,4 @@ This release closes the parametric authoring arc. Every editable dimensional arg
 
 Plus the donut hero artifact rewritten in two passes (#111, #112, #113) to demonstrate the surface end-to-end.
 
-![Demo](./demo.mp4)
+> **Note:** A captured `demo.mp4` for this artifact is forthcoming via the v0.21 synchronized live-build pipeline. Reproduce the build locally with `npx tsx src/cli/index.ts evaluate examples/v0.21/donut.kcad.ts` (15 features, OK).
