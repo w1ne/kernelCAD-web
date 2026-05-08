@@ -3,14 +3,14 @@
 // Demonstrates the just-shipped capabilities:
 //   - `param()` for editable dimensions (params.update at runtime re-lowers)
 //   - ParamRef arithmetic (`.add`, `.subtract`) for derived dimensions
-//   - `.fillet()` on revolved geometry (filletable on `revolveRect` per
-//     `cylinder().fillet()` and friends now composing cleanly)
+//   - `path()...close().revolve().fillet()` end-to-end parametric — every
+//     coord on the revolution profile is a ParamRef
 //
 // Per the memorable-builds policy (see `kernelCAD-private/docs/process/`).
 //
 // Limitation worth flagging for agents: `.translate(x, y, z)` accepts plain
 // numbers only, not `ParamRef`. So the body/glaze HEIGHTS that feed sprinkle
-// Z position stay as literal numbers; everything else is parametric.
+// Z position stay as literal numbers; PathBuilder is now fully parametric.
 
 const bodyInnerR = param('bodyInnerR', 12);
 const bodyOuterR = param('bodyOuterR', 35);
@@ -25,17 +25,29 @@ const glazeFilletR = param('glazeFilletR', 1.5);
 const sprinkleR = param('sprinkleR', 1);
 const sprinkleH = param('sprinkleH', 3);
 
-// Body: square cross-section ring of width = outerR - innerR.
-const bodyWidth = bodyOuterR.subtract(bodyInnerR);
-const body = revolveRect(bodyWidth, bodyHeightVal, bodyInnerR).fillet(bodyFilletR);
+// Body: rectangular cross-section ring revolved around Z. Coords on the
+// revolution profile are ParamRefs so dimensions stay editable end-to-end.
+const body = path()
+  .moveTo(bodyInnerR, 0)
+  .lineTo(bodyOuterR, 0)
+  .lineTo(bodyOuterR, bodyHeightVal)
+  .lineTo(bodyInnerR, bodyHeightVal)
+  .close()
+  .revolve()
+  .fillet(bodyFilletR);
 
 // Glaze: thinner ring sitting on top of the body, slightly oversized for a
 // "drip" silhouette. Inner/outer radii derive from the body via ParamRef
 // arithmetic so the glaze tracks the body when params edit.
 const glazeOuterR = bodyOuterR.add(glazeOverhang);
 const glazeInnerR = bodyInnerR.add(glazeInset);
-const glazeWidth = glazeOuterR.subtract(glazeInnerR);
-const glaze = revolveRect(glazeWidth, glazeHeightVal, glazeInnerR)
+const glaze = path()
+  .moveTo(glazeInnerR, 0)
+  .lineTo(glazeOuterR, 0)
+  .lineTo(glazeOuterR, glazeHeightVal)
+  .lineTo(glazeInnerR, glazeHeightVal)
+  .close()
+  .revolve()
   .translate(0, 0, bodyHeightVal)
   .fillet(glazeFilletR);
 
