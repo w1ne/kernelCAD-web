@@ -17,7 +17,7 @@ function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'i
   return undefined;
 }
 
-function isParamLike(v: unknown): v is { evaluated: number; paramRef?: string } {
+function isParamLike(v: unknown): v is { evaluated: number; paramRef?: unknown } {
   return (
     typeof v === 'object' &&
     v !== null &&
@@ -27,7 +27,11 @@ function isParamLike(v: unknown): v is { evaluated: number; paramRef?: string } 
 
 function enabledGateParamName(record: FeatureRecord): string | undefined {
   const enabled = (record.metadata as { enabled?: unknown } | undefined)?.enabled;
-  return isParamLike(enabled) ? enabled.paramRef : undefined;
+  if (!isParamLike(enabled)) return undefined;
+  // Boolean ParamRefs are leaves only (not composable per design); a string
+  // paramRef yields the gate name. Composed AST shapes carry no single name
+  // and don't apply to boolean gates.
+  return typeof enabled.paramRef === 'string' ? enabled.paramRef : undefined;
 }
 
 function isEnabledFalse(record: FeatureRecord): boolean {

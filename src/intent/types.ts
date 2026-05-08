@@ -20,10 +20,12 @@ export interface Param {
   /**
    * Slice-3: when set, this Param is a symbolic reference into the session's
    * ParamTable. The dispatcher pre-resolves at lower time and refreshes
-   * `evaluated` from `paramTable.get(paramRef).value`. Lowerers never see this
-   * field set — they always operate on resolved Params.
+   * `evaluated` from the table. Plain string is the leaf-name shorthand
+   * (back-compat); a ParamRefExpr is the full AST for derived expressions
+   * like `param('r', 5).divide(2)`. Lowerers never see this field set — they
+   * always operate on resolved Params.
    */
-  paramRef?: string;
+  paramRef?: string | import('../runtime/paramRef').ParamRefExpr;
 }
 
 // Single source of truth for the six axis-aligned canonical face names.

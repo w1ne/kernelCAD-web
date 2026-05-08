@@ -83,6 +83,14 @@ npm run dev
   and pattern capture/lowering behavior.
 - Added `proof:assembly-contract` to verify foundation gates plus assembly
   capture, static assembly model lowering, and SKILL global discoverability.
+- Added arithmetic methods on `ParamRef<number>` — `.add`, `.subtract`,
+  `.multiply`, `.divide`, and `.negate` — so agents can derive editable
+  dimensions like `param('r', 5).divide(2)` instead of falling back to plain
+  JS numbers (which silently `NaN`-coerce the branded ParamRef object). Each
+  method builds a structured expression that the dispatcher resolves against
+  the live ParamTable at lower time, so derived values stay reactive when the
+  underlying param is edited via `params.update`. Advertised through MCP
+  `list_api` as a new `paramRefMethods` array.
 
 ### Fixed — tech debt
 
