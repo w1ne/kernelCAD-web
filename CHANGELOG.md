@@ -92,6 +92,17 @@ npm run dev
   underlying param is edited via `params.update`. Advertised through MCP
   `list_api` as a new `paramRefMethods` array.
 
+### Changed — example demonstrations
+
+- Rewrote `examples/v0.21/donut.kcad.ts` (the v0.21 hero artifact) to
+  exercise the just-shipped capabilities end-to-end: 7 of its 9 dimensions
+  are now declared via `param()`; glaze inner/outer radii derive from body
+  via `.add` / `.subtract`; body and glaze rings revolve and fillet via the
+  fillet-on-revolved fix. Body/glaze heights stay literal because
+  `.translate(x, y, z)` does not accept `ParamRef` today (sprinkle Z is
+  computed from those literals). Total: 13 features, builds clean from a
+  fresh evaluate.
+
 ### Fixed — tech debt
 
 - Rejected non-uniform `.scale(sx, sy, sz)` at capture time instead of silently
