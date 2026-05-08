@@ -821,24 +821,39 @@ export class OcctLowerer implements FeatureLowerer {
         // filleted), treat as a no-op success so the user intent ("round this face") is met.
         const shapeForDihedral = base.getReplicadShape() as unknown as { faces: import('replicad').Face[] };
         const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
+        let nullCount = 0;
         const sharpEdges = (edgesResult as import('replicad').Edge[]).filter((e) => {
           const d = computeDihedralPublic(shapeForDihedral, e);
-          // null means the dihedral could not be computed (e.g., edge has only one adjacent
-          // face, or the isSameEdge scan found no match). Treat as non-sharp so OCCT
-          // doesn't receive a potentially-smooth edge it can't handle.
-          if (d === null) return false;
+          // null means the dihedral could not be computed — either the edge has only one
+          // adjacent face, isSameEdge found no match, or normalAt threw a non-Error C++
+          // exception (typical for cylinder cap edges sitting on the parametric U-seam
+          // of a CYLINDRE/CONE/SPHERE face). Track and inspect after the filter.
+          if (d === null) {
+            nullCount++;
+            return false;
+          }
           return d.angleDeg < 180 - SMOOTH_THRESHOLD;
         });
+        let edgesForFillet: import('replicad').Edge[];
         if (sharpEdges.length === 0) {
-          // No sharp edges remain — the fillet is already satisfied; return shape unchanged.
-          shape = base;
-          break;
+          if (nullCount === 0) {
+            // Genuinely all G1-smooth — fillet already satisfied, return shape unchanged.
+            shape = base;
+            break;
+          }
+          // All edges had unknown dihedral (e.g., cylinder cap edges on the
+          // parametric seam where normalAt throws). OCCT can fillet circular
+          // cap edges directly — trust it with the original edge set. The
+          // non-Error catch below handles any genuine OCCT rejection cleanly.
+          edgesForFillet = edgesResult as import('replicad').Edge[];
+        } else {
+          edgesForFillet = sharpEdges;
         }
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const edgeRefs: EdgeRefForFilleting[] = sharpEdges.map((e: any) => ({
+          const edgeRefs: EdgeRefForFilleting[] = edgesForFillet.map((e: any) => ({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
@@ -848,17 +863,30 @@ export class OcctLowerer implements FeatureLowerer {
           const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
           shape = new OcctBackend(wrapped, undefined, newMap);
         } catch (e) {
-          if (!(e instanceof Error) && r.inputs.face !== undefined) {
-            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build,
-            // AND the selection was face-based. This occurs when selected edges are
-            // G1-smooth (e.g., the boundary between a flat face and a fillet cylinder
-            // after a prior fillet) and OCCT cannot apply another fillet to them.
-            // Treat as a no-op: the shape is returned unchanged, which matches the
-            // user intent of "the face is already fully rounded."
-            shape = base;
-            break;
+          if (!(e instanceof Error)) {
+            // Non-JS exception (WASM/OCCT C++ exception pointer) thrown during Build.
+            // String(e) on a raw WASM pointer leaks an unhelpful integer ("8479736"),
+            // so we never include it in the diagnostic message regardless of path.
+            if (r.inputs.face !== undefined) {
+              // Pre-existing silent no-op: face-based fillet on already-G1-smooth
+              // boundary (the fillet-of-fillet case) — the user intent of
+              // "the face is already fully rounded" is met by returning unchanged.
+              shape = base;
+              break;
+            }
+            // Edge-based or default selection: OCCT genuinely rejected. Emit a
+            // clean diagnostic without leaking the raw pointer.
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.kernel-failed',
+              featureId: r.id,
+              severity: 'error',
+              message: 'OCCT fillet failed (non-Error C++ exception during Build)',
+              hint: 'OCCT could not apply that fillet — try a smaller radius, a different edge selection, or check whether the target edges are already G1-smooth.',
+            });
+            return { shape: base, diagnostics };
           }
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = e.message;
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
