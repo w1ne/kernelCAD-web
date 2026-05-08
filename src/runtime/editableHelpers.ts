@@ -1,7 +1,7 @@
 // Helpers that bridge user-side `Editable<T>` opts and capture-side `Param`
 // records / numeric validation views. See spec §E.1, §E.3.
 
-import type { Param, Unit } from '../intent/types';
+import type { Param, Unit, Vec3Param } from '../intent/types';
 import { isParamRef, paramExprToDebugString, type Editable } from './paramRef';
 import type { ParamTable } from './paramTable';
 import { resolveExpr } from './resolveParams';
@@ -30,6 +30,42 @@ export function toParam(value: Editable<number>, unit: Unit): Param {
     };
   }
   return { expression: String(value), unit, evaluated: value };
+}
+
+/** Convert an EditableVec3 (3-tuple of number|ParamRef) to a Vec3Param
+ *  (named struct of three Params). Single helper used by all transform +
+ *  assembly capture sites. */
+export function toVec3Param(
+  coords: [Editable<number>, Editable<number>, Editable<number>],
+  unit: Unit,
+): Vec3Param {
+  return {
+    x: toParam(coords[0], unit),
+    y: toParam(coords[1], unit),
+    z: toParam(coords[2], unit),
+  };
+}
+
+/** Resolve a Vec3Param against the live ParamTable to a concrete numeric
+ *  Vec3 at lower time. Each Param is walked via the existing resolver, so
+ *  ParamRefExpr ASTs (e.g. `param('x', 10).divide(2)`) are evaluated. */
+export function resolveVec3Param(
+  v: Vec3Param,
+  table: ParamTable,
+): [number, number, number] {
+  return [
+    resolveParamScalar(v.x, table),
+    resolveParamScalar(v.y, table),
+    resolveParamScalar(v.z, table),
+  ];
+}
+
+function resolveParamScalar(p: Param, table: ParamTable): number {
+  if (p.paramRef === undefined) return p.evaluated;
+  if (typeof p.paramRef === 'string') {
+    return table.get(p.paramRef).value as number;
+  }
+  return resolveExpr(p.paramRef, table);
 }
 
 /** Resolve an Editable<number> to its current numeric value at capture time

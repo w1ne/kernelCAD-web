@@ -2,6 +2,26 @@ export type Vec3 = [number, number, number];
 export type Vec2 = [number, number];
 export type Mat4 = number[]; // 16 elements, column-major
 
+/** Three named Param fields. Used for any Vec3 surface in the capture intent
+ *  whose components may be ParamRefs. Mirrors the inline `{x, y, z}` triple
+ *  that translate/rotate already use; promoted to a named contract so
+ *  assembly + transforms share one shape. Lower time walks each field
+ *  through the resolver. */
+export interface Vec3Param {
+  x: Param;
+  y: Param;
+  z: Param;
+}
+
+/** Script-facing Vec3 type that accepts a number or ParamRef per coord.
+ *  A plain `[number, number, number]` is structurally an EditableVec3, so
+ *  existing examples that pass numeric Vec3 keep working without edit. */
+export type EditableVec3 = [
+  import('../runtime/paramRef').Editable<number>,
+  import('../runtime/paramRef').Editable<number>,
+  import('../runtime/paramRef').Editable<number>,
+];
+
 export type FeatureId = string;
 export type RewriteId = string;
 
@@ -108,6 +128,23 @@ export type ScaleSpec = number | [number, number, number];
 
 export function isValidVec3(v: unknown): v is Vec3 {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+/** Vec3 input validator that accepts numbers or ParamRef<number> per coord.
+ *  Use at every capture-time entry point that takes an EditableVec3 (assembly
+ *  surfaces, transforms). Composes with `formatScalarForError` for diagnostics. */
+export function isValidEditableVec3(v: unknown): v is EditableVec3 {
+  if (!Array.isArray(v) || v.length !== 3) return false;
+  for (const c of v) {
+    if (typeof c === 'number') {
+      if (!Number.isFinite(c)) return false;
+      continue;
+    }
+    if (typeof c !== 'object' || c === null) return false;
+    const o = c as { _brand?: unknown; _type?: unknown };
+    if (o._brand !== 'ParamRef' || o._type !== 'number') return false;
+  }
+  return true;
 }
 
 export function isValidScaleSpec(v: unknown): v is ScaleSpec {
