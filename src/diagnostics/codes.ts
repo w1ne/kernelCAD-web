@@ -5,6 +5,9 @@
 // Add a new code only when no existing code corresponds to its recovery.
 // Removing or renaming any code is a breaking change to the agent contract.
 
+import type { NextAction } from './nextAction';
+import { NEXT_ACTIONS } from './nextAction';
+
 export type DiagnosticCode =
   // Args & validation (1)
   | 'feature.invalid-args'
@@ -70,6 +73,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
 export interface HintTemplate {
   /** Imperative one-sentence agent recovery instruction. */
   template: string;
+  /** Structured form of the recovery instruction. Sibling to `template`. */
+  nextAction: NextAction;
 }
 
 /**
@@ -77,94 +82,61 @@ export interface HintTemplate {
  * either this template verbatim or a more specific specialization (e.g.
  * `feature.kernel-failed` dispatches per-op via the emission site).
  */
-export const HINT_TEMPLATES: Record<DiagnosticCode, HintTemplate> = {
-  'feature.invalid-args': {
-    template: 'Fix the named field on the call args; check type, sign, and units.',
-  },
-  'feature.kernel-failed': {
-    template:
+function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
+  const templates: Record<DiagnosticCode, string> = {
+    'feature.invalid-args':
+      'Fix the named field on the call args; check type, sign, and units.',
+    'feature.kernel-failed':
       'OCCT rejected the operation. Retry with different params: smaller fillet/chamfer radius, thinner shell wall, translated mirror source, smaller sweep profile, etc.',
-  },
-  'feature.revolve.crosses-axis': {
-    template:
+    'feature.revolve.crosses-axis':
       'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
-  },
-  'feature.sketch.degenerate-arc': {
-    template:
+    'feature.sketch.degenerate-arc':
       'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor.',
-  },
-  'feature.face-ref.not-resolvable': {
-    template:
+    'feature.face-ref.not-resolvable':
       'Canonical face refs only work on un-transformed primitives. Apply this feature before any transform, or fillet/shell the primitive first then translate.',
-  },
-  'feature.face-ref.not-applicable': {
-    template:
+    'feature.face-ref.not-applicable':
       "That canonical face doesn't exist on this primitive (sphere has no canonical faces; cylinder has only top/bottom).",
-  },
-  'feature.face-ref.not-supported': {
-    template:
+    'feature.face-ref.not-supported':
       'Use a canonical face name, a label, or an inline FaceQuery / EdgeQuery instead.',
-  },
-  'feature.face-ref.ambiguous-after-split': {
-    template:
+    'feature.face-ref.ambiguous-after-split':
       'A named face was split by an upstream boolean. Apply this feature before the splitting boolean.',
-  },
-  'feature.face-ref.removed': {
-    template:
+    'feature.face-ref.removed':
       'A named face was removed by an upstream boolean. Reference a face that still exists.',
-  },
-  'feature.selection.no-match': {
-    template:
+    'feature.selection.no-match':
       'The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.',
-  },
-  'feature.selection.ambiguous': {
-    template:
+    'feature.selection.ambiguous':
       'Multiple edges/faces match. Use the plural selector for all matches, or tighten the query.',
-  },
-  'feature.label.unknown-name': {
-    template: 'Label not found. Call list_face_labels to see available labels.',
-  },
-  'feature.label.no-upstream-sketch': {
-    template:
+    'feature.label.unknown-name':
+      'Label not found. Call list_face_labels to see available labels.',
+    'feature.label.no-upstream-sketch':
       'Labels work on shapes built from a path() sketch. For primitives or imported shapes, use an inline face/edge query instead.',
-  },
-  'feature.label.unsupported-base': {
-    template:
+    'feature.label.unsupported-base':
       'Labels are supported for extrude only today. Use an inline query as a workaround.',
-  },
-  'feature.label.mixed-convexity': {
-    template:
+    'feature.label.mixed-convexity':
       'The labeled segment matched a mix of convex and concave edges. Split the label across smaller segments, or refine with an EdgeQuery filtering by convexity.',
-  },
-  'feature.label.collision': {
-    template: 'Two upstream features declared the same faceLabels name. Rename one.',
-  },
-  'recompute.input.missing': {
-    template:
+    'feature.label.collision':
+      'Two upstream features declared the same faceLabels name. Rename one.',
+    'recompute.input.missing':
       'An upstream feature failed or was suppressed. Call why_did_this_fail on the upstream feature_id to walk the chain.',
-  },
-  'recompute.lowering.exception': {
-    template:
+    'recompute.lowering.exception':
       'An exception was raised during lowering. Read the diagnostic message for the OCCT error.',
-  },
-  'cli.invalid-args': {
-    template: 'CLI was called with missing or malformed arguments. Run `kernelcad --help`.',
-  },
-  'cli.script-exception': {
-    template:
+    'cli.invalid-args':
+      'CLI was called with missing or malformed arguments. Run `kernelcad --help`.',
+    'cli.script-exception':
       'Your script raised an exception during execution. Read the diagnostic message for the JS error.',
-  },
-  'cli.file-read': {
-    template: 'kernelCAD could not read the script file. Check the path exists and is readable.',
-  },
-  'cli.export-exception': {
-    template: 'An exception occurred during export. Read the diagnostic message for details.',
-  },
-  'export.feature-not-found': {
-    template:
+    'cli.file-read':
+      'kernelCAD could not read the script file. Check the path exists and is readable.',
+    'cli.export-exception':
+      'An exception occurred during export. Read the diagnostic message for details.',
+    'export.feature-not-found':
       'The feature_id passed to export_stl was not found. Use list_features to see available IDs.',
-  },
-  'export.no-shape': {
-    template: 'The script did not return a shape. End the script with `return <shape>`.',
-  },
-};
+    'export.no-shape':
+      'The script did not return a shape. End the script with `return <shape>`.',
+  };
+  const out = {} as Record<DiagnosticCode, HintTemplate>;
+  for (const code of DIAGNOSTIC_CODES) {
+    out[code] = { template: templates[code], nextAction: NEXT_ACTIONS[code] };
+  }
+  return out;
+}
+export const HINT_TEMPLATES: Record<DiagnosticCode, HintTemplate> = buildHintTemplates();

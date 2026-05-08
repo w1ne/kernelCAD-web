@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { formatHuman } from '../../diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import { withNextActions } from '../../diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
 
@@ -25,11 +26,11 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
   if (input.code === undefined && input.file === undefined) {
     return { evaluation: {
       exitCode: 2, featureCount: 0,
-      diagnostics: [{
+      diagnostics: withNextActions([{
         target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
         message: 'evaluateScript: must provide either { file } or { code }.',
         hint: 'Pass --file <path> on the CLI, or { file } / { code } when calling programmatically.',
-      }],
+      }]),
     } };
   }
 
@@ -44,11 +45,11 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
       return {
         evaluation: {
           exitCode: 2, featureCount: 0,
-          diagnostics: [{
+          diagnostics: withNextActions([{
             target: 'export-occt', code: 'cli.file-read', severity: 'error',
             message: `Cannot read file: ${msg}`,
             hint: 'Check that the file path exists and is readable.',
-          }],
+          }]),
         },
       };
     }
@@ -62,7 +63,7 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     evaluation: {
       exitCode: fatal ? 1 : 0,
       featureCount: model.records.length,
-      diagnostics: model.diagnostics,
+      diagnostics: withNextActions(model.diagnostics),
     },
     model,
   };
