@@ -85,6 +85,24 @@ function loadFixture(fixturePath: string): AgentResponse[] {
   return data.responses;
 }
 
+/**
+ * Construct an agent client for the given model. When ANTHROPIC_API_KEY is
+ * set in the environment, returns a real Anthropic client; otherwise throws.
+ *
+ * Exported so other entrypoints (e.g. scripts/portfolioAttempt.ts) can build
+ * an agent without re-running this file's CLI `main()`. The model arg is
+ * accepted for symmetry with future per-model dispatch but is not currently
+ * used to vary client construction — the model is passed through to
+ * `runTask` separately.
+ */
+export function makeAgent(_model: string): AgentClient {
+  void _model;
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('makeAgent: ANTHROPIC_API_KEY is required to construct a real agent client.');
+  }
+  return new AnthropicAgentClient(process.env.ANTHROPIC_API_KEY);
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const isMock = args.includes('--mock');
@@ -183,7 +201,22 @@ async function main(): Promise<void> {
   process.exit(allInfra ? 1 : 0);
 }
 
-main().catch((err) => {
-  console.error('Fatal:', err);
-  process.exit(1);
-});
+// Only run the CLI when this module is the entrypoint. Importing it from
+// another script (e.g. scripts/portfolioAttempt.ts using `makeAgent`) must
+// not trigger a full eval run.
+const isEntrypoint = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    const invokedUrl = new URL(`file://${process.argv[1]}`).href;
+    return import.meta.url === invokedUrl;
+  } catch {
+    return false;
+  }
+})();
+
+if (isEntrypoint) {
+  main().catch((err) => {
+    console.error('Fatal:', err);
+    process.exit(1);
+  });
+}
