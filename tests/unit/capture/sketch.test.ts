@@ -23,11 +23,16 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toEqual([
-      { kind: 'moveTo', x: 0, y: 0 },
-      { kind: 'lineTo', x: 10, y: 0 },
-      { kind: 'close' },
-    ]);
+    // Coords are stored as Param objects so symbolic ParamRefs survive into
+    // lower time. Compare via .evaluated for the numeric view.
+    expect(commands).toHaveLength(3);
+    expect(commands[0]).toMatchObject({ kind: 'moveTo' });
+    expect((commands[0] as { x: { evaluated: number }; y: { evaluated: number } }).x.evaluated).toBe(0);
+    expect((commands[0] as { x: { evaluated: number }; y: { evaluated: number } }).y.evaluated).toBe(0);
+    expect(commands[1]).toMatchObject({ kind: 'lineTo' });
+    expect((commands[1] as { x: { evaluated: number }; y: { evaluated: number } }).x.evaluated).toBe(10);
+    expect((commands[1] as { x: { evaluated: number }; y: { evaluated: number } }).y.evaluated).toBe(0);
+    expect(commands[2]).toEqual({ kind: 'close' });
   });
 
   it('extrude record references the sketch via inputs.sketch', async () => {
@@ -96,7 +101,11 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'tangentArc', x: 15, y: 5 });
+    expect(commands).toContainEqual({
+      kind: 'tangentArc',
+      x: { expression: '15', unit: 'mm', evaluated: 15 },
+      y: { expression: '5', unit: 'mm', evaluated: 5 },
+    });
   });
 
   it('rejects tangentArc as the first command (would have no prior tangent)', async () => {
@@ -138,7 +147,11 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'tangentArc', x: 25, y: 80 });
+    expect(commands).toContainEqual({
+      kind: 'tangentArc',
+      x: { expression: '25', unit: 'mm', evaluated: 25 },
+      y: { expression: '80', unit: 'mm', evaluated: 80 },
+    });
     expect(result.records.find(r => r.kind === 'revolve')).toBeDefined();
   });
 
@@ -206,7 +219,13 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'threePointsArc', x: 20, y: 0, midX: 10, midY: 5 });
+    expect(commands).toContainEqual({
+      kind: 'threePointsArc',
+      x: { expression: '20', unit: 'mm', evaluated: 20 },
+      y: { expression: '0', unit: 'mm', evaluated: 0 },
+      midX: { expression: '10', unit: 'mm', evaluated: 10 },
+      midY: { expression: '5', unit: 'mm', evaluated: 5 },
+    });
   });
 
   it('captures sagittaArc with chord endpoint and bulge', async () => {
@@ -214,7 +233,12 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'sagittaArc', x: 20, y: 0, sagitta: 5 });
+    expect(commands).toContainEqual({
+      kind: 'sagittaArc',
+      x: { expression: '20', unit: 'mm', evaluated: 20 },
+      y: { expression: '0', unit: 'mm', evaluated: 0 },
+      sagitta: { expression: '5', unit: 'mm', evaluated: 5 },
+    });
   });
 
   it('captures bulgeArc with chord endpoint and DXF bulge factor', async () => {
@@ -222,7 +246,12 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'bulgeArc', x: 20, y: 0, bulge: 0.5 });
+    expect(commands).toContainEqual({
+      kind: 'bulgeArc',
+      x: { expression: '20', unit: 'mm', evaluated: 20 },
+      y: { expression: '0', unit: 'mm', evaluated: 0 },
+      bulge: { expression: '0.5', unit: 'unitless', evaluated: 0.5 },
+    });
   });
 
   it('captures radiusArc with chord endpoint and radius', async () => {
@@ -230,7 +259,12 @@ describe('path() builder + Sketch capture', () => {
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const sketchRec = result.records.find(r => r.kind === 'sketch')!;
     const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
-    expect(commands).toContainEqual({ kind: 'radiusArc', x: 20, y: 0, radius: 15 });
+    expect(commands).toContainEqual({
+      kind: 'radiusArc',
+      x: { expression: '20', unit: 'mm', evaluated: 20 },
+      y: { expression: '0', unit: 'mm', evaluated: 0 },
+      radius: { expression: '15', unit: 'mm', evaluated: 15 },
+    });
   });
 
   it('emits feature.sketch.degenerate-arc when radiusArc has invalid radius', async () => {
@@ -907,11 +941,12 @@ describe('path() builder + Sketch capture', () => {
       const sketches = result.records.filter(r => r.kind === 'sketch');
       expect(sketches).toHaveLength(2);
       const reflectedSketch = sketches[1];
-      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: number; y?: number }> }).commands;
-      expect(cmds[0]).toMatchObject({ kind: 'moveTo', x: 0, y: 0 });
-      expect(cmds[1]).toMatchObject({ kind: 'lineTo', x: 10, y: 0 });
-      expect(cmds[2]).toMatchObject({ kind: 'lineTo', x: 10, y: -5 });
-      expect(cmds[3]).toMatchObject({ kind: 'lineTo', x: 0, y: -5 });
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number } }> }).commands;
+      const xy = (i: number): [number | undefined, number | undefined] => [cmds[i].x?.evaluated, cmds[i].y?.evaluated];
+      expect(cmds[0].kind).toBe('moveTo'); expect(xy(0)).toEqual([0, 0]);
+      expect(cmds[1].kind).toBe('lineTo'); expect(xy(1)).toEqual([10, 0]);
+      expect(cmds[2].kind).toBe('lineTo'); expect(xy(2)).toEqual([10, -5]);
+      expect(cmds[3].kind).toBe('lineTo'); expect(xy(3)).toEqual([0, -5]);
     });
 
     it('reflects across the y-axis with offset', async () => {
@@ -923,9 +958,11 @@ describe('path() builder + Sketch capture', () => {
       const result = await runScript({ code, fileName: 'test.kcad.ts' });
       const sketches = result.records.filter(r => r.kind === 'sketch');
       const reflectedSketch = sketches[1];
-      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: number; y?: number }> }).commands;
-      expect(cmds[0]).toMatchObject({ kind: 'moveTo', x: 2, y: 0 });
-      expect(cmds[1]).toMatchObject({ kind: 'lineTo', x: -3, y: 5 });
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; x?: { evaluated: number }; y?: { evaluated: number } }> }).commands;
+      expect(cmds[0].kind).toBe('moveTo');
+      expect([cmds[0].x?.evaluated, cmds[0].y?.evaluated]).toEqual([2, 0]);
+      expect(cmds[1].kind).toBe('lineTo');
+      expect([cmds[1].x?.evaluated, cmds[1].y?.evaluated]).toEqual([-3, 5]);
     });
 
     it('negates sagitta sign on sagittaArc (winding inversion)', async () => {
@@ -936,10 +973,10 @@ describe('path() builder + Sketch capture', () => {
       const result = await runScript({ code, fileName: 'test.kcad.ts' });
       const sketches = result.records.filter(r => r.kind === 'sketch');
       const reflectedSketch = sketches[1];
-      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; sagitta?: number }> }).commands;
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; sagitta?: { evaluated: number } }> }).commands;
       const arcCmd = cmds.find(c => c.kind === 'sagittaArc');
       expect(arcCmd).toBeDefined();
-      expect(arcCmd!.sagitta).toBe(-5);
+      expect(arcCmd!.sagitta?.evaluated).toBe(-5);
     });
 
     it('negates radius sign on radiusArc (winding inversion)', async () => {
@@ -950,10 +987,10 @@ describe('path() builder + Sketch capture', () => {
       const result = await runScript({ code, fileName: 'test.kcad.ts' });
       const sketches = result.records.filter(r => r.kind === 'sketch');
       const reflectedSketch = sketches[1];
-      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; radius?: number }> }).commands;
+      const cmds = (reflectedSketch.metadata as { commands: Array<{ kind: string; radius?: { evaluated: number } }> }).commands;
       const arcCmd = cmds.find(c => c.kind === 'radiusArc');
       expect(arcCmd).toBeDefined();
-      expect(arcCmd!.radius).toBe(-15);
+      expect(arcCmd!.radius?.evaluated).toBe(-15);
     });
 
     it('preserves labels on their corresponding segments', async () => {
