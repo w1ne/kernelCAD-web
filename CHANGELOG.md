@@ -75,9 +75,32 @@ npm run dev
 - `assembly.ball(name, parent, child, opts)` — 3 rotational DOF (XYZ Euler).
 - `Shape.transform(t)` — apply an SE(3) `Transform` to a shape (decomposes
   to translate + rotate via existing ShapeTransform pipes).
+- `Shape.color(name)` — tag a feature with a render-time role color
+  (`'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'`)
+  or any `'#rrggbb'` hex literal. Stored on `FeatureRecord.metadata.color`;
+  the demo player and static panel resolve it through `ROLE_PALETTE` /
+  `resolveColor()` in `src/render/palette.ts`. Geometry is unchanged;
+  booleans drop the color so identity lives at leaf parts. Advertised
+  through `list_api`'s `SHAPE_METHODS` and SKILL.md.
+- `Shape.alongAxis(axis)` — orient a Z-default-axis shape along an
+  arbitrary direction. Sugar over `.rotate()` — preferred for cross-axis
+  cylinders and axles (e.g. `cylinder(20, 4).alongAxis([0, 1, 0])` for
+  an axle along +Y). Identity `[0, 0, 1]` is a no-op; antipodal
+  `[0, 0, -1]` is a deterministic 180° around X. Zero vector throws
+  `feature.invalid-args`; non-unit input is normalized.
 
 ### Changed
 
+- `Shape.scale(factor)` widened to accept `Vec3` for non-uniform scale
+  (e.g. `.scale([2, 1, 1])` to stretch X only). Uniform single-number
+  path unchanged. Non-uniform lowers via `gp_GTrsf` +
+  `BRepBuilderAPI_GTransform_2` so topology and face refs survive any
+  affine transform. All factors must be positive and finite; otherwise
+  `feature.invalid-args`.
+- `replicad-opencascadejs` pinned to forked
+  `github:w1ne/replicad-opencascadejs#kcad-v0.23.1` (one-line whitelist
+  patch to expose `BRepBuilderAPI_GTransform`, required by the
+  non-uniform-scale lowerer).
 - Joint origin convention changed from `EditableVec3` (worldOrigin from
   `parent.connector('tip').worldOrigin`) to numeric `Vec3` in the
   **parent part's local frame** (URDF/MuJoCo convention). This unblocks

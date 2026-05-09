@@ -18,6 +18,7 @@ import {
 import { isParamRef, type Editable } from '../runtime/paramRef';
 import { toParam, toVec3Param } from '../runtime/editableHelpers';
 import { Transform } from '../runtime/se3';
+import type { ColorToken } from '../render/palette';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -139,31 +140,129 @@ export class Shape {
     return this;
   }
 
-  scale(sx: number, sy?: number, sz?: number): Shape {
-    const scaleSpec = (sy !== undefined || sz !== undefined)
-      ? [sx, sy ?? sx, sz ?? sx] as [number, number, number]
-      : sx;
+  /**
+   * Tag this shape with a role-based color token (resolved by the renderer
+   * via ROLE_PALETTE) or a literal `#rrggbb` hex color. Stored on the
+   * underlying FeatureRecord.metadata.color; lowerer/exports ignore it.
+   *
+   * Color identity dies at boolean operations — `a.color('servo').union(b)`
+   * produces a new Shape with no color. Color lives at the LEAF-PART level;
+   * for an assembly, color each part individually before the assembly's
+   * solvedModel() unions them for export.
+   */
+  color(name: ColorToken | `#${string}`): Shape {
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.color: feature record '${this.id}' not found in session.`,
+        this.id,
+        'invalid-args.color.unknown-record — call .color() on a Shape produced by the current session.',
+      );
+    }
+    // Mutate metadata in place. Same pattern as other capture-time mutations.
+    if (record.metadata === undefined) {
+      (record as { metadata: Record<string, unknown> }).metadata = {};
+    }
+    (record.metadata as Record<string, unknown>).color = name;
+    return this;
+  }
+
+  /**
+   * Orient this shape so its current +Z axis aligns with the supplied
+   * direction vector. Sugar over .rotate() — preferred for cross-axis
+   * cylinders / axles where .rotate([1, 0, 0], 90) is error-prone.
+   *
+   * The axis is treated as a direction; magnitude is ignored (normalized
+   * internally). Antipodal case ([0, 0, -1]) is handled deterministically
+   * (180° around X). Identity case ([0, 0, 1]) is a no-op (no rotation
+   * appended).
+   */
+  alongAxis(axis: [number, number, number]): Shape {
+    const len = Math.hypot(axis[0], axis[1], axis[2]);
+    if (len === 0 || !Number.isFinite(len)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.alongAxis: axis must be a non-zero finite Vec3; got [${axis[0]}, ${axis[1]}, ${axis[2]}].`,
+        this.id,
+        'invalid-args.alongAxis.zero — provide a non-zero direction vector.',
+      );
+    }
+    const ax = axis[0] / len;
+    const ay = axis[1] / len;
+    const az = axis[2] / len;
+    // Identity: already +Z.
+    if (Math.abs(az - 1) < 1e-9 && Math.abs(ax) < 1e-9 && Math.abs(ay) < 1e-9) {
+      return this;
+    }
+    // Antipodal: rotate 180° around X (deterministic choice).
+    if (Math.abs(az + 1) < 1e-9 && Math.abs(ax) < 1e-9 && Math.abs(ay) < 1e-9) {
+      return this.rotate([1, 0, 0], 180);
+    }
+    // General: rotate around (Z × axis) by acos(Z · axis).
+    // Z × axis = [0, 0, 1] × [ax, ay, az] = [-ay, ax, 0].
+    const rx = -ay;
+    const ry = ax;
+    const rz = 0;
+    const angleRad = Math.acos(Math.min(1, Math.max(-1, az)));
+    const angleDeg = angleRad * 180 / Math.PI;
+    return this.rotate([rx, ry, rz], angleDeg);
+  }
+
+  /**
+   * Scale this shape uniformly (single positive number) or per-axis
+   * (Vec3 — sx/sy/sz). All factors must be positive and finite.
+   *
+   * Two call shapes are accepted:
+   *   - `.scale(2)`           — uniform
+   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form
+   *   - `.scale(2, 2, 2)`     — legacy multi-arg form (must be uniform; see below)
+   *
+   * The Vec3 form is the canonical agent-facing way to request non-uniform
+   * scale. Capture stores per-axis components in the FeatureRecord's
+   * transform stack (`{ op: 'scale', sx, sy, sz }`), so face refs survive
+   * because OCCT preserves topology under any affine transform (audited at
+   * `tests/unit/intent/faceRefScaleAudit.test.ts`).
+   *
+   * BACKEND LIMITATION (2026-05-09): the lowerer can only honor uniform
+   * scale today because `replicad-opencascadejs` does not export
+   * `BRepBuilderAPI_GTransform`. A non-uniform Vec3 still captures cleanly,
+   * but lowering will emit a `feature.kernel-failed` diagnostic. Track via
+   * the TODO in `src/backends/occt/occtLowerer.ts` near the scale dispatch.
+   */
+  scale(factor: number | [number, number, number]): Shape;
+  scale(sx: number, sy: number, sz: number): Shape;
+  scale(
+    factorOrSx: number | [number, number, number],
+    sy?: number,
+    sz?: number,
+  ): Shape {
+    // Normalize the three call shapes into a single ScaleSpec.
+    const scaleSpec: number | [number, number, number] = Array.isArray(factorOrSx)
+      ? factorOrSx
+      : (sy !== undefined || sz !== undefined)
+        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [number, number, number]
+        : factorOrSx;
+
     if (!isValidScaleSpec(scaleSpec)) {
       throw new KernelError(
         'feature.invalid-args',
         `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
         this.id,
-        'Pass a positive finite number (uniform) or three positive finite numbers (per-axis) to .scale().',
+        'invalid-args.scale.zero — provide positive finite scale factors.',
       );
     }
-    if (Array.isArray(scaleSpec) && (scaleSpec[0] !== scaleSpec[1] || scaleSpec[0] !== scaleSpec[2])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Non-uniform scale is not supported by the OCCT backend; got ${formatScalarForError(scaleSpec)}.`,
-        this.id,
-        'Pass one positive finite factor, or pass equal sx/sy/sz values. Use explicit dimensions on primitives when you need non-uniform sizing.',
-      );
-    }
+
+    const [sx, syOut, szOut]: [number, number, number] = Array.isArray(scaleSpec)
+      ? [scaleSpec[0], scaleSpec[1], scaleSpec[2]]
+      : [scaleSpec, scaleSpec, scaleSpec];
+
     this.session.appendTransform(this.id, {
       op: 'scale',
       sx,
-      sy: sy ?? sx,
-      sz: sz ?? sx,
+      sy: syOut,
+      sz: szOut,
     });
     return this;
   }
