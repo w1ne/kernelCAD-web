@@ -1,12 +1,32 @@
 import { KernelError } from '../intent/kernelError';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
-import { toVec3Param } from '../runtime/editableHelpers';
-import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
+import { currentValue, toVec3Param } from '../runtime/editableHelpers';
+import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
+
+/**
+ * Public pose surface for `Assembly.solve(poses)` and (Tasks 3-5)
+ * `Assembly.solvedModel(poses)`. Per-joint values may be number literals
+ * or ParamRefs (or, for ball joints, a per-axis tuple mixing both).
+ *
+ * - revolute, prismatic: `Editable<number>` (degrees / mm)
+ * - ball: `[Editable<number>, Editable<number>, Editable<number>]`
+ *   (XYZ Euler degrees, extrinsic — same as the numeric path)
+ * - fixed: NO pose accepted (validated; throws if listed)
+ *
+ * For `solve` the ParamRefs are resolved at call time (snapshot
+ * semantics — same role as `.boundingBox()` / `.measureArea()`).
+ * `solvedModel` captures the symbolic refs so studio-driven param edits
+ * re-pose the rendered scene reactively (Tasks 3-5).
+ */
+export type EditableScalarPose = Editable<number>;
+export type EditableBallPose = [Editable<number>, Editable<number>, Editable<number>];
+export type PoseValue = EditableScalarPose | EditableBallPose;
+export type Poses = Record<string, PoseValue>;
 
 export interface AssemblyPartRef {
   id: FeatureId;
@@ -328,7 +348,7 @@ export class Assembly {
    * `originalShape` via `Shape.transform(t)`. Calling solve() twice on the
    * same Assembly compounds transforms; build a fresh assembly per query.
    */
-  solve(poses: Record<string, number | [number, number, number]>): SolvedKinematics {
+  solve(poses: Poses): SolvedKinematics {
     // 1. Validate joint names supplied in poses.
     for (const name of Object.keys(poses)) {
       if (!this.joints.find(j => j.name === name)) {
@@ -342,7 +362,12 @@ export class Assembly {
       }
     }
 
-    // 2. Validate pose value shapes per joint kind.
+    // 2. Validate pose value shapes per joint kind, then resolve any ParamRef
+    //    coords to concrete numbers using the session's current ParamTable
+    //    (snapshot semantics — see header on `Poses`). Validation runs against
+    //    the resolved numeric pose so non-finite ParamRef values surface the
+    //    same hint as bad numeric poses.
+    const numericPoses: NumericPoses = {};
     for (const j of this.joints) {
       const v = poses[j.name];
       if (v === undefined) continue;
@@ -355,7 +380,7 @@ export class Assembly {
         );
       }
       if (j.kind === 'ball') {
-        if (!Array.isArray(v) || v.length !== 3 || v.some(x => typeof x !== 'number' || !Number.isFinite(x))) {
+        if (!Array.isArray(v) || v.length !== 3) {
           throw new KernelError(
             'feature.invalid-args',
             `assembly.solve ball joint '${j.name}' pose must be [eulerXDeg, eulerYDeg, eulerZDeg]; got ${formatScalarForError(v)}.`,
@@ -363,9 +388,15 @@ export class Assembly {
             'invalid-args.solve.ball-pose — pass three finite numbers as the XYZ Euler triple.',
           );
         }
+        const triple: [number, number, number] = [
+          resolveScalarPose(v[0], j.name, j.kind, this.session),
+          resolveScalarPose(v[1], j.name, j.kind, this.session),
+          resolveScalarPose(v[2], j.name, j.kind, this.session),
+        ];
+        numericPoses[j.name] = triple;
       } else {
-        // revolute or prismatic — single number.
-        if (typeof v !== 'number' || !Number.isFinite(v)) {
+        // revolute or prismatic — single Editable<number>.
+        if (Array.isArray(v)) {
           throw new KernelError(
             'feature.invalid-args',
             `assembly.solve ${j.kind} joint '${j.name}' pose must be a finite number; got ${formatScalarForError(v)}.`,
@@ -373,6 +404,7 @@ export class Assembly {
             'invalid-args.solve.bad-pose — pass a finite number.',
           );
         }
+        numericPoses[j.name] = resolveScalarPose(v, j.name, j.kind, this.session);
       }
     }
 
@@ -389,7 +421,7 @@ export class Assembly {
     // 4. Forward kinematics: pure body-tree FK (graph validation + SE(3) walk).
     //    Lives in forwardKinematics.ts so the lowerer can reach it without
     //    going through Assembly state.
-    const worldT = forwardKinematics(this.parts, this.joints, poses as NumericPoses);
+    const worldT = forwardKinematics(this.parts, this.joints, numericPoses);
 
     // 5. Apply per-part transform to the original shape (mutates the Shape's
     //    transform stack via existing translate + rotate ShapeTransform pipes).
@@ -398,15 +430,16 @@ export class Assembly {
       part.originalShape.transform(T);
     }
 
-    // 6. Build SolvedKinematics handle.
-    return new SolvedKinematics(this.parts, this.joints, worldT, poses);
+    // 6. Build SolvedKinematics handle. Hand it the already-resolved numeric
+    //    pose record so the snapshot can never accidentally re-resolve.
+    return new SolvedKinematics(this.parts, this.joints, worldT, numericPoses);
   }
 
   /**
    * Sugar: same as `solve(poses).toShape()`. Returns the unioned posed Shape
    * directly — for the simple "give me the renderable scene root" path.
    */
-  solvedModel(poses: Record<string, number | [number, number, number]>): Shape {
+  solvedModel(poses: Poses): Shape {
     return this.solve(poses).toShape();
   }
 
@@ -519,6 +552,44 @@ export class SolvedKinematics {
     }
     return model;
   }
+}
+
+/**
+ * Resolve an `Editable<number>` pose coord against the session's ParamTable
+ * to a concrete finite number. Used by `Assembly.solve` for snapshot
+ * resolution. Wraps `currentValue` (the existing capture-time resolver) so
+ * the diagnostic surface uses solve-specific hints.
+ *
+ * Errors:
+ *   - non-number / non-ParamRef     → invalid-args.solve.bad-pose
+ *   - non-finite numeric            → invalid-args.solve.bad-pose
+ *   - unknown ParamRef name         → propagated from ParamTable.get
+ *     (existing `invalid-args.param.unknown-name`).
+ */
+function resolveScalarPose(
+  value: Editable<number>,
+  jointName: string,
+  jointKind: AssemblyJointStored['kind'],
+  session: CaptureSession,
+): number {
+  if (!isParamRef(value) && typeof value !== 'number') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solve ${jointKind} joint '${jointName}' pose must be a finite number or ParamRef<number>; got ${formatScalarForError(value)}.`,
+      undefined,
+      'invalid-args.solve.bad-pose — pass a finite number or a ParamRef from kcad.param().',
+    );
+  }
+  const resolved = currentValue(value as Editable<number>, session.paramTable);
+  if (typeof resolved !== 'number' || !Number.isFinite(resolved)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solve ${jointKind} joint '${jointName}' pose must be a finite number; got ${formatScalarForError(resolved)}.`,
+      undefined,
+      'invalid-args.solve.bad-pose — pass a finite number.',
+    );
+  }
+  return resolved;
 }
 
 function isValidJointLimits(value: [number, number]): boolean {
