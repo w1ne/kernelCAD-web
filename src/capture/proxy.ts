@@ -169,6 +169,47 @@ export class Shape {
     return this;
   }
 
+  /**
+   * Orient this shape so its current +Z axis aligns with the supplied
+   * direction vector. Sugar over .rotate() — preferred for cross-axis
+   * cylinders / axles where .rotate([1, 0, 0], 90) is error-prone.
+   *
+   * The axis is treated as a direction; magnitude is ignored (normalized
+   * internally). Antipodal case ([0, 0, -1]) is handled deterministically
+   * (180° around X). Identity case ([0, 0, 1]) is a no-op (no rotation
+   * appended).
+   */
+  alongAxis(axis: [number, number, number]): Shape {
+    const len = Math.hypot(axis[0], axis[1], axis[2]);
+    if (len === 0 || !Number.isFinite(len)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.alongAxis: axis must be a non-zero finite Vec3; got [${axis[0]}, ${axis[1]}, ${axis[2]}].`,
+        this.id,
+        'invalid-args.alongAxis.zero — provide a non-zero direction vector.',
+      );
+    }
+    const ax = axis[0] / len;
+    const ay = axis[1] / len;
+    const az = axis[2] / len;
+    // Identity: already +Z.
+    if (Math.abs(az - 1) < 1e-9 && Math.abs(ax) < 1e-9 && Math.abs(ay) < 1e-9) {
+      return this;
+    }
+    // Antipodal: rotate 180° around X (deterministic choice).
+    if (Math.abs(az + 1) < 1e-9 && Math.abs(ax) < 1e-9 && Math.abs(ay) < 1e-9) {
+      return this.rotate([1, 0, 0], 180);
+    }
+    // General: rotate around (Z × axis) by acos(Z · axis).
+    // Z × axis = [0, 0, 1] × [ax, ay, az] = [-ay, ax, 0].
+    const rx = -ay;
+    const ry = ax;
+    const rz = 0;
+    const angleRad = Math.acos(Math.min(1, Math.max(-1, az)));
+    const angleDeg = angleRad * 180 / Math.PI;
+    return this.rotate([rx, ry, rz], angleDeg);
+  }
+
   scale(sx: number, sy?: number, sz?: number): Shape {
     const scaleSpec = (sy !== undefined || sz !== undefined)
       ? [sx, sy ?? sx, sz ?? sx] as [number, number, number]
