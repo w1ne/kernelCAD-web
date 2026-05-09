@@ -75,7 +75,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "replicad": "^0.23.1",
-    "replicad-opencascadejs": "^0.23.0",
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1",
     "sharp": "^0.33.5",
     "shiki": "^1.29.2",
     "three": "^0.182.0",
@@ -83,6 +83,9 @@
     "typescript": "~5.9.3",
     "yaml": "^2.8.4",
     "zod": "^4.3.6"
+  },
+  "overrides": {
+    "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",

@@ -447,9 +447,29 @@ export class OcctBackend implements ShapeBackend {
   }
 
   scale(s: number | Vec3): OcctBackend {
-    // Replicad's Shape.scale is uniform; collapse Vec3 to its first component.
-    const factor = typeof s === 'number' ? s : s[0];
-    return new OcctBackend(this.shape.scale(factor) as ReplicadShape3D);
+    const sx = typeof s === 'number' ? s : s[0];
+    const sy = typeof s === 'number' ? s : s[1];
+    const sz = typeof s === 'number' ? s : s[2];
+    if (sx === sy && sy === sz) {
+      return new OcctBackend(this.shape.scale(sx) as ReplicadShape3D);
+    }
+    // Non-uniform: gp_GTrsf + BRepBuilderAPI_GTransform applies a per-axis
+    // diagonal directly to the TopoDS_Shape (replicad's own Shape.scale is
+    // uniform-only, so we drop into raw OCCT here).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    const gtrsf = new oc.gp_GTrsf_1();
+    gtrsf.SetValue(1, 1, sx);
+    gtrsf.SetValue(2, 2, sy);
+    gtrsf.SetValue(3, 3, sz);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    const builder = new oc.BRepBuilderAPI_GTransform_2(wrapped, gtrsf, true);
+    const resultShape = builder.Shape();
+    const newShape = replicad.cast(resultShape) as ReplicadShape3D;
+    builder.delete();
+    gtrsf.delete();
+    return new OcctBackend(newShape);
   }
 
   /**

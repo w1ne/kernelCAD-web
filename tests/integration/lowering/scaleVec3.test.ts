@@ -1,21 +1,8 @@
 // tests/integration/lowering/scaleVec3.test.ts
 //
-// Render-primitives slice — Task 6 (2026-05-09).
-//
-// Lowering integration for `Shape.scale` Vec3 form. Two surfaces:
-//
-// 1. Uniform path (regression): `.scale([2, 2, 2])` and `.scale(2)` both
-//    produce a 2x bounding box.
-//
-// 2. Non-uniform path: today this lands as a `feature.kernel-failed`
-//    diagnostic with the `kernel-failed.scale.non-uniform` hint, because
-//    the active `replicad-opencascadejs` build does not export
-//    `BRepBuilderAPI_GTransform`. The capture-side encoding
-//    (per-axis sx/sy/sz on the FeatureRecord) is already in place and
-//    covered at `tests/unit/capture/shapeScaleVec3.test.ts`.
-//
-// When the WASM build ships GTransform, flip the non-uniform expectation
-// from "produces diagnostic" to "produces correctly scaled bounding box".
+// Lowering integration for `Shape.scale` Vec3 form. Both uniform and
+// non-uniform paths produce a correctly scaled bounding box; non-uniform
+// lowers via gp_GTrsf + BRepBuilderAPI_GTransform.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
@@ -74,23 +61,29 @@ describe('scale Vec3 lowering', () => {
     expect(dz).toBeCloseTo(20, 3);
   });
 
-  it('non-uniform Vec3 [2, 1, 1] emits feature.kernel-failed today (BRepBuilderAPI_GTransform unavailable)', async () => {
-    // TODO(render-primitives): once the OCCT WASM build ships
-    // BRepBuilderAPI_GTransform, replace this expectation with a
-    // bounding-box check (dx ≈ 20, dy ≈ 10, dz ≈ 10).
+  it('non-uniform Vec3 [2, 1, 1] stretches X only', async () => {
     const { shape, diagnostics } = await lowerScript(`
       return box(10, 10, 10).scale([2, 1, 1]);
     `);
-    const errors = diagnostics.filter(d => d.severity === 'error');
-    expect(errors.length).toBeGreaterThan(0);
-    const scaleErr = errors.find(d => d.code === 'feature.kernel-failed' && /non-uniform scale/i.test(d.message));
-    expect(scaleErr).toBeDefined();
-    expect(scaleErr!.hint).toMatch(/kernel-failed\.scale\.non-uniform/);
-    // Shape is preserved at its pre-scale extents (10mm cube).
-    if (shape !== undefined) {
-      const bb = shape.boundingBox();
-      const dx = bb.max[0] - bb.min[0];
-      expect(dx).toBeCloseTo(10, 3);
-    }
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape).toBeDefined();
+    const bb = shape!.boundingBox();
+    const dx = bb.max[0] - bb.min[0];
+    const dy = bb.max[1] - bb.min[1];
+    const dz = bb.max[2] - bb.min[2];
+    expect(dx).toBeCloseTo(20, 3);
+    expect(dy).toBeCloseTo(10, 3);
+    expect(dz).toBeCloseTo(10, 3);
+  });
+
+  it('non-uniform Vec3 [1, 1, 2] stretches Z only (cylinder)', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      return cylinder(20, 4).scale([1, 1, 2]);
+    `);
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape).toBeDefined();
+    const bb = shape!.boundingBox();
+    const dz = bb.max[2] - bb.min[2];
+    expect(dz).toBeCloseTo(40, 3);
   });
 });

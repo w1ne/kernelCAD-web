@@ -1329,39 +1329,9 @@ export class OcctLowerer implements FeatureLowerer {
           shape = shape.rotate(ax, t.degrees.evaluated, pv);
           break;
         }
-        case 'scale': {
-          // Non-uniform scale is captured by the Vec3 form of Shape.scale,
-          // but `replicad-opencascadejs` does not export
-          // `BRepBuilderAPI_GTransform`, the OCCT primitive that applies a
-          // `gp_GTrsf` (general transform with non-uniform diagonal) to a
-          // TopoDS_Shape. Until we ship a build of opencascadejs that
-          // includes that class (or rebuild shapes face-by-face via a
-          // Modification visitor), non-uniform scale lowers as a clean
-          // failure rather than a silent uniform fallback.
-          //
-          // TODO(render-primitives): re-enable non-uniform lowering once
-          // `BRepBuilderAPI_GTransform` is available in the WASM build.
-          // Capture-side encoding (sx/sy/sz triple) is already in place.
-          const isUniform = t.sx === t.sy && t.sy === t.sz;
-          if (!isUniform) {
-            diagnostics.push({
-              target: 'export-occt',
-              code: 'feature.kernel-failed',
-              featureId: r.id,
-              severity: 'error',
-              message:
-                `Non-uniform scale [${t.sx}, ${t.sy}, ${t.sz}] cannot be lowered: the active ` +
-                `replicad-opencascadejs build does not expose BRepBuilderAPI_GTransform. ` +
-                `The transform was captured but the OCCT shape is unchanged.`,
-              hint:
-                'kernel-failed.scale.non-uniform — bake the per-axis sizing into primitive dimensions ' +
-                '(e.g. box(20, 10, 10) instead of box(10, 10, 10).scale([2, 1, 1])) until the OCCT build ships gp_GTrsf shape transforms.',
-            });
-            break; // skip applying the transform; preserve the prior shape
-          }
+        case 'scale':
           shape = shape.scale([t.sx, t.sy, t.sz]);
           break;
-        }
         case 'reflect':
           if (!isValidPlaneSpec(t.plane)) {
             diagnostics.push({
