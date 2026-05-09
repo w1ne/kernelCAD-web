@@ -17,6 +17,7 @@ import {
 } from '../intent/cutoutValidation';
 import { isParamRef, type Editable } from '../runtime/paramRef';
 import { toParam, toVec3Param } from '../runtime/editableHelpers';
+import { Transform } from '../runtime/se3';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -112,6 +113,29 @@ export class Shape {
       ? { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg') }
       : { op: 'rotateAxis', axis: toVec3Param(axis, 'unitless'), degrees: toParam(degrees, 'deg'), pivot: toVec3Param(pivot, 'mm') };
     this.session.appendTransform(this.id, transform);
+    return this;
+  }
+
+  /**
+   * Apply an SE(3) Transform to this shape. Decomposes the transform into
+   * one rotate + one translate component (T = Translate · Rotate) and
+   * appends them to this shape's transform stack. The lowerer applies them
+   * via the existing translate / rotateAxis ShapeTransform pipes — no new
+   * lowerer code path.
+   *
+   * For an identity rotation, only the translate is appended.
+   * For a pure rotation (zero translation), only the rotate is appended.
+   * For an identity transform (no rotation, no translation), nothing is
+   * appended.
+   */
+  transform(t: Transform): Shape {
+    const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
+    if (rotateDeg !== 0) {
+      this.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
+    }
+    if (translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0) {
+      this.translate(translate[0], translate[1], translate[2]);
+    }
     return this;
   }
 
