@@ -1,11 +1,32 @@
 import { KernelError } from '../intent/kernelError';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
-import { toVec3Param } from '../runtime/editableHelpers';
-import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
-import { Transform, type Vec3 as Se3Vec3 } from '../runtime/se3';
+import { currentValue, toVec3Param } from '../runtime/editableHelpers';
+import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
+import { Transform } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
+import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
+
+/**
+ * Public pose surface for `Assembly.solve(poses)` and (Tasks 3-5)
+ * `Assembly.solvedModel(poses)`. Per-joint values may be number literals
+ * or ParamRefs (or, for ball joints, a per-axis tuple mixing both).
+ *
+ * - revolute, prismatic: `Editable<number>` (degrees / mm)
+ * - ball: `[Editable<number>, Editable<number>, Editable<number>]`
+ *   (XYZ Euler degrees, extrinsic — same as the numeric path)
+ * - fixed: NO pose accepted (validated; throws if listed)
+ *
+ * For `solve` the ParamRefs are resolved at call time (snapshot
+ * semantics — same role as `.boundingBox()` / `.measureArea()`).
+ * `solvedModel` captures the symbolic refs so studio-driven param edits
+ * re-pose the rendered scene reactively (Tasks 3-5).
+ */
+export type EditableScalarPose = Editable<number>;
+export type EditableBallPose = [Editable<number>, Editable<number>, Editable<number>];
+export type PoseValue = EditableScalarPose | EditableBallPose;
+export type Poses = Record<string, PoseValue>;
 
 export interface AssemblyPartRef {
   id: FeatureId;
@@ -86,7 +107,8 @@ export interface BallJointOpts {
  * by childPartId to find the parent joint of a part, and by parentPartId
  * to find children.
  */
-interface AssemblyJointStored {
+export interface AssemblyJointStored {
+  readonly id: FeatureId;
   readonly name: string;
   readonly kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
   readonly parentPartId: FeatureId;
@@ -109,7 +131,7 @@ interface AssemblyJointStored {
  *
  * `at` (zero-pose translation) already lives on AssemblyPartRef.
  */
-interface AssemblyPartStored extends AssemblyPartRef {
+export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
 }
@@ -186,6 +208,7 @@ export class Assembly {
       ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'revolute',
       parentPartId: a.id,
@@ -228,6 +251,7 @@ export class Assembly {
       ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'prismatic',
       parentPartId: a.id,
@@ -251,6 +275,7 @@ export class Assembly {
     }
     const record = this.session.assemblyJoint(this.name, name, 'fixed', a, b, { origin });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'fixed',
       parentPartId: a.id,
@@ -287,6 +312,7 @@ export class Assembly {
       ...(opts.limitsDeg !== undefined ? { ballLimitsDeg: opts.limitsDeg } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'ball',
       parentPartId: a.id,
@@ -327,7 +353,7 @@ export class Assembly {
    * `originalShape` via `Shape.transform(t)`. Calling solve() twice on the
    * same Assembly compounds transforms; build a fresh assembly per query.
    */
-  solve(poses: Record<string, number | [number, number, number]>): SolvedKinematics {
+  solve(poses: Poses): SolvedKinematics {
     // 1. Validate joint names supplied in poses.
     for (const name of Object.keys(poses)) {
       if (!this.joints.find(j => j.name === name)) {
@@ -341,7 +367,12 @@ export class Assembly {
       }
     }
 
-    // 2. Validate pose value shapes per joint kind.
+    // 2. Validate pose value shapes per joint kind, then resolve any ParamRef
+    //    coords to concrete numbers using the session's current ParamTable
+    //    (snapshot semantics — see header on `Poses`). Validation runs against
+    //    the resolved numeric pose so non-finite ParamRef values surface the
+    //    same hint as bad numeric poses.
+    const numericPoses: NumericPoses = {};
     for (const j of this.joints) {
       const v = poses[j.name];
       if (v === undefined) continue;
@@ -354,7 +385,7 @@ export class Assembly {
         );
       }
       if (j.kind === 'ball') {
-        if (!Array.isArray(v) || v.length !== 3 || v.some(x => typeof x !== 'number' || !Number.isFinite(x))) {
+        if (!Array.isArray(v) || v.length !== 3) {
           throw new KernelError(
             'feature.invalid-args',
             `assembly.solve ball joint '${j.name}' pose must be [eulerXDeg, eulerYDeg, eulerZDeg]; got ${formatScalarForError(v)}.`,
@@ -362,9 +393,15 @@ export class Assembly {
             'invalid-args.solve.ball-pose — pass three finite numbers as the XYZ Euler triple.',
           );
         }
+        const triple: [number, number, number] = [
+          resolveScalarPose(v[0], j.name, j.kind, this.session),
+          resolveScalarPose(v[1], j.name, j.kind, this.session),
+          resolveScalarPose(v[2], j.name, j.kind, this.session),
+        ];
+        numericPoses[j.name] = triple;
       } else {
-        // revolute or prismatic — single number.
-        if (typeof v !== 'number' || !Number.isFinite(v)) {
+        // revolute or prismatic — single Editable<number>.
+        if (Array.isArray(v)) {
           throw new KernelError(
             'feature.invalid-args',
             `assembly.solve ${j.kind} joint '${j.name}' pose must be a finite number; got ${formatScalarForError(v)}.`,
@@ -372,6 +409,7 @@ export class Assembly {
             'invalid-args.solve.bad-pose — pass a finite number.',
           );
         }
+        numericPoses[j.name] = resolveScalarPose(v, j.name, j.kind, this.session);
       }
     }
 
@@ -385,128 +423,41 @@ export class Assembly {
       );
     }
 
-    // 4. Build the parent-joint index: each part has at most one parent joint.
-    const parentJointByPart = new Map<FeatureId, AssemblyJointStored>();
-    for (const j of this.joints) {
-      if (parentJointByPart.has(j.childPartId)) {
-        const prior = parentJointByPart.get(j.childPartId)!;
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: a part has two parent joints ('${prior.name}' and '${j.name}'); body-tree requires at most one.`,
-          undefined,
-          'invalid-args.solve.multi-parent — restructure with a single parent joint per part, or use fixed joints in a chain.',
-        );
-      }
-      parentJointByPart.set(j.childPartId, j);
-    }
+    // 4. Forward kinematics: pure body-tree FK (graph validation + SE(3) walk).
+    //    Lives in forwardKinematics.ts so the lowerer can reach it without
+    //    going through Assembly state.
+    const worldT = forwardKinematics(this.parts, this.joints, numericPoses);
 
-    // 5. Cycle detection via DFS through joint-parent links.
-    const visited = new Set<FeatureId>();
-    const stack = new Set<FeatureId>();
-    const dfs = (partId: FeatureId): void => {
-      if (visited.has(partId)) return;
-      if (stack.has(partId)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: cycle detected in joint graph at part '${partId}'.`,
-          undefined,
-          'invalid-args.solve.cycle — joint parents must form a tree (no cycles).',
-        );
-      }
-      stack.add(partId);
-      const parentJ = parentJointByPart.get(partId);
-      if (parentJ) dfs(parentJ.parentPartId);
-      stack.delete(partId);
-      visited.add(partId);
-    };
-    for (const part of this.parts) dfs(part.id);
-
-    // 6. Topological sort: roots first, then walk down to leaves via parent-joint links.
-    const topoOrder: AssemblyPartStored[] = [];
-    const seen = new Set<FeatureId>();
-    const visit = (part: AssemblyPartStored): void => {
-      if (seen.has(part.id)) return;
-      seen.add(part.id);
-      const parentJ = parentJointByPart.get(part.id);
-      if (parentJ) {
-        const parentPart = this.parts.find(p => p.id === parentJ.parentPartId);
-        if (parentPart) visit(parentPart);
-      }
-      topoOrder.push(part);
-    };
-    for (const part of this.parts) visit(part);
-
-    // 7. Forward kinematics: walk in topo order, computing world transform per part.
-    const worldT = new Map<FeatureId, Transform>();
-    for (const part of topoOrder) {
-      const parentJ = parentJointByPart.get(part.id);
-      if (!parentJ) {
-        // Root part — no parent joint, identity transform.
-        worldT.set(part.id, Transform.identity());
-        continue;
-      }
-      const parentT = worldT.get(parentJ.parentPartId);
-      if (!parentT) {
-        // Should be impossible if topo sort is correct.
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: internal error — parent part '${parentJ.parentPartId}' of joint '${parentJ.name}' has no computed transform.`,
-          undefined,
-          'invalid-args.solve.internal — please file a bug.',
-        );
-      }
-
-      let jointLocalT: Transform;
-      switch (parentJ.kind) {
-        case 'revolute': {
-          const deg = (poses[parentJ.name] as number | undefined) ?? 0;
-          const ax = parentJ.axis as Se3Vec3;
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.rotationAxisAngleDeg(ax, deg));
-          break;
-        }
-        case 'prismatic': {
-          const stroke = (poses[parentJ.name] as number | undefined) ?? 0;
-          const ax = parentJ.axis as Se3Vec3;
-          const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
-          const dx = (ax[0] / len) * stroke;
-          const dy = (ax[1] / len) * stroke;
-          const dz = (ax[2] / len) * stroke;
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.translation(dx, dy, dz));
-          break;
-        }
-        case 'fixed': {
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
-          break;
-        }
-        case 'ball': {
-          const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
-          break;
-        }
-      }
-      worldT.set(part.id, parentT.compose(jointLocalT));
-    }
-
-    // 8. Apply per-part transform to the original shape (mutates the Shape's
+    // 5. Apply per-part transform to the original shape (mutates the Shape's
     //    transform stack via existing translate + rotate ShapeTransform pipes).
     for (const part of this.parts) {
       const T = worldT.get(part.id)!;
       part.originalShape.transform(T);
     }
 
-    // 9. Build SolvedKinematics handle.
-    return new SolvedKinematics(this.parts, this.joints, worldT, poses);
+    // 6. Build SolvedKinematics handle. Hand it the already-resolved numeric
+    //    pose record so the snapshot can never accidentally re-resolve.
+    return new SolvedKinematics(this.parts, this.joints, worldT, numericPoses);
   }
 
   /**
-   * Sugar: same as `solve(poses).toShape()`. Returns the unioned posed Shape
-   * directly — for the simple "give me the renderable scene root" path.
+   * Records a `solvedAssembly` FeatureRecord that captures the parts,
+   * joints, and per-joint poses (with ParamRefs preserved). The lowerer
+   * resolves the poses against the live ParamTable at recompute time,
+   * walks `forwardKinematics`, and returns the unioned posed Shape — so
+   * studio-driven param edits re-pose the rendered scene reactively
+   * without re-running the script.
    */
-  solvedModel(poses: Record<string, number | [number, number, number]>): Shape {
-    return this.solve(poses).toShape();
+  solvedModel(poses: Poses): Shape {
+    if (this.parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.solvedModel requires at least one part.',
+        undefined,
+        'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
+      );
+    }
+    return this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
   }
 
   model(): Shape {
@@ -618,6 +569,44 @@ export class SolvedKinematics {
     }
     return model;
   }
+}
+
+/**
+ * Resolve an `Editable<number>` pose coord against the session's ParamTable
+ * to a concrete finite number. Used by `Assembly.solve` for snapshot
+ * resolution. Wraps `currentValue` (the existing capture-time resolver) so
+ * the diagnostic surface uses solve-specific hints.
+ *
+ * Errors:
+ *   - non-number / non-ParamRef     → invalid-args.solve.bad-pose
+ *   - non-finite numeric            → invalid-args.solve.bad-pose
+ *   - unknown ParamRef name         → propagated from ParamTable.get
+ *     (existing `invalid-args.param.unknown-name`).
+ */
+function resolveScalarPose(
+  value: Editable<number>,
+  jointName: string,
+  jointKind: AssemblyJointStored['kind'],
+  session: CaptureSession,
+): number {
+  if (!isParamRef(value) && typeof value !== 'number') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solve ${jointKind} joint '${jointName}' pose must be a finite number or ParamRef<number>; got ${formatScalarForError(value)}.`,
+      undefined,
+      'invalid-args.solve.bad-pose — pass a finite number or a ParamRef from kcad.param().',
+    );
+  }
+  const resolved = currentValue(value as Editable<number>, session.paramTable);
+  if (typeof resolved !== 'number' || !Number.isFinite(resolved)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.solve ${jointKind} joint '${jointName}' pose must be a finite number; got ${formatScalarForError(resolved)}.`,
+      undefined,
+      'invalid-args.solve.bad-pose — pass a finite number.',
+    );
+  }
+  return resolved;
 }
 
 function isValidJointLimits(value: [number, number]): boolean {

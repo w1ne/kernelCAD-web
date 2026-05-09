@@ -35,21 +35,23 @@ describe('robot arm example', () => {
 
     // Mechanical detail: the example builds recessed bays via .subtract(box),
     // a structural rib unioned to the shoulder, a top-running rib unioned to
-    // the elbow, and a posed-union scene root from solvedModel(). At least
-    // five hole records (4 mounting screws + base pivot + shoulder pivots +
-    // elbow + wrist pivots), at least six boolean records (rib unions, bay
-    // subtracts, tool union, solvedModel union), and at least three fillets
-    // (basePlate, elbow, wrist).
+    // the elbow, and a posed scene root from solvedModel(). At least five
+    // hole records (4 mounting screws + base pivot + shoulder pivots +
+    // elbow + wrist pivots), several boolean records (rib unions, bay
+    // subtracts, tool union — the FK union now lives in the lowerer's
+    // `solvedAssembly` case rather than as boolean records), and at least
+    // two fillets (basePlate, elbow, wrist).
     const holes = records.filter((r) => r.kind === 'hole' || r.kind === 'holes');
     const booleans = records.filter((r) => r.kind === 'boolean');
     const fillets = records.filter((r) => r.kind === 'fillet');
     expect(holes.length).toBeGreaterThanOrEqual(5);
-    expect(booleans.length).toBeGreaterThanOrEqual(6);
+    expect(booleans.length).toBeGreaterThanOrEqual(5);
     expect(fillets.length).toBeGreaterThanOrEqual(2);
 
-    // solvedModel() returns the unioned posed Shape via SolvedKinematics.toShape();
-    // the last record is the boolean-union scene root, not an assemblyModel feature.
-    expect(records.at(-1)?.kind).toBe('boolean');
+    // solvedModel() now emits a `solvedAssembly` feature record that the
+    // lowerer resolves via forwardKinematics + per-part transform + union.
+    // The last record is therefore `solvedAssembly`, not `boolean`.
+    expect(records.at(-1)?.kind).toBe('solvedAssembly');
   });
 
   it('does not reference the removed robotArmKit global', () => {

@@ -446,6 +446,27 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(this.shape.rotate(degrees, pivot, axis) as ReplicadShape3D);
   }
 
+  /**
+   * Apply an SE(3) Transform to this shape. Decomposes T = Translate · Rotate
+   * into one rotate + one translate (about world origin) and dispatches to
+   * the existing primitives. Used by the `solvedAssembly` lowerer to apply
+   * forward-kinematics transforms to per-part shapes; also a convenience for
+   * any caller holding a `Transform` value directly. The same decomposition
+   * lives at capture time in `Shape.transform(t)` — both layers stay in sync
+   * because both call `Transform.decomposeToTranslateAndRotate()`.
+   */
+  applyTransform(t: import('../../runtime/se3').Transform): OcctBackend {
+    const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
+    const [tx, ty, tz] = translate;
+    const hasRotate = rotateDeg !== 0;
+    const hasTranslate = tx !== 0 || ty !== 0 || tz !== 0;
+    if (!hasRotate && !hasTranslate) return this;
+    if (!hasRotate) return this.translate(tx, ty, tz);
+    const rotated = this.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
+    if (!hasTranslate) return rotated;
+    return rotated.translate(tx, ty, tz);
+  }
+
   scale(s: number | Vec3): OcctBackend {
     const sx = typeof s === 'number' ? s : s[0];
     const sy = typeof s === 'number' ? s : s[1];
