@@ -13,6 +13,7 @@ import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
+import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
 import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
 
 interface LowerResult {
@@ -71,5 +72,60 @@ describe('solvedAssembly lowering', () => {
     expect(bb.max[1]).toBeGreaterThan(25);
     // Upper no longer extends far along X — only the base remains there.
     expect(bb.max[0]).toBeLessThan(15);
+  });
+
+  it('reactivity: param.update repos the assembly bbox', async () => {
+    // Mirrors the canonical reactive pattern from
+    // tests/unit/kernel/buildModel.test.ts ("updates params through the
+    // headless boundary"): build once with a parametric pose, then re-run
+    // updateModelParams to drive the recompute pipeline. The captured
+    // FeatureRecord must carry the param dependency in metadata.paramRefs
+    // (collectParamRefs walks nested metadata.poses[name].value Param
+    // wrappers) so the engine flags the solvedAssembly record as "first
+    // affected" and re-lowers it with the updated Param.evaluated.
+    const model = await buildModel({
+      fileName: 'reactive.kcad.ts',
+      code: `
+        const yawDeg = param('yawDeg', 0, { min: -180, max: 180 });
+        const arm = assembly('test');
+        const base  = arm.part('base',  box(10, 10, 10));
+        // Long upper arm extending +X (so yaw=90° rotates it onto +Y).
+        const upper = arm.part('upper', box(60, 10, 10).translate(30, 0, 0));
+        arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
+        return arm.solvedModel({ yaw: yawDeg });
+      `,
+    });
+
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const initial = model.tailShape as OcctBackend | undefined;
+    expect(initial).toBeDefined();
+    const bbBefore = initial!.boundingBox();
+    // At yaw=0, upper extends along +X past x=30 (geometry up to ~60).
+    expect(bbBefore.max[0]).toBeGreaterThan(30);
+    // Y bbox stays small (only the 10mm base spans Y; upper's Y extent ≤ 5).
+    expect(bbBefore.max[1]).toBeLessThan(15);
+
+    // Verify the dependency index picked up the nested-poses ParamRef.
+    // Without metadata.paramRefs containing 'yawDeg', the recompute engine
+    // would skip re-lowering and the bbox would not move.
+    const solvedRecord = model.records.find(r => r.kind === 'solvedAssembly');
+    expect(solvedRecord).toBeDefined();
+    const paramRefs = (solvedRecord!.metadata as { paramRefs?: string[] } | undefined)?.paramRefs;
+    expect(paramRefs).toContain('yawDeg');
+
+    // Drive a param edit and verify the bbox shifts from +X-extent to +Y-extent.
+    const updated = await updateModelParams(model, [{ name: 'yawDeg', value: 90 }]);
+    expect(updated.result.warnings).toEqual([]);
+    const after = updated.result.shape as OcctBackend;
+    expect(after).toBeDefined();
+    const bbAfter = after.boundingBox();
+    // After yaw=90° about Z, upper now extends along +Y (geometry up to ~60).
+    expect(bbAfter.max[1]).toBeGreaterThan(30);
+    // X is no longer dominated by the upper — only base contributes (≤ 5).
+    expect(bbAfter.max[0]).toBeLessThan(15);
+
+    // The solvedAssembly record should be in the relowered set (its pose
+    // depends on 'yawDeg'); pre-existing parts/joints stay cached.
+    expect(updated.result.relowered).toContain(solvedRecord!.id);
   });
 });
