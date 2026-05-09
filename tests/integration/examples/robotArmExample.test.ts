@@ -22,8 +22,12 @@ describe('robot arm example', () => {
     // 5 named parts: base-plate, shoulder-column, elbow-arm, wrist-arm,
     // tool-placeholder.
     expect(parts.length).toBe(5);
-    // 3 revolute joints: base-yaw, shoulder-pitch, elbow-pitch.
-    expect(joints.length).toBe(3);
+    // Single revolute joint at the base. solve() in this slice handles only
+    // single-joint chains; the shoulder/elbow articulation is baked into
+    // each part's geometry at construction time (vertical shoulder column,
+    // forward-reaching elbow + wrist), and base-yaw spins the whole bent
+    // arm about Z.
+    expect(joints.length).toBe(1);
 
     // Mechanical-detail features the rewrite adds beyond bare `box + holes`:
     //   - hole/holes: pivot bores + screw mounts on every plate.

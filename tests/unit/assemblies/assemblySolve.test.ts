@@ -100,12 +100,13 @@ describe('Assembly.solve', () => {
     expect(rot.pivot!.z.evaluated).toBe(5);
   });
 
-  it('multi-joint chain composes inner-to-outer (child joint applied first, ancestor second)', () => {
-    // base — base-yaw → shoulder — shoulder-pitch → elbow.
-    // partJointChain(elbow) walks elbow's parent joint first (shoulder-pitch),
-    // then up through shoulder's parent joint (base-yaw). solve() applies
-    // them in that order, so transforms[1] is shoulder-pitch and
-    // transforms[2] is base-yaw — inner-first, outer-last.
+  it('multi-joint chain rejects with feature.invalid-args (single-joint constraint)', () => {
+    // solve() requires at most one joint above any part. Multi-joint forward-
+    // kinematics needs pivot composition (inner pivot transformed by outer
+    // rotations), which this slice does not implement. Authors must
+    // restructure with a single revolute at the root + fixed connect: for
+    // downstream links, OR pre-rotate parts via Shape.rotate() at
+    // construction time.
     const session = new CaptureSession();
     const kcad = createApi({ session });
 
@@ -116,43 +117,12 @@ describe('Assembly.solve', () => {
     const base = arm.part('base', baseShape, { at: [0, 0, 0] });
     const shoulder = arm.part('shoulder', shoulderShape, { at: [10, 0, 5] });
     const elbow = arm.part('elbow', elbowShape, { at: [50, 0, 5] });
-    arm.revolute('base-yaw', base, shoulder, {
-      axis: [0, 0, 1],
-      origin: [0, 0, 5],
-    });
-    arm.revolute('shoulder-pitch', shoulder, elbow, {
-      axis: [0, 1, 0],
-      origin: [10, 0, 5],
-    });
+    arm.revolute('base-yaw', base, shoulder, { axis: [0, 0, 1], origin: [0, 0, 5] });
+    arm.revolute('shoulder-pitch', shoulder, elbow, { axis: [0, 1, 0], origin: [10, 0, 5] });
 
-    arm.solve({ 'base-yaw': 90, 'shoulder-pitch': 45 });
-
-    // shoulder: at-translate, then base-yaw rotation.
-    const shoulderTransforms = transformsForId(session, shoulderShape.id);
-    expect(shoulderTransforms).toHaveLength(2);
-    expect(shoulderTransforms[0].op).toBe('translate');
-    const shoulderRot = shoulderTransforms[1] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    expect(shoulderRot.op).toBe('rotateAxis');
-    expect(shoulderRot.degrees.evaluated).toBe(90);
-    // base-yaw axis is [0, 0, 1].
-    expect(shoulderRot.axis.z.evaluated).toBe(1);
-
-    // elbow: at-translate, then TWO rotations (inner-first: shoulder-pitch,
-    // outer-last: base-yaw).
-    const elbowTransforms = transformsForId(session, elbowShape.id);
-    expect(elbowTransforms).toHaveLength(3);
-    expect(elbowTransforms[0].op).toBe('translate');
-    const innerRot = elbowTransforms[1] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    const outerRot = elbowTransforms[2] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    expect(innerRot.op).toBe('rotateAxis');
-    expect(outerRot.op).toBe('rotateAxis');
-    // Inner = shoulder-pitch (axis [0,1,0], 45°).
-    expect(innerRot.degrees.evaluated).toBe(45);
-    expect(innerRot.axis.y.evaluated).toBe(1);
-    expect(innerRot.axis.z.evaluated).toBe(0);
-    // Outer = base-yaw (axis [0,0,1], 90°).
-    expect(outerRot.degrees.evaluated).toBe(90);
-    expect(outerRot.axis.z.evaluated).toBe(1);
+    expect(() => arm.solve({ 'base-yaw': 90, 'shoulder-pitch': 45 })).toThrow(
+      /multi-joint|2 ancestor joints/i,
+    );
   });
 
   it('reactive: a ParamRef pose stores paramRef on the rotateAxis degrees Param', () => {
@@ -253,38 +223,28 @@ describe('Assembly.solve', () => {
     }
   });
 
-  it('omitted joints default to 0 — joint not named in poses captures degrees=0', () => {
+  it('omitted joints default to 0 — single-joint chain with omitted pose captures degrees=0', () => {
+    // Single-joint constraint applies. Use one revolute and verify that
+    // omitting it from poses yields a literal 0° rotation.
     const session = new CaptureSession();
     const kcad = createApi({ session });
 
-    const arm = kcad.assembly('partial-pose');
+    const arm = kcad.assembly('omitted-pose');
     const baseShape = kcad.box(20, 20, 5);
-    const shoulderShape = kcad.box(40, 8, 4);
-    const elbowShape = kcad.box(40, 8, 4);
+    const linkShape = kcad.box(40, 8, 4);
     const base = arm.part('base', baseShape);
-    const shoulder = arm.part('shoulder', shoulderShape, { at: [10, 0, 5] });
-    const elbow = arm.part('elbow', elbowShape, { at: [50, 0, 5] });
-    arm.revolute('base-yaw', base, shoulder, {
-      axis: [0, 0, 1],
-      origin: [0, 0, 5],
-    });
-    arm.revolute('shoulder-pitch', shoulder, elbow, {
-      axis: [0, 1, 0],
-      origin: [10, 0, 5],
-    });
+    const link = arm.part('link', linkShape, { at: [10, 0, 5] });
+    arm.revolute('tilt', base, link, { axis: [0, 0, 1], origin: [0, 0, 5] });
 
-    // base-yaw is intentionally omitted.
-    arm.solve({ 'shoulder-pitch': 30 });
+    // tilt is intentionally omitted.
+    arm.solve({});
 
-    const elbowTransforms = transformsForId(session, elbowShape.id);
-    expect(elbowTransforms).toHaveLength(3);
-    const innerRot = elbowTransforms[1] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    const outerRot = elbowTransforms[2] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
-    // shoulder-pitch supplied → 30°.
-    expect(innerRot.degrees.evaluated).toBe(30);
-    // base-yaw omitted → defaults to literal 0.
-    expect(outerRot.degrees.evaluated).toBe(0);
-    expect(outerRot.degrees.paramRef).toBeUndefined();
+    const linkTransforms = transformsForId(session, linkShape.id);
+    expect(linkTransforms).toHaveLength(2);
+    const rot = linkTransforms[1] as Extract<ShapeTransform, { op: 'rotateAxis' }>;
+    expect(rot.op).toBe('rotateAxis');
+    expect(rot.degrees.evaluated).toBe(0);
+    expect(rot.degrees.paramRef).toBeUndefined();
   });
 
   it('throws feature.invalid-args on solve() of an empty assembly', () => {

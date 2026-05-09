@@ -381,6 +381,15 @@ Calling `solve()` twice on the same `Assembly` instance will compound
 transforms. Build a fresh `assembly()` per `solve()` call (a new script run
 counts as fresh).
 
+**Single-joint constraint:** `solve()` accepts at most one joint above any
+part. Multi-joint forward-kinematics (where an inner joint's pivot is
+transformed by the outer joints' rotations) is not yet implemented;
+attempting it raises `feature.invalid-args` with hint
+`invalid-args.solve.multi-joint`. Author multi-link assemblies with a
+single `revolute()` at the root and fixed `connect:` for downstream links
+(the connect-chain inherits the root joint via `connectParentId`), or
+pre-rotate parts at construction time via `Shape.rotate(axis, deg, pivot)`.
+
 ### Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:

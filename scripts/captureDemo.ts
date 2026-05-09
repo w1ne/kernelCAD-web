@@ -264,11 +264,16 @@ async function main(): Promise<void> {
   console.log(`loaded ${serialized.length} feature groups, bounds=[${bounds.min.map(v => v.toFixed(1)).join(',')}]→[${bounds.max.map(v => v.toFixed(1)).join(',')}]`);
 
   // Drive terminal lines (statements as a rough proxy — split source by newline).
+  // Filter to features pacing kept (long scenes get truncated; some features
+  // won't have pacing entries).
   const sourceLines = loaded.source.split('\n').filter((l) => l.trim().length > 0);
-  const terminalLines = loaded.features.map((f, i) => {
-    const t = pacing.features.get(f.id)!;
-    return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
-  });
+  const terminalLines = loaded.features
+    .map((f, i) => {
+      const t = pacing.features.get(f.id);
+      if (!t) return null;
+      return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
+    })
+    .filter((line): line is { text: string; fullyTypedAtMs: number } => line !== null);
   await page.evaluate((lines) => window.__demoPlayer!.setTerminalLines(lines), terminalLines);
   await page.evaluate((origin) => window.__demoPlayer!.startTerminalClock(origin), pacing.preRollMs);
 
@@ -294,7 +299,7 @@ async function main(): Promise<void> {
 
   const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
   const sortedEvents = loaded.features
-    .filter((f) => meshById.has(f.id))
+    .filter((f) => meshById.has(f.id) && pacing.features.has(f.id))
     .map((f) => {
       const mesh = meshById.get(f.id);
       if (!mesh) {

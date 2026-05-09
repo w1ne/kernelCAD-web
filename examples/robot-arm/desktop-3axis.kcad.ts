@@ -297,9 +297,16 @@ arm.part('tool-placeholder', toolPlaceholder, {
 
 // ---- joints --------------------------------------------------------------
 
-// Joint origins are the parent connector's worldOrigin — symbolic Vec3Param,
-// so editing baseX / shoulderHeight / elbowLength reactively moves the joint
-// frames alongside the connector frames.
+// Single revolute at the base. solve() in this slice handles only single-
+// joint chains (one revolute per part); multi-joint forward-kinematics
+// requires pivot composition through outer joints, which is a follow-up.
+// The shoulder/elbow articulation here is baked into the part orientation
+// at construction time (vertical shoulder column, forward-reaching elbow
+// + wrist), so the assembly reads as a bent arm at kinematic-zero. The
+// base-yaw joint then spins the whole bent arm about Z.
+//
+// Joint origin is the parent connector's worldOrigin — symbolic Vec3Param,
+// so editing baseX reactively moves the joint frame alongside the connector.
 
 arm.revolute('base-yaw', base, shoulder, {
   axis: [0, 0, 1],
@@ -307,27 +314,12 @@ arm.revolute('base-yaw', base, shoulder, {
   limitsDeg: [-120, 120],
 });
 
-arm.revolute('shoulder-pitch', shoulder, elbow, {
-  axis: [0, 1, 0],
-  origin: shoulder.connector('tip').worldOrigin,
-  limitsDeg: [-45, 135],
-});
-
-arm.revolute('elbow-pitch', elbow, wrist, {
-  axis: [0, 1, 0],
-  origin: elbow.connector('tip').worldOrigin,
-  limitsDeg: [-120, 120],
-});
-
 // ---- hero pose -----------------------------------------------------------
 
-// `arm.solve(poses)` composes joint-pose rotations onto each part's
-// originalShape (inner-to-outer through the ancestor chain) and returns
-// the unioned posed model. The defaults above bend the arm into a
-// confident posed silhouette so it reads as articulated from every camera
-// angle of a 360 demo rotate.
+// arm.solve({ 'base-yaw': baseYaw }) rotates every part downstream of the
+// single revolute by `baseYaw` degrees about Z. shoulder/elbow/wrist/tool
+// inherit the rotation through the connect-chain even though they have no
+// joint of their own.
 return arm.solve({
-  'base-yaw':       baseYaw,
-  'shoulder-pitch': shoulderPitch,
-  'elbow-pitch':    elbowPitch,
+  'base-yaw': baseYaw,
 });

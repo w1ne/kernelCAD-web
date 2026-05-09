@@ -268,8 +268,23 @@ export class Assembly {
         paramToEditable(part.atParam.z),
       );
 
-      // Apply joint rotations from inner to outer.
-      for (const joint of this.partJointChain(part.id)) {
+      // Apply joint rotations. Currently restricted to single-joint chains:
+      // multi-joint forward-kinematics requires composing rotation pivots
+      // through outer joints (the inner joint's pivot must be transformed by
+      // the outer joints' rotations), which this slice does not implement.
+      // For now, solve() accepts at most one joint above any part. Author
+      // multi-link chains with a single revolute at the root and fixed
+      // connect: for downstream links.
+      const chain = this.partJointChain(part.id);
+      if (chain.length > 1) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: part '${part.name}' has ${chain.length} ancestor joints (${chain.map(j => j.name).join(', ')}). Multi-joint pose composition is not supported; solve() requires at most one joint above any part. Restructure the assembly with a single revolute at the root and fixed connect: for downstream links, or pre-rotate parts at construction time via Shape.rotate(...).`,
+          undefined,
+          'invalid-args.solve.multi-joint — solve() accepts kinematic chains with at most one revolute joint per part.',
+        );
+      }
+      for (const joint of chain) {
         const poseDeg = poses[joint.name] ?? 0;
         posed = posed.rotate(
           [
