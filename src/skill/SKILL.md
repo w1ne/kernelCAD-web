@@ -358,6 +358,63 @@ arm.revolute('yaw', base, shoulder, {
 
 `setParamValue('baseX', 100)` reactively rebuilds the plate AND the connector frame AND the joint origin AND the dependent shoulder placement — all in one re-lower. Axis vectors normalize at lower time; an axis whose components resolve to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
 
+### Posing a kinematic chain
+
+`assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you
+both render the posed assembly and query per-part world transforms.
+`assembly.solvedModel(poses)` is sugar that returns the unioned posed Shape
+directly. Pose values are numeric (per joint kind):
+
+| Joint primitive | Pose value type |
+|---|---|
+| `arm.fixed(name, parent, child, { origin? })` | (none — accepts no pose) |
+| `arm.revolute(name, parent, child, { axis, origin, limitsDeg? })` | `number` — degrees |
+| `arm.prismatic(name, parent, child, { axis, origin, limitsMm? })` | `number` — mm |
+| `arm.ball(name, parent, child, { origin, limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
+
+Joint origins are in the **parent part's local frame** (URDF/MuJoCo
+convention). Multi-joint chains compose correctly; the FK tree-walk
+handles N joints.
+
+```ts
+arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [45, 35, 8],  limitsDeg: [-120, 120] });
+arm.revolute('shoulder-pitch', shoulder, elbow,    { axis: [0, 1, 0], origin: [0, 0, 90],   limitsDeg: [-45, 135] });
+arm.revolute('elbow-pitch',    elbow,    wrist,    { axis: [0, 1, 0], origin: [110, 0, 0],  limitsDeg: [-120, 120] });
+arm.fixed   ('wrist-tool',     wrist,    tool,     { origin: [75, 0, 0] });
+
+return arm.solvedModel({
+  'base-yaw':       20,
+  'shoulder-pitch': 35,
+  'elbow-pitch':   -55,
+});
+```
+
+For queryable access:
+
+```ts
+const solved = arm.solve({ 'base-yaw': 30 });
+const wristT = solved.transform('wrist');         // SE(3) Transform of wrist in world
+shape.transform(wristT);                          // attach a new shape to the wrist's frame
+const angle = solved.value('base-yaw');           // 30
+for (const { name, transform } of solved.bodies()) { /* ... */ }
+```
+
+**Limitations (v1):**
+- **Numeric poses only.** `setParamValue('shoulderPitch', 60)` does NOT
+  re-pose at runtime; agent re-runs the script with new pose values.
+- **Numeric joint origins.** Joint origins are plain `Vec3`, not
+  `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts
+  but not joint frames; future slice will lift joint origins to
+  `EditableVec3` once `setParamValue` reactivity is wired through.
+- **One frame per part.** Joint origins are `Vec3` numeric, can't bind
+  to faces/edges/vertices yet.
+- **Body-tree only.** Each part has at most one parent joint; no
+  closed-chain (4-bar linkage) kinematics.
+- **No motion-limit enforcement.** `limitsDeg`/`limitsMm` accepted but
+  out-of-range poses don't warn or throw.
+- Calling `solve()` twice on the same Assembly compounds transforms;
+  build a fresh `assembly()` per pose query.
+
 ### Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:

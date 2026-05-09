@@ -64,6 +64,31 @@ npm run dev
 
 - Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
 - Assembly Vec3 surfaces (`assembly.part({ at, connectors })`, `assembly.revolute({ axis, origin })`) accept `Editable<number>` per coord. Underlying intent uses a unified `Vec3Param` shape shared with `translate`/`rotate`. `AssemblyConnectorRef.worldOrigin` is symbolic — a parametric `at` plus parametric connector `origin` produces a `worldOrigin` whose components are composed `ParamRef` expressions, and the public input types accept that `Vec3Param` directly so an agent can write `arm.revolute({ origin: parent.connector('tip').worldOrigin })`. A single `setParamValue` re-lowers the part dimensions, dependent connector frames, and any joint built on those frames in one pass. Axis vectors normalize at lower time; an axis that resolves to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
+- `assembly.solve(poses): SolvedKinematics` — body-tree forward kinematics
+  with N-joint chain support. Returns a queryable handle:
+  `solved.transform(partName)` (SE(3) world transform), `solved.value(jointName)`
+  (current pose), `solved.bodies()` (iteration), `solved.toShape()` (unioned
+  posed model).
+- `assembly.solvedModel(poses): Shape` — sugar for `solve(poses).toShape()`.
+- `assembly.prismatic(name, parent, child, opts)` — 1 translational DOF.
+- `assembly.fixed(name, parent, child, opts)` — 0-DOF rigid attachment.
+- `assembly.ball(name, parent, child, opts)` — 3 rotational DOF (XYZ Euler).
+- `Shape.transform(t)` — apply an SE(3) `Transform` to a shape (decomposes
+  to translate + rotate via existing ShapeTransform pipes).
+
+### Changed
+
+- Joint origin convention changed from `EditableVec3` (worldOrigin from
+  `parent.connector('tip').worldOrigin`) to numeric `Vec3` in the
+  **parent part's local frame** (URDF/MuJoCo convention). This unblocks
+  multi-joint forward kinematics — the canonical bug case (yaw 90°Z +
+  pitch 90°Y on vertical-shoulder + horizontal-elbow → previously gave
+  wrong elbow position) now resolves correctly via SE(3) composition.
+  Existing examples that used `EditableVec3` joint origins must migrate
+  to numeric Vec3 in parent local frame.
+- Robot arm worked example (`examples/robot-arm/desktop-3axis.kcad.ts`)
+  rewritten to use 3 revolutes + 1 fixed joint with body-tree FK, posed
+  via `solvedModel({ baseYaw: 20, shoulderPitch: 35, elbowPitch: -55 })`.
 
 ## [0.4.1] — 2026-05-08
 
