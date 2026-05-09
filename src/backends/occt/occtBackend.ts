@@ -457,14 +457,14 @@ export class OcctBackend implements ShapeBackend {
    */
   applyTransform(t: import('../../runtime/se3').Transform): OcctBackend {
     const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
-    let out: OcctBackend = this;
-    if (rotateDeg !== 0) {
-      out = out.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
-    }
-    if (translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0) {
-      out = out.translate(translate[0], translate[1], translate[2]);
-    }
-    return out;
+    const [tx, ty, tz] = translate;
+    const hasRotate = rotateDeg !== 0;
+    const hasTranslate = tx !== 0 || ty !== 0 || tz !== 0;
+    if (!hasRotate && !hasTranslate) return this;
+    if (!hasRotate) return this.translate(tx, ty, tz);
+    const rotated = this.rotate([rotateAxis[0], rotateAxis[1], rotateAxis[2]], rotateDeg);
+    if (!hasTranslate) return rotated;
+    return rotated.translate(tx, ty, tz);
   }
 
   scale(s: number | Vec3): OcctBackend {
