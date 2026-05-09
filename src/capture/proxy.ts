@@ -18,6 +18,7 @@ import {
 import { isParamRef, type Editable } from '../runtime/paramRef';
 import { toParam, toVec3Param } from '../runtime/editableHelpers';
 import { Transform } from '../runtime/se3';
+import type { ColorToken } from '../render/palette';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -136,6 +137,35 @@ export class Shape {
     if (translate[0] !== 0 || translate[1] !== 0 || translate[2] !== 0) {
       this.translate(translate[0], translate[1], translate[2]);
     }
+    return this;
+  }
+
+  /**
+   * Tag this shape with a role-based color token (resolved by the renderer
+   * via ROLE_PALETTE) or a literal `#rrggbb` hex color. Stored on the
+   * underlying FeatureRecord.metadata.color; lowerer/exports ignore it.
+   *
+   * Color identity dies at boolean operations — `a.color('servo').union(b)`
+   * produces a new Shape with no color. Color lives at the LEAF-PART level;
+   * for an assembly, color each part individually before the assembly's
+   * solvedModel() unions them for export.
+   */
+  color(name: ColorToken | `#${string}`): Shape {
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.color: feature record '${this.id}' not found in session.`,
+        this.id,
+        'invalid-args.color.unknown-record — call .color() on a Shape produced by the current session.',
+      );
+    }
+    // Mutate metadata in place. Same pattern as other capture-time mutations.
+    if (record.metadata === undefined) {
+      (record as { metadata: Record<string, unknown> }).metadata = {};
+    }
+    (record.metadata as Record<string, unknown>).color = name;
     return this;
   }
 
