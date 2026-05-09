@@ -19,9 +19,31 @@ describe('robot arm example', () => {
     const parts = records.filter((record) => record.kind === 'assemblyPart');
     const joints = records.filter((record) => record.kind === 'assemblyJoint');
 
-    expect(parts.length).toBeGreaterThanOrEqual(5);
-    expect(joints.length).toBeGreaterThanOrEqual(3);
-    expect(records.at(-1)).toMatchObject({ kind: 'assemblyModel' });
+    // 5 named parts: base-plate, shoulder-column, elbow-arm, wrist-arm,
+    // tool-placeholder.
+    expect(parts.length).toBe(5);
+    // 3 revolute joints: base-yaw, shoulder-pitch, elbow-pitch.
+    expect(joints.length).toBe(3);
+
+    // Mechanical-detail features the rewrite adds beyond bare `box + holes`:
+    //   - hole/holes: pivot bores + screw mounts on every plate.
+    //   - boolean: rib unions + bay-pocket subtracts (≥3 expected:
+    //     basePlate bay subtract, shoulderColumn bay subtract, shoulder rib
+    //     union, elbow rib union, plus the booleans solve() emits to compose
+    //     posed parts into a single returned shape).
+    //   - fillet: at least 2 plates carry an all-edges fillet.
+    const holes = records.filter((r) => r.kind === 'hole' || r.kind === 'holes');
+    const booleans = records.filter((r) => r.kind === 'boolean');
+    const fillets = records.filter((r) => r.kind === 'fillet');
+    expect(holes.length).toBeGreaterThanOrEqual(5);
+    expect(booleans.length).toBeGreaterThanOrEqual(4);
+    expect(fillets.length).toBeGreaterThanOrEqual(2);
+
+    // arm.solve() composes joint-pose rotations + a part union on top of
+    // each originalShape, so the tail record is a boolean (the unioned
+    // solved model), not assemblyModel. The five assemblyPart records still
+    // sit in the record stream; the last record is the solve composition.
+    expect(records.at(-1)?.kind).toBe('boolean');
   });
 
   it('does not reference the removed robotArmKit global', () => {
