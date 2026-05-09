@@ -377,7 +377,7 @@ arm.revolute('yaw', base, shoulder, {
 `assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you
 both render the posed assembly and query per-part world transforms.
 `assembly.solvedModel(poses)` is sugar that returns the unioned posed Shape
-directly. Pose values are numeric (per joint kind):
+directly. Pose values accept `Editable<number>` per joint kind:
 
 | Joint primitive | Pose value type |
 |---|---|
@@ -395,11 +395,19 @@ arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [4
 arm.revolute('shoulder-pitch', shoulder, elbow,    { axis: [0, 1, 0], origin: [0, 0, 90],   limitsDeg: [-45, 135] });
 arm.revolute('elbow-pitch',    elbow,    wrist,    { axis: [0, 1, 0], origin: [110, 0, 0],  limitsDeg: [-120, 120] });
 arm.fixed   ('wrist-tool',     wrist,    tool,     { origin: [75, 0, 0] });
+```
+
+**Snapshot vs reactive:** `arm.solve(poses)` resolves pose ParamRefs at call time and returns a frozen `SolvedKinematics` handle. `arm.solvedModel(poses)` is captured as a feature; param updates trigger reactive re-pose. Use `solve` to read transforms once; use `solvedModel` for editable studio renders.
+
+```ts
+const baseYaw       = param('baseYawDeg',       20,  { min: -180, max: 180 });
+const shoulderPitch = param('shoulderPitchDeg', 35,  { min:  -45, max: 135 });
+const elbowPitch    = param('elbowPitchDeg',   -55,  { min: -120, max: 120 });
 
 return arm.solvedModel({
-  'base-yaw':       20,
-  'shoulder-pitch': 35,
-  'elbow-pitch':   -55,
+  'base-yaw':       baseYaw,
+  'shoulder-pitch': shoulderPitch,
+  'elbow-pitch':    elbowPitch,
 });
 ```
 
@@ -414,8 +422,6 @@ for (const { name, transform } of solved.bodies()) { /* ... */ }
 ```
 
 **Limitations (v1):**
-- **Numeric poses only.** `setParamValue('shoulderPitch', 60)` does NOT
-  re-pose at runtime; agent re-runs the script with new pose values.
 - **Numeric joint origins.** Joint origins are plain `Vec3`, not
   `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts
   but not joint frames; future slice will lift joint origins to
