@@ -1247,17 +1247,13 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        // Resolve metadata Vec3Params even though the visible joint shape is
-        // currently a passthrough. Reading `origin` exercises the
-        // pre-resolved values; calling `normalizeAxis` validates that an
-        // axis ParamRef hasn't been edited to zero. Both throws surface as
-        // structured diagnostics via the dispatcher's exception path.
-        const jointMeta = r.metadata as { origin?: Vec3Param; axis?: Vec3Param } | undefined;
-        if (jointMeta?.origin !== undefined) {
-          readVec3Param(jointMeta.origin);
-        }
+        // Read joint metadata Vec3 values. Joint frames are now pure numeric
+        // tuples (v1 spec deferred joint reactivity). `normalizeAxis`
+        // validates that the axis is non-zero; the throw surfaces as a
+        // structured diagnostic via the dispatcher's exception path.
+        const jointMeta = r.metadata as { origin?: [number, number, number]; axis?: [number, number, number] } | undefined;
         if (jointMeta?.axis !== undefined) {
-          normalizeAxis(readVec3Param(jointMeta.axis));
+          normalizeAxis(jointMeta.axis);
         }
         shape = partA.clone();
         break;

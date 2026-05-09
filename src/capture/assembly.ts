@@ -1,6 +1,6 @@
 import { KernelError } from '../intent/kernelError';
-import type { EditableVec3, FeatureId, Param, Unit, Vec3Param } from '../intent/types';
-import { formatScalarForError, isValidEditableVec3 } from '../intent/types';
+import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
+import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import { toVec3Param } from '../runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
 import type { CaptureSession } from './captureSession';
@@ -18,7 +18,7 @@ export interface AssemblyPartRef {
 export interface AssemblyJointRef {
   id: FeatureId;
   name: string;
-  kind: 'revolute';
+  kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
 }
 
 export interface AssemblyPartOpts {
@@ -60,15 +60,64 @@ export interface AssemblyConnectRef {
 }
 
 export interface RevoluteJointOpts {
-  axis: EditableVec3;
-  origin: EditableVec3;
+  axis: Vec3;
+  origin: Vec3;
   limitsDeg?: [number, number];
+}
+
+export interface PrismaticJointOpts {
+  axis: Vec3;
+  origin: Vec3;
+  limitsMm?: [number, number];
+}
+
+export interface FixedJointOpts {
+  origin?: Vec3;
+}
+
+export interface BallJointOpts {
+  origin: Vec3;
+  limitsDeg?: [[number, number], [number, number], [number, number]];
+}
+
+/**
+ * Internal joint storage. Discriminated by `kind`. solve() walks these
+ * by childPartId to find the parent joint of a part, and by parentPartId
+ * to find children.
+ */
+interface AssemblyJointStored {
+  readonly name: string;
+  readonly kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
+  readonly parentPartId: FeatureId;
+  readonly childPartId: FeatureId;
+  readonly axis?: Vec3;                             // revolute, prismatic
+  readonly origin: Vec3;                            // all (default [0,0,0] for fixed)
+  readonly limitsDeg?: [number, number];            // revolute
+  readonly limitsMm?: [number, number];             // prismatic
+  readonly ballLimitsDeg?: [[number, number], [number, number], [number, number]]; // ball
+}
+
+/**
+ * Internal part storage. Extends the public AssemblyPartRef with refs
+ * solve() needs:
+ * - originalShape: the Shape captured by box() etc., for solve() to
+ *   transform via Shape.transform(t).
+ * - connectParentId: when a part was placed via `connect: { to }`, the
+ *   parent part's id. Used by solve() to walk through fixed connect
+ *   chains for joint inheritance.
+ *
+ * `at` (zero-pose translation) already lives on AssemblyPartRef.
+ */
+interface AssemblyPartStored extends AssemblyPartRef {
+  readonly originalShape: Shape;
+  readonly connectParentId?: FeatureId;
 }
 
 export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
-  private readonly parts: AssemblyPartRef[] = [];
+  private readonly parts: AssemblyPartStored[] = [];
+  private readonly joints: AssemblyJointStored[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -88,7 +137,12 @@ export class Assembly {
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
     const part = makePartRef(this.name, record.id, name, at, connectors);
-    this.parts.push(part);
+    const stored: AssemblyPartStored = {
+      ...part,
+      originalShape: shape,
+      ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
+    };
+    this.parts.push(stored);
     if (opts.connect) {
       this.session.assemblyConnect(
         this.name,
@@ -101,20 +155,20 @@ export class Assembly {
   }
 
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
-    if (!isValidEditableVec3(opts.axis)) {
+    if (!isValidVec3(opts.axis)) {
       throw new KernelError(
         'feature.invalid-args',
         `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
         undefined,
-        'Pass axis: [x, y, z]; coords may be number or ParamRef.',
+        'Pass axis: [x, y, z].',
       );
     }
-    if (!isValidEditableVec3(opts.origin)) {
+    if (!isValidVec3(opts.origin)) {
       throw new KernelError(
         'feature.invalid-args',
         `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
         undefined,
-        'Pass origin: [x, y, z]; coords may be number or ParamRef.',
+        'Pass origin: [x, y, z] in the parent part local frame.',
       );
     }
     if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
@@ -125,13 +179,121 @@ export class Assembly {
         'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
       );
     }
-    const stored = {
-      axis: toVec3Param(opts.axis, 'unitless'),
-      origin: toVec3Param(opts.origin, 'mm'),
+    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, {
+      axis: opts.axis,
+      origin: opts.origin,
       ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    };
-    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, stored);
+    });
+    this.joints.push({
+      name,
+      kind: 'revolute',
+      parentPartId: a.id,
+      childPartId: b.id,
+      axis: opts.axis,
+      origin: opts.origin,
+      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+    });
     return { id: record.id, name, kind: 'revolute' };
+  }
+
+  prismatic(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
+    if (!isValidVec3(opts.axis)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `prismatic joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
+        undefined,
+        'Pass axis: [x, y, z].',
+      );
+    }
+    if (!isValidVec3(opts.origin)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `prismatic joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
+        undefined,
+        'Pass origin: [x, y, z] in the parent part local frame.',
+      );
+    }
+    if (opts.limitsMm !== undefined && !isValidJointLimits(opts.limitsMm)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `prismatic joint limitsMm must be [minMm, maxMm] finite numbers with min < max; got ${formatScalarForError(opts.limitsMm)}.`,
+        undefined,
+        'Pass limitsMm: [minMm, maxMm], or omit it.',
+      );
+    }
+    const record = this.session.assemblyJoint(this.name, name, 'prismatic', a, b, {
+      axis: opts.axis,
+      origin: opts.origin,
+      ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+    });
+    this.joints.push({
+      name,
+      kind: 'prismatic',
+      parentPartId: a.id,
+      childPartId: b.id,
+      axis: opts.axis,
+      origin: opts.origin,
+      ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+    });
+    return { id: record.id, name, kind: 'prismatic' };
+  }
+
+  fixed(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: FixedJointOpts = {}): AssemblyJointRef {
+    const origin: Vec3 = opts.origin ?? [0, 0, 0];
+    if (!isValidVec3(origin)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `fixed joint origin must be a finite Vec3 or omitted; got ${formatScalarForError(origin)}.`,
+        undefined,
+        'Pass origin: [x, y, z] or omit it.',
+      );
+    }
+    const record = this.session.assemblyJoint(this.name, name, 'fixed', a, b, { origin });
+    this.joints.push({
+      name,
+      kind: 'fixed',
+      parentPartId: a.id,
+      childPartId: b.id,
+      origin,
+    });
+    return { id: record.id, name, kind: 'fixed' };
+  }
+
+  ball(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: BallJointOpts): AssemblyJointRef {
+    if (!isValidVec3(opts.origin)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `ball joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
+        undefined,
+        'Pass origin: [x, y, z] in the parent part local frame.',
+      );
+    }
+    if (opts.limitsDeg !== undefined) {
+      for (let i = 0; i < 3; i++) {
+        const pair = opts.limitsDeg[i];
+        if (!isValidJointLimits(pair)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `ball joint limitsDeg[${i}] must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(pair)}.`,
+            undefined,
+            'Pass limitsDeg: [[xMin,xMax], [yMin,yMax], [zMin,zMax]] in XYZ Euler order, or omit it.',
+          );
+        }
+      }
+    }
+    const record = this.session.assemblyJoint(this.name, name, 'ball', a, b, {
+      origin: opts.origin,
+      ...(opts.limitsDeg !== undefined ? { ballLimitsDeg: opts.limitsDeg } : {}),
+    });
+    this.joints.push({
+      name,
+      kind: 'ball',
+      parentPartId: a.id,
+      childPartId: b.id,
+      origin: opts.origin,
+      ...(opts.limitsDeg !== undefined ? { ballLimitsDeg: opts.limitsDeg } : {}),
+    });
+    return { id: record.id, name, kind: 'ball' };
   }
 
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef {

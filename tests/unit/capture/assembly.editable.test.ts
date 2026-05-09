@@ -180,7 +180,7 @@ describe('assembly capture — EditableVec3 surfaces', () => {
     expect(at.z.paramRef).toBeUndefined();
   });
 
-  it('axis stays Vec3Param when fixed [0, 0, 1] (literal-only)', () => {
+  it('axis stored as plain numeric Vec3 (v1 body-tree convention)', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
 
@@ -191,18 +191,10 @@ describe('assembly capture — EditableVec3 surfaces', () => {
 
     const records = session.getRecords();
     const jointRecord = records.at(-1)!;
-    const meta = jointRecord.metadata as { axis: unknown; origin: unknown };
-    const axis = asVec3Param(meta.axis);
-
-    // Each Param exists but has no paramRef.
-    expect(asParam(axis.x).paramRef).toBeUndefined();
-    expect(asParam(axis.y).paramRef).toBeUndefined();
-    expect(asParam(axis.z).paramRef).toBeUndefined();
-    expect(axis.x.evaluated).toBe(0);
-    expect(axis.y.evaluated).toBe(0);
-    expect(axis.z.evaluated).toBe(1);
-    // Units carried through.
-    expect(axis.x.unit).toBe('unitless');
-    expect(axis.z.unit).toBe('unitless');
+    const meta = jointRecord.metadata as { axis: [number, number, number]; origin: [number, number, number] };
+    // v1 body-tree FK: joint axis/origin are numeric Vec3, not Vec3Param.
+    // (Pose reactivity via setParamValue deferred; see body-tree-kinematics design.)
+    expect(meta.axis).toEqual([0, 0, 1]);
+    expect(meta.origin).toEqual([0, 0, 0]);
   });
 });

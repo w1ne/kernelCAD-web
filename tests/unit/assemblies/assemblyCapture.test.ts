@@ -68,9 +68,10 @@ describe('assembly capture contract', () => {
         limitsDeg: [-90, 90],
       },
     });
-    const shoulderMeta = shoulderRecord!.metadata as { axis: unknown; origin: unknown };
-    expect(evaluatedXYZ(shoulderMeta.axis)).toEqual([0, 0, 1]);
-    expect(evaluatedXYZ(shoulderMeta.origin)).toEqual([0, 0, 8]);
+    // v1 body-tree: joint axis/origin stored as plain numeric Vec3 (not Vec3Param).
+    const shoulderMeta = shoulderRecord!.metadata as { axis: [number, number, number]; origin: [number, number, number] };
+    expect(shoulderMeta.axis).toEqual([0, 0, 1]);
+    expect(shoulderMeta.origin).toEqual([0, 0, 8]);
   });
 
   it('captures assembly.model() as one aggregate feature over all placed parts', () => {
