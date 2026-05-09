@@ -388,6 +388,9 @@ export class CaptureSession {
       }
       inputs[`part_${i}`] = { kind: 'feature', id: part.id };
     }
+    // Build joint-name -> kind map from the joint records so capture-time
+    // pose validation can match each pose entry against its declared joint.
+    const jointKindByName = new Map<string, 'revolute' | 'prismatic' | 'fixed' | 'ball'>();
     for (let j = 0; j < joints.length; j++) {
       const joint = joints[j];
       const record = this.records.find(r => r.id === joint.id);
@@ -395,6 +398,42 @@ export class CaptureSession {
         throw new Error(`assembly.solvedModel: joint '${joint.id}' is not an assembly joint in this CaptureSession`);
       }
       inputs[`joint_${j}`] = { kind: 'feature', id: joint.id };
+      const m = record.metadata as { jointName?: string; jointKind?: 'revolute' | 'prismatic' | 'fixed' | 'ball' };
+      if (m.jointName !== undefined && m.jointKind !== undefined) {
+        jointKindByName.set(m.jointName, m.jointKind);
+      }
+    }
+
+    // Capture-time pose validation: catch unknown-joint and pose-shape
+    // mismatches before encoding. Missing-pose / non-finite are deferred to
+    // the lowerer per spec — capture allows partial / Editable poses, the
+    // recompute pipeline emits structured diagnostics for the rest.
+    for (const [name, val] of Object.entries(poses)) {
+      const kind = jointKindByName.get(name);
+      if (kind === undefined) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solvedModel: joint '${name}' not declared on assembly '${assemblyName}'.`,
+          undefined,
+          `invalid-args.solvedModel.unknown-joint — joint ${name} not declared.`,
+        );
+      }
+      if (kind === 'ball' && !Array.isArray(val)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solvedModel: ball joint '${name}' requires [x, y, z] pose; got ${typeof val}.`,
+          undefined,
+          `invalid-args.solvedModel.pose-shape — joint ${name} is a ball joint; pose must be [x, y, z].`,
+        );
+      }
+      if (kind !== 'ball' && Array.isArray(val)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solvedModel: scalar joint '${name}' (${kind}) requires a number pose; got [x, y, z].`,
+          undefined,
+          `invalid-args.solvedModel.pose-shape — joint ${name} is a ${kind} joint; pose must be a single number.`,
+        );
+      }
     }
 
     type EncodedPose =

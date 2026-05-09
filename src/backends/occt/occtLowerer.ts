@@ -1410,6 +1410,38 @@ export class OcctLowerer implements FeatureLowerer {
           });
         }
 
+        // Recompute-time pose validation. Capture allows ParamRef-bearing
+        // partial pose maps; the lowerer must emit structured diagnostics
+        // when (a) a non-fixed joint has no pose value or (b) a pose
+        // resolved to a non-finite number (NaN / +/-Infinity).
+        for (const j of joints) {
+          if (j.kind !== 'fixed' && numericPoses[j.name] === undefined) {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `solvedAssembly: joint '${j.name}' (${j.kind}) requires a pose value.`,
+              hint: `invalid-args.solvedModel.missing-pose — joint ${j.name} requires a pose value.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+        }
+        for (const [name, val] of Object.entries(numericPoses)) {
+          const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
+          if (!finite) {
+            diagnostics.push({
+              target: this.target,
+              code: 'feature.kernel-failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `solvedAssembly: pose '${name}' is not finite (${JSON.stringify(val)}).`,
+              hint: `kernel-failed.solvedModel.bad-pose — pose value for ${name} is not finite.`,
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+        }
+
         // 4. Run body-tree forward kinematics. Throws KernelError on graph
         //    issues (multi-parent, cycles); the dispatcher's exception path
         //    surfaces these as structured diagnostics.
