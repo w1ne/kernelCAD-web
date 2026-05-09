@@ -83,9 +83,7 @@ const halfElbowWidth   = elbowWidth.divide(2);
 const halfElbowT       = elbowThickness.divide(2);
 const halfWristLength  = wristLength.divide(2);
 const halfWristWidth   = wristWidth.divide(2);
-const halfWristT       = wristThickness.divide(2);
 const halfToolLength   = toolLength.divide(2);
-const halfToolWidth    = toolWidth.divide(2);
 
 // ---- parts ---------------------------------------------------------------
 

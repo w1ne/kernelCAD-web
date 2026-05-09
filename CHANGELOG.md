@@ -64,6 +64,22 @@ npm run dev
 
 - Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
 - Assembly Vec3 surfaces (`assembly.part({ at, connectors })`, `assembly.revolute({ axis, origin })`) accept `Editable<number>` per coord. Underlying intent uses a unified `Vec3Param` shape shared with `translate`/`rotate`. `AssemblyConnectorRef.worldOrigin` is symbolic — a parametric `at` plus parametric connector `origin` produces a `worldOrigin` whose components are composed `ParamRef` expressions, and the public input types accept that `Vec3Param` directly so an agent can write `arm.revolute({ origin: parent.connector('tip').worldOrigin })`. A single `setParamValue` re-lowers the part dimensions, dependent connector frames, and any joint built on those frames in one pass. Axis vectors normalize at lower time; an axis that resolves to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
+- `assembly.solve(poses)`: returns a posed assembly model with each part
+  rotated about its ancestor joints in inner-to-outer order. Poses are
+  `Editable<number>`, so `setParamValue('shoulderPitch', 60)` reactively
+  re-bends the kinematic chain. Joint pose composition reuses the existing
+  `Shape.rotate(axis, deg, pivot)` primitive — no new lowerer code path.
+  Joints not listed default to `0` (kinematic-zero, equivalent to
+  `assembly.model()`). Unknown joint names raise `feature.invalid-args`
+  synchronously; non-finite pose values raise the same. Caveat: calling
+  `solve()` twice on the same assembly instance compounds transforms;
+  build a fresh `assembly()` per pose query.
+- `examples/robot-arm/desktop-3axis.kcad.ts`: full rewrite using
+  `arm.solve()` for the hero pose. Adds mechanical detail — fillets on
+  three of five link plates, recessed servo bays on the base + shoulder
+  (via `.subtract(box)` pockets), structural ribs on the shoulder column
+  back and the elbow forearm top, parallel-pad gripper silhouette on the
+  tool placeholder.
 
 ## [0.4.1] — 2026-05-08
 

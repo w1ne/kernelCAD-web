@@ -354,6 +354,33 @@ arm.revolute('yaw', base, shoulder, {
 
 `setParamValue('baseX', 100)` reactively rebuilds the plate AND the connector frame AND the joint origin AND the dependent shoulder placement — all in one re-lower. Axis vectors normalize at lower time; an axis whose components resolve to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
 
+### Posing a kinematic chain
+
+`assembly.solve(poses)` returns a posed model — each part rotated about its
+ancestor joints by the supplied angles, in inner-to-outer order. Joints not
+listed default to `0` (kinematic-zero). Poses are `Editable<number>`, so
+`setParamValue('shoulderPitch', 60)` reactively re-bends the chain.
+
+```typescript
+arm.revolute('shoulder-pitch', shoulder, elbow, { axis: [0, 1, 0], origin: ..., limitsDeg: [-45, 135] });
+arm.revolute('elbow-pitch',    elbow,    wrist, { axis: [0, 1, 0], origin: ..., limitsDeg: [-120, 120] });
+
+return arm.solve({
+  'shoulder-pitch': param('shoulderPitch', 35),
+  'elbow-pitch':    param('elbowPitch',   -55),
+});
+```
+
+Unknown joint names raise `feature.invalid-args` synchronously at capture
+time. Non-finite pose values raise the same. `solve()` composes rotations
+via the existing `Shape.rotate(axis, deg, pivot)` primitive, so reactivity
+flows through the standard transform stack.
+
+**Caveat:** `solve()` mutates each part's `originalShape` transforms array.
+Calling `solve()` twice on the same `Assembly` instance will compound
+transforms. Build a fresh `assembly()` per `solve()` call (a new script run
+counts as fresh).
+
 ### Naming features (slice 2)
 
 When two `.hole()` (or `.cutout()`) calls land on the same target, the bare `'wall'` selector resolves to *all* their walls collectively. To address them individually, give each one a `name:` and use `<name>.<ref>`:
