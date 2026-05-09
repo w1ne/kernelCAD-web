@@ -3,6 +3,7 @@ import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../i
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import { toVec3Param } from '../runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
+import { Transform, type Vec3 as Se3Vec3 } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 
@@ -303,6 +304,211 @@ export class Assembly {
     return { id: record.id, name, kind: 'fixed' };
   }
 
+  /**
+   * Build a SolvedKinematics for the supplied joint poses. Walks the
+   * body-tree (parts as nodes, joints as edges) computing per-part world
+   * transforms via SE(3) composition. Each part has at most one parent
+   * joint; multi-joint chains compose correctly because outer-joint
+   * rotations are baked into the parent's worldT before the inner joint
+   * applies.
+   *
+   * Pose value type per joint kind:
+   *   - revolute, prismatic: number (degrees / mm)
+   *   - ball: [number, number, number] (XYZ Euler degrees, extrinsic)
+   *   - fixed: NO pose accepted (throws if listed in poses)
+   *
+   * Joints not listed in poses default to 0 / [0,0,0]. Unknown joint names
+   * raise feature.invalid-args. Validation runs before any FK math:
+   *   - Pose values are finite + correct shape per joint kind.
+   *   - Each part has at most one parent joint (no diamond / closed-chain).
+   *   - Joint graph is acyclic (DFS detect).
+   *
+   * Side effect: applies the per-part SE(3) transform to each part's
+   * `originalShape` via `Shape.transform(t)`. Calling solve() twice on the
+   * same Assembly compounds transforms; build a fresh assembly per query.
+   */
+  solve(poses: Record<string, number | [number, number, number]>): SolvedKinematics {
+    // 1. Validate joint names supplied in poses.
+    for (const name of Object.keys(poses)) {
+      if (!this.joints.find(j => j.name === name)) {
+        const known = this.joints.map(j => j.name);
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: unknown joint '${name}'. Defined joints: ${known.length === 0 ? '(none)' : known.join(', ')}.`,
+          undefined,
+          'invalid-args.solve.unknown-joint — pass only joint names declared via assembly.revolute/prismatic/fixed/ball.',
+        );
+      }
+    }
+
+    // 2. Validate pose value shapes per joint kind.
+    for (const j of this.joints) {
+      const v = poses[j.name];
+      if (v === undefined) continue;
+      if (j.kind === 'fixed') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: joint '${j.name}' is fixed and accepts no pose; remove it from poses.`,
+          undefined,
+          'invalid-args.solve.fixed-pose — fixed joints have no DOF.',
+        );
+      }
+      if (j.kind === 'ball') {
+        if (!Array.isArray(v) || v.length !== 3 || v.some(x => typeof x !== 'number' || !Number.isFinite(x))) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solve ball joint '${j.name}' pose must be [eulerXDeg, eulerYDeg, eulerZDeg]; got ${formatScalarForError(v)}.`,
+            undefined,
+            'invalid-args.solve.ball-pose — pass three finite numbers as the XYZ Euler triple.',
+          );
+        }
+      } else {
+        // revolute or prismatic — single number.
+        if (typeof v !== 'number' || !Number.isFinite(v)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solve ${j.kind} joint '${j.name}' pose must be a finite number; got ${formatScalarForError(v)}.`,
+            undefined,
+            'invalid-args.solve.bad-pose — pass a finite number.',
+          );
+        }
+      }
+    }
+
+    // 3. Empty assembly is an authoring error.
+    if (this.parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.solve requires at least one part.',
+        undefined,
+        'Call assembly.part(name, shape, opts?) before assembly.solve(poses).',
+      );
+    }
+
+    // 4. Build the parent-joint index: each part has at most one parent joint.
+    const parentJointByPart = new Map<FeatureId, AssemblyJointStored>();
+    for (const j of this.joints) {
+      if (parentJointByPart.has(j.childPartId)) {
+        const prior = parentJointByPart.get(j.childPartId)!;
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: a part has two parent joints ('${prior.name}' and '${j.name}'); body-tree requires at most one.`,
+          undefined,
+          'invalid-args.solve.multi-parent — restructure with a single parent joint per part, or use fixed joints in a chain.',
+        );
+      }
+      parentJointByPart.set(j.childPartId, j);
+    }
+
+    // 5. Cycle detection via DFS through joint-parent links.
+    const visited = new Set<FeatureId>();
+    const stack = new Set<FeatureId>();
+    const dfs = (partId: FeatureId): void => {
+      if (visited.has(partId)) return;
+      if (stack.has(partId)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: cycle detected in joint graph at part '${partId}'.`,
+          undefined,
+          'invalid-args.solve.cycle — joint parents must form a tree (no cycles).',
+        );
+      }
+      stack.add(partId);
+      const parentJ = parentJointByPart.get(partId);
+      if (parentJ) dfs(parentJ.parentPartId);
+      stack.delete(partId);
+      visited.add(partId);
+    };
+    for (const part of this.parts) dfs(part.id);
+
+    // 6. Topological sort: roots first, then walk down to leaves via parent-joint links.
+    const topoOrder: AssemblyPartStored[] = [];
+    const seen = new Set<FeatureId>();
+    const visit = (part: AssemblyPartStored): void => {
+      if (seen.has(part.id)) return;
+      seen.add(part.id);
+      const parentJ = parentJointByPart.get(part.id);
+      if (parentJ) {
+        const parentPart = this.parts.find(p => p.id === parentJ.parentPartId);
+        if (parentPart) visit(parentPart);
+      }
+      topoOrder.push(part);
+    };
+    for (const part of this.parts) visit(part);
+
+    // 7. Forward kinematics: walk in topo order, computing world transform per part.
+    const worldT = new Map<FeatureId, Transform>();
+    for (const part of topoOrder) {
+      const parentJ = parentJointByPart.get(part.id);
+      if (!parentJ) {
+        // Root part — no parent joint, identity transform.
+        worldT.set(part.id, Transform.identity());
+        continue;
+      }
+      const parentT = worldT.get(parentJ.parentPartId);
+      if (!parentT) {
+        // Should be impossible if topo sort is correct.
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.solve: internal error — parent part '${parentJ.parentPartId}' of joint '${parentJ.name}' has no computed transform.`,
+          undefined,
+          'invalid-args.solve.internal — please file a bug.',
+        );
+      }
+
+      let jointLocalT: Transform;
+      switch (parentJ.kind) {
+        case 'revolute': {
+          const deg = (poses[parentJ.name] as number | undefined) ?? 0;
+          const ax = parentJ.axis as Se3Vec3;
+          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+            .compose(Transform.rotationAxisAngleDeg(ax, deg));
+          break;
+        }
+        case 'prismatic': {
+          const stroke = (poses[parentJ.name] as number | undefined) ?? 0;
+          const ax = parentJ.axis as Se3Vec3;
+          const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
+          const dx = (ax[0] / len) * stroke;
+          const dy = (ax[1] / len) * stroke;
+          const dz = (ax[2] / len) * stroke;
+          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+            .compose(Transform.translation(dx, dy, dz));
+          break;
+        }
+        case 'fixed': {
+          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
+          break;
+        }
+        case 'ball': {
+          const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
+          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
+            .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
+          break;
+        }
+      }
+      worldT.set(part.id, parentT.compose(jointLocalT));
+    }
+
+    // 8. Apply per-part transform to the original shape (mutates the Shape's
+    //    transform stack via existing translate + rotate ShapeTransform pipes).
+    for (const part of this.parts) {
+      const T = worldT.get(part.id)!;
+      part.originalShape.transform(T);
+    }
+
+    // 9. Build SolvedKinematics handle.
+    return new SolvedKinematics(this.parts, this.joints, worldT, poses, this.session);
+  }
+
+  /**
+   * Sugar: same as `solve(poses).toShape()`. Returns the unioned posed Shape
+   * directly — for the simple "give me the renderable scene root" path.
+   */
+  solvedModel(poses: Record<string, number | [number, number, number]>): Shape {
+    return this.solve(poses).toShape();
+  }
+
   model(): Shape {
     if (this.parts.length === 0) {
       throw new KernelError(
@@ -318,6 +524,103 @@ export class Assembly {
 
 export function makeAssembly(name: string | undefined, session: CaptureSession): Assembly {
   return new Assembly(name?.trim() || 'assembly', session);
+}
+
+/**
+ * Read-only handle returned by Assembly.solve(poses). Exposes per-part
+ * world transforms, per-joint pose values, body iteration, and a
+ * to-Shape sugar for rendering.
+ */
+export class SolvedKinematics {
+  private readonly partsByName: Map<string, AssemblyPartStored>;
+  private readonly worldT: Map<FeatureId, Transform>;
+  private readonly poses: Record<string, number | [number, number, number]>;
+  private readonly session: CaptureSession;
+  private readonly joints: readonly AssemblyJointStored[];
+
+  constructor(
+    parts: readonly AssemblyPartStored[],
+    joints: readonly AssemblyJointStored[],
+    worldT: Map<FeatureId, Transform>,
+    poses: Record<string, number | [number, number, number]>,
+    session: CaptureSession,
+  ) {
+    this.partsByName = new Map(parts.map(p => [p.name, p]));
+    this.worldT = worldT;
+    this.poses = poses;
+    this.session = session;
+    this.joints = joints;
+    Object.freeze(this);
+  }
+
+  /**
+   * World-space SE(3) transform of the named part. Read-only handle;
+   * use with Shape.transform(t) to attach geometry to this part's frame.
+   */
+  transform(partName: string): Transform {
+    const part = this.partsByName.get(partName);
+    if (!part) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `SolvedKinematics.transform: unknown part '${partName}'.`,
+        undefined,
+        'invalid-args.solved.unknown-part — pass a part name registered via assembly.part(...).',
+      );
+    }
+    return this.worldT.get(part.id)!;
+  }
+
+  /**
+   * Pose value supplied for the named joint (defaults: 0 for revolute /
+   * prismatic, [0,0,0] for ball, 0 for fixed since fixed has no pose).
+   */
+  value(jointName: string): number | [number, number, number] {
+    const joint = this.joints.find(j => j.name === jointName);
+    if (!joint) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `SolvedKinematics.value: unknown joint '${jointName}'.`,
+        undefined,
+        'invalid-args.solved.unknown-joint — pass a joint name registered via revolute/prismatic/fixed/ball.',
+      );
+    }
+    if (joint.kind === 'ball') {
+      return (this.poses[jointName] as [number, number, number] | undefined) ?? [0, 0, 0];
+    }
+    if (joint.kind === 'fixed') return 0;
+    return (this.poses[jointName] as number | undefined) ?? 0;
+  }
+
+  /**
+   * Iterate (partName, worldTransform) for every part in the assembly.
+   * Useful for batch attach or analysis loops.
+   */
+  *bodies(): IterableIterator<{ name: string; transform: Transform }> {
+    for (const [name, part] of this.partsByName) {
+      yield { name, transform: this.worldT.get(part.id)! };
+    }
+  }
+
+  /**
+   * Render: union all posed parts into a single Shape. Same effect as
+   * Assembly.solvedModel(poses).
+   */
+  toShape(): Shape {
+    const parts = Array.from(this.partsByName.values());
+    if (parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'SolvedKinematics.toShape: assembly has no parts.',
+        undefined,
+        'Call assembly.part(...) before assembly.solve(...).',
+      );
+    }
+    let model: Shape = parts[0].originalShape;
+    for (let i = 1; i < parts.length; i++) {
+      model = model.union(parts[i].originalShape);
+    }
+    return model;
+  }
 }
 
 function isValidJointLimits(value: [number, number]): boolean {
