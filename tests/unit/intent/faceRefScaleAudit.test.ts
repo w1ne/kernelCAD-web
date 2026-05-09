@@ -120,19 +120,27 @@ import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
 
 describe('face-ref invariants under non-uniform scale (audit)', () => {
-  // These tests document expected behavior post-Task-6. Today, .scale()
-  // rejects non-uniform inputs at capture time, so the only test that can
-  // run against the current code is the negative control: capture-time
-  // rejection still works as documented in the spec (uniform-only today).
+  // Task 6 (2026-05-09): Shape.scale now accepts Vec3. Capture-time
+  // rejection of non-uniform was lifted; the encoding lands on the
+  // FeatureRecord transform stack as `{ op: 'scale', sx, sy, sz }`. The
+  // OCCT lowerer emits a `feature.kernel-failed` diagnostic for truly
+  // non-uniform Vec3s today (BRepBuilderAPI_GTransform missing from the
+  // active replicad-opencascadejs build), so the lineage-layer assertions
+  // below are still pending pending the WASM upgrade.
 
-  it('capture-time: non-uniform scale is rejected today (control)', () => {
+  it('capture-time: non-uniform Vec3 scale is accepted and recorded per-axis', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const cube = kcad.box(10, 10, 10);
-    expect(() => cube.scale(2, 1, 1)).toThrow(/Non-uniform scale/);
+    expect(() => cube.scale([2, 1, 1])).not.toThrow();
+    const records = session.getRecords();
+    expect(records).toHaveLength(1);
+    expect(records[0].transforms).toEqual([
+      { op: 'scale', sx: 2, sy: 1, sz: 1 },
+    ]);
   });
 
-  // Wire these in Task 6 (when .scale(Vec3) is enabled):
+  // Wire these once BRepBuilderAPI_GTransform lands in the OCCT WASM build:
   //
   // Canonical: lineage-layer string match — should pass trivially.
   it.todo('canonical top stays canonical top after scale([2,1,1])');

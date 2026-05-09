@@ -124,15 +124,19 @@ describe('Shape transform validators (capture-time)', () => {
     expect(result.records[0].transforms).toHaveLength(1);
   });
 
-  it('scale rejects non-uniform factors instead of silently applying uniform scale', async () => {
-    let caught: unknown;
-    try {
-      await runScript({ code: `return box(10, 10, 10).scale(2, 3, 4);`, fileName: 'test.kcad.ts' });
-    } catch (e) { caught = e; }
-    expect(String(caught)).toMatch(/non-uniform scale is not supported/i);
+  it('scale captures non-uniform per-axis factors on the transform record', async () => {
+    // Render-primitives slice (2026-05-09): Shape.scale now accepts Vec3 for
+    // non-uniform scale. Capture writes per-axis components; lowering still
+    // requires a uniform diagonal until BRepBuilderAPI_GTransform ships in
+    // the active OCCT WASM build. See `tests/unit/capture/shapeScaleVec3.test.ts`.
+    const result = await runScript({ code: `return box(10, 10, 10).scale(2, 3, 4);`, fileName: 'test.kcad.ts' });
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0].transforms).toEqual([
+      { op: 'scale', sx: 2, sy: 3, sz: 4 },
+    ]);
   });
 
-  it('scale accepts explicit per-axis args only when they are uniform', async () => {
+  it('scale accepts explicit per-axis args (uniform triple)', async () => {
     const result = await runScript({ code: `return box(5, 5, 5).scale(2, 2, 2);`, fileName: 'test.kcad.ts' });
     expect(result.records).toHaveLength(1);
     expect(result.records[0].transforms).toEqual([

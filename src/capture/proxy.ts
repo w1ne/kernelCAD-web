@@ -210,31 +210,59 @@ export class Shape {
     return this.rotate([rx, ry, rz], angleDeg);
   }
 
-  scale(sx: number, sy?: number, sz?: number): Shape {
-    const scaleSpec = (sy !== undefined || sz !== undefined)
-      ? [sx, sy ?? sx, sz ?? sx] as [number, number, number]
-      : sx;
+  /**
+   * Scale this shape uniformly (single positive number) or per-axis
+   * (Vec3 — sx/sy/sz). All factors must be positive and finite.
+   *
+   * Two call shapes are accepted:
+   *   - `.scale(2)`           — uniform
+   *   - `.scale([2, 1, 1])`   — per-axis Vec3 form
+   *   - `.scale(2, 2, 2)`     — legacy multi-arg form (must be uniform; see below)
+   *
+   * The Vec3 form is the canonical agent-facing way to request non-uniform
+   * scale. Capture stores per-axis components in the FeatureRecord's
+   * transform stack (`{ op: 'scale', sx, sy, sz }`), so face refs survive
+   * because OCCT preserves topology under any affine transform (audited at
+   * `tests/unit/intent/faceRefScaleAudit.test.ts`).
+   *
+   * BACKEND LIMITATION (2026-05-09): the lowerer can only honor uniform
+   * scale today because `replicad-opencascadejs` does not export
+   * `BRepBuilderAPI_GTransform`. A non-uniform Vec3 still captures cleanly,
+   * but lowering will emit a `feature.kernel-failed` diagnostic. Track via
+   * the TODO in `src/backends/occt/occtLowerer.ts` near the scale dispatch.
+   */
+  scale(factor: number | [number, number, number]): Shape;
+  scale(sx: number, sy: number, sz: number): Shape;
+  scale(
+    factorOrSx: number | [number, number, number],
+    sy?: number,
+    sz?: number,
+  ): Shape {
+    // Normalize the three call shapes into a single ScaleSpec.
+    const scaleSpec: number | [number, number, number] = Array.isArray(factorOrSx)
+      ? factorOrSx
+      : (sy !== undefined || sz !== undefined)
+        ? [factorOrSx, sy ?? factorOrSx, sz ?? factorOrSx] as [number, number, number]
+        : factorOrSx;
+
     if (!isValidScaleSpec(scaleSpec)) {
       throw new KernelError(
         'feature.invalid-args',
         `Scale factor must be a positive finite number, or a Vec3 of three positive finite numbers; got ${formatScalarForError(scaleSpec)}.`,
         this.id,
-        'Pass a positive finite number (uniform) or three positive finite numbers (per-axis) to .scale().',
+        'invalid-args.scale.zero — provide positive finite scale factors.',
       );
     }
-    if (Array.isArray(scaleSpec) && (scaleSpec[0] !== scaleSpec[1] || scaleSpec[0] !== scaleSpec[2])) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `Non-uniform scale is not supported by the OCCT backend; got ${formatScalarForError(scaleSpec)}.`,
-        this.id,
-        'Pass one positive finite factor, or pass equal sx/sy/sz values. Use explicit dimensions on primitives when you need non-uniform sizing.',
-      );
-    }
+
+    const [sx, syOut, szOut]: [number, number, number] = Array.isArray(scaleSpec)
+      ? [scaleSpec[0], scaleSpec[1], scaleSpec[2]]
+      : [scaleSpec, scaleSpec, scaleSpec];
+
     this.session.appendTransform(this.id, {
       op: 'scale',
       sx,
-      sy: sy ?? sx,
-      sz: sz ?? sx,
+      sy: syOut,
+      sz: szOut,
     });
     return this;
   }
