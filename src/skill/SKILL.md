@@ -117,6 +117,10 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
 .patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
 
+// Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
+// Decomposes to translate + rotate via the existing transform pipes; no rebake.
+.transform(t: Transform): Shape
+
 // Eager lowering (for inspection; rarely called by agents directly):
 .lower(): Promise<OcctBackend>
 ```

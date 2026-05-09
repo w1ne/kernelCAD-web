@@ -97,8 +97,9 @@ describe('listAssembliesTool', () => {
       partIds: { a: assembly.parts[0].id, b: assembly.parts[1].id },
       limitsDeg: [-90, 90],
     });
-    expect(evaluatedXYZ(assembly.joints[0].axis)).toEqual([0, 0, 1]);
-    expect(evaluatedXYZ(assembly.joints[0].origin)).toEqual([15, 15, 8]);
+    // v1 body-tree: joint axis/origin are plain numeric Vec3 (not Vec3Param).
+    expect(assembly.joints[0].axis).toEqual([0, 0, 1]);
+    expect(assembly.joints[0].origin).toEqual([15, 15, 8]);
     expect(assembly.models).toEqual([
       expect.objectContaining({
         partIds: [assembly.parts[0].id, assembly.parts[1].id],
