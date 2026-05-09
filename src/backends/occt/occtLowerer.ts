@@ -6,8 +6,10 @@ import type {
   ShapeBackend,
 } from '../backend';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../intent/types';
+import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../intent/types';
 import { isValidPlaneSpec } from '../../intent/types';
+import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
+import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import { KernelError } from '../../intent/kernelError';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
@@ -284,6 +286,7 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyJoint',
     'assemblyConnect',
     'assemblyModel',
+    'solvedAssembly',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -1294,6 +1297,156 @@ export class OcctLowerer implements FeatureLowerer {
         for (const [, part] of partEntries.slice(1)) {
           shape = shape.union((part as OcctBackend).clone());
         }
+        break;
+      }
+      case 'solvedAssembly': {
+        // 1. Read poses from metadata. Param.evaluated is updated by the
+        //    recompute pipeline (resolveParams walks metadata) before lower
+        //    is called — so we just read it; never resolve ParamRefs here.
+        type EncodedPose =
+          | { kind: 'scalar'; value: Param }
+          | { kind: 'ball'; value: [Param, Param, Param] };
+        const meta = r.metadata as {
+          assemblyName?: string;
+          partIds?: FeatureId[];
+          jointIds?: FeatureId[];
+          poses?: Record<string, EncodedPose>;
+        } | undefined;
+        const partIds = meta?.partIds ?? [];
+        const jointIds = meta?.jointIds ?? [];
+        const encodedPoses = meta?.poses ?? {};
+
+        const partEntries = Object.entries(inputs.byKey)
+          .filter(([key]) => key.startsWith('part_'))
+          .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+        if (partEntries.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `solvedAssembly has no part inputs.`,
+            hint: 'Call assembly.part(...) at least once before assembly.solvedModel(poses).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // 2. Resolve poses to numeric values via Param.evaluated.
+        const numericPoses: NumericPoses = {};
+        for (const [name, p] of Object.entries(encodedPoses)) {
+          if (p.kind === 'ball') {
+            numericPoses[name] = [
+              p.value[0].evaluated,
+              p.value[1].evaluated,
+              p.value[2].evaluated,
+            ];
+          } else {
+            numericPoses[name] = p.value.evaluated;
+          }
+        }
+
+        // 3. Reconstruct AssemblyPartStored / AssemblyJointStored stubs from
+        //    FeatureRecords. forwardKinematics only reads .id on parts and
+        //    {id, name, kind, parentPartId, childPartId, axis, origin} on
+        //    joints — so we build the minimal viable shape.
+        const records = allRecords ?? [];
+        const parts: AssemblyPartStored[] = [];
+        for (const partId of partIds) {
+          const partRec = records.find(rec => rec.id === partId);
+          if (!partRec || partRec.kind !== 'assemblyPart') {
+            diagnostics.push({
+              target: this.target,
+              code: 'recompute.input.missing',
+              featureId: r.id,
+              severity: 'error',
+              message: `solvedAssembly: missing or wrong-kind part record '${partId}'.`,
+              hint: 'Each partId in metadata.partIds must reference an assemblyPart record.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          parts.push({ id: partRec.id } as AssemblyPartStored);
+        }
+        const joints: AssemblyJointStored[] = [];
+        for (const jointId of jointIds) {
+          const jointRec = records.find(rec => rec.id === jointId);
+          if (!jointRec || jointRec.kind !== 'assemblyJoint') {
+            diagnostics.push({
+              target: this.target,
+              code: 'recompute.input.missing',
+              featureId: r.id,
+              severity: 'error',
+              message: `solvedAssembly: missing or wrong-kind joint record '${jointId}'.`,
+              hint: 'Each jointId in metadata.jointIds must reference an assemblyJoint record.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const jm = jointRec.metadata as {
+            jointName: string;
+            jointKind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
+            axis?: Vec3;
+            origin: Vec3;
+          };
+          const aRef = jointRec.inputs.a as { id: FeatureId } | undefined;
+          const bRef = jointRec.inputs.b as { id: FeatureId } | undefined;
+          if (!aRef || !bRef) {
+            diagnostics.push({
+              target: this.target,
+              code: 'recompute.input.missing',
+              featureId: r.id,
+              severity: 'error',
+              message: `solvedAssembly: joint '${jointId}' is missing parent or child part input.`,
+              hint: 'Joint records must have a/b inputs referencing parent and child parts.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          joints.push({
+            id: jointRec.id,
+            name: jm.jointName,
+            kind: jm.jointKind,
+            parentPartId: aRef.id,
+            childPartId: bRef.id,
+            ...(jm.axis !== undefined ? { axis: jm.axis } : {}),
+            origin: jm.origin,
+          });
+        }
+
+        // 4. Run body-tree forward kinematics. Throws KernelError on graph
+        //    issues (multi-parent, cycles); the dispatcher's exception path
+        //    surfaces these as structured diagnostics.
+        const worldT = forwardKinematics(parts, joints, numericPoses);
+
+        // 5. Apply per-part FK transform to the pre-lowered part shape (which
+        //    already has the part's `at` translation applied by the
+        //    `assemblyPart` lowerer). Then union all transformed parts.
+        if (partEntries.length !== partIds.length) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `solvedAssembly: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
+            hint: 'Ensure inputs and partIds stay in sync.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const transformedParts: OcctBackend[] = partEntries.map(([, partShape], i) => {
+          const partId = partIds[i];
+          const T = worldT.get(partId);
+          if (!T) {
+            throw new KernelError(
+              'feature.invalid-args',
+              `solvedAssembly: forwardKinematics produced no transform for part '${partId}'.`,
+              r.id,
+              'invalid-args.solve.internal — please file a bug.',
+            );
+          }
+          return (partShape as OcctBackend).clone().applyTransform(T);
+        });
+        let result = transformedParts[0];
+        for (let i = 1; i < transformedParts.length; i++) {
+          result = result.union(transformedParts[i]);
+        }
+        shape = result;
         break;
       }
       default:
