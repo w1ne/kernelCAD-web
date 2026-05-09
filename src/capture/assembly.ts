@@ -498,7 +498,7 @@ export class Assembly {
     }
 
     // 9. Build SolvedKinematics handle.
-    return new SolvedKinematics(this.parts, this.joints, worldT, poses, this.session);
+    return new SolvedKinematics(this.parts, this.joints, worldT, poses);
   }
 
   /**
@@ -535,7 +535,6 @@ export class SolvedKinematics {
   private readonly partsByName: Map<string, AssemblyPartStored>;
   private readonly worldT: Map<FeatureId, Transform>;
   private readonly poses: Record<string, number | [number, number, number]>;
-  private readonly session: CaptureSession;
   private readonly joints: readonly AssemblyJointStored[];
 
   constructor(
@@ -543,12 +542,10 @@ export class SolvedKinematics {
     joints: readonly AssemblyJointStored[],
     worldT: Map<FeatureId, Transform>,
     poses: Record<string, number | [number, number, number]>,
-    session: CaptureSession,
   ) {
     this.partsByName = new Map(parts.map(p => [p.name, p]));
     this.worldT = worldT;
     this.poses = poses;
-    this.session = session;
     this.joints = joints;
     Object.freeze(this);
   }
