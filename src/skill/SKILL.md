@@ -87,7 +87,21 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
   degrees: Editable<number>,
   pivot?: [Editable<number>, Editable<number>, Editable<number>],
 ): Shape
-.scale(s: number): Shape  // uniform only; non-uniform sx/sy/sz is rejected
+// Uniform (single positive finite number) or per-axis Vec3 (non-uniform sx/sy/sz).
+// Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive
+// (topology preserved under any affine transform). All factors must be positive
+// and finite; otherwise feature.invalid-args.
+.scale(factor: number | [number, number, number]): Shape
+
+// Orient this shape so its current +Z axis aligns with `axis`. Sugar over .rotate() —
+// preferred for cross-axis cylinders/axles. Identity [0, 0, 1] is a no-op; antipodal
+// [0, 0, -1] is a deterministic 180° around X. Zero vector throws feature.invalid-args.
+.alongAxis(axis: [number, number, number]): Shape
+
+// Tag this shape with a render-time role color (geometry unchanged). Booleans drop
+// the color so identity lives at leaf parts. Tokens: 'servo' | 'gear' | 'beam' |
+// 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
+.color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
 .union(...others: Shape[]): Shape
