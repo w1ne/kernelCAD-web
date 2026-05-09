@@ -88,6 +88,23 @@ describe('meshFeaturesPerFeature', () => {
     expect(features.some(f => f.featureId === 'feat-a')).toBe(true);
   });
 
+  it('propagates record.metadata.color onto FeatureMesh.color', async () => {
+    const code = `
+      const housing = box(20, 20, 10).color('servo');
+      const plain = box(5, 5, 5).translate(30, 0, 0);
+      return [housing, plain];
+    `;
+    const { records } = await runScript({ code, fileName: 'color.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(records);
+    const housingMesh = features.find((f) => (records.find((r) => r.id === f.featureId)?.metadata as { color?: string } | undefined)?.color === 'servo');
+    expect(housingMesh).toBeDefined();
+    expect(housingMesh!.color).toBe('servo');
+    // The plain box has no color metadata → mesh color is undefined.
+    const plainMesh = features.find((f) => f.featureId !== housingMesh!.featureId && f.featureKind === 'box');
+    expect(plainMesh).toBeDefined();
+    expect(plainMesh!.color).toBeUndefined();
+  });
+
   it('does not fail valid renderless sketch profiles used by cutouts', async () => {
     const code = `
       const profile = path()

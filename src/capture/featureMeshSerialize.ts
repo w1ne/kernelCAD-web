@@ -22,6 +22,9 @@ export interface FeatureMeshSerialized {
   faces: FaceGeometrySerialized[];
   volume?: number;
   edges?: number[];
+  /** Color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
+   *  ROLE_PALETTE; absent means use the renderer's default material color. */
+  color?: string;
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -40,6 +43,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     })),
     volume: m.volume,
     edges: m.edges ? Array.from(m.edges) : undefined,
+    ...(m.color !== undefined ? { color: m.color } : {}),
   };
 }
 
@@ -59,5 +63,6 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     })),
     volume: s.volume,
     edges: s.edges ? new Float32Array(s.edges) : undefined,
+    ...(s.color !== undefined ? { color: s.color } : {}),
   };
 }

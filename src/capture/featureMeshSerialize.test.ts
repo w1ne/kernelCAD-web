@@ -83,6 +83,58 @@ describe('featureMeshSerialize', () => {
     expect(restored.predecessors).toEqual(['a', 'b']);
   });
 
+  it('round-trips color attribute (token form)', () => {
+    const original: FeatureMesh = {
+      featureId: 'srv_1',
+      featureKind: 'box',
+      predecessors: [],
+      faces: [{
+        vertices: new Float32Array([0, 0, 0]),
+        indices: new Uint32Array([0]),
+        normals: new Float32Array([0, 0, 1]),
+        faceId: 0,
+      }],
+      color: 'servo',
+    };
+    const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serializeForBridge(original))));
+    expect(restored.color).toBe('servo');
+  });
+
+  it('round-trips color attribute (hex form)', () => {
+    const original: FeatureMesh = {
+      featureId: 'custom_1',
+      featureKind: 'box',
+      predecessors: [],
+      faces: [{
+        vertices: new Float32Array([0, 0, 0]),
+        indices: new Uint32Array([0]),
+        normals: new Float32Array([0, 0, 1]),
+        faceId: 0,
+      }],
+      color: '#ff8800',
+    };
+    const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serializeForBridge(original))));
+    expect(restored.color).toBe('#ff8800');
+  });
+
+  it('omits color when absent (round-trips as undefined)', () => {
+    const original: FeatureMesh = {
+      featureId: 'no_color_1',
+      featureKind: 'box',
+      predecessors: [],
+      faces: [{
+        vertices: new Float32Array([0, 0, 0]),
+        indices: new Uint32Array([0]),
+        normals: new Float32Array([0, 0, 1]),
+        faceId: 0,
+      }],
+    };
+    const serialized = serializeForBridge(original);
+    expect(serialized.color).toBeUndefined();
+    const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serialized)));
+    expect(restored.color).toBeUndefined();
+  });
+
   it('round-trips plane and cylinder metadata on faces', () => {
     const original: FeatureMesh = {
       featureId: 'box_2',

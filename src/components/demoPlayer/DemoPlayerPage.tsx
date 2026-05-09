@@ -10,6 +10,7 @@ import type { TerminalLine } from './TerminalPane';
 import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
+import { resolveColor } from '../../render/palette';
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
@@ -49,7 +50,13 @@ const VIEWER_H = 1080;
 const TERMINAL_W = 640;
 const TERMINAL_H = 1080;
 
-function buildMeshFromFace(face: FaceGeometry, name: string): THREE.Mesh {
+/** Default mesh color when a feature has no .color() metadata. Held as a
+ *  number for THREE; mirrors the long-standing "neutral CAD silver" tone the
+ *  demo player has always rendered. resolveColor() returns hex strings, which
+ *  THREE.Material.color.set() also accepts. */
+const DEFAULT_MESH_COLOR = 0xc8d2e0;
+
+function buildMeshFromFace(face: FaceGeometry, name: string, color: number | string): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
@@ -57,7 +64,7 @@ function buildMeshFromFace(face: FaceGeometry, name: string): THREE.Mesh {
   geom.computeBoundingSphere();
   // MeshPhongMaterial — light-reactive shading for visible CAD geometry (existing scene has ambient + directional lights).
   const mat = new THREE.MeshPhongMaterial({
-    color: 0xc8d2e0,
+    color,
     specular: 0x222233,
     shininess: 30,
     transparent: true,
@@ -171,8 +178,12 @@ export function DemoPlayerPage(): React.JSX.Element {
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
           group.visible = true;
+          // Resolve role-token / hex color via the shared palette.
+          // Unknown / missing → DEFAULT_MESH_COLOR (preserves prior behavior).
+          const resolved = resolveColor(fm.color);
+          const colorForMesh: number | string = resolved ?? DEFAULT_MESH_COLOR;
           for (const face of fm.faces) {
-            const mesh = buildMeshFromFace(face, `${fm.featureId}-face-${face.faceId}`);
+            const mesh = buildMeshFromFace(face, `${fm.featureId}-face-${face.faceId}`, colorForMesh);
             group.add(mesh);
           }
           scene.add(group);

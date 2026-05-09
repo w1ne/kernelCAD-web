@@ -26,6 +26,10 @@ export interface FeatureMesh {
   faces: FaceGeometry[];
   volume?: number;
   edges?: Float32Array;
+  /** Color attribute carried from FeatureRecord.metadata.color (a ColorToken
+   *  or `#rrggbb` hex). Renderer resolves via `resolveColor()`; absent means
+   *  use the renderer's default. */
+  color?: string;
 }
 
 export interface Bounds {
@@ -50,6 +54,14 @@ export async function meshFeaturesPerFeature(
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
+  // Lookup table for record metadata.color so we can attach it onto each
+  // FeatureMesh when feature.compiled fires. Renderer resolves via ROLE_PALETTE.
+  const colorByFeatureId = new Map<FeatureId, string>();
+  for (const r of records) {
+    const color = (r.metadata as { color?: unknown } | undefined)?.color;
+    if (typeof color === 'string') colorByFeatureId.set(r.id, color);
+  }
+
   await engine.run(records, {
     paramTable,
     onEvent: (event) => {
@@ -71,6 +83,7 @@ export async function meshFeaturesPerFeature(
         return;
       }
 
+      const color = colorByFeatureId.get(event.featureId);
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,
@@ -79,6 +92,7 @@ export async function meshFeaturesPerFeature(
         faces: meshed.faces,
         volume: meshed.volume,
         edges: meshed.edges,
+        ...(color !== undefined ? { color } : {}),
       });
 
       // Aggregate bounds from this feature's vertices
