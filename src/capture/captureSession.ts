@@ -1,6 +1,6 @@
 import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
+import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import type {
@@ -351,6 +351,80 @@ export class CaptureSession {
       metadata: {
         assemblyName,
         partIds: parts.map(part => part.id),
+      },
+    });
+  }
+
+  /**
+   * Capture-time recording of `Assembly.solvedModel(poses)`. Mirrors
+   * `assemblyModel` but adds joint inputs and pose metadata. Pose values
+   * are wrapped via `toParam` so ParamRefs encode as `{ paramRef, evaluated:0 }`
+   * — the lowerer (Task 4) resolves them at recompute time using the live
+   * ParamTable, giving studio-driven param edits a reactive re-pose.
+   *
+   * Pose value shapes match `Poses` (assembly.ts):
+   *   - revolute, prismatic: `Editable<number>` -> `{ kind: 'scalar', value: Param }`
+   *   - ball: 3-tuple `Editable<number>` -> `{ kind: 'ball', value: [Param,Param,Param] }`
+   *
+   * Unit on the Param wrapper is cosmetic at v1: the lowerer reads
+   * `evaluated` regardless. Currently always `'deg'`; revisit when prismatic
+   * authoring surfaces a cleaner joint-kind branch.
+   */
+  solvedAssembly(
+    assemblyName: string,
+    parts: readonly AssemblyPartRef[],
+    joints: readonly { id: FeatureId; name: string }[],
+    poses: Record<string, Editable<number> | [Editable<number>, Editable<number>, Editable<number>]>,
+  ): Shape {
+    if (parts.length === 0) {
+      throw new Error('assembly.solvedModel requires at least one part');
+    }
+    const inputs: Record<string, FeatureRef> = {};
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const record = this.records.find(r => r.id === part.id);
+      if (!record || record.kind !== 'assemblyPart') {
+        throw new Error(`assembly.solvedModel: part '${part.id}' is not an assembly part in this CaptureSession`);
+      }
+      inputs[`part_${i}`] = { kind: 'feature', id: part.id };
+    }
+    for (let j = 0; j < joints.length; j++) {
+      const joint = joints[j];
+      const record = this.records.find(r => r.id === joint.id);
+      if (!record || record.kind !== 'assemblyJoint') {
+        throw new Error(`assembly.solvedModel: joint '${joint.id}' is not an assembly joint in this CaptureSession`);
+      }
+      inputs[`joint_${j}`] = { kind: 'feature', id: joint.id };
+    }
+
+    type EncodedPose =
+      | { kind: 'scalar'; value: Param }
+      | { kind: 'ball'; value: [Param, Param, Param] };
+    const encodedPoses: Record<string, EncodedPose> = {};
+    for (const [name, val] of Object.entries(poses)) {
+      if (Array.isArray(val)) {
+        encodedPoses[name] = {
+          kind: 'ball',
+          value: [
+            toParam(val[0], 'deg'),
+            toParam(val[1], 'deg'),
+            toParam(val[2], 'deg'),
+          ],
+        };
+      } else {
+        encodedPoses[name] = { kind: 'scalar', value: toParam(val, 'deg') };
+      }
+    }
+
+    return this.createShape({
+      kind: 'solvedAssembly',
+      params: {},
+      inputs,
+      metadata: {
+        assemblyName,
+        partIds: parts.map(part => part.id),
+        jointIds: joints.map(j => j.id),
+        poses: encodedPoses,
       },
     });
   }

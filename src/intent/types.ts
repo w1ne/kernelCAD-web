@@ -129,7 +129,7 @@ export type FeatureKind =
   // sketch (v0.2+)
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)
-  | 'assemblyPart' | 'assemblyJoint' | 'assemblyConnect' | 'assemblyModel'
+  | 'assemblyPart' | 'assemblyJoint' | 'assemblyConnect' | 'assemblyModel' | 'solvedAssembly'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sdf';
 

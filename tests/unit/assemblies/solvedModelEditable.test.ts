@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
+import type { Param } from '../../../src/intent/types';
 
 describe('Assembly.solve with Editable poses (snapshot semantics)', () => {
   it('resolves ParamRef at call time and returns numeric value(jointName)', () => {
@@ -115,5 +116,89 @@ describe('Assembly.solve with Editable poses (snapshot semantics)', () => {
     session.paramTable.set('yawDeg', 90);
     session.paramTable.set('yawDeg', -45);
     expect(sk.value('yaw')).toBe(30);
+  });
+});
+
+describe('solvedAssembly capture', () => {
+  it('records FeatureKind=solvedAssembly with poses encoded as Param wrappers', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const yawDeg = kcad.param('yawDeg', 30);
+    const arm = kcad.assembly('test');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const upper = arm.part('upper', kcad.box(10, 10, 10));
+    arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
+
+    arm.solvedModel({ yaw: yawDeg });
+
+    const records = session.getRecords();
+    const solved = records.find(r => r.kind === 'solvedAssembly');
+    expect(solved).toBeDefined();
+
+    const meta = solved!.metadata as {
+      assemblyName: string;
+      partIds: string[];
+      jointIds: string[];
+      poses: Record<string, { kind: 'scalar' | 'ball'; value: Param | [Param, Param, Param] }>;
+      paramRefs?: string[];
+    };
+    expect(meta.assemblyName).toBe('test');
+    expect(meta.partIds.length).toBe(2);
+    expect(meta.jointIds.length).toBe(1);
+
+    const yawPose = meta.poses.yaw;
+    expect(yawPose.kind).toBe('scalar');
+    expect((yawPose.value as Param).paramRef).toBe('yawDeg');
+    // Capture-time snapshot: ParamRef poses store evaluated=0 (resolved at
+    // lower time). Mirrors the convention used for `translate.vec.x`,
+    // assembly connector origins, etc. — see assembly.editable.test.ts.
+    expect((yawPose.value as Param).evaluated).toBe(0);
+
+    expect(meta.paramRefs).toContain('yawDeg');
+  });
+
+  it('numeric poses produce Param wrappers without paramRef field', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const upper = arm.part('upper', kcad.box(10, 10, 10));
+    arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
+
+    arm.solvedModel({ yaw: 45 });
+
+    const solved = session.getRecords().find(r => r.kind === 'solvedAssembly');
+    const meta = solved!.metadata as {
+      poses: Record<string, { kind: 'scalar' | 'ball'; value: Param }>;
+      paramRefs?: string[];
+    };
+    expect(meta.poses.yaw.value.paramRef).toBeUndefined();
+    expect(meta.poses.yaw.value.evaluated).toBe(45);
+    expect(meta.paramRefs?.length ?? 0).toBe(0);
+  });
+
+  it('ball joint poses encode as kind=ball with a 3-tuple of Param wrappers', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const ax = kcad.param('xDeg', 0);
+    const arm = kcad.assembly('test');
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const tip = arm.part('tip', kcad.box(10, 10, 10));
+    arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
+
+    arm.solvedModel({ wrist: [ax, 30, 60] });
+
+    const solved = session.getRecords().find(r => r.kind === 'solvedAssembly');
+    const meta = solved!.metadata as {
+      poses: Record<string, { kind: 'ball'; value: [Param, Param, Param] }>;
+      paramRefs?: string[];
+    };
+    expect(meta.poses.wrist.kind).toBe('ball');
+    expect(meta.poses.wrist.value[0].paramRef).toBe('xDeg');
+    // ParamRef coords store evaluated=0 at capture time (see scalar test above).
+    expect(meta.poses.wrist.value[0].evaluated).toBe(0);
+    expect(meta.poses.wrist.value[1].paramRef).toBeUndefined();
+    expect(meta.poses.wrist.value[1].evaluated).toBe(30);
+    expect(meta.paramRefs).toContain('xDeg');
   });
 });

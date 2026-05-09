@@ -108,6 +108,7 @@ export interface BallJointOpts {
  * to find children.
  */
 export interface AssemblyJointStored {
+  readonly id: FeatureId;
   readonly name: string;
   readonly kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
   readonly parentPartId: FeatureId;
@@ -207,6 +208,7 @@ export class Assembly {
       ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'revolute',
       parentPartId: a.id,
@@ -249,6 +251,7 @@ export class Assembly {
       ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'prismatic',
       parentPartId: a.id,
@@ -272,6 +275,7 @@ export class Assembly {
     }
     const record = this.session.assemblyJoint(this.name, name, 'fixed', a, b, { origin });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'fixed',
       parentPartId: a.id,
@@ -308,6 +312,7 @@ export class Assembly {
       ...(opts.limitsDeg !== undefined ? { ballLimitsDeg: opts.limitsDeg } : {}),
     });
     this.joints.push({
+      id: record.id,
       name,
       kind: 'ball',
       parentPartId: a.id,
@@ -436,11 +441,23 @@ export class Assembly {
   }
 
   /**
-   * Sugar: same as `solve(poses).toShape()`. Returns the unioned posed Shape
-   * directly — for the simple "give me the renderable scene root" path.
+   * Records a `solvedAssembly` FeatureRecord that captures the parts,
+   * joints, and per-joint poses (with ParamRefs preserved). The lowerer
+   * resolves the poses against the live ParamTable at recompute time,
+   * walks `forwardKinematics`, and returns the unioned posed Shape — so
+   * studio-driven param edits re-pose the rendered scene reactively
+   * without re-running the script.
    */
   solvedModel(poses: Poses): Shape {
-    return this.solve(poses).toShape();
+    if (this.parts.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.solvedModel requires at least one part.',
+        undefined,
+        'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
+      );
+    }
+    return this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
   }
 
   model(): Shape {
