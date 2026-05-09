@@ -3,8 +3,9 @@ import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../i
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import { toVec3Param } from '../runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../runtime/paramRef';
-import { Transform, type Vec3 as Se3Vec3 } from '../runtime/se3';
+import { Transform } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
+import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
 
 export interface AssemblyPartRef {
@@ -86,7 +87,7 @@ export interface BallJointOpts {
  * by childPartId to find the parent joint of a part, and by parentPartId
  * to find children.
  */
-interface AssemblyJointStored {
+export interface AssemblyJointStored {
   readonly name: string;
   readonly kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
   readonly parentPartId: FeatureId;
@@ -109,7 +110,7 @@ interface AssemblyJointStored {
  *
  * `at` (zero-pose translation) already lives on AssemblyPartRef.
  */
-interface AssemblyPartStored extends AssemblyPartRef {
+export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
 }
@@ -385,119 +386,19 @@ export class Assembly {
       );
     }
 
-    // 4. Build the parent-joint index: each part has at most one parent joint.
-    const parentJointByPart = new Map<FeatureId, AssemblyJointStored>();
-    for (const j of this.joints) {
-      if (parentJointByPart.has(j.childPartId)) {
-        const prior = parentJointByPart.get(j.childPartId)!;
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: a part has two parent joints ('${prior.name}' and '${j.name}'); body-tree requires at most one.`,
-          undefined,
-          'invalid-args.solve.multi-parent — restructure with a single parent joint per part, or use fixed joints in a chain.',
-        );
-      }
-      parentJointByPart.set(j.childPartId, j);
-    }
+    // 4. Forward kinematics: pure body-tree FK (graph validation + SE(3) walk).
+    //    Lives in forwardKinematics.ts so the lowerer can reach it without
+    //    going through Assembly state.
+    const worldT = forwardKinematics(this.parts, this.joints, poses as NumericPoses);
 
-    // 5. Cycle detection via DFS through joint-parent links.
-    const visited = new Set<FeatureId>();
-    const stack = new Set<FeatureId>();
-    const dfs = (partId: FeatureId): void => {
-      if (visited.has(partId)) return;
-      if (stack.has(partId)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: cycle detected in joint graph at part '${partId}'.`,
-          undefined,
-          'invalid-args.solve.cycle — joint parents must form a tree (no cycles).',
-        );
-      }
-      stack.add(partId);
-      const parentJ = parentJointByPart.get(partId);
-      if (parentJ) dfs(parentJ.parentPartId);
-      stack.delete(partId);
-      visited.add(partId);
-    };
-    for (const part of this.parts) dfs(part.id);
-
-    // 6. Topological sort: roots first, then walk down to leaves via parent-joint links.
-    const topoOrder: AssemblyPartStored[] = [];
-    const seen = new Set<FeatureId>();
-    const visit = (part: AssemblyPartStored): void => {
-      if (seen.has(part.id)) return;
-      seen.add(part.id);
-      const parentJ = parentJointByPart.get(part.id);
-      if (parentJ) {
-        const parentPart = this.parts.find(p => p.id === parentJ.parentPartId);
-        if (parentPart) visit(parentPart);
-      }
-      topoOrder.push(part);
-    };
-    for (const part of this.parts) visit(part);
-
-    // 7. Forward kinematics: walk in topo order, computing world transform per part.
-    const worldT = new Map<FeatureId, Transform>();
-    for (const part of topoOrder) {
-      const parentJ = parentJointByPart.get(part.id);
-      if (!parentJ) {
-        // Root part — no parent joint, identity transform.
-        worldT.set(part.id, Transform.identity());
-        continue;
-      }
-      const parentT = worldT.get(parentJ.parentPartId);
-      if (!parentT) {
-        // Should be impossible if topo sort is correct.
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly.solve: internal error — parent part '${parentJ.parentPartId}' of joint '${parentJ.name}' has no computed transform.`,
-          undefined,
-          'invalid-args.solve.internal — please file a bug.',
-        );
-      }
-
-      let jointLocalT: Transform;
-      switch (parentJ.kind) {
-        case 'revolute': {
-          const deg = (poses[parentJ.name] as number | undefined) ?? 0;
-          const ax = parentJ.axis as Se3Vec3;
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.rotationAxisAngleDeg(ax, deg));
-          break;
-        }
-        case 'prismatic': {
-          const stroke = (poses[parentJ.name] as number | undefined) ?? 0;
-          const ax = parentJ.axis as Se3Vec3;
-          const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
-          const dx = (ax[0] / len) * stroke;
-          const dy = (ax[1] / len) * stroke;
-          const dz = (ax[2] / len) * stroke;
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.translation(dx, dy, dz));
-          break;
-        }
-        case 'fixed': {
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2]);
-          break;
-        }
-        case 'ball': {
-          const euler = (poses[parentJ.name] as [number, number, number] | undefined) ?? [0, 0, 0];
-          jointLocalT = Transform.translation(parentJ.origin[0], parentJ.origin[1], parentJ.origin[2])
-            .compose(Transform.eulerXYZDeg(euler[0], euler[1], euler[2]));
-          break;
-        }
-      }
-      worldT.set(part.id, parentT.compose(jointLocalT));
-    }
-
-    // 8. Apply per-part transform to the original shape (mutates the Shape's
+    // 5. Apply per-part transform to the original shape (mutates the Shape's
     //    transform stack via existing translate + rotate ShapeTransform pipes).
     for (const part of this.parts) {
       const T = worldT.get(part.id)!;
       part.originalShape.transform(T);
     }
 
-    // 9. Build SolvedKinematics handle.
+    // 6. Build SolvedKinematics handle.
     return new SolvedKinematics(this.parts, this.joints, worldT, poses);
   }
 
