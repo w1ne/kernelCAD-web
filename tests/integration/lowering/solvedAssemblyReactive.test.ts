@@ -128,4 +128,66 @@ describe('solvedAssembly lowering', () => {
     // depends on 'yawDeg'); pre-existing parts/joints stay cached.
     expect(updated.result.relowered).toContain(solvedRecord!.id);
   });
+
+  it('ball joint: per-component ParamRef + literal poses lower and repose correctly', async () => {
+    // Ball joint pose is a 3-tuple [xDeg, yDeg, zDeg] of XYZ Euler angles.
+    // The FeatureKind capture (Task 3) and OCCT lowerer (Task 4) must round-
+    // trip a *mixed* triple: first axis is a ParamRef (Param wrapper), second
+    // and third are numeric literals. Re-driving the param then re-lowers the
+    // solvedAssembly record with the updated rotation, which should swing the
+    // tip's +Z extent off the Z axis observably in the bbox.
+    //
+    // Geometry:
+    //   base = box(10,10,10) at corner [0,0,0]→[10,10,10]
+    //   tip  = box(10,10,50) at corner [0,0,0]→[10,10,50]
+    //   wrist (ball) parent=base, child=tip, origin=[0,0,10] in base local
+    //
+    // FK applies tip-local-frame eulerXYZDeg(ax,ay,az) then translation. With
+    // right-hand-rule rotation about +X by +90°, the tip's +Z direction maps
+    // to -Y (standard convention; see Transform.rotationAxisAngleDeg).
+    const model = await buildModel({
+      fileName: 'ball-reactive.kcad.ts',
+      code: `
+        const xDeg = param('xDeg', 0, { min: -180, max: 180 });
+        const arm = assembly('test');
+        const base = arm.part('base', box(10, 10, 10));
+        const tip  = arm.part('tip',  box(10, 10, 50));
+        arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
+        return arm.solvedModel({ wrist: [xDeg, 0, 0] });
+      `,
+    });
+
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const initial = model.tailShape as OcctBackend | undefined;
+    expect(initial).toBeDefined();
+    const bbBefore = initial!.boundingBox();
+    // At [xDeg=0,0,0], tip sits at z in [10, 60]. Top reaches ~60.
+    expect(bbBefore.max[2]).toBeGreaterThan(55);
+    // Y is bounded by the box widths (10mm); no rotation yet.
+    expect(bbBefore.max[1]).toBeLessThan(15);
+    expect(bbBefore.min[1]).toBeGreaterThan(-5);
+
+    // Verify the captured FeatureRecord picks up the per-axis ParamRef.
+    // collectParamRefs must walk metadata.poses[name].value as a 3-tuple
+    // for ball joints (vs scalar for revolute/prismatic).
+    const solvedRecord = model.records.find(r => r.kind === 'solvedAssembly');
+    expect(solvedRecord).toBeDefined();
+    const paramRefs = (solvedRecord!.metadata as { paramRefs?: string[] } | undefined)?.paramRefs;
+    expect(paramRefs).toContain('xDeg');
+
+    // Drive xDeg to 90: rotation about +X swings tip's +Z extent into -Y.
+    const updated = await updateModelParams(model, [{ name: 'xDeg', value: 90 }]);
+    expect(updated.result.warnings).toEqual([]);
+    const after = updated.result.shape as OcctBackend;
+    expect(after).toBeDefined();
+    const bbAfter = after.boundingBox();
+    // After ax=90°, tip points along -Y; min[1] should drop well below 0.
+    expect(bbAfter.min[1]).toBeLessThan(-45);
+    // Z extent collapses: tip no longer reaches +Z, only base + small tip
+    // contribution from rotation around joint origin (z up to ~20).
+    expect(bbAfter.max[2]).toBeLessThan(25);
+
+    // The solvedAssembly record should re-lower (its pose depends on xDeg).
+    expect(updated.result.relowered).toContain(solvedRecord!.id);
+  });
 });
