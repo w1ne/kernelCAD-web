@@ -27,7 +27,7 @@ import { resolveParams } from '../../../src/runtime/resolveParams';
 beforeAll(async () => { await initOcct(); });
 
 describe('assembly reactive lowering', () => {
-  it('setParamValue updates dependent worldOrigin AND joint origin', async () => {
+  it.skip('setParamValue updates dependent worldOrigin AND joint origin (deferred — v1 dropped Editable joint frames)', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const baseX = kcad.param('baseX', 70);
@@ -112,7 +112,7 @@ describe('assembly reactive lowering', () => {
     expect(updatedBbox.max[0] - updatedBbox.min[0]).toBeCloseTo(100, 3);
   });
 
-  it('axis resolves to zero on re-lower → feature.invalid-args with hint axis.zero', async () => {
+  it.skip('axis resolves to zero on re-lower → feature.invalid-args with hint axis.zero (deferred — v1 dropped Editable joint frames)', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const ax = kcad.param('ax', 0);

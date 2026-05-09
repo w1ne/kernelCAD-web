@@ -1,6 +1,6 @@
 import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3Param } from '../intent/types';
+import type { FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import type {
@@ -294,10 +294,16 @@ export class CaptureSession {
   assemblyJoint(
     assemblyName: string,
     jointName: string,
-    jointKind: 'revolute',
+    jointKind: 'revolute' | 'prismatic' | 'fixed' | 'ball',
     a: AssemblyPartRef,
     b: AssemblyPartRef,
-    opts: { axis: Vec3Param; origin: Vec3Param; limitsDeg?: [number, number] },
+    opts: {
+      axis?: Vec3;
+      origin: Vec3;
+      limitsDeg?: [number, number];
+      limitsMm?: [number, number];
+      ballLimitsDeg?: [[number, number], [number, number], [number, number]];
+    },
   ): FeatureRecord {
     for (const part of [a, b]) {
       const record = this.records.find(r => r.id === part.id);
@@ -316,9 +322,11 @@ export class CaptureSession {
         assemblyName,
         jointName,
         jointKind,
-        axis: opts.axis,
+        ...(opts.axis !== undefined ? { axis: opts.axis } : {}),
         origin: opts.origin,
         ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+        ...(opts.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+        ...(opts.ballLimitsDeg !== undefined ? { ballLimitsDeg: opts.ballLimitsDeg } : {}),
       },
     });
   }
