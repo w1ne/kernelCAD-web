@@ -33,6 +33,20 @@ describe('robot arm example', () => {
     expect(revolutes.length).toBe(3);
     expect(fixedJoints.length).toBe(1);
 
+    // Mechanical detail: the example builds recessed bays via .subtract(box),
+    // a structural rib unioned to the shoulder, a top-running rib unioned to
+    // the elbow, and a posed-union scene root from solvedModel(). At least
+    // five hole records (4 mounting screws + base pivot + shoulder pivots +
+    // elbow + wrist pivots), at least six boolean records (rib unions, bay
+    // subtracts, tool union, solvedModel union), and at least three fillets
+    // (basePlate, elbow, wrist).
+    const holes = records.filter((r) => r.kind === 'hole' || r.kind === 'holes');
+    const booleans = records.filter((r) => r.kind === 'boolean');
+    const fillets = records.filter((r) => r.kind === 'fillet');
+    expect(holes.length).toBeGreaterThanOrEqual(5);
+    expect(booleans.length).toBeGreaterThanOrEqual(6);
+    expect(fillets.length).toBeGreaterThanOrEqual(2);
+
     // solvedModel() returns the unioned posed Shape via SolvedKinematics.toShape();
     // the last record is the boolean-union scene root, not an assemblyModel feature.
     expect(records.at(-1)?.kind).toBe('boolean');
