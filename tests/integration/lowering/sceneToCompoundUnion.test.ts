@@ -27,6 +27,7 @@ import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
 import { Scene } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';
 import { KernelError } from '../../../src/intent/kernelError';
+import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
 import type { Shape } from '../../../src/capture/proxy';
 import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
 
@@ -135,6 +136,59 @@ describe('Scene.toCompound + Scene.toUnion', () => {
     expect(bbA.min).toEqual(bbB.min);
     expect(bbA.max).toEqual(bbB.max);
     expect(a.shape!.volume()).toBeCloseTo(b.shape!.volume(), 5);
+  });
+
+  it('regression: assemblyExport survives params.update with non-identity worldTransforms', async () => {
+    // Replicad's translate()/rotate() destroy the source OCCT handle. The
+    // assemblyExport lowerer iterates SceneBackend.parts on every recompute;
+    // those part shapes are cached across `params.update` runs, so without a
+    // fresh clone the second recompute hit "This object has been deleted." on
+    // any part with a non-identity worldTransform. Identity transforms early-
+    // return `this` from applyTransform, which is why a yaw=0 path historically
+    // worked while ball-joint poses caught the bug. This test pins the fix.
+    const model = await buildModel({
+      fileName: 'reactive-double-update.kcad.ts',
+      code: `
+        const xDeg = param('xDeg', 10, { min: -180, max: 180 });
+        const arm = assembly('test');
+        const base = arm.part('base', box(10, 10, 10));
+        const tip  = arm.part('tip',  box(10, 10, 50));
+        arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
+        return arm.solvedModel({ wrist: [xDeg, 0, 0] }).toUnion();
+      `,
+    });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(model.tailShape).toBeDefined();
+    const initial = (model.tailShape as OcctBackend).boundingBox();
+
+    // First param edit — exercises the cached SceneBackend path with a fresh
+    // non-identity worldTransform on the tip part.
+    const first = await updateModelParams(model, [{ name: 'xDeg', value: 20 }]);
+    expect(first.result.warnings).toEqual([]);
+    expect(first.result.shape).toBeDefined();
+    const afterFirst = (first.result.shape as OcctBackend).boundingBox();
+
+    // Second param edit — without the clone fix, the part shape's OCCT handle
+    // has been destroyed by the first applyTransform and this throws
+    // "recompute.lowering.exception — This object has been deleted."
+    const second = await updateModelParams(model, [{ name: 'xDeg', value: 45 }]);
+    expect(second.result.warnings).toEqual([]);
+    expect(second.result.shape).toBeDefined();
+    const afterSecond = (second.result.shape as OcctBackend).boundingBox();
+
+    // Pose actually advanced — bbox.min[1] differs between the three
+    // rotations. World y = ly·cosθ − (lz−10)·sinθ; tip's far end (lz=50,
+    // ly=0) pulls min y down to ~ −40·sinθ:
+    //   θ=10° → ~ −6.94
+    //   θ=20° → ~ −13.68
+    //   θ=45° → ~ −28.28
+    // Identical mins would indicate the recompute silently kept a stale
+    // shape rather than re-applying the new worldTransform.
+    expect(afterFirst.min[1]).not.toBeCloseTo(initial.min[1], 1);
+    expect(afterSecond.min[1]).not.toBeCloseTo(afterFirst.min[1], 1);
+    // Sanity: min y trends progressively negative as |θ| grows.
+    expect(afterSecond.min[1]).toBeLessThan(afterFirst.min[1]);
+    expect(afterFirst.min[1]).toBeLessThan(initial.min[1]);
   });
 
   it('Scene.toCompound() / Scene.toUnion() throw cleanly when no exportFn was wired', () => {

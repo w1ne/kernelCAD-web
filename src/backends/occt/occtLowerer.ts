@@ -1594,8 +1594,16 @@ export class OcctLowerer implements FeatureLowerer {
         // Apply each part's worldTransform to its local-frame shape. Parts are
         // visited in scene-declaration order so both compound and union are
         // deterministic.
+        //
+        // We clone before applyTransform because replicad's translate()/rotate()
+        // mutate-and-destroy the source OCCT handle. The recompute engine caches
+        // the SceneBackend across `params.update` runs, so without a fresh clone
+        // the second recompute hits "This object has been deleted." on any part
+        // with a non-identity worldTransform. Identity transforms early-return
+        // `this` from applyTransform, which is why the yaw=0 path historically
+        // worked but ball-joint poses broke.
         const transformed: OcctBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
-          (p.shape as OcctBackend).applyTransform(p.worldTransform),
+          (p.shape as OcctBackend).clone().applyTransform(p.worldTransform),
         );
         if (op === 'compound') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

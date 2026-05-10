@@ -21,7 +21,6 @@ import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
 import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
-import { isSceneBackend, type SceneBackend } from '../../../src/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
 
 interface LowerResult {
@@ -150,10 +149,12 @@ describe('solvedAssembly lowering', () => {
     //   tip  = box(10,10,50) at corner [0,0,0]→[10,10,50]
     //   wrist (ball) parent=base, child=tip, origin=[0,0,10] in base local
     //
-    // Per Task 14: solvedModel returns Scene; we read the SceneBackend
-    // directly off `tailShape` and assert the per-part worldTransform of
-    // the 'tip' part. After ax=90°, applying the worldTransform to the
-    // tip's local +Z direction should yield -Y (right-hand-rule about +X).
+    // We assert reactivity through `.toUnion().boundingBox()` per the Task 14
+    // spec-preferred path. The double-recompute lifecycle (params.update then
+    // bbox-read) only round-trips cleanly because assemblyExport now clones
+    // the cached part shape before applyTransform — without that fix, the
+    // second recompute trips replicad's "This object has been deleted." on
+    // the tip part's mutated OCCT handle.
     const model = await buildModel({
       fileName: 'ball-reactive.kcad.ts',
       code: `
@@ -162,24 +163,19 @@ describe('solvedAssembly lowering', () => {
         const base = arm.part('base', box(10, 10, 10));
         const tip  = arm.part('tip',  box(10, 10, 50));
         arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
-        return arm.solvedModel({ wrist: [xDeg, 0, 0] });
+        return arm.solvedModel({ wrist: [xDeg, 0, 0] }).toUnion();
       `,
     });
 
     expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
-    const initial = model.tailShape as unknown as SceneBackend | undefined;
+    const initial = model.tailShape as OcctBackend | undefined;
     expect(initial).toBeDefined();
-    expect(isSceneBackend(initial)).toBe(true);
-    const tipBefore = initial!.parts.find(p => p.name === 'tip');
-    expect(tipBefore).toBeDefined();
-    // At xDeg=0, the wrist joint contributes a pure translation by [0,0,10]:
-    // tip's local +Z direction stays +Z in world, and the local origin
-    // lands at world (0, 0, 10).
-    const localZ: [number, number, number] = [0, 0, 1];
-    const worldOriginBefore = tipBefore!.worldTransform.point([0, 0, 0]);
-    expect(worldOriginBefore[2]).toBeCloseTo(10, 5);
-    const worldZBefore = tipBefore!.worldTransform.axisDir(localZ);
-    expect(worldZBefore[2]).toBeCloseTo(1, 5);
+    const bbBefore = initial!.boundingBox();
+    // At xDeg=0, wrist contributes a pure translation by [0,0,10]:
+    // base spans z in [0,10]; tip spans z in [10, 60]. Combined max z ~= 60.
+    expect(bbBefore.max[2]).toBeGreaterThan(55);
+    // No rotation has swung tip onto -Y yet, so y-min stays at 0.
+    expect(bbBefore.min[1]).toBeGreaterThan(-1);
 
     // Verify the captured FeatureRecord picks up the per-axis ParamRef.
     // collectParamRefs must walk metadata.poses[name].value as a 3-tuple
@@ -192,19 +188,15 @@ describe('solvedAssembly lowering', () => {
     // Drive xDeg to 90: rotation about +X swings tip's local +Z onto world -Y.
     const updated = await updateModelParams(model, [{ name: 'xDeg', value: 90 }]);
     expect(updated.result.warnings).toEqual([]);
-    const after = updated.result.shape as unknown as SceneBackend;
+    const after = updated.result.shape as OcctBackend;
     expect(after).toBeDefined();
-    expect(isSceneBackend(after)).toBe(true);
-    const tipAfter = after.parts.find(p => p.name === 'tip');
-    expect(tipAfter).toBeDefined();
-    // Local +Z now points along world -Y after a +90° rotation about +X.
-    const worldZAfter = tipAfter!.worldTransform.axisDir(localZ);
-    expect(worldZAfter[1]).toBeCloseTo(-1, 5);
-    expect(Math.abs(worldZAfter[2])).toBeLessThan(1e-5);
-    // Tip's local origin is anchored at the wrist joint origin (0,0,10);
-    // rotation about +X passes through that point so the world origin stays.
-    const worldOriginAfter = tipAfter!.worldTransform.point([0, 0, 0]);
-    expect(worldOriginAfter[2]).toBeCloseTo(10, 5);
+    const bbAfter = after.boundingBox();
+    // Tip's local +Z (length 50) now points along world -Y, so y-min reaches
+    // about -50 from the wrist origin (0,0,10). Tip's z-extent collapses to
+    // the joint origin's z (10) plus tip's own [0..10] in local Y mapped to
+    // world Z = [10, 20]. Combined with base [0..10], max z ~ 20.
+    expect(bbAfter.min[1]).toBeLessThan(-40);
+    expect(bbAfter.max[2]).toBeLessThan(25);
 
     // The solvedAssembly record should re-lower (its pose depends on xDeg).
     expect(updated.result.relowered).toContain(solvedRecord!.id);
