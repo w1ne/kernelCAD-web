@@ -223,8 +223,8 @@ interface Scene extends Iterable<ScenePart> {
   // ('feature.invalid-args', hint 'invalid-args.scene.unknown-part') on miss.
   part(name: string): ScenePart;
 
-  // Deprecated v0.6.0 — call .toUnion() instead. Warn-once advisory; will
-  // be removed in v0.7.0. (SolvedKinematics.toShape() carries the same
+  // Deprecated v0.5.0 — call .toUnion() instead. Warn-once advisory; will
+  // be removed in v0.6.0. (SolvedKinematics.toShape() carries the same
   // deprecation; use .toScene().toUnion() there.)
   toShape(): Shape;
 }

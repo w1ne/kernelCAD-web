@@ -6,7 +6,7 @@
 // per-part world transforms, colors, and metadata. Boolean fusion becomes an
 // explicit, opt-in `Scene.toUnion()` / `Scene.toCompound()` call.
 //
-// This module ships the types + a stub class for the v0.6.0 assembly
+// This module ships the types + a stub class for the v0.5.0 assembly
 // scene-graph slice. Lowerer dispatch, meshing, and the toCompound / toUnion
 // implementations land in follow-up tasks.
 
@@ -136,10 +136,10 @@ export class Scene implements Iterable<ScenePart> {
     return this.requireExportFn('toUnion')('union');
   }
 
-  /** @deprecated v0.6.0 — call `.toUnion()` instead. Emits a warn-once
+  /** @deprecated v0.5.0 — call `.toUnion()` instead. Emits a warn-once
    *  `deprecated.scene.toShape` advisory on the first call per process and
-   *  delegates to `.toUnion()`. Removal in v0.7.0 (CHANGELOG entry under
-   *  v0.6.0). */
+   *  delegates to `.toUnion()`. Removal in v0.6.0 (CHANGELOG entry under
+   *  v0.5.0). */
   toShape(): Shape {
     if (!Scene._toShapeWarned) {
       Scene._toShapeWarned = true;

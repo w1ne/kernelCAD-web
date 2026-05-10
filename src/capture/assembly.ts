@@ -697,10 +697,10 @@ export class SolvedKinematics {
   }
 
   /**
-   * @deprecated v0.6.0 — call `.toScene().toUnion()` instead. Emits a
+   * @deprecated v0.5.0 — call `.toScene().toUnion()` instead. Emits a
    * warn-once `deprecated.solvedKinematics.toShape` advisory on the first
    * call per process and delegates to `.toScene().toUnion()`. Removal in
-   * v0.7.0 (CHANGELOG entry under v0.6.0).
+   * v0.6.0 (CHANGELOG entry under v0.5.0).
    */
   toShape(): Shape {
     if (!SolvedKinematics.toShapeWarned) {

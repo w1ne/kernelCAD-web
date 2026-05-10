@@ -129,7 +129,7 @@ export const SCENE_METHODS: ApiEntry[] = [
   { name: 'toCompound', signature: '() => Shape', description: 'OCCT TopoDS_Compound — groups bodies without booleaning. Lossless on per-part identity (color, name, metadata preserved). Default path for STEP export with named bodies; preferred whenever a single Shape handle is needed without paying for a fuse. Free path via replicad makeCompound.' },
   { name: 'toUnion', signature: '() => Shape', description: 'Explicit boolean fuse of all parts into one Shape. Lossy on color, name, metadata — the result has no per-part identity. Documented antipattern; use only when downstream truly needs one solid (boolean ops against external geometry; legacy tools that do not accept compounds). Prefer toCompound() otherwise.' },
   { name: 'part', signature: '(name: string) => ScenePart', description: 'Look up a part by its assembly-unique name. Throws KernelError (`feature.invalid-args`, hint `invalid-args.scene.unknown-part — part X not declared on assembly Y`) on miss.' },
-  { name: 'toShape', signature: '() => Shape', description: 'Deprecated v0.6.0 — call `.toUnion()` instead. Emits a warn-once `deprecated.scene.toShape` advisory on first call per process and delegates to `.toUnion()`. Removal in v0.7.0. SolvedKinematics carries the same deprecation; use `.toScene().toUnion()` there.' },
+  { name: 'toShape', signature: '() => Shape', description: 'Deprecated v0.5.0 — call `.toUnion()` instead. Emits a warn-once `deprecated.scene.toShape` advisory on first call per process and delegates to `.toUnion()`. Removal in v0.6.0. SolvedKinematics carries the same deprecation; use `.toScene().toUnion()` there.' },
 ];
 
 export const SCENE_PART_PROPERTIES: ApiEntry[] = [
