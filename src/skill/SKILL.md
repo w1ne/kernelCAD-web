@@ -83,6 +83,32 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 lib.fromSTEP(path: string): Promise<Shape>;
 ```
 
+### Assembly validity (v0.5 MVP)
+
+`kernelcad validate <file.kcad.ts>` runs the assembly validator over the
+script's Scene. Three checks today:
+
+- **`assembly.part.floating`** — a part has no joint connecting it to
+  any other part. The fix: declare the connection via `arm.fixed(...)`
+  or `arm.revolute(...)`.
+- **`assembly.part.orphan`** — a part is in a sub-assembly disconnected
+  from the main mechanism.
+- **`assembly.interference.overlap`** — two parts share volume (promoted
+  from `kernelcad interference`).
+
+Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
+
+```bash
+kernelcad validate so100.kcad.ts && echo "fits"
+```
+
+Authoring rule: every `arm.part(name, shape)` should also appear as
+either the parent or child of at least one `arm.fixed(...)` /
+`arm.revolute(...)` / `arm.prismatic(...)` / `arm.ball(...)` call.
+Raw `at: [x, y, z]` placement without a joint produces a working
+geometric output but fails validation — the agent has authored a
+position but not a connection.
+
 ### Components from STEP files
 
 When a real component (servo, bearing, gripper jaw, fastener) has a vendor-published
@@ -681,6 +707,15 @@ kernelcad evaluate path/to/script.kcad.ts --json
 # Export to STL or STEP
 kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
+
+# Render a 4-view PNG (front/right/top/iso) for visual review
+kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+
+# Detect BREP interferences between Scene parts (industry-standard clash check)
+kernelcad interference path/to/script.kcad.ts
+
+# Validate the assembly: floating parts, orphan clusters, interferences (v0.5 MVP)
+kernelcad validate path/to/script.kcad.ts
 
 # Run the MCP server (stdio transport)
 kernelcad mcp

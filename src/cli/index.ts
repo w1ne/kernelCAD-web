@@ -7,6 +7,7 @@ import { interferenceCommand } from './commands/interference';
 import { mcpCommand } from './commands/mcp';
 import { renderCommand } from './commands/render';
 import { skillCommand } from './commands/skill';
+import { validateCommand } from './commands/validate';
 
 const requireFromHere = createRequire(import.meta.url);
 const pkg = requireFromHere('../../package.json') as { version: string };
@@ -23,6 +24,7 @@ program.addCommand(interferenceCommand());
 program.addCommand(mcpCommand());
 program.addCommand(renderCommand());
 program.addCommand(skillCommand());
+program.addCommand(validateCommand());
 
 program.parseAsync(process.argv).catch(err => {
   console.error(err);
