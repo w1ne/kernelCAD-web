@@ -295,18 +295,38 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
+  // Build partName → assemblyPart record id index so SceneBackend fan-out
+  // meshes (whose featureId is a composite like `solvedAssembly_1__base-plate`)
+  // can resolve to the part's OWN pacing slot — this is what drives the
+  // build-one-by-one animation. Without this, all fan-out parts would
+  // collapse to the parent solvedAssembly's single pacing entry and pop in
+  // simultaneously at the end of the timeline.
+  const assemblyPartIdByName = new Map<string, string>();
+  for (const f of loaded.features) {
+    if (f.kind !== 'assemblyPart') continue;
+    const partName = (f.record.metadata as { partName?: string } | undefined)?.partName;
+    if (typeof partName === 'string') assemblyPartIdByName.set(partName, f.id);
+  }
+
   const sortedEvents = featureMeshes
     .map((mesh) => {
-      // Mesh's own id may be a composite (e.g. solvedAssembly_1__base-plate)
-      // produced by the SceneBackend fan-out in meshFeaturesPerFeature.
-      // pacing.features is keyed by the ORIGINAL FeatureRecord id; fall back
-      // to mesh.predecessors[0] which is the parent assembly feature id.
-      // Final fallback: startAtMs 0 — meshes load at opacity 0 by design and
-      // need an event to tween to 1; without firing, they stay invisible
-      // (this triggers when pacing truncates and drops the parent feature).
-      const pacingKey = pacing.features.has(mesh.featureId)
-        ? mesh.featureId
-        : mesh.predecessors[0];
+      // Resolve pacing in this order:
+      //   1. mesh's own featureId — single-shape script path
+      //   2. composite-id fan-out: extract partName from `parent__partName`,
+      //      look up the matching assemblyPart record's pacing slot
+      //   3. mesh.predecessors[0] — the parent solvedAssembly's slot (used
+      //      when the composite path doesn't resolve, e.g. during a
+      //      pacing-truncation edge case)
+      //   4. hardcoded fallback so a missing pacing entry never silently
+      //      drops the mesh — without an event the renderer leaves it at
+      //      opacity 0 and the part stays invisible
+      const compositeIdx = mesh.featureId.indexOf('__');
+      const compositePart = compositeIdx >= 0 ? mesh.featureId.slice(compositeIdx + 2) : null;
+      const partRecordId = compositePart ? assemblyPartIdByName.get(compositePart) : undefined;
+      const pacingKey =
+        pacing.features.has(mesh.featureId) ? mesh.featureId :
+        partRecordId && pacing.features.has(partRecordId) ? partRecordId :
+        mesh.predecessors[0];
       const t: { startAtMs: number; durationMs: number; pauseMsAfter: number; cameraNudgeMs: number } =
         (pacingKey ? pacing.features.get(pacingKey) : undefined)
           ?? { startAtMs: 0, durationMs: 400, pauseMsAfter: 0, cameraNudgeMs: 0 };
