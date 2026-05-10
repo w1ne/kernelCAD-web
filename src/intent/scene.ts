@@ -53,6 +53,23 @@ export class Scene implements Iterable<ScenePart> {
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
 
+  /**
+   * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
+   * The warning channel for this slice is `console.warn` (the milestone-C
+   * `DiagnosticCode` catalogue is closed at 24 entries, so a dedicated
+   * `feature.deprecated` code is out of scope; the hint string format is
+   * preserved verbatim so a future migration to a structured session
+   * diagnostic is a one-line change). Mirrors the SolvedKinematics
+   * deprecation pattern (commit ad50090). See
+   * `tests/unit/scene/sceneClass.test.ts`.
+   */
+  private static _toShapeWarned = false;
+
+  /** Test hook: reset the process-scoped warn-once flag. NOT public API. */
+  static __resetDeprecationWarnedForTest(): void {
+    Scene._toShapeWarned = false;
+  }
+
   constructor(
     assemblyName: string,
     parts: readonly ScenePart[],
@@ -109,11 +126,19 @@ export class Scene implements Iterable<ScenePart> {
     return this.requireExportFn('toUnion')('union');
   }
 
-  /** @deprecated v0.6.0 — call .toUnion() instead. Today this is a thin
-   *  delegate; Task 11 attaches a warn-once
-   *  `feature.deprecated.scene.toShape` diagnostic on first call. */
+  /** @deprecated v0.6.0 — call `.toUnion()` instead. Emits a warn-once
+   *  `deprecated.scene.toShape` advisory on the first call per process and
+   *  delegates to `.toUnion()`. Removal in v0.7.0 (CHANGELOG entry under
+   *  v0.6.0). */
   toShape(): Shape {
-    return this.requireExportFn('toShape')('union');
+    if (!Scene._toShapeWarned) {
+      Scene._toShapeWarned = true;
+      console.warn(
+        'Scene.toShape() is deprecated; call .toUnion() instead. ' +
+          'hint: deprecated.scene.toShape — call .toUnion() instead.',
+      );
+    }
+    return this.toUnion();
   }
 
   private requireExportFn(method: string): SceneExportFn {
