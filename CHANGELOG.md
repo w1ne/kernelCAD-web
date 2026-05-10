@@ -36,6 +36,18 @@ instances, with fusion as opt-in export.
   every intermediate at LOCAL frame stacked at the origin.
 - Renderer adds `polygonOffset` on assembly mesh material to eliminate
   Z-fighting on coplanar touching surfaces.
+- New `kernelcad render <file.kcad.ts>` CLI subcommand emits a multi-view
+  PNG (front, right, top, iso) — single 2×2 composite by default,
+  `--separate` for four individual files. Closes the agent feedback gap:
+  authoring → render → adjust loop runs in ~6 seconds instead of the
+  full 5-minute capture pipeline.
+- New `kernelcad interference <file.kcad.ts>` CLI subcommand performs
+  pairwise BREP clash detection over an assembly's `Scene`. Industry-
+  standard interference check (Fusion 360 / Onshape / SolidWorks all
+  ship the same primitive). Bbox pre-filter + boolean intersect +
+  volume measurement — exit code 1 on any pair whose intersection
+  volume exceeds `--epsilon` (default 0.01 mm³). Pipe-friendly:
+  `kernelcad interference arm.kcad.ts && echo ok`.
 
 ## Migration
 
