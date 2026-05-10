@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Scene, type ScenePart } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';
 import type { Shape } from '../../../src/capture/proxy';
+import { KernelError } from '../../../src/intent/kernelError';
 
 const stubShape = { id: 'stub' } as unknown as Shape;
 
@@ -29,7 +30,18 @@ describe('Scene', () => {
 
   it('part(name) throws KernelError on unknown name with structured hint', () => {
     const scene = new Scene('arm', [], () => ({ min: [0, 0, 0], max: [0, 0, 0] }));
-    expect(() => scene.part('missing')).toThrow(/invalid-args\.scene\.unknown-part/);
+    let captured: unknown;
+    try {
+      scene.part('missing');
+    } catch (e) {
+      captured = e;
+    }
+    expect(captured).toBeInstanceOf(KernelError);
+    const err = captured as KernelError;
+    expect(err.code).toBe('feature.invalid-args');
+    expect(err.hint).toContain('invalid-args.scene.unknown-part');
+    expect(err.message).toContain("part 'missing' not declared on assembly 'arm'");
+    expect(err.message).not.toContain('invalid-args.scene.unknown-part');
   });
 
   it('parts is frozen (immutable)', () => {

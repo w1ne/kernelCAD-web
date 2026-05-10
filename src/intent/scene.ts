@@ -67,12 +67,11 @@ export class Scene implements Iterable<ScenePart> {
   part(name: string): ScenePart {
     const found = this.parts.find((p) => p.name === name);
     if (!found) {
-      const hint = `invalid-args.scene.unknown-part — part ${name} not declared on assembly ${this.assemblyName}.`;
       throw new KernelError(
         'feature.invalid-args',
-        `Scene.part: part '${name}' not declared on assembly '${this.assemblyName}'. ${hint}`,
+        `Scene.part: part '${name}' not declared on assembly '${this.assemblyName}'.`,
         undefined,
-        hint,
+        `invalid-args.scene.unknown-part — part ${name} not declared on assembly ${this.assemblyName}.`,
       );
     }
     return found;
