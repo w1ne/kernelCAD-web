@@ -48,9 +48,10 @@ export class CameraController {
   startRotate(durationMs: number, currentMs: number): void {
     this.rotateStartMs = currentMs;
     this.rotateDurationMs = durationMs;
-    this.rotateRadius = Math.hypot(this.camera.position.x, this.camera.position.z);
-    this.rotateStartAngle = Math.atan2(this.camera.position.z, this.camera.position.x);
-    this.rotateY = this.camera.position.y;
+    // Z-up convention: camera orbits in the XY plane at fixed Z height.
+    this.rotateRadius = Math.hypot(this.camera.position.x, this.camera.position.y);
+    this.rotateStartAngle = Math.atan2(this.camera.position.y, this.camera.position.x);
+    this.rotateY = this.camera.position.z;
   }
 
   update(currentMs: number): void {
@@ -69,8 +70,8 @@ export class CameraController {
       const angle = this.rotateStartAngle + easeInOut(Math.min(1, t)) * Math.PI * 2;
       this.camera.position.set(
         Math.cos(angle) * this.rotateRadius,
-        this.rotateY,
         Math.sin(angle) * this.rotateRadius,
+        this.rotateY,
       );
       this.camera.lookAt(0, 0, 0);
     }

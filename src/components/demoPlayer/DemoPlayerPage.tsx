@@ -123,8 +123,9 @@ function fitCameraToBounds(
 
   // kernelCAD is Z-up. Each engineering view fixes camera position + up
   // vector so the rendered tile matches first-angle drafting convention.
-  // 'demo' preserves the legacy 3/4 angle (Y-up THREE default) the demo
-  // pipeline has always rendered — captureDemo screenshots target this.
+  // 'demo' uses the same Z-up 3/4-front-right angle as the CLI's 'iso'
+  // view so plates lie horizontally as authored (not rotated 90° onto
+  // their side, which the legacy Y-up framing did).
   let pos: [number, number, number];
   let up: [number, number, number] = [0, 0, 1];
   switch (view) {
@@ -134,8 +135,7 @@ function fitCameraToBounds(
     case 'iso':   pos = [distance * 0.7, -distance * 0.7, distance * 0.5]; break;
     case 'demo':
     default:
-      pos = [distance * 0.78, distance * 0.5, distance * 0.78];
-      up = [0, 1, 0];
+      pos = [distance * 0.7, -distance * 0.7, distance * 0.5];
       break;
   }
   camera.up.set(up[0], up[1], up[2]);
