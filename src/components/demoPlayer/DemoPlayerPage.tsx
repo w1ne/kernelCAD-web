@@ -11,6 +11,7 @@ import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 import { resolveColor } from '../../render/palette';
+import { pbrFromColor } from '../../render/materialRoles';
 import type { RenderView } from '../../render/views';
 export type { RenderView };
 
@@ -69,21 +70,28 @@ const TERMINAL_H = 1080;
  *  THREE.Material.color.set() also accepts. */
 const DEFAULT_MESH_COLOR = 0xc8d2e0;
 
-function buildMeshFromFace(face: FaceGeometry, name: string, color: number | string): THREE.Mesh {
+function buildMeshFromFace(
+  face: FaceGeometry,
+  name: string,
+  color: number | string,
+  pbr: { metalness: number; roughness: number },
+): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
-  // MeshPhongMaterial — light-reactive shading for visible CAD geometry (existing scene has ambient + directional lights).
-  // polygonOffset — assemblies fan into N FeatureMeshes (Task 7), so adjacent
-  // parts whose surfaces touch (column on plate, servo case flush against
-  // bracket) produce coplanar geometry. Depth bias resolves the resulting
-  // Z-fighting flicker without geometric epsilons.
-  const mat = new THREE.MeshPhongMaterial({
+  // MeshStandardMaterial — physically-based shading driven by the role
+  // (servo/shaft/plate/...) attached at .color() time. Pairs with the
+  // three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // polygonOffset — assemblies fan into N FeatureMeshes; adjacent parts
+  // whose surfaces touch (column on plate, servo case flush against
+  // bracket) produce coplanar geometry. Depth bias kills Z-fighting
+  // without geometric epsilons.
+  const mat = new THREE.MeshStandardMaterial({
     color,
-    specular: 0x222233,
-    shininess: 30,
+    metalness: pbr.metalness,
+    roughness: pbr.roughness,
     transparent: true,
     opacity: 0,
     side: THREE.DoubleSide,
@@ -254,8 +262,14 @@ export function DemoPlayerPage(): React.JSX.Element {
           // Unknown / missing → DEFAULT_MESH_COLOR (preserves prior behavior).
           const resolved = resolveColor(fm.color);
           const colorForMesh: number | string = resolved ?? DEFAULT_MESH_COLOR;
+          const pbr = pbrFromColor(fm.color);
           for (const face of fm.faces) {
-            const mesh = buildMeshFromFace(face, `${fm.featureId}-face-${face.faceId}`, colorForMesh);
+            const mesh = buildMeshFromFace(
+              face,
+              `${fm.featureId}-face-${face.faceId}`,
+              colorForMesh,
+              pbr,
+            );
             group.add(mesh);
           }
           scene.add(group);
@@ -298,7 +312,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             meshCount++;
-            const mat = obj.material as THREE.MeshPhongMaterial;
+            const mat = obj.material as THREE.MeshStandardMaterial;
             if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
             if (samplePolygonOffsets.length < 5) {
               samplePolygonOffsets.push({

@@ -268,6 +268,16 @@ export function applyVariableEdgeFeature(
  * Operations not supported in v0.1 produce a single error `CompilerDiagnostic`
  * rather than throwing, so callers can collect diagnostics for a whole tree.
  */
+/** v0.5: build a lowerer pre-wired with a session's imported STEP geometry.
+ *  Use from any code that ran `runScript` and then needs to lower the
+ *  resulting records — without this, `importedStep` records error out
+ *  because the lowerer's `importedGeometry` map is empty. */
+export function createOcctLowerer(session?: { importedGeometry: Map<string, ShapeBackend> }): OcctLowerer {
+  const lowerer = new OcctLowerer();
+  if (session) lowerer.importedGeometry = session.importedGeometry;
+  return lowerer;
+}
+
 export class OcctLowerer implements FeatureLowerer {
   readonly target: BackendTarget = 'export-occt';
   readonly supports: ReadonlySet<FeatureKind> = new Set<FeatureKind>([
@@ -285,6 +295,7 @@ export class OcctLowerer implements FeatureLowerer {
     'loft',      // NEW (v0.13.0-rc.10)
     'mirror',    // NEW (v0.13.0-rc.13)
     'pattern',
+    'importedStep',  // v0.5: lib.fromSTEP(path)
     'assemblyPart',
     'assemblyJoint',
     'assemblyConnect',
@@ -292,6 +303,11 @@ export class OcctLowerer implements FeatureLowerer {
     'solvedAssembly',
     'assemblyExport',
   ]);
+
+  /** v0.5: pre-lowered geometry for `importedStep` records, populated by
+   *  `lib.fromSTEP(path)` at script-run time. Keyed by feature id; threaded
+   *  in by the script-runtime caller after the script returns. */
+  importedGeometry: Map<string, ShapeBackend> = new Map();
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -344,6 +360,26 @@ export class OcctLowerer implements FeatureLowerer {
         // Sphere has no canonical planar face names — leave historyMap undefined.
         // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
         shape = OcctBackend.sphere(r.params.r.evaluated);
+        break;
+      }
+      case 'importedStep': {
+        // `lib.fromSTEP(path)` ran the import at capture time (host-side
+        // fs read + replicad.importSTEP); the resulting OcctBackend was
+        // parked in `lowerer.importedGeometry` keyed by feature id.
+        // Lowering is a hand-back — the geometry is already a Shape3D.
+        const backend = this.importedGeometry.get(r.id);
+        if (!backend) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `importedStep record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
+            hint: "invalid-args.importedStep.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = backend;
         break;
       }
       case 'sketch': {

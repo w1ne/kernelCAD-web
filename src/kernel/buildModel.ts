@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ShapeBackend } from '../backends/backend';
 import { initOcct } from '../backends/occt/occtBackend';
-import { OcctLowerer } from '../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
 import type { FeatureRecord } from '../intent/featureRecord';
@@ -53,7 +53,7 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
   await initOcct();
   const run = await runScript(input);
   const session = run.session;
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(session));
   const warningsBefore = session.warnings.length;
   const result = await engine.run(run.records, {
     paramTable: session.paramTable,
@@ -105,7 +105,7 @@ export async function updateModelParams(
 
   const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
   await initOcct();
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(session));
   const warningsBefore = session.warnings.length;
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,

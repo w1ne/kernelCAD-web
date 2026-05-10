@@ -156,6 +156,7 @@ async function main(): Promise<void> {
       await meshFeaturesPerFeature(
         loaded2.features.map((f) => f.record),
         loaded2.paramTable,
+        loaded2.session,
       );
     if (failedIds2.length > 0) {
       console.error(`captureDemo: ${failedIds2.length} feature(s) failed to compile: ${failedIds2.join(', ')}`);
@@ -249,6 +250,7 @@ async function main(): Promise<void> {
   const { features: featureMeshes, bounds, failedFeatureIds } = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
     loaded.paramTable,
+    loaded.session,
   );
   if (failedFeatureIds.length > 0) {
     console.error(`captureDemo: ${failedFeatureIds.length} feature(s) failed to compile: ${failedFeatureIds.join(', ')}`);

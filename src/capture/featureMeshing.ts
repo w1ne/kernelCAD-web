@@ -123,9 +123,16 @@ function computeConstructionClosure(
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
   paramTable?: import('../runtime/paramTable').ParamTable,
+  /** v0.5: when records contain `importedStep` features, pass the
+   *  originating session so the lowerer can find the pre-imported
+   *  OcctBackend instances. Optional — scripts without `lib.fromSTEP`
+   *  work unchanged. */
+  session?: { importedGeometry: Map<FeatureId, ShapeBackend> },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const lowerer = new OcctLowerer();
+  if (session) lowerer.importedGeometry = session.importedGeometry;
+  const engine = new RecomputeEngine(lowerer);
   const features: FeatureMesh[] = [];
   const failedFeatureIds: FeatureId[] = [];
   let minX = Infinity, minY = Infinity, minZ = Infinity;

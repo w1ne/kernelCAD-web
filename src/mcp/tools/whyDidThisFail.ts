@@ -9,7 +9,7 @@
 // Agents can call list_diagnostic_codes for the full catalogue.
 
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { withNextActions } from '../../diagnostics/diagnostic';
@@ -58,7 +58,7 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   const targetRecord = run.records.find(r => r.id === targetId);
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
 
   // Collect upstream feature ids reachable from the target via input edges.

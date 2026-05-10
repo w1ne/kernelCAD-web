@@ -14,7 +14,7 @@
 
 import { runScript } from './runScript';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import { OcctLowerer } from '../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../backends/sceneBackend';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import { Shape } from '../capture/proxy';
@@ -32,6 +32,9 @@ export interface InterferencePair {
 export interface CheckInterferenceInput {
   readonly code: string;
   readonly fileName: string;
+  /** Absolute directory of the source script. Threaded so `lib.fromSTEP`
+   *  resolves relative paths. */
+  readonly scriptDir?: string;
   /** Volume threshold below which an intersection is treated as "touching"
    *  rather than "interfering". Default 0.01 mm³ — small enough to surface
    *  any meaningful overlap, large enough to ignore numerical artifacts on
@@ -59,8 +62,12 @@ export async function checkInterference(
   const epsilon = input.epsilonMm3 ?? DEFAULT_EPSILON_MM3;
   const ignored = input.ignorePairs ?? new Set<string>();
 
-  const run = await runScript({ code: input.code, fileName: input.fileName });
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const run = await runScript({
+    code: input.code,
+    fileName: input.fileName,
+    scriptDir: input.scriptDir,
+  });
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const fatal = r.diagnostics.filter((d) => d.severity === 'error');

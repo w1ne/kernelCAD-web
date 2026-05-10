@@ -103,6 +103,12 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
+   *  side import runs at script time; the lowerer pulls the OcctBackend
+   *  from this map by feature id when it sees an `importedStep` record.
+   *  Lives on the session (not the record) because OCCT shapes carry
+   *  circular references that would trip metadata walkers. */
+  readonly importedGeometry: Map<string, ShapeBackend> = new Map();
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);

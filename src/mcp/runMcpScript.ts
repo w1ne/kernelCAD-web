@@ -28,10 +28,15 @@ export async function runMcpScript(input: McpScriptInput): Promise<RunMcpScriptR
   if (!source.ok) return source;
 
   try {
+    // When source came from a file, pass the script's directory so
+    // `lib.fromSTEP('parts/foo.step')` resolves relative to the script.
+    const scriptDir = input.file !== undefined
+      ? resolve(input.file).replace(/[\\/][^\\/]*$/, '')
+      : undefined;
     return {
       ok: true,
       fileName: source.fileName,
-      run: await runScript({ code: source.code, fileName: source.fileName }),
+      run: await runScript({ code: source.code, fileName: source.fileName, scriptDir }),
     };
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e);

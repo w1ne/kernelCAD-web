@@ -75,7 +75,33 @@ helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, nu
 // Edge selection — lowers the shape lazily (awaitable).
 selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
 selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if zero or multiple match
+
+// Parts library — STEP import for vendor catalog components.
+// Resolved relative to the calling .kcad.ts file; absolute paths also accepted.
+// Returns the standard capture-proxy Shape — composes with translate/rotate/color
+// and arm.part(...) like any primitive.
+lib.fromSTEP(path: string): Promise<Shape>;
 ```
+
+### Components from STEP files
+
+When a real component (servo, bearing, gripper jaw, fastener) has a vendor-published
+STEP file, prefer `lib.fromSTEP(path)` over hand-authoring the silhouette from
+`box()` / `cylinder()`. Geometric fidelity matches the real part — bolt patterns,
+shaft positions, body cutouts — and the assembly tree carries that same fidelity
+through to renders, exports, and clash detection.
+
+```typescript
+const servo = (await lib.fromSTEP('parts/sts3215.step')).color('servo');
+const jaw   = await lib.fromSTEP('parts/so100-jaw.step');
+
+const arm = assembly('so100');
+arm.part('shoulder-servo', servo, { at: [0, 0, 0] });
+arm.part('jaw', jaw.translate(0, 0, 50), { at: [0, 0, 0] });
+```
+
+Authoring rule: imported parts for vendor catalog geometry; `box`/`cylinder`/`extrude`
+for the printed/machined plates and brackets that connect them.
 
 ### Shape methods (chainable)
 

@@ -1,6 +1,6 @@
 // src/mcp/tools/listTopology.ts
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import { OcctBackend } from '../../backends/occt/occtBackend';
 import { runMcpScript } from '../runMcpScript';
 
@@ -38,7 +38,7 @@ export async function listTopologyTool(input: ListTopologyInput): Promise<ListTo
     return { ok: false, error: `feature_id '${targetId}' not found.` };
   }
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = result.shapes.get(targetId);
   if (!shape) {

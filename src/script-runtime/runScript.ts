@@ -8,6 +8,10 @@ import { runIsolated } from './isolation';
 export interface RunScriptInput {
   code: string;
   fileName: string;
+  /** Absolute directory the script lives in. Threaded into the API context
+   *  so `lib.fromSTEP('parts/foo.step')` resolves paths relative to the
+   *  caller, matching how user .kcad.ts files reference sibling assets. */
+  scriptDir?: string;
 }
 
 export interface RunScriptResult {
@@ -34,9 +38,9 @@ export interface RunScriptResult {
  * body is wrapped in an IIFE inside the sandbox.
  */
 export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
-  const { code, fileName } = input;
+  const { code, fileName, scriptDir } = input;
   const session = new CaptureSession();
-  const api = createApi({ session });
+  const api = createApi({ session, scriptDir });
 
   const transpiled = transpileTs(code, fileName);
 

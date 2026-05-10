@@ -3,7 +3,7 @@
 // MCP tool: list faces of a kernelCAD shape with optional FaceQuery filter.
 
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import { OcctBackend } from '../../backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../backends/occt/edgeQueries';
 import type { Face } from 'replicad';
@@ -44,7 +44,7 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
     return { ok: false, error: 'Script returned no features.' };
   }
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const targetId = input.feature_id ?? run.records[run.records.length - 1].id;

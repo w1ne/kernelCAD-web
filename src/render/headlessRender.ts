@@ -55,6 +55,7 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   const meshing = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
     loaded.paramTable,
+    loaded.session,
   );
   if (meshing.failedFeatureIds.length > 0) {
     throw new Error(

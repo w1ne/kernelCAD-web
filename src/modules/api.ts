@@ -11,6 +11,7 @@ import {
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../runtime/paramRef';
@@ -19,6 +20,13 @@ import { toParam } from '../runtime/editableHelpers';
 
 export interface ApiContext {
   session: CaptureSession;
+  /** Absolute directory of the calling `.kcad.ts` script. Used by
+   *  `lib.fromSTEP(path)` to resolve relative STEP paths. */
+  scriptDir?: string;
+}
+
+export interface PartsLib {
+  fromSTEP(path: string): Promise<Shape>;
 }
 
 export interface FaceLabelOpts {
@@ -45,6 +53,9 @@ export interface KernelCadApi {
   helix(opts: HelixOptions): RailPoint[];
   selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
   selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;
+
+  /** Parts library — STEP-import + (future) parametric component wrappers. */
+  lib: PartsLib;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -179,6 +190,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     selectEdge: async (shape, query) => {
       const lowered = await shape.lower();
       return selectEdgeBackend(lowered, query);
+    },
+    lib: {
+      fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
     },
   };
   return api;

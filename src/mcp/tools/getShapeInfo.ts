@@ -1,6 +1,6 @@
 // src/mcp/tools/getShapeInfo.ts
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import type { FeatureKind } from '../../intent/types';
 import { runMcpScript } from '../runMcpScript';
 
@@ -47,7 +47,7 @@ export async function getShapeInfoTool(
     return { ok: false, error: `feature_id '${targetId}' not found in script's features.` };
   }
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = result.shapes.get(targetId);
   if (!shape) {

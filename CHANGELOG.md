@@ -48,6 +48,19 @@ instances, with fusion as opt-in export.
   volume measurement — exit code 1 on any pair whose intersection
   volume exceeds `--epsilon` (default 0.01 mm³). Pipe-friendly:
   `kernelcad interference arm.kcad.ts && echo ok`.
+- New `lib.fromSTEP(path)` global imports a STEP file as a Shape that
+  composes with the rest of the kernel API (`.translate(...)`,
+  `.rotate(...)`, `.color('servo')`, `arm.part(...)`). Path is
+  resolved relative to the calling .kcad.ts script; absolute paths
+  also accepted. Lets agents pull real vendor catalog parts (servos,
+  bearings, fasteners) instead of hand-authoring silhouettes from
+  primitives.
+- Renderer upgraded to physically-based shading: `MeshStandardMaterial`
+  with role-driven metalness/roughness (matte plastic for servo/frame,
+  polished metal for shaft/gear, painted aluminium for plate/beam),
+  three-point + rim lighting (key + fill + rim + low ambient), ACES
+  filmic tone mapping with sRGB output. Affects every demo and every
+  `kernelcad render` output.
 
 ## Migration
 

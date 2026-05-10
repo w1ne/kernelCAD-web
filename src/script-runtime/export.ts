@@ -1,6 +1,6 @@
 import { runScript } from './runScript';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import { OcctLowerer } from '../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../backends/occt/occtBackend';
 import { isSceneBackend } from '../backends/sceneBackend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
@@ -16,6 +16,9 @@ export interface ExportInput {
   format: ExportFormat;
   /** Optional: which feature to export. Defaults to the returned value or last captured feature. */
   feature_id?: string;
+  /** Optional: absolute directory of the source script. Threaded into the
+   *  API context so `lib.fromSTEP('parts/foo.step')` resolves. */
+  scriptDir?: string;
 }
 
 export interface ExportResult {
@@ -25,9 +28,9 @@ export interface ExportResult {
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
-  const { code, fileName, format, feature_id } = input;
-  const run = await runScript({ code, fileName });
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const { code, fileName, format, feature_id, scriptDir } = input;
+  const run = await runScript({ code, fileName, scriptDir });
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const featureCount = run.records.length;

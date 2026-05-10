@@ -5,7 +5,7 @@
 // imported geometry) before running fillet/chamfer.
 
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import { OcctBackend } from '../../backends/occt/occtBackend';
 import { selectEdges, type EdgeQuery, type EdgeSegment } from '../../backends/occt/edgeQueries';
 import { runMcpScript } from '../runMcpScript';
@@ -36,7 +36,7 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
     return { ok: false, error: 'Script returned no features.' };
   }
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
