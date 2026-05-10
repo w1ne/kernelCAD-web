@@ -15,6 +15,8 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
+import type { SceneBackend, SceneBackendPart } from '../sceneBackend';
+import { lookupSourceColor } from './lookupSourceColor';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -1447,9 +1449,12 @@ export class OcctLowerer implements FeatureLowerer {
         //    surfaces these as structured diagnostics.
         const worldT = forwardKinematics(parts, joints, numericPoses);
 
-        // 5. Apply per-part FK transform to the pre-lowered part shape (which
-        //    already has the part's `at` translation applied by the
-        //    `assemblyPart` lowerer). Then union all transformed parts.
+        // 5. Build a SceneBackend (no boolean union — each part stays in its
+        //    LOCAL frame and the FK-derived worldTransform travels with it).
+        //    This preserves per-part identity (color, name, topology) for
+        //    downstream meshing / STEP-compound export. The legacy union
+        //    path is gone; consumers that needed a fused single-Shape now
+        //    call Scene.toUnion() / Scene.toCompound() explicitly.
         if (partEntries.length !== partIds.length) {
           diagnostics.push({
             target: this.target,
@@ -1461,7 +1466,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        const transformedParts: OcctBackend[] = partEntries.map(([, partShape], i) => {
+        const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
           const partId = partIds[i];
           const T = worldT.get(partId);
           if (!T) {
@@ -1472,14 +1477,32 @@ export class OcctLowerer implements FeatureLowerer {
               'invalid-args.solve.internal — please file a bug.',
             );
           }
-          return (partShape as OcctBackend).clone().applyTransform(T);
+          const partRec = records.find((rec) => rec.id === partId)!;
+          const partMeta = partRec.metadata as { partName?: string } | undefined;
+          const partName = partMeta?.partName ?? partId;
+          const color = lookupSourceColor(partRec, records);
+          return {
+            name: partName,
+            shape: partShape as OcctBackend,
+            worldTransform: T,
+            ...(color !== undefined ? { color } : {}),
+          };
         });
-        let result = transformedParts[0];
-        for (let i = 1; i < transformedParts.length; i++) {
-          result = result.union(transformedParts[i]);
-        }
-        shape = result;
-        break;
+        const assemblyName =
+          (r.metadata as { assemblyName?: string } | undefined)?.assemblyName ?? 'unnamed';
+        const sceneBackend: SceneBackend = {
+          target: this.target,
+          assemblyName,
+          parts: sceneParts,
+          _kind: 'scene',
+        };
+        // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
+        // `r.transforms` loop below cannot be applied to it. Task 7 widens
+        // the dispatch signature to LoweringResult; today we cast cleanly at
+        // the boundary so existing ShapeBackend-typed call sites (recompute
+        // engine's shapes map, meshing) keep compiling. Consumers that need
+        // the SceneBackend at runtime use isSceneBackend(...) to discriminate.
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
       }
       default:
         return {
