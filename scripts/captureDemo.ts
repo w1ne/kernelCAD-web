@@ -265,10 +265,13 @@ async function main(): Promise<void> {
 
   // Drive terminal lines (statements as a rough proxy — split source by newline).
   const sourceLines = loaded.source.split('\n').filter((l) => l.trim().length > 0);
-  const terminalLines = loaded.features.map((f, i) => {
-    const t = pacing.features.get(f.id)!;
-    return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
-  });
+  const terminalLines = loaded.features
+    .map((f, i) => {
+      const t = pacing.features.get(f.id);
+      if (!t) return null;
+      return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
+    })
+    .filter((x): x is { text: string; fullyTypedAtMs: number } => x !== null);
   await page.evaluate((lines) => window.__demoPlayer!.setTerminalLines(lines), terminalLines);
   await page.evaluate((origin) => window.__demoPlayer!.startTerminalClock(origin), pacing.preRollMs);
 
@@ -292,15 +295,22 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
-  const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
-  const sortedEvents = loaded.features
-    .filter((f) => meshById.has(f.id))
-    .map((f) => {
-      const mesh = meshById.get(f.id);
-      if (!mesh) {
-        throw new Error(`captureDemo: feature '${f.id}' has no mesh — likely a meshFeaturesPerFeature bug`);
-      }
-      return { feature: f, t: pacing.features.get(f.id)!, mesh };
+  const sortedEvents = featureMeshes
+    .map((mesh) => {
+      // Mesh's own id may be a composite (e.g. solvedAssembly_1__base-plate)
+      // produced by the SceneBackend fan-out in meshFeaturesPerFeature.
+      // pacing.features is keyed by the ORIGINAL FeatureRecord id; fall back
+      // to mesh.predecessors[0] which is the parent assembly feature id.
+      // Final fallback: startAtMs 0 — meshes load at opacity 0 by design and
+      // need an event to tween to 1; without firing, they stay invisible
+      // (this triggers when pacing truncates and drops the parent feature).
+      const pacingKey = pacing.features.has(mesh.featureId)
+        ? mesh.featureId
+        : mesh.predecessors[0];
+      const t: { startAtMs: number; durationMs: number; pauseMsAfter: number; cameraNudgeMs: number } =
+        (pacingKey ? pacing.features.get(pacingKey) : undefined)
+          ?? { startAtMs: 0, durationMs: 400, pauseMsAfter: 0, cameraNudgeMs: 0 };
+      return { feature: { id: mesh.featureId, kind: mesh.featureKind }, t, mesh };
     })
     .sort((a, b) => a.t.startAtMs - b.t.startAtMs);
   let nextEventIdx = 0;
