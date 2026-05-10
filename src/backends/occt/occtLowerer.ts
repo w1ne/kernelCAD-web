@@ -17,6 +17,7 @@ import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
 import type { SceneBackend, SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
+import { Transform } from '../../runtime/se3';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -1280,6 +1281,11 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyModel': {
+        // Kinematic-zero counterpart of `solvedAssembly`: same SceneBackend
+        // shape change, but no FK runs — `model()` is the unposed view of
+        // the assembly, so each part's worldTransform is the identity. The
+        // legacy boolean-union path is gone; consumers that needed a fused
+        // single-Shape now call Scene.toUnion()/Scene.toCompound() explicitly.
         const partEntries = Object.entries(inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
           .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
@@ -1294,12 +1300,46 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        const [, firstPart] = partEntries[0];
-        shape = (firstPart as OcctBackend).clone();
-        for (const [, part] of partEntries.slice(1)) {
-          shape = shape.union((part as OcctBackend).clone());
+        const meta = r.metadata as {
+          assemblyName?: string;
+          partIds?: FeatureId[];
+        } | undefined;
+        const partIds = meta?.partIds ?? [];
+        if (partEntries.length !== partIds.length) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyModel: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
+            hint: 'Ensure inputs and partIds stay in sync.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        break;
+        const records = allRecords ?? [];
+        const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
+          const partId = partIds[i];
+          const partRec = records.find((rec) => rec.id === partId);
+          const partName =
+            (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
+          const color = partRec ? lookupSourceColor(partRec, records) : undefined;
+          return {
+            name: partName,
+            shape: partShape as OcctBackend,
+            worldTransform: Transform.identity(),
+            ...(color !== undefined ? { color } : {}),
+          };
+        });
+        const sceneBackend: SceneBackend = {
+          target: this.target,
+          assemblyName: meta?.assemblyName ?? 'unnamed',
+          parts: sceneParts,
+          _kind: 'scene',
+        };
+        // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
+        // r.transforms loop below cannot apply. Mirror the solvedAssembly
+        // boundary cast (Task 4); Task 7 widens the dispatch signature.
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
       }
       case 'solvedAssembly': {
         // 1. Read poses from metadata. Param.evaluated is updated by the
