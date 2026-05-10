@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
 import { mcpCommand } from './commands/mcp';
+import { renderCommand } from './commands/render';
 import { skillCommand } from './commands/skill';
 
 const requireFromHere = createRequire(import.meta.url);
@@ -18,6 +19,7 @@ program
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
 program.addCommand(mcpCommand());
+program.addCommand(renderCommand());
 program.addCommand(skillCommand());
 
 program.parseAsync(process.argv).catch(err => {

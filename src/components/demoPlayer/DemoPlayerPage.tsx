@@ -24,6 +24,14 @@ export interface DemoPlayerWindow {
   advance(dtMs: number): void;
   /** Set kernelCAD module version string for watermark, e.g. "v0.21". */
   setVersion(v: string): void;
+  /** Snap camera to one of four standard engineering views and force a
+   *  render. Used by `kernelcad render` for headless multi-view PNG
+   *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
+   *  appear at full visibility. */
+  setRenderView(view: RenderView): void;
+  /** Set every loaded FeatureMesh material to opacity 1.0 and re-render.
+   *  Used by `kernelcad render` to skip the build-animation fade-in. */
+  forceFullOpacity(): void;
   /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
   loadFeatureMeshes(
     perFeature: FeatureMeshSerialized[],
@@ -87,9 +95,12 @@ function buildMeshFromFace(face: FaceGeometry, name: string, color: number | str
   return mesh;
 }
 
+export type RenderView = 'front' | 'right' | 'top' | 'iso';
+
 function fitCameraToBounds(
   camera: THREE.PerspectiveCamera,
   bounds: { min: [number, number, number]; max: [number, number, number] },
+  view: RenderView | 'demo' = 'demo',
 ): void {
   // Bounds are centered at origin (caller offsets meshes so centroid = (0,0,0)).
   // Use the largest extent (not diagonal) so the model fills the viewport tightly.
@@ -101,8 +112,26 @@ function fitCameraToBounds(
   // Tighter framing for mobile-readable videos: the viewer is letterboxed next
   // to the terminal, so the model should fill the 3D pane without clipping.
   const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
-  // Canonical CAD-isometric-ish viewing angle (azimuth ~35°, elevation ~25°).
-  camera.position.set(distance * 0.78, distance * 0.5, distance * 0.78);
+
+  // kernelCAD is Z-up. Each engineering view fixes camera position + up
+  // vector so the rendered tile matches first-angle drafting convention.
+  // 'demo' preserves the legacy 3/4 angle (Y-up THREE default) the demo
+  // pipeline has always rendered — captureDemo screenshots target this.
+  let pos: [number, number, number];
+  let up: [number, number, number] = [0, 0, 1];
+  switch (view) {
+    case 'front': pos = [0, -distance, 0]; break;
+    case 'right': pos = [distance, 0, 0]; break;
+    case 'top':   pos = [0, 0, distance]; up = [0, 1, 0]; break;
+    case 'iso':   pos = [distance * 0.7, -distance * 0.7, distance * 0.5]; break;
+    case 'demo':
+    default:
+      pos = [distance * 0.78, distance * 0.5, distance * 0.78];
+      up = [0, 1, 0];
+      break;
+  }
+  camera.up.set(up[0], up[1], up[2]);
+  camera.position.set(pos[0], pos[1], pos[2]);
   camera.lookAt(0, 0, 0);
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
@@ -162,6 +191,39 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
       },
       setVersion: (v) => setVersion(v),
+      setRenderView: (view) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        // Reuse the bounds the loadFeatureMeshes path computed (mesh
+        // groups are already centered at origin; just re-aim the camera).
+        // Recompute aggregate bounds from current scene contents to
+        // tolerate scenes loaded without explicit fit.
+        const bbox = new THREE.Box3();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+        });
+        if (bbox.isEmpty()) return;
+        const minV = bbox.min, maxV = bbox.max;
+        fitCameraToBounds(
+          ctx.camera,
+          { min: [minV.x, minV.y, minV.z], max: [maxV.x, maxV.y, maxV.z] },
+          view,
+        );
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
+      forceFullOpacity: () => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) {
+            const mat = obj.material as THREE.Material;
+            mat.opacity = 1;
+            mat.transparent = false;
+            mat.needsUpdate = true;
+          }
+        });
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
       loadFeatureMeshes: (perFeature, bounds) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const scene = sceneRef.current.scene;
