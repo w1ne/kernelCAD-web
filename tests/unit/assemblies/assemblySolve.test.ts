@@ -10,15 +10,16 @@ function near(a: readonly number[], b: readonly number[], eps = 1e-6): void {
 }
 
 describe('Assembly.solve — body-tree forward kinematics', () => {
-  it('zero-pose, single part, no joints — solvedModel returns the part shape unioned', () => {
+  it('zero-pose, single part, no joints — solvedModel returns a Scene with the part', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const arm = kcad.assembly('test');
     arm.part('only', kcad.box(10, 10, 10));
-    const shape = arm.solvedModel({});
-    expect(shape.id).toBeTruthy();
-    // Identity transform applied via Shape.transform: zero translates, zero rotates appended.
-    // (Ditching exact transform-count assertion; rely on solvedModel succeeding without throw.)
+    // Per Task 14: solvedModel returns a Scene (multi-body), not a Shape.
+    // Assert Scene structure rather than the legacy shape.id token.
+    const scene = arm.solvedModel({});
+    expect(scene.assemblyName).toBe('test');
+    expect(scene.parts.map(p => p.name)).toEqual(['only']);
   });
 
   it('single revolute pose: solved.transform(child) reflects 90° rotation about Z', () => {
