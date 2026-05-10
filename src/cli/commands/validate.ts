@@ -23,8 +23,13 @@ import { validateAssembly, type ValidatorResult } from '../../lib/mates/validato
 export interface ValidateCliInput {
   file: string;
   json: boolean;
-  /** Same epsilon as `kernelcad interference`; touching surfaces below
-   *  this volume aren't promoted into the diagnostic stream. */
+  /** Fold interference results into the validator stream. Off by default —
+   *  intentional joint contacts (shaft-through-bore, yoke embracing a
+   *  servo) routinely clash by design; `kernelcad interference` remains
+   *  the dedicated surface for clash review. */
+  includeInterference: boolean;
+  /** Same epsilon as `kernelcad interference`; only consulted when
+   *  --include-interference is set. */
   epsilon: number;
 }
 
@@ -47,19 +52,26 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
 
   const run = await runScript({ code, fileName: input.file, scriptDir });
 
-  // Cheap path: run interference check (also resolves the SceneBackend +
-  // surfaces any kernel diagnostics from the run). validateAssembly then
-  // gets both records + interference pairs in one shot.
-  const interferenceR = await checkInterference({
-    code,
-    fileName: input.file,
-    scriptDir,
-    epsilonMm3: input.epsilon,
-  });
+  // Interferences are off by default — intentional joint contacts
+  // routinely clash by design. Agents who want them in the validator
+  // stream pass --include-interference (and get the same epsilon
+  // semantics as `kernelcad interference`).
+  let interferencePairs: import('../../script-runtime/checkInterference').InterferencePair[] = [];
+  let kernelDiagnostics: import('../../diagnostics/diagnostic').CompilerDiagnostic[] = [];
+  if (input.includeInterference) {
+    const interferenceR = await checkInterference({
+      code,
+      fileName: input.file,
+      scriptDir,
+      epsilonMm3: input.epsilon,
+    });
+    interferencePairs = [...interferenceR.pairs];
+    kernelDiagnostics = interferenceR.diagnostics;
+  }
 
   const result = validateAssembly({
     records: run.records,
-    interferencePairs: interferenceR.pairs,
+    interferencePairs,
   });
 
   if (input.json) {
@@ -69,7 +81,7 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
       partCount: result.partCount,
       jointCount: result.jointCount,
       diagnostics: result.diagnostics,
-      kernelDiagnostics: interferenceR.diagnostics,
+      kernelDiagnostics,
     }, null, 2));
   } else {
     renderHuman(result);
@@ -99,12 +111,14 @@ export function validateCommand(): Command {
   return new Command('validate')
     .description('Validate an assembly: floating parts, orphan clusters, interferences')
     .argument('<file>', 'path to .kcad.ts script')
-    .option('--epsilon <mm3>', 'interference volume threshold below which an intersection is "touching"', (v) => parseFloat(v), 0.01)
+    .option('--include-interference', 'also report BREP clashes (off by default; use kernelcad interference for the dedicated surface)', false)
+    .option('--epsilon <mm3>', 'interference volume threshold (only consulted with --include-interference)', (v) => parseFloat(v), 0.01)
     .option('--json', 'emit results as JSON')
-    .action(async (file: string, opts: { epsilon: number; json?: boolean }) => {
+    .action(async (file: string, opts: { epsilon: number; includeInterference?: boolean; json?: boolean }) => {
       const r = await runValidateCli({
         file,
         epsilon: opts.epsilon,
+        includeInterference: opts.includeInterference ?? false,
         json: opts.json ?? false,
       });
       process.exitCode = r.exitCode;

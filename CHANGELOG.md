@@ -91,10 +91,17 @@ instances, with fusion as opt-in export.
 
 ## Notes
 
-- v0.5.0 hero is `examples/robot-arm/so100/so100.kcad.ts`: the LeRobot
-  SO-ARM-100 5-DOF follower arm imported via `lib.fromSTEP`, with a
-  locally-authored desk plate. The previous `examples/robot-arm/
-  desktop-3axis.kcad.ts` is kept as a primitive-composition tutorial.
+- v0.5.0 hero is `examples/robot-arm/desktop-3axis.kcad.ts`: 13-part
+  body-tree robot arm authored from primitives; parts mate by
+  construction so the assembly fits without a constraint solver.
+  Validator reports 13 parts, 12 joints, fully connected mechanism.
+- `examples/robot-arm/so100/so100.kcad.ts` ships as the `lib.fromSTEP`
+  demo (single-import of LeRobot's pre-assembled SO-ARM-100 STEP +
+  engineered base plate). Multi-part SO-100 subassemblies wait for the
+  v0.6 mate-connector API — composing individual link STEPs into a
+  geometrically-correct kinematic chain requires axes-by-topology
+  connectors that today's `arm.fixed/revolute(...)` numeric-frame API
+  can't express.
 
 ---
 
