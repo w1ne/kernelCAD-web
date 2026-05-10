@@ -20,8 +20,6 @@ const elbowPitchDeg    = param('elbowPitchDeg',   -55,  { min: -120, max: 120 })
 const baseW         = param('baseW',         140, { min: 80,  max: 240 });
 const baseD         = param('baseD',         140, { min: 80,  max: 240 });
 const plateT        = param('plateT',          6, { min:  3,  max:  15 });
-const baseColumnW   = param('baseColumnW',    72, { min: 40,  max: 120 });
-const baseColumnH   = param('baseColumnH',    20, { min: 10,  max:  60 });
 
 // Servo dimensions (standard hobby servo silhouette).
 const servoW        = param('servoW',         40, { min: 20,  max:  60 });
@@ -53,11 +51,9 @@ const yokeCheekH    = param('yokeCheekH',     46, { min: 28,  max:  80 });
 const halfBaseW       = baseW.divide(2);
 const halfBaseD       = baseD.divide(2);
 const halfBeamT       = beamT.divide(2);
-const halfBaseColumnH = baseColumnH.divide(2);
 const halfYokeCheekH  = yokeCheekH.divide(2);
 const halfYokeCheekW  = yokeCheekW.divide(2);
 const halfServoH      = servoH.divide(2);
-const halfServoW      = servoW.divide(2);
 const halfUpperArm    = upperArmLen.divide(2);
 const halfForearm     = forearmLen.divide(2);
 
@@ -69,7 +65,6 @@ const baseFlangeZ      = plateT.add(servoH).subtract(servoFlangeT.divide(2));
 // Local origin (0,0,0) is at the base-yaw pivot output (top of base horn).
 // Pitch shaft sits up some distance through the cheek-yoke.
 const shoulderColumnH  = param('shoulderColumnH', 50, { min: 30, max: 110 });
-const halfShoulderColH = shoulderColumnH.divide(2);
 const shoulderPitchZ   = shoulderColumnH;        // pitch axis at top of column
 
 // ---- BASE link (root, no parent joint -> identity world transform) ------
@@ -97,14 +92,9 @@ const basePlateShape = box(baseW, baseD, plateT, true)
   .color('plate');
 const basePart = arm.part('base-plate', basePlateShape);
 
-// 2. Base column (riser block carrying the yaw servo).
-const baseColumnShape = box(baseColumnW, baseColumnW, baseColumnH, true)
-  .fillet(2)
-  .translate(0, 0, plateT.add(halfBaseColumnH))
-  .color('frame');
-const baseColumnPart = arm.part('base-column', baseColumnShape);
-
-// 3. Base yaw servo (body + flange + cable lug).
+// 2. Base yaw servo (body + flange + cable lug).
+//    The servo IS the structural carrier on the plate; an extra "column"
+//    riser only intersected the servo body and added no real strength.
 const baseServoStack = box(servoW, servoD, servoH, true)
   .translate(0, 0, baseServoCenterZ)
   .union(
@@ -117,7 +107,7 @@ const baseServoStack = box(servoW, servoD, servoH, true)
   .color('servo');
 const baseServoPart = arm.part('base-yaw-servo', baseServoStack);
 
-// 4. Base yaw output horn + shaft (as a single visual cluster).
+// 3. Base yaw output horn + shaft (as a single visual cluster).
 const baseHornStack = cylinder(hornT, hornR, 32)
   .translate(0, 0, plateT.add(servoH))
   .union(
@@ -131,30 +121,34 @@ const baseHornPart = arm.part('base-yaw-output', baseHornStack);
 // Authored in shoulder local frame: (0,0,0) sits at the base-yaw axis exit.
 // The link is a yoke that holds the shoulder-pitch servo and shaft.
 
-// 5. Shoulder column (vertical riser standing on the base-yaw output horn).
-const shoulderColumnShape = box(yokeCheekW, beamT.add(8), shoulderColumnH, true)
-  .fillet(1.5)
-  .translate(0, 0, halfShoulderColH)
+// 5. Shoulder column — thin spine connecting base-yaw output to the yoke
+//    above. Was a wide block that engulfed every other shoulder part; now
+//    a slim post the cheeks fan out around.
+const spineR = beamT.divide(2);
+const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
   .color('frame');
 const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
 
 // 6. Shoulder yoke cheeks (two flanking plates that carry the pitch shaft).
-const shoulderCheekL = box(yokeCheekT, yokeCheekW, yokeCheekH, true)
-  .translate(halfYokeCheekW.subtract(yokeCheekT.divide(2)), 0, shoulderPitchZ)
+//    Pushed OUT in X past the spine so they don't intersect it. Y reduced
+//    from yokeCheekW (=46) to a clearance band around the upper-arm beam.
+const cheekY = beamW.add(2);   // cheek depth in Y (along beam axis)
+const cheekClearX = spineR.add(2);  // distance from spine to cheek inner face
+const shoulderCheekL = box(yokeCheekT, cheekY, yokeCheekH, true)
+  .translate(cheekClearX.add(yokeCheekT.divide(2)), 0, shoulderPitchZ)
   .color('plate');
-const shoulderCheekR = box(yokeCheekT, yokeCheekW, yokeCheekH, true)
-  .translate(halfYokeCheekW.subtract(yokeCheekT.divide(2)).negate(), 0, shoulderPitchZ)
+const shoulderCheekR = box(yokeCheekT, cheekY, yokeCheekH, true)
+  .translate(cheekClearX.add(yokeCheekT.divide(2)).negate(), 0, shoulderPitchZ)
   .color('plate');
 const shoulderCheeks = shoulderCheekL.union(shoulderCheekR);
 const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
 
-// 7. Shoulder pitch servo, mounted sideways inside the yoke (axis along Y).
+// 7. Shoulder pitch servo — mounted EXTERNALLY on the front face of the
+//    cheeks (extending into +Y), not inside the yoke or onto the side
+//    where it would sweep through the upper-arm beam's pitched arc.
+const shoulderServoMountY = cheekY.divide(2).add(yokeCheekT.divide(2));
 const shoulderPitchServo = box(servoH, servoD, servoW, true)
-  .translate(0, 0, shoulderPitchZ)
-  .union(
-    box(servoH, servoD, servoW.add(servoFlangeOver.multiply(2)), true)
-      .translate(0, halfServoH.subtract(servoFlangeT.divide(2)), shoulderPitchZ),
-  )
+  .translate(0, shoulderServoMountY.add(servoD.divide(2)), shoulderPitchZ)
   .color('servo');
 const shoulderServoPart = arm.part('shoulder-pitch-servo', shoulderPitchServo);
 
@@ -194,25 +188,26 @@ const upperArmShape = upperArmBeamShape
 const upperArmPart = arm.part('upper-arm-beam', upperArmShape);
 
 // 9. Elbow yoke at the distal end of the upper arm (carries elbow servo).
-const elbowYokeBase = box(beamW.add(14), yokeCheekW, 6, true)
-  .translate(upperArmLen, 0, 0)
-  .color('frame');
-const elbowYokeCheekL = box(yokeCheekT, yokeCheekW, yokeCheekH, true)
+//    Two flanking plates only — the previous 6mm "yoke base" was a wide
+//    cross-bar that intersected the beam and surrounding parts. The two
+//    cheeks alone form a U-shape that holds the elbow shaft without a
+//    bridging slab.
+const elbowCheekY = beamW.add(2);
+const elbowYokeCheekL = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
   .translate(upperArmLen, halfYokeCheekW.subtract(yokeCheekT.divide(2)), halfYokeCheekH)
   .color('plate');
-const elbowYokeCheekR = box(yokeCheekT, yokeCheekW, yokeCheekH, true)
+const elbowYokeCheekR = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
   .translate(upperArmLen, halfYokeCheekW.subtract(yokeCheekT.divide(2)).negate(), halfYokeCheekH)
   .color('plate');
-const elbowYoke = elbowYokeBase.union(elbowYokeCheekL).union(elbowYokeCheekR);
+const elbowYoke = elbowYokeCheekL.union(elbowYokeCheekR);
 const elbowYokePart = arm.part('elbow-yoke', elbowYoke);
 
-// 10. Elbow pitch servo on the upper-arm side of the elbow joint.
-const elbowServoStack = box(servoH, servoW, servoD, true)
-  .translate(upperArmLen, 0, halfServoW)
-  .union(
-    box(servoH, servoW.add(servoFlangeOver.multiply(2)), servoFlangeT, true)
-      .translate(upperArmLen, 0, halfServoW.add(halfServoW).subtract(servoFlangeT.divide(2))),
-  )
+// 10. Elbow pitch servo — mounted EXTERNALLY on the +Y cheek's outer face
+//     (axis along +Y), not stacked above the joint where it intersected
+//     the upper-arm beam, the yoke, and the forearm beam after FK rotation.
+const elbowServoMountY = halfYokeCheekW.add(yokeCheekT.divide(2));
+const elbowServoStack = box(servoH, servoD, servoW, true)
+  .translate(upperArmLen, elbowServoMountY.add(servoD.divide(2)), halfYokeCheekH)
   .color('servo');
 const elbowServoPart = arm.part('elbow-pitch-servo', elbowServoStack);
 
@@ -272,7 +267,6 @@ const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
 // Base-link internals (column / servo / horn ride with the base, which is
 // stationary, but binding them via fixed joints documents the ownership
 // graph and keeps every part in the same body-tree).
-arm.fixed('base-column-fix',     basePart,     baseColumnPart, { origin: [0, 0, 0] });
 arm.fixed('base-yaw-servo-fix',  basePart,     baseServoPart,  { origin: [0, 0, 0] });
 arm.fixed('base-yaw-output-fix', basePart,     baseHornPart,   { origin: [0, 0, 0] });
 
