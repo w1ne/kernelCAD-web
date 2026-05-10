@@ -36,6 +36,9 @@ export interface DemoPlayerWindow {
     cameraPos: [number, number, number];
     cameraLookingAt: [number, number, number];
     sampleOpacities: number[];
+    /** polygonOffset triple per sampled mesh material — used by tests to
+     *  verify the renderer applies depth bias on assembly meshes. */
+    samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }>;
   };
 }
 
@@ -63,6 +66,10 @@ function buildMeshFromFace(face: FaceGeometry, name: string, color: number | str
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
   // MeshPhongMaterial — light-reactive shading for visible CAD geometry (existing scene has ambient + directional lights).
+  // polygonOffset — assemblies fan into N FeatureMeshes (Task 7), so adjacent
+  // parts whose surfaces touch (column on plate, servo case flush against
+  // bracket) produce coplanar geometry. Depth bias resolves the resulting
+  // Z-fighting flicker without geometric epsilons.
   const mat = new THREE.MeshPhongMaterial({
     color,
     specular: 0x222233,
@@ -71,6 +78,9 @@ function buildMeshFromFace(face: FaceGeometry, name: string, color: number | str
     opacity: 0,
     side: THREE.DoubleSide,
     flatShading: false,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
   });
   const mesh = new THREE.Mesh(geom, mat);
   mesh.name = name;
@@ -217,15 +227,24 @@ export function DemoPlayerPage(): React.JSX.Element {
             cameraPos: [0, 0, 0] as [number, number, number],
             cameraLookingAt: [0, 0, 0] as [number, number, number],
             sampleOpacities: [],
+            samplePolygonOffsets: [],
           };
         }
         let meshCount = 0;
         const sampleOpacities: number[] = [];
+        const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
         scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             meshCount++;
             const mat = obj.material as THREE.MeshPhongMaterial;
             if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
+            if (samplePolygonOffsets.length < 5) {
+              samplePolygonOffsets.push({
+                enabled: mat.polygonOffset,
+                factor: mat.polygonOffsetFactor,
+                units: mat.polygonOffsetUnits,
+              });
+            }
           }
         });
         const lookDir = new THREE.Vector3();
@@ -241,6 +260,7 @@ export function DemoPlayerPage(): React.JSX.Element {
           cameraPos: [camera.position.x, camera.position.y, camera.position.z],
           cameraLookingAt: lookAt,
           sampleOpacities,
+          samplePolygonOffsets,
         };
       },
     };
