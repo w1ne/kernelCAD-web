@@ -5,6 +5,8 @@
 // - Normals use Transform.axisDir() (rotation only) and are renormalized.
 // - Edges (if present) use Transform.point() (positions).
 // - plane.origin uses point(); plane.normal/xDir/yDir use axisDir().
+// - cylinder.origin uses point(); cylinder.axis uses axisDir() (renormalized);
+//   cylinder.radius is invariant under rigid SE(3).
 //
 // Returns a new FeatureMesh; does not mutate input.
 //
@@ -58,7 +60,27 @@ export function transformFeatureMesh(mesh: FeatureMesh, t: Transform): FeatureMe
             : {}),
         }
       : undefined;
-    return { ...f, vertices: newV, normals: newN, ...(newPlane ? { plane: newPlane } : {}) };
+    const newCylinder = f.cylinder
+      ? {
+          origin: ((): [number, number, number] => {
+            const p = t.point(f.cylinder!.origin);
+            return [p[0], p[1], p[2]];
+          })(),
+          axis: ((): [number, number, number] => {
+            const d = t.axisDir(f.cylinder!.axis);
+            const l = Math.hypot(d[0], d[1], d[2]) || 1;
+            return [d[0] / l, d[1] / l, d[2] / l];
+          })(),
+          radius: f.cylinder.radius, // scale-free transform; rigid SE(3) preserves radius
+        }
+      : undefined;
+    return {
+      ...f,
+      vertices: newV,
+      normals: newN,
+      ...(newPlane ? { plane: newPlane } : {}),
+      ...(newCylinder ? { cylinder: newCylinder } : {}),
+    };
   });
   let newEdges: Float32Array | undefined;
   if (mesh.edges) {

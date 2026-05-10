@@ -72,4 +72,18 @@ describe('transformFeatureMesh', () => {
     expect(out.faces[0].plane?.origin).toEqual([5,0,0]);
     expect(out.faces[0].plane?.normal).toEqual([0,0,1]);
   });
+
+  it('transforms cylinder.origin (point) and cylinder.axis (axisDir + renormalize)', () => {
+    const withCyl: FeatureMesh = {
+      ...triangle,
+      faces: [{
+        ...triangle.faces[0],
+        cylinder: { origin: [0, 0, 0], axis: [0, 0, 1], radius: 5 },
+      }],
+    };
+    const out = transformFeatureMesh(withCyl, Transform.translation(10, 0, 0));
+    expect(out.faces[0].cylinder?.origin).toEqual([10, 0, 0]);
+    expect(out.faces[0].cylinder?.axis).toEqual([0, 0, 1]);  // pure translation, axis unchanged
+    expect(out.faces[0].cylinder?.radius).toBe(5);
+  });
 });
