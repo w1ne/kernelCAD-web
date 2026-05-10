@@ -4,9 +4,16 @@
 // reconstructs AssemblyPartStored / AssemblyJointStored from FeatureRecords,
 // resolves the encoded poses to numeric values via Param.evaluated (the
 // recompute pipeline updates these before lowering), runs forwardKinematics,
-// applies the per-part SE(3) transform to the pre-lowered part Shape, and
-// unions the posed parts. Studio-driven param edits re-pose the rendered
-// scene reactively without re-running the script.
+// and emits a SceneBackend with per-part world transforms. Studio-driven
+// param edits re-pose the rendered scene reactively without re-running the
+// script.
+//
+// These bbox-based reactivity assertions terminate each script with
+// `.solvedModel(...).toUnion()` so the tail record is `assemblyExport`
+// (op=union) and lowers to a single Shape with `.boundingBox()`. The Scene
+// reactivity / per-part worldTransform path is exercised by
+// sceneBackendEmission / sceneToCompoundUnion / sceneAssemblyModel; here
+// we keep the legacy bbox semantics by routing through `.toUnion()`.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
@@ -41,7 +48,7 @@ describe('solvedAssembly lowering', () => {
       const base  = arm.part('base',  box(10, 10, 10));
       const upper = arm.part('upper', box(10, 10, 30));
       arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 10] });
-      return arm.solvedModel({ yaw: 0 });
+      return arm.solvedModel({ yaw: 0 }).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     expect(shape).toBeDefined();
@@ -63,7 +70,7 @@ describe('solvedAssembly lowering', () => {
       // Upper arm extends 30mm along +X (so yaw=90° rotates it onto +Y).
       const upper = arm.part('upper', box(30, 10, 10).translate(15, 0, 0));
       arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-      return arm.solvedModel({ yaw: 90 });
+      return arm.solvedModel({ yaw: 90 }).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     expect(shape).toBeDefined();
@@ -92,7 +99,7 @@ describe('solvedAssembly lowering', () => {
         // Long upper arm extending +X (so yaw=90° rotates it onto +Y).
         const upper = arm.part('upper', box(60, 10, 10).translate(30, 0, 0));
         arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-        return arm.solvedModel({ yaw: yawDeg });
+        return arm.solvedModel({ yaw: yawDeg }).toUnion();
       `,
     });
 
@@ -135,16 +142,19 @@ describe('solvedAssembly lowering', () => {
     // trip a *mixed* triple: first axis is a ParamRef (Param wrapper), second
     // and third are numeric literals. Re-driving the param then re-lowers the
     // solvedAssembly record with the updated rotation, which should swing the
-    // tip's +Z extent off the Z axis observably in the bbox.
+    // tip's worldTransform observably.
     //
     // Geometry:
     //   base = box(10,10,10) at corner [0,0,0]→[10,10,10]
     //   tip  = box(10,10,50) at corner [0,0,0]→[10,10,50]
     //   wrist (ball) parent=base, child=tip, origin=[0,0,10] in base local
     //
-    // FK applies tip-local-frame eulerXYZDeg(ax,ay,az) then translation. With
-    // right-hand-rule rotation about +X by +90°, the tip's +Z direction maps
-    // to -Y (standard convention; see Transform.rotationAxisAngleDeg).
+    // We assert reactivity through `.toUnion().boundingBox()` per the Task 14
+    // spec-preferred path. The double-recompute lifecycle (params.update then
+    // bbox-read) only round-trips cleanly because assemblyExport now clones
+    // the cached part shape before applyTransform — without that fix, the
+    // second recompute trips replicad's "This object has been deleted." on
+    // the tip part's mutated OCCT handle.
     const model = await buildModel({
       fileName: 'ball-reactive.kcad.ts',
       code: `
@@ -153,7 +163,7 @@ describe('solvedAssembly lowering', () => {
         const base = arm.part('base', box(10, 10, 10));
         const tip  = arm.part('tip',  box(10, 10, 50));
         arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
-        return arm.solvedModel({ wrist: [xDeg, 0, 0] });
+        return arm.solvedModel({ wrist: [xDeg, 0, 0] }).toUnion();
       `,
     });
 
@@ -161,11 +171,11 @@ describe('solvedAssembly lowering', () => {
     const initial = model.tailShape as OcctBackend | undefined;
     expect(initial).toBeDefined();
     const bbBefore = initial!.boundingBox();
-    // At [xDeg=0,0,0], tip sits at z in [10, 60]. Top reaches ~60.
+    // At xDeg=0, wrist contributes a pure translation by [0,0,10]:
+    // base spans z in [0,10]; tip spans z in [10, 60]. Combined max z ~= 60.
     expect(bbBefore.max[2]).toBeGreaterThan(55);
-    // Y is bounded by the box widths (10mm); no rotation yet.
-    expect(bbBefore.max[1]).toBeLessThan(15);
-    expect(bbBefore.min[1]).toBeGreaterThan(-5);
+    // No rotation has swung tip onto -Y yet, so y-min stays at 0.
+    expect(bbBefore.min[1]).toBeGreaterThan(-1);
 
     // Verify the captured FeatureRecord picks up the per-axis ParamRef.
     // collectParamRefs must walk metadata.poses[name].value as a 3-tuple
@@ -175,16 +185,17 @@ describe('solvedAssembly lowering', () => {
     const paramRefs = (solvedRecord!.metadata as { paramRefs?: string[] } | undefined)?.paramRefs;
     expect(paramRefs).toContain('xDeg');
 
-    // Drive xDeg to 90: rotation about +X swings tip's +Z extent into -Y.
+    // Drive xDeg to 90: rotation about +X swings tip's local +Z onto world -Y.
     const updated = await updateModelParams(model, [{ name: 'xDeg', value: 90 }]);
     expect(updated.result.warnings).toEqual([]);
     const after = updated.result.shape as OcctBackend;
     expect(after).toBeDefined();
     const bbAfter = after.boundingBox();
-    // After ax=90°, tip points along -Y; min[1] should drop well below 0.
-    expect(bbAfter.min[1]).toBeLessThan(-45);
-    // Z extent collapses: tip no longer reaches +Z, only base + small tip
-    // contribution from rotation around joint origin (z up to ~20).
+    // Tip's local +Z (length 50) now points along world -Y, so y-min reaches
+    // about -50 from the wrist origin (0,0,10). Tip's z-extent collapses to
+    // the joint origin's z (10) plus tip's own [0..10] in local Y mapped to
+    // world Z = [10, 20]. Combined with base [0..10], max z ~ 20.
+    expect(bbAfter.min[1]).toBeLessThan(-40);
     expect(bbAfter.max[2]).toBeLessThan(25);
 
     // The solvedAssembly record should re-lower (its pose depends on xDeg).

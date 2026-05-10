@@ -38,7 +38,7 @@ interface ActiveAnim {
 interface GroupRefs {
   group: THREE.Group;
   meshes: THREE.Mesh[];
-  mats: THREE.MeshPhongMaterial[];
+  mats: THREE.MeshStandardMaterial[];
   origColors: THREE.Color[];
 }
 
@@ -46,10 +46,10 @@ function findGroup(scene: THREE.Scene, name: string): GroupRefs | null {
   const obj = scene.getObjectByName(name);
   if (!(obj instanceof THREE.Group)) return null;
   const meshes = obj.children.filter((c): c is THREE.Mesh => c instanceof THREE.Mesh);
-  const mats: THREE.MeshPhongMaterial[] = [];
+  const mats: THREE.MeshStandardMaterial[] = [];
   const origColors: THREE.Color[] = [];
   for (const m of meshes) {
-    if (m.material instanceof THREE.MeshPhongMaterial) {
+    if (m.material instanceof THREE.MeshStandardMaterial) {
       mats.push(m.material);
       origColors.push(m.material.color.clone());
     }

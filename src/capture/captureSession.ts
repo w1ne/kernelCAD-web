@@ -103,6 +103,12 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
+   *  side import runs at script time; the lowerer pulls the OcctBackend
+   *  from this map by feature id when it sees an `importedStep` record.
+   *  Lives on the session (not the record) because OCCT shapes carry
+   *  circular references that would trip metadata walkers. */
+  readonly importedGeometry: Map<string, ShapeBackend> = new Map();
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
@@ -465,6 +471,42 @@ export class CaptureSession {
         jointIds: joints.map(j => j.id),
         poses: encodedPoses,
       },
+    });
+  }
+
+  /**
+   * Capture-time recording of `Scene.toCompound()` / `Scene.toUnion()`.
+   *
+   * Consumes the upstream `solvedAssembly` (or `assemblyModel`) feature's
+   * SceneBackend output via `inputs.scene = { kind: 'feature', id: sceneFeatureId }`.
+   * The lowerer reads each part's local-frame shape and worldTransform and
+   * either:
+   *   - `op: 'compound'` — wraps the per-part shapes in a TopoDS_Compound
+   *     via replicad.makeCompound (lossless on per-part identity), or
+   *   - `op: 'union'`    — boolean-fuses them into a single solid
+   *     (lossy on color/name/metadata).
+   *
+   * The returned Shape behaves like any other capture-time Shape — chain
+   * `.fillet()`, `.exportSTL()`, etc. on it.
+   */
+  assemblyExport(sceneFeatureId: FeatureId, op: 'compound' | 'union'): Shape {
+    const sourceRecord = this.records.find(r => r.id === sceneFeatureId);
+    if (!sourceRecord) {
+      throw new Error(`assemblyExport: source scene feature '${sceneFeatureId}' is not from this CaptureSession`);
+    }
+    if (sourceRecord.kind !== 'solvedAssembly' && sourceRecord.kind !== 'assemblyModel') {
+      throw new Error(`assemblyExport: source feature '${sceneFeatureId}' is kind '${sourceRecord.kind}'; expected 'solvedAssembly' or 'assemblyModel'.`);
+    }
+    const opLabel: Param = {
+      expression: `'${op}'`, unit: 'unitless', evaluated: 0,
+    };
+    return this.createShape({
+      kind: 'assemblyExport',
+      params: { op: opLabel },
+      inputs: {
+        scene: { kind: 'feature', id: sceneFeatureId },
+      },
+      metadata: { op },
     });
   }
 

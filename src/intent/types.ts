@@ -130,6 +130,8 @@ export type FeatureKind =
   | 'sketch' | 'constrainedSketch'
   // assembly (v0.6+)
   | 'assemblyPart' | 'assemblyJoint' | 'assemblyConnect' | 'assemblyModel' | 'solvedAssembly'
+  // assembly export (v0.6+) — Scene.toCompound() / Scene.toUnion()
+  | 'assemblyExport'
   // specialty (v0.13+)
   | 'sheetMetal' | 'sdf';
 

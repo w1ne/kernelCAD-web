@@ -23,12 +23,26 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1); // capture deterministic
+    // PBR-friendly output: linear-light pipeline with ACES filmic tone mapping
+    // mapping HDR linear → display sRGB. Pairs with MeshStandardMaterial in
+    // DemoPlayerPage to match the look agents see in modern CAD tools.
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
     mount.appendChild(renderer.domElement);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-    dir.position.set(50, 100, 50);
-    scene.add(ambient, dir);
+    // Three-point + rim lighting. Scene-attached (not camera-attached) so
+    // the rotation phase reveals geometry naturally as parts pass under
+    // each light. Fixed positions in world frame; intensities tuned for
+    // the current dark-charcoal background.
+    const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(80, 120, 100);
+    const fill = new THREE.DirectionalLight(0xa9c0e0, 0.5);
+    fill.position.set(-100, 50, -40);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.7);
+    rim.position.set(0, -80, -120);
+    scene.add(ambient, key, fill, rim);
 
     let raf = 0;
     const tick = () => {

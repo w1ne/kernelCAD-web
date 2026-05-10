@@ -78,6 +78,38 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     expect(distance).toBeLessThan(175);
   });
 
+  it('builds meshes with polygonOffset enabled to prevent Z-fighting on coplanar assembly parts', async () => {
+    // Assemblies fan into N FeatureMeshes (Task 7); adjacent parts whose
+    // surfaces touch (column on plate, servo case flush against bracket)
+    // produce coplanar geometry. Without polygonOffset, those surfaces
+    // flicker as the camera rotates. Assert the renderer applies depth bias
+    // (polygonOffset / Factor=1 / Units=1) on every mesh material it builds.
+    render(<DemoPlayerPage />);
+    await new Promise((r) => setTimeout(r, 50));
+
+    const fakeFace = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    const features: FeatureMeshSerialized[] = [
+      { featureId: 'plate_1', featureKind: 'box', predecessors: [], faces: [fakeFace] },
+      { featureId: 'column_1', featureKind: 'box', predecessors: [], faces: [fakeFace, fakeFace] },
+    ];
+    window.__demoPlayer!.loadFeatureMeshes(features, {
+      min: [0, 0, 0], max: [1, 1, 1],
+    });
+
+    const dump = window.__demoPlayer!.dumpScene();
+    expect(dump.samplePolygonOffsets.length).toBeGreaterThanOrEqual(3);
+    for (const probe of dump.samplePolygonOffsets) {
+      expect(probe.enabled).toBe(true);
+      expect(probe.factor).toBe(1);
+      expect(probe.units).toBe(1);
+    }
+  });
+
   it('keeps loaded geometry mounted while the title card is shown', async () => {
     render(<DemoPlayerPage />);
     await new Promise((r) => setTimeout(r, 50));

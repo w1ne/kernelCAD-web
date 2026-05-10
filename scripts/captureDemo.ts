@@ -156,6 +156,7 @@ async function main(): Promise<void> {
       await meshFeaturesPerFeature(
         loaded2.features.map((f) => f.record),
         loaded2.paramTable,
+        loaded2.session,
       );
     if (failedIds2.length > 0) {
       console.error(`captureDemo: ${failedIds2.length} feature(s) failed to compile: ${failedIds2.join(', ')}`);
@@ -240,22 +241,56 @@ async function main(): Promise<void> {
   const override: PacingOverride = args.pacing
     ? JSON.parse(readFileSync(resolve(args.pacing), 'utf8'))
     : {};
-  const pacing = computeTimeline(
-    loaded.features.map((f) => ({ id: f.id, kind: f.kind })),
-    override,
-  );
-  console.log(`pacing: total=${pacing.totalDurationMs}ms preRoll=${pacing.preRollMs}ms rotate=${pacing.rotateDurationMs}ms truncated=${pacing.truncated}`);
 
   // Node-side per-feature meshing: builds the scene authoritative source of truth.
+  // Run BEFORE pacing so we can budget time per visible mesh — the construction
+  // closure suppresses primitives that build assemblyParts, so feeding pacing
+  // the raw record list bloats the timeline budget with invisible work and
+  // truncates assemblies with many parts.
   const { features: featureMeshes, bounds, failedFeatureIds } = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
     loaded.paramTable,
+    loaded.session,
   );
   if (failedFeatureIds.length > 0) {
     console.error(`captureDemo: ${failedFeatureIds.length} feature(s) failed to compile: ${failedFeatureIds.join(', ')}`);
     console.error('Aborting capture — partial scene would produce a broken demo.');
     process.exit(1);
   }
+
+  // Pre-compute partName → assemblyPart record id so we can both (a) feed
+  // pacing only the records that produce visible meshes and (b) route
+  // SceneBackend fan-out events to the right pacing slot below.
+  const assemblyPartIdByName = new Map<string, string>();
+  for (const f of loaded.features) {
+    if (f.kind !== 'assemblyPart') continue;
+    const partName = (f.record.metadata as { partName?: string } | undefined)?.partName;
+    if (typeof partName === 'string') assemblyPartIdByName.set(partName, f.id);
+  }
+
+  // Build the visible-record set: for each mesh, the underlying record id is
+  // either the mesh's own featureId (single-shape path) or the assemblyPart
+  // resolved from the composite `parent__partName` (assembly fan-out path).
+  // Records not in this set were either suppressed by the closure filter or
+  // are joint/connect construction nodes — they never animate.
+  const visibleRecordIds = new Set<string>();
+  for (const mesh of featureMeshes) {
+    const compIdx = mesh.featureId.indexOf('__');
+    if (compIdx >= 0) {
+      const partName = mesh.featureId.slice(compIdx + 2);
+      const recId = assemblyPartIdByName.get(partName);
+      if (recId) visibleRecordIds.add(recId);
+    } else {
+      visibleRecordIds.add(mesh.featureId);
+    }
+  }
+  const visibleFeatures = loaded.features.filter((f) => visibleRecordIds.has(f.id));
+
+  const pacing = computeTimeline(
+    visibleFeatures.map((f) => ({ id: f.id, kind: f.kind })),
+    override,
+  );
+  console.log(`pacing: total=${pacing.totalDurationMs}ms preRoll=${pacing.preRollMs}ms rotate=${pacing.rotateDurationMs}ms truncated=${pacing.truncated} (${visibleFeatures.length}/${loaded.features.length} visible)`);
   const serialized = featureMeshes.map(serializeForBridge);
   await page.evaluate(
     ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
@@ -265,10 +300,13 @@ async function main(): Promise<void> {
 
   // Drive terminal lines (statements as a rough proxy — split source by newline).
   const sourceLines = loaded.source.split('\n').filter((l) => l.trim().length > 0);
-  const terminalLines = loaded.features.map((f, i) => {
-    const t = pacing.features.get(f.id)!;
-    return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
-  });
+  const terminalLines = loaded.features
+    .map((f, i) => {
+      const t = pacing.features.get(f.id);
+      if (!t) return null;
+      return { text: sourceLines[i] ?? `// ${f.id}`, fullyTypedAtMs: pacing.preRollMs + t.startAtMs };
+    })
+    .filter((x): x is { text: string; fullyTypedAtMs: number } => x !== null);
   await page.evaluate((lines) => window.__demoPlayer!.setTerminalLines(lines), terminalLines);
   await page.evaluate((origin) => window.__demoPlayer!.startTerminalClock(origin), pacing.preRollMs);
 
@@ -292,15 +330,35 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
-  const meshById = new Map(featureMeshes.map((m) => [m.featureId, m]));
-  const sortedEvents = loaded.features
-    .filter((f) => meshById.has(f.id))
-    .map((f) => {
-      const mesh = meshById.get(f.id);
-      if (!mesh) {
-        throw new Error(`captureDemo: feature '${f.id}' has no mesh — likely a meshFeaturesPerFeature bug`);
-      }
-      return { feature: f, t: pacing.features.get(f.id)!, mesh };
+  // partName → assemblyPart record id index already built above for the
+  // pacing-input filter; reused here to route SceneBackend fan-out meshes
+  // (composite ids like `solvedAssembly_1__base-plate`) to each part's
+  // OWN pacing slot. Without per-part routing, all fan-out parts would
+  // collapse to the parent solvedAssembly's single slot and pop in at once.
+
+  const sortedEvents = featureMeshes
+    .map((mesh) => {
+      // Resolve pacing in this order:
+      //   1. mesh's own featureId — single-shape script path
+      //   2. composite-id fan-out: extract partName from `parent__partName`,
+      //      look up the matching assemblyPart record's pacing slot
+      //   3. mesh.predecessors[0] — the parent solvedAssembly's slot (used
+      //      when the composite path doesn't resolve, e.g. during a
+      //      pacing-truncation edge case)
+      //   4. hardcoded fallback so a missing pacing entry never silently
+      //      drops the mesh — without an event the renderer leaves it at
+      //      opacity 0 and the part stays invisible
+      const compositeIdx = mesh.featureId.indexOf('__');
+      const compositePart = compositeIdx >= 0 ? mesh.featureId.slice(compositeIdx + 2) : null;
+      const partRecordId = compositePart ? assemblyPartIdByName.get(compositePart) : undefined;
+      const pacingKey =
+        pacing.features.has(mesh.featureId) ? mesh.featureId :
+        partRecordId && pacing.features.has(partRecordId) ? partRecordId :
+        mesh.predecessors[0];
+      const t: { startAtMs: number; durationMs: number; pauseMsAfter: number; cameraNudgeMs: number } =
+        (pacingKey ? pacing.features.get(pacingKey) : undefined)
+          ?? { startAtMs: 0, durationMs: 400, pauseMsAfter: 0, cameraNudgeMs: 0 };
+      return { feature: { id: mesh.featureId, kind: mesh.featureKind }, t, mesh };
     })
     .sort((a, b) => a.t.startAtMs - b.t.startAtMs);
   let nextEventIdx = 0;

@@ -15,6 +15,9 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
+import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
+import { lookupSourceColor } from './lookupSourceColor';
+import { Transform } from '../../runtime/se3';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -265,6 +268,16 @@ export function applyVariableEdgeFeature(
  * Operations not supported in v0.1 produce a single error `CompilerDiagnostic`
  * rather than throwing, so callers can collect diagnostics for a whole tree.
  */
+/** v0.5: build a lowerer pre-wired with a session's imported STEP geometry.
+ *  Use from any code that ran `runScript` and then needs to lower the
+ *  resulting records — without this, `importedStep` records error out
+ *  because the lowerer's `importedGeometry` map is empty. */
+export function createOcctLowerer(session?: { importedGeometry: Map<string, ShapeBackend> }): OcctLowerer {
+  const lowerer = new OcctLowerer();
+  if (session) lowerer.importedGeometry = session.importedGeometry;
+  return lowerer;
+}
+
 export class OcctLowerer implements FeatureLowerer {
   readonly target: BackendTarget = 'export-occt';
   readonly supports: ReadonlySet<FeatureKind> = new Set<FeatureKind>([
@@ -282,12 +295,19 @@ export class OcctLowerer implements FeatureLowerer {
     'loft',      // NEW (v0.13.0-rc.10)
     'mirror',    // NEW (v0.13.0-rc.13)
     'pattern',
+    'importedStep',  // v0.5: lib.fromSTEP(path)
     'assemblyPart',
     'assemblyJoint',
     'assemblyConnect',
     'assemblyModel',
     'solvedAssembly',
+    'assemblyExport',
   ]);
+
+  /** v0.5: pre-lowered geometry for `importedStep` records, populated by
+   *  `lib.fromSTEP(path)` at script-run time. Keyed by feature id; threaded
+   *  in by the script-runtime caller after the script returns. */
+  importedGeometry: Map<string, ShapeBackend> = new Map();
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -340,6 +360,26 @@ export class OcctLowerer implements FeatureLowerer {
         // Sphere has no canonical planar face names — leave historyMap undefined.
         // Falls back to the legacy !base.kind path in edgeSelection (correct behaviour).
         shape = OcctBackend.sphere(r.params.r.evaluated);
+        break;
+      }
+      case 'importedStep': {
+        // `lib.fromSTEP(path)` ran the import at capture time (host-side
+        // fs read + replicad.importSTEP); the resulting OcctBackend was
+        // parked in `lowerer.importedGeometry` keyed by feature id.
+        // Lowering is a hand-back — the geometry is already a Shape3D.
+        const backend = this.importedGeometry.get(r.id);
+        if (!backend) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `importedStep record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
+            hint: "invalid-args.importedStep.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = backend;
         break;
       }
       case 'sketch': {
@@ -1278,6 +1318,11 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyModel': {
+        // Kinematic-zero counterpart of `solvedAssembly`: same SceneBackend
+        // shape change, but no FK runs — `model()` is the unposed view of
+        // the assembly, so each part's worldTransform is the identity. The
+        // legacy boolean-union path is gone; consumers that needed a fused
+        // single-Shape now call Scene.toUnion()/Scene.toCompound() explicitly.
         const partEntries = Object.entries(inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
           .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
@@ -1292,12 +1337,46 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        const [, firstPart] = partEntries[0];
-        shape = (firstPart as OcctBackend).clone();
-        for (const [, part] of partEntries.slice(1)) {
-          shape = shape.union((part as OcctBackend).clone());
+        const meta = r.metadata as {
+          assemblyName?: string;
+          partIds?: FeatureId[];
+        } | undefined;
+        const partIds = meta?.partIds ?? [];
+        if (partEntries.length !== partIds.length) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyModel: input part count (${partEntries.length}) != metadata.partIds length (${partIds.length}).`,
+            hint: 'Ensure inputs and partIds stay in sync.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        break;
+        const records = allRecords ?? [];
+        const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
+          const partId = partIds[i];
+          const partRec = records.find((rec) => rec.id === partId);
+          const partName =
+            (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
+          const color = partRec ? lookupSourceColor(partRec, records) : undefined;
+          return {
+            name: partName,
+            shape: partShape as OcctBackend,
+            worldTransform: Transform.identity(),
+            ...(color !== undefined ? { color } : {}),
+          };
+        });
+        const sceneBackend: SceneBackend = {
+          target: this.target,
+          assemblyName: meta?.assemblyName ?? 'unnamed',
+          parts: sceneParts,
+          _kind: 'scene',
+        };
+        // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
+        // r.transforms loop below cannot apply. Mirror the solvedAssembly
+        // boundary cast (Task 4); Task 7 widens the dispatch signature.
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
       }
       case 'solvedAssembly': {
         // 1. Read poses from metadata. Param.evaluated is updated by the
@@ -1447,9 +1526,12 @@ export class OcctLowerer implements FeatureLowerer {
         //    surfaces these as structured diagnostics.
         const worldT = forwardKinematics(parts, joints, numericPoses);
 
-        // 5. Apply per-part FK transform to the pre-lowered part shape (which
-        //    already has the part's `at` translation applied by the
-        //    `assemblyPart` lowerer). Then union all transformed parts.
+        // 5. Build a SceneBackend (no boolean union — each part stays in its
+        //    LOCAL frame and the FK-derived worldTransform travels with it).
+        //    This preserves per-part identity (color, name, topology) for
+        //    downstream meshing / STEP-compound export. The legacy union
+        //    path is gone; consumers that needed a fused single-Shape now
+        //    call Scene.toUnion() / Scene.toCompound() explicitly.
         if (partEntries.length !== partIds.length) {
           diagnostics.push({
             target: this.target,
@@ -1461,7 +1543,7 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        const transformedParts: OcctBackend[] = partEntries.map(([, partShape], i) => {
+        const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
           const partId = partIds[i];
           const T = worldT.get(partId);
           if (!T) {
@@ -1472,13 +1554,108 @@ export class OcctLowerer implements FeatureLowerer {
               'invalid-args.solve.internal — please file a bug.',
             );
           }
-          return (partShape as OcctBackend).clone().applyTransform(T);
+          const partRec = records.find((rec) => rec.id === partId)!;
+          const partMeta = partRec.metadata as { partName?: string } | undefined;
+          const partName = partMeta?.partName ?? partId;
+          const color = lookupSourceColor(partRec, records);
+          return {
+            name: partName,
+            shape: partShape as OcctBackend,
+            worldTransform: T,
+            ...(color !== undefined ? { color } : {}),
+          };
         });
-        let result = transformedParts[0];
-        for (let i = 1; i < transformedParts.length; i++) {
-          result = result.union(transformedParts[i]);
+        const assemblyName =
+          (r.metadata as { assemblyName?: string } | undefined)?.assemblyName ?? 'unnamed';
+        const sceneBackend: SceneBackend = {
+          target: this.target,
+          assemblyName,
+          parts: sceneParts,
+          _kind: 'scene',
+        };
+        // Early-return: SceneBackend is not a ShapeBackend, so the post-hoc
+        // `r.transforms` loop below cannot be applied to it. Task 7 widens
+        // the dispatch signature to LoweringResult; today we cast cleanly at
+        // the boundary so existing ShapeBackend-typed call sites (recompute
+        // engine's shapes map, meshing) keep compiling. Consumers that need
+        // the SceneBackend at runtime use isSceneBackend(...) to discriminate.
+        return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
+      }
+      case 'assemblyExport': {
+        // Backs `Scene.toCompound()` and `Scene.toUnion()`. Reads the upstream
+        // SceneBackend (produced by `solvedAssembly` / `assemblyModel`),
+        // applies each part's worldTransform to its local-frame shape, then
+        // either:
+        //   - 'compound': groups the transformed parts into a TopoDS_Compound
+        //     via replicad.makeCompound (lossless on per-part identity).
+        //   - 'union'   : boolean-fuses them into a single solid (lossy on
+        //     color, name, metadata — documented antipattern).
+        const sceneInput = inputs.byKey.scene as unknown;
+        if (!isSceneBackend(sceneInput)) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: input 'scene' is not a SceneBackend (upstream solvedAssembly / assemblyModel must lower to a SceneBackend).`,
+            hint: 'Construct via Scene.toCompound() / Scene.toUnion() on a Scene returned by Assembly.model() / Assembly.solvedModel().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        shape = result;
+        const meta = r.metadata as { op?: 'compound' | 'union' } | undefined;
+        const op = meta?.op;
+        if (op !== 'compound' && op !== 'union') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: metadata.op must be 'compound' or 'union'; got ${JSON.stringify(op)}.`,
+            hint: 'Use Scene.toCompound() or Scene.toUnion() rather than constructing the feature directly.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const sceneBackend = sceneInput as SceneBackend;
+        if (sceneBackend.parts.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: scene has no parts.`,
+            hint: 'Call assembly.part(...) at least once before exporting the scene.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Apply each part's worldTransform to its local-frame shape. Parts are
+        // visited in scene-declaration order so both compound and union are
+        // deterministic.
+        //
+        // We clone before applyTransform because replicad's translate()/rotate()
+        // mutate-and-destroy the source OCCT handle. The recompute engine caches
+        // the SceneBackend across `params.update` runs, so without a fresh clone
+        // the second recompute hits "This object has been deleted." on any part
+        // with a non-identity worldTransform. Identity transforms early-return
+        // `this` from applyTransform, which is why the yaw=0 path historically
+        // worked but ball-joint poses broke.
+        const transformed: OcctBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
+          (p.shape as OcctBackend).clone().applyTransform(p.worldTransform),
+        );
+        if (op === 'compound') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const replicadShapes = transformed.map((b) => (b as OcctBackend).getReplicadShape() as any);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const compound = replicad.makeCompound(replicadShapes) as any;
+          shape = new OcctBackend(compound);
+          break;
+        }
+        // op === 'union': fold-fuse from the first part. Mirrors the
+        // pre-Task-4 union loop, just consumed from a SceneBackend instead.
+        let fused: OcctBackend = transformed[0];
+        for (let i = 1; i < transformed.length; i++) {
+          fused = fused.union(transformed[i]) as OcctBackend;
+        }
+        shape = fused;
         break;
       }
       default:

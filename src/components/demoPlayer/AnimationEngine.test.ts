@@ -9,8 +9,8 @@ function makeEngine() {
   return { scene, engine: new AnimationEngine(scene) };
 }
 
-function buildSingleMeshGroup(scene: THREE.Scene, name: string): THREE.MeshPhongMaterial {
-  const mat = new THREE.MeshPhongMaterial({ color: 0xc8d2e0 });
+function buildSingleMeshGroup(scene: THREE.Scene, name: string): THREE.MeshStandardMaterial {
+  const mat = new THREE.MeshStandardMaterial({ color: 0xc8d2e0 });
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
   const group = new THREE.Group();
   group.name = name;
@@ -178,13 +178,13 @@ describe('AnimationEngine — transform transition', () => {
 describe('AnimationEngine — group-aware transitions (v0.21.1)', () => {
   function buildGroup(scene: THREE.Scene, name: string, meshCount: number): {
     group: THREE.Group;
-    mats: THREE.MeshPhongMaterial[];
+    mats: THREE.MeshStandardMaterial[];
   } {
     const group = new THREE.Group();
     group.name = name;
-    const mats: THREE.MeshPhongMaterial[] = [];
+    const mats: THREE.MeshStandardMaterial[] = [];
     for (let i = 0; i < meshCount; i++) {
-      const mat = new THREE.MeshPhongMaterial({ color: 0xc8d2e0 });
+      const mat = new THREE.MeshStandardMaterial({ color: 0xc8d2e0 });
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
       group.add(mesh);
       mats.push(mat);

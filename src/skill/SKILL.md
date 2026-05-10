@@ -75,7 +75,59 @@ helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, nu
 // Edge selection — lowers the shape lazily (awaitable).
 selectEdges(shape: Shape, query?: EdgeQuery): Promise<EdgeSegment[]>;
 selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if zero or multiple match
+
+// Parts library — STEP import for vendor catalog components.
+// Resolved relative to the calling .kcad.ts file; absolute paths also accepted.
+// Returns the standard capture-proxy Shape — composes with translate/rotate/color
+// and arm.part(...) like any primitive.
+lib.fromSTEP(path: string): Promise<Shape>;
 ```
+
+### Assembly validity (v0.5 MVP)
+
+`kernelcad validate <file.kcad.ts>` runs the assembly validator over the
+script's Scene. Three checks today:
+
+- **`assembly.part.floating`** — a part has no joint connecting it to
+  any other part. The fix: declare the connection via `arm.fixed(...)`
+  or `arm.revolute(...)`.
+- **`assembly.part.orphan`** — a part is in a sub-assembly disconnected
+  from the main mechanism.
+- **`assembly.interference.overlap`** — two parts share volume (promoted
+  from `kernelcad interference`).
+
+Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
+
+```bash
+kernelcad validate so100.kcad.ts && echo "fits"
+```
+
+Authoring rule: every `arm.part(name, shape)` should also appear as
+either the parent or child of at least one `arm.fixed(...)` /
+`arm.revolute(...)` / `arm.prismatic(...)` / `arm.ball(...)` call.
+Raw `at: [x, y, z]` placement without a joint produces a working
+geometric output but fails validation — the agent has authored a
+position but not a connection.
+
+### Components from STEP files
+
+When a real component (servo, bearing, gripper jaw, fastener) has a vendor-published
+STEP file, prefer `lib.fromSTEP(path)` over hand-authoring the silhouette from
+`box()` / `cylinder()`. Geometric fidelity matches the real part — bolt patterns,
+shaft positions, body cutouts — and the assembly tree carries that same fidelity
+through to renders, exports, and clash detection.
+
+```typescript
+const servo = (await lib.fromSTEP('parts/sts3215.step')).color('servo');
+const jaw   = await lib.fromSTEP('parts/so100-jaw.step');
+
+const arm = assembly('so100');
+arm.part('shoulder-servo', servo, { at: [0, 0, 0] });
+arm.part('jaw', jaw.translate(0, 0, 50), { at: [0, 0, 0] });
+```
+
+Authoring rule: imported parts for vendor catalog geometry; `box`/`cylinder`/`extrude`
+for the printed/machined plates and brackets that connect them.
 
 ### Shape methods (chainable)
 
@@ -145,7 +197,7 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 
 ### Assembly intent
 
-Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return one fused/exportable `Shape` containing every placed part. Connector and joint records remain metadata for now; `.model()` does not solve motion. Use MCP `list_assemblies({ file? code? })` to inspect the captured assembly intent without recomputing topology.
+Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return a `Scene` with per-part bodies; iterate `.parts` for per-part rendering / export, call `.toCompound()` for an OCCT group (lossless on color/name/identity, default for STEP), or `.toUnion()` for one fused solid (lossy on color/name — antipattern except when downstream truly needs a single Shape). Connector and joint records remain metadata for now; `.model()` does not solve motion (use `.solvedModel(poses)` for that). Use MCP `list_assemblies({ file? code? })` to inspect the captured assembly intent without recomputing topology.
 
 ```typescript
 const arm = assembly('two-link arm');
@@ -166,6 +218,10 @@ arm.revolute('shoulder', base, link, {
   limitsDeg: [-90, 90],
 });
 
+// Agent-natural: return the Scene directly. The CLI / studio walks .parts,
+// the renderer paints per-part role colors, and STEP export uses
+// .toCompound() under the hood. Reach for .toUnion() only if a downstream
+// tool truly needs a single fused Shape (lossy on color/name/identity).
 return arm.model();
 ```
 
@@ -182,8 +238,60 @@ interface Assembly {
     origin: [number, number, number];
     limitsDeg?: [number, number];
   }): AssemblyJointRef;
-  model(): Shape;
+  model(): Scene;
+  solvedModel(poses: Poses): Scene;
 }
+```
+
+### Scene API
+
+`Assembly.model()` and `Assembly.solvedModel(poses)` return a `Scene` — a frozen, ordered list of named parts with per-part world transforms. A Scene is iterable (`for (const p of scene)`), exposes `.parts` for indexed access, and offers two ways to collapse to a single Shape when one is required.
+
+```typescript
+interface ScenePart {
+  readonly name: string;            // assembly-unique name from assembly.part(name, ...)
+  readonly shape: Shape;            // LOCAL-frame (untransformed)
+  readonly worldTransform: Transform; // SE(3); identity for kinematic-zero model() apart from each part's `at`
+  readonly color?: string;          // role token / hex; resolved from source shape's metadata
+  readonly metadata?: Readonly<Record<string, unknown>>;
+}
+
+interface Scene extends Iterable<ScenePart> {
+  readonly assemblyName: string;
+  readonly parts: readonly ScenePart[];
+  readonly bbox: { min: [number, number, number]; max: [number, number, number] };  // lazy AABB over transformed parts
+
+  // OCCT TopoDS_Compound — groups bodies without booleaning. Lossless on
+  // per-part identity. Default path for STEP export with named bodies, or
+  // when a single Shape handle is needed without paying for a fuse.
+  toCompound(): Shape;
+
+  // Explicit boolean fuse. Lossy on color, name, metadata — the result is
+  // a single Shape with no per-part identity. Documented antipattern;
+  // prefer toCompound() unless downstream truly needs one solid.
+  toUnion(): Shape;
+
+  // Look up a part by its assembly-unique name. Throws KernelError
+  // ('feature.invalid-args', hint 'invalid-args.scene.unknown-part') on miss.
+  part(name: string): ScenePart;
+
+  // Deprecated v0.5.0 — call .toUnion() instead. Warn-once advisory; will
+  // be removed in v0.6.0. (SolvedKinematics.toShape() carries the same
+  // deprecation; use .toScene().toUnion() there.)
+  toShape(): Shape;
+}
+```
+
+**Snapshot vs reactive:** Scene is a frozen snapshot; reactivity lives on the capture-time Assembly. Param edits trigger recompute → fresh Scene emitted to the renderer. Never mutate a Scene; re-build from the Assembly to get a new one.
+
+```typescript
+const scene = arm.model();
+for (const part of scene) {
+  console.log(part.name, part.color, part.worldTransform);
+}
+const base = scene.part('base');             // throws KernelError on miss
+const compound = scene.toCompound();         // STEP-friendly group, per-part identity preserved
+const fused = scene.toUnion();               // antipattern; only when one solid is required
 ```
 
 ### Sketch methods
@@ -376,8 +484,10 @@ arm.revolute('yaw', base, shoulder, {
 
 `assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you
 both render the posed assembly and query per-part world transforms.
-`assembly.solvedModel(poses)` is sugar that returns the unioned posed Shape
-directly. Pose values accept `Editable<number>` per joint kind:
+`assembly.solvedModel(poses)` returns a posed `Scene` directly — iterate
+`.parts`, call `.toCompound()` for STEP, or `.toUnion()` only if a single
+fused Shape is required (lossy antipattern). Pose values accept
+`Editable<number>` per joint kind:
 
 | Joint primitive | Pose value type |
 |---|---|
@@ -397,7 +507,7 @@ arm.revolute('elbow-pitch',    elbow,    wrist,    { axis: [0, 1, 0], origin: [1
 arm.fixed   ('wrist-tool',     wrist,    tool,     { origin: [75, 0, 0] });
 ```
 
-**Snapshot vs reactive:** `arm.solve(poses)` resolves pose ParamRefs at call time and returns a frozen `SolvedKinematics` handle. `arm.solvedModel(poses)` is captured as a feature; param updates trigger reactive re-pose. Use `solve` to read transforms once; use `solvedModel` for editable studio renders.
+**Snapshot vs reactive:** `arm.solve(poses)` resolves pose ParamRefs at call time and returns a frozen `SolvedKinematics` handle (call `.toScene()` for the snapshot Scene). `arm.solvedModel(poses)` is captured as a feature and returns a `Scene`; param updates trigger reactive re-pose → a fresh frozen Scene is emitted to the renderer. Both Scenes are frozen; reactivity always lives on the capture-time Assembly. Use `solve` to read transforms once; use `solvedModel` for editable studio renders.
 
 ```ts
 const baseYaw       = param('baseYawDeg',       20,  { min: -180, max: 180 });
@@ -419,6 +529,7 @@ const wristT = solved.transform('wrist');         // SE(3) Transform of wrist in
 shape.transform(wristT);                          // attach a new shape to the wrist's frame
 const angle = solved.value('base-yaw');           // 30
 for (const { name, transform } of solved.bodies()) { /* ... */ }
+const snapScene = solved.toScene();               // snapshot Scene; .toShape() is a deprecated alias for .toScene().toUnion()
 ```
 
 **Limitations (v1):**
@@ -596,6 +707,15 @@ kernelcad evaluate path/to/script.kcad.ts --json
 # Export to STL or STEP
 kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
+
+# Render a 4-view PNG (front/right/top/iso) for visual review
+kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+
+# Detect BREP interferences between Scene parts (industry-standard clash check)
+kernelcad interference path/to/script.kcad.ts
+
+# Validate the assembly: floating parts, orphan clusters, interferences (v0.5 MVP)
+kernelcad validate path/to/script.kcad.ts
 
 # Run the MCP server (stdio transport)
 kernelcad mcp

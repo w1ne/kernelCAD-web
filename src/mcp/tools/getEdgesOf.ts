@@ -1,6 +1,6 @@
 // src/mcp/tools/getEdgesOf.ts
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import { OcctBackend } from '../../backends/occt/occtBackend';
 import { pickEdges } from '../../backends/occt/edgeSelection';
 import type { FeatureRecord } from '../../intent/featureRecord';
@@ -45,7 +45,7 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
   const targetRecord = run.records.find(r => r.id === targetId);
   if (!targetRecord) return { ok: false, error: `feature_id '${targetId}' not found.` };
 
-  const engine = new RecomputeEngine(new OcctLowerer());
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
   const shape = result.shapes.get(targetId);
   if (!shape) {

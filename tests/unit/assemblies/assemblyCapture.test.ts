@@ -82,10 +82,17 @@ describe('assembly capture contract', () => {
     const base = lamp.part('base', kcad.box(40, 40, 6), { at: [0, 0, 0] });
     const arm = lamp.part('arm', kcad.box(80, 8, 8), { at: [35, 16, 20] });
 
+    // Per Task 14: assembly.model() returns a Scene (multi-body), not a
+    // Shape — the captured `assemblyModel` FeatureRecord is still the last
+    // record, so we identify it via session.getRecords().at(-1) instead of
+    // chaining `.id` off the Scene.
     const model = lamp.model();
+    expect(model.assemblyName).toBe('desk lamp');
+    expect(model.parts.map(p => p.name)).toEqual(['base', 'arm']);
 
-    expect(model.id).toMatch(/^assemblyModel_/);
-    expect(session.getRecords().at(-1)).toMatchObject({
+    const lastRecord = session.getRecords().at(-1)!;
+    expect(lastRecord.id).toMatch(/^assemblyModel_/);
+    expect(lastRecord).toMatchObject({
       kind: 'assemblyModel',
       inputs: {
         part_0: { kind: 'feature', id: base.id },

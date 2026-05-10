@@ -1,325 +1,311 @@
-// Desktop 3-axis robot arm — worked example (body-tree forward kinematics).
+// Parametric desktop 3-axis robot arm.
 //
-// Composes a posed multi-link arm out of generic kernelCAD primitives. Each
-// link carries real-world orientation BAKED into its local frame (shoulder
-// vertical along +Z, forearms forward along +X), so at kinematic-zero the
-// arm already reads as articulated before any pose is applied.
+// Three revolute joints (base-yaw, shoulder-pitch, elbow-pitch) driven by
+// `arm.solvedModel({...})` body-tree forward kinematics. Each link is authored
+// in its OWN LOCAL FRAME so the FK walk plants children where the joints land.
+// No hand-rolled chained `.rotate()` calls.
 //
-// Beyond the bare assembly graph, this example showcases:
-//
-//   1. Mechanical detail — fillets on the basePlate / elbow / wrist edges,
-//      recessed servo bays on the basePlate top + shoulder front via
-//      `.subtract(box(...))`, a structural rib down the back of the
-//      shoulder column, a top-running rib on the elbow forearm, and a
-//      parallel-pad gripper silhouette on the tool placeholder. The model
-//      reads as a real desktop robot arm rather than four flat plates from
-//      every angle of a 360 demo rotate.
-//
-//   2. arm.solvedModel({ baseYaw, shoulderPitch, elbowPitch }) drives the
-//      hero pose via body-tree FK (URDF / MuJoCo / Drake convention). Joint
-//      origins are numeric Vec3 in the PARENT'S LOCAL FRAME and stay fixed
-//      across geometry-param edits in v1; geometry-side dims still flow
-//      through ParamRef arithmetic.
-//
-//   3. Full ParamRef arithmetic on every geometry dimension; setParamValue
-//      on any geometry param re-lowers the whole assembly.
-//
-// The kernel does NOT ship a robot-arm template; this example exists to
-// show an agent how to build one (or any analogous articulated mechanism)
-// from the lean generic toolset.
+// Visual density: every joint carries a servo body, mounting flange, output
+// horn / shaft, and yoke cheeks. Beams use ribs + end plates so the arm reads
+// as a real desktop hobby kit, not a chain of cylinders. Decorative items per
+// link are attached via `arm.fixed(...)` so they inherit the link's pose.
 
-// ---- pose params ---------------------------------------------------------
-// Hero pose: tucked-in articulated silhouette so the arm reads from every
-// camera angle in a 360 sweep. -75° elbow folds the wrist back toward the
-// shoulder without clipping (verified visually).
-const baseYawDeg       = 25;
-const shoulderPitchDeg = 50;
-const elbowPitchDeg    = -75;
+// ---- pose parameters (live sliders) -------------------------------------
+const baseYawDeg       = param('baseYawDeg',       20,  { min: -180, max: 180 });
+const shoulderPitchDeg = param('shoulderPitchDeg', 35,  { min:  -45, max: 135 });
+const elbowPitchDeg    = param('elbowPitchDeg',   -55,  { min: -120, max: 120 });
 
-// ---- geometry params -----------------------------------------------------
+// ---- geometry parameters -------------------------------------------------
+// Footprint and base.
+const baseW         = param('baseW',         140, { min: 80,  max: 240 });
+const baseD         = param('baseD',         140, { min: 80,  max: 240 });
+const plateT        = param('plateT',          6, { min:  3,  max:  15 });
 
-// Base plate (sits flat on the desk; corner-anchored).
-const baseX        = param('baseX',        90);
-const baseY        = param('baseY',        70);
-const baseT        = param('baseT',         8);
-const baseFilletR  = param('baseFilletR',   2);
-const baseBayX     = param('baseBayX',     40);
-const baseBayY     = param('baseBayY',     36);
-const baseBayDepth = param('baseBayDepth',  5);
+// Servo dimensions (standard hobby servo silhouette).
+const servoW        = param('servoW',         40, { min: 20,  max:  60 });
+const servoD        = param('servoD',         20, { min: 12,  max:  30 });
+const servoH        = param('servoH',         38, { min: 25,  max:  55 });
+const servoFlangeT  = param('servoFlangeT',    3, { min:  2,  max:   6 });
+const servoFlangeOver = param('servoFlangeOver', 8, { min:  4, max:  16 });
+const hornR         = param('hornR',           9, { min:  5,  max:  16 });
+const hornT         = param('hornT',           4, { min:  2,  max:   8 });
 
-// Shoulder column (vertical; long axis +Z, centered on X/Y).
-const linkWidth        = param('linkWidth',        28);
-const linkThickness    = param('linkThickness',    14);
-const shoulderHeight   = param('shoulderHeight',   90);
-const ribWidth         = param('ribWidth',          6);
-const ribThickness     = param('ribThickness',      6);
-const shoulderBayW     = param('shoulderBayW',     16);
-const shoulderBayH     = param('shoulderBayH',     16);
-const shoulderBayDepth = param('shoulderBayDepth',  4);
+// Pivots / shafts.
+const pivotDia      = param('pivotDia',        6, { min:  3,  max:  12 });
+const shaftLen      = param('shaftLen',       18, { min: 12,  max:  60 });
 
-// Elbow forearm (horizontal; long axis +X, proximal-end-anchored).
-const elbowLength    = param('elbowLength',    110);
-const elbowRibHeight = param('elbowRibHeight',   4);
-const elbowFilletR   = param('elbowFilletR',    3);
+// Link beams.
+const upperArmLen   = param('upperArmLen',   140, { min: 80,  max: 220 });
+const forearmLen    = param('forearmLen',    120, { min: 60,  max: 180 });
+const beamW         = param('beamW',          22, { min: 14,  max:  40 });
+const beamT         = param('beamT',          12, { min:  8,  max:  22 });
+const ribT          = param('ribT',            4, { min:  2,  max:   8 });
+const ribH          = param('ribH',            6, { min:  3,  max:  12 });
 
-// Wrist forearm (slightly slimmer than elbow; long axis +X).
-const wristLength    = param('wristLength',    75);
-const wristWidth     = param('wristWidth',     24);
-const wristThickness = param('wristThickness', 12);
-const wristFilletR   = param('wristFilletR',    3);
+// Yoke cheeks (flanking plates around joint shafts).
+const yokeCheekT    = param('yokeCheekT',      5, { min:  3,  max:  10 });
+const yokeCheekW    = param('yokeCheekW',     46, { min: 28,  max:  80 });
+const yokeCheekH    = param('yokeCheekH',     46, { min: 28,  max:  80 });
 
-// Tool placeholder — flat tab + parallel-pad gripper silhouette.
-const toolLength    = param('toolLength',    30);
-const toolWidth     = param('toolWidth',     20);
-const padLength     = param('padLength',     14);
-const padThickness  = param('padThickness',   4);
-const padHeight     = param('padHeight',     16);
-const padOffset     = param('padOffset',      6);
+// ---- derived (symbolic ParamRef arithmetic) ------------------------------
+const halfBaseW       = baseW.divide(2);
+const halfBaseD       = baseD.divide(2);
+const halfBeamT       = beamT.divide(2);
+const halfYokeCheekH  = yokeCheekH.divide(2);
+const halfYokeCheekW  = yokeCheekW.divide(2);
+const halfServoH      = servoH.divide(2);
+const halfUpperArm    = upperArmLen.divide(2);
+const halfForearm     = forearmLen.divide(2);
 
-// Hardware.
-const screwSpacingX = param('screwSpacingX', 60);
-const screwSpacingY = param('screwSpacingY', 44);
-const screwDiameter = param('screwDiameter',  3);
-const pivotDiameter = param('pivotDiameter',  5);
+// Heights in the BASE local frame.
+const baseServoCenterZ = plateT.add(halfServoH);
+const baseFlangeZ      = plateT.add(servoH).subtract(servoFlangeT.divide(2));
 
-// ---- derived dimensions (stay symbolic via ParamRef arithmetic) ----------
+// Height in the SHOULDER local frame at which shoulder-pitch axis lives.
+// Local origin (0,0,0) is at the base-yaw pivot output (top of base horn).
+// Pitch shaft sits up some distance through the cheek-yoke.
+const shoulderColumnH  = param('shoulderColumnH', 50, { min: 30, max: 110 });
+const shoulderPitchZ   = shoulderColumnH;        // pitch axis at top of column
 
-const halfBaseX     = baseX.divide(2);
-const halfBaseY     = baseY.divide(2);
-const screwHalfX    = screwSpacingX.divide(2);
-const screwHalfY    = screwSpacingY.divide(2);
-const halfLinkW     = linkWidth.divide(2);
-const halfLinkT     = linkThickness.divide(2);
-const halfElbowLen  = elbowLength.divide(2);
-const halfWristLen  = wristLength.divide(2);
+// ---- BASE link (root, no parent joint -> identity world transform) ------
+// Authored sitting on the desk: footprint plate at z=0..plateT, column above.
+// All sub-parts of the base are attached via `arm.fixed(...)` so they share
+// the base's identity transform.
 
-// ---- parts ---------------------------------------------------------------
+const arm = assembly('desktop 3-axis parametric arm');
 
-// Base plate: corner-anchored 90×70×8 mm slab. Adds a recessed central servo
-// bay on the top face, four mounting screw holes, a central pivot bore for
-// the base-yaw shaft, and a moderate corner fillet for a desktop-product
-// silhouette.
-//
-// FALLBACK: the recessed bay is implemented via .subtract(box) instead of
-// .cutout(path, {face,depth}). cutout() does not pre-resolve ParamRef coords
-// on its profile sketch in v1 (the dispatcher walks command.x.evaluated but
-// not command.x.paramRef), so cutout-prism construction fails when the
-// profile uses ParamRef arithmetic. .subtract(box) preserves full ParamRef
-// reactivity on every bay dim and yields the same recessed-pocket silhouette.
-//
-// Hole order: drilled BEFORE the subtract so canonical 'top' face refs still
-// resolve unambiguously. Fillet runs LAST so the bay walls + bore lips don't
-// confuse OCCT's edge selection.
-const baseBayPocket = box(baseBayX, baseBayY, baseBayDepth)
-  .translate(
-    halfBaseX.subtract(baseBayX.divide(2)),
-    halfBaseY.subtract(baseBayY.divide(2)),
-    baseT.subtract(baseBayDepth),
-  );
-const basePlate = box(baseX, baseY, baseT)
+// 1. Base footprint plate (the chassis).
+const basePlateShape = box(baseW, baseD, plateT, true)
+  .fillet(1.5)
   .holes('top', {
     positions: [
-      { u: screwHalfX.negate(), v: screwHalfY.negate() },
-      { u: screwHalfX,          v: screwHalfY.negate() },
-      { u: screwHalfX.negate(), v: screwHalfY          },
-      { u: screwHalfX,          v: screwHalfY          },
+      { u: halfBaseW.subtract(10).negate(), v: halfBaseD.subtract(10).negate() },
+      { u: halfBaseW.subtract(10),          v: halfBaseD.subtract(10).negate() },
+      { u: halfBaseW.subtract(10).negate(), v: halfBaseD.subtract(10)          },
+      { u: halfBaseW.subtract(10),          v: halfBaseD.subtract(10)          },
     ],
-    diameter: screwDiameter,
+    diameter: 4,
     depth: 'through',
-    name: 'baseScrews',
+    name: 'baseFootScrews',
   })
-  .hole('top', {
-    u: 0,
-    v: 0,
-    diameter: pivotDiameter,
-    depth: 'through',
-    name: 'basePivot',
-  })
-  .subtract(baseBayPocket)
-  .fillet(baseFilletR);
+  .translate(0, 0, plateT.divide(2))
+  .color('plate');
+const basePart = arm.part('base-plate', basePlateShape);
 
-// Shoulder column: vertical, centered on X/Y. Contains:
-//   - a structural rib unioned to the BACK (+Y) face for visual mass,
-//   - a recessed servo bay on the FRONT (-Y) face near the top
-//     (where the shoulder-pitch motor would mount),
-//   - a top-cap pivot bore for the base-yaw shaft (Z-axis),
-//   - a side pivot bore on the right (+X) face for the shoulder-pitch
-//     shaft (X-axis).
-//
-// Canonical face conventions: front = -Y, back = +Y, left = -X, right = +X,
-// top = +Z, bottom = -Z. For a centered box(linkWidth, linkThickness,
-// shoulderHeight, true):
-//   - front (-Y) face is linkWidth × shoulderHeight ← bay pocket here
-//   - back  (+Y) face is linkWidth × shoulderHeight ← rib here
-//   - right (+X) face is linkThickness × shoulderHeight ← shoulder-pitch bore
-//   - top   (+Z) face is linkWidth × linkThickness   ← base-yaw bore
-//
-// Order: drill bores on the bare column FIRST (so canonical face refs
-// resolve unambiguously), THEN subtract the bay-pocket box, THEN union the
-// rib. Filleting after the rib union would round the rib seam — and we
-// don't fillet at all here per the FALLBACK note below.
-//
-// Same .subtract(box) fallback for the bay (see basePlate note).
-//
-// Bay sits near the top of the column. Centered Z position:
-//   bay-center-z = shoulderHeight/2 - 8 - shoulderBayH/2
-// Bay-Y position pushes the pocket so its inboard face overlaps the column
-// front (-Y) by shoulderBayDepth.
-const halfShoulderH = shoulderHeight.divide(2);
-const shoulderBayCenterZ = halfShoulderH
-  .subtract(8)
-  .subtract(shoulderBayH.divide(2));
-const shoulderBayPocket = box(shoulderBayW, shoulderBayDepth, shoulderBayH, true)
-  .translate(
-    0,
-    halfLinkT.negate().add(shoulderBayDepth.divide(2)),
-    shoulderBayCenterZ,
-  );
+// 2. Base yaw servo (body + flange + cable lug).
+//    The servo IS the structural carrier on the plate; an extra "column"
+//    riser only intersected the servo body and added no real strength.
+const baseServoStack = box(servoW, servoD, servoH, true)
+  .translate(0, 0, baseServoCenterZ)
+  .union(
+    box(servoW.add(servoFlangeOver.multiply(2)), servoD, servoFlangeT, true)
+      .translate(0, 0, baseFlangeZ),
+  )
+  .union(
+    box(8, servoD.add(4), 8, true).translate(0, 0, plateT.add(7)),
+  )
+  .color('servo');
+const baseServoPart = arm.part('base-yaw-servo', baseServoStack);
 
-// FALLBACK: no all-edges fillet on the column. Combining a through-bore on
-// 'right', a through-bore on 'top', the bay subtract, and the rib seam
-// produces too many narrow edges for OCCT to fillet at any stable radius
-// without bespoke edge selection. The rib + bay + bores already give the
-// column ample mechanical detail, so the raw silhouette reads as a desktop
-// servo housing.
-const column = box(linkWidth, linkThickness, shoulderHeight, true)
-  // Top-cap pivot — through-bore for the base-yaw joint pin (Z axis).
-  .hole('top', {
-    u: 0,
-    v: 0,
-    diameter: pivotDiameter,
-    depth: 'through',
-    name: 'shoulderBasePivot',
-  })
-  // Side pivot — through-bore for the shoulder-pitch joint pin (X axis).
-  // On 'right' (+X normal): uBasis=Y, vBasis=Z. The pivot sits halfLinkW
-  // below the top so the pin clears the top cap.
-  .hole('right', {
-    u: 0,
-    v: halfShoulderH.subtract(halfLinkW),
-    diameter: pivotDiameter,
-    depth: 'through',
-    name: 'shoulderTopPivot',
-  })
-  .subtract(shoulderBayPocket);
+// 3. Base yaw output horn + shaft (as a single visual cluster).
+const baseHornStack = cylinder(hornT, hornR, 32)
+  .translate(0, 0, plateT.add(servoH))
+  .union(
+    cylinder(shaftLen, pivotDia.divide(2), 32)
+      .translate(0, 0, plateT.add(servoH).add(hornT)),
+  )
+  .color('shaft');
+const baseHornPart = arm.part('base-yaw-output', baseHornStack);
 
-// Rib: a smaller centered box pushed to the back (+Y) of the column. Unioned
-// last so the column's face refs above resolve cleanly before the seam.
-const shoulderRib = box(ribWidth, ribThickness, shoulderHeight, true)
-  .translate(0, halfLinkT.add(ribThickness.divide(2)), 0);
-const shoulderColumn = column.union(shoulderRib);
+// ---- SHOULDER link (child of base-yaw joint) ----------------------------
+// Authored in shoulder local frame: (0,0,0) sits at the base-yaw axis exit.
+// The link is a yoke that holds the shoulder-pitch servo and shaft.
 
-// Elbow forearm: centered horizontal beam (long axis +X). Two pivot bores
-// near each end carry the shoulder + elbow joint pins. A rib runs along
-// the top (+Z) face for most of the length. End-edges get a small fillet
-// to round the silhouette.
-//
-// Same ordering as the shoulder: holes + fillet on the bare beam FIRST,
-// then union with the rib. Keeps canonical face refs resolvable through
-// every op.
-const elbowBeam = box(elbowLength, linkWidth, linkThickness, true)
+// 5. Shoulder column — thin spine connecting base-yaw output to the yoke
+//    above. Was a wide block that engulfed every other shoulder part; now
+//    a slim post the cheeks fan out around.
+const spineR = beamT.divide(2);
+const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
+  .color('frame');
+const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
+
+// 6. Shoulder yoke cheeks (two flanking plates that carry the pitch shaft).
+//    Pushed OUT in X past the spine so they don't intersect it. Y reduced
+//    from yokeCheekW (=46) to a clearance band around the upper-arm beam.
+const cheekY = beamW.add(2);   // cheek depth in Y (along beam axis)
+const cheekClearX = spineR.add(2);  // distance from spine to cheek inner face
+const shoulderCheekL = box(yokeCheekT, cheekY, yokeCheekH, true)
+  .translate(cheekClearX.add(yokeCheekT.divide(2)), 0, shoulderPitchZ)
+  .color('plate');
+const shoulderCheekR = box(yokeCheekT, cheekY, yokeCheekH, true)
+  .translate(cheekClearX.add(yokeCheekT.divide(2)).negate(), 0, shoulderPitchZ)
+  .color('plate');
+const shoulderCheeks = shoulderCheekL.union(shoulderCheekR);
+const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
+
+// 7. Shoulder pitch servo — mounted EXTERNALLY on the front face of the
+//    cheeks (extending into +Y), not inside the yoke or onto the side
+//    where it would sweep through the upper-arm beam's pitched arc.
+const shoulderServoMountY = cheekY.divide(2).add(yokeCheekT.divide(2));
+const shoulderPitchServo = box(servoH, servoD, servoW, true)
+  .translate(0, shoulderServoMountY.add(servoD.divide(2)), shoulderPitchZ)
+  .color('servo');
+const shoulderServoPart = arm.part('shoulder-pitch-servo', shoulderPitchServo);
+
+// ---- UPPER ARM link (child of shoulder-pitch joint) ---------------------
+// Authored in upper-arm local frame: (0,0,0) at shoulder-pitch axis.
+// Upper arm extends along +X, with structural ribs and an elbow yoke at the
+// distal end.
+
+// 8. Upper-arm beam (proximal-end-anchored along +X).
+const upperArmBeamShape = box(upperArmLen, beamW, beamT, true)
   .holes('top', {
     positions: [
-      { u: halfElbowLen.subtract(halfLinkW).negate(), v: 0 },
-      { u: halfElbowLen.subtract(halfLinkW),          v: 0 },
+      { u: halfUpperArm.subtract(beamW), v: 0 },
+      { u: halfUpperArm.subtract(beamW).negate(), v: 0 },
+      { u: 0, v: 0 },
     ],
-    diameter: pivotDiameter,
+    diameter: 3,
     depth: 'through',
-    name: 'elbowPivots',
+    name: 'upperArmLightening',
   })
-  .fillet(elbowFilletR);
-const elbowRib = box(elbowLength.subtract(16), ribThickness, elbowRibHeight, true)
-  .translate(0, 0, halfLinkT.add(elbowRibHeight.divide(2)));
-const elbowArm = elbowBeam.union(elbowRib);
+  .fillet(2)
+  .translate(halfUpperArm, 0, 0)
+  .color('beam');
+const upperArmRibTop = box(upperArmLen.subtract(20), ribT, ribH, true)
+  .translate(halfUpperArm, 0, halfBeamT.add(ribH.divide(2)))
+  .color('beam');
+const upperArmRibBot = box(upperArmLen.subtract(20), ribT, ribH, true)
+  .translate(halfUpperArm, 0, halfBeamT.add(ribH.divide(2)).negate())
+  .color('beam');
+const upperArmRootPlate = box(8, beamW.add(4), beamT.add(10), true)
+  .translate(0, 0, 0)
+  .color('plate');
+const upperArmShape = upperArmBeamShape
+  .union(upperArmRibTop)
+  .union(upperArmRibBot)
+  .union(upperArmRootPlate);
+const upperArmPart = arm.part('upper-arm-beam', upperArmShape);
 
-// Wrist forearm: smaller, slimmer, no rib. Pivot bores near each end.
-// End-edges get a fillet for a rounded silhouette.
-const halfWristW = wristWidth.divide(2);
-const wristArm = box(wristLength, wristWidth, wristThickness, true)
-  .holes('top', {
-    positions: [
-      { u: halfWristLen.subtract(halfWristW).negate(), v: 0 },
-      { u: halfWristLen.subtract(halfWristW),          v: 0 },
-    ],
-    diameter: pivotDiameter,
-    depth: 'through',
-    name: 'wristPivots',
-  })
-  .fillet(wristFilletR);
+// 9. Elbow yoke at the distal end of the upper arm (carries elbow servo).
+//    Two flanking plates only — the previous 6mm "yoke base" was a wide
+//    cross-bar that intersected the beam and surrounding parts. The two
+//    cheeks alone form a U-shape that holds the elbow shaft without a
+//    bridging slab.
+const elbowCheekY = beamW.add(2);
+const elbowYokeCheekL = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
+  .translate(upperArmLen, halfYokeCheekW.subtract(yokeCheekT.divide(2)), halfYokeCheekH)
+  .color('plate');
+const elbowYokeCheekR = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
+  .translate(upperArmLen, halfYokeCheekW.subtract(yokeCheekT.divide(2)).negate(), halfYokeCheekH)
+  .color('plate');
+const elbowYoke = elbowYokeCheekL.union(elbowYokeCheekR);
+const elbowYokePart = arm.part('elbow-yoke', elbowYoke);
 
-// Tool placeholder: flat tab + two thin parallel pads (gripper jaws)
-// sticking forward along +X. Reads as "robot end-effector" in the
-// silhouette rather than a featureless stub.
+// 10. Elbow pitch servo — mounted EXTERNALLY on the +Y cheek's outer face
+//     (axis along +Y), not stacked above the joint where it intersected
+//     the upper-arm beam, the yoke, and the forearm beam after FK rotation.
+const elbowServoMountY = halfYokeCheekW.add(yokeCheekT.divide(2));
+const elbowServoStack = box(servoH, servoD, servoW, true)
+  .translate(upperArmLen, elbowServoMountY.add(servoD.divide(2)), halfYokeCheekH)
+  .color('servo');
+const elbowServoPart = arm.part('elbow-pitch-servo', elbowServoStack);
+
+// 11. Shoulder-pitch shaft (cosmetic axle running through the upper-arm root).
+const shoulderPitchShaft = cylinder(yokeCheekW.add(10), pivotDia.divide(2), 32)
+  .alongAxis([0, 1, 0])
+  .translate(0, halfYokeCheekW.add(5).negate(), 0)
+  .color('shaft');
+const shoulderPitchShaftPart = arm.part('shoulder-pitch-shaft', shoulderPitchShaft);
+
+// ---- FOREARM link (child of elbow-pitch joint) --------------------------
+// Authored in forearm local frame: (0,0,0) at elbow-pitch axis.
+// Forearm extends along +X. Slimmer than upper arm, capped with a gripper
+// mounting plate.
+
+// 12. Forearm beam.
+const forearmBeamShape = box(forearmLen, beamW.subtract(2), beamT.subtract(2), true)
+  .fillet(1.5)
+  .translate(halfForearm, 0, 0)
+  .color('beam');
+const forearmRib = box(forearmLen.subtract(16), ribT.subtract(1), ribH.subtract(1), true)
+  .translate(halfForearm, 0, halfBeamT.add(ribH.divide(2)).subtract(1))
+  .color('beam');
+const forearmRootPlate = box(6, beamW.add(2), beamT.add(8), true)
+  .translate(0, 0, 0)
+  .color('plate');
+const forearmShape = forearmBeamShape.union(forearmRib).union(forearmRootPlate);
+const forearmPart = arm.part('forearm-beam', forearmShape);
+
+// 13. Gripper mounting plate at the forearm tip.
+const gripperPlate = box(6, 28, 28, true)
+  .fillet(2)
+  .translate(forearmLen.subtract(3), 0, 0)
+  .union(
+    cylinder(8, 5, 32).alongAxis([1, 0, 0]).translate(forearmLen, 0, 0),
+  )
+  .union(
+    cylinder(14, 1.5, 24).alongAxis([1, 0, 0]).translate(forearmLen.add(4), 0, 0),
+  )
+  .color('tool');
+const gripperPlatePart = arm.part('gripper-plate', gripperPlate);
+
+// 14. Elbow-pitch shaft (cosmetic axle through the forearm root cheeks).
+const elbowPitchShaft = cylinder(yokeCheekW.add(10), pivotDia.divide(2), 32)
+  .alongAxis([0, 1, 0])
+  .translate(0, halfYokeCheekW.add(5).negate(), 0)
+  .color('shaft');
+const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
+
+// ---- JOINTS --------------------------------------------------------------
+// Body-tree FK convention: joint origin lives in the PARENT'S LOCAL FRAME.
+// solvedModel() walks the joint tree and applies each pose in order.
 //
-// Tab is corner-anchored at the proximal (-X) end so it bolts onto the
-// wrist tip. Pads stick forward of the tab along +X, offset symmetrically
-// in ±Y, and stand tall in ±Z so the parallel-pad gripper silhouette reads
-// from every angle.
-const toolTab = box(toolLength, toolWidth, linkThickness)
-  .translate(0, toolWidth.divide(2).negate(), linkThickness.divide(2).negate());
-const padLeft = box(padLength, padThickness, padHeight)
-  .translate(toolLength, padOffset, padHeight.divide(2).negate());
-const padRight = box(padLength, padThickness, padHeight)
-  .translate(toolLength, padOffset.negate().subtract(padThickness), padHeight.divide(2).negate());
-const toolPlaceholder = union(toolTab, padLeft, padRight);
+// We chain the link-internal decorative parts via fixed joints so they all
+// inherit the moving link's pose.
 
-// ---- assembly ------------------------------------------------------------
+// Base-link internals (column / servo / horn ride with the base, which is
+// stationary, but binding them via fixed joints documents the ownership
+// graph and keeps every part in the same body-tree).
+arm.fixed('base-yaw-servo-fix',  basePart,     baseServoPart,  { origin: [0, 0, 0] });
+arm.fixed('base-yaw-output-fix', basePart,     baseHornPart,   { origin: [0, 0, 0] });
 
-const arm = assembly('desktop 3-axis robot arm');
+// Three driven revolute joints — these are the ones the harness counts.
+// Joint origins are plain numeric Vec3 in v1 (joint-frame ParamRef
+// reactivity is on the roadmap). Numerics match the geometry defaults so
+// editing geometry params reshapes parts but joint pivots stay put.
+const baseTopZNum     = 6 + 38 + 4;          // plateT + servoH + hornT
+const shoulderPitchZNum = 50;                // shoulderColumnH default
+const upperArmLenNum  = 140;                 // upperArmLen default
 
-const base     = arm.part('base',     basePlate);
-const shoulder = arm.part('shoulder', shoulderColumn);
-const elbow    = arm.part('elbow',    elbowArm);
-const wrist    = arm.part('wrist',    wristArm);
-const tool     = arm.part('tool',     toolPlaceholder);
-
-// ---- joints --------------------------------------------------------------
-//
-// Joint origins live in the PARENT'S LOCAL FRAME (URDF / MuJoCo / Drake
-// body-tree FK convention). v1 of the joint API takes plain numeric Vec3
-// for `origin` — pose reactivity for joint frames is deferred to a future
-// slice, so we hardcode literal numerics matching the param defaults. If
-// e.g. baseX is later edited via setParamValue, the basePlate geometry
-// rescales but the base-yaw joint origin stays put. Known v1 limitation;
-// tracked separately.
-
-// base-yaw: rotates the shoulder column around +Z, anchored at the center
-// of the base plate's top face.
-arm.revolute('base-yaw', base, shoulder, {
+arm.revolute('base-yaw', basePart, shoulderColumnPart, {
   axis: [0, 0, 1],
-  origin: [45, 35, 8], // [baseX/2, baseY/2, baseT] in base local frame
-  limitsDeg: [-120, 120],
+  origin: [0, 0, baseTopZNum],
+  limitsDeg: [-180, 180],
 });
+arm.fixed('shoulder-cheeks-fix', shoulderColumnPart, shoulderCheeksPart, { origin: [0, 0, 0] });
+arm.fixed('shoulder-servo-fix',  shoulderColumnPart, shoulderServoPart,  { origin: [0, 0, 0] });
 
-// shoulder-pitch: rotates the elbow forearm around +Y. The shoulder column
-// is centered on X/Y; its top-center sits at z = +shoulderHeight/2 in the
-// shoulder's local frame.
-arm.revolute('shoulder-pitch', shoulder, elbow, {
+arm.revolute('shoulder-pitch', shoulderColumnPart, upperArmPart, {
   axis: [0, 1, 0],
-  origin: [0, 0, 45], // [0, 0, shoulderHeight/2] in shoulder local frame
+  origin: [0, 0, shoulderPitchZNum],
   limitsDeg: [-45, 135],
 });
+arm.fixed('elbow-yoke-fix',          upperArmPart, elbowYokePart,           { origin: [0, 0, 0] });
+arm.fixed('elbow-pitch-servo-fix',   upperArmPart, elbowServoPart,          { origin: [0, 0, 0] });
+arm.fixed('shoulder-pitch-shaft-fix', upperArmPart, shoulderPitchShaftPart, { origin: [0, 0, 0] });
 
-// elbow-pitch: rotates the wrist forearm around +Y at the elbow's distal
-// tip. The elbow forearm is centered on X; tip-center sits at x =
-// +elbowLength/2 in the elbow's local frame.
-arm.revolute('elbow-pitch', elbow, wrist, {
+arm.revolute('elbow-pitch', upperArmPart, forearmPart, {
   axis: [0, 1, 0],
-  origin: [55, 0, 0], // [elbowLength/2, 0, 0] in elbow local frame
+  origin: [upperArmLenNum, 0, 0],
   limitsDeg: [-120, 120],
 });
+arm.fixed('gripper-plate-fix',      forearmPart, gripperPlatePart,    { origin: [0, 0, 0] });
+arm.fixed('elbow-pitch-shaft-fix',  forearmPart, elbowPitchShaftPart, { origin: [0, 0, 0] });
 
-// wrist-tool: rigid attach. Anchors the tool placeholder at the wrist's
-// distal tip. Wrist is centered on X; tip-center sits at x = +wristLength/2.
-arm.fixed('wrist-tool', wrist, tool, {
-  origin: [37.5, 0, 0], // [wristLength/2, 0, 0] in wrist local frame
-});
-
-// ---- hero pose -----------------------------------------------------------
-// solvedModel() runs body-tree FK and returns the unioned posed Shape via
-// SolvedKinematics.toShape(). At pose (baseYaw=25°, shoulderPitch=50°,
-// elbowPitch=-75°) the arm reads as a tucked-in articulated silhouette
-// from every camera angle. Fixed joints have no DOF and accept no pose.
+// ---- POSE ---------------------------------------------------------------
+// Pass ParamRef poses directly. solvedModel captures them so studio param
+// edits reactively re-pose the rendered arm without re-running the script.
 
 return arm.solvedModel({
   'base-yaw':       baseYawDeg,

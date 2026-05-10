@@ -1,0 +1,11 @@
+{
+  "taskId": "robot-arm-3axis-parametric",
+  "module": "v0.5",
+  "capturedAt": "2026-05-10T23:16:04.220Z",
+  "durationMs": 29500,
+  "truncated": false,
+  "gitSha": "29fea5c363a95660bdd0a34342e66cad7244b6d9",
+  "heroArtifact": "robot-arm-3axis-parametric",
+  "catalogSource": "memorable-builds-policy/v0.5",
+  "overrideApprovedBy": "v0.5.0 hero: desktop-3axis recaptured with PBR + Z-up framing + validator (so100 pivot retired; mate-connector API for real STEP assemblies waits for v0.6)"
+}

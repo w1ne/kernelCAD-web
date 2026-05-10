@@ -12,7 +12,7 @@ describe('CameraController', () => {
     const group = new THREE.Group();
     group.name = 'porthole';
     group.position.set(0, 24, 3);
-    group.add(new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshPhongMaterial()));
+    group.add(new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshStandardMaterial()));
     scene.add(group);
 
     const before = camera.position.length();
@@ -32,7 +32,7 @@ describe('CameraController', () => {
     const group = new THREE.Group();
     group.name = 'plate_1';
     const geometry = new THREE.BoxGeometry(120, 80, 10);
-    const material = new THREE.MeshPhongMaterial();
+    const material = new THREE.MeshStandardMaterial();
     group.add(new THREE.Mesh(geometry, material));
     scene.add(group);
 

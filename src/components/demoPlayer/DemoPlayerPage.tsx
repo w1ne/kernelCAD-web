@@ -11,6 +11,9 @@ import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 import { resolveColor } from '../../render/palette';
+import { pbrFromColor } from '../../render/materialRoles';
+import type { RenderView } from '../../render/views';
+export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
@@ -24,6 +27,14 @@ export interface DemoPlayerWindow {
   advance(dtMs: number): void;
   /** Set kernelCAD module version string for watermark, e.g. "v0.21". */
   setVersion(v: string): void;
+  /** Snap camera to one of four standard engineering views and force a
+   *  render. Used by `kernelcad render` for headless multi-view PNG
+   *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
+   *  appear at full visibility. */
+  setRenderView(view: RenderView): void;
+  /** Set every loaded FeatureMesh material to opacity 1.0 and re-render.
+   *  Used by `kernelcad render` to skip the build-animation fade-in. */
+  forceFullOpacity(): void;
   /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
   loadFeatureMeshes(
     perFeature: FeatureMeshSerialized[],
@@ -36,6 +47,9 @@ export interface DemoPlayerWindow {
     cameraPos: [number, number, number];
     cameraLookingAt: [number, number, number];
     sampleOpacities: number[];
+    /** polygonOffset triple per sampled mesh material — used by tests to
+     *  verify the renderer applies depth bias on assembly meshes. */
+    samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }>;
   };
 }
 
@@ -56,21 +70,35 @@ const TERMINAL_H = 1080;
  *  THREE.Material.color.set() also accepts. */
 const DEFAULT_MESH_COLOR = 0xc8d2e0;
 
-function buildMeshFromFace(face: FaceGeometry, name: string, color: number | string): THREE.Mesh {
+function buildMeshFromFace(
+  face: FaceGeometry,
+  name: string,
+  color: number | string,
+  pbr: { metalness: number; roughness: number },
+): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
-  // MeshPhongMaterial — light-reactive shading for visible CAD geometry (existing scene has ambient + directional lights).
-  const mat = new THREE.MeshPhongMaterial({
+  // MeshStandardMaterial — physically-based shading driven by the role
+  // (servo/shaft/plate/...) attached at .color() time. Pairs with the
+  // three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // polygonOffset — assemblies fan into N FeatureMeshes; adjacent parts
+  // whose surfaces touch (column on plate, servo case flush against
+  // bracket) produce coplanar geometry. Depth bias kills Z-fighting
+  // without geometric epsilons.
+  const mat = new THREE.MeshStandardMaterial({
     color,
-    specular: 0x222233,
-    shininess: 30,
+    metalness: pbr.metalness,
+    roughness: pbr.roughness,
     transparent: true,
     opacity: 0,
     side: THREE.DoubleSide,
     flatShading: false,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
   });
   const mesh = new THREE.Mesh(geom, mat);
   mesh.name = name;
@@ -80,6 +108,7 @@ function buildMeshFromFace(face: FaceGeometry, name: string, color: number | str
 function fitCameraToBounds(
   camera: THREE.PerspectiveCamera,
   bounds: { min: [number, number, number]; max: [number, number, number] },
+  view: RenderView | 'demo' = 'demo',
 ): void {
   // Bounds are centered at origin (caller offsets meshes so centroid = (0,0,0)).
   // Use the largest extent (not diagonal) so the model fills the viewport tightly.
@@ -91,8 +120,26 @@ function fitCameraToBounds(
   // Tighter framing for mobile-readable videos: the viewer is letterboxed next
   // to the terminal, so the model should fill the 3D pane without clipping.
   const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
-  // Canonical CAD-isometric-ish viewing angle (azimuth ~35°, elevation ~25°).
-  camera.position.set(distance * 0.78, distance * 0.5, distance * 0.78);
+
+  // kernelCAD is Z-up. Each engineering view fixes camera position + up
+  // vector so the rendered tile matches first-angle drafting convention.
+  // 'demo' uses the same Z-up 3/4-front-right angle as the CLI's 'iso'
+  // view so plates lie horizontally as authored (not rotated 90° onto
+  // their side, which the legacy Y-up framing did).
+  let pos: [number, number, number];
+  let up: [number, number, number] = [0, 0, 1];
+  switch (view) {
+    case 'front': pos = [0, -distance, 0]; break;
+    case 'right': pos = [distance, 0, 0]; break;
+    case 'top':   pos = [0, 0, distance]; up = [0, 1, 0]; break;
+    case 'iso':   pos = [distance * 0.7, -distance * 0.7, distance * 0.5]; break;
+    case 'demo':
+    default:
+      pos = [distance * 0.7, -distance * 0.7, distance * 0.5];
+      break;
+  }
+  camera.up.set(up[0], up[1], up[2]);
+  camera.position.set(pos[0], pos[1], pos[2]);
   camera.lookAt(0, 0, 0);
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
@@ -152,6 +199,39 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
       },
       setVersion: (v) => setVersion(v),
+      setRenderView: (view) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        // Reuse the bounds the loadFeatureMeshes path computed (mesh
+        // groups are already centered at origin; just re-aim the camera).
+        // Recompute aggregate bounds from current scene contents to
+        // tolerate scenes loaded without explicit fit.
+        const bbox = new THREE.Box3();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+        });
+        if (bbox.isEmpty()) return;
+        const minV = bbox.min, maxV = bbox.max;
+        fitCameraToBounds(
+          ctx.camera,
+          { min: [minV.x, minV.y, minV.z], max: [maxV.x, maxV.y, maxV.z] },
+          view,
+        );
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
+      forceFullOpacity: () => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) {
+            const mat = obj.material as THREE.Material;
+            mat.opacity = 1;
+            mat.transparent = false;
+            mat.needsUpdate = true;
+          }
+        });
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
       loadFeatureMeshes: (perFeature, bounds) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const scene = sceneRef.current.scene;
@@ -182,8 +262,14 @@ export function DemoPlayerPage(): React.JSX.Element {
           // Unknown / missing → DEFAULT_MESH_COLOR (preserves prior behavior).
           const resolved = resolveColor(fm.color);
           const colorForMesh: number | string = resolved ?? DEFAULT_MESH_COLOR;
+          const pbr = pbrFromColor(fm.color);
           for (const face of fm.faces) {
-            const mesh = buildMeshFromFace(face, `${fm.featureId}-face-${face.faceId}`, colorForMesh);
+            const mesh = buildMeshFromFace(
+              face,
+              `${fm.featureId}-face-${face.faceId}`,
+              colorForMesh,
+              pbr,
+            );
             group.add(mesh);
           }
           scene.add(group);
@@ -217,15 +303,24 @@ export function DemoPlayerPage(): React.JSX.Element {
             cameraPos: [0, 0, 0] as [number, number, number],
             cameraLookingAt: [0, 0, 0] as [number, number, number],
             sampleOpacities: [],
+            samplePolygonOffsets: [],
           };
         }
         let meshCount = 0;
         const sampleOpacities: number[] = [];
+        const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
         scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             meshCount++;
-            const mat = obj.material as THREE.MeshPhongMaterial;
+            const mat = obj.material as THREE.MeshStandardMaterial;
             if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
+            if (samplePolygonOffsets.length < 5) {
+              samplePolygonOffsets.push({
+                enabled: mat.polygonOffset,
+                factor: mat.polygonOffsetFactor,
+                units: mat.polygonOffsetUnits,
+              });
+            }
           }
         });
         const lookDir = new THREE.Vector3();
@@ -241,6 +336,7 @@ export function DemoPlayerPage(): React.JSX.Element {
           cameraPos: [camera.position.x, camera.position.y, camera.position.z],
           cameraLookingAt: lookAt,
           sampleOpacities,
+          samplePolygonOffsets,
         };
       },
     };

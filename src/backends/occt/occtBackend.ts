@@ -2,11 +2,13 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import type { ShapeBackend, BackendTarget } from '../backend';
+import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../capture/sketch';
 import { isSameEdge } from './edgeQueries';
 import { encodeBinaryStl } from '../../script-runtime/exportStlBinary';
+import { resolveColor } from '../../render/palette';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -913,6 +915,50 @@ export class OcctBackend implements ShapeBackend {
       maybeDelete.call(this.shape);
     }
   }
+}
+
+/**
+ * Scene-aware STEP export. Builds a `replicad.ShapeConfig[]` from the
+ * `SceneBackend`'s parts (apply each part's `worldTransform` to a fresh
+ * clone of its local-frame OCCT shape), then routes through replicad's
+ * native `exportSTEP` so the resulting STEP file ships a separate named
+ * body per part with its role color attached via XCAFDoc / STEP layers.
+ *
+ * Why a free function instead of a `Scene.exportSTEP()` method: the agent-
+ * facing Scene surface stays lean (per the kernelCAD product strategy —
+ * generic tools, not convenience methods). `runAndExport` calls this
+ * directly when the script returns a Scene. Callers outside the runtime
+ * (CLI, MCP, future Studio export panel) can import this free function.
+ *
+ * Lifecycle: clones every part shape before `applyTransform` because
+ * replicad's translate/rotate mutate-and-destroy the source OCCT handle
+ * (cf. commit 1d597dd). Color tokens (e.g. 'plate', 'gear') are resolved
+ * to `#rrggbb` via the role palette before being passed to replicad.
+ */
+export async function exportSceneToSTEPAsync(
+  sceneBackend: SceneBackend,
+): Promise<Uint8Array> {
+  if (sceneBackend.parts.length === 0) {
+    throw new Error('exportSceneToSTEPAsync: SceneBackend has no parts.');
+  }
+  const shapeConfigs = sceneBackend.parts.map((p) => {
+    const transformed = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    const config: {
+      shape: ReplicadShape3D;
+      name: string;
+      color?: string;
+    } = {
+      shape: transformed.getReplicadShape(),
+      name: p.name,
+    };
+    const hex = resolveColor(p.color);
+    if (hex !== undefined) config.color = hex;
+    return config;
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const blob = replicad.exportSTEP(shapeConfigs as any);
+  const buf = await blob.arrayBuffer();
+  return new Uint8Array(buf);
 }
 
 /**

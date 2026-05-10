@@ -39,6 +39,10 @@ export interface ListApiOutput {
   sketchMethods?: ApiEntry[];
   pathBuilderMethods?: ApiEntry[];
   paramRefMethods?: ApiEntry[];
+  /** Methods/properties on the `Scene` returned by `Assembly.model()` / `Assembly.solvedModel()`. */
+  sceneMethods?: ApiEntry[];
+  /** Properties on each `ScenePart` produced by a Scene. */
+  scenePartProperties?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
@@ -60,10 +64,11 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'param', signature: "(name, defaultValue, meta?) => ParamRef", description: 'Declare a symbolic editable parameter. Returns a ParamRef the chain ops accept anywhere a number is expected. Edit post-build via `kcad.params.update`. `meta?: { min?, max?, description? }`.' },
   { name: 'params', signature: "(decl) => { [name]: ParamRef }", description: 'Batched form of `param()` — declare many params at once. Returns an object of ParamRefs keyed by name.' },
   { name: 'union', signature: '(...shapes) => Shape', description: 'Boolean union of two or more shapes.' },
-  { name: 'assembly', signature: '(name?) => Assembly', description: 'Start an inspectable mechanical assembly. Use `.part(name, shape, { at?, connectors?, connect? })` to wrap modeled solids, `.connect(name, aConnector, bConnector)` for fixed connector metadata, joint primitives `.revolute/.prismatic/.fixed/.ball(name, parentPart, childPart, opts)` to declare DOF + joint origins (numeric Vec3 in parent local frame), `.solve(poses)` to run body-tree forward kinematics returning a SolvedKinematics handle (with `.transform(partName)`, `.value(jointName)`, `.bodies()`, `.toShape()`), `.solvedModel(poses)` as sugar for the unioned posed Shape, and `.model()` for the kinematic-zero Shape. Pose values accept `Editable<number>` — passing ParamRef poses to `.solvedModel` makes the rendered assembly reactive (param updates re-pose); `.solve` resolves ParamRefs at call time and returns a snapshot.' },
+  { name: 'assembly', signature: '(name?) => Assembly', description: 'Start an inspectable mechanical assembly. Use `.part(name, shape, { at?, connectors?, connect? })` to wrap modeled solids, `.connect(name, aConnector, bConnector)` for fixed connector metadata, joint primitives `.revolute/.prismatic/.fixed/.ball(name, parentPart, childPart, opts)` to declare DOF + joint origins (numeric Vec3 in parent local frame), `.solve(poses)` to run body-tree forward kinematics returning a SolvedKinematics handle (with `.transform(partName)`, `.value(jointName)`, `.bodies()`, `.toScene()`; `.toShape()` is deprecated — use `.toScene().toUnion()`), `.solvedModel(poses)` to return the posed `Scene`, and `.model()` for the kinematic-zero `Scene`. Pose values accept `Editable<number>` — passing ParamRef poses to `.solvedModel` makes the rendered Scene reactive (param updates re-pose → fresh frozen Scene); `.solve` resolves ParamRefs at call time and returns a snapshot. The `Scene` return exposes `.parts`, `.bbox`, `.assemblyName`, `.toCompound()` (lossless OCCT group, default for STEP), `.toUnion()` (lossy boolean fuse, antipattern), `.part(name)`, and iteration via `for (const p of scene)`.' },
   { name: 'helix', signature: '({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }) => [number, number, number][]', description: 'Polyline helix rail for `Sketch.sweep`. Default axis Z, 32 points per turn.' },
   { name: 'selectEdges', signature: '(shape, query?) => Promise<EdgeSegment[]>', description: 'Pre-select edges by EdgeQuery. Awaitable; lowers the shape lazily.' },
   { name: 'selectEdge', signature: '(shape, query) => Promise<EdgeSegment>', description: 'Like selectEdges but throws if zero or multiple edges match. Use for unambiguous single-edge selection.' },
+  { name: 'lib', signature: '{ fromSTEP(path: string): Promise<Shape> }', description: 'Parts library namespace. `lib.fromSTEP(path)` imports a STEP file as a Shape — path is resolved relative to the calling .kcad.ts script (absolute paths also accepted). Returned Shape composes with translate/rotate/color/arm.part(...) like any primitive. Use for vendor catalog parts (servos, bearings, fasteners) so geometric fidelity matches the real component instead of being hand-authored from box/cylinder.' },
 ];
 
 export const SHAPE_METHODS: ApiEntry[] = [
@@ -118,6 +123,24 @@ export const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'close', signature: '() => Sketch', description: 'Close the path; returns a Sketch that can be extruded/revolved/swept.' },
 ];
 
+export const SCENE_METHODS: ApiEntry[] = [
+  { name: 'parts', signature: 'readonly ScenePart[]', description: 'Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. Iterate with `for (const p of scene)` (Scene is also `Iterable<ScenePart>`).' },
+  { name: 'assemblyName', signature: 'string', description: 'Name passed to `assembly(name?)` at capture time; "unnamed-assembly" if no name was provided.' },
+  { name: 'bbox', signature: '{ min: [number, number, number]; max: [number, number, number] }', description: 'Lazy axis-aligned bounding box over all transformed parts. Computed on first access; cached on the Scene instance.' },
+  { name: 'toCompound', signature: '() => Shape', description: 'OCCT TopoDS_Compound — groups bodies without booleaning. Lossless on per-part identity (color, name, metadata preserved). Default path for STEP export with named bodies; preferred whenever a single Shape handle is needed without paying for a fuse. Free path via replicad makeCompound.' },
+  { name: 'toUnion', signature: '() => Shape', description: 'Explicit boolean fuse of all parts into one Shape. Lossy on color, name, metadata — the result has no per-part identity. Documented antipattern; use only when downstream truly needs one solid (boolean ops against external geometry; legacy tools that do not accept compounds). Prefer toCompound() otherwise.' },
+  { name: 'part', signature: '(name: string) => ScenePart', description: 'Look up a part by its assembly-unique name. Throws KernelError (`feature.invalid-args`, hint `invalid-args.scene.unknown-part — part X not declared on assembly Y`) on miss.' },
+  { name: 'toShape', signature: '() => Shape', description: 'Deprecated v0.5.0 — call `.toUnion()` instead. Emits a warn-once `deprecated.scene.toShape` advisory on first call per process and delegates to `.toUnion()`. Removal in v0.6.0. SolvedKinematics carries the same deprecation; use `.toScene().toUnion()` there.' },
+];
+
+export const SCENE_PART_PROPERTIES: ApiEntry[] = [
+  { name: 'name', signature: 'string', description: 'Assembly-unique part name from `assembly.part(name, ...)`.' },
+  { name: 'shape', signature: 'Shape', description: 'LOCAL-frame shape — untransformed. Apply `worldTransform` to render in world frame.' },
+  { name: 'worldTransform', signature: 'Transform', description: 'SE(3) post-FK placement. Identity for kinematic-zero `model()` (apart from each part\'s `at` already baked into the lowered shape); body-tree FK output for `solvedModel(poses)`.' },
+  { name: 'color', signature: 'string | undefined', description: 'Role token (e.g. "servo", "gear") or `#rrggbb` hex; resolved from the source shape\'s metadata via input-graph walk to nearest color attribution.' },
+  { name: 'metadata', signature: 'Readonly<Record<string, unknown>> | undefined', description: 'Forward-compat container for material, mass, BOM tags. Frozen.' },
+];
+
 /** Which global primitive/extrude functions accept an opts.faceLabels map,
  *  and the description of valid values for that map. */
 export const FEATURE_KIND_FACE_LABELS: FeatureKindFaceLabels = {
@@ -152,6 +175,8 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     sketchMethods: SKETCH_METHODS,
     pathBuilderMethods: PATH_BUILDER_METHODS,
     paramRefMethods: PARAM_REF_METHODS,
+    sceneMethods: SCENE_METHODS,
+    scenePartProperties: SCENE_PART_PROPERTIES,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
