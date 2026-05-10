@@ -1,10 +1,10 @@
 {
   "taskId": "robot-arm-3axis-parametric",
   "module": "v0.5",
-  "capturedAt": "2026-05-10T17:28:29.541Z",
-  "durationMs": 22600,
+  "capturedAt": "2026-05-10T17:52:23.371Z",
+  "durationMs": 29500,
   "truncated": false,
-  "gitSha": "e98aa20b02f194c25a172ad7cce1bb14b9c95d31",
+  "gitSha": "ac669df68c1ed7c92f68cdd92406ad49468077b9",
   "heroArtifact": "robot-arm-3axis-parametric",
   "catalogSource": "memorable-builds-policy/v0.5",
   "overrideApprovedBy": "v0.5.0 hero recapture: assembly-scene-graph slice ships under v0.5.0"
