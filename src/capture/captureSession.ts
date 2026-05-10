@@ -468,6 +468,42 @@ export class CaptureSession {
     });
   }
 
+  /**
+   * Capture-time recording of `Scene.toCompound()` / `Scene.toUnion()`.
+   *
+   * Consumes the upstream `solvedAssembly` (or `assemblyModel`) feature's
+   * SceneBackend output via `inputs.scene = { kind: 'feature', id: sceneFeatureId }`.
+   * The lowerer reads each part's local-frame shape and worldTransform and
+   * either:
+   *   - `op: 'compound'` — wraps the per-part shapes in a TopoDS_Compound
+   *     via replicad.makeCompound (lossless on per-part identity), or
+   *   - `op: 'union'`    — boolean-fuses them into a single solid
+   *     (lossy on color/name/metadata).
+   *
+   * The returned Shape behaves like any other capture-time Shape — chain
+   * `.fillet()`, `.exportSTL()`, etc. on it.
+   */
+  assemblyExport(sceneFeatureId: FeatureId, op: 'compound' | 'union'): Shape {
+    const sourceRecord = this.records.find(r => r.id === sceneFeatureId);
+    if (!sourceRecord) {
+      throw new Error(`assemblyExport: source scene feature '${sceneFeatureId}' is not from this CaptureSession`);
+    }
+    if (sourceRecord.kind !== 'solvedAssembly' && sourceRecord.kind !== 'assemblyModel') {
+      throw new Error(`assemblyExport: source feature '${sceneFeatureId}' is kind '${sourceRecord.kind}'; expected 'solvedAssembly' or 'assemblyModel'.`);
+    }
+    const opLabel: Param = {
+      expression: `'${op}'`, unit: 'unitless', evaluated: 0,
+    };
+    return this.createShape({
+      kind: 'assemblyExport',
+      params: { op: opLabel },
+      inputs: {
+        scene: { kind: 'feature', id: sceneFeatureId },
+      },
+      metadata: { op },
+    });
+  }
+
   edgeFeature(
     kind: 'fillet' | 'chamfer' | 'shell',
     base: Shape,

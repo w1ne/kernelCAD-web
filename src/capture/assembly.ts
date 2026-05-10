@@ -1,4 +1,5 @@
 import { KernelError } from '../intent/kernelError';
+import { Scene, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import { currentValue, toVec3Param } from '../runtime/editableHelpers';
@@ -444,11 +445,16 @@ export class Assembly {
    * Records a `solvedAssembly` FeatureRecord that captures the parts,
    * joints, and per-joint poses (with ParamRefs preserved). The lowerer
    * resolves the poses against the live ParamTable at recompute time,
-   * walks `forwardKinematics`, and returns the unioned posed Shape — so
-   * studio-driven param edits re-pose the rendered scene reactively
+   * walks `forwardKinematics`, and emits a `SceneBackend` that carries
+   * each part's local-frame shape, world transform, and color attribution
+   * so studio-driven param edits re-pose the rendered scene reactively
    * without re-running the script.
+   *
+   * Returns a frozen `Scene` (multi-body view). Use
+   * `Scene.toCompound()` for a TopoDS_Compound (lossless) or
+   * `Scene.toUnion()` for an explicit boolean fuse (lossy).
    */
-  solvedModel(poses: Poses): Shape {
+  solvedModel(poses: Poses): Scene {
     if (this.parts.length === 0) {
       throw new KernelError(
         'feature.invalid-args',
@@ -457,10 +463,17 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
     }
-    return this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
+    const sceneShape = this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
+    return this.makeScene(sceneShape);
   }
 
-  model(): Shape {
+  /**
+   * Records an `assemblyModel` FeatureRecord (kinematic-zero, no FK) and
+   * returns a `Scene` whose per-part `worldTransform` is the identity. Use
+   * for assemblies whose layout is set entirely by `assembly.part({ at })`
+   * / connectors and have no joints.
+   */
+  model(): Scene {
     if (this.parts.length === 0) {
       throw new KernelError(
         'feature.invalid-args',
@@ -469,7 +482,47 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.model().',
       );
     }
-    return this.session.assemblyModel(this.name, this.parts);
+    const sceneShape = this.session.assemblyModel(this.name, this.parts);
+    return this.makeScene(sceneShape);
+  }
+
+  /**
+   * Build the capture-time `Scene` returned by `model()` / `solvedModel()`.
+   *
+   * Per-part data is the assembly's authoring-time view: `name` from
+   * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
+   * and `worldTransform = identity` (the lowered SceneBackend carries the
+   * FK-derived transforms). The Scene's `exportFn` closes over the
+   * upstream solvedAssembly / assemblyModel feature id; calling
+   * `Scene.toCompound()` / `Scene.toUnion()` records a downstream
+   * `assemblyExport` feature whose lowerer reads the SceneBackend output.
+   *
+   * `bboxFn` is intentionally a "lower the model first" stub: AABBs over
+   * transformed parts are recompute-time data; expose them via a future
+   * `RecomputeResult.scene.bbox` (Task 9) rather than synchronously
+   * lowering inside `Scene.bbox`.
+   */
+  private makeScene(sceneShape: Shape): Scene {
+    const sceneFeatureId = sceneShape.id;
+    const session = this.session;
+    const sceneParts: ScenePart[] = this.parts.map((p) => ({
+      name: p.name,
+      shape: p.originalShape,
+      worldTransform: Transform.identity(),
+    }));
+    return new Scene(
+      this.name,
+      sceneParts,
+      () => {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Scene.bbox: capture-time AABB is not yet wired (Task 9). Lower the model and read the bounds from the recompute result, or call Scene.toCompound().boundingBox().`,
+          sceneFeatureId,
+          'invalid-args.scene.bbox-not-available — capture-time Scene bbox is computed during recompute; Task 9 surfaces it.',
+        );
+      },
+      (op) => session.assemblyExport(sceneFeatureId, op),
+    );
   }
 }
 

@@ -37,6 +37,13 @@ export interface SceneBbox {
   max: Vec3;
 }
 
+/** Capture-time export callback supplied by `Assembly.model()` /
+ *  `Assembly.solvedModel()`. Each call records a new `assemblyExport` feature
+ *  whose `inputs.scene` references the upstream `solvedAssembly` /
+ *  `assemblyModel` feature; the lowerer reads the SceneBackend and either
+ *  groups (compound) or boolean-fuses (union) the per-part shapes. */
+export type SceneExportFn = (op: 'compound' | 'union') => Shape;
+
 /** Multi-body output of `Assembly.model()` / `Assembly.solvedModel(poses)`.
  *  Frozen on construction; reactivity stays on the capture-time Assembly. */
 export class Scene implements Iterable<ScenePart> {
@@ -44,11 +51,18 @@ export class Scene implements Iterable<ScenePart> {
   readonly parts: readonly ScenePart[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
+  private readonly exportFn?: SceneExportFn;
 
-  constructor(assemblyName: string, parts: readonly ScenePart[], bboxFn: () => SceneBbox) {
+  constructor(
+    assemblyName: string,
+    parts: readonly ScenePart[],
+    bboxFn: () => SceneBbox,
+    exportFn?: SceneExportFn,
+  ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
     this.bboxFn = bboxFn;
+    this.exportFn = exportFn;
   }
 
   /** Lazily-computed AABB over all transformed parts. */
@@ -78,20 +92,39 @@ export class Scene implements Iterable<ScenePart> {
   }
 
   /** OCCT `TopoDS_Compound` — groups bodies without booleaning. Lossless on
-   *  per-part identity; use for STEP export with named bodies. Filled in by
-   *  Task 8. */
+   *  per-part identity; use for STEP export with named bodies, downstream
+   *  tools that walk a heterogeneous shape, or whenever a single Shape handle
+   *  is needed without paying for a fuse. Free path via replicad's
+   *  `makeCompound`. */
   toCompound(): Shape {
-    throw new Error('Scene.toCompound: not yet implemented (Task 8)');
+    return this.requireExportFn('toCompound')('compound');
   }
 
   /** Explicit boolean fuse. Lossy on color, name, metadata — the result is a
-   *  single Shape with no per-part identity. Filled in by Task 8. */
+   *  single Shape with no per-part identity. Use only when downstream truly
+   *  needs one solid (boolean ops against external geometry; legacy tools
+   *  that don't accept compounds). Documented antipattern; prefer
+   *  `toCompound()` whenever possible. */
   toUnion(): Shape {
-    throw new Error('Scene.toUnion: not yet implemented (Task 8)');
+    return this.requireExportFn('toUnion')('union');
   }
 
-  /** @deprecated v0.6.0 — call .toUnion() instead. */
+  /** @deprecated v0.6.0 — call .toUnion() instead. Today this is a thin
+   *  delegate; Task 11 attaches a warn-once
+   *  `feature.deprecated.scene.toShape` diagnostic on first call. */
   toShape(): Shape {
-    throw new Error('Scene.toShape: not yet implemented (Task 11)');
+    return this.requireExportFn('toShape')('union');
+  }
+
+  private requireExportFn(method: string): SceneExportFn {
+    if (this.exportFn === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Scene.${method}: this Scene was not produced by Assembly.model() / Assembly.solvedModel(); no export callback is wired.`,
+        undefined,
+        `invalid-args.scene.export-callback-missing — call Scene.${method}() on a Scene returned by an Assembly, not on a hand-constructed Scene.`,
+      );
+    }
+    return this.exportFn;
   }
 }

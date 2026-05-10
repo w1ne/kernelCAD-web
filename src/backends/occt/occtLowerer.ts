@@ -15,7 +15,7 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
-import type { SceneBackend, SceneBackendPart } from '../sceneBackend';
+import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
 import { Transform } from '../../runtime/se3';
 import * as replicad from 'replicad';
@@ -290,6 +290,7 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyConnect',
     'assemblyModel',
     'solvedAssembly',
+    'assemblyExport',
   ]);
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
@@ -1543,6 +1544,75 @@ export class OcctLowerer implements FeatureLowerer {
         // engine's shapes map, meshing) keep compiling. Consumers that need
         // the SceneBackend at runtime use isSceneBackend(...) to discriminate.
         return { shape: sceneBackend as unknown as ShapeBackend, diagnostics };
+      }
+      case 'assemblyExport': {
+        // Backs `Scene.toCompound()` and `Scene.toUnion()`. Reads the upstream
+        // SceneBackend (produced by `solvedAssembly` / `assemblyModel`),
+        // applies each part's worldTransform to its local-frame shape, then
+        // either:
+        //   - 'compound': groups the transformed parts into a TopoDS_Compound
+        //     via replicad.makeCompound (lossless on per-part identity).
+        //   - 'union'   : boolean-fuses them into a single solid (lossy on
+        //     color, name, metadata — documented antipattern).
+        const sceneInput = inputs.byKey.scene as unknown;
+        if (!isSceneBackend(sceneInput)) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: input 'scene' is not a SceneBackend (upstream solvedAssembly / assemblyModel must lower to a SceneBackend).`,
+            hint: 'Construct via Scene.toCompound() / Scene.toUnion() on a Scene returned by Assembly.model() / Assembly.solvedModel().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const meta = r.metadata as { op?: 'compound' | 'union' } | undefined;
+        const op = meta?.op;
+        if (op !== 'compound' && op !== 'union') {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: metadata.op must be 'compound' or 'union'; got ${JSON.stringify(op)}.`,
+            hint: 'Use Scene.toCompound() or Scene.toUnion() rather than constructing the feature directly.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const sceneBackend = sceneInput as SceneBackend;
+        if (sceneBackend.parts.length === 0) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `assemblyExport: scene has no parts.`,
+            hint: 'Call assembly.part(...) at least once before exporting the scene.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Apply each part's worldTransform to its local-frame shape. Parts are
+        // visited in scene-declaration order so both compound and union are
+        // deterministic.
+        const transformed: OcctBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
+          (p.shape as OcctBackend).applyTransform(p.worldTransform),
+        );
+        if (op === 'compound') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const replicadShapes = transformed.map((b) => (b as OcctBackend).getReplicadShape() as any);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const compound = replicad.makeCompound(replicadShapes) as any;
+          shape = new OcctBackend(compound);
+          break;
+        }
+        // op === 'union': fold-fuse from the first part. Mirrors the
+        // pre-Task-4 union loop, just consumed from a SceneBackend instead.
+        let fused: OcctBackend = transformed[0];
+        for (let i = 1; i < transformed.length; i++) {
+          fused = fused.union(transformed[i]) as OcctBackend;
+        }
+        shape = fused;
+        break;
       }
       default:
         return {
