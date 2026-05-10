@@ -135,4 +135,77 @@ describe('meshing — SceneBackend fan-out', () => {
     // No composite-id artefacts on the single-shape path.
     expect(features[0].featureId.includes('__')).toBe(false);
   });
+
+  // Construction-closure filter: when an assembly's terminal `solvedAssembly` /
+  // `assemblyModel` shape lands in meshing, the SceneBackend fan-out is the
+  // ONLY mesh source the renderer wants. Intermediate boxes/cylinders/fillets/
+  // holes/booleans used to BUILD each part are construction debris — they'd
+  // render at LOCAL frame stacked at the origin and drown out the colored,
+  // FK-posed fan-out. Pre-Task-9 the renderer was getting both, producing a
+  // gray-soup hero image; the closure filter scopes meshing to the fan-out.
+
+  it('filter active: solvedAssembly suppresses construction-input intermediates', async () => {
+    // Each part is built from a non-trivial chain: box → fillet. Without the
+    // filter, both intermediates would emit FeatureMesh entries (4 total),
+    // alongside the 2 fan-out entries for a total of 6. With the filter we
+    // expect ONLY the 2 fan-out entries.
+    const code = `
+      const arm = assembly('test');
+      const base = arm.part('base', box(10, 10, 10).fillet(0.5));
+      const armPart = arm.part('arm',  box(10, 10, 30).fillet(0.5));
+      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      return arm.solvedModel({ yaw: 0 });
+    `;
+    const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+    const { features, failedFeatureIds } = await meshFeaturesPerFeature(records);
+    expect(failedFeatureIds).toEqual([]);
+
+    // Exactly the 2 fan-out entries; nothing else.
+    expect(features).toHaveLength(2);
+
+    const last = records[records.length - 1];
+    expect(last.kind).toBe('solvedAssembly');
+    for (const fm of features) {
+      expect(fm.featureId.startsWith(`${last.id}__`)).toBe(true);
+    }
+  });
+
+  it('filter active: assemblyModel also suppresses construction-input intermediates', async () => {
+    // Same shape as the solvedAssembly test, but using arm.model() — the
+    // closure filter must apply to assemblyModel too.
+    const code = `
+      const arm = assembly('test');
+      const base = arm.part('base', box(10, 10, 10).fillet(0.5));
+      const armPart = arm.part('arm',  box(10, 10, 30).fillet(0.5));
+      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      return arm.model();
+    `;
+    const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+    const { features, failedFeatureIds } = await meshFeaturesPerFeature(records);
+    expect(failedFeatureIds).toEqual([]);
+
+    expect(features).toHaveLength(2);
+    const last = records[records.length - 1];
+    expect(last.kind).toBe('assemblyModel');
+    for (const fm of features) {
+      expect(fm.featureId.startsWith(`${last.id}__`)).toBe(true);
+    }
+  });
+
+  it('filter inactive: non-assembly script emits all FeatureMesh entries', async () => {
+    // No assemblyPart records → closure is empty → every compiled feature
+    // emits a FeatureMesh as before. box→fillet should yield 2 entries.
+    const code = `return box(10, 10, 10).fillet(0.5);`;
+    const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+    const { features, failedFeatureIds } = await meshFeaturesPerFeature(records);
+    expect(failedFeatureIds).toEqual([]);
+
+    expect(features).toHaveLength(2);
+    const kinds = features.map(f => f.featureKind).sort();
+    expect(kinds).toEqual(['box', 'fillet']);
+    // No composite-id artefacts — single-shape paths only.
+    for (const fm of features) {
+      expect(fm.featureId.includes('__')).toBe(false);
+    }
+  });
 });
