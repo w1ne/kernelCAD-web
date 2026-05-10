@@ -16,6 +16,19 @@ import type { RenderView } from './views';
 
 export type { RenderView };
 
+// `page.evaluate(...)` callbacks execute inside the browser, where `window`
+// is the page's global. The CLI tsconfig (lib: ES2022 only, no DOM) doesn't
+// know that, so declare a narrow shim here. The full demo-player API lives
+// in src/components/demoPlayer/DemoPlayerPage.tsx (`DemoPlayerWindow`),
+// which the CLI build deliberately excludes.
+declare const window: {
+  __demoPlayer?: {
+    loadFeatureMeshes: (perFeature: unknown, bounds: unknown) => unknown;
+    forceFullOpacity: () => void;
+    setRenderView: (view: RenderView) => void;
+  };
+};
+
 export const ALL_VIEWS: readonly RenderView[] = ['front', 'right', 'top', 'iso'];
 
 export interface HeadlessRenderOpts {
