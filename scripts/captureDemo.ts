@@ -240,13 +240,12 @@ async function main(): Promise<void> {
   const override: PacingOverride = args.pacing
     ? JSON.parse(readFileSync(resolve(args.pacing), 'utf8'))
     : {};
-  const pacing = computeTimeline(
-    loaded.features.map((f) => ({ id: f.id, kind: f.kind })),
-    override,
-  );
-  console.log(`pacing: total=${pacing.totalDurationMs}ms preRoll=${pacing.preRollMs}ms rotate=${pacing.rotateDurationMs}ms truncated=${pacing.truncated}`);
 
   // Node-side per-feature meshing: builds the scene authoritative source of truth.
+  // Run BEFORE pacing so we can budget time per visible mesh — the construction
+  // closure suppresses primitives that build assemblyParts, so feeding pacing
+  // the raw record list bloats the timeline budget with invisible work and
+  // truncates assemblies with many parts.
   const { features: featureMeshes, bounds, failedFeatureIds } = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),
     loaded.paramTable,
@@ -256,6 +255,40 @@ async function main(): Promise<void> {
     console.error('Aborting capture — partial scene would produce a broken demo.');
     process.exit(1);
   }
+
+  // Pre-compute partName → assemblyPart record id so we can both (a) feed
+  // pacing only the records that produce visible meshes and (b) route
+  // SceneBackend fan-out events to the right pacing slot below.
+  const assemblyPartIdByName = new Map<string, string>();
+  for (const f of loaded.features) {
+    if (f.kind !== 'assemblyPart') continue;
+    const partName = (f.record.metadata as { partName?: string } | undefined)?.partName;
+    if (typeof partName === 'string') assemblyPartIdByName.set(partName, f.id);
+  }
+
+  // Build the visible-record set: for each mesh, the underlying record id is
+  // either the mesh's own featureId (single-shape path) or the assemblyPart
+  // resolved from the composite `parent__partName` (assembly fan-out path).
+  // Records not in this set were either suppressed by the closure filter or
+  // are joint/connect construction nodes — they never animate.
+  const visibleRecordIds = new Set<string>();
+  for (const mesh of featureMeshes) {
+    const compIdx = mesh.featureId.indexOf('__');
+    if (compIdx >= 0) {
+      const partName = mesh.featureId.slice(compIdx + 2);
+      const recId = assemblyPartIdByName.get(partName);
+      if (recId) visibleRecordIds.add(recId);
+    } else {
+      visibleRecordIds.add(mesh.featureId);
+    }
+  }
+  const visibleFeatures = loaded.features.filter((f) => visibleRecordIds.has(f.id));
+
+  const pacing = computeTimeline(
+    visibleFeatures.map((f) => ({ id: f.id, kind: f.kind })),
+    override,
+  );
+  console.log(`pacing: total=${pacing.totalDurationMs}ms preRoll=${pacing.preRollMs}ms rotate=${pacing.rotateDurationMs}ms truncated=${pacing.truncated} (${visibleFeatures.length}/${loaded.features.length} visible)`);
   const serialized = featureMeshes.map(serializeForBridge);
   await page.evaluate(
     ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
@@ -295,18 +328,11 @@ async function main(): Promise<void> {
     await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
   };
 
-  // Build partName → assemblyPart record id index so SceneBackend fan-out
-  // meshes (whose featureId is a composite like `solvedAssembly_1__base-plate`)
-  // can resolve to the part's OWN pacing slot — this is what drives the
-  // build-one-by-one animation. Without this, all fan-out parts would
-  // collapse to the parent solvedAssembly's single pacing entry and pop in
-  // simultaneously at the end of the timeline.
-  const assemblyPartIdByName = new Map<string, string>();
-  for (const f of loaded.features) {
-    if (f.kind !== 'assemblyPart') continue;
-    const partName = (f.record.metadata as { partName?: string } | undefined)?.partName;
-    if (typeof partName === 'string') assemblyPartIdByName.set(partName, f.id);
-  }
+  // partName → assemblyPart record id index already built above for the
+  // pacing-input filter; reused here to route SceneBackend fan-out meshes
+  // (composite ids like `solvedAssembly_1__base-plate`) to each part's
+  // OWN pacing slot. Without per-part routing, all fan-out parts would
+  // collapse to the parent solvedAssembly's single slot and pop in at once.
 
   const sortedEvents = featureMeshes
     .map((mesh) => {
