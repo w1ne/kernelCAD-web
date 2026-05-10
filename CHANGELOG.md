@@ -1,3 +1,76 @@
+# kernelCAD v0.5.0
+
+v0.5.0 is the assembly scene-graph slice. `Assembly.solvedModel(poses)` and
+`Assembly.model()` now return a multi-body `Scene` instead of a single
+boolean-unioned `Shape`, bringing kernelCAD to parity with industry
+convention: every peer CAD system treats an assembly as a list of placed
+instances, with fusion as opt-in export.
+
+## Highlights
+
+- Added `Scene` and `ScenePart` types in the intent layer. A Scene is a
+  frozen, ordered list of named parts with per-part world transforms and
+  role colors; iterable via `for (const p of scene)` and indexed via
+  `scene.parts` / `scene.part(name)`.
+- Added `Scene.toCompound()` returning an OCCT `TopoDS_Compound` —
+  lossless on per-part identity (color, name, metadata preserved). This
+  is the default path for STEP export with named bodies. Free path via
+  replicad's `makeCompound`.
+- Added `Scene.toUnion()` as the explicit boolean fuse — lossy on color,
+  name, metadata. Documented antipattern; use only when downstream truly
+  needs a single Shape.
+- STEP export through Scene preserves named bodies + per-part colors via
+  replicad's `exportSTEP(ShapeConfig[])`.
+- Lowerer `solvedAssembly` and `assemblyModel` cases emit a new
+  `SceneBackend` (peer to `ShapeBackend`) carrying per-part
+  `worldTransform` plus per-part color resolved by walking the source
+  shape's input chain to the nearest color attribution.
+- Meshing fans `SceneBackend` into N `FeatureMesh` entries with composite
+  ids (`solvedAssembly_1__partName`) and FK-transformed vertices, so the
+  renderer gets one colored mesh per part with no boolean fusion.
+- Construction-input closure suppresses every intermediate primitive
+  (boxes, fillets, holes, boolean cutters, sketch profiles) used to build
+  each `assemblyPart`'s source shape, plus the `assemblyPart` /
+  `assemblyJoint` / `assemblyConnect` records themselves. Without this
+  filter the renderer received both the FK-posed colored fan-out AND
+  every intermediate at LOCAL frame stacked at the origin.
+- Renderer adds `polygonOffset` on assembly mesh material to eliminate
+  Z-fighting on coplanar touching surfaces.
+
+## Migration
+
+- `arm.solvedModel(poses).fillet(...)` → `arm.solvedModel(poses).toUnion().fillet(...)`
+- `arm.model().exportSTL()` → `arm.model().toUnion().exportSTL()`
+- `arm.model().exportSTEP()` → `arm.model().toCompound().exportSTEP()` to
+  preserve per-part names + colors in the STEP output.
+- `solvedKinematics.toShape()` → `solvedKinematics.toScene().toUnion()`.
+
+## Deprecations
+
+- `Scene.toShape()` is a deprecated alias for `Scene.toUnion()`. Emits a
+  warn-once `deprecated.scene.toShape` advisory on first call per
+  process. Removal in v0.6.0.
+- `SolvedKinematics.toShape()` is a deprecated alias for
+  `.toScene().toUnion()`. Emits a warn-once
+  `deprecated.solvedKinematics.toShape` advisory on first call per
+  process. Removal in v0.6.0.
+
+## Diagnostics
+
+- `feature.invalid-args` (hint `invalid-args.scene.unknown-part — part X
+  not declared on assembly Y`) — `Scene.part(name)` miss.
+- `feature.deprecated` (hint `deprecated.scene.toShape`) — warn-once on
+  legacy alias.
+- `feature.deprecated` (hint `deprecated.solvedKinematics.toShape`) —
+  warn-once on legacy alias.
+
+## Notes
+
+- Hero demo for v0.5.0 lands in a follow-up release PR alongside the
+  v0.5.0 tag.
+
+---
+
 # kernelCAD v0.4.0
 
 v0.4.0 is focused on constrained sketching for agent-authored CAD. The release
