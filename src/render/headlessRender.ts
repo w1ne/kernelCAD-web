@@ -1,4 +1,4 @@
-// scripts/lib/headlessRender.ts
+// src/render/headlessRender.ts
 //
 // Headless multi-view PNG renderer. Powers `kernelcad render`. Reuses the
 // browser-based demo-player path (puppeteer + Three.js + WebGL) but skips
@@ -9,10 +9,10 @@
 
 import { chromium, type Browser, type Page } from 'playwright';
 import sharp from 'sharp';
-import { loadScriptFeatures } from './scriptLoader';
-import { meshFeaturesPerFeature } from '../../src/capture/featureMeshing';
-import { serializeForBridge } from '../../src/capture/featureMeshSerialize';
-import type { RenderView } from '../../src/components/demoPlayer/DemoPlayerPage';
+import { loadScriptFeatures } from '../script-runtime/scriptLoader';
+import { meshFeaturesPerFeature } from '../capture/featureMeshing';
+import { serializeForBridge } from '../capture/featureMeshSerialize';
+import type { RenderView } from './views';
 
 export type { RenderView };
 

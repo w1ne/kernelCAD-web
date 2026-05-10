@@ -11,6 +11,8 @@ import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 import { resolveColor } from '../../render/palette';
+import type { RenderView } from '../../render/views';
+export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
@@ -94,8 +96,6 @@ function buildMeshFromFace(face: FaceGeometry, name: string, color: number | str
   mesh.name = name;
   return mesh;
 }
-
-export type RenderView = 'front' | 'right' | 'top' | 'iso';
 
 function fitCameraToBounds(
   camera: THREE.PerspectiveCamera,
