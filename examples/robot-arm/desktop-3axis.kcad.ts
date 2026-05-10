@@ -52,7 +52,6 @@ const yokeCheekH    = param('yokeCheekH',     46, { min: 28,  max:  80 });
 // ---- derived (symbolic ParamRef arithmetic) ------------------------------
 const halfBaseW       = baseW.divide(2);
 const halfBaseD       = baseD.divide(2);
-const halfBeamW       = beamW.divide(2);
 const halfBeamT       = beamT.divide(2);
 const halfBaseColumnH = baseColumnH.divide(2);
 const halfYokeCheekH  = yokeCheekH.divide(2);
@@ -65,8 +64,6 @@ const halfForearm     = forearmLen.divide(2);
 // Heights in the BASE local frame.
 const baseServoCenterZ = plateT.add(halfServoH);
 const baseFlangeZ      = plateT.add(servoH).subtract(servoFlangeT.divide(2));
-// Top of base servo + horn → location of the base-yaw joint axis exit.
-const baseTopZ         = plateT.add(servoH).add(hornT);
 
 // Height in the SHOULDER local frame at which shoulder-pitch axis lives.
 // Local origin (0,0,0) is at the base-yaw pivot output (top of base horn).
