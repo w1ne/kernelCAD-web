@@ -48,3 +48,9 @@ export interface FeatureLowerer {
   readonly supports: ReadonlySet<FeatureKind>;
   lower(record: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult>;
 }
+
+// Lowerer dispatch return type. Most features lower to a single ShapeBackend;
+// solvedAssembly and assemblyModel lower to a SceneBackend (multi-body, no
+// union). Consumers downstream (meshing, exporters) discriminate via the
+// `_kind: 'scene'` marker on SceneBackend (see isSceneBackend type guard).
+export type LoweringResult = ShapeBackend | import('./sceneBackend').SceneBackend;
