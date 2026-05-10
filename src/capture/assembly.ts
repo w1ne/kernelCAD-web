@@ -1,3 +1,4 @@
+import { lookupSourceColor } from '../backends/occt/lookupSourceColor';
 import { KernelError } from '../intent/kernelError';
 import { Scene, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
@@ -438,7 +439,7 @@ export class Assembly {
 
     // 6. Build SolvedKinematics handle. Hand it the already-resolved numeric
     //    pose record so the snapshot can never accidentally re-resolve.
-    return new SolvedKinematics(this.parts, this.joints, worldT, numericPoses);
+    return new SolvedKinematics(this.name, this.parts, this.joints, worldT, numericPoses, this.session);
   }
 
   /**
@@ -532,25 +533,48 @@ export function makeAssembly(name: string | undefined, session: CaptureSession):
 
 /**
  * Read-only handle returned by Assembly.solve(poses). Exposes per-part
- * world transforms, per-joint pose values, body iteration, and a
- * to-Shape sugar for rendering.
+ * world transforms, per-joint pose values, body iteration, the canonical
+ * Scene snapshot via `.toScene()`, and a deprecated `.toShape()` alias for
+ * legacy single-Shape consumers.
  */
 export class SolvedKinematics {
+  private readonly assemblyName: string;
   private readonly partsByName: Map<string, AssemblyPartStored>;
   private readonly worldT: Map<FeatureId, Transform>;
   private readonly poses: Record<string, number | [number, number, number]>;
   private readonly joints: readonly AssemblyJointStored[];
+  private readonly session: CaptureSession;
+
+  /**
+   * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
+   * The warning channel for this slice is `console.warn` (the milestone-C
+   * `DiagnosticCode` catalogue is closed at 24 entries, so a dedicated
+   * `feature.deprecated` code is out of scope; the hint string format is
+   * preserved verbatim so a future migration to a structured session
+   * diagnostic is a one-line change). See
+   * `tests/unit/assemblies/solvedKinematicsToScene.test.ts`.
+   */
+  private static toShapeWarned = false;
+
+  /** Test hook: reset the process-scoped warn-once flag. NOT public API. */
+  static __resetDeprecationWarnedForTest(): void {
+    SolvedKinematics.toShapeWarned = false;
+  }
 
   constructor(
+    assemblyName: string,
     parts: readonly AssemblyPartStored[],
     joints: readonly AssemblyJointStored[],
     worldT: Map<FeatureId, Transform>,
     poses: Record<string, number | [number, number, number]>,
+    session: CaptureSession,
   ) {
+    this.assemblyName = assemblyName;
     this.partsByName = new Map(parts.map(p => [p.name, p]));
     this.worldT = worldT;
     this.poses = poses;
     this.joints = joints;
+    this.session = session;
     Object.freeze(this);
   }
 
@@ -603,24 +627,89 @@ export class SolvedKinematics {
   }
 
   /**
-   * Render: union all posed parts into a single Shape. Same effect as
-   * Assembly.solvedModel(poses).
+   * Multi-body view of the FK snapshot. Mirrors `Assembly.solvedModel(poses)`'s
+   * return shape — a frozen `Scene` whose ordered `parts` match
+   * `assembly.part(name, ...)` declaration order, with each part's
+   * `worldTransform` set to the FK-resolved SE(3) and `color` walked from
+   * the source-shape upstream chain.
+   *
+   * Unlike the reactive `solvedModel(poses)` Scene, this Scene is a snapshot:
+   * the FK is already baked into each part's source `Shape` (see
+   * `Assembly.solve`), so `Scene.toUnion()` chains `Shape.union()` on the
+   * mutated source shapes directly and does NOT record a fresh
+   * `solvedAssembly` / `assemblyExport` feature pair. `Scene.toCompound()`
+   * is intentionally unsupported on snapshot Scenes — call
+   * `Assembly.solvedModel(poses).toCompound()` for a TopoDS_Compound that
+   * preserves per-part identity through the lowerer.
    */
-  toShape(): Shape {
-    const parts = Array.from(this.partsByName.values());
-    if (parts.length === 0) {
+  toScene(): Scene {
+    if (this.partsByName.size === 0) {
       throw new KernelError(
         'feature.invalid-args',
-        'SolvedKinematics.toShape: assembly has no parts.',
+        'SolvedKinematics.toScene: assembly has no parts.',
         undefined,
         'Call assembly.part(...) before assembly.solve(...).',
       );
     }
-    let model: Shape = parts[0].originalShape;
-    for (let i = 1; i < parts.length; i++) {
-      model = model.union(parts[i].originalShape);
+    const records = this.session.getRecords();
+    const sceneParts: ScenePart[] = [];
+    for (const part of this.partsByName.values()) {
+      const partRecord = records.find(r => r.id === part.id);
+      const color = partRecord ? lookupSourceColor(partRecord, records) : undefined;
+      sceneParts.push({
+        name: part.name,
+        shape: part.originalShape,
+        worldTransform: this.worldT.get(part.id) ?? Transform.identity(),
+        ...(color !== undefined ? { color } : {}),
+      });
     }
-    return model;
+    const assemblyName = this.assemblyName;
+    return new Scene(
+      assemblyName,
+      sceneParts,
+      () => {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Scene.bbox: snapshot Scene from SolvedKinematics has no capture-time AABB. Compute the bbox from each part's shape.boundingBox() with worldTransform applied, or call Scene.toUnion().boundingBox().`,
+          undefined,
+          'invalid-args.scene.bbox-not-available — capture-time Scene bbox is computed during recompute; for the snapshot Scene, use per-part bboxes or .toUnion().boundingBox().',
+        );
+      },
+      (op) => {
+        if (op === 'union') {
+          const partsArr = Array.from(this.partsByName.values());
+          let model: Shape = partsArr[0].originalShape;
+          for (let i = 1; i < partsArr.length; i++) {
+            model = model.union(partsArr[i].originalShape);
+          }
+          return model;
+        }
+        // op === 'compound'.
+        throw new KernelError(
+          'feature.invalid-args',
+          `Scene.toCompound: snapshot Scene from SolvedKinematics does not support compound export (per-part identity is not preserved through the snapshot). Call Assembly.solvedModel(poses).toCompound() instead.`,
+          undefined,
+          'invalid-args.scene.compound-not-supported-on-snapshot — call Assembly.solvedModel(poses).toCompound() for a Scene whose lowerer preserves per-part identity.',
+        );
+      },
+    );
+  }
+
+  /**
+   * @deprecated v0.6.0 — call `.toScene().toUnion()` instead. Emits a
+   * warn-once `deprecated.solvedKinematics.toShape` advisory on the first
+   * call per process and delegates to `.toScene().toUnion()`. Removal in
+   * v0.7.0 (CHANGELOG entry under v0.6.0).
+   */
+  toShape(): Shape {
+    if (!SolvedKinematics.toShapeWarned) {
+      SolvedKinematics.toShapeWarned = true;
+      console.warn(
+        'SolvedKinematics.toShape() is deprecated; call .toScene().toUnion() instead. ' +
+          'hint: deprecated.solvedKinematics.toShape — call .toScene().toUnion() instead.',
+      );
+    }
+    return this.toScene().toUnion();
   }
 }
 
