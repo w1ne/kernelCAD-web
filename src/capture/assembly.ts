@@ -523,6 +523,7 @@ export class Assembly {
         );
       },
       (op) => session.assemblyExport(sceneFeatureId, op),
+      sceneFeatureId,
     );
   }
 }

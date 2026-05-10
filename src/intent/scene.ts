@@ -52,6 +52,14 @@ export class Scene implements Iterable<ScenePart> {
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
+  /**
+   * Underlying capture-time feature id for the upstream `solvedAssembly` /
+   * `assemblyModel` record. Internal — used by `runAndExport` to route a
+   * Scene return value to its lowered SceneBackend without re-running the
+   * lossy `assemblyExport(compound)` path. Not part of the public surface;
+   * accessed via `__sourceFeatureId(scene)` to keep IDE autocomplete clean.
+   */
+  private readonly _sourceFeatureId?: string;
 
   /**
    * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
@@ -75,11 +83,13 @@ export class Scene implements Iterable<ScenePart> {
     parts: readonly ScenePart[],
     bboxFn: () => SceneBbox,
     exportFn?: SceneExportFn,
+    sourceFeatureId?: string,
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
     this.bboxFn = bboxFn;
     this.exportFn = exportFn;
+    this._sourceFeatureId = sourceFeatureId;
   }
 
   /** Lazily-computed AABB over all transformed parts. */
@@ -151,5 +161,16 @@ export class Scene implements Iterable<ScenePart> {
       );
     }
     return this.exportFn;
+  }
+
+  /**
+   * Internal accessor for `runAndExport` — returns the upstream
+   * `solvedAssembly` / `assemblyModel` feature id wired by
+   * `Assembly.makeScene()`, or `undefined` for hand-constructed Scenes
+   * (no recompute graph behind them). Underscore-prefixed: not part of
+   * the agent-facing API surface.
+   */
+  __sourceFeatureId(): string | undefined {
+    return this._sourceFeatureId;
   }
 }

@@ -1,10 +1,12 @@
 import { runScript } from './runScript';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
-import type { OcctBackend } from '../backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, type OcctBackend } from '../backends/occt/occtBackend';
+import { isSceneBackend } from '../backends/sceneBackend';
 import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../diagnostics/nextAction';
 import { Shape } from '../capture/proxy';
+import { Scene } from '../intent/scene';
 
 export type ExportFormat = 'stl' | 'step';
 
@@ -59,6 +61,11 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     const ret = run.returnValue;
     if (ret instanceof Shape) {
       targetId = ret.id;
+    } else if (ret instanceof Scene) {
+      // Scene return → use the upstream solvedAssembly / assemblyModel
+      // feature id so STEP export routes through the Scene-aware
+      // multi-body path (preserves part names + role colors).
+      targetId = ret.__sourceFeatureId();
     } else if (run.records.length > 0) {
       targetId = run.records[run.records.length - 1].id;
     }
@@ -78,8 +85,8 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     };
   }
 
-  const shape = r.shapes.get(targetId) as OcctBackend | undefined;
-  if (!shape) {
+  const lowered = r.shapes.get(targetId);
+  if (!lowered) {
     return {
       bytes: new Uint8Array(),
       featureCount,
@@ -95,6 +102,34 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     };
   }
 
+  // Scene-aware path: STEP export of a SceneBackend ships a STEP file
+  // with one named body per part (replicad.exportSTEP(ShapeConfig[])
+  // writes XCAFDoc names + colors). For STL we still need a single mesh,
+  // so fall back to the boolean union via assemblyExport(union).
+  if (isSceneBackend(lowered)) {
+    if (format === 'step') {
+      const bytes = await exportSceneToSTEPAsync(lowered);
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
+    // Scene.toCompound() upstream — surface a structured diagnostic
+    // pointing at the right call.
+    return {
+      bytes: new Uint8Array(),
+      featureCount,
+      diagnostics: [...r.diagnostics, {
+        target: 'export-occt',
+        code: 'export.no-shape',
+        featureId: targetId,
+        severity: 'error',
+        message: 'STL export of a Scene requires an explicit Scene.toUnion() or Scene.toCompound() upstream.',
+        hint: 'Return arm.solvedModel(poses).toUnion() (or .toCompound()) for STL; STEP export accepts the Scene directly and preserves per-part names + colors.',
+        nextAction: NEXT_ACTIONS['export.no-shape'],
+      }],
+    };
+  }
+
+  const shape = lowered as OcctBackend;
   const bytes = format === 'stl'
     ? await shape.exportSTLAsync()
     : await shape.exportSTEPAsync();
