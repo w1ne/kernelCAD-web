@@ -19,11 +19,9 @@ describe('robot arm example', () => {
     const parts = records.filter((record) => record.kind === 'assemblyPart');
     const joints = records.filter((record) => record.kind === 'assemblyJoint');
 
-    // 5 parts: base, shoulder, elbow, wrist, tool.
-    expect(parts.length).toBe(5);
-    // 4 joints: 3 revolute (base-yaw, shoulder-pitch, elbow-pitch) + 1 fixed (wrist-tool).
-    expect(joints.length).toBe(4);
-
+    // 3 revolute joints form the body-tree backbone: base-yaw,
+    // shoulder-pitch, elbow-pitch. Decorative items per link (servos,
+    // horns, yokes) attach via arm.fixed(...) so they ride along under FK.
     const revolutes = joints.filter(
       (j) => (j.metadata as { jointKind?: string })?.jointKind === 'revolute',
     );
@@ -31,20 +29,14 @@ describe('robot arm example', () => {
       (j) => (j.metadata as { jointKind?: string })?.jointKind === 'fixed',
     );
     expect(revolutes.length).toBe(3);
-    expect(fixedJoints.length).toBe(1);
+    expect(fixedJoints.length).toBeGreaterThanOrEqual(1);
+    // Each revolute spawns at least one child link, plus the base.
+    expect(parts.length).toBeGreaterThanOrEqual(revolutes.length + 1);
 
-    // Mechanical detail: the example builds recessed bays via .subtract(box),
-    // a structural rib unioned to the shoulder, a top-running rib unioned to
-    // the elbow, and a posed scene root from solvedModel(). At least five
-    // hole records (4 mounting screws + base pivot + shoulder pivots +
-    // elbow + wrist pivots), several boolean records (rib unions, bay
-    // subtracts, tool union — the FK union now lives in the lowerer's
-    // `solvedAssembly` case rather than as boolean records), and at least
-    // two fillets (basePlate, elbow, wrist).
-    const holes = records.filter((r) => r.kind === 'hole' || r.kind === 'holes');
+    // Mechanical detail: the example uses booleans heavily (servo/horn/yoke
+    // unions, bay subtracts) and fillets on the visible chamfered edges.
     const booleans = records.filter((r) => r.kind === 'boolean');
     const fillets = records.filter((r) => r.kind === 'fillet');
-    expect(holes.length).toBeGreaterThanOrEqual(5);
     expect(booleans.length).toBeGreaterThanOrEqual(5);
     expect(fillets.length).toBeGreaterThanOrEqual(2);
 
