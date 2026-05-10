@@ -1,0 +1,92 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 12600,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 22600,
+  "features": {
+    "assemblyPart_1": {
+      "startAtMs": 0,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_2": {
+      "startAtMs": 900,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_3": {
+      "startAtMs": 1800,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_4": {
+      "startAtMs": 2700,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_5": {
+      "startAtMs": 3600,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_6": {
+      "startAtMs": 4500,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_7": {
+      "startAtMs": 5400,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_8": {
+      "startAtMs": 6300,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_9": {
+      "startAtMs": 7200,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_10": {
+      "startAtMs": 8100,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_11": {
+      "startAtMs": 9000,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_12": {
+      "startAtMs": 9900,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_13": {
+      "startAtMs": 10800,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_14": {
+      "startAtMs": 11700,
+      "durationMs": 400,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    }
+  }
+}
