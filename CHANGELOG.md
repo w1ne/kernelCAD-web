@@ -91,8 +91,10 @@ instances, with fusion as opt-in export.
 
 ## Notes
 
-- Hero demo for v0.5.0 lands in a follow-up release PR alongside the
-  v0.5.0 tag.
+- v0.5.0 hero is `examples/robot-arm/so100/so100.kcad.ts`: the LeRobot
+  SO-ARM-100 5-DOF follower arm imported via `lib.fromSTEP`, with a
+  locally-authored desk plate. The previous `examples/robot-arm/
+  desktop-3axis.kcad.ts` is kept as a primitive-composition tutorial.
 
 ---
 

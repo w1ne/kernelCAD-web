@@ -15,6 +15,9 @@ import { KernelError } from '../intent/kernelError';
 export interface BuildModelInput {
   code: string;
   fileName: string;
+  /** Absolute directory of the source script. Threaded so `lib.fromSTEP`
+   *  resolves relative paths under the calling .kcad.ts file. */
+  scriptDir?: string;
 }
 
 export interface BuildModelFromFileInput {
@@ -81,7 +84,8 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
 export async function buildModelFromFile(input: BuildModelFromFileInput): Promise<BuiltModel> {
   const fileName = resolve(input.file);
   const code = await readFile(fileName, 'utf8');
-  return buildModel({ code, fileName });
+  const { dirname } = await import('node:path');
+  return buildModel({ code, fileName, scriptDir: dirname(fileName) });
 }
 
 export function populateCache(session: CaptureSession, shapes: Map<FeatureId, ShapeBackend>): void {

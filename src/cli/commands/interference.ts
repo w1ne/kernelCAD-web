@@ -11,7 +11,7 @@
 
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { checkInterference, pairKey } from '../../script-runtime/checkInterference';
 import { formatHuman } from '../../diagnostics/formatter';
@@ -31,8 +31,10 @@ export async function runInterferenceCli(input: InterferenceCliInput): Promise<I
   await initOcct();
 
   let code: string;
+  const absPath = resolve(input.file);
+  const scriptDir = dirname(absPath);
   try {
-    code = await readFile(resolve(input.file), 'utf8');
+    code = await readFile(absPath, 'utf8');
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 2 };
@@ -52,6 +54,7 @@ export async function runInterferenceCli(input: InterferenceCliInput): Promise<I
   const r = await checkInterference({
     code,
     fileName: input.file,
+    scriptDir,
     epsilonMm3: input.epsilon,
     ignorePairs,
   });
