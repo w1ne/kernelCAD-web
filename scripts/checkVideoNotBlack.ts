@@ -16,7 +16,7 @@
 // Run: npx tsx scripts/checkVideoNotBlack.ts <path-to-demo.mp4>
 
 import { execFileSync, execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
