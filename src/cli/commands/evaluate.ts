@@ -11,6 +11,26 @@ export interface EvaluateInput {
   code?: string;
 }
 
+/**
+ * Apply `kernelcad evaluate`-specific environment defaults before the
+ * user script is loaded. Currently flips `Assembly.solvedModel`'s validate
+ * gate default to `'error'` (T9 reads `process.env.KERNELCAD_VALIDATE_DEFAULT`)
+ * so harness runs trip on invalid assemblies rather than silently emitting
+ * warnings.
+ *
+ * Idempotent: a caller-supplied `KERNELCAD_VALIDATE_DEFAULT` (including
+ * `warn` / `off`) is preserved so users can still opt out with
+ * `KERNELCAD_VALIDATE_DEFAULT=warn npx kernelcad evaluate ...`.
+ *
+ * Per spec 2026-05-11-assembly-mates-validator-design.md §"Validity gate"
+ * (T10 of the v0.6 assembly mates plan).
+ */
+export function applyEvaluateDefaults(): void {
+  if (process.env.KERNELCAD_VALIDATE_DEFAULT === undefined) {
+    process.env.KERNELCAD_VALIDATE_DEFAULT = 'error';
+  }
+}
+
 export interface EvaluateResult {
   exitCode: number;
   featureCount: number;
@@ -23,6 +43,12 @@ export interface EvaluateAndBuildResult {
 }
 
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
+  // T10: harness-style evaluation flips the `solvedModel` validate gate to
+  // `'error'` (read by T9 in `Assembly.solvedModel`). Done before script
+  // load so the env var is visible to anything user-script transitively
+  // touches. Does not override a caller-supplied value.
+  applyEvaluateDefaults();
+
   if (input.code === undefined && input.file === undefined) {
     return { evaluation: {
       exitCode: 2, featureCount: 0,
