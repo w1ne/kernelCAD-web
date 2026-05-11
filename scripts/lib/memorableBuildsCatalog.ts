@@ -53,11 +53,13 @@ const CATALOG: Record<CatalogVersion, CatalogCandidate[]> = {
     { slug: 'parametric-mug', recommended: true },
     { slug: 'parametric-lego-brick', recommended: false },
     { slug: 'parametric-phone-case', recommended: false },
+    { slug: 'so100', recommended: false },
   ],
   'v0.6': [
     { slug: 'articulated-desk-lamp', recommended: true },
     { slug: 'crank-slider-piston', recommended: false },
     { slug: 'robot-finger', recommended: false },
+    { slug: 'so100-mates', recommended: false },
   ],
   'v0.7': [
     { slug: 'computer-mouse-shell', recommended: true },
