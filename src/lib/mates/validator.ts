@@ -17,26 +17,57 @@
 // asking agents to run two separate CLIs.
 //
 // Status enum mirrors Solvespace's solver outcomes (SOLVED / INCONSISTENT /
-// DIDNT_CONVERGE / UNDER_CONSTRAINED / REDUNDANT_OKAY) collapsed to the
-// three buckets that matter for an MVP without a numerical solver.
+// DIDNT_CONVERGE / UNDER_CONSTRAINED / REDUNDANT_OKAY) — the v0.5 MVP
+// collapsed these to three buckets (solved / warning / error); v0.6 brings
+// back the full 5-way classification through `validateAssemblyWithMates`,
+// which calls `solveMates(arm)` (see `./solver.ts`) and translates the
+// `SolveStatus` into mate-aware diagnostic codes.
 
+import type { Assembly } from '../../capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
+import { parseConnectorRef } from './mate';
+import { solveMates } from './solver';
 
-export type ValidatorStatus = 'solved' | 'warning' | 'error';
+export type ValidatorStatus =
+  | 'solved'
+  | 'warning'                    // v0.5 legacy
+  | 'error'                      // v0.5 legacy
+  | 'under-constrained'          // v0.6 — mate graph leaves residual DOF
+  | 'over-constrained'           // v0.6 — mates mutually contradictory
+  | 'redundant-ok'               // v0.6 — mates over-determine but agree
+  | 'did-not-converge';          // v0.6 — solver iter-cap hit
 
 export type ValidatorDiagnosticCode =
+  // v0.5 MVP codes (do not remove)
   | 'assembly.part.floating'
   | 'assembly.part.orphan'
-  | 'assembly.interference.overlap';
+  | 'assembly.interference.overlap'
+  // v0.6 new codes
+  | 'assembly.part.under-constrained'
+  | 'assembly.mate.over-constrained'
+  | 'assembly.mate.type-mismatch'
+  | 'assembly.mate.connector-not-found'
+  | 'assembly.loop.unclosed'
+  | 'assembly.solver.did-not-converge';
 
 export interface ValidatorDiagnostic {
   readonly code: ValidatorDiagnosticCode;
-  readonly severity: 'warning' | 'error';
+  /**
+   * Severity tier. v0.5 ships `warning` / `error`; v0.6 adds `info` for
+   * the `redundant-ok` case (mates over-determine the assembly but agree —
+   * mechanically valid, but worth surfacing so users can prune redundant
+   * mates without solver penalty). Severity stays decoupled from
+   * `ValidatorStatus`: status is the assembly-level verdict, severity is
+   * the per-diagnostic urgency.
+   */
+  readonly severity: 'info' | 'warning' | 'error';
   readonly message: string;
   readonly hint: string;
   /** Set when the diagnostic targets a single part. */
   readonly partName?: string;
+  /** Set when the diagnostic targets a single mate (v0.6). */
+  readonly mateName?: string;
   /** Set on interference diagnostics. */
   readonly partA?: string;
   readonly partB?: string;
@@ -179,6 +210,186 @@ function collectJoints(records: readonly FeatureRecord[]): JointInfo[] {
     });
   }
   return out;
+}
+
+/**
+ * v0.6 mate-aware validator entry point.
+ *
+ * Composes the v0.5 `validateAssembly(input)` checks (floating / orphan /
+ * interference) with the v0.6 mate-graph solver (`solveMates(arm)`) so a
+ * single call surfaces both authoring-level wiring mistakes and
+ * numeric-level mate inconsistencies. Pass an `Assembly` captured via
+ * `kcad.assembly(name)` — the function reads the session's records (so
+ * v0.5-style `arm.fixed/.revolute/.prismatic/.ball` joints continue to be
+ * checked) AND walks `arm.__mates()` through `solveMates` for the new
+ * mate-pair vocabulary.
+ *
+ * Capture-time codes (`assembly.mate.type-mismatch`,
+ * `assembly.mate.connector-not-found`) are NOT emitted here — those raise
+ * `KernelError` synchronously inside `Assembly.mate(...)`, so the assembly
+ * fails to construct and never reaches the validator. The codes remain in
+ * `ValidatorDiagnosticCode` so external tools (lowerer, MCP) can reference
+ * them when echoing structured error chains.
+ *
+ * Status resolution (most severe wins, see ValidatorStatus docstring):
+ *   - any `severity:'error'` diagnostic       → 'error' (preserves v0.5)
+ *   - SolveStatus 'over-constrained'          → 'over-constrained'
+ *   - SolveStatus 'did-not-converge'          → 'did-not-converge'
+ *   - SolveStatus 'under-constrained' OR any
+ *     `assembly.part.under-constrained` diag  → 'under-constrained'
+ *   - SolveStatus 'redundant-ok'              → 'redundant-ok'
+ *   - any v0.5 warning                        → 'warning'
+ *   - no diagnostics                          → 'solved'
+ */
+export async function validateAssemblyWithMates(
+  arm: Assembly,
+  interferencePairs?: readonly InterferencePair[],
+): Promise<ValidatorResult> {
+  // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
+  //    the same code path — do not duplicate. Filter the session's records
+  //    to just this assembly so cross-assembly state doesn't leak in.
+  const allRecords = arm.__session().getRecords();
+  const records = allRecords.filter((r) => {
+    const meta = r.metadata as { assemblyName?: string } | undefined;
+    return meta?.assemblyName === arm.name;
+  });
+  const base = validateAssembly({
+    records,
+    ...(interferencePairs !== undefined ? { interferencePairs } : {}),
+  });
+
+  // 2. Build the diagnostics chain starting from v0.5 results. We may
+  //    add v0.6 diagnostics below; we may also drop the v0.5 'floating'
+  //    diagnostic for a part if a mate (rather than a joint) connects it
+  //    — `validateAssembly` only sees v0.5 joints, so a part connected
+  //    purely via mates looks floating to it. Suppress those.
+  const matePartNames = new Set<string>();
+  for (const m of arm.__mates()) {
+    const a = safeParse(m.a);
+    const b = safeParse(m.b);
+    if (a) matePartNames.add(a);
+    if (b) matePartNames.add(b);
+  }
+  const diagnostics: ValidatorDiagnostic[] = base.diagnostics.filter((d) => {
+    if (d.code === 'assembly.part.floating' && d.partName && matePartNames.has(d.partName)) {
+      return false; // part is connected via a mate; v0.5 just couldn't see it.
+    }
+    return true;
+  });
+
+  // 3. Run the v0.6 mate solver. If there are no mates declared, skip — the
+  //    solver returns 'solved' on an empty mate set anyway, but the early
+  //    exit keeps `validateAssemblyWithMates` cheap for v0.5-only scenes
+  //    (regression check: legacy `arm.fixed` callers see identical output).
+  if (arm.__mates().length === 0) {
+    return finalizeResult(diagnostics, arm.__parts().length, arm.__joints().length, null);
+  }
+
+  const solveResult = await solveMates(arm);
+
+  // 4. Translate SolveStatus → v0.6 diagnostics.
+  switch (solveResult.status) {
+    case 'solved':
+      // Nothing to add.
+      break;
+    case 'under-constrained':
+      // The solver doesn't currently identify WHICH parts have residual
+      // DOF (T6/T7's SolveResult shape is `{ status, poses, iterations? }`;
+      // no per-part DOF map). For now emit a single assembly-scoped
+      // diagnostic; the per-part breakdown lands when SolveResult grows
+      // a `underConstrainedParts` field in T7.x. Surfacing the
+      // assembly-level fact is strictly better than silently dropping it,
+      // and the hint points users at the actionable fix (add a mate /
+      // tighten a constraint).
+      diagnostics.push({
+        code: 'assembly.part.under-constrained',
+        severity: 'warning',
+        message: `Assembly '${arm.name}' is under-constrained — the mate graph leaves residual degrees of freedom.`,
+        hint: `invalid-args.assembly.under-constrained — add a mate (arm.mate('...', 'partA.connector', 'partB.connector', '<type>')) or tighten an existing mate so every part has its 6 DOF removed.`,
+      });
+      break;
+    case 'over-constrained':
+      diagnostics.push({
+        code: 'assembly.mate.over-constrained',
+        severity: 'error',
+        message: `Assembly '${arm.name}' is over-constrained — at least one mate contradicts the others (loop-closure residual exceeds tolerance).`,
+        hint: `invalid-args.assembly.over-constrained — remove or relax one of the mates in the closed loop, or adjust a connector origin so the geometry agrees with the other mates.`,
+      });
+      break;
+    case 'redundant-ok':
+      diagnostics.push({
+        code: 'assembly.mate.over-constrained',
+        severity: 'info',
+        message: `Assembly '${arm.name}' has redundant mates that agree — mechanically valid but the extra mates carry no information.`,
+        hint: `invalid-args.assembly.redundant-mate — drop one mate from the closed loop if you want a minimal mate graph; otherwise no action needed.`,
+      });
+      break;
+    case 'did-not-converge':
+      diagnostics.push({
+        code: 'assembly.solver.did-not-converge',
+        severity: 'error',
+        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult.iterations ?? 0} iterations).`,
+        hint: `invalid-args.assembly.did-not-converge — articulated closed loops are not yet supported by the v0.6.0 solver (lands in T7.x); for v0.6.0, restrict closed loops to fastened-only mates.`,
+      });
+      break;
+    default: {
+      const _exhaustive: never = solveResult.status;
+      throw new Error(`validateAssemblyWithMates: unhandled SolveStatus '${String(_exhaustive)}'.`);
+    }
+  }
+
+  return finalizeResult(
+    diagnostics,
+    arm.__parts().length,
+    arm.__joints().length,
+    solveResult.status,
+  );
+}
+
+/** Parse `"part.connector"` safely (returns undefined on malformed refs
+ *  instead of throwing — the validator's job is to report, not to fail). */
+function safeParse(ref: string): string | undefined {
+  try {
+    return parseConnectorRef(ref).partName;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Compute the final `ValidatorStatus` from the diagnostic chain plus the
+ * upstream mate solver verdict. Most-severe-wins (see
+ * `validateAssemblyWithMates` JSDoc for the precedence table).
+ */
+function finalizeResult(
+  diagnostics: readonly ValidatorDiagnostic[],
+  partCount: number,
+  jointCount: number,
+  solveStatus: import('./solver').SolveStatus | null,
+): ValidatorResult {
+  const hasError = diagnostics.some((d) => d.severity === 'error');
+  const hasWarning = diagnostics.some((d) => d.severity === 'warning');
+
+  let status: ValidatorStatus;
+  if (hasError) {
+    // v0.5 errors win over solver-status. But: if the only error is the
+    // 'over-constrained' / 'did-not-converge' one we just emitted, surface
+    // those specific statuses (not the generic 'error' bucket) — they
+    // carry more information for the agent.
+    if (solveStatus === 'over-constrained') status = 'over-constrained';
+    else if (solveStatus === 'did-not-converge') status = 'did-not-converge';
+    else status = 'error';
+  } else if (solveStatus === 'under-constrained') {
+    status = 'under-constrained';
+  } else if (solveStatus === 'redundant-ok') {
+    status = 'redundant-ok';
+  } else if (hasWarning) {
+    status = 'warning';
+  } else {
+    status = 'solved';
+  }
+
+  return { status, diagnostics, partCount, jointCount };
 }
 
 function connectedComponents(

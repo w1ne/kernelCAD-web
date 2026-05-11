@@ -467,6 +467,27 @@ export class Assembly {
   }
 
   /**
+   * Internal accessor — read-only view of declared v0.5 joints for the v0.6
+   * mate-aware validator (`./lib/mates/validator.ts:validateAssemblyWithMates`).
+   * Mirrors `__parts()` / `__mates()`. Not public; agents that need joint
+   * metadata should read it off `Scene` via `model()` / `solvedModel()`.
+   */
+  __joints(): readonly AssemblyJointStored[] {
+    return this.joints;
+  }
+
+  /**
+   * Internal accessor — returns the underlying `CaptureSession` so the v0.6
+   * mate-aware validator can call the existing v0.5 `validateAssembly(input)`
+   * with the session's `FeatureRecord[]` (filtered by this assembly's name).
+   * Not public; the agent-facing surface is `Assembly.model()` /
+   * `Assembly.solvedModel()`, both of which already close over the session.
+   */
+  __session(): CaptureSession {
+    return this.session;
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent
