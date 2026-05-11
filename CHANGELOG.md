@@ -1,3 +1,41 @@
+# kernelCAD v0.6.0
+
+## v0.6.0 — 2026-05-XX (pending)
+
+### Added
+
+- `Connector` primitive on parts (`arm.part(...).connector(name, opts)`). Numeric Vec3 + canonical-face topology-bound origins (face-center / face-normal / edge-axis on box/cylinder primitives). Non-canonical labels resolve via `.label({ ... })` propagation. Connector topology-bound origins extended for v0.6 assembly mates: `face-center` / `face-normal` queries resolve user-declared face labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and peers) in addition to the six canonical face names, by walking the capture session's upstream feature records — same machinery as fillet/chamfer/shell label resolution. `edge-axis` queries resolve canonical box edges by name (`edge-<face1>-<face2>`, e.g. `edge-top-front`; order insignificant) and canonical cylinder cap edges (`edge-top` / `edge-bottom`). Resolution survives `.translate` and `.rotate` because the bounding-box plane match tracks transforms. Post-boolean shapes where the canonical face/edge no longer exists surface a clean `assembly.connector.topology-not-resolvable` diagnostic. Vertex queries deferred to v0.7.
+- `arm.mate(name, aRef, bRef, type)` API. 7 mate types: `fastened`, `revolute`, `prismatic`, `cylindrical`, `planar`, `ball`, `pin_slot`. Capture-time pair-compatibility validation (build123d-style early error) throws `KernelError('feature.invalid-args')` with structured hints (`invalid-args.assembly.mate-type-mismatch`, `invalid-args.assembly.mate-connector-not-found`).
+- Newton-Raphson closed-loop solver scaffold (iter-cap 50, finite-diff Jacobian). Fastened-only loops classified `redundant-ok` / `over-constrained`. Articulated closed loops (revolute/prismatic in a cycle) return `did-not-converge` — deferred to v0.6.x after pose articulation lands.
+- `validateAssemblyWithMates` with Solvespace-style 5-way status enum (`solved`, `under-constrained`, `over-constrained`, `redundant-ok`, `did-not-converge`).
+- `solvedModel({}, { validate: 'warn' | 'error' | 'off' })` gate. Default `'warn'` attaches diagnostics to `scene.warnings`; `'error'` throws on the first error-severity diagnostic; `'off'` skips validation. `kernelcad evaluate` flips the default to `'error'` via the `KERNELCAD_VALIDATE_DEFAULT=error` env var.
+- 6 new validator diagnostic codes (local to `ValidatorDiagnosticCode` union — kernel `DiagnosticCode` remains closed at 24): `assembly.part.under-constrained`, `assembly.mate.over-constrained`, `assembly.mate.type-mismatch`, `assembly.mate.connector-not-found`, `assembly.loop.unclosed` (type-only, reserved), `assembly.solver.did-not-converge`.
+- 5 new MCP tools: `add_connector`, `add_mate`, `list_mates`, `validate_assembly`, `solve_mates`.
+- `Scene.warnings: readonly ValidatorDiagnostic[]` — always present (empty when validation is skipped or clean); `Scene.mates?: readonly MateRecord[]` — populated when the assembly declared at least one mate.
+- SO-100 hero rewrite at `examples/robot-arm/so100/so100-mates.kcad.ts` — 6 parts mated with 3 fastened + 2 revolute; validator returns `solved` with zero warnings.
+
+### Changed
+
+- `Assembly.solvedModel(poses)` now accepts optional `{ validate }` opts; existing call sites unchanged (default `'warn'` is backwards-compatible).
+- Existing `arm.fixed/.revolute/.prismatic/.ball(...)` joints continue to work alongside the new mate API. No script changes required.
+- `Scene` gains a `warnings: readonly ValidatorDiagnostic[]` field (always present; empty when validation skipped or clean).
+
+### Removed
+
+- `Scene.toShape()` — was deprecated in v0.5.0 with explicit "Removal in v0.6.0" note; call `.toUnion()` instead.
+
+### Deferred to v0.7
+
+- Vertex-query topology resolution on connectors (placeholder error `assembly.connector.topology-not-resolvable: vertex labeling not yet supported`).
+- Newton-Raphson for articulated closed loops (revolute/prismatic in a cycle). Today returns `did-not-converge`.
+- Full historyMap-based topology resolution after booleans — post-boolean canonical face/edge resolution still surfaces `assembly.connector.topology-not-resolvable` instead of walking the boolean's emit map.
+
+### Test-quality audit (prep)
+
+- Converted 5 `it.todo()` cases in `tests/unit/intent/faceRefScaleAudit.test.ts` to `it.skip()` (same deferred-semantic; unblocks `proof:foundation`).
+
+---
+
 # kernelCAD v0.5.0
 
 v0.5.0 is the assembly scene-graph slice. `Assembly.solvedModel(poses)` and
@@ -195,23 +233,6 @@ npm run dev
   an axle along +Y). Identity `[0, 0, 1]` is a no-op; antipodal
   `[0, 0, -1]` is a deterministic 180° around X. Zero vector throws
   `feature.invalid-args`; non-unit input is normalized.
-- Connector topology-bound origins extended for v0.6 assembly mates:
-  `face-center` / `face-normal` queries now resolve user-declared face
-  labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and
-  peers) in addition to the six canonical face names, by walking the
-  capture session's upstream feature records — same machinery as
-  fillet/chamfer/shell label resolution. `edge-axis` queries resolve
-  canonical box edges by name (`edge-<face1>-<face2>`, e.g.
-  `edge-top-front`; order insignificant) and canonical cylinder cap
-  edges (`edge-top` / `edge-bottom`). Resolution survives `.translate`
-  and `.rotate` because the bounding-box plane match tracks transforms.
-  Post-boolean shapes where the canonical face/edge no longer exists
-  surface a clean `assembly.connector.topology-not-resolvable`
-  diagnostic — full historyMap-based resolution after booleans is a
-  v0.7 task. Vertex queries (`{ kind: 'vertex', name: '...' }`) are
-  deferred to v0.7 (no vertex-labeling infrastructure exists yet) and
-  raise `topology-not-resolvable: vertex labeling not yet supported`.
-
 ### Changed
 
 - `Shape.scale(factor)` widened to accept `Vec3` for non-uniform scale

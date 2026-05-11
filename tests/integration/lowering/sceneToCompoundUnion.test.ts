@@ -17,7 +17,6 @@
 //     compound does not fuse), preserves boundingBox(), and chains.
 //   - toUnion() lowers to a single fused solid (volume <= sum if parts
 //     overlap; equal if disjoint), and chains via .fillet().
-//   - toShape() delegates to toUnion() (deprecation alias works).
 //   - hand-constructed Scene with no exportFn throws a clear KernelError.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
@@ -113,29 +112,6 @@ describe('Scene.toCompound + Scene.toUnion', () => {
     expect(shape).toBeInstanceOf(OcctBackend);
     // Filleted volume strictly less than 2 * 8000 (corners shaved).
     expect(shape!.volume()).toBeLessThan(16000);
-  });
-
-  it('toShape() delegates to toUnion() (deprecation alias works)', async () => {
-    // Identical assemblies via toShape() and toUnion(); bboxes must match.
-    const a = await lowerScript(`
-      const arm = assembly('test');
-      arm.part('a', box(10, 10, 10), { at: [0, 0, 0] });
-      arm.part('b', box(10, 10, 10).translate(20, 0, 0), { at: [0, 0, 0] });
-      return arm.model().toShape();
-    `);
-    const b = await lowerScript(`
-      const arm = assembly('test');
-      arm.part('a', box(10, 10, 10), { at: [0, 0, 0] });
-      arm.part('b', box(10, 10, 10).translate(20, 0, 0), { at: [0, 0, 0] });
-      return arm.model().toUnion();
-    `);
-    expect(a.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    expect(b.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    const bbA = a.shape!.boundingBox();
-    const bbB = b.shape!.boundingBox();
-    expect(bbA.min).toEqual(bbB.min);
-    expect(bbA.max).toEqual(bbB.max);
-    expect(a.shape!.volume()).toBeCloseTo(b.shape!.volume(), 5);
   });
 
   it('regression: assemblyExport survives params.update with non-identity worldTransforms', async () => {
