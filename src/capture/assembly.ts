@@ -449,6 +449,24 @@ export class Assembly {
   }
 
   /**
+   * Internal accessor — read-only view of the registered parts for the v0.6
+   * mate solver (`src/lib/mates/solver.ts`). Underscore-prefixed: not part of
+   * the agent-facing surface. Mirrors `Scene.__sourceFeatureId` convention.
+   */
+  __parts(): readonly AssemblyPartStored[] {
+    return this.parts;
+  }
+
+  /**
+   * Internal accessor — read-only view of declared mate records for the v0.6
+   * mate solver. Surfaces the same `MateRecord[]` already exposed via
+   * `Scene.mates`, but without forcing a `makeScene` round-trip. Not public.
+   */
+  __mates(): readonly MateRecord[] {
+    return this.mates;
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent
