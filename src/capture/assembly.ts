@@ -3,6 +3,12 @@ import { KernelError } from '../intent/kernelError';
 import { Scene, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
+import {
+  makeConnector,
+  type Connector,
+  type ConnectorOrigin,
+  type ConnectorType,
+} from '../lib/mates/connector';
 import { currentValue, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -30,13 +36,41 @@ export type EditableBallPose = [Editable<number>, Editable<number>, Editable<num
 export type PoseValue = EditableScalarPose | EditableBallPose;
 export type Poses = Record<string, PoseValue>;
 
+/**
+ * Options for the v0.6 mate-style `partRef.connector(name, opts)` chain
+ * method. Distinct from `AssemblyConnectorFrame` (the legacy v0.5 kinematic
+ * connector shape used by `assembly.part({ connectors })` + `opts.connect`):
+ * carries a `type` tag (frame/axis/planar/ball) and a structured
+ * `ConnectorOrigin` that may be either a numeric Vec3 or a topology query.
+ * Resolved into the `ScenePart.connectors[]` returned by `Assembly.model()` /
+ * `Assembly.solvedModel()`.
+ */
+export interface AssemblyConnectorOpts {
+  type: ConnectorType;
+  origin: ConnectorOrigin;
+  axis?: Vec3;
+  normal?: Vec3;
+}
+
 export interface AssemblyPartRef {
   id: FeatureId;
   name: string;
   assemblyName: string;
   at: Vec3Param;
   connectors: Record<string, AssemblyConnectorFrameStored>;
+  /** Mate-style connectors registered via the 2-arg `connector(name, opts)`
+   *  chain (v0.6 Task 4). Mutated in place by the chain method so the array
+   *  is shared with the assembly's stored record and visible to
+   *  `Assembly.model()` / `Assembly.solvedModel()`. */
+  mateConnectors: Connector[];
+  /** Look up a v0.5 kinematic connector by name (declared via
+   *  `assembly.part(..., { connectors })`) — returns an `AssemblyConnectorRef`
+   *  for use in `opts.connect`. */
   connector(name: string): AssemblyConnectorRef;
+  /** Register a v0.6 mate-style connector on this part and return the
+   *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
+   *  connector with the same name is already registered on this part. */
+  connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
 }
 
 export interface AssemblyJointRef {
@@ -161,7 +195,12 @@ export class Assembly {
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
-    const part = makePartRef(this.name, record.id, name, at, connectors);
+    // Shared mutable array: the part-ref's `.connector(name, opts)` chain
+    // method pushes into this array, and the `AssemblyPartStored` record
+    // below references the same array via spread (arrays are by-reference),
+    // so `makeScene` sees additions made after `part(...)` returns.
+    const mateConnectors: Connector[] = [];
+    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors);
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
@@ -510,6 +549,7 @@ export class Assembly {
       name: p.name,
       shape: p.originalShape,
       worldTransform: Transform.identity(),
+      ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
     }));
     return new Scene(
       this.name,
@@ -662,6 +702,7 @@ export class SolvedKinematics {
         shape: part.originalShape,
         worldTransform: this.worldT.get(part.id) ?? Transform.identity(),
         ...(color !== undefined ? { color } : {}),
+        ...(part.mateConnectors.length > 0 ? { connectors: [...part.mateConnectors] } : {}),
       });
     }
     const assemblyName = this.assemblyName;
@@ -897,39 +938,70 @@ function makePartRef(
   name: string,
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
+  mateConnectors: Connector[],
 ): AssemblyPartRef {
-  return {
+  // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
+  // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
+  // the part-ref for chaining. Defined as a standalone function so the
+  // overloaded union return type can be narrowed by `opts !== undefined`.
+  const connector = (
+    connectorName: string,
+    opts?: AssemblyConnectorOpts,
+  ): AssemblyConnectorRef | AssemblyPartRef => {
+    if (opts !== undefined) {
+      if (mateConnectors.some((c) => c.name === connectorName)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.connector.duplicate-name: part '${name}' already has a connector named '${connectorName}'.`,
+          id,
+          `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
+        );
+      }
+      mateConnectors.push(
+        makeConnector({
+          name: connectorName,
+          type: opts.type,
+          origin: opts.origin,
+          axis: opts.axis,
+          normal: opts.normal,
+        }),
+      );
+      return ref;
+    }
+    const frame = connectors[connectorName];
+    if (!frame) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly connector '${connectorName}' is not defined on part '${name}'.`,
+        id,
+        'Use one of the connector names declared in assembly.part(..., { connectors }).',
+      );
+    }
+    const worldOrigin: Vec3Param = {
+      x: addParams(at.x, frame.origin.x),
+      y: addParams(at.y, frame.origin.y),
+      z: addParams(at.z, frame.origin.z),
+    };
+    return {
+      assemblyName,
+      partId: id,
+      partName: name,
+      connector: connectorName,
+      origin: frame.origin,
+      worldOrigin,
+      ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
+    };
+  };
+  const ref: AssemblyPartRef = {
     id,
     name,
     assemblyName,
     at,
     connectors,
-    connector(connectorName: string): AssemblyConnectorRef {
-      const frame = connectors[connectorName];
-      if (!frame) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly connector '${connectorName}' is not defined on part '${name}'.`,
-          id,
-          'Use one of the connector names declared in assembly.part(..., { connectors }).',
-        );
-      }
-      const worldOrigin: Vec3Param = {
-        x: addParams(at.x, frame.origin.x),
-        y: addParams(at.y, frame.origin.y),
-        z: addParams(at.z, frame.origin.z),
-      };
-      return {
-        assemblyName,
-        partId: id,
-        partName: name,
-        connector: connectorName,
-        origin: frame.origin,
-        worldOrigin,
-        ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
-      };
-    },
+    mateConnectors,
+    connector: connector as AssemblyPartRef['connector'],
   };
+  return ref;
 }
 
 function validateConnectorAssembly(assemblyName: string, connector: AssemblyConnectorRef): void {

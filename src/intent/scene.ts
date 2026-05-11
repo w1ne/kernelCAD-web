@@ -11,6 +11,7 @@
 // implementations land in follow-up tasks.
 
 import type { Shape } from '../capture/proxy';
+import type { Connector } from '../lib/mates/connector';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';
@@ -29,6 +30,12 @@ export interface ScenePart {
   readonly color?: string;
   /** Forward-compat container for material, mass, BOM tags, etc. */
   readonly metadata?: Readonly<Record<string, unknown>>;
+  /** Mate-style connectors declared on this part via
+   *  `partRef.connector(name, opts)` (v0.6 Task 4). Carries the structured
+   *  `Connector` (type tag + `ConnectorOrigin` that may be vec3 or topology).
+   *  Distinct from the legacy v0.5 kinematic connectors on
+   *  `AssemblyPartRef.connectors` used by `opts.connect`. */
+  readonly connectors?: readonly Connector[];
 }
 
 /** Axis-aligned bounding box over a Scene's transformed parts. */
