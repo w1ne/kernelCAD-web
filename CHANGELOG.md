@@ -1,3 +1,70 @@
+# kernelCAD v0.6.0
+
+## v0.6.0 — 2026-05-11
+
+v0.6.0 ships the assembly **structure validity** layer — the mate vocabulary, Pattern-A forward kinematics that drives placement, and an interference hard-gate that makes it structurally impossible to ship a clashing assembly through `kernelcad evaluate`. **Mechanism functional validity** (kinematic grounding: mounting-hole consistency, joint-axis-to-structure binding, swept-volume self-collision across pose limits, workspace reachability, static load capacity) is the next slice and lands in v0.7. v0.6 ensures the assembly graph and BREP geometry are consistent; it does not yet prove the resulting mechanism would actually function as a real machine.
+
+### Added — mate vocabulary + Pattern-A placement
+
+- `arm.part(...).connector(name, opts)` chain method on parts. Connectors are named coordinate frames embedded in a part. Four types: `frame` (full 6-DOF), `axis` (line + point), `planar` (plane + origin), `ball` (point only). Origin can be a numeric `Vec3` or a topology-bound query.
+- `Connector` topology-bound origins: `face-center` / `face-normal` queries resolve user-declared face labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and peers) in addition to the six canonical face names, by walking the capture session's upstream feature records — same machinery as fillet/chamfer/shell label resolution. `edge-axis` queries resolve canonical box edges by name (`edge-<face1>-<face2>`, e.g. `edge-top-front`; order insignificant) and canonical cylinder cap edges (`edge-top` / `edge-bottom`). Resolution survives `.translate` and `.rotate` because the bounding-box plane match tracks transforms. Post-boolean shapes where the canonical face/edge no longer exists surface `assembly.connector.topology-not-resolvable` cleanly. Vertex queries deferred to v0.7.
+- `arm.mate(name, aRef, bRef, type, opts?)` API. 7 mate types: `fastened`, `revolute`, `prismatic`, `cylindrical`, `planar`, `ball`, `pin_slot`. Capture-time pair-compatibility validation (build123d-style early error) throws `KernelError('feature.invalid-args')` with structured hints (`invalid-args.assembly.mate-type-mismatch`, `invalid-args.assembly.mate-connector-not-found`). `opts.pose` accepts a numeric or `ParamRef` pose for revolute / prismatic / cylindrical / ball / pin_slot mates; `fastened` / `planar` reject the pose arg.
+- Pattern-A forward-kinematics walk over the mate graph: parts authored in their own LOCAL FRAMES, `solveMates(arm, poses?)` composes per-part world transforms by walking the mate tree from root, applying each mate's joint-frame contribution (rotation around the connector axis for revolute, translation along axis for prismatic, etc.). Industry-standard data flow — same model used by Fusion 360, OnShape, build123d, URDF, MuJoCo, Drake, USD.
+- Mate-FK transforms wired through `Assembly.solvedModel(poses, opts)` (capture-time Scene composition) AND the OCCT lowerer (recompute-time mesh placement), so rendered output reflects mate-driven placement end-to-end. Mate-transforms win over v0.5 joint-FK transforms for parts in the mate graph; v0.5 joint-only assemblies render unchanged.
+- Newton-Raphson closed-loop solver scaffold (iter-cap 50, finite-diff Jacobian). Fastened-only loops classified `redundant-ok` / `over-constrained`. Articulated closed loops (revolute / prismatic in a cycle) return `did-not-converge` — deferred to v0.6.x.
+
+### Added — structure validity hard-gate
+
+- `validateAssemblyWithMates` with Solvespace-style 5-way status enum (`solved`, `under-constrained`, `over-constrained`, `redundant-ok`, `did-not-converge`).
+- `solvedModel({}, { validate: 'warn' | 'error' | 'off' })` gate. Default `'warn'` attaches diagnostics to `scene.warnings`; `'error'` throws on the first error-severity diagnostic; `'off'` skips validation. `kernelcad evaluate` flips the default to `'error'` via the `KERNELCAD_VALIDATE_DEFAULT=error` env var.
+- **Interference hard-gate:** when `validate` resolves to `'error'`, `Assembly.solvedModel` automatically runs pairwise BREP interference detection on the lowered scene and folds any overlaps into the validator's diagnostic stream as `assembly.interference.overlap` (error severity). Agents are structurally unable to ship a clashing assembly through `kernelcad evaluate`. Interference detection is skipped under `'warn'` and `'off'` for perf reasons (BREP overlap is O(parts²); evaluate-mode runs accept the cost, interactive callers opt in).
+- 6 new validator diagnostic codes (local to `ValidatorDiagnosticCode` union — kernel `DiagnosticCode` remains closed at 24): `assembly.part.under-constrained`, `assembly.mate.over-constrained`, `assembly.mate.type-mismatch`, `assembly.mate.connector-not-found`, `assembly.loop.unclosed` (type-only, reserved), `assembly.solver.did-not-converge`.
+
+### Added — agent surface
+
+- 5 new MCP tools: `add_connector`, `add_mate`, `list_mates`, `validate_assembly`, `solve_mates`.
+- `Scene.warnings: readonly ValidatorDiagnostic[]` — always present (empty when validation skipped or clean); `Scene.mates?: readonly MateRecord[]` — populated when the assembly declared at least one mate.
+
+### Added — hero
+
+- `examples/robot-arm/desktop-3axis-mates.kcad.ts` — parametric 3-axis desktop robot arm, fully mate-driven (3 revolute + 9 fastened mates, no `arm.fixed/.revolute` calls). 13 parts. 0 pairwise BREP interferences at default poses (engineered to clear after a focused geometry-cleanup pass on the v0.5 base). Demonstrates Pattern-A authoring: each link in its own local frame, mate-FK plants children.
+
+### Changed
+
+- `Assembly.solvedModel(poses)` now accepts optional `{ validate }` opts; existing call sites unchanged (default `'warn'` is backwards-compatible).
+- Existing `arm.fixed/.revolute/.prismatic/.ball(...)` joints continue to work alongside the new mate API. No script changes required.
+- `Scene` gains a `warnings: readonly ValidatorDiagnostic[]` field (always present; empty when validation skipped or clean).
+
+### Removed
+
+- `Scene.toShape()` — was deprecated in v0.5.0 with explicit "Removal in v0.6.0" note; call `.toUnion()` instead.
+
+### Deferred to v0.7 — mechanism functional validity (next slice, the killer feature)
+
+The biggest open thing v0.6 does NOT do: **prove that the mechanism would actually function**. The interference gate catches "parts overlap in space," but the agent can still author CAD that looks like a robot arm yet couldn't move as one — servos not really mounted, shafts not connected to bearings, link cross-sections that don't span the load path, joint axes floating in air. v0.7 introduces design-time mechanism feasibility gates inside the authoring loop:
+
+- Mounting-hole consistency — every part declared `color('servo')` (or via `.role('servo', spec)`) must have mounting holes whose pattern matches the bracket it's fastened to.
+- Joint-axis-to-structure binding — every revolute / prismatic / ball connector's axis must pierce real structural geometry (bearing / yoke cheek pair / clevis).
+- Swept-volume self-collision — extend BREP interference to a swept-volume check across `limitsDeg` for each revolute / prismatic mate.
+- Workspace reachability — given joint limits + link lengths, the end-effector must reach a non-trivial volume.
+- Static load capacity — given declared servo torque + cumulative downstream mass + lever arm, each joint must support the load.
+- Mechanism intent contract — `assembly.intent({ type, reach })` annotations; the kernel proves the geometry realizes the declared intent.
+
+Nobody else has design-time mechanism-feasibility gates inside CAD authoring (Fusion / OnShape relegate it to separate sim modules; Drake / MuJoCo are post-design sim research). This is the agent-first kernel differentiator.
+
+### Deferred to v0.7 — smaller items
+
+- Vertex-query topology resolution on connectors (placeholder error `assembly.connector.topology-not-resolvable: vertex labeling not yet supported`).
+- Newton-Raphson for articulated closed loops (revolute / prismatic in a cycle).
+- Full historyMap-based topology resolution after booleans — post-boolean canonical face/edge resolution still surfaces `assembly.connector.topology-not-resolvable` instead of walking the boolean's emit map.
+- MCP `validate_assembly` tool surfacing interferences (currently only the `validate:'error'` runtime path runs the BREP check; the MCP tool reports mate-graph diagnostics only).
+
+### Test-quality audit (prep)
+
+- Converted 5 `it.todo()` cases in `tests/unit/intent/faceRefScaleAudit.test.ts` to `it.skip()` (same deferred-semantic; unblocks `proof:foundation`).
+
+---
+
 # kernelCAD v0.5.0
 
 v0.5.0 is the assembly scene-graph slice. `Assembly.solvedModel(poses)` and
@@ -195,7 +262,6 @@ npm run dev
   an axle along +Y). Identity `[0, 0, 1]` is a no-op; antipodal
   `[0, 0, -1]` is a deterministic 180° around X. Zero vector throws
   `feature.invalid-args`; non-unit input is normalized.
-
 ### Changed
 
 - `Shape.scale(factor)` widened to accept `Vec3` for non-uniform scale

@@ -11,6 +11,9 @@
 // implementations land in follow-up tasks.
 
 import type { Shape } from '../capture/proxy';
+import type { Connector } from '../lib/mates/connector';
+import type { MateRecord } from '../lib/mates/mate';
+import type { ValidatorDiagnostic } from '../lib/mates/validator';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';
@@ -29,6 +32,12 @@ export interface ScenePart {
   readonly color?: string;
   /** Forward-compat container for material, mass, BOM tags, etc. */
   readonly metadata?: Readonly<Record<string, unknown>>;
+  /** Mate-style connectors declared on this part via
+   *  `partRef.connector(name, opts)` (v0.6 Task 4). Carries the structured
+   *  `Connector` (type tag + `ConnectorOrigin` that may be vec3 or topology).
+   *  Distinct from the legacy v0.5 kinematic connectors on
+   *  `AssemblyPartRef.connectors` used by `opts.connect`. */
+  readonly connectors?: readonly Connector[];
 }
 
 /** Axis-aligned bounding box over a Scene's transformed parts. */
@@ -49,6 +58,20 @@ export type SceneExportFn = (op: 'compound' | 'union') => Shape;
 export class Scene implements Iterable<ScenePart> {
   readonly assemblyName: string;
   readonly parts: readonly ScenePart[];
+  /** Mate records declared via `arm.mate(name, aRef, bRef, type)` (v0.6 Task 5).
+   *  Scene-level (not per-part) — each entry references two parts by
+   *  `partName.connectorName` string. Undefined when the assembly declared no
+   *  mates, omitted from the field set for parity with the optional
+   *  `ScenePart.connectors` surface. */
+  readonly mates?: readonly MateRecord[];
+  /** Validator diagnostics attached by `Assembly.solvedModel({validate: 'warn'})`
+   *  (v0.6 Task 9). Populated from `validateAssemblyWithMates(arm)` when the
+   *  gate is in `warn` mode; empty when validation is skipped (`mode: 'off'`)
+   *  or when `mode: 'error'` is used (in which case error-severity diagnostics
+   *  throw, and the surviving warnings/info are silently dropped). Always
+   *  present (possibly empty); never undefined, so consumers don't need a
+   *  presence check. */
+  readonly warnings: readonly ValidatorDiagnostic[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
@@ -61,35 +84,29 @@ export class Scene implements Iterable<ScenePart> {
    */
   private readonly _sourceFeatureId?: string;
 
-  /**
-   * Process-scoped warn-once flag for the deprecated `.toShape()` alias.
-   * The warning channel for this slice is `console.warn` (the milestone-C
-   * `DiagnosticCode` catalogue is closed at 24 entries, so a dedicated
-   * `feature.deprecated` code is out of scope; the hint string format is
-   * preserved verbatim so a future migration to a structured session
-   * diagnostic is a one-line change). Mirrors the SolvedKinematics
-   * deprecation pattern (commit ad50090). See
-   * `tests/unit/scene/sceneClass.test.ts`.
-   */
-  private static _toShapeWarned = false;
-
-  /** Test hook: reset the process-scoped warn-once flag. NOT public API. */
-  static __resetDeprecationWarnedForTest(): void {
-    Scene._toShapeWarned = false;
-  }
-
   constructor(
     assemblyName: string,
     parts: readonly ScenePart[],
     bboxFn: () => SceneBbox,
     exportFn?: SceneExportFn,
     sourceFeatureId?: string,
+    mates?: readonly MateRecord[],
+    warnings?: readonly ValidatorDiagnostic[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
     this.bboxFn = bboxFn;
     this.exportFn = exportFn;
     this._sourceFeatureId = sourceFeatureId;
+    if (mates !== undefined && mates.length > 0) {
+      this.mates = Object.freeze([...mates]);
+    }
+    // `warnings` is always present (possibly empty) — keep it a frozen array
+    // so callers can `.some(...)` / iterate without a null-check. Inserted as
+    // the last constructor arg so existing v0.5 call sites (Scene built by
+    // SolvedKinematics.toScene, Assembly.makeScene before T9) keep working
+    // without an explicit `[]`.
+    this.warnings = Object.freeze(warnings ? [...warnings] : []);
   }
 
   /** Lazily-computed AABB over all transformed parts. */
@@ -134,21 +151,6 @@ export class Scene implements Iterable<ScenePart> {
    *  `toCompound()` whenever possible. */
   toUnion(): Shape {
     return this.requireExportFn('toUnion')('union');
-  }
-
-  /** @deprecated v0.5.0 — call `.toUnion()` instead. Emits a warn-once
-   *  `deprecated.scene.toShape` advisory on the first call per process and
-   *  delegates to `.toUnion()`. Removal in v0.6.0 (CHANGELOG entry under
-   *  v0.5.0). */
-  toShape(): Shape {
-    if (!Scene._toShapeWarned) {
-      Scene._toShapeWarned = true;
-      console.warn(
-        'Scene.toShape() is deprecated; call .toUnion() instead. ' +
-          'hint: deprecated.scene.toShape — call .toUnion() instead.',
-      );
-    }
-    return this.toUnion();
   }
 
   private requireExportFn(method: string): SceneExportFn {

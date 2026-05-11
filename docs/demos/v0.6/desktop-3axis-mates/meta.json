@@ -1,0 +1,11 @@
+{
+  "taskId": "desktop-3axis-mates",
+  "module": "v0.6",
+  "capturedAt": "2026-05-11T18:19:47.786Z",
+  "durationMs": 29500,
+  "truncated": false,
+  "gitSha": "7ff21cb32fb1ea21a93e4b39692e02b6d0b35c7c",
+  "heroArtifact": "desktop-3axis-mates",
+  "catalogSource": "memorable-builds-policy/v0.6",
+  "overrideApprovedBy": null
+}

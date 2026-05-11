@@ -63,8 +63,8 @@ describe('list_api drift sentinels', () => {
     const r = await listApiTool({});
     const advertised = new Set(r.sceneMethods!.map(m => m.name));
 
-    // Scene exposes both prototype methods (part/toCompound/toUnion/toShape),
-    // a prototype getter (bbox), and instance fields (assemblyName/parts) set
+    // Scene exposes prototype methods (part/toCompound/toUnion), a
+    // prototype getter (bbox), and instance fields (assemblyName/parts) set
     // in the constructor. Walk the prototype for methods + getters; the
     // instance fields are documented but not introspectable from prototype.
     const proto = Scene.prototype as Record<string, unknown>;

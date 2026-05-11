@@ -1,0 +1,86 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 19500,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 29500,
+  "features": {
+    "assemblyPart_1": {
+      "startAtMs": 0,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_2": {
+      "startAtMs": 1500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_3": {
+      "startAtMs": 3000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_4": {
+      "startAtMs": 4500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_5": {
+      "startAtMs": 6000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_6": {
+      "startAtMs": 7500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_7": {
+      "startAtMs": 9000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_8": {
+      "startAtMs": 10500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_9": {
+      "startAtMs": 12000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_10": {
+      "startAtMs": 13500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_11": {
+      "startAtMs": 15000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_12": {
+      "startAtMs": 16500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_13": {
+      "startAtMs": 18000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}

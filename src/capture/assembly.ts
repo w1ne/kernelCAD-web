@@ -3,7 +3,17 @@ import { KernelError } from '../intent/kernelError';
 import { Scene, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
-import { currentValue, toVec3Param } from '../runtime/editableHelpers';
+import {
+  makeConnector,
+  type Connector,
+  type ConnectorOrigin,
+  type ConnectorType,
+} from '../lib/mates/connector';
+import { parseConnectorRef, type MatePose, type MateRecord } from '../lib/mates/mate';
+import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+import { solveMates } from '../lib/mates/solver';
+import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
+import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
@@ -30,13 +40,41 @@ export type EditableBallPose = [Editable<number>, Editable<number>, Editable<num
 export type PoseValue = EditableScalarPose | EditableBallPose;
 export type Poses = Record<string, PoseValue>;
 
+/**
+ * Options for the v0.6 mate-style `partRef.connector(name, opts)` chain
+ * method. Distinct from `AssemblyConnectorFrame` (the legacy v0.5 kinematic
+ * connector shape used by `assembly.part({ connectors })` + `opts.connect`):
+ * carries a `type` tag (frame/axis/planar/ball) and a structured
+ * `ConnectorOrigin` that may be either a numeric Vec3 or a topology query.
+ * Resolved into the `ScenePart.connectors[]` returned by `Assembly.model()` /
+ * `Assembly.solvedModel()`.
+ */
+export interface AssemblyConnectorOpts {
+  type: ConnectorType;
+  origin: ConnectorOrigin;
+  axis?: Vec3;
+  normal?: Vec3;
+}
+
 export interface AssemblyPartRef {
   id: FeatureId;
   name: string;
   assemblyName: string;
   at: Vec3Param;
   connectors: Record<string, AssemblyConnectorFrameStored>;
+  /** Mate-style connectors registered via the 2-arg `connector(name, opts)`
+   *  chain (v0.6 Task 4). Mutated in place by the chain method so the array
+   *  is shared with the assembly's stored record and visible to
+   *  `Assembly.model()` / `Assembly.solvedModel()`. */
+  mateConnectors: Connector[];
+  /** Look up a v0.5 kinematic connector by name (declared via
+   *  `assembly.part(..., { connectors })`) — returns an `AssemblyConnectorRef`
+   *  for use in `opts.connect`. */
   connector(name: string): AssemblyConnectorRef;
+  /** Register a v0.6 mate-style connector on this part and return the
+   *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
+   *  connector with the same name is already registered on this part. */
+  connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
 }
 
 export interface AssemblyJointRef {
@@ -143,6 +181,9 @@ export class Assembly {
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
   private readonly joints: AssemblyJointStored[] = [];
+  /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
+   *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
+  private readonly mates: MateRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -161,7 +202,12 @@ export class Assembly {
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
-    const part = makePartRef(this.name, record.id, name, at, connectors);
+    // Shared mutable array: the part-ref's `.connector(name, opts)` chain
+    // method pushes into this array, and the `AssemblyPartStored` record
+    // below references the same array via spread (arrays are by-reference),
+    // so `makeScene` sees additions made after `part(...)` returns.
+    const mateConnectors: Connector[] = [];
+    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors);
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
@@ -333,6 +379,148 @@ export class Assembly {
   }
 
   /**
+   * Record a typed mate between two named connectors. Refs are
+   * `"<partName>.<connectorName>"` strings naming v0.6 mate-style connectors
+   * declared via `partRef.connector(name, opts)`. Compatibility between the
+   * mate type and the two connector types is validated at capture time
+   * (build123d-style early error), so authoring scripts surface bad pairs
+   * immediately instead of at solve / lower time.
+   *
+   * Optional `opts.pose` articulates the mate's joint frame at solve time.
+   * Per-type shape:
+   *   - revolute / prismatic / cylindrical / pin_slot: `Editable<number>`
+   *     (degrees / mm; cylindrical & pin_slot treat the scalar as rotation
+   *     degrees and zero the secondary translation — v0.6 single-DOF surface).
+   *   - ball: `[Editable<number>, Editable<number>, Editable<number>]` (XYZ
+   *     Euler degrees, extrinsic — same shape as the v0.5 ball-joint pose).
+   *   - fastened / planar: pose is rejected at capture time (zero
+   *     articulation DOF on the v0.6 surface).
+   *
+   * Errors:
+   *   - ref malformed (no dot, empty side)   → assembly.mate.connector-not-found
+   *   - unknown part name                    → assembly.mate.connector-not-found
+   *   - unknown connector on the part        → assembly.mate.connector-not-found
+   *   - mate / connector-pair mismatch       → assembly.mate.type-mismatch
+   *   - pose on fastened / planar            → assembly.mate-pose-on-zero-dof-mate
+   *
+   * The mate record itself is surfaced on `Scene.mates` returned by
+   * `Assembly.model()` / `Assembly.solvedModel()`. Pose-driven articulation
+   * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
+   * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
+   */
+  mate(
+    name: string,
+    aRef: string,
+    bRef: string,
+    type: MateType,
+    opts?: { pose?: MatePose },
+  ): this {
+    const a = this.resolveMateConnector(aRef);
+    const b = this.resolveMateConnector(bRef);
+    if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.type-mismatch: mate '${name}' type '${type}' is not compatible with the connector pair (${aRef}:${a.connector.type}, ${bRef}:${b.connector.type}).`,
+        undefined,
+        `invalid-args.assembly.mate-type-mismatch — '${type}' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.`,
+      );
+    }
+    if (opts?.pose !== undefined && (type === 'fastened' || type === 'planar')) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.pose-on-zero-dof-mate: mate '${name}' is type '${type}' and accepts no pose; remove opts.pose.`,
+        undefined,
+        `invalid-args.assembly.mate-pose-on-zero-dof-mate — '${type}' mates have no articulation DOF; drop opts.pose or change the mate type.`,
+      );
+    }
+    this.mates.push({
+      name,
+      a: aRef,
+      b: bRef,
+      type,
+      ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
+    });
+    return this;
+  }
+
+  /** Resolve `"<partName>.<connectorName>"` to its part + connector. Throws
+   *  `assembly.mate.connector-not-found` on malformed ref, unknown part, or
+   *  unknown connector. Internal — keeps the diagnostic hint colocated with
+   *  `mate()` so callers don't need to interpret the `parseConnectorRef`
+   *  Error subclass. */
+  private resolveMateConnector(ref: string): { part: AssemblyPartStored; connector: Connector } {
+    let parsed: { partName: string; connectorName: string };
+    try {
+      parsed = parseConnectorRef(ref);
+    } catch {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: '${ref}' is not a 'partName.connectorName' reference.`,
+        undefined,
+        `invalid-args.assembly.mate-connector-not-found — pass refs of the form '<partName>.<connectorName>' where both names are declared on this assembly.`,
+      );
+    }
+    const part = this.parts.find((p) => p.name === parsed.partName);
+    if (!part) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: part '${parsed.partName}' (from ref '${ref}') is not declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.mate-connector-not-found — declare the part via arm.part('${parsed.partName}', ...) before referencing it in a mate.`,
+      );
+    }
+    const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (!connector) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: connector '${parsed.connectorName}' is not declared on part '${parsed.partName}' (ref '${ref}').`,
+        part.id,
+        `invalid-args.assembly.mate-connector-not-found — register the connector via partRef.connector('${parsed.connectorName}', { type, origin, ... }) before referencing it in a mate.`,
+      );
+    }
+    return { part, connector };
+  }
+
+  /**
+   * Internal accessor — read-only view of the registered parts for the v0.6
+   * mate solver (`src/lib/mates/solver.ts`). Underscore-prefixed: not part of
+   * the agent-facing surface. Mirrors `Scene.__sourceFeatureId` convention.
+   */
+  __parts(): readonly AssemblyPartStored[] {
+    return this.parts;
+  }
+
+  /**
+   * Internal accessor — read-only view of declared mate records for the v0.6
+   * mate solver. Surfaces the same `MateRecord[]` already exposed via
+   * `Scene.mates`, but without forcing a `makeScene` round-trip. Not public.
+   */
+  __mates(): readonly MateRecord[] {
+    return this.mates;
+  }
+
+  /**
+   * Internal accessor — read-only view of declared v0.5 joints for the v0.6
+   * mate-aware validator (`./lib/mates/validator.ts:validateAssemblyWithMates`).
+   * Mirrors `__parts()` / `__mates()`. Not public; agents that need joint
+   * metadata should read it off `Scene` via `model()` / `solvedModel()`.
+   */
+  __joints(): readonly AssemblyJointStored[] {
+    return this.joints;
+  }
+
+  /**
+   * Internal accessor — returns the underlying `CaptureSession` so the v0.6
+   * mate-aware validator can call the existing v0.5 `validateAssembly(input)`
+   * with the session's `FeatureRecord[]` (filtered by this assembly's name).
+   * Not public; the agent-facing surface is `Assembly.model()` /
+   * `Assembly.solvedModel()`, both of which already close over the session.
+   */
+  __session(): CaptureSession {
+    return this.session;
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent
@@ -443,19 +631,121 @@ export class Assembly {
   }
 
   /**
-   * Records a `solvedAssembly` FeatureRecord that captures the parts,
-   * joints, and per-joint poses (with ParamRefs preserved). The lowerer
-   * resolves the poses against the live ParamTable at recompute time,
-   * walks `forwardKinematics`, and emits a `SceneBackend` that carries
-   * each part's local-frame shape, world transform, and color attribution
-   * so studio-driven param edits re-pose the rendered scene reactively
-   * without re-running the script.
+   * Build the mate metadata payload threaded into `session.solvedAssembly`
+   * so the OCCT lowerer's `solvedAssembly` case can run `mateFk` at
+   * recompute time. Encodes connectors with their raw `ConnectorOrigin`
+   * (topology queries resolved per-part on the already-lowered backend at
+   * lower-time) and mates with `pose` lifted into `Param`-shape encoding so
+   * `resolveParams` walks the metadata blob and updates `Param.evaluated`
+   * on studio-driven param edits — keeping pose reactivity identical to
+   * the v0.5 joint-pose path.
    *
-   * Returns a frozen `Scene` (multi-body view). Use
-   * `Scene.toCompound()` for a TopoDS_Compound (lossless) or
+   * Only collects connectors that are referenced by a mate; unreferenced
+   * connectors don't influence FK and stay out of the FeatureRecord to
+   * keep the recorded metadata minimal.
+   */
+  private buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata {
+    // 1. Collect (partName, connectorName) pairs referenced by any mate.
+    const refsByPartName = new Map<string, Set<string>>();
+    for (const m of this.mates) {
+      const aSide = parseConnectorRef(m.a);
+      const bSide = parseConnectorRef(m.b);
+      for (const side of [aSide, bSide]) {
+        let set = refsByPartName.get(side.partName);
+        if (!set) {
+          set = new Set<string>();
+          refsByPartName.set(side.partName, set);
+        }
+        set.add(side.connectorName);
+      }
+    }
+    // 2. For each part referenced by mates, snapshot the relevant connectors.
+    //    Connectors are kept structurally identical to the live Assembly view
+    //    so the lowerer can plug them into `mateFk` after topology resolution.
+    const connectorsByPartId: Record<FeatureId, Connector[]> = {};
+    for (const part of this.parts) {
+      const wanted = refsByPartName.get(part.name);
+      if (!wanted || wanted.size === 0) continue;
+      const list: Connector[] = [];
+      for (const c of part.mateConnectors) {
+        if (wanted.has(c.name)) list.push(c);
+      }
+      if (list.length > 0) connectorsByPartId[part.id] = list;
+    }
+    // 3. Encode mates with `pose` in Param shape so the recompute pipeline
+    //    auto-resolves ParamRefs through `resolveParams` (same scheme as
+    //    encoded joint poses on `metadata.poses`). Capture-time validation
+    //    already rejects pose on fastened/planar mates (see `mate()` above).
+    const encodedMates: import('./captureSession').EncodedMateRecord[] = this.mates.map((m) => {
+      if (m.pose === undefined) {
+        return { name: m.name, a: m.a, b: m.b, type: m.type };
+      }
+      if (Array.isArray(m.pose)) {
+        return {
+          name: m.name,
+          a: m.a,
+          b: m.b,
+          type: m.type,
+          pose: {
+            kind: 'ball',
+            value: [
+              toParam(m.pose[0], 'deg'),
+              toParam(m.pose[1], 'deg'),
+              toParam(m.pose[2], 'deg'),
+            ],
+          },
+        };
+      }
+      // Scalar pose. Unit is cosmetic on the Param (lowerer reads .evaluated);
+      // `'deg'` mirrors the joint-pose encoding choice above.
+      return {
+        name: m.name,
+        a: m.a,
+        b: m.b,
+        type: m.type,
+        pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
+      };
+    });
+    return { connectorsByPartId, mates: encodedMates };
+  }
+
+  /**
+   * Records a `solvedAssembly` FeatureRecord that captures the parts,
+   * joints, per-joint poses (with ParamRefs preserved), AND — when the
+   * assembly declares any `arm.mate(...)` records — the v0.6 mate graph +
+   * the connectors those mates reference. The lowerer resolves the poses
+   * against the live ParamTable at recompute time, runs `forwardKinematics`
+   * over v0.5 joints AND `mateFk` over the mate graph (when present), and
+   * emits a `SceneBackend` that carries each part's local-frame shape,
+   * world transform, and color attribution so studio-driven param edits
+   * re-pose the rendered scene reactively without re-running the script.
+   *
+   * Precedence at lower-time: a part's world transform is sourced as
+   * `mateFk > forwardKinematics > identity` — i.e. when a part is both in
+   * a mate graph and on a v0.5 joint tree, the mate-derived placement wins.
+   *
+   * Returns a `Promise<Scene>` (multi-body view, frozen). The Promise
+   * wraps the v0.6 mate-aware validator pass — the `opts.validate` gate
+   * runs `validateAssemblyWithMates(this)` and either attaches
+   * diagnostics to `scene.warnings` (`'warn'`, default), throws on the
+   * first error-severity diagnostic (`'error'`), or skips validation
+   * (`'off'`). The default flips to `'error'` when
+   * `KERNELCAD_VALIDATE_DEFAULT=error` is set in the environment (T10
+   * wires this from `kernelcad evaluate`).
+   *
+   * Capture-time pose validation (unknown joint, ball-vs-scalar pose
+   * shape) throws SYNCHRONOUSLY from this method — the validator gate
+   * runs only after the upstream `solvedAssembly` feature has been
+   * recorded, so callers using `expect(() => arm.solvedModel(...)).toThrow`
+   * for pose errors keep working without rewriting to `.rejects.toThrow`.
+   *
+   * Use `Scene.toCompound()` for a TopoDS_Compound (lossless) or
    * `Scene.toUnion()` for an explicit boolean fuse (lossy).
    */
-  solvedModel(poses: Poses): Scene {
+  solvedModel(
+    poses: Poses,
+    opts?: { validate?: 'warn' | 'error' | 'off' },
+  ): Promise<Scene> {
     if (this.parts.length === 0) {
       throw new KernelError(
         'feature.invalid-args',
@@ -464,8 +754,100 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
     }
-    const sceneShape = this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
-    return this.makeScene(sceneShape);
+    // Synchronous phase — must throw (not reject) so existing
+    // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time
+    // tests continue to pass without conversion. `session.solvedAssembly`
+    // is the source of `invalid-args.solvedModel.{unknown-joint,pose-shape}`.
+    //
+    // v0.6 T17: also feed mate metadata into the FeatureRecord when the
+    // assembly declares mates. The lowerer's `solvedAssembly` case runs
+    // `mateFk` over this metadata so the rendered output (compound, STL,
+    // STEP) actually reflects mate-driven placement — not just the
+    // capture-time `Scene.parts[].worldTransform` (T16).
+    const mateMetadata = this.mates.length > 0 ? this.buildMateMetadata() : undefined;
+    const sceneShape = this.session.solvedAssembly(
+      this.name,
+      this.parts,
+      this.joints,
+      poses,
+      mateMetadata,
+    );
+
+    // Mode resolution: explicit opts win; otherwise read the env override
+    // (T10 sets this from `kernelcad evaluate`). Default for everything else
+    // is `'warn'` — never breaking, never silent.
+    const envDefault = process.env.KERNELCAD_VALIDATE_DEFAULT === 'error' ? 'error' : 'warn';
+    const mode: 'warn' | 'error' | 'off' = opts?.validate ?? envDefault;
+
+    // Compute mate-driven per-part world transforms first. This is the v0.6
+    // Pattern A FK output — when mates are declared the solver's transforms
+    // win on the capture-time Scene (parts authored in LOCAL frames).
+    // `solveMates` is a no-op when no mates are declared (empty map);
+    // skipping the call avoids paying for a tree walk on v0.5 assemblies.
+    const mateTransformsPromise: Promise<ReadonlyMap<string, Transform> | undefined> =
+      this.mates.length > 0
+        ? solveMates(this).then((r) => r.poses)
+        : Promise.resolve(undefined);
+
+    if (mode === 'off') {
+      // No validation, empty warnings — Scene still gets mate-driven
+      // worldTransforms so the user-visible placement matches the mate
+      // graph even with validation disabled.
+      return mateTransformsPromise.then((mateT) =>
+        this.makeScene(sceneShape, [], mateT),
+      );
+    }
+
+    // Under `'error'` mode (the harness gate set by `kernelcad evaluate`), also
+    // run pairwise BREP interference detection and fold the results into the
+    // validator. Solid bodies sharing volume is mechanically invalid, so the
+    // harness MUST refuse to ship a clashing assembly. The interference check
+    // is BREP-level and expensive (lowers the assembly + boolean intersects
+    // each bbox-overlapping pair), so we deliberately skip it under
+    // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
+    // call cheap — interference is opt-in via the gate.
+    const interferencePromise: Promise<readonly import('../script-runtime/checkInterference').InterferencePair[] | undefined> =
+      mode === 'error'
+        ? this.computeInterferencesForGate(sceneShape)
+        : Promise.resolve(undefined);
+
+    return Promise.all([
+      interferencePromise,
+      mateTransformsPromise,
+    ]).then(async ([interferencePairs, mateT]) => {
+      const result = await validateAssemblyWithMates(this, interferencePairs);
+      return { result, mateT };
+    }).then(
+      ({ result, mateT }) => {
+        if (mode === 'error') {
+          const errDiag = result.diagnostics.find((d) => d.severity === 'error');
+          // Status-driven fallback: `over-constrained` / `did-not-converge`
+          // always carry an error-severity diagnostic per validator.ts, so the
+          // `errDiag` lookup catches them; the explicit status check below is
+          // a belt-and-suspenders guarantee for the spec wording.
+          if (errDiag) {
+            throw new KernelError(
+              'feature.invalid-args',
+              errDiag.message,
+              undefined,
+              errDiag.hint,
+            );
+          }
+          if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
+            throw new KernelError(
+              'feature.invalid-args',
+              `assembly.solvedModel: validator reported status '${result.status}' for assembly '${this.name}'.`,
+              undefined,
+              `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
+            );
+          }
+          // error mode: warnings/info silently dropped per T9 spec.
+          return this.makeScene(sceneShape, [], mateT);
+        }
+        // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
+        return this.makeScene(sceneShape, result.diagnostics, mateT);
+      },
+    );
   }
 
   /**
@@ -488,28 +870,88 @@ export class Assembly {
   }
 
   /**
+   * Lower the just-recorded `solvedAssembly` and run pairwise BREP
+   * interference detection so the validate-gate can include
+   * `assembly.interference.overlap` error-severity diagnostics in its
+   * decision.
+   *
+   * This is the agent-safety closure for v0.6: `kernelcad evaluate`
+   * (`KERNELCAD_VALIDATE_DEFAULT=error`) MUST refuse a clashing assembly,
+   * not silently emit it. Reuses `detectInterferences` (BREP common-volume,
+   * bbox pre-filter) on the lowered `SceneBackend` — same code path as the
+   * standalone `kernelcad interference` CLI.
+   *
+   * Cost: full lower of the assembly's records + O(n²) bbox overlaps + a
+   * boolean intersect per overlapping pair. Only called when
+   * `opts.validate === 'error'`; cheap modes (`'warn'`, `'off'`) skip this.
+   */
+  private async computeInterferencesForGate(
+    sceneShape: Shape,
+  ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../backends/occt/occtBackend');
+    const { isSceneBackend } = await import('../backends/sceneBackend');
+    const { detectInterferences } = await import('../script-runtime/checkInterference');
+
+    await initOcct();
+    const engine = new RecomputeEngine(createOcctLowerer(this.session));
+    const records = this.session.getRecords();
+    const r = await engine.run(records, {
+      paramTable: this.session.paramTable,
+      gatedFeatureNames: this.session.gatedFeatureNames,
+    });
+
+    // If the lower failed, defer to the validator's other diagnostics; an
+    // un-lowerable assembly already has bigger problems. Return an empty
+    // list so the gate doesn't double-flag the failure as interference.
+    const lowered = r.shapes.get(sceneShape.id);
+    if (!lowered || !isSceneBackend(lowered)) {
+      return [];
+    }
+
+    const result = detectInterferences(lowered, 0.01, new Set<string>());
+    return result.pairs;
+  }
+
+  /**
    * Build the capture-time `Scene` returned by `model()` / `solvedModel()`.
    *
    * Per-part data is the assembly's authoring-time view: `name` from
    * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
-   * and `worldTransform = identity` (the lowered SceneBackend carries the
-   * FK-derived transforms). The Scene's `exportFn` closes over the
-   * upstream solvedAssembly / assemblyModel feature id; calling
-   * `Scene.toCompound()` / `Scene.toUnion()` records a downstream
-   * `assemblyExport` feature whose lowerer reads the SceneBackend output.
+   * and `worldTransform` from the v0.6 mate solver when mates are declared
+   * (Pattern A FK over `solveMates(arm, poses)`) or identity otherwise.
+   * Identity is a no-op fall-back for v0.5 callers and for kinematic-zero
+   * `model()` calls — the lowerer-side body-tree FK on `solvedAssembly`
+   * still applies for v0.5 `arm.revolute/.fixed/.prismatic/.ball` joints.
+   *
+   * Precedence: when a part has BOTH an authoring `.translate(...)` chain
+   * AND lives in a mate graph, the solver-assigned `worldTransform` wins on
+   * the capture-time Scene. Authors mating parts should therefore declare
+   * them in LOCAL frames (Fusion / OnShape / build123d convention).
+   *
+   * The Scene's `exportFn` closes over the upstream `solvedAssembly` /
+   * `assemblyModel` feature id; calling `Scene.toCompound()` /
+   * `Scene.toUnion()` records a downstream `assemblyExport` feature whose
+   * lowerer reads the SceneBackend output.
    *
    * `bboxFn` is intentionally a "lower the model first" stub: AABBs over
    * transformed parts are recompute-time data; expose them via a future
    * `RecomputeResult.scene.bbox` (Task 9) rather than synchronously
    * lowering inside `Scene.bbox`.
    */
-  private makeScene(sceneShape: Shape): Scene {
+  private makeScene(
+    sceneShape: Shape,
+    warnings: readonly ValidatorDiagnostic[] = [],
+    matePartTransforms?: ReadonlyMap<string, Transform>,
+  ): Scene {
     const sceneFeatureId = sceneShape.id;
     const session = this.session;
     const sceneParts: ScenePart[] = this.parts.map((p) => ({
       name: p.name,
       shape: p.originalShape,
-      worldTransform: Transform.identity(),
+      worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
+      ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
     }));
     return new Scene(
       this.name,
@@ -524,12 +966,22 @@ export class Assembly {
       },
       (op) => session.assemblyExport(sceneFeatureId, op),
       sceneFeatureId,
+      this.mates.length > 0 ? [...this.mates] : undefined,
+      warnings,
     );
   }
 }
 
 export function makeAssembly(name: string | undefined, session: CaptureSession): Assembly {
-  return new Assembly(name?.trim() || 'assembly', session);
+  const arm = new Assembly(name?.trim() || 'assembly', session);
+  // v0.6: register on the session so MCP tools (`add_connector`, `add_mate`,
+  // `list_mates`, `validate_assembly`, `solve_mates`) can look up the live
+  // Assembly after `evaluate_script` settles. Multiple `kcad.assembly(name)`
+  // calls with the same name in one script alias to the last instance — the
+  // capture-side throws if duplicate part / connector names appear within an
+  // Assembly anyway, so the alias is unambiguous in practice.
+  session.assemblies.set(arm.name, arm);
+  return arm;
 }
 
 /**
@@ -662,6 +1114,7 @@ export class SolvedKinematics {
         shape: part.originalShape,
         worldTransform: this.worldT.get(part.id) ?? Transform.identity(),
         ...(color !== undefined ? { color } : {}),
+        ...(part.mateConnectors.length > 0 ? { connectors: [...part.mateConnectors] } : {}),
       });
     }
     const assemblyName = this.assemblyName;
@@ -897,39 +1350,70 @@ function makePartRef(
   name: string,
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
+  mateConnectors: Connector[],
 ): AssemblyPartRef {
-  return {
+  // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
+  // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
+  // the part-ref for chaining. Defined as a standalone function so the
+  // overloaded union return type can be narrowed by `opts !== undefined`.
+  const connector = (
+    connectorName: string,
+    opts?: AssemblyConnectorOpts,
+  ): AssemblyConnectorRef | AssemblyPartRef => {
+    if (opts !== undefined) {
+      if (mateConnectors.some((c) => c.name === connectorName)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.connector.duplicate-name: part '${name}' already has a connector named '${connectorName}'.`,
+          id,
+          `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
+        );
+      }
+      mateConnectors.push(
+        makeConnector({
+          name: connectorName,
+          type: opts.type,
+          origin: opts.origin,
+          axis: opts.axis,
+          normal: opts.normal,
+        }),
+      );
+      return ref;
+    }
+    const frame = connectors[connectorName];
+    if (!frame) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly connector '${connectorName}' is not defined on part '${name}'.`,
+        id,
+        'Use one of the connector names declared in assembly.part(..., { connectors }).',
+      );
+    }
+    const worldOrigin: Vec3Param = {
+      x: addParams(at.x, frame.origin.x),
+      y: addParams(at.y, frame.origin.y),
+      z: addParams(at.z, frame.origin.z),
+    };
+    return {
+      assemblyName,
+      partId: id,
+      partName: name,
+      connector: connectorName,
+      origin: frame.origin,
+      worldOrigin,
+      ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
+    };
+  };
+  const ref: AssemblyPartRef = {
     id,
     name,
     assemblyName,
     at,
     connectors,
-    connector(connectorName: string): AssemblyConnectorRef {
-      const frame = connectors[connectorName];
-      if (!frame) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `assembly connector '${connectorName}' is not defined on part '${name}'.`,
-          id,
-          'Use one of the connector names declared in assembly.part(..., { connectors }).',
-        );
-      }
-      const worldOrigin: Vec3Param = {
-        x: addParams(at.x, frame.origin.x),
-        y: addParams(at.y, frame.origin.y),
-        z: addParams(at.z, frame.origin.z),
-      };
-      return {
-        assemblyName,
-        partId: id,
-        partName: name,
-        connector: connectorName,
-        origin: frame.origin,
-        worldOrigin,
-        ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
-      };
-    },
+    mateConnectors,
+    connector: connector as AssemblyPartRef['connector'],
   };
+  return ref;
 }
 
 function validateConnectorAssembly(assemblyName: string, connector: AssemblyConnectorRef): void {

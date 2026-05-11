@@ -260,6 +260,12 @@ interface Scene extends Iterable<ScenePart> {
   readonly assemblyName: string;
   readonly parts: readonly ScenePart[];
   readonly bbox: { min: [number, number, number]; max: [number, number, number] };  // lazy AABB over transformed parts
+  // Mate-aware validator diagnostics attached when `solvedModel({}, { validate: 'warn' })`
+  // runs (v0.6). Always present — empty array when validation is off or clean.
+  readonly warnings: readonly ValidatorDiagnostic[];
+  // Mate records declared via `arm.mate(name, aRef, bRef, type)` (v0.6).
+  // Undefined when the assembly declared no mates.
+  readonly mates?: readonly MateRecord[];
 
   // OCCT TopoDS_Compound — groups bodies without booleaning. Lossless on
   // per-part identity. Default path for STEP export with named bodies, or
@@ -274,11 +280,6 @@ interface Scene extends Iterable<ScenePart> {
   // Look up a part by its assembly-unique name. Throws KernelError
   // ('feature.invalid-args', hint 'invalid-args.scene.unknown-part') on miss.
   part(name: string): ScenePart;
-
-  // Deprecated v0.5.0 — call .toUnion() instead. Warn-once advisory; will
-  // be removed in v0.6.0. (SolvedKinematics.toShape() carries the same
-  // deprecation; use .toScene().toUnion() there.)
-  toShape(): Shape;
 }
 ```
 
@@ -529,7 +530,7 @@ const wristT = solved.transform('wrist');         // SE(3) Transform of wrist in
 shape.transform(wristT);                          // attach a new shape to the wrist's frame
 const angle = solved.value('base-yaw');           // 30
 for (const { name, transform } of solved.bodies()) { /* ... */ }
-const snapScene = solved.toScene();               // snapshot Scene; .toShape() is a deprecated alias for .toScene().toUnion()
+const snapScene = solved.toScene();               // snapshot Scene; call .toUnion() / .toCompound() to collapse to a Shape
 ```
 
 **Limitations (v1):**
@@ -545,6 +546,166 @@ const snapScene = solved.toScene();               // snapshot Scene; .toShape() 
   out-of-range poses don't warn or throw.
 - Calling `solve()` twice on the same Assembly compounds transforms;
   build a fresh `assembly()` per pose query.
+
+### Connectors and mates (v0.6)
+
+v0.6 adds a build123d / Fusion 360-style mate vocabulary on top of the v0.5
+kinematic-joint API. Connectors are named coordinate frames embedded in a part;
+mates are typed relationships between two connectors. The validator and solver
+treat the mate graph as the source of truth for assembly topology; the legacy
+`arm.fixed/.revolute/.prismatic/.ball(...)` helpers keep working untouched.
+
+#### Declaring connectors — `partRef.connector(name, opts)`
+
+Chain `.connector(name, opts)` off a part-ref to register a mate-style
+connector on that part. Four connector types:
+
+| Type | Carries | Used by mates |
+|---|---|---|
+| `frame`  | origin + normal | `fastened` |
+| `axis`   | origin + axis   | `revolute`, `prismatic`, `cylindrical`, `pin_slot` |
+| `planar` | origin + normal | `planar` |
+| `ball`   | origin          | `ball` |
+
+Connector origins can be a numeric `Vec3` or a topology query that resolves
+against the part's shape. Canonical face/edge names work today; non-canonical
+labels declared via `.faceLabels` propagate. Vertex queries are reserved for
+v0.7.
+
+```typescript
+const arm = assembly('arm');
+
+// Numeric Vec3 origin — explicit coordinates in the part's local frame.
+arm.part('base', basePlate)
+  .connector('shoulder-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, PLATE_H / 2] },
+    normal: [0, 0, 1],
+  });
+
+// Topology-bound origin — resolved from the part's geometry.
+arm.part('servo', servoShape, { connectors: undefined })
+  .connector('flange', {
+    type: 'frame',
+    origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } },
+    normal: [0, 0, 1],
+  })
+  .connector('shaft', {
+    type: 'axis',
+    origin: { kind: 'topology', query: { kind: 'edge-axis', name: 'edge-top' } },
+    axis: [0, 0, 1],
+  });
+```
+
+Topology queries: `face-center` / `face-normal` resolve canonical box/cylinder
+faces and any user-declared `faceLabels`. `edge-axis` resolves canonical box
+edges (`edge-<face1>-<face2>`, order insignificant) and cylinder cap edges
+(`edge-top` / `edge-bottom`). `vertex` raises
+`assembly.connector.topology-not-resolvable` with hint
+`vertex labeling not yet supported` — deferred to v0.7. Post-boolean shapes
+where the canonical face/edge no longer exists also surface
+`assembly.connector.topology-not-resolvable`.
+
+#### Declaring mates — `arm.mate(name, aRef, bRef, type)`
+
+Refs are `"<partName>.<connectorName>"` strings. The seven mate types map to
+the URDF + Fusion + OnShape converged vocabulary; each type is restricted to a
+single compatible connector-type pair, so the wrong pair throws at capture time
+(build123d-style early error).
+
+| Mate type | DOF removed (of 6) | Compatible connector pair |
+|---|---|---|
+| `fastened`    | 6 | `frame`-`frame` |
+| `revolute`    | 5 | `axis`-`axis` |
+| `prismatic`   | 5 | `axis`-`axis` |
+| `cylindrical` | 4 | `axis`-`axis` |
+| `planar`      | 3 | `planar`-`planar` |
+| `ball`        | 3 | `ball`-`ball` |
+| `pin_slot`    | 4 | `axis`-`axis` |
+
+```typescript
+arm.mate('shoulder-bolts',  'shoulder-servo.base-mount',  'base.shoulder-mount', 'fastened');
+arm.mate('shoulder-rotate', 'shoulder-servo.output-shaft', 'horn.shaft-hub',     'revolute');
+```
+
+Capture-time errors throw `KernelError('feature.invalid-args')` with
+structured hints:
+
+- `invalid-args.assembly.mate-type-mismatch` — the chosen mate type doesn't
+  match the connector pair (e.g. `revolute` on `frame`-`frame`). Recovery:
+  pick a compatible mate type or change the connector types.
+- `invalid-args.assembly.mate-connector-not-found` — the `"part.connector"`
+  ref is malformed, the part is undeclared, or the connector wasn't
+  registered. Recovery: declare the part / register the connector before
+  calling `arm.mate(...)`.
+
+#### Validator — `validateAssemblyWithMates`
+
+The mate-aware validator walks the assembly's parts + joints + mate graph and
+returns one of five statuses (Solvespace-style):
+
+| Status | Meaning |
+|---|---|
+| `solved`              | Mate graph is consistent and fully constrains the assembly. |
+| `under-constrained`   | One or more parts have residual DOF — declare more mates. |
+| `over-constrained`    | Mates mutually contradict — remove or relax one. |
+| `redundant-ok`        | Mates over-determine the pose but agree — info-severity diagnostic, prune for hygiene. |
+| `did-not-converge`    | Newton-Raphson iter-cap hit (closed articulated loops). |
+
+Six new diagnostic codes on `ValidatorDiagnostic` (kernel `DiagnosticCode` is
+closed at 24 entries; these are local to the validator's
+`ValidatorDiagnosticCode` union):
+
+- `assembly.part.under-constrained` — part has residual DOF after mate graph.
+- `assembly.mate.over-constrained` — mate pair contradicts the rest of the graph.
+- `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
+- `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
+- `assembly.loop.unclosed` — reserved (type-only today).
+- `assembly.solver.did-not-converge` — Newton-Raphson hit the iter-cap.
+
+#### Validation gate on `solvedModel`
+
+`solvedModel(poses, { validate })` runs the validator before returning the
+`Scene`:
+
+| Mode | Behavior |
+|---|---|
+| `'warn'`  | (default) Attaches every diagnostic — error/warning/info — to `scene.warnings`. Never throws. |
+| `'error'` | Throws `KernelError('feature.invalid-args')` on the first error-severity diagnostic. `scene.warnings` is empty on success. |
+| `'off'`   | Skip validation entirely. `scene.warnings` is the empty array. |
+
+`kernelcad evaluate` flips the default to `'error'` via the
+`KERNELCAD_VALIDATE_DEFAULT=error` env var, so authoring scripts surface
+malformed assemblies as CLI failures.
+
+```typescript
+const scene = await arm.solvedModel({}, { validate: 'warn' });
+for (const w of scene.warnings) {
+  console.log(w.code, w.message, w.hint);
+}
+```
+
+#### MCP companions
+
+Five new MCP tools mirror the `.kcad.ts` surface for runtime introspection:
+
+- `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` —
+  register a mate-style connector on a named part. `type` is one of
+  `frame`/`axis`/`planar`/`ball`; `origin` accepts either a `[x, y, z]`
+  shorthand (becomes `{ kind: 'vec3' }`) or a structured `ConnectorOrigin`.
+- `add_mate({ name, a, b, type, assembly? })` — declare a typed mate between
+  two `"<partName>.<connectorName>"` refs. Same capture-time validation as
+  the script API: type-mismatch and connector-not-found errors surface
+  immediately with structured hints.
+- `list_mates({ assembly? })` — return the declared mate records as
+  `{ mates: [{ name, a, b, type }, ...] }`. Read-only.
+- `validate_assembly({ assembly? })` — run `validateAssemblyWithMates(arm)`
+  and return `{ status, diagnostics, partCount, jointCount }`. Each
+  diagnostic carries `code` and `hint` for recovery.
+- `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return
+  `{ status, poses, iterations? }`. The `poses` input is reserved for the
+  post-T9 articulated path; today the solver classifies tree assemblies and
+  fastened-only loops only.
 
 ### Naming features (slice 2)
 
@@ -723,7 +884,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 22 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 27 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -747,6 +908,11 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `solve_sketch({ entities, constraints })` — solve a 2D POINT/LINE/CIRCLE sketch constraint set; returns `{ ok, entities, constraints }` or validation errors. Side-effect-free.
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
 - `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
+- `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a v0.6 mate-style connector on a named part of the active assembly; requires a prior `evaluate_script`. `type` is one of `frame`/`axis`/`planar`/`ball`. `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`.
+- `add_mate({ name, a, b, type, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
+- `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type }, ...] }`.
+- `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
+- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input is reserved for the post-T9 articulated path.
 
 ## Out of Scope
 

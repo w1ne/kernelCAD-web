@@ -1,8 +1,15 @@
 // src/lib/mates/validator.test.ts
 import { describe, it, expect } from 'vitest';
-import { validateAssembly } from './validator';
+import {
+  validateAssembly,
+  validateAssemblyWithMates,
+  type ValidatorDiagnostic,
+  type ValidatorDiagnosticCode,
+} from './validator';
+import { CaptureSession } from '../../capture/captureSession';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { Param, Vec3Param } from '../../intent/types';
+import { createApi } from '../../modules/api';
 
 const p = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
 const v = (x: number, y: number, z: number): Vec3Param => ({ x: p(x), y: p(y), z: p(z) });
@@ -131,5 +138,161 @@ describe('validateAssembly', () => {
       interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 1 }],
     });
     expect(r.status).toBe('error');
+  });
+});
+
+// v0.6 mate-aware entry point. Builds an Assembly via the public capture
+// API (parallel to solver.test.ts's `makeArm()` helper — don't duplicate
+// FeatureRecord factories above, those exercise the v0.5 path).
+function makeArm() {
+  const session = new CaptureSession();
+  const kcad = createApi({ session });
+  return { arm: kcad.assembly('t'), kcad };
+}
+
+describe('validateAssembly — v0.6 mate-aware codes', () => {
+  it('returns solved on a clean fastened 2-part assembly', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 1] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('a-b', 'a.top', 'b.bot', 'fastened');
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.status).toBe('solved');
+    expect(result.diagnostics).toHaveLength(0);
+  });
+
+  it('reports assembly.mate.over-constrained on an inconsistent triangle', async () => {
+    // Inconsistent triangle pattern (mirrors solver.test.ts:89-111).
+    // m3 wants c.t (world (2,0,0)) to coincide with a.p (world (0,0,0)) —
+    // residual 2 mm, no DOF to absorb it ⇒ over-constrained.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm
+      .part('c', kcad.box(1, 1, 1))
+      .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('t', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm.mate('m1', 'a.p', 'b.q', 'fastened');
+    arm.mate('m2', 'b.r', 'c.s', 'fastened');
+    arm.mate('m3', 'c.t', 'a.p', 'fastened');
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.diagnostics.find((d) => d.code === 'assembly.mate.over-constrained')).toBeDefined();
+    expect(result.status).toBe('over-constrained');
+  });
+
+  it('reports assembly.solver.did-not-converge on a non-fastened loop (T7 punt)', async () => {
+    // T7 punts articulated closed loops to T7.x: any non-fastened mate in a
+    // loop returns 'did-not-converge' with iterations=0. Build a triangle
+    // where m3 is revolute — exercises that branch.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('axis', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm
+      .part('c', kcad.box(1, 1, 1))
+      .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('axis', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [1, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm.mate('m1', 'a.p', 'b.q', 'fastened');
+    arm.mate('m2', 'b.r', 'c.s', 'fastened');
+    arm.mate('m3', 'c.axis', 'a.axis', 'revolute'); // non-fastened loop edge
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.diagnostics.find((d) => d.code === 'assembly.solver.did-not-converge')).toBeDefined();
+    expect(result.status).toBe('did-not-converge');
+  });
+
+  it('reports redundant-ok on a consistent triangle of fastened mates', async () => {
+    // Consistent triangle (mirrors solver.test.ts:61-87). m3 agrees with the
+    // tree-FK at zero-pose ⇒ residual ≈ 0 ⇒ redundant-ok.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm
+      .part('c', kcad.box(1, 1, 1))
+      .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } })
+      .connector('t', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m1', 'a.p', 'b.q', 'fastened');
+    arm.mate('m2', 'b.r', 'c.s', 'fastened');
+    arm.mate('m3', 'c.t', 'a.p', 'fastened');
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.status).toBe('redundant-ok');
+    const info = result.diagnostics.find((d) => d.code === 'assembly.mate.over-constrained');
+    expect(info?.severity).toBe('info');
+  });
+
+  it('type-system accepts the 9 v0.6 diagnostic codes', () => {
+    // Capture-time codes (`type-mismatch`, `connector-not-found`) are thrown
+    // as `KernelError` by `arm.mate(...)` and never surface through the
+    // validator — but external consumers (lowerer, MCP error-chain echoes)
+    // still need them in the union. This test pins the union shape so a
+    // future refactor can't silently drop them.
+    const codes: ValidatorDiagnosticCode[] = [
+      'assembly.part.floating',
+      'assembly.part.orphan',
+      'assembly.interference.overlap',
+      'assembly.part.under-constrained',
+      'assembly.mate.over-constrained',
+      'assembly.mate.type-mismatch',
+      'assembly.mate.connector-not-found',
+      'assembly.loop.unclosed',
+      'assembly.solver.did-not-converge',
+    ];
+    expect(codes).toHaveLength(9);
+    // Smoke-check that the capture-time codes survive on a hand-crafted
+    // `ValidatorDiagnostic` (compile-time check; runtime is trivial).
+    const typeMismatch: ValidatorDiagnostic = {
+      code: 'assembly.mate.type-mismatch',
+      severity: 'error',
+      message: 'fixture',
+      hint: 'invalid-args.assembly.mate-type-mismatch — fixture',
+    };
+    const connectorMissing: ValidatorDiagnostic = {
+      code: 'assembly.mate.connector-not-found',
+      severity: 'error',
+      message: 'fixture',
+      hint: 'invalid-args.assembly.mate-connector-not-found — fixture',
+    };
+    expect(typeMismatch.code).toBe('assembly.mate.type-mismatch');
+    expect(connectorMissing.code).toBe('assembly.mate.connector-not-found');
+  });
+
+  it('falls back to v0.5 validateAssembly for legacy joint-only scenes (regression check)', async () => {
+    // No mates declared — should pass through to v0.5 behavior. Build a
+    // clean joint-only chain (base-link via fixed) and expect 'solved'.
+    const { arm, kcad } = makeArm();
+    const base = arm.part('base', kcad.box(10, 10, 10));
+    const link = arm.part('link', kcad.box(5, 5, 5));
+    arm.fixed('base-link', base, link);
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.status).toBe('solved');
+    expect(result.diagnostics).toHaveLength(0);
+    expect(result.partCount).toBe(2);
+    expect(result.jointCount).toBe(1);
   });
 });

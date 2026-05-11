@@ -10,14 +10,16 @@ function near(a: readonly number[], b: readonly number[], eps = 1e-6): void {
 }
 
 describe('Assembly.solve — body-tree forward kinematics', () => {
-  it('zero-pose, single part, no joints — solvedModel returns a Scene with the part', () => {
+  it('zero-pose, single part, no joints — solvedModel returns a Scene with the part', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const arm = kcad.assembly('test');
     arm.part('only', kcad.box(10, 10, 10));
     // Per Task 14: solvedModel returns a Scene (multi-body), not a Shape.
     // Assert Scene structure rather than the legacy shape.id token.
-    const scene = arm.solvedModel({});
+    // v0.6 T9: solvedModel returns Promise<Scene> (await for the resolved
+    // Scene; capture-time pose errors still throw synchronously).
+    const scene = await arm.solvedModel({});
     expect(scene.assemblyName).toBe('test');
     expect(scene.parts.map(p => p.name)).toEqual(['only']);
   });

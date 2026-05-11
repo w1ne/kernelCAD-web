@@ -1,0 +1,51 @@
+// tests/integration/mcp/solveMates.test.ts
+//
+// v0.6 Task 11: integration test for `solve_mates` MCP tool. Wraps
+// `solveMates(arm)` (T6/T7). Verifies the solver surfaces per-part world
+// transforms serialized as { translation, rotateAxis, rotateDeg } via the
+// existing `decomposeToTranslateAndRotate()`.
+
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
+import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
+import { solveMatesTool } from '../../../src/mcp/tools/solveMates';
+
+describe('solve_mates MCP tool', () => {
+  beforeAll(async () => { await initOcct(); }, 60000);
+  beforeEach(() => { clearActiveMcpSession(); });
+
+  it('returns status=solved with serialized per-part transforms on a simple two-part fastened mate', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rig');
+        arm.part('a', box(1, 1, 1))
+          .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.part('b', box(1, 1, 1))
+          .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('m1', 'a.p', 'b.q', 'fastened');
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await solveMatesTool({});
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.status).toBe('solved');
+      expect(Object.keys(r.poses).sort()).toEqual(['a', 'b']);
+      const pa = r.poses.a;
+      expect(pa.translation).toHaveLength(3);
+      expect(pa.rotateAxis).toHaveLength(3);
+      expect(typeof pa.rotateDeg).toBe('number');
+    }
+  });
+
+  it('returns ok:false when no active session is set', async () => {
+    const r = await solveMatesTool({});
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errorCode).toBe('feature.invalid-args');
+    }
+  });
+});

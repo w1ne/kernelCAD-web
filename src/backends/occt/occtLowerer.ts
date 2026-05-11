@@ -10,6 +10,11 @@ import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3P
 import { isValidPlaneSpec } from '../../intent/types';
 import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
+import { mateFk, type ResolvedMatePart } from '../../lib/mates/solver';
+import type { Connector } from '../../lib/mates/connector';
+import type { MateRecord } from '../../lib/mates/mate';
+import type { MateType } from '../../lib/mates/mateTypes';
+import { resolveTopologyOriginOnBackend } from './connectorTopology';
 import { KernelError } from '../../intent/kernelError';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
@@ -1385,15 +1390,26 @@ export class OcctLowerer implements FeatureLowerer {
         type EncodedPose =
           | { kind: 'scalar'; value: Param }
           | { kind: 'ball'; value: [Param, Param, Param] };
+        type EncodedMate = {
+          name: string;
+          a: string;
+          b: string;
+          type: MateType;
+          pose?: EncodedPose;
+        };
         const meta = r.metadata as {
           assemblyName?: string;
           partIds?: FeatureId[];
           jointIds?: FeatureId[];
           poses?: Record<string, EncodedPose>;
+          mates?: EncodedMate[];
+          connectorsByPartId?: Record<FeatureId, readonly Connector[]>;
         } | undefined;
         const partIds = meta?.partIds ?? [];
         const jointIds = meta?.jointIds ?? [];
         const encodedPoses = meta?.poses ?? {};
+        const encodedMates: readonly EncodedMate[] = meta?.mates ?? [];
+        const connectorsByPartId = meta?.connectorsByPartId ?? {};
 
         const partEntries = Object.entries(inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
@@ -1525,6 +1541,135 @@ export class OcctLowerer implements FeatureLowerer {
         //    issues (multi-parent, cycles); the dispatcher's exception path
         //    surfaces these as structured diagnostics.
         const worldT = forwardKinematics(parts, joints, numericPoses);
+
+        // 4b. v0.6 T17: when the assembly declares mates, run `mateFk` over
+        //     the captured mate metadata. The mate-derived transforms WIN
+        //     over the v0.5 joint-derived transforms per part — parts that
+        //     participate in a mate graph are placed in LOCAL frames at
+        //     authoring time, and the mate solver is the source of truth for
+        //     their world position. Without this step the lowerer would emit
+        //     identity transforms for purely-mated parts and the rendered
+        //     output (compound, STL, STEP) would sit at the local origin
+        //     even though the capture-time Scene's `worldTransform` (T16) is
+        //     correct.
+        if (encodedMates.length > 0 && partEntries.length === partIds.length) {
+          // Resolve mate poses the same way joint poses are: Param.evaluated
+          // already reflects the live ParamTable value (resolveParams walked
+          // metadata before lower was called).
+          const matePoses: NumericPoses = {};
+          for (const m of encodedMates) {
+            if (m.pose === undefined) continue;
+            if (m.pose.kind === 'ball') {
+              matePoses[m.name] = [
+                m.pose.value[0].evaluated,
+                m.pose.value[1].evaluated,
+                m.pose.value[2].evaluated,
+              ];
+            } else {
+              matePoses[m.name] = m.pose.value.evaluated;
+            }
+          }
+          // Mate-pose finiteness check (mirror of the joint-pose check above).
+          // Capture allows ParamRef poses; if the live ParamTable resolves one
+          // to NaN / +/-Infinity, surface a structured diagnostic instead of
+          // letting `mateFk` produce a degenerate transform.
+          let matePoseFiniteFailed = false;
+          for (const [name, val] of Object.entries(matePoses)) {
+            const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
+            if (!finite) {
+              diagnostics.push({
+                target: this.target,
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `solvedAssembly: mate pose '${name}' is not finite (${JSON.stringify(val)}).`,
+                hint: `kernel-failed.solvedModel.bad-pose — mate pose value for ${name} is not finite.`,
+              });
+              matePoseFiniteFailed = true;
+            }
+          }
+          if (matePoseFiniteFailed) {
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // Resolve topology connector origins via each part's already-
+          // lowered backend, then build the pure-data `ResolvedMatePart[]`
+          // input for `mateFk`. Vec3 origins pass through unchanged.
+          const resolvedParts: ResolvedMatePart[] = [];
+          let topologyResolutionFailed = false;
+          for (let i = 0; i < partIds.length; i++) {
+            const partId = partIds[i];
+            const partRec = records.find((rec) => rec.id === partId)!;
+            const partName =
+              (partRec.metadata as { partName?: string } | undefined)?.partName ?? partId;
+            const rawConnectors = connectorsByPartId[partId] ?? [];
+            if (rawConnectors.length === 0) {
+              resolvedParts.push({ id: partId, name: partName, connectors: [] });
+              continue;
+            }
+            const partBackend = partEntries[i][1] as OcctBackend;
+            const resolvedConnectors: Connector[] = [];
+            for (const c of rawConnectors) {
+              if (c.origin.kind === 'vec3') {
+                resolvedConnectors.push(c);
+                continue;
+              }
+              try {
+                const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
+                  records,
+                  consumerId: partId,
+                });
+                resolvedConnectors.push({
+                  ...c,
+                  origin: { kind: 'vec3', value },
+                });
+              } catch (err) {
+                const msg = (err as Error).message;
+                diagnostics.push({
+                  target: this.target,
+                  code: 'feature.invalid-args',
+                  featureId: r.id,
+                  severity: 'error',
+                  message: `solvedAssembly: failed to resolve connector '${c.name}' on part '${partName}' (${msg}).`,
+                  hint: 'invalid-args.assembly.mate-connector-origin-unresolved — declare the connector with a numeric origin or a topology query that resolves on the lowered shape.',
+                });
+                topologyResolutionFailed = true;
+              }
+            }
+            if (topologyResolutionFailed) break;
+            resolvedParts.push({ id: partId, name: partName, connectors: resolvedConnectors });
+          }
+          if (topologyResolutionFailed) {
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          // mateFk is pure — KernelErrors propagate out and surface via the
+          // dispatcher's exception path as structured diagnostics, same as
+          // forwardKinematics' graph errors.
+          const mates: MateRecord[] = encodedMates.map((m) => ({
+            name: m.name,
+            a: m.a,
+            b: m.b,
+            type: m.type,
+          }));
+          const mateWorldT = mateFk(resolvedParts, mates, matePoses);
+          // Merge: mate-derived transforms WIN over joint-derived transforms.
+          // Disconnected-from-mates parts retain their joint-FK transform (or
+          // identity if no joint either). This is the explicit precedence
+          // documented in `Assembly.solvedModel`'s JSDoc.
+          //
+          // `mateFk` always populates a transform for every part it was given
+          // (disconnected parts default to identity). To keep that identity
+          // from clobbering a v0.5 joint-tree transform when the SAME part is
+          // both on a joint tree AND in the mate-parts list but NOT actually
+          // referenced by any mate, we only overwrite when the part has at
+          // least one mate-connector entry (i.e. it's a real participant in
+          // the mate graph). Mate participants are exactly the parts whose
+          // FeatureId appears in `connectorsByPartId`.
+          for (const [partId, mT] of mateWorldT) {
+            if (partId in connectorsByPartId) {
+              worldT.set(partId, mT);
+            }
+          }
+        }
 
         // 5. Build a SceneBackend (no boolean union — each part stays in its
         //    LOCAL frame and the FK-derived worldTransform travels with it).
