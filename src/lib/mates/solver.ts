@@ -2,11 +2,15 @@
 //
 // v0.6 Task 6: tree-FK over the mate graph for all 7 mate types.
 // v0.6 Task 7: Newton-Raphson closed-loop solver for fastened-only loops.
+// v0.6 T-pose: pose-driven articulation. `solveMates(arm, poses?)` honors the
+// numeric `poses` override first, then the capture-time `mate.pose`
+// (resolved through the session's ParamTable), defaulting to 0 / [0,0,0].
 //
-// `solveMates(arm)` walks the parts-by-mate graph and produces per-part world
-// transforms in the assembly's root frame. Mates default to their zero-pose
-// (0 deg / 0 mm / [0,0,0] Euler). Pose-driven articulation comes via the
-// existing `solvedModel(poses)` path in T9.
+// `solveMates(arm, poses?)` walks the parts-by-mate graph and produces
+// per-part world transforms in the assembly's root frame. Pose-driven joint
+// frames (revolute rotation, prismatic translation, ball Euler) compose into
+// the parent→child transform — mirroring the v0.5 body-tree FK math in
+// `../../capture/forwardKinematics.ts`.
 //
 // Tree topologies are solved exactly. Closed kinematic loops with fastened
 // mates are evaluated via tree-FK + loop-closure residual check:
@@ -28,6 +32,7 @@
 // shipped code.
 
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
+import type { NumericPoses } from '../../capture/forwardKinematics';
 import { KernelError } from '../../intent/kernelError';
 // Newton-Raphson machinery for articulated closed loops (T7.x): the
 // finite-diff Jacobian + small-matrix linear solver from
@@ -37,13 +42,15 @@ import { KernelError } from '../../intent/kernelError';
 // meaningful. Keeping these imports here makes the wiring point explicit
 // and stops future readers from rebuilding helpers that already exist.
 import { norm2 } from '../numeric/jacobian';
+import { currentValue } from '../../runtime/editableHelpers';
+import type { Editable } from '../../runtime/paramRef';
 import { Transform, type Vec3 as Se3Vec3 } from '../../runtime/se3';
 import {
   resolveConnectorOrigin,
   type Connector,
   type ConnectorOrigin,
 } from './connector';
-import type { MateRecord } from './mate';
+import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
 
@@ -91,7 +98,77 @@ const SOLVER = {
   OVER_CONSTRAINED_FACTOR: 100,
 } as const;
 
-export async function solveMates(arm: Assembly): Promise<SolveResult> {
+/**
+ * Resolve a mate's articulation pose to its numeric joint-frame value.
+ *
+ * Pose-resolution chain (highest priority first):
+ *   1. `numericOverrides[mate.name]` — caller-supplied numeric override
+ *      (used by `Assembly.solvedModel(poses)` once the public pose surface
+ *      lands; today's callers pass `undefined`).
+ *   2. `mate.pose` — capture-time pose stored on the MateRecord. May carry
+ *      a ParamRef; resolved via the session's ParamTable through
+ *      `currentValue` (the same path `Assembly.solve` uses for `Editable`
+ *      pose coords).
+ *   3. Default — `0` for scalar pose types, `[0,0,0]` for ball.
+ *
+ * Returns `undefined` for mate types that don't accept articulation
+ * (fastened / planar) — capture-time validation already rejects `mate.pose`
+ * on those, and the per-type SE(3) collapses to identity regardless.
+ */
+function resolveMatePose(
+  mate: MateRecord,
+  arm: Assembly,
+  numericOverrides: NumericPoses | undefined,
+): number | [number, number, number] | undefined {
+  if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
+  // 1. Numeric override (caller-supplied) wins.
+  const override = numericOverrides?.[mate.name];
+  if (override !== undefined) return override;
+  // 2. Capture-time mate.pose (may be ParamRef — resolve via ParamTable).
+  if (mate.pose !== undefined) {
+    return resolvePoseFromEditable(mate.pose, mate.type, arm);
+  }
+  // 3. Default — zero pose.
+  return mate.type === 'ball' ? [0, 0, 0] : 0;
+}
+
+/** Walk an `Editable`-bearing pose triple/scalar and resolve via ParamTable. */
+function resolvePoseFromEditable(
+  pose: MatePose,
+  type: MateType,
+  arm: Assembly,
+): number | [number, number, number] {
+  const table = arm.__session().paramTable;
+  if (Array.isArray(pose)) {
+    if (type !== 'ball') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `solveMates: mate type '${type}' got a triple pose; expected a single number.`,
+        undefined,
+        `invalid-args.assembly.mate-pose-shape — '${type}' mates take a single Editable<number> pose.`,
+      );
+    }
+    return [
+      currentValue(pose[0] as Editable<number>, table),
+      currentValue(pose[1] as Editable<number>, table),
+      currentValue(pose[2] as Editable<number>, table),
+    ];
+  }
+  if (type === 'ball') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `solveMates: ball mate pose must be [eulerXDeg, eulerYDeg, eulerZDeg]; got a single number.`,
+      undefined,
+      `invalid-args.assembly.mate-pose-shape — ball mates take an XYZ Euler triple of Editable<number>.`,
+    );
+  }
+  return currentValue(pose as Editable<number>, table);
+}
+
+export async function solveMates(
+  arm: Assembly,
+  poses?: NumericPoses,
+): Promise<SolveResult> {
   const parts = arm.__parts();
   const mates = arm.__mates();
 
@@ -112,7 +189,7 @@ export async function solveMates(arm: Assembly): Promise<SolveResult> {
   // 2. Build a spanning tree via BFS from the first declared part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName);
+  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, poses);
 
   if (loopMates.length === 0) {
     return { status: 'solved', poses: worldT };
@@ -140,6 +217,8 @@ async function walkSpanningTree(
   parts: readonly AssemblyPartStored[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, AssemblyPartStored>,
+  arm: Assembly,
+  poses: NumericPoses | undefined,
 ): Promise<SpanningTreeResult> {
   const worldT = new Map<string, Transform>();
   const loopMates: MateRecord[] = [];
@@ -163,7 +242,7 @@ async function walkSpanningTree(
         continue;
       }
       visited.add(edge.neighbor);
-      const childT = await composeChildTransform(parentT, edge, partByName);
+      const childT = await composeChildTransform(parentT, edge, partByName, arm, poses);
       worldT.set(edge.neighbor, childT);
       queue.push(edge.neighbor);
     }
@@ -291,11 +370,17 @@ async function computeLoopResidual(
 }
 
 /** Compose the child part's world transform from the parent's world
- *  transform and the mate's local SE(3) contribution. */
+ *  transform and the mate's local SE(3) contribution. Pose-driven (Pattern A):
+ *  the joint frame applies a rotation / translation per the mate's resolved
+ *  pose around the PARENT connector's axis (revolute, prismatic, cylindrical,
+ *  pin_slot) or as an Euler triple (ball). Fastened / planar collapse to
+ *  identity at the joint frame. */
 async function composeChildTransform(
   parentT: Transform,
   edge: MateEdge,
   partByName: ReadonlyMap<string, AssemblyPartStored>,
+  arm: Assembly,
+  poses: NumericPoses | undefined,
 ): Promise<Transform> {
   const aSide = parseConnectorRef(edge.mate.a);
   const bSide = parseConnectorRef(edge.mate.b);
@@ -314,19 +399,15 @@ async function composeChildTransform(
 
   // Build SE(3): parentWorldT
   //   ∘ T(parentOrigin)
-  //   ∘ jointLocalT(mate type, zero-pose)
+  //   ∘ jointLocalT(mate type, pose, axis)
   //   ∘ T(-childOrigin)
   // Interpretation: shift parent's frame to its connector, apply the joint
   // motion at the connector, then shift back so the child's connector origin
   // lands on the parent's connector origin.
   const parentToConnector = Transform.translation(parentOrigin[0], parentOrigin[1], parentOrigin[2]);
   const childInverse = Transform.translation(-childOrigin[0], -childOrigin[1], -childOrigin[2]);
-  // `parentConnector` / `childConnector` are read for origin resolution only;
-  // their axis / normal will matter once T9 wires pose-driven articulation
-  // (rotate about axis, translate along axis, rotate about normal, etc.). At
-  // zero-pose every per-type local SE(3) reduces to identity, so we don't
-  // need the connector axis/normal fields yet.
-  const jointLocalT = jointTransformForMate(edge.mate.type);
+  const pose = resolveMatePose(edge.mate, arm, poses);
+  const jointLocalT = jointTransformForMate(edge.mate.type, pose, parentConnector);
   return parentT.compose(parentToConnector).compose(jointLocalT).compose(childInverse);
 }
 
@@ -350,21 +431,60 @@ async function originVec3(part: AssemblyPartStored, origin: ConnectorOrigin): Pr
   return resolved.value as Se3Vec3;
 }
 
-/** Per-mate-type zero-pose local SE(3) contribution at the connector frame.
- *  Every mate type's zero-pose reduces to identity (fastened: 0 DOF; the
- *  others have free DOFs that default to 0 deg / 0 mm / [0,0,0] Euler).
- *  Pose-driven articulation lands in T9 via the existing
- *  `solvedModel(poses)` path. */
-function jointTransformForMate(type: MateType): Transform {
+/** Per-mate-type local SE(3) contribution at the connector frame, honoring
+ *  the resolved pose. Math mirrors the v0.5 body-tree FK in
+ *  `forwardKinematics.ts` for the equivalent joint kinds:
+ *    - revolute     → rotation around parent connector axis by pose (deg)
+ *    - prismatic    → translation along parent connector axis by pose (mm)
+ *    - cylindrical  → v0.6 single-DOF surface: rotation around axis by
+ *                     pose deg; secondary translation defaults to 0.
+ *    - pin_slot     → v0.6 single-DOF surface: rotation around axis by
+ *                     pose deg; in-plane translation defaults to 0.
+ *    - ball         → extrinsic XYZ Euler from the pose triple
+ *    - fastened     → identity (0 DOF)
+ *    - planar       → identity (3 DOF in-plane translation not exposed via
+ *                     a single scalar pose; covered when Pattern A grows a
+ *                     multi-DOF pose surface).
+ *  `parentConnector.axis` defaults to `+Z` when omitted — matches the
+ *  `Connector` type doc. */
+function jointTransformForMate(
+  type: MateType,
+  pose: number | [number, number, number] | undefined,
+  parentConnector: Connector,
+): Transform {
   switch (type) {
     case 'fastened':
-    case 'revolute':
-    case 'prismatic':
-    case 'cylindrical':
-    case 'pin_slot':
     case 'planar':
-    case 'ball':
       return Transform.identity();
+    case 'revolute': {
+      const deg = (pose as number | undefined) ?? 0;
+      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      return Transform.rotationAxisAngleDeg(ax, deg);
+    }
+    case 'prismatic': {
+      const stroke = (pose as number | undefined) ?? 0;
+      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
+      const dx = (ax[0] / len) * stroke;
+      const dy = (ax[1] / len) * stroke;
+      const dz = (ax[2] / len) * stroke;
+      return Transform.translation(dx, dy, dz);
+    }
+    case 'cylindrical':
+    case 'pin_slot': {
+      // v0.6 single-DOF surface — both types take a scalar pose interpreted
+      // as rotation degrees around the parent connector axis; the secondary
+      // DOF (axial translation for cylindrical, perpendicular translation
+      // for pin_slot) defaults to 0. A multi-DOF pose surface lands when
+      // Pattern A grows beyond scalar/triple inputs.
+      const deg = (pose as number | undefined) ?? 0;
+      const ax = (parentConnector.axis ?? [0, 0, 1]) as Se3Vec3;
+      return Transform.rotationAxisAngleDeg(ax, deg);
+    }
+    case 'ball': {
+      const euler = (pose as [number, number, number] | undefined) ?? [0, 0, 0];
+      return Transform.eulerXYZDeg(euler[0], euler[1], euler[2]);
+    }
     default: {
       // Exhaustiveness guard: a future MateType added without a case lands here.
       const _exhaustive: never = type;

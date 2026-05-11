@@ -7,7 +7,23 @@
 // builder surfaces these records on `scene.mates` returned by
 // `Assembly.model()` / `Assembly.solvedModel()`.
 
+import type { Editable } from '../../runtime/paramRef';
 import type { MateType } from './mateTypes';
+
+/**
+ * Optional articulation value on a mate. v0.6 T-pose extension to Pattern A FK.
+ *  - revolute / prismatic / cylindrical / pin_slot: `Editable<number>`
+ *    (degrees for rotational types, mm for prismatic)
+ *  - ball: `[Editable<number>, Editable<number>, Editable<number>]`
+ *    (XYZ Euler degrees, extrinsic — matches the v0.5 ball-joint pose triple)
+ *  - fastened / planar: pose is not accepted (validated at capture time).
+ *
+ * Resolved at solve time by `solveMates(arm, numericPoses?)` against either a
+ * numeric override or the session's ParamTable.
+ */
+export type MatePose =
+  | Editable<number>
+  | [Editable<number>, Editable<number>, Editable<number>];
 
 export interface MateRecord {
   readonly name: string;
@@ -16,6 +32,10 @@ export interface MateRecord {
   /** "<partName>.<connectorName>" */
   readonly b: string;
   readonly type: MateType;
+  /** Optional capture-time pose (articulation value). May be a number, a
+   *  ParamRef, or — for ball mates — an XYZ Euler triple of either. See
+   *  `MatePose` for the per-type shape contract. */
+  readonly pose?: MatePose;
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

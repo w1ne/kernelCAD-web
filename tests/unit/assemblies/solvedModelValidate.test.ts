@@ -85,3 +85,59 @@ describe('Assembly.solvedModel({validate})', () => {
     }
   });
 });
+
+describe('Assembly.solvedModel — mate-driven placement (Pattern A)', () => {
+  it('places parts via the mate solver when mates are declared', async () => {
+    // Two parts in LOCAL frames (no `.translate(...)` for placement);
+    // a revolute mate with pose=90° plants the child on the parent's
+    // connector at z=5 and rotates it 90° about +Z. The Scene's
+    // `worldTransform` for 'child' must reflect that placement.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('parent', kcad.box(10, 10, 10))
+      .connector('out', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 5] },
+        axis: [0, 0, 1],
+      });
+    arm
+      .part('child', kcad.box(5, 5, 5))
+      .connector('in', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm.mate('joint', 'parent.out', 'child.in', 'revolute', { pose: 90 });
+
+    const scene = await arm.solvedModel({});
+    const childPart = scene.part('child');
+    // child's local [0,0,0] lands on parent's connector at world [0,0,5].
+    const childOriginWorld = childPart.worldTransform.point([0, 0, 0]);
+    expect(childOriginWorld[0]).toBeCloseTo(0);
+    expect(childOriginWorld[1]).toBeCloseTo(0);
+    expect(childOriginWorld[2]).toBeCloseTo(5);
+    // child's local +X rotates 90° about +Z → world +Y at the same z.
+    const childPlusXWorld = childPart.worldTransform.point([1, 0, 0]);
+    expect(childPlusXWorld[0]).toBeCloseTo(0);
+    expect(childPlusXWorld[1]).toBeCloseTo(1);
+    expect(childPlusXWorld[2]).toBeCloseTo(5);
+  });
+
+  it('preserves v0.5 body-tree FK behavior when no mates are declared', async () => {
+    // Pure v0.5: a single orphan part (no joints, no mates). Scene's
+    // worldTransform must remain identity — the existing `.translate(...)`
+    // chain on the source shape stays untouched, and the lowerer-side
+    // body-tree FK on `solvedAssembly` is the source of truth at recompute
+    // time. Capture-time Scene's per-part `worldTransform` is identity for
+    // v0.5 (no body-tree FK runs at capture).
+    const { arm, kcad } = makeArm();
+    arm.part('orphan', kcad.box(1, 1, 1));
+    const scene = await arm.solvedModel({}, { validate: 'off' });
+    const part = scene.part('orphan');
+    const { translate, rotateDeg } = part.worldTransform.decomposeToTranslateAndRotate();
+    expect(translate[0]).toBeCloseTo(0);
+    expect(translate[1]).toBeCloseTo(0);
+    expect(translate[2]).toBeCloseTo(0);
+    expect(Math.abs(rotateDeg)).toBeCloseTo(0);
+  });
+});

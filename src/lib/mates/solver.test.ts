@@ -118,3 +118,111 @@ describe('solveMates — closed loop (Newton-Raphson)', () => {
   // jacobian.test.ts unit suite (finite-difference Jacobian on non-linear f).
   it.skip('reports did-not-converge when iteration cap hits (deferred to T9)', () => {});
 });
+
+describe('solveMates — pose-driven articulation', () => {
+  it('rotates child part by pose-degrees on revolute mate', async () => {
+    // Parent's connector is at z=5 on the +Z axis; child's connector at
+    // local origin. A 90° revolute pose around the +Z axis rotates the
+    // child about that axis at the mate point — the child's local +X
+    // basis ([1,0,0]) lands on world +Y, while the connector origin stays
+    // anchored at the parent's connector location.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('parent', kcad.box(10, 10, 10))
+      .connector('out', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 5] },
+        axis: [0, 0, 1],
+      });
+    arm
+      .part('child', kcad.box(5, 5, 5))
+      .connector('in', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm.mate('m1', 'parent.out', 'child.in', 'revolute');
+    const r = await solveMates(arm, { m1: 90 });
+    expect(r.status).toBe('solved');
+    const childT = r.poses.get('child')!;
+    // Child's local origin lands at parent's connector world position [0,0,5].
+    const childOriginWorld = childT.point([0, 0, 0]);
+    expect(childOriginWorld[0]).toBeCloseTo(0);
+    expect(childOriginWorld[1]).toBeCloseTo(0);
+    expect(childOriginWorld[2]).toBeCloseTo(5);
+    // Child's local +X axis rotates 90° about +Z → world +Y.
+    const childPlusXWorld = childT.point([1, 0, 0]);
+    expect(childPlusXWorld[0]).toBeCloseTo(0);
+    expect(childPlusXWorld[1]).toBeCloseTo(1);
+    expect(childPlusXWorld[2]).toBeCloseTo(5);
+    // Decomposed rotation magnitude equals the pose.
+    const { rotateDeg } = childT.decomposeToTranslateAndRotate();
+    expect(Math.abs(rotateDeg)).toBeCloseTo(90);
+  });
+
+  it('translates child part by pose-mm on prismatic mate', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('rail', kcad.box(10, 10, 10))
+      .connector('a', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [1, 0, 0],
+      });
+    arm
+      .part('slider', kcad.box(5, 5, 5))
+      .connector('a', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [1, 0, 0],
+      });
+    arm.mate('m1', 'rail.a', 'slider.a', 'prismatic');
+    const r = await solveMates(arm, { m1: 25 });
+    expect(r.status).toBe('solved');
+    const sliderT = r.poses.get('slider')!;
+    const sliderOriginWorld = sliderT.point([0, 0, 0]);
+    // Translation of 25mm along the parent's +X axis.
+    expect(sliderOriginWorld[0]).toBeCloseTo(25);
+    expect(sliderOriginWorld[1]).toBeCloseTo(0);
+    expect(sliderOriginWorld[2]).toBeCloseTo(0);
+  });
+
+  it('falls back to capture-time mate.pose ParamRef when no numeric override', async () => {
+    const { arm, kcad } = makeArm();
+    const theta = kcad.param('theta', 45, { unit: 'deg' });
+    arm
+      .part('parent', kcad.box(10, 10, 10))
+      .connector('out', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm
+      .part('child', kcad.box(5, 5, 5))
+      .connector('in', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm.mate('m1', 'parent.out', 'child.in', 'revolute', { pose: theta });
+    // No numeric override → resolver falls back to mate.pose (ParamRef → 45°).
+    const r = await solveMates(arm);
+    expect(r.status).toBe('solved');
+    const childT = r.poses.get('child')!;
+    const { rotateDeg } = childT.decomposeToTranslateAndRotate();
+    expect(Math.abs(rotateDeg)).toBeCloseTo(45);
+  });
+
+  it('rejects pose arg on fastened mate at capture time', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    expect(() => arm.mate('m', 'a.p', 'b.q', 'fastened', { pose: 30 })).toThrow(
+      /pose-on-zero-dof-mate/,
+    );
+  });
+});

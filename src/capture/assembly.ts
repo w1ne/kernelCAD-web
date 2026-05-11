@@ -9,8 +9,9 @@ import {
   type ConnectorOrigin,
   type ConnectorType,
 } from '../lib/mates/connector';
-import { parseConnectorRef, type MateRecord } from '../lib/mates/mate';
+import { parseConnectorRef, type MatePose, type MateRecord } from '../lib/mates/mate';
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+import { solveMates } from '../lib/mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
 import { currentValue, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
@@ -385,18 +386,35 @@ export class Assembly {
    * (build123d-style early error), so authoring scripts surface bad pairs
    * immediately instead of at solve / lower time.
    *
+   * Optional `opts.pose` articulates the mate's joint frame at solve time.
+   * Per-type shape:
+   *   - revolute / prismatic / cylindrical / pin_slot: `Editable<number>`
+   *     (degrees / mm; cylindrical & pin_slot treat the scalar as rotation
+   *     degrees and zero the secondary translation — v0.6 single-DOF surface).
+   *   - ball: `[Editable<number>, Editable<number>, Editable<number>]` (XYZ
+   *     Euler degrees, extrinsic — same shape as the v0.5 ball-joint pose).
+   *   - fastened / planar: pose is rejected at capture time (zero
+   *     articulation DOF on the v0.6 surface).
+   *
    * Errors:
    *   - ref malformed (no dot, empty side)   → assembly.mate.connector-not-found
    *   - unknown part name                    → assembly.mate.connector-not-found
    *   - unknown connector on the part        → assembly.mate.connector-not-found
    *   - mate / connector-pair mismatch       → assembly.mate.type-mismatch
+   *   - pose on fastened / planar            → assembly.mate-pose-on-zero-dof-mate
    *
    * The mate record itself is surfaced on `Scene.mates` returned by
-   * `Assembly.model()` / `Assembly.solvedModel()`. No FK or constraint solve
-   * is performed here — mates carry the declarative pair for downstream
-   * consumers (validator, lowerer, future solver).
+   * `Assembly.model()` / `Assembly.solvedModel()`. Pose-driven articulation
+   * is honored by the v0.6 Pattern A FK in `solveMates(arm, poses?)` and
+   * piped into `Scene.parts[].worldTransform` by `Assembly.solvedModel`.
    */
-  mate(name: string, aRef: string, bRef: string, type: MateType): this {
+  mate(
+    name: string,
+    aRef: string,
+    bRef: string,
+    type: MateType,
+    opts?: { pose?: MatePose },
+  ): this {
     const a = this.resolveMateConnector(aRef);
     const b = this.resolveMateConnector(bRef);
     if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
@@ -407,7 +425,21 @@ export class Assembly {
         `invalid-args.assembly.mate-type-mismatch — '${type}' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.`,
       );
     }
-    this.mates.push({ name, a: aRef, b: bRef, type });
+    if (opts?.pose !== undefined && (type === 'fastened' || type === 'planar')) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.pose-on-zero-dof-mate: mate '${name}' is type '${type}' and accepts no pose; remove opts.pose.`,
+        undefined,
+        `invalid-args.assembly.mate-pose-on-zero-dof-mate — '${type}' mates have no articulation DOF; drop opts.pose or change the mate type.`,
+      );
+    }
+    this.mates.push({
+      name,
+      a: aRef,
+      b: bRef,
+      type,
+      ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
+    });
     return this;
   }
 
@@ -649,40 +681,56 @@ export class Assembly {
     const envDefault = process.env.KERNELCAD_VALIDATE_DEFAULT === 'error' ? 'error' : 'warn';
     const mode: 'warn' | 'error' | 'off' = opts?.validate ?? envDefault;
 
+    // Compute mate-driven per-part world transforms first. This is the v0.6
+    // Pattern A FK output — when mates are declared the solver's transforms
+    // win on the capture-time Scene (parts authored in LOCAL frames).
+    // `solveMates` is a no-op when no mates are declared (empty map);
+    // skipping the call avoids paying for a tree walk on v0.5 assemblies.
+    const mateTransformsPromise: Promise<ReadonlyMap<string, Transform> | undefined> =
+      this.mates.length > 0
+        ? solveMates(this).then((r) => r.poses)
+        : Promise.resolve(undefined);
+
     if (mode === 'off') {
-      // No validation, empty warnings — same Scene shape as v0.5 callers got.
-      return Promise.resolve(this.makeScene(sceneShape, []));
+      // No validation, empty warnings — Scene still gets mate-driven
+      // worldTransforms so the user-visible placement matches the mate
+      // graph even with validation disabled.
+      return mateTransformsPromise.then((mateT) =>
+        this.makeScene(sceneShape, [], mateT),
+      );
     }
 
-    return validateAssemblyWithMates(this).then((result) => {
-      if (mode === 'error') {
-        const errDiag = result.diagnostics.find((d) => d.severity === 'error');
-        // Status-driven fallback: `over-constrained` / `did-not-converge`
-        // always carry an error-severity diagnostic per validator.ts, so the
-        // `errDiag` lookup catches them; the explicit status check below is
-        // a belt-and-suspenders guarantee for the spec wording.
-        if (errDiag) {
-          throw new KernelError(
-            'feature.invalid-args',
-            errDiag.message,
-            undefined,
-            errDiag.hint,
-          );
+    return Promise.all([validateAssemblyWithMates(this), mateTransformsPromise]).then(
+      ([result, mateT]) => {
+        if (mode === 'error') {
+          const errDiag = result.diagnostics.find((d) => d.severity === 'error');
+          // Status-driven fallback: `over-constrained` / `did-not-converge`
+          // always carry an error-severity diagnostic per validator.ts, so the
+          // `errDiag` lookup catches them; the explicit status check below is
+          // a belt-and-suspenders guarantee for the spec wording.
+          if (errDiag) {
+            throw new KernelError(
+              'feature.invalid-args',
+              errDiag.message,
+              undefined,
+              errDiag.hint,
+            );
+          }
+          if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
+            throw new KernelError(
+              'feature.invalid-args',
+              `assembly.solvedModel: validator reported status '${result.status}' for assembly '${this.name}'.`,
+              undefined,
+              `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
+            );
+          }
+          // error mode: warnings/info silently dropped per T9 spec.
+          return this.makeScene(sceneShape, [], mateT);
         }
-        if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
-          throw new KernelError(
-            'feature.invalid-args',
-            `assembly.solvedModel: validator reported status '${result.status}' for assembly '${this.name}'.`,
-            undefined,
-            `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
-          );
-        }
-        // error mode: warnings/info silently dropped per T9 spec.
-        return this.makeScene(sceneShape, []);
-      }
-      // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
-      return this.makeScene(sceneShape, result.diagnostics);
-    });
+        // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
+        return this.makeScene(sceneShape, result.diagnostics, mateT);
+      },
+    );
   }
 
   /**
@@ -709,24 +757,38 @@ export class Assembly {
    *
    * Per-part data is the assembly's authoring-time view: `name` from
    * `assembly.part(name, ...)`, `shape` from each part's `originalShape`,
-   * and `worldTransform = identity` (the lowered SceneBackend carries the
-   * FK-derived transforms). The Scene's `exportFn` closes over the
-   * upstream solvedAssembly / assemblyModel feature id; calling
-   * `Scene.toCompound()` / `Scene.toUnion()` records a downstream
-   * `assemblyExport` feature whose lowerer reads the SceneBackend output.
+   * and `worldTransform` from the v0.6 mate solver when mates are declared
+   * (Pattern A FK over `solveMates(arm, poses)`) or identity otherwise.
+   * Identity is a no-op fall-back for v0.5 callers and for kinematic-zero
+   * `model()` calls — the lowerer-side body-tree FK on `solvedAssembly`
+   * still applies for v0.5 `arm.revolute/.fixed/.prismatic/.ball` joints.
+   *
+   * Precedence: when a part has BOTH an authoring `.translate(...)` chain
+   * AND lives in a mate graph, the solver-assigned `worldTransform` wins on
+   * the capture-time Scene. Authors mating parts should therefore declare
+   * them in LOCAL frames (Fusion / OnShape / build123d convention).
+   *
+   * The Scene's `exportFn` closes over the upstream `solvedAssembly` /
+   * `assemblyModel` feature id; calling `Scene.toCompound()` /
+   * `Scene.toUnion()` records a downstream `assemblyExport` feature whose
+   * lowerer reads the SceneBackend output.
    *
    * `bboxFn` is intentionally a "lower the model first" stub: AABBs over
    * transformed parts are recompute-time data; expose them via a future
    * `RecomputeResult.scene.bbox` (Task 9) rather than synchronously
    * lowering inside `Scene.bbox`.
    */
-  private makeScene(sceneShape: Shape, warnings: readonly ValidatorDiagnostic[] = []): Scene {
+  private makeScene(
+    sceneShape: Shape,
+    warnings: readonly ValidatorDiagnostic[] = [],
+    matePartTransforms?: ReadonlyMap<string, Transform>,
+  ): Scene {
     const sceneFeatureId = sceneShape.id;
     const session = this.session;
     const sceneParts: ScenePart[] = this.parts.map((p) => ({
       name: p.name,
       shape: p.originalShape,
-      worldTransform: Transform.identity(),
+      worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
       ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
     }));
     return new Scene(
