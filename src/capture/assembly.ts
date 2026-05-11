@@ -9,6 +9,8 @@ import {
   type ConnectorOrigin,
   type ConnectorType,
 } from '../lib/mates/connector';
+import { parseConnectorRef, type MateRecord } from '../lib/mates/mate';
+import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
 import { currentValue, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -177,6 +179,9 @@ export class Assembly {
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
   private readonly joints: AssemblyJointStored[] = [];
+  /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
+   *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
+  private readonly mates: MateRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -372,6 +377,78 @@ export class Assembly {
   }
 
   /**
+   * Record a typed mate between two named connectors. Refs are
+   * `"<partName>.<connectorName>"` strings naming v0.6 mate-style connectors
+   * declared via `partRef.connector(name, opts)`. Compatibility between the
+   * mate type and the two connector types is validated at capture time
+   * (build123d-style early error), so authoring scripts surface bad pairs
+   * immediately instead of at solve / lower time.
+   *
+   * Errors:
+   *   - ref malformed (no dot, empty side)   → assembly.mate.connector-not-found
+   *   - unknown part name                    → assembly.mate.connector-not-found
+   *   - unknown connector on the part        → assembly.mate.connector-not-found
+   *   - mate / connector-pair mismatch       → assembly.mate.type-mismatch
+   *
+   * The mate record itself is surfaced on `Scene.mates` returned by
+   * `Assembly.model()` / `Assembly.solvedModel()`. No FK or constraint solve
+   * is performed here — mates carry the declarative pair for downstream
+   * consumers (validator, lowerer, future solver).
+   */
+  mate(name: string, aRef: string, bRef: string, type: MateType): this {
+    const a = this.resolveMateConnector(aRef);
+    const b = this.resolveMateConnector(bRef);
+    if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.type-mismatch: mate '${name}' type '${type}' is not compatible with the connector pair (${aRef}:${a.connector.type}, ${bRef}:${b.connector.type}).`,
+        undefined,
+        `invalid-args.assembly.mate-type-mismatch — '${type}' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.`,
+      );
+    }
+    this.mates.push({ name, a: aRef, b: bRef, type });
+    return this;
+  }
+
+  /** Resolve `"<partName>.<connectorName>"` to its part + connector. Throws
+   *  `assembly.mate.connector-not-found` on malformed ref, unknown part, or
+   *  unknown connector. Internal — keeps the diagnostic hint colocated with
+   *  `mate()` so callers don't need to interpret the `parseConnectorRef`
+   *  Error subclass. */
+  private resolveMateConnector(ref: string): { part: AssemblyPartStored; connector: Connector } {
+    let parsed: { partName: string; connectorName: string };
+    try {
+      parsed = parseConnectorRef(ref);
+    } catch {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: '${ref}' is not a 'partName.connectorName' reference.`,
+        undefined,
+        `invalid-args.assembly.mate-connector-not-found — pass refs of the form '<partName>.<connectorName>' where both names are declared on this assembly.`,
+      );
+    }
+    const part = this.parts.find((p) => p.name === parsed.partName);
+    if (!part) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: part '${parsed.partName}' (from ref '${ref}') is not declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.mate-connector-not-found — declare the part via arm.part('${parsed.partName}', ...) before referencing it in a mate.`,
+      );
+    }
+    const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (!connector) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mate.connector-not-found: connector '${parsed.connectorName}' is not declared on part '${parsed.partName}' (ref '${ref}').`,
+        part.id,
+        `invalid-args.assembly.mate-connector-not-found — register the connector via partRef.connector('${parsed.connectorName}', { type, origin, ... }) before referencing it in a mate.`,
+      );
+    }
+    return { part, connector };
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent
@@ -564,6 +641,7 @@ export class Assembly {
       },
       (op) => session.assemblyExport(sceneFeatureId, op),
       sceneFeatureId,
+      this.mates.length > 0 ? [...this.mates] : undefined,
     );
   }
 }

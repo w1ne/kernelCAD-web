@@ -12,6 +12,7 @@
 
 import type { Shape } from '../capture/proxy';
 import type { Connector } from '../lib/mates/connector';
+import type { MateRecord } from '../lib/mates/mate';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';
@@ -56,6 +57,12 @@ export type SceneExportFn = (op: 'compound' | 'union') => Shape;
 export class Scene implements Iterable<ScenePart> {
   readonly assemblyName: string;
   readonly parts: readonly ScenePart[];
+  /** Mate records declared via `arm.mate(name, aRef, bRef, type)` (v0.6 Task 5).
+   *  Scene-level (not per-part) — each entry references two parts by
+   *  `partName.connectorName` string. Undefined when the assembly declared no
+   *  mates, omitted from the field set for parity with the optional
+   *  `ScenePart.connectors` surface. */
+  readonly mates?: readonly MateRecord[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
@@ -91,12 +98,16 @@ export class Scene implements Iterable<ScenePart> {
     bboxFn: () => SceneBbox,
     exportFn?: SceneExportFn,
     sourceFeatureId?: string,
+    mates?: readonly MateRecord[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
     this.bboxFn = bboxFn;
     this.exportFn = exportFn;
     this._sourceFeatureId = sourceFeatureId;
+    if (mates !== undefined && mates.length > 0) {
+      this.mates = Object.freeze([...mates]);
+    }
   }
 
   /** Lazily-computed AABB over all transformed parts. */
