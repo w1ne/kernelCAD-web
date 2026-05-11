@@ -1,5 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { makeConnector, type Connector } from './connector';
+import { describe, it, expect, beforeAll } from 'vitest';
+import {
+  makeConnector,
+  resolveConnectorOrigin,
+  type Connector,
+  type ConnectorOrigin,
+} from './connector';
+import { CaptureSession } from '../../capture/captureSession';
+import { createApi } from '../../modules/api';
+import { initOcct } from '../../backends/occt/occtBackend';
 
 describe('Connector (numeric origin)', () => {
   it('creates a frame connector with Vec3 origin', () => {
@@ -23,5 +31,48 @@ describe('Connector (numeric origin)', () => {
       const c = makeConnector({ name: 't', type: t, origin: { kind: 'vec3', value: [0, 0, 0] } });
       expect(c.type).toBe(t);
     }
+  });
+});
+
+describe('Connector (topology-bound origin)', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it('resolves face-center to the face centroid Vec3', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);  // anchored at origin corner: spans [0,10]^3
+    const resolved = await resolveConnectorOrigin(box, {
+      kind: 'topology',
+      query: { kind: 'face-center', name: 'top' },
+    });
+    expect(resolved.kind).toBe('vec3');
+    // Top face centroid: x=5, y=5, z=10.
+    expect(resolved.value[0]).toBeCloseTo(5, 5);
+    expect(resolved.value[1]).toBeCloseTo(5, 5);
+    expect(resolved.value[2]).toBeCloseTo(10, 5);
+  });
+
+  it('throws assembly.connector.topology-not-resolvable on missing face name', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    await expect(
+      resolveConnectorOrigin(box, {
+        kind: 'topology',
+        query: { kind: 'face-center', name: 'nonexistent' },
+      }),
+    ).rejects.toThrow(/assembly\.connector\.topology-not-resolvable/);
+  });
+
+  it('passes through vec3 origin unchanged', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    const o: ConnectorOrigin = { kind: 'vec3', value: [1, 2, 3] };
+    const resolved = await resolveConnectorOrigin(box, o);
+    expect(resolved.kind).toBe('vec3');
+    expect(resolved.value).toEqual([1, 2, 3]);
   });
 });

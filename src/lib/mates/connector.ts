@@ -5,6 +5,8 @@
 // Type tag governs which mates can attach (see mateTypes.ts).
 
 import type { Vec3 } from '../../intent/types';
+import type { Shape } from '../../capture/proxy';
+import { resolveTopologyOriginOnBackend } from '../../backends/occt/connectorTopology';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';
 
@@ -47,4 +49,35 @@ export function makeConnector(input: MakeConnectorInput): Connector {
     axis: input.axis,
     normal: input.normal,
   };
+}
+
+/**
+ * Resolve a `ConnectorOrigin` against a part's `Shape`.
+ *
+ * - For `vec3` origins, returns the value unchanged.
+ * - For `topology` origins, lowers the shape and resolves the query against
+ *   the underlying OCCT geometry, returning a concrete `{ kind: 'vec3' }`.
+ *
+ * Throws an `Error` whose message starts with
+ * `assembly.connector.topology-not-resolvable` when:
+ *  - the named face/vertex/edge cannot be located on the shape, or
+ *  - the query kind is not yet implemented in this slice.
+ *
+ * v0.6 T2 scope: `face-center` / `face-normal` are implemented and resolve a
+ * face by its canonical name (`top` / `bottom` / `left` / `right` / `front` /
+ * `back`) on primitive shapes. `vertex` and `edge-axis` are typed but throw
+ * `topology-not-resolvable` — full label/vertex/edge resolution is followup
+ * work for v0.6.x. Callers convert the thrown message into a structured
+ * `assembly.connector.topology-not-resolvable` diagnostic in T8.
+ */
+export async function resolveConnectorOrigin(
+  shape: Shape,
+  origin: ConnectorOrigin,
+): Promise<{ kind: 'vec3'; value: Vec3 }> {
+  if (origin.kind === 'vec3') {
+    return { kind: 'vec3', value: origin.value };
+  }
+  const backend = await shape.lower();
+  const value = resolveTopologyOriginOnBackend(backend, origin.query);
+  return { kind: 'vec3', value };
 }
