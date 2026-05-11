@@ -6,6 +6,7 @@
 
 import type { Vec3 } from '../../intent/types';
 import type { Shape } from '../../capture/proxy';
+import type { FeatureRecord } from '../../intent/featureRecord';
 import { resolveTopologyOriginOnBackend } from '../../backends/occt/connectorTopology';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';
@@ -58,26 +59,39 @@ export function makeConnector(input: MakeConnectorInput): Connector {
  * - For `topology` origins, lowers the shape and resolves the query against
  *   the underlying OCCT geometry, returning a concrete `{ kind: 'vec3' }`.
  *
+ * The optional `records` argument is the capture session's
+ * `FeatureRecord[]` (e.g. from `session.getRecords()`). When supplied, the
+ * resolver can look up non-canonical face labels declared via the creating
+ * op's `faceLabels` metadata (e.g. `box(10, 10, 10, false, { faceLabels:
+ * { lid: 'top' } })`). When omitted, only the six canonical face names
+ * resolve and any non-canonical name throws `topology-not-resolvable`.
+ *
  * Throws an `Error` whose message starts with
  * `assembly.connector.topology-not-resolvable` when:
  *  - the named face/vertex/edge cannot be located on the shape, or
  *  - the query kind is not yet implemented in this slice.
  *
- * v0.6 T2 scope: `face-center` / `face-normal` are implemented and resolve a
- * face by its canonical name (`top` / `bottom` / `left` / `right` / `front` /
- * `back`) on primitive shapes. `vertex` and `edge-axis` are typed but throw
- * `topology-not-resolvable` — full label/vertex/edge resolution is followup
- * work for v0.6.x. Callers convert the thrown message into a structured
- * `assembly.connector.topology-not-resolvable` diagnostic in T8.
+ * v0.6 T2 scope: `face-center` / `face-normal` resolve by canonical face name
+ * or by a user-declared label from upstream `metadata.faceLabels` (when
+ * `records` is supplied). `edge-axis` resolves canonical box edges
+ * (`edge-<face>-<face>`) and canonical cylinder cap edges (`edge-top` /
+ * `edge-bottom`). `vertex` is deferred to v0.7 (no vertex-labeling
+ * infrastructure exists yet — see v0.7 followup). Callers convert the
+ * thrown message into a structured `assembly.connector.topology-not-resolvable`
+ * diagnostic in T8.
  */
 export async function resolveConnectorOrigin(
   shape: Shape,
   origin: ConnectorOrigin,
+  records?: readonly FeatureRecord[],
 ): Promise<{ kind: 'vec3'; value: Vec3 }> {
   if (origin.kind === 'vec3') {
     return { kind: 'vec3', value: origin.value };
   }
   const backend = await shape.lower();
-  const value = resolveTopologyOriginOnBackend(backend, origin.query);
+  const value = resolveTopologyOriginOnBackend(backend, origin.query, {
+    records,
+    consumerId: shape.id,
+  });
   return { kind: 'vec3', value };
 }

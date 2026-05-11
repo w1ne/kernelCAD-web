@@ -76,3 +76,132 @@ describe('Connector (topology-bound origin)', () => {
     expect(resolved.value).toEqual([1, 2, 3]);
   });
 });
+
+describe('Connector (non-canonical face labels)', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it("resolves a user-defined face label via faceLabels: { lid: 'top' }", async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
+    const resolved = await resolveConnectorOrigin(
+      box,
+      { kind: 'topology', query: { kind: 'face-center', name: 'lid' } },
+      session.getRecords(),
+    );
+    expect(resolved.kind).toBe('vec3');
+    // Top face center = (5, 5, 10) on a 10x10x10 box anchored at origin corner.
+    expect(resolved.value[0]).toBeCloseTo(5, 5);
+    expect(resolved.value[1]).toBeCloseTo(5, 5);
+    expect(resolved.value[2]).toBeCloseTo(10, 5);
+  });
+
+  it('throws topology-not-resolvable when records are missing and label is non-canonical', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
+    // Without records, only canonical names should work; 'lid' is non-canonical.
+    await expect(
+      resolveConnectorOrigin(box, {
+        kind: 'topology',
+        query: { kind: 'face-center', name: 'lid' },
+      }),
+    ).rejects.toThrow(/assembly\.connector\.topology-not-resolvable/);
+  });
+});
+
+describe('Connector (vertex queries)', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it('throws topology-not-resolvable for vertex queries (deferred to v0.7)', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    await expect(
+      resolveConnectorOrigin(
+        box,
+        { kind: 'topology', query: { kind: 'vertex', name: 'corner-tfr' } },
+        session.getRecords(),
+      ),
+    ).rejects.toThrow(/vertex labeling not yet supported|vertex query/);
+  });
+});
+
+describe('Connector (edge-axis queries)', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it('resolves a canonical box edge axis by name (edge-top-front)', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    // 'edge-top-front' on a 10x10x10 box anchored at origin = edge at z=10, y=0,
+    // running along X from (0, 0, 10) to (10, 0, 10). Midpoint = (5, 0, 10).
+    const resolved = await resolveConnectorOrigin(
+      box,
+      { kind: 'topology', query: { kind: 'edge-axis', name: 'edge-top-front' } },
+      session.getRecords(),
+    );
+    expect(resolved.kind).toBe('vec3');
+    expect(resolved.value[0]).toBeCloseTo(5, 5);
+    expect(resolved.value[1]).toBeCloseTo(0, 5);
+    expect(resolved.value[2]).toBeCloseTo(10, 5);
+  });
+
+  it('resolves canonical box edge "edge-right-top" (Y-running edge at x=max,z=max)', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    const resolved = await resolveConnectorOrigin(
+      box,
+      { kind: 'topology', query: { kind: 'edge-axis', name: 'edge-right-top' } },
+      session.getRecords(),
+    );
+    expect(resolved.kind).toBe('vec3');
+    // Right(x=10) ∩ Top(z=10): edge running along Y from (10,0,10) to (10,10,10).
+    expect(resolved.value[0]).toBeCloseTo(10, 5);
+    expect(resolved.value[1]).toBeCloseTo(5, 5);
+    expect(resolved.value[2]).toBeCloseTo(10, 5);
+  });
+
+  it('throws topology-not-resolvable on unknown edge name', async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    const box = api.box(10, 10, 10);
+    await expect(
+      resolveConnectorOrigin(
+        box,
+        { kind: 'topology', query: { kind: 'edge-axis', name: 'edge-bogus' } },
+        session.getRecords(),
+      ),
+    ).rejects.toThrow(/assembly\.connector\.topology-not-resolvable/);
+  });
+});
+
+describe('Connector (transformed primitives)', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it("resolves face-center correctly after .translate", async () => {
+    const session = new CaptureSession();
+    const api = createApi({ session });
+    // Box anchored at origin corner; translated by (5, 0, 0) → spans [5,15] x [0,10] x [0,10].
+    const box = api.box(10, 10, 10).translate(5, 0, 0);
+    const resolved = await resolveConnectorOrigin(
+      box,
+      { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
+      session.getRecords(),
+    );
+    expect(resolved.kind).toBe('vec3');
+    // Top face center = (x_min+x_max)/2=10, (y_min+y_max)/2=5, z=z_max=10.
+    expect(resolved.value[0]).toBeCloseTo(10, 5);
+    expect(resolved.value[1]).toBeCloseTo(5, 5);
+    expect(resolved.value[2]).toBeCloseTo(10, 5);
+  });
+});

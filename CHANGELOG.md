@@ -195,6 +195,22 @@ npm run dev
   an axle along +Y). Identity `[0, 0, 1]` is a no-op; antipodal
   `[0, 0, -1]` is a deterministic 180° around X. Zero vector throws
   `feature.invalid-args`; non-unit input is normalized.
+- Connector topology-bound origins extended for v0.6 assembly mates:
+  `face-center` / `face-normal` queries now resolve user-declared face
+  labels (declared via `box(..., { faceLabels: { lid: 'top' } })` and
+  peers) in addition to the six canonical face names, by walking the
+  capture session's upstream feature records — same machinery as
+  fillet/chamfer/shell label resolution. `edge-axis` queries resolve
+  canonical box edges by name (`edge-<face1>-<face2>`, e.g.
+  `edge-top-front`; order insignificant) and canonical cylinder cap
+  edges (`edge-top` / `edge-bottom`). Resolution survives `.translate`
+  and `.rotate` because the bounding-box plane match tracks transforms.
+  Post-boolean shapes where the canonical face/edge no longer exists
+  surface a clean `assembly.connector.topology-not-resolvable`
+  diagnostic — full historyMap-based resolution after booleans is a
+  v0.7 task. Vertex queries (`{ kind: 'vertex', name: '...' }`) are
+  deferred to v0.7 (no vertex-labeling infrastructure exists yet) and
+  raise `topology-not-resolvable: vertex labeling not yet supported`.
 
 ### Changed
 
