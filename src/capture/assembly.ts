@@ -11,6 +11,7 @@ import {
 } from '../lib/mates/connector';
 import { parseConnectorRef, type MateRecord } from '../lib/mates/mate';
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
 import { currentValue, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -606,11 +607,28 @@ export class Assembly {
    * so studio-driven param edits re-pose the rendered scene reactively
    * without re-running the script.
    *
-   * Returns a frozen `Scene` (multi-body view). Use
-   * `Scene.toCompound()` for a TopoDS_Compound (lossless) or
+   * Returns a `Promise<Scene>` (multi-body view, frozen). The Promise
+   * wraps the v0.6 mate-aware validator pass — the `opts.validate` gate
+   * runs `validateAssemblyWithMates(this)` and either attaches
+   * diagnostics to `scene.warnings` (`'warn'`, default), throws on the
+   * first error-severity diagnostic (`'error'`), or skips validation
+   * (`'off'`). The default flips to `'error'` when
+   * `KERNELCAD_VALIDATE_DEFAULT=error` is set in the environment (T10
+   * wires this from `kernelcad evaluate`).
+   *
+   * Capture-time pose validation (unknown joint, ball-vs-scalar pose
+   * shape) throws SYNCHRONOUSLY from this method — the validator gate
+   * runs only after the upstream `solvedAssembly` feature has been
+   * recorded, so callers using `expect(() => arm.solvedModel(...)).toThrow`
+   * for pose errors keep working without rewriting to `.rejects.toThrow`.
+   *
+   * Use `Scene.toCompound()` for a TopoDS_Compound (lossless) or
    * `Scene.toUnion()` for an explicit boolean fuse (lossy).
    */
-  solvedModel(poses: Poses): Scene {
+  solvedModel(
+    poses: Poses,
+    opts?: { validate?: 'warn' | 'error' | 'off' },
+  ): Promise<Scene> {
     if (this.parts.length === 0) {
       throw new KernelError(
         'feature.invalid-args',
@@ -619,8 +637,52 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
     }
+    // Synchronous phase — must throw (not reject) so existing
+    // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time
+    // tests continue to pass without conversion. `session.solvedAssembly`
+    // is the source of `invalid-args.solvedModel.{unknown-joint,pose-shape}`.
     const sceneShape = this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
-    return this.makeScene(sceneShape);
+
+    // Mode resolution: explicit opts win; otherwise read the env override
+    // (T10 sets this from `kernelcad evaluate`). Default for everything else
+    // is `'warn'` — never breaking, never silent.
+    const envDefault = process.env.KERNELCAD_VALIDATE_DEFAULT === 'error' ? 'error' : 'warn';
+    const mode: 'warn' | 'error' | 'off' = opts?.validate ?? envDefault;
+
+    if (mode === 'off') {
+      // No validation, empty warnings — same Scene shape as v0.5 callers got.
+      return Promise.resolve(this.makeScene(sceneShape, []));
+    }
+
+    return validateAssemblyWithMates(this).then((result) => {
+      if (mode === 'error') {
+        const errDiag = result.diagnostics.find((d) => d.severity === 'error');
+        // Status-driven fallback: `over-constrained` / `did-not-converge`
+        // always carry an error-severity diagnostic per validator.ts, so the
+        // `errDiag` lookup catches them; the explicit status check below is
+        // a belt-and-suspenders guarantee for the spec wording.
+        if (errDiag) {
+          throw new KernelError(
+            'feature.invalid-args',
+            errDiag.message,
+            undefined,
+            errDiag.hint,
+          );
+        }
+        if (result.status === 'over-constrained' || result.status === 'did-not-converge') {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solvedModel: validator reported status '${result.status}' for assembly '${this.name}'.`,
+            undefined,
+            `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
+          );
+        }
+        // error mode: warnings/info silently dropped per T9 spec.
+        return this.makeScene(sceneShape, []);
+      }
+      // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
+      return this.makeScene(sceneShape, result.diagnostics);
+    });
   }
 
   /**
@@ -658,7 +720,7 @@ export class Assembly {
    * `RecomputeResult.scene.bbox` (Task 9) rather than synchronously
    * lowering inside `Scene.bbox`.
    */
-  private makeScene(sceneShape: Shape): Scene {
+  private makeScene(sceneShape: Shape, warnings: readonly ValidatorDiagnostic[] = []): Scene {
     const sceneFeatureId = sceneShape.id;
     const session = this.session;
     const sceneParts: ScenePart[] = this.parts.map((p) => ({
@@ -681,6 +743,7 @@ export class Assembly {
       (op) => session.assemblyExport(sceneFeatureId, op),
       sceneFeatureId,
       this.mates.length > 0 ? [...this.mates] : undefined,
+      warnings,
     );
   }
 }

@@ -13,6 +13,7 @@
 import type { Shape } from '../capture/proxy';
 import type { Connector } from '../lib/mates/connector';
 import type { MateRecord } from '../lib/mates/mate';
+import type { ValidatorDiagnostic } from '../lib/mates/validator';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';
@@ -63,6 +64,14 @@ export class Scene implements Iterable<ScenePart> {
    *  mates, omitted from the field set for parity with the optional
    *  `ScenePart.connectors` surface. */
   readonly mates?: readonly MateRecord[];
+  /** Validator diagnostics attached by `Assembly.solvedModel({validate: 'warn'})`
+   *  (v0.6 Task 9). Populated from `validateAssemblyWithMates(arm)` when the
+   *  gate is in `warn` mode; empty when validation is skipped (`mode: 'off'`)
+   *  or when `mode: 'error'` is used (in which case error-severity diagnostics
+   *  throw, and the surviving warnings/info are silently dropped). Always
+   *  present (possibly empty); never undefined, so consumers don't need a
+   *  presence check. */
+  readonly warnings: readonly ValidatorDiagnostic[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
@@ -99,6 +108,7 @@ export class Scene implements Iterable<ScenePart> {
     exportFn?: SceneExportFn,
     sourceFeatureId?: string,
     mates?: readonly MateRecord[],
+    warnings?: readonly ValidatorDiagnostic[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
@@ -108,6 +118,12 @@ export class Scene implements Iterable<ScenePart> {
     if (mates !== undefined && mates.length > 0) {
       this.mates = Object.freeze([...mates]);
     }
+    // `warnings` is always present (possibly empty) — keep it a frozen array
+    // so callers can `.some(...)` / iterate without a null-check. Inserted as
+    // the last constructor arg so existing v0.5 call sites (Scene built by
+    // SolvedKinematics.toScene, Assembly.makeScene before T9) keep working
+    // without an explicit `[]`.
+    this.warnings = Object.freeze(warnings ? [...warnings] : []);
   }
 
   /** Lazily-computed AABB over all transformed parts. */

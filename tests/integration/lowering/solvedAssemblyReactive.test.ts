@@ -48,7 +48,7 @@ describe('solvedAssembly lowering', () => {
       const base  = arm.part('base',  box(10, 10, 10));
       const upper = arm.part('upper', box(10, 10, 30));
       arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 10] });
-      return arm.solvedModel({ yaw: 0 }).toUnion();
+      return (await arm.solvedModel({ yaw: 0 })).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     expect(shape).toBeDefined();
@@ -70,7 +70,7 @@ describe('solvedAssembly lowering', () => {
       // Upper arm extends 30mm along +X (so yaw=90° rotates it onto +Y).
       const upper = arm.part('upper', box(30, 10, 10).translate(15, 0, 0));
       arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-      return arm.solvedModel({ yaw: 90 }).toUnion();
+      return (await arm.solvedModel({ yaw: 90 })).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     expect(shape).toBeDefined();
@@ -99,7 +99,7 @@ describe('solvedAssembly lowering', () => {
         // Long upper arm extending +X (so yaw=90° rotates it onto +Y).
         const upper = arm.part('upper', box(60, 10, 10).translate(30, 0, 0));
         arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-        return arm.solvedModel({ yaw: yawDeg }).toUnion();
+        return (await arm.solvedModel({ yaw: yawDeg })).toUnion();
       `,
     });
 
@@ -163,7 +163,7 @@ describe('solvedAssembly lowering', () => {
         const base = arm.part('base', box(10, 10, 10));
         const tip  = arm.part('tip',  box(10, 10, 50));
         arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
-        return arm.solvedModel({ wrist: [xDeg, 0, 0] }).toUnion();
+        return (await arm.solvedModel({ wrist: [xDeg, 0, 0] })).toUnion();
       `,
     });
 

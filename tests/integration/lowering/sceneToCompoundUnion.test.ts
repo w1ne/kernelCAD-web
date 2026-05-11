@@ -154,7 +154,7 @@ describe('Scene.toCompound + Scene.toUnion', () => {
         const base = arm.part('base', box(10, 10, 10));
         const tip  = arm.part('tip',  box(10, 10, 50));
         arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
-        return arm.solvedModel({ wrist: [xDeg, 0, 0] }).toUnion();
+        return (await arm.solvedModel({ wrist: [xDeg, 0, 0] })).toUnion();
       `,
     });
     expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
