@@ -24,6 +24,7 @@ import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
 import { runScript } from '../../../src/script-runtime/runScript';
+import { checkInterference } from '../../../src/script-runtime/checkInterference';
 import { Scene } from '../../../src/intent/scene';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -98,4 +99,22 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(r).toBeGreaterThan(50);
     expect(r).toBeLessThan(300);
   }, 120_000);
+
+  it('reports zero interferences at default poses', async () => {
+    // Industry-standard clash detection (BREP common-volume) over the
+    // 13-part mate-driven assembly. The v0.6 hero ships with all parts
+    // verified non-interfering at the default articulation
+    // (baseYawDeg=20°, shoulderPitchDeg=35°, elbowPitchDeg=-55°).
+    const code = await readFile(EXAMPLE_ABSOLUTE, 'utf8');
+    const result = await checkInterference({
+      code,
+      fileName: EXAMPLE_PATH,
+      scriptDir: dirname(EXAMPLE_ABSOLUTE),
+      epsilonMm3: 0.01,
+      ignorePairs: new Set<string>(),
+    });
+
+    expect(result.partCount).toBe(13);
+    expect(result.pairs).toEqual([]);
+  }, 180_000);
 });
