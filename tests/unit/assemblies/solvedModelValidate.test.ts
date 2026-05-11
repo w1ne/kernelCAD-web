@@ -49,8 +49,15 @@ describe('Assembly.solvedModel({validate})', () => {
 
   it('throws on validation issue when mode=error and an error-severity diagnostic exists', async () => {
     const { arm } = makeTriangleArm();
+    // The triangle fixture has 3 unit boxes at the same world origin (because
+    // their connectors mate at [0,0,0]), so the v0.6 hard gate sees pairwise
+    // BREP overlap and throws on `assembly.interference.overlap` BEFORE the
+    // mate-solver's over-constrained status is reached. Either error-severity
+    // diagnostic satisfies the gate; the regex covers both so a future
+    // re-ordering (e.g. interferences computed only when mate-solver clean)
+    // doesn't silently rewrite the assertion.
     await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(
-      /over-constrained|invalid-args/,
+      /over-constrained|invalid-args|overlap|interference/,
     );
   });
 
@@ -84,6 +91,53 @@ describe('Assembly.solvedModel({validate})', () => {
       else process.env.KERNELCAD_VALIDATE_DEFAULT = prev;
     }
   });
+});
+
+describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', () => {
+  it('throws when two parts intersect (interference detected)', async () => {
+    // Build a fixture: two boxes overlapping in world coords, mated fastened at
+    // colliding origin. With validate:'error', the gate lowers the assembly,
+    // runs the BREP interference sweep, finds 100% overlap, and throws.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10)) // identical box at same world pos = full overlap
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+    await expect(arm.solvedModel({}, { validate: 'error' }))
+      .rejects.toThrow(/assembly\.interference\.overlap|overlap/i);
+  }, 60_000);
+
+  it('does NOT auto-run interference under validate:"warn"', async () => {
+    // Same fixture but with warn mode — should return a Scene, may have warnings,
+    // but should not throw and should NOT include interference results.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+    const scene = await arm.solvedModel({}, { validate: 'warn' });
+    expect(scene.warnings.some((w) => w.code === 'assembly.interference.overlap')).toBe(false);
+  }, 60_000);
+
+  it('does not throw on a clean (non-clashing) assembly under validate:"error"', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 10] } });
+    arm
+      .part('b', kcad.box(5, 5, 5))
+      .connector('bot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.top', 'b.bot', 'fastened');
+    // a's top at world Z=10 (local-frame box origin at world 0), b's bot at world Z=10.
+    // The two boxes touch on a face (zero overlap volume) — should NOT register.
+    await expect(arm.solvedModel({}, { validate: 'error' })).resolves.not.toThrow();
+  }, 60_000);
 });
 
 describe('Assembly.solvedModel — mate-driven placement (Pattern A)', () => {

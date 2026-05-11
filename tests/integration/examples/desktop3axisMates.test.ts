@@ -26,6 +26,8 @@ import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { checkInterference } from '../../../src/script-runtime/checkInterference';
 import { Scene } from '../../../src/intent/scene';
+import { CaptureSession } from '../../../src/capture/captureSession';
+import { createApi } from '../../../src/modules/api';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
@@ -117,4 +119,23 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(result.partCount).toBe(13);
     expect(result.pairs).toEqual([]);
   }, 180_000);
+
+  it('would throw under validate:error if interferences existed (sanity check on the gate)', async () => {
+    // Build a 2-part fixture with 100% overlap — should throw at the gate.
+    // This is a separate test from the hero clean assertion; it proves the
+    // validate:'error' gate now structurally rejects clashing assemblies, so
+    // if a future regression slips overlapping geometry into the hero, the
+    // hero's own `evaluates end-to-end with zero error diagnostics` test fires.
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('clash-fixture');
+    arm
+      .part('p', kcad.box(10, 10, 10))
+      .connector('c', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('q', kcad.box(10, 10, 10))
+      .connector('c', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'p.c', 'q.c', 'fastened');
+    await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(/interference|clash|overlap/i);
+  }, 60_000);
 });

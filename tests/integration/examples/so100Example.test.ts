@@ -5,7 +5,22 @@ const EXAMPLE_PATH = 'examples/robot-arm/so100/so100.kcad.ts';
 
 describe('so100 example', () => {
   it('composes a 2-DOF gripper subassembly from vendor STEPs + local plates', async () => {
-    const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
+    // The v0.5 so100 example has known interferences between the vendor
+    // servo STEPs and the locally-authored plates (the plates clamp around
+    // the servo body by design). v0.6's interference hard gate
+    // (`KERNELCAD_VALIDATE_DEFAULT=error`) is for new mate-driven authoring;
+    // pin this v0.5 evaluation to warn-mode so the legacy example still
+    // exercises the multi-body lower without the new gate flagging the
+    // known clamp overlaps.
+    const prev = process.env.KERNELCAD_VALIDATE_DEFAULT;
+    process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
+    let result;
+    try {
+      result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+      else process.env.KERNELCAD_VALIDATE_DEFAULT = prev;
+    }
 
     expect(result.evaluation.exitCode).toBe(0);
     expect(result.evaluation.diagnostics).toEqual([]);

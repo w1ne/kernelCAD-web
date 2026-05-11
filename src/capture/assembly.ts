@@ -798,8 +798,27 @@ export class Assembly {
       );
     }
 
-    return Promise.all([validateAssemblyWithMates(this), mateTransformsPromise]).then(
-      ([result, mateT]) => {
+    // Under `'error'` mode (the harness gate set by `kernelcad evaluate`), also
+    // run pairwise BREP interference detection and fold the results into the
+    // validator. Solid bodies sharing volume is mechanically invalid, so the
+    // harness MUST refuse to ship a clashing assembly. The interference check
+    // is BREP-level and expensive (lowers the assembly + boolean intersects
+    // each bbox-overlapping pair), so we deliberately skip it under
+    // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
+    // call cheap — interference is opt-in via the gate.
+    const interferencePromise: Promise<readonly import('../script-runtime/checkInterference').InterferencePair[] | undefined> =
+      mode === 'error'
+        ? this.computeInterferencesForGate(sceneShape)
+        : Promise.resolve(undefined);
+
+    return Promise.all([
+      interferencePromise,
+      mateTransformsPromise,
+    ]).then(async ([interferencePairs, mateT]) => {
+      const result = await validateAssemblyWithMates(this, interferencePairs);
+      return { result, mateT };
+    }).then(
+      ({ result, mateT }) => {
         if (mode === 'error') {
           const errDiag = result.diagnostics.find((d) => d.severity === 'error');
           // Status-driven fallback: `over-constrained` / `did-not-converge`
@@ -848,6 +867,51 @@ export class Assembly {
     }
     const sceneShape = this.session.assemblyModel(this.name, this.parts);
     return this.makeScene(sceneShape);
+  }
+
+  /**
+   * Lower the just-recorded `solvedAssembly` and run pairwise BREP
+   * interference detection so the validate-gate can include
+   * `assembly.interference.overlap` error-severity diagnostics in its
+   * decision.
+   *
+   * This is the agent-safety closure for v0.6: `kernelcad evaluate`
+   * (`KERNELCAD_VALIDATE_DEFAULT=error`) MUST refuse a clashing assembly,
+   * not silently emit it. Reuses `detectInterferences` (BREP common-volume,
+   * bbox pre-filter) on the lowered `SceneBackend` — same code path as the
+   * standalone `kernelcad interference` CLI.
+   *
+   * Cost: full lower of the assembly's records + O(n²) bbox overlaps + a
+   * boolean intersect per overlapping pair. Only called when
+   * `opts.validate === 'error'`; cheap modes (`'warn'`, `'off'`) skip this.
+   */
+  private async computeInterferencesForGate(
+    sceneShape: Shape,
+  ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../backends/occt/occtBackend');
+    const { isSceneBackend } = await import('../backends/sceneBackend');
+    const { detectInterferences } = await import('../script-runtime/checkInterference');
+
+    await initOcct();
+    const engine = new RecomputeEngine(createOcctLowerer(this.session));
+    const records = this.session.getRecords();
+    const r = await engine.run(records, {
+      paramTable: this.session.paramTable,
+      gatedFeatureNames: this.session.gatedFeatureNames,
+    });
+
+    // If the lower failed, defer to the validator's other diagnostics; an
+    // un-lowerable assembly already has bigger problems. Return an empty
+    // list so the gate doesn't double-flag the failure as interference.
+    const lowered = r.shapes.get(sceneShape.id);
+    if (!lowered || !isSceneBackend(lowered)) {
+      return [];
+    }
+
+    const result = detectInterferences(lowered, 0.01, new Set<string>());
+    return result.pairs;
   }
 
   /**

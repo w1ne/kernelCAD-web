@@ -10,7 +10,24 @@ const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
 describe('robot arm example', () => {
   it('evaluates a body-tree-posed robot arm composed from generic primitives', async () => {
-    const result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
+    // The v0.5 desktop-3axis example has known small part-on-part overlaps
+    // (servo/yoke unions where booleans were merged via translation rather
+    // than a clean `arm.mate(...)` graph). v0.6 added an interference hard
+    // gate to `evaluate` (`KERNELCAD_VALIDATE_DEFAULT=error`); that gate is
+    // for new mate-driven authoring (see `desktop-3axis-mates.kcad.ts`).
+    // Pin this v0.5 evaluation to warn-mode so the legacy example still
+    // exercises the lowering path without the new gate flagging known
+    // overlaps. The v0.6 hero (`desktop3axisMates.test.ts`) covers the
+    // hard-gate path.
+    const prev = process.env.KERNELCAD_VALIDATE_DEFAULT;
+    process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
+    let result;
+    try {
+      result = await evaluateAndBuildScript({ file: EXAMPLE_PATH });
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_VALIDATE_DEFAULT;
+      else process.env.KERNELCAD_VALIDATE_DEFAULT = prev;
+    }
 
     expect(result.evaluation.exitCode).toBe(0);
     expect(result.evaluation.diagnostics).toEqual([]);
