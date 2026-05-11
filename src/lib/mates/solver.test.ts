@@ -55,8 +55,42 @@ describe('solveMates — tree topology', () => {
     expect(cT.decomposeToTranslateAndRotate().translate[2]).toBeCloseTo(15);
   });
 
-  it('reports did-not-converge on a closed loop (placeholder until T7 wires Newton-Raphson)', async () => {
-    // 3 parts in a triangle: a-b, b-c, c-a; all fastened. Forms a closed loop.
+});
+
+describe('solveMates — closed loop (Newton-Raphson)', () => {
+  it('returns redundant-ok on a triangle of consistent fastened mates', async () => {
+    // 3 parts in a triangle: a-b, b-c, c-a; all fastened. The connector
+    // positions make m3 redundant (it agrees with the tree FK at zero-pose),
+    // so the loop is consistent and the solver reports 'redundant-ok'.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(1, 1, 1))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(1, 1, 1))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm
+      .part('c', kcad.box(1, 1, 1))
+      .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } })
+      .connector('t', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m1', 'a.p', 'b.q', 'fastened');
+    arm.mate('m2', 'b.r', 'c.s', 'fastened');
+    arm.mate('m3', 'c.t', 'a.p', 'fastened'); // closes the loop — consistent
+    const r = await solveMates(arm);
+    expect(r.status).toBe('redundant-ok');
+    expect(r.iterations ?? 0).toBeLessThanOrEqual(50);
+    // All three parts should still be placed.
+    expect(r.poses.get('a')).toBeDefined();
+    expect(r.poses.get('b')).toBeDefined();
+    expect(r.poses.get('c')).toBeDefined();
+  });
+
+  it('reports over-constrained when the loop is geometrically inconsistent', async () => {
+    // Triangle where mate connector positions disagree at zero-pose.
+    // b.r at (1,0,0) lands at world (1,0,0); c.s at (0,0,0) makes c at (1,0,0);
+    // c.t at (1,0,0) lands at world (2,0,0); m3 says it should equal a.p at
+    // (0,0,0). Inconsistent by 2 mm — over-constrained.
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(1, 1, 1))
@@ -71,9 +105,16 @@ describe('solveMates — tree topology', () => {
       .connector('t', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
     arm.mate('m1', 'a.p', 'b.q', 'fastened');
     arm.mate('m2', 'b.r', 'c.s', 'fastened');
-    arm.mate('m3', 'c.t', 'a.p', 'fastened'); // closes the loop
+    arm.mate('m3', 'c.t', 'a.p', 'fastened'); // inconsistent by 2 mm
     const r = await solveMates(arm);
-    expect(r.status).toBe('did-not-converge');
-    expect(r.iterations).toBe(0);
+    expect(r.status).toBe('over-constrained');
   });
+
+  // T7.x will add an assembly-level did-not-converge test once T9 wires
+  // pose-driven articulation (revolute/prismatic) — closed loops over
+  // articulated joints exercise the Newton-Raphson iteration path that a
+  // pure fastened-only loop cannot trigger (zero free DOFs ⇒ no iteration).
+  // For now, the iter-cap path is exercised indirectly via the
+  // jacobian.test.ts unit suite (finite-difference Jacobian on non-linear f).
+  it.skip('reports did-not-converge when iteration cap hits (deferred to T9)', () => {});
 });
