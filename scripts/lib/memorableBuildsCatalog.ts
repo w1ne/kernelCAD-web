@@ -59,7 +59,7 @@ const CATALOG: Record<CatalogVersion, CatalogCandidate[]> = {
     { slug: 'articulated-desk-lamp', recommended: true },
     { slug: 'crank-slider-piston', recommended: false },
     { slug: 'robot-finger', recommended: false },
-    { slug: 'so100-mates', recommended: false },
+    { slug: 'desktop-3axis-mates', recommended: false },
   ],
   'v0.7': [
     { slug: 'computer-mouse-shell', recommended: true },
