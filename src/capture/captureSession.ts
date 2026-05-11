@@ -17,6 +17,40 @@ import { toParam } from '../runtime/editableHelpers';
 import type { Editable } from '../runtime/paramRef';
 import type { ShapeBackend } from '../backends/backend';
 import { KernelError } from '../intent/kernelError';
+import type { Connector } from '../lib/mates/connector';
+import type { MateType } from '../lib/mates/mateTypes';
+
+/**
+ * Encoded mate / connector data attached to `solvedAssembly` metadata so the
+ * OCCT lowerer can run mate-FK at recompute time. Connectors here have their
+ * origins pre-resolved to numeric `vec3` (topology queries resolved upstream
+ * in `Assembly.solvedModel` before this method runs). Mate poses are encoded
+ * as `Param` (just like joint poses) so studio-driven param edits re-pose
+ * the rendered scene reactively.
+ *
+ * - `connectorsByPartId` — keyed by part FeatureId; each entry holds the
+ *   pre-resolved Connector list referenced by mates on this assembly.
+ *   Parts with no mate connectors may be omitted.
+ * - `mates` — every MateRecord declared on the assembly, with `pose`
+ *   replaced by a `Param`-shaped encoding when present.
+ */
+export interface SolvedAssemblyMateMetadata {
+  readonly connectorsByPartId: Record<FeatureId, readonly Connector[]>;
+  readonly mates: readonly EncodedMateRecord[];
+}
+
+/** Mate record with `pose` encoded for the recompute pipeline. Mirrors
+ *  `EncodedPose` on joints — scalar Params for revolute/prismatic/etc.,
+ *  triple for ball. */
+export interface EncodedMateRecord {
+  readonly name: string;
+  readonly a: string;
+  readonly b: string;
+  readonly type: MateType;
+  readonly pose?:
+    | { kind: 'scalar'; value: Param }
+    | { kind: 'ball'; value: [Param, Param, Param] };
+}
 
 export { validateFaceLabels } from './faceLabels';
 
@@ -389,6 +423,7 @@ export class CaptureSession {
     parts: readonly AssemblyPartRef[],
     joints: readonly { id: FeatureId; name: string }[],
     poses: Record<string, Editable<number> | [Editable<number>, Editable<number>, Editable<number>]>,
+    mateMetadata?: SolvedAssemblyMateMetadata,
   ): Shape {
     if (parts.length === 0) {
       throw new Error('assembly.solvedModel requires at least one part');
@@ -478,6 +513,21 @@ export class CaptureSession {
         partIds: parts.map(part => part.id),
         jointIds: joints.map(j => j.id),
         poses: encodedPoses,
+        // v0.6 T17 (mate-FK at lower-time): mate metadata flows here when the
+        // assembly declares mates, so the lowerer can run `mateFk` and put the
+        // mate-derived world transforms on the SceneBackend. Without this
+        // metadata the lowerer falls back to v0.5 body-tree FK only and parts
+        // mated via .connector/.mate sit at the LOCAL origin in the rendered
+        // output. The `connectorsByPartId` map holds connectors whose origins
+        // are already resolved to numeric `vec3` (topology queries lowered
+        // upstream in `Assembly.solvedModel`); `mates[].pose` is encoded as
+        // `Param` so reactive param edits re-pose without rerunning capture.
+        ...(mateMetadata !== undefined && mateMetadata.mates.length > 0
+          ? {
+              mates: mateMetadata.mates,
+              connectorsByPartId: mateMetadata.connectorsByPartId,
+            }
+          : {}),
       },
     });
   }

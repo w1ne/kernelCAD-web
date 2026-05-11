@@ -34,6 +34,7 @@
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
 import type { NumericPoses } from '../../capture/forwardKinematics';
 import { KernelError } from '../../intent/kernelError';
+import type { FeatureId } from '../../intent/types';
 // Newton-Raphson machinery for articulated closed loops (T7.x): the
 // finite-diff Jacobian + small-matrix linear solver from
 // `../numeric/jacobian.ts` (unit-tested there). For the v0.6.0 fastened-
@@ -200,6 +201,174 @@ export async function solveMates(
   //    loop Newton-Raphson lands in T7.x once T9 wires pose-driven articulation
   //    through the solver.
   return loopSolve(mates, partByName, loopMates, worldT);
+}
+
+/**
+ * Resolved part data for the pure `mateFk` function. Carries the FeatureId
+ * (so the lowerer can index its SceneBackend parts by FeatureId — matching
+ * `forwardKinematics`'s return shape), the part name (the mate graph keys
+ * connectors as `"<partName>.<connectorName>"`), and connectors whose
+ * origins have already been resolved to numeric `vec3` (topology queries
+ * resolved upstream — at capture time during `Assembly.solvedModel`).
+ *
+ * The lowerer's `solvedAssembly` case (and any other recompute-time caller)
+ * builds these from the encoded `solvedAssembly` metadata; `solveMates`
+ * builds them in-process from the live `Assembly` handle.
+ */
+export interface ResolvedMatePart {
+  readonly id: FeatureId;
+  readonly name: string;
+  /** Connectors with numeric `vec3` origins only — topology origins must be
+   *  resolved by the caller before passing through here. */
+  readonly connectors: readonly Connector[];
+}
+
+/**
+ * Pure mate-FK. Walks the mate graph (BFS spanning tree from `parts[0]`)
+ * and composes per-part world transforms in the assembly root frame.
+ *
+ * Pure data in / pure data out — no `Assembly` handle, no `ParamTable`, no
+ * topology resolution. Mate poses are read directly from `numericPoses`
+ * (caller resolves any ParamRefs / capture-time `mate.pose` ahead of time);
+ * connector origins are read straight off `parts[i].connectors[j].origin`
+ * (caller resolves any `topology` queries to `vec3` ahead of time).
+ *
+ * Returns a `Map<FeatureId, Transform>` keyed by part FeatureId — matching
+ * the return shape of `forwardKinematics`. Disconnected parts default to
+ * identity. Loop-closure mates are dropped from the tree walk (the loop
+ * residual lives in `solveMates`); when only tree mates are present this is
+ * functionally complete for the OCCT lowerer's geometry placement.
+ *
+ * Errors:
+ *   - mate ref points at an unknown part / unknown connector -> KernelError
+ *     (`assembly.mate.connector-not-found`)
+ *   - unsupported mate type -> KernelError (`mate-type-unsupported`)
+ */
+export function mateFk(
+  parts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+  numericPoses: NumericPoses,
+): Map<FeatureId, Transform> {
+  const worldT = new Map<FeatureId, Transform>();
+  if (parts.length === 0) return worldT;
+
+  // 1. Adjacency: part-name -> array of mate edges. Mirrors `solveMates`'s
+  //    tree walk but keyed off the resolved-part view (no Assembly handle).
+  const adjacency = new Map<string, MateEdge[]>();
+  for (const p of parts) adjacency.set(p.name, []);
+  for (const m of mates) {
+    const aSide = parseConnectorRef(m.a);
+    const bSide = parseConnectorRef(m.b);
+    const aList = adjacency.get(aSide.partName);
+    const bList = adjacency.get(bSide.partName);
+    if (aList === undefined || bList === undefined) {
+      // Mate references an unknown part — surface as KernelError so the
+      // lowerer's exception path converts it to a structured diagnostic.
+      throw new KernelError(
+        'feature.invalid-args',
+        `mateFk: mate '${m.name}' references unknown part(s) (${m.a} / ${m.b}).`,
+        undefined,
+        `invalid-args.assembly.mate-connector-not-found — declare the part(s) on the assembly before mating.`,
+      );
+    }
+    aList.push({ mate: m, neighbor: bSide.partName, partIsA: true });
+    bList.push({ mate: m, neighbor: aSide.partName, partIsA: false });
+  }
+
+  const partByName = new Map(parts.map((p) => [p.name, p]));
+
+  // 2. BFS spanning tree from parts[0]. Compose child world transform from
+  //    parent's via the mate's local SE(3) contribution.
+  const root = parts[0];
+  const worldTByName = new Map<string, Transform>();
+  worldTByName.set(root.name, Transform.identity());
+  const queue: string[] = [root.name];
+  const visited = new Set<string>([root.name]);
+  const seenMate = new Set<string>();
+
+  while (queue.length > 0) {
+    const parentName = queue.shift()!;
+    const parentT = worldTByName.get(parentName)!;
+    for (const edge of adjacency.get(parentName) ?? []) {
+      if (seenMate.has(edge.mate.name)) continue;
+      seenMate.add(edge.mate.name);
+      if (visited.has(edge.neighbor)) continue; // loop-closure mate — owned by solveMates
+      visited.add(edge.neighbor);
+
+      const aSide = parseConnectorRef(edge.mate.a);
+      const bSide = parseConnectorRef(edge.mate.b);
+      const parentSide = edge.partIsA ? aSide : bSide;
+      const childSide = edge.partIsA ? bSide : aSide;
+      const parentPart = partByName.get(parentSide.partName)!;
+      const childPart = partByName.get(childSide.partName)!;
+      const parentConnector = findResolvedConnector(parentPart, parentSide.connectorName);
+      const childConnector = findResolvedConnector(childPart, childSide.connectorName);
+      const parentOrigin = numericOrigin(parentConnector, parentPart.name);
+      const childOrigin = numericOrigin(childConnector, childPart.name);
+
+      const parentToConnector = Transform.translation(parentOrigin[0], parentOrigin[1], parentOrigin[2]);
+      const childInverse = Transform.translation(-childOrigin[0], -childOrigin[1], -childOrigin[2]);
+      const pose = resolveNumericPose(edge.mate, numericPoses);
+      const jointLocalT = jointTransformForMate(edge.mate.type, pose, parentConnector);
+      const childT = parentT.compose(parentToConnector).compose(jointLocalT).compose(childInverse);
+      worldTByName.set(edge.neighbor, childT);
+      queue.push(edge.neighbor);
+    }
+  }
+
+  // Disconnected parts default to identity. (Same convention as
+  // `walkSpanningTree`'s tail fallback.)
+  for (const p of parts) {
+    if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
+  }
+
+  // 3. Re-key the result by FeatureId so callers (and the lowerer) can
+  //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
+  for (const p of parts) {
+    worldT.set(p.id, worldTByName.get(p.name)!);
+  }
+  return worldT;
+}
+
+/** Pure-FK variant of `findConnector` — no Assembly handle, no Shape. */
+function findResolvedConnector(part: ResolvedMatePart, connectorName: string): Connector {
+  const c = part.connectors.find((x) => x.name === connectorName);
+  if (!c) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `mateFk: connector '${connectorName}' not found on part '${part.name}'.`,
+      part.id,
+      `invalid-args.assembly.mate-connector-not-found — register the connector via partRef.connector('${connectorName}', ...) before solving.`,
+    );
+  }
+  return c;
+}
+
+/** Read a numeric Vec3 from a resolved connector. Topology origins must have
+ *  been resolved upstream — they trip this guard if they slip through. */
+function numericOrigin(conn: Connector, partName: string): Se3Vec3 {
+  if (conn.origin.kind !== 'vec3') {
+    throw new KernelError(
+      'feature.invalid-args',
+      `mateFk: connector '${conn.name}' on part '${partName}' has an unresolved topology origin (kind='${conn.origin.kind}').`,
+      undefined,
+      `invalid-args.assembly.mate-connector-origin-unresolved — resolve topology connectors to numeric Vec3 before calling mateFk.`,
+    );
+  }
+  return conn.origin.value as Se3Vec3;
+}
+
+/** Pure-data-in variant of `resolveMatePose` — reads ONLY from the numeric
+ *  override map. Capture-time `mate.pose` (ParamRef-bearing) is resolved
+ *  upstream by `Assembly.solvedModel` into the `numericPoses` entry. */
+function resolveNumericPose(
+  mate: MateRecord,
+  numericPoses: NumericPoses,
+): number | [number, number, number] | undefined {
+  if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
+  const v = numericPoses[mate.name];
+  if (v !== undefined) return v;
+  return mate.type === 'ball' ? [0, 0, 0] : 0;
 }
 
 interface SpanningTreeResult {

@@ -13,7 +13,7 @@ import { parseConnectorRef, type MatePose, type MateRecord } from '../lib/mates/
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
 import { solveMates } from '../lib/mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
-import { currentValue, toVec3Param } from '../runtime/editableHelpers';
+import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
 import type { CaptureSession } from './captureSession';
@@ -631,13 +631,98 @@ export class Assembly {
   }
 
   /**
+   * Build the mate metadata payload threaded into `session.solvedAssembly`
+   * so the OCCT lowerer's `solvedAssembly` case can run `mateFk` at
+   * recompute time. Encodes connectors with their raw `ConnectorOrigin`
+   * (topology queries resolved per-part on the already-lowered backend at
+   * lower-time) and mates with `pose` lifted into `Param`-shape encoding so
+   * `resolveParams` walks the metadata blob and updates `Param.evaluated`
+   * on studio-driven param edits — keeping pose reactivity identical to
+   * the v0.5 joint-pose path.
+   *
+   * Only collects connectors that are referenced by a mate; unreferenced
+   * connectors don't influence FK and stay out of the FeatureRecord to
+   * keep the recorded metadata minimal.
+   */
+  private buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata {
+    // 1. Collect (partName, connectorName) pairs referenced by any mate.
+    const refsByPartName = new Map<string, Set<string>>();
+    for (const m of this.mates) {
+      const aSide = parseConnectorRef(m.a);
+      const bSide = parseConnectorRef(m.b);
+      for (const side of [aSide, bSide]) {
+        let set = refsByPartName.get(side.partName);
+        if (!set) {
+          set = new Set<string>();
+          refsByPartName.set(side.partName, set);
+        }
+        set.add(side.connectorName);
+      }
+    }
+    // 2. For each part referenced by mates, snapshot the relevant connectors.
+    //    Connectors are kept structurally identical to the live Assembly view
+    //    so the lowerer can plug them into `mateFk` after topology resolution.
+    const connectorsByPartId: Record<FeatureId, Connector[]> = {};
+    for (const part of this.parts) {
+      const wanted = refsByPartName.get(part.name);
+      if (!wanted || wanted.size === 0) continue;
+      const list: Connector[] = [];
+      for (const c of part.mateConnectors) {
+        if (wanted.has(c.name)) list.push(c);
+      }
+      if (list.length > 0) connectorsByPartId[part.id] = list;
+    }
+    // 3. Encode mates with `pose` in Param shape so the recompute pipeline
+    //    auto-resolves ParamRefs through `resolveParams` (same scheme as
+    //    encoded joint poses on `metadata.poses`). Capture-time validation
+    //    already rejects pose on fastened/planar mates (see `mate()` above).
+    const encodedMates: import('./captureSession').EncodedMateRecord[] = this.mates.map((m) => {
+      if (m.pose === undefined) {
+        return { name: m.name, a: m.a, b: m.b, type: m.type };
+      }
+      if (Array.isArray(m.pose)) {
+        return {
+          name: m.name,
+          a: m.a,
+          b: m.b,
+          type: m.type,
+          pose: {
+            kind: 'ball',
+            value: [
+              toParam(m.pose[0], 'deg'),
+              toParam(m.pose[1], 'deg'),
+              toParam(m.pose[2], 'deg'),
+            ],
+          },
+        };
+      }
+      // Scalar pose. Unit is cosmetic on the Param (lowerer reads .evaluated);
+      // `'deg'` mirrors the joint-pose encoding choice above.
+      return {
+        name: m.name,
+        a: m.a,
+        b: m.b,
+        type: m.type,
+        pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
+      };
+    });
+    return { connectorsByPartId, mates: encodedMates };
+  }
+
+  /**
    * Records a `solvedAssembly` FeatureRecord that captures the parts,
-   * joints, and per-joint poses (with ParamRefs preserved). The lowerer
-   * resolves the poses against the live ParamTable at recompute time,
-   * walks `forwardKinematics`, and emits a `SceneBackend` that carries
-   * each part's local-frame shape, world transform, and color attribution
-   * so studio-driven param edits re-pose the rendered scene reactively
-   * without re-running the script.
+   * joints, per-joint poses (with ParamRefs preserved), AND — when the
+   * assembly declares any `arm.mate(...)` records — the v0.6 mate graph +
+   * the connectors those mates reference. The lowerer resolves the poses
+   * against the live ParamTable at recompute time, runs `forwardKinematics`
+   * over v0.5 joints AND `mateFk` over the mate graph (when present), and
+   * emits a `SceneBackend` that carries each part's local-frame shape,
+   * world transform, and color attribution so studio-driven param edits
+   * re-pose the rendered scene reactively without re-running the script.
+   *
+   * Precedence at lower-time: a part's world transform is sourced as
+   * `mateFk > forwardKinematics > identity` — i.e. when a part is both in
+   * a mate graph and on a v0.5 joint tree, the mate-derived placement wins.
    *
    * Returns a `Promise<Scene>` (multi-body view, frozen). The Promise
    * wraps the v0.6 mate-aware validator pass — the `opts.validate` gate
@@ -673,7 +758,20 @@ export class Assembly {
     // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time
     // tests continue to pass without conversion. `session.solvedAssembly`
     // is the source of `invalid-args.solvedModel.{unknown-joint,pose-shape}`.
-    const sceneShape = this.session.solvedAssembly(this.name, this.parts, this.joints, poses);
+    //
+    // v0.6 T17: also feed mate metadata into the FeatureRecord when the
+    // assembly declares mates. The lowerer's `solvedAssembly` case runs
+    // `mateFk` over this metadata so the rendered output (compound, STL,
+    // STEP) actually reflects mate-driven placement — not just the
+    // capture-time `Scene.parts[].worldTransform` (T16).
+    const mateMetadata = this.mates.length > 0 ? this.buildMateMetadata() : undefined;
+    const sceneShape = this.session.solvedAssembly(
+      this.name,
+      this.parts,
+      this.joints,
+      poses,
+      mateMetadata,
+    );
 
     // Mode resolution: explicit opts win; otherwise read the env override
     // (T10 sets this from `kernelcad evaluate`). Default for everything else
