@@ -749,7 +749,15 @@ export class Assembly {
 }
 
 export function makeAssembly(name: string | undefined, session: CaptureSession): Assembly {
-  return new Assembly(name?.trim() || 'assembly', session);
+  const arm = new Assembly(name?.trim() || 'assembly', session);
+  // v0.6: register on the session so MCP tools (`add_connector`, `add_mate`,
+  // `list_mates`, `validate_assembly`, `solve_mates`) can look up the live
+  // Assembly after `evaluate_script` settles. Multiple `kcad.assembly(name)`
+  // calls with the same name in one script alias to the last instance — the
+  // capture-side throws if duplicate part / connector names appear within an
+  // Assembly anyway, so the alias is unambiguous in practice.
+  session.assemblies.set(arm.name, arm);
+  return arm;
 }
 
 /**

@@ -1,0 +1,64 @@
+// tests/integration/mcp/addMate.test.ts
+//
+// v0.6 Task 11: integration test for the `add_mate` MCP tool. Wraps
+// `arm.mate(name, aRef, bRef, type)` (T5). Covers happy-path plus the
+// connector-not-found error path.
+
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
+import { addMateTool } from '../../../src/mcp/tools/addMate';
+import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
+import { listMatesTool } from '../../../src/mcp/tools/listMates';
+
+describe('add_mate MCP tool', () => {
+  beforeAll(async () => { await initOcct(); }, 60000);
+  beforeEach(() => { clearActiveMcpSession(); });
+
+  it('declares a fastened mate between two connectors on the active assembly', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rig');
+        arm.part('a', box(1, 1, 1))
+          .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.part('b', box(1, 1, 1))
+          .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await addMateTool({ name: 'm1', a: 'a.p', b: 'b.q', type: 'fastened' });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.mate).toEqual({ name: 'm1', a: 'a.p', b: 'b.q', type: 'fastened' });
+    }
+
+    const after = await listMatesTool({});
+    expect(after.ok).toBe(true);
+    if (after.ok) {
+      expect(after.mates).toHaveLength(1);
+      expect(after.mates[0]).toMatchObject({ name: 'm1', type: 'fastened' });
+    }
+  });
+
+  it('returns a structured error when a connector ref is unknown', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rig');
+        arm.part('a', box(1, 1, 1))
+          .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.part('b', box(1, 1, 1));
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await addMateTool({ name: 'm1', a: 'a.p', b: 'b.nosuch', type: 'fastened' });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.error).toMatch(/connector-not-found/);
+      expect(r.errorCode).toBe('feature.invalid-args');
+    }
+  });
+});

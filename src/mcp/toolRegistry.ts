@@ -1,5 +1,7 @@
+import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
+import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
@@ -11,12 +13,15 @@ import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
+import { listMatesTool } from './tools/listMates';
 import { listTopologyTool } from './tools/listTopology';
 import { lookupCookbookTool } from './tools/lookupCookbook';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
 import { setParamValueTool } from './tools/setParamValue';
+import { solveMatesTool } from './tools/solveMates';
+import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 
 export interface McpToolDefinition {
@@ -417,6 +422,86 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listConstraintsTool(input as unknown as Parameters<typeof listConstraintsTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_connector',
+      description:
+        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand or a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }). Returns the registered connector\'s { partName, name, type }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          assembly: { type: 'string', description: 'Assembly name; defaults to the only/first assembly on the active session.' },
+          part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
+          name: { type: 'string', description: 'Connector name (unique within the part).' },
+          type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
+          origin: { description: 'Origin as [x, y, z] (vec3 shorthand) or a structured ConnectorOrigin.' },
+          axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
+          normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
+        },
+        required: ['part', 'name', 'type', 'origin'],
+      },
+    },
+    handler: input => addConnectorTool(input as unknown as Parameters<typeof addConnectorTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_mate',
+      description:
+        'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Capture-time errors (type-mismatch, connector-not-found) bubble out as MCP error envelopes.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          assembly: { type: 'string' },
+          name: { type: 'string', description: 'Mate name (unique within the assembly).' },
+          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
+        },
+        required: ['name', 'a', 'b', 'type'],
+      },
+    },
+    handler: input => addMateTool(input as unknown as Parameters<typeof addMateTool>[0]),
+  },
+  {
+    definition: {
+      name: 'list_mates',
+      description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type }, ...] }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          assembly: { type: 'string' },
+        },
+      },
+    },
+    handler: input => listMatesTool(input as unknown as Parameters<typeof listMatesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'validate_assembly',
+      description: 'Run the mate-aware assembly validator (validateAssemblyWithMates) on the active assembly. Returns { status, diagnostics, partCount, jointCount } where diagnostics carry per-code hints agents use to recover.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          assembly: { type: 'string' },
+        },
+      },
+    },
+    handler: input => validateAssemblyTool(input as unknown as Parameters<typeof validateAssemblyTool>[0]),
+  },
+  {
+    definition: {
+      name: 'solve_mates',
+      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). The optional poses input is reserved for the articulated-loop path (T9+) and ignored today.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          assembly: { type: 'string' },
+          poses: { type: 'object', description: 'Reserved for articulated mates (T9+); ignored by the v0.6.0 fastened-only solver.' },
+        },
+      },
+    },
+    handler: input => solveMatesTool(input as unknown as Parameters<typeof solveMatesTool>[0]),
   },
 ];
 

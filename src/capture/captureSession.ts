@@ -109,6 +109,14 @@ export class CaptureSession {
    *  Lives on the session (not the record) because OCCT shapes carry
    *  circular references that would trip metadata walkers. */
   readonly importedGeometry: Map<string, ShapeBackend> = new Map();
+  /** v0.6: live `Assembly` instances created via `kcad.assembly(name)` during
+   *  this session's script run. Tracked by name so the v0.6 MCP mutator tools
+   *  (`add_connector`, `add_mate`) can look up the live Assembly object and
+   *  call its capture-side methods (`partRef.connector(name, opts)`,
+   *  `arm.mate(...)`) after `evaluate_script` has settled the session.
+   *  Untyped `unknown` to avoid a TS cycle with `./assembly`; the MCP tools
+   *  cast back to `Assembly` at the boundary. */
+  readonly assemblies: Map<string, unknown> = new Map();
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);

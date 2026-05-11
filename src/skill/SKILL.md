@@ -723,7 +723,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 22 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 27 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -747,6 +747,11 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `solve_sketch({ entities, constraints })` — solve a 2D POINT/LINE/CIRCLE sketch constraint set; returns `{ ok, entities, constraints }` or validation errors. Side-effect-free.
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
 - `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
+- `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a v0.6 mate-style connector on a named part of the active assembly; requires a prior `evaluate_script`. `type` is one of `frame`/`axis`/`planar`/`ball`. `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`.
+- `add_mate({ name, a, b, type, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
+- `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type }, ...] }`.
+- `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
+- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input is reserved for the post-T9 articulated path.
 
 ## Out of Scope
 
