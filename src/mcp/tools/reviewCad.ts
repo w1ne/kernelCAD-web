@@ -2,6 +2,11 @@ import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/e
 import type { Assembly } from '../../capture/assembly';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { withNextActions } from '../../diagnostics/diagnostic';
+import {
+  summarizeMechanismFitness,
+  type MechanismBlockingReason,
+  type MechanismFitnessResult,
+} from '../../lib/mates/mechanismFitness';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../lib/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../lib/mates/poseEnvelope';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
@@ -32,6 +37,7 @@ export type ReviewCadOutput =
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
+      fitness: MechanismFitnessResult;
     }
   | {
       ok: false;
@@ -46,6 +52,7 @@ export type ReviewCadOutput =
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
+      fitness?: MechanismFitnessResult;
       suggestedRepairPrompt: string;
     };
 
@@ -95,9 +102,12 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...validator.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
-  const ok = !diagnostics.some((d) => d.severity === 'error') &&
-    validator.status !== 'over-constrained' &&
-    validator.status !== 'did-not-converge';
+  const fitness = summarizeMechanismFitness({
+    validatorDiagnostics: validator.diagnostics,
+    poseEnvelope,
+    trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
+  });
+  const ok = fitness.functional;
 
   if (ok) {
     return {
@@ -113,6 +123,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       },
       ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
       ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
+      fitness,
     };
   }
 
@@ -129,7 +140,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     },
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics),
+    fitness,
+    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness.blockingReasons),
   };
 }
 
@@ -160,13 +172,19 @@ function selectAssembly(
 
 function buildSuggestedRepairPrompt(
   diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic)[],
+  blockingReasons: readonly MechanismBlockingReason[] = [],
 ): string {
-  if (diagnostics.length === 0) {
+  if (diagnostics.length === 0 && blockingReasons.length === 0) {
     return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
   }
-  const facts = diagnostics.slice(0, 8).map((d) => {
+  const diagnosticFacts = diagnostics.slice(0, 8).map((d) => {
     const scoped = 'sampleName' in d && d.sampleName ? ` [${d.sampleName}]` : '';
     return `- ${d.code}${scoped}: ${d.message} Hint: ${d.hint}`;
-  }).join('\n');
+  });
+  const remaining = Math.max(0, 8 - diagnosticFacts.length);
+  const fitnessFacts = blockingReasons.slice(0, remaining).map((reason) =>
+    `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
+  );
+  const facts = [...diagnosticFacts, ...fitnessFacts].join('\n');
   return `Repair the kernelCAD script using these deterministic review facts:\n${facts}`;
 }

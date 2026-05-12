@@ -709,9 +709,13 @@ MCP tools mirror the `.kcad.ts` surface for runtime introspection:
   name.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` —
   run the deterministic agent review loop: evaluate, validate mates, sample
-  declared pose limits, report connector workspace bounds, and return
-  diagnostics plus a repair prompt. Pass `trackConnectors:
-  ['gripper-plate.tool-tip']` to focus workspace output on an end-effector.
+  declared pose limits, report connector workspace bounds, and return raw
+  diagnostics plus a fitness summary (`fitness.functional`,
+  `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is
+  selected. Pass
+  `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an
+  end-effector; connector workspace is only computed when pose-envelope
+  sampling is enabled.
 
 ### Naming features (slice 2)
 
@@ -919,7 +923,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name.
-- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — evaluate a script, validate its assembly/mate graph, sample declared mate limits, optionally run BREP interference checks at those samples, return connector workspace bounds, and return diagnostics plus a suggested repair prompt.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — evaluate a script, validate its assembly/mate graph, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace is only computed when pose-envelope sampling is enabled.
 
 ## Out of Scope
 

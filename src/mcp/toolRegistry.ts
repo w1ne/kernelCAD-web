@@ -510,7 +510,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, sample declared mate limits, optionally check interferences at sampled poses, and report connector workspace bounds. Returns diagnostics plus a suggested repair prompt for agent self-review.',
+      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review.',
       inputSchema: {
         type: 'object',
         properties: {
