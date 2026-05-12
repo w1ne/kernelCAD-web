@@ -174,7 +174,7 @@ export async function reviewPoseEnvelope(
     }
 
     if (!includeInterference) continue;
-    const pairs = await detectInterferencesForSample(arm, sample.poses, epsilon);
+    const pairs = await detectInterferencesForPoses(arm, sample.poses, epsilon);
     for (const pair of pairs) {
       interferencePairs.push({ ...pair, sampleName: sample.name });
       diagnostics.push({
@@ -309,10 +309,10 @@ function resolvePoseFromEditable(
   return currentValue(pose as Editable<number>, table);
 }
 
-async function detectInterferencesForSample(
+export async function detectInterferencesForPoses(
   arm: Assembly,
   poses: NumericPoses,
-  epsilonMm3: number,
+  epsilonMm3: number = DEFAULT_EPSILON_MM3,
 ): Promise<InterferencePair[]> {
   await initOcct();
   const scene = await arm.solvedModel(poses, { validate: 'off' });
