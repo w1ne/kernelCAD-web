@@ -19,6 +19,7 @@ import { lookupCookbookTool } from './tools/lookupCookbook';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
+import { reviewCadTool } from './tools/reviewCad';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
 import { validateAssemblyTool } from './tools/validateAssembly';
@@ -448,7 +449,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_mate',
       description:
-        'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Capture-time errors (type-mismatch, connector-not-found) bubble out as MCP error envelopes.',
+        'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -457,6 +458,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
           b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
+          pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
+          limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
+          limitsMm: { type: 'array', description: 'Optional [minMm, maxMm] range for prismatic mates.' },
         },
         required: ['name', 'a', 'b', 'type'],
       },
@@ -492,16 +496,39 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'solve_mates',
-      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). The optional poses input is reserved for the articulated-loop path (T9+) and ignored today.',
+      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
       inputSchema: {
         type: 'object',
         properties: {
           assembly: { type: 'string' },
-          poses: { type: 'object', description: 'Reserved for articulated mates (T9+); ignored by the v0.6.0 fastened-only solver.' },
+          poses: { type: 'object', description: 'Optional numeric pose overrides keyed by mate name.' },
         },
       },
     },
     handler: input => solveMatesTool(input as unknown as Parameters<typeof solveMatesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'review_cad',
+      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, sample declared mate limits, optionally check interferences at sampled poses, and report connector workspace bounds. Returns diagnostics plus a suggested repair prompt for agent self-review.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
+          includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
+          epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
+          trackConnectors: {
+            type: 'array',
+            description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
+            items: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: input => reviewCadTool(input as unknown as Parameters<typeof reviewCadTool>[0]),
   },
 ];
 

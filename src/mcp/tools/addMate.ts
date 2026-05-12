@@ -7,6 +7,7 @@
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
+import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
 
@@ -16,10 +17,13 @@ export interface AddMateInput {
   a: string;
   b: string;
   type: MateType;
+  pose?: MatePose;
+  limitsDeg?: MateLimitRange;
+  limitsMm?: MateLimitRange;
 }
 
 export type AddMateOutput =
-  | { ok: true; mate: { name: string; a: string; b: string; type: MateType } }
+  | { ok: true; mate: { name: string; a: string; b: string; type: MateType; pose?: MatePose; limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange } }
   | { ok: false; error: string; errorCode?: string; errorHint?: string };
 
 export async function addMateTool(input: AddMateInput): Promise<AddMateOutput> {
@@ -52,8 +56,24 @@ export async function addMateTool(input: AddMateInput): Promise<AddMateOutput> {
     };
   }
   try {
-    arm.mate(input.name, input.a, input.b, input.type);
-    return { ok: true, mate: { name: input.name, a: input.a, b: input.b, type: input.type } };
+    const opts = {
+      ...(input.pose !== undefined ? { pose: input.pose } : {}),
+      ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
+      ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),
+    };
+    arm.mate(input.name, input.a, input.b, input.type, opts);
+    return {
+      ok: true,
+      mate: {
+        name: input.name,
+        a: input.a,
+        b: input.b,
+        type: input.type,
+        ...(input.pose !== undefined ? { pose: input.pose } : {}),
+        ...(input.limitsDeg !== undefined ? { limitsDeg: input.limitsDeg } : {}),
+        ...(input.limitsMm !== undefined ? { limitsMm: input.limitsMm } : {}),
+      },
+    };
   } catch (e) {
     return {
       ok: false,

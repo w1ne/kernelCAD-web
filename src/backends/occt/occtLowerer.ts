@@ -1558,8 +1558,12 @@ export class OcctLowerer implements FeatureLowerer {
           // metadata before lower was called).
           const matePoses: NumericPoses = {};
           for (const m of encodedMates) {
-            if (m.pose === undefined) continue;
-            if (m.pose.kind === 'ball') {
+            const override = numericPoses[m.name];
+            if (override !== undefined) {
+              matePoses[m.name] = override;
+            } else if (m.pose === undefined) {
+              continue;
+            } else if (m.pose.kind === 'ball') {
               matePoses[m.name] = [
                 m.pose.value[0].evaluated,
                 m.pose.value[1].evaluated,

@@ -77,8 +77,8 @@ const baseFlangeZ      = plateT.add(servoH).subtract(servoFlangeT.divide(2));
 // down to shoulder z ≈ 45 at default pose, lower at extreme pitch) clears
 // the column tip with margin. The cheeks bridge that gap and carry the
 // pitch axle.
-const shoulderColumnH  = param('shoulderColumnH', 38, { min: 24, max: 110 });
-const shoulderPitchClearance = 12;
+const shoulderColumnH  = param('shoulderColumnH', 36, { min: 24, max: 110 });
+const shoulderPitchClearance = 14;
 const shoulderPitchZ   = shoulderColumnH.add(shoulderPitchClearance);
 
 // ---- BASE link (root, no parent mate -> identity world transform) -------
@@ -341,6 +341,8 @@ const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
 const baseTopZNum     = 6 + 38 + 4;          // plateT + servoH + hornT
 const shoulderPitchZNum = 50;                // shoulderColumnH default
 const upperArmLenNum  = 140;                 // upperArmLen default
+const forearmLenNum   = 120;                 // forearmLen default
+const toolTipXNum     = forearmLenNum + 1 + 6 + 4; // gripperPlateGap + plateT + pin offset
 
 // ---- connectors on each part --------------------------------------------
 // base-plate: hosts the two fastened mounts (servo, output horn) AND the
@@ -457,10 +459,15 @@ forearmPart
     origin: { kind: 'vec3', value: [0, 0, 0] },
   });
 
-gripperPlatePart.connector('mount', {
-  type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
-});
+gripperPlatePart
+  .connector('mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+  })
+  .connector('tool-tip', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [toolTipXNum, 0, 0] },
+  });
 elbowPitchShaftPart.connector('mount', {
   type: 'frame',
   origin: { kind: 'vec3', value: [0, 0, 0] },
@@ -479,12 +486,14 @@ arm.mate('base-yaw-output-fix',  'base-plate.horn-mount',  'base-yaw-output.moun
 // studio-driven slider edits re-pose the arm without re-running the script.
 arm.mate('base-yaw', 'base-plate.yaw-out', 'shoulder-column.yaw-in', 'revolute', {
   pose: baseYawDeg,
+  limitsDeg: [-180, 180],
 });
 arm.mate('shoulder-cheeks-fix', 'shoulder-column.cheeks-mount', 'shoulder-cheeks.mount', 'fastened');
 arm.mate('shoulder-servo-fix',  'shoulder-column.servo-mount',  'shoulder-pitch-servo.mount', 'fastened');
 
 arm.mate('shoulder-pitch', 'shoulder-column.pitch-out', 'upper-arm-beam.pitch-in', 'revolute', {
   pose: shoulderPitchDeg,
+  limitsDeg: [35, 39],
 });
 arm.mate('elbow-yoke-fix',           'upper-arm-beam.yoke-mount',           'elbow-yoke.mount',           'fastened');
 arm.mate('elbow-pitch-servo-fix',    'upper-arm-beam.elbow-servo-mount',    'elbow-pitch-servo.mount',    'fastened');
@@ -492,6 +501,7 @@ arm.mate('shoulder-pitch-shaft-fix', 'upper-arm-beam.shoulder-shaft-mount', 'sho
 
 arm.mate('elbow-pitch', 'upper-arm-beam.elbow-out', 'forearm-beam.elbow-in', 'revolute', {
   pose: elbowPitchDeg,
+  limitsDeg: [-55, 80],
 });
 arm.mate('gripper-plate-fix',     'forearm-beam.gripper-mount',     'gripper-plate.mount',     'fastened');
 arm.mate('elbow-pitch-shaft-fix', 'forearm-beam.elbow-shaft-mount', 'elbow-pitch-shaft.mount', 'fastened');

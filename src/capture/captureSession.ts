@@ -452,6 +452,10 @@ export class CaptureSession {
         jointKindByName.set(m.jointName, m.jointKind);
       }
     }
+    const mateKindByName = new Map<string, MateType>();
+    for (const mate of mateMetadata?.mates ?? []) {
+      mateKindByName.set(mate.name, mate.type);
+    }
 
     // Capture-time pose validation: catch unknown-joint and pose-shape
     // mismatches before encoding. Missing-pose / non-finite are deferred to
@@ -459,6 +463,26 @@ export class CaptureSession {
     // recompute pipeline emits structured diagnostics for the rest.
     for (const [name, val] of Object.entries(poses)) {
       const kind = jointKindByName.get(name);
+      const mateKind = mateKindByName.get(name);
+      if (kind === undefined && mateKind !== undefined) {
+        if (mateKind === 'ball' && !Array.isArray(val)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solvedModel: ball mate '${name}' requires [x, y, z] pose; got ${typeof val}.`,
+            undefined,
+            `invalid-args.solvedModel.pose-shape — mate ${name} is a ball mate; pose must be [x, y, z].`,
+          );
+        }
+        if (mateKind !== 'ball' && Array.isArray(val)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solvedModel: scalar mate '${name}' (${mateKind}) requires a number pose; got [x, y, z].`,
+            undefined,
+            `invalid-args.solvedModel.pose-shape — mate ${name} is a ${mateKind} mate; pose must be a single number.`,
+          );
+        }
+        continue;
+      }
       if (kind === undefined) {
         throw new KernelError(
           'feature.invalid-args',

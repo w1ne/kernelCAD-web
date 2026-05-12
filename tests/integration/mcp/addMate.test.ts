@@ -42,6 +42,44 @@ describe('add_mate MCP tool', () => {
     }
   });
 
+  it('passes articulated pose and limit metadata through to the assembly', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rig');
+        arm.part('base', box(1, 1, 1))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('link', box(1, 1, 1))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await addMateTool({
+      name: 'yaw',
+      a: 'base.axis',
+      b: 'link.axis',
+      type: 'revolute',
+      pose: 15,
+      limitsDeg: [-90, 90],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.mate).toMatchObject({
+        name: 'yaw',
+        type: 'revolute',
+        pose: 15,
+        limitsDeg: [-90, 90],
+      });
+    }
+
+    const after = await listMatesTool({});
+    expect(after.ok).toBe(true);
+    if (after.ok) {
+      expect(after.mates[0]).toMatchObject({ name: 'yaw', pose: 15, limitsDeg: [-90, 90] });
+    }
+  });
+
   it('returns a structured error when a connector ref is unknown', async () => {
     const ev = await evaluateScriptTool({
       code: `

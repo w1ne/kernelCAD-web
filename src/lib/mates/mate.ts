@@ -25,6 +25,8 @@ export type MatePose =
   | Editable<number>
   | [Editable<number>, Editable<number>, Editable<number>];
 
+export type MateLimitRange = readonly [number, number];
+
 export interface MateRecord {
   readonly name: string;
   /** "<partName>.<connectorName>" */
@@ -36,6 +38,10 @@ export interface MateRecord {
    *  ParamRef, or — for ball mates — an XYZ Euler triple of either. See
    *  `MatePose` for the per-type shape contract. */
   readonly pose?: MatePose;
+  /** Rotational scalar pose limits in degrees for revolute/cylindrical/pin_slot mates. */
+  readonly limitsDeg?: MateLimitRange;
+  /** Linear scalar pose limits in mm for prismatic mates. */
+  readonly limitsMm?: MateLimitRange;
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

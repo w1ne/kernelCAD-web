@@ -41,6 +41,27 @@ describe('solve_mates MCP tool', () => {
     }
   });
 
+  it('honors per-mate pose overrides', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('rig');
+        arm.part('base', box(10, 10, 10))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('link', box(5, 5, 5))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('yaw', 'base.axis', 'link.axis', 'revolute');
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await solveMatesTool({ poses: { yaw: 30 } });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.poses.link.rotateDeg).toBeCloseTo(30);
+    }
+  });
+
   it('returns ok:false when no active session is set', async () => {
     const r = await solveMatesTool({});
     expect(r.ok).toBe(false);

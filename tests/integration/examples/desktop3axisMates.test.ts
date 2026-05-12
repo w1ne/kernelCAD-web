@@ -28,6 +28,7 @@ import { checkInterference } from '../../../src/script-runtime/checkInterference
 import { Scene } from '../../../src/intent/scene';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
+import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
@@ -73,6 +74,15 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     // Hero declares 13 parts and 12 mates (3 revolute, 9 fastened).
     expect(scene.parts.length).toBe(13);
     expect(scene.mates?.length).toBe(12);
+    expect(scene.mates?.filter((m) => m.type === 'revolute').map((m) => ({
+      name: m.name,
+      limitsDeg: m.limitsDeg,
+    }))).toEqual([
+      { name: 'base-yaw', limitsDeg: [-180, 180] },
+      { name: 'shoulder-pitch', limitsDeg: [35, 39] },
+      { name: 'elbow-pitch', limitsDeg: [-55, 80] },
+    ]);
+    expect(scene.part('gripper-plate').connectors?.some((c) => c.name === 'tool-tip')).toBe(true);
 
     // Base-plate is the root — its worldTransform should be identity
     // (origin at world origin).
@@ -119,6 +129,31 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(result.partCount).toBe(13);
     expect(result.pairs).toEqual([]);
   }, 180_000);
+
+  it('passes the functional review loop with non-trivial tool-tip workspace', async () => {
+    const result = await reviewCadTool({
+      file: EXAMPLE_PATH,
+      trackConnectors: ['gripper-plate.tool-tip'],
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.poseEnvelope?.diagnostics).toEqual([]);
+      expect(result.poseEnvelope?.interferencePairs).toEqual([]);
+      expect(result.poseEnvelope?.samples.map((s) => s.name)).toEqual([
+        'current',
+        'base-yaw:min',
+        'base-yaw:max',
+        'shoulder-pitch:min',
+        'shoulder-pitch:max',
+        'elbow-pitch:min',
+        'elbow-pitch:max',
+      ]);
+      expect(result.connectorWorkspace).toHaveLength(1);
+      expect(result.connectorWorkspace?.[0].ref).toBe('gripper-plate.tool-tip');
+      expect(result.connectorWorkspace?.[0].travelMm).toBeGreaterThan(50);
+    }
+  }, 240_000);
 
   it('would throw under validate:error if interferences existed (sanity check on the gate)', async () => {
     // Build a 2-part fixture with 100% overlap — should throw at the gate.
