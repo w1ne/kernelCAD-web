@@ -87,4 +87,30 @@ describe('pose-envelope review helpers', () => {
     expect(result.connectorWorkspace[0].travelMm).toBeGreaterThan(20);
     expect(result.connectorPoses.map((p) => p.sampleName)).toEqual(['current', 'yaw:min', 'yaw:max']);
   });
+
+  it('diagnoses tracked topology connector origins that cannot be sampled in capture-time workspace review', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('link', kcad.box(20, 5, 5))
+      .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('top-center', {
+        type: 'frame',
+        origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
+      });
+    arm.mate('fix', 'base.mount', 'link.mount', 'fastened');
+
+    const result = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      trackConnectors: ['link.top-center'],
+    });
+    expect(result.connectorWorkspace).toEqual([]);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      code: 'assembly.pose-envelope.connector-unresolved',
+      severity: 'warning',
+      connectorRef: 'link.top-center',
+    }));
+  });
 });

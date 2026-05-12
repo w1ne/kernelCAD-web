@@ -15,7 +15,8 @@ import { solveMates } from './solver';
 export type PoseEnvelopeDiagnosticCode =
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
-  | 'assembly.pose-envelope.interference';
+  | 'assembly.pose-envelope.interference'
+  | 'assembly.pose-envelope.connector-unresolved';
 
 export interface PoseEnvelopeDiagnostic {
   readonly code: PoseEnvelopeDiagnosticCode;
@@ -29,6 +30,7 @@ export interface PoseEnvelopeDiagnostic {
   readonly partA?: string;
   readonly partB?: string;
   readonly volumeMm3?: number;
+  readonly connectorRef?: string;
 }
 
 export interface PoseEnvelopeSample {
@@ -135,12 +137,20 @@ export async function reviewPoseEnvelope(
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = opts.trackConnectors !== undefined ? new Set(opts.trackConnectors) : undefined;
+  const unresolvedConnectorRefs = new Set<string>();
 
   for (const sample of samples) {
     diagnostics.push(...validateMatePoseLimits(arm, sample.poses, sample.name));
     try {
       const solved = await solveMates(arm, sample.poses);
-      collectConnectorPoses(arm, solved.poses, sample.name, trackConnectors, connectorPoses);
+      collectConnectorPoses(
+        arm,
+        solved.poses,
+        sample.name,
+        trackConnectors,
+        connectorPoses,
+        unresolvedConnectorRefs,
+      );
       if (
         solved.status === 'over-constrained' ||
         solved.status === 'did-not-converge'
@@ -180,6 +190,16 @@ export async function reviewPoseEnvelope(
     }
   }
 
+  for (const ref of unresolvedConnectorRefs) {
+    diagnostics.push({
+      code: 'assembly.pose-envelope.connector-unresolved',
+      severity: 'warning',
+      connectorRef: ref,
+      message: `Tracked connector '${ref}' has a topology-based origin and cannot be included in capture-time workspace bounds.`,
+      hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`,
+    });
+  }
+
   return {
     samples,
     diagnostics,
@@ -195,14 +215,18 @@ function collectConnectorPoses(
   sampleName: string,
   trackConnectors: ReadonlySet<string> | undefined,
   out: TrackedConnectorPose[],
+  unresolvedConnectorRefs: Set<string>,
 ): void {
   for (const part of arm.__parts()) {
     const transform = partTransforms.get(part.name);
     if (!transform) continue;
     for (const connector of part.mateConnectors) {
-      if (connector.origin.kind !== 'vec3') continue;
       const ref = `${part.name}.${connector.name}`;
       if (trackConnectors !== undefined && !trackConnectors.has(ref)) continue;
+      if (connector.origin.kind !== 'vec3') {
+        unresolvedConnectorRefs.add(ref);
+        continue;
+      }
       out.push({
         sampleName,
         ref,

@@ -124,7 +124,7 @@ function resolveMatePose(
   if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
   // 1. Numeric override (caller-supplied) wins.
   const override = numericOverrides?.[mate.name];
-  if (override !== undefined) return override;
+  if (override !== undefined) return validateNumericPoseShape(mate, override, 'solveMates');
   // 2. Capture-time mate.pose (may be ParamRef — resolve via ParamTable).
   if (mate.pose !== undefined) {
     return resolvePoseFromEditable(mate.pose, mate.type, arm);
@@ -367,8 +367,35 @@ function resolveNumericPose(
 ): number | [number, number, number] | undefined {
   if (mate.type === 'fastened' || mate.type === 'planar') return undefined;
   const v = numericPoses[mate.name];
-  if (v !== undefined) return v;
+  if (v !== undefined) return validateNumericPoseShape(mate, v, 'mateFk');
   return mate.type === 'ball' ? [0, 0, 0] : 0;
+}
+
+function validateNumericPoseShape(
+  mate: MateRecord,
+  value: number | [number, number, number],
+  caller: 'solveMates' | 'mateFk',
+): number | [number, number, number] {
+  if (mate.type === 'ball') {
+    if (!Array.isArray(value)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `${caller}: ball mate '${mate.name}' requires [x, y, z] pose; got a single number.`,
+        undefined,
+        `invalid-args.assembly.mate-pose-shape — ball mates take an XYZ Euler triple of numbers.`,
+      );
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${caller}: mate type '${mate.type}' got a triple pose; expected a single number.`,
+      undefined,
+      `invalid-args.assembly.mate-pose-shape — '${mate.type}' mates take a single numeric pose.`,
+    );
+  }
+  return value;
 }
 
 interface SpanningTreeResult {

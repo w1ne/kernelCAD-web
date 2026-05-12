@@ -470,7 +470,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'list_mates',
-      description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type }, ...] }.',
+      description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }.',
       inputSchema: {
         type: 'object',
         properties: {
