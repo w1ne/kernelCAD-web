@@ -3,14 +3,14 @@
 //
 // The hero is a mate-driven rewrite of the v0.5 `desktop-3axis.kcad.ts`:
 // parts authored in their own local frames, mate-FK (`solveMates`) plants
-// them. Same body-tree topology, same geometry parameters, swap
-// `arm.fixed/.revolute` → `arm.mate(...)`.
+// them. It now keeps the existing arm hero and adds a functional terminal
+// gripper driven by one grip mate plus two coupled finger curls.
 //
 // Three checks:
 //   1. Evaluate end-to-end via `evaluateAndBuildScript` — the harness flips
 //      the validate-gate default to `'error'`, so any error-severity
 //      diagnostic surfaces as a non-zero exitCode.
-//   2. Inventory the FeatureRecords: 12 parts (one per `arm.part(...)`),
+//   2. Inventory the FeatureRecords: 16 parts (one per `arm.part(...)`),
 //      no `assemblyJoint` records (the v0.6 vocabulary doesn't emit them),
 //      trailing `solvedAssembly`.
 //   3. Run via `runScript` and assert per-part `worldTransform`s reflect
@@ -46,13 +46,14 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     const parts = records.filter((r) => r.kind === 'assemblyPart');
     const joints = records.filter((r) => r.kind === 'assemblyJoint');
 
-    // 12 parts: base-plate, base-yaw-servo, base-yaw-output, shoulder-column,
+    // 16 parts: base-plate, base-yaw-servo, base-yaw-output, shoulder-column,
     // shoulder-cheeks, shoulder-pitch-servo, upper-arm-beam, elbow-yoke,
     // elbow-pitch-servo, shoulder-pitch-shaft, forearm-beam, gripper-plate,
-    // elbow-pitch-shaft. (Twelve revolute + fastened mates, but mates don't
+    // grip-driver, left-finger, right-finger, elbow-pitch-shaft.
+    // (Fifteen revolute + fastened mates, but mates don't
     // emit `assemblyJoint` records — they ride on the assembly's mate list
     // and surface on `Scene.mates`.)
-    expect(parts.length).toBe(13);
+    expect(parts.length).toBe(16);
     expect(joints.length).toBe(0);
 
     // The trailing capture-time record is the solvedAssembly, which the
@@ -71,9 +72,10 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(returnValue).toBeInstanceOf(Scene);
     const scene = returnValue as Scene;
 
-    // Hero declares 13 parts and 12 mates (3 revolute, 9 fastened).
-    expect(scene.parts.length).toBe(13);
-    expect(scene.mates?.length).toBe(12);
+    // Hero declares 16 parts and 15 mates (6 revolute, 9 fastened). The
+    // terminal gripper has one actuator mate that drives two finger curls.
+    expect(scene.parts.length).toBe(16);
+    expect(scene.mates?.length).toBe(15);
     expect(scene.mates?.filter((m) => m.type === 'revolute').map((m) => ({
       name: m.name,
       limitsDeg: m.limitsDeg,
@@ -81,8 +83,13 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       { name: 'base-yaw', limitsDeg: [-180, 180] },
       { name: 'shoulder-pitch', limitsDeg: [35, 39] },
       { name: 'elbow-pitch', limitsDeg: [-55, 80] },
+      { name: 'grip', limitsDeg: [0, 42] },
+      { name: 'left-curl', limitsDeg: undefined },
+      { name: 'right-curl', limitsDeg: undefined },
     ]);
     expect(scene.part('gripper-plate').connectors?.some((c) => c.name === 'tool-tip')).toBe(true);
+    expect(scene.part('left-finger').connectors?.some((c) => c.name === 'tip')).toBe(true);
+    expect(scene.part('right-finger').connectors?.some((c) => c.name === 'tip')).toBe(true);
 
     // Base-plate is the root — its worldTransform should be identity
     // (origin at world origin).
@@ -114,7 +121,7 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
 
   it('reports zero interferences at default poses', async () => {
     // Industry-standard clash detection (BREP common-volume) over the
-    // 13-part mate-driven assembly. The v0.6 hero ships with all parts
+    // 16-part mate-driven assembly. The v0.6 hero ships with all parts
     // verified non-interfering at the default articulation
     // (baseYawDeg=20°, shoulderPitchDeg=35°, elbowPitchDeg=-55°).
     const code = await readFile(EXAMPLE_ABSOLUTE, 'utf8');
@@ -126,14 +133,18 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       ignorePairs: new Set<string>(),
     });
 
-    expect(result.partCount).toBe(13);
+    expect(result.partCount).toBe(16);
     expect(result.pairs).toEqual([]);
   }, 180_000);
 
   it('passes the functional review loop with non-trivial tool-tip workspace', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
-      trackConnectors: ['gripper-plate.tool-tip'],
+      trackConnectors: ['gripper-plate.tool-tip', 'left-finger.tip', 'right-finger.tip'],
+      gripperAperture: {
+        left: 'left-finger.tip',
+        right: 'right-finger.tip',
+      },
     });
 
     expect(result.ok).toBe(true);
@@ -148,10 +159,15 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
         'shoulder-pitch:max',
         'elbow-pitch:min',
         'elbow-pitch:max',
+        'grip:min',
+        'grip:max',
       ]);
-      expect(result.connectorWorkspace).toHaveLength(1);
+      expect(result.connectorWorkspace).toHaveLength(3);
       expect(result.connectorWorkspace?.[0].ref).toBe('gripper-plate.tool-tip');
       expect(result.connectorWorkspace?.[0].travelMm).toBeGreaterThan(50);
+      expect(result.gripperAperture?.maxMm).toBeGreaterThan(result.gripperAperture?.minMm ?? 0);
+      expect(result.gripperAperture?.travelMm).toBeGreaterThan(15);
+      expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
     }
   }, 240_000);
 

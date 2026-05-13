@@ -11,6 +11,7 @@ import { isValidPlaneSpec } from '../../intent/types';
 import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import { mateFk, type ResolvedMatePart } from '../../lib/mates/solver';
+import { expandCoupledPoses, type MateCouplingRecord } from '../../lib/mates/coupledPoses';
 import type { Connector } from '../../lib/mates/connector';
 import type { MateRecord } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';
@@ -1403,12 +1404,14 @@ export class OcctLowerer implements FeatureLowerer {
           jointIds?: FeatureId[];
           poses?: Record<string, EncodedPose>;
           mates?: EncodedMate[];
+          couplings?: readonly MateCouplingRecord[];
           connectorsByPartId?: Record<FeatureId, readonly Connector[]>;
         } | undefined;
         const partIds = meta?.partIds ?? [];
         const jointIds = meta?.jointIds ?? [];
         const encodedPoses = meta?.poses ?? {};
         const encodedMates: readonly EncodedMate[] = meta?.mates ?? [];
+        const mateCouplings = meta?.couplings ?? [];
         const connectorsByPartId = meta?.connectorsByPartId ?? {};
 
         const partEntries = Object.entries(inputs.byKey)
@@ -1654,7 +1657,8 @@ export class OcctLowerer implements FeatureLowerer {
             b: m.b,
             type: m.type,
           }));
-          const mateWorldT = mateFk(resolvedParts, mates, matePoses);
+          const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
+          const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses);
           // Merge: mate-derived transforms WIN over joint-derived transforms.
           // Disconnected-from-mates parts retain their joint-FK transform (or
           // identity if no joint either). This is the explicit precedence

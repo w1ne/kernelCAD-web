@@ -805,7 +805,11 @@ export class Assembly {
         pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
       };
     });
-    return { connectorsByPartId, mates: encodedMates };
+    return {
+      connectorsByPartId,
+      mates: encodedMates,
+      couplings: [...this.mateCouplings],
+    };
   }
 
   /**

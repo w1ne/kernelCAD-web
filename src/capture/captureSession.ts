@@ -18,6 +18,7 @@ import type { Editable } from '../runtime/paramRef';
 import type { ShapeBackend } from '../backends/backend';
 import { KernelError } from '../intent/kernelError';
 import type { Connector } from '../lib/mates/connector';
+import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
 import type { MateType } from '../lib/mates/mateTypes';
 
 /**
@@ -37,6 +38,7 @@ import type { MateType } from '../lib/mates/mateTypes';
 export interface SolvedAssemblyMateMetadata {
   readonly connectorsByPartId: Record<FeatureId, readonly Connector[]>;
   readonly mates: readonly EncodedMateRecord[];
+  readonly couplings?: readonly MateCouplingRecord[];
 }
 
 /** Mate record with `pose` encoded for the recompute pipeline. Mirrors
@@ -549,6 +551,7 @@ export class CaptureSession {
         ...(mateMetadata !== undefined && mateMetadata.mates.length > 0
           ? {
               mates: mateMetadata.mates,
+              couplings: mateMetadata.couplings ?? [],
               connectorsByPartId: mateMetadata.connectorsByPartId,
             }
           : {}),

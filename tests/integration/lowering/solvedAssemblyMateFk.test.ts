@@ -115,4 +115,28 @@ describe('solvedAssembly lowerer — mate-FK integration (v0.6 T17)', () => {
     // X bbox is now dominated by parent (10x10), not child.
     expect(bb90.max[0]).toBeLessThan(11);
   });
+
+  it('expands coupled mate poses before rendering solvedAssembly', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      const arm = assembly('coupled-render');
+      const parent = arm.part('parent', box(4, 4, 4, true));
+      parent
+        .connector('driver', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      const driver = arm.part('driver', cylinder(2, 2));
+      driver.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      const finger = arm.part('finger', box(20, 4, 4, false));
+      finger.connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('grip', 'parent.driver', 'driver.axis', 'revolute', { pose: 90 });
+      arm.mate('curl', 'parent.hinge', 'finger.hinge', 'revolute');
+      arm.coupleMates('curl', { source: 'grip', ratio: 1 });
+      return (await arm.solvedModel({}, { validate: 'off' })).toCompound();
+    `);
+
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(shape).toBeDefined();
+    const bb = shape!.boundingBox();
+    expect(bb.max[1]).toBeGreaterThan(15);
+    expect(bb.max[0]).toBeLessThan(6);
+  });
 });
