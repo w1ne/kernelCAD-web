@@ -51,6 +51,7 @@ import {
   type Connector,
   type ConnectorOrigin,
 } from './connector';
+import { expandCoupledPoses } from './coupledPoses';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
@@ -172,6 +173,9 @@ export async function solveMates(
 ): Promise<SolveResult> {
   const parts = arm.__parts();
   const mates = arm.__mates();
+  const expandedPoses = expandCoupledPoses(mates, arm.__mateCouplings(), poses ?? {}, {
+    resolveSourcePose: (mate, currentPoses) => resolveMatePose(mate, arm, currentPoses),
+  });
 
   if (parts.length === 0) {
     return { status: 'solved', poses: new Map() };
@@ -190,7 +194,7 @@ export async function solveMates(
   // 2. Build a spanning tree via BFS from the first declared part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, poses);
+  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, expandedPoses);
 
   if (loopMates.length === 0) {
     return { status: 'solved', poses: worldT };

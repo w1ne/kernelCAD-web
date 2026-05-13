@@ -7,6 +7,7 @@ import {
   type MechanismBlockingReason,
   type MechanismFitnessResult,
 } from '../../lib/mates/mechanismFitness';
+import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../lib/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../lib/mates/poseEnvelope';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
@@ -21,6 +22,7 @@ export interface ReviewCadInput {
   includeInterference?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
+  gripperAperture?: GripperApertureRequest;
 }
 
 export type ReviewCadOutput =
@@ -37,6 +39,7 @@ export type ReviewCadOutput =
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
+      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness: MechanismFitnessResult;
     }
   | {
@@ -52,6 +55,7 @@ export type ReviewCadOutput =
       };
       poseEnvelope?: PoseEnvelopeReviewResult;
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
+      gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness?: MechanismFitnessResult;
       suggestedRepairPrompt: string;
     };
@@ -94,6 +98,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
         includeInterference: input.includeInterference ?? true,
         epsilonMm3: input.epsilonMm3,
         trackConnectors: input.trackConnectors,
+        gripperAperture: input.gripperAperture,
       })
     : undefined;
 
@@ -123,6 +128,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       },
       ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
       ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
+      ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
       fitness,
     };
   }
@@ -140,6 +146,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     },
     ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
+    ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     fitness,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness.blockingReasons),
   };

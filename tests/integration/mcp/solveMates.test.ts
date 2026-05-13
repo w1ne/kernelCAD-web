@@ -62,6 +62,75 @@ describe('solve_mates MCP tool', () => {
     }
   });
 
+  it('expands coupled mate poses from one grip actuator', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const arm = assembly('hand');
+        arm.part('base', box(10, 10, 2))
+          .connector('left', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] })
+          .connector('right', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] })
+          .connector('driver', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('driver', box(2, 2, 2))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('left', box(20, 3, 3))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('right', box(20, 3, 3))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('grip', 'base.driver', 'driver.axis', 'revolute', { limitsDeg: [0, 40] });
+        arm.mate('left-curl', 'base.left', 'left.axis', 'revolute');
+        arm.mate('right-curl', 'base.right', 'right.axis', 'revolute');
+        arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
+        arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await solveMatesTool({ poses: { grip: 30 } });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.poses.left.rotateDeg).toBeCloseTo(30);
+      expect(r.poses.right.rotateDeg).toBeCloseTo(30);
+      expect(r.poses.left.rotateAxis[2]).toBeGreaterThan(0);
+      expect(r.poses.right.rotateAxis[2]).toBeLessThan(0);
+    }
+  });
+
+  it('expands coupled mate poses from a source ParamRef pose', async () => {
+    const ev = await evaluateScriptTool({
+      code: `
+        const gripDeg = param('gripDeg', 25, { min: 0, max: 40 });
+        const arm = assembly('hand');
+        arm.part('base', box(10, 10, 2))
+          .connector('left', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] })
+          .connector('right', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] })
+          .connector('driver', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('driver', box(2, 2, 2))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('left', box(20, 3, 3))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('right', box(20, 3, 3))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('grip', 'base.driver', 'driver.axis', 'revolute', { pose: gripDeg, limitsDeg: [0, 40] });
+        arm.mate('left-curl', 'base.left', 'left.axis', 'revolute');
+        arm.mate('right-curl', 'base.right', 'right.axis', 'revolute');
+        arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
+        arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+        return arm.model();
+      `,
+    });
+    expect(ev.ok).toBe(true);
+
+    const r = await solveMatesTool({});
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.poses.left.rotateDeg).toBeCloseTo(25);
+      expect(r.poses.right.rotateDeg).toBeCloseTo(25);
+      expect(r.poses.left.rotateAxis[2]).toBeGreaterThan(0);
+      expect(r.poses.right.rotateAxis[2]).toBeLessThan(0);
+    }
+  });
+
   it('returns ok:false when a scalar mate receives a triple pose override', async () => {
     const ev = await evaluateScriptTool({
       code: `

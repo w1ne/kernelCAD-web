@@ -13,6 +13,9 @@ export interface MechanismSummary {
   readonly interferenceCount: number;
   readonly trackedConnectorCount: number;
   readonly maxTrackedTravelMm?: number;
+  readonly gripperApertureMinMm?: number;
+  readonly gripperApertureMaxMm?: number;
+  readonly gripperApertureTravelMm?: number;
 }
 
 export interface MechanismFitnessResult {
@@ -33,6 +36,7 @@ const PASSED_CHECKS = {
   poseEnvelopeSolved: 'pose-envelope-solved',
   poseEnvelopeNoInterference: 'pose-envelope-no-interference',
   trackedConnectorsMove: 'tracked-connectors-move',
+  gripperApertureMoves: 'gripper-aperture-moves',
 } as const;
 
 export function summarizeMechanismFitness(
@@ -125,6 +129,19 @@ export function summarizeMechanismFitness(
     passedChecks.push(PASSED_CHECKS.trackedConnectorsMove);
   }
 
+  if (poseEnvelope?.gripperApertureRequest !== undefined && poseEnvelope.gripperAperture === undefined) {
+    addBlockingReason(
+      'assembly.mechanism.gripper-aperture-missing',
+      'Requested gripper aperture could not be computed.',
+      'Pass two numeric frame connector refs that are present across pose-envelope samples.',
+      poseEnvelope.gripperApertureRequest,
+    );
+  }
+
+  if (poseEnvelope?.gripperAperture !== undefined && poseEnvelope.gripperAperture.travelMm > 0) {
+    passedChecks.push(PASSED_CHECKS.gripperApertureMoves);
+  }
+
   const sampleCount = poseEnvelope?.samples.length ?? 0;
   const interferenceCount = poseEnvelope?.interferencePairs.length ?? 0;
 
@@ -137,6 +154,11 @@ export function summarizeMechanismFitness(
       interferenceCount,
       trackedConnectorCount,
       ...(maxTrackedTravelMm === undefined ? {} : { maxTrackedTravelMm }),
+      ...(poseEnvelope?.gripperAperture === undefined ? {} : {
+        gripperApertureMinMm: poseEnvelope.gripperAperture.minMm,
+        gripperApertureMaxMm: poseEnvelope.gripperAperture.maxMm,
+        gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
+      }),
     },
   };
 }

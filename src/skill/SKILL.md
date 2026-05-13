@@ -629,6 +629,25 @@ arm.mate('shoulder-bolts',  'shoulder-servo.base-mount',  'base.shoulder-mount',
 arm.mate('shoulder-rotate', 'shoulder-servo.output-shaft', 'horn.shaft-hub',     'revolute');
 ```
 
+Couple scalar articulated mates when one actuator should drive multiple
+finger/jaw joints. The driven pose is `sourcePose * ratio + offset`; explicit
+numeric `solve_mates({ poses })` overrides for a driven mate still win for
+debugging.
+
+```typescript
+arm.mate('grip', 'palm.driver', 'grip-driver.axis', 'revolute', {
+  limitsDeg: [0, 40],
+});
+arm.mate('left-curl', 'palm.left-hinge', 'left-finger.hinge', 'revolute');
+arm.mate('right-curl', 'palm.right-hinge', 'right-finger.hinge', 'revolute');
+arm.coupleMates('left-curl', { source: 'grip', ratio: 1 });
+arm.coupleMates('right-curl', { source: 'grip', ratio: -1 });
+```
+
+Use this for two-finger grippers and simple underactuated fingers before
+hand-authoring duplicated pose params. Coupling supports scalar mates:
+`revolute`, `prismatic`, `cylindrical`, and `pin_slot`.
+
 Capture-time errors throw `KernelError('feature.invalid-args')` with
 structured hints:
 
@@ -706,8 +725,8 @@ MCP tools mirror the `.kcad.ts` surface for runtime introspection:
   diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return
   `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate
-  name.
-- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` —
+  name; coupled driven mates are expanded from their source mate before solve.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` —
   run the deterministic agent review loop: evaluate, validate mates, sample
   declared pose limits, report connector workspace bounds, and return raw
   diagnostics plus a fitness summary (`fitness.functional`,
@@ -715,7 +734,9 @@ MCP tools mirror the `.kcad.ts` surface for runtime introspection:
   selected. Pass
   `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an
   end-effector; connector workspace is only computed when pose-envelope
-  sampling is enabled.
+  sampling is enabled. For grippers, pass
+  `gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' }`
+  to get `minMm`, `maxMm`, `travelMm`, and per-sample fingertip distances.
 
 ### Naming features (slice 2)
 
@@ -922,8 +943,8 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
 - `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
-- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name.
-- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — evaluate a script, validate its assembly/mate graph, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace is only computed when pose-envelope sampling is enabled.
+- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace and gripper aperture are only computed when pose-envelope sampling is enabled.
 
 ## Out of Scope
 
