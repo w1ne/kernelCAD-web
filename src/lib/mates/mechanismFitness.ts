@@ -1,5 +1,6 @@
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import type { ValidatorDiagnostic } from './validator';
+import type { MechanicalPlausibilityDiagnostic } from './mechanicalPlausibility';
 
 export interface MechanismBlockingReason {
   readonly code: string;
@@ -16,6 +17,7 @@ export interface MechanismSummary {
   readonly gripperApertureMinMm?: number;
   readonly gripperApertureMaxMm?: number;
   readonly gripperApertureTravelMm?: number;
+  readonly mechanicalPlausibilityIssueCount?: number;
 }
 
 export interface MechanismFitnessResult {
@@ -27,6 +29,7 @@ export interface MechanismFitnessResult {
 
 export interface MechanismFitnessInput {
   readonly validatorDiagnostics?: readonly ValidatorDiagnostic[];
+  readonly mechanicalPlausibilityDiagnostics?: readonly MechanicalPlausibilityDiagnostic[];
   readonly poseEnvelope?: PoseEnvelopeReviewResult;
   readonly trackConnectors?: readonly string[];
 }
@@ -43,6 +46,7 @@ export function summarizeMechanismFitness(
   input: MechanismFitnessInput = {},
 ): MechanismFitnessResult {
   const validatorDiagnostics = input.validatorDiagnostics ?? [];
+  const mechanicalPlausibilityDiagnostics = input.mechanicalPlausibilityDiagnostics ?? [];
   const poseEnvelope = input.poseEnvelope;
   const trackConnectors = input.trackConnectors ?? [];
 
@@ -71,6 +75,15 @@ export function summarizeMechanismFitness(
 
   if (!hasValidatorErrors) {
     passedChecks.push(PASSED_CHECKS.validatorNoErrors);
+  }
+
+  for (const diagnostic of mechanicalPlausibilityDiagnostics) {
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
   }
 
   const hasPoseEnvelopeErrors = poseEnvelope?.diagnostics.some((diagnostic) => diagnostic.severity === 'error') ?? false;
@@ -144,6 +157,7 @@ export function summarizeMechanismFitness(
 
   const sampleCount = poseEnvelope?.samples.length ?? 0;
   const interferenceCount = poseEnvelope?.interferencePairs.length ?? 0;
+  const mechanicalPlausibilityIssueCount = mechanicalPlausibilityDiagnostics.length;
 
   return {
     functional: blockingReasons.length === 0,
@@ -159,6 +173,7 @@ export function summarizeMechanismFitness(
         gripperApertureMaxMm: poseEnvelope.gripperAperture.maxMm,
         gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
       }),
+      ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
     },
   };
 }

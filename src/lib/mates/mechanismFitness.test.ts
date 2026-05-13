@@ -6,6 +6,7 @@ import {
 } from './mechanismFitness';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import type { ValidatorDiagnostic } from './validator';
+import type { MechanicalPlausibilityDiagnostic } from './mechanicalPlausibility';
 
 function mkPoseEnvelope(overrides: Partial<PoseEnvelopeReviewResult> = {}): PoseEnvelopeReviewResult {
   return {
@@ -32,6 +33,21 @@ function mkBlockingReasonFromValidatorDiagnostic(code: ValidatorDiagnostic['code
     severity: 'error',
     message: `${code} error`,
     hint: `${code} hint`,
+  };
+}
+
+function mkMechanicalDiagnostic(): MechanicalPlausibilityDiagnostic {
+  return {
+    code: 'assembly.mechanical.connector-not-in-solid',
+    severity: 'error',
+    message: 'connector is away from modeled material',
+    hint: 'add support geometry',
+    mateName: 'yaw',
+    partName: 'link',
+    connectorName: 'axis',
+    connectorRef: 'link.axis',
+    distanceMm: 42,
+    bbox: { min: [50, -2, -2], max: [70, 2, 2] },
   };
 }
 
@@ -104,6 +120,18 @@ describe('summarizeMechanismFitness', () => {
     expect(result.blockingReasons).toHaveLength(1);
     expect(result.blockingReasons[0].code).toBe('assembly.solver.did-not-converge');
     expect(result.passedChecks).toEqual(['pose-envelope-solved', 'pose-envelope-no-interference']);
+  });
+
+  it('returns functional=false for mechanical plausibility diagnostics', () => {
+    const result = summarizeMechanismFitness({
+      mechanicalPlausibilityDiagnostics: [mkMechanicalDiagnostic()],
+      poseEnvelope: mkPoseEnvelope(),
+    });
+
+    expect(result.functional).toBe(false);
+    expect(result.blockingReasons).toHaveLength(1);
+    expect(result.blockingReasons[0].code).toBe('assembly.mechanical.connector-not-in-solid');
+    expect(result.mechanismSummary.mechanicalPlausibilityIssueCount).toBe(1);
   });
 
   it('returns functional=false when no requested tracked connectors are in pose-envelope workspace', () => {

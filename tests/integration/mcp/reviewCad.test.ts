@@ -63,6 +63,30 @@ describe('review_cad MCP tool', () => {
     }
   });
 
+  it('blocks mechanically implausible mates whose connector is not on modeled material', async () => {
+    const r = await reviewCadTool({
+      includeInterference: false,
+      code: `
+        const arm = assembly('floating-hinge');
+        arm.part('base', box(20, 20, 8, true))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.part('link', box(30, 4, 4, true).translate(60, 0, 0))
+          .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', {
+          limitsDeg: [0, 90],
+        });
+        return arm.model();
+      `,
+    });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.fitness?.functional).toBe(false);
+      expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.connector-not-in-solid')).toBe(true);
+      expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.connector-not-in-solid/);
+    }
+  });
+
   it('reports gripper aperture travel for coupled fingertip connectors', async () => {
     const r = await reviewCadTool({
       includeInterference: false,
@@ -70,7 +94,7 @@ describe('review_cad MCP tool', () => {
       gripperAperture: { left: 'left.tip', right: 'right.tip' },
       code: `
         const arm = assembly('hand');
-        arm.part('base', box(10, 10, 2))
+        arm.part('base', box(30, 30, 4, true))
           .connector('driver', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
           .connector('left', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] })
           .connector('right', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
