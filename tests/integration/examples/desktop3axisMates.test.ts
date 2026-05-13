@@ -137,7 +137,7 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(result.pairs).toEqual([]);
   }, 180_000);
 
-  it('reports mechanical plausibility blockers for unsupported connector geometry', async () => {
+  it('passes the functional review loop with mechanically supported connector geometry', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       trackConnectors: ['gripper-plate.tool-tip', 'left-finger.tip', 'right-finger.tip'],
@@ -147,8 +147,8 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       },
     });
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
+    expect(result.ok).toBe(true);
+    if (result.ok) {
       expect(result.poseEnvelope?.diagnostics).toEqual([]);
       expect(result.poseEnvelope?.interferencePairs).toEqual([]);
       expect(result.poseEnvelope?.samples.map((s) => s.name)).toEqual([
@@ -167,10 +167,10 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       expect(result.connectorWorkspace?.[0].travelMm).toBeGreaterThan(50);
       expect(result.gripperAperture?.maxMm).toBeGreaterThan(result.gripperAperture?.minMm ?? 0);
       expect(result.gripperAperture?.travelMm).toBeGreaterThan(15);
-      expect(result.fitness?.passedChecks).toContain('gripper-aperture-moves');
-      expect(result.fitness?.functional).toBe(false);
-      expect(result.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.connector-not-in-solid')).toBe(true);
-      expect(result.fitness?.mechanismSummary.mechanicalPlausibilityIssueCount).toBeGreaterThan(0);
+      expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
+      expect(result.fitness.functional).toBe(true);
+      expect(result.fitness.blockingReasons).toEqual([]);
+      expect(result.fitness.mechanismSummary.mechanicalPlausibilityIssueCount).toBeUndefined();
     }
   }, 240_000);
 

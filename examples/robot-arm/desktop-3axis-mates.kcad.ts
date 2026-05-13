@@ -133,7 +133,7 @@ const baseHornPart = arm.part('base-yaw-output', baseHornStack);
 // 5. Shoulder column — thin spine connecting base-yaw output to the yoke
 //    above. Was a wide block that engulfed every other shoulder part; now
 //    a slim post the cheeks fan out around.
-const spineR = beamT.divide(2);
+const spineR = 5;
 const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
   .color('frame');
 const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
@@ -176,7 +176,7 @@ const shoulderServoPart = arm.part('shoulder-pitch-servo', shoulderPitchServo);
 // back into upper-arm x ≈ upperArmLen - 4 at elbowPitchDeg=-55° — doesn't
 // punch into the upper-arm body. The cheeks bridge that gap and carry
 // the elbow shaft.
-const elbowClearance = 8;
+const elbowClearance = 6;
 const upperArmBeamLen = upperArmLen.subtract(elbowClearance);
 const upperArmBeamCenter = upperArmBeamLen.divide(2);
 const upperArmBeamShape = box(upperArmBeamLen, beamW, beamT, true)
@@ -230,6 +230,7 @@ const elbowCheekInnerY = beamW.divide(2).add(ribH).add(2);             // 19
 const elbowCheekOuterY = halfYokeCheekW;                               // 23
 const elbowCheekY      = elbowCheekOuterY.subtract(elbowCheekInnerY); // 4
 const elbowCheekCenterY = elbowCheekInnerY.add(elbowCheekY.divide(2));// 21
+const elbowCheekMountYNum = 17;
 const elbowYokeCheekL = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
   .translate(upperArmLen, elbowCheekCenterY, halfYokeCheekH)
   .color('plate');
@@ -244,7 +245,7 @@ const elbowYokePart = arm.part('elbow-yoke', elbowYoke);
 //     the upper-arm beam, the yoke, and the forearm beam after FK rotation.
 const elbowServoMountY = halfYokeCheekW.add(yokeCheekT.divide(2));
 const elbowServoStack = box(servoH, servoD, servoW, true)
-  .translate(upperArmLen, elbowServoMountY.add(servoD.divide(2)), halfYokeCheekH)
+  .translate(upperArmLen, elbowServoMountY.add(servoD.divide(2)), halfYokeCheekH.add(8))
   .color('servo');
 const elbowServoPart = arm.part('elbow-pitch-servo', elbowServoStack);
 
@@ -366,7 +367,9 @@ const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
 // params reshapes parts but joint pivots stay put — same convention as v0.5.
 const baseTopZNum     = 6 + 38 + 4;          // plateT + servoH + hornT
 const shoulderPitchZNum = 50;                // shoulderColumnH default
+const shoulderColumnHNum = 36;               // shoulderColumnH default
 const upperArmLenNum  = 140;                 // upperArmLen default
+const forearmLenNum   = 120;                 // forearmLen default
 const toolTipXNum     = gripperHingeXNum + gripperFingerLen;
 
 // ---- connectors on each part --------------------------------------------
@@ -375,26 +378,28 @@ const toolTipXNum     = gripperHingeXNum + gripperFingerLen;
 basePart
   .connector('servo-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [0, 0, 6] },
+  });
+
+baseServoPart
+  .connector('mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, 6] },
   })
   .connector('horn-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [0, 0, baseTopZNum - 4] },
+  });
+baseHornPart
+  .connector('mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, baseTopZNum - 4] },
   })
   .connector('yaw-out', {
     type: 'axis',
     origin: { kind: 'vec3', value: [0, 0, baseTopZNum] },
     axis: [0, 0, 1],
   });
-
-baseServoPart.connector('mount', {
-  type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
-});
-baseHornPart.connector('mount', {
-  type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
-});
 
 // shoulder-column: yaw-input (from base) + decorative cheek/servo mounts +
 // the driven shoulder-pitch revolute at the top of the column.
@@ -406,11 +411,7 @@ shoulderColumnPart
   })
   .connector('cheeks-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
-  })
-  .connector('servo-mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [0, 0, shoulderColumnHNum] },
   })
   .connector('pitch-out', {
     type: 'axis',
@@ -418,13 +419,23 @@ shoulderColumnPart
     axis: [0, 1, 0],
   });
 
-shoulderCheeksPart.connector('mount', {
-  type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
-});
+shoulderCheeksPart
+  .connector('mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 0, shoulderPitchZNum - 12] },
+  })
+  .connector('servo-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [0, 14, shoulderPitchZNum] },
+  })
+  .connector('pitch-out', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, shoulderPitchZNum] },
+    axis: [0, 1, 0],
+  });
 shoulderServoPart.connector('mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [0, 14, shoulderPitchZNum] },
 });
 
 // upper-arm-beam: pitch-input (from shoulder column) + decorative elbow yoke /
@@ -438,11 +449,11 @@ upperArmPart
   })
   .connector('yoke-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [upperArmLenNum, elbowCheekMountYNum, 6] },
   })
   .connector('elbow-servo-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [upperArmLenNum, 23, 6] },
   })
   .connector('shoulder-shaft-mount', {
     type: 'frame',
@@ -454,13 +465,18 @@ upperArmPart
     axis: [0, 1, 0],
   });
 
-elbowYokePart.connector('mount', {
-  type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
-});
+elbowYokePart
+  .connector('mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [upperArmLenNum, elbowCheekMountYNum, 6] },
+  })
+  .connector('servo-mount', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [upperArmLenNum, 23, 14] },
+  });
 elbowServoPart.connector('mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [upperArmLenNum, 23, 14] },
 });
 shoulderPitchShaftPart.connector('mount', {
   type: 'frame',
@@ -477,7 +493,7 @@ forearmPart
   })
   .connector('gripper-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [forearmLenNum + gripperPlateGap, 0, 0] },
   })
   .connector('elbow-shaft-mount', {
     type: 'frame',
@@ -487,7 +503,7 @@ forearmPart
 gripperPlatePart
   .connector('mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [forearmLenNum + gripperPlateGap, 0, 0] },
   })
   .connector('grip-axis', {
     type: 'axis',
@@ -542,26 +558,26 @@ elbowPitchShaftPart.connector('mount', {
 // Base-link internals (column / servo / horn ride with the base, which is
 // stationary, but binding them via fastened mates documents the ownership
 // graph and keeps every part in the same mate-tree).
-arm.mate('base-yaw-servo-fix',   'base-plate.servo-mount', 'base-yaw-servo.mount', 'fastened');
-arm.mate('base-yaw-output-fix',  'base-plate.horn-mount',  'base-yaw-output.mount', 'fastened');
+arm.mate('base-yaw-servo-fix',   'base-plate.servo-mount',     'base-yaw-servo.mount',   'fastened');
+arm.mate('base-yaw-output-fix',  'base-yaw-servo.horn-mount',  'base-yaw-output.mount',  'fastened');
 
 // Three driven revolute mates — these are the ones the harness counts.
 // Pose ParamRefs are captured on the mate record (T16); recompute-time
 // resolution against the session's ParamTable preserves reactivity so
 // studio-driven slider edits re-pose the arm without re-running the script.
-arm.mate('base-yaw', 'base-plate.yaw-out', 'shoulder-column.yaw-in', 'revolute', {
+arm.mate('base-yaw', 'base-yaw-output.yaw-out', 'shoulder-column.yaw-in', 'revolute', {
   pose: baseYawDeg,
   limitsDeg: [-180, 180],
 });
 arm.mate('shoulder-cheeks-fix', 'shoulder-column.cheeks-mount', 'shoulder-cheeks.mount', 'fastened');
-arm.mate('shoulder-servo-fix',  'shoulder-column.servo-mount',  'shoulder-pitch-servo.mount', 'fastened');
+arm.mate('shoulder-servo-fix',  'shoulder-cheeks.servo-mount',  'shoulder-pitch-servo.mount', 'fastened');
 
-arm.mate('shoulder-pitch', 'shoulder-column.pitch-out', 'upper-arm-beam.pitch-in', 'revolute', {
+arm.mate('shoulder-pitch', 'shoulder-cheeks.pitch-out', 'upper-arm-beam.pitch-in', 'revolute', {
   pose: shoulderPitchDeg,
   limitsDeg: [35, 39],
 });
 arm.mate('elbow-yoke-fix',           'upper-arm-beam.yoke-mount',           'elbow-yoke.mount',           'fastened');
-arm.mate('elbow-pitch-servo-fix',    'upper-arm-beam.elbow-servo-mount',    'elbow-pitch-servo.mount',    'fastened');
+arm.mate('elbow-pitch-servo-fix',    'elbow-yoke.servo-mount',              'elbow-pitch-servo.mount',    'fastened');
 arm.mate('shoulder-pitch-shaft-fix', 'upper-arm-beam.shoulder-shaft-mount', 'shoulder-pitch-shaft.mount', 'fastened');
 
 arm.mate('elbow-pitch', 'upper-arm-beam.elbow-out', 'forearm-beam.elbow-in', 'revolute', {
