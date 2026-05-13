@@ -1,24 +1,21 @@
 // Parametric desktop 3-axis robot arm — v0.6 mate-graph rewrite.
 //
-// Same geometry + same body-tree topology as the v0.5
-// `desktop-3axis.kcad.ts`, but joints are declared via the v0.6 mate
-// vocabulary (`partRef.connector(...)` + `arm.mate(...)`) instead of the
-// v0.5 helpers (`arm.fixed/.revolute`). Each link is still authored in its
-// OWN LOCAL FRAME — mate-FK (`solveMates`, T16) plants the children where
-// the mates land. Visual output under default pose params matches the v0.5
-// hero pixel-for-pixel: same connector origins as the v0.5 joint origins,
-// child connectors all at [0,0,0] so the per-mate SE(3) collapses to the
-// v0.5 body-tree FK math.
+// Starts from the v0.5 `desktop-3axis.kcad.ts` body-tree hero, but joints are
+// declared via the v0.6 mate vocabulary (`partRef.connector(...)` +
+// `arm.mate(...)`) instead of the v0.5 helpers (`arm.fixed/.revolute`). Each
+// link is authored in its own local frame and mate-FK plants children where
+// their connectors land.
 //
-// 3 revolute mates (base-yaw, shoulder-pitch, elbow-pitch) expose articulation
-// DOF; the other 9 fastened mates couple decorative link-internal parts to
-// their parent link. Open tree — no closed loops — so the mate solver
-// classifies as `solved` in one pass.
+// 4 actuator mates expose articulation: base-yaw, shoulder-pitch, elbow-pitch,
+// and grip. The terminal gripper uses one visible drive mate plus two coupled
+// finger curl mates, so the review loop can sample fingertip aperture instead
+// of only tracking a rigid tool plate.
 
 // ---- pose parameters (live sliders) -------------------------------------
 const baseYawDeg       = param('baseYawDeg',       20,  { min: -180, max: 180 });
 const shoulderPitchDeg = param('shoulderPitchDeg', 35,  { min:  -45, max: 135 });
 const elbowPitchDeg    = param('elbowPitchDeg',   -55,  { min: -120, max: 120 });
+const gripDeg          = param('gripDeg',           0,  { min:    0, max:  42 });
 
 // ---- geometry parameters -------------------------------------------------
 // Footprint and base.
@@ -290,14 +287,20 @@ const forearmRootPlate = box(6, beamW.subtract(2), beamT.subtract(2), true)
 const forearmShape = forearmBeamShape.union(forearmRib).union(forearmRootPlate);
 const forearmPart = arm.part('forearm-beam', forearmShape);
 
-// 13. Gripper mounting plate at the forearm tip. The plate sits PAST the
-//     forearm beam's distal face (x = forearmLen) — was previously
-//     centered at forearmLen - 3, which slid the plate body half-inside
-//     the forearm beam and produced a large overlap. Plate now bolts onto
-//     the beam tip with a small air gap; the cylindrical neck and pin
-//     extend further out toward the gripper tool.
+// 13. Functional gripper palm at the forearm tip. The palm sits PAST the
+//     forearm beam's distal face (x = forearmLen) and carries a small
+//     visible drive disc plus two hinged fingers. The fingers are separate
+//     assembly parts so the review loop can sample the grip actuator and
+//     measure real fingertip aperture.
 const gripperPlateT = 6;
 const gripperPlateGap = 1;
+const gripperFingerLen = 34;
+const gripperFingerW = 6;
+const gripperFingerT = 6;
+const gripperHingeY = 28;
+const gripperHingeXNum = 139; // forearmLen default + gap + palm thickness + knuckle offset
+const gripDriverXNum = 132;
+const gripDriverZNum = 18;
 const gripperPlate = box(gripperPlateT, 28, 28, true)
   .fillet(2)
   .translate(forearmLen.add(gripperPlateGap).add(gripperPlateT / 2), 0, 0)
@@ -307,8 +310,31 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
   .union(
     cylinder(14, 1.5, 24).alongAxis([1, 0, 0]).translate(forearmLen.add(gripperPlateGap).add(gripperPlateT + 4), 0, 0),
   )
+  .union(
+    box(8, 8, 8, true).fillet(0.8).translate(gripperHingeXNum - 8, gripperHingeY, 0),
+  )
+  .union(
+    box(8, 8, 8, true).fillet(0.8).translate(gripperHingeXNum - 8, -gripperHingeY, 0),
+  )
   .color('tool');
 const gripperPlatePart = arm.part('gripper-plate', gripperPlate);
+
+const gripDriver = cylinder(4, 5, 32)
+  .translate(0, 0, 0)
+  .color('gear');
+const gripDriverPart = arm.part('grip-driver', gripDriver);
+
+const leftFinger = box(gripperFingerLen, gripperFingerW, gripperFingerT, true)
+  .fillet(0.7)
+  .translate(gripperFingerLen / 2, 0, 0)
+  .color('tool');
+const leftFingerPart = arm.part('left-finger', leftFinger);
+
+const rightFinger = box(gripperFingerLen, gripperFingerW, gripperFingerT, true)
+  .fillet(0.7)
+  .translate(gripperFingerLen / 2, 0, 0)
+  .color('tool');
+const rightFingerPart = arm.part('right-finger', rightFinger);
 
 // 14. Elbow-pitch shaft (cosmetic axle stubs at the forearm root).
 //     Two short stubs protruding from each side of the forearm beam; a
@@ -341,8 +367,7 @@ const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
 const baseTopZNum     = 6 + 38 + 4;          // plateT + servoH + hornT
 const shoulderPitchZNum = 50;                // shoulderColumnH default
 const upperArmLenNum  = 140;                 // upperArmLen default
-const forearmLenNum   = 120;                 // forearmLen default
-const toolTipXNum     = forearmLenNum + 1 + 6 + 4; // gripperPlateGap + plateT + pin offset
+const toolTipXNum     = gripperHingeXNum + gripperFingerLen;
 
 // ---- connectors on each part --------------------------------------------
 // base-plate: hosts the two fastened mounts (servo, output horn) AND the
@@ -464,9 +489,49 @@ gripperPlatePart
     type: 'frame',
     origin: { kind: 'vec3', value: [0, 0, 0] },
   })
+  .connector('grip-axis', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [gripDriverXNum, 0, gripDriverZNum] },
+    axis: [0, 0, 1],
+  })
+  .connector('left-hinge', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [gripperHingeXNum, gripperHingeY, 0] },
+    axis: [0, 0, 1],
+  })
+  .connector('right-hinge', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [gripperHingeXNum, -gripperHingeY, 0] },
+    axis: [0, 0, 1],
+  })
   .connector('tool-tip', {
     type: 'frame',
     origin: { kind: 'vec3', value: [toolTipXNum, 0, 0] },
+  });
+gripDriverPart.connector('axis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 0, 1],
+});
+leftFingerPart
+  .connector('hinge', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 0, 1],
+  })
+  .connector('tip', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [gripperFingerLen, 0, 0] },
+  });
+rightFingerPart
+  .connector('hinge', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [0, 0, 1],
+  })
+  .connector('tip', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [gripperFingerLen, 0, 0] },
   });
 elbowPitchShaftPart.connector('mount', {
   type: 'frame',
@@ -504,6 +569,14 @@ arm.mate('elbow-pitch', 'upper-arm-beam.elbow-out', 'forearm-beam.elbow-in', 're
   limitsDeg: [-55, 80],
 });
 arm.mate('gripper-plate-fix',     'forearm-beam.gripper-mount',     'gripper-plate.mount',     'fastened');
+arm.mate('grip', 'gripper-plate.grip-axis', 'grip-driver.axis', 'revolute', {
+  pose: gripDeg,
+  limitsDeg: [0, 42],
+});
+arm.mate('left-curl', 'gripper-plate.left-hinge', 'left-finger.hinge', 'revolute');
+arm.mate('right-curl', 'gripper-plate.right-hinge', 'right-finger.hinge', 'revolute');
+arm.coupleMates('left-curl', { source: 'grip', ratio: -1 });
+arm.coupleMates('right-curl', { source: 'grip', ratio: 1 });
 arm.mate('elbow-pitch-shaft-fix', 'forearm-beam.elbow-shaft-mount', 'elbow-pitch-shaft.mount', 'fastened');
 
 // ---- POSE ---------------------------------------------------------------
