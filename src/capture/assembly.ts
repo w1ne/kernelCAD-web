@@ -9,6 +9,7 @@ import {
   type ConnectorOrigin,
   type ConnectorType,
 } from '../lib/mates/connector';
+import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
 import {
   parseConnectorRef,
   type MateLimitRange,
@@ -205,6 +206,7 @@ export class Assembly {
   /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
   private readonly mates: MateRecord[] = [];
+  private readonly mateCouplings: MateCouplingRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -467,6 +469,46 @@ export class Assembly {
     return this;
   }
 
+  coupleMates(
+    driven: string,
+    opts: { source: string; ratio: number; offset?: number },
+  ): this {
+    const source = this.mates.find((mate) => mate.name === opts.source);
+    const drivenMate = this.mates.find((mate) => mate.name === driven);
+    if (!source || !drivenMate) {
+      const known = this.mates.map((mate) => mate.name).join(', ') || '(none)';
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.coupleMates: source '${opts.source}' or driven mate '${driven}' is not declared. Defined mates: ${known}.`,
+        undefined,
+        `invalid-args.assembly.coupled-mate-not-found — call arm.mate(...) for both source and driven mates before arm.coupleMates(...).`,
+      );
+    }
+    if (!isScalarCouplingMate(source.type) || !isScalarCouplingMate(drivenMate.type)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.coupleMates: source '${source.name}' (${source.type}) and driven '${drivenMate.name}' (${drivenMate.type}) must both be scalar articulated mates.`,
+        undefined,
+        `invalid-args.assembly.coupled-mate-type — couple only revolute, prismatic, cylindrical, or pin_slot mates.`,
+      );
+    }
+    if (!Number.isFinite(opts.ratio) || (opts.offset !== undefined && !Number.isFinite(opts.offset))) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'assembly.coupleMates: ratio and offset must be finite numbers.',
+        undefined,
+        `invalid-args.assembly.coupled-mate-invalid-scale — pass finite numeric ratio and offset values.`,
+      );
+    }
+    this.mateCouplings.push({
+      driven,
+      source: opts.source,
+      ratio: opts.ratio,
+      ...(opts.offset !== undefined ? { offset: opts.offset } : {}),
+    });
+    return this;
+  }
+
   private validateMateLimits(
     name: string,
     type: MateType,
@@ -550,6 +592,10 @@ export class Assembly {
    */
   __mates(): readonly MateRecord[] {
     return this.mates;
+  }
+
+  __mateCouplings(): readonly MateCouplingRecord[] {
+    return this.mateCouplings;
   }
 
   /**
@@ -1265,6 +1311,13 @@ function isValidJointLimits(value: [number, number]): boolean {
     value.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
     value[0] < value[1]
   );
+}
+
+function isScalarCouplingMate(type: MateType): boolean {
+  return type === 'revolute'
+    || type === 'prismatic'
+    || type === 'cylindrical'
+    || type === 'pin_slot';
 }
 
 function normalizeConnectors(

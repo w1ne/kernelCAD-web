@@ -9,6 +9,12 @@ import { currentValue } from '../../runtime/editableHelpers';
 import type { Editable } from '../../runtime/paramRef';
 import { detectInterferences } from '../../script-runtime/checkInterference';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
+import { expandCoupledPoses } from './coupledPoses';
+import {
+  computeGripperAperture,
+  type GripperApertureRequest,
+  type GripperApertureSummary,
+} from './gripperAperture';
 import type { MatePose, MateRecord } from './mate';
 import { solveMates } from './solver';
 
@@ -16,7 +22,8 @@ export type PoseEnvelopeDiagnosticCode =
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
   | 'assembly.pose-envelope.interference'
-  | 'assembly.pose-envelope.connector-unresolved';
+  | 'assembly.pose-envelope.connector-unresolved'
+  | 'assembly.gripper-aperture.connector-missing';
 
 export interface PoseEnvelopeDiagnostic {
   readonly code: PoseEnvelopeDiagnosticCode;
@@ -43,6 +50,7 @@ export interface PoseEnvelopeReviewOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
+  readonly gripperAperture?: GripperApertureRequest;
 }
 
 export interface PoseEnvelopeReviewResult {
@@ -51,6 +59,8 @@ export interface PoseEnvelopeReviewResult {
   readonly interferencePairs: Array<InterferencePair & { sampleName: string }>;
   readonly connectorPoses: TrackedConnectorPose[];
   readonly connectorWorkspace: ConnectorWorkspace[];
+  readonly gripperApertureRequest?: GripperApertureRequest;
+  readonly gripperAperture?: GripperApertureSummary;
 }
 
 export interface TrackedConnectorPose {
@@ -83,13 +93,13 @@ export function buildPoseEnvelopeSamples(arm: Assembly): PoseEnvelopeSample[] {
     const [min, max] = limits;
     samples.push({
       name: `${mate.name}:min`,
-      poses: { [mate.name]: min },
+      poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: min }),
       reason: `${mate.name} lower limit`,
     });
     if (max !== min) {
       samples.push({
         name: `${mate.name}:max`,
-        poses: { [mate.name]: max },
+        poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: max }),
         reason: `${mate.name} upper limit`,
       });
     }
@@ -136,7 +146,12 @@ export async function reviewPoseEnvelope(
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const connectorPoses: TrackedConnectorPose[] = [];
-  const trackConnectors = opts.trackConnectors !== undefined ? new Set(opts.trackConnectors) : undefined;
+  const trackConnectors = opts.trackConnectors !== undefined || opts.gripperAperture !== undefined
+    ? new Set([
+        ...(opts.trackConnectors ?? []),
+        ...(opts.gripperAperture !== undefined ? [opts.gripperAperture.left, opts.gripperAperture.right] : []),
+      ])
+    : undefined;
   const unresolvedConnectorRefs = new Set<string>();
 
   for (const sample of samples) {
@@ -200,12 +215,27 @@ export async function reviewPoseEnvelope(
     });
   }
 
+  const aperture = opts.gripperAperture !== undefined
+    ? computeGripperAperture(connectorPoses, opts.gripperAperture)
+    : undefined;
+  if (opts.gripperAperture !== undefined && aperture?.summary === undefined) {
+    diagnostics.push({
+      code: 'assembly.gripper-aperture.connector-missing',
+      severity: 'warning',
+      connectorRef: aperture?.missingRefs.join(', ') ?? `${opts.gripperAperture.left}, ${opts.gripperAperture.right}`,
+      message: `Gripper aperture could not be computed because one or both fingertip connector refs were not observed.`,
+      hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`,
+    });
+  }
+
   return {
     samples,
     diagnostics,
     interferencePairs,
     connectorPoses,
     connectorWorkspace: buildConnectorWorkspace(connectorPoses),
+    ...(opts.gripperAperture !== undefined ? { gripperApertureRequest: opts.gripperAperture } : {}),
+    ...(aperture?.summary !== undefined ? { gripperAperture: aperture.summary } : {}),
   };
 }
 
