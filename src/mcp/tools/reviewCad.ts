@@ -10,6 +10,10 @@ import {
 import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../lib/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../lib/mates/poseEnvelope';
+import {
+  reviewMechanicalPlausibility,
+  type MechanicalPlausibilityDiagnostic,
+} from '../../lib/mates/mechanicalPlausibility';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
 import { validateAssemblyWithMates } from '../../lib/mates/validator';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -29,7 +33,7 @@ export type ReviewCadOutput =
   | {
       ok: true;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic>;
       assembly: string;
       validator: {
         status: ValidatorStatus;
@@ -45,7 +49,7 @@ export type ReviewCadOutput =
   | {
       ok: false;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic>;
       assembly?: string;
       validator?: {
         status: ValidatorStatus;
@@ -92,6 +96,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
   }
 
   const validator = await validateAssemblyWithMates(arm);
+  const mechanicalPlausibility = await reviewMechanicalPlausibility(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
   const poseEnvelope = includePoseEnvelope
     ? await reviewPoseEnvelope(arm, {
@@ -105,10 +110,12 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
   const diagnostics = [
     ...withNextActions(evaluation.diagnostics),
     ...validator.diagnostics,
+    ...mechanicalPlausibility.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
   const fitness = summarizeMechanismFitness({
     validatorDiagnostics: validator.diagnostics,
+    mechanicalPlausibilityDiagnostics: mechanicalPlausibility.diagnostics,
     poseEnvelope,
     trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
   });
@@ -178,7 +185,7 @@ function selectAssembly(
 }
 
 function buildSuggestedRepairPrompt(
-  diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic)[],
+  diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic)[],
   blockingReasons: readonly MechanismBlockingReason[] = [],
 ): string {
   if (diagnostics.length === 0 && blockingReasons.length === 0) {
