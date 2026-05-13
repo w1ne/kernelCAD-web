@@ -4,6 +4,7 @@
 // Wraps the internal `arm.__mates()` accessor (capture/assembly.ts T6).
 
 import type { Assembly } from '../../capture/assembly';
+import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
 
@@ -16,6 +17,9 @@ export interface MateSummary {
   a: string;
   b: string;
   type: MateType;
+  pose?: MatePose;
+  limitsDeg?: MateLimitRange;
+  limitsMm?: MateLimitRange;
 }
 
 export type ListMatesOutput =
@@ -46,6 +50,14 @@ export async function listMatesTool(input: ListMatesInput): Promise<ListMatesOut
   }
   return {
     ok: true,
-    mates: arm.__mates().map((m) => ({ name: m.name, a: m.a, b: m.b, type: m.type })),
+    mates: arm.__mates().map((m) => ({
+      name: m.name,
+      a: m.a,
+      b: m.b,
+      type: m.type,
+      ...(m.pose !== undefined ? { pose: m.pose } : {}),
+      ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+      ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+    })),
   };
 }

@@ -542,8 +542,9 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
   to faces/edges/vertices yet.
 - **Body-tree only.** Each part has at most one parent joint; no
   closed-chain (4-bar linkage) kinematics.
-- **No motion-limit enforcement.** `limitsDeg`/`limitsMm` accepted but
-  out-of-range poses don't warn or throw.
+- **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm`
+  are checked by pose-envelope review (`review_cad` / `validateMatePoseLimits`);
+  raw `solve()` still computes the requested pose.
 - Calling `solve()` twice on the same Assembly compounds transforms;
   build a fresh `assembly()` per pose query.
 
@@ -687,25 +688,34 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-Five new MCP tools mirror the `.kcad.ts` surface for runtime introspection:
+MCP tools mirror the `.kcad.ts` surface for runtime introspection:
 
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` —
   register a mate-style connector on a named part. `type` is one of
   `frame`/`axis`/`planar`/`ball`; `origin` accepts either a `[x, y, z]`
   shorthand (becomes `{ kind: 'vec3' }`) or a structured `ConnectorOrigin`.
-- `add_mate({ name, a, b, type, assembly? })` — declare a typed mate between
-  two `"<partName>.<connectorName>"` refs. Same capture-time validation as
-  the script API: type-mismatch and connector-not-found errors surface
-  immediately with structured hints.
+- `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` —
+  declare a typed mate between two `"<partName>.<connectorName>"` refs. Same
+  capture-time validation as the script API: type-mismatch and
+  connector-not-found errors surface immediately with structured hints.
 - `list_mates({ assembly? })` — return the declared mate records as
-  `{ mates: [{ name, a, b, type }, ...] }`. Read-only.
+  `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
+  Read-only.
 - `validate_assembly({ assembly? })` — run `validateAssemblyWithMates(arm)`
   and return `{ status, diagnostics, partCount, jointCount }`. Each
   diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return
-  `{ status, poses, iterations? }`. The `poses` input is reserved for the
-  post-T9 articulated path; today the solver classifies tree assemblies and
-  fastened-only loops only.
+  `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate
+  name.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` —
+  run the deterministic agent review loop: evaluate, validate mates, sample
+  declared pose limits, report connector workspace bounds, and return raw
+  diagnostics plus a fitness summary (`fitness.functional`,
+  `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is
+  selected. Pass
+  `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an
+  end-effector; connector workspace is only computed when pose-envelope
+  sampling is enabled.
 
 ### Naming features (slice 2)
 
@@ -884,7 +894,7 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 27 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 28 tools:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
@@ -909,10 +919,11 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
 - `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a v0.6 mate-style connector on a named part of the active assembly; requires a prior `evaluate_script`. `type` is one of `frame`/`axis`/`planar`/`ball`. `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`.
-- `add_mate({ name, a, b, type, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
-- `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type }, ...] }`.
+- `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs on the active assembly. `type` is one of `fastened`/`revolute`/`prismatic`/`cylindrical`/`planar`/`ball`/`pin_slot`; capture-time validation surfaces type-mismatch / connector-not-found errors.
+- `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
-- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input is reserved for the post-T9 articulated path.
+- `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors? })` — evaluate a script, validate its assembly/mate graph, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace is only computed when pose-envelope sampling is enabled.
 
 ## Out of Scope
 

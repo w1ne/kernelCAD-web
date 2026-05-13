@@ -1,10 +1,9 @@
 // src/mcp/tools/solveMates.ts
 //
 // v0.6 MCP tool — run the mate-graph solver on the active assembly and
-// return per-part world transforms. Wraps `solveMates(arm)` (T6/T7) and
+// return per-part world transforms. Wraps `solveMates(arm, poses?)` (T6/T7) and
 // serializes each `Transform` to a plain `{ translation, rotateAxis,
 // rotateDeg }` object via the existing `decomposeToTranslateAndRotate()`.
-// `poses` is reserved for the post-T9 articulated path; ignored for now.
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
@@ -13,9 +12,7 @@ import { getActiveMcpSession } from '../activeSession';
 
 export interface SolveMatesInput {
   assembly?: string;
-  /** Reserved for the articulated-loop solver (T9+). Ignored by the v0.6.0
-   *  fastened-only path; carried in the input shape so agents authoring
-   *  forward-compatible scripts don't need to rewrite later. */
+  /** Optional per-mate numeric pose overrides. */
   poses?: Record<string, number | [number, number, number]>;
 }
 
@@ -64,7 +61,7 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
     };
   }
   try {
-    const r = await solveMates(arm);
+    const r = await solveMates(arm, input.poses);
     const serialized: Record<string, SerializedPose> = {};
     for (const [partName, t] of r.poses) {
       const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();

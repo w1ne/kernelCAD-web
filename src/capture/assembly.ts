@@ -9,7 +9,12 @@ import {
   type ConnectorOrigin,
   type ConnectorType,
 } from '../lib/mates/connector';
-import { parseConnectorRef, type MatePose, type MateRecord } from '../lib/mates/mate';
+import {
+  parseConnectorRef,
+  type MateLimitRange,
+  type MatePose,
+  type MateRecord,
+} from '../lib/mates/mate';
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
 import { solveMates } from '../lib/mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
@@ -75,6 +80,22 @@ export interface AssemblyPartRef {
    *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
    *  connector with the same name is already registered on this part. */
   connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
+}
+
+function validateLimitRange(
+  mateName: string,
+  field: 'limitsDeg' | 'limitsMm',
+  range: MateLimitRange,
+): void {
+  const [min, max] = range;
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly.mate.invalid-limits: mate '${mateName}' ${field} must be a finite [min, max] range with min <= max.`,
+      undefined,
+      `invalid-args.assembly.mate-invalid-limits — pass ${field}: [min, max] with finite numbers and min <= max.`,
+    );
+  }
 }
 
 export interface AssemblyJointRef {
@@ -413,7 +434,7 @@ export class Assembly {
     aRef: string,
     bRef: string,
     type: MateType,
-    opts?: { pose?: MatePose },
+    opts?: { pose?: MatePose; limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange },
   ): this {
     const a = this.resolveMateConnector(aRef);
     const b = this.resolveMateConnector(bRef);
@@ -433,14 +454,46 @@ export class Assembly {
         `invalid-args.assembly.mate-pose-on-zero-dof-mate — '${type}' mates have no articulation DOF; drop opts.pose or change the mate type.`,
       );
     }
+    this.validateMateLimits(name, type, opts);
     this.mates.push({
       name,
       a: aRef,
       b: bRef,
       type,
       ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
+      ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
+      ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
     });
     return this;
+  }
+
+  private validateMateLimits(
+    name: string,
+    type: MateType,
+    opts?: { limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange },
+  ): void {
+    if (opts?.limitsDeg !== undefined) {
+      validateLimitRange(name, 'limitsDeg', opts.limitsDeg);
+      if (type !== 'revolute' && type !== 'cylindrical' && type !== 'pin_slot') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mate.limit-type-mismatch: mate '${name}' type '${type}' does not accept limitsDeg.`,
+          undefined,
+          `invalid-args.assembly.mate-limit-type-mismatch — limitsDeg applies to revolute, cylindrical, and pin_slot mates.`,
+        );
+      }
+    }
+    if (opts?.limitsMm !== undefined) {
+      validateLimitRange(name, 'limitsMm', opts.limitsMm);
+      if (type !== 'prismatic') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mate.limit-type-mismatch: mate '${name}' type '${type}' does not accept limitsMm.`,
+          undefined,
+          `invalid-args.assembly.mate-limit-type-mismatch — limitsMm applies to prismatic mates.`,
+        );
+      }
+    }
   }
 
   /** Resolve `"<partName>.<connectorName>"` to its part + connector. Throws
@@ -786,7 +839,7 @@ export class Assembly {
     // skipping the call avoids paying for a tree walk on v0.5 assemblies.
     const mateTransformsPromise: Promise<ReadonlyMap<string, Transform> | undefined> =
       this.mates.length > 0
-        ? solveMates(this).then((r) => r.poses)
+        ? solveMates(this, poses as NumericPoses).then((r) => r.poses)
         : Promise.resolve(undefined);
 
     if (mode === 'off') {
