@@ -47,6 +47,10 @@ export interface SdfNamespace {
   torus(majorR: number, minorR: number): SdfField;
   smoothBlend(a: SdfField, b: SdfField, k: number): SdfField;
   materialize(field: SdfField, opts?: MaterializeOpts): Shape;
+  /** Bind an SdfField by name on the session, so the `evaluate_sdf` MCP tool
+   *  can sample it after the script returns. Used by agents who want to probe
+   *  field values before (or after) calling the expensive `sdf.materialize`. */
+  bind(name: string, field: SdfField): void;
 }
 
 export interface KernelCadApi {
@@ -349,6 +353,17 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       torus: sdfTorus,
       smoothBlend: sdfSmoothBlend,
       materialize: (field, opts) => sdfMaterialize({ session }, field, opts),
+      bind: (name, field) => {
+        if (typeof name !== 'string' || name.length === 0) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `sdf.bind: name must be a non-empty string; got ${JSON.stringify(name)}.`,
+            undefined,
+            'invalid-args.sdf.bind.name — pass a non-empty string identifier.',
+          );
+        }
+        session.sdfFields.set(name, field);
+      },
     },
   };
   return api;
