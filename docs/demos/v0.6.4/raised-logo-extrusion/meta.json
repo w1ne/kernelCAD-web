@@ -1,0 +1,11 @@
+{
+  "taskId": "raised-logo-extrusion",
+  "module": "v0.6.4",
+  "capturedAt": "2026-05-14T18:21:26.711Z",
+  "durationMs": 14900,
+  "truncated": false,
+  "gitSha": "a4ca2c355effbdfb9399c4103bee9a733a3d5742",
+  "heroArtifact": "raised-logo-extrusion",
+  "catalogSource": "memorable-builds-policy/v0.6.4",
+  "overrideApprovedBy": null
+}
