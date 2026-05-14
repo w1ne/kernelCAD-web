@@ -250,17 +250,15 @@ export interface SkinnedSurface {
 
 /**
  * Thicken a single-face shell (the NURBS face) into a closed solid via
- * `BRepOffsetAPI_MakeThickSolid.MakeThickSolidByJoin`.
+ * `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`.
  *
- * Inputs: `t` is the total thickness in mm. The implementation passes `t/2`
- * as the offset because BRepOffsetAPI offsets both sides relative to the
- * source face (positive normal direction), so the resulting solid has
- * thickness ≈ `t` along the surface normal.
- *
- * Note: callers requesting `t === thickness span` expect bounding-box span
- * `≈ t`. For our test/corpus assertions we use the OCCT convention directly
- * (offset = t, span ≈ t), which matches how the existing `shell` feature
- * uses MakeThickSolid.
+ * Inputs: `t` is the total thickness in mm and is passed directly (no `/2`
+ * halving) as the offset distance. `MakeThickSolidBySimple` is the correct
+ * OCCT entry point for "close an open shell into a solid by offsetting one
+ * side" — the resulting solid has thickness ≈ `t` along the surface normal.
+ * The alternative `MakeThickSolidByJoin` requires a solid input plus a list
+ * of faces to remove (used for hollowing an existing solid, e.g. the `shell`
+ * feature), which is the wrong shape for the slice-1 NURBS use case.
  */
 export function thickenFace(surface: replicad.Face | BuiltSurface, t: number): OcctBackend {
   if (!(t > 0 && Number.isFinite(t))) {
