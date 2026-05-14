@@ -760,7 +760,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 33 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 34 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1071,6 +1071,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
 - `add_nurbs_surface({ code, controls?, degree?, weights?, knots?, periodic?, section_sketch_ids?, binding_name? })` — insert a `nurbsSurface(...)` or `surfaceFromCurves(...)` call; returns modified code + diagnostics. Chain `.thicken(t)` / `.toShape()` via the existing `add_feature` tool on the returned binding name.
 - `add_sketch_text({ code, content, size, font?, align?, position?, rotation?, bindAs? })` — insert a `sketch.text(...)` call before the last top-level return and return modified code plus diagnostics. Pair with subsequent `.extrude(...)` / `cut(...)` edits to land an engraved or raised text feature.
+- `add_pattern_feature({ code, target, kind, linear?, circular?, grid?, assign_to? })` — insert a `Shape.patternLinear / .patternCircular / .patternGrid` call before the last top-level return and return modified code plus diagnostics. Composes the call from structured args (validated under the same predicates as the capture proxy). Pattern-instance face refs resolve via the virtual `<sourceId>_pattern_<i>` lineage id on the pattern feature.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
