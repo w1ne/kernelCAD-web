@@ -53,4 +53,7 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'export.no-shape':                          { kind: 'add-return' },
   'feature.nurbs.degenerate-controls':        { kind: 'fix-arg', field: 'controls' },
   'feature.nurbs.degree-mismatch':            { kind: 'fix-arg', field: 'degree' },
+  'feature.sheetMetal.kfactor-invalid':           { kind: 'fix-arg', field: 'kFactor' },
+  'feature.bend.edge-not-linear':                 { kind: 'rewrite-feature', guidance: 'pick a linear edge on the sheet perimeter' },
+  'feature.flattenPattern.multi-bend-unsupported':{ kind: 'rewrite-feature', guidance: 'flatten an upstream Shape with <= 2 bends (slice-1 limit)' },
 };

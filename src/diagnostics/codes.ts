@@ -51,7 +51,11 @@ export type DiagnosticCode =
   | 'export.no-shape'
   // NURBS surfaces (2) — W1.3
   | 'feature.nurbs.degenerate-controls'
-  | 'feature.nurbs.degree-mismatch';
+  | 'feature.nurbs.degree-mismatch'
+  // Sheet metal slice 1 (3) — W2.2
+  | 'feature.sheetMetal.kfactor-invalid'
+  | 'feature.bend.edge-not-linear'
+  | 'feature.flattenPattern.multi-bend-unsupported';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -84,6 +88,9 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'export.no-shape',
   'feature.nurbs.degenerate-controls',
   'feature.nurbs.degree-mismatch',
+  'feature.sheetMetal.kfactor-invalid',
+  'feature.bend.edge-not-linear',
+  'feature.flattenPattern.multi-bend-unsupported',
 ] as const;
 
 export interface HintTemplate {
@@ -160,6 +167,12 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
     'feature.nurbs.degree-mismatch':
       'NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.',
+    'feature.sheetMetal.kfactor-invalid':
+      'K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33–0.45. Adjust the kFactor argument to sheetMetal().',
+    'feature.bend.edge-not-linear':
+      '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).',
+    'feature.flattenPattern.multi-bend-unsupported':
+      '.flattenPattern() supports at most 2 bends in slice 1. Flatten an upstream Shape with two or fewer bends, or wait for slice 2.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
