@@ -1,4 +1,28 @@
-# kernelCAD v0.6.0
+# kernelCAD v0.6.3
+
+## v0.6.3 — 2026-05-14 — v0.3 stable-naming finish
+
+### Added
+
+- `created` face/edge refs resolve end-to-end through the `HistoryMap` topology
+  route, with a geometry-snapshot fallback (centroid + normal + area + surfaceType)
+  that emits `feature.created-ref.fallback-used` (warning) instead of erroring
+  when an upstream op rewrites enough topology to lose the slot lookup.
+- `snapshotAtCreate` + `surfaceType` siblings on `FaceLineage` — immutable
+  create-time fingerprint preserved through every downstream op.
+- MCP tool `get_face_lineage` — walks the lineage chain for a named face/edge
+  ref; returns `{ chain, usedFallback }`. Ships create/modify ops in this slice;
+  split/delete classification is deferred.
+- 3 new corpus tasks: `through-hole-roundtrip`, `blind-hole-bottom-face-fillet`,
+  `cylindrical-wall-created-ref-through-fillet-chain`.
+- 2 new diagnostic codes: `feature.hole.no-target-face` (error),
+  `feature.created-ref.fallback-used` (warning). Catalogue is now 26 codes.
+
+### Audited
+
+- `mergeBooleanHistory` / `mergeEdgeFeatureHistory` lineage propagation across
+  `fillet` / `chamfer` / `shell` / `cutout` — confirms `CreatedRefSpec`s survive
+  a downstream op.
 
 ## v0.6.0 — 2026-05-11
 
