@@ -99,6 +99,24 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
       surfaceType: lineage.surfaceType,
     });
   }
+  // Canonical chain ordering — `map.entries()` iterates in insertion-order,
+  // which is implementation-defined for the result HistoryMap. Sort by
+  // featureId-index against `run.records` (creation order), then break ties
+  // on the slot name lexicographically. This guarantees agents reading the
+  // chain see a stable, chronological view regardless of how the lowerers
+  // happened to build the result map.
+  const idIndex = new Map<string, number>();
+  for (let i = 0; i < run.records.length; i++) idIndex.set(run.records[i].id, i);
+  chain.sort((a, b) => {
+    const ai = idIndex.get(a.featureId) ?? Number.MAX_SAFE_INTEGER;
+    const bi = idIndex.get(b.featureId) ?? Number.MAX_SAFE_INTEGER;
+    if (ai !== bi) return ai - bi;
+    const as = a.slot ?? '';
+    const bs = b.slot ?? '';
+    if (as < bs) return -1;
+    if (as > bs) return 1;
+    return 0;
+  });
   // usedFallback is signalled by the resolver via `feature.created-ref.fallback-used`
   // anywhere in the run's diagnostics — the resolver is the authoritative emitter.
   const usedFallback = (result.diagnostics ?? []).some((d) => d.code === 'feature.created-ref.fallback-used');
