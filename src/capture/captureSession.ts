@@ -5,7 +5,7 @@ import {
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
 import type {
-  SurfaceRecord, SurfaceId, NurbsSurfaceData, SurfaceFromCurvesData,
+  SurfaceRecord, SurfaceId, NurbsSurfaceData,
 } from '../intent/surfaceRecord';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';

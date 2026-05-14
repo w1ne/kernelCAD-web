@@ -47,4 +47,6 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'cli.export-exception':                     { kind: 'inspect-message' },
   'export.feature-not-found':                 { kind: 'call-introspection-tool', tool: 'list_features' },
   'export.no-shape':                          { kind: 'add-return' },
+  'feature.nurbs.degenerate-controls':        { kind: 'fix-arg', field: 'controls' },
+  'feature.nurbs.degree-mismatch':            { kind: 'fix-arg', field: 'degree' },
 };

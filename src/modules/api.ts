@@ -2,8 +2,9 @@ import type { CaptureSession } from '../capture/captureSession';
 import { validateFaceLabels } from '../capture/faceLabels';
 import { makeAssembly, type Assembly } from '../capture/assembly';
 import { Shape } from '../capture/proxy';
-import { makePath, type PathBuilder } from '../capture/sketch';
-import type { Param } from '../intent/types';
+import { Sketch, makePath, type PathBuilder } from '../capture/sketch';
+import type { SurfaceProxy } from '../capture/surfaceProxy';
+import type { Param, Vec3 } from '../intent/types';
 import {
   selectEdges as selectEdgesBackend,
   selectEdge as selectEdgeBackend,
@@ -56,10 +57,93 @@ export interface KernelCadApi {
 
   /** Parts library — STEP-import + (future) parametric component wrappers. */
   lib: PartsLib;
+
+  /**
+   * W1.3: Build a NURBS surface from an explicit control net + degree.
+   * Returns a `Surface` peer to `Shape`. Use `.thicken(t)` to get a
+   * closed solid, or `.toShape()` to get a zero-volume single-face shell.
+   *
+   * Slice-1 limitation: `weights` is accepted but silently degraded to
+   * non-rational (the underlying OCCT `TColStd_Array2OfReal` binding isn't
+   * exposed in `replicad-opencascadejs`). See decision doc 2026-05-14.
+   */
+  nurbsSurface(opts: {
+    controls: Vec3[][];
+    weights?: number[][];
+    degree: { u: number; v: number };
+    knots?: { u: number[]; v: number[] };
+    periodic?: { u: boolean; v: boolean };
+  }): SurfaceProxy;
+
+  /**
+   * W1.3: Skin a NURBS surface through a sequence of Sketch sections in
+   * order. Each section's lifted profile becomes a transverse cross-section
+   * of the resulting surface. Returns a `Surface` peer to `Shape`.
+   */
+  surfaceFromCurves(sections: Sketch[]): SurfaceProxy;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
+
+// === W1.3 NURBS surfaces validation helpers ===
+
+function isRectangularGrid(grid: unknown[][]): boolean {
+  if (!Array.isArray(grid) || grid.length === 0) return false;
+  const nV = grid[0].length;
+  if (nV === 0) return false;
+  return grid.every(row => Array.isArray(row) && row.length === nV);
+}
+
+function describeGridShape(grid: unknown): string {
+  if (!Array.isArray(grid)) return String(grid);
+  if (grid.length === 0) return '[]';
+  const rowLens = (grid as unknown[][]).map(r => Array.isArray(r) ? r.length : 'NaN');
+  return `${grid.length} rows, inner lengths [${rowLens.join(',')}]`;
+}
+
+function validateNurbsControls(controls: Vec3[][]): void {
+  if (!isRectangularGrid(controls as unknown[][])) {
+    throw new KernelError(
+      'feature.nurbs.degenerate-controls',
+      `nurbsSurface: controls must be a non-empty rectangular Vec3 grid; got shape ${describeGridShape(controls)}.`,
+      undefined,
+      'nurbs.degenerate-controls — controls must be a non-empty rectangular Vec3 grid spanning a 2D extent.',
+    );
+  }
+  for (const row of controls) {
+    for (const p of row) {
+      if (
+        !Array.isArray(p) || p.length !== 3 ||
+        !p.every(c => typeof c === 'number' && Number.isFinite(c))
+      ) {
+        throw new KernelError(
+          'feature.nurbs.degenerate-controls',
+          `nurbsSurface: every control point must be a finite Vec3; got ${JSON.stringify(p)}.`,
+          undefined,
+          'nurbs.degenerate-controls — control points must be finite Vec3 (3 numbers).',
+        );
+      }
+    }
+  }
+}
+
+function validateNurbsDegree(controls: Vec3[][], degree: { u: number; v: number }): void {
+  const nU = controls.length;
+  const nV = controls[0].length;
+  const bad =
+    !Number.isFinite(degree.u) || !Number.isFinite(degree.v) ||
+    degree.u < 1 || degree.v < 1 ||
+    degree.u > nU - 1 || degree.v > nV - 1;
+  if (bad) {
+    throw new KernelError(
+      'feature.nurbs.degree-mismatch',
+      `nurbsSurface: degree must satisfy 1 <= degree.u <= ${nU - 1} and 1 <= degree.v <= ${nV - 1}; got degree.u=${degree.u}, degree.v=${degree.v}.`,
+      undefined,
+      `nurbs.degree-mismatch — degree.u must be in [1, nU-1] = [1, ${nU - 1}], degree.v in [1, nV-1] = [1, ${nV - 1}].`,
+    );
+  }
+}
 
 export function createApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
@@ -193,6 +277,39 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     },
     lib: {
       fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
+    },
+
+    nurbsSurface(opts) {
+      validateNurbsControls(opts.controls);
+      validateNurbsDegree(opts.controls, opts.degree);
+      if (opts.weights && !isRectangularGrid(opts.weights as unknown[][])) {
+        throw new KernelError(
+          'feature.nurbs.degenerate-controls',
+          `nurbsSurface: weights grid must be the same rectangular shape as controls; got ${describeGridShape(opts.weights)}.`,
+          undefined,
+          'nurbs.degenerate-controls — weights grid must match controls shape.',
+        );
+      }
+      return session.addNurbsSurface({
+        kind: 'nurbsSurface',
+        controls: opts.controls,
+        weights: opts.weights,
+        degree: opts.degree,
+        knots: opts.knots,
+        periodic: opts.periodic,
+      });
+    },
+
+    surfaceFromCurves(sections) {
+      if (!Array.isArray(sections) || sections.length < 2) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `surfaceFromCurves: need at least 2 sections; got ${sections?.length ?? 0}.`,
+          undefined,
+          'invalid-args.surfaceFromCurves.sections — pass at least 2 Sketch sections.',
+        );
+      }
+      return session.addSurfaceFromCurves(sections.map(s => s.id));
     },
   };
   return api;
