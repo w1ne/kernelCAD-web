@@ -27,6 +27,8 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.kernel-failed':                    { kind: 'retry-with-smaller-param', param: 'op-radius-or-thickness', factor: 0.5 },
   'feature.revolve.crosses-axis':             { kind: 'rewrite-feature', guidance: 'clamp all path coords to x >= 0' },
   'feature.sketch.degenerate-arc':            { kind: 'retry-with-smaller-param', param: 'arc-radius-or-endpoints', factor: 0.5 },
+  'sketch.text.font-not-found':               { kind: 'fix-arg', field: 'font' },
+  'sketch.text.empty-content':                { kind: 'fix-arg', field: 'content' },
   'feature.face-ref.not-resolvable':          { kind: 'reorder-pipeline', guidance: 'apply this feature before any transform' },
   'feature.face-ref.not-applicable':          { kind: 'rewrite-feature', guidance: 'use a different primitive or inline FaceQuery' },
   'feature.face-ref.not-supported':           { kind: 'rewrite-feature', guidance: 'use a canonical face name, label, or inline FaceQuery / EdgeQuery' },

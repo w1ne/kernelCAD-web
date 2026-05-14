@@ -11,6 +11,8 @@ import {
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import { createSketchModule, type SketchModule } from './sketch';
+import { fontPath, type FontPath } from '../lib/fonts';
 import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
@@ -56,6 +58,12 @@ export interface KernelCadApi {
 
   /** Parts library — STEP-import + (future) parametric component wrappers. */
   lib: PartsLib;
+
+  /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
+  sketch: SketchModule;
+
+  /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
+  fontPath(p: string): FontPath;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -194,6 +202,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     lib: {
       fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
     },
+    sketch: createSketchModule(session),
+    fontPath,
   };
   return api;
 }

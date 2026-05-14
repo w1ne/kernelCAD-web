@@ -145,6 +145,12 @@ export class CaptureSession {
    *  Lives on the session (not the record) because OCCT shapes carry
    *  circular references that would trip metadata walkers. */
   readonly importedGeometry: Map<string, ShapeBackend> = new Map();
+  /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
+   *  OCCT text lowerer to resolve relative `fontPath(...)` arguments at
+   *  lower time. Mirrors how `lib.fromSTEP(path)` threads scriptDir through
+   *  the API context — but the lowerer pulls it here instead of via the API
+   *  context (which doesn't reach lowering). */
+  scriptDir?: string;
   /** v0.6: live `Assembly` instances created via `kcad.assembly(name)` during
    *  this session's script run. Tracked by name so the v0.6 MCP mutator tools
    *  (`add_connector`, `add_mate`) can look up the live Assembly object and

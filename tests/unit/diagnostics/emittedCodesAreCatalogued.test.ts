@@ -26,11 +26,14 @@ const EMITTING_FILES = [
   'backends/occt/holeLowerer.ts',
   'backends/occt/edgeSelection.ts',
   'backends/occt/edgeQueries.ts',
+  'backends/occt/textLowerer.ts',
   'capture/captureSession.ts',
   'capture/proxy.ts',
   'capture/sketch.ts',
   'capture/faceLabels.ts',
+  'lib/fonts/index.ts',
   'modules/api.ts',
+  'modules/sketch/index.ts',
   'compute/recomputeEngine.ts',
   'cli/commands/evaluate.ts',
   'cli/commands/export.ts',
@@ -60,15 +63,15 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 26 codes', () => {
-    expect(catalogue.size).toBe(26);
+  it('catalogue has exactly 28 codes', () => {
+    expect(catalogue.size).toBe(28);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 24 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 26 in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });

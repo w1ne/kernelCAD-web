@@ -256,10 +256,14 @@ npm run dev
 ```
 
 
-## [Unreleased]
+## v0.6.4 — 2026-05-14 — 2D text (sketch.text primitive)
 
 ### Added
 
+- `sketch.text(content, opts)` — author 2D text as a sketch-internal primitive. Returns a `Sketch` covering all rendered glyph outlines; chains into `.extrude()` for engraved or raised text features. `align: 'left' | 'center' | 'right'`, `position: [x, y]`, and CCW `rotation` degrees are all editable. Bundled font is Liberation Sans Regular (SIL OFL 1.1); pass `font: fontPath('/path/to/font.ttf')` to load a custom TTF.
+- `add_sketch_text` MCP tool — AST-edit a `sketch.text(...)` call into a kernelCAD script with optional `bindAs` to name the resulting variable.
+- Two new diagnostic codes: `sketch.text.font-not-found`, `sketch.text.empty-content`. Both error-severity with mandatory hints.
+- Two corpus tasks: `engraved-nameplate` (text cut into a plate) and `raised-logo-extrusion` (text extruded upward, rotated 15°).
 - Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
 - Assembly Vec3 surfaces (`assembly.part({ at, connectors })`, `assembly.revolute({ axis, origin })`) accept `Editable<number>` per coord. Underlying intent uses a unified `Vec3Param` shape shared with `translate`/`rotate`. `AssemblyConnectorRef.worldOrigin` is symbolic — a parametric `at` plus parametric connector `origin` produces a `worldOrigin` whose components are composed `ParamRef` expressions, and the public input types accept that `Vec3Param` directly so an agent can write `arm.revolute({ origin: parent.connector('tip').worldOrigin })`. A single `setParamValue` re-lowers the part dimensions, dependent connector frames, and any joint built on those frames in one pass. Axis vectors normalize at lower time; an axis that resolves to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
 - `assembly.solve(poses): SolvedKinematics` — body-tree forward kinematics
