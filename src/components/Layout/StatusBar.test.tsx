@@ -80,6 +80,39 @@ describe('StatusBar', () => {
         expect(screen.queryByText('Stack trace line')).toBeNull();
     });
 
+    it('renders interferences count when prop is passed', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={2}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+                interferences={3}
+            />
+        );
+
+        expect(screen.getByText('interferences: 3')).toBeDefined();
+    });
+
+    it('omits interferences when prop is undefined', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={2}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+            />
+        );
+
+        expect(screen.queryByTestId('status-interferences')).toBeNull();
+    });
+
     it('truncates long first-line errors', () => {
         const firstLine = `OpenCascade Error ${'x'.repeat(100)}`;
         const expected = `${firstLine.slice(0, 93)}...`;
