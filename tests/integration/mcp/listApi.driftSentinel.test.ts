@@ -9,6 +9,7 @@ import { CaptureSession } from '../../../src/capture/captureSession';
 import { Shape } from '../../../src/capture/proxy';
 import { Sketch, PathBuilder } from '../../../src/capture/sketch';
 import { Scene } from '../../../src/intent/scene';
+import { SurfaceProxy } from '../../../src/capture/surfaceProxy';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {
@@ -96,5 +97,15 @@ describe('list_api drift sentinels', () => {
     for (const field of expectedFields) {
       expect(advertised.has(field), `SCENE_PART_PROPERTIES missing entry for ScenePart.${field}`).toBe(true);
     }
+  });
+
+  it('SURFACE_METHODS matches SurfaceProxy.prototype', async () => {
+    const r = await listApiTool({});
+    const advertised = new Set((r.surfaceMethods ?? []).map(m => m.name));
+    const actual = new Set(
+      Object.getOwnPropertyNames(SurfaceProxy.prototype)
+        .filter(n => n !== 'constructor' && typeof (SurfaceProxy.prototype as Record<string, unknown>)[n] === 'function'),
+    );
+    expect(advertised).toEqual(actual);
   });
 });
