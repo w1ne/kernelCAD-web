@@ -6,6 +6,7 @@ import { evaluateScriptTool } from './tools/evaluateScript';
 import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
+import { inspectAssemblyTool } from './tools/inspectAssembly';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
@@ -19,6 +20,7 @@ import { lookupCookbookTool } from './tools/lookupCookbook';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
+import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
@@ -90,6 +92,22 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listAssembliesTool(input as Parameters<typeof listAssembliesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'inspect_assembly',
+      description:
+        'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors, mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        },
+      },
+    },
+    handler: input => inspectAssemblyTool(input as Parameters<typeof inspectAssemblyTool>[0]),
   },
   {
     definition: {
@@ -510,13 +528,19 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review.',
+      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
       inputSchema: {
         type: 'object',
         properties: {
           file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
           assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          designGoal: { type: 'string', description: 'Original user design prompt or goal. Included in suggestedRepairPrompt so topology-redesign repairs restart from the intended physical design instead of local coordinate nudges.' },
+          preserveInterfaces: {
+            type: 'array',
+            description: 'External mates, connector refs, part names, or behavioral interfaces the repair agent must preserve during redesign.',
+            items: { type: 'string' },
+          },
           includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
           includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
           epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
@@ -529,6 +553,48 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => reviewCadTool(input as unknown as Parameters<typeof reviewCadTool>[0]),
+  },
+  {
+    definition: {
+      name: 'design_loop',
+      description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
+          attempts: {
+            type: 'array',
+            description: 'Ordered design attempts. Each item is { id?, title?, file? or code? }. File attempts can be replayed by Studio build records.',
+            items: { type: 'object' },
+          },
+          assembly: { type: 'string' },
+          preserveInterfaces: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'External mates, connector refs, part names, or behavioral interfaces the agent must preserve between attempts.',
+          },
+          includePoseEnvelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+          includeInterference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+          epsilonMm3: { type: 'number', description: 'Forwarded to review_cad.' },
+          trackConnectors: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Connector refs to track across sampled poses.',
+          },
+          gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
+          stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+          allowReviewWarnings: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok.',
+          },
+          outputRecordPath: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
+          recordTitle: { type: 'string', description: 'Optional title for the build record.' },
+        },
+        required: ['goal', 'attempts'],
+      },
+    },
+    handler: input => designLoopTool(input as unknown as Parameters<typeof designLoopTool>[0]),
   },
 ];
 

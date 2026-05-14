@@ -1,6 +1,8 @@
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import type { ValidatorDiagnostic } from './validator';
 import type { MechanicalPlausibilityDiagnostic } from './mechanicalPlausibility';
+import type { MechanicalIntentDiagnostic } from './mechanicalIntent';
+import type { MechanicalTransmissionDiagnostic } from './mechanicalTransmission';
 
 export interface MechanismBlockingReason {
   readonly code: string;
@@ -8,6 +10,12 @@ export interface MechanismBlockingReason {
   readonly evidence?: unknown;
   readonly repairHint: string;
 }
+
+export type MechanismRepairMode =
+  | 'none'
+  | 'local-fix'
+  | 'parameter-tune'
+  | 'topology-redesign';
 
 export interface MechanismSummary {
   readonly sampleCount: number;
@@ -18,10 +26,14 @@ export interface MechanismSummary {
   readonly gripperApertureMaxMm?: number;
   readonly gripperApertureTravelMm?: number;
   readonly mechanicalPlausibilityIssueCount?: number;
+  readonly mechanicalIntentIssueCount?: number;
+  readonly mechanicalTransmissionIssueCount?: number;
 }
 
 export interface MechanismFitnessResult {
   readonly functional: boolean;
+  readonly repairMode: MechanismRepairMode;
+  readonly repairDirective: string;
   readonly passedChecks: readonly string[];
   readonly blockingReasons: readonly MechanismBlockingReason[];
   readonly mechanismSummary: MechanismSummary;
@@ -30,6 +42,8 @@ export interface MechanismFitnessResult {
 export interface MechanismFitnessInput {
   readonly validatorDiagnostics?: readonly ValidatorDiagnostic[];
   readonly mechanicalPlausibilityDiagnostics?: readonly MechanicalPlausibilityDiagnostic[];
+  readonly mechanicalIntentDiagnostics?: readonly MechanicalIntentDiagnostic[];
+  readonly mechanicalTransmissionDiagnostics?: readonly MechanicalTransmissionDiagnostic[];
   readonly poseEnvelope?: PoseEnvelopeReviewResult;
   readonly trackConnectors?: readonly string[];
 }
@@ -47,6 +61,8 @@ export function summarizeMechanismFitness(
 ): MechanismFitnessResult {
   const validatorDiagnostics = input.validatorDiagnostics ?? [];
   const mechanicalPlausibilityDiagnostics = input.mechanicalPlausibilityDiagnostics ?? [];
+  const mechanicalIntentDiagnostics = input.mechanicalIntentDiagnostics ?? [];
+  const mechanicalTransmissionDiagnostics = input.mechanicalTransmissionDiagnostics ?? [];
   const poseEnvelope = input.poseEnvelope;
   const trackConnectors = input.trackConnectors ?? [];
 
@@ -78,6 +94,25 @@ export function summarizeMechanismFitness(
   }
 
   for (const diagnostic of mechanicalPlausibilityDiagnostics) {
+    if (diagnostic.severity !== 'error') continue;
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
+  }
+
+  for (const diagnostic of mechanicalIntentDiagnostics) {
+    addBlockingReason(
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.hint,
+      diagnostic,
+    );
+  }
+
+  for (const diagnostic of mechanicalTransmissionDiagnostics) {
     addBlockingReason(
       diagnostic.code,
       diagnostic.message,
@@ -95,6 +130,15 @@ export function summarizeMechanismFitness(
         diagnostic.message,
         diagnostic.hint,
         diagnostic,
+      );
+    }
+    const layoutConflict = summarizePersistentLayoutConflict(poseEnvelope);
+    if (layoutConflict !== undefined) {
+      addBlockingReason(
+        'assembly.mechanism.layout-conflict',
+        `Parts '${layoutConflict.partA}' and '${layoutConflict.partB}' interfere in ${layoutConflict.sampleCount}/${poseEnvelope.samples.length} pose-envelope samples (max ${layoutConflict.maxVolumeMm3.toFixed(2)} mm^3).`,
+        `This is likely a local layout/topology conflict, not a connector nudge. Redesign the joint layout so '${layoutConflict.partA}' and '${layoutConflict.partB}' occupy separate swept volumes before tuning mates or limits.`,
+        layoutConflict,
       );
     }
   }
@@ -158,9 +202,14 @@ export function summarizeMechanismFitness(
   const sampleCount = poseEnvelope?.samples.length ?? 0;
   const interferenceCount = poseEnvelope?.interferencePairs.length ?? 0;
   const mechanicalPlausibilityIssueCount = mechanicalPlausibilityDiagnostics.length;
+  const mechanicalIntentIssueCount = mechanicalIntentDiagnostics.length;
+  const mechanicalTransmissionIssueCount = mechanicalTransmissionDiagnostics.length;
+  const repairMode = chooseRepairMode(blockingReasons);
 
   return {
     functional: blockingReasons.length === 0,
+    repairMode,
+    repairDirective: repairDirectiveForMode(repairMode),
     passedChecks,
     blockingReasons,
     mechanismSummary: {
@@ -174,6 +223,66 @@ export function summarizeMechanismFitness(
         gripperApertureTravelMm: poseEnvelope.gripperAperture.travelMm,
       }),
       ...(mechanicalPlausibilityIssueCount === 0 ? {} : { mechanicalPlausibilityIssueCount }),
+      ...(mechanicalIntentIssueCount === 0 ? {} : { mechanicalIntentIssueCount }),
+      ...(mechanicalTransmissionIssueCount === 0 ? {} : { mechanicalTransmissionIssueCount }),
     },
   };
+}
+
+function chooseRepairMode(
+  blockingReasons: readonly MechanismBlockingReason[],
+): MechanismRepairMode {
+  if (blockingReasons.length === 0) return 'none';
+
+  if (blockingReasons.some((reason) => reason.code === 'assembly.mechanism.layout-conflict')) {
+    return 'topology-redesign';
+  }
+
+  if (blockingReasons.every((reason) => reason.code === 'assembly.pose.out-of-limits')) {
+    return 'parameter-tune';
+  }
+
+  return 'local-fix';
+}
+
+function repairDirectiveForMode(mode: MechanismRepairMode): string {
+  switch (mode) {
+    case 'none':
+      return 'No repair needed. Preserve the current topology and keep validating with review_cad after changes.';
+    case 'parameter-tune':
+      return 'Tune numeric poses, limits, or ranges without changing the mechanism topology, then rerun review_cad.';
+    case 'topology-redesign':
+      return 'Stop patching local coordinates. Redesign the affected joint or module from the original design prompt, preserve declared interfaces, and rerun review_cad against the redesigned topology.';
+    case 'local-fix':
+      return 'Fix the reported local modeling errors while preserving the current topology, then rerun review_cad.';
+  }
+}
+
+function summarizePersistentLayoutConflict(
+  poseEnvelope: PoseEnvelopeReviewResult,
+): { partA: string; partB: string; sampleCount: number; maxVolumeMm3: number } | undefined {
+  if (poseEnvelope.samples.length < 2 || poseEnvelope.interferencePairs.length === 0) return undefined;
+  const byPair = new Map<string, { partA: string; partB: string; sampleNames: Set<string>; maxVolumeMm3: number }>();
+  for (const pair of poseEnvelope.interferencePairs) {
+    const names = [pair.a, pair.b].sort();
+    const key = `${names[0]}|${names[1]}`;
+    let entry = byPair.get(key);
+    if (entry === undefined) {
+      entry = { partA: names[0], partB: names[1], sampleNames: new Set(), maxVolumeMm3: 0 };
+      byPair.set(key, entry);
+    }
+    entry.sampleNames.add(pair.sampleName);
+    entry.maxVolumeMm3 = Math.max(entry.maxVolumeMm3, pair.volumeMm3);
+  }
+
+  const threshold = Math.max(2, Math.ceil(poseEnvelope.samples.length * 0.6));
+  return [...byPair.values()]
+    .filter((entry) => entry.sampleNames.size >= threshold)
+    .sort((a, b) => b.sampleNames.size - a.sampleNames.size || b.maxVolumeMm3 - a.maxVolumeMm3)
+    .map((entry) => ({
+      partA: entry.partA,
+      partB: entry.partB,
+      sampleCount: entry.sampleNames.size,
+      maxVolumeMm3: entry.maxVolumeMm3,
+    }))[0];
 }

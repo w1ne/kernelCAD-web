@@ -70,6 +70,7 @@ describe('summarizeMechanismFitness', () => {
     });
 
     expect(result.functional).toBe(true);
+    expect(result.repairMode).toBe('none');
     expect(result.blockingReasons).toEqual([]);
     expect(result.passedChecks).toEqual([
       'validator-no-errors',
@@ -103,11 +104,71 @@ describe('summarizeMechanismFitness', () => {
     });
 
     expect(result.functional).toBe(false);
+    expect(result.repairMode).toBe('local-fix');
+    expect(result.repairDirective).toMatch(/Fix the reported local modeling errors/);
     expect(result.blockingReasons).toHaveLength(1);
     expect(result.blockingReasons[0].code).toBe('assembly.pose-envelope.interference');
     expect(result.mechanismSummary.interferenceCount).toBe(1);
     expect(result.passedChecks).toEqual(['validator-no-errors']);
     expect(result.passedChecks).not.toContain('pose-envelope-no-interference');
+  });
+
+  it('adds a layout-conflict blocker when the same parts collide across most pose samples', () => {
+    const result = summarizeMechanismFitness({
+      poseEnvelope: mkPoseEnvelope({
+        samples: [
+          { name: 'current', poses: {}, reason: 'current' },
+          { name: 'yaw:min', poses: { yaw: -45 }, reason: 'min' },
+          { name: 'yaw:max', poses: { yaw: 45 }, reason: 'max' },
+        ],
+        diagnostics: [
+          {
+            code: 'assembly.pose-envelope.interference',
+            severity: 'error',
+            sampleName: 'current',
+            partA: 'shoulder-cheeks',
+            partB: 'upper-arm-beam',
+            volumeMm3: 10,
+            message: 'current overlap',
+            hint: 'fix overlap',
+          },
+          {
+            code: 'assembly.pose-envelope.interference',
+            severity: 'error',
+            sampleName: 'yaw:min',
+            partA: 'shoulder-cheeks',
+            partB: 'upper-arm-beam',
+            volumeMm3: 12,
+            message: 'min overlap',
+            hint: 'fix overlap',
+          },
+          {
+            code: 'assembly.pose-envelope.interference',
+            severity: 'error',
+            sampleName: 'yaw:max',
+            partA: 'shoulder-cheeks',
+            partB: 'upper-arm-beam',
+            volumeMm3: 8,
+            message: 'max overlap',
+            hint: 'fix overlap',
+          },
+        ],
+        interferencePairs: [
+          { sampleName: 'current', a: 'shoulder-cheeks', b: 'upper-arm-beam', volumeMm3: 10 },
+          { sampleName: 'yaw:min', a: 'shoulder-cheeks', b: 'upper-arm-beam', volumeMm3: 12 },
+          { sampleName: 'yaw:max', a: 'shoulder-cheeks', b: 'upper-arm-beam', volumeMm3: 8 },
+        ],
+      }),
+    });
+
+    expect(result.functional).toBe(false);
+    expect(result.repairMode).toBe('topology-redesign');
+    expect(result.repairDirective).toMatch(/redesign the affected joint or module from the original design prompt/i);
+    expect(result.blockingReasons.map((reason) => reason.code)).toContain('assembly.mechanism.layout-conflict');
+    const layout = result.blockingReasons.find((reason) => reason.code === 'assembly.mechanism.layout-conflict');
+    expect(layout?.message).toContain('shoulder-cheeks');
+    expect(layout?.message).toContain('upper-arm-beam');
+    expect(layout?.repairHint).toMatch(/redesign/i);
   });
 
   it('returns functional=false for validator error diagnostics', () => {
@@ -120,6 +181,29 @@ describe('summarizeMechanismFitness', () => {
     expect(result.blockingReasons).toHaveLength(1);
     expect(result.blockingReasons[0].code).toBe('assembly.solver.did-not-converge');
     expect(result.passedChecks).toEqual(['pose-envelope-solved', 'pose-envelope-no-interference']);
+  });
+
+  it('uses parameter-tune mode when the only blocker is a pose outside limits', () => {
+    const result = summarizeMechanismFitness({
+      poseEnvelope: mkPoseEnvelope({
+        diagnostics: [
+          {
+            code: 'assembly.pose.out-of-limits',
+            severity: 'error',
+            mateName: 'elbow',
+            sampleName: 'current',
+            pose: 120,
+            limits: [-90, 90],
+            message: 'elbow is outside limits',
+            hint: 'clamp elbow',
+          },
+        ],
+      }),
+    });
+
+    expect(result.functional).toBe(false);
+    expect(result.repairMode).toBe('parameter-tune');
+    expect(result.repairDirective).toMatch(/Tune numeric poses, limits, or ranges/);
   });
 
   it('returns functional=false for mechanical plausibility diagnostics', () => {

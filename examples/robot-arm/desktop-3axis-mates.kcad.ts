@@ -77,6 +77,8 @@ const baseFlangeZ      = plateT.add(servoH).subtract(servoFlangeT.divide(2));
 const shoulderColumnH  = param('shoulderColumnH', 36, { min: 24, max: 110 });
 const shoulderPitchClearance = 14;
 const shoulderPitchZ   = shoulderColumnH.add(shoulderPitchClearance);
+const shoulderCheekX = 12;
+const shoulderCheekCenterY = beamW.divide(2).add(yokeCheekT.divide(2)).add(3);
 
 // ---- BASE link (root, no parent mate -> identity world transform) -------
 // Authored sitting on the desk: footprint plate at z=0..plateT, column above.
@@ -135,24 +137,25 @@ const baseHornPart = arm.part('base-yaw-output', baseHornStack);
 //    a slim post the cheeks fan out around.
 const spineR = 5;
 const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
+  // Two side lugs carry the yoke cheeks while leaving the pitch-axis center
+  // and upper-arm swept volume open.
+  .union(
+    box(10, 4, 6, true).translate(0, shoulderCheekCenterY, shoulderColumnH.add(3)),
+  )
+  .union(
+    box(10, 4, 6, true).translate(0, shoulderCheekCenterY.negate(), shoulderColumnH.add(3)),
+  )
   .color('frame');
 const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
 
 // 6. Shoulder yoke cheeks (two flanking plates that carry the pitch shaft).
-//    Pushed OUT in X past the spine so they don't intersect it. Y reduced
-//    from yokeCheekW (=46) to a clearance band around the upper-arm beam.
-const cheekY = beamW.add(2);   // cheek depth in Y (along beam axis)
-// Distance from spine axis to the cheek inner face. Pushed PAST the
-// pitched upper-arm beam corner's max-x sweep: at shoulderPitchDeg=35°,
-// the beam corner at LOCAL x≈19 / z=+halfBeamT reaches shoulder x≈19, so
-// the cheek inner face must sit further out than that to stay clear.
-// Half the upper-arm beam length covers that sweep with comfortable margin.
-const cheekClearX = beamW.subtract(2);   // ≈ 20 at defaults
-const shoulderCheekL = box(yokeCheekT, cheekY, yokeCheekH, true)
-  .translate(cheekClearX.add(yokeCheekT.divide(2)), 0, shoulderPitchZ)
+//    Pitch axis is +Y, so the fork plates flank the beam in Y and leave the
+//    upper-arm beam's X/Z sweep clear.
+const shoulderCheekL = box(shoulderCheekX, yokeCheekT, yokeCheekH, true)
+  .translate(0, shoulderCheekCenterY, shoulderPitchZ)
   .color('plate');
-const shoulderCheekR = box(yokeCheekT, cheekY, yokeCheekH, true)
-  .translate(cheekClearX.add(yokeCheekT.divide(2)).negate(), 0, shoulderPitchZ)
+const shoulderCheekR = box(shoulderCheekX, yokeCheekT, yokeCheekH, true)
+  .translate(0, shoulderCheekCenterY.negate(), shoulderPitchZ)
   .color('plate');
 const shoulderCheeks = shoulderCheekL.union(shoulderCheekR);
 const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
@@ -162,7 +165,7 @@ const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
 //    where it would sweep through the upper-arm beam's pitched arc.
 //    Inner face sits past the pitch-shaft stub (which protrudes to
 //    y ≈ beamW/2 + pitchStubLen ≈ 17) with a small air gap.
-const shoulderServoMountY = beamW.divide(2).add(ribH).add(3);
+const shoulderServoMountY = beamW.divide(2).add(yokeCheekT).add(3);
 const shoulderPitchServo = box(servoH, servoD, servoW, true)
   .translate(0, shoulderServoMountY.add(servoD.divide(2)), shoulderPitchZ)
   .color('servo');
@@ -254,7 +257,7 @@ const elbowServoPart = arm.part('elbow-pitch-servo', elbowServoStack);
 //     full-length shaft would tunnel through the shoulder column and the
 //     shoulder-pitch servo body. Stubs live OUTSIDE the column footprint
 //     (radius = spineR = beamT/2) so they don't clip the column.
-const pitchStubLen = ribH;                    // 6mm — visible past beam edge
+const pitchStubLen = 2;                       // short witness stubs; no modeled through-solid shaft
 const pitchStubInnerY = beamW.divide(2);      // start at beam outer face
 const shoulderPitchShaft = cylinder(pitchStubLen, pivotDia.divide(2), 32)
   .alongAxis([0, 1, 0])
@@ -312,10 +315,26 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
     cylinder(14, 1.5, 24).alongAxis([1, 0, 0]).translate(forearmLen.add(gripperPlateGap).add(gripperPlateT + 4), 0, 0),
   )
   .union(
-    box(8, 8, 8, true).fillet(0.8).translate(gripperHingeXNum - 8, gripperHingeY, 0),
+    // Side bearing towers carry the grip driver axis at z=18 while leaving
+    // the driver's central swept volume open.
+    box(8, 4, 8, true).fillet(0.6).translate(gripDriverXNum, 8, gripDriverZNum - 4),
   )
   .union(
-    box(8, 8, 8, true).fillet(0.8).translate(gripperHingeXNum - 8, -gripperHingeY, 0),
+    box(8, 4, 8, true).fillet(0.6).translate(gripDriverXNum, -8, gripDriverZNum - 4),
+  )
+  .union(
+    // Thin upper/lower hinge straps bridge from the palm edge to each finger
+    // hinge while leaving the finger's swept XY plane clear at grip:max.
+    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, 21, 5),
+  )
+  .union(
+    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, 21, -5),
+  )
+  .union(
+    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, -21, 5),
+  )
+  .union(
+    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, -21, -5),
   )
   .color('tool');
 const gripperPlatePart = arm.part('gripper-plate', gripperPlate);
@@ -482,6 +501,11 @@ shoulderPitchShaftPart.connector('mount', {
   type: 'frame',
   origin: { kind: 'vec3', value: [0, 0, 0] },
 });
+shoulderPitchShaftPart.connector('axis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 1, 0],
+});
 
 // forearm-beam: elbow-input (from upper arm) + decorative gripper-plate /
 // elbow-pitch-shaft mounts.
@@ -579,6 +603,20 @@ arm.mate('shoulder-pitch', 'shoulder-cheeks.pitch-out', 'upper-arm-beam.pitch-in
 arm.mate('elbow-yoke-fix',           'upper-arm-beam.yoke-mount',           'elbow-yoke.mount',           'fastened');
 arm.mate('elbow-pitch-servo-fix',    'elbow-yoke.servo-mount',              'elbow-pitch-servo.mount',    'fastened');
 arm.mate('shoulder-pitch-shaft-fix', 'upper-arm-beam.shoulder-shaft-mount', 'shoulder-pitch-shaft.mount', 'fastened');
+
+arm.mechanicalJoint('shoulder-pitch-joint', {
+  mate: 'shoulder-pitch',
+  actuator: 'shoulder-pitch-servo',
+  shaft: 'shoulder-pitch-shaft',
+  supports: ['shoulder-column', 'shoulder-cheeks', 'shoulder-pitch-servo'],
+  output: 'upper-arm-beam',
+  requiredSupport: {
+    kind: 'hinge-bracket',
+    around: 'shoulder-cheeks.pitch-out',
+    supports: ['shoulder-cheeks'],
+    minBearingLengthMm: 8,
+  },
+});
 
 arm.mate('elbow-pitch', 'upper-arm-beam.elbow-out', 'forearm-beam.elbow-in', 'revolute', {
   pose: elbowPitchDeg,

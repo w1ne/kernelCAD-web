@@ -17,6 +17,29 @@ export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
+interface DevMeshPayload {
+  features: FeatureMeshSerialized[];
+  bounds: { min: [number, number, number]; max: [number, number, number] };
+}
+
+interface BuildRecordStep {
+  id: string;
+  title: string;
+  status: 'failed' | 'passed';
+  script: string;
+  review: {
+    ok: boolean;
+    summary: string;
+    blockingReasons?: string[];
+  };
+}
+
+interface BuildRecord {
+  title: string;
+  goal: string;
+  steps: BuildRecordStep[];
+}
+
 export interface DemoPlayerWindow {
   isFrameReady(): boolean;
   onEvent(event: FeatureEvent): void;
@@ -157,10 +180,18 @@ export function DemoPlayerPage(): React.JSX.Element {
   const elapsedMsRef = useRef(0);
   const terminalOriginRef = useRef(0);
   const [version, setVersion] = useState('v0.21');
+  const [isDemoApiReady, setIsDemoApiReady] = useState(false);
+  const [scriptLoadStatus, setScriptLoadStatus] = useState<
+    { kind: 'idle' | 'loading' | 'error'; message?: string }
+  >({ kind: 'idle' });
   const [terminalLines, setTerminalLines] = useState<readonly TerminalLine[]>([]);
+  const [buildRecord, setBuildRecord] = useState<BuildRecord | null>(null);
+  const [buildRecordStep, setBuildRecordStep] = useState<BuildRecordStep | null>(null);
   const [titleCard, setTitleCard] = useState<{ title: string; tagline: string; durationMs: number } | null>(
     null,
   );
+  const autoLoadedScriptRef = useRef<string | null>(null);
+  const autoLoadedRecordRef = useRef<string | null>(null);
 
   const handleSceneReady = useCallback((ctx: NonNullable<typeof sceneRef.current>) => {
     sceneRef.current = ctx;
@@ -340,10 +371,143 @@ export function DemoPlayerPage(): React.JSX.Element {
         };
       },
     };
+    setIsDemoApiReady(true);
     return () => {
+      setIsDemoApiReady(false);
       delete window.__demoPlayer;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isDemoApiReady || autoLoadedScriptRef.current !== null || autoLoadedRecordRef.current !== null) return;
+
+    const script = new URLSearchParams(window.location.search).get('script');
+    if (!script) return;
+
+    autoLoadedScriptRef.current = script;
+    let cancelled = false;
+    setScriptLoadStatus({ kind: 'loading', message: `Loading ${script}` });
+
+    fetch(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`)
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) {
+          const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+          throw new Error(message);
+        }
+        return payload as DevMeshPayload;
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading script');
+        window.__demoPlayer.loadFeatureMeshes(payload.features, payload.bounds);
+        window.__demoPlayer.forceFullOpacity();
+        window.__demoPlayer.setVersion('dev');
+        setScriptLoadStatus({ kind: 'idle' });
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setScriptLoadStatus({
+          kind: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDemoApiReady]);
+
+  useEffect(() => {
+    if (!isDemoApiReady || autoLoadedRecordRef.current !== null || autoLoadedScriptRef.current !== null) return;
+
+    const recordPath = new URLSearchParams(window.location.search).get('record');
+    if (!recordPath) return;
+
+    autoLoadedRecordRef.current = recordPath;
+    let cancelled = false;
+    let stepTimer: number | undefined;
+    let clockTimer: number | undefined;
+    setScriptLoadStatus({ kind: 'loading', message: `Loading build record ${recordPath}` });
+
+    const linesForStep = (record: BuildRecord, step: BuildRecordStep, index: number): TerminalLine[] => {
+      const status = step.status === 'passed' ? 'PASS' : 'FAIL';
+      const reasons = step.review.blockingReasons ?? [];
+      return [
+        { text: `$ kernelcad loop --goal "${record.goal}"`, fullyTypedAtMs: 450 },
+        { text: `iteration ${index + 1}/${record.steps.length}: ${step.title}`, fullyTypedAtMs: 1050 },
+        { text: `script: ${step.script}`, fullyTypedAtMs: 1600 },
+        { text: `review_cad: ${status} - ${step.review.summary}`, fullyTypedAtMs: 2300 },
+        ...reasons.slice(0, 3).map((reason, reasonIndex) => ({
+          text: `blocking: ${reason}`,
+          fullyTypedAtMs: 3050 + reasonIndex * 650,
+        })),
+      ];
+    };
+
+    const loadStep = async (record: BuildRecord, index: number) => {
+      const step = record.steps[index];
+      if (!step) return;
+      setBuildRecordStep(step);
+      setScriptLoadStatus({ kind: 'loading', message: `Loading ${step.script}` });
+      const response = await fetch(`/__kernelcad/mesh?script=${encodeURIComponent(step.script)}`);
+      const payload = await response.json();
+      if (!response.ok) {
+        const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+        throw new Error(message);
+      }
+      if (cancelled) return;
+      if (!window.__demoPlayer) throw new Error('demo-player API disappeared while loading build record');
+      window.__demoPlayer.loadFeatureMeshes(
+        (payload as DevMeshPayload).features,
+        (payload as DevMeshPayload).bounds,
+      );
+      window.__demoPlayer.forceFullOpacity();
+      window.__demoPlayer.setVersion(step.status === 'passed' ? 'loop pass' : 'loop fail');
+      window.__demoPlayer.setTerminalLines(linesForStep(record, step, index));
+      window.__demoPlayer.startTerminalClock(elapsedMsRef.current);
+      setScriptLoadStatus({ kind: 'idle' });
+    };
+
+    fetch(recordPath)
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) {
+          const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+          throw new Error(message);
+        }
+        return payload as BuildRecord;
+      })
+      .then(async (record) => {
+        if (cancelled) return;
+        setBuildRecord(record);
+        let stepIndex = 0;
+        await loadStep(record, stepIndex);
+        clockTimer = window.setInterval(() => window.__demoPlayer?.advance(100), 100);
+        stepTimer = window.setInterval(() => {
+          stepIndex = (stepIndex + 1) % record.steps.length;
+          void loadStep(record, stepIndex).catch((error) => {
+            setScriptLoadStatus({
+              kind: 'error',
+              message: error instanceof Error ? error.message : String(error),
+            });
+          });
+        }, 5200);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setScriptLoadStatus({
+          kind: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        });
+      });
+
+    return () => {
+      cancelled = true;
+      if (stepTimer !== undefined) window.clearInterval(stepTimer);
+      if (clockTimer !== undefined) window.clearInterval(clockTimer);
+    };
+  }, [isDemoApiReady]);
 
   return (
     <div
@@ -368,6 +532,43 @@ export function DemoPlayerPage(): React.JSX.Element {
         height={VIEWER_H}
         onSceneReady={handleSceneReady}
       />
+      {scriptLoadStatus.kind !== 'idle' ? (
+        <div
+          data-testid="demo-player-load-status"
+          style={{
+            position: 'absolute',
+            left: 24,
+            bottom: 24,
+            maxWidth: 560,
+            padding: '10px 12px',
+            borderRadius: 6,
+            background: scriptLoadStatus.kind === 'error' ? '#7f1d1d' : 'rgba(15, 23, 42, 0.88)',
+            color: '#f8fafc',
+            font: '13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace',
+          }}
+        >
+          {scriptLoadStatus.message}
+        </div>
+      ) : null}
+      {buildRecord && buildRecordStep ? (
+        <div
+          data-testid="build-record-status"
+          style={{
+            position: 'absolute',
+            top: 24,
+            left: TERMINAL_W + 24,
+            maxWidth: 520,
+            padding: '10px 12px',
+            borderRadius: 6,
+            background: buildRecordStep.status === 'passed' ? 'rgba(22, 101, 52, 0.9)' : 'rgba(127, 29, 29, 0.9)',
+            color: '#f8fafc',
+            font: '14px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace',
+          }}
+        >
+          <div>{buildRecord.title}</div>
+          <div>{buildRecordStep.id}: {buildRecordStep.title}</div>
+        </div>
+      ) : null}
       {titleCard ? <TitleCard title={titleCard.title} tagline={titleCard.tagline} /> : null}
     </div>
   );

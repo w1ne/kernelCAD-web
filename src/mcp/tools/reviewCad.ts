@@ -4,7 +4,6 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { withNextActions } from '../../diagnostics/diagnostic';
 import {
   summarizeMechanismFitness,
-  type MechanismBlockingReason,
   type MechanismFitnessResult,
 } from '../../lib/mates/mechanismFitness';
 import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
@@ -14,6 +13,14 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../lib/mates/mechanicalPlausibility';
+import {
+  reviewMechanicalIntent,
+  type MechanicalIntentDiagnostic,
+} from '../../lib/mates/mechanicalIntent';
+import {
+  reviewMechanicalTransmission,
+  type MechanicalTransmissionDiagnostic,
+} from '../../lib/mates/mechanicalTransmission';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
 import { validateAssemblyWithMates } from '../../lib/mates/validator';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -22,6 +29,8 @@ export interface ReviewCadInput {
   file?: string;
   code?: string;
   assembly?: string;
+  designGoal?: string;
+  preserveInterfaces?: string[];
   includePoseEnvelope?: boolean;
   includeInterference?: boolean;
   epsilonMm3?: number;
@@ -33,7 +42,7 @@ export type ReviewCadOutput =
   | {
       ok: true;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic>;
       assembly: string;
       validator: {
         status: ValidatorStatus;
@@ -49,7 +58,7 @@ export type ReviewCadOutput =
   | {
       ok: false;
       featureCount: number;
-      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic>;
+      diagnostics: Array<CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic>;
       assembly?: string;
       validator?: {
         status: ValidatorStatus;
@@ -72,7 +81,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       ok: false,
       featureCount: evaluation.featureCount,
       diagnostics: withNextActions(evaluation.diagnostics),
-      suggestedRepairPrompt: buildSuggestedRepairPrompt(withNextActions(evaluation.diagnostics)),
+      suggestedRepairPrompt: buildSuggestedRepairPrompt(withNextActions(evaluation.diagnostics), undefined, input),
     };
   }
 
@@ -97,7 +106,9 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
 
   const validator = await validateAssemblyWithMates(arm);
   const mechanicalPlausibility = await reviewMechanicalPlausibility(arm);
+  const mechanicalIntent = await reviewMechanicalIntent(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
+  const mechanicalTransmission = await reviewMechanicalTransmission(arm, { includePoseEnvelope });
   const poseEnvelope = includePoseEnvelope
     ? await reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
@@ -111,11 +122,15 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...withNextActions(evaluation.diagnostics),
     ...validator.diagnostics,
     ...mechanicalPlausibility.diagnostics,
+    ...mechanicalIntent.diagnostics,
+    ...mechanicalTransmission.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
   const fitness = summarizeMechanismFitness({
     validatorDiagnostics: validator.diagnostics,
     mechanicalPlausibilityDiagnostics: mechanicalPlausibility.diagnostics,
+    mechanicalIntentDiagnostics: mechanicalIntent.diagnostics,
+    mechanicalTransmissionDiagnostics: mechanicalTransmission.diagnostics,
     poseEnvelope,
     trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
   });
@@ -155,7 +170,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
     ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     fitness,
-    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness.blockingReasons),
+    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
   };
 }
 
@@ -185,9 +200,11 @@ function selectAssembly(
 }
 
 function buildSuggestedRepairPrompt(
-  diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic)[],
-  blockingReasons: readonly MechanismBlockingReason[] = [],
+  diagnostics: readonly (CompilerDiagnostic | ValidatorDiagnostic | PoseEnvelopeDiagnostic | MechanicalPlausibilityDiagnostic | MechanicalIntentDiagnostic | MechanicalTransmissionDiagnostic)[],
+  fitness?: MechanismFitnessResult,
+  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
 ): string {
+  const blockingReasons = fitness?.blockingReasons ?? [];
   if (diagnostics.length === 0 && blockingReasons.length === 0) {
     return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
   }
@@ -200,5 +217,13 @@ function buildSuggestedRepairPrompt(
     `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
   );
   const facts = [...diagnosticFacts, ...fitnessFacts].join('\n');
-  return `Repair the kernelCAD script using these deterministic review facts:\n${facts}`;
+  const repairDirective = fitness === undefined
+    ? ''
+    : `\nRepair mode: ${fitness.repairMode}\nDirective: ${fitness.repairDirective}\n`;
+  const designContext = [
+    input?.designGoal ? `Design goal: ${input.designGoal}` : undefined,
+    input?.preserveInterfaces?.length ? `Preserve interfaces: ${input.preserveInterfaces.join(', ')}` : undefined,
+  ].filter((line): line is string => line !== undefined);
+  const designBlock = designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
+  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts}`;
 }

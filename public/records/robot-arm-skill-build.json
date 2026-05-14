@@ -1,0 +1,34 @@
+{
+  "title": "Robot arm skill build loop",
+  "goal": "Build a compact robot arm with supported yaw, shoulder, elbow, and gripper joints.",
+  "steps": [
+    {
+      "id": "01",
+      "title": "Rejected: colliding joint stack",
+      "status": "failed",
+      "script": "examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts",
+      "review": {
+        "ok": false,
+        "summary": "topology-redesign required after 47 diagnostics",
+        "blockingReasons": [
+          "Revolute mate 'base-yaw' leaves 4.0 mm of air gap between bearing material on 'base-frame' and 'yaw-turret'.",
+          "Pose-envelope sample 'current' makes parts 'base-frame' and 'yaw-turret' overlap by 2585.37 mm³.",
+          "Pose-envelope sample 'current' makes parts 'yaw-turret' and 'upper-link' overlap by 2729.20 mm³.",
+          "Pose-envelope sample 'current' makes parts 'yaw-turret' and 'shoulder-shaft' overlap by 24.78 mm³.",
+          "Pose-envelope sample 'current' makes parts 'upper-link' and 'forearm-link' overlap by 2731.24 mm³."
+        ]
+      }
+    },
+    {
+      "id": "02",
+      "title": "Accepted: supported clevis arm",
+      "status": "passed",
+      "script": "examples/robot-arm/skill-built-supported-arm.kcad.ts",
+      "review": {
+        "ok": true,
+        "summary": "validator clean, pose envelope solved, no interferences, gripper aperture moves 34.00 mm",
+        "blockingReasons": []
+      }
+    }
+  ]
+}

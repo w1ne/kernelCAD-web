@@ -18,6 +18,11 @@ function isCodeParsable(code: string): boolean {
 
 import { useProject } from './context/ProjectContext';
 
+function readScriptParam(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('script');
+}
+
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const {
     code, viewMode, viewMode3D, sidePanelVisible, showSketches,
@@ -26,9 +31,42 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
   const { activeProject, saveActiveProject } = useProject();
   const [isInitialized, setIsInitialized] = useState(false);
+  const scriptParam = readScriptParam();
+
+  useEffect(() => {
+    if (isDevLab || !scriptParam) return;
+
+    let cancelled = false;
+    fetch(`/__kernelcad/mesh?script=${encodeURIComponent(scriptParam)}`)
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) {
+          const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
+          throw new Error(message);
+        }
+        if (typeof payload?.source !== 'string') {
+          throw new Error('Script endpoint did not return source code.');
+        }
+        return payload.source as string;
+      })
+      .then((source) => {
+        if (cancelled) return;
+        setCode(source);
+        setViewMode('code');
+        setIsInitialized(true);
+      })
+      .catch((error) => {
+        console.error('Failed to load script source:', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDevLab, scriptParam, setCode, setViewMode]);
 
   // Sync active project -> workbench state
   useEffect(() => {
+    if (scriptParam) return;
     if (isDevLab || !activeProject) return;
 
     // Only sync on initial load or project switch
@@ -41,10 +79,11 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D]);
+  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
+    if (scriptParam) return;
     if (isDevLab || !isInitialized || !activeProject) return;
     if (!isCodeParsable(code)) return;
 
@@ -61,7 +100,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isDevLab, isInitialized, activeProject, saveActiveProject]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
 
   return isDevLab ? <DevLab /> : <WorkbenchLayout />;
 }

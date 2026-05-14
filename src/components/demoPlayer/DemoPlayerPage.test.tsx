@@ -18,13 +18,15 @@ vi.mock('three', async () => {
   return { ...actual, WebGLRenderer: FakeWebGLRenderer };
 });
 
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, waitFor } from '@testing-library/react';
 import { DemoPlayerPage } from './DemoPlayerPage';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 
 describe('DemoPlayerPage.loadFeatureMeshes', () => {
   beforeEach(() => {
     delete (window as { __demoPlayer?: unknown }).__demoPlayer;
+    window.history.pushState({}, '', '/demo-player');
+    vi.restoreAllMocks();
   });
 
   afterEach(() => {
@@ -131,5 +133,96 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
+  });
+
+  it('auto-loads an examples script from the dev mesh endpoint when script query is present', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/demo-player?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    );
+
+    const fakeFace = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [
+          { featureId: 'shoulder', featureKind: 'box', predecessors: [], faces: [fakeFace] },
+        ],
+        bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+      }),
+    } as Response);
+
+    render(<DemoPlayerPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/__kernelcad/mesh?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
+      );
+      expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
+    });
+  });
+
+  it('auto-loads a build record and renders the first recorded iteration', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/demo-player?record=/records/robot-arm-skill-build.json',
+    );
+
+    const fakeFace = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 0,
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      if (url === '/records/robot-arm-skill-build.json') {
+        return {
+          ok: true,
+          json: async () => ({
+            title: 'Robot arm loop',
+            goal: 'Build a supported robot arm.',
+            steps: [
+              {
+                id: '01',
+                title: 'Floating boxes',
+                status: 'failed',
+                script: 'examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts',
+                review: {
+                  ok: false,
+                  summary: 'pose envelope found collisions',
+                  blockingReasons: ['base-frame intersects upper-link'],
+                },
+              },
+            ],
+          }),
+        } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          features: [
+            { featureId: 'bad-arm', featureKind: 'box', predecessors: [], faces: [fakeFace] },
+          ],
+          bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+        }),
+      } as Response;
+    });
+
+    render(<DemoPlayerPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/records/robot-arm-skill-build.json');
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/__kernelcad/mesh?script=examples%2Frobot-arm%2Fskill-built-supported-arm-01-colliding.kcad.ts',
+      );
+      expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
+    });
   });
 });

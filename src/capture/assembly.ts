@@ -99,6 +99,27 @@ function validateLimitRange(
   }
 }
 
+function validateMechanicalIntentName(field: string, value: string): void {
+  if (typeof value === 'string' && value.trim().length > 0) return;
+  throw new KernelError(
+    'feature.invalid-args',
+    `assembly.mechanicalJoint.invalid-ref: ${field} must be a non-empty string.`,
+    undefined,
+    `invalid-args.assembly.mechanical-joint-invalid-ref — pass non-empty part and mate names in mechanicalJoint(...).`,
+  );
+}
+
+function isTransmissionKind(value: unknown): value is TransmissionKind {
+  return (
+    value === 'direct-horn' ||
+    value === 'link-rod' ||
+    value === 'four-bar' ||
+    value === 'gear-pair' ||
+    value === 'belt' ||
+    value === 'tendon'
+  );
+}
+
 export interface AssemblyJointRef {
   id: FeatureId;
   name: string;
@@ -113,6 +134,51 @@ export interface AssemblyPartOpts {
     to: AssemblyConnectorRef;
     name?: string;
   };
+}
+
+export interface MechanicalJointIntentOpts {
+  readonly mate: string;
+  readonly actuator: string;
+  readonly shaft: string;
+  readonly supports: readonly string[];
+  readonly output: string;
+  readonly requiredSupport?: MechanicalJointSupportRequirement;
+}
+
+export interface MechanicalJointIntentRecord extends MechanicalJointIntentOpts {
+  readonly name: string;
+}
+
+export type TransmissionKind =
+  | 'direct-horn'
+  | 'link-rod'
+  | 'four-bar'
+  | 'gear-pair'
+  | 'belt'
+  | 'tendon';
+
+export interface TransmissionIntentOpts {
+  readonly kind: TransmissionKind;
+  readonly sourceMate: string;
+  readonly drivenMates: readonly string[];
+  readonly actuator?: string;
+  readonly input?: string;
+  readonly output?: string;
+  readonly path: readonly string[];
+  readonly ratio?: number;
+  readonly notes?: string;
+}
+
+export interface TransmissionIntentRecord extends TransmissionIntentOpts {
+  readonly name: string;
+}
+
+export interface MechanicalJointSupportRequirement {
+  readonly kind: 'hinge-bracket' | 'bearing' | 'bracket';
+  readonly around: string;
+  readonly supports?: readonly string[];
+  readonly minBearingLengthMm?: number;
+  readonly clearanceMm?: number;
 }
 
 /** Script-facing input: each coord may be a number or ParamRef<number>. */
@@ -207,6 +273,8 @@ export class Assembly {
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
   private readonly mates: MateRecord[] = [];
   private readonly mateCouplings: MateCouplingRecord[] = [];
+  private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
+  private readonly transmissionIntents: TransmissionIntentRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -509,6 +577,146 @@ export class Assembly {
     return this;
   }
 
+  mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
+    validateMechanicalIntentName('name', name);
+    if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mechanicalJoint.duplicate-name: mechanical joint intent '${name}' is already declared.`,
+        undefined,
+        `invalid-args.assembly.mechanical-joint-duplicate-name — use a unique mechanicalJoint name.`,
+      );
+    }
+    validateMechanicalIntentName('mate', opts.mate);
+    validateMechanicalIntentName('actuator', opts.actuator);
+    validateMechanicalIntentName('shaft', opts.shaft);
+    validateMechanicalIntentName('output', opts.output);
+    if (!Array.isArray(opts.supports) || opts.supports.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.mechanicalJoint.invalid-ref: mechanical joint intent '${name}' requires at least one support part.`,
+        undefined,
+        `invalid-args.assembly.mechanical-joint-invalid-ref — pass supports: ['support-part-name', ...].`,
+      );
+    }
+    for (const support of opts.supports) {
+      validateMechanicalIntentName('supports[]', support);
+    }
+    if (opts.requiredSupport !== undefined) {
+      validateMechanicalIntentName('requiredSupport.kind', opts.requiredSupport.kind);
+      validateMechanicalIntentName('requiredSupport.around', opts.requiredSupport.around);
+      for (const support of opts.requiredSupport.supports ?? []) {
+        validateMechanicalIntentName('requiredSupport.supports[]', support);
+      }
+      if (
+        opts.requiredSupport.minBearingLengthMm !== undefined &&
+        (!Number.isFinite(opts.requiredSupport.minBearingLengthMm) || opts.requiredSupport.minBearingLengthMm <= 0)
+      ) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mechanicalJoint.invalid-required-support: minBearingLengthMm must be a positive finite number.`,
+          undefined,
+          `invalid-args.assembly.mechanical-joint-invalid-required-support — pass minBearingLengthMm > 0, or omit it.`,
+        );
+      }
+      if (
+        opts.requiredSupport.clearanceMm !== undefined &&
+        (!Number.isFinite(opts.requiredSupport.clearanceMm) || opts.requiredSupport.clearanceMm < 0)
+      ) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly.mechanicalJoint.invalid-required-support: clearanceMm must be a non-negative finite number.`,
+          undefined,
+          `invalid-args.assembly.mechanical-joint-invalid-required-support — pass clearanceMm >= 0, or omit it.`,
+        );
+      }
+    }
+
+    this.mechanicalJointIntents.push({
+      name,
+      mate: opts.mate,
+      actuator: opts.actuator,
+      shaft: opts.shaft,
+      supports: [...opts.supports],
+      output: opts.output,
+      ...(opts.requiredSupport !== undefined ? {
+        requiredSupport: {
+          ...opts.requiredSupport,
+          ...(opts.requiredSupport.supports !== undefined ? { supports: [...opts.requiredSupport.supports] } : {}),
+        },
+      } : {}),
+    });
+    return this;
+  }
+
+  transmission(name: string, opts: TransmissionIntentOpts): this {
+    validateMechanicalIntentName('name', name);
+    if (this.transmissionIntents.some((intent) => intent.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.transmission.duplicate-name: transmission intent '${name}' is already declared.`,
+        undefined,
+        `invalid-args.assembly.transmission-duplicate-name — use a unique arm.transmission(...) name.`,
+      );
+    }
+    if (!isTransmissionKind(opts.kind)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.transmission.invalid-kind: '${String(opts.kind)}' is not a supported transmission kind.`,
+        undefined,
+        `invalid-args.assembly.transmission-invalid-kind — use direct-horn, link-rod, four-bar, gear-pair, belt, or tendon.`,
+      );
+    }
+    validateMechanicalIntentName('sourceMate', opts.sourceMate);
+    if (!Array.isArray(opts.drivenMates) || opts.drivenMates.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.transmission.invalid-driven-mates: transmission '${name}' requires at least one driven mate.`,
+        undefined,
+        `invalid-args.assembly.transmission-invalid-driven-mates — pass drivenMates: ['mate-name', ...].`,
+      );
+    }
+    for (const driven of opts.drivenMates) {
+      validateMechanicalIntentName('drivenMates[]', driven);
+    }
+    if (!Array.isArray(opts.path) || opts.path.length === 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.transmission.invalid-path: transmission '${name}' requires at least one physical path part.`,
+        undefined,
+        `invalid-args.assembly.transmission-invalid-path — pass path: ['input-part', 'linkage-part', 'output-part'].`,
+      );
+    }
+    for (const partName of opts.path) {
+      validateMechanicalIntentName('path[]', partName);
+    }
+    for (const optional of [opts.actuator, opts.input, opts.output]) {
+      if (optional !== undefined) validateMechanicalIntentName('part ref', optional);
+    }
+    if (opts.ratio !== undefined && !Number.isFinite(opts.ratio)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.transmission.invalid-ratio: transmission '${name}' ratio must be finite.`,
+        undefined,
+        `invalid-args.assembly.transmission-invalid-ratio — pass a finite ratio or omit it.`,
+      );
+    }
+
+    this.transmissionIntents.push({
+      name,
+      kind: opts.kind,
+      sourceMate: opts.sourceMate,
+      drivenMates: [...opts.drivenMates],
+      ...(opts.actuator !== undefined ? { actuator: opts.actuator } : {}),
+      ...(opts.input !== undefined ? { input: opts.input } : {}),
+      ...(opts.output !== undefined ? { output: opts.output } : {}),
+      path: [...opts.path],
+      ...(opts.ratio !== undefined ? { ratio: opts.ratio } : {}),
+      ...(opts.notes !== undefined ? { notes: opts.notes } : {}),
+    });
+    return this;
+  }
+
   private validateMateLimits(
     name: string,
     type: MateType,
@@ -596,6 +804,14 @@ export class Assembly {
 
   __mateCouplings(): readonly MateCouplingRecord[] {
     return this.mateCouplings;
+  }
+
+  __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
+    return this.mechanicalJointIntents;
+  }
+
+  __transmissionIntents(): readonly TransmissionIntentRecord[] {
+    return this.transmissionIntents;
   }
 
   /**

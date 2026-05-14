@@ -1,5 +1,6 @@
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
+import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../lib/geometryHelpers';
 import { createSafeReplicad, SafeSketcher } from '../../lib/safeSketch';
 import { withTemporaryGlobals } from '../../lib/withTemporaryGlobals';
@@ -37,19 +38,13 @@ async function init() {
     };
     const opencascade = mod.default;
 
-    const env = (import.meta as unknown as { env?: Record<string, unknown> }).env ?? {};
     if (DEBUG) console.log('Worker: Initializing OpenCascade...');
-    if (DEBUG) console.log('Worker: Environment:', JSON.stringify(env));
 
     OC = await opencascade({
       locateFile: (file: string) => {
         if (file.endsWith('.wasm')) {
-          const baseUrl = typeof env.BASE_URL === 'string' ? env.BASE_URL : '/';
-          let path = baseUrl.startsWith('.') ? '/' + file : baseUrl + file;
-          path = path.replace(/\/\//g, '/');
-          const finalUrl = new URL(path, self.location.origin).href + '?v=' + Date.now();
-          if (DEBUG) console.log(`Worker: Locating ${file} -> ${finalUrl}`);
-          return finalUrl;
+          if (DEBUG) console.log(`Worker: Locating ${file} -> ${wasmUrl}`);
+          return wasmUrl;
         }
         return file;
       },

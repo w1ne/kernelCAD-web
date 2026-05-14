@@ -239,6 +239,93 @@ describe('assembly capture contract', () => {
     expect(evaluatedXYZ(connectMeta.b.worldOrigin)).toEqual([15, 0, 1.5]);
   });
 
+  it('captures mechanical joint intent contracts for review_cad', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const arm = kcad.assembly('intent arm');
+    arm
+      .part('base', kcad.box(40, 40, 4, true))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 2] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(30, 8, 6, true))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('servo', kcad.box(20, 12, 20, true));
+    arm.part('shaft', kcad.cylinder(8, 2).alongAxis([0, 0, 1]));
+    arm.part('support', kcad.box(12, 12, 8, true));
+    arm.mate('yaw', 'base.axis', 'link.axis', 'revolute');
+
+    const returned = arm.mechanicalJoint('yaw-drive', {
+      mate: 'yaw',
+      actuator: 'servo',
+      shaft: 'shaft',
+      supports: ['support'],
+      output: 'link',
+      requiredSupport: {
+        kind: 'hinge-bracket',
+        around: 'base.axis',
+        supports: ['support'],
+        minBearingLengthMm: 6,
+      },
+    });
+
+    expect(returned).toBe(arm);
+    expect(arm.__mechanicalJointIntents()).toEqual([
+      {
+        name: 'yaw-drive',
+        mate: 'yaw',
+        actuator: 'servo',
+        shaft: 'shaft',
+        supports: ['support'],
+        output: 'link',
+        requiredSupport: {
+          kind: 'hinge-bracket',
+          around: 'base.axis',
+          supports: ['support'],
+          minBearingLengthMm: 6,
+        },
+      },
+    ]);
+  });
+
+  it('rejects duplicate or empty mechanical joint intent fields', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('bad intent');
+
+    arm.mechanicalJoint('drive', {
+      mate: 'yaw',
+      actuator: 'servo',
+      shaft: 'shaft',
+      supports: ['support'],
+      output: 'link',
+    });
+
+    expect(() => arm.mechanicalJoint('drive', {
+      mate: 'other',
+      actuator: 'servo',
+      shaft: 'shaft',
+      supports: ['support'],
+      output: 'link',
+    })).toThrow(/assembly.mechanicalJoint.duplicate-name/);
+
+    expect(() => arm.mechanicalJoint('empty-actuator', {
+      mate: 'yaw',
+      actuator: '',
+      shaft: 'shaft',
+      supports: ['support'],
+      output: 'link',
+    })).toThrow(/assembly.mechanicalJoint.invalid-ref/);
+
+    expect(() => arm.mechanicalJoint('empty-support', {
+      mate: 'yaw',
+      actuator: 'servo',
+      shaft: 'shaft',
+      supports: ['support', ''],
+      output: 'link',
+    })).toThrow(/assembly.mechanicalJoint.invalid-ref/);
+  });
+
   it('rejects connector placement when the local connector is missing', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

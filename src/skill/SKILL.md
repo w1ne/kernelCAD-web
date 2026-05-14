@@ -709,6 +709,12 @@ for (const w of scene.warnings) {
 
 MCP tools mirror the `.kcad.ts` surface for runtime introspection:
 
+- `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
+  return a physical inventory for agents: named parts, bounding boxes,
+  connectors, mates, mechanical review facts, disconnected solids, and
+  `unexplainedGeometry`. Use this before accepting a mechanism that looks
+  suspicious in Studio; random boxes/floating fragments must either disappear
+  or be explicitly justified by the original design goal.
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` —
   register a mate-style connector on a named part. `type` is one of
   `frame`/`axis`/`planar`/`ball`; `origin` accepts either a `[x, y, z]`
@@ -737,6 +743,83 @@ MCP tools mirror the `.kcad.ts` surface for runtime introspection:
   sampling is enabled. For grippers, pass
   `gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' }`
   to get `minMm`, `maxMm`, `travelMm`, and per-sample fingertip distances.
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` —
+  run ordered design attempts through `review_cad`, continue past functional
+  attempts that still have unresolved warnings, return repair prompts, and
+  optionally write a Studio replay record. Visual review is required by
+  default: each accepted attempt must include `visualReview: { accepted,
+  screenshotPath, findings }` after the vision-capable agent renders/opens the
+  screenshot and records concrete observations. Missing `screenshotPath` or
+  empty `findings` fails with `assembly.visual.review-incomplete`. Use
+  `requireVisualReview: false` only for explicit non-visual batch checks. Only
+  use `allowReviewWarnings` when the original prompt explicitly permits that
+  warning code.
+
+#### Drive transmissions
+
+Mate coupling is not physical transmission. If you use
+`arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from
+the actuator/input mate to the driven output:
+
+```typescript
+arm.transmission('left-finger-drive-linkage', {
+  kind: 'link-rod',
+  sourceMate: 'grip',
+  drivenMates: ['left-curl'],
+  actuator: 'grip-servo',
+  input: 'grip-driver',
+  output: 'left-finger',
+  path: ['grip-driver', 'left-hinge-pin', 'left-finger'],
+  ratio: -1,
+});
+```
+
+`kind` is one of `direct-horn`, `link-rod`, `four-bar`, `gear-pair`, `belt`, or
+`tendon`. The `path` names the physical parts that transmit motion/load. A
+coupled mate without a matching transmission fails `review_cad` with
+`assembly.transmission.missing-for-coupled-mate`. Consecutive `path` parts must
+also stay near-contact adjacent across sampled mate travel; a jump through
+empty space or a visible air gap fails with
+`assembly.transmission.path-disconnected`.
+
+#### Fresh-agent mechanism loop
+
+When a user asks for a robot arm, hand, gripper, linkage, or other physical
+mechanism, do not start by polishing a mesh. Start from a script that returns an
+`assembly(...).model()` or `.solvedModel(...)`, then run this loop:
+
+1. Build named, purpose-bearing parts. Every visible solid should be a base,
+   bracket, servo/motor body, shaft/pin, bearing/clevis/knuckle, link, palm,
+   finger, fixture, or clearly named end-effector part.
+2. Declare connector frames and mates on the parts that carry load. Prefer
+   revolute/prismatic/fastened mates with limits over visually aligned free
+   geometry.
+3. If one mate drives another, declare both `coupleMates(...)` and
+   `transmission(...)`; the coupling is the kinematic ratio, the transmission
+   is the physical drive path. Do not jump directly from a servo horn to a
+   distant finger; include the real adjacent horn/link/gear/belt/tendon/support
+   parts in `path`.
+4. Run `inspect_assembly({ file })`. If `unexplainedGeometry` is non-empty,
+   redesign before continuing unless the original prompt explicitly allows the
+   disconnected geometry and you document why.
+5. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors,
+   gripperAperture? })`. Treat `fitness.functional === false`,
+   `fitness.blockingReasons`, connector-not-in-solid, unsupported revolutes,
+   missing mate contact, missing drive transmission, pose-limit failures, and
+   interference pairs as repair facts, not optional style feedback.
+6. Run `design_loop({ goal, attempts, outputRecordPath? })` when comparing
+   mechanism attempts or creating a Studio replay. Visual review is mandatory by
+   default; a pass means functional, quality-clean, and screenshot-reviewed. A
+   merely renderable model is not enough.
+7. Only after the deterministic tools are clean should you open Studio or a
+   screenshot for visual review. If the image still shows arbitrary fragments,
+   go back to `inspect_assembly` and make the fragment inventory explainable.
+
+For robot arms specifically, preserve at least these interfaces between repair
+attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate,
+wrist/grip mate, tool-tip connector, and fingertip connectors. Track the
+tool-tip workspace and gripper aperture so the review proves movement, not just
+static contact.
 
 ### Naming features (slice 2)
 
@@ -915,11 +998,12 @@ kernelcad mcp
 
 ## MCP Companion (introspection)
 
-When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes 28 tools:
+When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes the current tool registry, including:
 
 - `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
 - `list_assemblies({ file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
+- `inspect_assembly({ file? | code?, assembly? })` — physical assembly inventory for agents: named parts, bboxes, connectors, mates, mechanical review facts, disconnected solids, `unexplainedGeometry`, and a next-action prompt. Run this before accepting visually suspicious mechanisms; random/floating geometry must be repaired or explicitly justified by the original prompt.
 - `get_shape_info({ file? code?, feature_id? })` — volume/surfaceArea/bbox of a feature (default: last)
 - `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
@@ -945,6 +1029,38 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace and gripper aperture are only computed when pose-envelope sampling is enabled.
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, continue past functional attempts with unresolved warnings, require screenshot review via per-attempt `visualReview` by default, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath` and non-empty `findings`; otherwise `assembly.visual.review-incomplete` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
+- `arm.transmission(name, { kind, sourceMate, drivenMates, actuator?, input?, output?, path, ratio?, notes? })` is script API, not an MCP tool. Use it when `coupleMates(...)` declares a driven mate. `review_cad` emits `assembly.transmission.missing-for-coupled-mate` if a coupled mate has no matching transmission path.
+- `review_cad` emits `assembly.transmission.path-disconnected` when consecutive
+  transmission `path` parts are separated at the current pose or any sampled
+  mate-limit pose. Add or reorder horn/link/gear/belt/tendon/support parts so
+  the path stays adjacent across the declared travel.
+
+### Mechanism build loop for fresh agents
+
+For robot arms, hands, grippers, linkages, and other physical mechanisms, a
+renderable model is not enough. Use this sequence even when starting without
+project context:
+
+1. Author an `assembly(...)` with named parts and a `.model()` or
+   `.solvedModel(...)` return. Name parts by physical role: base, bracket,
+   servo, shaft, bearing, link, palm, finger, fixture, end-effector.
+2. Declare connectors and mates for the actual load path. Use mate limits for
+   motion; do not rely on boxes that merely look aligned.
+3. Run `inspect_assembly({ file })`. Any `unexplainedGeometry` means the model
+   still contains disconnected/floating fragments. Repair them or explicitly
+   justify them from the original prompt before continuing.
+4. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors,
+   gripperAperture? })`. Treat blocking reasons, unsupported joints,
+   connector-not-in-solid, missing mate contact, pose-limit failures, and
+   interference pairs as required repairs.
+5. Use `design_loop({ goal, attempts, outputRecordPath? })` to compare
+   mechanism attempts and produce a Studio replay. A pass requires functional
+   fitness, no unresolved review warnings, and accepted screenshot review unless
+   the warning is explicitly allowed.
+6. After deterministic review passes, inspect the Studio image. If it still
+   shows arbitrary fragments, return to `inspect_assembly`; the inventory must
+   explain what every disconnected part is and why it exists.
 
 ## Out of Scope
 

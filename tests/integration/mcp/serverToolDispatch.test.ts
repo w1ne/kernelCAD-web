@@ -12,6 +12,7 @@ describe('MCP server tool registry', () => {
   it('has one unique executable handler per advertised tool name', async () => {
     const names = TOOL_REGISTRY.map(entry => entry.definition.name);
     expect(new Set(names).size).toBe(names.length);
+    expect(names).toContain('design_loop');
 
     await expect(callMcpTool('list_api', {})).resolves.toMatchObject({
       globals: expect.any(Array),
