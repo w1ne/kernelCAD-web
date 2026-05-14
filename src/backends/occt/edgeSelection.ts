@@ -8,6 +8,7 @@ import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edg
 import type { FaceQuery } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from '../../intent/queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
+import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
 import {
   parseFaceSelector,
   findLineageMatches,
@@ -275,6 +276,21 @@ function resolveEdgesRef(
   base: OcctBackend,
   ref: EdgeRef,
 ): EdgeList | { error: CompilerDiagnostic } {
+  if (ref.kind === 'created') {
+    const result = resolveEdgeRef(ref, {
+      currentShape: base,
+      featureId: record.id,
+      surface: 'edge-feature',
+    });
+    if (!result.ok) return { error: result.diagnostic };
+    if (result.warnings) {
+      (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
+        ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
+        ...result.warnings,
+      ];
+    }
+    return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
+  }
   if (ref.kind === 'query') {
     const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
     if (unknownKeys.length > 0) {
