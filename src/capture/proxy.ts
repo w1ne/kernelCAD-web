@@ -19,6 +19,8 @@ import { isParamRef, type Editable } from '../runtime/paramRef';
 import { toParam, toVec3Param } from '../runtime/editableHelpers';
 import { Transform } from '../runtime/se3';
 import type { ColorToken } from '../render/palette';
+import { validateBendArgs } from '../modules/sheetMetal';
+import type { Region } from '../intent/region';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -417,6 +419,59 @@ export class Shape {
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
+  }
+
+  /**
+   * W2.2: Add a sheet-metal bend along a linear edge. The Shape must trace
+   * its lineage to a `sheetMetal(...)` record (validated at lowering time;
+   * non-sheet-metal callers see `feature.invalid-args`).
+   *
+   * @param edgeRef the linear edge to fold around. Same selector shape as
+   *               `.fillet(edges, ...)`: an EdgeQuery, EdgeSegment[],
+   *               `{ face: <canonical|label> }`, or a string label name.
+   * @param angle  fold angle in degrees. Positive = fold toward the sheet's
+   *               +normal; negative = fold the other way.
+   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`
+   *               to avoid sewing failure (`feature.kernel-failed`).
+   *
+   * Bend-allowance math (K-factor):
+   *   `BA = (pi * |angle| / 180) * (kFactor * thickness + radius)`
+   *
+   * Slice-1 lowering limits:
+   *   - edge must be linear (else `feature.bend.edge-not-linear`)
+   *   - at most 2 bends in the chain for `.flattenPattern()` (else
+   *     `feature.flattenPattern.multi-bend-unsupported`).
+   */
+  bend(
+    edgeRef: EdgeSelector | { face: FaceSelector | CanonicalFace | string } | CanonicalFace | string,
+    angle: Editable<number>,
+    radius: Editable<number>,
+  ): Shape {
+    const angleParam = toParam(angle, 'deg');
+    const radiusParam = toParam(radius, 'mm');
+    // Capture-time validation on the resolved scalar values.
+    validateBendArgs(angleParam.evaluated, radiusParam.evaluated, this.id);
+    // Reuse edgeFeature's selector-handling so .bend(...) accepts the same
+    // shape as .fillet(...) / .shell(...). We piggyback on edgeFeature by
+    // calling it with kind: 'sheetMetalBend' wedged into the same pipeline
+    // via session.createShape directly (edgeFeature's kind union doesn't
+    // include 'sheetMetalBend', so we replicate its body here).
+    return this.session.bendFeature(this, angleParam, radiusParam, edgeRef as EdgeSelector | { face: FaceSelector | CanonicalFace | string });
+  }
+
+  /**
+   * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape
+   * as a `Region`. Slice-1 limit: at most 2 bends in the chain — third bend
+   * emits `feature.flattenPattern.multi-bend-unsupported`. Derived view;
+   * adds no FeatureRecord. Requires the shape to have been lowered at least
+   * once (the bendRecord metadata is populated by the sheetMetalBend lowerer).
+   */
+  flattenPattern(): Region {
+    // Implementation imported lazily to avoid circular import (proxy.ts is
+    // imported by captureSession.ts which is imported by everything).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require('../backends/occt/flattenPattern') as typeof import('../backends/occt/flattenPattern');
+    return mod.flattenPattern(this.session.getRecords(), this.id);
   }
 
   /**
