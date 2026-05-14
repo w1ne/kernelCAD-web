@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { TabId } from './types';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
@@ -15,12 +15,11 @@ export function Inspector({ tabSlots }: InspectorProps) {
 
     const [activeTab, setActiveTab] = useState<TabId>('scene');
 
-    useEffect(() => {
-        if (!visibleTabs.includes(activeTab)) {
-            setActiveTab('scene');
-        }
-    }, [visibleTabs, activeTab]);
-
+    // Derive the effective tab in render rather than syncing via useEffect —
+    // setState-in-effect causes cascading renders and is lint-blocked
+    // (react-hooks/set-state-in-effect). If the requested activeTab isn't
+    // in the visible set, we render the scene fallback; the next user
+    // click on a real tab updates activeTab cleanly.
     const effectiveTab: TabId = visibleTabs.includes(activeTab) ? activeTab : 'scene';
 
     return (
