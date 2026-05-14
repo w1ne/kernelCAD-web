@@ -34,6 +34,18 @@ describe('get_face_lineage', () => {
     expect(result.errorCode).toBeDefined();
   });
 
+  it('accepts ordinal selector form (hole1.wall) for unnamed holes', async () => {
+    // Selector delegation to runtime/selectorParser.parseFaceSelector means
+    // the tool now accepts the canonical `<kind><N>.<ref>` form for unnamed
+    // features in addition to the legacy `<name>.<ref>` form.
+    const code = `
+      return box(40, 40, 10).hole('top', { u: 0, v: 0, diameter: 6, depth: 3 });
+    `;
+    const result = await getFaceLineageTool({ code, feature_id: 'auto', ref: 'hole1.wall' });
+    expect(result.ok).toBe(true);
+    expect(result.chain && result.chain.length).toBeGreaterThan(0);
+  });
+
   it('returns chain sorted by feature creation order (non-decreasing index in run.records)', async () => {
     // Build a 3-op chain that exercises propagation through fillet + chamfer
     // (chamfer targets the box's bottom face — independent of the hole's

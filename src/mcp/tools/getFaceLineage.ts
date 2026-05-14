@@ -17,6 +17,7 @@ import { runMcpScript } from '../runMcpScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import { OcctBackend } from '../../backends/occt/occtBackend';
+import { parseFaceSelector } from '../../runtime/selectorParser';
 
 export interface GetFaceLineageInput {
   file?: string;
@@ -126,11 +127,30 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
 
 function parseSelector(
   s: string,
-  records: readonly { id: string; metadata?: unknown }[],
+  records: readonly { id: string; kind: string; metadata?: unknown }[],
 ): { rewriteId: string; slot: string } | null {
-  const m = s.match(/^([a-zA-Z][\w-]*)\.([a-z][a-z0-9-]*)$/);
-  if (!m) return null;
-  const [, name, slot] = m;
-  const rec = records.find((r) => (r.metadata as { name?: string } | undefined)?.name === name);
-  return rec ? { rewriteId: rec.id, slot } : null;
+  // Delegate to the canonical face-selector parser used by pickFace /
+  // pickEdges so this tool accepts the same surface (named, indexed-named,
+  // and ordinal forms) without diverging from the runtime's grammar.
+  const parsed = parseFaceSelector(s);
+  if (parsed.kind === 'named') {
+    const rec = records.find((r) => (r.metadata as { name?: string } | undefined)?.name === parsed.featureName);
+    if (!rec) return null;
+    return { rewriteId: rec.id, slot: parsed.refName };
+  }
+  if (parsed.kind === 'ordinal') {
+    // Ordinal form (`<kind><N>.<ref>`): match the Nth feature of the given
+    // kind in `records` order.
+    let n = 0;
+    for (const r of records) {
+      if (r.kind === parsed.featureKind && ((r.metadata as { name?: string } | undefined)?.name === undefined)) {
+        n++;
+        if (n === parsed.n) return { rewriteId: r.id, slot: parsed.refName };
+      }
+    }
+    return null;
+  }
+  // 'collective' form (bare label without a feature qualifier) has no
+  // featureId to resolve to; reject so the caller surfaces a useful error.
+  return null;
 }
