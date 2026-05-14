@@ -90,11 +90,6 @@ vi.mock('../../context/WorkbenchContext', () => ({
 }));
 
 vi.mock('./Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('./NavigationPanel', () => ({
-    NavigationPanel: ({ children }: { children: React.ReactNode }) => (
-        <div data-testid="navigation-panel">{children}</div>
-    ),
-}));
 vi.mock('./EditorPanel', () => ({
     EditorPanel: () => <div data-testid="editor-panel" />,
 }));
@@ -103,11 +98,7 @@ vi.mock('./ViewerPanel', () => ({
 }));
 vi.mock('../../features/ai/FloatingAgent', () => ({ FloatingAgent: () => null }));
 vi.mock('../../features/ai/SmartWidget', () => ({ SmartWidget: () => null }));
-vi.mock('../Dialogs/ParameterDialog', () => ({ default: () => null }));
 vi.mock('../Dialogs/ProjectManagerDialog', () => ({ default: () => null }));
-vi.mock('../CommandPalette/CommandPalette', () => ({ CommandPalette: () => null }));
-vi.mock('./ContextToolbar', () => ({ ContextToolbar: () => null }));
-vi.mock('./PanelManager', () => ({ PanelManager: () => null }));
 
 describe('WorkbenchLayout', () => {
     it('renders the workbench shell while the geometry kernel initializes', () => {
