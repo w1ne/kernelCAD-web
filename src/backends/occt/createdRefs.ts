@@ -36,6 +36,9 @@ export interface CreatedRefSpec {
    *  feature kinds extend this freely. */
   refName: string;
   snapshot: FaceSnapshot;
+  /** OCCT surface type captured at create time. Read by lowerers from
+   *  `face.geomType` (e.g. 'PLANE', 'CYLINDRE', 'CONE'). */
+  surfaceType: 'PLANE' | 'CYLINDRE' | 'CONE' | 'SPHERE' | 'TORUS' | 'BSPLINE' | 'OTHER';
 }
 
 /** Default snapshot tolerance — used by the geometry-fallback resolver
@@ -81,6 +84,22 @@ function snapshotOf(face: Face): FaceSnapshot {
   }
 
   return { centroid, normal, area };
+}
+
+/** Read the OCCT surface type off a replicad Face. Returns one of the
+ *  enumerated `CreatedRefSpec['surfaceType']` strings; defaults to `'OTHER'`
+ *  when the underlying handle does not expose `geomType` in a recognized form.
+ *  Used by lowerers at create time so the geometry-snapshot fallback resolver
+ *  can use surface kind as the 4th discriminator. */
+export function surfaceTypeOf(face: Face): CreatedRefSpec['surfaceType'] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gt = (face as any).geomType;
+  const raw = typeof gt === 'function' ? gt.call(face) : gt;
+  if (typeof raw !== 'string') return 'OTHER';
+  const up = raw.toUpperCase();
+  if (up === 'PLANE' || up === 'CYLINDRE' || up === 'CONE' ||
+      up === 'SPHERE' || up === 'TORUS' || up === 'BSPLINE') return up;
+  return 'OTHER';
 }
 
 /** Hash a single replicad face via its underlying TopoDS handle. Mirrors the
@@ -148,6 +167,11 @@ export function applyCreatedRefs(
       : { rootHash: ref.faceHash, rootFeatureId: featureId };
     lineage.labelName = ref.refName;
     lineage.snapshot = ref.snapshot;
+    // Immutable create-time fingerprint. Only written here, never refreshed.
+    if (lineage.snapshotAtCreate === undefined) {
+      lineage.snapshotAtCreate = ref.snapshot;
+    }
+    lineage.surfaceType = ref.surfaceType;
     lineage.featureId = featureId;
     lineage.featureKind = featureKind;
     if (featureName !== undefined) lineage.featureName = featureName;

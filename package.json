@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": false,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad','playwright','playwright-core','chromium-bidi','sharp'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
+    "build:cli": "tsc --noEmit -p tsconfig.cli.json && node -e \"const b=require('./node_modules/esbuild/lib/main.js');b.build({entryPoints:['src/cli/index.ts'],bundle:true,platform:'node',format:'esm',target:'node20',outfile:'dist/cli/index.js',external:['commander','typescript','replicad','playwright','playwright-core','chromium-bidi','sharp'],banner:{js:[\\\"#!/usr/bin/env node\\\",\\\"import{createRequire as __bcr}from'node:module';\\\",\\\"const require=__bcr(import.meta.url);\\\",\\\"const __filename=new URL(import.meta.url).pathname;\\\",\\\"const __dirname=new URL('.',import.meta.url).pathname;\\\"].join('\\\\n')}}).then(()=>{require('fs').copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm','dist/cli/replicad_single.wasm');require('fs').copyFileSync('src/skill/SKILL.md','dist/cli/SKILL.md');require('fs').mkdirSync('dist/cli/fonts',{recursive:true});require('fs').copyFileSync('src/lib/fonts/LiberationSans-Regular.ttf','dist/cli/fonts/LiberationSans-Regular.ttf');require('fs').copyFileSync('src/lib/fonts/LICENSE-FONTS.md','dist/cli/fonts/LICENSE-FONTS.md');console.log('dist/cli/index.js built')}).catch(e=>{console.error(e);process.exit(1)})\"",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
     "portfolio:attempt": "npx tsx scripts/portfolioAttempt.ts",

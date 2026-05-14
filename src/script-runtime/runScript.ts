@@ -40,6 +40,7 @@ export interface RunScriptResult {
 export async function runScript(input: RunScriptInput): Promise<RunScriptResult> {
   const { code, fileName, scriptDir } = input;
   const session = new CaptureSession();
+  session.scriptDir = scriptDir;
   const api = createApi({ session, scriptDir });
 
   const transpiled = transpileTs(code, fileName);

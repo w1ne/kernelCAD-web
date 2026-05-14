@@ -39,6 +39,14 @@ export interface FaceLineage {
   featureOrdinal?: number;
   /** Feature kind that emitted this label. Needed for ordinal resolution. */
   featureKind?: import('../intent/types').FeatureKind;
+  /** Geometric fingerprint captured ONCE at face creation. Immutable.
+   *  `refreshSnapshots` must not overwrite this. The geometry-snapshot
+   *  fallback resolver compares against this when the topology route
+   *  loses the face. */
+  snapshotAtCreate?: import('../backends/occt/createdRefs').FaceSnapshot;
+  /** OCCT surface type read at create time (`face.geomType`). Used as the
+   *  4th discriminator in the geometry-snapshot fallback. */
+  surfaceType?: 'PLANE' | 'CYLINDRE' | 'CONE' | 'SPHERE' | 'TORUS' | 'BSPLINE' | 'OTHER';
 }
 
 export interface EdgeLineage {

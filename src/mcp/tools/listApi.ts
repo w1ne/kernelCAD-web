@@ -43,6 +43,8 @@ export interface ListApiOutput {
   sceneMethods?: ApiEntry[];
   /** Properties on each `ScenePart` produced by a Scene. */
   scenePartProperties?: ApiEntry[];
+  /** Methods on the `Surface` peer returned by `nurbsSurface()` / `surfaceFromCurves()`. */
+  surfaceMethods?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
@@ -69,6 +71,10 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'selectEdges', signature: '(shape, query?) => Promise<EdgeSegment[]>', description: 'Pre-select edges by EdgeQuery. Awaitable; lowers the shape lazily.' },
   { name: 'selectEdge', signature: '(shape, query) => Promise<EdgeSegment>', description: 'Like selectEdges but throws if zero or multiple edges match. Use for unambiguous single-edge selection.' },
   { name: 'lib', signature: '{ fromSTEP(path: string): Promise<Shape> }', description: 'Parts library namespace. `lib.fromSTEP(path)` imports a STEP file as a Shape — path is resolved relative to the calling .kcad.ts script (absolute paths also accepted). Returned Shape composes with translate/rotate/color/arm.part(...) like any primitive. Use for vendor catalog parts (servos, bearings, fasteners) so geometric fidelity matches the real component instead of being hand-authored from box/cylinder.' },
+  { name: 'nurbsSurface', signature: '({ controls, degree, weights?, knots?, periodic? }) => Surface', description: 'Build a NURBS surface from an explicit control net + degree. `controls` is a U-major V-minor rectangular Vec3 grid (mm). Returns a Surface (peer to Shape) — use `.thicken(t)` or `.toShape()` to enter the Shape pipeline. Slice-1: weights are accepted but ignored (non-rational only); rational support pending WASM bindings.' },
+  { name: 'surfaceFromCurves', signature: '(sections: Sketch[]) => Surface', description: 'Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. Returns a Surface — chain `.thicken(t)` or `.toShape()`. Use for free-form panels and lofted shells.' },
+  { name: 'sketch', signature: '{ text(content: string, opts: { size: Editable<number>; align?: "left" | "center" | "right"; position?: [Editable<number>, Editable<number>]; rotation?: Editable<number>; font?: string }): Sketch }', description: 'Sketch primitives namespace. `sketch.text(content, opts)` produces a Sketch covering all glyph outlines of the rendered string (one Sketch per call, regardless of glyph count). Bundled font is Liberation Sans Regular; pass `opts.font: fontPath("/abs/path.ttf")` to load a different TTF. `align` is horizontal-only (vertical alignment is always baseline). Chainable into `.extrude(depth)` for engraved (subtract) or raised (union) text features.' },
+  { name: 'fontPath', signature: '(p: string) => FontPath', description: 'Brand a string as a font filesystem path (TTF). Use in `sketch.text({ font: fontPath("/path/to/font.ttf") })` to distinguish a TTF path from a logical font family name. Relative paths resolve against the calling .kcad.ts script\'s directory.' },
 ];
 
 export const SHAPE_METHODS: ApiEntry[] = [
@@ -132,6 +138,26 @@ export const SCENE_METHODS: ApiEntry[] = [
   { name: 'part', signature: '(name: string) => ScenePart', description: 'Look up a part by its assembly-unique name. Throws KernelError (`feature.invalid-args`, hint `invalid-args.scene.unknown-part — part X not declared on assembly Y`) on miss.' },
 ];
 
+/**
+ * Methods on the `Surface` peer returned by `nurbsSurface(...)` and
+ * `surfaceFromCurves(...)`. Drift-sentinel contract: adding a method to
+ * `SurfaceProxy` REQUIRES updating this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const SURFACE_METHODS: ApiEntry[] = [
+  {
+    name: 'thicken',
+    signature: '(t: Editable<number>) => Shape',
+    description: 'Offset both sides of this surface by `t` mm and return the closed solid Shape. Lowers via OCCT BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple. `t` must be a positive finite number or a ParamRef<number>.',
+  },
+  {
+    name: 'toShape',
+    signature: '() => Shape',
+    description: 'Wrap this surface as a single-face zero-volume Shape (TopoDS_Shell). Use as a profile placeholder for downstream face-aware features; `.volume()` returns ~0 but `.boundingBox()` works.',
+  },
+];
+
 export const SCENE_PART_PROPERTIES: ApiEntry[] = [
   { name: 'name', signature: 'string', description: 'Assembly-unique part name from `assembly.part(name, ...)`.' },
   { name: 'shape', signature: 'Shape', description: 'LOCAL-frame shape — untransformed. Apply `worldTransform` to render in world frame.' },
@@ -176,6 +202,7 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     paramRefMethods: PARAM_REF_METHODS,
     sceneMethods: SCENE_METHODS,
     scenePartProperties: SCENE_PART_PROPERTIES,
+    surfaceMethods: SURFACE_METHODS,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,
