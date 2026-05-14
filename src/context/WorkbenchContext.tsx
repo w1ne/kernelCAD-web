@@ -226,6 +226,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         geometryCtx.executionHistory,
         geometryCtx.scriptParams,
         geometryCtx.scriptReview,
+        geometryCtx.featureRecords,
+        geometryCtx.recomputeMs,
         geometryCtx.staleMainResponsesDropped,
         geometryCtx.stalePreviewResponsesDropped,
         geometryCtx.executeGeometry,
