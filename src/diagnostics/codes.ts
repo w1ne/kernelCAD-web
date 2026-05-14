@@ -51,7 +51,10 @@ export type DiagnosticCode =
   | 'export.no-shape'
   // NURBS surfaces (2) — W1.3
   | 'feature.nurbs.degenerate-controls'
-  | 'feature.nurbs.degree-mismatch';
+  | 'feature.nurbs.degree-mismatch'
+  // SDF (2) — W2.3
+  | 'feature.sdf.field-undefined'
+  | 'feature.sdf.materialize-resolution-out-of-range';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -84,6 +87,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'export.no-shape',
   'feature.nurbs.degenerate-controls',
   'feature.nurbs.degree-mismatch',
+  'feature.sdf.field-undefined',
+  'feature.sdf.materialize-resolution-out-of-range',
 ] as const;
 
 export interface HintTemplate {
@@ -160,6 +165,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
     'feature.nurbs.degree-mismatch':
       'NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.',
+    'feature.sdf.field-undefined':
+      'The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.',
+    'feature.sdf.materialize-resolution-out-of-range':
+      'sdf.materialize resolution must be an integer in [10, 200]. Use 30-60 for typical brackets; 80-120 for fine smooth-blends; <30 only when previewing. 200 is the cap to prevent OOM (200^3 = 8M voxels).',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
