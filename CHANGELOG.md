@@ -232,7 +232,7 @@ npm run dev
 ```
 
 
-## [Unreleased]
+## v0.6.4 — 2026-05-14 — 2D text (sketch.text primitive)
 
 ### Added
 
