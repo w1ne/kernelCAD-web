@@ -60,4 +60,64 @@ describe('CreatedRefSpec propagation across boolean-participating lowerers', () 
       expect(pilotLineages.length).toBeGreaterThan(0);
     });
   }
+
+  // ── B. snapshotAtCreate + surfaceType immutability across downstream op ─────
+  // Spec contract: snapshotAtCreate and surfaceType are written ONCE at face
+  // creation and never refreshed. Downstream fillet/chamfer/shell may evolve
+  // (or even drop) `snapshot`, but the immutable fingerprint must reach the
+  // final shape byte-equal to the create-time value. This test compares the
+  // pilot's hole-only lineage against the same pilot's lineage after each
+  // downstream op.
+  for (const c of cases) {
+    it(`preserves snapshotAtCreate + surfaceType byte-equal across ${c.op}`, async () => {
+      // Hole-only baseline — same hole, no downstream op.
+      const baselineCode = `
+        return box(40, 40, 10).hole('top', { u: 0, v: 0, diameter: 6, depth: 3, name: 'pilot' });
+      `;
+      const baseline = await lowerCode(baselineCode);
+      const baseEntries = new Map<string, { snapshotAtCreate: unknown; surfaceType: unknown; labelName: string }>();
+      for (const lin of baseline.shape!.historyMap!.values()) {
+        if (lin.featureName === 'pilot' && lin.labelName && lin.snapshotAtCreate && lin.surfaceType) {
+          baseEntries.set(lin.labelName, {
+            snapshotAtCreate: lin.snapshotAtCreate,
+            surfaceType: lin.surfaceType,
+            labelName: lin.labelName,
+          });
+        }
+      }
+      // The hole baseline must produce at least `wall` and `floor` entries
+      // with snapshotAtCreate + surfaceType populated.
+      expect(baseEntries.size).toBeGreaterThanOrEqual(2);
+
+      // Now lower the full chain (with downstream op) and verify each pilot
+      // entry on the result still carries the SAME snapshotAtCreate and
+      // surfaceType as the baseline.
+      const after = await lowerCode(c.code);
+      const afterEntries = new Map<string, { snapshotAtCreate: unknown; surfaceType: unknown }>();
+      for (const lin of after.shape!.historyMap!.values()) {
+        if (lin.featureName === 'pilot' && lin.labelName) {
+          afterEntries.set(lin.labelName, {
+            snapshotAtCreate: lin.snapshotAtCreate,
+            surfaceType: lin.surfaceType,
+          });
+        }
+      }
+
+      // For each baseline pilot-slot that still appears in the after-map,
+      // the immutable fields must be byte-equal. (Shell may split or drop
+      // the wall, so we only assert on surviving slots.)
+      let comparedAtLeastOne = false;
+      for (const [slot, base] of baseEntries) {
+        const post = afterEntries.get(slot);
+        if (!post) continue;
+        comparedAtLeastOne = true;
+        // surfaceType is a string enum — strict equality is byte-equality.
+        expect(post.surfaceType).toBe(base.surfaceType);
+        // snapshotAtCreate is { centroid: Vec3, normal: Vec3, area: number }.
+        // toEqual deep-compares numbers byte-equal (no rounding tolerance).
+        expect(post.snapshotAtCreate).toEqual(base.snapshotAtCreate);
+      }
+      expect(comparedAtLeastOne).toBe(true);
+    });
+  }
 });
