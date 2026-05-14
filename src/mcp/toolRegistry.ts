@@ -29,6 +29,8 @@ import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
 import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
+import { flattenPatternTool } from './tools/flattenPattern';
+import { getBendTableTool } from './tools/getBendTable';
 
 export interface McpToolDefinition {
   name: string;
@@ -735,6 +737,40 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => designLoopTool(input as unknown as Parameters<typeof designLoopTool>[0]),
+  },
+  {
+    definition: {
+      name: 'flatten_pattern',
+      description:
+        'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
+        '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
+        'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          code: { type: 'string' },
+          featureId: { type: 'string' },
+        },
+      },
+    },
+    handler: input => flattenPatternTool(input as unknown as Parameters<typeof flattenPatternTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'get_bend_table',
+      description:
+        'List every sheetMetalBend in a script with its computed K-factor bend allowance, ' +
+        'axis line, angle, radius, and parent sheetMetal thickness + kFactor. Pass { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          code: { type: 'string' },
+        },
+      },
+    },
+    handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
   },
 ];
 

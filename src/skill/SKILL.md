@@ -758,7 +758,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 33 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 35 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
