@@ -348,6 +348,8 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'sheetMetal',       // W2.2
+    'sheetMetalBend',   // W2.2
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -728,6 +730,42 @@ export class OcctLowerer implements FeatureLowerer {
               },
             ],
           };
+        }
+        break;
+      }
+      case 'sheetMetal': {
+        // Reuse the sketch→extrude pipeline. Sheet metal differs only in:
+        //   (a) the record kind is 'sheetMetal' (threaded for face-label
+        //       canonicalization and bend lineage walks);
+        //   (b) thickness = depth;
+        //   (c) kFactor + sketchPlane carried on metadata for .bend() and
+        //       flattenPattern().
+        const depth = r.params.thickness.evaluated;
+        const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+        if (!sketchInput) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetal requires an input sketch.`,
+            hint: 'Pass a closed path()...close() sketch as the first argument: sheetMetal(sketch, opts).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT extrude failed during sheetMetal lowering: ${msg}`,
+            hint: 'sheetMetal lowers via the extrude pipeline. Check for self-intersecting profile or near-zero thickness.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         break;
       }
