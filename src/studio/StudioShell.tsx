@@ -10,6 +10,7 @@ import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
 import { ValidityTab } from './tabs/ValidityTab';
+import { ExportTab } from './tabs/ExportTab';
 import { StatusBar } from '../components/Layout/StatusBar';
 import ProjectManagerDialog from '../components/Dialogs/ProjectManagerDialog';
 import { FloatingAgent } from '../features/ai/FloatingAgent';
@@ -47,16 +48,26 @@ export function StudioShell() {
 
     const isModified = activeProject != null && workbench.code !== activeProject.code;
 
-    // Bridge shell selection → Viewer's existing selectedItemIds, so the
-    // R3F SelectionOutline overlay can react. Identity-system caveat:
-    // FeatureRecord.id (e.g. "box_1") and the Viewer's variable-name
-    // matching live in different namespaces — the bridge sets the id
-    // regardless; outlining only fires when they coincide. Full selection-
-    // identity reconciliation is its own slice (1.4 candidate).
-    const { setSelectedItemId } = workbench;
+    // Bridge shell selection → Viewer's existing selectedItemIds. Identity
+    // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.
+    // "box_1"); Viewer's selectedItemIds match against script variable
+    // names (from codeContext.returnedVariables). We align by position —
+    // features[i] corresponds to returnedVariables[i] in capture order.
+    // Falls back to the raw id when no variable maps; falls back to null
+    // for null selection.
+    const { setSelectedItemId, codeContext } = workbench;
     useEffect(() => {
-        setSelectedItemId(selectedFeatureId);
-    }, [selectedFeatureId, setSelectedItemId]);
+        if (selectedFeatureId == null) {
+            setSelectedItemId(null);
+            return;
+        }
+        const idx = recompute.features.findIndex((f) => f.id === selectedFeatureId);
+        const returned = (codeContext?.returnedVariables ?? []) as (string | null)[];
+        const mapped = idx >= 0 && typeof returned[idx] === 'string'
+            ? returned[idx]
+            : selectedFeatureId;
+        setSelectedItemId(mapped);
+    }, [selectedFeatureId, recompute.features, codeContext, setSelectedItemId]);
 
     const handleToggleAgentRail = useCallback(() => {
         shellStore.setAgentRailOpen(!agentRailOpen);
@@ -67,6 +78,7 @@ export function StudioShell() {
         code: <CodeTab />,
         params: <ParamsTab />,
         validity: <ValidityTab />,
+        export: <ExportTab />,
     };
 
     const interferenceCount = recompute.validity?.diagnostics.filter(

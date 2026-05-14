@@ -75,14 +75,25 @@ describe('getVisibleTabs', () => {
         });
     }
 
-    it('reserved tabs (joints/export/sections/cut/animation/render) are never returned in Phase 2', () => {
+    it('reserved tabs (joints/sections/cut/animation/render) are never returned (Phase 2 baseline)', () => {
         const result = fixture({
             paramTable: paramTableWith(1),
             validity: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
         });
         const tabs = getVisibleTabs(result);
-        for (const reserved of ['joints', 'export', 'sections', 'cut', 'animation', 'render'] as TabId[]) {
+        for (const reserved of ['joints', 'sections', 'cut', 'animation', 'render'] as TabId[]) {
             expect(tabs).not.toContain(reserved);
         }
+    });
+
+    it('export tab surfaces when geometries.length > 0 (Slice 1.4)', () => {
+        const result = fixture({
+            geometries: [{ faces: [] }],
+        });
+        expect(getVisibleTabs(result)).toContain('export');
+    });
+
+    it('export tab is hidden when geometries are empty', () => {
+        expect(getVisibleTabs(fixture({ geometries: [] }))).not.toContain('export');
     });
 });

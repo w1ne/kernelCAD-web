@@ -125,6 +125,65 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       });
 
+      server.middlewares.use('/__kernelcad/export', async (req, res) => {
+        try {
+          const url = new URL(req.url ?? '', 'http://localhost');
+          const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+          const formatParam = url.searchParams.get('format');
+          if (!scriptPath) {
+            res.statusCode = 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
+            return;
+          }
+          if (formatParam !== 'stl' && formatParam !== 'step') {
+            res.statusCode = 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'format must be stl or step' }));
+            return;
+          }
+
+          const [{ readFile }, { runAndExport }, { dirname, basename }] = await Promise.all([
+            import('node:fs/promises'),
+            import('./src/script-runtime/export'),
+            import('node:path'),
+          ]);
+          const code = await readFile(scriptPath, 'utf-8');
+          const fileName = basename(scriptPath);
+          const result = await runAndExport({
+            code,
+            fileName,
+            format: formatParam,
+            scriptDir: dirname(scriptPath),
+          });
+
+          if (result.bytes.length === 0) {
+            res.statusCode = 500;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({
+              error: 'export produced no bytes',
+              diagnostics: result.diagnostics,
+            }));
+            return;
+          }
+
+          const contentType = formatParam === 'stl'
+            ? 'model/stl'
+            : 'application/STEP';
+          const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${formatParam}`;
+          res.statusCode = 200;
+          res.setHeader('content-type', contentType);
+          res.setHeader('content-disposition', `attachment; filename="${downloadName}"`);
+          res.end(Buffer.from(result.bytes));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
+
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
