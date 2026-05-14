@@ -289,7 +289,7 @@ export function resolveBendAxis(
   faceRef: unknown,
   featureId: FeatureId,
   thickness: number,
-): { axis: BendAxisSpec; diagnostic?: undefined } | { diagnostic: CompilerDiagnostic } {
+): { axis: BendAxisSpec } | { diagnostic: CompilerDiagnostic } {
   const bb = base.boundingBox();
   const zMid = (bb.min[2] + bb.max[2]) / 2;
 
