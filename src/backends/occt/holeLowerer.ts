@@ -31,6 +31,7 @@ import {
   captureAllFaceSnapshots,
   refreshSnapshots,
   faceHashOf,
+  surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
 import type { FeatureKind } from '../../intent/types';
@@ -373,7 +374,12 @@ function attachCreatedRefs(
       if (cls !== null) break;
     }
     if (cls !== null) {
-      refs.push({ faceHash: h, refName: cls, snapshot: snapshots.get(h)! });
+      refs.push({
+        faceHash: h,
+        refName: cls,
+        snapshot: snapshots.get(h)!,
+        surfaceType: surfaceTypeOf(face),
+      });
     }
   }
 

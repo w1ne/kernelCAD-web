@@ -154,6 +154,33 @@ describe('applyCreatedRefs', () => {
   });
 });
 
+describe('holeLowerer surfaceType propagation', () => {
+  beforeAll(async () => { await initOcct(); });
+  it('hole lowerer writes surfaceType=CYLINDRE on the bore wall', async () => {
+    const { runScript } = await import('../../../../src/script-runtime/runScript');
+    const { RecomputeEngine } = await import('../../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../../src/backends/occt/occtLowerer');
+    const code = `
+      const base = box(40, 40, 20);
+      return base.hole('top', { u: 0, v: 0, diameter: 10, depth: 8 });
+    `;
+    const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(records);
+    const lastRecord = records[records.length - 1];
+    const shape = r.shapes.get(lastRecord.id) as OcctBackend;
+    const hMap = shape.historyMap!;
+    // Find at least one lineage entry with surfaceType === 'CYLINDRE' (the bore wall).
+    const cylindreLineages = Array.from(hMap.values()).filter(l => l.surfaceType === 'CYLINDRE');
+    expect(cylindreLineages.length).toBeGreaterThanOrEqual(1);
+    // Confirm at least one entry has labelName === 'wall' AND surfaceType === 'CYLINDRE'.
+    const wall = Array.from(hMap.values()).find(l => l.labelName === 'wall');
+    expect(wall).toBeDefined();
+    expect(wall!.surfaceType).toBe('CYLINDRE');
+    expect(wall!.snapshotAtCreate).toBeDefined();
+  });
+});
+
 describe('snapshotAtCreate immutability', () => {
   beforeAll(async () => { await initOcct(); });
   it('refreshSnapshots overwrites snapshot but never snapshotAtCreate', async () => {
