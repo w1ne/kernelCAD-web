@@ -183,6 +183,19 @@ for the printed/machined plates and brackets that connect them.
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
 .patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
 
+// Pattern features are a single editable unit per call (one FeatureRecord). To address an
+// individual instance's face / edge, build a FaceRef / EdgeRef with kind: 'created',
+// rewriteId: '<sourceFeatureId>_pattern_<i>' (zero-indexed; instance 0 is the source
+// position), and the source feature's slot name. To address all instances together, use
+// the source feature's name selector (e.g. 'mountBolt.wall' resolves to every patterned
+// instance's wall in one collective).
+//
+// Geometric note: pattern is implemented as cumulative boolean union of transformed source
+// copies. Additive features (boxes, ribs, fins, tabs, spokes) pattern cleanly. Patterning
+// a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent
+// bodies are disjoint — overlapping patterned bodies cause the inner void to be filled by
+// the outer body's solid (boolean-union semantics).
+
 // Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.
 .transform(t: Transform): Shape
