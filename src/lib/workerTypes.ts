@@ -78,6 +78,7 @@ export const GeometryResultSchema = z.object({
     faces: z.array(FaceGeometrySchema),
     volume: z.number().optional(),
     edges: Float32ArraySchema.optional(),
+    color: z.string().optional(),
 });
 
 export const SketchGeometrySchema = z.object({
@@ -131,6 +132,7 @@ export interface GeometryResult {
     faces: FaceGeometry[];
     volume?: number;
     edges?: Float32Array;
+    color?: string;
 }
 
 export interface SketchGeometry {

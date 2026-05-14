@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../lib/geometryEngine";
+import { computeGeometryBounds } from "./cameraBounds";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
@@ -11,9 +12,35 @@ const SKETCH_DISTANCE = 20;
 export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
+    const cameraRef = useRef(camera);
     const targetState = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; } | null>(null);
     const prevSketchActive = useRef(false);
     const savedCameraState = useRef<{ position: THREE.Vector3; target: THREE.Vector3; } | null>(null);
+    const lastGeometrySignature = useRef<string | null>(null);
+
+    useEffect(() => {
+        cameraRef.current = camera;
+    }, [camera]);
+
+    useEffect(() => {
+        if (geometries.length === 0 || sketchMode.active) return;
+
+        const bounds = computeGeometryBounds(geometries);
+        if (!bounds) return;
+
+        const signature = `${geometries.length}:${bounds.center.x.toFixed(3)},${bounds.center.y.toFixed(3)},${bounds.center.z.toFixed(3)}:${bounds.radius.toFixed(3)}`;
+        if (signature === lastGeometrySignature.current) return;
+        lastGeometrySignature.current = signature;
+
+        const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
+        const direction = new THREE.Vector3(1, 1, 0.75).normalize();
+        const nextPosition = bounds.center.clone().add(direction.multiplyScalar(distance));
+
+        targetState.current = { position: nextPosition, lookAt: bounds.center };
+        cameraRef.current.near = Math.max(distance / 500, 0.01);
+        cameraRef.current.far = Math.max(distance * 20, 1000);
+        cameraRef.current.updateProjectionMatrix();
+    }, [geometries, sketchMode.active]);
 
     useEffect(() => {
         const isSketching = sketchMode.active;

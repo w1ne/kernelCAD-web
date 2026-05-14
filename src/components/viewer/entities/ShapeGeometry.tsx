@@ -7,6 +7,7 @@ import { useWorkbench } from "../../../context/WorkbenchContext";
 import { useUI } from "../../../context/UIContext";
 import { CAD_COLORS, CAD_COLORS_HEX } from "../../../constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
+import { DEFAULT_COLOR, resolveColor } from "../../../render/palette";
 
 interface ShapeProps {
     geometry: GeometryResult;
@@ -127,7 +128,8 @@ export function ConsolidatedShape({
         });
     }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
-    const color = isSelected ? CAD_COLORS.selection : 0x808080;
+    const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
+    const color = isSelected ? CAD_COLORS.selection : resolvedColor;
     const material = useMemo(() => new THREE.MeshLambertMaterial({
         color,
         flatShading: viewMode3D === 'shadedWithEdges'

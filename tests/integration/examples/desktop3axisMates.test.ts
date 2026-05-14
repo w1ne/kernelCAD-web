@@ -137,9 +137,19 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(result.pairs).toEqual([]);
   }, 180_000);
 
-  it('passes the functional review loop with mechanically supported connector geometry', async () => {
+  it('passes the functional review loop with realized mechanical joint intent', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
+      designGoal: 'Build a compact desktop 3-axis robot arm with physically supported servo joints and a functional gripper.',
+      preserveInterfaces: [
+        'base-yaw mate',
+        'shoulder-pitch mate',
+        'elbow-pitch mate',
+        'grip mate',
+        'gripper-plate.tool-tip connector',
+        'left-finger.tip connector',
+        'right-finger.tip connector',
+      ],
       trackConnectors: ['gripper-plate.tool-tip', 'left-finger.tip', 'right-finger.tip'],
       gripperAperture: {
         left: 'left-finger.tip',
@@ -170,7 +180,7 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
       expect(result.fitness.functional).toBe(true);
       expect(result.fitness.blockingReasons).toEqual([]);
-      expect(result.fitness.mechanismSummary.mechanicalPlausibilityIssueCount).toBeUndefined();
+      expect(result.fitness.mechanismSummary.mechanicalIntentIssueCount).toBeUndefined();
     }
   }, 240_000);
 

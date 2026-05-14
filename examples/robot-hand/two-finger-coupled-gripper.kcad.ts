@@ -97,4 +97,26 @@ hand.mate('right-curl', 'palm.right-hinge', 'right-finger.hinge', 'revolute');
 hand.coupleMates('left-curl', { source: 'grip', ratio: 1 });
 hand.coupleMates('right-curl', { source: 'grip', ratio: -1 });
 
+hand.transmission('left-finger-drive-linkage', {
+  kind: 'direct-horn',
+  sourceMate: 'grip',
+  drivenMates: ['left-curl'],
+  actuator: 'grip-driver',
+  input: 'grip-driver',
+  output: 'left-finger',
+  path: ['grip-driver', 'palm', 'left-finger'],
+  ratio: 1,
+});
+
+hand.transmission('right-finger-drive-linkage', {
+  kind: 'direct-horn',
+  sourceMate: 'grip',
+  drivenMates: ['right-curl'],
+  actuator: 'grip-driver',
+  input: 'grip-driver',
+  output: 'right-finger',
+  path: ['grip-driver', 'palm', 'right-finger'],
+  ratio: -1,
+});
+
 return hand.model();

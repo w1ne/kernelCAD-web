@@ -399,17 +399,6 @@ export function WorkbenchLayout() {
         }
     };
 
-    if (!isReady) {
-        return (
-            <div className="w-screen h-screen flex items-center justify-center bg-black text-white">
-                <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="animate-spin" />
-                    <span>Initializing Kernel...</span>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col" data-testid="workbench-ready">
             <Header />
@@ -439,6 +428,16 @@ export function WorkbenchLayout() {
                     isFaceSelecting={isFaceSelecting}
                     onCancelFaceSelection={cancelFaceSelection}
                 />
+
+                {!isReady && (
+                    <div
+                        data-testid="kernel-init-banner"
+                        className="pointer-events-none absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
+                    >
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Geometry kernel warming up...</span>
+                    </div>
+                )}
 
                 {/* AI Agents Layer */}
                 <FloatingAgent />

@@ -33,3 +33,20 @@ test('demo-player route renders without console errors', async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test('demo-player can load the robot arm example through the dev mesh endpoint', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
+
+  await page.goto('/demo-player?script=examples/robot-arm/desktop-3axis-mates.kcad.ts');
+  await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 10000 });
+  await page.waitForFunction(() => window.__demoPlayer!.dumpScene().meshCount > 20, { timeout: 30000 });
+
+  const dump = await page.evaluate(() => window.__demoPlayer!.dumpScene());
+  expect(dump.meshCount).toBeGreaterThan(20);
+  expect(dump.sampleOpacities.every((opacity) => opacity === 1)).toBe(true);
+  expect(errors).toEqual([]);
+});
