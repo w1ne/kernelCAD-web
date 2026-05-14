@@ -497,14 +497,31 @@ export class OcctBackend implements ShapeBackend {
     // Build each triangle: 3 vertices → 3 edges (MakeEdge_3) → wire (MakeWire_4)
     // → planar face (MakeFace_15). `replicad-opencascadejs` does not expose
     // `BRepBuilderAPI_MakePolygon`, so we walk the underlying primitives.
+    //
+    // Surface-nets / marching-cubes can emit zero-area "sliver" triangles
+    // where two vertices coincide within float epsilon. OCCT's
+    // BRepBuilderAPI_MakeEdge_3 rejects these, so we filter them here.
+    // The threshold matches the sewing tolerance (1 µm).
+    const DEGEN_EPS_SQ = 1e-12;  // (1 µm)² in mm²
     const nTris = indices.length / 3;
+    let skipped = 0;
     for (let t = 0; t < nTris; t++) {
       const i0 = indices[3 * t];
       const i1 = indices[3 * t + 1];
       const i2 = indices[3 * t + 2];
-      const p0 = new oc.gp_Pnt_3(vertices[3 * i0], vertices[3 * i0 + 1], vertices[3 * i0 + 2]);
-      const p1 = new oc.gp_Pnt_3(vertices[3 * i1], vertices[3 * i1 + 1], vertices[3 * i1 + 2]);
-      const p2 = new oc.gp_Pnt_3(vertices[3 * i2], vertices[3 * i2 + 1], vertices[3 * i2 + 2]);
+      const ax = vertices[3 * i0], ay = vertices[3 * i0 + 1], az = vertices[3 * i0 + 2];
+      const bx = vertices[3 * i1], by = vertices[3 * i1 + 1], bz = vertices[3 * i1 + 2];
+      const cx = vertices[3 * i2], cy = vertices[3 * i2 + 1], cz = vertices[3 * i2 + 2];
+      const dab = (bx - ax) ** 2 + (by - ay) ** 2 + (bz - az) ** 2;
+      const dbc = (cx - bx) ** 2 + (cy - by) ** 2 + (cz - bz) ** 2;
+      const dca = (ax - cx) ** 2 + (ay - cy) ** 2 + (az - cz) ** 2;
+      if (dab < DEGEN_EPS_SQ || dbc < DEGEN_EPS_SQ || dca < DEGEN_EPS_SQ) {
+        skipped++;
+        continue;
+      }
+      const p0 = new oc.gp_Pnt_3(ax, ay, az);
+      const p1 = new oc.gp_Pnt_3(bx, by, bz);
+      const p2 = new oc.gp_Pnt_3(cx, cy, cz);
       const e01 = new oc.BRepBuilderAPI_MakeEdge_3(p0, p1);
       const e12 = new oc.BRepBuilderAPI_MakeEdge_3(p1, p2);
       const e20 = new oc.BRepBuilderAPI_MakeEdge_3(p2, p0);
@@ -525,13 +542,33 @@ export class OcctBackend implements ShapeBackend {
       wireBuilder.delete?.();
       faceBuilder.delete?.();
     }
+    if (skipped > 0 && skipped === nTris) {
+      throw new Error(`OcctBackend.fromTriangleMesh: all ${nTris} triangles were degenerate (zero-area within 1µm). Mesh has no usable geometry.`);
+    }
 
     sewing.Perform(new oc.Message_ProgressRange_1());
     const sewedShape = sewing.SewedShape();
     sewing.delete?.();
 
-    // SewedShape returns a TopoDS_Shape — coerce to TopoDS_Shell for MakeSolid_3.
-    const shell = oc.TopoDS.Shell_1(sewedShape);
+    // SewedShape returns a TopoDS_Shape (typically a shell, sometimes a
+    // compound or single face depending on connectivity). Inspect the
+    // shape type before forcing a Shell cast.
+    // TopAbs_ShapeEnum values: COMPOUND=0, COMPSOLID=1, SOLID=2, SHELL=3,
+    // FACE=4, WIRE=5, EDGE=6, VERTEX=7, SHAPE=8.
+    const shapeTypeRaw = sewedShape.ShapeType();
+    const shapeTypeVal = typeof shapeTypeRaw === 'object' && shapeTypeRaw !== null
+      ? (shapeTypeRaw as { value?: number }).value ?? shapeTypeRaw
+      : shapeTypeRaw;
+    let shell: unknown;
+    if (shapeTypeVal === 3) {
+      // SHELL — direct cast.
+      shell = oc.TopoDS.Shell_1(sewedShape);
+    } else {
+      // Not a clean shell — sewing produced a compound or worse. Surface
+      // as kernel-failed for the materialize lowerer to translate. The
+      // most common cause is non-watertight mesh (open boundaries).
+      throw new Error(`OcctBackend.fromTriangleMesh: sewing produced shape type ${shapeTypeVal} (expected SHELL=3); mesh is likely not watertight.`);
+    }
     const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
     if (!makeSolid.IsDone()) {
       makeSolid.delete?.();
