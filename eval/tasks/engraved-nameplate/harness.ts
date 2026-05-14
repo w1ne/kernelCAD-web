@@ -20,7 +20,6 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
     gates: {
       'evaluates clean': true,
       'non-empty solid': s.volume > 0,
-      'no interferences': true,
     },
     scored: {
       'plate footprint ≈ 80×30': dims[0] > 75 && dims[0] < 85 && dims[1] > 25 && dims[1] < 35,

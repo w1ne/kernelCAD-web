@@ -19,10 +19,9 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
     gates: {
       'evaluates clean': true,
       'non-empty solid': s.volume > 0,
-      'no interferences': true,
     },
     scored: {
-      'base footprint ≈ 60×60 (with rotated text extending beyond)': dims[0] > 55 && dims[0] < 80 && dims[1] > 55 && dims[1] < 80,
+      'base footprint ≈ 60×60 (with rotated text extending beyond)': dims[0] > 55 && dims[0] < 75 && dims[1] > 55 && dims[1] < 75,
       'total height ≈ 3.5 mm (base + relief)': dims[2] > 3.2 && dims[2] < 3.8,
       'relief adds volume': s.volume > baseVol * 1.02,
     },
