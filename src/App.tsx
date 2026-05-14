@@ -1,5 +1,5 @@
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext';
-import { WorkbenchLayout } from './components/Layout/WorkbenchLayout';
+import { StudioShell } from './studio/StudioShell';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
@@ -102,7 +102,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     return () => clearTimeout(timeoutId);
   }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
 
-  return isDevLab ? <DevLab /> : <WorkbenchLayout />;
+  return isDevLab ? <DevLab /> : <StudioShell />;
 }
 
 function isDemoPlayerRoute(): boolean {
