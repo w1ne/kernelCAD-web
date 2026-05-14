@@ -289,7 +289,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         required: ['feature_id', 'ref'],
       },
     },
-    handler: input => getFaceLineageTool(input as Parameters<typeof getFaceLineageTool>[0]),
+    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
   },
   {
     definition: {
