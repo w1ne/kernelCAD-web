@@ -17,6 +17,7 @@ import { FloatingAgent } from '../features/ai/FloatingAgent';
 import { SmartWidget } from '../features/ai/SmartWidget';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { useShellStore, shellStore } from './store/useShellStore';
+import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useProject } from '../context/ProjectContext';
 
@@ -47,6 +48,18 @@ export function StudioShell() {
     }, [workbench]);
 
     const isModified = activeProject != null && workbench.code !== activeProject.code;
+
+    // Test/integration hook so MCP (Slice 1.5b) and the browser console can
+    // stage a proposed edit. Mounted on the window object behind a
+    // __kernelcad_ prefix so it's clearly internal.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const w = window as unknown as { __kernelcad_propose_edit?: (edit: StagedEdit) => void };
+        w.__kernelcad_propose_edit = (edit) => shellStore.proposeStagedEdit(edit);
+        return () => {
+            delete w.__kernelcad_propose_edit;
+        };
+    }, []);
 
     // Bridge shell selection → Viewer's existing selectedItemIds. Identity
     // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.

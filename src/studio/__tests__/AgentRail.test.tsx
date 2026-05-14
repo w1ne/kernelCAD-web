@@ -1,8 +1,14 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { AgentRail } from '../AgentRail';
 import { shellStore } from '../store/useShellStore';
+
+// AgentRail composes StagedEditSlot which (Slice 1.5+) reads useWorkbench.
+// Mock the context so the rail can render in isolation.
+vi.mock('../../context/WorkbenchContext', () => ({
+    useWorkbench: () => ({ setCode: vi.fn() }),
+}));
 
 afterEach(() => {
     cleanup();

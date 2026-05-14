@@ -9,11 +9,29 @@ import type { SelectedFeatureId } from '../types';
 // future slice needs richer selectors (slice equality, devtools), this
 // store can be swapped for Zustand without changing consumers' signatures.
 
+/**
+ * One proposed AST edit awaiting human review. Single-slot (no queue) in
+ * Slice 1.5; future slices may extend. Population comes from
+ * `window.__kernelcad_propose_edit` today (test hook), and from the MCP
+ * `propose_edit` tool in Slice 1.5b.
+ */
+export interface StagedEdit {
+    readonly id: string;
+    readonly intent: string;
+    readonly fromCode: string;
+    readonly toCode: string;
+    /** Optional snapshot of validateAssembly predicted output post-edit. */
+    readonly expectedDiagnostics?: ReadonlyArray<{ code: string; severity: string; message: string }>;
+    /** Where the proposal came from. */
+    readonly source?: { kind: 'agent' | 'human' | 'test'; label?: string };
+}
+
 export interface ShellState {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRailOpen: boolean;
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
+    readonly stagedEdit: StagedEdit | null;
 }
 
 const INITIAL_STATE: ShellState = {
@@ -21,6 +39,7 @@ const INITIAL_STATE: ShellState = {
     agentRailOpen: false,
     previousValidity: null,
     currentValidity: null,
+    stagedEdit: null,
 };
 
 type Listener = () => void;
@@ -67,6 +86,23 @@ export class ShellStore {
             previousValidity: this.state.currentValidity,
             currentValidity: next,
         };
+        this.emit();
+    };
+
+    /**
+     * Propose a staged edit. Idempotent on identical reference. Slice 1.5
+     * is single-slot — a new proposal replaces any existing one without a
+     * queue. Future slices may extend.
+     */
+    proposeStagedEdit = (edit: StagedEdit | null): void => {
+        if (this.state.stagedEdit === edit) return;
+        this.state = { ...this.state, stagedEdit: edit };
+        this.emit();
+    };
+
+    clearStagedEdit = (): void => {
+        if (this.state.stagedEdit === null) return;
+        this.state = { ...this.state, stagedEdit: null };
         this.emit();
     };
 

@@ -103,4 +103,40 @@ describe('ShellStore', () => {
 
         expect(listener).toHaveBeenCalledTimes(1);
     });
+
+    it('proposeStagedEdit populates the slot and fans out', () => {
+        store = new ShellStore();
+        const listener = vi.fn();
+        store.subscribe(listener);
+
+        store.proposeStagedEdit({
+            id: 'e1',
+            intent: 'x',
+            fromCode: 'a',
+            toCode: 'b',
+        });
+        expect(store.getSnapshot().stagedEdit?.id).toBe('e1');
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('proposeStagedEdit is idempotent on identical reference', () => {
+        store = new ShellStore();
+        const edit = { id: 'e1', intent: 'x', fromCode: 'a', toCode: 'b' };
+        store.proposeStagedEdit(edit);
+        const listener = vi.fn();
+        store.subscribe(listener);
+        store.proposeStagedEdit(edit);
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('clearStagedEdit clears and fans out once', () => {
+        store = new ShellStore();
+        store.proposeStagedEdit({ id: 'e1', intent: 'x', fromCode: 'a', toCode: 'b' });
+        const listener = vi.fn();
+        store.subscribe(listener);
+        store.clearStagedEdit();
+        store.clearStagedEdit();
+        expect(store.getSnapshot().stagedEdit).toBeNull();
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
 });
