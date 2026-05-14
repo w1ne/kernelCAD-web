@@ -1,4 +1,39 @@
-# kernelCAD v0.7.0
+# kernelCAD v0.8.0
+
+## v0.8.0 — 2026-05-15 — SDF authoring (slice 1)
+
+v0.8.0 adds signed-distance-field authoring to the agent surface: agents can compose `sdf.sphere/.box/.cylinder/.torus` primitives, blend them smoothly with `sdf.smoothBlend(a, b, k)`, then call `sdf.materialize(field, { resolution })` to obtain a standard `Shape` (kind `sdfMaterialize`) that flows through the existing pipeline — booleans, exports, history walks. The slice ships the minimum credible surface to land a smooth-blended bracket without forking the renderer, calling a GPU, or leaving the standard `Shape` contract.
+
+### Added — top-level API
+
+- `sdf.sphere(r)`, `sdf.box([sx, sy, sz])`, `sdf.cylinder(r, h)`, `sdf.torus(R, r)` build callable distance-field closures with exact AABBs in mm, centred at origin in their local frame.
+- `sdf.smoothBlend(a, b, k)` applies the polynomial smooth-min combinator (Inigo Quilez's standard formula) with a `k`-padded AABB. Slice-1 supports union only; smooth-intersect / smooth-difference are deferred.
+- `sdf.materialize(field, { resolution? })` runs marching-cubes (pure JS via `isosurface@1.0.0`, MIT) on the field's AABB, sews the resulting triangles into a closed polyhedral solid via the new `OcctBackend.fromTriangleMesh` static factory, and parks the backend on `session.importedGeometry` exactly like `lib.fromSTEP`. Default resolution **30** (clamped to `[10, 200]`); see the SKILL.md "Memory + perf" table for measured timings.
+- `sdf.bind(name, field)` registers an `SdfField` under a string name on the session so the read-only `evaluate_sdf` MCP tool can sample it later.
+- New MCP tool `evaluate_sdf({ file? | code?, fieldName, point: [x, y, z] })` samples the named field at a 3D point and returns `{ distance, inside, aabb, kind }`. Use for pre-materialize verification of SDF composition.
+- New `FeatureKind` value `'sdfMaterialize'` joins the union; the lowerer arm hands back the parked backend (byte-for-byte mirror of `'importedStep'`). The bare `'sdf'` FeatureKind remains a reservation marker for slice 2+ (TPMS / voronoi) and is not lowered.
+
+### Added — diagnostics
+
+- Two new diagnostic codes: `feature.sdf.field-undefined` (SDF returned NaN/Infinity, or `evaluate_sdf` couldn't find the named binding) and `feature.sdf.materialize-resolution-out-of-range` (`opts.resolution` outside `[10, 200]` or non-integer). Catalogue grows from 30 to **32** codes.
+
+### Shape limitations (slice 1)
+
+- The `sdf.materialize` output is **polyhedral** — thousands of triangular planar faces, not analytic surfaces. Canonical face refs (`'top'`, `'bottom'`, …) do not apply; downstream `fillet({ face: 'top' })`-style calls return `feature.face-ref.not-applicable`.
+- Booleans (`union` / `subtract` / `intersect`) **do** work — standard OCCT BREP operates on the polyhedral solid.
+- No `field.translate(...)` in slice 1: compose primitives whose origins align, materialize, then translate the resulting `Shape`.
+
+### Deferred to slice 2+
+
+- TPMS, voronoi, organic noise, custom raymarch DSL, GPU evaluation, direct SDF rendering in the viewport.
+- Smooth-intersect / smooth-difference.
+- Per-axis resolution.
+- A dedicated capture-time helper for offsetting primitives without post-materialize transforms.
+
+### Plan-vs-API deviations (recorded for transparency)
+
+- **Default resolution = 30, not 50.** OCCT per-triangle sewing scales with triangle count; res=50 on sphere(10) takes ~170 s while res=30 takes ~20 s. Default lowered to keep typical capture times manageable; agents can bump explicitly for finer surface quality.
+- **Field binding via `sdf.bind(name, field)`, not `globalThis[name]`.** The script sandbox in `src/script-runtime/isolation.ts` strips `globalThis`/`require` for host isolation, so the plan's original binding mechanism wasn't viable. `sdf.bind` writes to `session.sdfFields`, which `evaluate_sdf` reads.
 
 ## v0.7.0 — 2026-05-14 — NURBS surfaces
 
