@@ -11,6 +11,7 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { getFaceLineageTool } from './tools/getFaceLineage';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -271,6 +272,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listFaceLabelsTool(input as Parameters<typeof listFaceLabelsTool>[0]),
+  },
+  {
+    definition: {
+      name: 'get_face_lineage',
+      description:
+        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
+          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
+        },
+        required: ['feature_id', 'ref'],
+      },
+    },
+    handler: input => getFaceLineageTool(input as Parameters<typeof getFaceLineageTool>[0]),
   },
   {
     definition: {
