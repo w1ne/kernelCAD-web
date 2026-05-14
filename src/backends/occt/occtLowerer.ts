@@ -19,6 +19,9 @@ import { resolveTopologyOriginOnBackend } from './connectorTopology';
 import { KernelError } from '../../intent/kernelError';
 import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
+import {
+  buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
+} from './nurbsSurfaceLowerer';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
@@ -281,9 +284,26 @@ export function applyVariableEdgeFeature(
  *  Use from any code that ran `runScript` and then needs to lower the
  *  resulting records — without this, `importedStep` records error out
  *  because the lowerer's `importedGeometry` map is empty. */
-export function createOcctLowerer(session?: { importedGeometry: Map<string, ShapeBackend> }): OcctLowerer {
+export function createOcctLowerer(
+  session?: {
+    importedGeometry: Map<string, ShapeBackend>;
+    cachedShapes?: Map<string, ShapeBackend>;
+    /** W1.3: surface-record lookup. Optional for callers that don't ship NURBS. */
+    getSurfaceRecord?: (
+      id: import('../../intent/surfaceRecord').SurfaceId,
+    ) => import('../../intent/surfaceRecord').SurfaceRecord | undefined;
+  },
+): OcctLowerer {
   const lowerer = new OcctLowerer();
-  if (session) lowerer.importedGeometry = session.importedGeometry;
+  if (session) {
+    lowerer.importedGeometry = session.importedGeometry;
+    if (session.getSurfaceRecord) {
+      lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
+    }
+    // W1.3: stash the session reference so surfaceFromCurves can reach the
+    // per-record cachedShapes map populated by the recompute engine.
+    (lowerer as { session?: typeof session }).session = session;
+  }
   return lowerer;
 }
 
@@ -311,12 +331,151 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyModel',
     'solvedAssembly',
     'assemblyExport',
+    'surfaceThicken',   // W1.3
+    'surfaceToShape',   // W1.3
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
    *  `lib.fromSTEP(path)` at script-run time. Keyed by feature id; threaded
    *  in by the script-runtime caller after the script returns. */
   importedGeometry: Map<string, ShapeBackend> = new Map();
+
+  /** W1.3: per-lowerer-instance cache mapping `SurfaceId` to the resolved
+   *  Replicad Face. Populated lazily on first surface ref consumption per
+   *  surface id; reused across `surfaceThicken` / `surfaceToShape` records
+   *  that point at the same surface. */
+  surfaceCache: Map<import('../../intent/surfaceRecord').SurfaceId, import('replicad').Face> = new Map();
+
+  /** W1.3: optional session hook to look up a SurfaceRecord by id at lower
+   *  time. Provided by `createOcctLowerer(session)`; undefined if the lowerer
+   *  was instantiated without a session (legacy / unit-test code paths). */
+  getSurfaceRecord?: (
+    id: import('../../intent/surfaceRecord').SurfaceId,
+  ) => import('../../intent/surfaceRecord').SurfaceRecord | undefined;
+
+  /**
+   * Resolve the Replicad Face referenced by `record.inputs.surface`. Order of
+   * resolution: external map (`inputs.surfaces`) → instance cache
+   * (`surfaceCache`) → session lookup via `getSurfaceRecord` + lazy build.
+   *
+   * Returns undefined and appends the appropriate diagnostic when the input
+   * ref is missing/wrong-kind or the underlying surface cannot be built.
+   */
+  private resolveSurfaceFaceForRecord(
+    r: FeatureRecord,
+    inputs: ResolvedInputs,
+    diagnostics: CompilerDiagnostic[],
+  ): import('replicad').Face | undefined {
+    const surfaceRef = r.inputs.surface;
+    if (!surfaceRef || surfaceRef.kind !== 'surface') {
+      diagnostics.push({
+        target: this.target,
+        code: 'feature.invalid-args',
+        featureId: r.id,
+        severity: 'error',
+        message: `${r.kind}: missing or wrong-kind surface input ref.`,
+        hint: `invalid-args.${r.kind}.input — call the corresponding Surface method on a captured Surface.`,
+      });
+      return undefined;
+    }
+    const sid = surfaceRef.surfaceId;
+    let face = inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
+    if (face) return face;
+    if (!this.getSurfaceRecord) {
+      diagnostics.push({
+        target: this.target,
+        code: 'recompute.input.missing',
+        featureId: r.id,
+        severity: 'error',
+        message: `${r.kind}: surface ${sid} not resolved (lowerer has no session hook).`,
+        hint: 'recompute.input.missing — use createOcctLowerer(session) so SurfaceRecords are reachable.',
+      });
+      return undefined;
+    }
+    const surfRec = this.getSurfaceRecord(sid);
+    if (!surfRec) {
+      diagnostics.push({
+        target: this.target,
+        code: 'recompute.input.missing',
+        featureId: r.id,
+        severity: 'error',
+        message: `${r.kind}: SurfaceRecord ${sid} not found in session.`,
+        hint: 'recompute.input.missing — Surface was not captured before its thicken/toShape escape.',
+      });
+      return undefined;
+    }
+    try {
+      if (surfRec.data.kind === 'nurbsSurface') {
+        face = buildNurbsFace({
+          controls: surfRec.data.controls,
+          weights: surfRec.data.weights,
+          degree: surfRec.data.degree,
+          knots: surfRec.data.knots,
+          periodic: surfRec.data.periodic,
+        });
+      } else if (surfRec.data.kind === 'surfaceFromCurves') {
+        const sectionShapes: OcctBackend[] = [];
+        for (const fid of surfRec.data.sectionIds) {
+          // The session's records are reachable through inputs.records.
+          // For surfaceFromCurves we need the lowered sketch backend; pull
+          // from the engine's per-record output via inputs.byKey isn't
+          // available here (the section ids aren't in inputs.byKey because
+          // they're declared on the SurfaceRecord, not the consumer
+          // record). The simplest reliable path is: look up the cached
+          // OcctBackend from the session's cachedShapes map if the
+          // session provided one. Slice-1 limitation: surfaceFromCurves
+          // requires the session to have lowered each section sketch
+          // before this surface's first consumer is processed (true in
+          // practice because the script-time `surfaceFromCurves(...)`
+          // call comes after the sketches in declaration order, and the
+          // recompute engine pre-lowers each FeatureRecord top-down).
+          const sessionShape =
+            (this as unknown as { session?: { cachedShapes?: Map<string, ShapeBackend> } })
+              .session?.cachedShapes?.get(fid);
+          if (!sessionShape) {
+            diagnostics.push({
+              target: this.target,
+              code: 'recompute.input.missing',
+              featureId: r.id,
+              severity: 'error',
+              message: `${r.kind}: section sketch ${fid} not in session cache (was it lowered?).`,
+              hint: 'recompute.input.missing — Each section sketch must be referenced after declaration in your script; surfaceFromCurves only sees sketches that have been captured first.',
+            });
+            return undefined;
+          }
+          sectionShapes.push(sessionShape as OcctBackend);
+        }
+        const planes = sectionShapes.map((_, i) => ({
+          plane: 'XY' as const,
+          origin: [0, 0, i * 10] as [number, number, number],
+        }));
+        face = buildSkinnedSurface(sectionShapes, planes);
+      } else {
+        diagnostics.push({
+          target: this.target,
+          code: 'feature.invalid-args',
+          featureId: r.id,
+          severity: 'error',
+          message: `Unknown SurfaceRecord data kind on ${sid}.`,
+          hint: 'Use nurbsSurface(...) or surfaceFromCurves(...) to capture a Surface.',
+        });
+        return undefined;
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      diagnostics.push({
+        target: this.target,
+        code: 'feature.kernel-failed',
+        featureId: r.id,
+        severity: 'error',
+        message: `${r.kind}: surface build failed: ${msg}`,
+        hint: 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
+      });
+      return undefined;
+    }
+    this.surfaceCache.set(sid, face);
+    return face;
+  }
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -1812,6 +1971,53 @@ export class OcctLowerer implements FeatureLowerer {
           fused = fused.union(transformed[i]) as OcctBackend;
         }
         shape = fused;
+        break;
+      }
+      case 'surfaceThicken': {
+        // W1.3 NURBS: consume the upstream Surface (resolved via session hook
+        // or pre-populated by the recompute engine into `inputs.surfaces`) and
+        // offset both sides via BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple.
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        if (!face) {
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const t = r.params.t.evaluated;
+        try {
+          shape = thickenFace(face, t);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceThicken: OCCT failed: ${msg}`,
+            hint: 'kernel-failed — try a smaller thickness, simplify the control net, or ensure the surface has no self-intersections.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        break;
+      }
+      case 'surfaceToShape': {
+        // W1.3 NURBS: wrap the Replicad Face as a single-face TopoDS_Shell.
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        if (!face) {
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          shape = faceToShape(face);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `surfaceToShape: OCCT failed: ${msg}`,
+            hint: 'kernel-failed — surface produced an invalid Face; check control-net + degree.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
         break;
       }
       default:

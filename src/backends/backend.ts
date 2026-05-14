@@ -36,6 +36,13 @@ export interface ResolvedInputs {
    * sketch). Optional because lowerers without that need don't pay for it.
    */
   records?: readonly FeatureRecord[];
+  /**
+   * W1.3 NURBS: per-record map of resolved surfaces keyed by SurfaceId.
+   * Populated by the recompute engine for `surfaceThicken` / `surfaceToShape`
+   * records that have a `{ kind: 'surface' }` input ref. Optional — most
+   * lowerers never read it.
+   */
+  surfaces?: Map<import('../intent/surfaceRecord').SurfaceId, import('replicad').Face>;
 }
 
 export interface LowerResult {
