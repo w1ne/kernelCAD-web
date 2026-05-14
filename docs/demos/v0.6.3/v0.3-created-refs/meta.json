@@ -1,0 +1,11 @@
+{
+  "taskId": "v0.3-created-refs",
+  "module": "v0.6.3",
+  "capturedAt": "2026-05-14T17:33:45.501Z",
+  "durationMs": 17800,
+  "truncated": false,
+  "gitSha": "c38bc8bfaeab601b87844aa1111e0c6fb951a3bb",
+  "heroArtifact": "cylindrical-wall-created-ref-through-fillet-chain",
+  "catalogSource": "memorable-builds-policy/v0.6.3",
+  "overrideApprovedBy": null
+}

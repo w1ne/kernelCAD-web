@@ -8,6 +8,7 @@ import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edg
 import type { FaceQuery } from './edgeQueries';
 import { EDGE_QUERY_KEYS } from '../../intent/queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
+import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
 import {
   parseFaceSelector,
   findLineageMatches,
@@ -198,23 +199,24 @@ export function pickEdges(
     return edges;
   }
 
-  // 5. Existing canonical face dispatch (UNCHANGED behavior).
-  if (faceRef.kind !== 'face' || faceRef.ref.kind !== 'canonical') {
+  // 5. Existing canonical face dispatch + v0.3 created-ref branch.
+  if (faceRef.kind !== 'face' || (faceRef.ref.kind !== 'canonical' && faceRef.ref.kind !== 'created')) {
     return {
       error: {
         target: 'export-occt',
         code: 'feature.face-ref.not-supported',
         featureId: record.id,
         severity: 'error',
-        message: `Only canonical face refs, queries, and labels are supported; got '${faceRef.kind === 'face' ? faceRef.ref.kind : faceRef.kind}'.`,
+        message: `Only canonical face refs, created refs, queries, and labels are supported; got '${faceRef.kind === 'face' ? faceRef.ref.kind : faceRef.kind}'.`,
         hint: 'Use a canonical face name, a label, or an inline FaceQuery / EdgeQuery.',
       },
     };
   }
 
-  // Canonical face filter — use resolveFaceRef for shapes with a historyMap
-  // (seeded on primitives, propagated through transforms and booleans), or fall
-  // back to the centroid heuristic for shapes without lineage data (sphere, legacy).
+  // Canonical / created face filter — use resolveFaceRef for shapes with a
+  // historyMap (seeded on primitives, propagated through transforms and
+  // booleans), or fall back to the centroid heuristic for shapes without
+  // lineage data (sphere, legacy).
   // NOTE: an empty historyMap (size === 0) still enters this path so that
   //       face-ref-removed is emitted when all faces were deleted by a boolean.
   if (base.historyMap !== undefined) {
@@ -225,6 +227,15 @@ export function pickEdges(
     });
     if (!resolved.ok) {
       return { error: resolved.diagnostic };
+    }
+    if (resolved.warnings) {
+      // Route fallback warnings to the record's diagnostics slot so the
+      // lowerer surfaces them upstream. Lowerers concat these into their
+      // own diagnostics array.
+      (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
+        ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
+        ...resolved.warnings,
+      ];
     }
     return edgesOfFaceByHash(base, resolved.faceHash);
   }
@@ -243,6 +254,20 @@ export function pickEdges(
     };
   }
 
+  // Created refs have no canonical-face fallback path; they require lineage.
+  if (faceRef.ref.kind === 'created') {
+    return {
+      error: {
+        target: 'export-occt',
+        code: 'feature.face-ref.not-resolvable',
+        featureId: record.id,
+        severity: 'error',
+        message: `Created face refs require a historyMap on the input shape; got none on '${base.kind}'.`,
+        hint: 'Apply the feature that creates the ref before any transform that drops lineage.',
+      },
+    };
+  }
+
   return canonicalFaceEdgesOrError(record, base, faceRef.ref.face);
 }
 
@@ -251,6 +276,21 @@ function resolveEdgesRef(
   base: OcctBackend,
   ref: EdgeRef,
 ): EdgeList | { error: CompilerDiagnostic } {
+  if (ref.kind === 'created') {
+    const result = resolveEdgeRef(ref, {
+      currentShape: base,
+      featureId: record.id,
+      surface: 'edge-feature',
+    });
+    if (!result.ok) return { error: result.diagnostic };
+    if (result.warnings) {
+      (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
+        ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
+        ...result.warnings,
+      ];
+    }
+    return edgesOfFaceByHash(base, result.faceHashForBoundaryEdges);
+  }
   if (ref.kind === 'query') {
     const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
     if (unknownKeys.length > 0) {
@@ -585,12 +625,13 @@ export function pickFace(
     return result.face;
   }
 
-  // 3. FaceRef.canonical → use resolveFaceRef for shapes with a historyMap
-  // (seeded on primitives, propagated through transforms and booleans), or fall
-  // back to the centroid heuristic for shapes without lineage data (sphere, legacy).
+  // 3. FaceRef.canonical / FaceRef.created → use resolveFaceRef for shapes
+  // with a historyMap (seeded on primitives, propagated through transforms
+  // and booleans), or fall back to the centroid heuristic for shapes without
+  // lineage data (sphere, legacy).
   // NOTE: an empty historyMap (size === 0) still enters this path so that
   //       face-ref-removed is emitted when all faces were deleted by a boolean.
-  if (faceRef.ref.kind === 'canonical') {
+  if (faceRef.ref.kind === 'canonical' || faceRef.ref.kind === 'created') {
     if (base.historyMap !== undefined) {
       const resolved = resolveFaceRef(faceRef.ref, {
         currentShape: base,
@@ -600,7 +641,26 @@ export function pickFace(
       if (!resolved.ok) {
         return { error: resolved.diagnostic };
       }
+      if (resolved.warnings) {
+        (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [
+          ...((record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings ?? []),
+          ...resolved.warnings,
+        ];
+      }
       return faceByHash(base, resolved.faceHash);
+    }
+
+    if (faceRef.ref.kind === 'created') {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-ref.not-resolvable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Created face refs require a historyMap on the input shape; got none on '${base.kind ?? 'unknown'}'.`,
+          hint: 'Apply the feature that creates the ref before any transform that drops lineage.',
+        },
+      };
     }
 
     // No historyMap → must be an un-transformed primitive (kind tag set).
