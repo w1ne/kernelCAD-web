@@ -144,6 +144,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         executionHistory: geometryCtx.executionHistory,
         scriptParams: geometryCtx.scriptParams,
         scriptReview: geometryCtx.scriptReview,
+        featureRecords: geometryCtx.featureRecords,
+        recomputeMs: geometryCtx.recomputeMs,
         staleMainResponsesDropped: geometryCtx.staleMainResponsesDropped,
         stalePreviewResponsesDropped: geometryCtx.stalePreviewResponsesDropped,
         executeGeometry: geometryCtx.executeGeometry,

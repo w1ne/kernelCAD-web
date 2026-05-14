@@ -43,13 +43,13 @@ export function useRecomputeResult(): StudioRecomputeResult {
 
     return useMemo<StudioRecomputeResult>(
         () => ({
-            features: [],
+            features: workbench.featureRecords ?? [],
             geometries: workbench.geometries ?? [],
             validity,
             paramTable,
             diagnostics,
-            recomputeMs: 0,
+            recomputeMs: workbench.recomputeMs ?? 0,
         }),
-        [workbench.geometries, validity, paramTable, diagnostics],
+        [workbench.featureRecords, workbench.geometries, workbench.recomputeMs, validity, paramTable, diagnostics],
     );
 }

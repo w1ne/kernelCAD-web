@@ -104,9 +104,15 @@ function kernelCadMeshEndpoint(): Plugin {
 
           res.statusCode = 200;
           res.setHeader('content-type', 'application/json');
+          // featureRecords carry the captured FeatureRecord per feature so the
+          // Studio shell can render scene rows / inline validity badges
+          // against the real model. JSON.stringify here drops any
+          // non-JSON-safe metadata values silently; the kernel guarantees
+          // ids/kinds/params are JSON-safe.
           res.end(JSON.stringify({
             source: loaded.source,
             features: meshing.features.map(serializeForBridge),
+            featureRecords: loaded.features.map((f) => f.record),
             bounds: meshing.bounds,
             params: loaded.paramTable.serialize(),
           }));

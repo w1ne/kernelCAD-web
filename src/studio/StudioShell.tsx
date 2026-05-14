@@ -32,16 +32,20 @@ export function StudioShell() {
     const { activeProject } = useProject();
 
     const handleValidate = useCallback(() => {
-        // Validate dispatches through the existing recompute pipeline.
-        // Phase 1.5+ slice wires this to an explicit revalidate trigger;
-        // for now a no-op keeps the contract stable.
-    }, []);
+        // Force a re-fetch of /__kernelcad/review by re-running the
+        // geometry pipeline. The review fetch is chained inside
+        // GeometryContext.executeGeometry, so re-executing pulls a fresh
+        // validity result into shellStore.
+        workbench.executeGeometry?.(workbench.code);
+    }, [workbench]);
 
     const handleRun = useCallback(() => {
         // Run forces a re-execution of the current script. The existing
         // recompute auto-runs on code changes; this is the manual button.
         workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
     }, [workbench]);
+
+    const isModified = activeProject != null && workbench.code !== activeProject.code;
 
     const handleToggleAgentRail = useCallback(() => {
         shellStore.setAgentRailOpen(!agentRailOpen);
@@ -67,7 +71,7 @@ export function StudioShell() {
             <Toolbar
                 project={activeProject ? { name: activeProject.name } : null}
                 filename={activeProject?.name ? `${activeProject.name}.kcad.ts` : 'untitled.kcad.ts'}
-                isModified={false}
+                isModified={isModified}
                 onValidate={handleValidate}
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
