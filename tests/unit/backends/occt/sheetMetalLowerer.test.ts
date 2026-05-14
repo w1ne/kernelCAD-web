@@ -14,6 +14,50 @@ async function lowerScript(code: string) {
   return { shape, diagnostics: r.diagnostics, recordCount: records.length, records };
 }
 
+describe('sheetMetalBend lowering — single bend', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('L-bracket: 90 degree fold along x=50 produces a non-empty bent body', async () => {
+    const code = `
+      const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+      const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+      return blank.bend({ atX: 50 }, 90, 3);
+    `;
+    const { shape, diagnostics } = await lowerScript(code);
+    // Slice-1 sewing may emit warnings — assert no error-severity diags.
+    const errors = (diagnostics as CompilerDiagnostic[]).filter(d => d.severity === 'error');
+    expect(errors).toEqual([]);
+    expect(shape).toBeDefined();
+    const bb = shape!.boundingBox();
+    // Bent L-bracket: one half is lifted from z=0..2 to z=0..50ish; bbox
+    // height should be greater than the flat thickness.
+    expect(bb.max[2] - bb.min[2]).toBeGreaterThan(10);
+  });
+
+  it('rejects .bend() on non-sheet-metal Shape with feature.invalid-args', async () => {
+    const code = `
+      return box(20, 20, 20).bend({ atX: 10 }, 90, 3);
+    `;
+    const { diagnostics } = await lowerScript(code);
+    expect(diagnostics.length).toBeGreaterThan(0);
+    expect(diagnostics[0]!.code).toBe('feature.invalid-args');
+  });
+
+  it('persists bendRecord metadata for flattenPattern consumption', async () => {
+    const code = `
+      const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+      const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+      return blank.bend({ atX: 50 }, 90, 3);
+    `;
+    const { records } = await lowerScript(code);
+    const bend = records.find(r => r.kind === 'sheetMetalBend');
+    expect(bend).toBeDefined();
+    const md = bend!.metadata as { bendRecord?: { axisDirection: [number, number, number] } } | undefined;
+    expect(md?.bendRecord).toBeDefined();
+    expect(md?.bendRecord?.axisDirection).toEqual([0, 1, 0]);
+  });
+});
+
 describe('sheetMetal lowering — flat body via extrude pipeline', () => {
   beforeAll(async () => { await initOcct(); });
 

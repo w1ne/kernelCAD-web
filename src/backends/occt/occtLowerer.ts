@@ -24,6 +24,8 @@ import {
 } from './nurbsSurfaceLowerer';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
+import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
+import { findRootSheetMetalRecord } from '../../modules/sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
 import { Transform } from '../../runtime/se3';
@@ -767,6 +769,72 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
+        break;
+      }
+      case 'sheetMetalBend': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetalBend requires an input named 'base'.`,
+            hint: 'Chain .bend() on a sheetMetal(...) Shape.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Walk lineage backward to find the root sheetMetal record so we can
+        // read its kFactor and thickness. If none, emit feature.invalid-args.
+        const rootRec = findRootSheetMetalRecord(r, allRecords ?? []);
+        if (!rootRec) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `.bend() only works on Shapes whose lineage roots at sheetMetal(...).`,
+            hint: 'Build the body via sheetMetal(sketch, opts), then chain .bend().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const kFactor = rootRec.params.kFactor.evaluated;
+        const thickness = rootRec.params.thickness.evaluated;
+        // Top-face normal for slice-1 xy-plane bodies is +Z. (We could read
+        // metadata.sketchPlane to support xz/yz; slice-1 sheets lower on XY.)
+        const topNormal: [number, number, number] = [0, 0, 1];
+        // Resolve the bend axis from edges / face inputs.
+        const axisResult = resolveBendAxis(
+          base,
+          r.inputs.edges,
+          r.inputs.face,
+          r.id,
+          thickness,
+        );
+        if ('diagnostic' in axisResult) {
+          diagnostics.push(axisResult.diagnostic);
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const result = lowerSheetMetalBend({
+          featureId: r.id,
+          base,
+          axis: axisResult.axis,
+          topNormal,
+          angleDeg: r.params.angle.evaluated,
+          radius: r.params.radius.evaluated,
+          kFactor,
+          thickness,
+        });
+        diagnostics.push(...result.diagnostics);
+        if (!result.shape) {
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Persist the bend record on r.metadata for flattenPattern.
+        if (result.bendRecord) {
+          const md = (r.metadata ??= {}) as Record<string, unknown>;
+          md.bendRecord = result.bendRecord;
+        }
+        shape = result.shape;
         break;
       }
       case 'revolve': {
