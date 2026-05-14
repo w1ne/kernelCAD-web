@@ -452,6 +452,101 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(lofted);
   }
 
+  /**
+   * Build a polyhedral solid OcctBackend from a triangle mesh.
+   *
+   * Internally: per triangle build a 3-edge polygon → planar face,
+   * feed all faces into BRepBuilderAPI_Sewing, wrap the resulting
+   * TopoDS_Shell with BRepBuilderAPI_MakeSolid.
+   *
+   * Throws if the resulting shell isn't closed (sewing tolerance 1 µm).
+   *
+   * Reuse path: `sdf.materialize` (W2.3) is the first caller; future
+   * `lib.fromSTL` / `lib.fromOBJ` / `lib.fromGLB` callers + the orphaned
+   * `importedMesh` FeatureKind consume the same helper.
+   *
+   * @param vertices Float32Array, length = 3 * nVertices (xyzxyzxyz…)
+   * @param indices  Uint32Array, length = 3 * nTriangles (i0 i1 i2 i0 i1 i2 …)
+   */
+  static fromTriangleMesh(vertices: Float32Array, indices: Uint32Array): OcctBackend {
+    if (!initialized) throw new Error('OCCT not initialized — call initOcct() first');
+    if (indices.length === 0) {
+      throw new Error('OcctBackend.fromTriangleMesh: need at least one triangle (got 0 indices)');
+    }
+    if (indices.length % 3 !== 0) {
+      throw new Error(`OcctBackend.fromTriangleMesh: indices length must be a multiple of 3 (got ${indices.length})`);
+    }
+    if (vertices.length % 3 !== 0) {
+      throw new Error(`OcctBackend.fromTriangleMesh: vertices length must be a multiple of 3 (got ${vertices.length})`);
+    }
+    const nVerts = vertices.length / 3;
+    for (let i = 0; i < indices.length; i++) {
+      const idx = indices[i];
+      if (idx >= nVerts) {
+        throw new Error(`OcctBackend.fromTriangleMesh: index ${idx} at indices[${i}] out of range (nVerts=${nVerts})`);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    // 1 µm sewing tolerance — well-tuned for marching-cubes output at default
+    // resolution (verified on unit cube in this file's other tests).
+    // Args: tol, option=true, cutting=true, nonManifold=true, FaceMode=false
+    const sewing = new oc.BRepBuilderAPI_Sewing(1e-3, true, true, true, false);
+
+    // Build each triangle: 3 vertices → 3 edges (MakeEdge_3) → wire (MakeWire_4)
+    // → planar face (MakeFace_15). `replicad-opencascadejs` does not expose
+    // `BRepBuilderAPI_MakePolygon`, so we walk the underlying primitives.
+    const nTris = indices.length / 3;
+    for (let t = 0; t < nTris; t++) {
+      const i0 = indices[3 * t];
+      const i1 = indices[3 * t + 1];
+      const i2 = indices[3 * t + 2];
+      const p0 = new oc.gp_Pnt_3(vertices[3 * i0], vertices[3 * i0 + 1], vertices[3 * i0 + 2]);
+      const p1 = new oc.gp_Pnt_3(vertices[3 * i1], vertices[3 * i1 + 1], vertices[3 * i1 + 2]);
+      const p2 = new oc.gp_Pnt_3(vertices[3 * i2], vertices[3 * i2 + 1], vertices[3 * i2 + 2]);
+      const e01 = new oc.BRepBuilderAPI_MakeEdge_3(p0, p1);
+      const e12 = new oc.BRepBuilderAPI_MakeEdge_3(p1, p2);
+      const e20 = new oc.BRepBuilderAPI_MakeEdge_3(p2, p0);
+      const edge01 = e01.Edge();
+      const edge12 = e12.Edge();
+      const edge20 = e20.Edge();
+      const wireBuilder = new oc.BRepBuilderAPI_MakeWire_4(edge01, edge12, edge20);
+      const wire = wireBuilder.Wire();
+      const faceBuilder = new oc.BRepBuilderAPI_MakeFace_15(wire, true);
+      sewing.Add(faceBuilder.Face());
+      // OCCT WASM is heap-managed; release intermediates explicitly.
+      p0.delete?.();
+      p1.delete?.();
+      p2.delete?.();
+      e01.delete?.();
+      e12.delete?.();
+      e20.delete?.();
+      wireBuilder.delete?.();
+      faceBuilder.delete?.();
+    }
+
+    sewing.Perform(new oc.Message_ProgressRange_1());
+    const sewedShape = sewing.SewedShape();
+    sewing.delete?.();
+
+    // SewedShape returns a TopoDS_Shape — coerce to TopoDS_Shell for MakeSolid_3.
+    const shell = oc.TopoDS.Shell_1(sewedShape);
+    const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
+    if (!makeSolid.IsDone()) {
+      makeSolid.delete?.();
+      throw new Error('OcctBackend.fromTriangleMesh: BRepBuilderAPI_MakeSolid failed (shell not closed)');
+    }
+    const solid = makeSolid.Solid();
+    makeSolid.delete?.();
+
+    // Wrap as a replicad Shape3D via the same path replicad uses for raw
+    // TopoDS shapes returned by OCCT builders — `replicad.cast` inspects the
+    // ShapeType and produces the right wrapper (Solid for closed solids).
+    const wrapped = replicad.cast(solid) as ReplicadShape3D;
+    return new OcctBackend(wrapped);
+  }
+
   translate(x: number, y: number, z: number): OcctBackend {
     return new OcctBackend(this.shape.translate(x, y, z) as ReplicadShape3D);
   }
