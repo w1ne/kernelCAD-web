@@ -348,6 +348,7 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'sdfMaterialize',   // W2.3
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -560,6 +561,26 @@ export class OcctLowerer implements FeatureLowerer {
             severity: 'error',
             message: `importedStep record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
             hint: "invalid-args.importedStep.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = backend;
+        break;
+      }
+      case 'sdfMaterialize': {
+        // `sdf.materialize(field, opts?)` ran the marching-cubes sweep at
+        // capture time (host-side pure JS + OCCT sewing); the resulting
+        // OcctBackend was parked in `session.importedGeometry` keyed by
+        // feature id. Lowering is a hand-back — geometry is already built.
+        const backend = this.importedGeometry.get(r.id);
+        if (!backend) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sdfMaterialize record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
+            hint: "invalid-args.sdfMaterialize.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
