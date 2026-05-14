@@ -1,8 +1,15 @@
-import { createFeatureIdGenerator, type FeatureIdGenerator } from '../intent/featureId';
+import {
+  createFeatureIdGenerator, createSurfaceIdGenerator,
+  type FeatureIdGenerator, type SurfaceIdGenerator,
+} from '../intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
+import type {
+  SurfaceRecord, SurfaceId, NurbsSurfaceData,
+} from '../intent/surfaceRecord';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
+import { SurfaceProxy } from './surfaceProxy';
 import type {
   AssemblyConnectorFrameStored,
   AssemblyConnectorRef,
@@ -159,6 +166,38 @@ export class CaptureSession {
    *  Untyped `unknown` to avoid a TS cycle with `./assembly`; the MCP tools
    *  cast back to `Assembly` at the boundary. */
   readonly assemblies: Map<string, unknown> = new Map();
+
+  /** W1.3 NURBS surfaces: id generator + record list for `nurbsSurface()` /
+   *  `surfaceFromCurves()`. Surfaces never enter `FeatureRecord` — they
+   *  live here separately and are resolved into Replicad Faces at lower
+   *  time by the OCCT lowerer's `surfaceCache`. */
+  private surfaceIdGen: SurfaceIdGenerator = createSurfaceIdGenerator();
+  private surfaceRecords: SurfaceRecord[] = [];
+
+  /** Capture a new NURBS surface from an explicit control net + degree. */
+  addNurbsSurface(data: NurbsSurfaceData): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    this.surfaceRecords.push({ id, kind: 'nurbsSurface', params: {}, data });
+    return new SurfaceProxy(id, this);
+  }
+
+  /** Capture a new surface skinned through 2+ sketch sections. */
+  addSurfaceFromCurves(sectionIds: FeatureId[]): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    this.surfaceRecords.push({
+      id, kind: 'surfaceFromCurves', params: {},
+      data: { kind: 'surfaceFromCurves', sectionIds },
+    });
+    return new SurfaceProxy(id, this);
+  }
+
+  getSurfaceRecord(id: SurfaceId): SurfaceRecord | undefined {
+    return this.surfaceRecords.find(s => s.id === id);
+  }
+
+  getSurfaceRecords(): readonly SurfaceRecord[] {
+    return this.surfaceRecords;
+  }
 
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);

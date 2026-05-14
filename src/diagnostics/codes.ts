@@ -48,7 +48,10 @@ export type DiagnosticCode =
   | 'cli.export-exception'
   // Export (2)
   | 'export.feature-not-found'
-  | 'export.no-shape';
+  | 'export.no-shape'
+  // NURBS surfaces (2) — W1.3
+  | 'feature.nurbs.degenerate-controls'
+  | 'feature.nurbs.degree-mismatch';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -79,6 +82,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'cli.export-exception',
   'export.feature-not-found',
   'export.no-shape',
+  'feature.nurbs.degenerate-controls',
+  'feature.nurbs.degree-mismatch',
 ] as const;
 
 export interface HintTemplate {
@@ -151,6 +156,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'The feature_id passed to export_stl was not found. Use list_features to see available IDs.',
     'export.no-shape':
       'The script did not return a shape. End the script with `return <shape>`.',
+    'feature.nurbs.degenerate-controls':
+      'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
+    'feature.nurbs.degree-mismatch':
+      'NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

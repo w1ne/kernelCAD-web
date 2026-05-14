@@ -758,7 +758,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 32 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 33 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1067,13 +1067,14 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic).
 - `set_param_value({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
+- `add_nurbs_surface({ code, controls?, degree?, weights?, knots?, periodic?, section_sketch_ids?, binding_name? })` — insert a `nurbsSurface(...)` or `surfaceFromCurves(...)` call; returns modified code + diagnostics. Chain `.thicken(t)` / `.toShape()` via the existing `add_feature` tool on the returned binding name.
 - `add_sketch_text({ code, content, size, font?, align?, position?, rotation?, bindAs? })` — insert a `sketch.text(...)` call before the last top-level return and return modified code plus diagnostics. Pair with subsequent `.extrude(...)` / `cut(...)` edits to land an engraved or raised text feature.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
-- `list_diagnostic_codes({})` — return the 28-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
+- `list_diagnostic_codes({})` — return the 30-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
 - `get_face_lineage({ file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
@@ -1121,6 +1122,33 @@ project context:
    shows arbitrary fragments, return to `inspect_assembly`; the inventory must
    explain what every disconnected part is and why it exists.
 
+## NURBS surfaces
+
+Build free-form panels and lofted shells whose result enters the existing Shape pipeline (booleans, fillets, exports).
+
+```ts
+// Lofted free-form panel from sketch sections
+const s0 = path().moveTo(-30, -10).lineTo(30, -10).lineTo(30, 10).lineTo(-30, 10).close();
+// (use sketch('xy', { offset: <z> }).path()...close() to place sections at different z)
+const panel = surfaceFromCurves([s0, s1]).thicken(2);
+```
+
+`nurbsSurface({ controls, degree, weights?, knots?, periodic? })` returns a `Surface` peer to `Shape`. The `Surface` exposes exactly two escape methods:
+
+| Method | Returns | Notes |
+|---|---|---|
+| `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
+| `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
+
+`surfaceFromCurves(sections)` skins through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction.
+
+Slice-1 caveat: `weights` is accepted but silently ignored — every surface is built as a non-rational B-spline today. For an "exact circle" tube you currently need either a fine polygonal approximation (16+ control points around the circumference, degree 1 in U) or a section-skinned approach with explicit circle sketches per section.
+
+### NURBS diagnostic codes
+
+- `feature.nurbs.degenerate-controls` (error) — `controls` is empty, jagged, contains non-finite points, or `weights` doesn't match the controls grid shape. Hint: pass a non-empty rectangular Vec3 grid spanning a 2D extent.
+- `feature.nurbs.degree-mismatch` (error) — `degree.u > controls.length - 1` (or v-analog) or `< 1`. Hint: reduce degree, or add control points.
+
 ## Out of Scope
 
 These return errors today; do not generate code that uses them:
@@ -1130,6 +1158,8 @@ These return errors today; do not generate code that uses them:
 - Draft features — deferred
 - Dynamic assembly solving / motion simulation — deferred; static assembly parts, fixed connector placement, revolute joint metadata, and fused `assembly.model()` output are supported.
 - BOM, dimensions, BREP, multi-view PDF — deferred
+- Rational NURBS (control-net `weights`) — accepted at the API but ignored in slice-1; rational support pending WASM bindings.
+- NURBS surface trim/extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
 
 <!-- COOKBOOK:START -->
 ## Cookbook (snippet index)
