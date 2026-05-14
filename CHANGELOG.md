@@ -1,6 +1,6 @@
 # kernelCAD v0.7.1
 
-## v0.7.1 — 2026-05-14 — Patterns: per-instance lineage + agent surface
+## v0.7.1 — 2026-05-15 — Patterns: per-instance lineage + agent surface
 
 v0.7.1 carries pattern-instance identity and lineage end-to-end. The OCCT pattern lowerer now threads `propagateTransformHistory` per instance and stamps each per-instance lineage entry with a virtual `<sourceId>_pattern_<i>` `featureId`, so a `created` FaceRef whose `rewriteId` matches that virtual id resolves to the corresponding patterned instance's face. The per-instance fuse runs through `fuseWithHistory` + `mergeBooleanHistory` (the same history-aware path booleans use), keeping naming history intact across the cumulative union. The captured `FeatureRecord` shape is unchanged (one editable unit per pattern call).
 
