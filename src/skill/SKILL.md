@@ -380,8 +380,34 @@ Two cases produce explicit diagnostics:
 
 - `feature.face-ref.ambiguous-after-split` — an upstream boolean split the named face into multiple children (e.g., a divider cut splits `top` into two halves). Geometry-fallback disambiguation is planned for a future release; current workaround: apply the edge/face feature before the splitting operation, or use a query-based selector.
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
+- `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
+- `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
+
+### Created face refs
+
+Subtractive features (`hole`, `cutout`) write created face refs that downstream
+ops can address by `<featureName>.<slot>`:
+
+```typescript
+const plate = box(100, 60, 5)
+  .hole('top', { u: 0, v: 0, diameter: 6, depth: 3, name: 'pilotHole' });
+
+plate.fillet(0.2, { face: 'pilotHole.floor' });
+```
+
+Slots written by `hole`: `wall`, `floor`, `wall-back`, `counterbore-wall`,
+`counterbore-floor`, `countersink-cone`, `entry-rim`, `floor-rim`,
+`wall-back-rim`. Slots written by `cutout`: see `cutoutClassifier`.
+
+When an upstream op rewrites enough topology that the slot-by-name lookup
+loses the face, the resolver falls back to a geometry-snapshot match
+(centroid + normal + area + surfaceType from the create-time fingerprint).
+Successful fallback emits `feature.created-ref.fallback-used` (warning,
+not error) — the downstream feature still resolves. Lock the ref against
+future edits by naming the upstream feature with `.name()` and addressing
+it by `<name>.<slot>`.
 
 Per-primitive canonical face applicability:
 - Box: all six (`top` / `bottom` / `left` / `right` / `front` / `back`).
@@ -707,7 +733,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 30 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 31 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -972,7 +998,7 @@ failed because an upstream feature failed (`code` is
 `recompute.input.missing`), call `why_did_this_fail` to walk the chain
 and find the root cause.
 
-The full code catalogue (24 codes) is enumerated by the
+The full code catalogue (26 codes) is enumerated by the
 `list_diagnostic_codes` MCP tool. Call it once at session start if you
 want to pre-populate retry strategies.
 
@@ -1021,7 +1047,8 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
-- `list_diagnostic_codes({})` — return the 24-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
+- `list_diagnostic_codes({})` — return the 26-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
+- `get_face_lineage({ file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 - `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.

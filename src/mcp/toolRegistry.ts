@@ -11,6 +11,7 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { getFaceLineageTool } from './tools/getFaceLineage';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -274,6 +275,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'get_face_lineage',
+      description:
+        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
+          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
+        },
+        required: ['feature_id', 'ref'],
+      },
+    },
+    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
+  },
+  {
+    definition: {
       name: 'list_api',
       description:
         'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
@@ -288,7 +307,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'list_diagnostic_codes',
       description:
-        'Return the kernelCAD 24-code diagnostic catalogue with hint templates. ' +
+        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
         'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
         'retry strategies. Hints are also inline on every emitted diagnostic — ' +
         'this tool just gives you the canonical list up front.',

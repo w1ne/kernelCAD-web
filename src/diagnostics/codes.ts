@@ -22,6 +22,10 @@ export type DiagnosticCode =
   | 'feature.face-ref.not-supported'
   | 'feature.face-ref.ambiguous-after-split'
   | 'feature.face-ref.removed'
+  // Hole-specific target (1)
+  | 'feature.hole.no-target-face'
+  // Created-ref fallback (1, warning)
+  | 'feature.created-ref.fallback-used'
   // Selection (2)
   | 'feature.selection.no-match'
   | 'feature.selection.ambiguous'
@@ -53,6 +57,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.face-ref.not-supported',
   'feature.face-ref.ambiguous-after-split',
   'feature.face-ref.removed',
+  'feature.hole.no-target-face',
+  'feature.created-ref.fallback-used',
   'feature.selection.no-match',
   'feature.selection.ambiguous',
   'feature.label.unknown-name',
@@ -102,6 +108,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'A named face was split by an upstream boolean. Apply this feature before the splitting boolean.',
     'feature.face-ref.removed':
       'A named face was removed by an upstream boolean. Reference a face that still exists.',
+    'feature.hole.no-target-face':
+      'The hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.',
+    'feature.created-ref.fallback-used':
+      'Geometry-snapshot fallback used. Name the upstream feature with .name() and reference it by `<name>.<slot>` to lock the ref against future history edits.',
     'feature.selection.no-match':
       'The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.',
     'feature.selection.ambiguous':
