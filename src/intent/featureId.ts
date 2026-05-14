@@ -1,4 +1,5 @@
 import type { FeatureId, FeatureKind } from './types';
+import type { SurfaceId } from './surfaceRecord';
 
 export interface FeatureIdGenerator {
   next(kind: FeatureKind): FeatureId;
@@ -16,5 +17,24 @@ export function createFeatureIdGenerator(): FeatureIdGenerator {
     reset() {
       counters.clear();
     },
+  };
+}
+
+/**
+ * Parallel id stream for `SurfaceRecord`. Surfaces never enter `FeatureKind`
+ * — they have their own counter so `surface_1` cannot collide with
+ * `surfaceThicken_1` (the latter is a Shape FeatureId minted from
+ * `createFeatureIdGenerator`).
+ */
+export interface SurfaceIdGenerator {
+  next(): SurfaceId;
+  reset(): void;
+}
+
+export function createSurfaceIdGenerator(): SurfaceIdGenerator {
+  let n = 0;
+  return {
+    next() { n += 1; return `surface_${n}`; },
+    reset() { n = 0; },
   };
 }

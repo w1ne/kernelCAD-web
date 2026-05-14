@@ -16,6 +16,14 @@ export interface DesignLoopVisualReview {
   accepted: boolean;
   screenshotPath?: string;
   findings: string[];
+  checks?: DesignLoopVisualReviewCheck[];
+}
+
+export interface DesignLoopVisualReviewCheck {
+  code: string;
+  passed: boolean;
+  finding: string;
+  screenshotPath?: string;
 }
 
 export interface DesignLoopInput {
@@ -234,19 +242,19 @@ function visualReviewFacts(
   const missingCode = 'assembly.visual.review-required';
   const rejectedCode = 'assembly.visual.review-rejected';
   const incompleteCode = 'assembly.visual.review-incomplete';
-  if (
-    allowReviewWarnings.includes(missingCode)
-    || allowReviewWarnings.includes(rejectedCode)
-    || allowReviewWarnings.includes(incompleteCode)
-  ) return [];
+  const failedCheckCode = 'assembly.visual.review-check-failed';
+  const fact = (code: string, message: string, hint: string) =>
+    allowReviewWarnings.includes(code)
+      ? []
+      : [{ code, severity: 'warning', message, hint }];
+
   if (!requireVisualReview) return [];
   if (visualReview === undefined) {
-    return [{
-      code: missingCode,
-      severity: 'warning',
-      message: 'This design-loop run requires screenshot review, but the attempt has no visualReview result.',
-      hint: 'visual-review.required — render screenshots from Studio/demo-player, inspect whether the model visually matches the requested physical mechanism, then attach visualReview with screenshotPath, findings, and accepted.',
-    }];
+    return fact(
+      missingCode,
+      'This design-loop run requires screenshot review, but the attempt has no visualReview result.',
+      'visual-review.required — render screenshots from Studio/demo-player, inspect whether the model visually matches the requested physical mechanism, then attach visualReview with screenshotPath, findings, checks, and accepted.',
+    );
   }
   if (visualReview.accepted) {
     const missing: string[] = [];
@@ -256,20 +264,60 @@ function visualReviewFacts(
     if (visualReview.findings.length === 0 || visualReview.findings.every((finding) => finding.trim() === '')) {
       missing.push('findings');
     }
-    if (missing.length === 0) return [];
-    return [{
-      code: incompleteCode,
-      severity: 'warning',
-      message: `Accepted screenshot review is incomplete; missing ${missing.join(' and ')}.`,
-      hint: 'visual-review.incomplete — as the vision-capable agent, render or open a screenshot, inspect it for floating parts, unsupported joints, disconnected drive paths, arbitrary fragments, occluded code/model mismatch, and then record screenshotPath plus concrete findings before accepting.',
-    }];
+    if (visualReview.checks === undefined || visualReview.checks.length === 0) {
+      missing.push('visualReview.checks');
+    }
+    const checkResults = visualReview.checks ?? [];
+    const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
+      !checkResults.some((check) => check.code === code),
+    );
+    if (missingCheckCodes.length > 0) {
+      missing.push(`checks for ${missingCheckCodes.join(', ')}`);
+    }
+    const checksMissingFindings = checkResults
+      .filter((check) => check.finding.trim() === '')
+      .map((check) => check.code);
+    if (checksMissingFindings.length > 0) {
+      missing.push(`check findings for ${checksMissingFindings.join(', ')}`);
+    }
+    if (missing.length === 0) {
+      const failedChecks = checkResults.filter((check) => !check.passed);
+      if (failedChecks.length === 0) return [];
+      return fact(
+        failedCheckCode,
+        `Accepted screenshot review has failed checks: ${failedChecks.map((check) => `${check.code}: ${check.finding}`).join(' ')}`,
+        'visual-review.check-failed — an accepted visual review cannot contain failed checks. Repair the specific failed visual checks, render screenshots again, and only accept when every required check passes.',
+      );
+    }
+    return fact(
+      incompleteCode,
+      `Accepted screenshot review is incomplete; missing ${missing.join(' and ')}.`,
+      'visual-review.incomplete — as the vision-capable agent, render or open screenshots, inspect them against the required visualReview.checks checklist, and record screenshotPath plus concrete findings before accepting.',
+    );
   }
-  return [{
-    code: rejectedCode,
-    severity: 'warning',
-    message: `Screenshot review rejected this attempt: ${visualReview.findings.join(' ')}`,
-    hint: 'visual-review.rejected — redesign from the prompt or a mechanism primitive, render screenshots again, and only set accepted when the model is visually/mechanically legible.',
-  }];
+  const failedChecks = (visualReview.checks ?? []).filter((check) => !check.passed);
+  if (failedChecks.length > 0) {
+    return fact(
+      failedCheckCode,
+      `Screenshot review failed required checks: ${failedChecks.map((check) => `${check.code}: ${check.finding}`).join(' ')}`,
+      'visual-review.check-failed — repair the specific failed visual checks, render screenshots again, and only accept when every required check passes.',
+    );
+  }
+  return fact(
+    rejectedCode,
+    `Screenshot review rejected this attempt: ${visualReview.findings.join(' ')}`,
+    'visual-review.rejected — redesign from the prompt or a mechanism primitive, render screenshots again, and only set accepted when the model is visually/mechanically legible.',
+  );
+}
+
+function requiredVisualReviewCheckCodes(): readonly string[] {
+  return [
+    'main-object-count',
+    'proportions-match-reference',
+    'required-visible-features',
+    'no-stray-or-floating-geometry',
+    'canonical-views-physically-coherent',
+  ];
 }
 
 function countPattern(source: string, pattern: RegExp): number {

@@ -1,0 +1,38 @@
+{
+  "preRollMs": 0,
+  "rotateStartMs": 7800,
+  "rotateDurationMs": 8000,
+  "totalDurationMs": 17800,
+  "features": {
+    "box_1": {
+      "startAtMs": 0,
+      "durationMs": 500,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "hole_1": {
+      "startAtMs": 1600,
+      "durationMs": 600,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "fillet_1": {
+      "startAtMs": 3300,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "fillet_2": {
+      "startAtMs": 4800,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "fillet_3": {
+      "startAtMs": 6300,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}
