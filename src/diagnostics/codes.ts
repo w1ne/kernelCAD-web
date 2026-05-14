@@ -16,12 +16,19 @@ export type DiagnosticCode =
   // Specific retries (2)
   | 'feature.revolve.crosses-axis'
   | 'feature.sketch.degenerate-arc'
+  // Text (2)
+  | 'sketch.text.font-not-found'
+  | 'sketch.text.empty-content'
   // Face-ref state (5)
   | 'feature.face-ref.not-resolvable'
   | 'feature.face-ref.not-applicable'
   | 'feature.face-ref.not-supported'
   | 'feature.face-ref.ambiguous-after-split'
   | 'feature.face-ref.removed'
+  // Hole-specific target (1)
+  | 'feature.hole.no-target-face'
+  // Created-ref fallback (1, warning)
+  | 'feature.created-ref.fallback-used'
   // Selection (2)
   | 'feature.selection.no-match'
   | 'feature.selection.ambiguous'
@@ -51,11 +58,15 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.kernel-failed',
   'feature.revolve.crosses-axis',
   'feature.sketch.degenerate-arc',
+  'sketch.text.font-not-found',
+  'sketch.text.empty-content',
   'feature.face-ref.not-resolvable',
   'feature.face-ref.not-applicable',
   'feature.face-ref.not-supported',
   'feature.face-ref.ambiguous-after-split',
   'feature.face-ref.removed',
+  'feature.hole.no-target-face',
+  'feature.created-ref.fallback-used',
   'feature.selection.no-match',
   'feature.selection.ambiguous',
   'feature.label.unknown-name',
@@ -97,6 +108,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'A revolve profile must stay on one side of the rotation axis. Clamp all path coordinates to x >= 0.',
     'feature.sketch.degenerate-arc':
       'The arc segment is degenerate. Try a larger radius, different endpoints, or another arc constructor.',
+    'sketch.text.font-not-found':
+      "The font name is not registered. Use fontPath('/path/to/font.ttf') to load a TTF from disk, or omit opts.font to use the bundled Liberation Sans.",
+    'sketch.text.empty-content':
+      'sketch.text(content) requires a non-empty string with at least one printable glyph.',
     'feature.face-ref.not-resolvable':
       'Canonical face refs only work on un-transformed primitives. Apply this feature before any transform, or fillet/shell the primitive first then translate.',
     'feature.face-ref.not-applicable':
@@ -107,6 +122,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'A named face was split by an upstream boolean. Apply this feature before the splitting boolean.',
     'feature.face-ref.removed':
       'A named face was removed by an upstream boolean. Reference a face that still exists.',
+    'feature.hole.no-target-face':
+      'The hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.',
+    'feature.created-ref.fallback-used':
+      'Geometry-snapshot fallback used. Name the upstream feature with .name() and reference it by `<name>.<slot>` to lock the ref against future history edits.',
     'feature.selection.no-match':
       'The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.',
     'feature.selection.ambiguous':

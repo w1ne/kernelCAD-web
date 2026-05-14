@@ -2,6 +2,7 @@ import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { exportStlTool } from './tools/exportStl';
@@ -12,6 +13,7 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { getFaceLineageTool } from './tools/getFaceLineage';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -272,6 +274,27 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'add_sketch_text',
+      description: 'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code:     { type: 'string', description: 'The .kcad.ts source code.' },
+          content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
+          size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
+          font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
+          align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
+          position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
+          rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
+          bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
+        },
+        required: ['code', 'content', 'size'],
+      },
+    },
+    handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
+  },
+  {
+    definition: {
       name: 'remove_feature',
       description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
       inputSchema: {
@@ -337,6 +360,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'get_face_lineage',
+      description:
+        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
+          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
+        },
+        required: ['feature_id', 'ref'],
+      },
+    },
+    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
+  },
+  {
+    definition: {
       name: 'list_api',
       description:
         'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
@@ -351,7 +392,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'list_diagnostic_codes',
       description:
-        'Return the kernelCAD 24-code diagnostic catalogue with hint templates. ' +
+        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
         'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
         'retry strategies. Hints are also inline on every emitted diagnostic — ' +
         'this tool just gives you the canonical list up front.',

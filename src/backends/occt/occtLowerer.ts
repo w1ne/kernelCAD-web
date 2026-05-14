@@ -48,6 +48,22 @@ import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
 // Shared helpers: Vec3Param resolution + axis normalization
 // ---------------------------------------------------------------------------
 
+/** Drain any `_resolvedWarnings` deposited on `record` by edgeSelection's
+ *  resolveFaceRef created-ref branch into the lowerer's diagnostics list.
+ *  Called immediately after a successful `pickEdges` / `pickFace` so warnings
+ *  ride out alongside the feature's other diagnostics. */
+function drainResolvedWarnings(
+  record: FeatureRecord,
+  diagnostics: CompilerDiagnostic[],
+): void {
+  const warns = (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings;
+  if (warns && warns.length > 0) {
+    diagnostics.push(...warns);
+    (record as { _resolvedWarnings?: CompilerDiagnostic[] })._resolvedWarnings = [];
+  }
+}
+
+
 /** Read a Vec3Param to a numeric Vec3 by picking the `evaluated` field of each
  *  component. The recompute engine pre-resolves every Param-shaped node in the
  *  record (params + metadata + transforms) against the live ParamTable before
@@ -235,6 +251,7 @@ export function applyVariableEdgeFeature(
       });
       return { ok: false, diagnostics };
     }
+    drainResolvedWarnings(synth, diagnostics);
 
     if (kind === 'fillet') {
       filletGroups.push({ edges: edgesResult, radius: value });
@@ -287,6 +304,7 @@ export function applyVariableEdgeFeature(
 export function createOcctLowerer(
   session?: {
     importedGeometry: Map<string, ShapeBackend>;
+    scriptDir?: string;
     /** W1.3: surface-record lookup. Optional for callers that don't ship NURBS. */
     getSurfaceRecord?: (
       id: import('../../intent/surfaceRecord').SurfaceId,
@@ -296,6 +314,7 @@ export function createOcctLowerer(
   const lowerer = new OcctLowerer();
   if (session) {
     lowerer.importedGeometry = session.importedGeometry;
+    lowerer.scriptDir = session.scriptDir;
     if (session.getSurfaceRecord) {
       lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
     }
@@ -470,6 +489,10 @@ export class OcctLowerer implements FeatureLowerer {
     return surface;
   }
 
+  /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
+   *  text lowerer to resolve relative `fontPath(...)` arguments. */
+  scriptDir?: string;
+
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
     let shape: ShapeBackend;
@@ -544,15 +567,25 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'sketch': {
-        const commands = (r.metadata as { commands?: unknown } | undefined)?.commands;
+        const meta = r.metadata as { textContent?: unknown; commands?: unknown } | undefined;
+        if (typeof meta?.textContent === 'string') {
+          const res = await (await import('./textLowerer')).lowerSketchText(r, this.scriptDir);
+          if (!res.ok) {
+            diagnostics.push(...res.diagnostics);
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          shape = res.backend;
+          break;
+        }
+        const commands = meta?.commands;
         if (!Array.isArray(commands) || commands.length === 0) {
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
-            message: `sketch requires metadata.commands: SketchCommand[].`,
-            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close().',
+            message: `sketch requires metadata.commands: SketchCommand[] OR metadata.textContent: string.`,
+            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close() OR sketch.text(content, opts).',
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -1029,6 +1062,7 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
         }
+        drainResolvedWarnings(r, diagnostics);
         // Filter to sharp edges only — BRepFilletAPI_MakeFillet requires convex/concave
         // (non-smooth) edges. Smooth edges (G1, dihedral ≈ 180°) will cause OCCT to throw.
         // If all edges are already smooth (e.g., iterating a fillet on a face that was already
@@ -1154,6 +1188,7 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics.push(edgesResult.error);
           return { shape: base, diagnostics };
         }
+        drainResolvedWarnings(r, diagnostics);
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
@@ -1211,6 +1246,7 @@ export class OcctLowerer implements FeatureLowerer {
           diagnostics.push(faceResult.error);
           return { shape: base, diagnostics };
         }
+        drainResolvedWarnings(r, diagnostics);
         try {
           // Convert replicad Face → { hash: FaceHash } by hashing the
           // underlying TopoDS_Face handle.

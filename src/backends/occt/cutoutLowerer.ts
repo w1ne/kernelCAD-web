@@ -16,7 +16,7 @@
 //   6. cutWithHistory(target, tool) → the post-boolean result.
 //   7. Walk new faces, classify via createdFaceTracker.classifyCutoutFace.
 //
-// Diagnostics use only the 24-code catalog. Per-trigger recovery via hint.
+// Diagnostics use only the 26-code catalog. Per-trigger recovery via hint.
 
 import * as replicad from 'replicad';
 import type { Face } from 'replicad';
@@ -35,6 +35,7 @@ import {
   captureAllFaceSnapshots,
   refreshSnapshots,
   faceHashOf,
+  surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
 import type { FeatureKind } from '../../intent/types';
@@ -266,7 +267,12 @@ function attachCreatedRefs(
     if (merged.has(h)) continue;
     const cls: CutoutRefName | null = classifyCutoutFace(face, frame);
     if (cls !== null) {
-      refs.push({ faceHash: h, refName: cls, snapshot: snapshots.get(h)! });
+      refs.push({
+        faceHash: h,
+        refName: cls,
+        snapshot: snapshots.get(h)!,
+        surfaceType: surfaceTypeOf(face),
+      });
     }
   }
 

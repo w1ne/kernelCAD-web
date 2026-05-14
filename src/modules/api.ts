@@ -12,6 +12,8 @@ import {
   type EdgeSegment,
 } from '../backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import { createSketchModule, type SketchModule } from './sketch';
+import { fontPath, type FontPath } from '../lib/fonts';
 import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
@@ -81,6 +83,12 @@ export interface KernelCadApi {
    * of the resulting surface. Returns a `Surface` peer to `Shape`.
    */
   surfaceFromCurves(sections: Sketch[]): SurfaceProxy;
+
+  /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
+  sketch: SketchModule;
+
+  /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
+  fontPath(p: string): FontPath;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -311,6 +319,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       }
       return session.addSurfaceFromCurves(sections.map(s => s.id));
     },
+
+    sketch: createSketchModule(session),
+    fontPath,
   };
   return api;
 }
