@@ -3,56 +3,24 @@ import * as THREE from "three";
 import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import type { GeometryResult } from "../../../lib/geometryEngine";
+import { computeGeometryBounds } from "./cameraBounds";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.
 // For now I will hardcode or use the same values.
 const SKETCH_DISTANCE = 20;
 
-export function computeGeometryBounds(
-    geometries: GeometryResult[],
-): { center: THREE.Vector3; radius: number } | null {
-    const min = new THREE.Vector3(Infinity, Infinity, Infinity);
-    const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-    let sawVertex = false;
-
-    for (const geometry of geometries) {
-        for (const face of geometry.faces) {
-            const vertices = face.vertices;
-            for (let i = 0; i < vertices.length; i += 3) {
-                const x = vertices[i];
-                const y = vertices[i + 1];
-                const z = vertices[i + 2];
-                if (
-                    x === undefined ||
-                    y === undefined ||
-                    z === undefined ||
-                    !Number.isFinite(x) ||
-                    !Number.isFinite(y) ||
-                    !Number.isFinite(z)
-                ) {
-                    continue;
-                }
-                sawVertex = true;
-                min.min(new THREE.Vector3(x, y, z));
-                max.max(new THREE.Vector3(x, y, z));
-            }
-        }
-    }
-
-    if (!sawVertex) return null;
-
-    const center = min.clone().add(max).multiplyScalar(0.5);
-    const radius = Math.max(min.distanceTo(max) / 2, 1);
-    return { center, radius };
-}
-
 export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) {
     const { selectedFace, sketchMode } = useWorkbench();
     const { camera, controls } = useThree();
+    const cameraRef = useRef(camera);
     const targetState = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; } | null>(null);
     const prevSketchActive = useRef(false);
     const savedCameraState = useRef<{ position: THREE.Vector3; target: THREE.Vector3; } | null>(null);
     const lastGeometrySignature = useRef<string | null>(null);
+
+    useEffect(() => {
+        cameraRef.current = camera;
+    }, [camera]);
 
     useEffect(() => {
         if (geometries.length === 0 || sketchMode.active) return;
@@ -69,10 +37,10 @@ export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) 
         const nextPosition = bounds.center.clone().add(direction.multiplyScalar(distance));
 
         targetState.current = { position: nextPosition, lookAt: bounds.center };
-        camera.near = Math.max(distance / 500, 0.01);
-        camera.far = Math.max(distance * 20, 1000);
-        camera.updateProjectionMatrix();
-    }, [geometries, sketchMode.active, camera]);
+        cameraRef.current.near = Math.max(distance / 500, 0.01);
+        cameraRef.current.far = Math.max(distance * 20, 1000);
+        cameraRef.current.updateProjectionMatrix();
+    }, [geometries, sketchMode.active]);
 
     useEffect(() => {
         const isSketching = sketchMode.active;

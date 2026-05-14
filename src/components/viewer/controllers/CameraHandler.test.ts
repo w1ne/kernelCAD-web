@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeGeometryBounds } from './CameraHandler';
+import { computeGeometryBounds } from './cameraBounds';
 import type { GeometryResult } from '../../../lib/geometryEngine';
 
 function geom(vertices: number[]): GeometryResult {
