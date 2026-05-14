@@ -51,7 +51,10 @@ export type DiagnosticCode =
   | 'export.no-shape'
   // NURBS surfaces (2) — W1.3
   | 'feature.nurbs.degenerate-controls'
-  | 'feature.nurbs.degree-mismatch';
+  | 'feature.nurbs.degree-mismatch'
+  // Pattern (2) — W2.1
+  | 'feature.pattern.source-not-found'
+  | 'feature.pattern.count-out-of-range';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -84,6 +87,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'export.no-shape',
   'feature.nurbs.degenerate-controls',
   'feature.nurbs.degree-mismatch',
+  'feature.pattern.source-not-found',
+  'feature.pattern.count-out-of-range',
 ] as const;
 
 export interface HintTemplate {
@@ -160,6 +165,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
     'feature.nurbs.degree-mismatch':
       'NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.',
+    'feature.pattern.source-not-found':
+      "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
+    'feature.pattern.count-out-of-range':
+      "Pattern count must be an integer >= 2. For grid patterns, both x.count and y.count must be >= 2. If count is a Param, set { min: 2 } on the Param declaration so updates can't lower it below the valid range.",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

@@ -407,6 +407,8 @@ Two cases produce explicit diagnostics:
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 - `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
 - `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
+- `feature.pattern.source-not-found` — the pattern source feature was not found. Verify the variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what `list_features` reports.
+- `feature.pattern.count-out-of-range` — pattern count must be an integer >= 2. For grid patterns, both `x.count` and `y.count` must be >= 2. If count is a Param, set `{ min: 2 }` on the Param declaration so updates can't lower it below the valid range.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
 

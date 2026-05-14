@@ -53,4 +53,6 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'export.no-shape':                          { kind: 'add-return' },
   'feature.nurbs.degenerate-controls':        { kind: 'fix-arg', field: 'controls' },
   'feature.nurbs.degree-mismatch':            { kind: 'fix-arg', field: 'degree' },
+  'feature.pattern.source-not-found':         { kind: 'call-introspection-tool', tool: 'list_features' },
+  'feature.pattern.count-out-of-range':       { kind: 'fix-arg', field: 'count' },
 };
