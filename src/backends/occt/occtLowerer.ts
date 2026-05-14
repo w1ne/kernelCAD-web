@@ -287,7 +287,6 @@ export function applyVariableEdgeFeature(
 export function createOcctLowerer(
   session?: {
     importedGeometry: Map<string, ShapeBackend>;
-    cachedShapes?: Map<string, ShapeBackend>;
     /** W1.3: surface-record lookup. Optional for callers that don't ship NURBS. */
     getSurfaceRecord?: (
       id: import('../../intent/surfaceRecord').SurfaceId,
@@ -300,9 +299,6 @@ export function createOcctLowerer(
     if (session.getSurfaceRecord) {
       lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
     }
-    // W1.3: stash the session reference so surfaceFromCurves can reach the
-    // per-record cachedShapes map populated by the recompute engine.
-    (lowerer as { session?: typeof session }).session = session;
   }
   return lowerer;
 }
@@ -341,10 +337,14 @@ export class OcctLowerer implements FeatureLowerer {
   importedGeometry: Map<string, ShapeBackend> = new Map();
 
   /** W1.3: per-lowerer-instance cache mapping `SurfaceId` to the resolved
-   *  Replicad Face. Populated lazily on first surface ref consumption per
-   *  surface id; reused across `surfaceThicken` / `surfaceToShape` records
-   *  that point at the same surface. */
-  surfaceCache: Map<import('../../intent/surfaceRecord').SurfaceId, import('replicad').Face> = new Map();
+   *  surface (either a single Replicad Face for `nurbsSurface`, or a
+   *  multi-face shell for `surfaceFromCurves`). Populated lazily on first
+   *  surface ref consumption per surface id; reused across `surfaceThicken`
+   *  / `surfaceToShape` records that point at the same surface. */
+  surfaceCache: Map<
+    import('../../intent/surfaceRecord').SurfaceId,
+    import('./nurbsSurfaceLowerer').BuiltSurface
+  > = new Map();
 
   /** W1.3: optional session hook to look up a SurfaceRecord by id at lower
    *  time. Provided by `createOcctLowerer(session)`; undefined if the lowerer
@@ -365,7 +365,7 @@ export class OcctLowerer implements FeatureLowerer {
     r: FeatureRecord,
     inputs: ResolvedInputs,
     diagnostics: CompilerDiagnostic[],
-  ): import('replicad').Face | undefined {
+  ): import('./nurbsSurfaceLowerer').BuiltSurface | undefined {
     const surfaceRef = r.inputs.surface;
     if (!surfaceRef || surfaceRef.kind !== 'surface') {
       diagnostics.push({
@@ -379,8 +379,9 @@ export class OcctLowerer implements FeatureLowerer {
       return undefined;
     }
     const sid = surfaceRef.surfaceId;
-    let face = inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
-    if (face) return face;
+    let surface: import('./nurbsSurfaceLowerer').BuiltSurface | undefined =
+      inputs.surfaces?.get(sid) ?? this.surfaceCache.get(sid);
+    if (surface) return surface;
     if (!this.getSurfaceRecord) {
       diagnostics.push({
         target: this.target,
@@ -406,50 +407,41 @@ export class OcctLowerer implements FeatureLowerer {
     }
     try {
       if (surfRec.data.kind === 'nurbsSurface') {
-        face = buildNurbsFace({
+        const face = buildNurbsFace({
           controls: surfRec.data.controls,
           weights: surfRec.data.weights,
           degree: surfRec.data.degree,
           knots: surfRec.data.knots,
           periodic: surfRec.data.periodic,
         });
+        surface = { kind: 'face', face };
       } else if (surfRec.data.kind === 'surfaceFromCurves') {
+        // Section sketches are passed via the consumer record's inputs map
+        // (SurfaceProxy.buildInputsWithSectionRefs adds `section_<i>` feature
+        // refs so the dep graph drives their lowering before this record is
+        // visited). Read them from `inputs.byKey` here.
         const sectionShapes: OcctBackend[] = [];
-        for (const fid of surfRec.data.sectionIds) {
-          // The session's records are reachable through inputs.records.
-          // For surfaceFromCurves we need the lowered sketch backend; pull
-          // from the engine's per-record output via inputs.byKey isn't
-          // available here (the section ids aren't in inputs.byKey because
-          // they're declared on the SurfaceRecord, not the consumer
-          // record). The simplest reliable path is: look up the cached
-          // OcctBackend from the session's cachedShapes map if the
-          // session provided one. Slice-1 limitation: surfaceFromCurves
-          // requires the session to have lowered each section sketch
-          // before this surface's first consumer is processed (true in
-          // practice because the script-time `surfaceFromCurves(...)`
-          // call comes after the sketches in declaration order, and the
-          // recompute engine pre-lowers each FeatureRecord top-down).
-          const sessionShape =
-            (this as unknown as { session?: { cachedShapes?: Map<string, ShapeBackend> } })
-              .session?.cachedShapes?.get(fid);
-          if (!sessionShape) {
+        for (let i = 0; i < surfRec.data.sectionIds.length; i++) {
+          const fid = surfRec.data.sectionIds[i];
+          const back = inputs.byKey[`section_${i}`] as OcctBackend | undefined;
+          if (!back) {
             diagnostics.push({
               target: this.target,
               code: 'recompute.input.missing',
               featureId: r.id,
               severity: 'error',
-              message: `${r.kind}: section sketch ${fid} not in session cache (was it lowered?).`,
-              hint: 'recompute.input.missing — Each section sketch must be referenced after declaration in your script; surfaceFromCurves only sees sketches that have been captured first.',
+              message: `${r.kind}: section sketch ${fid} (section_${i}) not resolved by upstream lowering.`,
+              hint: 'recompute.input.missing — surfaceFromCurves requires every section to lower cleanly. Inspect each sketch with why_did_this_fail.',
             });
             return undefined;
           }
-          sectionShapes.push(sessionShape as OcctBackend);
+          sectionShapes.push(back);
         }
         const planes = sectionShapes.map((_, i) => ({
           plane: 'XY' as const,
           origin: [0, 0, i * 10] as [number, number, number],
         }));
-        face = buildSkinnedSurface(sectionShapes, planes);
+        surface = buildSkinnedSurface(sectionShapes, planes);
       } else {
         diagnostics.push({
           target: this.target,
@@ -473,8 +465,9 @@ export class OcctLowerer implements FeatureLowerer {
       });
       return undefined;
     }
-    this.surfaceCache.set(sid, face);
-    return face;
+    if (!surface) return undefined;
+    this.surfaceCache.set(sid, surface);
+    return surface;
   }
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {

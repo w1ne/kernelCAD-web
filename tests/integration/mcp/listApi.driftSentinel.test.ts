@@ -99,12 +99,19 @@ describe('list_api drift sentinels', () => {
     }
   });
 
-  it('SURFACE_METHODS matches SurfaceProxy.prototype', async () => {
+  it('SURFACE_METHODS matches SurfaceProxy.prototype public methods', async () => {
     const r = await listApiTool({});
     const advertised = new Set((r.surfaceMethods ?? []).map(m => m.name));
+    // Drift-sentinel convention: underscore-prefixed methods are private
+    // and excluded from the drift comparison (matches how Shape's lower-
+    // path private helpers are not advertised).
     const actual = new Set(
       Object.getOwnPropertyNames(SurfaceProxy.prototype)
-        .filter(n => n !== 'constructor' && typeof (SurfaceProxy.prototype as Record<string, unknown>)[n] === 'function'),
+        .filter(n =>
+          n !== 'constructor' &&
+          !n.startsWith('_') &&
+          typeof (SurfaceProxy.prototype as Record<string, unknown>)[n] === 'function',
+        ),
     );
     expect(advertised).toEqual(actual);
   });

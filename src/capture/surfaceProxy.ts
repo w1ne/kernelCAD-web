@@ -56,7 +56,7 @@ export class SurfaceProxy {
     }
     return this.session.createShape({
       kind: 'surfaceThicken',
-      inputs: { surface: { kind: 'surface', surfaceId: this.id } },
+      inputs: this._buildInputsWithSectionRefs(),
       params: { t: toParam(t, 'mm') },
     });
   }
@@ -70,9 +70,31 @@ export class SurfaceProxy {
   toShape(): Shape {
     return this.session.createShape({
       kind: 'surfaceToShape',
-      inputs: { surface: { kind: 'surface', surfaceId: this.id } },
+      inputs: this._buildInputsWithSectionRefs(),
       params: {},
     });
+  }
+
+  /**
+   * Build the `inputs` map for the new surfaceThicken / surfaceToShape
+   * FeatureRecord. Always includes the surface ref; for surfaceFromCurves
+   * surfaces, ALSO includes a `feature` ref per section so the dep graph
+   * forces each section sketch to lower before this record is reached.
+   * Without this, surfaceFromCurves would silently fail at lower time
+   * because the section Sketches were never consumed (their lowering is
+   * driven by downstream demand only).
+   */
+  private _buildInputsWithSectionRefs(): Record<string, import('../intent/types').FeatureRef> {
+    const inputs: Record<string, import('../intent/types').FeatureRef> = {
+      surface: { kind: 'surface', surfaceId: this.id },
+    };
+    const surfRec = this.session.getSurfaceRecord(this.id);
+    if (surfRec && surfRec.data.kind === 'surfaceFromCurves') {
+      for (let i = 0; i < surfRec.data.sectionIds.length; i++) {
+        inputs[`section_${i}`] = { kind: 'feature', id: surfRec.data.sectionIds[i] };
+      }
+    }
+    return inputs;
   }
 }
 

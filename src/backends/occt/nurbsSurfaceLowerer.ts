@@ -185,35 +185,67 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
 
 /**
  * Skin a NURBS surface through a sequence of section wires (lifted from
- * sketches). Reuses `OcctBackend.loftFromSketches` and peels the largest
- * face out of the resulting solid as the lateral lofted face.
+ * sketches). Calls `replicad.Sketch.loftWith(others, cfg, returnShell=true)`
+ * so the result is a `TopoDS_Shell` — the full skinned surface, possibly
+ * comprised of multiple lateral faces (for closed wires of N sections,
+ * ThruSections produces 4 lateral faces tied together as a shell).
  *
- * Slice-1 limitation: this is a best-effort extraction from a solid loft —
- * sufficient for the corpus tasks (smooth panels skinned through rectangular
- * cross-sections). A future iteration could replace this with a direct
- * BRepOffsetAPI_ThruSections producing a shell rather than a solid.
+ * Returns the underlying replicad shape so the consumer can thicken or
+ * shell-wrap it; we do NOT collapse to a single face because that would
+ * lose the full skinned surface bound to closed-wire sections.
  */
 export function buildSkinnedSurface(
   sectionShapes: OcctBackend[],
   planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>,
-): replicad.Face {
-  const solid = OcctBackend.loftFromSketches(sectionShapes, planes, {});
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const faces = (solid.getReplicadShape() as any).faces as replicad.Face[];
-  if (!faces || faces.length === 0) {
-    throw new Error('buildSkinnedSurface: loft produced no faces');
+): SkinnedSurface {
+  if (sectionShapes.length < 2) {
+    throw new Error(
+      `buildSkinnedSurface: need at least 2 sections (got ${sectionShapes.length})`,
+    );
   }
-  // Lateral face heuristic: among all faces, take the largest one. For a
-  // 2-section ruled loft of rectangular profiles, the cap faces share area
-  // with the side faces, so this is unambiguous for our corpus tasks.
-  const sorted = [...faces].sort((a, b) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const aArea = (a as any).area?.() ?? 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bArea = (b as any).area?.() ?? 0;
-    return bArea - aArea;
-  });
-  return sorted[0];
+  if (planes.length !== sectionShapes.length) {
+    throw new Error(
+      `buildSkinnedSurface: planes count ${planes.length} must equal sections count ${sectionShapes.length}`,
+    );
+  }
+  // Lift each sketch onto its target plane. Mirrors OcctBackend.loftFromSketches'
+  // section-prep pass but inlined here so we can request the shell variant.
+  const lifted: unknown[] = [];
+  for (let i = 0; i < sectionShapes.length; i++) {
+    const s = sectionShapes[i] as unknown as {
+      kind?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      _drawing?: any;
+    };
+    const drawing = s._drawing;
+    if (s.kind !== 'sketch' || !drawing) {
+      throw new Error(`buildSkinnedSurface: input ${i} is not a sketch-tagged OcctBackend`);
+    }
+    const p = planes[i];
+    lifted.push(drawing.sketchOnPlane(p.plane, p.origin));
+  }
+  const [first, ...rest] = lifted;
+  // returnShell=true → BRepOffsetAPI_ThruSections returns a TopoDS_Shell of
+  // skinned faces. For closed-wire N-section input that's 4 lateral faces
+  // sewn together — the consumer (thicken/toShape) treats the whole shell
+  // as one surface.
+  const shellShape = (first as {
+    loftWith: (others: unknown[], cfg: object, returnShell: boolean) => unknown;
+  }).loftWith(rest, { ruled: false }, true);
+  return { kind: 'skinned', shape: shellShape };
+}
+
+/** Tagged variant of a built NURBS surface. The lowerer treats both kinds
+ *  the same for thicken / toShape, but the shell variant skips the
+ *  single-face wrap step (the shell already contains all lateral faces). */
+export type BuiltSurface =
+  | { kind: 'face'; face: replicad.Face }
+  | SkinnedSurface;
+
+export interface SkinnedSurface {
+  kind: 'skinned';
+  /** Replicad-wrapped TopoDS_Shell from ThruSections. */
+  shape: unknown;
 }
 
 /**
@@ -230,24 +262,33 @@ export function buildSkinnedSurface(
  * (offset = t, span ≈ t), which matches how the existing `shell` feature
  * uses MakeThickSolid.
  */
-export function thickenFace(face: replicad.Face, t: number): OcctBackend {
+export function thickenFace(surface: replicad.Face | BuiltSurface, t: number): OcctBackend {
   if (!(t > 0 && Number.isFinite(t))) {
     throw new Error(`thickenFace: t must be a positive finite number; got ${t}`);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const faceTopo = (face as any).wrapped;
 
-  // Build a single-face shell containing this face. BRepOffsetAPI_MakeThickSolid
-  // treats the input shape as a solid to be hollowed (Closing faces removed
-  // before offset). For a "thicken an open surface" use case, the seed is a
-  // shell containing the single face, and the closing-faces list is empty —
-  // every face is then offset to produce both sides of the resulting solid.
-  const builder = new oc.TopoDS_Builder();
-  const shell = new oc.TopoDS_Shell();
-  builder.MakeShell(shell);
-  builder.Add(shell, faceTopo);
+  // Discriminator: skinned shell (multi-face) → pass shell directly;
+  // bare Face or 'face' wrapper → wrap as a single-face shell first.
+  let shellTopo: unknown;
+  if (typeof surface === 'object' && surface !== null && (surface as { kind?: string }).kind === 'skinned') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    shellTopo = ((surface as SkinnedSurface).shape as any).wrapped;
+  } else {
+    // Either a bare Face or a { kind: 'face', face } wrapper.
+    const face: replicad.Face =
+      typeof surface === 'object' && surface !== null && (surface as { kind?: string }).kind === 'face'
+        ? (surface as { kind: 'face'; face: replicad.Face }).face
+        : (surface as replicad.Face);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const faceTopo = (face as any).wrapped;
+    const builder = new oc.TopoDS_Builder();
+    const shell = new oc.TopoDS_Shell();
+    builder.MakeShell(shell);
+    builder.Add(shell, faceTopo);
+    shellTopo = shell;
+  }
 
   const thicker = new oc.BRepOffsetAPI_MakeThickSolid();
   const progress = new oc.Message_ProgressRange_1();
@@ -256,14 +297,12 @@ export function thickenFace(face: replicad.Face, t: number): OcctBackend {
   // faces to remove (the existing shell-feature path uses that for hollowing
   // a solid). For free-surface thickening, the simple-mode call is the
   // canonical OCCT entry point.
-  thicker.MakeThickSolidBySimple(shell, t);
+  thicker.MakeThickSolidBySimple(shellTopo, t);
   thicker.Build(progress);
   if (!thicker.IsDone()) {
     throw new Error('BRepOffsetAPI_MakeThickSolid failed (IsDone=false)');
   }
   const solidRaw = thicker.Shape();
-  // Convert raw TopoDS_Shape to a typed replicad.Shape3D via replicad.cast()
-  // (same pattern occtBackend uses for BRepBuilderAPI_GTransform output).
   const solid = replicad.cast(solidRaw) as replicad.Shape3D;
   return new OcctBackend(solid);
 }
@@ -273,7 +312,15 @@ export function thickenFace(face: replicad.Face, t: number): OcctBackend {
  * `OcctBackend` has no `kind` and no historyMap — it's a shell whose
  * `.boundingBox()` etc. still work. `.volume()` returns 0 (or near-zero).
  */
-export function faceToShape(face: replicad.Face): OcctBackend {
+export function faceToShape(surface: replicad.Face | BuiltSurface): OcctBackend {
+  // Skinned shell path: just rewrap the shell as a Shape3D.
+  if (typeof surface === 'object' && surface !== null && (surface as { kind?: string }).kind === 'skinned') {
+    return new OcctBackend((surface as SkinnedSurface).shape as replicad.Shape3D);
+  }
+  const face: replicad.Face =
+    typeof surface === 'object' && surface !== null && (surface as { kind?: string }).kind === 'face'
+      ? (surface as { kind: 'face'; face: replicad.Face }).face
+      : (surface as replicad.Face);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

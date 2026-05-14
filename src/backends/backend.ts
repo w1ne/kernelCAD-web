@@ -39,10 +39,15 @@ export interface ResolvedInputs {
   /**
    * W1.3 NURBS: per-record map of resolved surfaces keyed by SurfaceId.
    * Populated by the recompute engine for `surfaceThicken` / `surfaceToShape`
-   * records that have a `{ kind: 'surface' }` input ref. Optional — most
-   * lowerers never read it.
+   * records that have a `{ kind: 'surface' }` input ref. Values are
+   * `BuiltSurface` (either a single Replicad Face for `nurbsSurface` or a
+   * multi-face shell for `surfaceFromCurves`). Optional — most lowerers
+   * never read it.
    */
-  surfaces?: Map<import('../intent/surfaceRecord').SurfaceId, import('replicad').Face>;
+  surfaces?: Map<
+    import('../intent/surfaceRecord').SurfaceId,
+    import('./occt/nurbsSurfaceLowerer').BuiltSurface
+  >;
 }
 
 export interface LowerResult {
