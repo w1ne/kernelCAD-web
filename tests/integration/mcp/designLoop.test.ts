@@ -6,6 +6,13 @@ import { designLoopTool } from '../../../src/mcp/tools/designLoop';
 
 describe('design_loop MCP tool', () => {
   const tempDirs: string[] = [];
+  const passingVisualChecks = [
+    { code: 'main-object-count', passed: true, finding: 'The screenshot shows one primary object, not duplicate assemblies.' },
+    { code: 'proportions-match-reference', passed: true, finding: 'The major proportions match the requested object closely enough for this pass.' },
+    { code: 'required-visible-features', passed: true, finding: 'The required visible features are present and legible.' },
+    { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible.' },
+    { code: 'canonical-views-physically-coherent', passed: true, finding: 'Canonical views still read as one physically coherent object.' },
+  ];
 
   afterEach(async () => {
     await Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true })));
@@ -47,6 +54,7 @@ describe('design_loop MCP tool', () => {
             accepted: true,
             screenshotPath: '/tmp/accepted-supported-clevis-arm.png',
             findings: ['Screenshot shows a supported clevis arm with continuous links and no obvious floating blocks.'],
+            checks: passingVisualChecks,
           },
         },
       ],
@@ -125,6 +133,7 @@ describe('design_loop MCP tool', () => {
             accepted: true,
             screenshotPath: '/tmp/clean-bracket.png',
             findings: ['Screenshot shows a simple connected bracket with no unexplained floating solids.'],
+            checks: passingVisualChecks,
           },
         },
       ],
@@ -196,6 +205,7 @@ describe('design_loop MCP tool', () => {
             accepted: true,
             screenshotPath: '/tmp/clean-cylinder-arm.png',
             findings: ['Screenshot shows a compact cylindrical base and link without cuboid clutter.'],
+            checks: passingVisualChecks,
           },
         },
       ],
@@ -239,6 +249,7 @@ describe('design_loop MCP tool', () => {
             accepted: true,
             screenshotPath: '/tmp/robot-arm-reviewed.png',
             findings: ['Screenshot shows continuous base and link with no floating blocks.'],
+            checks: passingVisualChecks,
           },
         },
       ],
@@ -335,6 +346,81 @@ describe('design_loop MCP tool', () => {
       expect.objectContaining({ code: 'assembly.visual.review-incomplete' }),
     ]));
     expect(result.attempts[0].nextActionPrompt).toContain('findings');
+  });
+
+  it('rejects accepted visual reviews that do not include structured reviewer checks', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a watch from a screenshot and require the agent to review it against the rendered evidence.',
+      includeInterference: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Accepted with only vague screenshot findings',
+          code: `
+            const arm = assembly('clean-bracket');
+            arm.part('base', box(30, 20, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 8, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/vague-review.png',
+            findings: ['Looks okay.'],
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0]).toMatchObject({
+      functional: true,
+      qualityOk: false,
+      ok: false,
+    });
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-incomplete' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('visualReview.checks');
+  });
+
+  it('rejects accepted visual reviews when any required reviewer check fails', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a watch from a screenshot and require the agent to reject duplicate visible bodies.',
+      includeInterference: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Accepted despite duplicate object',
+          code: `
+            const arm = assembly('clean-bracket');
+            arm.part('base', box(30, 20, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 8, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/duplicate-watch.png',
+            findings: ['The model still appears to contain two watch bodies.'],
+            checks: [
+              ...passingVisualChecks.filter((check) => check.code !== 'main-object-count'),
+              { code: 'main-object-count', passed: false, finding: 'The screenshot appears to show two overlapping main objects.' },
+            ],
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-check-failed' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('main-object-count');
   });
 
   it('allows explicit opt-out for non-visual batch checks', async () => {

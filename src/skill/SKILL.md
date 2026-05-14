@@ -749,12 +749,17 @@ for runtime introspection:
   attempts that still have unresolved warnings, return repair prompts, and
   optionally write a Studio replay record. Visual review is required by
   default: each accepted attempt must include `visualReview: { accepted,
-  screenshotPath, findings }` after the vision-capable agent renders/opens the
-  screenshot and records concrete observations. Missing `screenshotPath` or
-  empty `findings` fails with `assembly.visual.review-incomplete`. Use
-  `requireVisualReview: false` only for explicit non-visual batch checks. Only
-  use `allowReviewWarnings` when the original prompt explicitly permits that
-  warning code.
+  screenshotPath, findings, checks }` after the vision-capable agent
+  renders/opens screenshots and records concrete observations. Accepted
+  reviews must pass these checklist codes: `main-object-count`,
+  `proportions-match-reference`, `required-visible-features`,
+  `no-stray-or-floating-geometry`, and
+  `canonical-views-physically-coherent`. Missing `screenshotPath`, empty
+  `findings`, missing checklist entries, or blank check findings fails with
+  `assembly.visual.review-incomplete`; failed checks fail with
+  `assembly.visual.review-check-failed`. Use `requireVisualReview: false` only
+  for explicit non-visual batch checks. Only use `allowReviewWarnings` when the
+  original prompt explicitly permits that warning code.
 
 #### Drive transmissions
 
@@ -1030,7 +1035,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace and gripper aperture are only computed when pose-envelope sampling is enabled.
-- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, continue past functional attempts with unresolved warnings, require screenshot review via per-attempt `visualReview` by default, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath` and non-empty `findings`; otherwise `assembly.visual.review-incomplete` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, continue past functional attempts with unresolved warnings, require screenshot review via per-attempt `visualReview` by default, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath`, non-empty `findings`, and passing `checks` for `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, and `canonical-views-physically-coherent`; otherwise `assembly.visual.review-incomplete` or `assembly.visual.review-check-failed` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
 - `arm.transmission(name, { kind, sourceMate, drivenMates, actuator?, input?, output?, path, ratio?, notes? })` is script API, not an MCP tool. Use it when `coupleMates(...)` declares a driven mate. `review_cad` emits `assembly.transmission.missing-for-coupled-mate` if a coupled mate has no matching transmission path.
 - `review_cad` emits `assembly.transmission.path-disconnected` when consecutive
   transmission `path` parts are separated at the current pose or any sampled
