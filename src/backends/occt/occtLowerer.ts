@@ -278,9 +278,12 @@ export function applyVariableEdgeFeature(
  *  Use from any code that ran `runScript` and then needs to lower the
  *  resulting records — without this, `importedStep` records error out
  *  because the lowerer's `importedGeometry` map is empty. */
-export function createOcctLowerer(session?: { importedGeometry: Map<string, ShapeBackend> }): OcctLowerer {
+export function createOcctLowerer(session?: { importedGeometry: Map<string, ShapeBackend>; scriptDir?: string }): OcctLowerer {
   const lowerer = new OcctLowerer();
-  if (session) lowerer.importedGeometry = session.importedGeometry;
+  if (session) {
+    lowerer.importedGeometry = session.importedGeometry;
+    lowerer.scriptDir = session.scriptDir;
+  }
   return lowerer;
 }
 
@@ -314,6 +317,10 @@ export class OcctLowerer implements FeatureLowerer {
    *  `lib.fromSTEP(path)` at script-run time. Keyed by feature id; threaded
    *  in by the script-runtime caller after the script returns. */
   importedGeometry: Map<string, ShapeBackend> = new Map();
+
+  /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
+   *  text lowerer to resolve relative `fontPath(...)` arguments. */
+  scriptDir?: string;
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const diagnostics: CompilerDiagnostic[] = [];
@@ -389,15 +396,25 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'sketch': {
-        const commands = (r.metadata as { commands?: unknown } | undefined)?.commands;
+        const meta = r.metadata as { textContent?: unknown; commands?: unknown } | undefined;
+        if (typeof meta?.textContent === 'string') {
+          const res = await (await import('./textLowerer')).lowerSketchText(r, this.scriptDir);
+          if (!res.ok) {
+            diagnostics.push(...res.diagnostics);
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          shape = res.backend;
+          break;
+        }
+        const commands = meta?.commands;
         if (!Array.isArray(commands) || commands.length === 0) {
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
             featureId: r.id,
             severity: 'error',
-            message: `sketch requires metadata.commands: SketchCommand[].`,
-            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close().',
+            message: `sketch requires metadata.commands: SketchCommand[] OR metadata.textContent: string.`,
+            hint: 'Construct sketches via path().moveTo(...).lineTo(...).close() OR sketch.text(content, opts).',
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
