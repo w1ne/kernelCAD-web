@@ -1,0 +1,11 @@
+{
+  "taskId": "nurbs-lofted-panel",
+  "module": "v0.7",
+  "capturedAt": "2026-05-14T18:40:19.490Z",
+  "durationMs": 17500,
+  "truncated": false,
+  "gitSha": "95283f2299be7a2d99d1b4fec947423bba76752d",
+  "heroArtifact": "nurbs-lofted-panel",
+  "catalogSource": "memorable-builds-policy/v0.7",
+  "overrideApprovedBy": null
+}

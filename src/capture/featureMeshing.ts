@@ -126,12 +126,24 @@ export async function meshFeaturesPerFeature(
   /** v0.5: when records contain `importedStep` features, pass the
    *  originating session so the lowerer can find the pre-imported
    *  OcctBackend instances. Optional — scripts without `lib.fromSTEP`
-   *  work unchanged. */
-  session?: { importedGeometry: Map<FeatureId, ShapeBackend> },
+   *  work unchanged.
+   *  W1.3: also threads through `getSurfaceRecord` for NURBS surface
+   *  resolution. */
+  session?: {
+    importedGeometry: Map<FeatureId, ShapeBackend>;
+    getSurfaceRecord?: (
+      id: import('../intent/surfaceRecord').SurfaceId,
+    ) => import('../intent/surfaceRecord').SurfaceRecord | undefined;
+  },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
   const lowerer = new OcctLowerer();
-  if (session) lowerer.importedGeometry = session.importedGeometry;
+  if (session) {
+    lowerer.importedGeometry = session.importedGeometry;
+    if (session.getSurfaceRecord) {
+      lowerer.getSurfaceRecord = session.getSurfaceRecord.bind(session);
+    }
+  }
   const engine = new RecomputeEngine(lowerer);
   const features: FeatureMesh[] = [];
   const failedFeatureIds: FeatureId[] = [];

@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { listDiagnosticCodesTool } from '../../../../src/mcp/tools/listDiagnosticCodes';
 
 describe('list_diagnostic_codes', () => {
-  it('returns all 24 codes with non-empty hint templates', async () => {
+  it('returns all 30 codes with non-empty hint templates', async () => {
     const result = await listDiagnosticCodesTool({});
     expect(result.ok).toBe(true);
-    expect(result.codes).toHaveLength(24);
+    expect(result.codes).toHaveLength(30);
     for (const entry of result.codes) {
       expect(entry.hint_template.trim().length).toBeGreaterThan(0);
     }
@@ -13,6 +13,6 @@ describe('list_diagnostic_codes', () => {
 
   it('every code is unique', async () => {
     const result = await listDiagnosticCodesTool({});
-    expect(new Set(result.codes.map((c) => c.code)).size).toBe(24);
+    expect(new Set(result.codes.map((c) => c.code)).size).toBe(30);
   });
 });

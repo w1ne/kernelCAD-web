@@ -69,7 +69,14 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
   const upstreamIds = new Set<string>();
   const queue: string[] = [];
   for (const ref of Object.values(targetRecord.inputs)) {
-    const upId = ref.kind === 'feature' ? ref.id : ref.featureId;
+    // W1.3: 'surface' refs point to a SurfaceRecord (not a FeatureRecord),
+    // so there's no upstream Feature to walk through. Skip.
+    const upId =
+      ref.kind === 'surface'
+        ? undefined
+        : ref.kind === 'feature'
+          ? ref.id
+          : ref.featureId;
     if (upId && !upstreamIds.has(upId)) {
       upstreamIds.add(upId);
       queue.push(upId);
@@ -80,7 +87,14 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
     const rec = run.records.find(r => r.id === id);
     if (!rec) continue;
     for (const ref of Object.values(rec.inputs)) {
-      const upId = ref.kind === 'feature' ? ref.id : ref.featureId;
+      // W1.3: 'surface' refs point to a SurfaceRecord (not a FeatureRecord),
+    // so there's no upstream Feature to walk through. Skip.
+    const upId =
+      ref.kind === 'surface'
+        ? undefined
+        : ref.kind === 'feature'
+          ? ref.id
+          : ref.featureId;
       if (upId && !upstreamIds.has(upId)) {
         upstreamIds.add(upId);
         queue.push(upId);

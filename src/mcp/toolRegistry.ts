@@ -1,6 +1,8 @@
 import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
+import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { exportStlTool } from './tools/exportStl';
@@ -11,6 +13,7 @@ import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
+import { getFaceLineageTool } from './tools/getFaceLineage';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -209,6 +212,89 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'add_nurbs_surface',
+      description:
+        "Insert a nurbsSurface(...) or surfaceFromCurves(...) call into the user's .kcad.ts. The returned Surface is captured but produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Returns the modified code + diagnostics. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'Current .kcad.ts source.' },
+          controls: {
+            type: 'array',
+            description: 'Control-point grid for direct construction (controls[u][v] = [x, y, z], mm).',
+            items: {
+              type: 'array',
+              items: { type: 'array', items: { type: 'number' } },
+            },
+          },
+          weights: {
+            type: 'array',
+            description: 'Optional rational weights, same grid shape as controls. Ignored in slice-1.',
+            items: { type: 'array', items: { type: 'number' } },
+          },
+          degree: {
+            type: 'object',
+            description: 'Degrees in U and V; each in [1, nU-1] / [1, nV-1].',
+            properties: {
+              u: { type: 'integer', minimum: 1 },
+              v: { type: 'integer', minimum: 1 },
+            },
+            required: ['u', 'v'],
+          },
+          knots: {
+            type: 'object',
+            description: 'Optional explicit knot vectors; missing => clamped uniform inferred.',
+            properties: {
+              u: { type: 'array', items: { type: 'number' } },
+              v: { type: 'array', items: { type: 'number' } },
+            },
+          },
+          periodic: {
+            type: 'object',
+            description: 'Optional periodic flags per parametric direction.',
+            properties: {
+              u: { type: 'boolean' },
+              v: { type: 'boolean' },
+            },
+          },
+          section_sketch_ids: {
+            type: 'array',
+            description: 'Existing sketch FeatureIds (2 or more) to skin a surface through, in order.',
+            items: { type: 'string' },
+          },
+          binding_name: {
+            type: 'string',
+            description: 'JS const name for the new Surface binding (default: surface_<N>).',
+          },
+        },
+        required: ['code'],
+      },
+    },
+    handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_sketch_text',
+      description: 'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code:     { type: 'string', description: 'The .kcad.ts source code.' },
+          content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
+          size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
+          font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
+          align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
+          position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
+          rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
+          bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
+        },
+        required: ['code', 'content', 'size'],
+      },
+    },
+    handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
+  },
+  {
+    definition: {
       name: 'remove_feature',
       description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
       inputSchema: {
@@ -274,6 +360,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'get_face_lineage',
+      description:
+        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
+          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
+        },
+        required: ['feature_id', 'ref'],
+      },
+    },
+    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
+  },
+  {
+    definition: {
       name: 'list_api',
       description:
         'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
@@ -288,7 +392,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'list_diagnostic_codes',
       description:
-        'Return the kernelCAD 24-code diagnostic catalogue with hint templates. ' +
+        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
         'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
         'retry strategies. Hints are also inline on every emitted diagnostic — ' +
         'this tool just gives you the canonical list up front.',
@@ -564,8 +668,43 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
           attempts: {
             type: 'array',
-            description: 'Ordered design attempts. Each item is { id?, title?, file? or code? }. File attempts can be replayed by Studio build records.',
-            items: { type: 'object' },
+            description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visualReview? }. File attempts can be replayed by Studio build records.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                title: { type: 'string' },
+                file: { type: 'string' },
+                code: { type: 'string' },
+                visualReview: {
+                  type: 'object',
+                  description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshotPath, concrete findings, and all required checks passing.',
+                  properties: {
+                    accepted: { type: 'boolean' },
+                    screenshotPath: { type: 'string' },
+                    findings: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    checks: {
+                      type: 'array',
+                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, canonical-views-physically-coherent.',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          code: { type: 'string' },
+                          passed: { type: 'boolean' },
+                          finding: { type: 'string' },
+                          screenshotPath: { type: 'string' },
+                        },
+                        required: ['code', 'passed', 'finding'],
+                      },
+                    },
+                  },
+                  required: ['accepted', 'findings'],
+                },
+              },
+            },
           },
           assembly: { type: 'string' },
           preserveInterfaces: {
@@ -583,6 +722,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+          requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
           allowReviewWarnings: {
             type: 'array',
             items: { type: 'string' },

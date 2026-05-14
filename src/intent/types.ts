@@ -39,6 +39,8 @@ export type EditableVec3 =
 
 export type FeatureId = string;
 export type RewriteId = string;
+// Re-import for FeatureRef.surface discriminant.
+import type { SurfaceId } from './surfaceRecord';
 
 export interface ScriptLocation {
   file: string;
@@ -93,7 +95,13 @@ export type FeatureRef =
   | { kind: 'feature'; id: FeatureId }
   | { kind: 'face'; featureId: FeatureId; ref: FaceRef }
   | { kind: 'edge'; featureId: FeatureId; ref: EdgeRef }
-  | { kind: 'vertex'; featureId: FeatureId; ref: VertexRef };
+  | { kind: 'vertex'; featureId: FeatureId; ref: VertexRef }
+  // W1.3 NURBS: surface-typed input ref. Only consumed by the new
+  // `surfaceThicken` / `surfaceToShape` lowerer cases; resolved upstream
+  // of the existing face/edge ref paths.
+  | { kind: 'surface'; surfaceId: SurfaceId };
+
+export type { SurfaceId } from './surfaceRecord';
 
 export type CardinalPlane = 'xy' | 'xz' | 'yz';
 export type PlaneSpec = CardinalPlane | { plane: CardinalPlane; offset?: number };
@@ -133,7 +141,9 @@ export type FeatureKind =
   // assembly export (v0.6+) — Scene.toCompound() / Scene.toUnion()
   | 'assemblyExport'
   // specialty (v0.13+)
-  | 'sheetMetal' | 'sdf';
+  | 'sheetMetal' | 'sdf'
+  // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
+  | 'surfaceThicken' | 'surfaceToShape';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings

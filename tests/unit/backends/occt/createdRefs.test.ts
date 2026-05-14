@@ -68,7 +68,7 @@ describe('applyCreatedRefs', () => {
 
     const map: HistoryMap = new Map();
     const refs: CreatedRefSpec[] = [
-      { faceHash: firstHash, refName: 'wall', snapshot: firstSnapshot },
+      { faceHash: firstHash, refName: 'wall', snapshot: firstSnapshot, surfaceType: 'PLANE' },
     ];
     applyCreatedRefs(map, refs, 'feature-42', 'hole', 'mountingBolt', undefined);
 
@@ -92,7 +92,7 @@ describe('applyCreatedRefs', () => {
 
     const map: HistoryMap = new Map();
     const refs: CreatedRefSpec[] = [
-      { faceHash: firstHash, refName: 'wall', snapshot: snapshots.get(firstHash)! },
+      { faceHash: firstHash, refName: 'wall', snapshot: snapshots.get(firstHash)!, surfaceType: 'PLANE' },
     ];
     applyCreatedRefs(map, refs, 'feature-7', 'hole', undefined, 2);
 
@@ -116,7 +116,7 @@ describe('applyCreatedRefs', () => {
     map.set(firstHash, existing);
 
     const refs: CreatedRefSpec[] = [
-      { faceHash: firstHash, refName: 'wall', snapshot: snapshots.get(firstHash)! },
+      { faceHash: firstHash, refName: 'wall', snapshot: snapshots.get(firstHash)!, surfaceType: 'PLANE' },
     ];
     applyCreatedRefs(map, refs, 'hole-feature', 'hole', undefined, 1);
 
@@ -142,14 +142,67 @@ describe('applyCreatedRefs', () => {
 
     const map: HistoryMap = new Map();
     const refs: CreatedRefSpec[] = [
-      { faceHash: hashes[0], refName: 'wall', snapshot: snapshots.get(hashes[0])! },
-      { faceHash: hashes[1], refName: 'floor', snapshot: snapshots.get(hashes[1])! },
-      { faceHash: hashes[2], refName: 'wall-back', snapshot: snapshots.get(hashes[2])! },
+      { faceHash: hashes[0], refName: 'wall', snapshot: snapshots.get(hashes[0])!, surfaceType: 'PLANE' },
+      { faceHash: hashes[1], refName: 'floor', snapshot: snapshots.get(hashes[1])!, surfaceType: 'PLANE' },
+      { faceHash: hashes[2], refName: 'wall-back', snapshot: snapshots.get(hashes[2])!, surfaceType: 'PLANE' },
     ];
     applyCreatedRefs(map, refs, 'f', 'hole', 'hole1', undefined);
 
     expect(map.get(hashes[0])!.labelName).toBe('wall');
     expect(map.get(hashes[1])!.labelName).toBe('floor');
     expect(map.get(hashes[2])!.labelName).toBe('wall-back');
+  });
+});
+
+describe('holeLowerer surfaceType propagation', () => {
+  beforeAll(async () => { await initOcct(); });
+  it('hole lowerer writes surfaceType=CYLINDRE on the bore wall', async () => {
+    const { runScript } = await import('../../../../src/script-runtime/runScript');
+    const { RecomputeEngine } = await import('../../../../src/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../../src/backends/occt/occtLowerer');
+    const code = `
+      const base = box(40, 40, 20);
+      return base.hole('top', { u: 0, v: 0, diameter: 10, depth: 8 });
+    `;
+    const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+    const engine = new RecomputeEngine(new OcctLowerer());
+    const r = await engine.run(records);
+    const lastRecord = records[records.length - 1];
+    const shape = r.shapes.get(lastRecord.id) as OcctBackend;
+    const hMap = shape.historyMap!;
+    // Find at least one lineage entry with surfaceType === 'CYLINDRE' (the bore wall).
+    const cylindreLineages = Array.from(hMap.values()).filter(l => l.surfaceType === 'CYLINDRE');
+    expect(cylindreLineages.length).toBeGreaterThanOrEqual(1);
+    // Confirm at least one entry has labelName === 'wall' AND surfaceType === 'CYLINDRE'.
+    const wall = Array.from(hMap.values()).find(l => l.labelName === 'wall');
+    expect(wall).toBeDefined();
+    expect(wall!.surfaceType).toBe('CYLINDRE');
+    expect(wall!.snapshotAtCreate).toBeDefined();
+  });
+});
+
+describe('snapshotAtCreate immutability', () => {
+  beforeAll(async () => { await initOcct(); });
+  it('refreshSnapshots overwrites snapshot but never snapshotAtCreate', async () => {
+    const box = OcctBackend.box(10, 10, 10);
+    const faces = box.getReplicadShape().faces;
+    const snapshots = captureAllFaceSnapshots(faces);
+    const firstHash = Array.from(snapshots.keys())[0];
+    const firstSnap = snapshots.get(firstHash)!;
+    const map: HistoryMap = new Map();
+    applyCreatedRefs(
+      map,
+      [{ faceHash: firstHash, refName: 'wall', snapshot: firstSnap, surfaceType: 'PLANE' }],
+      'feat-1', 'hole', undefined, undefined,
+    );
+    const original = map.get(firstHash)!.snapshotAtCreate;
+    expect(original).toBeDefined();
+    // Force a fake snapshot into the live map for that hash, then refresh:
+    // Use a manual `refreshSnapshots` re-call with the same faces (idempotent) and assert.
+    const { refreshSnapshots } = await import('../../../../src/backends/occt/createdRefs');
+    refreshSnapshots(map, faces);
+    const after = map.get(firstHash)!;
+    expect(after.snapshotAtCreate).toEqual(original);   // unchanged
+    expect(after.snapshot).toBeDefined();
   });
 });

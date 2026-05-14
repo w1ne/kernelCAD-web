@@ -1,4 +1,69 @@
-# kernelCAD v0.6.0
+# kernelCAD v0.7.0
+
+## v0.7.0 — 2026-05-14 — NURBS surfaces
+
+v0.7.0 adds NURBS surface construction to the agent-facing kernel: agents can now build smooth panels, lofted shells, and tubular geometry as first-class surfaces, then enter the existing Shape pipeline (booleans, fillets, exports) via two escape methods. This iteration ships the **peer-form** Path A from the W1.3 decision (peer `Surface` interface alongside `Shape`); the descope-trigger gates were all under threshold (`FeatureRef` ripple = 9 src files, well below the 15-file cap; only one exhaustive `FeatureRef.kind` switch needed a `'surface'` arm).
+
+### Added — top-level API
+
+- `nurbsSurface({ controls, degree, weights?, knots?, periodic? })` builds a NURBS surface from an explicit control net + degree. `controls` is a U-major V-minor rectangular Vec3 grid (mm). Returns a `Surface` peer to `Shape`. Optional `weights` is accepted for forward compatibility but currently ignored (see Slice-1 caveat below). Optional `knots` and `periodic` give precise control over the parametric domain; defaults (clamped-uniform, non-periodic) cover the common case.
+- `surfaceFromCurves(sections: Sketch[])` skins a NURBS surface through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction. Lowers via OCCT's `BRepOffsetAPI_ThruSections` configured to return a shell rather than a solid (`returnShell=true`).
+- `Surface` exposes exactly two escape methods:
+  - `.thicken(t: Editable<number>) => Shape` — offsets the surface by `t` mm and returns the closed solid `Shape`. Lowers via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` must be a positive finite number or a `ParamRef<number>` (reactive thicken).
+  - `.toShape() => Shape` — wraps the surface as a single-face zero-volume `Shape` (TopoDS_Shell). Use as a profile placeholder for downstream face-aware features; `.volume()` returns ~0 but `.boundingBox()` etc. work.
+- New MCP tool `add_nurbs_surface` AST-inserts a `nurbsSurface(...)` or `surfaceFromCurves(...)` binding into a `.kcad.ts`. Chain `.thicken(t)` / `.toShape()` onto the returned binding via the existing `add_feature` tool.
+- New `Surface` peer in the intent layer (`SurfaceRecord` on `CaptureSession`, parallel to `FeatureRecord`); new `FeatureRef` variant `{ kind: 'surface'; surfaceId }`; new `FeatureKind` values `surfaceThicken` and `surfaceToShape`.
+
+### Added — diagnostics
+
+- Two new diagnostic codes: `feature.nurbs.degenerate-controls` (controls grid is empty, jagged, contains non-finite points, or weights grid mismatch) and `feature.nurbs.degree-mismatch` (`degree.u` or `degree.v` outside `[1, n-1]`). Catalogue grows to 30 codes (W1.1 + W1.2 + W1.3 cumulative).
+
+### Added — corpus + demos
+
+- Corpus task `nurbs-lofted-panel`: free-form panel skinned through three rectangular cross-sections (widening, narrowing) and thickened by 2 mm.
+- Corpus task `nurbs-tube`: 16-sided polygonal tube wall (degree-1 NURBS surface) thickened by 1 mm to a closed hollow shaft.
+- v0.7 H11 demo bundles: `docs/demos/v0.7/nurbs-lofted-panel/` and `docs/demos/v0.7/nurbs-tube/` with MP4, hero-frame, panel image, whats-new.md.
+
+### Slice-1 caveats
+
+- **Non-rational only.** `Geom_BSplineSurface_2` (the rational variant) requires `TColStd_Array2OfReal` (2-D Real array) which is not exposed in the `replicad-opencascadejs` WASM bindings. Slice-1 silently downgrades weighted surfaces to non-rational and logs a warning. For exact rational geometry (true circles, conics) use the polygonal-approximation pattern shown in the `nurbs-tube` corpus task until rational support lands.
+- **`Surface` is NOT a `Shape`.** Surfaces don't implement `ShapeBackend`. No `.translate`, `.rotate`, `.boolean`, `.fillet`, etc. directly on a `Surface` — call `.toShape()` first.
+- **`surfaceFromCurves` sections are spaced 10 mm apart in Z.** A future iteration will accept explicit per-section plane / spacing args; today the spacing is fixed.
+
+### Plan-vs-API deviations encountered during implementation
+
+(Detailed in the decision doc at `kernelCAD-private/docs/process/decisions/2026-05-14-nurbs-surfaces-path.md`.)
+
+- Knot arrays use `TColStd_Array1OfReal_2` (not `IntTools_CArray1OfReal_2`, which is a type alias only).
+- `BRepBuilderAPI_MakeFace_8` requires the base `Handle_Geom_Surface_2(surf)`, not the specialized `Handle_Geom_BSplineSurface_2`.
+- Thicken uses `MakeThickSolidBySimple(shell, t)` (canonical for "offset an open shell"), not `MakeThickSolidByJoin` (which requires a solid + faces-to-remove and is used by the existing `shell` feature for hollowing solids).
+- `BRep_Builder` is not exposed; we use `TopoDS_Builder` (its concrete subclass).
+
+---
+
+## v0.6.3 — 2026-05-14 — v0.3 stable-naming finish
+
+### Added
+
+- `created` face/edge refs resolve end-to-end through the `HistoryMap` topology
+  route, with a geometry-snapshot fallback (centroid + normal + area + surfaceType)
+  that emits `feature.created-ref.fallback-used` (warning) instead of erroring
+  when an upstream op rewrites enough topology to lose the slot lookup.
+- `snapshotAtCreate` + `surfaceType` siblings on `FaceLineage` — immutable
+  create-time fingerprint preserved through every downstream op.
+- MCP tool `get_face_lineage` — walks the lineage chain for a named face/edge
+  ref; returns `{ chain, usedFallback }`. Ships create/modify ops in this slice;
+  split/delete classification is deferred.
+- 3 new corpus tasks: `through-hole-roundtrip`, `blind-hole-bottom-face-fillet`,
+  `cylindrical-wall-created-ref-through-fillet-chain`.
+- 2 new diagnostic codes: `feature.hole.no-target-face` (error),
+  `feature.created-ref.fallback-used` (warning). Catalogue is now 26 codes.
+
+### Audited
+
+- `mergeBooleanHistory` / `mergeEdgeFeatureHistory` lineage propagation across
+  `fillet` / `chamfer` / `shell` / `cutout` — confirms `CreatedRefSpec`s survive
+  a downstream op.
 
 ## v0.6.0 — 2026-05-11
 
@@ -232,10 +297,14 @@ npm run dev
 ```
 
 
-## [Unreleased]
+## v0.6.4 — 2026-05-14 — 2D text (sketch.text primitive)
 
 ### Added
 
+- `sketch.text(content, opts)` — author 2D text as a sketch-internal primitive. Returns a `Sketch` covering all rendered glyph outlines; chains into `.extrude()` for engraved or raised text features. `align: 'left' | 'center' | 'right'`, `position: [x, y]`, and CCW `rotation` degrees are all editable. Bundled font is Liberation Sans Regular (SIL OFL 1.1); pass `font: fontPath('/path/to/font.ttf')` to load a custom TTF.
+- `add_sketch_text` MCP tool — AST-edit a `sketch.text(...)` call into a kernelCAD script with optional `bindAs` to name the resulting variable.
+- Two new diagnostic codes: `sketch.text.font-not-found`, `sketch.text.empty-content`. Both error-severity with mandatory hints.
+- Two corpus tasks: `engraved-nameplate` (text cut into a plate) and `raised-logo-extrusion` (text extruded upward, rotated 15°).
 - Diagnostic envelope gains an auxiliary structured `nextAction` field alongside the existing one-sentence `hint`. Every milestone-C code maps to a well-typed recovery hint (retry-with-smaller-param, call-introspection-tool, rewrite-feature, reorder-pipeline, fix-arg, inspect-message, rename, add-return, check-cli-args, check-file-path). The wire `hint` string is unchanged; `nextAction` is opt-in extra data on the same envelope.
 - Assembly Vec3 surfaces (`assembly.part({ at, connectors })`, `assembly.revolute({ axis, origin })`) accept `Editable<number>` per coord. Underlying intent uses a unified `Vec3Param` shape shared with `translate`/`rotate`. `AssemblyConnectorRef.worldOrigin` is symbolic — a parametric `at` plus parametric connector `origin` produces a `worldOrigin` whose components are composed `ParamRef` expressions, and the public input types accept that `Vec3Param` directly so an agent can write `arm.revolute({ origin: parent.connector('tip').worldOrigin })`. A single `setParamValue` re-lowers the part dimensions, dependent connector frames, and any joint built on those frames in one pass. Axis vectors normalize at lower time; an axis that resolves to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.
 - `assembly.solve(poses): SolvedKinematics` — body-tree forward kinematics

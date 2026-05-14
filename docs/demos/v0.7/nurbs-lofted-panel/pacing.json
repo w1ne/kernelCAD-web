@@ -1,0 +1,14 @@
+{
+  "preRollMs": 2000,
+  "rotateStartMs": 3500,
+  "rotateDurationMs": 12000,
+  "totalDurationMs": 17500,
+  "features": {
+    "surfaceThicken_1": {
+      "startAtMs": 0,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    }
+  }
+}
