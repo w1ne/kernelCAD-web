@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from '../components/Layout/Header';
 import { Toolbar } from './Toolbar';
@@ -22,12 +22,12 @@ import { useProject } from '../context/ProjectContext';
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
  * Inspector / AgentRail / BottomDrawer / StatusBar — over the existing
- * Header chrome. Mounted by App.tsx; replaces the WorkbenchLayout stub
- * that Phase 1 left behind.
+ * Header chrome. Mounted by App.tsx and DevLab; the Phase 1 WorkbenchLayout
+ * stub has been retired (Slice 1.3).
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen } = useShellStore();
+    const { agentRailOpen, selectedFeatureId } = useShellStore();
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
 
@@ -46,6 +46,17 @@ export function StudioShell() {
     }, [workbench]);
 
     const isModified = activeProject != null && workbench.code !== activeProject.code;
+
+    // Bridge shell selection → Viewer's existing selectedItemIds, so the
+    // R3F SelectionOutline overlay can react. Identity-system caveat:
+    // FeatureRecord.id (e.g. "box_1") and the Viewer's variable-name
+    // matching live in different namespaces — the bridge sets the id
+    // regardless; outlining only fires when they coincide. Full selection-
+    // identity reconciliation is its own slice (1.4 candidate).
+    const { setSelectedItemId } = workbench;
+    useEffect(() => {
+        setSelectedItemId(selectedFeatureId);
+    }, [selectedFeatureId, setSelectedItemId]);
 
     const handleToggleAgentRail = useCallback(() => {
         shellStore.setAgentRailOpen(!agentRailOpen);
