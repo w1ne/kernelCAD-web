@@ -15,6 +15,10 @@ import { helix, type RailPoint, type HelixOptions } from './helix';
 import { createSketchModule, type SketchModule } from './sketch';
 import { fontPath, type FontPath } from '../lib/fonts';
 import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
+import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
+import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
+import { materialize as sdfMaterialize, type MaterializeOpts } from './sdf/materialize';
+import type { SdfField } from './sdf';
 import { KernelError } from '../intent/kernelError';
 import type { FaceLabelsMap } from '../intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../runtime/paramRef';
@@ -34,6 +38,15 @@ export interface PartsLib {
 
 export interface FaceLabelOpts {
   faceLabels?: FaceLabelsMap;
+}
+
+export interface SdfNamespace {
+  sphere(radius: number): SdfField;
+  box(size: Vec3): SdfField;
+  cylinder(radius: number, height: number): SdfField;
+  torus(majorR: number, minorR: number): SdfField;
+  smoothBlend(a: SdfField, b: SdfField, k: number): SdfField;
+  materialize(field: SdfField, opts?: MaterializeOpts): Shape;
 }
 
 export interface KernelCadApi {
@@ -89,6 +102,12 @@ export interface KernelCadApi {
 
   /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
   fontPath(p: string): FontPath;
+
+  /** SDF authoring namespace (W2.3). Primitives + smoothBlend + materialize.
+   *  `sdf.materialize(field)` returns a standard `Shape` of kind 'sdfMaterialize'
+   *  that flows through booleans/fillets/exports. The bare `'sdf'` FeatureKind
+   *  is a reservation marker for slice-2+ (TPMS / voronoi) and is not lowered. */
+  sdf: SdfNamespace;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -322,6 +341,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
 
     sketch: createSketchModule(session),
     fontPath,
+
+    sdf: {
+      sphere: sdfSphere,
+      box: sdfBox,
+      cylinder: sdfCylinder,
+      torus: sdfTorus,
+      smoothBlend: sdfSmoothBlend,
+      materialize: (field, opts) => sdfMaterialize({ session }, field, opts),
+    },
   };
   return api;
 }
