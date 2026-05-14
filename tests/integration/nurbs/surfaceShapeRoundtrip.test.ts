@@ -39,6 +39,16 @@ describe('Surface to Shape roundtrip', () => {
       .thicken(2);
     const backend = await shape.lower();
     expect(backend.volume()).toBeGreaterThan(0);
-    expect(backend.boundingBox()).toBeTruthy();
+    const bb = backend.boundingBox();
+    expect(bb).toBeTruthy();
+    // The control net lies in the XY plane (all Z=0), so MakeThickSolidBySimple
+    // offsets along +Z and the resulting solid's Z-span must match the
+    // requested thickness `t === 2` within OCCT offset tolerance. This locks
+    // the MakeThickSolidBySimple semantics (offset = t, not t/2) so a future
+    // regression on the thicken pipeline is caught here, not just in the
+    // demo-replay gate.
+    const zSpan = bb.max[2] - bb.min[2];
+    expect(zSpan).toBeGreaterThanOrEqual(1.9);
+    expect(zSpan).toBeLessThanOrEqual(2.1);
   });
 });
