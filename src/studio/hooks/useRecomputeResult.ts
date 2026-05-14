@@ -1,29 +1,55 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../../context/WorkbenchContext';
+import { reviewToValidity } from '../adapters/reviewToValidity';
+import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
+import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
+import { shellStore } from '../store/shellStore';
 import type { StudioRecomputeResult } from '../types';
 
 /**
- * Single source of truth for shell consumers. Aggregates the bits the
- * existing pipeline produces into the `StudioRecomputeResult` contract.
+ * Single source of truth for shell consumers. Adapts the bits the
+ * existing pipeline produces (geometries from the worker, scriptReview
+ * from `/__kernelcad/review`, scriptParams from `/__kernelcad/mesh`)
+ * into the `StudioRecomputeResult` contract.
  *
- * Phase 2 wiring: geometries flow through verbatim; features / validity /
- * paramTable / diagnostics are exposed as nulls/empties until Phase 3
- * deepens `WorkbenchContext` to surface them (or until subagents working
- * on individual tabs pull from the right sub-context themselves).
- *
- * Subscribers must tolerate empty/null fields — the shell renders the
- * always-visible `scene` and `code` tabs unconditionally, and adapts the
- * rest via `getVisibleTabs`.
+ * Slice 1.1: validity + paramTable + diagnostics now plumbed. Features
+ * still empty pending a worker-side `FeatureRecord` serialization
+ * (Slice 1.2). SceneTab falls back to its legacy rows when features is
+ * empty.
  */
 export function useRecomputeResult(): StudioRecomputeResult {
     const workbench = useWorkbench();
 
-    return useMemo<StudioRecomputeResult>(() => ({
-        features: [],
-        geometries: workbench.geometries ?? [],
-        validity: null,
-        paramTable: null,
-        diagnostics: [],
-        recomputeMs: 0,
-    }), [workbench.geometries]);
+    const validity = useMemo(
+        () => reviewToValidity(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
+    const paramTable = useMemo(
+        () => serializedParamsToTable(workbench.scriptParams ?? []),
+        [workbench.scriptParams],
+    );
+
+    const diagnostics = useMemo(
+        () => reviewDiagnosticsToCompiler(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
+    // Publish validity into the shell store so BottomDrawer +
+    // ValidityDeltaHeader see the delta (current ↔ previous).
+    useEffect(() => {
+        shellStore.publishValidity(validity);
+    }, [validity]);
+
+    return useMemo<StudioRecomputeResult>(
+        () => ({
+            features: workbench.featureRecords ?? [],
+            geometries: workbench.geometries ?? [],
+            validity,
+            paramTable,
+            diagnostics,
+            recomputeMs: workbench.recomputeMs ?? 0,
+        }),
+        [workbench.featureRecords, workbench.geometries, workbench.recomputeMs, validity, paramTable, diagnostics],
+    );
 }

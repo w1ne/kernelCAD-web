@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from '../components/Layout/Header';
 import { Toolbar } from './Toolbar';
@@ -22,26 +22,41 @@ import { useProject } from '../context/ProjectContext';
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
  * Inspector / AgentRail / BottomDrawer / StatusBar — over the existing
- * Header chrome. Mounted by App.tsx; replaces the WorkbenchLayout stub
- * that Phase 1 left behind.
+ * Header chrome. Mounted by App.tsx and DevLab; the Phase 1 WorkbenchLayout
+ * stub has been retired (Slice 1.3).
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen } = useShellStore();
+    const { agentRailOpen, selectedFeatureId } = useShellStore();
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
 
     const handleValidate = useCallback(() => {
-        // Validate dispatches through the existing recompute pipeline.
-        // Phase 1.5+ slice wires this to an explicit revalidate trigger;
-        // for now a no-op keeps the contract stable.
-    }, []);
+        // Force a re-fetch of /__kernelcad/review by re-running the
+        // geometry pipeline. The review fetch is chained inside
+        // GeometryContext.executeGeometry, so re-executing pulls a fresh
+        // validity result into shellStore.
+        workbench.executeGeometry?.(workbench.code);
+    }, [workbench]);
 
     const handleRun = useCallback(() => {
         // Run forces a re-execution of the current script. The existing
         // recompute auto-runs on code changes; this is the manual button.
         workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
     }, [workbench]);
+
+    const isModified = activeProject != null && workbench.code !== activeProject.code;
+
+    // Bridge shell selection → Viewer's existing selectedItemIds, so the
+    // R3F SelectionOutline overlay can react. Identity-system caveat:
+    // FeatureRecord.id (e.g. "box_1") and the Viewer's variable-name
+    // matching live in different namespaces — the bridge sets the id
+    // regardless; outlining only fires when they coincide. Full selection-
+    // identity reconciliation is its own slice (1.4 candidate).
+    const { setSelectedItemId } = workbench;
+    useEffect(() => {
+        setSelectedItemId(selectedFeatureId);
+    }, [selectedFeatureId, setSelectedItemId]);
 
     const handleToggleAgentRail = useCallback(() => {
         shellStore.setAgentRailOpen(!agentRailOpen);
@@ -67,7 +82,7 @@ export function StudioShell() {
             <Toolbar
                 project={activeProject ? { name: activeProject.name } : null}
                 filename={activeProject?.name ? `${activeProject.name}.kcad.ts` : 'untitled.kcad.ts'}
-                isModified={false}
+                isModified={isModified}
                 onValidate={handleValidate}
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
