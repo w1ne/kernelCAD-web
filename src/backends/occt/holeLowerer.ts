@@ -12,7 +12,7 @@
 //      and attach `labelName` entries to the result HistoryMap so downstream
 //      face-by-label resolution finds them.
 //
-// Diagnostics use only the 24-code catalog from milestone C; per-trigger
+// Diagnostics use only the 26-code catalog from milestone C; per-trigger
 // recovery information lives in the `hint` field.
 
 import * as replicad from 'replicad';
@@ -31,6 +31,7 @@ import {
   captureAllFaceSnapshots,
   refreshSnapshots,
   faceHashOf,
+  surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
 import type { FeatureKind } from '../../intent/types';
@@ -154,11 +155,11 @@ function deriveThroughDepth(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.kernel-failed',
+          code: 'feature.hole.no-target-face',
           featureId,
           severity: 'error',
           message: `'through' requested but no back face was found on the bore axis.`,
-          hint: "'through' requested but the tool axis didn't intersect any back face. Pass an explicit upToFace, or verify the body isn't shelled away on the exit side.",
+          hint: "The hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.",
         },
       };
     }
@@ -373,7 +374,12 @@ function attachCreatedRefs(
       if (cls !== null) break;
     }
     if (cls !== null) {
-      refs.push({ faceHash: h, refName: cls, snapshot: snapshots.get(h)! });
+      refs.push({
+        faceHash: h,
+        refName: cls,
+        snapshot: snapshots.get(h)!,
+        surfaceType: surfaceTypeOf(face),
+      });
     }
   }
 

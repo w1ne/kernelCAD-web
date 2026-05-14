@@ -271,6 +271,18 @@ export class OcctBackend implements ShapeBackend {
     return back;
   }
 
+  /** Build a sketch-tagged OcctBackend directly from a replicad Drawing
+   *  (e.g. the result of `drawText(...)` plus translate/rotate transforms).
+   *  Used by `textLowerer.ts`. The returned backend has `kind === 'sketch'`
+   *  and is consumed identically to one produced by `fromSketchCommands`. */
+  static fromDrawing(drawing: replicad.Drawing): OcctBackend {
+    const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
+    back._drawing = drawing;
+    // No SketchCommand[] available — leave _commands null so any
+    // downstream caller relying on _commands gracefully no-ops.
+    return back;
+  }
+
   /**
    * Extrude a sketch-tagged OcctBackend into a 3D solid.
    *

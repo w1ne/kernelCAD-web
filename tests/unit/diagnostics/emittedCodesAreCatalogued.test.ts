@@ -23,13 +23,17 @@ const SRC_DIR = resolvePath(__dirname, '../../../src');
 // (a new emit site).
 const EMITTING_FILES = [
   'backends/occt/occtLowerer.ts',
+  'backends/occt/holeLowerer.ts',
   'backends/occt/edgeSelection.ts',
   'backends/occt/edgeQueries.ts',
+  'backends/occt/textLowerer.ts',
   'capture/captureSession.ts',
   'capture/proxy.ts',
   'capture/sketch.ts',
   'capture/faceLabels.ts',
+  'lib/fonts/index.ts',
   'modules/api.ts',
+  'modules/sketch/index.ts',
   'compute/recomputeEngine.ts',
   'cli/commands/evaluate.ts',
   'cli/commands/export.ts',
@@ -59,15 +63,15 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 24 codes', () => {
-    expect(catalogue.size).toBe(24);
+  it('catalogue has exactly 30 codes', () => {
+    expect(catalogue.size).toBe(30);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 24 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 30 in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });

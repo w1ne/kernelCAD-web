@@ -162,6 +162,10 @@ export class RecomputeEngine {
       const byKey: Record<string, ShapeBackend> = {};
       let inputsOk = true;
       for (const [key, ref] of Object.entries(r.inputs)) {
+        // W1.3: 'surface' refs point to a SurfaceRecord, not a FeatureRecord.
+        // The lowerer resolves them via its session hook (see OcctLowerer.
+        // resolveSurfaceFaceForRecord) — skip here.
+        if (ref.kind === 'surface') continue;
         const upstreamId = ref.kind === 'feature' ? ref.id : (ref as { featureId: FeatureId }).featureId;
         const s = shapes.get(upstreamId);
         if (!s) {
