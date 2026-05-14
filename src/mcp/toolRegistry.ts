@@ -583,8 +583,43 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
           attempts: {
             type: 'array',
-            description: 'Ordered design attempts. Each item is { id?, title?, file? or code? }. File attempts can be replayed by Studio build records.',
-            items: { type: 'object' },
+            description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visualReview? }. File attempts can be replayed by Studio build records.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                title: { type: 'string' },
+                file: { type: 'string' },
+                code: { type: 'string' },
+                visualReview: {
+                  type: 'object',
+                  description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshotPath, concrete findings, and all required checks passing.',
+                  properties: {
+                    accepted: { type: 'boolean' },
+                    screenshotPath: { type: 'string' },
+                    findings: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                    checks: {
+                      type: 'array',
+                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, canonical-views-physically-coherent.',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          code: { type: 'string' },
+                          passed: { type: 'boolean' },
+                          finding: { type: 'string' },
+                          screenshotPath: { type: 'string' },
+                        },
+                        required: ['code', 'passed', 'finding'],
+                      },
+                    },
+                  },
+                  required: ['accepted', 'findings'],
+                },
+              },
+            },
           },
           assembly: { type: 'string' },
           preserveInterfaces: {
@@ -602,6 +637,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+          requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
           allowReviewWarnings: {
             type: 'array',
             items: { type: 'string' },
