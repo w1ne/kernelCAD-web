@@ -16,7 +16,7 @@
 //   6. cutWithHistory(target, tool) → the post-boolean result.
 //   7. Walk new faces, classify via createdFaceTracker.classifyCutoutFace.
 //
-// Diagnostics use only the 24-code catalog. Per-trigger recovery via hint.
+// Diagnostics use only the 26-code catalog. Per-trigger recovery via hint.
 
 import * as replicad from 'replicad';
 import type { Face } from 'replicad';

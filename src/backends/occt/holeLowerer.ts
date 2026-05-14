@@ -12,7 +12,7 @@
 //      and attach `labelName` entries to the result HistoryMap so downstream
 //      face-by-label resolution finds them.
 //
-// Diagnostics use only the 24-code catalog from milestone C; per-trigger
+// Diagnostics use only the 26-code catalog from milestone C; per-trigger
 // recovery information lives in the `hint` field.
 
 import * as replicad from 'replicad';
