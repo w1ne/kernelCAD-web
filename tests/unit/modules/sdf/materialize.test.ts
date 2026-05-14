@@ -34,12 +34,12 @@ describe('sdf.materialize (capture side)', () => {
     // Slice-1 deviation: plan called for default=50, but OCCT sewing is
     // O(triangle count) and res=50 takes ~170s for sphere(10). Default
     // lowered to 30 (~20s for sphere(10)). Use sphere(2) here so test
-    // completes in <10s.
+    // completes in <10s standalone, ~20s under parallel suite load.
     const s = materialize({ session }, sphere(2));
     const record = session.getRecords().find(r => r.id === s.id)!;
     expect(record.kind).toBe('sdfMaterialize');
     expect(record.params.resolution.evaluated).toBe(30);
-  }, 60_000);
+  }, 120_000);
 
   it('parks an OcctBackend on session.importedGeometry keyed by shape id', () => {
     const session = new CaptureSession();
