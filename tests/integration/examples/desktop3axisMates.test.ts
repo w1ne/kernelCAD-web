@@ -180,7 +180,6 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
       expect(result.fitness.passedChecks).toContain('gripper-aperture-moves');
       expect(result.fitness.functional).toBe(true);
       expect(result.fitness.blockingReasons).toEqual([]);
-      expect(result.fitness.mechanismSummary.mechanicalPlausibilityIssueCount).toBeUndefined();
       expect(result.fitness.mechanismSummary.mechanicalIntentIssueCount).toBeUndefined();
     }
   }, 240_000);

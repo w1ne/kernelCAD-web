@@ -631,6 +631,26 @@ arm.mate('left-curl', 'gripper-plate.left-hinge', 'left-finger.hinge', 'revolute
 arm.mate('right-curl', 'gripper-plate.right-hinge', 'right-finger.hinge', 'revolute');
 arm.coupleMates('left-curl', { source: 'grip', ratio: -1 });
 arm.coupleMates('right-curl', { source: 'grip', ratio: 1 });
+arm.transmission('left-finger-drive-linkage', {
+  kind: 'direct-horn',
+  sourceMate: 'grip',
+  drivenMates: ['left-curl'],
+  actuator: 'grip-driver',
+  input: 'grip-driver',
+  output: 'left-finger',
+  path: ['grip-driver', 'gripper-plate', 'left-finger'],
+  ratio: -1,
+});
+arm.transmission('right-finger-drive-linkage', {
+  kind: 'direct-horn',
+  sourceMate: 'grip',
+  drivenMates: ['right-curl'],
+  actuator: 'grip-driver',
+  input: 'grip-driver',
+  output: 'right-finger',
+  path: ['grip-driver', 'gripper-plate', 'right-finger'],
+  ratio: 1,
+});
 arm.mate('elbow-pitch-shaft-fix', 'forearm-beam.elbow-shaft-mount', 'elbow-pitch-shaft.mount', 'fastened');
 
 // ---- POSE ---------------------------------------------------------------
