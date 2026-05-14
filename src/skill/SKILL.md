@@ -350,6 +350,31 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 
 Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
 
+### 2D text (sketch.text)
+
+Drop a string of glyph outlines into a sketch as a single closed-region primitive. The bundled font is an industry-standard sans-serif default; pass `font: fontPath('/abs/path/to/your.ttf')` to load any TTF.
+
+```typescript
+// Engraved label: cut text into a plate.
+const plate = box(80, 30, 3);
+const label = sketch.text("KERNEL", { size: 12, align: 'center', position: [40, 15] }).extrude(1.5);
+return plate.subtract(label.translate(0, 0, 1.5));
+
+// Raised logo: extrude text upward as a protrusion.
+const base = extrudeRect(60, 60, 2);
+const logo = sketch.text("KC", { size: 20, align: 'center', position: [30, 30], rotation: 15 }).extrude(1.5);
+return base.union(logo.translate(0, 0, 2));
+```
+
+Options:
+- `size` (required, mm): glyph cap height.
+- `align` (`'left' | 'center' | 'right'`, default `'left'`): horizontal alignment relative to `position`. Vertical alignment is always baseline.
+- `position` (`[x, y]`, default `[0, 0]`): anchor point in the sketch's local plane.
+- `rotation` (degrees CCW, default `0`): rotation around `position`.
+- `font` (default = bundled): logical name (must be previously loaded) OR `fontPath('/abs/file.ttf')`.
+
+Returns a single `Sketch` covering the whole string — chain `.extrude(depth)` to land 3D text.
+
 ### Constrained sketches (v0.4 MCP)
 
 The script `path()` API remains the way to author production geometry. The v0.4 constrained-sketch MCP tools are for side-effect-free sketch solving and agent discovery: pass explicit `POINT`, `LINE`, and `CIRCLE` entity records plus a constraint list, then use the returned coordinates to author or adjust a script.
@@ -707,7 +732,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 30 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 31 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1016,12 +1041,13 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic).
 - `set_param_value({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
+- `add_sketch_text({ code, content, size, font?, align?, position?, rotation?, bindAs? })` — insert a `sketch.text(...)` call before the last top-level return and return modified code plus diagnostics. Pair with subsequent `.extrude(...)` / `cut(...)` edits to land an engraved or raised text feature.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
 - `list_face_labels({ file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
-- `list_diagnostic_codes({})` — return the 24-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
+- `list_diagnostic_codes({})` — return the 26-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 - `params_list({})` — list symbolic parameters declared on the active evaluated session, including current value, default, type, and metadata.
