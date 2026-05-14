@@ -707,7 +707,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 30 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 31 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1016,6 +1016,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic).
 - `set_param_value({ code, param_name, new_value })` — edit a `param()` default value and return modified code plus diagnostics
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
+- `add_nurbs_surface({ code, controls?, degree?, weights?, knots?, periodic?, section_sketch_ids?, binding_name? })` — insert a `nurbsSurface(...)` or `surfaceFromCurves(...)` call; returns modified code + diagnostics. Chain `.thicken(t)` / `.toShape()` via the existing `add_feature` tool on the returned binding name.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
