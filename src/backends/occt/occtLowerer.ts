@@ -180,8 +180,11 @@ export function applyVariableEdgeFeature(
           synthInputs.face = ref;
           break;
         case 'feature':
-        case 'vertex': {
-          // Unexpected ref kind for an edge_group input.
+        case 'vertex':
+        case 'surface': {
+          // Unexpected ref kind for an edge_group input. 'surface' is valid
+          // only on `surfaceThicken` / `surfaceToShape` records — never on
+          // an edge-feature input slot.
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.invalid-args',
