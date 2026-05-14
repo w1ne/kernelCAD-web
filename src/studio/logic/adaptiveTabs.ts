@@ -22,5 +22,6 @@ export function getVisibleTabs(result: StudioRecomputeResult | null): readonly T
     const tabs: TabId[] = [...ALWAYS_VISIBLE];
     if (result.paramTable && result.paramTable.size() > 0) tabs.push('params');
     if (result.validity != null) tabs.push('validity');
+    if (result.geometries.length > 0) tabs.push('export');
     return tabs;
 }
