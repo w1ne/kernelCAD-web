@@ -24,9 +24,20 @@ describe('W2.1 — created refs inherit through pattern instances', () => {
   it('hole.wall resolves on every linear-pattern instance via <sourceId>_pattern_<i>', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
-    // Plate with a named hole → pattern 4 instances along X.
-    kcad.box(120, 40, 6)
-      .hole('top', { u: -45, v: 0, diameter: 5, depth: 'through', name: 'mountBolt' })
+    // Small plates with a named hole → pattern 4 instances along X with
+    // spacing > plate width so the plates DON'T overlap. The pattern lowerer
+    // fuses the four disjoint plates; each plate's bore wall survives the
+    // boolean union, so each instance's `hole.wall` should resolve via the
+    // virtual <sourceId>_pattern_<i> id.
+    //
+    // Limitation note (W2.1): patterning a shape that has subtractive
+    // features (e.g. a hole) only preserves the per-instance void when
+    // adjacent patterned bodies are geometrically disjoint. When patterned
+    // bodies overlap, the boolean union fills voids that lie inside another
+    // instance's solid — by design of boolean union. See SKILL.md for the
+    // recommended pattern shape: positive (additive) features.
+    kcad.box(20, 40, 6)
+      .hole('top', { u: 0, v: 0, diameter: 5, depth: 'through', name: 'mountBolt' })
       .patternLinear({ count: 4, direction: [1, 0, 0], spacing: 30 });
 
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
@@ -35,6 +46,7 @@ describe('W2.1 — created refs inherit through pattern instances', () => {
     const patternShape = result.shapes.get('pattern_1') as OcctBackend;
     expect(patternShape).toBeDefined();
     expect(patternShape.historyMap).toBeDefined();
+
 
     // The source hole's FeatureId in this session is 'hole_1' (kind-counter).
     // After W2.1, the pattern feature's historyMap carries lineage entries
