@@ -36,7 +36,7 @@ export async function lowerSketchText(
   r: FeatureRecord,
   scriptDir: string | undefined,
 ): Promise<LowerSketchTextOk | LowerSketchTextErr> {
-  const meta = r.metadata as TextMetadata;
+  const meta = r.metadata as unknown as TextMetadata;
   const diagnostics: CompilerDiagnostic[] = [];
   try {
     const { fontFamily } = await resolveAndLoadFont(meta.fontFamily, scriptDir);
