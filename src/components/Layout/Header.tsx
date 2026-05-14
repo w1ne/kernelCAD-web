@@ -38,11 +38,12 @@ export function Header() {
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setActiveDialog('projectManager')}
-                    className="flex items-center gap-2 group hover:bg-[#222] px-2 py-1 rounded transition-colors"
+                    aria-label="Open project manager"
+                    className="flex items-center gap-2 group hover:bg-[#222] px-2 py-1 rounded transition-colors min-w-0"
                 >
-                    <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                        {activeProject?.name || 'Untitled Project'}
+                    <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:animate-pulse" />
+                    <span className="text-sm font-medium text-gray-300 flex items-center gap-2 min-w-0">
+                        <span className="truncate max-w-[180px]">{activeProject?.name || 'Untitled Project'}</span>
                         <FolderOpen size={12} className="text-gray-500 group-hover:text-blue-400" />
                     </span>
                 </button>
