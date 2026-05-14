@@ -243,6 +243,7 @@ function visualReviewFacts(
   const rejectedCode = 'assembly.visual.review-rejected';
   const incompleteCode = 'assembly.visual.review-incomplete';
   const failedCheckCode = 'assembly.visual.review-check-failed';
+  const weakEvidenceCode = 'assembly.visual.review-evidence-weak';
   const fact = (code: string, message: string, hint: string) =>
     allowReviewWarnings.includes(code)
       ? []
@@ -282,17 +283,25 @@ function visualReviewFacts(
     }
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
+      const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
+      if (weakEvidence.length > 0) {
+        return fact(
+          weakEvidenceCode,
+          `Accepted screenshot review has weak evidence: ${weakEvidence.join(' ')}`,
+          `visual-review.evidence-weak — record concrete screenshot evidence before accepting the attempt. ${visualReviewEvidenceRequirements().join(' ')}`,
+        );
+      }
       if (failedChecks.length === 0) return [];
       return fact(
         failedCheckCode,
         `Accepted screenshot review has failed checks: ${failedChecks.map((check) => `${check.code}: ${check.finding}`).join(' ')}`,
-        'visual-review.check-failed — an accepted visual review cannot contain failed checks. Repair the specific failed visual checks, render screenshots again, and only accept when every required check passes.',
+        `visual-review.check-failed — an accepted visual review cannot contain failed checks. Repair the specific failed visual checks, render screenshots again, and only accept when every required check passes. ${visualReviewEvidenceRequirements().join(' ')}`,
       );
     }
     return fact(
       incompleteCode,
       `Accepted screenshot review is incomplete; missing ${missing.join(' and ')}.`,
-      'visual-review.incomplete — as the vision-capable agent, render or open screenshots, inspect them against the required visualReview.checks checklist, and record screenshotPath plus concrete findings before accepting.',
+      `visual-review.incomplete — as the vision-capable agent, render or open screenshots, inspect them against the required visualReview.checks checklist, and record screenshotPath plus concrete findings before accepting. ${visualReviewEvidenceRequirements().join(' ')}`,
     );
   }
   const failedChecks = (visualReview.checks ?? []).filter((check) => !check.passed);
@@ -300,7 +309,7 @@ function visualReviewFacts(
     return fact(
       failedCheckCode,
       `Screenshot review failed required checks: ${failedChecks.map((check) => `${check.code}: ${check.finding}`).join(' ')}`,
-      'visual-review.check-failed — repair the specific failed visual checks, render screenshots again, and only accept when every required check passes.',
+      `visual-review.check-failed — repair the specific failed visual checks, render screenshots again, and only accept when every required check passes. ${visualReviewEvidenceRequirements().join(' ')}`,
     );
   }
   return fact(
@@ -316,7 +325,62 @@ function requiredVisualReviewCheckCodes(): readonly string[] {
     'proportions-match-reference',
     'required-visible-features',
     'no-stray-or-floating-geometry',
+    'attachment-plausibility',
+    'semantic-orientation-alignment',
+    'device-depth-and-construction',
     'canonical-views-physically-coherent',
+  ];
+}
+
+function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
+  if (!check.passed) return [];
+  const finding = check.finding.toLowerCase();
+  if (check.code === 'attachment-plausibility') {
+    const namesInterface = /\b(lugs?|spring\s*bars?|pins?|barrels?|slots?|clamps?|brackets?|mounts?|fasteners?|hinges?|strap\s*tongues?|end\s*links?|connectors?|interfaces?)\b/.test(finding);
+    const namesContinuity = /\b(connects?|connected|connection|load(?:\s|-)*path|load(?:\s|-)*bearing|bridg\w*|through|between|seated|captured|passes|touches|anchored|retained)\b/.test(finding);
+    const namesFit = /\b(seated|exposed|clearance|clearanced|not\s+buried|not\s+half(?:\s|-)*inserted|not\s+embedded|not\s+occluded|visible\s+ends?|flush|captured\s+in\s+(?:the\s+)?lugs?)\b/.test(finding);
+    const namesBodyAnchor = /\b(case(?:\s|-)*body|case(?:\s|-)*band|case|body|housing|watch\s*head|main\s*body)\b/.test(finding);
+    if (namesInterface && namesContinuity && namesFit && namesBodyAnchor) return [];
+    return [
+      `attachment-plausibility needs concrete interface, load path, seated/no-buried-hardware, and parent or case body anchor evidence; finding was "${check.finding}".`,
+    ];
+  }
+  if (check.code === 'required-visible-features') {
+    const namesRequiredDetails = /\b(required|features?|dial|numerals?|numbers?|labels?|text|hands?|markers?|ticks?|crown|strap|bracelet)\b/.test(finding);
+    const namesLegibility = /\b(legible|readable|visible|clear|present)\b/.test(finding);
+    const namesNoOcclusion = /\b(unobstructed|not\s+covered|not\s+occluded|not\s+hidden|not\s+cut\s*off|clearance|clearanced|outside\s+the\s+bezel|inside\s+the\s+dial|within\s+the\s+dial)\b/.test(finding);
+    if (namesRequiredDetails && namesLegibility && namesNoOcclusion) return [];
+    return [
+      `required-visible-features needs evidence that required details are legible and unobstructed/not covered; finding was "${check.finding}".`,
+    ];
+  }
+  if (check.code === 'no-stray-or-floating-geometry') {
+    const rejectsFloating = /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/.test(finding);
+    const namesSupport = /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/.test(finding);
+    const namesSecondary = /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/.test(finding);
+    if (rejectsFloating && namesSupport && namesSecondary) return [];
+    return [
+      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact, fasteners, brackets, or a continuous path into the parent body; finding was "${check.finding}".`,
+    ];
+  }
+  if (check.code === 'device-depth-and-construction') {
+    const namesDepth = /\b(side|canonical|section|thickness|depth|deep|wall|shell|layer|layers|stack)\b/.test(finding);
+    const namesConstruction = /\b(bezel|case(?:back)?|back|cover|housing|body|cavity|movement|crystal|gasket|recess|pocket|chamber|case\s*band)\b/.test(finding);
+    const rejectsFacade = /\b(non(?:\s|-)*facade|not\s+(?:a\s+)?flat|not\s+two\s+(?:flat\s+)?faces|not\s+two\s+surfaces|full\s+casing)\b/.test(finding);
+    if (namesDepth && namesConstruction && rejectsFacade) return [];
+    return [
+      `device-depth-and-construction needs concrete construction layers and non-facade evidence; finding was "${check.finding}".`,
+    ];
+  }
+  return [];
+}
+
+function visualReviewEvidenceRequirements(): string[] {
+  return [
+    'For attachment-plausibility, name the interface geometry and prove it is seated/clearanced, not buried, half-inserted, embedded, or visually occluded.',
+    'For required-visible-features, prove dial details, numerals, labels, hands, markers, and other requested features are legible and unobstructed, not covered by casing or bezel geometry.',
+    'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact, fasteners, brackets, or a continuous path into the parent body.',
+    'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
   ];
 }
 
