@@ -155,11 +155,11 @@ function deriveThroughDepth(
       return {
         error: {
           target: 'export-occt',
-          code: 'feature.kernel-failed',
+          code: 'feature.hole.no-target-face',
           featureId,
           severity: 'error',
           message: `'through' requested but no back face was found on the bore axis.`,
-          hint: "'through' requested but the tool axis didn't intersect any back face. Pass an explicit upToFace, or verify the body isn't shelled away on the exit side.",
+          hint: "The hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.",
         },
       };
     }

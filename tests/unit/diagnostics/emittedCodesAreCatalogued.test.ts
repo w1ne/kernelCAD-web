@@ -23,6 +23,7 @@ const SRC_DIR = resolvePath(__dirname, '../../../src');
 // (a new emit site).
 const EMITTING_FILES = [
   'backends/occt/occtLowerer.ts',
+  'backends/occt/holeLowerer.ts',
   'backends/occt/edgeSelection.ts',
   'backends/occt/edgeQueries.ts',
   'capture/captureSession.ts',
