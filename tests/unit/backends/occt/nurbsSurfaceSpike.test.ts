@@ -18,7 +18,6 @@ describe('OCCT NURBS spike (Phase 0)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('Geom_BSplineSurface_1 constructor accepts a 2x2 control net', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
 
     // 2x2 control net: planar quad at z=0, spanning [0,10] x [0,10].
@@ -49,7 +48,6 @@ describe('OCCT NURBS spike (Phase 0)', () => {
   });
 
   it('BRepBuilderAPI_MakeFace_8 wraps a Handle_Geom_Surface', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const poles = new oc.TColgp_Array2OfPnt_2(1, 2, 1, 2);
     poles.SetValue(1, 1, new oc.gp_Pnt_3(0, 0, 0));
@@ -80,7 +78,6 @@ describe('OCCT NURBS spike (Phase 0)', () => {
   });
 
   it('GeomAPI_PointsToBSplineSurface_2 builds a surface from a point grid', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const poles = new oc.TColgp_Array2OfPnt_2(1, 3, 1, 3);
     for (let i = 1; i <= 3; i++) {
