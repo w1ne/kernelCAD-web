@@ -23,6 +23,7 @@ const SRC_DIR = resolvePath(__dirname, '../../../src');
 // (a new emit site).
 const EMITTING_FILES = [
   'backends/occt/occtLowerer.ts',
+  'backends/occt/holeLowerer.ts',
   'backends/occt/edgeSelection.ts',
   'backends/occt/edgeQueries.ts',
   'backends/occt/textLowerer.ts',
@@ -62,8 +63,8 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 26 codes', () => {
-    expect(catalogue.size).toBe(26);
+  it('catalogue has exactly 28 codes', () => {
+    expect(catalogue.size).toBe(28);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

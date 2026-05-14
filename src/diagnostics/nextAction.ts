@@ -34,6 +34,8 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.face-ref.not-supported':           { kind: 'rewrite-feature', guidance: 'use a canonical face name, label, or inline FaceQuery / EdgeQuery' },
   'feature.face-ref.ambiguous-after-split':   { kind: 'reorder-pipeline', guidance: 'apply this feature before the splitting boolean' },
   'feature.face-ref.removed':                 { kind: 'rewrite-feature', guidance: 'reference a face that still exists' },
+  'feature.hole.no-target-face':              { kind: 'rewrite-feature', guidance: 'pick an entry face on a body the bore axis enters' },
+  'feature.created-ref.fallback-used':        { kind: 'rename', guidance: 'name the upstream feature with .name() to lock the ref' },
   'feature.selection.no-match':               { kind: 'call-introspection-tool', tool: 'list_edges' },
   'feature.selection.ambiguous':              { kind: 'rewrite-feature', guidance: 'use the plural selector or tighten the query' },
   'feature.label.unknown-name':               { kind: 'call-introspection-tool', tool: 'list_face_labels' },
