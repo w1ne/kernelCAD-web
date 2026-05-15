@@ -183,6 +183,19 @@ for the printed/machined plates and brackets that connect them.
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
 .patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
 
+// Pattern features are a single editable unit per call (one FeatureRecord). To address an
+// individual instance's face / edge, build a FaceRef / EdgeRef with kind: 'created',
+// rewriteId: '<sourceFeatureId>_pattern_<i>' (zero-indexed; instance 0 is the source
+// position), and the source feature's slot name. To address all instances together, use
+// the source feature's name selector (e.g. 'mountBolt.wall' resolves to every patterned
+// instance's wall in one collective).
+//
+// Geometric note: pattern is implemented as cumulative boolean union of transformed source
+// copies. Additive features (boxes, ribs, fins, tabs, spokes) pattern cleanly. Patterning
+// a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent
+// bodies are disjoint — overlapping patterned bodies cause the inner void to be filled by
+// the outer body's solid (boolean-union semantics).
+
 // Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.
 .transform(t: Transform): Shape
@@ -407,6 +420,8 @@ Two cases produce explicit diagnostics:
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 - `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
 - `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
+- `feature.pattern.source-not-found` — the pattern source feature was not found. Verify the variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what `list_features` reports.
+- `feature.pattern.count-out-of-range` — pattern count must be an integer >= 2. For grid patterns, both `x.count` and `y.count` must be >= 2. If count is a Param, set `{ min: 2 }` on the Param declaration so updates can't lower it below the valid range.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
 
@@ -758,7 +773,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 34 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 37 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1069,6 +1084,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
 - `add_nurbs_surface({ code, controls?, degree?, weights?, knots?, periodic?, section_sketch_ids?, binding_name? })` — insert a `nurbsSurface(...)` or `surfaceFromCurves(...)` call; returns modified code + diagnostics. Chain `.thicken(t)` / `.toShape()` via the existing `add_feature` tool on the returned binding name.
 - `add_sketch_text({ code, content, size, font?, align?, position?, rotation?, bindAs? })` — insert a `sketch.text(...)` call before the last top-level return and return modified code plus diagnostics. Pair with subsequent `.extrude(...)` / `cut(...)` edits to land an engraved or raised text feature.
+- `add_pattern_feature({ code, target, kind, linear?, circular?, grid?, assign_to? })` — insert a `Shape.patternLinear / .patternCircular / .patternGrid` call before the last top-level return and return modified code plus diagnostics. Composes the call from structured args (validated under the same predicates as the capture proxy). Pattern-instance face refs resolve via the virtual `<sourceId>_pattern_<i>` lineage id on the pattern feature.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
@@ -1090,7 +1106,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the v0.6 mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Connector workspace and gripper aperture are only computed when pose-envelope sampling is enabled.
-- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, continue past functional attempts with unresolved warnings, require screenshot review via per-attempt `visualReview` by default, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath`, non-empty `findings`, and passing `checks` for `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, and `canonical-views-physically-coherent`; otherwise `assembly.visual.review-incomplete` or `assembly.visual.review-check-failed` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, continue past functional attempts with unresolved warnings, require screenshot review via per-attempt `visualReview` by default, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath`, non-empty `findings`, and passing `checks` for `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, `attachment-plausibility`, `semantic-orientation-alignment`, `device-depth-and-construction`, and `canonical-views-physically-coherent`; otherwise `assembly.visual.review-incomplete`, `assembly.visual.review-evidence-weak`, or `assembly.visual.review-check-failed` keeps the attempt from passing. Attachment findings must name concrete interface geometry, prove a load path, and state that hardware is seated/clearanced rather than buried or half-inserted. Device-depth findings must name casing/body layers and explicitly rule out a flat two-face facade. Set `requireVisualReview: false` only for explicit non-visual batch checks.
 - `arm.transmission(name, { kind, sourceMate, drivenMates, actuator?, input?, output?, path, ratio?, notes? })` is script API, not an MCP tool. Use it when `coupleMates(...)` declares a driven mate. `review_cad` emits `assembly.transmission.missing-for-coupled-mate` if a coupled mate has no matching transmission path.
 - `review_cad` emits `assembly.transmission.path-disconnected` when consecutive
   transmission `path` parts are separated at the current pose or any sampled
@@ -1224,6 +1240,74 @@ fine surface quality at the cost of seconds-to-minutes more capture time.
 - `sdf.sphere(10)` res=30 — ~7500 tris, ~20 s.
 - `sdf.sphere(10)` res=50 — ~22000 tris, ~170 s (long, but still completes).
 - `sdf.sphere(10)` res=100 — ~80000 tris, several minutes (use with care).
+
+## Sheet metal
+
+Build folded sheet-metal parts (L-brackets, U-channels, service panels) from a closed Sketch + thickness + K-factor. Bend along a linear axis line; recover the flat blank as a `Region` for laser/CNC consumption.
+
+### API
+
+```typescript
+// Top-level constructor — captures kind:sheetMetal record.
+sheetMetal(profile: Sketch, opts: {
+  thickness: Editable<number>;   // mm
+  kFactor: Editable<number>;     // unitless, [0, 1]
+  faceLabels?: FaceLabelsMap;
+}): Shape;
+
+// Shape methods — chain on a sheetMetal-rooted Shape.
+shape.bend(
+  edgeRef: EdgeSelector | string,  // slice-1: { atX: n } | { atY: n } | { face: 'top' }
+  angle: Editable<number>,        // degrees, signed (positive = fold +normal)
+  radius: Editable<number>,       // mm, inner bend radius
+): Shape;
+
+shape.flattenPattern(): Region;   // derived view — no FeatureRecord
+```
+
+### Bend-allowance math (K-factor approximation)
+
+```
+BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
+```
+
+- `BA` = developed length of the neutral axis through the bend arc.
+- `kFactor` = neutral-axis offset ratio. Typical values: 0.33-0.45 (mild steel / aluminum).
+- Slice 1 supports the K-factor formula only.
+
+### Slice-1 limits
+
+- Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
+- `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
+- `flattenPattern()` supports at most 2 bends in the chain; 3+ emits `feature.flattenPattern.multi-bend-unsupported`.
+- Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
+- The lowering pipeline (slice 1) omits the curved bend section in favor of a sharp-corner fuse — agents see the rotation but not the radiused inside corner. The K-factor math still holds for flat-pattern recovery.
+
+### Examples
+
+```typescript
+// L-bracket: 100 x 60 x 2 mm, one 90 degree fold along x=50.
+const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+const bracket = blank.bend({ atX: 50 }, 90, 3);
+return bracket;
+
+// Recover the flat blank as a Region.
+const flat = bracket.flattenPattern();
+console.log(flat.outer);        // [[0,0], [100,0], [100,60], [0,60]]
+console.log(flat.bendLines);    // [{ start: [50,0], end: [50,60], angle: 90, radius: 3, ordinal: 0 }]
+```
+
+### MCP introspection
+
+- `flatten_pattern` — returns the unfolded Region as JSON.
+- `get_bend_table` — lists every bend with its K-factor BA, axis line, and parent sheetMetal opts.
+
+### Sheet-metal diagnostic codes
+
+- `feature.sheetMetal.kfactor-invalid` (error) — `kFactor` not in `[0, 1]` or non-finite. Hint: pass a value in `[0, 1]`; typical 0.33-0.45.
+- `feature.bend.edge-not-linear` (error) — resolved bend axis cannot be derived from the selector. Hint: pick a straight perimeter edge; slice-1 supports `{ atX: <n> }`, `{ atY: <n> }`, or `{ face: 'top' }`.
+- `feature.flattenPattern.multi-bend-unsupported` (error) — chain has 3+ bends. Hint: flatten an upstream Shape with `<= 2` bends, or wait for slice 2.
 
 ## Out of Scope
 

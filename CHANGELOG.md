@@ -15,7 +15,7 @@ v0.7.3 adds signed-distance-field authoring to the agent surface: agents can com
 
 ### Added — diagnostics
 
-- Two new diagnostic codes: `feature.sdf.field-undefined` (SDF returned NaN/Infinity, or `evaluate_sdf` couldn't find the named binding) and `feature.sdf.materialize-resolution-out-of-range` (`opts.resolution` outside `[10, 200]` or non-integer). Catalogue grows from 30 to **32** codes.
+- Two new diagnostic codes: `feature.sdf.field-undefined` (SDF returned NaN/Infinity, or `evaluate_sdf` couldn't find the named binding) and `feature.sdf.materialize-resolution-out-of-range` (`opts.resolution` outside `[10, 200]` or non-integer). Catalogue grows from 35 to **37** codes.
 
 ### Shape limitations (slice 1)
 
@@ -34,6 +34,57 @@ v0.7.3 adds signed-distance-field authoring to the agent surface: agents can com
 
 - **Default resolution = 30, not 50.** OCCT per-triangle sewing scales with triangle count; res=50 on sphere(10) takes ~170 s while res=30 takes ~20 s. Default lowered to keep typical capture times manageable; agents can bump explicitly for finer surface quality.
 - **Field binding via `sdf.bind(name, field)`, not `globalThis[name]`.** The script sandbox in `src/script-runtime/isolation.ts` strips `globalThis`/`require` for host isolation, so the plan's original binding mechanism wasn't viable. `sdf.bind` writes to `session.sdfFields`, which `evaluate_sdf` reads.
+
+## v0.7.2 — 2026-05-15 — Sheet metal (slice 1)
+
+### Added — top-level API
+
+- `sheetMetal(profile, { thickness, kFactor })` top-level constructor for folded-sheet bodies. Reuses the sketch->extrude pipeline; tags the record as `kind: 'sheetMetal'` so downstream `.bend()` math can read kFactor + thickness without walking the chain.
+- `Shape.bend(edgeRef, angle, radius)` Shape method — fold a sheet-metal body along a linear axis. Lowers via OCCT split/rotate/fuse (slice 1 omits the curved bend section in favor of a sharp-corner fuse; the K-factor math is preserved on `bendRecord` metadata for the flatten roundtrip).
+- `Shape.flattenPattern() -> Region` derived view: walks the lineage chain to the `sheetMetal` root, replays each bend's K-factor neutral-axis length, and returns the unfolded outline as a `Region` (closed polyline + holes + bend lines + source plane). Slice-1 limit: at most 2 bends.
+- New `Region` type (`src/intent/region.ts`) — closed planar outline with bend-line metadata. Returned only by `flattenPattern()` today; reusable by future 2D consumers.
+
+### Added — diagnostics + MCP tools
+
+- 3 new diagnostic codes: `feature.sheetMetal.kfactor-invalid`, `feature.bend.edge-not-linear`, `feature.flattenPattern.multi-bend-unsupported`. Catalogue grows 32 -> 35.
+- 2 new MCP tools: `flatten_pattern` (serialise the Region produced by `Shape.flattenPattern()`) and `get_bend_table` (list every bend's K-factor BA + axis line + parent thickness/kFactor).
+
+### Added — corpus + demos
+
+- Corpus task `sheet-metal-l-bracket`: single 90 degree fold on a 100x60x2 mm blank along x=50.
+- Corpus task `sheet-metal-u-channel`: two parallel 90 degree folds on a 120x80x2 mm blank, K-factor 0.40.
+- Corpus task `sheet-metal-flatten-roundtrip`: bend then flatten an L-bracket; the recovered `Region.outer` bounding box matches the original sketch within 1e-3 mm (K-factor neutral-axis identity).
+
+### Changed
+
+- `FeatureKind` adds `'sheetMetalBend'`. `'sheetMetal'` was already reserved (v0.13 placeholder) and is now implemented.
+
+### Limitations (slice 1)
+
+- Bend axis must be derivable from `{ atX: <n> }` / `{ atY: <n> }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
+- `radius >= 0.5 * thickness` recommended; tighter bends fail the fuse step with `feature.kernel-failed`.
+- `flattenPattern()` supports at most 2 bends in the chain.
+- Sketch profiles must be polylines (no arc segments through bends).
+- The lowered body shows a sharp inside corner instead of the curved bend section; the K-factor math is still recorded for flatten-pattern roundtrips. Slice 2 will add the OCCT revolve-based bend cylinder.
+
+## v0.7.1 — 2026-05-15 — Patterns: per-instance lineage + agent surface
+
+v0.7.1 carries pattern-instance identity and lineage end-to-end. The OCCT pattern lowerer now threads `propagateTransformHistory` per instance and stamps each per-instance lineage entry with a virtual `<sourceId>_pattern_<i>` `featureId`, so a `created` FaceRef whose `rewriteId` matches that virtual id resolves to the corresponding patterned instance's face. The per-instance fuse runs through `fuseWithHistory` + `mergeBooleanHistory` (the same history-aware path booleans use), keeping naming history intact across the cumulative union. The captured `FeatureRecord` shape is unchanged (one editable unit per pattern call).
+
+### Added
+
+- Pattern-instance face refs: `Shape.patternLinear` / `.patternCircular` / `.patternGrid` now thread per-instance lineage through history-aware boolean fuse. Address an individual instance's faces via `{ kind: 'created', rewriteId: '<sourceId>_pattern_<i>', slot: '...' }`, or fan out to all instances by addressing the source's collective slot.
+- `add_pattern_feature` MCP tool — typed AST-edit composer for the three pattern variants (linear / circular / grid). Validates structured input via shared per-kind predicates, inserts the call before the last top-level return, and re-evaluates the script.
+- Two diagnostic codes: `feature.pattern.source-not-found` (named pattern base wasn't found or was suppressed) and `feature.pattern.count-out-of-range` (count < 2 at runtime — catches Param-bound counts that capture-time validation can't see). Catalogue grows from 30 to 32 codes.
+- Three corpus tasks: `linear-bolt-pattern-on-plate` (6 spaced tiles each with one through-bore), `circular-hole-array-around-hub` (6 mounting tabs around a hub rim), `grid-heat-sink-fin-array` (24-fin heat sink). Each exercises a different pattern kind and the history-aware fuse.
+
+### Changed
+
+- Pattern lowerer now uses `fuseWithHistory` + `mergeBooleanHistory` instead of plain `OcctBackend.union`, and threads `propagateTransformHistory` per instance. Created face/edge refs from the source feature inherit through every patterned instance.
+
+### Slice-1 caveats
+
+- **Pattern semantics are cumulative boolean union of transformed source copies.** This works cleanly for additive features (boxes, ribs, fins, tabs, spokes). Patterning a subtractive feature (e.g. a plate with a hole) only preserves the per-instance void when adjacent patterned bodies are geometrically disjoint — when adjacent bodies overlap, boolean union fills the void of the body that lies inside the other instance's solid, which is the mathematically correct semantics for union. The bundled corpus tasks therefore use disjoint-instance geometry for `linear-bolt-pattern-on-plate` (each plate 20mm wide, spacing 30mm > plate width). Cut-based patterning of subtractive features is a deferred follow-on.
 
 ## v0.7.0 — 2026-05-14 — NURBS surfaces
 

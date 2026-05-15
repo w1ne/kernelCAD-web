@@ -52,6 +52,13 @@ export type DiagnosticCode =
   // NURBS surfaces (2) — W1.3
   | 'feature.nurbs.degenerate-controls'
   | 'feature.nurbs.degree-mismatch'
+  // Pattern (2) — W2.1
+  | 'feature.pattern.source-not-found'
+  | 'feature.pattern.count-out-of-range'
+  // Sheet metal slice 1 (3) — W2.2
+  | 'feature.sheetMetal.kfactor-invalid'
+  | 'feature.bend.edge-not-linear'
+  | 'feature.flattenPattern.multi-bend-unsupported'
   // SDF (2) — W2.3
   | 'feature.sdf.field-undefined'
   | 'feature.sdf.materialize-resolution-out-of-range';
@@ -87,6 +94,11 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'export.no-shape',
   'feature.nurbs.degenerate-controls',
   'feature.nurbs.degree-mismatch',
+  'feature.pattern.source-not-found',
+  'feature.pattern.count-out-of-range',
+  'feature.sheetMetal.kfactor-invalid',
+  'feature.bend.edge-not-linear',
+  'feature.flattenPattern.multi-bend-unsupported',
   'feature.sdf.field-undefined',
   'feature.sdf.materialize-resolution-out-of-range',
 ] as const;
@@ -165,6 +177,16 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
     'feature.nurbs.degree-mismatch':
       'NURBS degree must satisfy 1 <= degree.u <= controls.length - 1 and 1 <= degree.v <= controls[0].length - 1. Reduce degree, or add control points.',
+    'feature.pattern.source-not-found':
+      "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
+    'feature.pattern.count-out-of-range':
+      "Pattern count must be an integer >= 2. For grid patterns, both x.count and y.count must be >= 2. If count is a Param, set { min: 2 } on the Param declaration so updates can't lower it below the valid range.",
+    'feature.sheetMetal.kfactor-invalid':
+      'K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33–0.45. Adjust the kFactor argument to sheetMetal().',
+    'feature.bend.edge-not-linear':
+      '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).',
+    'feature.flattenPattern.multi-bend-unsupported':
+      '.flattenPattern() supports at most 2 bends in slice 1. Flatten an upstream Shape with two or fewer bends, or wait for slice 2.',
     'feature.sdf.field-undefined':
       'The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.',
     'feature.sdf.materialize-resolution-out-of-range':

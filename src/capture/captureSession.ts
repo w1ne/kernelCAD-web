@@ -680,6 +680,34 @@ export class CaptureSession {
    * resolves each group's edges via `pickEdges`-style dispatch and builds a
    * Replicad function-form RadiusConfig.
    */
+  /** W2.2: capture a `kind: 'sheetMetalBend'` FeatureRecord with the same
+   *  selector-handling as `.fillet()` / `.chamfer()`. The lowerer validates
+   *  the bend root + edge linearity; this capture method does no edge
+   *  resolution. */
+  bendFeature(
+    base: Shape,
+    angleParam: Param,
+    radiusParam: Param,
+    selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
+  ): Shape {
+    if (!this.records.some(r => r.id === base.id)) {
+      throw new Error(`bend: base shape '${base.id}' is not from this CaptureSession`);
+    }
+    const inputs: Record<string, FeatureRef> = {
+      base: { kind: 'feature', id: base.id },
+    };
+    if (selector !== undefined) {
+      const ref = buildEdgeFeatureRef(base.id, selector);
+      if (ref.key === 'face') inputs.face = ref.value;
+      if (ref.key === 'edges') inputs.edges = ref.value;
+    }
+    return this.createShape({
+      kind: 'sheetMetalBend',
+      params: { angle: angleParam, radius: radiusParam },
+      inputs,
+    });
+  }
+
   variableEdgeFeature(
     kind: 'fillet' | 'chamfer',
     base: Shape,

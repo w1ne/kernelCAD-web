@@ -2,6 +2,7 @@ import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
@@ -30,6 +31,8 @@ import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
 import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
+import { flattenPatternTool } from './tools/flattenPattern';
+import { getBendTableTool } from './tools/getBendTable';
 
 export interface McpToolDefinition {
   name: string;
@@ -293,6 +296,36 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_pattern_feature',
+      description: "Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code:      { type: 'string', description: 'The .kcad.ts source code.' },
+          target:    { type: 'string', description: 'Variable name of the Shape to pattern (inserted verbatim as the LHS receiver).' },
+          kind:      { type: 'string', enum: ['linear', 'circular', 'grid'] },
+          linear:    { type: 'object', description: 'Required when kind=linear.', properties: {
+            count: { type: 'integer', minimum: 2 },
+            direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            spacing: { type: 'number' },
+          }, required: ['count', 'direction', 'spacing'] },
+          circular:  { type: 'object', description: 'Required when kind=circular.', properties: {
+            count: { type: 'integer', minimum: 2 },
+            axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
+          }, required: ['count', 'axis'] },
+          grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
+            x: { type: 'object' }, y: { type: 'object' },
+          }, required: ['x', 'y'] },
+          assign_to: { type: 'string', description: "Optional const-binding name; emits `const <assign_to> = <target>.patternX(...);`. Omit for statement form." },
+        },
+        required: ['code', 'target', 'kind'],
+      },
+    },
+    handler: input => addPatternFeatureTool(input as unknown as Parameters<typeof addPatternFeatureTool>[0]),
   },
   {
     definition: {
@@ -736,6 +769,40 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => designLoopTool(input as unknown as Parameters<typeof designLoopTool>[0]),
+  },
+  {
+    definition: {
+      name: 'flatten_pattern',
+      description:
+        'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
+        '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
+        'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          code: { type: 'string' },
+          featureId: { type: 'string' },
+        },
+      },
+    },
+    handler: input => flattenPatternTool(input as unknown as Parameters<typeof flattenPatternTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'get_bend_table',
+      description:
+        'List every sheetMetalBend in a script with its computed K-factor bend allowance, ' +
+        'axis line, angle, radius, and parent sheetMetal thickness + kFactor. Pass { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          code: { type: 'string' },
+        },
+      },
+    },
+    handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
   },
   {
     definition: {
