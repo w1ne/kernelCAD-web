@@ -42,6 +42,16 @@ site/public/demo.json
 site/demo.mp4
 site/demo.json
 site/favicon.svg
+site/gallery.json
+
+# Gallery build artifacts + per-slug symlinks inside site/gallery/
+# (curator-tracked files: entries.json, README.md, .gitkeep)
+site/public/gallery.json
+site/public/gallery/
+site/gallery/*
+!site/gallery/entries.json
+!site/gallery/README.md
+!site/gallery/.gitkeep
 
 # Brand renderer artifacts
 site/public/brand/

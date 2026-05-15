@@ -4,7 +4,7 @@
 // emits site/public/gallery.json + per-slug assets.
 
 import {
-  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync,
+  copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync,
 } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +31,9 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const parsed = parseGalleryEntries(raw);
   const entriesDir = path.dirname(opts.entriesPath);
   const galleryOutDir = path.join(opts.publicDir, 'gallery');
+  // Idempotent: wipe stale per-slug dirs from earlier builds so dropped
+  // candidates don't leave orphans the dev symlink loop would re-link.
+  if (existsSync(galleryOutDir)) rmSync(galleryOutDir, { recursive: true, force: true });
   mkdirSync(galleryOutDir, { recursive: true });
 
   const published: PublishedEntry[] = [];
