@@ -46,6 +46,11 @@ export interface PoseEnvelopeSample {
   readonly reason: string;
 }
 
+export interface PoseEnvelopeSamplingOptions {
+  samplesPerMate?: number;
+  combinatorial?: boolean;
+}
+
 export interface PoseEnvelopeReviewOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
@@ -82,7 +87,11 @@ export interface ConnectorWorkspace {
 
 const DEFAULT_EPSILON_MM3 = 0.01;
 
-export function buildPoseEnvelopeSamples(arm: Assembly): PoseEnvelopeSample[] {
+export function buildPoseEnvelopeSamples(
+  arm: Assembly,
+  options: PoseEnvelopeSamplingOptions = {},
+): PoseEnvelopeSample[] {
+  const samplesPerMate = options.samplesPerMate ?? 1;
   const samples: PoseEnvelopeSample[] = [
     { name: 'current', poses: {}, reason: 'capture-time/default mate poses' },
   ];
@@ -97,6 +106,18 @@ export function buildPoseEnvelopeSamples(arm: Assembly): PoseEnvelopeSample[] {
       reason: `${mate.name} lower limit`,
     });
     if (max !== min) {
+      if (samplesPerMate >= 3) {
+        const interiorCount = samplesPerMate - 2;
+        for (let i = 1; i <= interiorCount; i++) {
+          const t = i / (interiorCount + 1);
+          const value = min + (max - min) * t;
+          samples.push({
+            name: `${mate.name}:interior-${i}`,
+            poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: value }),
+            reason: `${mate.name} interior sample ${i}/${interiorCount}`,
+          });
+        }
+      }
       samples.push({
         name: `${mate.name}:max`,
         poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: max }),

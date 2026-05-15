@@ -27,6 +27,57 @@ describe('pose-envelope review helpers', () => {
     ]);
   });
 
+  it('samples interior points within mate limits when samplesPerMate > 1', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+
+    const samples = buildPoseEnvelopeSamples(arm, { samplesPerMate: 4 });
+    const hingeSamples = samples.filter((s) => s.name !== 'current');
+    const hingeValues = hingeSamples.map((s) => s.poses.hinge as number).sort((a, b) => a - b);
+
+    expect(hingeValues).toHaveLength(4);
+    expect(hingeValues[0]).toBe(-90);
+    expect(hingeValues[1]).toBeCloseTo(-30, 0);
+    expect(hingeValues[2]).toBeCloseTo(30, 0);
+    expect(hingeValues[3]).toBe(90);
+  });
+
+  it('preserves corner-only sampling when samplesPerMate is 1 or unset', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+
+    const defaultNames = buildPoseEnvelopeSamples(arm).map((s) => s.name);
+    const oneNames = buildPoseEnvelopeSamples(arm, { samplesPerMate: 1 }).map((s) => s.name);
+    expect(defaultNames).toEqual(['current', 'hinge:min', 'hinge:max']);
+    expect(oneNames).toEqual(['current', 'hinge:min', 'hinge:max']);
+  });
+
+  it('emits only min and max when samplesPerMate is 2 (no interior points)', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+
+    const names = buildPoseEnvelopeSamples(arm, { samplesPerMate: 2 }).map((s) => s.name);
+    expect(names).toEqual(['current', 'hinge:min', 'hinge:max']);
+  });
+
   it('reports capture-time pose values outside declared limits', () => {
     const { arm, kcad } = makeArm();
     arm
