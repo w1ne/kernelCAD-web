@@ -75,6 +75,18 @@
       </div>
     </section>
 
+    <section class="gallery" id="gallery" hidden>
+      <div class="gallery-header">
+        <h2 class="gallery-headline">Built with kernelCAD</h2>
+        <p class="gallery-sub">Every release ships with a build. Click any to see the prompt that built it.</p>
+        <a class="gallery-submit"
+           href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
+          Submit your build →
+        </a>
+      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </section>
+
     <section class="signup" id="signup">
       <h2 class="signup-headline">Get notified when we ship</h2>
       <p class="signup-sub">~1 email per release. No spam. Unsubscribe anytime.</p>
@@ -120,6 +132,59 @@
         const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
         document.getElementById('demo-video').src = `/demo.mp4?v=${demoCacheKey}`;
         document.getElementById('demo-version').textContent = d.version;
+      });
+
+    // Render the curated gallery from /gallery.json
+    function formatRelativeDate(iso) {
+      const then = new Date(iso + 'T00:00:00Z');
+      const now = new Date();
+      const ms = now.getTime() - then.getTime();
+      const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+      if (days <= 0) return 'Today';
+      if (days === 1) return 'Yesterday';
+      if (days <= 7) return days + 'd ago';
+      return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    fetch('/gallery.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((g) => {
+        if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
+        const section = document.getElementById('gallery');
+        const grid = document.getElementById('gallery-grid');
+        for (const entry of g.entries) {
+          const tile = document.createElement('div');
+          tile.className = 'gallery-tile';
+          tile.dataset.slug = entry.slug;
+          tile.innerHTML = `
+            <model-viewer
+              class="tile-viewer"
+              src="${entry.modelUrl}"
+              poster="${entry.posterUrl}"
+              auto-rotate
+              auto-rotate-delay="0"
+              rotation-per-second="20deg"
+              camera-controls
+              touch-action="pan-y"
+              interaction-prompt="none"
+              reveal="interaction"
+              disable-zoom
+              loading="lazy"
+            ></model-viewer>
+            <div class="tile-chip tile-chip-bl">
+              <span class="version">${entry.version}</span>
+              <span class="title">${entry.title}</span>
+              <span class="relative-date" title="${entry.createdAt}">${formatRelativeDate(entry.createdAt)}</span>
+            </div>
+            <div class="tile-chip tile-chip-br">
+              <span class="author">by @${entry.author.handle}</span>
+            </div>
+            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
+          `;
+          tile.__entry = entry;
+          grid.appendChild(tile);
+        }
+        section.hidden = false;
       });
 
     // copy install command on click
