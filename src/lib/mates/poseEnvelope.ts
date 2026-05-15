@@ -51,7 +51,7 @@ export interface PoseEnvelopeSamplingOptions {
   combinatorial?: boolean;
 }
 
-export interface PoseEnvelopeReviewOptions {
+export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
@@ -163,7 +163,10 @@ export async function reviewPoseEnvelope(
 ): Promise<PoseEnvelopeReviewResult> {
   const includeInterference = opts.includeInterference ?? true;
   const epsilon = opts.epsilonMm3 ?? DEFAULT_EPSILON_MM3;
-  const samples = buildPoseEnvelopeSamples(arm);
+  const samples = buildPoseEnvelopeSamples(arm, {
+    samplesPerMate: opts.samplesPerMate,
+    combinatorial: opts.combinatorial,
+  });
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const connectorPoses: TrackedConnectorPose[] = [];

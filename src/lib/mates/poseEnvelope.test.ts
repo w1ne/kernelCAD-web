@@ -139,6 +139,30 @@ describe('pose-envelope review helpers', () => {
     expect(result.connectorPoses.map((p) => p.sampleName)).toEqual(['current', 'yaw:min', 'yaw:max']);
   });
 
+  it('reviewPoseEnvelope honors samplesPerMate and produces interior pose samples', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+
+    const defaultResult = await reviewPoseEnvelope(arm, { includeInterference: false });
+    expect(defaultResult.samples.map((s) => s.name)).toEqual(['current', 'yaw:min', 'yaw:max']);
+
+    const result = await reviewPoseEnvelope(arm, {
+      includeInterference: false,
+      samplesPerMate: 4,
+    });
+    const names = result.samples.map((s) => s.name);
+    expect(names).toHaveLength(5);
+    expect(names).toContain('yaw:interior-1');
+    expect(names).toContain('yaw:interior-2');
+    expect(names).toEqual(['current', 'yaw:min', 'yaw:interior-1', 'yaw:interior-2', 'yaw:max']);
+  });
+
   it('diagnoses tracked topology connector origins that cannot be sampled in capture-time workspace review', async () => {
     const { arm, kcad } = makeArm();
     arm
