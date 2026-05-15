@@ -9,7 +9,17 @@ import type { AgentClient, AgentResponse, TaskResult } from './types';
 const MODEL = process.env.EVAL_MODEL ?? 'claude-sonnet-4-6';
 const TASKS_DIR = resolve('eval/tasks');
 const RUNS_DIR = resolve('eval/runs');
-const SKILL_PATH = resolve('src/skill/SKILL.md');
+const SKILLS_ROOT = resolve('src/skills');
+
+function loadCombinedSkillMd(): string {
+  const dirs = readdirSync(SKILLS_ROOT, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(SKILLS_ROOT, e.name, 'SKILL.md')))
+    .map((e) => e.name)
+    .sort();
+  return dirs
+    .map((name) => readFileSync(join(SKILLS_ROOT, name, 'SKILL.md'), 'utf8'))
+    .join('\n\n---\n\n');
+}
 
 function timestamp(): string {
   // YYYY-MM-DDTHH-MM-SS — filesystem-safe ISO.
@@ -117,8 +127,8 @@ async function main(): Promise<void> {
       : 'eval/runs/golden-2026-05-02-bracket-holes/fixture.json';
 
   // Pre-flight
-  if (!existsSync(SKILL_PATH)) {
-    fail(`SKILL.md not found at ${SKILL_PATH}`);
+  if (!existsSync(SKILLS_ROOT)) {
+    fail(`skills directory not found at ${SKILLS_ROOT}`);
   }
   if (!(await isKernelcadAvailable())) {
     fail(
@@ -129,7 +139,7 @@ async function main(): Promise<void> {
     fail('ANTHROPIC_API_KEY env var is required (or pass --mock to replay a fixture).');
   }
 
-  const skillMd = readFileSync(SKILL_PATH, 'utf8');
+  const skillMd = loadCombinedSkillMd();
 
   // Lazy-load the injector only when --cookbook is enabled to avoid the
   // cookbook IO/parse cost in the default code path.

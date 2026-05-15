@@ -5,6 +5,27 @@
 // PATH_BUILDER_METHODS / HINTS keys) and asserts SKILL.md mentions
 // every entry with word-boundary precision.
 
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { join, resolve as resolvePath, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Load all skill SKILL.md files from src/skills/ and concatenate them.
+ * Mirrors the logic in src/cli/commands/skill.ts renderOnefile().
+ */
+export function loadCombinedSkillMd(): string {
+  const skillsRoot = resolvePath(__dirname, '../../../src/skills');
+  const dirs = readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
+    .map((e) => e.name)
+    .sort();
+  return dirs
+    .map((name) => readFileSync(join(skillsRoot, name, 'SKILL.md'), 'utf8'))
+    .join('\n\n---\n\n');
+}
+
 /**
  * Escape regex special characters for safe inclusion in a RegExp source.
  */

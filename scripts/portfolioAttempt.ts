@@ -6,8 +6,8 @@
 //
 // Usage: portfolioAttempt --slug <slug> --model <model> [--notes <notes>]
 // The prompt and harness are read from eval/portfolio/_tasks/<slug>/.
-import { resolve } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { runTask } from '../eval/runner';
 import { appendPortfolioAttempt } from '../eval/portfolio/portfolioAttemptsLog';
 import type { PortfolioAttempt, PortfolioAttemptStatus } from '../eval/portfolio/portfolioAttemptsLog';
@@ -53,7 +53,13 @@ async function main(): Promise<void> {
   const runDir = resolve('eval/runs', `portfolio-${a.slug}-${startedAt}`);
 
   const agent = makeAgent(a.model);
-  const skillMd = readFileSync(resolve('src/skill/SKILL.md'), 'utf8');
+  const skillsRoot = resolve('src/skills');
+  const skillMd = readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => readFileSync(join(skillsRoot, name, 'SKILL.md'), 'utf8'))
+    .join('\n\n---\n\n');
 
   // runTask writes score.json + transcript.md into runDir; we read score.json
   // back to classify the attempt rather than relying on the in-memory return

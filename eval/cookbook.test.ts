@@ -1,11 +1,20 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { mkdtempSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdtempSync, readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { runTask } from './runner';
 import { MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import { injectCookbook } from './cookbook-injector';
+
+function loadCombinedSkillMd(): string {
+  const root = resolve('src/skills');
+  const dirs = readdirSync(root, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(root, e.name, 'SKILL.md')))
+    .map((e) => e.name)
+    .sort();
+  return dirs.map((name) => readFileSync(join(root, name, 'SKILL.md'), 'utf8')).join('\n\n---\n\n');
+}
 
 let kernelcadAvailable = false;
 
@@ -23,7 +32,7 @@ describe('cookbook A/B against bracket-holes', () => {
     if (!kernelcadAvailable) return ctx.skip();
 
     const expert = readFileSync('eval/tasks/bracket-holes/solution-expert.kcad.ts', 'utf8');
-    const skillMd = readFileSync('src/skill/SKILL.md', 'utf8');
+    const skillMd = loadCombinedSkillMd();
     const prompt = readFileSync('eval/tasks/bracket-holes/prompt.md', 'utf8');
 
     // OFF
