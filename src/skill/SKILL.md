@@ -1191,3 +1191,42 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
 - For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `frenet: true`.
+
+## Self-check before declaring done
+
+When you author a model — especially from a reference photo or visual brief — `evaluate` returning OK is not proof the model is correct. OK only means the script ran. The model can still look wrong: parts floating in air, hero features pointing the wrong way, sub-components at the wrong scale, named parts that never reach a render. **You must run a render-and-compare visual gate before reporting done.**
+
+### The loop
+
+For every authoring task that has a visual target:
+
+1. After each authoring pass, render the four canonical views (front, right, top, iso) and **Read the PNGs back** — looking at filenames is not enough.
+2. Compare each render to the reference photo (or to the spec's textual description if there is no photo).
+3. Fill in a binary gate table at `<artifact-dir>/visual-checks.md`. Every gate is **yes** or **no** — never "mostly", "kind of", or a paragraph of caveats.
+4. If ANY gate is `no`, fix the source and loop. Do NOT report done.
+5. Hard cap: **8 iteration passes**. If you hit it, report which gates are still `no` and stop — do not lie about completion.
+
+### The standard gate set
+
+These apply to every model. Copy them into `visual-checks.md` and add task-specific gates after.
+
+| Gate | Pass criterion |
+|------|----------------|
+| G-eval | `kernelcad evaluate` exits 0 with zero diagnostics |
+| G-interference | `kernelcad interference` reports zero overlaps |
+| G-no-floaters | Every part visible in any render is supported by an adjacent part — no component appears to hover in empty space |
+| G-no-protrusions | Sub-components meant to be contained (case inside frame, dial inside bezel, screws inside counterbores) are fully contained on every visible axis — no unintended sticking-out |
+| G-hero-scale | The "new tool" feature (NURBS surface, sketch-text, etc.) is at the intended scale and on the intended sub-component — not shrunk to a corner, not displaced to the wrong part, not buried beneath an opaque layer |
+| G-reference-parity | For every visually distinct feature in the reference, the corresponding part is present in the render at the right relative position and scale |
+| G-front-read | The front view reads instantly as the target object on first glance — a stranger shown only this render would name the object correctly |
+
+### Forbidden rationalizations
+
+If a defect is visible in a render, fix it. The following are **not** valid reasons to leave a gate at `no`:
+
+- "It looks flat in this view because the camera angle is straight-on" — pick a different camera, or fix the geometry.
+- "The float is only 1 mm" — fix the offset.
+- "The numerals are partially behind the crystal because the crystal is on top" — re-order Y-layers so the numerals win.
+- "The renderer's framing crops the part" — recenter the model.
+
+Visible defect → fix or `no`. Never explain away.
