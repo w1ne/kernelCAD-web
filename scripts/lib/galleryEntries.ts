@@ -11,6 +11,7 @@ export const galleryEntrySchema = z.object({
   prompt: z.string().min(1),
   source: z.enum(['curated', 'studio']),
   video: z.string().min(1),
+  codeLocal: z.string().min(1),
   code: z.string().url(),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),

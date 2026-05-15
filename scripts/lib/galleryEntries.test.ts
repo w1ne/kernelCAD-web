@@ -10,6 +10,7 @@ describe('parseGalleryEntries', () => {
     prompt: 'Build a desktop 3-axis CNC.',
     source: 'curated' as const,
     video: '../../docs/demos/v0.6/desktop-3axis-mates/build.mp4',
+    codeLocal: '../../examples/desktop-3axis-mates.kcad.ts',
     code: 'https://github.com/w1ne/kernelCAD-web/blob/main/examples/desktop-3axis-mates.kcad.ts',
     tags: ['assembly'],
     featured: false,
@@ -51,5 +52,20 @@ describe('parseGalleryEntries', () => {
     delete entry.featured;
     const result = parseGalleryEntries({ entries: [entry] });
     expect(result.entries[0].featured).toBe(false);
+  });
+
+  it('requires codeLocal field (path to .kcad.ts for GLB build)', () => {
+    const bad = { ...validEntry } as Partial<typeof validEntry> & { codeLocal?: string };
+    delete bad.codeLocal;
+    expect(() => parseGalleryEntries({ entries: [bad] })).toThrow(/codeLocal/);
+  });
+
+  it('accepts a valid codeLocal path', () => {
+    const entry = {
+      ...validEntry,
+      codeLocal: '../../examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    };
+    const result = parseGalleryEntries({ entries: [entry] });
+    expect(result.entries[0].codeLocal).toBe(entry.codeLocal);
   });
 });
