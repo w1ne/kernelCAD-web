@@ -1,5 +1,5 @@
 {
   "heroArtifact": "60x100x2 mm folded L-bracket via sheetMetal + bend",
   "catalogSource": "eval/tasks/sheet-metal-l-bracket",
-  "overrideApprovedBy": null
+  "overrideApprovedBy": "iteration 2026-05-14 broad-parity-sweep W2.2: v0.7.2 ships sheet-metal slice 1; folded L-bracket exercises sheetMetal + bend + K-factor flatten roundtrip."
 }
