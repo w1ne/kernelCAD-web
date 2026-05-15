@@ -9,6 +9,7 @@ import {
 import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
 import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../lib/mates/poseEnvelope';
 import { reviewPoseEnvelope } from '../../lib/mates/poseEnvelope';
+import { suggestLimitFix } from '../../lib/mates/limitFixSuggest';
 import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
@@ -38,6 +39,18 @@ export interface ReviewCadInput {
   gripperAperture?: GripperApertureRequest;
 }
 
+export interface RepairContext {
+  readonly blockingReasons: readonly string[];
+  readonly topDiagnostics: ReadonlyArray<{
+    readonly code: string;
+    readonly sampleName?: string;
+    readonly mateName?: string;
+    readonly suggestedDelta?: { mate: string; widenBy?: number; narrowBy?: number };
+  }>;
+  readonly preserveInterfaces: readonly string[];
+  readonly designGoal: string;
+}
+
 export type ReviewCadOutput =
   | {
       ok: true;
@@ -54,6 +67,7 @@ export type ReviewCadOutput =
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness: MechanismFitnessResult;
+      repairContext: RepairContext;
     }
   | {
       ok: false;
@@ -70,18 +84,29 @@ export type ReviewCadOutput =
       connectorWorkspace?: PoseEnvelopeReviewResult['connectorWorkspace'];
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness?: MechanismFitnessResult;
+      repairContext: RepairContext;
       suggestedRepairPrompt: string;
     };
+
+type ReviewDiagnostic =
+  | CompilerDiagnostic
+  | ValidatorDiagnostic
+  | PoseEnvelopeDiagnostic
+  | MechanicalPlausibilityDiagnostic
+  | MechanicalIntentDiagnostic
+  | MechanicalTransmissionDiagnostic;
 
 export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOutput> {
   const { evaluation, model } = await evaluateForReview(input as EvaluateInput);
   if (evaluation.exitCode !== 0 || !model) {
     clearActiveMcpSession();
+    const diagnostics = withNextActions(evaluation.diagnostics);
     return {
       ok: false,
       featureCount: evaluation.featureCount,
-      diagnostics: withNextActions(evaluation.diagnostics),
-      suggestedRepairPrompt: buildSuggestedRepairPrompt(withNextActions(evaluation.diagnostics), undefined, input),
+      diagnostics,
+      repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
+      suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, undefined, input),
     };
   }
 
@@ -100,6 +125,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       ok: false,
       featureCount: evaluation.featureCount,
       diagnostics: [],
+      repairContext: await buildRepairContext(undefined, [], undefined, input),
       suggestedRepairPrompt: `${message} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
     };
   }
@@ -136,6 +162,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
   });
   const ok = fitness.functional;
 
+  const repairContext = await buildRepairContext(arm, diagnostics, fitness, input);
+
   if (ok) {
     return {
       ok: true,
@@ -152,6 +180,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
       ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
       fitness,
+      repairContext,
     };
   }
 
@@ -170,6 +199,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
     ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
     fitness,
+    repairContext,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
   };
 }
@@ -197,6 +227,126 @@ function selectAssembly(
   return name !== undefined
     ? assemblies.get(name)
     : assemblies.values().next().value;
+}
+
+function severityRank(diag: ReviewDiagnostic): number {
+  // CompilerDiagnostic uses 'warn'; structured diagnostics use 'warning'. Both
+  // are warning-tier and sort below 'error'. 'info' (validator-only) sorts last.
+  switch (diag.severity) {
+    case 'error':
+      return 0;
+    case 'warning':
+    case 'warn':
+      return 1;
+    default:
+      return 2;
+  }
+}
+
+function diagnosticMateName(diag: ReviewDiagnostic): string | undefined {
+  return 'mateName' in diag && typeof diag.mateName === 'string' ? diag.mateName : undefined;
+}
+
+function diagnosticSampleName(diag: ReviewDiagnostic): string | undefined {
+  return 'sampleName' in diag && typeof diag.sampleName === 'string' ? diag.sampleName : undefined;
+}
+
+function diagnosticVolume(diag: ReviewDiagnostic): number | undefined {
+  return 'volumeMm3' in diag && typeof diag.volumeMm3 === 'number' ? diag.volumeMm3 : undefined;
+}
+
+function compareDiagnostics(a: ReviewDiagnostic, b: ReviewDiagnostic): number {
+  // Severity DESC (error first), then volumeMm3 DESC (where present),
+  // then stable lex order on code, then on sampleName.
+  const sevDelta = severityRank(a) - severityRank(b);
+  if (sevDelta !== 0) return sevDelta;
+  const va = diagnosticVolume(a);
+  const vb = diagnosticVolume(b);
+  if (va !== undefined || vb !== undefined) {
+    if (va === undefined) return 1;   // entries with volume sort first
+    if (vb === undefined) return -1;
+    if (vb !== va) return vb - va;
+  }
+  if (a.code !== b.code) return a.code < b.code ? -1 : 1;
+  const sa = diagnosticSampleName(a) ?? '';
+  const sb = diagnosticSampleName(b) ?? '';
+  if (sa !== sb) return sa < sb ? -1 : 1;
+  return 0;
+}
+
+async function computeSuggestedDelta(
+  arm: Assembly | undefined,
+  diag: ReviewDiagnostic,
+): Promise<{ mate: string; widenBy?: number; narrowBy?: number } | undefined> {
+  if (diag.code !== 'assembly.pose.out-of-limits') return undefined;
+  const mateName = diagnosticMateName(diag);
+  if (mateName === undefined) return undefined;
+
+  // For out-of-limits the diagnostic carries the static pose and declared
+  // limits; the repair is to widen the bound the pose crossed. Direct
+  // computation here keeps semantics correct (suggestLimitFix only narrows,
+  // and bails on sampleName='current' which is what out-of-limits emits).
+  const pose = 'pose' in diag ? diag.pose : undefined;
+  const limits = 'limits' in diag ? diag.limits : undefined;
+  if (typeof pose === 'number' && Array.isArray(limits) && limits.length === 2) {
+    const [min, max] = limits as readonly [number, number];
+    if (pose > max) return { mate: mateName, widenBy: pose - max };
+    if (pose < min) return { mate: mateName, widenBy: min - pose };
+  }
+
+  // Fall back to suggestLimitFix for diagnostics that name a :min/:max sample
+  // (won't fire for the current out-of-limits path but kept for completeness
+  // should the diagnostic shape change).
+  if (arm !== undefined) {
+    const fix = await suggestLimitFix(arm, diag as PoseEnvelopeDiagnostic);
+    if (fix !== null) {
+      const [oMin, oMax] = fix.originalLimits;
+      const [nMin, nMax] = fix.limits;
+      if (fix.shrunkBound === 'max') {
+        return { mate: fix.mateName, narrowBy: oMax - nMax };
+      }
+      if (fix.shrunkBound === 'min') {
+        return { mate: fix.mateName, narrowBy: nMin - oMin };
+      }
+    }
+  }
+
+  return undefined;
+}
+
+async function buildRepairContext(
+  arm: Assembly | undefined,
+  diagnostics: readonly ReviewDiagnostic[],
+  fitness: MechanismFitnessResult | undefined,
+  input: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
+): Promise<RepairContext> {
+  const blockingReasons = (fitness?.blockingReasons ?? []).map(
+    (reason) => `${reason.code}: ${reason.message}`,
+  );
+  const sorted = [...diagnostics].sort(compareDiagnostics).slice(0, 3);
+  const topDiagnostics = await Promise.all(
+    sorted.map(async (diag) => {
+      const entry: {
+        code: string;
+        sampleName?: string;
+        mateName?: string;
+        suggestedDelta?: { mate: string; widenBy?: number; narrowBy?: number };
+      } = { code: diag.code };
+      const sample = diagnosticSampleName(diag);
+      if (sample !== undefined) entry.sampleName = sample;
+      const mate = diagnosticMateName(diag);
+      if (mate !== undefined) entry.mateName = mate;
+      const delta = await computeSuggestedDelta(arm, diag);
+      if (delta !== undefined) entry.suggestedDelta = delta;
+      return entry;
+    }),
+  );
+  return {
+    blockingReasons,
+    topDiagnostics,
+    preserveInterfaces: input.preserveInterfaces ?? [],
+    designGoal: input.designGoal ?? '',
+  };
 }
 
 function buildSuggestedRepairPrompt(
