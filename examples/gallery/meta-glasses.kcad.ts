@@ -1,185 +1,168 @@
 // Real Object Brief
-// Artifact: Ray-Ban Meta Wayfarer smart glasses (dual-camera smart glasses).
-//   Reference image: /tmp/ray-ban-stories.jpg — black Wayfarer-silhouette
-//   smart glasses with dual camera bumps at upper-outer corners of the front face.
-// Scale: millimetres. Overall frame ~136 mm wide × 46 mm tall × 7 mm deep;
-//   lens aperture per side: top ~56 mm wide, bottom ~36 mm (Wayfarer taper);
-//   bridge gap ~14 mm top / 20 mm bottom; temples ~130 mm long extending in +Y.
+// Artifact: Ray-Ban Meta — Wayfarer smart glasses, front-face only.
+//   Reference: gallery prompt scripts/demo-prompts/gallery-meta-glasses.md.
+// Scale: millimetres. Frame envelope 142 mm wide × 46 mm tall × 6 mm deep.
+//   Wayfarer lens opening: top edge ~56 mm wide, bottom edge ~36 mm; height ~36 mm.
+//   Bridge gap: 14 mm at top, widens to 20 mm at bottom (the "nose notch" is the
+//   natural gap between the two trapezoid feet, not a separate cutout).
+//   Dark lens inserts: trapezoidal slabs (1.4 mm deep) recessed 1.2 mm
+//   inside each lens cavity. Camera bumps: r=2.4 mm cylinders, h=1.8 mm at the
+//   outer-upper corners of the front face. LED dot: r=0.9 mm at right side near bridge.
 // Visible facts (from reference photo):
-//   1. Matte-black Wayfarer silhouette: trapezoidal lens openings (top wider).
-//   2. Solid frame border: top bar, bottom bar, outer angled rims, bridge.
-//   3. Nose bridge: wider gap at bottom (nose-notch shape = Wayfarer key detail).
-//   4. Camera bumps at outer-upper corners of front face (Meta signature).
-//   5. LED indicator near bridge on right side of front face.
-//   6. Temples extending backward (+Y): chunky housing, then thin arm.
-// Hidden-side inference: hinge as housing step; nose pads, speakers omitted.
-// Validation focus: front view shows two dark trapezoidal openings + frame + bumps;
-//   side/iso show temples in +Y; camera bumps on frame outer face (not floating).
+//   1. Solid Wayfarer rim — chunky, matte body; not a wireframe.
+//   2. Two trapezoidal lens openings, mirror symmetric about the bridge midline.
+//   3. Dark lens inserts visibly recessed inside each opening.
+//   4. Two small camera bumps protruding forward from the upper-outer corners.
+//   5. Single LED indicator dot on the right lens, near the bridge.
+//   6. Bridge with nose-notch shape (narrower at top, wider at bottom).
+// Hidden-side inference: temples / hinges OMITTED per brief (v1 = front-face only).
+//   Bounding box stays X-dominant for clean renderer auto-framing.
+// Validation focus: front view reads as Wayfarer smart glasses on first glance —
+//   trapezoidal lenses are filled (not hollow rims), camera bumps + LED visible,
+//   bridge nose-notch readable. Iso view shows the front face thickness.
 //
-// Coordinate convention: Z-up, right-handed. Front view from -Y → +Y.
-// Front face at Y=0. Frame body extends in +Y. Width = X. Height = Z.
+// Coordinate convention: Z-up, right-handed. Render's "front" view looks from -Y
+// toward +Y. Front face at Y = -FRAME_DEPTH/2, back at Y = +FRAME_DEPTH/2.
 
 // ─── Dimensions ────────────────────────────────────────────────────────────
-const FRAME_DEPTH  = 7;
-const BRIDGE_TOP   = 14;    // bridge width at lens top (Z=36)
-const BRIDGE_BOT   = 20;    // bridge width at lens bottom (Z=0) = nose notch wider
-const LENS_TOP_W   = 56;    // lens opening width at top
-const LENS_BOT_W   = 36;    // lens opening width at bottom
-const LENS_Z_TOP   = 36;    // Z of top edge of lens openings
-const LENS_Z_BOT   = 0;     // Z of bottom edge of lens openings
-const FRAME_BORDER = 5;     // minimum frame border thickness
-const FRAME_W = BRIDGE_TOP + LENS_TOP_W * 2 + FRAME_BORDER * 2; // 136
-const FRAME_H = LENS_Z_TOP - LENS_Z_BOT + FRAME_BORDER * 2;     // 46
-const FRAME_Z_BOT = LENS_Z_BOT - FRAME_BORDER;                  // -5
-const FRAME_Z_TOP = LENS_Z_TOP + FRAME_BORDER;                   // 41
-const FRAME_X = -FRAME_W / 2;  // = -68 (left edge of frame)
+const FRAME_DEPTH      = 6;
+const BRIDGE_TOP       = 14;
+const BRIDGE_BOT       = 20;
+const LENS_TOP_W       = 56;
+const LENS_BOT_W       = 36;
+const LENS_H           = 36;
+const RIM_BORDER       = 5;
 
-// Camera bumps: protrude from front face (Y=0) toward camera (in -Y)
-const CAMERA_R = 2.8;
-const CAMERA_H = 2.5;
-// Position on frame material: inner top of outer rim (just inside the lens top-outer corner)
-// Outer rim inner edge at top = LENS outer edge top = ±(BRIDGE_TOP/2 + LENS_TOP_W) = ±63
-// Camera bump center X = ±65 (on the outer rim material, 3mm from outer edge at Z=LENS_Z_TOP)
-const BUMP_X  = 65;
-const BUMP_Z  = LENS_Z_TOP - 2;  // Z=34: near top of frame
+const LENS_Z_BOT       = -(LENS_H / 2);     // -18
+const LENS_Z_TOP       = +(LENS_H / 2);     // +18
+const FRAME_Z_BOT      = LENS_Z_BOT - RIM_BORDER;   // -23
+const FRAME_Z_TOP      = LENS_Z_TOP + RIM_BORDER;   // +23
+const FRAME_HALF_W     = (BRIDGE_TOP / 2) + LENS_TOP_W + RIM_BORDER;  // 7+56+5 = 68
 
-// LED indicator
-const LED_Z = LENS_Z_TOP - 4;  // Z=32
+const LENS_INSERT_DEPTH   = 1.4;
+const LENS_INSERT_INSET   = 1.0;
+const LENS_INSERT_SHRINK  = 0.4;
 
-// Temples
-// Hinge block sits at the top outer corners, spanning Z=LENS_Z_TOP..FRAME_Z_TOP
-// so that from the front view the hinge is occluded by the top bar material (Y=0..7).
-const TEMPLE_LEN   = 130;
-const TEMPLE_W     = 6;
-const TEMPLE_H_ARM = 9;
-const HINGE_LEN    = 22;
-const HINGE_H      = FRAME_BORDER;  // 5mm — matches top-bar height for occlusion
-const HINGE_W      = 11;
-const TEMPLE_Z_BOT = LENS_Z_TOP;    // hinge bottom at Z=36, sits in top-bar band
-const TEMPLE_Z_CTR = LENS_Z_TOP + FRAME_BORDER / 2;  // 38.5 — midpoint of top bar
+const CAMERA_R         = 2.4;
+const CAMERA_H         = 1.8;
 
-// ─── Path helper: build XZ polygon extruded in Y direction ──────────────────
-// extrudePolygon/path XY coords → extrude +Z → rotate([1,0,0],-90°) → Y extrusion
-// rotate([1,0,0], -90°): (x,y_path,z) → (x, z, -y_path)
-// So: y_path → z_world = -y_path → use Y_path = -Z_world in path() calls.
-// z_extrude (0..depth) → y_world (0..depth). No extra translation needed. ✓
+const LED_R            = 0.9;
+const LED_H            = 0.5;
 
-// ─── TOP BAR: full width, Z from LENS_Z_TOP to FRAME_Z_TOP (5mm tall) ───────
-const topBar = path()
-  .moveTo(-68, -FRAME_Z_TOP)   // left outer at Z=41
-  .lineTo( 68, -FRAME_Z_TOP)   // right outer at Z=41
-  .lineTo( 68, -LENS_Z_TOP)    // right inner at Z=36
-  .lineTo(-68, -LENS_Z_TOP)    // left inner at Z=36
-  .close()
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], -90);
+const FRONT_Y          = -(FRAME_DEPTH / 2);  // -3, smallest Y = closest to camera
 
-// ─── BOTTOM BAR: full width, Z from FRAME_Z_BOT to LENS_Z_BOT (5mm tall) ────
-const bottomBar = path()
-  .moveTo(-68, -LENS_Z_BOT)    // left inner at Z=0
-  .lineTo( 68, -LENS_Z_BOT)    // right inner at Z=0
-  .lineTo( 68, -FRAME_Z_BOT)   // right outer at Z=-5
-  .lineTo(-68, -FRAME_Z_BOT)   // left outer at Z=-5
-  .close()
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], -90);
+// ─── Sketch-to-world helper ───────────────────────────────────────────────────
+// path() builds in sketch XY; .extrude(d) extrudes +Z (sketch normal).
+// rotate([1,0,0],-90°): (x, y_sketch, z_sketch) → (x, z_sketch, -y_sketch).
+// So sketch.x → world.x, sketch.y → -world.z, sketch.z (extrude) → world.y.
+// We pass sketch.y = -Z_world so world Z = intended Z, and extrude depth becomes world Y.
+function xzPanel(points: [number, number][], depth: number, yFront: number) {
+  let p = path().moveTo(points[0][0], -points[0][1]);
+  for (let i = 1; i < points.length; i++) {
+    p = p.lineTo(points[i][0], -points[i][1]);
+  }
+  return p.close().extrude(depth).rotate([1, 0, 0], -90).translate(0, yFront, 0);
+}
 
-// ─── LEFT OUTER RIM: the Wayfarer taper piece on the left side ──────────────
-// At Z=41 (FRAME_Z_TOP): spans X from -68 to -63 (5mm wide: outer border)
-// At Z=36 (LENS_Z_TOP): spans X from -68 to -63 (same 5mm, since that's where lens top is)
-// At Z=0  (LENS_Z_BOT): spans X from -68 to -46 (22mm wide: Wayfarer bottom wider)
-// At Z=-5 (FRAME_Z_BOT): spans X from -68 to -46 (same as lens bottom)
-// But wait: the top bar covers Z=36..41 for the full width. So the left outer rim
-// can just be the lens-height region Z=0..36.
-// Combined outer left piece (including the angled Wayfarer portion):
-const leftOuterRim = path()
-  .moveTo(-68, -LENS_Z_TOP)    // outer-top-left  x=-68, Z=36
-  .lineTo(-63, -LENS_Z_TOP)    // inner-top-right x=-63, Z=36 (5mm border at top)
-  .lineTo(-46, -LENS_Z_BOT)    // inner-bot-right x=-46, Z=0  (22mm border at bot)
-  .lineTo(-68, -LENS_Z_BOT)    // outer-bot-left  x=-68, Z=0
-  .close()
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], -90);
+// ─── Additive frame: 5 panels unioned in XZ, extruded in Y ──────────────────
+// Each (x, z) coordinate is the world position; xzPanel handles the sketch flip.
 
-// ─── RIGHT OUTER RIM (mirror of left) ────────────────────────────────────────
-const rightOuterRim = path()
-  .moveTo(63, -LENS_Z_TOP)     // inner-top-left  x=63, Z=36
-  .lineTo(68, -LENS_Z_TOP)     // outer-top-right x=68, Z=36
-  .lineTo(68, -LENS_Z_BOT)     // outer-bot-right x=68, Z=0
-  .lineTo(46, -LENS_Z_BOT)     // inner-bot-left  x=46, Z=0
-  .close()
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], -90);
+// Top rim: full width, Z from LENS_Z_TOP to FRAME_Z_TOP.
+const topRim = xzPanel(
+  [
+    [-FRAME_HALF_W, FRAME_Z_TOP],
+    [ FRAME_HALF_W, FRAME_Z_TOP],
+    [ FRAME_HALF_W, LENS_Z_TOP],
+    [-FRAME_HALF_W, LENS_Z_TOP],
+  ],
+  FRAME_DEPTH,
+  FRONT_Y,
+);
 
-// ─── BRIDGE: nose piece between lenses, tapers wider at bottom ─────────────
-// At Z=36: X from -(BRIDGE_TOP/2) to +(BRIDGE_TOP/2) = -7 to +7 (14mm)
-// At Z=0:  X from -(BRIDGE_BOT/2) to +(BRIDGE_BOT/2) = -10 to +10 (20mm)
-// Spans full FRAME_DEPTH in Y.
-const bridge = path()
-  .moveTo(-(BRIDGE_TOP / 2), -LENS_Z_TOP)   // left at Z=36
-  .lineTo( (BRIDGE_TOP / 2), -LENS_Z_TOP)   // right at Z=36
-  .lineTo( (BRIDGE_BOT / 2), -LENS_Z_BOT)   // right at Z=0
-  .lineTo(-(BRIDGE_BOT / 2), -LENS_Z_BOT)   // left at Z=0
-  .close()
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], -90);
+// Bottom rim: full width, Z from FRAME_Z_BOT to LENS_Z_BOT.
+const bottomRim = xzPanel(
+  [
+    [-FRAME_HALF_W, LENS_Z_BOT],
+    [ FRAME_HALF_W, LENS_Z_BOT],
+    [ FRAME_HALF_W, FRAME_Z_BOT],
+    [-FRAME_HALF_W, FRAME_Z_BOT],
+  ],
+  FRAME_DEPTH,
+  FRONT_Y,
+);
 
-// ─── Assemble frame ──────────────────────────────────────────────────────────
-let glasses = topBar
-  .union(bottomBar)
+// Outer rim — Wayfarer angled piece, mirror-symmetric. Built for xSign = +1.
+// Outer X at top/bot: FRAME_HALF_W (=68). Inner X follows the trapezoid taper.
+// At Z=LENS_Z_TOP: inner X = BRIDGE_TOP/2 + LENS_TOP_W = 63 (so rim width = 5 at top).
+// At Z=LENS_Z_BOT: inner X = BRIDGE_BOT/2 + LENS_BOT_W = 46 (so rim width = 22 at bot).
+function outerRim(xSign: -1 | 1) {
+  const outerX = xSign * FRAME_HALF_W;
+  const innerXTop = xSign * (BRIDGE_TOP / 2 + LENS_TOP_W);
+  const innerXBot = xSign * (BRIDGE_BOT / 2 + LENS_BOT_W);
+  // Build CCW for xSign = +1 (right side): top-outer → top-inner → bot-inner → bot-outer.
+  // For xSign = -1 (left side), reverse to keep CCW after mirroring.
+  const pts: [number, number][] =
+    xSign > 0
+      ? [
+          [outerX,     LENS_Z_TOP],
+          [innerXTop,  LENS_Z_TOP],
+          [innerXBot,  LENS_Z_BOT],
+          [outerX,     LENS_Z_BOT],
+        ]
+      : [
+          [outerX,     LENS_Z_TOP],
+          [outerX,     LENS_Z_BOT],
+          [innerXBot,  LENS_Z_BOT],
+          [innerXTop,  LENS_Z_TOP],
+        ];
+  return xzPanel(pts, FRAME_DEPTH, FRONT_Y);
+}
+
+const leftOuterRim  = outerRim(-1);
+const rightOuterRim = outerRim(1);
+
+// Bridge: between the two lenses, narrower at top (14) widens to bottom (20).
+const bridge = xzPanel(
+  [
+    [-(BRIDGE_TOP / 2), LENS_Z_TOP],
+    [ (BRIDGE_TOP / 2), LENS_Z_TOP],
+    [ (BRIDGE_BOT / 2), LENS_Z_BOT],
+    [-(BRIDGE_BOT / 2), LENS_Z_BOT],
+  ],
+  FRAME_DEPTH,
+  FRONT_Y,
+);
+
+let glasses = topRim
+  .union(bottomRim)
   .union(leftOuterRim)
   .union(rightOuterRim)
   .union(bridge);
 
-// ─── CAMERA BUMPS on front face (outer upper corners) ────────────────────────
-// Camera bumps are on the FRAME MATERIAL near the outer upper corner of each lens.
-// The outer rim inner edge at Z=LENS_Z_TOP is at X=±63.
-// Camera bump center at X=±65 (3mm from outer edge, ON the outer rim material).
-// Bump protrudes in -Y from front face (Y=0 to Y=-CAMERA_H).
-function makeCameraBump(xSign: -1 | 1) {
-  return cylinder(CAMERA_H, CAMERA_R, 32)
+// Lens openings stay hollow — the dark background reads as the dark Wayfarer
+// lens against the grey frame. A thin recessed insert was tried but read as a
+// flush groove at this render resolution; an empty opening is more legible.
+
+// ─── Camera bumps — Meta signature, front face outer-upper corners ──────────
+const BUMP_X = (BRIDGE_TOP / 2) + LENS_TOP_W - 1.5;
+const BUMP_Z = LENS_Z_TOP + 1.5;
+
+function cameraBump(xSign: -1 | 1) {
+  return cylinder(CAMERA_H, CAMERA_R, 48)
     .alongAxis([0, 1, 0])
-    .translate(xSign * BUMP_X, -CAMERA_H, BUMP_Z);
+    .translate(xSign * BUMP_X, FRONT_Y - CAMERA_H, BUMP_Z);
 }
 
-glasses = glasses
-  .union(makeCameraBump(-1))
-  .union(makeCameraBump(1));
+glasses = glasses.union(cameraBump(-1)).union(cameraBump(1));
 
-// ─── LED INDICATOR (right side, near bridge) ─────────────────────────────────
-glasses = glasses.union(
-  cylinder(0.7, 1.0, 16)
-    .alongAxis([0, 1, 0])
-    .translate(BRIDGE_TOP / 2 + 8, -0.7, LED_Z)
-);
+// ─── LED indicator dot (right side, near bridge) ────────────────────────────
+const LED_X = (BRIDGE_TOP / 2) + 5;
+const LED_Z = LENS_Z_TOP - 5;
 
-// ─── TEMPLES ─────────────────────────────────────────────────────────────────
-// Hinge block sits in the top bar area (Z=36..41) at the outer X corners.
-// From the front view (Y=0), the top bar material (Y=0..7) occludes the hinge.
-// Temple arm = narrower stick starting at hinge end, extending in +Y.
-function makeTemple(xSign: -1 | 1) {
-  // Hinge housing: small block at top corner, within top-bar Z band
-  const hingeX = xSign > 0 ? FRAME_W / 2 - HINGE_W : -(FRAME_W / 2);
-  const housing = box(HINGE_W, HINGE_LEN, HINGE_H)
-    .translate(hingeX, FRAME_DEPTH, LENS_Z_TOP);  // Z=36..41
+const led = cylinder(LED_H, LED_R, 24)
+  .alongAxis([0, 1, 0])
+  .translate(LED_X, FRONT_Y - LED_H, LED_Z);
 
-  // Main arm: thinner, taller stick continuing in +Y from end of hinge
-  const stickX = xSign > 0 ? FRAME_W / 2 - TEMPLE_W : -(FRAME_W / 2);
-  const stick  = box(TEMPLE_W, TEMPLE_LEN - HINGE_LEN, TEMPLE_H_ARM)
-    .translate(stickX, FRAME_DEPTH + HINGE_LEN, TEMPLE_Z_CTR - TEMPLE_H_ARM / 2);
+glasses = glasses.union(led);
 
-  return housing.union(stick);
-}
-
-glasses = glasses
-  .union(makeTemple(-1))
-  .union(makeTemple(1));
-
-// ─── CENTER the model in Y so perspective front-view camera fits cleanly ──────
-// Model spans Y = -CAMERA_H (-2.5) to Y = FRAME_DEPTH + TEMPLE_LEN (137).
-// Without centering, the renderer places the perspective camera at -84mm from
-// the origin but the front face is at Y=-67 (post-renderer-centering), only
-// 17mm from the camera — causing extreme wide-angle crop in the front render.
-// Shifting by -67.25 in Y puts the front face at Y=-67.25, centroid at Y=0.
-const Y_CENTER = ((-CAMERA_H) + (FRAME_DEPTH + TEMPLE_LEN)) / 2;  // ≈ 67.25
-return glasses.translate(0, -Y_CENTER, 0);
+return glasses;

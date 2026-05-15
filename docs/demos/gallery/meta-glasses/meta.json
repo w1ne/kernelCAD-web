@@ -1,0 +1,11 @@
+{
+  "taskId": "meta-glasses",
+  "module": "gallery",
+  "capturedAt": "2026-05-15T16:36:46.568Z",
+  "durationMs": 25700,
+  "truncated": false,
+  "gitSha": "c92eafa325c8467ad69280c1c288fc2a13528a89",
+  "heroArtifact": "meta-glasses",
+  "catalogSource": "memorable-builds-policy/gallery",
+  "overrideApprovedBy": "gallery-curated: front-face curated entry"
+}

@@ -1,6 +1,24 @@
 {
   "entries": [
     {
+      "slug": "meta-glasses",
+      "title": "Ray-Ban Meta — Wayfarer",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.7.3",
+      "prompt": "# Reproduce Ray-Ban Meta smart glasses (Wayfarer) as a kernelCAD model\n\nBuild the iconic Ray-Ban Meta Wayfarer silhouette from primitives — recognizable as Meta smart glasses, not generic eyewear. Front-face only (skip temples in v1).\n\nRequired identifying features:\n\n- Wayfarer trapezoidal lens shape: top edge much wider than bottom (~56 mm vs 36 mm), top-to-bottom height ~36 mm. Two lenses, mirror symmetric about the bridge midline.\n- Bridge: narrow gap (14 mm) at the top widening to ~20 mm at the bottom (the nose notch is the natural gap between the trapezoid feet, not a separate cutout).\n- Outer frame: rounded-rectangle perimeter (142 mm × 46 mm × 6 mm), uniform matte body.\n- Dark lens inserts: thin (~1.4 mm) trapezoidal slabs recessed ~1.2 mm inside each lens cavity.\n- **Camera bumps**: two small protruding cylinders (radius ~2.4 mm, height ~1.8 mm) at the outer-top corners of the frame front face — the Meta-specific identifying detail.\n- **LED recording indicator**: small flat dot (radius ~0.9 mm) on the right side near the bridge.\n\nZ-up coordinates, millimetres. Center at X=0. Return the final unioned Shape.",
+      "source": "curated",
+      "video": "../../docs/demos/gallery/meta-glasses/demo.mp4",
+      "codeLocal": "../../examples/gallery/meta-glasses.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/gallery/meta-glasses.kcad.ts",
+      "tags": ["consumer-product", "wearable", "wayfarer", "smart-glasses", "reproduction"],
+      "featured": true,
+      "createdAt": "2026-05-15",
+      "appUrl": null
+    },
+    {
       "slug": "grid-heat-sink-fin-array",
       "title": "Grid-Patterned Heat-Sink Fin Array",
       "author": {
@@ -14,7 +32,7 @@
       "codeLocal": "../../eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts",
       "code": "https://github.com/w1ne/kernelCAD-web/blob/main/eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts",
       "tags": ["pattern", "grid", "heat-sink", "union", "fin-array"],
-      "featured": true,
+      "featured": false,
       "createdAt": "2026-05-14",
       "appUrl": null
     },
