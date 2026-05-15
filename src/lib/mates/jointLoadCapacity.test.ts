@@ -198,4 +198,129 @@ describe('validateJointLoadCapacity', () => {
     expect(hingeDiag?.hint).toMatch(/5N·m/);                // declared
     expect(hingeDiag?.hint).toMatch(/100\.00N·m/);          // observed
   });
+
+  it('cylindrical with both maxLoad.force and maxLoad.torque exceeded: emits 2 diagnostics', () => {
+    const { arm, kcad } = makeArm();
+    // Cylindrical's `switch` branch runs BOTH `checkForce` and `checkTorque`
+    // (the joint resists axial slide AND moment-about-axis). Set up
+    // geometry + loads such that both exceed simultaneously:
+    //
+    //   partA at [50, 0, 0], connector local origin [-50, 0, 0]
+    //   → joint world origin = [0, 0, 0], r = [50, 0, 0] mm
+    //   F on partA = [200, 0, -1000] N (|F| = ~1019.8 N)
+    //     - force magnitude 1019.8 N > 100 N maxLoad.force ✓
+    //     - |r × F| = |[50,0,0] × [200,0,-1000]| = |[0·-1000 - 0·0,
+    //       0·200 - 50·-1000, 50·0 - 0·200]| = |[0, 50000, 0]| = 50000 N·mm
+    //       = 50 N·m > 10 N·m maxLoad.torque ✓
+    arm
+      .part('a', kcad.box(10, 10, 10), { at: [50, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [-50, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [0, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('cyl', 'a.c', 'b.c', 'cylindrical');
+    setMaxLoad(arm, 'cyl', { force: 100, torque: 10 });
+
+    const externalLoads: Record<string, { force?: Vec3 }> = {
+      a: { force: [200, 0, -1000] },
+    };
+    const diags = validateJointLoadCapacity(arm, externalLoads);
+
+    expect(diags).toHaveLength(2);
+    const forceDiag = diags.find((d) => /force=/.test(d.message));
+    const torqueDiag = diags.find((d) => /torque=/.test(d.message));
+
+    expect(forceDiag).toBeDefined();
+    expect(forceDiag?.code).toBe('assembly.joint.load-exceeded');
+    expect(forceDiag?.severity).toBe('error');
+    expect(forceDiag?.mateName).toBe('cyl');
+    expect(forceDiag?.hint).toMatch(/cylindrical/);
+    expect(forceDiag?.hint).toMatch(/force/);
+
+    expect(torqueDiag).toBeDefined();
+    expect(torqueDiag?.code).toBe('assembly.joint.load-exceeded');
+    expect(torqueDiag?.severity).toBe('error');
+    expect(torqueDiag?.mateName).toBe('cyl');
+    expect(torqueDiag?.hint).toMatch(/cylindrical/);
+    expect(torqueDiag?.hint).toMatch(/torque/);
+  });
+
+  it('revolute with topology-origin side: emits 1 info-severity deferred note, skips load summation', () => {
+    const { arm, kcad } = makeArm();
+    // Side A's connector uses a topology query origin — Gate 3 in v0.7.4
+    // does not support sync topology resolution and surfaces an
+    // info-severity deferred note for that side; side B uses a vec3
+    // origin. The mate's load summation is silently SKIPPED, so even
+    // with externalLoads that would otherwise blow past the declared
+    // torque cap there is no error-severity diagnostic — only the one
+    // info note from the topology side.
+    const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
+    arm
+      .part('a', a, { at: [50, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }, axis: [0, 0, 1] });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [0, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'a.c', 'b.c', 'revolute');
+    setMaxLoad(arm, 'hinge', { torque: 10 });
+
+    const externalLoads: Record<string, { force?: Vec3 }> = {
+      a: { force: [0, 0, -1000] },   // would yield ~50 N·m if the side were resolved
+    };
+    const diags = validateJointLoadCapacity(arm, externalLoads);
+
+    expect(diags).toHaveLength(1);
+    expect(diags[0].code).toBe('assembly.joint.load-exceeded');
+    expect(diags[0].severity).toBe('info');
+    expect(diags[0].mateName).toBe('hinge');
+    expect(diags[0].partA).toBe('a');
+    // The deferred-note builder for side 'a' sets `partA` only (not `partB`).
+    expect(diags[0].partB).toBeUndefined();
+    expect(diags[0].hint).toMatch(/topology connector origin/);
+    expect(diags[0].hint).toMatch(/v0\.7\.4/);
+    // No error-severity diagnostic — load summation was skipped.
+    expect(diags.filter((d) => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('ball with maxLoad.force AND maxLoad.torque declared: only force checked, torque silently ignored', () => {
+    const { arm, kcad } = makeArm();
+    // Ball mates resist force but not moment (3 DOF rotational freedom).
+    // The switch branch for `ball` only calls `checkForce`; any
+    // `maxLoad.torque` set on a ball mate is silently ignored even when
+    // the geometric setup would clearly exceed it. Pin this behavior so
+    // the kind-to-mate-type mapping doesn't regress.
+    //
+    //   partA at [100, 0, 0], connector local origin [-100, 0, 0]
+    //   → joint world origin = [0, 0, 0], r = [100, 0, 0] mm
+    //   F on partA = [0, 0, -1000] N (|F| = 1000 N)
+    //     - force magnitude 1000 N > 100 N maxLoad.force ✓ (1 diag)
+    //     - |r × F| = |[100,0,0] × [0,0,-1000]| = |[0, 100000, 0]|
+    //       = 100 N·m > 50 N·m maxLoad.torque — would fire IF ball
+    //       branched into checkTorque, but it doesn't (silently ignored).
+    arm
+      .part('a', kcad.box(10, 10, 10), { at: [100, 0, 0] })
+      .connector('c', { type: 'ball', origin: { kind: 'vec3', value: [-100, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [0, 0, 0] })
+      .connector('c', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('socket', 'a.c', 'b.c', 'ball');
+    setMaxLoad(arm, 'socket', { force: 100, torque: 50 });
+
+    const externalLoads: Record<string, { force?: Vec3 }> = {
+      a: { force: [0, 0, -1000] },
+    };
+    const diags = validateJointLoadCapacity(arm, externalLoads);
+
+    expect(diags).toHaveLength(1);
+    expect(diags[0].code).toBe('assembly.joint.load-exceeded');
+    expect(diags[0].severity).toBe('error');
+    expect(diags[0].mateName).toBe('socket');
+    expect(diags[0].partA).toBe('a');
+    expect(diags[0].partB).toBe('b');
+    expect(diags[0].hint).toMatch(/ball/);
+    expect(diags[0].hint).toMatch(/force/);
+    expect(diags[0].hint).not.toMatch(/torque/);
+    expect(diags[0].hint).toMatch(/1000\.00N\b/);   // observed magnitude
+    expect(diags[0].hint).toMatch(/100N\b/);        // declared cap
+  });
 });
