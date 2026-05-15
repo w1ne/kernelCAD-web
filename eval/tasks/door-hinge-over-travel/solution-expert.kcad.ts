@@ -31,8 +31,6 @@ const HINGE_GAP_MM =    5; // clearance between hinge axis and wall front face;
                            // without this gap the door's back-face hinge-side
                            // corner intrudes into the wall at large angles.
 
-const HINGE_LIMITS_DEG: [number, number] = [0, 95];
-
 const door = assembly('door-hinge-over-travel');
 
 // Wall: centered horizontally at x=0, sitting on the ground (z=0..WALL_H),
