@@ -27,6 +27,29 @@ export type MatePose =
 
 export type MateLimitRange = readonly [number, number];
 
+/**
+ * Optional declared load capacity for a mate. v0.7.4 adds this as a stable
+ * agent-facing surface for Gate 3 (joint-load static check).
+ *
+ * Unit semantics per mate type (see spec
+ * `2026-05-15-v0.7-kinematic-grounding-design.md` §Gate 3):
+ *  - `revolute`: only `torque` is meaningful (N·m). `force` is ignored if set.
+ *  - `prismatic`: only `force` is meaningful (N). `torque` is ignored if set.
+ *  - `cylindrical`: both `force` (N) and `torque` (N·m) may be set.
+ *  - `ball`: only `force` (N).
+ *  - `fastened` / `planar` / `pin_slot`: `maxLoad` is permitted but **not
+ *    gated** in v0.7.4 — the type accepts it so the agent surface is stable
+ *    for the v0.7.x extension, but the validator does not run summation. This
+ *    is silent acceptance per the spec's open-question 4 resolution (no
+ *    warning at every script run).
+ */
+export interface MateLoadLimit {
+  /** Maximum allowable applied force in Newtons. */
+  readonly force?: number;
+  /** Maximum allowable applied torque in Newton·metres. */
+  readonly torque?: number;
+}
+
 export interface MateRecord {
   readonly name: string;
   /** "<partName>.<connectorName>" */
@@ -42,6 +65,10 @@ export interface MateRecord {
   readonly limitsDeg?: MateLimitRange;
   /** Linear scalar pose limits in mm for prismatic mates. */
   readonly limitsMm?: MateLimitRange;
+  /** Optional static-load capacity. Read by the v0.7.4 Gate 3 stub
+   *  (`validateJointLoadCapacity`). Per the field's unit semantics, see
+   *  `MateLoadLimit` JSDoc. */
+  readonly maxLoad?: MateLoadLimit;
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

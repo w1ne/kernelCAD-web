@@ -247,7 +247,7 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(info?.severity).toBe('info');
   });
 
-  it('type-system accepts the 14 v0.6 + v0.6.2 diagnostic codes', () => {
+  it('type-system accepts the 17 v0.6 + v0.6.2 + v0.7.4 diagnostic codes', () => {
     // Capture-time codes (`type-mismatch`, `connector-not-found`) are thrown
     // as `KernelError` by `arm.mate(...)` and never surface through the
     // validator — but external consumers (lowerer, MCP error-chain echoes)
@@ -258,6 +258,10 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     // (assembly.pose.out-of-limits, assembly.pose-envelope.{solve-failed,
     // interference, connector-unresolved}) + 1 new code
     // (assembly.mate.limit-missing).
+    //
+    // v0.7.4 grew the union by 3 kinematic-grounding gates:
+    // assembly.mounting-hole.mismatch, assembly.joint-axis.unbound,
+    // assembly.joint.load-exceeded.
     const codes: ValidatorDiagnosticCode[] = [
       'assembly.part.floating',
       'assembly.part.orphan',
@@ -273,13 +277,16 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
       'assembly.pose-envelope.interference',
       'assembly.pose-envelope.connector-unresolved',
       'assembly.mate.limit-missing',
+      'assembly.mounting-hole.mismatch',
+      'assembly.joint-axis.unbound',
+      'assembly.joint.load-exceeded',
     ];
     // When bumping this number: update the literal, the it(...) title above,
     // AND the inline comment listing what's in the union.
     expect(
       codes.length,
       'ValidatorDiagnosticCode union changed — update count, it() title, and member-list comment together',
-    ).toBe(14);
+    ).toBe(17);
     // Smoke-check that the capture-time codes survive on a hand-crafted
     // `ValidatorDiagnostic` (compile-time check; runtime is trivial).
     const typeMismatch: ValidatorDiagnostic = {
@@ -372,5 +379,20 @@ describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', (
 
     const result = await validateAssemblyWithMates(arm);
     expect(result.diagnostics.filter((d) => d.code === 'assembly.mate.limit-missing')).toHaveLength(0);
+  });
+});
+
+describe('v0.7.4 diagnostic codes — compile-time check', () => {
+  it('declares assembly.mounting-hole.mismatch, assembly.joint-axis.unbound, assembly.joint.load-exceeded in ValidatorDiagnosticCode', () => {
+    // `satisfies` enforces at compile-time that each literal is a member of
+    // `ValidatorDiagnosticCode`. The runtime `.toHaveLength(3)` exists only
+    // so vitest counts this as a real test; the type-level guarantee is the
+    // load-bearing part.
+    const codes = [
+      'assembly.mounting-hole.mismatch',
+      'assembly.joint-axis.unbound',
+      'assembly.joint.load-exceeded',
+    ] as const satisfies readonly ValidatorDiagnosticCode[];
+    expect(codes).toHaveLength(3);
   });
 });

@@ -1063,7 +1063,23 @@ export class Assembly {
    */
   solvedModel(
     poses: Poses,
-    opts?: { validate?: 'warn' | 'error' | 'off' },
+    opts?: {
+      validate?: 'warn' | 'error' | 'off';
+      /**
+       * v0.7.4 — optional per-part external loads for the Gate 3 stub
+       * (`validateJointLoadCapacity`). Keys are part names already registered
+       * on this Assembly via `arm.part(name, ...)`; values are world-frame
+       * force (N) and/or torque (N·m) vectors. Unknown keys throw
+       * `feature.invalid-args` at capture-entry below — silent ignore would
+       * mask agent typos (per spec open-question 5 resolution). The Gate 3
+       * check runs only under `validate: 'error'`; under `'warn'` / `'off'`
+       * the loads are validated for key membership and otherwise ignored.
+       *
+       * Currently a pass-through to `validateAssemblyWithMates`; the Gate 3
+       * implementation lands later in the v0.7.4 plan (Phase 5).
+       */
+      externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
+    },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
       throw new KernelError(
@@ -1072,6 +1088,23 @@ export class Assembly {
         undefined,
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
+    }
+    // v0.7.4 — validate externalLoads keys at capture entry so agent typos
+    // surface immediately, not silently. Per spec open-question 5 resolution
+    // (error on typo, not silent ignore).
+    if (opts?.externalLoads !== undefined) {
+      const knownParts = this.parts.map((p) => p.name);
+      const knownSet = new Set(knownParts);
+      for (const key of Object.keys(opts.externalLoads)) {
+        if (!knownSet.has(key)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solvedModel: externalLoads['${key}'] does not match any part on assembly '${this.name}'.`,
+            undefined,
+            `invalid-args.assembly.external-load-unknown-part — externalLoads['${key}'] does not match any part; known parts: ${knownParts.join(', ')}.`,
+          );
+        }
+      }
     }
     // Synchronous phase — must throw (not reject) so existing
     // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time

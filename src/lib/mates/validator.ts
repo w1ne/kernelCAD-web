@@ -25,10 +25,20 @@
 
 import type { Assembly } from '../../capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
+import type { Vec3 } from '../../intent/types';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
 import { parseConnectorRef } from './mate';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
+
+/**
+ * v0.7.4 — per-part external loads pass-through type used by
+ * `validateAssemblyWithMates`'s optional 4th arg and by the not-yet-wired
+ * Gate 3 (`jointLoadCapacity.ts`, Phase 5). Forces in Newtons (world frame),
+ * torques in N·m. Same shape as the `externalLoads` option on
+ * `Assembly.solvedModel`.
+ */
+export type ExternalLoadMap = Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
 
 export type ValidatorStatus =
   | 'solved'
@@ -64,7 +74,16 @@ export type ValidatorDiagnosticCode =
   // (revolute/prismatic/cylindrical/pin_slot) without declared
   // limitsDeg/limitsMm. Ball mates with per-axis limit triples are not
   // sampled by the envelope (yet) and are exempt from this check.
-  | 'assembly.mate.limit-missing';
+  | 'assembly.mate.limit-missing'
+  // v0.7.4 — kinematic-grounding gates. Emitted by the per-gate modules
+  // `mountingHoleConsistency.ts`, `jointAxisBinding.ts`,
+  // `jointLoadCapacity.ts` (modules are dead code until Phase 6 wires them
+  // into `validateAssemblyWithMates`). All three are severity `error` under
+  // `validate:'error'`; downstream consumers (lowerer, MCP error-chain
+  // echoes) reference these codes so the union must include them.
+  | 'assembly.mounting-hole.mismatch'
+  | 'assembly.joint-axis.unbound'
+  | 'assembly.joint.load-exceeded';
 
 export interface ValidatorDiagnostic {
   readonly code: ValidatorDiagnosticCode;
@@ -267,6 +286,11 @@ export async function validateAssemblyWithMates(
   arm: Assembly,
   interferencePairs?: readonly InterferencePair[],
   poseEnvelopeResult?: PoseEnvelopeReviewResult,
+  // v0.7.4 — pass-through only in this slice. Gate 3
+  // (`validateJointLoadCapacity`) is wired in Phase 5; until then the body
+  // ignores this arg. Keeping it on the signature now keeps the agent
+  // surface stable as the gate rolls in.
+  _externalLoads?: ExternalLoadMap,
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
