@@ -1,7 +1,7 @@
 // tests/integration/skill/install.test.ts
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,18 +14,25 @@ const SKIP = !existsSync(CLI_BIN);
 describe.skipIf(SKIP)('skill install (built CLI)', () => {
   it('writes SKILL.md to a target directory', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
-    const out = execFileSync('node', [CLI_BIN, 'skill', 'install', '--dir', tmp], { encoding: 'utf8' });
-    expect(out).toMatch(/Wrote/);
-    const target = join(tmp, 'SKILL.md');
+    execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
+    // The install command copies each skill into its own subdirectory.
+    const target = join(tmp, 'kernelcad', 'SKILL.md');
     expect(existsSync(target)).toBe(true);
     const content = readFileSync(target, 'utf8');
     expect(content).toMatch(/^---\nname: kernelcad/);
   });
 
-  it('writes SKILL.md to an explicit path via skill one-file', () => {
+  it('installs all 11 skill subdirectories', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
+    execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
+    const dirs = readdirSync(tmp);
+    expect(dirs.length).toBe(11);
+  });
+
+  it('writes combined skill content to an explicit path via skill onefile', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     const out = join(tmp, 'context.md');
-    execFileSync('node', [CLI_BIN, 'skill', 'one-file', out], { encoding: 'utf8' });
+    execFileSync('node', [CLI_BIN, 'skill', 'onefile', out], { encoding: 'utf8' });
     expect(existsSync(out)).toBe(true);
     const content = readFileSync(out, 'utf8');
     expect(content).toMatch(/^---\nname: kernelcad/);
