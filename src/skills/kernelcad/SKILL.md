@@ -15,6 +15,9 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Editable parameters / params_update / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.
 - Freeform NURBS surfaces → also load `kernelcad-nurbs`.
+- Mechanical patterns (linear / circular / grid replication of a sub-feature) → also load `kernelcad-patterns`.
+- Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
+- Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-sdf`.
 - Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
 
 ## Universal conventions

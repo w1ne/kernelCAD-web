@@ -141,7 +141,7 @@ export type FeatureKind =
   // assembly export (v0.6+) — Scene.toCompound() / Scene.toUnion()
   | 'assemblyExport'
   // specialty (v0.13+)
-  | 'sheetMetal' | 'sdf'
+  | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
   | 'surfaceThicken' | 'surfaceToShape';
 

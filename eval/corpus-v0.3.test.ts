@@ -35,6 +35,10 @@ const tasks: Array<{ id: string; dir: string }> = [
   // slice 3 — symbolic params + edit-after-build replay
   { id: 'param-edit-bolt-diameter',         dir: './eval/tasks/param-edit-bolt-diameter' },
   { id: 'param-gate-cable-port',            dir: './eval/tasks/param-gate-cable-port' },
+  // W2.1 — patterns
+  { id: 'linear-bolt-pattern-on-plate',     dir: './eval/tasks/linear-bolt-pattern-on-plate' },
+  { id: 'circular-hole-array-around-hub',   dir: './eval/tasks/circular-hole-array-around-hub' },
+  { id: 'grid-heat-sink-fin-array',         dir: './eval/tasks/grid-heat-sink-fin-array' },
 ];
 
 describe('v0.3 corpus — expert solutions score 100%', () => {

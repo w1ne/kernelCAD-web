@@ -15,7 +15,12 @@ import { helix, type RailPoint, type HelixOptions } from './helix';
 import { createSketchModule, type SketchModule } from './sketch';
 import { fontPath, type FontPath } from '../lib/fonts';
 import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
+import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
+import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
+import { materialize as sdfMaterialize, type MaterializeOpts } from './sdf/materialize';
+import type { SdfField } from './sdf';
 import { KernelError } from '../intent/kernelError';
+import { validateThickness, validateKFactor } from './sheetMetal';
 import type { FaceLabelsMap } from '../intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../runtime/paramRef';
 import type { ParamMetadata } from '../runtime/paramTable';
@@ -34,6 +39,32 @@ export interface PartsLib {
 
 export interface FaceLabelOpts {
   faceLabels?: FaceLabelsMap;
+}
+
+/** W2.2: opts for `sheetMetal(profile, opts)`. The kernel does not bake
+ *  material tables; the agent picks `kFactor` per material/thickness. */
+export interface SheetMetalOpts {
+  /** Sheet thickness in mm. Drives extrude depth of the base body.
+   *  Must be a positive finite number (or ParamRef<number>). */
+  thickness: Editable<number>;
+  /** K-factor — neutral-axis offset ratio in [0, 1]. Typical mild-steel /
+   *  aluminum values are 0.33–0.45. */
+  kFactor: Editable<number>;
+  /** Standard face-labels map. */
+  faceLabels?: FaceLabelsMap;
+}
+
+export interface SdfNamespace {
+  sphere(radius: number): SdfField;
+  box(size: Vec3): SdfField;
+  cylinder(radius: number, height: number): SdfField;
+  torus(majorR: number, minorR: number): SdfField;
+  smoothBlend(a: SdfField, b: SdfField, k: number): SdfField;
+  materialize(field: SdfField, opts?: MaterializeOpts): Shape;
+  /** Bind an SdfField by name on the session, so the `evaluate_sdf` MCP tool
+   *  can sample it after the script returns. Used by agents who want to probe
+   *  field values before (or after) calling the expensive `sdf.materialize`. */
+  bind(name: string, field: SdfField): void;
 }
 
 export interface KernelCadApi {
@@ -87,8 +118,28 @@ export interface KernelCadApi {
   /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
   sketch: SketchModule;
 
+  /**
+   * W2.2: Build a sheet-metal body from a closed planar Sketch. Reuses the
+   * sketch→extrude pipeline at depth = `thickness`; tags the record as
+   * `kind: 'sheetMetal'` so the lowerer threads sheet-metal canonical face
+   * labels and stores `kFactor` for downstream `.bend()` math.
+   *
+   * Bend-allowance math (K-factor approximation, used by `.bend()`):
+   *   `BA = (π · |angle_deg| / 180) · (kFactor · thickness + radius)`
+   *
+   * Slice-1 limits: planar profile only; `radius >= 0.5 · thickness` for
+   * reliable sewing; flatten-pattern supports <= 2 bends.
+   */
+  sheetMetal(profile: Sketch, opts: SheetMetalOpts): Shape;
+
   /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
   fontPath(p: string): FontPath;
+
+  /** SDF authoring namespace (W2.3). Primitives + smoothBlend + materialize.
+   *  `sdf.materialize(field)` returns a standard `Shape` of kind 'sdfMaterialize'
+   *  that flows through booleans/fillets/exports. The bare `'sdf'` FeatureKind
+   *  is a reservation marker for slice-2+ (TPMS / voronoi) and is not lowered. */
+  sdf: SdfNamespace;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -322,6 +373,52 @@ export function createApi(ctx: ApiContext): KernelCadApi {
 
     sketch: createSketchModule(session),
     fontPath,
+
+    sheetMetal(profile, opts) {
+      // Capture-time validation. Evaluate Editable inputs once.
+      const thicknessParam = mm(opts.thickness);
+      const kFactorParam = ul(opts.kFactor);
+      const tNum = thicknessParam.evaluated;
+      const kNum = kFactorParam.evaluated;
+      // Throws feature.invalid-args / feature.sheetMetal.kfactor-invalid.
+      validateThickness(tNum);
+      validateKFactor(kNum);
+      const faceLabels = validateFaceLabels(opts.faceLabels, 'sheetMetal');
+      return session.createShape({
+        kind: 'sheetMetal',
+        params: {
+          thickness: thicknessParam,
+          kFactor: kFactorParam,
+        },
+        inputs: { sketch: { kind: 'feature', id: profile.id } },
+        // Sketch plane is captured so flattenPattern() can project back
+        // without re-deriving. Slice-1 sketches lower on the XY plane.
+        metadata: {
+          sketchPlane: 'xy',
+          ...(faceLabels ? { faceLabels } : {}),
+        },
+      });
+    },
+
+    sdf: {
+      sphere: sdfSphere,
+      box: sdfBox,
+      cylinder: sdfCylinder,
+      torus: sdfTorus,
+      smoothBlend: sdfSmoothBlend,
+      materialize: (field, opts) => sdfMaterialize({ session }, field, opts),
+      bind: (name, field) => {
+        if (typeof name !== 'string' || name.length === 0) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `sdf.bind: name must be a non-empty string; got ${JSON.stringify(name)}.`,
+            undefined,
+            'invalid-args.sdf.bind.name — pass a non-empty string identifier.',
+          );
+        }
+        session.sdfFields.set(name, field);
+      },
+    },
   };
   return api;
 }

@@ -25,39 +25,56 @@ function getString(obj: unknown, key: string): string | null {
 }
 
 let isInitialized = false;
+// Concurrent callers to init() share a single in-flight promise so the
+// self-prewarm at module load and the host's INIT message coalesce into
+// one WASM compile + OCCT bootstrap. Cleared on failure to permit retry.
+let initPromise: Promise<void> | null = null;
 let executionLock = Promise.resolve();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let OC: any = null;
 
 async function init() {
   if (isInitialized) return;
+  if (initPromise) return initPromise;
 
-  try {
-    const mod = (await import('replicad-opencascadejs')) as unknown as {
-      default: (opts?: unknown) => Promise<unknown>;
-    };
-    const opencascade = mod.default;
+  initPromise = (async () => {
+    try {
+      const mod = (await import('replicad-opencascadejs')) as unknown as {
+        default: (opts?: unknown) => Promise<unknown>;
+      };
+      const opencascade = mod.default;
 
-    if (DEBUG) console.log('Worker: Initializing OpenCascade...');
+      if (DEBUG) console.log('Worker: Initializing OpenCascade...');
 
-    OC = await opencascade({
-      locateFile: (file: string) => {
-        if (file.endsWith('.wasm')) {
-          if (DEBUG) console.log(`Worker: Locating ${file} -> ${wasmUrl}`);
-          return wasmUrl;
-        }
-        return file;
-      },
-    });
+      OC = await opencascade({
+        locateFile: (file: string) => {
+          if (file.endsWith('.wasm')) {
+            if (DEBUG) console.log(`Worker: Locating ${file} -> ${wasmUrl}`);
+            return wasmUrl;
+          }
+          return file;
+        },
+      });
 
-    setOC(OC);
-    isInitialized = true;
-    if (DEBUG) console.log('Worker: OpenCascade initialized successfully');
-  } catch (err) {
-    console.error('Worker: Failed to initialize OpenCascade:', err);
-    throw err;
-  }
+      setOC(OC);
+      isInitialized = true;
+      if (DEBUG) console.log('Worker: OpenCascade initialized successfully');
+    } catch (err) {
+      initPromise = null;
+      console.error('Worker: Failed to initialize OpenCascade:', err);
+      throw err;
+    }
+  })();
+
+  return initPromise;
 }
+
+// Self-prewarm: begin the WASM compile + OCCT bootstrap the moment this
+// worker module loads, overlapping with the host's React render. By the
+// time the host postMessages 'INIT', init() returns the in-flight promise
+// rather than restarting the work. Errors surface via the INIT/EXECUTE
+// handlers' re-await of init().
+init().catch(() => { /* surfaced to host via re-await; swallow here */ });
 
 function postResponse(response: WorkerResponse, transfer?: Transferable[]) {
   if (transfer) self.postMessage(response, { transfer } as unknown as { transfer: Transferable[] });

@@ -24,6 +24,8 @@ import {
 } from './nurbsSurfaceLowerer';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
+import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
+import { findRootSheetMetalRecord } from '../../modules/sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
 import { Transform } from '../../runtime/se3';
@@ -43,6 +45,8 @@ import {
 } from './historyAwareEdgeFeatures';
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
+import { retagInstance } from './patternHistory';
+import { HINT_TEMPLATES } from '../../diagnostics/codes';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -348,6 +352,9 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'sheetMetal',       // W2.2
+    'sheetMetalBend',   // W2.2
+    'sdfMaterialize',   // W2.3
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -566,6 +573,26 @@ export class OcctLowerer implements FeatureLowerer {
         shape = backend;
         break;
       }
+      case 'sdfMaterialize': {
+        // `sdf.materialize(field, opts?)` ran the marching-cubes sweep at
+        // capture time (host-side pure JS + OCCT sewing); the resulting
+        // OcctBackend was parked in `session.importedGeometry` keyed by
+        // feature id. Lowering is a hand-back — geometry is already built.
+        const backend = this.importedGeometry.get(r.id);
+        if (!backend) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sdfMaterialize record '${r.id}' has no pre-lowered geometry registered on the lowerer.`,
+            hint: "invalid-args.sdfMaterialize.missing-backend — wire the session's importedGeometry map into the lowerer before calling engine.run().",
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        shape = backend;
+        break;
+      }
       case 'sketch': {
         const meta = r.metadata as { textContent?: unknown; commands?: unknown } | undefined;
         if (typeof meta?.textContent === 'string') {
@@ -729,6 +756,108 @@ export class OcctLowerer implements FeatureLowerer {
             ],
           };
         }
+        break;
+      }
+      case 'sheetMetal': {
+        // Reuse the sketch→extrude pipeline. Sheet metal differs only in:
+        //   (a) the record kind is 'sheetMetal' (threaded for face-label
+        //       canonicalization and bend lineage walks);
+        //   (b) thickness = depth;
+        //   (c) kFactor + sketchPlane carried on metadata for .bend() and
+        //       flattenPattern().
+        const depth = r.params.thickness.evaluated;
+        const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+        if (!sketchInput) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetal requires an input sketch.`,
+            hint: 'Pass a closed path()...close() sketch as the first argument: sheetMetal(sketch, opts).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT extrude failed during sheetMetal lowering: ${msg}`,
+            hint: 'sheetMetal lowers via the extrude pipeline. Check for self-intersecting profile or near-zero thickness.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        break;
+      }
+      case 'sheetMetalBend': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetalBend requires an input named 'base'.`,
+            hint: 'Chain .bend() on a sheetMetal(...) Shape.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Walk lineage backward to find the root sheetMetal record so we can
+        // read its kFactor and thickness. If none, emit feature.invalid-args.
+        const rootRec = findRootSheetMetalRecord(r, allRecords ?? []);
+        if (!rootRec) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `.bend() only works on Shapes whose lineage roots at sheetMetal(...).`,
+            hint: 'Build the body via sheetMetal(sketch, opts), then chain .bend().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const kFactor = rootRec.params.kFactor.evaluated;
+        const thickness = rootRec.params.thickness.evaluated;
+        // Top-face normal for slice-1 xy-plane bodies is +Z. (We could read
+        // metadata.sketchPlane to support xz/yz; slice-1 sheets lower on XY.)
+        const topNormal: [number, number, number] = [0, 0, 1];
+        // Resolve the bend axis from edges / face inputs.
+        const axisResult = resolveBendAxis(
+          base,
+          r.inputs.edges,
+          r.inputs.face,
+          r.id,
+          thickness,
+        );
+        if ('diagnostic' in axisResult) {
+          diagnostics.push(axisResult.diagnostic);
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const result = lowerSheetMetalBend({
+          featureId: r.id,
+          base,
+          axis: axisResult.axis,
+          topNormal,
+          angleDeg: r.params.angle.evaluated,
+          radius: r.params.radius.evaluated,
+          kFactor,
+          thickness,
+        });
+        diagnostics.push(...result.diagnostics);
+        if (!result.shape) {
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Persist the bend record on r.metadata for flattenPattern.
+        if (result.bendRecord) {
+          const md = (r.metadata ??= {}) as Record<string, unknown>;
+          md.bendRecord = result.bendRecord;
+        }
+        shape = result.shape;
         break;
       }
       case 'revolve': {
@@ -1401,11 +1530,11 @@ export class OcctLowerer implements FeatureLowerer {
         if (!base) {
           diagnostics.push({
             target: this.target,
-            code: 'recompute.input.missing',
+            code: 'feature.pattern.source-not-found',
             featureId: r.id,
             severity: 'error',
             message: `pattern base input is missing or failed.`,
-            hint: 'Pattern features must reference a successfully lowered base shape.',
+            hint: HINT_TEMPLATES['feature.pattern.source-not-found'].template,
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -1417,40 +1546,123 @@ export class OcctLowerer implements FeatureLowerer {
             featureId: r.id,
             severity: 'error',
             message: 'pattern feature is missing pattern metadata.',
-            hint: 'Create patterns through .patternLinear(...) or .patternCircular(...).',
+            hint: 'Create patterns through .patternLinear(...) / .patternCircular(...) / .patternGrid(...).',
           });
           return { shape: base, diagnostics };
         }
 
-        shape = base.clone();
-        if (pattern.kind === 'grid') {
+        // Runtime count guard (catches Param-bound counts < 2 that capture-time
+        // proxy validation can't see).
+        const totalCount = pattern.kind === 'grid'
+          ? pattern.x.count * pattern.y.count
+          : pattern.count;
+        if (totalCount < 2) {
+          diagnostics.push({
+            target: this.target,
+            code: 'feature.pattern.count-out-of-range',
+            featureId: r.id,
+            severity: 'error',
+            message: `pattern total instance count is ${totalCount}; must be >= 2.`,
+            hint: HINT_TEMPLATES['feature.pattern.count-out-of-range'].template,
+          });
+          return { shape: base, diagnostics };
+        }
+
+        // Source FeatureId is the named input that the captured FeatureRecord
+        // references. We retag every lineage entry whose featureId matches it.
+        const sourceId = (r.inputs.base as { kind: 'feature'; id: string }).id;
+
+        // --- Instance enumeration -------------------------------------------
+        // Build an iterator yielding (i, transformFn) pairs covering all
+        // count-1 derived instances. Instance 0 = base (no transform applied
+        // beyond retag). Order: linear/circular walk i=1..count-1; grid walks
+        // (x,y) skipping (0,0) in (x then y) order. We preserve the (x,y)
+        // order so historyMap entries match an externally predictable instance
+        // numbering: i = x * y.count + y, skipping (0,0).
+
+        type Instance = { i: number; applyTo: (s: OcctBackend) => OcctBackend };
+        const instances: Instance[] = [];
+        if (pattern.kind === 'linear') {
+          for (let i = 1; i < pattern.count; i++) {
+            const [dx, dy, dz] = pattern.direction;
+            const s = pattern.spacing * i;
+            instances.push({
+              i,
+              applyTo: (sh) => sh.translate(dx * s, dy * s, dz * s),
+            });
+          }
+        } else if (pattern.kind === 'circular') {
+          for (let i = 1; i < pattern.count; i++) {
+            const ang = (pattern.angleDeg / pattern.count) * i;
+            instances.push({
+              i,
+              applyTo: (sh) => sh.rotate(pattern.axis, ang),
+            });
+          }
+        } else {
+          // grid: instance index = x * y.count + y; skip (0,0).
           for (let x = 0; x < pattern.x.count; x++) {
             for (let y = 0; y < pattern.y.count; y++) {
               if (x === 0 && y === 0) continue;
-              const instance = base.clone().translate(
-                pattern.x.direction[0] * pattern.x.spacing * x + pattern.y.direction[0] * pattern.y.spacing * y,
-                pattern.x.direction[1] * pattern.x.spacing * x + pattern.y.direction[1] * pattern.y.spacing * y,
-                pattern.x.direction[2] * pattern.x.spacing * x + pattern.y.direction[2] * pattern.y.spacing * y,
-              );
-              shape = shape.union(instance);
+              const idx = x * pattern.y.count + y;
+              const tx =
+                pattern.x.direction[0] * pattern.x.spacing * x +
+                pattern.y.direction[0] * pattern.y.spacing * y;
+              const ty =
+                pattern.x.direction[1] * pattern.x.spacing * x +
+                pattern.y.direction[1] * pattern.y.spacing * y;
+              const tz =
+                pattern.x.direction[2] * pattern.x.spacing * x +
+                pattern.y.direction[2] * pattern.y.spacing * y;
+              instances.push({ i: idx, applyTo: (sh) => sh.translate(tx, ty, tz) });
             }
           }
-          break;
         }
 
-        for (let i = 1; i < pattern.count; i++) {
-          let instance: OcctBackend;
-          if (pattern.kind === 'linear') {
-            instance = base.clone().translate(
-              pattern.direction[0] * pattern.spacing * i,
-              pattern.direction[1] * pattern.spacing * i,
-              pattern.direction[2] * pattern.spacing * i,
-            );
+        // --- Cumulative fuse with retagged-per-instance history --------------
+
+        // Instance 0 — base, no transform. Retag its lineage entries.
+        // We reuse `base`'s TopoDS directly (no clone), so its face hashes
+        // match `tagged0`'s keys. Subsequent fuses build new OcctBackends so
+        // base remains untouched.
+        const base0Map = (base.historyMap ?? new Map()) as HistoryMap;
+        const tagged0 = retagInstance(base0Map, sourceId, 0);
+        let cumulative = new OcctBackend(
+          base.getReplicadShape() as replicad.Shape3D,
+          base.kind,
+          tagged0,
+        );
+
+        // Hashes are read from `base` directly (not a clone). Cloning may
+        // refresh TShape pointers and shift face hashes; reading from `base`
+        // keeps them aligned with `base.historyMap`. The transform is applied
+        // to a clone so it doesn't mutate `base`.
+        const baseInputHashes = base.faceHashes();
+        for (const inst of instances) {
+          // Clone base, apply transform; propagate history through transform.
+          const cloneOfBase = base.clone();
+          const transformed = inst.applyTo(cloneOfBase);
+          const outputHashes = transformed.faceHashes();
+          let transformedMap: HistoryMap;
+          if (base.historyMap && outputHashes.length === baseInputHashes.length) {
+            transformedMap = propagateTransformHistory(base.historyMap, baseInputHashes, outputHashes);
           } else {
-            instance = base.clone().rotate(pattern.axis, (pattern.angleDeg / pattern.count) * i);
+            transformedMap = new Map();   // defensive — no history to propagate
           }
-          shape = shape.union(instance);
+          const taggedInstanceMap = retagInstance(transformedMap, sourceId, inst.i);
+          const instanceBackend = new OcctBackend(
+            transformed.getReplicadShape() as replicad.Shape3D,
+            base.kind,
+            taggedInstanceMap,
+          );
+          // History-aware fuse — same pattern as `case 'boolean':`.
+          const fused = fuseWithHistory(cumulative, instanceBackend);
+          const newMap = mergeBooleanHistory(cumulative.historyMap, instanceBackend.historyMap, fused);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const wrapped = replicad.cast(fused.shape as any) as replicad.Shape3D;
+          cumulative = new OcctBackend(wrapped, base.kind, newMap);
         }
+        shape = cumulative;
         break;
       }
       case 'assemblyPart': {

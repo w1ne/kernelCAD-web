@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": false,
-  "version": "0.7.0",
+  "version": "0.7.3",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -55,6 +55,7 @@
     "capture-demo:retro-v0.1": "npx tsx scripts/captureDemo.ts --script examples/bracket-with-hole.kcad.ts --prompt scripts/demo-prompts/v0.1-bracket.md --module v0.1 --output docs/demos/v0.1/bracket-with-hole/ --hero-artifact bracket-with-hole --override-approved-by 'grandfathered: pre-policy v0.1 retro capture'",
     "capture-demo:retro-v0.2": "npx tsx scripts/captureDemo.ts --task subtract-then-fillet-rim --module v0.2 --output docs/demos/v0.2/subtract-then-fillet-rim/ --hero-artifact subtract-then-fillet-rim --override-approved-by 'grandfathered: pre-policy v0.2 retro capture'",
     "capture-demo:v0.6-hero": "npx tsx scripts/captureDemo.ts --script examples/robot-arm/desktop-3axis-mates.kcad.ts --prompt scripts/demo-prompts/v0.6.0-desktop-3axis-mates.md --module v0.6 --output docs/demos/v0.6/desktop-3axis-mates/ --hero-artifact desktop-3axis-mates",
+    "capture-demo:v0.7.1-patterns": "npx tsx scripts/captureDemo.ts --script eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts --prompt scripts/demo-prompts/v0.7.1-grid-heat-sink-fin-array.md --module v0.7.1 --output docs/demos/v0.7.1/grid-heat-sink-fin-array/ --hero-artifact grid-heat-sink-fin-array",
     "lint-demos": "npx tsx scripts/lint-demos.ts",
     "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts"
@@ -72,6 +73,7 @@
     "cmdk": "^1.1.1",
     "commander": "^14.0.3",
     "framer-motion": "^12.33.0",
+    "isosurface": "1.0.0",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
