@@ -1,3 +1,58 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "slug": "grid-heat-sink-fin-array",
+      "title": "Grid-Patterned Heat-Sink Fin Array",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.7.1",
+      "prompt": "# Task: Grid Heat-Sink Fin Array\n\nBuild a flat heat-sink base and a grid-patterned fin array unioned onto it.\n\nFunctional requirements:\n\n- Base: 100 × 100 × 3 mm plate, anchored at origin so it spans `[0, 100] × [0, 100] × [0, 3]`.\n- One source fin: 3 × 25 × 12 mm box. Translate it so its bottom face sits on the base top (z = 3) and its corner anchors at (0, 0, 3).\n- Pattern the fin in a grid:\n  - x direction `[1, 0, 0]`, 8 instances, spacing 12 mm.\n  - y direction `[0, 1, 0]`, 3 instances, spacing 30 mm.\n- Union the fin grid onto the base.\n\nReturn the heat sink.\n\nZ-up, millimetres, degrees.",
+      "source": "curated",
+      "video": "../../docs/demos/v0.7.1/grid-heat-sink-fin-array/demo.mp4",
+      "codeLocal": "../../eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts",
+      "tags": ["pattern", "grid", "heat-sink", "union", "fin-array"],
+      "featured": true,
+      "createdAt": "2026-05-14",
+      "appUrl": null
+    },
+    {
+      "slug": "raised-logo-extrusion",
+      "title": "Raised Logo Extrusion",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.6.4",
+      "prompt": "# Raised Logo Extrusion (v0.6.4 — sketch.text)\n\nBuild a square base 60 × 60 × 2 mm with the text \"KC\" extruded 1.5 mm upward as a raised relief, centered on the base, rotated 15° counter-clockwise for visual interest. Glyph cap height 20 mm.\n\nUse `sketch.text(\"KC\", { size: 20, align: 'center', position: [30, 30], rotation: 15 })` and chain `.extrude(1.5)`; then union with the base.",
+      "source": "curated",
+      "video": "../../docs/demos/v0.6.4/raised-logo-extrusion/demo.mp4",
+      "codeLocal": "../../eval/tasks/raised-logo-extrusion/solution-expert.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/eval/tasks/raised-logo-extrusion/solution-expert.kcad.ts",
+      "tags": ["sketch-text", "extrusion", "relief", "union", "parametric"],
+      "featured": false,
+      "createdAt": "2026-05-14",
+      "appUrl": null
+    },
+    {
+      "slug": "rocket-keychain",
+      "title": "Rocket Keychain",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.4",
+      "prompt": "# Convert a CC0 rocket image into a v0.4 constrained-sketch keychain\n\nUse the CC0 Wikimedia Commons `Rocket with boosters icon.svg` as the visual reference, then convert it into a flat, readable rocket keychain that demonstrates the v0.4 constraint vocabulary in one memorable model.\n\n- a symmetric booster-rocket hull with matching left/right body sides and fins\n- tangent nose-to-body arcs so the nose reads as a smooth rounded cone\n- concentric porthole rings centered on the rocket body\n- fins set by an explicit angle constraint\n- dimensioned body sections that make the nose, porthole, fin roots, and tail stations easy to inspect\n- a small keyring hole that makes the converted icon read as a physical charm\n\nUse the constrained-sketch workflow as the design source, then author the production `.kcad.ts` script with literal numeric geometry from the solved sketch. Current runtime params are symbolic ParamRefs, so do not do arithmetic with ParamRef values. If you introduce params, use them only where the chain accepts them directly, such as thickness, hole radii, or fillet radii.\n\nAll dimensions are in mm.",
+      "source": "curated",
+      "video": "../../docs/demos/v0.4/rocket-keychain/demo.mp4",
+      "codeLocal": "../../examples/v0.4/rocket-keychain.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/v0.4/rocket-keychain.kcad.ts",
+      "tags": ["constrained-sketch", "keychain", "symmetric", "extrusion", "parametric"],
+      "featured": false,
+      "createdAt": "2026-05-06",
+      "appUrl": null
+    }
+  ]
 }
