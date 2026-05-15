@@ -62,6 +62,9 @@ describe('validateJointAxisBinding', () => {
     }
     const parts = diags.map((d) => d.partName).sort();
     expect(parts).toEqual(['a', 'b']);
+    // Distinctness — sort+equal would still pass if both diags named the
+    // same part; the Set assertion pins partA and partB are BOTH flagged.
+    expect(new Set(diags.map((d) => d.partName)).size).toBe(2);
   });
 
   it('emits one diagnostic naming partB only when the axis intersects partA but not partB', async () => {

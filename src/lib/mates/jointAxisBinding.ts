@@ -57,8 +57,10 @@ import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../backends/occt/occtBackend';
 import { isSceneBackend } from '../../backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
+import type { EncodedMateRecord, SolvedAssemblyMateMetadata } from '../../capture/captureSession';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import type { Vec3 } from '../../intent/types';
+import type { FeatureId, Vec3 } from '../../intent/types';
+import { toParam } from '../../runtime/editableHelpers';
 import { Transform } from '../../runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../runtime/se3';
 import { resolveConnectorOrigin, type Connector } from './connector';
@@ -75,6 +77,19 @@ import type { ValidatorDiagnostic } from './validator';
  * false-positive misses.
  */
 const EPSILON_MM = 0.1;
+
+/**
+ * Direction-vector parallelism threshold for line-plane intersection
+ * denominators (and the equivalent ray-AABB slab degenerate case). 1e-4 is
+ * well below any geometrically meaningful angular sensitivity for
+ * kernelCAD's mm-scale parts — the smallest direction component a healthy
+ * mate axis carries after FK is O(1), so 1e-4 only catches genuinely
+ * axis-aligned-to-plane degeneracies, not numerical noise on real axes.
+ *
+ * Not a derived value of `EPSILON_MM`: positional ε and angular/denominator
+ * ε are independent floors. Spec §Gate 2 calls these out separately.
+ */
+const PARALLEL_DIRECTION_EPSILON = 1e-4;
 
 /** Gated mate types per spec §Gate 2. */
 const GATED_MATE_TYPES: ReadonlySet<MateType> = new Set<MateType>([
@@ -99,22 +114,29 @@ export async function validateJointAxisBinding(arm: Assembly): Promise<Validator
   const gatedMates = arm.__mates().filter((m) => GATED_MATE_TYPES.has(m.type));
   if (gatedMates.length === 0) return [];
 
-  // Lower the assembly. Mirrors `detectInterferencesForPoses`: ask the
-  // assembly for its solved scene (no validation — we don't want to throw
-  // on unrelated diagnostics), then re-run the recompute engine so we can
-  // pull the SceneBackend out of the result. The SceneBackend's per-part
-  // `worldTransform` already encodes mate-FK placement, so the world-space
-  // axis line maps onto a part whose BREP we can apply the transform to.
+  // Lower the assembly via a single `RecomputeEngine.run` — mirrors the
+  // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300),
+  // not `detectInterferencesForPoses`'s legacy `solvedModel + run` double-pass.
+  // We register the `solvedAssembly` FeatureRecord directly on the session
+  // (encoding mate metadata inline since `Assembly.buildMateMetadata` is
+  // private), then read the SceneBackend off `result.shapes.get(sceneShape.id)`.
+  // Skipping `arm.solvedModel(...)` avoids the redundant capture-time
+  // `solveMates` pass (which lowers per-part shapes for topology connectors
+  // and runs JS-layer FK) and the in-validator interference recompute that
+  // `validate: 'off'` would otherwise still hand-roll. Source id comes off
+  // the input `sceneShape.id`, not `scene.__sourceFeatureId()` (which would
+  // require a `solvedModel` round-trip just to recover the same value).
   await initOcct();
-  const scene = await arm.solvedModel({}, { validate: 'off' });
-  const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
-  const recompute = await engine.run(arm.__session().getRecords(), {
-    paramTable: arm.__session().paramTable,
-    gatedFeatureNames: arm.__session().gatedFeatureNames,
+  const session = arm.__session();
+  const mateMetadata = buildMateMetadataForGate(arm);
+  const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
+  const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
+  const engine = new RecomputeEngine(createOcctLowerer(session));
+  const recompute = await engine.run(session.getRecords(), {
+    paramTable: session.paramTable,
+    gatedFeatureNames: session.gatedFeatureNames,
   });
-  const sourceId = scene.__sourceFeatureId();
-  if (sourceId === undefined) return [];
-  const lowered = recompute.shapes.get(sourceId);
+  const lowered = recompute.shapes.get(sceneShape.id);
   if (!lowered || !isSceneBackend(lowered)) return [];
 
   // Apply each part's world transform once up-front (clone first — replicad
@@ -205,6 +227,7 @@ async function resolveLocalOrigin(part: AssemblyPartStored, connector: Connector
  * §Gate 2 option 1). Returns `true` iff some face of `shape` admits the
  * line within `EPSILON_MM`.
  */
+// TODO(v0.7.x): replace AABB+plane with OCCT line-vs-shape primitive for curved-surface exactness.
 function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: OcctBackend): boolean {
   // AABB pre-filter — slab algorithm in mm space. Pad by EPSILON_MM so that
   // a line that just kisses the body's bounding plane is admitted.
@@ -261,7 +284,7 @@ function lineIntersectsAabb(
     const d = direction[i];
     const lo = min[i] - epsilon;
     const hi = max[i] + epsilon;
-    if (Math.abs(d) < EPSILON_MM * 1e-3) {
+    if (Math.abs(d) < PARALLEL_DIRECTION_EPSILON) {
       // Direction parallel to this slab: line misses unless origin is
       // already inside the slab.
       if (origin[i] < lo || origin[i] > hi) return false;
@@ -292,7 +315,7 @@ function intersectLineWithPlane(
     lineDir[0] * planeNormal[0]
     + lineDir[1] * planeNormal[1]
     + lineDir[2] * planeNormal[2];
-  if (Math.abs(denom) < EPSILON_MM * 1e-3) return undefined;
+  if (Math.abs(denom) < PARALLEL_DIRECTION_EPSILON) return undefined;
   const dx = planeOrigin[0] - lineOrigin[0];
   const dy = planeOrigin[1] - lineOrigin[1];
   const dz = planeOrigin[2] - lineOrigin[2];
@@ -330,5 +353,87 @@ function makeUnboundDiagnostic(mate: MateRecord, side: ResolvedSide): ValidatorD
       `intersect part '${side.partName}'s BREP. Move the connector origin onto a ` +
       `face/edge of '${side.partName}', or change the connector axis so the line ` +
       `passes through the part's body.`,
+  };
+}
+
+/**
+ * Inline mirror of `Assembly.buildMateMetadata` (private to `assembly.ts`).
+ * Threaded into `session.solvedAssembly(...)` so the OCCT lowerer's
+ * `solvedAssembly` case runs `mateFk` at recompute time and produces a
+ * SceneBackend whose per-part `worldTransform` already encodes mate
+ * placement.
+ *
+ * Why inline: `buildMateMetadata` is `private` on `Assembly`. Replicating
+ * here lets `validateJointAxisBinding` skip `arm.solvedModel(...)` (which
+ * runs the JS-layer `solveMates` + capture-time FK redundantly with the
+ * engine's lowerer-side `mateFk`) without exposing new public surface on
+ * the Assembly class.
+ *
+ * Returns `undefined` when no mates are declared — matches the parent's
+ * branch that drops mate metadata entirely so the lowerer falls back to
+ * `forwardKinematics`-only world transforms.
+ */
+function buildMateMetadataForGate(arm: Assembly): SolvedAssemblyMateMetadata | undefined {
+  const mates = arm.__mates();
+  if (mates.length === 0) return undefined;
+  // 1. Collect mate-referenced (partName, connectorName) pairs.
+  const refsByPartName = new Map<string, Set<string>>();
+  for (const m of mates) {
+    for (const ref of [m.a, m.b]) {
+      const side = parseConnectorRef(ref);
+      let set = refsByPartName.get(side.partName);
+      if (!set) {
+        set = new Set<string>();
+        refsByPartName.set(side.partName, set);
+      }
+      set.add(side.connectorName);
+    }
+  }
+  // 2. Snapshot referenced connectors per-part, keyed by FeatureId.
+  const connectorsByPartId: Record<FeatureId, Connector[]> = {};
+  for (const part of arm.__parts()) {
+    const wanted = refsByPartName.get(part.name);
+    if (!wanted || wanted.size === 0) continue;
+    const list: Connector[] = [];
+    for (const c of part.mateConnectors) {
+      if (wanted.has(c.name)) list.push(c);
+    }
+    if (list.length > 0) connectorsByPartId[part.id] = list;
+  }
+  // 3. Encode mates with `pose` in Param shape (matches assembly.ts:962-1023).
+  //    Default-pose mates pass through with no `pose` field; the lowerer
+  //    reads `mate.pose === undefined` as "use the mate type's zero pose."
+  const encodedMates: EncodedMateRecord[] = mates.map((m) => {
+    if (m.pose === undefined) {
+      return { name: m.name, a: m.a, b: m.b, type: m.type };
+    }
+    if (Array.isArray(m.pose)) {
+      return {
+        name: m.name,
+        a: m.a,
+        b: m.b,
+        type: m.type,
+        pose: {
+          kind: 'ball',
+          value: [
+            toParam(m.pose[0], 'deg'),
+            toParam(m.pose[1], 'deg'),
+            toParam(m.pose[2], 'deg'),
+          ],
+        },
+      };
+    }
+    return {
+      name: m.name,
+      a: m.a,
+      b: m.b,
+      type: m.type,
+      pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
+    };
+  });
+  return {
+    connectorsByPartId,
+    mates: encodedMates,
+    couplings: [...arm.__mateCouplings()],
   };
 }
