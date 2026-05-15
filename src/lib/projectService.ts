@@ -13,6 +13,10 @@ export interface ViewState {
     viewMode3D: string;
     sidePanelVisible: boolean;
     showSketches: boolean;
+    /** Studio shell — agent rail toggle. Persisted per project so the user
+     *  sees their last layout on reload. Optional in older project files;
+     *  defaults to false on hydration. */
+    agentRailOpen?: boolean;
 }
 
 export interface ProjectMetadata {
@@ -32,6 +36,7 @@ const ViewStateSchema = z.object({
     viewMode3D: z.string().min(1),
     sidePanelVisible: z.boolean(),
     showSketches: z.boolean(),
+    agentRailOpen: z.boolean().optional(),
 });
 
 const ProjectSchema = z.object({

@@ -11,8 +11,8 @@
 
 ### Added — diagnostics + MCP tools
 
-- 3 new diagnostic codes: `feature.sheetMetal.kfactor-invalid`, `feature.bend.edge-not-linear`, `feature.flattenPattern.multi-bend-unsupported`. Catalogue grows 30 -> 33.
-- 2 new MCP tools: `flatten_pattern` (serialise the Region produced by `Shape.flattenPattern()`) and `get_bend_table` (list every bend's K-factor BA + axis line + parent thickness/kFactor). MCP tool count 33 -> 35.
+- 3 new diagnostic codes: `feature.sheetMetal.kfactor-invalid`, `feature.bend.edge-not-linear`, `feature.flattenPattern.multi-bend-unsupported`. Catalogue grows 32 -> 35.
+- 2 new MCP tools: `flatten_pattern` (serialise the Region produced by `Shape.flattenPattern()`) and `get_bend_table` (list every bend's K-factor BA + axis line + parent thickness/kFactor).
 
 ### Added — corpus + demos
 
@@ -31,6 +31,25 @@
 - `flattenPattern()` supports at most 2 bends in the chain.
 - Sketch profiles must be polylines (no arc segments through bends).
 - The lowered body shows a sharp inside corner instead of the curved bend section; the K-factor math is still recorded for flatten-pattern roundtrips. Slice 2 will add the OCCT revolve-based bend cylinder.
+
+## v0.7.1 — 2026-05-15 — Patterns: per-instance lineage + agent surface
+
+v0.7.1 carries pattern-instance identity and lineage end-to-end. The OCCT pattern lowerer now threads `propagateTransformHistory` per instance and stamps each per-instance lineage entry with a virtual `<sourceId>_pattern_<i>` `featureId`, so a `created` FaceRef whose `rewriteId` matches that virtual id resolves to the corresponding patterned instance's face. The per-instance fuse runs through `fuseWithHistory` + `mergeBooleanHistory` (the same history-aware path booleans use), keeping naming history intact across the cumulative union. The captured `FeatureRecord` shape is unchanged (one editable unit per pattern call).
+
+### Added
+
+- Pattern-instance face refs: `Shape.patternLinear` / `.patternCircular` / `.patternGrid` now thread per-instance lineage through history-aware boolean fuse. Address an individual instance's faces via `{ kind: 'created', rewriteId: '<sourceId>_pattern_<i>', slot: '...' }`, or fan out to all instances by addressing the source's collective slot.
+- `add_pattern_feature` MCP tool — typed AST-edit composer for the three pattern variants (linear / circular / grid). Validates structured input via shared per-kind predicates, inserts the call before the last top-level return, and re-evaluates the script.
+- Two diagnostic codes: `feature.pattern.source-not-found` (named pattern base wasn't found or was suppressed) and `feature.pattern.count-out-of-range` (count < 2 at runtime — catches Param-bound counts that capture-time validation can't see). Catalogue grows from 30 to 32 codes.
+- Three corpus tasks: `linear-bolt-pattern-on-plate` (6 spaced tiles each with one through-bore), `circular-hole-array-around-hub` (6 mounting tabs around a hub rim), `grid-heat-sink-fin-array` (24-fin heat sink). Each exercises a different pattern kind and the history-aware fuse.
+
+### Changed
+
+- Pattern lowerer now uses `fuseWithHistory` + `mergeBooleanHistory` instead of plain `OcctBackend.union`, and threads `propagateTransformHistory` per instance. Created face/edge refs from the source feature inherit through every patterned instance.
+
+### Slice-1 caveats
+
+- **Pattern semantics are cumulative boolean union of transformed source copies.** This works cleanly for additive features (boxes, ribs, fins, tabs, spokes). Patterning a subtractive feature (e.g. a plate with a hole) only preserves the per-instance void when adjacent patterned bodies are geometrically disjoint — when adjacent bodies overlap, boolean union fills the void of the body that lies inside the other instance's solid, which is the mathematically correct semantics for union. The bundled corpus tasks therefore use disjoint-instance geometry for `linear-bolt-pattern-on-plate` (each plate 20mm wide, spacing 30mm > plate width). Cut-based patterning of subtractive features is a deferred follow-on.
 
 ## v0.7.0 — 2026-05-14 — NURBS surfaces
 

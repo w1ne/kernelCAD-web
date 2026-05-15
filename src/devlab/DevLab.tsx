@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { WorkbenchLayout } from '../components/Layout/WorkbenchLayout';
+import { StudioShell } from '../studio/StudioShell';
 import { devLabScenarios } from './scenarios';
 import { useWorkbench } from '../context/WorkbenchContext';
 
@@ -50,7 +50,7 @@ function DevLabOverlay() {
 export function DevLab() {
   return (
     <div className="w-full h-full relative">
-      <WorkbenchLayout />
+      <StudioShell />
       <DevLabOverlay />
     </div>
   );
