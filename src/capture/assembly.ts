@@ -836,6 +836,19 @@ export class Assembly {
   }
 
   /**
+   * Internal accessor — exposes `buildMateMetadata` to validator gates that
+   * need to register a `solvedAssembly` FeatureRecord directly (skipping the
+   * `solvedModel(...)` round-trip + its capture-time `solveMates` pass).
+   * Mirrors the `__parts()` / `__mates()` underscore convention; not public.
+   * Used by `validateJointAxisBinding` (and any future gate that lowers the
+   * assembly itself) to avoid duplicating the ~85-line metadata builder.
+   */
+  __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
+    if (this.mates.length === 0) return undefined;
+    return this.buildMateMetadata();
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent

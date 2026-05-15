@@ -57,10 +57,8 @@ import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../backends/occt/occtBackend';
 import { isSceneBackend } from '../../backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
-import type { EncodedMateRecord, SolvedAssemblyMateMetadata } from '../../capture/captureSession';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import type { FeatureId, Vec3 } from '../../intent/types';
-import { toParam } from '../../runtime/editableHelpers';
+import type { Vec3 } from '../../intent/types';
 import { Transform } from '../../runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../runtime/se3';
 import { resolveConnectorOrigin, type Connector } from './connector';
@@ -118,17 +116,17 @@ export async function validateJointAxisBinding(arm: Assembly): Promise<Validator
   // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300),
   // not `detectInterferencesForPoses`'s legacy `solvedModel + run` double-pass.
   // We register the `solvedAssembly` FeatureRecord directly on the session
-  // (encoding mate metadata inline since `Assembly.buildMateMetadata` is
-  // private), then read the SceneBackend off `result.shapes.get(sceneShape.id)`.
-  // Skipping `arm.solvedModel(...)` avoids the redundant capture-time
-  // `solveMates` pass (which lowers per-part shapes for topology connectors
-  // and runs JS-layer FK) and the in-validator interference recompute that
+  // (mate metadata sourced from `arm.__buildMateMetadata()`), then read the
+  // SceneBackend off `result.shapes.get(sceneShape.id)`. Skipping
+  // `arm.solvedModel(...)` avoids the redundant capture-time `solveMates`
+  // pass (which lowers per-part shapes for topology connectors and runs
+  // JS-layer FK) and the in-validator interference recompute that
   // `validate: 'off'` would otherwise still hand-roll. Source id comes off
   // the input `sceneShape.id`, not `scene.__sourceFeatureId()` (which would
   // require a `solvedModel` round-trip just to recover the same value).
   await initOcct();
   const session = arm.__session();
-  const mateMetadata = buildMateMetadataForGate(arm);
+  const mateMetadata = arm.__buildMateMetadata();
   const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
   const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
   const engine = new RecomputeEngine(createOcctLowerer(session));
@@ -356,84 +354,3 @@ function makeUnboundDiagnostic(mate: MateRecord, side: ResolvedSide): ValidatorD
   };
 }
 
-/**
- * Inline mirror of `Assembly.buildMateMetadata` (private to `assembly.ts`).
- * Threaded into `session.solvedAssembly(...)` so the OCCT lowerer's
- * `solvedAssembly` case runs `mateFk` at recompute time and produces a
- * SceneBackend whose per-part `worldTransform` already encodes mate
- * placement.
- *
- * Why inline: `buildMateMetadata` is `private` on `Assembly`. Replicating
- * here lets `validateJointAxisBinding` skip `arm.solvedModel(...)` (which
- * runs the JS-layer `solveMates` + capture-time FK redundantly with the
- * engine's lowerer-side `mateFk`) without exposing new public surface on
- * the Assembly class.
- *
- * Returns `undefined` when no mates are declared — matches the parent's
- * branch that drops mate metadata entirely so the lowerer falls back to
- * `forwardKinematics`-only world transforms.
- */
-function buildMateMetadataForGate(arm: Assembly): SolvedAssemblyMateMetadata | undefined {
-  const mates = arm.__mates();
-  if (mates.length === 0) return undefined;
-  // 1. Collect mate-referenced (partName, connectorName) pairs.
-  const refsByPartName = new Map<string, Set<string>>();
-  for (const m of mates) {
-    for (const ref of [m.a, m.b]) {
-      const side = parseConnectorRef(ref);
-      let set = refsByPartName.get(side.partName);
-      if (!set) {
-        set = new Set<string>();
-        refsByPartName.set(side.partName, set);
-      }
-      set.add(side.connectorName);
-    }
-  }
-  // 2. Snapshot referenced connectors per-part, keyed by FeatureId.
-  const connectorsByPartId: Record<FeatureId, Connector[]> = {};
-  for (const part of arm.__parts()) {
-    const wanted = refsByPartName.get(part.name);
-    if (!wanted || wanted.size === 0) continue;
-    const list: Connector[] = [];
-    for (const c of part.mateConnectors) {
-      if (wanted.has(c.name)) list.push(c);
-    }
-    if (list.length > 0) connectorsByPartId[part.id] = list;
-  }
-  // 3. Encode mates with `pose` in Param shape (matches assembly.ts:962-1023).
-  //    Default-pose mates pass through with no `pose` field; the lowerer
-  //    reads `mate.pose === undefined` as "use the mate type's zero pose."
-  const encodedMates: EncodedMateRecord[] = mates.map((m) => {
-    if (m.pose === undefined) {
-      return { name: m.name, a: m.a, b: m.b, type: m.type };
-    }
-    if (Array.isArray(m.pose)) {
-      return {
-        name: m.name,
-        a: m.a,
-        b: m.b,
-        type: m.type,
-        pose: {
-          kind: 'ball',
-          value: [
-            toParam(m.pose[0], 'deg'),
-            toParam(m.pose[1], 'deg'),
-            toParam(m.pose[2], 'deg'),
-          ],
-        },
-      };
-    }
-    return {
-      name: m.name,
-      a: m.a,
-      b: m.b,
-      type: m.type,
-      pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
-    };
-  });
-  return {
-    connectorsByPartId,
-    mates: encodedMates,
-    couplings: [...arm.__mateCouplings()],
-  };
-}
