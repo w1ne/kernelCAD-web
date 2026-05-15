@@ -183,6 +183,19 @@ for the printed/machined plates and brackets that connect them.
 .patternGrid({ x, y }: { x: { count: number; direction: [number, number, number]; spacing: number }; y: { count: number; direction: [number, number, number]; spacing: number } }): Shape
 .patternCircular({ count, axis, angleDeg? }: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape
 
+// Pattern features are a single editable unit per call (one FeatureRecord). To address an
+// individual instance's face / edge, build a FaceRef / EdgeRef with kind: 'created',
+// rewriteId: '<sourceFeatureId>_pattern_<i>' (zero-indexed; instance 0 is the source
+// position), and the source feature's slot name. To address all instances together, use
+// the source feature's name selector (e.g. 'mountBolt.wall' resolves to every patterned
+// instance's wall in one collective).
+//
+// Geometric note: pattern is implemented as cumulative boolean union of transformed source
+// copies. Additive features (boxes, ribs, fins, tabs, spokes) pattern cleanly. Patterning
+// a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent
+// bodies are disjoint — overlapping patterned bodies cause the inner void to be filled by
+// the outer body's solid (boolean-union semantics).
+
 // Apply an SE(3) Transform (returned by SolvedKinematics.transform()) to a shape.
 // Decomposes to translate + rotate via the existing transform pipes; no rebake.
 .transform(t: Transform): Shape
@@ -407,6 +420,8 @@ Two cases produce explicit diagnostics:
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 - `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
 - `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
+- `feature.pattern.source-not-found` — the pattern source feature was not found. Verify the variable receiving `.patternLinear` / `.patternCircular` / `.patternGrid` is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what `list_features` reports.
+- `feature.pattern.count-out-of-range` — pattern count must be an integer >= 2. For grid patterns, both `x.count` and `y.count` must be >= 2. If count is a Param, set `{ min: 2 }` on the Param declaration so updates can't lower it below the valid range.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
 
@@ -758,7 +773,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 33 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 34 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1069,6 +1084,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `add_feature({ code, feature_code })` — insert one source line before the last top-level return and return modified code plus diagnostics
 - `add_nurbs_surface({ code, controls?, degree?, weights?, knots?, periodic?, section_sketch_ids?, binding_name? })` — insert a `nurbsSurface(...)` or `surfaceFromCurves(...)` call; returns modified code + diagnostics. Chain `.thicken(t)` / `.toShape()` via the existing `add_feature` tool on the returned binding name.
 - `add_sketch_text({ code, content, size, font?, align?, position?, rotation?, bindAs? })` — insert a `sketch.text(...)` call before the last top-level return and return modified code plus diagnostics. Pair with subsequent `.extrude(...)` / `cut(...)` edits to land an engraved or raised text feature.
+- `add_pattern_feature({ code, target, kind, linear?, circular?, grid?, assign_to? })` — insert a `Shape.patternLinear / .patternCircular / .patternGrid` call before the last top-level return and return modified code plus diagnostics. Composes the call from structured args (validated under the same predicates as the capture proxy). Pattern-instance face refs resolve via the virtual `<sourceId>_pattern_<i>` lineage id on the pattern feature.
 - `remove_feature({ code, match })` — remove one uniquely matched non-return line and return modified code plus diagnostics
 - `list_edges({ file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `list_faces({ file? code?, feature_id? })` — enumerate all faces with area and centroid
