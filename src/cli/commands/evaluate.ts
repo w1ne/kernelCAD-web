@@ -5,6 +5,11 @@ import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
 import { withNextActions } from '../../diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
+import type { Assembly } from '../../capture/assembly';
+import {
+  reviewPoseEnvelope,
+  type PoseEnvelopeDiagnostic,
+} from '../../lib/mates/poseEnvelope';
 
 export interface EvaluateInput {
   file?: string;
@@ -99,6 +104,156 @@ export async function evaluateScript(input: EvaluateInput): Promise<EvaluateResu
   return (await evaluateAndBuildScript(input)).evaluation;
 }
 
+export interface EvaluateWithEnvelopeInput extends EvaluateInput {
+  /** When true, run `reviewPoseEnvelope` on every captured assembly after
+   *  the script settles. Any envelope `severity: 'error'` diagnostic causes
+   *  exit code 2. When false (the default), behavior matches plain
+   *  `evaluateScript` — capture-time validity gate only. */
+  envelope?: boolean;
+  /** Forwarded to `reviewPoseEnvelope` when `envelope` is true. Integer ≥ 1.
+   *  Specifying without `envelope: true` is a misuse — sets `exitCode: 1`
+   *  and populates `misuseMessage`. */
+  samplesPerMate?: number;
+  /** Forwarded to `reviewPoseEnvelope` when `envelope` is true. Specifying
+   *  without `envelope: true` is a misuse — sets `exitCode: 1` and
+   *  populates `misuseMessage`. */
+  combinatorial?: boolean;
+}
+
+export interface EvaluateWithEnvelopeResult {
+  /** 0: clean evaluation (script ran AND envelope clean if --envelope set)
+   *  1: script-execution failure OR misuse of flags
+   *  2: envelope-error diagnostics surfaced (only possible when --envelope) */
+  exitCode: number;
+  featureCount: number;
+  diagnostics: CompilerDiagnostic[];
+  /** All envelope diagnostics (across every captured assembly) when
+   *  `envelope: true`. Undefined when envelope review didn't run. */
+  envelopeDiagnostics?: PoseEnvelopeDiagnostic[];
+  /** Total pose-envelope sample count across every captured assembly.
+   *  Undefined when envelope review didn't run. */
+  envelopeSampleCount?: number;
+  /** Set when the caller passed an envelope sampling flag without
+   *  `envelope: true`. Triggers `exitCode: 1`. */
+  misuseMessage?: string;
+}
+
+/**
+ * Implements `kernelcad evaluate --envelope [--samples-per-mate N]
+ * [--combinatorial]`. After the script runs, captured assemblies are pulled
+ * off the session and `reviewPoseEnvelope` runs on each. Any envelope
+ * `severity: 'error'` diagnostic produces exit code 2.
+ *
+ * If sampling flags are supplied without `--envelope`, the call is rejected
+ * with `exitCode: 1` and a `misuseMessage` — sampling has no effect without
+ * the gate.
+ *
+ * Per Task 7 of the pose-envelope review-loop closure plan.
+ */
+export async function evaluateWithEnvelope(
+  input: EvaluateWithEnvelopeInput,
+): Promise<EvaluateWithEnvelopeResult> {
+  // Misuse check first — agent supplies sampling flags without enabling the
+  // gate. Fail fast and tell the user how to enable it. No script run.
+  if (!input.envelope) {
+    if (input.samplesPerMate !== undefined) {
+      return {
+        exitCode: 1,
+        featureCount: 0,
+        diagnostics: [],
+        misuseMessage:
+          '--samples-per-mate has no effect without --envelope. Pass --envelope to run the pose-envelope gate.',
+      };
+    }
+    if (input.combinatorial) {
+      return {
+        exitCode: 1,
+        featureCount: 0,
+        diagnostics: [],
+        misuseMessage:
+          '--combinatorial has no effect without --envelope. Pass --envelope to run the pose-envelope gate.',
+      };
+    }
+  }
+
+  if (input.samplesPerMate !== undefined && (!Number.isInteger(input.samplesPerMate) || input.samplesPerMate < 1)) {
+    return {
+      exitCode: 1,
+      featureCount: 0,
+      diagnostics: [],
+      misuseMessage:
+        `--samples-per-mate must be an integer ≥ 1; got ${input.samplesPerMate}.`,
+    };
+  }
+
+  const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
+  const { evaluation, model } = built;
+
+  if (!input.envelope) {
+    return {
+      exitCode: evaluation.exitCode,
+      featureCount: evaluation.featureCount,
+      diagnostics: evaluation.diagnostics,
+    };
+  }
+
+  if (evaluation.exitCode !== 0) {
+    // Don't run envelope on a broken script — surface the underlying failure.
+    return {
+      exitCode: evaluation.exitCode,
+      featureCount: evaluation.featureCount,
+      diagnostics: evaluation.diagnostics,
+      envelopeDiagnostics: [],
+      envelopeSampleCount: 0,
+    };
+  }
+
+  if (!model) {
+    // Shouldn't happen for exitCode 0, but be defensive.
+    return {
+      exitCode: evaluation.exitCode,
+      featureCount: evaluation.featureCount,
+      diagnostics: evaluation.diagnostics,
+      envelopeDiagnostics: [],
+      envelopeSampleCount: 0,
+    };
+  }
+
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  if (assemblies.length === 0) {
+    return {
+      exitCode: 0,
+      featureCount: evaluation.featureCount,
+      diagnostics: evaluation.diagnostics,
+      envelopeDiagnostics: [],
+      envelopeSampleCount: 0,
+    };
+  }
+
+  const reviewOpts: { samplesPerMate?: number; combinatorial?: boolean; includeInterference: true } = {
+    includeInterference: true,
+  };
+  if (input.samplesPerMate !== undefined) reviewOpts.samplesPerMate = input.samplesPerMate;
+  if (input.combinatorial) reviewOpts.combinatorial = true;
+
+  const envelopeDiagnostics: PoseEnvelopeDiagnostic[] = [];
+  let envelopeSampleCount = 0;
+  for (const arm of assemblies) {
+    const review = await reviewPoseEnvelope(arm, reviewOpts);
+    envelopeDiagnostics.push(...review.diagnostics);
+    envelopeSampleCount += review.samples.length;
+  }
+
+  const hasError = envelopeDiagnostics.some((d) => d.severity === 'error');
+  return {
+    exitCode: hasError ? 2 : 0,
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluation.diagnostics,
+    envelopeDiagnostics,
+    envelopeSampleCount,
+  };
+}
+
 function isFileReadError(e: unknown): boolean {
   return (
     typeof e === 'object' &&
@@ -114,22 +269,55 @@ export function evaluateCommand(): Command {
     .description('Run a .kcad.ts script and report diagnostics')
     .argument('<file>', 'path to a .kcad.ts script')
     .option('--json', 'emit diagnostics as JSON')
-    .action(async (file: string, opts: { json?: boolean }) => {
-      const r = await evaluateScript({ file });
+    .option('--envelope', 'after the script runs, run reviewPoseEnvelope on every captured assembly; non-zero exit on envelope-error')
+    .option('--samples-per-mate <n>', 'interior samples per mate for the envelope sweep (integer ≥ 1)', (v) => parseInt(v, 10))
+    .option('--combinatorial', 'enumerate corner combinations across all limited mates (cap: 8 mates)')
+    .action(async (file: string, opts: { json?: boolean; envelope?: boolean; samplesPerMate?: number; combinatorial?: boolean }) => {
+      const r = await evaluateWithEnvelope({
+        file,
+        ...(opts.envelope ? { envelope: true } : {}),
+        ...(opts.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
+        ...(opts.combinatorial ? { combinatorial: true } : {}),
+      });
+
+      if (r.misuseMessage) {
+        console.error(r.misuseMessage);
+        process.exitCode = r.exitCode;
+        return;
+      }
+
+      const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
+
       if (opts.json) {
         console.log(JSON.stringify({
           ok: r.exitCode === 0,
           featureCount: r.featureCount,
           diagnostics: r.diagnostics,
+          ...(r.envelopeDiagnostics !== undefined ? {
+            envelopeDiagnostics: r.envelopeDiagnostics,
+            envelopeSampleCount: r.envelopeSampleCount,
+          } : {}),
         }, null, 2));
       } else {
         console.log(`Features: ${r.featureCount}`);
         if (r.diagnostics.length > 0) {
           console.log(formatHuman(r.diagnostics));
         }
+        if (envelopeErrors.length > 0) {
+          console.error(formatEnvelopeDiagnostics(envelopeErrors));
+        } else if (r.envelopeDiagnostics !== undefined) {
+          console.log(`Pose-envelope: ${r.envelopeSampleCount} sample${r.envelopeSampleCount === 1 ? '' : 's'} clean.`);
+        }
         if (r.exitCode === 0) console.log('OK');
       }
       process.exitCode = r.exitCode;
     });
   return cmd;
+}
+
+function formatEnvelopeDiagnostics(diags: readonly PoseEnvelopeDiagnostic[]): string {
+  return diags.map((d) => {
+    const where = d.sampleName ? `sample '${d.sampleName}'` : '<envelope>';
+    return `${d.severity.toUpperCase()} [${d.code}] ${where}: ${d.message}\n  Hint: ${d.hint}`;
+  }).join('\n');
 }

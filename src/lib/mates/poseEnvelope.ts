@@ -31,6 +31,7 @@ export interface PoseEnvelopeDiagnostic {
   readonly message: string;
   readonly hint: string;
   readonly sampleName?: string;
+  readonly sampleStrategy?: 'corner' | 'interior' | 'combinatorial';
   readonly mateName?: string;
   readonly pose?: number | [number, number, number];
   readonly limits?: readonly [number, number];
@@ -40,13 +41,36 @@ export interface PoseEnvelopeDiagnostic {
   readonly connectorRef?: string;
 }
 
+/**
+ * Classifies a pose-envelope sample name into the sampling strategy that
+ * produced it. Names follow the patterns emitted by `buildPoseEnvelopeSamples`:
+ *   - `current`, `<mate>:min`, `<mate>:max` → `'corner'`
+ *   - `<mate>:interior-<i>` → `'interior'`
+ *   - `corner:<bitmask>` → `'combinatorial'`
+ *   - `undefined` or any unrecognized pattern → `undefined`
+ */
+export function classifySampleStrategy(
+  sampleName: string | undefined,
+): 'corner' | 'interior' | 'combinatorial' | undefined {
+  if (sampleName === undefined) return undefined;
+  if (sampleName.startsWith('corner:')) return 'combinatorial';
+  if (/:interior-\d+$/.test(sampleName)) return 'interior';
+  if (sampleName === 'current' || /:(min|max)$/.test(sampleName)) return 'corner';
+  return undefined;
+}
+
 export interface PoseEnvelopeSample {
   readonly name: string;
   readonly poses: NumericPoses;
   readonly reason: string;
 }
 
-export interface PoseEnvelopeReviewOptions {
+export interface PoseEnvelopeSamplingOptions {
+  samplesPerMate?: number;
+  combinatorial?: boolean;
+}
+
+export interface PoseEnvelopeReviewOptions extends PoseEnvelopeSamplingOptions {
   readonly includeInterference?: boolean;
   readonly epsilonMm3?: number;
   readonly trackConnectors?: readonly string[];
@@ -82,7 +106,11 @@ export interface ConnectorWorkspace {
 
 const DEFAULT_EPSILON_MM3 = 0.01;
 
-export function buildPoseEnvelopeSamples(arm: Assembly): PoseEnvelopeSample[] {
+export function buildPoseEnvelopeSamples(
+  arm: Assembly,
+  options: PoseEnvelopeSamplingOptions = {},
+): PoseEnvelopeSample[] {
+  const samplesPerMate = options.samplesPerMate ?? 1;
   const samples: PoseEnvelopeSample[] = [
     { name: 'current', poses: {}, reason: 'capture-time/default mate poses' },
   ];
@@ -97,11 +125,55 @@ export function buildPoseEnvelopeSamples(arm: Assembly): PoseEnvelopeSample[] {
       reason: `${mate.name} lower limit`,
     });
     if (max !== min) {
+      if (samplesPerMate >= 3) {
+        const interiorCount = samplesPerMate - 2;
+        for (let i = 1; i <= interiorCount; i++) {
+          const t = i / (interiorCount + 1);
+          const value = min + (max - min) * t;
+          samples.push({
+            name: `${mate.name}:interior-${i}`,
+            poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: value }),
+            reason: `${mate.name} interior sample ${i}/${interiorCount}`,
+          });
+        }
+      }
       samples.push({
         name: `${mate.name}:max`,
         poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: max }),
         reason: `${mate.name} upper limit`,
       });
+    }
+  }
+
+  if (options.combinatorial) {
+    const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
+    if (limited.length > 8) {
+      throw new Error(
+        `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,
+      );
+    }
+    // With 0 limited mates the only "corner" is the empty pose, which duplicates
+    // the `current` sample emitted above — skip enumeration entirely to keep the
+    // output deduped.
+    if (limited.length >= 1) {
+      const width = limited.length;
+      const total = 1 << width;
+      for (let mask = 0; mask < total; mask++) {
+        const overrides: NumericPoses = {};
+        for (let i = 0; i < width; i++) {
+          const mate = limited[i];
+          const limits = (mate.limitsDeg ?? mate.limitsMm) as readonly [number, number];
+          // Bit i (LSB = mate 0) — set bit -> max, unset -> min.
+          const useMax = ((mask >> i) & 1) === 1;
+          overrides[mate.name] = useMax ? limits[1] : limits[0];
+        }
+        const maskBits = mask.toString(2).padStart(width, '0');
+        samples.push({
+          name: `corner:${maskBits}`,
+          poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), overrides),
+          reason: `combinatorial corner ${mask + 1}/${total}`,
+        });
+      }
     }
   }
 
@@ -125,6 +197,7 @@ export function validateMatePoseLimits(
         code: 'assembly.pose.out-of-limits',
         severity: 'error',
         sampleName,
+        sampleStrategy: classifySampleStrategy(sampleName),
         mateName: mate.name,
         pose,
         limits,
@@ -142,7 +215,10 @@ export async function reviewPoseEnvelope(
 ): Promise<PoseEnvelopeReviewResult> {
   const includeInterference = opts.includeInterference ?? true;
   const epsilon = opts.epsilonMm3 ?? DEFAULT_EPSILON_MM3;
-  const samples = buildPoseEnvelopeSamples(arm);
+  const samples = buildPoseEnvelopeSamples(arm, {
+    samplesPerMate: opts.samplesPerMate,
+    combinatorial: opts.combinatorial,
+  });
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const connectorPoses: TrackedConnectorPose[] = [];
@@ -174,6 +250,7 @@ export async function reviewPoseEnvelope(
           code: 'assembly.pose-envelope.solve-failed',
           severity: 'error',
           sampleName: sample.name,
+          sampleStrategy: classifySampleStrategy(sample.name),
           message: `Pose-envelope sample '${sample.name}' produced solver status '${solved.status}'.`,
           hint: `invalid-args.assembly.pose-envelope-solve-failed — repair the mate graph or reduce declared travel before trusting this mechanism range.`,
         });
@@ -183,6 +260,7 @@ export async function reviewPoseEnvelope(
         code: 'assembly.pose-envelope.solve-failed',
         severity: 'error',
         sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
         message: `Pose-envelope sample '${sample.name}' could not be solved: ${e instanceof Error ? e.message : String(e)}`,
         hint: `invalid-args.assembly.pose-envelope-solve-failed — inspect the mate refs, connector origins, and pose shapes for this sample.`,
       });
@@ -196,6 +274,7 @@ export async function reviewPoseEnvelope(
         code: 'assembly.pose-envelope.interference',
         severity: 'error',
         sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
         partA: pair.a,
         partB: pair.b,
         volumeMm3: pair.volumeMm3,

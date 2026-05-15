@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../lib/mates/mechanismFitness';
-import { reviewCadTool, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
+import { reviewCadTool, type RepairContext, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -36,6 +36,8 @@ export interface DesignLoopInput {
   epsilonMm3?: number;
   trackConnectors?: string[];
   gripperAperture?: GripperApertureRequest;
+  samplesPerMate?: number;
+  combinatorial?: boolean;
   stopOnPass?: boolean;
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
@@ -122,6 +124,8 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
       epsilonMm3: input.epsilonMm3,
       trackConnectors: input.trackConnectors,
       gripperAperture: input.gripperAperture,
+      samplesPerMate: input.samplesPerMate,
+      combinatorial: input.combinatorial,
     };
     const review = await reviewCadTool(reviewInput);
     const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');
@@ -209,8 +213,105 @@ function toAttemptResult(input: {
       ? buildQualityRepairPrompt(reviewFacts)
       : input.review.ok
       ? fitness?.repairDirective ?? 'No repair needed. Preserve the current design and rerun review_cad after changes.'
-      : input.review.suggestedRepairPrompt,
+      : buildFailureRepairPrompt(input.review),
   };
+}
+
+function buildFailureRepairPrompt(review: Extract<ReviewCadOutput, { ok: false }>): string {
+  const context = review.repairContext;
+  if (context === undefined) {
+    // Defensive fallback: predecessor commits guarantee repairContext on every
+    // review output, but keep the prior string for callers that injected an
+    // older ReviewCadOutput shape (unit tests, fixtures).
+    return review.suggestedRepairPrompt;
+  }
+  const severityByKey = indexDiagnosticSeverity(review.diagnostics);
+  const blockingLines = context.blockingReasons.map((reason) => `- ${reason}`);
+  const topLines = context.topDiagnostics
+    .slice(0, 3)
+    .map((entry) => renderTopDiagnostic(entry, severityByKey));
+  const repairDirectiveBlock = review.fitness !== undefined
+    ? `Repair mode: ${review.fitness.repairMode}\nDirective: ${review.fitness.repairDirective}`
+    : undefined;
+  const designLines: string[] = [];
+  if (context.designGoal.trim() !== '') {
+    designLines.push(`Design goal: ${context.designGoal}`);
+  }
+  if (context.preserveInterfaces.length > 0) {
+    designLines.push(`Preserve interfaces: ${context.preserveInterfaces.join(', ')}`);
+  }
+  const sections: string[] = [];
+  if (blockingLines.length > 0) {
+    sections.push(`Blocking reasons:\n${blockingLines.join('\n')}`);
+  }
+  if (topLines.length > 0) {
+    sections.push(`Top diagnostics:\n${topLines.join('\n')}`);
+  }
+  if (repairDirectiveBlock !== undefined) {
+    sections.push(repairDirectiveBlock);
+  }
+  if (designLines.length > 0) {
+    sections.push(designLines.join('\n'));
+  }
+  if (sections.length === 0) {
+    return review.suggestedRepairPrompt;
+  }
+  return sections.join('\n\n');
+}
+
+function renderTopDiagnostic(
+  entry: RepairContext['topDiagnostics'][number],
+  severityByKey: ReadonlyMap<string, string>,
+): string {
+  const severity = severityByKey.get(diagnosticKey(entry.code, entry.sampleName)) ?? 'error';
+  const parts: string[] = [`[${severity}] ${entry.code}`];
+  const scope: string[] = [];
+  if (entry.sampleName !== undefined) scope.push(`sampleName=${entry.sampleName}`);
+  if (entry.mateName !== undefined) scope.push(`mate=${entry.mateName}`);
+  if (scope.length > 0) parts.push(`@ ${scope.join(' ')}`);
+  if (entry.suggestedDelta !== undefined) {
+    parts.push(`-> suggested: ${formatSuggestedDelta(entry.suggestedDelta)}`);
+  }
+  return `- ${parts.join(' ')}`;
+}
+
+function formatSuggestedDelta(
+  delta: NonNullable<RepairContext['topDiagnostics'][number]['suggestedDelta']>,
+): string {
+  if (typeof delta.widenBy === 'number') {
+    return `widen by ${formatDeltaValue(delta.widenBy)}`;
+  }
+  if (typeof delta.narrowBy === 'number') {
+    return `narrow by ${formatDeltaValue(delta.narrowBy)}`;
+  }
+  return `adjust ${delta.mate}`;
+}
+
+function formatDeltaValue(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+function indexDiagnosticSeverity(
+  diagnostics: readonly { code: string; severity: string; sampleName?: string }[],
+): ReadonlyMap<string, string> {
+  const map = new Map<string, string>();
+  for (const diagnostic of diagnostics) {
+    const sampleName = 'sampleName' in diagnostic && typeof diagnostic.sampleName === 'string'
+      ? diagnostic.sampleName
+      : undefined;
+    const key = diagnosticKey(diagnostic.code, sampleName);
+    if (!map.has(key)) map.set(key, normalizeSeverity(diagnostic.severity));
+  }
+  return map;
+}
+
+function diagnosticKey(code: string, sampleName: string | undefined): string {
+  return `${code}::${sampleName ?? ''}`;
+}
+
+function normalizeSeverity(severity: string): string {
+  if (severity === 'warn') return 'warning';
+  return severity;
 }
 
 function scriptQualityFacts(

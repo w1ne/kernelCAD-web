@@ -1,6 +1,6 @@
 import { lookupSourceColor } from '../backends/occt/lookupSourceColor';
 import { KernelError } from '../intent/kernelError';
-import { Scene, type ScenePart } from '../intent/scene';
+import { Scene, type SceneDiagnostic, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import {
@@ -17,8 +17,12 @@ import {
   type MateRecord,
 } from '../lib/mates/mate';
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+import {
+  reviewPoseEnvelope,
+  type PoseEnvelopeDiagnostic,
+} from '../lib/mates/poseEnvelope';
 import { solveMates } from '../lib/mates/solver';
-import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
+import { validateAssemblyWithMates } from '../lib/mates/validator';
 import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -1063,7 +1067,31 @@ export class Assembly {
    */
   solvedModel(
     poses: Poses,
-    opts?: { validate?: 'warn' | 'error' | 'off' },
+    opts?: {
+      validate?: 'warn' | 'error' | 'off';
+      /**
+       * Which poses the validation gate covers. Orthogonal to `validate`
+       * (which controls severity).
+       *
+       * - `'default'` (default) → the existing behavior: gate runs over the
+       *   default/capture-time pose only. No pose-envelope review runs.
+       * - `'envelope'` → after the existing default-pose gate, run
+       *   `reviewPoseEnvelope(this, { samplesPerMate, combinatorial,
+       *   includeInterference: true })` and fold the envelope diagnostics
+       *   into the gate. Under `validate: 'error'` any envelope-error fails
+       *   the call; under `validate: 'warn'` they surface on `scene.warnings`
+       *   without throwing.
+       *
+       * Per-mate envelope sweep is configured by `samplesPerMate` /
+       * `combinatorial` below — same semantics as `reviewPoseEnvelope`'s
+       * `PoseEnvelopeSamplingOptions`.
+       */
+      posesGate?: 'default' | 'envelope';
+      /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
+      samplesPerMate?: number;
+      /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
+      combinatorial?: boolean;
+    },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
       throw new KernelError(
@@ -1130,14 +1158,28 @@ export class Assembly {
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
 
+    // T6: optional pose-envelope review runs AFTER the default-pose
+    // validator so its diagnostics layer on top of the existing gate.
+    // `posesGate` is orthogonal to `validate` — see the opts JSDoc above.
+    const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
+    const envelopePromise: Promise<readonly PoseEnvelopeDiagnostic[]> =
+      posesGate === 'envelope'
+        ? reviewPoseEnvelope(this, {
+            ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
+            ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
+            includeInterference: true,
+          }).then((r) => r.diagnostics)
+        : Promise.resolve([] as readonly PoseEnvelopeDiagnostic[]);
+
     return Promise.all([
       interferencePromise,
       mateTransformsPromise,
     ]).then(async ([interferencePairs, mateT]) => {
       const result = await validateAssemblyWithMates(this, interferencePairs);
-      return { result, mateT };
+      const envelopeDiagnostics = await envelopePromise;
+      return { result, mateT, envelopeDiagnostics };
     }).then(
-      ({ result, mateT }) => {
+      ({ result, mateT, envelopeDiagnostics }) => {
         if (mode === 'error') {
           const errDiag = result.diagnostics.find((d) => d.severity === 'error');
           // Status-driven fallback: `over-constrained` / `did-not-converge`
@@ -1160,11 +1202,37 @@ export class Assembly {
               `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
             );
           }
+          // T6: throw if the pose-envelope review (when enabled) surfaced any
+          // error-severity diagnostic. The message lists code counts so a
+          // caller can grep for the specific failure family.
+          const envelopeErrors = envelopeDiagnostics.filter((d) => d.severity === 'error');
+          if (envelopeErrors.length > 0) {
+            const counts = new Map<string, number>();
+            for (const d of envelopeErrors) {
+              counts.set(d.code, (counts.get(d.code) ?? 0) + 1);
+            }
+            const codeSummary = Array.from(counts.entries())
+              .map(([code, count]) => `${code} (x${count})`)
+              .join(', ');
+            const sampleHint = envelopeErrors[0].hint;
+            throw new KernelError(
+              'feature.invalid-args',
+              `solvedModel: pose-envelope errors: ${codeSummary}`,
+              undefined,
+              sampleHint,
+            );
+          }
           // error mode: warnings/info silently dropped per T9 spec.
           return this.makeScene(sceneShape, [], mateT);
         }
-        // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
-        return this.makeScene(sceneShape, result.diagnostics, mateT);
+        // warn mode: attach all diagnostics (error/warning/info) to
+        // scene.warnings. When posesGate === 'envelope', the envelope review
+        // diagnostics are appended after the default-pose validator's.
+        const aggregated: readonly SceneDiagnostic[] = [
+          ...result.diagnostics,
+          ...envelopeDiagnostics,
+        ];
+        return this.makeScene(sceneShape, aggregated, mateT);
       },
     );
   }
@@ -1261,7 +1329,7 @@ export class Assembly {
    */
   private makeScene(
     sceneShape: Shape,
-    warnings: readonly ValidatorDiagnostic[] = [],
+    warnings: readonly SceneDiagnostic[] = [],
     matePartTransforms?: ReadonlyMap<string, Transform>,
   ): Scene {
     const sceneFeatureId = sceneShape.id;
