@@ -1,5 +1,7 @@
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext';
-import { WorkbenchLayout } from './components/Layout/WorkbenchLayout';
+import { StudioShell } from './studio/StudioShell';
+import { shellStore } from './studio/store/shellStore';
+import { useShellStore } from './studio/store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
@@ -30,6 +32,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   } = useWorkbench();
 
   const { activeProject, saveActiveProject } = useProject();
+  const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const scriptParam = readScriptParam();
 
@@ -75,6 +78,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       if (activeProject.viewState) {
         setViewMode(activeProject.viewState.viewMode);
         setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
+        shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
       }
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
@@ -94,15 +98,16 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
           viewMode,
           viewMode3D,
           sidePanelVisible,
-          showSketches
+          showSketches,
+          agentRailOpen,
         }
       });
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
 
-  return isDevLab ? <DevLab /> : <WorkbenchLayout />;
+  return isDevLab ? <DevLab /> : <StudioShell />;
 }
 
 function isDemoPlayerRoute(): boolean {

@@ -9,8 +9,11 @@ describe('design_loop MCP tool', () => {
   const passingVisualChecks = [
     { code: 'main-object-count', passed: true, finding: 'The screenshot shows one primary object, not duplicate assemblies.' },
     { code: 'proportions-match-reference', passed: true, finding: 'The major proportions match the requested object closely enough for this pass.' },
-    { code: 'required-visible-features', passed: true, finding: 'The required visible features are present and legible.' },
-    { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible.' },
+    { code: 'required-visible-features', passed: true, finding: 'The required visible features, labels, numerals, and dial details are present, legible, unobstructed, and not covered by surrounding geometry.' },
+    { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible; each secondary component is visibly supported by contact, fasteners, brackets, or a continuous path into the parent body.' },
+    { code: 'attachment-plausibility', passed: true, finding: 'Visible lugs, spring bars, brackets, straps, and case-band interfaces connect through a plausible load-bearing geometry anchored into the parent case body, with seated exposed interfaces and no buried half-inserted hardware.' },
+    { code: 'semantic-orientation-alignment', passed: true, finding: 'Hands, arrows, labels, and repeated indicators point in deliberate, reference-consistent directions.' },
+    { code: 'device-depth-and-construction', passed: true, finding: 'Side and canonical views show real case thickness, bezel, case back, body layers, and non-facade device construction.' },
     { code: 'canonical-views-physically-coherent', passed: true, finding: 'Canonical views still read as one physically coherent object.' },
   ];
 
@@ -421,6 +424,120 @@ describe('design_loop MCP tool', () => {
       expect.objectContaining({ code: 'assembly.visual.review-check-failed' }),
     ]));
     expect(result.attempts[0].nextActionPrompt).toContain('main-object-count');
+  });
+
+  it('rejects required-feature reviews that do not prove dial details are unobstructed', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a watch whose numerals must not be covered by the casing or bezel.',
+      includeInterference: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Accepted without unobstructed numeral evidence',
+          code: `
+            const arm = assembly('clean-bracket');
+            arm.part('base', box(30, 20, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 8, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/watch-numerals-possibly-covered.png',
+            findings: ['The watch has numerals on the dial.'],
+            checks: passingVisualChecks.map((check) =>
+              check.code === 'required-visible-features'
+                ? { ...check, finding: 'The dial numerals and hands are present.' }
+                : check,
+            ),
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-evidence-weak' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('unobstructed');
+  });
+
+  it('rejects attachment reviews that do not anchor the bracelet path into the case body', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a watch whose bracelet or strap is properly mounted to the case body.',
+      includeInterference: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Accepted without case-body anchor evidence',
+          code: `
+            const arm = assembly('clean-bracket');
+            arm.part('base', box(30, 20, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 8, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/watch-strap-no-case-anchor.png',
+            findings: ['The strap has spring bars and visible lugs.'],
+            checks: passingVisualChecks.map((check) =>
+              check.code === 'attachment-plausibility'
+                ? { ...check, finding: 'Spring bars connect the strap through seated exposed lugs with no buried half-inserted hardware.' }
+                : check,
+            ),
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-evidence-weak' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('case body');
+  });
+
+  it('rejects no-floating-geometry reviews that do not prove secondary parts are supported', async () => {
+    const result = await designLoopTool({
+      goal: 'Build a physical device where every strap, bracket, button, and secondary part must be supported by the main body.',
+      includeInterference: false,
+      attempts: [
+        {
+          id: '01',
+          title: 'Accepted without support evidence for secondary geometry',
+          code: `
+            const arm = assembly('clean-bracket');
+            arm.part('base', box(30, 20, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 3] }, axis: [0, 0, 1] });
+            arm.part('link', box(30, 8, 6, true))
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+            arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
+            return arm.model();
+          `,
+          visualReview: {
+            accepted: true,
+            screenshotPath: '/tmp/device-floating-secondary-parts.png',
+            findings: ['The model has no obvious random extra blocks.'],
+            checks: passingVisualChecks.map((check) =>
+              check.code === 'no-stray-or-floating-geometry'
+                ? { ...check, finding: 'No obvious extra geometry is visible.' }
+                : check,
+            ),
+          },
+        },
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-evidence-weak' }),
+    ]));
+    expect(result.attempts[0].nextActionPrompt).toContain('secondary component');
   });
 
   it('allows explicit opt-out for non-visual batch checks', async () => {

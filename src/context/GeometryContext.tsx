@@ -4,6 +4,7 @@ import { remapSketchNames } from '../lib/sketchNaming';
 import { parseCode } from '../lib/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../runtime/paramTable';
+import type { FeatureRecord } from '../intent/featureRecord';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -40,6 +41,8 @@ export interface GeometryContextType {
     executionHistory: ExecutionRecord[];
     scriptParams: SerializedParamEntry[];
     scriptReview: ScriptReviewSummary | null;
+    featureRecords: FeatureRecord[];
+    recomputeMs: number;
     staleMainResponsesDropped: number;
     stalePreviewResponsesDropped: number;
     // Execute code to update geometries
@@ -91,6 +94,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>([]);
     const [scriptParams, setScriptParams] = useState<SerializedParamEntry[]>([]);
     const [scriptReview, setScriptReview] = useState<ScriptReviewSummary | null>(null);
+    const [featureRecords, setFeatureRecords] = useState<FeatureRecord[]>([]);
+    const [recomputeMs, setRecomputeMs] = useState<number>(0);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
@@ -132,6 +137,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         setIsComputing(true);
         let cancelled = false;
 
+        const fetchStart = performance.now();
         fetch(`/__kernelcad/mesh?script=${encodeURIComponent(studioScript)}`)
             .then(async (response) => {
                 const payload = await response.json();
@@ -141,6 +147,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 }
                 return payload as {
                     features: FeatureMeshSerialized[];
+                    featureRecords?: FeatureRecord[];
                     bounds: { min: [number, number, number]; max: [number, number, number] };
                     params?: SerializedParamTable;
                 };
@@ -151,6 +158,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     return;
                 }
                 setGeometries(featureMeshesToGeometries(payload.features));
+                setFeatureRecords(payload.featureRecords ?? []);
+                setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
                 setScriptParams(Object.values(payload.params ?? {}));
                 setScriptReview(null);
                 setSketchesGeometries([]);
@@ -421,11 +430,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         executionHistory,
         scriptParams,
         scriptReview,
+        featureRecords,
+        recomputeMs,
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
         executeGeometry,
         setPreviewCode,
-    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }
