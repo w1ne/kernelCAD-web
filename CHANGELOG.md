@@ -1,8 +1,8 @@
-# kernelCAD v0.8.0
+# kernelCAD v0.7.3
 
-## v0.8.0 — 2026-05-15 — SDF authoring (slice 1)
+## v0.7.3 — 2026-05-15 — SDF authoring (slice 1)
 
-v0.8.0 adds signed-distance-field authoring to the agent surface: agents can compose `sdf.sphere/.box/.cylinder/.torus` primitives, blend them smoothly with `sdf.smoothBlend(a, b, k)`, then call `sdf.materialize(field, { resolution })` to obtain a standard `Shape` (kind `sdfMaterialize`) that flows through the existing pipeline — booleans, exports, history walks. The slice ships the minimum credible surface to land a smooth-blended bracket without forking the renderer, calling a GPU, or leaving the standard `Shape` contract.
+v0.7.3 adds signed-distance-field authoring to the agent surface: agents can compose `sdf.sphere/.box/.cylinder/.torus` primitives, blend them smoothly with `sdf.smoothBlend(a, b, k)`, then call `sdf.materialize(field, { resolution })` to obtain a standard `Shape` (kind `sdfMaterialize`) that flows through the existing pipeline — booleans, exports, history walks. The slice ships the minimum credible surface to land a smooth-blended bracket without forking the renderer, calling a GPU, or leaving the standard `Shape` contract.
 
 ### Added — top-level API
 

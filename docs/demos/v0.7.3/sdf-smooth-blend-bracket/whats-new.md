@@ -1,4 +1,4 @@
-# v0.8.0 — sdf-smooth-blend-bracket hero
+# v0.7.3 — sdf-smooth-blend-bracket hero
 
 ## Hero artifact
 
