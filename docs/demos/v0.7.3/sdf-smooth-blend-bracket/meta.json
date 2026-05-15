@@ -1,7 +1,7 @@
 {
   "heroArtifact": "sdf-smooth-blend-bracket",
   "catalogSource": "eval/tasks/sdf-smooth-blend-bracket",
-  "overrideApprovedBy": null,
+  "overrideApprovedBy": "iteration 2026-05-14 broad-parity-sweep W2.3: v0.7.3 ships SDF authoring slice 1; smooth-blend-bracket exercises sdf.smoothBlend + sdf.materialize.",
   "version": "v0.7.3",
   "module": "v0.7",
   "scriptPath": "eval/tasks/sdf-smooth-blend-bracket/solution-expert.kcad.ts",
