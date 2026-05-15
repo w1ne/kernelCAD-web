@@ -134,6 +134,12 @@
         document.getElementById('demo-version').textContent = d.version;
       });
 
+    // Lazy-load <model-viewer> once when the gallery section is in the DOM.
+    if (document.querySelector('section.gallery')) {
+      import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
+        .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+    }
+
     // Render the curated gallery from /gallery.json
     function formatRelativeDate(iso) {
       const then = new Date(iso + 'T00:00:00Z');
