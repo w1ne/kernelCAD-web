@@ -103,8 +103,12 @@ lib.fromSTEP(path: string): Promise<Shape>;
 .alongAxis(axis: [number, number, number]): Shape
 
 // Tag this shape with a render-time role color (geometry unchanged). Booleans drop
-// the color so identity lives at leaf parts. Tokens: 'servo' | 'gear' | 'beam' |
-// 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
+// the color so identity lives at leaf parts: a `.color()` call applied to a
+// composed/unioned shape silently has NO effect on the underlying leaf parts —
+// each part must be colored BEFORE it enters a boolean. Coloring the post-union
+// root is a no-op; don't infer from a uniform-grey render that "renderer ignores
+// .color()". Tokens: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' |
+// 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
@@ -299,8 +303,12 @@ kernelcad evaluate path/to/script.kcad.ts --json
 kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
 
-# Render a 4-view PNG (front/right/top/iso) for visual review
-kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+# Render a 4-view PNG (front/right/top/iso) for visual review.
+# Always pass --width 1920 --height 1080: the demo-player page layout is
+# fixed at 1920×1080 (terminal pane 640 + viewer pane 1280); rendering at
+# the CLI default 1024×1024 silently clips the viewer pane and crops the
+# model on the right side.
+kernelcad render path/to/script.kcad.ts --width 1920 --height 1080 -o /tmp/out.png
 
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts

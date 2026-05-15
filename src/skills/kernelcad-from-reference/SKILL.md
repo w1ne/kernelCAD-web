@@ -54,12 +54,12 @@ Example from `examples/portfolio/pocket-watch/build.kcad.ts` lines 1–28:
 ## Author-then-verify loop
 
 For every authoring task with a visual target:
-1. Render the four canonical views (front, right, top, iso) after each authoring pass.
+1. Render the four canonical views (front, right, top, iso) after each authoring pass. **Always pass `--width 1920 --height 1080`** to `kernelcad render` — the demo-player page layout is fixed at 1920×1080 (terminal 640 + viewer 1280); the CLI's 1024×1024 default clips the viewer and the rendered model appears cropped on the right.
 2. **Read the PNGs back** — filenames are not evidence.
 3. Compare each render to the reference.
 4. Fill in a binary gate table at `<artifact-dir>/visual-checks.md`. Every gate is **yes** or **no** — never "mostly", "kind of", or a paragraph of caveats.
 5. If ANY gate is `no`, fix the source and loop.
-6. Hard cap: **8 iteration passes**. If hit, report which gates remain `no` and stop — do not lie about completion.
+6. Hard cap: **8 iteration passes**. If hit, report which gates remain `no` and stop — do not lie about completion, and do not silently start over with a fresh counter.
 
 ## Forbidden rationalizations
 
@@ -67,7 +67,12 @@ If a defect is visible in a render, fix it or mark the gate `no`. These are NOT 
 - "It looks flat in this view because the camera angle is straight-on" — pick a different camera, or fix the geometry.
 - "The float is only 1 mm" — fix the offset.
 - "The numerals are partially behind the crystal because the crystal is on top" — re-order Y-layers so the numerals win.
-- "The renderer's framing crops the part" — recenter the model.
+- "The renderer's framing crops the part" — recenter the model, or pass `--width 1920 --height 1080` if you have not.
+- "But the render is mostly identifiable / does not prevent identification" — split that judgement into separate gates with binary answers; never write a passage of qualifications.
+
+## Do not tamper with verification gates
+
+If a render gate, an ffmpeg black-frame check, an interference check, or any other automated verification reports a failure, **fix the underlying model or capture pipeline**. Do not edit the gate's source to loosen the threshold so your work passes. If you genuinely believe the gate is wrong, stop authoring and surface the gate change to the user with the evidence; the gate exists because a real failure was shipped before. Loosening it to ship today is the same failure twice.
 
 ## Verification gates
 
