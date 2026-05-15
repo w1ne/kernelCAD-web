@@ -681,6 +681,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
           includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
+          samplesPerMate: {
+            type: 'integer',
+            minimum: 1,
+            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+          },
+          combinatorial: {
+            type: 'boolean',
+            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+          },
           epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
           trackConnectors: {
             type: 'array',
@@ -748,6 +757,15 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           },
           includePoseEnvelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
           includeInterference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+          samplesPerMate: {
+            type: 'integer',
+            minimum: 1,
+            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+          },
+          combinatorial: {
+            type: 'boolean',
+            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+          },
           epsilonMm3: { type: 'number', description: 'Forwarded to review_cad.' },
           trackConnectors: {
             type: 'array',
