@@ -31,6 +31,7 @@ export interface PoseEnvelopeDiagnostic {
   readonly message: string;
   readonly hint: string;
   readonly sampleName?: string;
+  readonly sampleStrategy?: 'corner' | 'interior' | 'combinatorial';
   readonly mateName?: string;
   readonly pose?: number | [number, number, number];
   readonly limits?: readonly [number, number];
@@ -38,6 +39,24 @@ export interface PoseEnvelopeDiagnostic {
   readonly partB?: string;
   readonly volumeMm3?: number;
   readonly connectorRef?: string;
+}
+
+/**
+ * Classifies a pose-envelope sample name into the sampling strategy that
+ * produced it. Names follow the patterns emitted by `buildPoseEnvelopeSamples`:
+ *   - `current`, `<mate>:min`, `<mate>:max` → `'corner'`
+ *   - `<mate>:interior-<i>` → `'interior'`
+ *   - `corner:<bitmask>` → `'combinatorial'`
+ *   - `undefined` or any unrecognized pattern → `undefined`
+ */
+export function classifySampleStrategy(
+  sampleName: string | undefined,
+): 'corner' | 'interior' | 'combinatorial' | undefined {
+  if (sampleName === undefined) return undefined;
+  if (sampleName.startsWith('corner:')) return 'combinatorial';
+  if (/:interior-\d+$/.test(sampleName)) return 'interior';
+  if (sampleName === 'current' || /:(min|max)$/.test(sampleName)) return 'corner';
+  return undefined;
 }
 
 export interface PoseEnvelopeSample {
@@ -178,6 +197,7 @@ export function validateMatePoseLimits(
         code: 'assembly.pose.out-of-limits',
         severity: 'error',
         sampleName,
+        sampleStrategy: classifySampleStrategy(sampleName),
         mateName: mate.name,
         pose,
         limits,
@@ -230,6 +250,7 @@ export async function reviewPoseEnvelope(
           code: 'assembly.pose-envelope.solve-failed',
           severity: 'error',
           sampleName: sample.name,
+          sampleStrategy: classifySampleStrategy(sample.name),
           message: `Pose-envelope sample '${sample.name}' produced solver status '${solved.status}'.`,
           hint: `invalid-args.assembly.pose-envelope-solve-failed — repair the mate graph or reduce declared travel before trusting this mechanism range.`,
         });
@@ -239,6 +260,7 @@ export async function reviewPoseEnvelope(
         code: 'assembly.pose-envelope.solve-failed',
         severity: 'error',
         sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
         message: `Pose-envelope sample '${sample.name}' could not be solved: ${e instanceof Error ? e.message : String(e)}`,
         hint: `invalid-args.assembly.pose-envelope-solve-failed — inspect the mate refs, connector origins, and pose shapes for this sample.`,
       });
@@ -252,6 +274,7 @@ export async function reviewPoseEnvelope(
         code: 'assembly.pose-envelope.interference',
         severity: 'error',
         sampleName: sample.name,
+        sampleStrategy: classifySampleStrategy(sample.name),
         partA: pair.a,
         partB: pair.b,
         volumeMm3: pair.volumeMm3,

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../capture/captureSession';
 import { createApi } from '../../modules/api';
-import { buildPoseEnvelopeSamples, reviewPoseEnvelope, validateMatePoseLimits } from './poseEnvelope';
+import {
+  buildPoseEnvelopeSamples,
+  classifySampleStrategy,
+  reviewPoseEnvelope,
+  validateMatePoseLimits,
+} from './poseEnvelope';
 
 function makeArm() {
   const session = new CaptureSession();
@@ -250,5 +255,45 @@ describe('pose-envelope review helpers', () => {
       severity: 'warning',
       connectorRef: 'link.top-center',
     }));
+  });
+
+  it('classifySampleStrategy returns correct strategy for each sample name pattern', () => {
+    expect(classifySampleStrategy('current')).toBe('corner');
+    expect(classifySampleStrategy('hinge:min')).toBe('corner');
+    expect(classifySampleStrategy('hinge:max')).toBe('corner');
+    expect(classifySampleStrategy('yaw:interior-1')).toBe('interior');
+    expect(classifySampleStrategy('yaw:interior-42')).toBe('interior');
+    expect(classifySampleStrategy('corner:00')).toBe('combinatorial');
+    expect(classifySampleStrategy('corner:1101')).toBe('combinatorial');
+    expect(classifySampleStrategy(undefined)).toBeUndefined();
+    expect(classifySampleStrategy('something-weird')).toBeUndefined();
+  });
+
+  it('tags pose-envelope diagnostics with sampleStrategy based on sample name', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', {
+      pose: 120,
+      limitsDeg: [-90, 90],
+    });
+
+    const result = await reviewPoseEnvelope(arm, { includeInterference: false });
+    const outOfLimits = result.diagnostics.filter(
+      (d) => d.code === 'assembly.pose.out-of-limits',
+    );
+    expect(outOfLimits.length).toBeGreaterThan(0);
+    for (const diag of outOfLimits) {
+      expect(diag.sampleStrategy).toBe('corner');
+    }
+
+    // validateMatePoseLimits standalone path also carries sampleStrategy.
+    const standalone = validateMatePoseLimits(arm);
+    expect(standalone).toHaveLength(1);
+    expect(standalone[0].sampleStrategy).toBe('corner');
   });
 });
