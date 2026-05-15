@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
+    "@google/model-viewer": "^4.2.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@monaco-editor/react": "^4.7.0",
     "@react-three/drei": "^10.7.7",
