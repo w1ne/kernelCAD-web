@@ -224,3 +224,118 @@ body {
   .signup-headline { font-size: 22px; }
   .signup-form { flex-direction: column; }
 }
+
+/* ---------- Gallery ---------- */
+.gallery {
+  margin: 4rem auto 0;
+  max-width: 1100px;
+  padding: 0 1.5rem;
+}
+.gallery-header { text-align: center; margin-bottom: 1.5rem; }
+.gallery-headline { font-size: 1.75rem; margin: 0 0 0.25rem; }
+.gallery-sub { opacity: 0.7; margin: 0 0 0.75rem; }
+.gallery-submit { font-size: 0.9rem; opacity: 0.7; }
+.gallery-submit:hover { opacity: 1; }
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+@media (max-width: 1023px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px)  { .gallery-grid { grid-template-columns: 1fr; } }
+
+.gallery-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #1a1a1a;
+}
+.gallery-tile .tile-viewer {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: #1a1a1a;
+  --poster-color: transparent;
+}
+.gallery-tile .tile-viewer::part(default-progress-bar) { display: none; }
+
+.tile-chip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  display: flex; gap: 6px; align-items: center;
+}
+.tile-chip-bl { bottom: 8px; left: 8px; }
+.tile-chip-br { bottom: 8px; right: 8px; }
+.tile-chip .version { opacity: 0.7; }
+.tile-chip .relative-date { opacity: 0.6; }
+.tile-featured {
+  position: absolute; top: 8px; left: 8px;
+  background: #fff; color: #111;
+  font-size: 0.65rem; font-weight: 600;
+  padding: 3px 7px; border-radius: 3px;
+}
+
+/* ---------- Lightbox ---------- */
+#gallery-lightbox {
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 880px;
+  width: 90vw;
+}
+#gallery-lightbox::backdrop { background: rgba(0, 0, 0, 0.75); }
+.lightbox-inner {
+  background: #111;
+  color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+.lightbox-close {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0, 0, 0, 0.6); color: #fff;
+  border: none; border-radius: 50%;
+  width: 32px; height: 32px; font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 1;
+}
+.lightbox-video { width: 100%; display: block; background: #000; }
+.lightbox-body { padding: 1.5rem; }
+.lightbox-body h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.lightbox-meta { opacity: 0.6; font-size: 0.85rem; margin: 0 0 1rem; }
+.lightbox-prompt {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.85rem 1rem;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  margin: 0 0 1.25rem;
+}
+.lightbox-ctas {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+.lightbox-subscribe { display: flex; gap: 0.5rem; }
+.lightbox-subscribe input[type=email] {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-radius: 4px;
+}
+.lightbox-secondary { display: flex; flex-direction: column; gap: 0.4rem; }
+.lightbox-secondary a { font-size: 0.85rem; color: #fff; opacity: 0.8; }
+.lightbox-secondary a:hover { opacity: 1; }
+.lightbox-footer { margin-top: 1rem; opacity: 0.6; font-size: 0.85rem; }
