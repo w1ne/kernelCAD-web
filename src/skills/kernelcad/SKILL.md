@@ -1,6 +1,6 @@
 ---
 name: kernelcad
-description: kernelCAD core authoring — coordinate system, primitives, transforms, booleans, sketches, path-builder, sketch-text, return-single-shape rule. Use when writing or modifying .kcad.ts geometry.
+description: kernelCAD entry decision tree — what skill to load when, universal conventions that apply everywhere. Load this FIRST; it points at the right specialty skill for your task.
 ---
 
 # kernelCAD
