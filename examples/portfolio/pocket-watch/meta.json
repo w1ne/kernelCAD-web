@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "slug": "pocket-watch",
+  "category": "misc",
+  "difficulty": "hard",
+  "sourceUrl": "https://github.com/w1ne/kernelCAD-web/pull/156",
+  "sourceLicense": "MIT",
+  "paraphrasedPrompt": "Build a recognizable pop-art octagonal pocket watch (Swatch x AP-style): outer pink octagonal frame with lanyard loop, inner yellow octagonal case with 8 hex screws at vertices, teal dial with stick markers and raised numerals (12, 9, 6), pink-ringed sub-seconds at 3 o'clock, yellow crown above 12, NURBS domed sapphire crystal over the dial.",
+  "model": "claude-opus-4-7",
+  "attemptCount": 3,
+  "builtAt": "2026-05-15T14:10:24Z",
+  "artifactHashes": {
+    "step": "sha256:0edd271589c7e62204f623d5b355e41611eb98f40b3700100c002d48f0f430da",
+    "stl": "sha256:3c3a1bad653096c632bb7af560c35676be4d3188b0b9ae2e456741d55926d3ec"
+  }
+}
