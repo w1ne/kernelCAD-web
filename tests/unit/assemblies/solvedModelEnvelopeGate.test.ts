@@ -36,8 +36,14 @@ describe('Assembly.solvedModel({validate:"error"}) — envelope hard-gate (v0.6.
        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 2.5, 2.5] }, axis: [0, 0, 1] });
     arm.mate('m', 'a.hinge', 'b.hinge', 'revolute', { pose: 0, limitsDeg: [0, 180] });
 
+    // Assert against the diagnostic's hint (carried on `KernelError.hint`)
+    // rather than the message: the hint embeds the diagnostic code in dashed
+    // form (`pose-envelope-interference`), which uniquely identifies the
+    // envelope path. The v0.6.0 single-pose interference path would surface
+    // `invalid-args.assembly.interference — ...` here, so this match fails
+    // if a future regression rewires the throw away from the envelope gate.
     await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toThrow(/pose-envelope.interference|interference|overlap/i);
+      .rejects.toMatchObject({ hint: expect.stringMatching(/pose-envelope-interference/i) });
   });
 
   it('does NOT auto-run envelope under validate=warn (perf)', async () => {

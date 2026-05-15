@@ -274,7 +274,12 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
       'assembly.pose-envelope.connector-unresolved',
       'assembly.mate.limit-missing',
     ];
-    expect(codes).toHaveLength(14);
+    // When bumping this number: update the literal, the it(...) title above,
+    // AND the inline comment listing what's in the union.
+    expect(
+      codes.length,
+      'ValidatorDiagnosticCode union changed — update count, it() title, and member-list comment together',
+    ).toBe(14);
     // Smoke-check that the capture-time codes survive on a hand-crafted
     // `ValidatorDiagnostic` (compile-time check; runtime is trivial).
     const typeMismatch: ValidatorDiagnostic = {
