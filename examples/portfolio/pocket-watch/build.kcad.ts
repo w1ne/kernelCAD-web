@@ -99,7 +99,6 @@ function faceText(value, size, x, z, frontFaceY, color) {
 // Y-axis layout (smallest Y = closest to camera, largest Y = deepest in case):
 // =============================================================================
 const CASE_Y_FRONT = -CASE_DEPTH / 2;   // -4.0  (visible front face of case)
-const CASE_Y_BACK  =  CASE_DEPTH / 2;   //  4.0  (back of case)
 const DIAL_POCKET_DEPTH = 2.4;          // depth of dial pocket carved into case front
 const DIAL_Y_BACK  = CASE_Y_FRONT + DIAL_POCKET_DEPTH;   // -1.6 (rear face of dial recess)
 const DIAL_Y_FRONT = DIAL_Y_BACK - DIAL_DEPTH;            // -3.2 (visible dial face)
@@ -107,9 +106,6 @@ const DIAL_Y_FRONT = DIAL_Y_BACK - DIAL_DEPTH;            // -3.2 (visible dial 
 const STICK_Y_BACK   = DIAL_Y_FRONT;                      // -3.2 sticks butt against dial
 const STICK_THICK_Y  = 0.5;
 const STICK_Y_FRONT  = STICK_Y_BACK - STICK_THICK_Y;      // -3.7
-const NUMERAL_Y_BACK = DIAL_Y_FRONT;                      // -3.2
-const NUMERAL_THICK  = 0.5;
-const NUMERAL_Y_FRONT= NUMERAL_Y_BACK - NUMERAL_THICK;    // -3.7
 const SUBRING_Y_BACK = DIAL_Y_FRONT;                      // -3.2
 const SUBRING_THICK  = 0.6;
 const SUBRING_Y_FRONT= SUBRING_Y_BACK - SUBRING_THICK;    // -3.8
@@ -118,7 +114,6 @@ const SUBFACE_THICK  = 0.4;
 const SUBFACE_Y_FRONT= SUBFACE_Y_BACK - SUBFACE_THICK;
 const SUBHAND_Y_BACK = SUBFACE_Y_FRONT;
 const SUBHAND_THICK  = 0.18;
-const SUBHAND_Y_FRONT= SUBHAND_Y_BACK - SUBHAND_THICK;
 const HOUR_HAND_THICK  = 0.45;
 const HOUR_HAND_Y_BACK = STICK_Y_FRONT - 0.1;             // -3.8
 const HOUR_HAND_Y_FRONT= HOUR_HAND_Y_BACK - HOUR_HAND_THICK;
@@ -127,7 +122,6 @@ const MIN_HAND_Y_BACK  = HOUR_HAND_Y_FRONT - 0.1;
 const MIN_HAND_Y_FRONT = MIN_HAND_Y_BACK - MIN_HAND_THICK;
 const PIN_THICK = 0.5;
 const PIN_Y_BACK = MIN_HAND_Y_FRONT - 0.05;
-const PIN_Y_FRONT= PIN_Y_BACK - PIN_THICK;                // ≈ -5.65
 
 // Crystal is a full-dial dome: rim sits JUST IN FRONT of the bezel (case
 // front face) so the dome solid never penetrates the case/frame body, apex
@@ -395,7 +389,6 @@ for (let i = 0; i < 12; i += 1) {
 // SUBDIAL — pink ring + white face + red hand at 3 o'clock.
 // =============================================================================
 // Pink ring is an annulus standing proud of the dial face.
-const SUBRING_Y_CENTER = SUBRING_Y_BACK - SUBRING_THICK / 2;
 const subRing = cylY(SUBRING_THICK, subdialR, SUBRING_Y_BACK)
   .subtract(cylY(SUBRING_THICK + 0.6, subdialR - 0.6, SUBRING_Y_BACK + 0.3))
   .translate(subdialCenterX, 0, subdialCenterZ)
@@ -443,7 +436,6 @@ watch.fixed('hour hand on pinion', dial, hourPart, { origin: [0, DIAL_Y_FRONT, 0
 watch.fixed('minute hand above hour hand', dial, minPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // Central pinion cap — sits in front of both hands.
-const PIN_Y_CENTER = PIN_Y_BACK - PIN_THICK / 2;
 const pinion = cylY(PIN_THICK, 0.85, PIN_Y_BACK).color('#e8c84a');
 const pinionPart = watch.part('central pinion cap', pinion);
 watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
