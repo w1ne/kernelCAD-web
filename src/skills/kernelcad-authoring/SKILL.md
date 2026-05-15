@@ -324,6 +324,7 @@ These return errors today; do not generate code that uses them:
 - Rational NURBS (control-net `weights`) — accepted at the API but ignored in slice-1; rational support pending WASM bindings.
 - NURBS surface trim/extend/untrim/blend, surface-surface intersection, lattice/quilt — deferred
 
+<!-- COOKBOOK:START -->
 ## Cookbook (snippet index)
 
 When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to fetch the full body of a snippet. The IDs and triggers below are the full v1 inventory; query by intent, not by ID.
@@ -342,6 +343,8 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — author the rectangular profile via path() with the inner radius as the x offset, then call .revolve() to sweep it around Z. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
 | union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
+
+<!-- COOKBOOK:END -->
 
 ## Conventions
 

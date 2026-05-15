@@ -1,10 +1,19 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { mkdtempSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdtempSync, readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { runTask } from './runner';
 import { MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
+
+function loadCombinedSkillMd(): string {
+  const root = resolve('src/skills');
+  const dirs = readdirSync(root, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(root, e.name, 'SKILL.md')))
+    .map((e) => e.name)
+    .sort();
+  return dirs.map((name) => readFileSync(join(root, name, 'SKILL.md'), 'utf8')).join('\n\n---\n\n');
+}
 
 const GOLDEN = 'eval/runs/golden-2026-05-02-bracket-holes';
 
@@ -34,7 +43,7 @@ describe('golden mock replay', () => {
       runDir: tmpRun,
       agent: client,
       model: 'mock-model',
-      skillMd: readFileSync('src/skill/SKILL.md', 'utf8'),
+      skillMd: loadCombinedSkillMd(),
       startedAt: 'GOLDEN',
     });
 

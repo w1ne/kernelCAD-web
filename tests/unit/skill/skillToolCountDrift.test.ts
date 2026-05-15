@@ -1,15 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve as resolvePath, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { TOOLS } from '../../../src/mcp/server';
-import { assertEveryNameInSKILL } from './_helpers';
+import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SKILL_MD = readFileSync(
-  resolvePath(__dirname, '../../../src/skill/SKILL.md'),
-  'utf8',
-);
+const SKILL_MD = loadCombinedSkillMd();
 
 describe('SKILL.md tool count drift sentinel', () => {
   it('the documented MCP tool count matches the actual TOOLS array length', () => {
