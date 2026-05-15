@@ -1,6 +1,6 @@
-# kernelCAD
+# kernelCAD v0.7.2
 
-## Unreleased — W2.2 sheet metal slice 1
+## v0.7.2 — 2026-05-15 — Sheet metal (slice 1)
 
 ### Added — top-level API
 
