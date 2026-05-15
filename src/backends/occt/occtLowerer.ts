@@ -24,6 +24,8 @@ import {
 } from './nurbsSurfaceLowerer';
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
+import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
+import { findRootSheetMetalRecord } from '../../modules/sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
 import { Transform } from '../../runtime/se3';
@@ -350,6 +352,8 @@ export class OcctLowerer implements FeatureLowerer {
     'assemblyExport',
     'surfaceThicken',   // W1.3
     'surfaceToShape',   // W1.3
+    'sheetMetal',       // W2.2
+    'sheetMetalBend',   // W2.2
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -731,6 +735,108 @@ export class OcctLowerer implements FeatureLowerer {
             ],
           };
         }
+        break;
+      }
+      case 'sheetMetal': {
+        // Reuse the sketch→extrude pipeline. Sheet metal differs only in:
+        //   (a) the record kind is 'sheetMetal' (threaded for face-label
+        //       canonicalization and bend lineage walks);
+        //   (b) thickness = depth;
+        //   (c) kFactor + sketchPlane carried on metadata for .bend() and
+        //       flattenPattern().
+        const depth = r.params.thickness.evaluated;
+        const sketchInput = inputs.byKey.sketch as OcctBackend | undefined;
+        if (!sketchInput) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetal requires an input sketch.`,
+            hint: 'Pass a closed path()...close() sketch as the first argument: sheetMetal(sketch, opts).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          shape = OcctBackend.extrudeFromSketch(sketchInput, depth);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT extrude failed during sheetMetal lowering: ${msg}`,
+            hint: 'sheetMetal lowers via the extrude pipeline. Check for self-intersecting profile or near-zero thickness.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        break;
+      }
+      case 'sheetMetalBend': {
+        const base = inputs.byKey.base as OcctBackend | undefined;
+        if (!base) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `sheetMetalBend requires an input named 'base'.`,
+            hint: 'Chain .bend() on a sheetMetal(...) Shape.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Walk lineage backward to find the root sheetMetal record so we can
+        // read its kFactor and thickness. If none, emit feature.invalid-args.
+        const rootRec = findRootSheetMetalRecord(r, allRecords ?? []);
+        if (!rootRec) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `.bend() only works on Shapes whose lineage roots at sheetMetal(...).`,
+            hint: 'Build the body via sheetMetal(sketch, opts), then chain .bend().',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const kFactor = rootRec.params.kFactor.evaluated;
+        const thickness = rootRec.params.thickness.evaluated;
+        // Top-face normal for slice-1 xy-plane bodies is +Z. (We could read
+        // metadata.sketchPlane to support xz/yz; slice-1 sheets lower on XY.)
+        const topNormal: [number, number, number] = [0, 0, 1];
+        // Resolve the bend axis from edges / face inputs.
+        const axisResult = resolveBendAxis(
+          base,
+          r.inputs.edges,
+          r.inputs.face,
+          r.id,
+          thickness,
+        );
+        if ('diagnostic' in axisResult) {
+          diagnostics.push(axisResult.diagnostic);
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const result = lowerSheetMetalBend({
+          featureId: r.id,
+          base,
+          axis: axisResult.axis,
+          topNormal,
+          angleDeg: r.params.angle.evaluated,
+          radius: r.params.radius.evaluated,
+          kFactor,
+          thickness,
+        });
+        diagnostics.push(...result.diagnostics);
+        if (!result.shape) {
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        // Persist the bend record on r.metadata for flattenPattern.
+        if (result.bendRecord) {
+          const md = (r.metadata ??= {}) as Record<string, unknown>;
+          md.bendRecord = result.bendRecord;
+        }
+        shape = result.shape;
         break;
       }
       case 'revolve': {

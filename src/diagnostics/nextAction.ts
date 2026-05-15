@@ -55,4 +55,7 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.nurbs.degree-mismatch':            { kind: 'fix-arg', field: 'degree' },
   'feature.pattern.source-not-found':         { kind: 'call-introspection-tool', tool: 'list_features' },
   'feature.pattern.count-out-of-range':       { kind: 'fix-arg', field: 'count' },
+  'feature.sheetMetal.kfactor-invalid':           { kind: 'fix-arg', field: 'kFactor' },
+  'feature.bend.edge-not-linear':                 { kind: 'rewrite-feature', guidance: 'pick a linear edge on the sheet perimeter' },
+  'feature.flattenPattern.multi-bend-unsupported':{ kind: 'rewrite-feature', guidance: 'flatten an upstream Shape with <= 2 bends (slice-1 limit)' },
 };

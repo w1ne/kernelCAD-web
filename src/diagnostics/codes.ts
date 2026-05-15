@@ -54,7 +54,11 @@ export type DiagnosticCode =
   | 'feature.nurbs.degree-mismatch'
   // Pattern (2) — W2.1
   | 'feature.pattern.source-not-found'
-  | 'feature.pattern.count-out-of-range';
+  | 'feature.pattern.count-out-of-range'
+  // Sheet metal slice 1 (3) — W2.2
+  | 'feature.sheetMetal.kfactor-invalid'
+  | 'feature.bend.edge-not-linear'
+  | 'feature.flattenPattern.multi-bend-unsupported';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -89,6 +93,9 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.nurbs.degree-mismatch',
   'feature.pattern.source-not-found',
   'feature.pattern.count-out-of-range',
+  'feature.sheetMetal.kfactor-invalid',
+  'feature.bend.edge-not-linear',
+  'feature.flattenPattern.multi-bend-unsupported',
 ] as const;
 
 export interface HintTemplate {
@@ -169,6 +176,12 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
     'feature.pattern.count-out-of-range':
       "Pattern count must be an integer >= 2. For grid patterns, both x.count and y.count must be >= 2. If count is a Param, set { min: 2 } on the Param declaration so updates can't lower it below the valid range.",
+    'feature.sheetMetal.kfactor-invalid':
+      'K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33–0.45. Adjust the kFactor argument to sheetMetal().',
+    'feature.bend.edge-not-linear':
+      '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).',
+    'feature.flattenPattern.multi-bend-unsupported':
+      '.flattenPattern() supports at most 2 bends in slice 1. Flatten an upstream Shape with two or fewer bends, or wait for slice 2.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

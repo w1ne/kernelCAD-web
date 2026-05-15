@@ -1,4 +1,36 @@
-# kernelCAD v0.7.1
+# kernelCAD v0.7.2
+
+## v0.7.2 — 2026-05-15 — Sheet metal (slice 1)
+
+### Added — top-level API
+
+- `sheetMetal(profile, { thickness, kFactor })` top-level constructor for folded-sheet bodies. Reuses the sketch->extrude pipeline; tags the record as `kind: 'sheetMetal'` so downstream `.bend()` math can read kFactor + thickness without walking the chain.
+- `Shape.bend(edgeRef, angle, radius)` Shape method — fold a sheet-metal body along a linear axis. Lowers via OCCT split/rotate/fuse (slice 1 omits the curved bend section in favor of a sharp-corner fuse; the K-factor math is preserved on `bendRecord` metadata for the flatten roundtrip).
+- `Shape.flattenPattern() -> Region` derived view: walks the lineage chain to the `sheetMetal` root, replays each bend's K-factor neutral-axis length, and returns the unfolded outline as a `Region` (closed polyline + holes + bend lines + source plane). Slice-1 limit: at most 2 bends.
+- New `Region` type (`src/intent/region.ts`) — closed planar outline with bend-line metadata. Returned only by `flattenPattern()` today; reusable by future 2D consumers.
+
+### Added — diagnostics + MCP tools
+
+- 3 new diagnostic codes: `feature.sheetMetal.kfactor-invalid`, `feature.bend.edge-not-linear`, `feature.flattenPattern.multi-bend-unsupported`. Catalogue grows 32 -> 35.
+- 2 new MCP tools: `flatten_pattern` (serialise the Region produced by `Shape.flattenPattern()`) and `get_bend_table` (list every bend's K-factor BA + axis line + parent thickness/kFactor).
+
+### Added — corpus + demos
+
+- Corpus task `sheet-metal-l-bracket`: single 90 degree fold on a 100x60x2 mm blank along x=50.
+- Corpus task `sheet-metal-u-channel`: two parallel 90 degree folds on a 120x80x2 mm blank, K-factor 0.40.
+- Corpus task `sheet-metal-flatten-roundtrip`: bend then flatten an L-bracket; the recovered `Region.outer` bounding box matches the original sketch within 1e-3 mm (K-factor neutral-axis identity).
+
+### Changed
+
+- `FeatureKind` adds `'sheetMetalBend'`. `'sheetMetal'` was already reserved (v0.13 placeholder) and is now implemented.
+
+### Limitations (slice 1)
+
+- Bend axis must be derivable from `{ atX: <n> }` / `{ atY: <n> }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
+- `radius >= 0.5 * thickness` recommended; tighter bends fail the fuse step with `feature.kernel-failed`.
+- `flattenPattern()` supports at most 2 bends in the chain.
+- Sketch profiles must be polylines (no arc segments through bends).
+- The lowered body shows a sharp inside corner instead of the curved bend section; the K-factor math is still recorded for flatten-pattern roundtrips. Slice 2 will add the OCCT revolve-based bend cylinder.
 
 ## v0.7.1 — 2026-05-15 — Patterns: per-instance lineage + agent surface
 

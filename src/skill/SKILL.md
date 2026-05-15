@@ -773,7 +773,7 @@ for (const w of scene.warnings) {
 
 #### MCP companions
 
-The MCP server exposes 34 MCP tools. MCP tools mirror the `.kcad.ts` surface
+The MCP server exposes 36 MCP tools. MCP tools mirror the `.kcad.ts` surface
 for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and
@@ -1164,6 +1164,74 @@ Slice-1 caveat: `weights` is accepted but silently ignored — every surface is 
 
 - `feature.nurbs.degenerate-controls` (error) — `controls` is empty, jagged, contains non-finite points, or `weights` doesn't match the controls grid shape. Hint: pass a non-empty rectangular Vec3 grid spanning a 2D extent.
 - `feature.nurbs.degree-mismatch` (error) — `degree.u > controls.length - 1` (or v-analog) or `< 1`. Hint: reduce degree, or add control points.
+
+## Sheet metal
+
+Build folded sheet-metal parts (L-brackets, U-channels, service panels) from a closed Sketch + thickness + K-factor. Bend along a linear axis line; recover the flat blank as a `Region` for laser/CNC consumption.
+
+### API
+
+```typescript
+// Top-level constructor — captures kind:sheetMetal record.
+sheetMetal(profile: Sketch, opts: {
+  thickness: Editable<number>;   // mm
+  kFactor: Editable<number>;     // unitless, [0, 1]
+  faceLabels?: FaceLabelsMap;
+}): Shape;
+
+// Shape methods — chain on a sheetMetal-rooted Shape.
+shape.bend(
+  edgeRef: EdgeSelector | string,  // slice-1: { atX: n } | { atY: n } | { face: 'top' }
+  angle: Editable<number>,        // degrees, signed (positive = fold +normal)
+  radius: Editable<number>,       // mm, inner bend radius
+): Shape;
+
+shape.flattenPattern(): Region;   // derived view — no FeatureRecord
+```
+
+### Bend-allowance math (K-factor approximation)
+
+```
+BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
+```
+
+- `BA` = developed length of the neutral axis through the bend arc.
+- `kFactor` = neutral-axis offset ratio. Typical values: 0.33-0.45 (mild steel / aluminum).
+- Slice 1 supports the K-factor formula only.
+
+### Slice-1 limits
+
+- Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
+- `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
+- `flattenPattern()` supports at most 2 bends in the chain; 3+ emits `feature.flattenPattern.multi-bend-unsupported`.
+- Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
+- The lowering pipeline (slice 1) omits the curved bend section in favor of a sharp-corner fuse — agents see the rotation but not the radiused inside corner. The K-factor math still holds for flat-pattern recovery.
+
+### Examples
+
+```typescript
+// L-bracket: 100 x 60 x 2 mm, one 90 degree fold along x=50.
+const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
+const bracket = blank.bend({ atX: 50 }, 90, 3);
+return bracket;
+
+// Recover the flat blank as a Region.
+const flat = bracket.flattenPattern();
+console.log(flat.outer);        // [[0,0], [100,0], [100,60], [0,60]]
+console.log(flat.bendLines);    // [{ start: [50,0], end: [50,60], angle: 90, radius: 3, ordinal: 0 }]
+```
+
+### MCP introspection
+
+- `flatten_pattern` — returns the unfolded Region as JSON.
+- `get_bend_table` — lists every bend with its K-factor BA, axis line, and parent sheetMetal opts.
+
+### Sheet-metal diagnostic codes
+
+- `feature.sheetMetal.kfactor-invalid` (error) — `kFactor` not in `[0, 1]` or non-finite. Hint: pass a value in `[0, 1]`; typical 0.33-0.45.
+- `feature.bend.edge-not-linear` (error) — resolved bend axis cannot be derived from the selector. Hint: pick a straight perimeter edge; slice-1 supports `{ atX: <n> }`, `{ atY: <n> }`, or `{ face: 'top' }`.
+- `feature.flattenPattern.multi-bend-unsupported` (error) — chain has 3+ bends. Hint: flatten an upstream Shape with `<= 2` bends, or wait for slice 2.
 
 ## Out of Scope
 
