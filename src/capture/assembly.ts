@@ -1130,11 +1130,29 @@ export class Assembly {
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
 
+    // v0.6.2 — envelope review under error mode when any mate has scalar
+    // limits. Per the v0.6.2 plan §Task 4 + v0.7.4 plan §Phase 1: this is
+    // the agent-safety closure for limit-induced collisions — the v0.6.0
+    // single-pose interference gate only catches overlaps at the
+    // capture-time pose; `reviewPoseEnvelope` samples each mate at its
+    // declared `[min, max]` and folds any per-sample interference /
+    // out-of-limits / solve-failed diagnostics into the validator stream
+    // via the third arg to `validateAssemblyWithMates`. Skipped when no
+    // mate has limits (nothing to sample) or under `'warn'` / `'off'`
+    // (keeps capture-time `solvedModel` cheap).
+    const envelopePromise: Promise<import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined> =
+      mode === 'error' && this.hasMatesWithLimits()
+        ? import('../lib/mates/poseEnvelope').then((m) =>
+            m.reviewPoseEnvelope(this, { includeInterference: true }),
+          )
+        : Promise.resolve(undefined);
+
     return Promise.all([
       interferencePromise,
       mateTransformsPromise,
-    ]).then(async ([interferencePairs, mateT]) => {
-      const result = await validateAssemblyWithMates(this, interferencePairs);
+      envelopePromise,
+    ]).then(async ([interferencePairs, mateT, envelope]) => {
+      const result = await validateAssemblyWithMates(this, interferencePairs, envelope);
       return { result, mateT };
     }).then(
       ({ result, mateT }) => {
@@ -1186,6 +1204,20 @@ export class Assembly {
     }
     const sceneShape = this.session.assemblyModel(this.name, this.parts);
     return this.makeScene(sceneShape);
+  }
+
+  /**
+   * v0.6.2 — true iff any mate declares scalar `limitsDeg` or `limitsMm`.
+   * Gates the envelope auto-run under `solvedModel({validate:'error'})`:
+   * `reviewPoseEnvelope` only samples mates with scalar limits (see
+   * `buildPoseEnvelopeSamples`), so it has no work to do on a graph
+   * without any. Ball mates' per-axis Euler triples are stored in a
+   * different field and are not currently sampled — they don't trigger
+   * the envelope gate in v0.6.2 (the ball-mate envelope is a v0.6.x
+   * followup).
+   */
+  private hasMatesWithLimits(): boolean {
+    return this.mates.some((m) => m.limitsDeg !== undefined || m.limitsMm !== undefined);
   }
 
   /**
