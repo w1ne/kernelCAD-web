@@ -163,6 +163,69 @@ describe('pose-envelope review helpers', () => {
     expect(names).toEqual(['current', 'yaw:min', 'yaw:interior-1', 'yaw:interior-2', 'yaw:max']);
   });
 
+  it('produces 2^N combinatorial corner samples when combinatorial=true', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+      .connector('pitch', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    arm
+      .part('link1', kcad.box(5, 5, 5))
+      .connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link2', kcad.box(5, 5, 5))
+      .connector('pitch', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    arm.mate('yaw', 'base.yaw', 'link1.yaw', 'revolute', { limitsDeg: [-90, 90] });
+    arm.mate('pitch', 'base.pitch', 'link2.pitch', 'revolute', { limitsDeg: [-45, 45] });
+
+    const samples = buildPoseEnvelopeSamples(arm, { combinatorial: true });
+    const cornerSamples = samples.filter((s) => s.name.startsWith('corner:'));
+    expect(cornerSamples).toHaveLength(4);
+    const cornerNames = cornerSamples.map((s) => s.name).sort();
+    expect(cornerNames).toEqual(['corner:00', 'corner:01', 'corner:10', 'corner:11']);
+    const yawValues = new Set(cornerSamples.map((s) => s.poses.yaw as number));
+    const pitchValues = new Set(cornerSamples.map((s) => s.poses.pitch as number));
+    expect(yawValues).toEqual(new Set([-90, 90]));
+    expect(pitchValues).toEqual(new Set([-45, 45]));
+  });
+
+  it('refuses combinatorial sampling above 8 mates with declared limits', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('seg0', kcad.box(5, 5, 5))
+      .connector('out', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    for (let i = 1; i <= 9; i++) {
+      arm
+        .part(`seg${i}`, kcad.box(5, 5, 5))
+        .connector('in', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] })
+        .connector('out', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate(`j${i}`, `seg${i - 1}.out`, `seg${i}.in`, 'revolute', { limitsDeg: [-30, 30] });
+    }
+
+    expect(() => buildPoseEnvelopeSamples(arm, { combinatorial: true })).toThrowError(
+      /combinatorial sampling capped at 8/,
+    );
+  });
+
+  it('combinatorial sampling coexists with samplesPerMate interior points', () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('base', kcad.box(10, 10, 10))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('link', kcad.box(5, 5, 5))
+      .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-90, 90] });
+
+    const samples = buildPoseEnvelopeSamples(arm, { samplesPerMate: 4, combinatorial: true });
+    const names = samples.map((s) => s.name);
+    expect(names).toContain('hinge:interior-1');
+    expect(names).toContain('hinge:interior-2');
+    expect(names).toContain('corner:0');
+    expect(names).toContain('corner:1');
+    expect(samples).toHaveLength(7);
+  });
+
   it('diagnoses tracked topology connector origins that cannot be sampled in capture-time workspace review', async () => {
     const { arm, kcad } = makeArm();
     arm

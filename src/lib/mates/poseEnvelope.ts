@@ -126,6 +126,38 @@ export function buildPoseEnvelopeSamples(
     }
   }
 
+  if (options.combinatorial) {
+    const limited = arm.__mates().filter((m) => (m.limitsDeg ?? m.limitsMm) !== undefined);
+    if (limited.length > 8) {
+      throw new Error(
+        `combinatorial sampling capped at 8 mates with declared limits; got ${limited.length}. Use samplesPerMate for higher-DOF mechanisms.`,
+      );
+    }
+    // With 0 limited mates the only "corner" is the empty pose, which duplicates
+    // the `current` sample emitted above — skip enumeration entirely to keep the
+    // output deduped.
+    if (limited.length >= 1) {
+      const width = limited.length;
+      const total = 1 << width;
+      for (let mask = 0; mask < total; mask++) {
+        const overrides: NumericPoses = {};
+        for (let i = 0; i < width; i++) {
+          const mate = limited[i];
+          const limits = (mate.limitsDeg ?? mate.limitsMm) as readonly [number, number];
+          // Bit i (LSB = mate 0) — set bit -> max, unset -> min.
+          const useMax = ((mask >> i) & 1) === 1;
+          overrides[mate.name] = useMax ? limits[1] : limits[0];
+        }
+        const maskBits = mask.toString(2).padStart(width, '0');
+        samples.push({
+          name: `corner:${maskBits}`,
+          poses: expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), overrides),
+          reason: `combinatorial corner ${mask + 1}/${total}`,
+        });
+      }
+    }
+  }
+
   return samples;
 }
 
