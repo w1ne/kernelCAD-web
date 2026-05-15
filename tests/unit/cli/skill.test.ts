@@ -3,35 +3,66 @@ import { describe, it, expect } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { installSkill, oneFileSkill } from '../../../src/cli/commands/skill';
+import { installCommand, renderOnefile } from '../../../src/cli/commands/skill';
 
 describe('skill commands', () => {
-  it('installSkill writes SKILL.md to <dir>/SKILL.md', () => {
+  it('installCommand installs each skill into its own subdirectory', async () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-'));
-    const r = installSkill({ dir: tmp });
-    expect(r.ok).toBe(true);
-    const target = join(tmp, 'SKILL.md');
+    await installCommand(tmp);
+    // kernelcad is always the first skill (sorted); it must have a SKILL.md
+    const target = join(tmp, 'kernelcad', 'SKILL.md');
     expect(existsSync(target)).toBe(true);
     const content = readFileSync(target, 'utf8');
     expect(content).toMatch(/^---\nname: kernelcad/);
-    expect(content).toMatch(/Face refs through operations/); // a unique-enough section heading
   });
 
-  it('installSkill creates the directory if missing', () => {
+  it('installCommand creates subdirectories even when target is missing', async () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-'));
-    const nested = join(tmp, 'nested', 'kernelcad');
-    const r = installSkill({ dir: nested });
-    expect(r.ok).toBe(true);
-    expect(existsSync(join(nested, 'SKILL.md'))).toBe(true);
+    const nested = join(tmp, 'nested', 'skills');
+    await installCommand(nested);
+    expect(existsSync(join(nested, 'kernelcad', 'SKILL.md'))).toBe(true);
   });
 
-  it('oneFileSkill writes SKILL.md content to a path', () => {
+  it('installCommand covers all 8 skill subdirectories', async () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-'));
-    const out = join(tmp, 'kernelcad-context.md');
-    const r = oneFileSkill({ path: out });
-    expect(r.ok).toBe(true);
-    expect(existsSync(out)).toBe(true);
-    const content = readFileSync(out, 'utf8');
+    await installCommand(tmp);
+    const expected = [
+      'kernelcad',
+      'kernelcad-assemblies',
+      'kernelcad-authoring',
+      'kernelcad-features',
+      'kernelcad-from-reference',
+      'kernelcad-mcp',
+      'kernelcad-nurbs',
+      'kernelcad-params',
+    ];
+    for (const name of expected) {
+      expect(existsSync(join(tmp, name, 'SKILL.md')), `${name}/SKILL.md`).toBe(true);
+    }
+  });
+
+  it('renderOnefile concatenates all skills starting with the kernelcad entry skill', async () => {
+    const content = await renderOnefile();
+    // First skill (sorted: kernelcad) must be the entry-decision skill.
     expect(content).toMatch(/^---\nname: kernelcad/);
+    // Combined doc should include authoring API content.
+    expect(content).toMatch(/Face refs through operations/); // from kernelcad-features
+  });
+
+  it('renderOnefile output is non-empty and contains all skill names', async () => {
+    const content = await renderOnefile();
+    const skillNames = [
+      'kernelcad',
+      'kernelcad-assemblies',
+      'kernelcad-authoring',
+      'kernelcad-features',
+      'kernelcad-from-reference',
+      'kernelcad-mcp',
+      'kernelcad-nurbs',
+      'kernelcad-params',
+    ];
+    for (const name of skillNames) {
+      expect(content).toContain(`name: ${name}`);
+    }
   });
 });
