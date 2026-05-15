@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../scripts/lib/gallery-score-schema.json",
+  "iteration": "v28",
+  "render": "v28.iso.png",
+  "reference": "../../../eval/tasks/eyewear-wayfarer-front/reference.jpg",
+  "pose": "iso (~az=45, el=35)",
+  "evalPoseUsedByHarness": "30,15",
+  "poseNote": "Scored at iso because the renderer needs a Vite dev server and we haven't yet rendered at the eval-task pose 30,15. Iso is the closest available approximation. To finalise this gate, render the eval expert at pose 30,15 and re-score.",
+  "thresholds": {
+    "silhouetteIoU": 0.45,
+    "composite": 0.30
+  },
+  "perGate": {
+    "silhouetteIoU": 0.4374922279792746,
+    "ssim": 0.12742639357956662,
+    "perceptualHash": 0.34375
+  },
+  "composite": 0.3257240320635073,
+  "gateStatus": {
+    "silhouetteIoU >= 0.45": false,
+    "composite >= 0.30": true
+  },
+  "diagnostics": [
+    {
+      "code": "image.silhouette.mismatch",
+      "severity": "error",
+      "message": "Silhouette IoU 0.437 below 0.5 — the rendered outline does not match the reference outline.",
+      "hint": "Largest silhouette mismatch in the upper-right quadrant — focus geometry edits there. (XOR pixel counts: UL=4086, UR=8575, LL=8296, LR=6184)."
+    },
+    {
+      "code": "image.structure.mismatch",
+      "severity": "warning",
+      "message": "SSIM 0.127 below 0.6 — interior structure (lens placement, surface features) does not match.",
+      "hint": "Check whether features called out in the reference (camera position, LED, lens insert, surface texture) are present in the render at the correct position."
+    },
+    {
+      "code": "image.layout.mismatch",
+      "severity": "info",
+      "message": "Perceptual hash similarity 0.344 below 0.7 — coarse layout differs from the reference.",
+      "hint": "The render and reference are placed differently in the frame (cropping, scale, or rotation). Re-check render viewport and model centering."
+    }
+  ],
+  "history": {
+    "v24.iso": { "composite": 0.2506, "silhouetteIoU": 0.2759 },
+    "v28.iso": { "composite": 0.3257, "silhouetteIoU": 0.4375 },
+    "trend": "improving; silhouette IoU climbed from 0.276 to 0.437 across four iterations (v24 → v28). Composite crosses 0.30 threshold for the first time at v28; silhouette IoU still 0.013 below 0.45 threshold."
+  },
+  "notPromoted": "This entry is NOT in site/gallery/entries.json because silhouetteIoU at the closest-available pose (iso) is 0.437, below the 0.45 threshold. Re-run the scorer at pose 30,15 against the eval-task reference; if both gates pass, promote by adding the entry back to entries.json with codeLocal: '../../eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts'."
+}
