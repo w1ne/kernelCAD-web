@@ -1185,6 +1185,7 @@ export class Assembly {
       mateTransformsPromise,
       envelopePromise,
     ]).then(async ([interferencePairs, mateT, envelope]) => {
+      // Phase 5: forward opts.externalLoads as 4th arg when Gate 3 wires through.
       const result = await validateAssemblyWithMates(this, interferencePairs, envelope);
       return { result, mateT };
     }).then(

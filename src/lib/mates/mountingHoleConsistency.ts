@@ -58,8 +58,20 @@ interface SideObservation {
     /** `'through'` collapses the depth check (any screw fits). */
     readonly depth: number | 'through';
   };
-  /** Set when the origin is vec3 and the gate skips this side. */
-  readonly deferredReason?: string;
+  /**
+   * Set when this side cannot be gated. Severity drives diagnostic level:
+   *   - `'vec3-origin'`: info-severity deferred note (vec3-origin face
+   *     inference is the documented v0.7.x deferral path).
+   *   - `'unsupported-topology'`: warning-severity — the connector uses a
+   *     non-face-center topology kind (face-normal, vertex, edge-axis,
+   *     tracked, created, propagated, query); the gate cannot verify
+   *     this side at all and the mate is silently ungated otherwise.
+   */
+  readonly deferred?: {
+    readonly severity: 'info' | 'warning';
+    readonly reason: string;
+    readonly hint: string;
+  };
 }
 
 /**
@@ -85,36 +97,40 @@ export function validateMountingHoleConsistency(arm: Assembly): ValidatorDiagnos
     const aSide = observeSide(mate.a, parts, records);
     const bSide = observeSide(mate.b, parts, records);
 
-    // Surface vec3-origin "deferred" notes (info severity). Only emitted on
-    // the side that uses a vec3 origin; topology-bound sides on the same
-    // mate proceed normally — the gate's verdict for that mate is decided
-    // below using whichever side(s) successfully resolved.
-    if (aSide.deferredReason !== undefined) {
+    // Surface "deferred" notes. vec3-origin sides emit info-severity (the
+    // documented v0.7.x deferral path); non-face-center topology kinds
+    // (face-normal, vertex, edge-axis, tracked, created, propagated, query)
+    // emit warning-severity — those connector shapes are unsupported by the
+    // mounting-hole gate and would otherwise silently never be verified.
+    // Only emitted on the side that defers; topology-bound sides on the
+    // same mate proceed normally — the gate's verdict for that mate is
+    // decided below using whichever side(s) successfully resolved.
+    if (aSide.deferred !== undefined) {
       out.push({
         code: 'assembly.mounting-hole.mismatch',
-        severity: 'info',
+        severity: aSide.deferred.severity,
         mateName: mate.name,
         partA: aSide.partName,
-        message: `Mate '${mate.name}' (fastened) side '${aSide.partName}.${aSide.connectorName}': ${aSide.deferredReason}.`,
-        hint: `invalid-args.assembly.mounting-hole-mismatch — side '${aSide.partName}.${aSide.connectorName}' uses a vec3 connector origin; v0.7.4 mounting-hole consistency only gates topology-bound origins. Switch to origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } } to enable the gate on this side.`,
+        message: `Mate '${mate.name}' (fastened) side '${aSide.partName}.${aSide.connectorName}': ${aSide.deferred.reason}.`,
+        hint: aSide.deferred.hint,
       });
     }
-    if (bSide.deferredReason !== undefined) {
+    if (bSide.deferred !== undefined) {
       out.push({
         code: 'assembly.mounting-hole.mismatch',
-        severity: 'info',
+        severity: bSide.deferred.severity,
         mateName: mate.name,
         partB: bSide.partName,
-        message: `Mate '${mate.name}' (fastened) side '${bSide.partName}.${bSide.connectorName}': ${bSide.deferredReason}.`,
-        hint: `invalid-args.assembly.mounting-hole-mismatch — side '${bSide.partName}.${bSide.connectorName}' uses a vec3 connector origin; v0.7.4 mounting-hole consistency only gates topology-bound origins. Switch to origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } } to enable the gate on this side.`,
+        message: `Mate '${mate.name}' (fastened) side '${bSide.partName}.${bSide.connectorName}': ${bSide.deferred.reason}.`,
+        hint: bSide.deferred.hint,
       });
     }
 
-    // If either side deferred to vec3-origin handling, skip the binary
-    // verdict for this mate — the deferred-info note already surfaced the
-    // limitation. Phase 6 may revisit; for v0.7.4 we don't error on
-    // unknown vec3-origin holes.
-    if (aSide.deferredReason !== undefined || bSide.deferredReason !== undefined) {
+    // If either side deferred, skip the binary verdict for this mate — the
+    // deferred note (info for vec3-origin, warning for unsupported topology)
+    // already surfaced the limitation. Phase 6 may revisit; for v0.7.4 we
+    // don't error on unknown holes for deferred sides.
+    if (aSide.deferred !== undefined || bSide.deferred !== undefined) {
       continue;
     }
 
@@ -218,7 +234,15 @@ function observeSide(
   // Step 3 of the plan outline — extract the bound face name.
   const bound = extractBoundFace(connector);
   if (bound.kind === 'deferred') {
-    return { partName, connectorName, deferredReason: bound.reason };
+    return {
+      partName,
+      connectorName,
+      deferred: {
+        severity: bound.severity,
+        reason: bound.reason,
+        hint: bound.hint(partName, connectorName),
+      },
+    };
   }
 
   // Steps 4 + 5 — walk the records chain from the part's originalShape.id
@@ -236,25 +260,42 @@ function observeSide(
 
 type BoundFace =
   | { kind: 'faceName'; faceName: string }
-  | { kind: 'deferred'; reason: string };
+  | {
+      kind: 'deferred';
+      severity: 'info' | 'warning';
+      reason: string;
+      hint: (partName: string, connectorName: string) => string;
+    };
 
 function extractBoundFace(connector: Connector): BoundFace {
   if (connector.origin.kind === 'vec3') {
+    // Documented v0.7.x deferral — vec3-origin face inference (project
+    // origin onto BREP, pick closest face) is queued but not shipped.
+    // Emit info: still a common authoring shape today.
     return {
       kind: 'deferred',
+      severity: 'info',
       reason: 'vec3-origin face inference deferred to v0.7.x',
+      hint: (partName, connectorName) =>
+        `invalid-args.assembly.mounting-hole-mismatch — side '${partName}.${connectorName}' uses a vec3 connector origin; v0.7.4 mounting-hole consistency only gates topology-bound origins. Switch to origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } } to enable the gate on this side.`,
     };
   }
   if (connector.origin.query.kind === 'face-center') {
     return { kind: 'faceName', faceName: connector.origin.query.name };
   }
-  // Other topology kinds (face-normal, vertex, edge-axis) don't carry the
-  // "this connector is bound to face X" semantics needed for the
-  // hole-feature lookup — surface as deferred so the gate documents the
-  // limit instead of silently passing.
+  // Non-face-center topology kinds (face-normal, vertex, edge-axis, tracked,
+  // created, propagated, query) do not carry "this connector is bound to
+  // face X" semantics — the gate cannot resolve a face to look for a hole.
+  // Emit warning (not info): this is an UNSUPPORTED connector shape for the
+  // mounting-hole gate, not a deferred-to-v0.7.x feature; without escalating
+  // to warning the fastened mate would silently never be gated.
+  const queryKind = connector.origin.query.kind;
   return {
     kind: 'deferred',
-    reason: `topology query kind '${connector.origin.query.kind}' is not a face-center binding`,
+    severity: 'warning',
+    reason: `connector uses topology query kind '${queryKind}'; the mounting-hole gate only supports 'face-center' for face inference. The gate cannot verify this side. Either change the connector origin to a face-center query or accept that this mate is ungated`,
+    hint: (partName, connectorName) =>
+      `invalid-args.assembly.mounting-hole-mismatch — mate connector '${partName}.${connectorName}' uses topology query kind '${queryKind}'; the mounting-hole gate only supports 'face-center' for face inference. The gate cannot verify this side. Either change the connector origin to a face-center query (origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } }) or accept that this mate is ungated.`,
   };
 }
 
@@ -304,9 +345,8 @@ function faceRefMatches(rec: FeatureRecord, boundFaceName: string): boolean {
   if (ref.kind === 'canonical') return ref.face === boundFaceName;
   // User-declared labels via `metadata.faceLabels` — compare on `name`.
   if (ref.kind === 'label') return ref.name === boundFaceName;
-  // 'tracked' / 'created' / 'propagated' / 'query' have no easily compared
-  // string identity here; v0.7.x can extend the matcher if real fixtures
-  // demand it.
+  // TODO(v0.7.x): extend matcher to handle tracked/created/propagated/query FaceRef kinds.
+  // Today only 'canonical' refs match; non-canonical refs cause false 'no hole' diagnostics.
   return false;
 }
 
