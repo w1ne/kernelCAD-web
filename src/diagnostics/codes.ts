@@ -58,7 +58,10 @@ export type DiagnosticCode =
   // Sheet metal slice 1 (3) — W2.2
   | 'feature.sheetMetal.kfactor-invalid'
   | 'feature.bend.edge-not-linear'
-  | 'feature.flattenPattern.multi-bend-unsupported';
+  | 'feature.flattenPattern.multi-bend-unsupported'
+  // SDF (2) — W2.3
+  | 'feature.sdf.field-undefined'
+  | 'feature.sdf.materialize-resolution-out-of-range';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -96,6 +99,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.sheetMetal.kfactor-invalid',
   'feature.bend.edge-not-linear',
   'feature.flattenPattern.multi-bend-unsupported',
+  'feature.sdf.field-undefined',
+  'feature.sdf.materialize-resolution-out-of-range',
 ] as const;
 
 export interface HintTemplate {
@@ -182,6 +187,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).',
     'feature.flattenPattern.multi-bend-unsupported':
       '.flattenPattern() supports at most 2 bends in slice 1. Flatten an upstream Shape with two or fewer bends, or wait for slice 2.',
+    'feature.sdf.field-undefined':
+      'The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.',
+    'feature.sdf.materialize-resolution-out-of-range':
+      'sdf.materialize resolution must be an integer in [10, 200]. Use 30-60 for typical brackets; 80-120 for fine smooth-blends; <30 only when previewing. 200 is the cap to prevent OOM (200^3 = 8M voxels).',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

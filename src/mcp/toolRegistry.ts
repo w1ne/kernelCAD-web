@@ -6,6 +6,7 @@ import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
+import { evaluateSdfTool } from './tools/evaluateSdf';
 import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
@@ -802,6 +803,35 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'evaluate_sdf',
+      description:
+        'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
+        'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
+        '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
+        'calling sdf.materialize (which is the expensive step). The script must bind the SdfField via ' +
+        "sdf.bind('<name>', field) and pass that name as fieldName. " +
+        'Hint: pass either { file } or { code }, plus { fieldName, point: [x,y,z] }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          fieldName: { type: 'string', description: "sdf.bind binding name holding the SdfField." },
+          point: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: 'Sample point [x, y, z] in mm.',
+          },
+        },
+        required: ['fieldName', 'point'],
+      },
+    },
+    handler: input => evaluateSdfTool(input as unknown as Parameters<typeof evaluateSdfTool>[0]),
   },
 ];
 

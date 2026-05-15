@@ -167,6 +167,12 @@ export class CaptureSession {
    *  cast back to `Assembly` at the boundary. */
   readonly assemblies: Map<string, unknown> = new Map();
 
+  /** W2.3 SDF: live `SdfField` closures the script bound by name via
+   *  `sdfFields.set(name, field)`. Read by the `evaluate_sdf` MCP tool after
+   *  the script re-runs in an isolated session. Untyped `unknown` to avoid
+   *  a cycle with `../modules/sdf`; consumers cast back at the boundary. */
+  readonly sdfFields: Map<string, unknown> = new Map();
+
   /** W1.3 NURBS surfaces: id generator + record list for `nurbsSurface()` /
    *  `surfaceFromCurves()`. Surfaces never enter `FeatureRecord` — they
    *  live here separately and are resolved into Replicad Faces at lower

@@ -58,4 +58,6 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.sheetMetal.kfactor-invalid':           { kind: 'fix-arg', field: 'kFactor' },
   'feature.bend.edge-not-linear':                 { kind: 'rewrite-feature', guidance: 'pick a linear edge on the sheet perimeter' },
   'feature.flattenPattern.multi-bend-unsupported':{ kind: 'rewrite-feature', guidance: 'flatten an upstream Shape with <= 2 bends (slice-1 limit)' },
+  'feature.sdf.field-undefined':              { kind: 'call-introspection-tool', tool: 'evaluate_sdf' },
+  'feature.sdf.materialize-resolution-out-of-range': { kind: 'fix-arg', field: 'resolution' },
 };
