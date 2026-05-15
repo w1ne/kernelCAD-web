@@ -1,4 +1,73 @@
-# kernelCAD v0.7.3
+# kernelCAD v0.7.4
+
+## v0.7.4 — 2026-05-15 — Pose-envelope review-loop closure (workstream 5a)
+
+v0.7.4 closes the pose-envelope mechanism-validity bridge from v0.6: agents declare mate travel via `limitsDeg`/`limitsMm`, request envelope-wide validation through one of three sampling strategies, gate `kernelcad evaluate` on a clean envelope, and consume a structured `RepairContext` that drives `design_loop`'s `nextActionPrompt` for autonomous fix iterations. The slice is purely additive — default behavior on every existing surface is unchanged.
+
+### Added — pose-envelope sampling
+
+- `samplesPerMate?: number` on `PoseEnvelopeSamplingOptions`. `N = N total samples per non-locked mate`. Default `1` = corners only (min + max). `N >= 3` adds `N - 2` uniformly-spaced interior points; emits names `<mate>:interior-1`, `<mate>:interior-2`, … Interior sampling catches mid-travel interferences that corner-only sampling misses.
+- `combinatorial?: boolean` on the same options. When `true`, additionally emits `2^M` samples across mates with declared limits — every combination of each mate at its `min` or `max`. Sample names: `corner:<bitmask>`. **Capped at `M <= 8`**; throws above the cap with `combinatorial sampling capped at 8 mates with declared limits; got <N>. Use samplesPerMate for higher-DOF mechanisms.` Use for worst-pose detection on low-DOF mechanisms.
+- Both options flow through `reviewPoseEnvelope`, `solvedModel`, MCP `review_cad` / `design_loop`, and the `kernelcad evaluate` CLI without re-implementation.
+
+### Added — script API
+
+- `solvedModel(poses, { validate, posesGate, samplesPerMate, combinatorial })` gains a new option `posesGate?: 'default' | 'envelope'`. Default `'default'` preserves prior behavior. `'envelope'` runs `reviewPoseEnvelope` and (when `validate === 'error'`) throws on any envelope `severity: 'error'` diagnostic. The throw message names the diagnostic codes and counts.
+- `posesGate` is **separate from** the existing severity-coded `validate` parameter so the matrix `(severity × poses-set)` is honest. The two combinations that throw are `validate: 'error'` with either `posesGate: 'default'` (today's behavior) or `posesGate: 'envelope'` (new).
+
+### Added — CLI
+
+- `kernelcad evaluate <file> [--envelope] [--samples-per-mate N] [--combinatorial]`. Exit code `0` clean, `1` script-execution failure OR sampling flags used without `--envelope`, `2` envelope-error diagnostics surfaced.
+- `--samples-per-mate` and `--combinatorial` outside the `--envelope` context exit 1 with a diagnostic so the misuse is surfaced loudly.
+
+### Added — MCP
+
+- `review_cad` and `design_loop` tool schemas in `toolRegistry.ts` advertise `samplesPerMate` (integer ≥ 1) and `combinatorial` (boolean). The handlers now plumb both fields end-to-end into `reviewPoseEnvelope` (closes the gap where the schema declared them but the handler dropped them).
+- `review_cad` now emits a structured `repairContext: RepairContext` alongside the existing freeform `suggestedRepairPrompt`. The field is present on BOTH `ok: true` and `ok: false` outputs:
+  ```typescript
+  interface RepairContext {
+    blockingReasons: readonly string[];                // 'code: message' formatted
+    topDiagnostics: ReadonlyArray<{
+      code: string;
+      sampleName?: string;
+      mateName?: string;
+      suggestedDelta?: { mate: string; widenBy?: number; narrowBy?: number };  // deg for revolute/cylindrical/pin_slot; mm for prismatic
+    }>;
+    preserveInterfaces: readonly string[];
+    designGoal: string;
+  }
+  ```
+  `topDiagnostics` is the worst 3 sorted by severity (errors first) then `volumeMm3` then code. `suggestedDelta` is computed via `suggestLimitFix` for `:min`/`:max` samples and via direct `widenBy = abs(pose - violatedBound)` for `assembly.pose.out-of-limits` at `sampleName === 'current'`.
+- `design_loop`'s per-attempt `nextActionPrompt` renders from `repairContext`: leads with `blockingReasons`, follows with up to 3 `[severity] code @ sampleName=… mate=…` lines including `→ suggested: widen by N` directives where present, closes with the restated `designGoal` and `preserveInterfaces` list. Falls back to the prior freeform path defensively when `repairContext` is unexpectedly absent.
+
+### Changed
+
+- `PoseEnvelopeDiagnostic` carries a new optional `sampleStrategy?: 'corner' | 'interior' | 'combinatorial'` context field. Classified from the originating `sampleName`. Downstream consumers (UI, agent dashboards) can group failures by strategy without re-parsing names. No code-vocabulary change — the existing 5 pose-envelope diagnostic codes are untouched.
+- `Scene.warnings` is typed `readonly SceneDiagnostic[]` where `SceneDiagnostic = ValidatorDiagnostic | PoseEnvelopeDiagnostic`. The two diagnostic shapes share `code`/`severity`/`message`/`hint`, so all existing `.map(w => w.code)` callers compile and run unchanged. The widening lets `solvedModel({ posesGate: 'envelope' })` append envelope diagnostics into the same stream without forking the warning channel.
+
+### Added — eval corpus
+
+- `eval/tasks/door-hinge-over-travel/` — agent must build a door + wall + revolute hinge with `limitsDeg: [0, 95]` such that the door clears the wall across the entire envelope. Harness gates `envelope clean` via `kernelcad evaluate --envelope --samples-per-mate 3 --json`. Expert solution + 100%-score regression test land in `eval/corpus-envelope.test.ts`.
+- `eval/tasks/gripper-aperture-sweep/` — parallel-jaw gripper with one prismatic actuator coupled 1:1 to a driven prismatic. Harness gates `aperture summary present` plus `minMm within 1mm of 0` and `maxMm within 1mm of 50` via `review_cad`'s `gripperAperture` request. Tests the `coupleMates` sample-expansion path through pose-envelope review.
+
+### Documentation
+
+- `src/skills/kernelcad-assemblies/SKILL.md` gains a full `## Pose-envelope review` section covering the `validate × posesGate` matrix, sampling-mode table with the `samplesPerMate` semantic, the `combinatorial` 2^M cap with the exact thrown message, the 5 emitted diagnostic codes with hints copied verbatim from `src/lib/mates/poseEnvelope.ts`, the CLI surface, and the workspace-bounds limitation ("sampled bound, not analytic").
+- `src/skills/kernelcad-mcp/SKILL.md` documents `samplesPerMate` / `combinatorial` on `review_cad` / `design_loop` and the `RepairContext` return shape.
+
+### Test coverage delta
+
+- `+13` new tests in `src/lib/mates/poseEnvelope.test.ts` and `src/capture/posesGate.test.ts` for sampling extensions, `sampleStrategy` classification, and the `posesGate × validate` matrix.
+- `+6` CLI tests in `tests/unit/cli/evaluateEnvelope.test.ts` for `--envelope` and misuse paths.
+- `+4` MCP tests in `tests/unit/mcp/reviewCadRepairContext.test.ts` for the structured repair context.
+- `+4` MCP tests in `tests/unit/mcp/designLoopNextActionPrompt.test.ts` for the rendered prompt.
+- `+4` MCP tests across `tests/unit/mcp/reviewCadEnvelopeOptions.test.ts` and `tests/unit/mcp/designLoopEnvelopeOptions.test.ts` for the schema-handler plumbing fix.
+- `+4` tool-registry-schema tests in `tests/unit/mcp/toolRegistrySchema.test.ts`.
+- `+2` corpus regressions in `eval/corpus-envelope.test.ts`.
+
+### Non-goals (deferred to later workstreams)
+
+This slice does NOT ship full mechanism functional validity. Mounting-hole consistency, joint-axis-to-structure binding, swept-volume self-collision beyond mate-driven motion, workspace reachability for declared end-effectors, and static-load capacity remain on the v0.7 mechanism-feasibility layer roadmap. The pose-envelope reviewer here proves envelope kinematics, not mechanism intent.
 
 ## v0.7.3 — 2026-05-15 — SDF authoring (slice 1)
 
