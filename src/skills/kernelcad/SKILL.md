@@ -5,4 +5,21 @@ description: kernelCAD entry decision tree — what skill to load when, universa
 
 # kernelCAD
 
-<!-- BODY MIGRATED IN TASKS 4–14 OF docs/plans/2026-05-15-skill-tree-split.md (in kernelCAD-private) -->
+A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.kcad.ts` model.** Add specialty skills as the task demands.
+
+## Decision tree
+
+- Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
+- Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
+- Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
+- Editable parameters / params_update / live sliders → also load `kernelcad-params`.
+- Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.
+- Freeform NURBS surfaces → also load `kernelcad-nurbs`.
+- Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
+
+## Universal conventions
+
+- **Units**: millimetres, degrees, Z-up right-handed.
+- **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`).
+- **Diagnostic-anchored hints**: when a kernelCAD tool throws, the error carries a `hint` field tied to a diagnostic code (`feature.*`, `assembly.*`, etc.). Read the hint — it carries the fix.
+- **Verification gates**: every authoring skill ends with a `## Verification gates` section. After authoring, walk the relevant gate set before reporting done — render → Read PNGs back → compare to reference. Never rationalize a visible defect (see `kernelcad-from-reference` for the canonical loop).
