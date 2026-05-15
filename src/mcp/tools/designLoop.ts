@@ -36,6 +36,8 @@ export interface DesignLoopInput {
   epsilonMm3?: number;
   trackConnectors?: string[];
   gripperAperture?: GripperApertureRequest;
+  samplesPerMate?: number;
+  combinatorial?: boolean;
   stopOnPass?: boolean;
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
@@ -122,6 +124,8 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
       epsilonMm3: input.epsilonMm3,
       trackConnectors: input.trackConnectors,
       gripperAperture: input.gripperAperture,
+      samplesPerMate: input.samplesPerMate,
+      combinatorial: input.combinatorial,
     };
     const review = await reviewCadTool(reviewInput);
     const source = attempt.code ?? (attempt.file !== undefined ? await readFile(attempt.file, 'utf-8') : '');

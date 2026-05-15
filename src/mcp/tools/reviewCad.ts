@@ -37,6 +37,8 @@ export interface ReviewCadInput {
   epsilonMm3?: number;
   trackConnectors?: string[];
   gripperAperture?: GripperApertureRequest;
+  samplesPerMate?: number;
+  combinatorial?: boolean;
 }
 
 export interface RepairContext {
@@ -141,6 +143,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
         epsilonMm3: input.epsilonMm3,
         trackConnectors: input.trackConnectors,
         gripperAperture: input.gripperAperture,
+        samplesPerMate: input.samplesPerMate,
+        combinatorial: input.combinatorial,
       })
     : undefined;
 
