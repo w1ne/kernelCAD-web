@@ -7,9 +7,13 @@ export interface CodePaneProps {
 
 export function CodePane({ code, language = 'typescript' }: CodePaneProps) {
   return (
-    <div className="w-full h-full border-l border-neutral-800">
+    <div className="w-full h-full border-l border-rule">
+      {/* Code label — matches marketing site's .code-label style */}
+      <div className="font-mono text-[11px] text-ink-soft tracking-widest uppercase px-4 py-2 bg-vellum-soft border-b border-rule">
+        .kcad.ts
+      </div>
       <Editor
-        height="100%"
+        height="calc(100% - 33px)"
         defaultLanguage={language}
         theme="vs-dark"
         value={code}

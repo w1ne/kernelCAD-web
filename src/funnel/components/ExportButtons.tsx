@@ -10,7 +10,7 @@ export function ExportButtons({ slug, signedIn }: ExportButtonsProps) {
         type="button"
         disabled
         title={`STL export for ${slug} — server-side endpoint wiring is Phase 4`}
-        className="rounded-lg border border-neutral-700 text-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-800 disabled:opacity-50"
+        className="rounded-lg border border-rule text-ink-soft px-3 py-1.5 font-mono text-[11px] tracking-wide hover:bg-vellum-soft disabled:opacity-50 transition-colors"
       >
         Export STL
       </button>
@@ -18,7 +18,7 @@ export function ExportButtons({ slug, signedIn }: ExportButtonsProps) {
         type="button"
         disabled={!signedIn}
         title={signedIn ? `STEP export for ${slug} — Phase 4` : 'Sign in to export STEP'}
-        className="rounded-lg border border-neutral-700 text-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-800 disabled:opacity-50"
+        className="rounded-lg border border-rule text-ink-soft px-3 py-1.5 font-mono text-[11px] tracking-wide hover:bg-vellum-soft disabled:opacity-50 transition-colors"
       >
         Export STEP
       </button>

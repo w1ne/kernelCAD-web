@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
 @theme {
+    /* Existing Studio palette */
     --color-highlight-orange: #FF9F1C;
     --color-selection-blue: #2EC4B6;
     --color-snap-green: #00FF9D;
     --color-guide-grey: #AAB3C2;
     --color-error-red: #FF4D4D;
+
+    /* kernelCAD brand palette */
+    --color-vellum: #F4ECD7;
+    --color-vellum-soft: #EFE5C9;
+    --color-ink: #0A1628;
+    --color-ink-soft: #3F4C5E;
+    --color-ink-faint: #97A0AC;
+    --color-blueprint: #1E5FA8;
+    --color-blueprint-hover: #174E8B;
+    --color-copper: #B87333;
+    --color-rule: #D6CDB4;
+    --color-code-bg: #0A1628;
+    --color-code-text: #E5DFCB;
+
+    /* Brand font families */
+    --font-serif: "Source Serif 4", Georgia, serif;
+    --font-sans: Inter, system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
