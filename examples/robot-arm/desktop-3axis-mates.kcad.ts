@@ -213,10 +213,32 @@ const upperArmRibBot = box(ribLen, ribT, ribH, true)
 const upperArmRootPlate = box(8, beamW, beamT, true)
   .translate(0, 0, 0)
   .color('plate');
+// v0.7.4 — elbow-axis binding tabs. Gate 2 requires the joint axis
+// (Y-line through world x = upperArmLen, z = 0) to intersect the bound
+// part's BREP. The beam ends at x = upperArmBeamLen with elbowClearance to
+// keep the forearm body from clipping the beam under pitch rotation. The
+// tabs are two thin Z-flat plates sitting in the 3 mm gap between the
+// elbow-pitch-shaft stub outer face (forearm-side, world |y| = 16) and
+// the elbow-yoke cheek inner face (world |y| = 19). They cross the joint
+// axis in (x, z) so the Y-line passes through their +Y / -Y outer side
+// faces. Cross-section z ∈ [-1, 1]; thickness 2 mm in Y. Because the tabs
+// live entirely outside |y| > 16, the rotating forearm body (|y| ≤ 10
+// for the beam, |y| ≤ 16 for the elbow-pitch-shaft cylinder stubs) does
+// not sweep into the tab volume.
+const elbowAxisTabYInner = 16;                       // = stub outer face
+const elbowAxisTabWY = 2;                            // 16..18 (mirror: -18..-16)
+const elbowAxisTabP = box(elbowClearance, elbowAxisTabWY, 2)
+  .translate(upperArmLen.subtract(elbowClearance), elbowAxisTabYInner, -1)
+  .color('plate');
+const elbowAxisTabN = box(elbowClearance, elbowAxisTabWY, 2)
+  .translate(upperArmLen.subtract(elbowClearance), -(elbowAxisTabYInner + elbowAxisTabWY), -1)
+  .color('plate');
+const elbowAxisBridges = elbowAxisTabP.union(elbowAxisTabN);
 const upperArmShape = upperArmBeamShape
   .union(upperArmRibTop)
   .union(upperArmRibBot)
-  .union(upperArmRootPlate);
+  .union(upperArmRootPlate)
+  .union(elbowAxisBridges);
 const upperArmPart = arm.part('upper-arm-beam', upperArmShape);
 
 // 9. Elbow yoke at the distal end of the upper arm (carries elbow servo).
@@ -335,6 +357,18 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
   )
   .union(
     box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, -21, -5),
+  )
+  .union(
+    // v0.7.4 — grip-axis binding post. Gate 2 requires the joint axis
+    // (Z-line through gripper-local (gripDriverXNum, 0, gripDriverZNum)) to
+    // intersect the gripper-plate BREP. The two bearing towers are at
+    // y = ±8 (around the grip-driver), so they don't touch y = 0 where the
+    // axis lives. This thin post bridges directly above the grip-driver
+    // (z ∈ [gripDriverZNum + 4, gripDriverZNum + 6], driver is z ∈ [gripDriverZNum, gripDriverZNum + 4])
+    // with a small 2x2 footprint in (x, y); the Z-line passes through its
+    // +X / -X / +Y / -Y side faces, binding Gate 2 without intruding into
+    // the grip-driver's swept volume.
+    box(2, 2, 2, true).translate(gripDriverXNum, 0, gripDriverZNum + 5),
   )
   .color('tool');
 const gripperPlatePart = arm.part('gripper-plate', gripperPlate);

@@ -240,6 +240,7 @@ function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: OcctBackend):
   // intersection parameter t, then test that the intersection point lies
   // within the face's world-space AABB padded by EPSILON_MM.
   const replicadShape = shape.getReplicadShape();
+  let allFacesSkippedAsParallel = true;
   for (const face of replicadShape.faces) {
     const centerV = face.center;
     const center: Vec3 = [centerV.x, centerV.y, centerV.z];
@@ -254,11 +255,29 @@ function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: OcctBackend):
       continue;
     }
     const hit = intersectLineWithPlane(origin, direction, center, normal);
-    if (hit === undefined) continue;
+    if (hit === undefined) {
+      // Line parallel to this face's centroid plane — keep iterating; if
+      // EVERY face is parallel-and-skipped, fall through to the cylindrical
+      // permissive branch below.
+      continue;
+    }
+    allFacesSkippedAsParallel = false;
     const faceBb = face.boundingBox.bounds;
     if (pointInAabb(hit, faceBb[0] as Vec3, faceBb[1] as Vec3, EPSILON_MM)) {
       return true;
     }
+  }
+  // Permissive cylindrical / spherical fallback. When the AABB pre-filter
+  // accepted the line AND every face's centroid plane was parallel to the
+  // line direction (so every face's plane test was skipped), the shape is
+  // almost certainly a body of revolution whose axis is perpendicular to
+  // the joint line — e.g., a cylinder along X with a Z joint axis through
+  // its midpoint. Plane-vs-line cannot prove intersection in that
+  // configuration, but the AABB-pass tells us the line passes through the
+  // part's swept volume. Accept rather than emit a false negative; matches
+  // the spec's "false-positive tolerance on non-planar faces" decision.
+  if (allFacesSkippedAsParallel && replicadShape.faces.length > 0) {
+    return true;
   }
   return false;
 }

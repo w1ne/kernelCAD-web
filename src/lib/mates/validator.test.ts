@@ -6,6 +6,7 @@ import {
   type ValidatorDiagnostic,
   type ValidatorDiagnosticCode,
 } from './validator';
+import type { MateLoadLimit, MateRecord } from './mate';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { CaptureSession } from '../../capture/captureSession';
 import type { FeatureRecord } from '../../intent/featureRecord';
@@ -163,7 +164,12 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     arm.mate('a-b', 'a.top', 'b.bot', 'fastened');
     const result = await validateAssemblyWithMates(arm);
     expect(result.status).toBe('solved');
-    expect(result.diagnostics).toHaveLength(0);
+    // v0.7.4 Gate 1 emits info-severity "deferred" notes for vec3-origin
+    // sides on fastened mates (the v0.7.x followup wires vec3-origin face
+    // inference). Filter those out — this test is about clean-status, not
+    // about Gate 1's deferred-note behaviour (covered in mountingHoleConsistency.test.ts).
+    const nonDeferred = result.diagnostics.filter((d) => d.severity !== 'info');
+    expect(nonDeferred).toHaveLength(0);
   });
 
   it('reports assembly.mate.over-constrained on an inconsistent triangle', async () => {
@@ -379,6 +385,44 @@ describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', (
 
     const result = await validateAssemblyWithMates(arm);
     expect(result.diagnostics.filter((d) => d.code === 'assembly.mate.limit-missing')).toHaveLength(0);
+  });
+});
+
+describe('validateAssemblyWithMates — v0.7.4 externalLoads flow-through (Phase 6)', () => {
+  it('emits assembly.joint.load-exceeded when externalLoads flow through to Gate 3, absent otherwise', async () => {
+    // Phase 6 integration check: `validateAssemblyWithMates(arm, ifaces,
+    // envelope, externalLoads)` must hand the 4th arg to
+    // `validateJointLoadCapacity` so the gate fires on exceed. Building the
+    // same fixture twice (once with externalLoads, once without) and
+    // asserting the diagnostic-count delta pins the wiring — if the 4th
+    // arg were dropped on the floor (the Phase 2 placeholder behaviour), the
+    // "with" call would have the same zero-load-exceeded count as the
+    // "without" call.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10), { at: [50, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [-50, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [0, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'a.c', 'b.c', 'revolute', { limitsDeg: [-90, 90] });
+    // Patch maxLoad onto the just-pushed mate. `arm.mate(...)` doesn't yet
+    // accept `maxLoad`; see the parallel pattern in jointLoadCapacity.test.ts.
+    const mates = arm.__mates() as MateRecord[];
+    (mates[0] as { maxLoad?: MateLoadLimit }).maxLoad = { torque: 10 };
+
+    // r = 50 mm, F = 1000 N perpendicular → 50 N·m > 10 N·m cap.
+    const externalLoads = { a: { force: [0, 0, -1000] as [number, number, number] } };
+
+    const withLoads = await validateAssemblyWithMates(arm, undefined, undefined, externalLoads);
+    const withoutLoads = await validateAssemblyWithMates(arm, undefined, undefined, undefined);
+
+    const exceededWith = withLoads.diagnostics.filter((d) => d.code === 'assembly.joint.load-exceeded' && d.severity === 'error');
+    const exceededWithout = withoutLoads.diagnostics.filter((d) => d.code === 'assembly.joint.load-exceeded' && d.severity === 'error');
+    expect(exceededWith).toHaveLength(1);
+    expect(exceededWithout).toHaveLength(0);
+    expect(exceededWith[0].mateName).toBe('hinge');
+    expect(exceededWith[0].hint).toMatch(/joint-load-exceeded/);
   });
 });
 

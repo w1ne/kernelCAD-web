@@ -208,7 +208,14 @@ function buildSuggestedRepairPrompt(
   if (diagnostics.length === 0 && blockingReasons.length === 0) {
     return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
   }
-  const diagnosticFacts = diagnostics.slice(0, 8).map((d) => {
+  // v0.7.4 — filter out info-severity diagnostics (documented v0.7.x
+  // deferrals from Gate 1's vec3-origin face-inference path). They are not
+  // actionable repair facts and would otherwise crowd out higher-priority
+  // fitness blocking reasons given the 8-slot cap below.
+  const actionableDiagnostics = diagnostics.filter((d) =>
+    'severity' in d ? d.severity !== 'info' : true,
+  );
+  const diagnosticFacts = actionableDiagnostics.slice(0, 8).map((d) => {
     const scoped = 'sampleName' in d && d.sampleName ? ` [${d.sampleName}]` : '';
     return `- ${d.code}${scoped}: ${d.message} Hint: ${d.hint}`;
   });

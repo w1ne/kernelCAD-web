@@ -1088,8 +1088,8 @@ export class Assembly {
        * check runs only under `validate: 'error'`; under `'warn'` / `'off'`
        * the loads are validated for key membership and otherwise ignored.
        *
-       * Currently a pass-through to `validateAssemblyWithMates`; the Gate 3
-       * implementation lands later in the v0.7.4 plan (Phase 5).
+       * Forwarded as the 4th arg to `validateAssemblyWithMates` (Phase 6),
+       * which composes Gate 3 with the v0.7.4 grounding gates.
        */
       externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
     },
@@ -1198,8 +1198,12 @@ export class Assembly {
       mateTransformsPromise,
       envelopePromise,
     ]).then(async ([interferencePairs, mateT, envelope]) => {
-      // Phase 5: forward opts.externalLoads as 4th arg when Gate 3 wires through.
-      const result = await validateAssemblyWithMates(this, interferencePairs, envelope);
+      const result = await validateAssemblyWithMates(
+        this,
+        interferencePairs,
+        envelope,
+        opts?.externalLoads,
+      );
       return { result, mateT };
     }).then(
       ({ result, mateT }) => {

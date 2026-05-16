@@ -33,7 +33,12 @@ describe('validate_assembly MCP tool', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.status).toBe('solved');
-      expect(r.diagnostics).toEqual([]);
+      // v0.7.4 Gate 1 emits info-severity "deferred" notes per vec3-origin
+      // side on fastened mates (the topology-bound face inference path is a
+      // v0.7.x followup). Filter those out — this test asserts clean status,
+      // not the deferred-note behaviour (covered by mountingHoleConsistency.test.ts).
+      const errorsAndWarnings = r.diagnostics.filter((d) => d.severity !== 'info');
+      expect(errorsAndWarnings).toEqual([]);
       expect(r.partCount).toBe(2);
       expect(r.jointCount).toBe(0);
     }

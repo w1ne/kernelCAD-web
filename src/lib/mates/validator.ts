@@ -27,7 +27,10 @@ import type { Assembly } from '../../capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { Vec3 } from '../../intent/types';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
+import { validateJointAxisBinding } from './jointAxisBinding';
+import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { parseConnectorRef } from './mate';
+import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
 
@@ -286,11 +289,12 @@ export async function validateAssemblyWithMates(
   arm: Assembly,
   interferencePairs?: readonly InterferencePair[],
   poseEnvelopeResult?: PoseEnvelopeReviewResult,
-  // v0.7.4 — pass-through only in this slice. Gate 3
-  // (`validateJointLoadCapacity`) is wired in Phase 5; until then the body
-  // ignores this arg. Keeping it on the signature now keeps the agent
-  // surface stable as the gate rolls in.
-  _externalLoads?: ExternalLoadMap,
+  // v0.7.4 — per-part external loads consumed by Gate 3
+  // (`validateJointLoadCapacity`). When undefined, Gate 3 fast-returns and
+  // no `assembly.joint.load-exceeded` diagnostics are emitted regardless of
+  // declared `maxLoad`. See `validateJointLoadCapacity` for the gate's
+  // per-mate-type semantics.
+  externalLoads?: ExternalLoadMap,
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -423,6 +427,15 @@ export async function validateAssemblyWithMates(
       hint: `invalid-args.assembly.mate-limit-missing — declare limitsDeg:[min,max] (or limitsMm for prismatic) on '${mate.name}' so the kernel can verify the mechanism does not self-collide across its declared range.`,
     });
   }
+
+  // 7. v0.7.4 — kinematic grounding gates. Run order: cheap pure gates first
+  //    (Gate 3, Gate 1), expensive BREP gate last (Gate 2) so an earlier
+  //    error can short-circuit when desired. For now we run all three so the
+  //    agent sees the full picture per single solvedModel call (per plan
+  //    Step 2 — no short-circuit, agent gets full diagnostic chain).
+  diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
+  diagnostics.push(...validateMountingHoleConsistency(arm));
+  diagnostics.push(...await validateJointAxisBinding(arm));
 
   return finalizeResult(
     diagnostics,
