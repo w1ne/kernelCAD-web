@@ -355,6 +355,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sheetMetal',       // W2.2
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
+    'referenceImage',   // virtual — no BREP; defense-in-depth guard
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -2276,6 +2277,12 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         break;
+      }
+      case 'referenceImage': {
+        // Virtual record — no BREP output. recomputeEngine gates on
+        // metadata.virtual === true and skips the lowerer, so this arm is
+        // defense-in-depth for callers that invoke the lowerer directly.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       default:
         return {

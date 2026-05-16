@@ -77,4 +77,32 @@ describe('OcctLowerer', () => {
     const expected = 8000 - Math.PI * 25 * 20;
     expect(res.shape.volume()).toBeCloseTo(expected, 0);
   });
+
+  it('lowers a referenceImage record without falling through to the default arm', async () => {
+    const r: FeatureRecord = {
+      id: 'ref-1' as import('../../../../src/shared/intent/types').FeatureId,
+      kind: 'referenceImage',
+      inputs: {},
+      params: {},
+      transforms: [],
+      suppressed: false,
+      metadata: {
+        virtual: true,
+        path: '/tmp/nonexistent.png',
+        plane: 'xz',
+        anchor: 'origin',
+        scale: 'fit-bbox',
+        opacity: 0.5,
+        flipU: false,
+        flipV: false,
+        pixelWidth: 0,
+        pixelHeight: 0,
+      },
+    };
+    const lowerer = new OcctLowerer();
+    const res = await lowerer.lower(r, { byKey: {} });
+    // Virtual record — no BREP, no error diagnostics.
+    expect(res.shape).toBeUndefined();
+    expect(res.diagnostics).toEqual([]);
+  });
 });
