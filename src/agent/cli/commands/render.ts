@@ -65,7 +65,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       written.push(outPath);
     }
     // Also emit pose-keyed PNGs alongside the view tiles.
-    for (const [poseKey, buf] of Object.entries(result.pngsByPose)) {
+    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
       const [az, el] = poseKey.split(',').map((s) => s.trim());
       const suffix = `pose-${az}-${el}.png`;
       const outPath = input.out
@@ -82,7 +82,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
     // In composite mode, pose captures still emit as separate files next to
     // the composite output. Resolves the `node ... render --pose <az,el> -o
     // /tmp/<stem>.png` flow which expects `/tmp/<stem>.pose-<az>-<el>.png`.
-    for (const [poseKey, buf] of Object.entries(result.pngsByPose)) {
+    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
       const [az, el] = poseKey.split(',').map((s) => s.trim());
       const suffix = `pose-${az}-${el}.png`;
       const posePath = (input.out ?? join(dir, `${stem}.png`)).replace(/\.png$/i, `.${suffix}`);
