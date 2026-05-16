@@ -14,6 +14,8 @@ import { resolveColor } from '../../../shared/render/palette';
 import { pbrFromColor } from '../../../shared/render/materialRoles';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
+import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
+import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -101,137 +103,6 @@ const VIEWER_W = 1280;
 const VIEWER_H = 1080;
 const TERMINAL_W = 640;
 const TERMINAL_H = 1080;
-
-/** Default mesh color when a feature has no .color() metadata. Held as a
- *  number for THREE; mirrors the long-standing "neutral CAD silver" tone the
- *  demo player has always rendered. resolveColor() returns hex strings, which
- *  THREE.Material.color.set() also accepts. */
-const DEFAULT_MESH_COLOR = 0xc8d2e0;
-
-/**
- * Construct a MeshPhysicalMaterial from a full PBR record. All optional PBR
- * fields default to physically neutral values so the output is always a valid
- * renderable material. When `pbr` is undefined the renderer's default neutral
- * CAD silver (DEFAULT_MESH_COLOR) is used.
- *
- * This is the canonical material factory for the demo player. Exported so
- * unit tests can exercise it without mounting a full React tree.
- */
-export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Material {
-  const baseColor = pbr?.baseColor ?? DEFAULT_MESH_COLOR;
-  const resolved: number | string = resolveColor(typeof baseColor === 'string' ? baseColor : undefined) ?? DEFAULT_MESH_COLOR;
-  return new THREE.MeshPhysicalMaterial({
-    color: resolved,
-    metalness: pbr?.metalness ?? 0,
-    roughness: pbr?.roughness ?? 0.5,
-    clearcoat: pbr?.clearcoat ?? 0,
-    clearcoatRoughness: pbr?.clearcoatRoughness ?? 0.03,
-    ior: pbr?.ior ?? 1.5,
-    transmission: pbr?.transmission ?? 0,
-    sheen: pbr?.sheen ?? 0,
-  });
-}
-
-/**
- * Apply a PlaneSpec orientation to a THREE.Mesh. This sets the mesh rotation
- * so it lies in the requested cardinal plane, and shifts it along the plane
- * normal by the PlaneSpec offset (if any). The mesh is created in the XY
- * plane by THREE.PlaneGeometry (normal +Z) and rotated here.
- *
- * - `'xy'` (or `{ plane: 'xy' }`) — no rotation; plane normal is +Z.
- * - `'xz'` (or `{ plane: 'xz' }`) — rotate -PI/2 about X so it lies in XZ.
- * - `'yz'` (or `{ plane: 'yz' }`) — rotate PI/2 about Y so it lies in YZ.
- */
-function applyPlaneOrientation(
-  mesh: THREE.Mesh,
-  planeSpec: ReferenceImageMetadata['plane'],
-  anchor: ReferenceImageMetadata['anchor'],
-): void {
-  const plane = typeof planeSpec === 'string' ? planeSpec : planeSpec.plane;
-  const offset = typeof planeSpec === 'object' ? (planeSpec.offset ?? 0) : 0;
-
-  switch (plane) {
-    case 'xy':
-      mesh.rotation.set(0, 0, 0);
-      break;
-    case 'xz':
-      mesh.rotation.set(-Math.PI / 2, 0, 0);
-      break;
-    case 'yz':
-      mesh.rotation.set(0, Math.PI / 2, 0);
-      break;
-  }
-
-  // Anchor position
-  let ax = 0, ay = 0, az = 0;
-  if (Array.isArray(anchor)) {
-    [ax, ay, az] = anchor as [number, number, number];
-  }
-  // Shift along plane normal by offset
-  switch (plane) {
-    case 'xy': az += offset; break;
-    case 'xz': ay += offset; break;
-    case 'yz': ax += offset; break;
-  }
-  mesh.position.set(ax, ay, az);
-}
-
-/**
- * Build a textured THREE.Mesh representing a reference-image overlay.
- * The mesh is a PlaneGeometry sized by the metadata's scale spec and
- * oriented by its plane/anchor spec. Uses MeshBasicMaterial with the
- * supplied texture so reference images render unlit (no shadow/highlight).
- *
- * The `texture` parameter is already-loaded; the caller owns async loading.
- * `sceneBbox` is used when scale === 'fit-bbox'.
- *
- * Exported for unit tests (allows mocking TextureLoader).
- */
-export function buildReferenceImagePlane(
-  ri: ReferenceImageMetadata,
-  texture: THREE.Texture,
-  sceneBbox: THREE.Box3,
-): THREE.Mesh {
-  if (ri.flipU) { texture.repeat.x = -1; texture.offset.x = 1; }
-  if (ri.flipV) { texture.repeat.y = -1; texture.offset.y = 1; }
-
-  const aspect =
-    ri.pixelWidth > 0 && ri.pixelHeight > 0
-      ? ri.pixelWidth / ri.pixelHeight
-      : 1.0;
-
-  let planeWidth: number;
-  if (ri.scale === 'fit-bbox') {
-    const size = sceneBbox.getSize(new THREE.Vector3());
-    planeWidth = Math.max(size.x, size.y, size.z);
-    if (planeWidth === 0) planeWidth = 100; // fallback for empty scene
-  } else if (typeof ri.scale === 'number') {
-    planeWidth = ri.scale;
-  } else {
-    // { width?, height? } object form
-    const scaleObj = ri.scale as { width?: number; height?: number };
-    if (scaleObj.width !== undefined) {
-      planeWidth = scaleObj.width;
-    } else if (scaleObj.height !== undefined) {
-      planeWidth = scaleObj.height * aspect;
-    } else {
-      planeWidth = 100;
-    }
-  }
-  const planeHeight = planeWidth / aspect;
-
-  const geom = new THREE.PlaneGeometry(planeWidth, planeHeight);
-  const mat = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    opacity: ri.opacity,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-  });
-  const mesh = new THREE.Mesh(geom, mat);
-  applyPlaneOrientation(mesh, ri.plane, ri.anchor);
-  return mesh;
-}
 
 function buildMeshFromFace(
   face: FaceGeometry,

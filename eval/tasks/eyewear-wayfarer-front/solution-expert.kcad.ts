@@ -55,7 +55,6 @@ const FRAME_DEPTH = 10;          // Y thickness of the acetate body
 const BRIDGE_TOP_W = 18;
 const BRIDGE_BOT_W = 22;
 const LENS_TOP_W = 52;
-const LENS_BOT_W = 46;
 const LENS_H = 39;
 const RIM_TOP = 11;
 const RIM_BOT = 7;

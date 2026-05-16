@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { buildReferenceImagePlane } from '../../../src/studio/components/demoPlayer/DemoPlayerPage';
+import { buildReferenceImagePlane } from '../../../src/studio/components/demoPlayer/buildReferenceImagePlane';
 import type { ReferenceImageMetadata } from '../../../src/shared/intent/referenceImageRecord';
 
 /** Build a minimal ReferenceImageMetadata for testing. */

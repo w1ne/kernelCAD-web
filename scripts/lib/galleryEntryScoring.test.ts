@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 import { parseGalleryEntries } from './galleryEntries';
 
 // Single-source-of-truth gate for the gallery.
@@ -103,7 +103,6 @@ describe('gallery entry scoring gate', () => {
 
     // Walk examples/gallery/<slug>/score.json for slugs that exist on disk.
     const galleryRoot = join(REPO_ROOT, 'examples/gallery');
-    const { readdirSync, statSync } = require('node:fs') as typeof import('node:fs');
     const slugs = readdirSync(galleryRoot).filter((name) => {
       const p = join(galleryRoot, name);
       return statSync(p).isDirectory();
