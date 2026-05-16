@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PromptBox } from '../../funnel/components/PromptBox';
 import { EmailSignup } from '../../funnel/components/EmailSignup';
+import { SignInModal } from '../../funnel/components/SignInModal';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
 
@@ -17,21 +18,23 @@ function LandingPage() {
   const { phase, events, submit } = useGeneration();
   const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
+  const [signInOpen, setSignInOpen] = useState(false);
 
   const handleSubmit = useCallback(
     (prompt: string) => {
       if (!session) {
+        // Stash so the post-OAuth landing can pick it up and auto-submit.
         try {
           window.localStorage.setItem(PENDING_PROMPT_KEY, prompt);
         } catch {
           // Storage unavailable (private mode) — proceed without resume.
         }
-        void navigate({ to: '/signin', search: { next: '/' } });
+        setSignInOpen(true);
         return;
       }
       void submit(prompt);
     },
-    [session, navigate, submit],
+    [session, submit],
   );
 
   // After OAuth returns with a session, auto-resume the stashed prompt.
@@ -99,7 +102,7 @@ function LandingPage() {
             <PromptBox onSubmit={handleSubmit} disabled={isBusy} />
             {!session && !sessionLoading && (
               <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                Sign in is required — Generate will prompt you to continue with Google.
+                Free with sign-in · daily quota · upgrade for more.
               </p>
             )}
           </div>
@@ -131,6 +134,13 @@ function LandingPage() {
             success-rate + retention metrics make this redundant. */}
         <EmailSignup />
       </div>
+
+      <SignInModal
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        title="Sign in to generate"
+        description="Generation runs on your free daily quota. Pick up where you left off — we'll auto-submit your prompt after sign-in."
+      />
     </main>
   );
 }
