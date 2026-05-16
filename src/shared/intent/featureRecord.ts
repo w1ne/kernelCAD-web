@@ -11,6 +11,20 @@ export type ShapeTransform =
   | { op: 'scale'; sx: number; sy: number; sz: number }
   | { op: 'reflect'; plane: PlaneSpec };
 
+export interface FeatureMetadata {
+  /** Hex color or CSS color string applied to this feature's mesh. */
+  color?: string;
+  /** Face-label map for features that support canonical-face naming. */
+  faceLabels?: import('./queryTypes').FaceQuery | Record<string, unknown>;
+  /** PBR material applied by `Shape.material()`. Identity dies at booleans. */
+  material?: import('./material').PBRMaterial;
+  /** true for capture-graph nodes that produce no OcctBackend geometry
+   *  (referenceImage today; future construction-only feature kinds may set this). */
+  virtual?: boolean;
+  /** Catch-all for future metadata keys not yet promoted to typed fields. */
+  [key: string]: unknown;
+}
+
 export interface FeatureRecord {
   id: FeatureId;
   kind: FeatureKind;
@@ -19,7 +33,7 @@ export interface FeatureRecord {
   transforms: ShapeTransform[];
   scriptLocation?: ScriptLocation;
   suppressed: boolean;
-  metadata?: Record<string, unknown>;
+  metadata?: FeatureMetadata;
 }
 
 /** Map of user-chosen label → resolution target. Stored under

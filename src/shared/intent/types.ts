@@ -143,7 +143,9 @@ export type FeatureKind =
   // specialty (v0.13+)
   | 'sheetMetal' | 'sheetMetalBend' | 'sdf' | 'sdfMaterialize'
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
-  | 'surfaceThicken' | 'surfaceToShape';
+  | 'surfaceThicken' | 'surfaceToShape'
+  // Slice A: reference-image overlay node (capture-only, no OCCT output).
+  | 'referenceImage';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings
