@@ -13,16 +13,26 @@ export const Route = createFileRoute('/g/$genId')({
   component: AnonGenPage,
 });
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUuid(s: string | undefined): boolean {
+  return typeof s === 'string' && UUID_RE.test(s);
+}
+
 function AnonGenPage() {
   const { genId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
   const [gen, setGen] = useState<GenerationRow | null>(null);
-  const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [loadErr, setLoadErr] = useState<string | null>(() =>
+    isUuid(genId)
+      ? null
+      : 'Invalid generation link. The previous run may not have completed — try generating again from the home page.',
+  );
   const { phase, submit } = useGeneration();
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'error'>('idle');
 
   useEffect(() => {
+    if (!isUuid(genId)) return;
     fetchGeneration(genId).then(setGen).catch(e => setLoadErr(String(e)));
   }, [genId]);
 
