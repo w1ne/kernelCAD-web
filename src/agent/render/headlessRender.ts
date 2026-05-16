@@ -26,6 +26,7 @@ declare const window: {
     loadFeatureMeshes: (perFeature: unknown, bounds: unknown) => unknown;
     forceFullOpacity: () => void;
     setRenderView: (view: RenderView) => void;
+    setReferenceImagesVisible: (visible: boolean) => void;
   };
 };
 
@@ -39,6 +40,9 @@ export interface HeadlessRenderOpts {
   views?: readonly RenderView[];
   /** URL of a running studio dev server; defaults to localhost:5173. */
   baseUrl?: string;
+  /** When true, hides the `__referenceImages` overlay group before taking
+   *  screenshots. Useful for clean engineering-view captures without overlays. */
+  hideReferenceImages?: boolean;
 }
 
 export interface HeadlessRenderResult {
@@ -82,6 +86,11 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       { feats: serialized, b: meshing.bounds },
     );
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
+
+    // 3b. Optionally hide reference-image overlays for clean engineering views.
+    if (opts.hideReferenceImages) {
+      await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
+    }
 
     // 4. Per-view: snap camera, screenshot, collect.
     const pngsByView: Partial<Record<RenderView, Buffer>> = {};
