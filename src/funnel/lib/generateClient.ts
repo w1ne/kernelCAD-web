@@ -75,30 +75,34 @@ function parseEventBlock(raw: string): GenerateEvent | null {
   return mapToEvent(name, payload);
 }
 
+function asString(v: unknown): string {
+  return typeof v === 'string' ? v : '';
+}
+
 function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | null {
   switch (name) {
     case 'generation':
-      return { kind: 'generation', generationId: String(p.generationId), anonId: String(p.anonId) };
+      return { kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) };
     case 'status':
       return { kind: 'status', phase: p.phase as 'running' | 'tool_calling' };
     case 'tool_call':
-      return { kind: 'tool_call', name: String(p.name), args: p.args };
+      return { kind: 'tool_call', name: asString(p.name), args: p.args };
     case 'tool_result':
-      return { kind: 'tool_result', name: String(p.name), ok: Boolean(p.ok) };
+      return { kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) };
     case 'done':
       return {
         kind: 'done',
         artifact: p.artifact as Artifact,
-        generationId: String(p.generationId),
-        anonId: String(p.anonId),
+        generationId: asString(p.generationId),
+        anonId: asString(p.anonId),
         durationMs: Number(p.durationMs ?? 0),
       };
     case 'error':
       return {
         kind: 'error',
         code: p.code as 'llm_failed' | 'eval_failed' | 'timeout',
-        message: String(p.message ?? ''),
-        generationId: String(p.generationId ?? ''),
+        message: asString(p.message),
+        generationId: asString(p.generationId),
       };
     default:
       return null;

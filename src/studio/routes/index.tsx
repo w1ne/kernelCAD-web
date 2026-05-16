@@ -1,15 +1,54 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { PromptBox } from '../../funnel/components/PromptBox';
+import { EmailSignup } from '../../funnel/components/EmailSignup';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
+import { useSession } from '../../funnel/hooks/useSession';
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
 });
 
+// Stash the user's prompt across the Google OAuth round-trip so that after
+// sign-in we can resume generation without making them retype.
+const PENDING_PROMPT_KEY = 'kc:pendingPrompt';
+
 function LandingPage() {
   const { phase, events, submit } = useGeneration();
+  const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
+
+  const handleSubmit = useCallback(
+    (prompt: string) => {
+      if (!session) {
+        try {
+          window.localStorage.setItem(PENDING_PROMPT_KEY, prompt);
+        } catch {
+          // Storage unavailable (private mode) — proceed without resume.
+        }
+        void navigate({ to: '/signin', search: { next: '/' } });
+        return;
+      }
+      void submit(prompt);
+    },
+    [session, navigate, submit],
+  );
+
+  // After OAuth returns with a session, auto-resume the stashed prompt.
+  useEffect(() => {
+    if (sessionLoading || !session) return;
+    if (phase.state !== 'idle') return;
+    let pending: string | null = null;
+    try {
+      pending = window.localStorage.getItem(PENDING_PROMPT_KEY);
+    } catch {
+      return;
+    }
+    if (pending) {
+      window.localStorage.removeItem(PENDING_PROMPT_KEY);
+      void submit(pending);
+    }
+  }, [sessionLoading, session, phase.state, submit]);
 
   useEffect(() => {
     if (phase.state === 'done') {
@@ -57,7 +96,12 @@ function LandingPage() {
 
           {/* Prompt box */}
           <div className="mt-2 max-w-2xl mx-auto">
-            <PromptBox onSubmit={submit} disabled={isBusy} />
+            <PromptBox onSubmit={handleSubmit} disabled={isBusy} />
+            {!session && !sessionLoading && (
+              <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
+                Sign in is required — Generate will prompt you to continue with Google.
+              </p>
+            )}
           </div>
 
           {/* Running status */}
@@ -81,6 +125,11 @@ function LandingPage() {
             </div>
           )}
         </header>
+
+        {/* Email opt-in — fallback signal collection until the prompt funnel
+            reaches "fully working slice" status. Remove when generation
+            success-rate + retention metrics make this redundant. */}
+        <EmailSignup />
       </div>
     </main>
   );
