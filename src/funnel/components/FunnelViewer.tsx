@@ -43,7 +43,7 @@ function FunnelViewerInner() {
  */
 export function FunnelViewer({ code }: FunnelViewerProps) {
   return (
-    <div className="relative w-full h-full bg-neutral-900">
+    <div className="relative w-full h-full bg-code-bg">
       <WorkbenchProvider initialCode={code}>
         <FunnelViewerInner />
       </WorkbenchProvider>

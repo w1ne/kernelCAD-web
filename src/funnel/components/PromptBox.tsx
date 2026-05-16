@@ -31,10 +31,10 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES }: P
         onChange={e => setValue(e.target.value)}
         rows={3}
         disabled={disabled}
-        placeholder="Describe the part you want..."
-        className="w-full rounded-xl bg-neutral-900 border border-neutral-700 text-white p-4 text-base focus:border-blue-500 focus:outline-none disabled:opacity-50"
+        placeholder="Describe the part you want…"
+        className="w-full rounded-lg bg-white border border-rule text-ink p-4 text-base placeholder:text-ink-faint focus:border-blueprint focus:outline-none disabled:opacity-50 font-sans"
       />
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
           {examples.map(ex => (
             <button
@@ -42,7 +42,7 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES }: P
               type="button"
               onClick={() => setValue(ex)}
               disabled={disabled}
-              className="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded-md border border-neutral-700 hover:border-neutral-500 disabled:opacity-50"
+              className="font-mono text-[11px] text-ink-soft hover:text-ink hover:border-ink px-2.5 py-1 rounded border border-rule disabled:opacity-50 tracking-wide transition-colors"
             >
               {ex}
             </button>
@@ -51,9 +51,9 @@ export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES }: P
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="rounded-lg bg-white text-neutral-900 px-5 py-2 text-sm font-medium hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-6 py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {disabled ? 'Generating…' : 'Generate'}
+          {disabled ? 'Generating…' : 'Generate →'}
         </button>
       </div>
     </form>

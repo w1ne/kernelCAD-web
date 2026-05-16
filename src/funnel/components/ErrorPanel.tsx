@@ -13,10 +13,11 @@ export function ErrorPanel({ code, message, originalPrompt, onRefine, busy }: Er
   const [value, setValue] = useState(prefill);
 
   return (
-    <div className="rounded-xl border border-amber-700 bg-amber-950/40 p-4 text-amber-100">
-      <p className="font-medium">Generation didn't succeed: {code}</p>
-      <p className="text-sm text-amber-200/80 mt-1 break-words">{message}</p>
-      <p className="text-xs text-amber-200/60 mt-3">
+    <div className="rounded-xl border border-copper bg-vellum-soft p-4">
+      <p className="font-serif text-xl font-medium text-ink">Generation didn't finish</p>
+      <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{code}</p>
+      <p className="text-sm text-ink-soft mt-2 break-words">{message}</p>
+      <p className="font-mono text-xs text-ink-faint mt-3 tracking-wide">
         Tweak the prompt below and try again. (Failed gens don't count against your free quota.)
       </p>
       <textarea
@@ -24,7 +25,7 @@ export function ErrorPanel({ code, message, originalPrompt, onRefine, busy }: Er
         onChange={e => setValue(e.target.value)}
         rows={4}
         disabled={busy}
-        className="mt-3 w-full rounded-lg bg-neutral-900 border border-neutral-700 text-white p-3 text-sm focus:border-blue-500 focus:outline-none disabled:opacity-50"
+        className="mt-3 w-full rounded-lg bg-white border border-rule text-ink p-3 text-sm focus:border-blueprint focus:outline-none disabled:opacity-50 font-sans"
         onKeyDown={e => {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') onRefine(value);
         }}
@@ -34,7 +35,7 @@ export function ErrorPanel({ code, message, originalPrompt, onRefine, busy }: Er
           type="button"
           disabled={busy}
           onClick={() => onRefine(value)}
-          className="rounded-lg bg-white text-neutral-900 px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors"
         >
           {busy ? 'Retrying…' : 'Retry'}
         </button>
