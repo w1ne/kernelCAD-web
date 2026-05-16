@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { isAbsolute, relative, resolve } from 'node:path';
@@ -221,6 +222,10 @@ function kernelCadMeshEndpoint(): Plugin {
 export default defineConfig(({ command }) => ({
   base: process.env.VITE_BASE_PATH ?? (command === 'build' ? '/kernelCAD-web/' : '/'),
   plugins: [
+    TanStackRouterVite({
+      routesDirectory: './src/studio/routes',
+      generatedRouteTree: './src/studio/routeTree.gen.ts',
+    }),
     kernelCadMeshEndpoint(),
     react(),
     tailwindcss(),
