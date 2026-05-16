@@ -76,6 +76,7 @@ export async function renderScript(scriptPath: string, opts: RenderOpts): Promis
     '--width', String(width),
     '--height', String(height),
     '--base-url', baseUrl,
+    '--hide-reference-images',  // eval scoring never sees reference-image overlays
   ];
   for (const p of poses) {
     args.push('--pose', p);

@@ -21,6 +21,7 @@ export interface RenderInput {
   width: number;
   height: number;
   baseUrl: string;
+  hideReferenceImages: boolean;
 }
 
 export interface RenderCliResult {
@@ -39,6 +40,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       viewportHeight: input.height,
       views: ALL_VIEWS,
       baseUrl: input.baseUrl,
+      hideReferenceImages: input.hideReferenceImages,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -82,12 +84,14 @@ export function renderCommand(): Command {
       'studio dev server URL (run `npm run dev` first)',
       'http://localhost:5173',
     )
+    .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
       width: number;
       height: number;
       baseUrl: string;
+      hideReferenceImages: boolean;
     }) => {
       const r = await renderScript({
         file,
@@ -96,6 +100,7 @@ export function renderCommand(): Command {
         width: opts.width,
         height: opts.height,
         baseUrl: opts.baseUrl,
+        hideReferenceImages: opts.hideReferenceImages,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
