@@ -1,4 +1,15 @@
-# kernelCAD v0.7.3
+# kernelCAD v0.7.5
+
+## v0.7.5 — 2026-05-16 — Kinematic grounding gates
+
+v0.7.5 closes the design-time mechanism feasibility gap inside `Assembly.solvedModel({validate:'error'})`. Three gates run in the harness path: mounting-hole consistency (a `fastened` mate now refuses to ship when the two bound faces don't expose matching hole features), joint-axis binding (revolute / prismatic / cylindrical axes must intersect both bound parts' BREP — no axes floating in space), and declared-load capacity (joints with `maxLoad` declared verify that the assembly's `externalLoads` don't exceed the joint's stated capacity). All three emit one-code-per-gate diagnostics with structured recovery hints; all three flow through the existing `review_cad` MCP path.
+
+The load gate is a stub — N·m / N magnitudes only, no FEA, no friction, no cross-joint propagation. Agents stating `maxLoad` get a sanity gate, not a structural certification.
+
+- New `MateRecord.maxLoad?: { force?: number; torque?: number }` field; new `solvedModel(poses, { externalLoads })` opt.
+- Three new diagnostic codes: `assembly.mounting-hole.mismatch`, `assembly.joint-axis.unbound`, `assembly.joint.load-exceeded`. Local `ValidatorDiagnosticCode` union 14 → 17.
+- Six new eval-corpus tasks under `eval/tasks/kinematic-grounding-*` (3 negative + 1 positive + 2 repair-loop pair).
+- Brought forward from v0.6.2: envelope-aware harness gate inside `solvedModel({validate:'error'})` auto-runs `reviewPoseEnvelope` when any mate has limits, folds 4 envelope codes + emits `assembly.mate.limit-missing` warning.
 
 ## v0.7.3 — 2026-05-15 — SDF authoring (slice 1)
 
