@@ -46,19 +46,31 @@ export function useGeneration() {
     for await (const e of parseSseStream(res.body)) {
       setEvents(prev => [...prev, e]);
       if (e.kind === 'generation') {
-        generationId = e.generationId;
-        anonId = e.anonId;
+        if (e.generationId) generationId = e.generationId;
+        if (e.anonId) anonId = e.anonId;
         setPhase({ state: 'running', generationId, anonId, lastEvent: e });
       } else if (e.kind === 'done') {
-        setPhase({ state: 'done', generationId: e.generationId, anonId: e.anonId, artifact: e.artifact });
+        const finalId = e.generationId || generationId;
+        const finalAnon = e.anonId || anonId;
+        if (!finalId) {
+          setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
+          return;
+        }
+        setPhase({ state: 'done', generationId: finalId, anonId: finalAnon, artifact: e.artifact });
         return;
       } else if (e.kind === 'error') {
-        setPhase({ state: 'error', code: e.code, message: e.message, generationId: e.generationId });
+        setPhase({ state: 'error', code: e.code, message: e.message, generationId: e.generationId || generationId });
         return;
       } else {
         setPhase({ state: 'running', generationId, anonId, lastEvent: e });
       }
     }
+
+    // Stream ended without a `done` or `error` event (e.g., upstream timeout
+    // or proxy buffering). Surface this instead of silently leaving phase in
+    // `running` — otherwise a stale phase can later coerce navigation to
+    // `/g/undefined`.
+    setPhase({ state: 'error', code: 'stream_closed', message: 'Connection closed before generation finished.' });
   }, []);
 
   return { phase, events, submit };
