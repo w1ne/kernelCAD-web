@@ -1,12 +1,12 @@
 name: Deploy to Cloudflare Pages
 
-# Phase 2B: deploys the Vite-built Studio bundle to kernelcad-web (kernelcad.com).
-# The old marketing-only project (kernelcad-marketing) is preserved for backward
-# compat but the primary production deploy is now the Studio bundle.
+# Phase 2B: deploys the Vite-built Studio bundle to kernelcad-marketing (kernelcad.com).
+# The kernelcad-marketing CF Pages project previously hosted the static marketing site;
+# it now receives the Vite Studio bundle so kernelcad.com becomes the live funnel.
 #
 # Project routing:
-#   - kernelcad-web   ← dist/ (kernelcad.com) — Studio funnel, replaces marketing site
-#   - kernelcad-app   ← dist/ (app.kernelcad.com, Vite build with base=/)
+#   - kernelcad-marketing ← dist/ (kernelcad.com) — Studio funnel
+#   - kernelcad-app       ← dist/ (app.kernelcad.com, Vite build with base=/)
 
 on:
   push:
@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   studio:
-    name: Deploy Studio bundle to kernelcad-web
+    name: Deploy Studio bundle to kernelcad-marketing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,13 +47,13 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
-      - name: Deploy to Cloudflare Pages (kernelcad-web)
+      - name: Deploy to Cloudflare Pages (kernelcad-marketing)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: site
-          command: pages deploy ../dist --project-name=kernelcad-web --commit-dirty=true
+          command: pages deploy ../dist --project-name=kernelcad-marketing --commit-dirty=true
 
   app:
     name: Deploy visual debugger app

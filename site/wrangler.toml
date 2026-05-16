@@ -7,7 +7,7 @@
 # D1 binding kept for backward-compat: Pages Functions at site/functions/
 # still handle the subscriber-capture endpoint.
 
-name = "kernelcad-web"
+name = "kernelcad-marketing"
 compatibility_date = "2026-04-01"
 pages_build_output_dir = "../dist"
 
