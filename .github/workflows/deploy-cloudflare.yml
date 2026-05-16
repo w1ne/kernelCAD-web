@@ -1,14 +1,19 @@
 name: Deploy to Cloudflare Pages
 
-# Auto-deploys two Cloudflare Pages projects on every push:
-#   - kernelcad-marketing  ← site/ (kernelcad.com)
-#   - kernelcad-app        ← dist/ (app.kernelcad.com, Vite build with base=/)
+# Phase 2B: deploys the Vite-built Studio bundle to kernelcad-web (kernelcad.com).
+# The old marketing-only project (kernelcad-marketing) is preserved for backward
+# compat but the primary production deploy is now the Studio bundle.
+#
+# Project routing:
+#   - kernelcad-web   ← dist/ (kernelcad.com) — Studio funnel, replaces marketing site
+#   - kernelcad-app   ← dist/ (app.kernelcad.com, Vite build with base=/)
 
 on:
   push:
     branches:
       - main
       - develop
+      - 'feat/**'
       - feat/kernelcad-website
     tags:
       - 'v*'
@@ -19,8 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  marketing:
-    name: Deploy marketing site
+  studio:
+    name: Deploy Studio bundle to kernelcad-web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,21 +40,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Chromium (for brand asset rendering)
-        run: npx playwright install --with-deps chromium
+      - name: Build Vite Studio bundle
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: npm run build
 
-      - name: Build demo + brand assets
-        run: |
-          npx tsx site/scripts/build-demo.ts
-          node site/scripts/render-brand.mjs
-
-      - name: Deploy to Cloudflare Pages (kernelcad-marketing)
+      - name: Deploy to Cloudflare Pages (kernelcad-web)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: site
-          command: pages deploy . --project-name=kernelcad-marketing --branch=main --commit-dirty=true
+          command: pages deploy ../dist --project-name=kernelcad-web --commit-dirty=true
 
   app:
     name: Deploy visual debugger app
