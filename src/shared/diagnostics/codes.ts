@@ -206,17 +206,17 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
     'feature.sdf.materialize-resolution-out-of-range':
       'sdf.materialize resolution must be an integer in [10, 200]. Use 30-60 for typical brackets; 80-120 for fine smooth-blends; <30 only when previewing. 200 is the cap to prevent OOM (200^3 = 8M voxels).',
     'feature.reference-image.path-not-found':
-      "reference-image.path-not-found — pass a path that exists relative to the .kcad.ts file.",
+      "Pass a path that exists relative to the .kcad.ts file.",
     'feature.reference-image.invalid-plane':
-      "reference-image.invalid-plane — plane must be 'xy', 'xz', 'yz', or { plane: <cardinal>, offset?: number }.",
+      "Plane must be 'xy', 'xz', 'yz', or { plane: <cardinal>, offset?: number }.",
     'feature.reference-image.scale-out-of-range':
-      "reference-image.scale-out-of-range — pass a scale > 0 and ≤ 10000 mm, or use 'fit-bbox'.",
+      "Pass a scale > 0 and ≤ 10000 mm, or use 'fit-bbox'.",
     'feature.reference-image.format-unsupported':
-      'reference-image.format-unsupported — supported formats: .png, .jpg, .jpeg, .webp.',
+      'Supported formats: .png, .jpg, .jpeg, .webp.',
     'feature.material.invalid-base-color':
-      'material.invalid-base-color — pass a CSS color string or a registered role token to baseColor.',
+      'Pass a CSS color string or a registered role token to baseColor.',
     'feature.material.value-clamped':
-      'material.value-clamped — numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
+      'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
