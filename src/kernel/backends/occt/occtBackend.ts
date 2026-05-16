@@ -9,6 +9,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
+import { type PBRMaterial } from '../../../shared/intent/material';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -1225,6 +1226,23 @@ export async function exportSceneToSTEPAsync(
   const blob = replicad.exportSTEP(shapeConfigs as any);
   const buf = await blob.arrayBuffer();
   return new Uint8Array(buf);
+}
+
+/**
+ * Build a PBR record from FeatureRecord.metadata. Priority:
+ *   1. metadata.material (full PBR) — used directly.
+ *   2. metadata.color (legacy flat color) — promoted to { baseColor }.
+ *   3. neither — undefined; renderer falls back to DEFAULT_MESH_COLOR.
+ */
+export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): PBRMaterial | undefined {
+  if (!metadata) return undefined;
+  if (metadata.material && typeof metadata.material === 'object') {
+    return metadata.material as PBRMaterial;
+  }
+  if (typeof metadata.color === 'string') {
+    return { baseColor: metadata.color };
+  }
+  return undefined;
 }
 
 /**
