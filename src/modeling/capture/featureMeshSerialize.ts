@@ -36,6 +36,9 @@ export interface FeatureMeshSerialized {
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
   referenceImage?: ReferenceImageMetadata;
+  /** When true, the renderer's auto-framer skips this feature's bbox when
+   *  computing camera position. Mirrors `FeatureMesh.excludeFromCameraFit`. */
+  excludeFromCameraFit?: boolean;
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -58,6 +61,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     ...(m.material !== undefined ? { material: m.material } : {}),
     ...(m.virtual === true ? { virtual: true } : {}),
     ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
+    ...(m.excludeFromCameraFit === true ? { excludeFromCameraFit: true } : {}),
   };
 }
 
@@ -81,5 +85,6 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     ...(s.material !== undefined ? { material: s.material } : {}),
     ...(s.virtual === true ? { virtual: true } : {}),
     ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
+    ...(s.excludeFromCameraFit === true ? { excludeFromCameraFit: true } : {}),
   };
 }

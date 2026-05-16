@@ -86,13 +86,13 @@ const LED_H = 0.6;
 const FRONT_BEVEL_CHAMFER = 0.6;      // acetate front-face bevel depth
 const BACK_PERIMETER_FILLET = 0.8;    // back-face perimeter softening
 
-// Temple parameters. Real Wayfarer temples are ~140 mm hinge-to-ear-curl;
-// we shorten to 60 mm so the scene bounding box doesn't grow far enough to
-// trigger camera auto-zoom-out at pose 30,15 (lengths >65 mm pushed the
-// front face below 4% silhouette IoU because the auto-framer rescaled
-// the whole render). 60 mm is the sweet spot for the SSIM diagnostic's
-// upper-right quadrant under the current camera-fit code path.
-const TEMPLE_LENGTH = 60;
+// Temple parameters. Real Wayfarer temples are ~140 mm hinge-to-ear-curl.
+// We use full length now that the auto-framer can ignore appendage Y-extent
+// via the `excludeFromCameraFit()` tag applied to the leaf temple shapes
+// below — `meshFeaturesPerFeature` skips tagged leaves from the Node-side
+// bounds aggregation, so the camera distance/centering stays sized on the
+// body silhouette even after the union bakes the temples into one mesh.
+const TEMPLE_LENGTH = 140;
 const TEMPLE_THICKNESS = 5;     // X-axis (cross-section width)
 const TEMPLE_HEIGHT = 12;       // Z-axis cross-section (taller -> stands above frame top in 30,15 pose)
 const TEMPLE_DOWN_ANGLE = -5;   // degrees; mild rake (real Wayfarers angle ~3-5° down)
@@ -280,11 +280,14 @@ const RIGHT_HINGE_Z = outerTopLowerZ + 1.0;             // 21.5 (near outer-top 
 const rightTemple = box(TEMPLE_THICKNESS, TEMPLE_LENGTH, TEMPLE_HEIGHT)
   .translate(-TEMPLE_THICKNESS / 2, 0, -TEMPLE_HEIGHT / 2)
   .rotate([1, 0, 0], TEMPLE_DOWN_ANGLE)
-  .translate(RIGHT_HINGE_X, RIGHT_HINGE_Y, RIGHT_HINGE_Z);
+  .translate(RIGHT_HINGE_X, RIGHT_HINGE_Y, RIGHT_HINGE_Z)
+  .excludeFromCameraFit();
 
 // Mirror returns the full union of right + left (per kernel mirror semantics),
-// so we union the mirrored pair onto the body in a single boolean.
-const temples = rightTemple.mirror('yz');
+// so we union the mirrored pair onto the body in a single boolean. Re-tag the
+// mirrored pair — `.excludeFromCameraFit()` identity dies at booleans, same
+// rule as `.color()` / `.material()`.
+const temples = rightTemple.mirror('yz').excludeFromCameraFit();
 
 const frameBody = frameBodyCored.union(temples);
 

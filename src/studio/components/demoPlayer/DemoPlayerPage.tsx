@@ -104,6 +104,22 @@ const VIEWER_H = 1080;
 const TERMINAL_W = 640;
 const TERMINAL_H = 1080;
 
+/**
+ * Walk up an Object3D's parent chain looking for a feature-group ancestor
+ * tagged `userData.excludeFromCameraFit`. Used by the auto-framer (camera-fit
+ * bbox computation) to ignore appendages — eyewear temples, decorative
+ * spires, anything that extends the silhouette far beyond the "main" form
+ * and would otherwise zoom the camera out.
+ */
+function meshIsExcludedFromCameraFit(obj: THREE.Object3D): boolean {
+  let p: THREE.Object3D | null = obj;
+  while (p) {
+    if (p.userData && p.userData.excludeFromCameraFit === true) return true;
+    p = p.parent;
+  }
+  return false;
+}
+
 function buildMeshFromFace(
   face: FaceGeometry,
   name: string,
@@ -198,6 +214,12 @@ export function DemoPlayerPage(): React.JSX.Element {
   );
   const autoLoadedScriptRef = useRef<string | null>(null);
   const autoLoadedRecordRef = useRef<string | null>(null);
+  // Cache the per-load bounds so `setRenderPose` / `setRenderView` can size
+  // the camera from the SAME body-only bounds `meshFeaturesPerFeature` emits
+  // on the Node side (which honors `excludeFromCameraFit`). Without this,
+  // `setRenderPose` would recompute bbox from the scene meshes and see any
+  // unioned-in-temples geometry that survived a boolean operation.
+  const loadedBoundsRef = useRef<{ min: [number, number, number]; max: [number, number, number] } | null>(null);
 
   const handleSceneReady = useCallback((ctx: NonNullable<typeof sceneRef.current>) => {
     sceneRef.current = ctx;
@@ -239,19 +261,36 @@ export function DemoPlayerPage(): React.JSX.Element {
       setRenderView: (view) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
-        // Reuse the bounds the loadFeatureMeshes path computed (mesh
-        // groups are already centered at origin; just re-aim the camera).
-        // Recompute aggregate bounds from current scene contents to
-        // tolerate scenes loaded without explicit fit.
-        const bbox = new THREE.Box3();
-        ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
-        });
-        if (bbox.isEmpty()) return;
-        const minV = bbox.min, maxV = bbox.max;
+        // Prefer the Node-side body-only bounds cached by loadFeatureMeshes
+        // (honors `excludeFromCameraFit`). Fall back to a scene traversal
+        // that skips excluded subtrees when no bounds have been cached
+        // (e.g. scenes loaded outside the bridge path).
+        let boundsMin: [number, number, number];
+        let boundsMax: [number, number, number];
+        if (loadedBoundsRef.current) {
+          // Mesh groups have been translated to center the cached bounds at
+          // the origin; rebuild the centered min/max so fitCameraToBounds
+          // sees the same coordinate frame the meshes actually live in.
+          const lb = loadedBoundsRef.current;
+          const cx = (lb.min[0] + lb.max[0]) / 2;
+          const cy = (lb.min[1] + lb.max[1]) / 2;
+          const cz = (lb.min[2] + lb.max[2]) / 2;
+          boundsMin = [lb.min[0] - cx, lb.min[1] - cy, lb.min[2] - cz];
+          boundsMax = [lb.max[0] - cx, lb.max[1] - cy, lb.max[2] - cz];
+        } else {
+          const bbox = new THREE.Box3();
+          ctx.scene.traverse((obj) => {
+            if (obj instanceof THREE.Mesh && !meshIsExcludedFromCameraFit(obj)) {
+              bbox.expandByObject(obj);
+            }
+          });
+          if (bbox.isEmpty()) return;
+          boundsMin = [bbox.min.x, bbox.min.y, bbox.min.z];
+          boundsMax = [bbox.max.x, bbox.max.y, bbox.max.z];
+        }
         fitCameraToBounds(
           ctx.camera,
-          { min: [minV.x, minV.y, minV.z], max: [maxV.x, maxV.y, maxV.z] },
+          { min: boundsMin, max: boundsMax },
           view,
         );
         ctx.renderer.render(ctx.scene, ctx.camera);
@@ -259,14 +298,31 @@ export function DemoPlayerPage(): React.JSX.Element {
       setRenderPose: (azDeg, elDeg) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
-        const bbox = new THREE.Box3();
-        ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
-        });
-        if (bbox.isEmpty()) return;
-        const dx = bbox.max.x - bbox.min.x;
-        const dy = bbox.max.y - bbox.min.y;
-        const dz = bbox.max.z - bbox.min.z;
+        // Prefer the Node-side body-only bounds cached by loadFeatureMeshes;
+        // fall back to scene traversal skipping excluded meshes.
+        let bMin: [number, number, number];
+        let bMax: [number, number, number];
+        if (loadedBoundsRef.current) {
+          const lb = loadedBoundsRef.current;
+          const cx = (lb.min[0] + lb.max[0]) / 2;
+          const cy = (lb.min[1] + lb.max[1]) / 2;
+          const cz = (lb.min[2] + lb.max[2]) / 2;
+          bMin = [lb.min[0] - cx, lb.min[1] - cy, lb.min[2] - cz];
+          bMax = [lb.max[0] - cx, lb.max[1] - cy, lb.max[2] - cz];
+        } else {
+          const bbox = new THREE.Box3();
+          ctx.scene.traverse((obj) => {
+            if (obj instanceof THREE.Mesh && !meshIsExcludedFromCameraFit(obj)) {
+              bbox.expandByObject(obj);
+            }
+          });
+          if (bbox.isEmpty()) return;
+          bMin = [bbox.min.x, bbox.min.y, bbox.min.z];
+          bMax = [bbox.max.x, bbox.max.y, bbox.max.z];
+        }
+        const dx = bMax[0] - bMin[0];
+        const dy = bMax[1] - bMin[1];
+        const dz = bMax[2] - bMin[2];
         const maxExtent = Math.max(dx, dy, dz);
         const fov = ctx.camera.fov * (Math.PI / 180);
         const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
@@ -360,6 +416,13 @@ export function DemoPlayerPage(): React.JSX.Element {
           group.userData.featureKind = fm.featureKind;
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
+          // Tag for auto-framer skip. setRenderView / setRenderPose walk the
+          // scene to recompute bbox; this flag lets them skip out-of-silhouette
+          // appendages (eyewear temples, etc.) that would otherwise zoom the
+          // camera out and tank framing.
+          if (fm.excludeFromCameraFit === true) {
+            group.userData.excludeFromCameraFit = true;
+          }
           group.visible = true;
           // Prefer the full PBR record emitted by the bridge serializer (Task 7+).
           // Fall back to the legacy color string path: pbrFromColor resolves role
@@ -392,6 +455,12 @@ export function DemoPlayerPage(): React.JSX.Element {
           groupCount++;
         }
 
+        // Cache the bounds so setRenderPose / setRenderView use the SAME
+        // body-only bounds (computed Node-side honoring excludeFromCameraFit)
+        // instead of recomputing scene bbox after the unioned mesh has baked
+        // in the temple geometry.
+        loadedBoundsRef.current = { min: [...bounds.min] as [number, number, number], max: [...bounds.max] as [number, number, number] };
+
         // Center & camera-fit using supplied bounds (skip if nothing was loaded).
         // We compute scene bbox before adding reference images so the camera fits
         // the actual model geometry, not the (potentially larger) overlay planes.
@@ -420,9 +489,16 @@ export function DemoPlayerPage(): React.JSX.Element {
           scene.add(riGroup);
 
           // Compute sceneBbox from the model geometry for 'fit-bbox' scale.
+          // Skip meshes in groups tagged excludeFromCameraFit so the reference
+          // image overlay stays sized to the "main" silhouette (not the
+          // bbox-busting appendages like eyewear temples).
           const sceneBbox = new THREE.Box3();
           scene.traverse((obj) => {
-            if (obj instanceof THREE.Mesh && obj.parent !== riGroup) {
+            if (
+              obj instanceof THREE.Mesh
+              && obj.parent !== riGroup
+              && !meshIsExcludedFromCameraFit(obj)
+            ) {
               sceneBbox.expandByObject(obj);
             }
           });

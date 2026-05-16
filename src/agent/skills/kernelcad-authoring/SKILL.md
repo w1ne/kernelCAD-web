@@ -125,6 +125,14 @@ referenceImage(path: string, opts: {
 // 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
+// Tag this shape so the renderer's auto-framer skips its bounding box when
+// fitting the camera. Use for appendages that extend the silhouette far beyond
+// the main form (eyewear temples, antennae, decorative spires) where including
+// them in scene bounds tanks framing. Identity dies at booleans (leaf-level,
+// same as `.color()` / `.material()`) — re-apply on the unioned result, or
+// keep the excluded part as a SEPARATE tail Shape so the flag survives.
+.excludeFromCameraFit(): Shape
+
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
 .union(...others: Shape[]): Shape
 .subtract(...others: Shape[]): Shape

@@ -248,6 +248,37 @@ export class Shape {
   }
 
   /**
+   * Tag this shape so the auto-framer/camera-fit ignores its bounding box
+   * when computing camera position. Useful for parts that extend the
+   * natural silhouette far beyond the "main" form (eyewear temples,
+   * decorative spires) where including them in scene bounds zooms the
+   * camera out and tanks framing.
+   *
+   * Mutates `record.metadata.excludeFromCameraFit = true`. Like `.color()`
+   * and `.material()`, identity dies at boolean operations — the flag
+   * lives at the leaf-record level. For unions across an excluded leaf,
+   * call `.excludeFromCameraFit()` on the result of the union if you
+   * want the unioned shape to be excluded too.
+   */
+  excludeFromCameraFit(): Shape {
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.excludeFromCameraFit: feature record '${this.id}' not found in session.`,
+        this.id,
+        'Call .excludeFromCameraFit() on a Shape produced by the current session.',
+      );
+    }
+    if (record.metadata === undefined) {
+      (record as { metadata: Record<string, unknown> }).metadata = {};
+    }
+    (record.metadata as Record<string, unknown>).excludeFromCameraFit = true;
+    return this;
+  }
+
+  /**
    * Orient this shape so its current +Z axis aligns with the supplied
    * direction vector. Sugar over .rotate() — preferred for cross-axis
    * cylinders / axles where .rotate([1, 0, 0], 90) is error-prone.

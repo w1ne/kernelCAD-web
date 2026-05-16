@@ -28,6 +28,18 @@ export interface FeatureMetadata {
    *  (referenceImage today; future construction-only feature kinds may set this). */
   virtual?: boolean;
   /**
+   * When true, the auto-framer/camera-fit ignores this feature's bbox when
+   * computing camera position. Useful for parts that extend the natural
+   * silhouette far beyond the "main" form (eyewear temples, decorative
+   * spires, etc.) where including them tanks framing.
+   *
+   * Read by `meshFeaturesPerFeature` (skips the feature's vertices when
+   * aggregating scene `bounds`) and the renderer's `loadFeatureMeshes` path
+   * (places the geometry in a `__excludedFromCameraFit` group that the
+   * `setRenderPose` / `setRenderView` bbox traversal also skips).
+   */
+  excludeFromCameraFit?: boolean;
+  /**
    * Catch-all for feature-kind-specific keys (commands, poses, partIds,
    * bendRecord, etc.) accessed via cast in individual lowerers. Promote a
    * key to a typed field above when it is read by >2 modules or when its

@@ -42,6 +42,10 @@ export interface FeatureMesh {
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
   referenceImage?: ReferenceImageMetadata;
+  /** When true, this feature's bbox is skipped by the renderer's auto-framer
+   *  (camera-fit). Mirrors `FeatureMetadata.excludeFromCameraFit`. Also used
+   *  here to skip the feature's vertices when aggregating scene bounds. */
+  excludeFromCameraFit?: boolean;
 }
 
 export interface Bounds {
@@ -165,11 +169,15 @@ export async function meshFeaturesPerFeature(
   const colorByFeatureId = new Map<FeatureId, string>();
   // Lookup table for full PBR material derived from record metadata.
   const materialByFeatureId = new Map<FeatureId, PBRMaterial>();
+  // Set of feature IDs the auto-framer should ignore when fitting the camera.
+  const excludeFromCameraFitIds = new Set<FeatureId>();
   for (const r of records) {
     const color = (r.metadata as { color?: unknown } | undefined)?.color;
     if (typeof color === 'string') colorByFeatureId.set(r.id, color);
     const pbr = pbrFromMetadata(r.metadata as Record<string, unknown> | undefined);
     if (pbr !== undefined) materialByFeatureId.set(r.id, pbr);
+    const excl = (r.metadata as { excludeFromCameraFit?: unknown } | undefined)?.excludeFromCameraFit;
+    if (excl === true) excludeFromCameraFitIds.add(r.id);
   }
 
   // Emit virtual records (referenceImage etc.) directly — they produce no OCCT
@@ -270,6 +278,7 @@ export async function meshFeaturesPerFeature(
 
       const color = colorByFeatureId.get(event.featureId);
       const material = materialByFeatureId.get(event.featureId);
+      const excludeFromCameraFit = excludeFromCameraFitIds.has(event.featureId);
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,
@@ -280,23 +289,31 @@ export async function meshFeaturesPerFeature(
         edges: meshed.edges,
         ...(color !== undefined ? { color } : {}),
         ...(material !== undefined ? { material } : {}),
+        ...(excludeFromCameraFit ? { excludeFromCameraFit: true } : {}),
       });
 
-      // Aggregate bounds from this feature's vertices
-      for (const f of meshed.faces) {
-        for (let i = 0; i < f.vertices.length; i += 3) {
-          const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
-          if (x < minX) minX = x; if (x > maxX) maxX = x;
-          if (y < minY) minY = y; if (y > maxY) maxY = y;
-          if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+      // Aggregate bounds from this feature's vertices. Excluded features
+      // are skipped — they would otherwise pull the camera-fit bbox wide
+      // and zoom out the whole render.
+      if (!excludeFromCameraFit) {
+        for (const f of meshed.faces) {
+          for (let i = 0; i < f.vertices.length; i += 3) {
+            const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
+            if (x < minX) minX = x; if (x > maxX) maxX = x;
+            if (y < minY) minY = y; if (y > maxY) maxY = y;
+            if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+          }
         }
       }
     },
   });
 
+  // Use Number.isFinite to guard against the all-excluded case (every
+  // geometry feature opted out of camera-fit, leaving minX et al at Infinity).
+  const boundsValid = Number.isFinite(minX) && Number.isFinite(minY) && Number.isFinite(minZ);
   const bounds: Bounds = {
-    min: features.length > 0 ? [minX, minY, minZ] : [0, 0, 0],
-    max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
+    min: boundsValid ? [minX, minY, minZ] : [0, 0, 0],
+    max: boundsValid ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
   return { features, bounds, failedFeatureIds };
