@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import type { Param } from '../../../src/intent/types';
 
 describe('Assembly.solve with Editable poses (snapshot semantics)', () => {

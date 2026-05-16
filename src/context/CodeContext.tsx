@@ -81,7 +81,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
     }, [code]);
 
     const renameItem = useCallback((oldName: string, newName: string) => {
-        import('../features/modeling/RefactoringManager').then(({ refactoringManager }) => {
+        import('../modeling/features/modeling/RefactoringManager').then(({ refactoringManager }) => {
             commitMutation((prev) => refactoringManager.renameVariable(prev, oldName, newName), 'renameItem');
         });
     }, [commitMutation]);

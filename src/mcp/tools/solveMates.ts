@@ -7,7 +7,7 @@
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
-import { solveMates, type SolveStatus } from '../../lib/mates/solver';
+import { solveMates, type SolveStatus } from '../../modeling/mates/solver';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface SolveMatesInput {

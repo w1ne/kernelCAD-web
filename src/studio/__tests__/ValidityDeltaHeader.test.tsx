@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { ValidityDeltaHeader } from '../ValidityDeltaHeader';
-import type { ValidatorDiagnostic, ValidatorResult } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
 
 afterEach(() => {
     cleanup();

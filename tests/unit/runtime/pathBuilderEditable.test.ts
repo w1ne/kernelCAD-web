@@ -16,7 +16,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import type { SketchCommand } from '../../../src/capture/sketch';
 
 beforeAll(async () => { await initOcct(); });

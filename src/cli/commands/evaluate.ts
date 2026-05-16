@@ -4,12 +4,12 @@ import { formatHuman } from '../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
-import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
+import { buildModel, buildModelFromFile, type BuiltModel } from '../../modeling/buildModel';
 import type { Assembly } from '../../capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
-} from '../../lib/mates/poseEnvelope';
+} from '../../modeling/mates/poseEnvelope';
 
 export interface EvaluateInput {
   file?: string;

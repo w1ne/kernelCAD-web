@@ -19,7 +19,7 @@ import { isParamRef, type Editable } from '../runtime/paramRef';
 import { toParam, toVec3Param } from '../runtime/editableHelpers';
 import { Transform } from '../runtime/se3';
 import type { ColorToken } from '../shared/render/palette';
-import { validateBendArgs } from '../modules/sheetMetal';
+import { validateBendArgs } from '../modeling/sheetMetal';
 import type { Region } from '../intent/region';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
@@ -606,8 +606,8 @@ export class Shape {
     ) {
       return this._loweredBackend;
     }
-    const { RecomputeEngine } = await import('../compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../kernel/backends/occt/occtLowerer');
+    const { RecomputeEngine } = await import('../modeling/compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../modeling/backends/occt/occtLowerer');
     const { OcctBackend, initOcct } = await import('../kernel/backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));

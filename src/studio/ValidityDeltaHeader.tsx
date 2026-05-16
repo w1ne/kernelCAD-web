@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ValidatorResult, ValidatorStatus } from '../lib/mates/validator';
+import type { ValidatorResult, ValidatorStatus } from '../modeling/mates/validator';
 import { computeValidityDelta } from './logic/validityDelta';
 
 export interface ValidityDeltaHeaderProps {

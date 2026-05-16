@@ -2,8 +2,8 @@
 //
 // MCP tool: list faces of a kernelCAD shape with optional FaceQuery filter.
 
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../kernel/backends/occt/edgeQueries';
 import type { Face } from 'replicad';

@@ -11,10 +11,10 @@
 // implementations land in follow-up tasks.
 
 import type { Shape } from '../capture/proxy';
-import type { Connector } from '../lib/mates/connector';
-import type { MateRecord } from '../lib/mates/mate';
-import type { PoseEnvelopeDiagnostic } from '../lib/mates/poseEnvelope';
-import type { ValidatorDiagnostic } from '../lib/mates/validator';
+import type { Connector } from '../modeling/mates/connector';
+import type { MateRecord } from '../modeling/mates/mate';
+import type { PoseEnvelopeDiagnostic } from '../modeling/mates/poseEnvelope';
+import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';

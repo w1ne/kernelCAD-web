@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShellStore } from '../store/shellStore';
-import type { ValidatorResult } from '../../lib/mates/validator';
+import type { ValidatorResult } from '../../modeling/mates/validator';
 
 function makeValidity(status: ValidatorResult['status']): ValidatorResult {
     return { status, diagnostics: [], partCount: 0, jointCount: 0 };

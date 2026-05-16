@@ -16,7 +16,7 @@ import type {
     ValidatorDiagnosticCode,
     ValidatorResult,
     ValidatorStatus,
-} from '../../lib/mates/validator';
+} from '../../modeling/mates/validator';
 
 export function reviewToValidity(review: ScriptReviewSummary | null): ValidatorResult | null {
     if (review == null) return null;

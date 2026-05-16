@@ -16,9 +16,9 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { buildModel } from '../../../src/kernel/buildModel';
+import { buildModel } from '../../../src/modeling/buildModel';
 import { KernelError, isKernelError } from '../../../src/intent/kernelError';
 
 /** Run `fn` and assert it throws a KernelError whose `hint` matches `re`.
@@ -134,8 +134,8 @@ describe('solvedAssembly recompute-time diagnostics', () => {
     expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
 
     model.session.paramTable.set('yawDeg', Number.NaN);
-    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
+    const { RecomputeEngine } = await import('../../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/modeling/backends/occt/occtLowerer');
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(model.records, {
       paramTable: model.session.paramTable,

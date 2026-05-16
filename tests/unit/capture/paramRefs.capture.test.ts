@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 
 describe('capture-time paramRef threading', () => {
   it('box(width: ParamRef) records {$param} in params + metadata.paramRefs', () => {

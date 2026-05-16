@@ -1,6 +1,6 @@
 // tests/unit/backends/occt/occtLowerer.sketch.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../src/intent/featureRecord';
 import type { Param } from '../../../../src/intent/types';

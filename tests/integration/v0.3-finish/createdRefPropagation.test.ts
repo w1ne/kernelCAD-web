@@ -4,8 +4,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 
 async function lowerCode(code: string) {
   const { records } = await runScript({ code, fileName: '<inline>' });

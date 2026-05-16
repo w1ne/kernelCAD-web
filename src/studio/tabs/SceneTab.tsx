@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { JSX } from 'react';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { ValidatorDiagnostic } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import SceneBrowser from '../../components/SceneBrowser';

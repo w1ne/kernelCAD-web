@@ -8,21 +8,21 @@ import {
   type Connector,
   type ConnectorOrigin,
   type ConnectorType,
-} from '../lib/mates/connector';
-import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
+} from '../modeling/mates/connector';
+import type { MateCouplingRecord } from '../modeling/mates/coupledPoses';
 import {
   parseConnectorRef,
   type MateLimitRange,
   type MatePose,
   type MateRecord,
-} from '../lib/mates/mate';
-import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+} from '../modeling/mates/mate';
+import { isCompatiblePair, type MateType } from '../modeling/mates/mateTypes';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
-} from '../lib/mates/poseEnvelope';
-import { solveMates } from '../lib/mates/solver';
-import { validateAssemblyWithMates } from '../lib/mates/validator';
+} from '../modeling/mates/poseEnvelope';
+import { solveMates } from '../modeling/mates/solver';
+import { validateAssemblyWithMates } from '../modeling/mates/validator';
 import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -1228,7 +1228,7 @@ export class Assembly {
     // full rationale.
     const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
     const envelopeResultPromise: Promise<
-      import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
+      import('../modeling/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
     > =
       posesGate === 'envelope'
         ? reviewPoseEnvelope(this, {
@@ -1356,8 +1356,8 @@ export class Assembly {
   private async computeInterferencesForGate(
     sceneShape: Shape,
   ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
-    const { RecomputeEngine } = await import('../compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../kernel/backends/occt/occtLowerer');
+    const { RecomputeEngine } = await import('../modeling/compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../modeling/backends/occt/occtLowerer');
     const { initOcct } = await import('../kernel/backends/occt/occtBackend');
     const { isSceneBackend } = await import('../kernel/backends/sceneBackend');
     const { detectInterferences } = await import('../script-runtime/checkInterference');

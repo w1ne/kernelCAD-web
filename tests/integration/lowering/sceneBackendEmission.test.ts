@@ -25,8 +25,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { Transform } from '../../../src/runtime/se3';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';

@@ -18,10 +18,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Vec3Param } from '../../../src/intent/types';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { resolveParams } from '../../../src/runtime/resolveParams';
 
 beforeAll(async () => { await initOcct(); });

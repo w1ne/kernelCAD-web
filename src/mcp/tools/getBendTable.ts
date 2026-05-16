@@ -6,9 +6,9 @@
 
 import { readFileSync } from 'node:fs';
 import { runScript } from '../../script-runtime/runScript';
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../kernel/backends/occt/occtLowerer';
-import { computeBendAllowance } from '../../modules/sheetMetal';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../modeling/backends/occt/occtLowerer';
+import { computeBendAllowance } from '../../modeling/sheetMetal';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
 

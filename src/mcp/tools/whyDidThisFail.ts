@@ -8,8 +8,8 @@
 // vocabulary collapse), so this tool no longer carries an HINTS map.
 // Agents can call list_diagnostic_codes for the full catalogue.
 
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import type { FeatureKind } from '../../intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';

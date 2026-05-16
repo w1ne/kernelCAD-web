@@ -7,8 +7,8 @@
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
-import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
-import type { MateType } from '../../lib/mates/mateTypes';
+import type { MateLimitRange, MatePose } from '../../modeling/mates/mate';
+import type { MateType } from '../../modeling/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface AddMateInput {

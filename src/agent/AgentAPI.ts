@@ -1,6 +1,6 @@
-import { HeadlessKernel, type ExecutionResult } from '../kernel/HeadlessKernel';
-import { featureRegistry } from '../features/FeatureRegistry';
-import type { FeatureContext } from '../features/types';
+import { HeadlessKernel, type ExecutionResult } from '../modeling/HeadlessKernel';
+import { featureRegistry } from '../modeling/features/FeatureRegistry';
+import type { FeatureContext } from '../modeling/features/types';
 
 export class AgentAPI {
     readonly kernel: HeadlessKernel;

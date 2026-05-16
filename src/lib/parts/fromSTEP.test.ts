@@ -10,10 +10,10 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../../capture/captureSession';
-import { createApi } from '../../modules/api';
+import { createApi } from '../../modeling/api';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 
 let stepPath: string;
 let tmpDir: string;

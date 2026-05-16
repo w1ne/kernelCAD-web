@@ -1,8 +1,8 @@
 // tests/unit/backends/occt/labelDiagnostics.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runScript } from '../../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('Label diagnostic codes (I4 split)', () => {

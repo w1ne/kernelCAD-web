@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 
 describe('Surface to Shape roundtrip', () => {
   beforeAll(async () => { await initOcct(); });

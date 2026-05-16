@@ -5,7 +5,7 @@ import { TerminalPane } from './TerminalPane';
 import { TitleCard } from './TitleCard';
 import { AnimationEngine } from './AnimationEngine';
 import { CameraController } from './CameraController';
-import type { FeatureEvent } from '../../compute/featureEvents';
+import type { FeatureEvent } from '../../modeling/compute/featureEvents';
 import type { TerminalLine } from './TerminalPane';
 import type { FaceGeometry } from '../../lib/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';

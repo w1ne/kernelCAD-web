@@ -6,8 +6,8 @@
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
-import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
-import { validateAssemblyWithMates } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
+import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface ValidateAssemblyInput {

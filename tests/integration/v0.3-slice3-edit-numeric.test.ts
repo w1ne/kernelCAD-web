@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { runScript } from '../../src/script-runtime/runScript';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/capture/captureSession';
-import { createApi } from '../../src/modules/api';
+import { createApi } from '../../src/modeling/api';
 
 describe('v0.3 slice-3 — params.update on numeric param', () => {
   beforeAll(async () => { await initOcct(); });

@@ -5,25 +5,25 @@ import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import {
   summarizeMechanismFitness,
   type MechanismFitnessResult,
-} from '../../lib/mates/mechanismFitness';
-import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
-import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../lib/mates/poseEnvelope';
-import { reviewPoseEnvelope } from '../../lib/mates/poseEnvelope';
-import { suggestLimitFix } from '../../lib/mates/limitFixSuggest';
+} from '../../modeling/mates/mechanismFitness';
+import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
+import type { PoseEnvelopeDiagnostic, PoseEnvelopeReviewResult } from '../../modeling/mates/poseEnvelope';
+import { reviewPoseEnvelope } from '../../modeling/mates/poseEnvelope';
+import { suggestLimitFix } from '../../modeling/mates/limitFixSuggest';
 import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
-} from '../../lib/mates/mechanicalPlausibility';
+} from '../../modeling/mates/mechanicalPlausibility';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
-} from '../../lib/mates/mechanicalIntent';
+} from '../../modeling/mates/mechanicalIntent';
 import {
   reviewMechanicalTransmission,
   type MechanicalTransmissionDiagnostic,
-} from '../../lib/mates/mechanicalTransmission';
-import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
-import { validateAssemblyWithMates } from '../../lib/mates/validator';
+} from '../../modeling/mates/mechanicalTransmission';
+import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
+import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface ReviewCadInput {

@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PoseEnvelopeReviewOptions, PoseEnvelopeReviewResult } from '../../../src/lib/mates/poseEnvelope';
+import type { PoseEnvelopeReviewOptions, PoseEnvelopeReviewResult } from '../../../src/modeling/mates/poseEnvelope';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
 
@@ -7,9 +7,9 @@ const reviewPoseEnvelopeSpy = vi.fn<
   (arm: unknown, opts?: PoseEnvelopeReviewOptions) => Promise<PoseEnvelopeReviewResult>
 >();
 
-vi.mock('../../../src/lib/mates/poseEnvelope', async () => {
-  const actual = await vi.importActual<typeof import('../../../src/lib/mates/poseEnvelope')>(
-    '../../../src/lib/mates/poseEnvelope',
+vi.mock('../../../src/modeling/mates/poseEnvelope', async () => {
+  const actual = await vi.importActual<typeof import('../../../src/modeling/mates/poseEnvelope')>(
+    '../../../src/modeling/mates/poseEnvelope',
   );
   return {
     ...actual,

@@ -24,9 +24,9 @@ import { toParam } from '../runtime/editableHelpers';
 import type { Editable } from '../runtime/paramRef';
 import type { ShapeBackend } from '../kernel/backends/backend';
 import { KernelError } from '../intent/kernelError';
-import type { Connector } from '../lib/mates/connector';
-import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
-import type { MateType } from '../lib/mates/mateTypes';
+import type { Connector } from '../modeling/mates/connector';
+import type { MateCouplingRecord } from '../modeling/mates/coupledPoses';
+import type { MateType } from '../modeling/mates/mateTypes';
 
 /**
  * Encoded mate / connector data attached to `solvedAssembly` metadata so the
@@ -820,7 +820,7 @@ export class CaptureSession {
    *  in `src/kernel/buildModel.ts` so CLI, MCP, and direct session updates
    *  share the same cache/warning/tail-shape policy. */
   private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
-    const { updateModelParams } = await import('../kernel/buildModel');
+    const { updateModelParams } = await import('../modeling/buildModel');
     const records = this.getRecords();
     const shapes = new Map<string, ShapeBackend>();
     for (const [id, shape] of this.cachedShapes) shapes.set(id, shape);

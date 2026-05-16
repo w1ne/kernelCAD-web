@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { routeDiagnosticToSelection } from '../logic/diagnosticRouter';
-import type { ValidatorDiagnostic } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 
 function diag(overrides: Partial<ValidatorDiagnostic>): ValidatorDiagnostic {
     return {

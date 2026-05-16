@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudioRecomputeResult } from '../../types';
-import type { ValidatorDiagnostic, ValidatorResult } from '../../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorResult } from '../../../modeling/mates/validator';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();
 const mockSelectFeature = vi.fn();

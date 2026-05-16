@@ -13,8 +13,8 @@
 // instead of inferring overlap visually from a render.
 
 import { runScript } from './runScript';
-import { RecomputeEngine } from '../compute/recomputeEngine';
-import { createOcctLowerer } from '../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { Shape } from '../capture/proxy';

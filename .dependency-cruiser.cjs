@@ -37,6 +37,13 @@ module.exports = {
             comment: 'kernel/ may only import from kernel/ or shared/. capture/ is permitted while captureSession.ts and its bridge files await PR-3 (modeling/).',
             from: { path: '^src/kernel/' },
             to: { path: '^src/(modeling|authoring|agent|studio)/' }
+        },
+        {
+            name: 'modeling-no-upward',
+            severity: 'error',
+            comment: 'modeling/ may only import from modeling/, kernel/, capture/, or shared/.',
+            from: { path: '^src/modeling/' },
+            to: { path: '^src/(authoring|agent|studio)/' }
         }
     ],
     options: {

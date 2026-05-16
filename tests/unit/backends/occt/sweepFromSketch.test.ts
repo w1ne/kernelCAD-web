@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
-import { helix } from '../../../../src/modules/helix';
+import { helix } from '../../../../src/modeling/helix';
 import { toParam } from '../../../../src/runtime/editableHelpers';
 
 const mm = (n: number) => toParam(n, 'mm');

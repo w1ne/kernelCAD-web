@@ -1,6 +1,6 @@
 // tests/unit/modules/helix.test.ts
 import { describe, it, expect } from 'vitest';
-import { helix } from '../../../src/modules/helix';
+import { helix } from '../../../src/modeling/helix';
 
 describe('helix', () => {
   it('default 32 points/turn × 1 turn → 33 points (start + 32 segments)', () => {

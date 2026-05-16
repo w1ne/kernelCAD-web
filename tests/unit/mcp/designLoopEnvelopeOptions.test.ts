@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { MechanismFitnessResult } from '../../../src/lib/mates/mechanismFitness';
+import type { MechanismFitnessResult } from '../../../src/modeling/mates/mechanismFitness';
 import type { ReviewCadInput, ReviewCadOutput } from '../../../src/mcp/tools/reviewCad';
 
 const mockReviewCadTool = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();

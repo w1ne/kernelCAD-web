@@ -1,6 +1,6 @@
 // src/mcp/tools/getEdgesOf.ts
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { pickEdges } from '../../kernel/backends/occt/edgeSelection';
 import type { FeatureRecord } from '../../intent/featureRecord';

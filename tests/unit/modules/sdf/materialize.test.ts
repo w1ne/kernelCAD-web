@@ -7,10 +7,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../../src/capture/captureSession';
-import { sphere, box } from '../../../../src/modules/sdf/primitives';
-import { materialize } from '../../../../src/modules/sdf/materialize';
-import { createOcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
-import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
+import { sphere, box } from '../../../../src/modeling/sdf/primitives';
+import { materialize } from '../../../../src/modeling/sdf/materialize';
+import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 
 beforeAll(async () => {
   await initOcct();

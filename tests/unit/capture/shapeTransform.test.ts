@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import { Transform } from '../../../src/runtime/se3';
 import type { ShapeTransform } from '../../../src/intent/featureRecord';
 

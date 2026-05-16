@@ -1,5 +1,5 @@
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../modules/api';
+import { createApi } from '../modeling/api';
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { ParamTable } from '../runtime/paramTable';
 import { transpileTs } from './transpile';

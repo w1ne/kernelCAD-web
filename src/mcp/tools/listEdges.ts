@@ -4,8 +4,8 @@
 // Lets agents introspect any shape (primitives, booleans, transformed solids,
 // imported geometry) before running fillet/chamfer.
 
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { selectEdges, type EdgeQuery, type EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import { runMcpScript } from '../runMcpScript';

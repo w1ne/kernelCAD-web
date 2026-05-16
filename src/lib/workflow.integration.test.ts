@@ -9,14 +9,14 @@
 import { describe, it, expect } from 'vitest';
 import { generateSketchCode, generateSketchName } from './sketchCodegen';
 import { CodeAnalyzer } from './codeGeneration';
-import { generateExtrudeFromFaceCode } from '../features/core/extrudeFromFace.feature';
-import { generateRevolveCode } from '../features/core/revolve.feature';
-import { generateSketchOnFaceCode } from '../features/core/sketchOnFace.feature';
+import { generateExtrudeFromFaceCode } from '../modeling/features/core/extrudeFromFace.feature';
+import { generateRevolveCode } from '../modeling/features/core/revolve.feature';
+import { generateSketchOnFaceCode } from '../modeling/features/core/sketchOnFace.feature';
 import {
     generateFilletCode,
     generateChamferCode,
     generateBooleanCode
-} from '../features/core/modifiers.feature';
+} from '../modeling/features/core/modifiers.feature';
 import type { SketchData } from '../shared/types/sketch';
 
 const createCodeContext = (code = '') => new CodeAnalyzer(code).createContext();

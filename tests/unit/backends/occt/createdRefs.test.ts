@@ -158,8 +158,8 @@ describe('holeLowerer surfaceType propagation', () => {
   beforeAll(async () => { await initOcct(); });
   it('hole lowerer writes surfaceType=CYLINDRE on the bore wall', async () => {
     const { runScript } = await import('../../../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../../src/kernel/backends/occt/occtLowerer');
+    const { RecomputeEngine } = await import('../../../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../../src/modeling/backends/occt/occtLowerer');
     const code = `
       const base = box(40, 40, 20);
       return base.hole('top', { u: 0, v: 0, diameter: 10, depth: 8 });

@@ -1,4 +1,4 @@
-import type { ValidatorDiagnostic, ValidatorResult } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
 import type { ValidityDelta } from '../types';
 
 /**

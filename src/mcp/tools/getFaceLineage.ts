@@ -14,8 +14,8 @@ import type { FaceRef, EdgeRef, FeatureKind } from '../../intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 import type { FaceSnapshot } from '../../kernel/backends/occt/createdRefs';
 import { runMcpScript } from '../runMcpScript';
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { parseFaceSelector } from '../../runtime/selectorParser';
 

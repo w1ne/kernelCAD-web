@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { initFeatures } from './features/init'
+import { initFeatures } from './modeling/features/init'
 import { GeometryEngine } from './lib/geometryEngine'
 
 initFeatures();

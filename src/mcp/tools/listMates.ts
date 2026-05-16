@@ -4,8 +4,8 @@
 // Wraps the internal `arm.__mates()` accessor (capture/assembly.ts T6).
 
 import type { Assembly } from '../../capture/assembly';
-import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
-import type { MateType } from '../../lib/mates/mateTypes';
+import type { MateLimitRange, MatePose } from '../../modeling/mates/mate';
+import type { MateType } from '../../modeling/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface ListMatesInput {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 
 describe('pattern capture contract', () => {
   it('captures a linear pattern as one feature with base input and spacing metadata', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
-import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import type { FeatureRecord } from '../../../../src/intent/featureRecord';
 import type { Param } from '../../../../src/intent/types';
 

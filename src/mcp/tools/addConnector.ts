@@ -8,7 +8,7 @@
 
 import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
-import type { ConnectorOrigin, ConnectorType } from '../../lib/mates/connector';
+import type { ConnectorOrigin, ConnectorType } from '../../modeling/mates/connector';
 import type { Vec3 } from '../../intent/types';
 import { getActiveMcpSession } from '../activeSession';
 

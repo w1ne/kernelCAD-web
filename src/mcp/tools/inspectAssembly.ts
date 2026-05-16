@@ -5,11 +5,11 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
   type PartDisconnectedDiagnostic,
-} from '../../lib/mates/mechanicalPlausibility';
+} from '../../modeling/mates/mechanicalPlausibility';
 import {
   reviewMechanicalTransmission,
   type MechanicalTransmissionDiagnostic,
-} from '../../lib/mates/mechanicalTransmission';
+} from '../../modeling/mates/mechanicalTransmission';
 
 type Bbox = { min: Vec3; max: Vec3 };
 type AssemblyMateConnector = AssemblyPartStored['mateConnectors'][number];

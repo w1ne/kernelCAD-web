@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildModel, buildModelFromFile, updateModelParams } from '../../../src/kernel/buildModel';
+import { buildModel, buildModelFromFile, updateModelParams } from '../../../src/modeling/buildModel';
 
 describe('buildModel', () => {
   it('builds source into a session, records, shapes, tail shape, and cache', async () => {

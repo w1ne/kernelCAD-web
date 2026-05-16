@@ -27,7 +27,7 @@ import { runScript } from '../../../src/script-runtime/runScript';
 import { checkInterference } from '../../../src/script-runtime/checkInterference';
 import { Scene } from '../../../src/intent/scene';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { createApi } from '../../../src/modeling/api';
 import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

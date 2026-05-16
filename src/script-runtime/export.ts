@@ -1,6 +1,6 @@
 import { runScript } from './runScript';
-import { RecomputeEngine } from '../compute/recomputeEngine';
-import { createOcctLowerer } from '../kernel/backends/occt/occtLowerer';
+import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';

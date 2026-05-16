@@ -18,7 +18,7 @@ import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runScript } from '../../script-runtime/runScript';
 import { checkInterference } from '../../script-runtime/checkInterference';
-import { validateAssembly, type ValidatorResult } from '../../lib/mates/validator';
+import { validateAssembly, type ValidatorResult } from '../../modeling/mates/validator';
 
 export interface ValidateCliInput {
   file: string;

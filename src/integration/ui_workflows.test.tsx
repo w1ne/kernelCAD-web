@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import React from 'react';
 import App from '../App';
 import * as GeometryEngine from '../lib/geometryEngine';
-import { initFeatures } from '../features/init';
+import { initFeatures } from '../modeling/features/init';
 import type { EditorLike } from '../shared/types/editor';
 import { parseCode } from '../lib/ast';
 

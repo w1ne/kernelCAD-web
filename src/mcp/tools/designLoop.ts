@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
-import type { GripperApertureRequest } from '../../lib/mates/gripperAperture';
-import type { MechanismFitnessResult } from '../../lib/mates/mechanismFitness';
+import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
+import type { MechanismFitnessResult } from '../../modeling/mates/mechanismFitness';
 import { reviewCadTool, type RepairContext, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
 
 export interface DesignLoopAttemptInput {
