@@ -4,6 +4,7 @@ import type {
 // Re-export so consumers can import CanonicalFace from the same module as FaceLabelsMap.
 export type { CanonicalFace };
 import type { FaceQuery } from './queryTypes';
+import type { PBRMaterial } from './material';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -11,17 +12,30 @@ export type ShapeTransform =
   | { op: 'scale'; sx: number; sy: number; sz: number }
   | { op: 'reflect'; plane: PlaneSpec };
 
+/** Map of user-chosen label → resolution target. Stored under
+ *  FeatureRecord.metadata.faceLabels for kinds that accept it (box, cylinder,
+ *  extrude, revolve, sweep, loft). Sphere rejects this key at capture time. */
+export type FaceLabelsMap = Record<string, CanonicalFace | FaceQuery>;
+
 export interface FeatureMetadata {
   /** Hex color or CSS color string applied to this feature's mesh. */
   color?: string;
   /** Face-label map for features that support canonical-face naming. */
-  faceLabels?: import('./queryTypes').FaceQuery | Record<string, unknown>;
+  faceLabels?: FaceLabelsMap;
   /** PBR material applied by `Shape.material()`. Identity dies at booleans. */
-  material?: import('./material').PBRMaterial;
+  material?: PBRMaterial;
   /** true for capture-graph nodes that produce no OcctBackend geometry
    *  (referenceImage today; future construction-only feature kinds may set this). */
   virtual?: boolean;
-  /** Catch-all for future metadata keys not yet promoted to typed fields. */
+  /**
+   * Catch-all for feature-kind-specific keys (commands, poses, partIds,
+   * bendRecord, etc.) accessed via cast in individual lowerers. Promote a
+   * key to a typed field above when it is read by >2 modules or when its
+   * shape becomes part of a public API contract.
+   *
+   * Trade-off: this swallows typos at the call site (`metadata.materail`
+   * would compile and return `unknown`). New typed fields above catch them.
+   */
   [key: string]: unknown;
 }
 
@@ -35,8 +49,3 @@ export interface FeatureRecord {
   suppressed: boolean;
   metadata?: FeatureMetadata;
 }
-
-/** Map of user-chosen label → resolution target. Stored under
- *  FeatureRecord.metadata.faceLabels for kinds that accept it (box, cylinder,
- *  extrude, revolve, sweep, loft). Sphere rejects this key at capture time. */
-export type FaceLabelsMap = Record<string, CanonicalFace | FaceQuery>;

@@ -29,4 +29,9 @@ describe('PBRMaterial', () => {
     expect(isPBRMaterial(null)).toBe(false);
     expect(isPBRMaterial('red')).toBe(false);
   });
+
+  it('rejects an object with a non-string baseColor', () => {
+    expect(isPBRMaterial({ baseColor: 42 })).toBe(false);
+    expect(isPBRMaterial({ baseColor: null })).toBe(false);
+  });
 });
