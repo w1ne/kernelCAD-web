@@ -33,10 +33,18 @@ function AnonGenPage() {
   }, [phase, navigate]);
 
   if (loadErr) {
-    return <main className="p-8 text-red-300">Failed to load: {loadErr}</main>;
+    return (
+      <main className="min-h-screen bg-vellum font-sans p-8">
+        <p className="text-copper font-mono text-sm">Failed to load: {loadErr}</p>
+      </main>
+    );
   }
   if (!gen) {
-    return <main className="p-8 text-neutral-400">Loading…</main>;
+    return (
+      <main className="min-h-screen bg-vellum font-sans p-8">
+        <p className="text-ink-faint font-mono text-sm">Loading…</p>
+      </main>
+    );
   }
 
   async function handleSave() {
@@ -64,15 +72,21 @@ function AnonGenPage() {
   const isBusy = phase.state === 'running';
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white grid grid-rows-[auto_1fr] grid-cols-1">
-      <header className="border-b border-neutral-900 px-6 py-3 flex items-center justify-between">
-        <a href="/" className="text-lg font-bold">kernelCAD</a>
+    <main className="min-h-screen bg-vellum text-ink font-sans grid grid-rows-[auto_1fr] grid-cols-1">
+      {/* Nav */}
+      <header className="border-b border-rule px-6 py-3 flex items-center justify-between bg-vellum">
+        <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-ink">
+          <svg className="w-4 h-4 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+          </svg>
+          <span>kernel<span className="text-blueprint">CAD</span></span>
+        </a>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => void handleSave()}
             disabled={isBusy || savingState === 'saving' || gen.status !== 'done' || !gen.code}
-            className="rounded-lg bg-white text-neutral-900 px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors"
           >
             {session ? (savingState === 'saving' ? 'Saving…' : 'Save this') : 'Sign in to save'}
           </button>
@@ -81,24 +95,26 @@ function AnonGenPage() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 min-h-0">
-        <div className="bg-neutral-900 min-h-[60vh] lg:min-h-0">
+        {/* 3D Viewer — dark background matches brand code-bg */}
+        <div className="bg-code-bg min-h-[60vh] lg:min-h-0">
           {gen.code ? (
             <FunnelViewer code={gen.code} />
           ) : (
-            <div className="p-6 text-neutral-500">No geometry — generation failed.</div>
+            <div className="p-6 text-ink-faint font-mono text-sm">No geometry — generation failed.</div>
           )}
         </div>
 
-        <aside className="flex flex-col min-h-0 border-l border-neutral-900">
-          <div className="px-6 py-4 border-b border-neutral-900">
-            <p className="text-xs uppercase text-neutral-500 tracking-wide">Prompt</p>
-            <p className="text-sm mt-1">{gen.prompt}</p>
+        {/* Sidebar — vellum */}
+        <aside className="flex flex-col min-h-0 border-l border-rule bg-vellum">
+          <div className="px-6 py-4 border-b border-rule">
+            <p className="font-mono text-[11px] text-ink-faint tracking-widest uppercase">Prompt</p>
+            <p className="text-sm mt-1 text-ink">{gen.prompt}</p>
           </div>
 
           {gen.status === 'done' && gen.code && (
             <>
-              <div className="px-6 py-4 border-b border-neutral-900">
-                <p className="text-xs uppercase text-neutral-500 tracking-wide mb-2">Refine</p>
+              <div className="px-6 py-4 border-b border-rule">
+                <p className="font-mono text-[11px] text-ink-faint tracking-widest uppercase mb-2">Refine</p>
                 <SuggestionChips
                   suggestions={gen.suggestions}
                   onSelect={s => void submit(`${gen.prompt}\n\nNow: ${s}`)}
@@ -126,7 +142,7 @@ function AnonGenPage() {
           )}
 
           {gen.status === 'running' && (
-            <div className="p-6 text-neutral-400 text-sm">Still running…</div>
+            <div className="p-6 text-ink-soft font-mono text-sm">Still running…</div>
           )}
         </aside>
       </div>
