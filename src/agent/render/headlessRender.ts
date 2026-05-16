@@ -83,7 +83,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       viewport: { width: opts.viewportWidth, height: opts.viewportHeight },
     });
     page = await context.newPage();
-    await page.goto(`${baseUrl}/demo-player`);
+    // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
+    // chrome) in src/studio/routes/__root.tsx so the captured PNG contains
+    // only scene pixels. See issue #173.
+    await page.goto(`${baseUrl}/demo-player?headless=1`);
     await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
 
     // 3. Load meshes + skip the fade-in animation.
