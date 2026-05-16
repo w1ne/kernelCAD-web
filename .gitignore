@@ -55,3 +55,6 @@ eval/portfolio-attempts.jsonl
 
 # Refactor / ad-hoc debug scaffolds
 /.debug-*.ts
+
+# TanStack Router generated route tree (regenerated at dev/build time)
+src/studio/routeTree.gen.ts
