@@ -14,6 +14,45 @@ const DEBUG = false;
 
 type UnknownRecord = Record<string, unknown>;
 
+/**
+ * Render-grade mesh deflection tunables. Replicad's `face.mesh({tolerance,
+ * angularTolerance})` lowers to `BRepMesh_IncrementalMesh` under the hood;
+ * the linear tolerance is in mm, angular in degrees.
+ *
+ * Defaults below are the *render path* deflection — finer than legacy
+ * `(0.1 mm, 30°)` to give curved highlights enough triangles to read as
+ * smooth specular rather than faceted on photoreal scoring. The export path
+ * (`occtBackend.meshShapeForExport`) keeps its own tighter knobs for STL
+ * watertightness — they're decoupled on purpose.
+ *
+ * `KERNELCAD_MESH_DEFLECTION_SCALE` (float, default 1.0): per-process scale
+ * factor that multiplies *both* tolerances. Set to 0.5 to halve them again
+ * for a denser mesh (slower, smoother), or to 2.0 to coarsen for speed.
+ * Negative / non-finite values are ignored and the default is used.
+ */
+const DEFAULT_LINEAR_DEFLECTION_MM = 0.05;
+const DEFAULT_ANGULAR_DEFLECTION_DEG = 15;
+
+function readDeflectionScale(): number {
+  const raw = typeof process !== 'undefined' ? process.env?.KERNELCAD_MESH_DEFLECTION_SCALE : undefined;
+  if (raw === undefined || raw === '') return 1.0;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 1.0;
+  return parsed;
+}
+
+/** Resolved per-call tuple `(tolerance_mm, angularTolerance_deg)` for the
+ *  render-path mesher. Recomputed on each call so the env var can be flipped
+ *  between independent renders in the same process (useful for A/B harness
+ *  scripts). */
+function renderMeshTolerances(): { tolerance: number; angularTolerance: number } {
+  const scale = readDeflectionScale();
+  return {
+    tolerance: DEFAULT_LINEAR_DEFLECTION_MM * scale,
+    angularTolerance: DEFAULT_ANGULAR_DEFLECTION_DEG * scale,
+  };
+}
+
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -358,7 +397,7 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   if (!isRecord(wire)) return null;
   const meshEdgesFn = getFn(wire, 'meshEdges');
   if (meshEdgesFn) {
-    const meshEdges = meshEdgesFn.call(wire, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+    const meshEdges = meshEdgesFn.call(wire, renderMeshTolerances()) as UnknownRecord;
     const lines = isRecord(meshEdges) && Array.isArray((meshEdges as UnknownRecord).lines)
       ? ((meshEdges as UnknownRecord).lines as number[])
       : null;
@@ -370,7 +409,8 @@ export function meshWireToSketch(wire: unknown, id: string, name: string): Sketc
   const meshFn = getFn(wire, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(wire, { tolerance: 0.1 }) as UnknownRecord;
+  const { tolerance } = renderMeshTolerances();
+  const mesh = meshFn.call(wire, { tolerance }) as UnknownRecord;
   if (!isRecord(mesh) || !Array.isArray(mesh.vertices)) return null;
   return { id, name, vertices: new Float32Array(mesh.vertices as number[]) };
 }
@@ -380,7 +420,9 @@ export function meshFaceToGeometry(face: unknown, faceId: number): FaceGeometry 
   const meshFn = getFn(face, 'mesh');
   if (!meshFn) return null;
 
-  const mesh = meshFn.call(face, { tolerance: 0.1, angularTolerance: 30 }) as UnknownRecord;
+  // Render-path deflection — see DEFAULT_LINEAR_DEFLECTION_MM /
+  // DEFAULT_ANGULAR_DEFLECTION_DEG above for the rationale.
+  const mesh = meshFn.call(face, renderMeshTolerances()) as UnknownRecord;
   if (!isRecord(mesh)) return null;
 
   const vertices = Array.isArray(mesh.vertices) ? (mesh.vertices as number[]) : null;
@@ -487,7 +529,7 @@ export function meshShape(shape: unknown): GeometryResult | null {
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
-      const edgeRes = meshEdgesFn.call(shape, { tolerance: 0.1, angularTolerance: 30 }) as Record<string, unknown>;
+      const edgeRes = meshEdgesFn.call(shape, renderMeshTolerances()) as Record<string, unknown>;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
         if (lines.length > 0) edges = new Float32Array(lines);
