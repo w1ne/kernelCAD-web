@@ -51,6 +51,14 @@ interface ToolRegistryEntry {
   handler: ToolHandler;
 }
 
+/**
+ * Registry of every MCP tool — pairs each definition with its handler.
+ *
+ * Public contract — depended on by kernelCAD-server (vendor/kernelcad/ submodule).
+ * The shape of `ToolRegistryEntry` (`{ definition: McpToolDefinition, handler: ToolHandler }`)
+ * is the source of truth; `TOOLS` and the in-process Map indexes are derived from it.
+ * Do NOT change the entry shape or remove entries without bumping the consumer SHA explicitly.
+ */
 export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
@@ -854,11 +862,42 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
 ];
 
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));
+const toolDefinitions = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.definition]));
 
+/**
+ * Flat array of all tool definitions, in registry order.
+ *
+ * Public contract — depended on by kernelCAD-server.
+ */
 export const TOOLS = TOOL_REGISTRY.map(entry => entry.definition);
 
+/**
+ * Dispatch an MCP tool call by name. Transport-agnostic: used by stdio MCP server,
+ * remote MCP gateway (kernelCAD-server), and the server-side agent orchestrator.
+ *
+ * Public contract — depended on by kernelCAD-server. Do NOT remove or change the
+ * signature without bumping the consumer SHA explicitly.
+ *
+ * @param name - The MCP tool name
+ * @param input - The tool's input arguments (validated against inputSchema by the handler)
+ * @returns The tool's result (shape varies per tool — see individual tool files)
+ * @throws Error if `name` does not match any registered tool
+ */
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<unknown> {
   const handler = toolHandlers.get(name);
   if (!handler) throw new Error(`Unknown tool: ${name}`);
   return handler(input);
+}
+
+/**
+ * Look up a tool's MCP definition by name.
+ *
+ * Public contract — depended on by kernelCAD-server (vendor/kernelcad/ submodule).
+ * Do NOT remove or change the signature without bumping the consumer SHA explicitly.
+ *
+ * @param name - The MCP tool name (e.g. 'evaluate_script')
+ * @returns The McpToolDefinition, or undefined if no tool by that name exists
+ */
+export function getToolDefinition(name: string): McpToolDefinition | undefined {
+  return toolDefinitions.get(name);
 }
