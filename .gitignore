@@ -53,5 +53,6 @@ site/brand
 eval/portfolio-attempts.jsonl
 .claude/
 
-# TanStack Router generated route tree (regenerated at dev/build time)
-src/routeTree.gen.ts
+# TanStack Router generated route tree — committed so CI can typecheck without
+# a prior vite run; regenerated automatically at dev/build time by the plugin.
+# src/routeTree.gen.ts
