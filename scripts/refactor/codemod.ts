@@ -120,20 +120,42 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
         changed = true;
       }
     }
-    // Dynamic imports: import('./foo')
+    // Inline specifier sites: runtime `import('./foo')`, type-position
+    // `import('./foo').Bar`, and CommonJS `require('./foo')`.
     sf.forEachDescendant((node) => {
-      if (node.getKindName() === 'CallExpression') {
+      const kind = node.getKindName();
+
+      if (kind === 'CallExpression') {
         const expr = (node as any).getExpression?.();
-        if (expr && expr.getKindName?.() === 'ImportKeyword') {
-          const args = (node as any).getArguments?.() ?? [];
-          if (args.length === 1 && args[0].getKindName() === 'StringLiteral') {
-            const oldSpec = args[0].getLiteralValue();
-            const next = rewriteSpecifier(importerAbs, oldSpec);
-            if (next && next !== oldSpec) {
-              args[0].setLiteralValue(next);
-              changed = true;
-            }
-          }
+        const args = (node as any).getArguments?.() ?? [];
+        if (args.length !== 1 || args[0].getKindName() !== 'StringLiteral') return;
+        // Runtime dynamic import: import('./foo')
+        // CommonJS require: require('./foo')
+        const isDynamicImport = expr?.getKindName?.() === 'ImportKeyword';
+        const isRequireCall =
+          expr?.getKindName?.() === 'Identifier' && expr.getText?.() === 'require';
+        if (!isDynamicImport && !isRequireCall) return;
+        const oldSpec = args[0].getLiteralValue();
+        const next = rewriteSpecifier(importerAbs, oldSpec);
+        if (next && next !== oldSpec) {
+          args[0].setLiteralValue(next);
+          changed = true;
+        }
+        return;
+      }
+
+      // Type-position import expression: const x: import('./foo').Bar = ...
+      // ImportType wraps a LiteralType whose .getLiteral() is the StringLiteral.
+      if (kind === 'ImportType') {
+        const arg = (node as any).getArgument?.();
+        if (arg?.getKindName?.() !== 'LiteralType') return;
+        const literal = arg.getLiteral?.();
+        if (literal?.getKindName?.() !== 'StringLiteral') return;
+        const oldSpec = literal.getLiteralValue();
+        const next = rewriteSpecifier(importerAbs, oldSpec);
+        if (next && next !== oldSpec) {
+          literal.setLiteralValue(next);
+          changed = true;
         }
       }
     });

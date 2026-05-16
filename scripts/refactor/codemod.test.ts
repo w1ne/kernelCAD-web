@@ -137,6 +137,51 @@ describe('rewriteImports codemod', () => {
     expect(updated).toContain(`import { z } from '../sibling';`);
   });
 
+  it('rewrites type-position import() expressions (TS inline type imports)', async () => {
+    // Regression for PR-1: src/capture/captureSession.ts uses `import('../intent/types').T`
+    // as a type annotation. The codemod's CallExpression branch missed these because
+    // they're TypeScript ImportType AST nodes, not ImportKeyword call expressions.
+    await writeFile(join(root, 'src/types.ts'), `export type T = number;\n`);
+    await writeFile(
+      join(root, 'src/uses.ts'),
+      `export const x: import('./types').T = 1;\n`,
+    );
+    const { rename } = await import('node:fs/promises');
+    await mkdir(join(root, 'src/sub'), { recursive: true });
+    await rename(join(root, 'src/uses.ts'), join(root, 'src/sub/uses.ts'));
+
+    await rewriteImports({
+      projectRoot: root,
+      mapping: { 'src/uses.ts': 'src/sub/uses.ts' },
+    });
+
+    const updated = await readFile(join(root, 'src/sub/uses.ts'), 'utf8');
+    expect(updated).toContain(`import('../types').T`);
+  });
+
+  it('rewrites CommonJS require() calls', async () => {
+    // Regression for PR-1: src/capture/proxy.ts contains
+    //   `require('../backends/occt/flattenPattern') as typeof import('../...')`
+    // Both the require() and the typeof import() halves need rewriting.
+    await writeFile(join(root, 'src/mod.ts'), `module.exports = { v: 1 };\n`);
+    await writeFile(
+      join(root, 'src/loader.ts'),
+      `const m = require('./mod') as typeof import('./mod');\n`,
+    );
+    const { rename } = await import('node:fs/promises');
+    await mkdir(join(root, 'src/sub'), { recursive: true });
+    await rename(join(root, 'src/loader.ts'), join(root, 'src/sub/loader.ts'));
+
+    await rewriteImports({
+      projectRoot: root,
+      mapping: { 'src/loader.ts': 'src/sub/loader.ts' },
+    });
+
+    const updated = await readFile(join(root, 'src/sub/loader.ts'), 'utf8');
+    expect(updated).toContain(`require('../mod')`);
+    expect(updated).toContain(`typeof import('../mod')`);
+  });
+
   it('rewrites dynamic imports in root-level *.config.ts files', async () => {
     // Regression for PR-1: vite.config.ts at repo root carried `import('./src/capture/...')`
     // which the codemod missed because it only scanned src/tests/scripts/eval.
