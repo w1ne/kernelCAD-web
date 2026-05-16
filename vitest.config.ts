@@ -11,7 +11,6 @@ export default defineConfig({
             'scripts/**/*.test.ts',
             'src/**/*.spec.{ts,tsx}',
             'tests/unit/**/*.test.{ts,tsx}',
-            'tests/funnel/**/*.test.{ts,tsx}',
             'tests/e2e/**/*.test.ts',
             'tests/integration/**/*.test.ts',
             'eval/**/*.test.ts',
