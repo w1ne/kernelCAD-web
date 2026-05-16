@@ -5,18 +5,27 @@
 # not here — keep this composite tight.
 #
 # Steps:
-#   1. setup-node (with built-in npm cache for ~/.npm).
-#   2. Cache node_modules keyed on package-lock.json hash → skips npm ci on hit.
-#   3. Cache .tsbuildinfo + node_modules/.cache + node_modules/.vite keyed on
+#   1. Install ffmpeg (needed by gallery video tests: blackFrameCheck,
+#      extractPoster, build-gallery).
+#   2. setup-node (with built-in npm cache for ~/.npm).
+#   3. Cache node_modules keyed on package-lock.json hash → skips npm ci on hit.
+#   4. Cache .tsbuildinfo + node_modules/.cache + node_modules/.vite keyed on
 #      TS source + vite/vitest config hashes → incremental TS compile + warm
 #      vitest cache when source unchanged.
-#   4. Conditional npm ci — only runs when node_modules cache missed.
+#   5. Conditional npm ci — only runs when node_modules cache missed.
 name: Setup kernelCAD CI
 description: Shared setup steps (node, caches, install) for parallel CI jobs.
 
 runs:
   using: composite
   steps:
+    - name: Install ffmpeg
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq ffmpeg
+        ffmpeg -version | head -1
+
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
