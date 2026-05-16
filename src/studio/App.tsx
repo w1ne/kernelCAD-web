@@ -115,13 +115,21 @@ function isDemoPlayerRoute(): boolean {
   return window.location.pathname === '/demo-player';
 }
 
-export default function App() {
+interface AppProps {
+  /** Seed the workbench with this code on first mount. Used by the funnel
+   * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
+   * the full Studio shell rather than a stripped viewer. */
+  initialCode?: string;
+}
+
+export default function App({ initialCode: initialCodeProp }: AppProps = {}) {
   if (isDemoPlayerRoute()) {
     return <DemoPlayerPage />;
   }
 
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
-  const initialCode = isDevLab ? (devLabScenarios[0]?.code ?? undefined) : undefined;
+  const initialCode =
+    initialCodeProp ?? (isDevLab ? (devLabScenarios[0]?.code ?? undefined) : undefined);
 
   return (
     <WorkbenchProvider initialCode={initialCode}>
