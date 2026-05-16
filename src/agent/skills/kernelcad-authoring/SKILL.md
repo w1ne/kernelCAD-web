@@ -79,6 +79,20 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 // Returns the standard capture-proxy Shape — composes with translate/rotate/color
 // and arm.part(...) like any primitive.
 lib.fromSTEP(path: string): Promise<Shape>;
+
+// Reference-image overlay — virtual node (no OCCT geometry). The renderer draws
+// the image on the chosen plane for tracing or design review. Path resolved
+// relative to the calling .kcad.ts file. Supported formats: .png .jpg .jpeg .webp.
+// Validation errors (missing file, bad format, invalid plane) are pushed as
+// diagnostics on the returned handle rather than thrown.
+referenceImage(path: string, opts: {
+  plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset?: number };
+  anchor?: 'origin' | [number, number, number];  // default 'origin'
+  scale?: 'fit-bbox' | number | { width?: number; height?: number };  // default 'fit-bbox'
+  opacity?: number;   // [0, 1], default 0.5
+  flipU?: boolean;    // default false
+  flipV?: boolean;    // default false
+}): ReferenceImageHandle;
 ```
 
 ### Shape methods (chainable)

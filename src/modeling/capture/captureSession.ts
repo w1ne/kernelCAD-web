@@ -4,9 +4,16 @@ import {
 } from '../../shared/intent/featureId';
 import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
+import { isValidPlaneSpec } from '../../shared/intent/types';
 import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData,
 } from '../../shared/intent/surfaceRecord';
+import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
+import { imageDimensions } from './imageDimensions';
+import { existsSync } from 'node:fs';
+import { resolve as resolvePath, extname } from 'node:path';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -199,6 +206,118 @@ export class CaptureSession {
 
   getSurfaceRecord(id: SurfaceId): SurfaceRecord | undefined {
     return this.surfaceRecords.find(s => s.id === id);
+  }
+
+  /**
+   * Capture a reference-image overlay node. Validates format, path existence,
+   * and plane. Pushes structured diagnostics to `metadata.diagnostics` instead
+   * of throwing — the record is always produced so agents can inspect errors.
+   *
+   * Returns the assigned `FeatureId` (the caller in `api.ts` wraps it as a
+   * `ReferenceImageHandle`).
+   */
+  addReferenceImage(args: {
+    path: string;
+    plane: PlaneSpec;
+    anchor?: 'origin' | Vec3;
+    scale?: ReferenceImageScale;
+    opacity?: number;
+    flipU?: boolean;
+    flipV?: boolean;
+  }): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    // ── 1. Validate format extension ─────────────────────────────────────────
+    const ext = extname(args.path).toLowerCase();
+    const validExts = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+    if (!validExts.has(ext)) {
+      diagnostics.push({
+        target: 'host',
+        code: 'feature.reference-image.format-unsupported',
+        severity: 'error',
+        message: `referenceImage: unsupported file format '${ext || '(no extension)'}'. Supported: .png, .jpg, .jpeg, .webp.`,
+        hint: HINT_TEMPLATES['feature.reference-image.format-unsupported'].template,
+      });
+    }
+
+    // ── 2. Resolve and validate path existence ───────────────────────────────
+    const scriptDir = this.scriptDir ?? process.cwd();
+    const resolvedPath = resolvePath(scriptDir, args.path);
+    let fileExists = false;
+    if (validExts.has(ext)) {
+      // Only check existence when format is valid (avoid spurious second error).
+      fileExists = existsSync(resolvedPath);
+      if (!fileExists) {
+        diagnostics.push({
+          target: 'host',
+          code: 'feature.reference-image.path-not-found',
+          severity: 'error',
+          message: `referenceImage: file not found at '${resolvedPath}'.`,
+          hint: HINT_TEMPLATES['feature.reference-image.path-not-found'].template,
+        });
+      }
+    }
+
+    // ── 3. Validate plane ────────────────────────────────────────────────────
+    if (!isValidPlaneSpec(args.plane)) {
+      diagnostics.push({
+        target: 'host',
+        code: 'feature.reference-image.invalid-plane',
+        severity: 'error',
+        message: `referenceImage: invalid plane '${JSON.stringify(args.plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
+        hint: HINT_TEMPLATES['feature.reference-image.invalid-plane'].template,
+      });
+    }
+
+    // ── 4. Read pixel dimensions ─────────────────────────────────────────────
+    let pixelWidth = 0;
+    let pixelHeight = 0;
+    if (fileExists) {
+      const dims = imageDimensions(resolvedPath);
+      pixelWidth = dims.width;
+      pixelHeight = dims.height;
+    }
+
+    // ── 5. Validate scale ────────────────────────────────────────────────────
+    const scale: ReferenceImageScale = args.scale ?? 'fit-bbox';
+    if (typeof scale === 'number') {
+      if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
+        diagnostics.push({
+          target: 'host',
+          code: 'feature.reference-image.scale-out-of-range',
+          severity: 'warn',
+          message: `referenceImage: scale ${scale} is out of range. Must be in (0, 10000] mm.`,
+          hint: HINT_TEMPLATES['feature.reference-image.scale-out-of-range'].template,
+        });
+      }
+    }
+
+    // ── 6. Clamp opacity ─────────────────────────────────────────────────────
+    const opacity = Math.max(0, Math.min(1, args.opacity ?? 0.5));
+
+    // ── 7. Build metadata ────────────────────────────────────────────────────
+    const metadata: ReferenceImageMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      path: resolvedPath,
+      plane: args.plane,
+      anchor: args.anchor ?? 'origin',
+      scale,
+      opacity,
+      flipU: args.flipU ?? false,
+      flipV: args.flipV ?? false,
+      pixelWidth,
+      pixelHeight,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'referenceImage',
+      params: {},
+      inputs: {},
+      metadata,
+    });
+
+    return r.id;
   }
 
   getSurfaceRecords(): readonly SurfaceRecord[] {

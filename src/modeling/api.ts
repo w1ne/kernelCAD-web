@@ -4,13 +4,14 @@ import { makeAssembly, type Assembly } from './capture/assembly';
 import { Shape } from './capture/proxy';
 import { Sketch, makePath, type PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
-import type { Param, Vec3 } from '../shared/intent/types';
+import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
 import {
   selectEdges as selectEdgesBackend,
   selectEdge as selectEdgeBackend,
   type EdgeQuery,
   type EdgeSegment,
 } from '../kernel/backends/occt/edgeQueries';
+import type { ReferenceImageHandle, ReferenceImageScale } from '../shared/intent/referenceImageRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/index';
@@ -140,6 +141,36 @@ export interface KernelCadApi {
    *  that flows through booleans/fillets/exports. The bare `'sdf'` FeatureKind
    *  is a reservation marker for slice-2+ (TPMS / voronoi) and is not lowered. */
   sdf: SdfNamespace;
+
+  /**
+   * Slice A: overlay a reference image on a plane for tracing or design review.
+   * The record is virtual — no OCCT geometry is produced; the renderer reads
+   * the image directly from the feature graph.
+   *
+   * Validation errors (missing file, bad format, invalid plane) are pushed as
+   * structured diagnostics on the returned handle's record rather than thrown —
+   * so agents can inspect and correct them incrementally.
+   *
+   * @param path   Path to the image file (.png, .jpg, .jpeg, .webp), resolved
+   *               relative to the calling .kcad.ts script's directory.
+   * @param opts.plane    Plane on which the image is displayed ('xy' | 'xz' | 'yz' | offset-plane).
+   * @param opts.anchor   World-space anchor — 'origin' (default) or an explicit Vec3 in mm.
+   * @param opts.scale    'fit-bbox' (default) | mm width-number | { width?, height? } in mm.
+   * @param opts.opacity  Display opacity in [0, 1]; clamped; default 0.5.
+   * @param opts.flipU    Flip image horizontally; default false.
+   * @param opts.flipV    Flip image vertically; default false.
+   */
+  referenceImage(
+    path: string,
+    opts: {
+      plane: PlaneSpec;
+      anchor?: 'origin' | [number, number, number];
+      scale?: ReferenceImageScale;
+      opacity?: number;
+      flipU?: boolean;
+      flipV?: boolean;
+    },
+  ): ReferenceImageHandle;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -418,6 +449,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         }
         session.sdfFields.set(name, field);
       },
+    },
+
+    referenceImage(path, opts) {
+      const id = session.addReferenceImage({ path, ...opts });
+      const record = session.getRecords().find(r => r.id === id)!;
+      // Cast metadata — ReferenceImageMetadata is stored under the [key: string]: unknown
+      // index signature of FeatureMetadata, so we re-surface it with proper typing here.
+      const metadata = record.metadata as import('../shared/intent/referenceImageRecord').ReferenceImageMetadata;
+      return { id, metadata };
     },
   };
   return api;
