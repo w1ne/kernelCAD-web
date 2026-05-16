@@ -185,7 +185,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 - **Numeric joint origins.** Joint origins are plain `Vec3`, not `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts but not joint frames; future slice will lift joint origins to `EditableVec3` once `setParamValue` reactivity is wired through.
 - **One frame per part.** Joint origins are `Vec3` numeric, can't bind to faces/edges/vertices yet.
 - **Body-tree only.** Each part has at most one parent joint; no closed-chain (4-bar linkage) kinematics.
-- **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm` are checked by pose-envelope review (`review_cad` / `validateMatePoseLimits`); raw `solve()` still computes the requested pose.
+- **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm` are checked by pose-envelope review (`review_cad`, `validateMatePoseLimits`, or `solvedModel(poses, { posesGate: 'envelope' })`); raw `solve()` still computes the requested pose.
 - Calling `solve()` twice on the same Assembly compounds transforms; build a fresh `assembly()` per pose query.
 
 ## Connectors and mates
@@ -348,6 +348,139 @@ The MCP server exposes assembly-specific tools for runtime introspection:
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an end-effector; connector workspace is only computed when pose-envelope sampling is enabled. For grippers, pass `gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' }` to get `minMm`, `maxMm`, `travelMm`, and per-sample fingertip distances.
 - `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — run ordered design attempts through `review_cad`, continue past functional attempts that still have unresolved warnings, return repair prompts, and optionally write a Studio replay record. Visual review is required by default: each accepted attempt must include `visualReview: { accepted, screenshotPath, findings, checks }` after the vision-capable agent renders/opens screenshots and records concrete observations. Accepted reviews must pass these checklist codes: `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, and `canonical-views-physically-coherent`. Missing `screenshotPath`, empty `findings`, missing checklist entries, or blank check findings fails with `assembly.visual.review-incomplete`; failed checks fail with `assembly.visual.review-check-failed`. Use `requireVisualReview: false` only for explicit non-visual batch checks. Only use `allowReviewWarnings` when the original prompt explicitly permits that warning code.
 
+## Pose-envelope review
+
+The default `solvedModel(poses, { validate })` gate only checks the single pose you passed in. Mechanisms fail in the wild because they clash, leave their connector untouched, or break the solver at the *extremes* of declared mate travel — poses that the default gate never visits. The pose-envelope review samples every mate with declared `limitsDeg` / `limitsMm` and runs the same validator + interference + connector-contact checks at each sample.
+
+### `solvedModel(poses, opts)` parameters
+
+```typescript
+arm.solvedModel(poses, {
+  validate?: 'warn' | 'error' | 'off',     // existing — controls severity
+  posesGate?: 'default' | 'envelope',      // which poses the gate covers
+  samplesPerMate?: number,                  // forwarded to the envelope sweep
+  combinatorial?: boolean,                  // forwarded to the envelope sweep
+});
+```
+
+`validate` and `posesGate` are orthogonal:
+
+| `validate` | `posesGate` | Behavior |
+|---|---|---|
+| `'off'`   | (any)        | No validation. `scene.warnings` is the empty array. |
+| `'warn'`  | `'default'`  | (default) Default-pose validator only. Diagnostics attach to `scene.warnings`. |
+| `'warn'`  | `'envelope'` | Default-pose validator runs, then `reviewPoseEnvelope` runs over sampled poses. All diagnostics — including envelope errors — attach to `scene.warnings`. Never throws. |
+| `'error'` | `'default'`  | Default-pose validator throws on the first error-severity diagnostic. |
+| `'error'` | `'envelope'` | Default-pose validator runs first; if clean, the envelope review runs and any envelope-error diagnostic throws `KernelError('feature.invalid-args')` with a message listing the failing code counts (e.g. `pose-envelope errors: assembly.pose-envelope.interference (x3)`) and the first offender's hint. |
+
+`scene.warnings` is typed `SceneDiagnostic[]` — the union `ValidatorDiagnostic | PoseEnvelopeDiagnostic` — so an envelope-mode warn-run lets you iterate every sample's findings without losing the validator entries.
+
+### `samplesPerMate` — interior coverage
+
+`samplesPerMate` is the **total** sample count per non-locked mate. The endpoint pair is always emitted; interior points are added only at `N >= 3`.
+
+| `samplesPerMate` | Samples per mate with declared limits |
+|---|---|
+| `1` (default) | `{min, max}` — corners only |
+| `2`           | `{min, max}` — identical to `1` (no room for interior) |
+| `3`           | `{min, midpoint, max}` |
+| `N >= 3`      | `{min, plus N-2 uniform interior points, max}` |
+
+A revolute with `limitsDeg: [-90, 90]` and `samplesPerMate: 4` produces poses at `-90, -30, 30, 90`. Use this when the worst pose isn't at a corner — long links sweeping through air gaps, or interference that only shows up mid-stroke.
+
+### `combinatorial` — corner-tuple sweep
+
+`combinatorial: true` enumerates all `2^M` min/max combinations across mates with declared limits, where `M` is the count of limited mates. This catches diagonal interference: two joints that are each clean at their own corners but collide when both go to their extremes simultaneously.
+
+Footgun: solve cost scales as `2^M`. `M=8` is 256 solves; `M=9` throws synchronously from `buildPoseEnvelopeSamples` with `combinatorial sampling capped at 8 mates with declared limits; got <N>. Use samplesPerMate for higher-DOF mechanisms.` Reach for `combinatorial` only when you've already minimized declared-limit mates, or for a small sub-assembly under design review.
+
+`samplesPerMate` and `combinatorial` compose: enable both for interior coverage plus worst-pose diagonal detection.
+
+### Diagnostic shape and `sampleStrategy`
+
+Envelope diagnostics carry a `sampleStrategy` field so downstream tools (Studio review panes, repair-loop summarizers) can tell which sweep family caught the failure:
+
+```typescript
+interface PoseEnvelopeDiagnostic {
+  readonly code: PoseEnvelopeDiagnosticCode;
+  readonly severity: 'warning' | 'error';
+  readonly message: string;
+  readonly hint: string;
+  readonly sampleName?: string;
+  readonly sampleStrategy?: 'corner' | 'interior' | 'combinatorial';
+  readonly mateName?: string;
+  readonly pose?: number | [number, number, number];
+  readonly limits?: readonly [number, number];
+  readonly partA?: string;
+  readonly partB?: string;
+  readonly volumeMm3?: number;
+  readonly connectorRef?: string;
+}
+```
+
+`sampleStrategy` classification: `<mate>:min` / `<mate>:max` / `current` → `'corner'`; `<mate>:interior-<i>` → `'interior'`; `corner:<bitmask>` → `'combinatorial'`. Five emitting codes:
+
+- `assembly.pose.out-of-limits` — a sample pose fell outside the mate's declared `limitsDeg`/`limitsMm`. Hint: `invalid-args.assembly.pose-out-of-limits — clamp '<mate>' to [<min>, <max>] or widen the mate limits if the mechanism is intended to travel that far.`
+- `assembly.pose-envelope.solve-failed` — solver reported `over-constrained` / `did-not-converge` at this sample. Hint: `invalid-args.assembly.pose-envelope-solve-failed — repair the mate graph or reduce declared travel before trusting this mechanism range.`
+- `assembly.pose-envelope.interference` — sampled pose makes two parts overlap by more than `epsilonMm3`. Hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`
+- `assembly.pose-envelope.connector-unresolved` — a tracked connector has a topology-based origin and was skipped from workspace bounds. Hint: `invalid-args.assembly.pose-envelope-connector-unresolved — use a numeric vec3 connector origin for workspace review, or run a lowerer-backed topology resolver before requesting this connector.`
+- `assembly.gripper-aperture.connector-missing` — one or both fingertip connector refs weren't observed. Hint: `invalid-args.assembly.gripper-aperture-connector-missing — pass gripperAperture refs that exist as numeric frame connectors and are included in pose-envelope samples.`
+
+### Worked example
+
+A single-link hinge that clashes only at the upper limit:
+
+```typescript
+const base  = arm.part('base',  box(60, 60, 8));
+const link  = arm.part('link',  box(80, 12, 8).translate(40, 0, 8));
+base.connector('hinge-base', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 8] }, axis: [0, 0, 1] });
+link.connector('hinge-end',  { type: 'axis', origin: { kind: 'vec3', value: [-40, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('hinge', 'base.hinge-base', 'link.hinge-end', 'revolute', {
+  limitsDeg: [-30, 175],   // 175 sweeps the link into the base
+});
+
+const scene = await arm.solvedModel({}, {
+  posesGate: 'envelope',
+  samplesPerMate: 4,
+  validate: 'error',
+});
+// Throws KernelError('feature.invalid-args'):
+//   "solvedModel: pose-envelope errors: assembly.pose-envelope.interference (x1)"
+//   hint: invalid-args.assembly.pose-envelope-interference — add clearance, …
+```
+
+Switching to `validate: 'warn'` returns a Scene whose `warnings` array contains the same diagnostic with `sampleStrategy: 'corner'`, `sampleName: 'hinge:max'`, `partA: 'base'`, `partB: 'link'`, and the overlap volume. Repair: tighten `limitsDeg` to e.g. `[-30, 90]`, or move the link's origin.
+
+### CLI surface
+
+`kernelcad evaluate <file> [--envelope] [--samples-per-mate N] [--combinatorial]` runs the envelope review across every captured assembly. Exit 0 (clean) / 1 (script error, or sampling flags used without `--envelope`) / 2 (envelope-error diagnostics surfaced). Passing `--samples-per-mate` or `--combinatorial` without `--envelope` is rejected to prevent silent no-ops.
+
+### MCP surface
+
+`review_cad` and `design_loop` accept `samplesPerMate` (integer ≥ 1) and `combinatorial` (boolean) with the same semantics as the script API. `review_cad` also returns `repairContext` on both `ok: true` and `ok: false` branches:
+
+```typescript
+interface RepairContext {
+  readonly blockingReasons: readonly string[];    // formatted "code: message"
+  readonly topDiagnostics: ReadonlyArray<{
+    readonly code: string;
+    readonly sampleName?: string;
+    readonly mateName?: string;
+    readonly suggestedDelta?: { mate: string; widenBy?: number; narrowBy?: number };
+  }>;
+  readonly preserveInterfaces: readonly string[];
+  readonly designGoal: string;
+}
+```
+
+`suggestedDelta.widenBy` / `narrowBy` are in **degrees for revolute / cylindrical / pin_slot mates, mm for prismatic mates** — the same unit as the diagnostic's `limits` field. `design_loop` renders its `nextActionPrompt` directly from this context: blocking reasons first, then the top three diagnostics with explicit `widen by N` / `narrow by N` directives when a suggested delta is present.
+
+### Known limitations
+
+- **Sampled bounds, not analytic.** `connectorWorkspace.min` / `.max` are AABB extremes computed from the sampled poses. Sparse sampling (`samplesPerMate: 1`) understates the true reachable region because the worst pose isn't always at a corner. For workspace-critical claims, use `samplesPerMate >= 4` and/or `combinatorial: true` on the limited DOF subset.
+- **Numeric vec3 connectors only for workspace.** Topology-bound connector origins surface `assembly.pose-envelope.connector-unresolved` (warning) and are skipped from `connectorWorkspace`. Switch the tracked connector to `{ kind: 'vec3', value: [...] }` for inclusion.
+- **`limitsDeg`/`limitsMm` required.** Mates without declared limits are not sampled — they contribute only the `current` pose. The pose-envelope review is silent on infinite-travel mates by design.
+
 ## Drive transmissions
 
 Mate coupling is not physical transmission. If you use `arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from the actuator/input mate to the driven output:
@@ -397,6 +530,11 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.connector.topology-not-resolvable` | connector declaration — unresolvable topology query |
 | `assembly.transmission.missing-for-coupled-mate` | review_cad — coupled mate without transmission |
 | `assembly.transmission.path-disconnected` | review_cad — transmission path has air gap |
+| `assembly.pose.out-of-limits` | pose-envelope — sample fell outside declared mate limits |
+| `assembly.pose-envelope.solve-failed` | pose-envelope — solver hit over-constrained / did-not-converge at sample |
+| `assembly.pose-envelope.interference` | pose-envelope — sampled pose overlaps two parts |
+| `assembly.pose-envelope.connector-unresolved` | pose-envelope — tracked connector has topology-based origin |
+| `assembly.gripper-aperture.connector-missing` | pose-envelope — fingertip connector ref not observed |
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
 | `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |

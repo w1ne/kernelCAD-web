@@ -1,6 +1,6 @@
 import { lookupSourceColor } from '../backends/occt/lookupSourceColor';
 import { KernelError } from '../intent/kernelError';
-import { Scene, type ScenePart } from '../intent/scene';
+import { Scene, type SceneDiagnostic, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import {
@@ -17,8 +17,12 @@ import {
   type MateRecord,
 } from '../lib/mates/mate';
 import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
+import {
+  reviewPoseEnvelope,
+  type PoseEnvelopeDiagnostic,
+} from '../lib/mates/poseEnvelope';
 import { solveMates } from '../lib/mates/solver';
-import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../lib/mates/validator';
+import { validateAssemblyWithMates } from '../lib/mates/validator';
 import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
 import { Transform } from '../runtime/se3';
@@ -1079,7 +1083,33 @@ export class Assembly {
     opts?: {
       validate?: 'warn' | 'error' | 'off';
       /**
-       * v0.7.4 — optional per-part external loads for the Gate 3 stub
+       * v0.7.4 — Which poses the validation gate covers. Orthogonal to
+       * `validate` (which controls severity).
+       *
+       * - `'default'` (default) → the existing behavior: gate runs over the
+       *   default/capture-time pose only. (When `validate === 'error'` AND
+       *   at least one mate declares `limitsDeg`/`limitsMm`, the v0.6.2
+       *   safety-net described below auto-runs the envelope review even
+       *   without an explicit `posesGate` opt-in — see the implicit-path
+       *   block further down.)
+       * - `'envelope'` → after the existing default-pose gate, run
+       *   `reviewPoseEnvelope(this, { samplesPerMate, combinatorial,
+       *   includeInterference: true })` and fold the envelope diagnostics
+       *   into the gate. Under `validate: 'error'` any envelope-error fails
+       *   the call; under `validate: 'warn'` they surface on `scene.warnings`
+       *   without throwing.
+       *
+       * Per-mate envelope sweep is configured by `samplesPerMate` /
+       * `combinatorial` below — same semantics as `reviewPoseEnvelope`'s
+       * `PoseEnvelopeSamplingOptions`.
+       */
+      posesGate?: 'default' | 'envelope';
+      /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
+      samplesPerMate?: number;
+      /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
+      combinatorial?: boolean;
+      /**
+       * v0.7.5 — optional per-part external loads for the Gate 3 stub
        * (`validateJointLoadCapacity`). Keys are part names already registered
        * on this Assembly via `arm.part(name, ...)`; values are world-frame
        * force (N) and/or torque (N·m) vectors. Unknown keys throw
@@ -1088,8 +1118,8 @@ export class Assembly {
        * check runs only under `validate: 'error'`; under `'warn'` / `'off'`
        * the loads are validated for key membership and otherwise ignored.
        *
-       * Forwarded as the 4th arg to `validateAssemblyWithMates` (Phase 6),
-       * which composes Gate 3 with the v0.7.4 grounding gates.
+       * Forwarded as the 4th arg to `validateAssemblyWithMates`, which
+       * composes Gate 3 with the v0.7.5 grounding gates.
        */
       externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
     },
@@ -1176,37 +1206,61 @@ export class Assembly {
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
 
-    // v0.6.2 — envelope review under error mode when any mate has scalar
-    // limits. Per the v0.6.2 plan §Task 4 + v0.7.4 plan §Phase 1: this is
-    // the agent-safety closure for limit-induced collisions — the v0.6.0
-    // single-pose interference gate only catches overlaps at the
-    // capture-time pose; `reviewPoseEnvelope` samples each mate at its
-    // declared `[min, max]` and folds any per-sample interference /
-    // out-of-limits / solve-failed diagnostics into the validator stream
-    // via the third arg to `validateAssemblyWithMates`. Skipped when no
-    // mate has limits (nothing to sample) or under `'warn'` / `'off'`
-    // (keeps capture-time `solvedModel` cheap).
-    const envelopePromise: Promise<import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined> =
-      mode === 'error' && this.hasMatesWithLimits()
-        ? import('../lib/mates/poseEnvelope').then((m) =>
-            m.reviewPoseEnvelope(this, { includeInterference: true }),
-          )
+    // v0.7.4 — pose-envelope review is now EXPLICIT-only via the
+    // `posesGate: 'envelope'` opt (workstream 5a / PR #157). The v0.6.2 plan
+    // had proposed an IMPLICIT auto-wire (run envelope when `validate:'error'`
+    // AND any mate has limits), but workstream 5a's settled API surface in
+    // PR #157 chose the explicit opt instead and ships a regression test
+    // (`src/capture/posesGate.test.ts`) asserting that `posesGate: 'default'`
+    // does NOT throw on envelope-only errors — even under `validate:'error'`.
+    //
+    // The implicit-auto-wire codepath is therefore dropped on merge to develop;
+    // its safety-net role is preserved via TWO complementary surfaces:
+    //   - `assembly.mate.limit-missing` warning fires from
+    //     `validateAssemblyWithMates` unconditionally for articulated mates
+    //     without declared limits — the AUTHORING surface, not the envelope
+    //     output. This nudges agents to declare limits in the first place.
+    //   - The `posesGate: 'envelope'` opt remains the path to actually run
+    //     envelope review; agents wanting the v0.6.2 auto-coverage simply
+    //     pass `posesGate: 'envelope'` (or use `kernelcad evaluate --envelope`).
+    //
+    // See the v0.7.5 CHANGELOG entry and the merge commit message for the
+    // full rationale.
+    const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
+    const envelopeResultPromise: Promise<
+      import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
+    > =
+      posesGate === 'envelope'
+        ? reviewPoseEnvelope(this, {
+            ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
+            ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
+            includeInterference: true,
+          })
         : Promise.resolve(undefined);
 
     return Promise.all([
       interferencePromise,
       mateTransformsPromise,
-      envelopePromise,
-    ]).then(async ([interferencePairs, mateT, envelope]) => {
+      envelopeResultPromise,
+    ]).then(async ([interferencePairs, mateT, envelopeResult]) => {
+      // v0.7.5 — `validateAssemblyWithMates` 3rd-arg (`poseEnvelopeResult`)
+      // is left undefined: the explicit `posesGate: 'envelope'` path keeps
+      // its diagnostics in a separate stream so the dedicated throw-by-code-
+      // counts block below can fire on them under `'error'` and aggregate
+      // them on scene.warnings under `'warn'`. The validator still emits
+      // `assembly.mate.limit-missing` warnings, Gate 1/2/3 diagnostics, and
+      // every v0.5/v0.6 base check.
       const result = await validateAssemblyWithMates(
         this,
         interferencePairs,
-        envelope,
+        undefined,
         opts?.externalLoads,
       );
-      return { result, mateT };
+      const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
+        envelopeResult ? envelopeResult.diagnostics : [];
+      return { result, mateT, envelopeDiagnostics };
     }).then(
-      ({ result, mateT }) => {
+      ({ result, mateT, envelopeDiagnostics }) => {
         if (mode === 'error') {
           const errDiag = result.diagnostics.find((d) => d.severity === 'error');
           // Status-driven fallback: `over-constrained` / `did-not-converge`
@@ -1229,11 +1283,37 @@ export class Assembly {
               `invalid-args.assembly.${result.status} — inspect arm via validateAssemblyWithMates(arm) for the per-mate diagnostic chain.`,
             );
           }
+          // T6: throw if the pose-envelope review (when enabled) surfaced any
+          // error-severity diagnostic. The message lists code counts so a
+          // caller can grep for the specific failure family.
+          const envelopeErrors = envelopeDiagnostics.filter((d) => d.severity === 'error');
+          if (envelopeErrors.length > 0) {
+            const counts = new Map<string, number>();
+            for (const d of envelopeErrors) {
+              counts.set(d.code, (counts.get(d.code) ?? 0) + 1);
+            }
+            const codeSummary = Array.from(counts.entries())
+              .map(([code, count]) => `${code} (x${count})`)
+              .join(', ');
+            const sampleHint = envelopeErrors[0].hint;
+            throw new KernelError(
+              'feature.invalid-args',
+              `solvedModel: pose-envelope errors: ${codeSummary}`,
+              undefined,
+              sampleHint,
+            );
+          }
           // error mode: warnings/info silently dropped per T9 spec.
           return this.makeScene(sceneShape, [], mateT);
         }
-        // warn mode: attach all diagnostics (error/warning/info) to scene.warnings.
-        return this.makeScene(sceneShape, result.diagnostics, mateT);
+        // warn mode: attach all diagnostics (error/warning/info) to
+        // scene.warnings. When posesGate === 'envelope', the envelope review
+        // diagnostics are appended after the default-pose validator's.
+        const aggregated: readonly SceneDiagnostic[] = [
+          ...result.diagnostics,
+          ...envelopeDiagnostics,
+        ];
+        return this.makeScene(sceneShape, aggregated, mateT);
       },
     );
   }
@@ -1255,20 +1335,6 @@ export class Assembly {
     }
     const sceneShape = this.session.assemblyModel(this.name, this.parts);
     return this.makeScene(sceneShape);
-  }
-
-  /**
-   * v0.6.2 — true iff any mate declares scalar `limitsDeg` or `limitsMm`.
-   * Gates the envelope auto-run under `solvedModel({validate:'error'})`:
-   * `reviewPoseEnvelope` only samples mates with scalar limits (see
-   * `buildPoseEnvelopeSamples`), so it has no work to do on a graph
-   * without any. Ball mates' per-axis Euler triples are stored in a
-   * different field and are not currently sampled — they don't trigger
-   * the envelope gate in v0.6.2 (the ball-mate envelope is a v0.6.x
-   * followup).
-   */
-  private hasMatesWithLimits(): boolean {
-    return this.mates.some((m) => m.limitsDeg !== undefined || m.limitsMm !== undefined);
   }
 
   /**
@@ -1344,7 +1410,7 @@ export class Assembly {
    */
   private makeScene(
     sceneShape: Shape,
-    warnings: readonly ValidatorDiagnostic[] = [],
+    warnings: readonly SceneDiagnostic[] = [],
     matePartTransforms?: ReadonlyMap<string, Transform>,
   ): Scene {
     const sceneFeatureId = sceneShape.id;

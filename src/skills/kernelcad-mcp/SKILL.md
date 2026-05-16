@@ -62,8 +62,26 @@ All edit tools return the modified source plus diagnostics. Re-run `kernelcad ev
 - `list_mates({ assembly? })` — return the declared mate records on the active assembly: `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`.
 - `validate_assembly({ assembly? })` — run the mate-aware validator on the active assembly; returns `{ status, diagnostics, partCount, jointCount }` where each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver on the active assembly; returns `{ status, poses, iterations? }` with each pose serialized as `{ translation, rotateAxis, rotateDeg }`. The `poses` input overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
-- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected.
-- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, return repair prompts, and optionally write a Studio-compatible replay record. Accepted visual reviews must include `screenshotPath`, non-empty `findings`, and passing checks; otherwise `assembly.visual.review-incomplete`, `assembly.visual.review-evidence-weak`, or `assembly.visual.review-check-failed` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
+- `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, samplesPerMate?, combinatorial?, epsilonMm3?, trackConnectors?, gripperAperture? })` — evaluate a script, validate its assembly/mate graph, check that mate connectors touch modeled material, sample declared mate limits, optionally run BREP interference checks at those samples, report connector workspace bounds, optionally report gripper aperture between two fingertip connector refs, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. `samplesPerMate` (integer ≥ 1, default 1) is the **total** sample count per declared-limit mate — `1`/`2` = corners only, `>=3` adds `samplesPerMate - 2` uniform interior points. `combinatorial` (default false) emits all `2^M` min/max corner-tuples across mates with declared limits and is capped at `M <= 8` (`M=9` throws with `combinatorial sampling capped at 8 mates with declared limits`). `review_cad` always returns `repairContext: RepairContext` (see below).
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, samplesPerMate?, combinatorial?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — review ordered design attempts, return repair prompts, and optionally write a Studio-compatible replay record. `samplesPerMate` / `combinatorial` are forwarded to `review_cad` with the same semantics (corners-only at `1`, interior coverage at `>=3`, full-corner sweep at `combinatorial: true`, cap of 8 limited mates). `nextActionPrompt` is rendered from each attempt's `repairContext` — blocking reasons first, then the top three diagnostics with explicit `widen by N` / `narrow by N` directives when a `suggestedDelta` is present. Accepted visual reviews must include `screenshotPath`, non-empty `findings`, and passing checks; otherwise `assembly.visual.review-incomplete`, `assembly.visual.review-evidence-weak`, or `assembly.visual.review-check-failed` keeps the attempt from passing. Set `requireVisualReview: false` only for explicit non-visual batch checks.
+
+`review_cad` returns this `repairContext` on both the `ok: true` and `ok: false` branches so a calling agent always has a structured handle on what to fix and what to preserve:
+
+```typescript
+interface RepairContext {
+  readonly blockingReasons: readonly string[];    // formatted "code: message" from fitness.blockingReasons
+  readonly topDiagnostics: ReadonlyArray<{
+    readonly code: string;
+    readonly sampleName?: string;
+    readonly mateName?: string;
+    readonly suggestedDelta?: { mate: string; widenBy?: number; narrowBy?: number };
+  }>;
+  readonly preserveInterfaces: readonly string[];
+  readonly designGoal: string;
+}
+```
+
+`suggestedDelta.widenBy` / `narrowBy` are in **degrees** for revolute / cylindrical / pin_slot mates and **mm** for prismatic mates — the same unit as the diagnostic's `limits` field. `topDiagnostics` is capped at three entries, ordered by severity. `preserveInterfaces` and `designGoal` echo the inputs so the repair agent doesn't drop them between attempts.
 
 ### Export
 

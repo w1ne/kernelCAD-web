@@ -13,10 +13,22 @@
 import type { Shape } from '../capture/proxy';
 import type { Connector } from '../lib/mates/connector';
 import type { MateRecord } from '../lib/mates/mate';
+import type { PoseEnvelopeDiagnostic } from '../lib/mates/poseEnvelope';
 import type { ValidatorDiagnostic } from '../lib/mates/validator';
 import type { Transform } from '../runtime/se3';
 import type { Vec3 } from './types';
 import { KernelError } from './kernelError';
+
+/** Aggregated diagnostic surfaced on `Scene.warnings`. Carries either a
+ *  default-pose validator diagnostic (`ValidatorDiagnostic`, attached by the
+ *  baseline `Assembly.solvedModel({validate: 'warn'})` flow) or a
+ *  pose-envelope review diagnostic (`PoseEnvelopeDiagnostic`, attached when
+ *  `solvedModel(poses, { posesGate: 'envelope' })` is requested in T6).
+ *
+ *  Both shapes share `code` (string), `severity`, `message`, and `hint`, so
+ *  the common-path `.map(w => w.code)` / `.filter(w => w.severity === ...)`
+ *  consumer patterns work without narrowing. */
+export type SceneDiagnostic = ValidatorDiagnostic | PoseEnvelopeDiagnostic;
 
 /** A single placed part in a Scene. The `shape` is authored in its own
  *  local frame; the `worldTransform` carries the post-FK placement. */
@@ -71,7 +83,7 @@ export class Scene implements Iterable<ScenePart> {
    *  throw, and the surviving warnings/info are silently dropped). Always
    *  present (possibly empty); never undefined, so consumers don't need a
    *  presence check. */
-  readonly warnings: readonly ValidatorDiagnostic[];
+  readonly warnings: readonly SceneDiagnostic[];
   private _bbox: SceneBbox | null = null;
   private readonly bboxFn: () => SceneBbox;
   private readonly exportFn?: SceneExportFn;
@@ -91,7 +103,7 @@ export class Scene implements Iterable<ScenePart> {
     exportFn?: SceneExportFn,
     sourceFeatureId?: string,
     mates?: readonly MateRecord[],
-    warnings?: readonly ValidatorDiagnostic[],
+    warnings?: readonly SceneDiagnostic[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
