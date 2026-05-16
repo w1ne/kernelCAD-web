@@ -12,6 +12,7 @@ import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMes
 import { rehydrateFromBridge } from '../../../modeling/capture/featureMeshSerialize';
 import { resolveColor } from '../../../shared/render/palette';
 import { pbrFromColor } from '../../../shared/render/materialRoles';
+import type { PBRMaterial } from '../../../shared/intent/material';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -93,37 +94,56 @@ const TERMINAL_H = 1080;
  *  THREE.Material.color.set() also accepts. */
 const DEFAULT_MESH_COLOR = 0xc8d2e0;
 
+/**
+ * Construct a MeshPhysicalMaterial from a full PBR record. All optional PBR
+ * fields default to physically neutral values so the output is always a valid
+ * renderable material. When `pbr` is undefined the renderer's default neutral
+ * CAD silver (DEFAULT_MESH_COLOR) is used.
+ *
+ * This is the canonical material factory for the demo player. Exported so
+ * unit tests can exercise it without mounting a full React tree.
+ */
+export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Material {
+  const baseColor = pbr?.baseColor ?? DEFAULT_MESH_COLOR;
+  const resolved: number | string = resolveColor(typeof baseColor === 'string' ? baseColor : undefined) ?? DEFAULT_MESH_COLOR;
+  return new THREE.MeshPhysicalMaterial({
+    color: resolved,
+    metalness: pbr?.metalness ?? 0,
+    roughness: pbr?.roughness ?? 0.5,
+    clearcoat: pbr?.clearcoat ?? 0,
+    clearcoatRoughness: pbr?.clearcoatRoughness ?? 0.03,
+    ior: pbr?.ior ?? 1.5,
+    transmission: pbr?.transmission ?? 0,
+    sheen: pbr?.sheen ?? 0,
+  });
+}
+
 function buildMeshFromFace(
   face: FaceGeometry,
   name: string,
-  color: number | string,
-  pbr: { metalness: number; roughness: number },
+  material: THREE.Material,
 ): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
-  // MeshStandardMaterial — physically-based shading driven by the role
-  // (servo/shaft/plate/...) attached at .color() time. Pairs with the
-  // three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // MeshPhysicalMaterial — physically-based shading driven by the role
+  // (servo/shaft/plate/...) attached at .color() or .material() time. Pairs
+  // with the three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // The caller applies transparent/opacity/side/polygonOffset render state.
   // polygonOffset — assemblies fan into N FeatureMeshes; adjacent parts
   // whose surfaces touch (column on plate, servo case flush against
   // bracket) produce coplanar geometry. Depth bias kills Z-fighting
   // without geometric epsilons.
-  const mat = new THREE.MeshStandardMaterial({
-    color,
-    metalness: pbr.metalness,
-    roughness: pbr.roughness,
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide,
-    flatShading: false,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-  });
-  const mesh = new THREE.Mesh(geom, mat);
+  material.transparent = true;
+  material.opacity = 0;
+  (material as THREE.MeshPhysicalMaterial).side = THREE.DoubleSide;
+  (material as THREE.MeshPhysicalMaterial).flatShading = false;
+  material.polygonOffset = true;
+  material.polygonOffsetFactor = 1;
+  material.polygonOffsetUnits = 1;
+  const mesh = new THREE.Mesh(geom, material);
   mesh.name = name;
   return mesh;
 }
@@ -289,17 +309,30 @@ export function DemoPlayerPage(): React.JSX.Element {
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
           group.visible = true;
-          // Resolve role-token / hex color via the shared palette.
-          // Unknown / missing → DEFAULT_MESH_COLOR (preserves prior behavior).
-          const resolved = resolveColor(fm.color);
-          const colorForMesh: number | string = resolved ?? DEFAULT_MESH_COLOR;
-          const pbr = pbrFromColor(fm.color);
+          // Prefer the full PBR record emitted by the bridge serializer (Task 7+).
+          // Fall back to the legacy color string path: pbrFromColor resolves role
+          // tokens ('servo', 'gear', ...) to metalness/roughness profiles and we
+          // promote the result to a minimal PBRMaterial so buildMaterialFromPBR
+          // handles both paths uniformly.
+          // When neither field is present the helper defaults to DEFAULT_MESH_COLOR.
+          let pbrForFaces: PBRMaterial | undefined;
+          if (fm.material !== undefined) {
+            pbrForFaces = fm.material;
+          } else if (fm.color !== undefined) {
+            const legacyProfile = pbrFromColor(fm.color);
+            const resolvedBase = resolveColor(fm.color) ?? String(DEFAULT_MESH_COLOR);
+            pbrForFaces = {
+              baseColor: resolvedBase,
+              metalness: legacyProfile.metalness,
+              roughness: legacyProfile.roughness,
+            };
+          }
           for (const face of fm.faces) {
+            const material = buildMaterialFromPBR(pbrForFaces);
             const mesh = buildMeshFromFace(
               face,
               `${fm.featureId}-face-${face.faceId}`,
-              colorForMesh,
-              pbr,
+              material,
             );
             group.add(mesh);
           }
