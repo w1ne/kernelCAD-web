@@ -11,10 +11,11 @@
 //
 // See plans/2026-05-15-v0.7-kinematic-grounding.md §Phase 6 Step 1.
 
-import { describe, it, expect } from 'vitest';
+import { beforeAll, describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import type { MateLoadLimit, MateRecord } from '../../../src/lib/mates/mate';
 import { createApi } from '../../../src/modules/api';
+import { initOcct } from '../../../src/backends/occt/occtBackend';
 
 function makeArm() {
   const session = new CaptureSession();
@@ -23,6 +24,14 @@ function makeArm() {
 }
 
 describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-gate (v0.7.4)', () => {
+  // Pre-warm OCCT in this worker process before any test runs. Gate 1 / 2 /
+  // 3 cases all reach `solveMates → resolveConnectorOrigin → shape.lower()`
+  // for topology-bound connectors; under the full `npm test` run a worker
+  // accumulates state across many files and the first lower in this file
+  // can otherwise race against init in other OCCT-using paths. Matches the
+  // pattern used by `tests/unit/backends/occt/*.test.ts`.
+  beforeAll(async () => { await initOcct(); });
+
   it('throws on mounting-hole diameter mismatch (Gate 1)', async () => {
     // Two parts joined by a fastened mate with topology-bound face-center
     // origins; the holes are Ø5 vs Ø6 — Gate 1 emits
