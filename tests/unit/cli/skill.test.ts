@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { installCommand, renderOnefile } from '../../../src/cli/commands/skill';
+import { installCommand, renderOnefile } from '../../../src/agent/cli/commands/skill';
 
 describe('skill commands', () => {
   it('installCommand installs each skill into its own subdirectory', async () => {

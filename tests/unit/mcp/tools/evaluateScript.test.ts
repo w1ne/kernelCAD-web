@@ -1,6 +1,6 @@
 // tests/unit/mcp/tools/evaluateScript.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateScriptTool } from '../../../../src/mcp/tools/evaluateScript';
+import { evaluateScriptTool } from '../../../../src/agent/mcp/tools/evaluateScript';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('evaluateScriptTool', () => {

@@ -9,7 +9,7 @@ import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from '../capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
-import { runScript } from '../script-runtime/runScript';
+import { runScript } from './runtime/runScript';
 import { KernelError } from '../shared/intent/kernelError';
 
 export interface BuildModelInput {

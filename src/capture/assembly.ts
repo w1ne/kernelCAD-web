@@ -1201,7 +1201,7 @@ export class Assembly {
     // each bbox-overlapping pair), so we deliberately skip it under
     // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
     // call cheap — interference is opt-in via the gate.
-    const interferencePromise: Promise<readonly import('../script-runtime/checkInterference').InterferencePair[] | undefined> =
+    const interferencePromise: Promise<readonly import('../modeling/runtime/detectInterferences').InterferencePair[] | undefined> =
       mode === 'error'
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
@@ -1355,12 +1355,12 @@ export class Assembly {
    */
   private async computeInterferencesForGate(
     sceneShape: Shape,
-  ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
+  ): Promise<readonly import('../modeling/runtime/detectInterferences').InterferencePair[]> {
     const { RecomputeEngine } = await import('../modeling/compute/recomputeEngine');
     const { createOcctLowerer } = await import('../modeling/backends/occt/occtLowerer');
     const { initOcct } = await import('../kernel/backends/occt/occtBackend');
     const { isSceneBackend } = await import('../kernel/backends/sceneBackend');
-    const { detectInterferences } = await import('../script-runtime/checkInterference');
+    const { detectInterferences } = await import('../modeling/runtime/detectInterferences');
 
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));

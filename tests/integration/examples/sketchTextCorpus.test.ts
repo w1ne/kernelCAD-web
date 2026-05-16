@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { resolve } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 import { readFileSync } from 'node:fs';
 
 const repoRoot = resolve(__dirname, '../../..');

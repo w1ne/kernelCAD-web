@@ -5,7 +5,7 @@ import {
   listConstraintsTool,
   solveSketchTool,
   SUPPORTED_CONSTRAINT_TYPES,
-} from '../../../../src/mcp/tools/constraints';
+} from '../../../../src/agent/mcp/tools/constraints';
 import {
   cloneRocketConstraintEntities,
   cloneRocketConstraintList,

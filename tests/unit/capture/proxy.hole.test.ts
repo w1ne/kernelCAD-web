@@ -9,8 +9,8 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
-import { kernelErrorToDiagnostic } from '../../../src/script-runtime/kernelErrorToDiagnostic';
+import { runScript } from '../../../src/modeling/runtime/runScript';
+import { kernelErrorToDiagnostic } from '../../../src/agent/script-runtime/kernelErrorToDiagnostic';
 
 async function runAndCatch(code: string): Promise<unknown> {
   let caught: unknown;

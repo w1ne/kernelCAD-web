@@ -82,7 +82,7 @@ function kernelCadMeshEndpoint(): Plugin {
           });
 
           const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }] = await Promise.all([
-            import('./src/script-runtime/scriptLoader'),
+            import('./src/modeling/runtime/scriptLoader'),
             import('./src/capture/featureMeshing'),
             import('./src/capture/featureMeshSerialize'),
           ]);
@@ -145,7 +145,7 @@ function kernelCadMeshEndpoint(): Plugin {
 
           const [{ readFile }, { runAndExport }, { dirname, basename }] = await Promise.all([
             import('node:fs/promises'),
-            import('./src/script-runtime/export'),
+            import('./src/agent/script-runtime/export'),
             import('node:path'),
           ]);
           const code = await readFile(scriptPath, 'utf-8');
@@ -195,7 +195,7 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
 
-          const { reviewCadTool } = await import('./src/mcp/tools/reviewCad');
+          const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
           const review = await reviewCadTool({
             file: scriptPath,
             includePoseEnvelope: true,

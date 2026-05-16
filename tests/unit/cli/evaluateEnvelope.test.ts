@@ -10,7 +10,7 @@
 // returns `arm.model()`).
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateWithEnvelope } from '../../../src/cli/commands/evaluate';
+import { evaluateWithEnvelope } from '../../../src/agent/cli/commands/evaluate';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

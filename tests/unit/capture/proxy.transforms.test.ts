@@ -1,7 +1,7 @@
 // tests/unit/capture/proxy.transforms.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 import { formatScalarForError } from '../../../src/shared/intent/types';
 
 describe('Shape transform validators (capture-time)', () => {
@@ -10,7 +10,7 @@ describe('Shape transform validators (capture-time)', () => {
   // translate ----------------------------------------------------------------
 
   it('translate throws feature.transform.invalid-translate when given a NaN', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).translate(NaN, 0, 0);`, fileName: 'test.kcad.ts' });
@@ -39,7 +39,7 @@ describe('Shape transform validators (capture-time)', () => {
   // rotate -------------------------------------------------------------------
 
   it('rotate throws feature.transform.invalid-rotate when degrees is Infinity', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).rotate([0, 0, 1], Infinity);`, fileName: 'test.kcad.ts' });
@@ -83,7 +83,7 @@ describe('Shape transform validators (capture-time)', () => {
   // scale --------------------------------------------------------------------
 
   it('scale throws feature.transform.invalid-scale when factor is negative', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).scale(-1);`, fileName: 'test.kcad.ts' });
@@ -147,7 +147,7 @@ describe('Shape transform validators (capture-time)', () => {
   // reflect ------------------------------------------------------------------
 
   it('reflect throws feature.transform.invalid-reflect when plane is malformed', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).reflect('z');`, fileName: 'test.kcad.ts' });
@@ -160,7 +160,7 @@ describe('Shape transform validators (capture-time)', () => {
   });
 
   it('reflect throws feature.transform.invalid-reflect for null plane', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).reflect(null);`, fileName: 'test.kcad.ts' });
@@ -187,7 +187,7 @@ describe('Shape transform validators (capture-time)', () => {
   // mirror -------------------------------------------------------------------
 
   it('mirror throws feature.mirror.invalid-plane when plane is malformed', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({ code: `return box(10, 10, 10).mirror('z');`, fileName: 'test.kcad.ts' });

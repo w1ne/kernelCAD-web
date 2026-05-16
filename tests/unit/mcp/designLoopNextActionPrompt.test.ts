@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { MechanismFitnessResult } from '../../../src/modeling/mates/mechanismFitness';
-import type { ReviewCadInput, ReviewCadOutput } from '../../../src/mcp/tools/reviewCad';
+import type { ReviewCadInput, ReviewCadOutput } from '../../../src/agent/mcp/tools/reviewCad';
 
 const mockReviewCadTool = vi.fn<(input: ReviewCadInput) => Promise<ReviewCadOutput>>();
 
-vi.mock('../../../src/mcp/tools/reviewCad', () => ({
+vi.mock('../../../src/agent/mcp/tools/reviewCad', () => ({
   reviewCadTool: (input: ReviewCadInput) => mockReviewCadTool(input),
 }));
 
 // Imported after the mock so designLoopTool's reviewCadTool reference is the mock.
-import { designLoopTool } from '../../../src/mcp/tools/designLoop';
+import { designLoopTool } from '../../../src/agent/mcp/tools/designLoop';
 
 function failingFitness(): MechanismFitnessResult {
   return {

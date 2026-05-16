@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 import type { Assembly } from '../../../src/capture/assembly';
 import { reviewMechanicalTransmission } from '../../../src/modeling/mates/mechanicalTransmission';
-import { inspectAssemblyTool } from '../../../src/mcp/tools/inspectAssembly';
-import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
+import { inspectAssemblyTool } from '../../../src/agent/mcp/tools/inspectAssembly';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 const COUPLED_GRIPPER_WITHOUT_TRANSMISSION = `
   const arm = assembly('coupled gripper');

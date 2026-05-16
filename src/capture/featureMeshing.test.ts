@@ -1,7 +1,7 @@
 // src/capture/featureMeshing.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
-import { runScript } from '../script-runtime/runScript';
+import { runScript } from '../modeling/runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
 
 beforeAll(async () => {

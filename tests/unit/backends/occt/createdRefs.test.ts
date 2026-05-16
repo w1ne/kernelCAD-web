@@ -157,7 +157,7 @@ describe('applyCreatedRefs', () => {
 describe('holeLowerer surfaceType propagation', () => {
   beforeAll(async () => { await initOcct(); });
   it('hole lowerer writes surfaceType=CYLINDRE on the bore wall', async () => {
-    const { runScript } = await import('../../../../src/script-runtime/runScript');
+    const { runScript } = await import('../../../../src/modeling/runtime/runScript');
     const { RecomputeEngine } = await import('../../../../src/modeling/compute/recomputeEngine');
     const { OcctLowerer } = await import('../../../../src/modeling/backends/occt/occtLowerer');
     const code = `

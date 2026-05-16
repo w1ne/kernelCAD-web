@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('runScript', () => {

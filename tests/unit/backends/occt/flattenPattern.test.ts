@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../../src/script-runtime/runScript';
+import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { flattenPattern } from '../../../../src/kernel/backends/occt/flattenPattern';

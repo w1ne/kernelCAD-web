@@ -26,7 +26,7 @@
 import type { Assembly } from '../../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
-import type { InterferencePair } from '../../script-runtime/checkInterference';
+import type { InterferencePair } from '../runtime/detectInterferences';
 import { validateJointAxisBinding } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { parseConnectorRef } from './mate';

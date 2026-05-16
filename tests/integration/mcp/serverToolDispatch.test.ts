@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TOOLS } from '../../../src/mcp/server';
-import { callMcpTool, TOOL_REGISTRY } from '../../../src/mcp/toolRegistry';
+import { TOOLS } from '../../../src/agent/mcp/server';
+import { callMcpTool, TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry';
 
 describe('MCP server tool registry', () => {
   it('derives the advertised TOOLS array from the executable registry', () => {

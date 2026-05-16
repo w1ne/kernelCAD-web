@@ -3,7 +3,7 @@
 // Drift sentinel: the `list_api` curated surface must match the real
 // runtime API. Future API additions that miss `listApi.ts` fail this test.
 import { describe, it, expect } from 'vitest';
-import { listApiTool } from '../../../src/mcp/tools/listApi';
+import { listApiTool } from '../../../src/agent/mcp/tools/listApi';
 import { createApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { Shape } from '../../../src/capture/proxy';

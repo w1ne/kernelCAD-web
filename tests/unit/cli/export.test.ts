@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { exportScript } from '../../../src/cli/commands/export';
+import { exportScript } from '../../../src/agent/cli/commands/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { listDiagnosticCodesTool } from '../../../../src/mcp/tools/listDiagnosticCodes';
+import { listDiagnosticCodesTool } from '../../../../src/agent/mcp/tools/listDiagnosticCodes';
 
 describe('list_diagnostic_codes', () => {
   it('returns all 37 codes with non-empty hint templates', async () => {

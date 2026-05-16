@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('Shape.shell capture', () => {
   beforeAll(async () => { await initOcct(); });

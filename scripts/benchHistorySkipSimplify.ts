@@ -1,5 +1,5 @@
 // scripts/benchHistorySkipSimplify.ts
-import { evaluateScript } from '../src/cli/commands/evaluate';
+import { evaluateScript } from '../src/agent/cli/commands/evaluate';
 import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

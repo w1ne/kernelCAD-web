@@ -1,7 +1,7 @@
 // tests/unit/capture/sketch.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('path() builder + Sketch capture', () => {
   beforeAll(async () => { await initOcct(); });
@@ -1073,7 +1073,7 @@ describe('path() builder + Sketch capture', () => {
     });
 
     it('feature.sketch.reflect.invalid-axis diagnostic carries featureId when caught from a sketch context', async () => {
-      const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+      const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
       const code = `
         const sketch = path().moveTo(0, 0).lineTo(1, 1).close();
         return sketch.reflect('z').extrude(1);

@@ -41,7 +41,7 @@ describe('helix', () => {
 
 describe('helix script-runtime registration', () => {
   it('helix is callable from a kernelCAD script', async () => {
-    const { runScript } = await import('../../../src/script-runtime/runScript');
+    const { runScript } = await import('../../../src/modeling/runtime/runScript');
     const code = `
       const pts = helix({ radius: 10, pitch: 5, turns: 1 });
       // No shape returned — just verifying helix() is a global.

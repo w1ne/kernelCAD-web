@@ -1,6 +1,6 @@
 // tests/unit/mcp/tools/whyDidThisFail.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { whyDidThisFailTool } from '../../../../src/mcp/tools/whyDidThisFail';
+import { whyDidThisFailTool } from '../../../../src/agent/mcp/tools/whyDidThisFail';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('whyDidThisFailTool', () => {

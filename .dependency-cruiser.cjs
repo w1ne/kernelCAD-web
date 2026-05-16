@@ -51,6 +51,13 @@ module.exports = {
             comment: 'authoring/ may only import from authoring/, modeling/, kernel/, capture/, or shared/.',
             from: { path: '^src/authoring/' },
             to: { path: '^src/(agent|studio)/' }
+        },
+        {
+            name: 'agent-no-studio',
+            severity: 'error',
+            comment: 'agent/ may not import from studio/.',
+            from: { path: '^src/agent/' },
+            to: { path: '^src/studio/' }
         }
     ],
     options: {

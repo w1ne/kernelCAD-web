@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { designLoopTool } from '../../../src/mcp/tools/designLoop';
+import { designLoopTool } from '../../../src/agent/mcp/tools/designLoop';
 
 describe('design_loop MCP tool', () => {
   const tempDirs: string[] = [];

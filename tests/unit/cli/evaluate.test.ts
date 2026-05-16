@@ -1,6 +1,6 @@
 // tests/unit/cli/evaluate.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateScript } from '../../../src/cli/commands/evaluate';
+import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';

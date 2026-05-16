@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addNurbsSurface } from '../../../../src/mcp/edits/addNurbsSurface';
+import { addNurbsSurface } from '../../../../src/agent/mcp/edits/addNurbsSurface';
 
 // The plan's existing add_feature helper inserts before the last top-level
 // `return` (brace depth 0). The eval entry point is a `return` at the file

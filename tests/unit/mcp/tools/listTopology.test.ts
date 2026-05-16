@@ -1,6 +1,6 @@
 // tests/unit/mcp/tools/listTopology.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { listTopologyTool } from '../../../../src/mcp/tools/listTopology';
+import { listTopologyTool } from '../../../../src/agent/mcp/tools/listTopology';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('listTopologyTool', () => {

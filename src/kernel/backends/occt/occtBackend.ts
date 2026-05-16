@@ -7,7 +7,7 @@ import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/type
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../capture/sketch';
 import { isSameEdge } from './edgeQueries';
-import { encodeBinaryStl } from '../../../script-runtime/exportStlBinary';
+import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
 
 type ReplicadEdge = replicad.Edge;

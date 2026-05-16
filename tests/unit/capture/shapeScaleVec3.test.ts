@@ -19,7 +19,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('Shape.scale Vec3 capture', () => {
   beforeAll(async () => { await initOcct(); });
@@ -70,7 +70,7 @@ describe('Shape.scale Vec3 capture', () => {
   });
 
   it('Vec3 with a zero component throws feature.invalid-args', async () => {
-    const { kernelErrorToDiagnostic } = await import('../../../src/script-runtime/kernelErrorToDiagnostic');
+    const { kernelErrorToDiagnostic } = await import('../../../src/agent/script-runtime/kernelErrorToDiagnostic');
     let caught: unknown;
     try {
       await runScript({

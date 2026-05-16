@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transpileTs } from '../../../src/script-runtime/transpile';
+import { transpileTs } from '../../../src/modeling/runtime/transpile';
 
 describe('transpileTs', () => {
   it('strips TypeScript types', () => {

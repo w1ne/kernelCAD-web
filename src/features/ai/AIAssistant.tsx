@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { agentAPI } from '../../agent/AgentAPI';
+import { agentAPI } from '../../agent/api';
 import Markdown from 'react-markdown';
 import { llmService, type ChatMessage } from './LLMService';
 

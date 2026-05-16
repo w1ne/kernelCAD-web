@@ -28,7 +28,7 @@ describe('queryKeys (single source of truth)', () => {
     // This test just ensures all 3 consumer files load without import errors.
     const fromCaptureSession = await import('../../../src/capture/captureSession');
     const fromEdgeSelection = await import('../../../src/kernel/backends/occt/edgeSelection');
-    const fromListApi = await import('../../../src/mcp/tools/listApi');
+    const fromListApi = await import('../../../src/agent/mcp/tools/listApi');
     expect(fromCaptureSession).toBeDefined();
     expect(fromEdgeSelection).toBeDefined();
     expect(fromListApi).toBeDefined();

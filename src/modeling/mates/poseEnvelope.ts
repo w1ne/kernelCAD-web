@@ -7,8 +7,8 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
-import { detectInterferences } from '../../script-runtime/checkInterference';
-import type { InterferencePair } from '../../script-runtime/checkInterference';
+import { detectInterferences } from '../runtime/detectInterferences';
+import type { InterferencePair } from '../runtime/detectInterferences';
 import { expandCoupledPoses } from './coupledPoses';
 import {
   computeGripperAperture,

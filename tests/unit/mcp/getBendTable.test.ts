@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { getBendTableTool } from '../../../src/mcp/tools/getBendTable';
+import { getBendTableTool } from '../../../src/agent/mcp/tools/getBendTable';
 
 describe('get_bend_table MCP tool', () => {
   beforeAll(async () => { await initOcct(); });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateScript } from '../../../src/cli/commands/evaluate';
+import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 
 describe('assembly examples', () => {
   it('evaluates the two-link connector arm example', async () => {

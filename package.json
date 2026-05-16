@@ -45,7 +45,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "qc:lint": "npm run lint && npm run cookbook:validate",
-    "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && git diff --exit-code src/skills && npm run cookbook:evaluate",
+    "qc:build": "npm run typecheck && npm run build:cli && npm run cookbook:build && git diff --exit-code src/agent/skills && npm run cookbook:evaluate",
     "qc:test": "npm test",
     "qc": "npm run qc:lint && npm run qc:build && npm run qc:test",
     "qc:full": "npm run qc && npm run test:e2e && npm run build",

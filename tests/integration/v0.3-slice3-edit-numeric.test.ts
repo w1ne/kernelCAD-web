@@ -5,7 +5,7 @@
 // new diameter; verify relowered/skipped granularity is correct.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { runScript } from '../../src/script-runtime/runScript';
+import { runScript } from '../../src/modeling/runtime/runScript';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/capture/captureSession';
 import { createApi } from '../../src/modeling/api';

@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const runDir = resolve('eval/runs', `portfolio-${a.slug}-${startedAt}`);
 
   const agent = makeAgent(a.model);
-  const skillsRoot = resolve('src/skills');
+  const skillsRoot = resolve('src/agent/skills');
   const skillMd = readdirSync(skillsRoot, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
     .map((e) => e.name)

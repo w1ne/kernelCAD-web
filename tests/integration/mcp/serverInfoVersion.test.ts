@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createMcpServer } from '../../../src/mcp/server';
+import { createMcpServer } from '../../../src/agent/mcp/server';
 
 describe('MCP serverInfo.version matches package.json (rc.10 review I-C)', () => {
   it('createMcpServer reports version from package.json', () => {
@@ -17,7 +17,7 @@ describe('MCP serverInfo.version matches package.json (rc.10 review I-C)', () =>
     // The MCP Server stores serverInfo internally. Cross-checking via
     // the constructor argument (read from server.ts source) is the most
     // robust approach since the Server class doesn't expose version.
-    const srcPath = resolve(__dirname, '../../../src/mcp/server.ts');
+    const srcPath = resolve(__dirname, '../../../src/agent/mcp/server.ts');
     const src = readFileSync(srcPath, 'utf8');
     // The version literal must NOT be a hardcoded string; it must be a
     // reference to package.json.version. Assert no `version: '<x.y.z>'` literal.

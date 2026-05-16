@@ -6,8 +6,8 @@
 // error diagnostics. Mirrors the pattern of nurbs example tests.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { getShapeInfoTool } from '../../../src/mcp/tools/getShapeInfo';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { getShapeInfoTool } from '../../../src/agent/mcp/tools/getShapeInfo';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

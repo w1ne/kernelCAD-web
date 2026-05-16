@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { runScript } from '../../../../src/script-runtime/runScript';
+import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';

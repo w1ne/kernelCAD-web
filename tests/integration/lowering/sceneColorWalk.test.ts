@@ -16,7 +16,7 @@
 //   3. No color anywhere upstream → returns undefined.
 
 import { describe, it, expect } from 'vitest';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 import { lookupSourceColor } from '../../../src/kernel/backends/occt/lookupSourceColor';
 
 describe('lookupSourceColor', () => {

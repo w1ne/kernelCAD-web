@@ -6,9 +6,9 @@
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
-import { addConnectorTool } from '../../../src/mcp/tools/addConnector';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
+import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
+import { addConnectorTool } from '../../../src/agent/mcp/tools/addConnector';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 
 describe('add_connector MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);

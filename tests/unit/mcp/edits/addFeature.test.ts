@@ -1,6 +1,6 @@
 // tests/unit/mcp/edits/addFeature.test.ts
 import { describe, it, expect } from 'vitest';
-import { addFeature } from '../../../../src/mcp/edits/addFeature';
+import { addFeature } from '../../../../src/agent/mcp/edits/addFeature';
 import { parseCode } from '../../../../src/shared/codeGeneration/ast';
 
 function expectParseable(code: string): void {

@@ -116,7 +116,7 @@ export function CodeProvider({ children, initialCode = defaultCode }: { children
 
     const applyCodeSafe = useCallback(async (newCode: string): Promise<boolean> => {
         try {
-            const { agentAPI } = await import('../agent/AgentAPI');
+            const { agentAPI } = await import('../agent/api');
             const result = await agentAPI.evaluateCode(newCode);
 
             if (result.errors && result.errors.length > 0) {

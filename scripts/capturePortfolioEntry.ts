@@ -23,7 +23,7 @@ import { join, resolve } from 'node:path';
 import { writePortfolioMeta, type PortfolioCategory, type PortfolioDifficulty, type PortfolioMeta } from './lib/portfolioMeta';
 import { loadScriptFeatures } from './lib/scriptLoader';
 import { meshFeaturesPerFeature } from '../src/capture/featureMeshing';
-import { encodeBinaryStl } from '../src/script-runtime/exportStlBinary';
+import { encodeBinaryStl } from '../src/kernel/backends/occt/exportStlBinary';
 
 interface Args {
   slug: string;

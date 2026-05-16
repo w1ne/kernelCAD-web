@@ -1,7 +1,7 @@
 // tests/unit/capture/sketchText.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('sketch.text() capture surface', () => {
   beforeAll(async () => { await initOcct(); });

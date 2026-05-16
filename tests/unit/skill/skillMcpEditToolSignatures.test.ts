@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TOOL_REGISTRY } from '../../../src/mcp/toolRegistry';
+import { TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry';
 import { loadCombinedSkillMd } from './_helpers';
 
 const SKILL_MD = loadCombinedSkillMd();

@@ -13,7 +13,7 @@ function copyDir(src, dst) {
 }
 
 await esbuild.build({
-  entryPoints: ['src/cli/index.ts'],
+  entryPoints: ['src/agent/cli/index.ts'],
   bundle: true,
   platform: 'node',
   format: 'esm',
@@ -32,7 +32,7 @@ await esbuild.build({
 });
 
 copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
-copyDir('src/skills', 'dist/cli/skills');
+copyDir('src/agent/skills', 'dist/cli/skills');
 mkdirSync('dist/cli/fonts', { recursive: true });
 copyFileSync('src/shared/fonts/LiberationSans-Regular.ttf', 'dist/cli/fonts/LiberationSans-Regular.ttf');
 copyFileSync('src/shared/fonts/LICENSE-FONTS.md', 'dist/cli/fonts/LICENSE-FONTS.md');

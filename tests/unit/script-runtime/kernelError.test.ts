@@ -1,7 +1,7 @@
 // tests/unit/script-runtime/kernelError.test.ts
 import { describe, it, expect } from 'vitest';
 import { KernelError, isKernelError } from '../../../src/shared/intent/kernelError';
-import { kernelErrorToDiagnostic } from '../../../src/script-runtime/kernelErrorToDiagnostic';
+import { kernelErrorToDiagnostic } from '../../../src/agent/script-runtime/kernelErrorToDiagnostic';
 
 describe('KernelError', () => {
   it('carries the code field', () => {
@@ -53,7 +53,7 @@ describe('kernelErrorToDiagnostic', () => {
   });
 });
 
-import { evaluateScript } from '../../../src/cli/commands/evaluate';
+import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 
 describe('CLI evaluate uses KernelError code', () => {
   it('emits feature.path.duplicate-label as a diagnostic (not cli.script.exception)', async () => {

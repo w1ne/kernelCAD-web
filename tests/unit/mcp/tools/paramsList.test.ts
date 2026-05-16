@@ -1,8 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../../src/mcp/activeSession';
-import { evaluateScriptTool } from '../../../../src/mcp/tools/evaluateScript';
-import { paramsListTool } from '../../../../src/mcp/tools/paramsList';
+import { clearActiveMcpSession } from '../../../../src/agent/mcp/activeSession';
+import { evaluateScriptTool } from '../../../../src/agent/mcp/tools/evaluateScript';
+import { paramsListTool } from '../../../../src/agent/mcp/tools/paramsList';
 
 describe('paramsListTool', () => {
   beforeAll(async () => { await initOcct(); });
