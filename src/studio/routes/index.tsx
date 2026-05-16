@@ -39,10 +39,10 @@ function LandingPage() {
         {/* Hero */}
         <header className="text-center pb-18 pt-0">
           <h1 className="font-serif text-8xl font-medium leading-[0.95] tracking-tight mb-7">
-            Describe it. <span className="text-blueprint italic">Build it.</span>
+            Words to <span className="text-blueprint italic">geometry</span>.
           </h1>
           <p className="text-xl text-ink-soft max-w-xl mx-auto mb-4 leading-relaxed">
-            A sentence in, a parametric 3D model out. STEP-grade, agent-built.
+            Describe a part in plain English. Get a parametric, STEP-grade 3D model.
           </p>
 
           <div className="font-mono text-xs text-ink-faint tracking-widest inline-flex gap-3.5 mb-10">
