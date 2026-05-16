@@ -1,7 +1,7 @@
 // tests/integration/mcp/listApi.test.ts
 import { describe, it, expect } from 'vitest';
-import { listApiTool, GLOBALS } from '../../../src/mcp/tools/listApi';
-import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/mcp/tools/constraints';
+import { listApiTool, GLOBALS } from '../../../src/agent/mcp/tools/listApi';
+import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/agent/mcp/tools/constraints';
 
 describe('list_api MCP tool', () => {
   it('returns globals including box, path, selectEdges, helix', async () => {

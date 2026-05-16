@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createApi } from '../../../src/modules/api';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 
 describe('API surface', () => {
   it('box() returns a Shape and registers a feature', () => {

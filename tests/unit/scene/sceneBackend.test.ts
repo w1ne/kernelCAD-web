@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isSceneBackend, type SceneBackend } from '../../../src/backends/sceneBackend';
+import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
 
 describe('SceneBackend', () => {
   it('isSceneBackend distinguishes from ShapeBackend by structural marker', () => {

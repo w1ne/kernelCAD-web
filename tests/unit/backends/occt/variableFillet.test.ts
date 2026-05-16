@@ -1,8 +1,8 @@
 // tests/unit/backends/occt/variableFillet.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import { applyVariableEdgeFeature } from '../../../../src/backends/occt/occtLowerer';
-import type { FeatureRecord } from '../../../../src/intent/featureRecord';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import { applyVariableEdgeFeature } from '../../../../src/modeling/backends/occt/occtLowerer';
+import type { FeatureRecord } from '../../../../src/shared/intent/featureRecord';
 
 describe('OcctBackend.filletVariable / chamferVariable', () => {
   beforeAll(async () => { await initOcct(); });

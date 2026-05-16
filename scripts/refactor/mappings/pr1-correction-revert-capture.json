@@ -1,0 +1,14 @@
+{
+  "src/shared/capture/assembly.ts": "src/capture/assembly.ts",
+  "src/shared/capture/faceLabels.ts": "src/capture/faceLabels.ts",
+  "src/shared/capture/featureMeshSerialize.test.ts": "src/capture/featureMeshSerialize.test.ts",
+  "src/shared/capture/featureMeshSerialize.ts": "src/capture/featureMeshSerialize.ts",
+  "src/shared/capture/featureMeshing.test.ts": "src/capture/featureMeshing.test.ts",
+  "src/shared/capture/featureMeshing.ts": "src/capture/featureMeshing.ts",
+  "src/shared/capture/forwardKinematics.ts": "src/capture/forwardKinematics.ts",
+  "src/shared/capture/posesGate.test.ts": "src/capture/posesGate.test.ts",
+  "src/shared/capture/proxy.ts": "src/capture/proxy.ts",
+  "src/shared/capture/sketch.ts": "src/capture/sketch.ts",
+  "src/shared/capture/surfaceProxy.ts": "src/capture/surfaceProxy.ts",
+  "src/shared/capture/transformMesh.ts": "src/capture/transformMesh.ts"
+}

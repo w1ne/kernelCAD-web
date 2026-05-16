@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { GLOBALS } from '../../../src/mcp/tools/listApi';
+import { GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 
 const SKILL_MD = loadCombinedSkillMd();

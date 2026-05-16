@@ -10,7 +10,7 @@
 // Per spec 2026-05-11-assembly-mates-validator-design.md §"Validity gate".
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { applyEvaluateDefaults } from '../../../src/cli/commands/evaluate';
+import { applyEvaluateDefaults } from '../../../src/agent/cli/commands/evaluate';
 
 describe('kernelcad evaluate — validate gate', () => {
   let prev: string | undefined;

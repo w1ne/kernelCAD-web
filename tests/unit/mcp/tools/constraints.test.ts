@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ConstraintType, SketchEntity } from '../../../../src/lib/constraints/types';
+import type { ConstraintType, SketchEntity } from '../../../../src/modeling/constraints/types';
 import {
   addConstraintTool,
   listConstraintsTool,
   solveSketchTool,
   SUPPORTED_CONSTRAINT_TYPES,
-} from '../../../../src/mcp/tools/constraints';
+} from '../../../../src/agent/mcp/tools/constraints';
 import {
   cloneRocketConstraintEntities,
   cloneRocketConstraintList,

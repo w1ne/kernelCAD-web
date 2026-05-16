@@ -1,4 +1,4 @@
-import { loadSnippets, search, type Snippet } from '../src/cookbook/index';
+import { loadSnippets, search, type Snippet } from '../src/agent/cookbook/index';
 
 export interface CookbookInjection {
   query: string;

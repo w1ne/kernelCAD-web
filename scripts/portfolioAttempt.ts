@@ -12,7 +12,7 @@ import { runTask } from '../eval/runner';
 import { appendPortfolioAttempt } from '../eval/portfolio/portfolioAttemptsLog';
 import type { PortfolioAttempt, PortfolioAttemptStatus } from '../eval/portfolio/portfolioAttemptsLog';
 import type { FailureModeTag } from '../eval/portfolio/failureMode';
-import type { DiagnosticCode } from '../src/diagnostics/codes';
+import type { DiagnosticCode } from '../src/shared/diagnostics/codes';
 import { makeAgent } from '../eval/run';
 
 interface Args { slug: string; model: string; notes: string; }
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const runDir = resolve('eval/runs', `portfolio-${a.slug}-${startedAt}`);
 
   const agent = makeAgent(a.model);
-  const skillsRoot = resolve('src/skills');
+  const skillsRoot = resolve('src/agent/skills');
   const skillMd = readdirSync(skillsRoot, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
     .map((e) => e.name)

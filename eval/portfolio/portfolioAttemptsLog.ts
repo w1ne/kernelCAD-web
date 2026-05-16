@@ -1,7 +1,7 @@
 // eval/portfolio/portfolioAttemptsLog.ts
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { isFailureModeTag, type FailureModeTag } from './failureMode';
-import { DIAGNOSTIC_CODES, type DiagnosticCode } from '../../src/diagnostics/codes';
+import { DIAGNOSTIC_CODES, type DiagnosticCode } from '../../src/shared/diagnostics/codes';
 
 export type PortfolioAttemptStatus = 'built' | 'failed' | 'abandoned';
 

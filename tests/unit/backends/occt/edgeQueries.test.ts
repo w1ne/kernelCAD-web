@@ -1,7 +1,7 @@
 // tests/unit/backends/occt/edgeQueries.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import { resolveEdgeQuery, resolveFaceQuery, selectEdges, selectEdge } from '../../../../src/backends/occt/edgeQueries';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import { resolveEdgeQuery, resolveFaceQuery, selectEdges, selectEdge } from '../../../../src/kernel/backends/occt/edgeQueries';
 import * as replicad from 'replicad';
 
 describe('resolveEdgeQuery', () => {

@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { runMcpScript } from '../../../src/mcp/runMcpScript';
+import { runMcpScript } from '../../../src/agent/mcp/runMcpScript';
 
 describe('runMcpScript', () => {
   let tempDir: string | undefined;

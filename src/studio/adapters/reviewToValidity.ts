@@ -10,13 +10,13 @@
 // Phase 1.2 deepens the server payload; Phase 1.1 ships the conservative
 // adapter so the shell lights up today.
 
-import type { ScriptReviewSummary } from '../../context/GeometryContext';
+import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type {
     ValidatorDiagnostic,
     ValidatorDiagnosticCode,
     ValidatorResult,
     ValidatorStatus,
-} from '../../lib/mates/validator';
+} from '../../modeling/mates/validator';
 
 export function reviewToValidity(review: ScriptReviewSummary | null): ValidatorResult | null {
     if (review == null) return null;

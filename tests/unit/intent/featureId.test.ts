@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createFeatureIdGenerator } from '../../../src/intent/featureId';
+import { createFeatureIdGenerator } from '../../../src/shared/intent/featureId';
 
 describe('featureId', () => {
   it('produces unique IDs for the same kind', () => {

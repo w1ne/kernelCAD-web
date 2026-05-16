@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getVisibleTabs } from '../logic/adaptiveTabs';
 import type { StudioRecomputeResult, TabId } from '../types';
-import { ParamTable } from '../../runtime/paramTable';
+import { ParamTable } from '../../shared/runtime/paramTable';
 
 function paramTableWith(count: number): ParamTable {
     const table = new ParamTable();

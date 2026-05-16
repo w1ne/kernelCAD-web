@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { ScriptReviewSummary } from '../../context/GeometryContext';
-import type { SerializedParamEntry } from '../../runtime/paramTable';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { ScriptReviewSummary } from '../context/GeometryContext';
+import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 
 const workbenchValue: {
     geometries: never[];
@@ -19,7 +19,7 @@ const workbenchValue: {
     scriptParams: [],
 };
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => workbenchValue,
 }));
 

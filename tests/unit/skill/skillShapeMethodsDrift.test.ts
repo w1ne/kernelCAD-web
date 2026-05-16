@@ -3,7 +3,7 @@ import {
   SHAPE_METHODS,
   SCENE_METHODS,
   SCENE_PART_PROPERTIES,
-} from '../../../src/mcp/tools/listApi';
+} from '../../../src/agent/mcp/tools/listApi';
 import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 
 const SKILL_MD = loadCombinedSkillMd();

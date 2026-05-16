@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { PATH_BUILDER_METHODS } from '../../../src/mcp/tools/listApi';
+import { PATH_BUILDER_METHODS } from '../../../src/agent/mcp/tools/listApi';
 import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 
 const SKILL_MD = loadCombinedSkillMd();

@@ -11,12 +11,12 @@
 // emits feature.face-ref.removed / not-resolvable.
 
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
-import { createApi } from '../../../src/modules/api';
-import { resolveFaceRef } from '../../../src/naming/resolveFaceRef';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { createApi } from '../../../src/modeling/api';
+import { resolveFaceRef } from '../../../src/kernel/naming/resolveFaceRef';
 
 describe('W2.1 — created refs inherit through pattern instances', () => {
   beforeAll(async () => { await initOcct(); });

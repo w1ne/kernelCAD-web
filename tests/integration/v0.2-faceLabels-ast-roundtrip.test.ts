@@ -13,9 +13,9 @@
 // via validateFaceLabels + session.createShape. This test is the contract proof.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { addFeature } from '../../src/mcp/edits/addFeature';
-import { runScript } from '../../src/script-runtime/runScript';
-import { initOcct } from '../../src/backends/occt/occtBackend';
+import { addFeature } from '../../src/agent/mcp/edits/addFeature';
+import { runScript } from '../../src/modeling/runtime/runScript';
+import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 
 // Minimal script skeleton with a top-level return so addFeature has a target.
 const SKELETON = `return box(10, 10, 10);\n`;

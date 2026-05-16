@@ -1,7 +1,7 @@
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { SelectedFeatureId, StudioRecomputeResult } from '../types';
 
 const mockSelection = vi.hoisted(() => ({

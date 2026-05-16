@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addPatternFeatureTool } from '../../../src/mcp/tools/addPatternFeature';
+import { addPatternFeatureTool } from '../../../src/agent/mcp/tools/addPatternFeature';
 
 // kernelCAD scripts have a top-level `return`. The MCP add_pattern_feature
 // tool inserts the patternX call before that return; the script then gets

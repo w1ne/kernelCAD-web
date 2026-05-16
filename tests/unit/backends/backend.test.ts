@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ShapeBackend, FeatureLowerer } from '../../../src/backends/backend';
+import type { ShapeBackend, FeatureLowerer } from '../../../src/kernel/backends/backend';
 
 describe('backend interfaces', () => {
   it('ShapeBackend interface compiles', () => {

@@ -4,11 +4,11 @@
 // types are the contract every shell component reads against; Phase 3
 // components import from here, never from the underlying primitives directly.
 
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { GeometryResult } from '../lib/workerTypes';
-import type { ValidatorResult, ValidatorStatus } from '../lib/mates/validator';
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
-import type { ParamTable } from '../runtime/paramTable';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { GeometryResult } from '../shared/worker/workerTypes';
+import type { ValidatorResult, ValidatorStatus } from '../modeling/mates/validator';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
+import type { ParamTable } from '../shared/runtime/paramTable';
 
 /**
  * All inspector tabs the shell knows about. Phase 1 surfaces `scene` and

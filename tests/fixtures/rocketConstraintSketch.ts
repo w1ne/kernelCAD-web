@@ -1,4 +1,4 @@
-import type { Constraint, SketchEntity, SolverState } from '../../src/lib/constraints/types';
+import type { Constraint, SketchEntity, SolverState } from '../../src/modeling/constraints/types';
 
 export interface PointLike {
   x: number;

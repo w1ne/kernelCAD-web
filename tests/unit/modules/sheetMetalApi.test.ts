@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('sheetMetal(profile, opts) — capture-time behavior', () => {
   it('captures a kind:sheetMetal record from a closed sketch + thickness/kFactor', async () => {

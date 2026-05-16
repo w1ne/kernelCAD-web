@@ -3,8 +3,8 @@
 // This file is the v0.2.0 ship gate — every test must pass before the branch merges.
 
 import { describe, it, beforeAll } from 'vitest';
-import { evaluateScript } from '../../src/cli/commands/evaluate';
-import { initOcct } from '../../src/backends/occt/occtBackend';
+import { evaluateScript } from '../../src/agent/cli/commands/evaluate';
+import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

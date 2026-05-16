@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
-vi.mock('../../components/Viewer', () => ({
+vi.mock('../components/Viewer', () => ({
     __esModule: true,
     default: (props: Record<string, unknown>) => (
         <div data-testid="mock-viewer" data-view-mode={String(props.viewMode3D)} />
@@ -24,7 +24,7 @@ vi.mock('../hooks/useFeatureSelection', () => ({
     useFeatureSelection: () => ({ selectedFeatureId: null, selectFeature: vi.fn() }),
 }));
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
         viewMode3D: 'shadedWithEdges',
         sketchesGeometries: [],

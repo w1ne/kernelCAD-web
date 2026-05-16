@@ -1,6 +1,6 @@
 // tests/unit/render/palette.test.ts
 import { describe, it, expect } from 'vitest';
-import { resolveColor, ROLE_PALETTE, isColorToken, DEFAULT_COLOR } from '../../../src/render/palette';
+import { resolveColor, ROLE_PALETTE, isColorToken, DEFAULT_COLOR } from '../../../src/shared/render/palette';
 
 describe('palette', () => {
   it('resolveColor returns the palette hex for known tokens', () => {

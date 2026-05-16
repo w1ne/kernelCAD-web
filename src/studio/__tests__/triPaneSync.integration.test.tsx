@@ -9,8 +9,8 @@
 
 import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import type { ValidatorDiagnostic, ValidatorResult } from '../../lib/mates/validator';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { StudioRecomputeResult } from '../types';
 import { shellStore } from '../store/shellStore';
 
@@ -58,7 +58,7 @@ vi.mock('../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => recompute,
 }));
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
         code: '',
         setCode: vi.fn(),

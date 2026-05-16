@@ -6,10 +6,10 @@
 // recover from authoring errors.
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { validateAssemblyTool } from '../../../src/mcp/tools/validateAssembly';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { validateAssemblyTool } from '../../../src/agent/mcp/tools/validateAssembly';
 
 describe('validate_assembly MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);

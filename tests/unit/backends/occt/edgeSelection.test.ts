@@ -1,8 +1,8 @@
 // tests/unit/backends/occt/edgeSelection.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { pickEdges } from '../../../../src/backends/occt/edgeSelection';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import type { FeatureRecord } from '../../../../src/intent/featureRecord';
+import { pickEdges } from '../../../../src/kernel/backends/occt/edgeSelection';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import type { FeatureRecord } from '../../../../src/shared/intent/featureRecord';
 
 const filletNoFilter = (baseId: string): FeatureRecord => ({
   id: 'fillet_1', kind: 'fillet',

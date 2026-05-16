@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { evaluateScript } from '../../oracle/kernelcad-client';
 import type { HarnessResult } from '../../types';
-import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 export default async function harness(scriptPath: string): Promise<HarnessResult> {
   const ev = await evaluateScript(scriptPath);

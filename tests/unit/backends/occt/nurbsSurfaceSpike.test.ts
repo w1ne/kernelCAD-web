@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getOC } from 'replicad';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 /**
  * Phase-0 spike for W1.3 NURBS surfaces.

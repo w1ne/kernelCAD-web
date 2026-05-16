@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { DiagnosticRow } from '../DiagnosticRow';
 import { shellStore } from '../store/useShellStore';
-import type { ValidatorDiagnostic } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 
 afterEach(() => {
     cleanup();

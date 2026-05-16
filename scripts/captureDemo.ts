@@ -13,8 +13,8 @@ import { computeTimeline, type PacingOverride } from './lib/pacingEngine';
 import { FfmpegPipeline } from './lib/ffmpegPipeline';
 import { composeStaticPanel } from './lib/staticPanel';
 import { whatsNewTemplate, writeWhatsNewIfMissing } from './lib/whatsNewTemplate';
-import { meshFeaturesPerFeature } from '../src/capture/featureMeshing';
-import { serializeForBridge } from '../src/capture/featureMeshSerialize';
+import { meshFeaturesPerFeature } from '../src/modeling/capture/featureMeshing';
+import { serializeForBridge } from '../src/modeling/capture/featureMeshSerialize';
 import { demoDisplayName } from './lib/demoDisplayName';
 
 interface Args {

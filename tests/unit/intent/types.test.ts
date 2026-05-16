@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Param, FaceRef, EdgeRef, FeatureRef } from '../../../src/intent/types';
+import type { Param, FaceRef, EdgeRef, FeatureRef } from '../../../src/shared/intent/types';
 
 describe('intent/types', () => {
   it('Param accepts expression + unit + evaluated', () => {

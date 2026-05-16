@@ -1,6 +1,6 @@
 // tests/unit/mcp/toolRegistrySchema.test.ts
 import { describe, it, expect } from 'vitest';
-import { TOOL_REGISTRY } from '../../../src/mcp/toolRegistry';
+import { TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry';
 
 function findTool(name: string) {
   const entry = TOOL_REGISTRY.find(e => e.definition.name === name);

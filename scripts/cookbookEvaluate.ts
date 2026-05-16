@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadSnippets } from '../src/cookbook/index';
+import { loadSnippets } from '../src/agent/cookbook/index';
 import { evaluateScript, isKernelcadAvailable } from '../eval/oracle/kernelcad-client';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
