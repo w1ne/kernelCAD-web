@@ -126,8 +126,9 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
       const kind = node.getKindName();
 
       if (kind === 'CallExpression') {
-        const expr = (node as any).getExpression?.();
-        const args = (node as any).getArguments?.() ?? [];
+        const call = node as unknown as { getExpression?: () => { getKindName?: () => string; getText?: () => string }; getArguments?: () => Array<{ getKindName: () => string; getLiteralValue: () => string; setLiteralValue: (v: string) => void }> };
+        const expr = call.getExpression?.();
+        const args = call.getArguments?.() ?? [];
         if (args.length !== 1 || args[0].getKindName() !== 'StringLiteral') return;
         // Runtime dynamic import: import('./foo')
         // CommonJS require: require('./foo')
@@ -147,7 +148,8 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
       // Type-position import expression: const x: import('./foo').Bar = ...
       // ImportType wraps a LiteralType whose .getLiteral() is the StringLiteral.
       if (kind === 'ImportType') {
-        const arg = (node as any).getArgument?.();
+        const importTypeNode = node as unknown as { getArgument?: () => { getKindName?: () => string; getLiteral?: () => { getKindName?: () => string; getLiteralValue: () => string; setLiteralValue: (v: string) => void } | undefined } | undefined };
+        const arg = importTypeNode.getArgument?.();
         if (arg?.getKindName?.() !== 'LiteralType') return;
         const literal = arg.getLiteral?.();
         if (literal?.getKindName?.() !== 'StringLiteral') return;

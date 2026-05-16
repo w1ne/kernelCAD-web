@@ -28,8 +28,8 @@ async function main() {
     try {
       await stat(toAbs);
       throw new Error(`Destination already exists: ${to}`);
-    } catch (e: any) {
-      if (e.code !== 'ENOENT') throw e;
+    } catch (e: unknown) {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
     }
   }
 
