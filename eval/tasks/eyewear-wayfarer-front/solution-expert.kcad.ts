@@ -112,7 +112,17 @@ const botCornerInnerX = sx - BOT_CORNER_R;
 const rightSilhouette = path()
   .moveTo(0, bridgeTopZ)
   // Top edge: continuous upward arc from bridge to outer-top wing
-  .sagittaArc(outerTopInnerX, FRAME_Z_TOP, 1.5)
+  // Sagitta 2.9 — increased from 1.5 baseline after a brow-curvature sweep
+  // (see iteration notes below). Pushes the brow rise nearer the reference
+  // photo's more pronounced acetate curve while staying clear of the
+  // variable-fillet/chamfer solver cliff at ~2.95. SSIM 0.165 → 0.166;
+  // silhouetteIoU 0.675 → 0.686; composite 0.481 → 0.490. The kernel does
+  // not expose a sketch-level NURBS curve primitive (only
+  // {sagitta,radius,bulge,tangent,threePoints}Arc), so multi-arc chains
+  // were also tried but every variant tripped the OCCT BRepFilletAPI
+  // BlendChain solver on the C0 kink between sub-arcs — single-arc with
+  // tuned sagitta is the bound-feasible improvement available today.
+  .sagittaArc(outerTopInnerX, FRAME_Z_TOP, 2.9)
   // Wing corner: arc down to outer side
   .tangentArc(sx, outerTopLowerZ)
   // Outer side: gentle convex bow
