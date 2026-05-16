@@ -7,8 +7,8 @@ import {
   Scene as ThreeScene,
 } from 'three';
 import { GLTFExporter } from 'three-stdlib';
-import { evaluateAndBuildScript } from '../../src/cli/commands/evaluate';
-import type { OcctBackend } from '../../src/backends/occt/occtBackend';
+import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
+import type { OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
 
 export interface ExportGlbOptions {
   scriptPath: string;

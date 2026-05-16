@@ -7,5 +7,5 @@
   "gitSha": "95283f2299be7a2d99d1b4fec947423bba76752d",
   "heroArtifact": "nurbs-lofted-panel",
   "catalogSource": "memorable-builds-policy/v0.7",
-  "overrideApprovedBy": "iteration 2026-05-14 broad-parity-sweep: v0.7.0 ships NURBS surfaces; lofted-panel is the recommended hero. Catalog slugs (computer-mouse-shell etc.) reserved for a later v0.7 minor refresh."
+  "overrideApprovedBy": null
 }
