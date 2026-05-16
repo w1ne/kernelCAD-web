@@ -57,9 +57,20 @@ export interface DemoPlayerWindow {
    *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
    *  appear at full visibility. */
   setRenderView(view: RenderView): void;
+  /** Snap camera to an arbitrary az/el pose (degrees). az=0 looks down -Y
+   *  (front view); az increases CCW around +Z (top-down); el increases looking
+   *  up (positive el = camera above the horizon). Used by `kernelcad render
+   *  --pose <az,el>` for headless reference-photo-pose scoring. */
+  setRenderPose(azDeg: number, elDeg: number): void;
   /** Set every loaded FeatureMesh material to opacity 1.0 and re-render.
    *  Used by `kernelcad render` to skip the build-animation fade-in. */
   forceFullOpacity(): void;
+  /** Hide every feature-mesh group that another feature lists as a
+   *  predecessor — i.e. keep only the tail records visible. Used by
+   *  `kernelcad render` so intermediate construction debris (cutter
+   *  boxes, pre-fillet bodies) doesn't bleed through the final shape in
+   *  headless captures. */
+  showOnlyTailFeatures(): void;
   /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
   loadFeatureMeshes(
     perFeature: FeatureMeshSerialized[],
@@ -374,6 +385,36 @@ export function DemoPlayerPage(): React.JSX.Element {
         );
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
+      setRenderPose: (azDeg, elDeg) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        const bbox = new THREE.Box3();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+        });
+        if (bbox.isEmpty()) return;
+        const dx = bbox.max.x - bbox.min.x;
+        const dy = bbox.max.y - bbox.min.y;
+        const dz = bbox.max.z - bbox.min.z;
+        const maxExtent = Math.max(dx, dy, dz);
+        const fov = ctx.camera.fov * (Math.PI / 180);
+        const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
+        // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
+        // az increases CCW around +Z; el lifts the camera above the horizon.
+        const az = (azDeg * Math.PI) / 180;
+        const el = (elDeg * Math.PI) / 180;
+        const cosEl = Math.cos(el);
+        const x = distance * Math.sin(az) * cosEl;
+        const y = -distance * Math.cos(az) * cosEl;
+        const z = distance * Math.sin(el);
+        ctx.camera.up.set(0, 0, 1);
+        ctx.camera.position.set(x, y, z);
+        ctx.camera.lookAt(0, 0, 0);
+        ctx.camera.near = Math.max(0.1, distance / 100);
+        ctx.camera.far = distance * 20;
+        ctx.camera.updateProjectionMatrix();
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
       forceFullOpacity: () => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
@@ -385,6 +426,27 @@ export function DemoPlayerPage(): React.JSX.Element {
             mat.needsUpdate = true;
           }
         });
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
+      showOnlyTailFeatures: () => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        // Collect every feature-mesh group + every group that another
+        // feature lists as a predecessor. The set difference is the tail.
+        const allGroups: THREE.Group[] = [];
+        const predecessorIds = new Set<string>();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Group && obj.userData[KCAD_FEATURE_GROUP_KEY]) {
+            allGroups.push(obj);
+            const preds = obj.userData.predecessors as readonly string[] | undefined;
+            if (preds) {
+              for (const p of preds) predecessorIds.add(p);
+            }
+          }
+        });
+        for (const group of allGroups) {
+          group.visible = !predecessorIds.has(group.name);
+        }
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
       loadFeatureMeshes: (perFeature, bounds) => {

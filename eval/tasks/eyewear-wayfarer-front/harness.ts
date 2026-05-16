@@ -14,6 +14,15 @@ const REFERENCE_POSE = '30,15';
 // gets the same scoring rubric and ~3-attempt budget.
 const SILHOUETTE_FLOOR = 0.45;
 const COMPOSITE_FLOOR = 0.30;
+// SSIM gate added by Slice A Task 16 (variable-fillet/chamfer + PBR material
+// rewrite). The Slice A target was 0.35 — a stretch goal set by the spec
+// against the reference photo at pose 30,15. The current rewrite ships ~0.14
+// because the reference photo includes temples + a ground plane + significant
+// lighting detail the front-face-only model does not reproduce. The gate is
+// kept at 0.35 (per memory feedback_no_gate_tampering — never loosen a gate
+// to make passing easier) so the scored field reflects the real gap until a
+// follow-up slice closes it (NURBS brow curves + temple geometry).
+const SSIM_FLOOR = 0.35;
 
 export default async function harness(scriptPath: string, ctx?: HarnessCtx): Promise<HarnessResult> {
   const ev = await evaluateScript(scriptPath);
@@ -38,6 +47,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
   // render+score path and surface that as an inconclusive gate.
   let silhouetteIoU = 0;
   let composite = 0;
+  let ssim = 0;
   let rendered = false;
   if (ctx) {
     const referencePath = join(ctx.taskDir, 'reference.jpg');
@@ -50,6 +60,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
       const score = await scoreAgainstReference(r.paths.poses[REFERENCE_POSE], referencePath);
       silhouetteIoU = score.perGate.silhouetteIoU;
       composite = score.composite;
+      ssim = score.perGate.ssim;
       rendered = true;
     }
   }
@@ -68,6 +79,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
       'rendered against reference': rendered,
       'silhouette IoU >= 0.45 vs photo': rendered && silhouetteIoU >= SILHOUETTE_FLOOR,
       'composite >= 0.30 vs photo': rendered && composite >= COMPOSITE_FLOOR,
+      'SSIM >= 0.35 vs photo': rendered && ssim >= SSIM_FLOOR,
     },
   };
 }

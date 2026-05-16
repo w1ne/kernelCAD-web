@@ -7,7 +7,7 @@
         "handle": "kernelcad",
         "url": "https://x.com/kernelcad"
       },
-      "version": "v0.7.4",
+      "version": "v0.8.0",
       "prompt": "# Build the front face of Ray-Ban Meta \u2014 Wayfarer\n\nReproduce the front face of a pair of Ray-Ban Meta smart glasses (Wayfarer variant) as a kernelCAD `.kcad.ts` script. Open the reference photo at `eval/tasks/eyewear-wayfarer-front/reference.jpg` before authoring.\n\nTargets:\n\n- Chunky black acetate body with smoothly curved outer silhouette \u2014 Wayfarer \"wing\" curves on the top-outer corners, gentle bottom curve.\n- Two trapezoidal lens openings with rounded inner+bottom corners.\n- Asymmetric camera+LED on the LEFT side only.\n- A small bridge with a narrow nose-notch.\n- Omit temples (front face only).\n\nReturn a single `Shape`. Z-up, mm.",
       "source": "curated",
       "video": "../../docs/demos/gallery/meta-glasses/demo.mp4",
