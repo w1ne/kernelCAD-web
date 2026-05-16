@@ -9,7 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 function makeArm() {

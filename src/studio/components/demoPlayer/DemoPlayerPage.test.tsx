@@ -20,7 +20,7 @@ vi.mock('three', async () => {
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { DemoPlayerPage } from './DemoPlayerPage';
-import type { FeatureMeshSerialized } from '../../../capture/featureMeshSerialize';
+import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 
 describe('DemoPlayerPage.loadFeatureMeshes', () => {
   beforeEach(() => {

@@ -8,8 +8,8 @@
 
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
-import type { FaceSelector } from '../../capture/proxy';
-import type { SketchCommand } from '../../capture/sketch';
+import type { FaceSelector } from '../capture/proxy';
+import type { SketchCommand } from '../capture/sketch';
 import { validateFeatureName } from './holeValidation';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool, toParam, toBoolParam } from '../../shared/runtime/editableHelpers';

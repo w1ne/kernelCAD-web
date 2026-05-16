@@ -116,7 +116,7 @@
 // — it widens the existing one.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 describe('face-ref invariants under non-uniform scale (audit)', () => {

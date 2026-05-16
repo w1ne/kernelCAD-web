@@ -1,4 +1,4 @@
-// src/capture/featureMeshSerialize.test.ts
+// src/modeling/capture/featureMeshSerialize.test.ts
 import { describe, it, expect } from 'vitest';
 import { serializeForBridge, rehydrateFromBridge } from './featureMeshSerialize';
 import type { FeatureMesh } from './featureMeshing';

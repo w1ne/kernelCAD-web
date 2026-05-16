@@ -7,7 +7,7 @@
 // flips the default for opt-less calls (T10 will set it from the CLI).
 
 import { describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 function makeArm() {

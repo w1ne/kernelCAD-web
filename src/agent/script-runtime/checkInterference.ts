@@ -11,8 +11,8 @@ import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
-import { Shape } from '../../capture/proxy';
-import { Scene } from '../../authoring/validation/scene';
+import { Shape } from '../../modeling/capture/proxy';
+import { Scene } from '../../modeling/validation/scene';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import {
   detectInterferences,

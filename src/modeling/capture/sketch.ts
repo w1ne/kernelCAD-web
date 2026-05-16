@@ -1,23 +1,20 @@
-// src/capture/sketch.ts
-import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../shared/intent/types';
-import { isValidAxisSpec } from '../shared/intent/types';
+// src/modeling/capture/sketch.ts
+import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../../shared/intent/types';
+import { isValidAxisSpec } from '../../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
-import { KernelError } from '../shared/intent/kernelError';
-import type { FaceLabelsMap } from '../shared/intent/featureRecord';
-import { type Editable } from '../shared/runtime/paramRef';
-import { toParam } from '../shared/runtime/editableHelpers';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
+import { type Editable } from '../../shared/runtime/paramRef';
+import { toParam } from '../../shared/runtime/editableHelpers';
+import type { SketchCommand } from '../../shared/capture/sketchCommand';
 
-export type SketchCommand =
-  | { kind: 'moveTo'; x: Param; y: Param }
-  | { kind: 'lineTo'; x: Param; y: Param }
-  | { kind: 'tangentArc'; x: Param; y: Param }
-  | { kind: 'threePointsArc'; x: Param; y: Param; midX: Param; midY: Param }
-  | { kind: 'sagittaArc'; x: Param; y: Param; sagitta: Param }
-  | { kind: 'bulgeArc'; x: Param; y: Param; bulge: Param }
-  | { kind: 'radiusArc'; x: Param; y: Param; radius: Param }
-  | { kind: 'close' };
+// Re-export so existing modeling/agent/authoring importers keep working.
+// The canonical definition lives in shared/capture/sketchCommand.ts as a
+// leaf module so the kernel can type-import it without depending on
+// modeling/.
+export type { SketchCommand };
 
 /**
  * `Sketch` captures a closed 2D profile that can later be extruded.

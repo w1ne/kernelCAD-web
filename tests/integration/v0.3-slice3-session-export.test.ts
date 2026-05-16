@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
-import { CaptureSession } from '../../src/capture/captureSession';
+import { CaptureSession } from '../../src/modeling/capture/captureSession';
 import { createApi } from '../../src/modeling/api';
 
 describe('v0.3 slice-3 session export/import', () => {

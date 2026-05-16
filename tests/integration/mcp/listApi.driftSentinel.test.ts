@@ -5,11 +5,11 @@
 import { describe, it, expect } from 'vitest';
 import { listApiTool } from '../../../src/agent/mcp/tools/listApi';
 import { createApi } from '../../../src/modeling/api';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { Shape } from '../../../src/capture/proxy';
-import { Sketch, PathBuilder } from '../../../src/capture/sketch';
-import { Scene } from '../../../src/authoring/validation/scene';
-import { SurfaceProxy } from '../../../src/capture/surfaceProxy';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { Shape } from '../../../src/modeling/capture/proxy';
+import { Sketch, PathBuilder } from '../../../src/modeling/capture/sketch';
+import { Scene } from '../../../src/modeling/validation/scene';
+import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {

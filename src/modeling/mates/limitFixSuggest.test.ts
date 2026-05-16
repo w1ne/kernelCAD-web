@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { suggestLimitFix, type SuggestedLimits } from './limitFixSuggest';
 import type { PoseEnvelopeDiagnostic } from './poseEnvelope';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 function makeArm() {

@@ -7,7 +7,7 @@ import { RecomputeEngine } from './compute/recomputeEngine';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
-import type { CaptureSession } from '../capture/captureSession';
+import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript } from './runtime/runScript';
 import { KernelError } from '../shared/intent/kernelError';

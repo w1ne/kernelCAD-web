@@ -27,28 +27,28 @@ module.exports = {
         {
             name: 'shared-stays-leaf',
             severity: 'error',
-            comment: 'shared/ may not import from any other layer. Files with cross-layer deps stay outside shared/ until those deps are broken (e.g., captureSession.ts has a kernel/buildModel runtime-late import — carved out of PR-1, see follow-up).',
+            comment: 'shared/ may not import from any other layer. Files with cross-layer deps stay outside shared/ until those deps are broken.',
             from: { path: '^src/shared/' },
             to: { path: '^src/(kernel|modeling|authoring|agent|studio)/' }
         },
         {
             name: 'kernel-stays-pure',
             severity: 'error',
-            comment: 'kernel/ may only import from kernel/ or shared/. capture/ is permitted while captureSession.ts and its bridge files await PR-3 (modeling/).',
+            comment: 'kernel/ may only import from kernel/ or shared/.',
             from: { path: '^src/kernel/' },
             to: { path: '^src/(modeling|authoring|agent|studio)/' }
         },
         {
             name: 'modeling-no-upward',
             severity: 'error',
-            comment: 'modeling/ may only import from modeling/, kernel/, capture/, or shared/.',
+            comment: 'modeling/ may only import from modeling/, kernel/, or shared/.',
             from: { path: '^src/modeling/' },
             to: { path: '^src/(authoring|agent|studio)/' }
         },
         {
             name: 'authoring-no-upward',
             severity: 'error',
-            comment: 'authoring/ may only import from authoring/, modeling/, kernel/, capture/, or shared/.',
+            comment: 'authoring/ may only import from authoring/, modeling/, kernel/, or shared/.',
             from: { path: '^src/authoring/' },
             to: { path: '^src/(agent|studio)/' }
         },

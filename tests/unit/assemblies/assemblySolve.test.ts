@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 function near(a: readonly number[], b: readonly number[], eps = 1e-6): void {

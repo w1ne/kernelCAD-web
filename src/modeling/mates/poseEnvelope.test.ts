@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import {
   buildPoseEnvelopeSamples,

@@ -11,8 +11,8 @@
 // 5. Park the backend on session.importedGeometry keyed by the new shape id.
 // 6. Return the Shape (kind 'sdfMaterialize') for downstream booleans/fillets/exports.
 
-import type { CaptureSession } from '../../capture/captureSession';
-import type { Shape } from '../../capture/proxy';
+import type { CaptureSession } from '../capture/captureSession';
+import type { Shape } from '../capture/proxy';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { Vec3 } from '../../shared/intent/types';

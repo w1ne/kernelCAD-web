@@ -1,26 +1,26 @@
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../shared/intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../shared/intent/types';
-import { KernelError } from '../shared/intent/kernelError';
-import type { ShapeTransform } from '../shared/intent/featureRecord';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
+import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
-import type { EdgeQuery, FaceQuery, EdgeSegment } from '../kernel/backends/occt/edgeQueries';
+import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
-} from '../authoring/validation/holeValidation';
+} from '../validation/holeValidation';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
-} from '../authoring/validation/cutoutValidation';
-import { isParamRef, type Editable } from '../shared/runtime/paramRef';
-import { toParam, toVec3Param } from '../shared/runtime/editableHelpers';
-import { Transform } from '../shared/runtime/se3';
-import type { ColorToken } from '../shared/render/palette';
-import { validateBendArgs } from '../modeling/sheetMetal';
-import type { Region } from '../shared/intent/region';
+} from '../validation/cutoutValidation';
+import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
+import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { Transform } from '../../shared/runtime/se3';
+import type { ColorToken } from '../../shared/render/palette';
+import { validateBendArgs } from '../sheetMetal';
+import type { Region } from '../../shared/intent/region';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -53,7 +53,7 @@ export class Shape {
   // selectEdge calls don't re-run RecomputeEngine.run() against the full
   // record list. Invalidated by record-count growth (capture is append-only,
   // so length growth is the only signal we need today).
-  private _loweredBackend?: import('../kernel/backends/occt/occtBackend').OcctBackend;
+  private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
 
@@ -470,7 +470,7 @@ export class Shape {
     // Implementation imported lazily to avoid circular import (proxy.ts is
     // imported by captureSession.ts which is imported by everything).
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('../kernel/backends/occt/flattenPattern') as typeof import('../kernel/backends/occt/flattenPattern');
+    const mod = require('../../kernel/backends/occt/flattenPattern') as typeof import('../../kernel/backends/occt/flattenPattern');
     return mod.flattenPattern(this.session.getRecords(), this.id);
   }
 
@@ -590,7 +590,7 @@ export class Shape {
    * Most agents won't call this directly. It's invoked implicitly when an
    * agent calls `selectEdges(myShape, ...)` from a `.kcad.ts` script.
    */
-  async lower(): Promise<import('../kernel/backends/occt/occtBackend').OcctBackend> {
+  async lower(): Promise<import('../../kernel/backends/occt/occtBackend').OcctBackend> {
     const records = this.session.getRecords();
     // C1 fix: cache invalidates on either record-count growth OR a transform
     // appended to THIS shape. `appendTransform` mutates `record.transforms`
@@ -606,13 +606,13 @@ export class Shape {
     ) {
       return this._loweredBackend;
     }
-    const { RecomputeEngine } = await import('../modeling/compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../modeling/backends/occt/occtLowerer');
-    const { OcctBackend, initOcct } = await import('../kernel/backends/occt/occtBackend');
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
     const r = await engine.run(
-      records as readonly import('../shared/intent/featureRecord').FeatureRecord[],
+      records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
         paramTable: this.session.paramTable,
         warningSink: (warning) => this.session.warnings.push(warning),

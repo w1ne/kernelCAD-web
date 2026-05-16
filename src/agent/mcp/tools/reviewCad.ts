@@ -1,5 +1,5 @@
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
-import type { Assembly } from '../../../capture/assembly';
+import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import {

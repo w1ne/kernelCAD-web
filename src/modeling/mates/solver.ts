@@ -31,8 +31,8 @@
 // the two data models diverge enough that unifying upstream would touch
 // shipped code.
 
-import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
-import type { NumericPoses } from '../../capture/forwardKinematics';
+import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { NumericPoses } from '../capture/forwardKinematics';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FeatureId } from '../../shared/intent/types';
 // Newton-Raphson machinery for articulated closed loops (T7.x): the

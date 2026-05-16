@@ -1,10 +1,10 @@
-// src/capture/faceLabels.ts
+// src/modeling/capture/faceLabels.ts
 // Shared capture-time validation for `faceLabels` option on creating ops.
 // Kept in a separate module to avoid circular dependencies between
 // captureSession.ts (imports Sketch) and sketch.ts (needs this validator).
 
-import { KernelError } from '../shared/intent/kernelError';
-import type { FaceLabelsMap } from '../shared/intent/featureRecord';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 
 const CANONICAL_FACES = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
 

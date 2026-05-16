@@ -14,13 +14,13 @@
 // We deliberately re-import the module after resetting the warn-once flag in
 // every "deprecation" test so the warn-once observation is independent of
 // test ordering. The flag is exposed as a package-private setter on
-// `SolvedKinematics` (see `src/capture/assembly.ts`).
+// `SolvedKinematics` (see `src/modeling/capture/assembly.ts`).
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { SolvedKinematics } from '../../../src/capture/assembly';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { SolvedKinematics } from '../../../src/modeling/capture/assembly';
 import { createApi } from '../../../src/modeling/api';
-import { Scene } from '../../../src/authoring/validation/scene';
+import { Scene } from '../../../src/modeling/validation/scene';
 import { Transform } from '../../../src/shared/runtime/se3';
 
 beforeEach(() => {

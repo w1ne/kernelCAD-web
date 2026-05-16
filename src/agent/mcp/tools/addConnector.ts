@@ -6,7 +6,7 @@
 // by `evaluate_script`; agents drive the assembly incrementally by calling
 // this tool after authoring a script that constructs the parts.
 
-import type { Assembly } from '../../../capture/assembly';
+import type { Assembly } from '../../../modeling/capture/assembly';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
 import type { Vec3 } from '../../../shared/intent/types';

@@ -8,7 +8,7 @@ import {
 } from './validator';
 import type { MateLoadLimit, MateRecord } from './mate';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Param, Vec3Param } from '../../shared/intent/types';
 import { createApi } from '../api';

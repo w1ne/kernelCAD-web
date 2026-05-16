@@ -1,10 +1,10 @@
-import type { SurfaceId } from '../shared/intent/surfaceRecord';
+import type { SurfaceId } from '../../shared/intent/surfaceRecord';
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
-import { KernelError } from '../shared/intent/kernelError';
-import { toParam } from '../shared/runtime/editableHelpers';
-import { isParamRef, type Editable } from '../shared/runtime/paramRef';
-import { formatScalarForError } from '../shared/intent/types';
+import { KernelError } from '../../shared/intent/kernelError';
+import { toParam } from '../../shared/runtime/editableHelpers';
+import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
+import { formatScalarForError } from '../../shared/intent/types';
 
 /**
  * Capture-time proxy for a NURBS surface. NOT a `Shape` — does NOT implement
@@ -84,8 +84,8 @@ export class SurfaceProxy {
    * because the section Sketches were never consumed (their lowering is
    * driven by downstream demand only).
    */
-  private _buildInputsWithSectionRefs(): Record<string, import('../shared/intent/types').FeatureRef> {
-    const inputs: Record<string, import('../shared/intent/types').FeatureRef> = {
+  private _buildInputsWithSectionRefs(): Record<string, import('../../shared/intent/types').FeatureRef> {
+    const inputs: Record<string, import('../../shared/intent/types').FeatureRef> = {
       surface: { kind: 'surface', surfaceId: this.id },
     };
     const surfRec = this.session.getSurfaceRecord(this.id);

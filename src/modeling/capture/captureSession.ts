@@ -1,12 +1,12 @@
 import {
   createFeatureIdGenerator, createSurfaceIdGenerator,
   type FeatureIdGenerator, type SurfaceIdGenerator,
-} from '../shared/intent/featureId';
-import type { FeatureRecord, ShapeTransform } from '../shared/intent/featureRecord';
-import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../shared/intent/types';
+} from '../../shared/intent/featureId';
+import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureRecord';
+import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
 import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData,
-} from '../shared/intent/surfaceRecord';
+} from '../../shared/intent/surfaceRecord';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -16,17 +16,17 @@ import type {
   AssemblyPartOpts,
   AssemblyPartRef,
 } from './assembly';
-import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../shared/intent/queryKeys';
-import { ParamTable, type SerializedParamTable } from '../shared/runtime/paramTable';
-import type { SoftWarning } from '../shared/runtime/softWarning';
-import { collectParamRefs } from '../shared/runtime/resolveParams';
-import { toParam } from '../shared/runtime/editableHelpers';
-import type { Editable } from '../shared/runtime/paramRef';
-import type { ShapeBackend } from '../kernel/backends/backend';
-import { KernelError } from '../shared/intent/kernelError';
-import type { Connector } from '../modeling/mates/connector';
-import type { MateCouplingRecord } from '../modeling/mates/coupledPoses';
-import type { MateType } from '../modeling/mates/mateTypes';
+import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../../shared/intent/queryKeys';
+import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
+import type { SoftWarning } from '../../shared/runtime/softWarning';
+import { collectParamRefs } from '../../shared/runtime/resolveParams';
+import { toParam } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
+import type { ShapeBackend } from '../../kernel/backends/backend';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { Connector } from '../mates/connector';
+import type { MateCouplingRecord } from '../mates/coupledPoses';
+import type { MateType } from '../mates/mateTypes';
 
 /**
  * Encoded mate / connector data attached to `solvedAssembly` metadata so the
@@ -68,7 +68,7 @@ export { validateFaceLabels } from './faceLabels';
  *  callers (hole/holes/cutout) that always want a face ref, never an
  *  edges ref. */
 export function buildFaceInputRef(
-  baseId: import('../shared/intent/types').FeatureId,
+  baseId: import('../../shared/intent/types').FeatureId,
   face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
   // `{ face: <something> }` wrapper form
@@ -91,14 +91,14 @@ export function buildFaceInputRef(
     return {
       kind: 'face',
       featureId: baseId,
-      ref: { kind: 'query', query: faceVal as import('../kernel/backends/occt/edgeQueries').FaceQuery },
+      ref: { kind: 'query', query: faceVal as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
     };
   }
   // Bare FaceQuery object (no { face: ... } wrapper)
   return {
     kind: 'face',
     featureId: baseId,
-    ref: { kind: 'query', query: face as import('../kernel/backends/occt/edgeQueries').FaceQuery },
+    ref: { kind: 'query', query: face as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
   };
 }
 
@@ -811,7 +811,7 @@ export class CaptureSession {
   /** Slice-3 namespace: edit-after-build operations.
    *  See spec §E.6, §F.1, §F.2. */
   readonly params = {
-    list: (): import('../shared/runtime/paramTable').ParamEntry[] => this.paramTable.list(),
+    list: (): import('../../shared/runtime/paramTable').ParamEntry[] => this.paramTable.list(),
 
     update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
   };
@@ -820,7 +820,7 @@ export class CaptureSession {
    *  in `src/kernel/buildModel.ts` so CLI, MCP, and direct session updates
    *  share the same cache/warning/tail-shape policy. */
   private async runParamUpdate(edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> {
-    const { updateModelParams } = await import('../modeling/buildModel');
+    const { updateModelParams } = await import('../buildModel');
     const records = this.getRecords();
     const shapes = new Map<string, ShapeBackend>();
     for (const [id, shape] of this.cachedShapes) shapes.set(id, shape);
@@ -896,7 +896,7 @@ function buildEdgeFeatureRef(
       value: {
         kind: 'face',
         featureId: baseId,
-        ref: { kind: 'query', query: faceVal as import('../kernel/backends/occt/edgeQueries').FaceQuery },
+        ref: { kind: 'query', query: faceVal as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
       },
     };
   }
@@ -936,7 +936,7 @@ function buildEdgeFeatureRef(
         value: {
           kind: 'edge',
           featureId: baseId,
-          ref: { kind: 'query', query: selector as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
+          ref: { kind: 'query', query: selector as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
         },
       };
     }
@@ -947,7 +947,7 @@ function buildEdgeFeatureRef(
       value: {
         kind: 'edge',
         featureId: baseId,
-        ref: { kind: 'query', query: selector as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
+        ref: { kind: 'query', query: selector as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
       },
     };
   }
@@ -957,7 +957,7 @@ function buildEdgeFeatureRef(
     value: {
       kind: 'edge',
       featureId: baseId,
-      ref: { kind: 'query', query: selector as unknown as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
+      ref: { kind: 'query', query: selector as unknown as import('../../kernel/backends/occt/edgeQueries').EdgeQuery },
     },
   };
 }

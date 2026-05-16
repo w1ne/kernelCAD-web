@@ -10,11 +10,11 @@
 // scene-graph slice. Lowerer dispatch, meshing, and the toCompound / toUnion
 // implementations land in follow-up tasks.
 
-import type { Shape } from '../../capture/proxy';
-import type { Connector } from '../../modeling/mates/connector';
-import type { MateRecord } from '../../modeling/mates/mate';
-import type { PoseEnvelopeDiagnostic } from '../../modeling/mates/poseEnvelope';
-import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
+import type { Shape } from '../capture/proxy';
+import type { Connector } from '../mates/connector';
+import type { MateRecord } from '../mates/mate';
+import type { PoseEnvelopeDiagnostic } from '../mates/poseEnvelope';
+import type { ValidatorDiagnostic } from '../mates/validator';
 import type { Transform } from '../../shared/runtime/se3';
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';

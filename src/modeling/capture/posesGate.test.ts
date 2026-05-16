@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../modeling/api';
+import { createApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();

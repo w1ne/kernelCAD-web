@@ -5,7 +5,7 @@
 // session's register() populates `metadata.paramRefs` for the dependency index.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 describe('capture-time paramRef threading', () => {

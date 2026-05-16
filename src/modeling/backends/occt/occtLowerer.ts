@@ -8,8 +8,8 @@ import type {
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
 import { isValidPlaneSpec } from '../../../shared/intent/types';
-import { forwardKinematics, type NumericPoses } from '../../../capture/forwardKinematics';
-import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
+import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
+import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
 import { mateFk, type ResolvedMatePart } from '../../mates/solver';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../mates/coupledPoses';
 import type { Connector } from '../../mates/connector';
@@ -617,7 +617,7 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         try {
-          shape = OcctBackend.fromSketchCommands(commands as import('../../../capture/sketch').SketchCommand[]);
+          shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           // Narrow degenerate-arc cases (radiusArc-only for now) to the kept

@@ -1,31 +1,31 @@
-import { lookupSourceColor } from '../kernel/backends/occt/lookupSourceColor';
-import { KernelError } from '../shared/intent/kernelError';
-import { Scene, type SceneDiagnostic, type ScenePart } from '../authoring/validation/scene';
-import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../shared/intent/types';
-import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../shared/intent/types';
+import { lookupSourceColor } from '../../kernel/backends/occt/lookupSourceColor';
+import { KernelError } from '../../shared/intent/kernelError';
+import { Scene, type SceneDiagnostic, type ScenePart } from '../validation/scene';
+import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
+import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../../shared/intent/types';
 import {
   makeConnector,
   type Connector,
   type ConnectorOrigin,
   type ConnectorType,
-} from '../modeling/mates/connector';
-import type { MateCouplingRecord } from '../modeling/mates/coupledPoses';
+} from '../mates/connector';
+import type { MateCouplingRecord } from '../mates/coupledPoses';
 import {
   parseConnectorRef,
   type MateLimitRange,
   type MatePose,
   type MateRecord,
-} from '../modeling/mates/mate';
-import { isCompatiblePair, type MateType } from '../modeling/mates/mateTypes';
+} from '../mates/mate';
+import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
-} from '../modeling/mates/poseEnvelope';
-import { solveMates } from '../modeling/mates/solver';
-import { validateAssemblyWithMates } from '../modeling/mates/validator';
-import { currentValue, toParam, toVec3Param } from '../shared/runtime/editableHelpers';
-import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../shared/runtime/paramRef';
-import { Transform } from '../shared/runtime/se3';
+} from '../mates/poseEnvelope';
+import { solveMates } from '../mates/solver';
+import { validateAssemblyWithMates } from '../mates/validator';
+import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
+import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
+import { Transform } from '../../shared/runtime/se3';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
@@ -1201,7 +1201,7 @@ export class Assembly {
     // each bbox-overlapping pair), so we deliberately skip it under
     // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
     // call cheap — interference is opt-in via the gate.
-    const interferencePromise: Promise<readonly import('../modeling/runtime/detectInterferences').InterferencePair[] | undefined> =
+    const interferencePromise: Promise<readonly import('../runtime/detectInterferences').InterferencePair[] | undefined> =
       mode === 'error'
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
@@ -1211,7 +1211,7 @@ export class Assembly {
     // had proposed an IMPLICIT auto-wire (run envelope when `validate:'error'`
     // AND any mate has limits), but workstream 5a's settled API surface in
     // PR #157 chose the explicit opt instead and ships a regression test
-    // (`src/capture/posesGate.test.ts`) asserting that `posesGate: 'default'`
+    // (`src/modeling/capture/posesGate.test.ts`) asserting that `posesGate: 'default'`
     // does NOT throw on envelope-only errors — even under `validate:'error'`.
     //
     // The implicit-auto-wire codepath is therefore dropped on merge to develop;
@@ -1228,7 +1228,7 @@ export class Assembly {
     // full rationale.
     const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
     const envelopeResultPromise: Promise<
-      import('../modeling/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
+      import('../mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
     > =
       posesGate === 'envelope'
         ? reviewPoseEnvelope(this, {
@@ -1355,12 +1355,12 @@ export class Assembly {
    */
   private async computeInterferencesForGate(
     sceneShape: Shape,
-  ): Promise<readonly import('../modeling/runtime/detectInterferences').InterferencePair[]> {
-    const { RecomputeEngine } = await import('../modeling/compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../modeling/backends/occt/occtLowerer');
-    const { initOcct } = await import('../kernel/backends/occt/occtBackend');
-    const { isSceneBackend } = await import('../kernel/backends/sceneBackend');
-    const { detectInterferences } = await import('../modeling/runtime/detectInterferences');
+  ): Promise<readonly import('../runtime/detectInterferences').InterferencePair[]> {
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../../kernel/backends/occt/occtBackend');
+    const { isSceneBackend } = await import('../../kernel/backends/sceneBackend');
+    const { detectInterferences } = await import('../runtime/detectInterferences');
 
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));

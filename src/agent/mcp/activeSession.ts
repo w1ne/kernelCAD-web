@@ -1,5 +1,5 @@
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { CaptureSession } from '../../capture/captureSession';
+import type { CaptureSession } from '../../modeling/capture/captureSession';
 import { buildModel, buildModelFromFile } from '../../modeling/buildModel';
 
 export interface ScriptSourceInput {

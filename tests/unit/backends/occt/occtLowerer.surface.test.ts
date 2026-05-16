@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
-import { CaptureSession } from '../../../../src/capture/captureSession';
+import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../../src/modeling/api';
 
 describe('OcctLowerer: surfaceThicken + surfaceToShape', () => {

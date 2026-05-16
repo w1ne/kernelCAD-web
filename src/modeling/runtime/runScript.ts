@@ -1,4 +1,4 @@
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';

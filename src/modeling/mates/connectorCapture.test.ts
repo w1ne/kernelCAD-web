@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 // v0.6 Task 4: arm.part(name, shape).connector(name, opts) chain method.

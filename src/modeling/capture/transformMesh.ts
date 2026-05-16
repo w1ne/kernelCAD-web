@@ -1,4 +1,4 @@
-// src/capture/transformMesh.ts
+// src/modeling/capture/transformMesh.ts
 //
 // Apply an SE(3) Transform to a FeatureMesh's geometry.
 // - Vertices use Transform.point() (translation + rotation).
@@ -14,7 +14,7 @@
 // SceneBackend is encountered.
 
 import type { FeatureMesh } from './featureMeshing';
-import type { Transform } from '../shared/runtime/se3';
+import type { Transform } from '../../shared/runtime/se3';
 
 export function transformFeatureMesh(mesh: FeatureMesh, t: Transform): FeatureMesh {
   const transformedFaces = mesh.faces.map((f) => {

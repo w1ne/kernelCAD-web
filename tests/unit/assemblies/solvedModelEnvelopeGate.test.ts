@@ -5,7 +5,7 @@
 // any mate had scalar limits. That implicit-auto path was retired during the
 // v0.7.5 → develop merge in favor of the explicit `posesGate: 'envelope'`
 // surface (PR #157 / workstream 5a). The covered behavior moved to:
-//   - `src/capture/posesGate.test.ts` for `posesGate: 'envelope'` semantics.
+//   - `src/modeling/capture/posesGate.test.ts` for `posesGate: 'envelope'` semantics.
 //   - The `assembly.mate.limit-missing` warning in
 //     `src/lib/mates/validator.test.ts` for the authoring-side nudge.
 //
@@ -15,7 +15,7 @@
 // it just lives under the new public API.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 function makeArm() {

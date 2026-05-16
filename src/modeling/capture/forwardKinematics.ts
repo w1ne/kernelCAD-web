@@ -1,13 +1,13 @@
-// src/capture/forwardKinematics.ts
+// src/modeling/capture/forwardKinematics.ts
 //
 // Pure body-tree forward kinematics, extracted from Assembly.solve so the
 // OCCT lowerer can reach FK directly without going through CaptureSession
 // or Assembly state. Math is unchanged from the original Assembly.solve
 // body — this file just owns the graph walk + SE(3) composition.
 
-import { KernelError } from '../shared/intent/kernelError';
-import type { FeatureId } from '../shared/intent/types';
-import { Transform, type Vec3 as Se3Vec3 } from '../shared/runtime/se3';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { FeatureId } from '../../shared/intent/types';
+import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from './assembly';
 
 /**

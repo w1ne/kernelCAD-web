@@ -5,7 +5,7 @@ import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
-import type { SketchCommand } from '../../../capture/sketch';
+import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
@@ -672,7 +672,7 @@ export class OcctBackend implements ShapeBackend {
    * with its reflection — does NOT perform a boolean union with the source).
    * kernelCAD's user-facing `Shape.mirror()` is a separate higher-level
    * method that does perform the union (the symmetric-part shortcut);
-   * see `Shape.mirror` in `src/capture/proxy.ts`. Different verbs, different
+   * see `Shape.mirror` in `src/modeling/capture/proxy.ts`. Different verbs, different
    * layers — both names appear in our API for clarity.
    *
    * For offset planes (e.g. `{ plane: 'yz', offset: 5 }`) we decompose:

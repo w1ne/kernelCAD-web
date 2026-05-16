@@ -15,7 +15,7 @@
 // See spec: ~/projects/kernelCAD-private/docs/specs/2026-05-10-paramref-poses-on-solvedmodel-design.md
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildModel } from '../../../src/modeling/buildModel';

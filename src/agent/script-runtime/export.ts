@@ -5,8 +5,8 @@ import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/nextAction';
-import { Shape } from '../../capture/proxy';
-import { Scene } from '../../authoring/validation/scene';
+import { Shape } from '../../modeling/capture/proxy';
+import { Scene } from '../../modeling/validation/scene';
 
 export type ExportFormat = 'stl' | 'step';
 

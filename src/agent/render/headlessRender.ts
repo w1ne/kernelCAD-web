@@ -10,8 +10,8 @@
 import { chromium, type Browser, type Page } from 'playwright';
 import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
-import { meshFeaturesPerFeature } from '../../capture/featureMeshing';
-import { serializeForBridge } from '../../capture/featureMeshSerialize';
+import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
+import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize';
 import type { RenderView } from '../../shared/render/views';
 
 export type { RenderView };

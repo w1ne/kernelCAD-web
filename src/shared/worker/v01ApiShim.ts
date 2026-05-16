@@ -10,7 +10,7 @@
  * This module wires a minimal `param` / `box` / `cylinder` / `sphere` global
  * surface — backed directly by Replicad — that returns shapes whose
  * `.subtract()` / `.union()` / `.intersect()` / `.translate()` / `.fillet()` /
- * `.chamfer()` methods match the v0.1 `Shape` proxy in `src/capture/proxy.ts`.
+ * `.chamfer()` methods match the v0.1 `Shape` proxy in `src/modeling/capture/proxy.ts`.
  * The Replicad shape underneath still exposes `blobSTL()` / `blobSTEP()` for
  * the export path, so the existing `EXPORT_STL` / `EXPORT_STEP` worker
  * handlers keep working.

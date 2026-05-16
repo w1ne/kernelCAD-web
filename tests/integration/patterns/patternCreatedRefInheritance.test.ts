@@ -11,7 +11,7 @@
 // emits feature.face-ref.removed / not-resolvable.
 
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';

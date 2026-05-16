@@ -18,9 +18,9 @@
 import { describe, it, expect } from 'vitest';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import type { MateLoadLimit, MateRecord } from './mate';
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 function makeArm() {

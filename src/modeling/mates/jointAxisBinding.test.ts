@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { validateJointAxisBinding } from './jointAxisBinding';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 function makeArm() {

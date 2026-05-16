@@ -6,7 +6,7 @@
 // translate / rotateAxis ShapeTransform pipes. No new lowerer code path.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { Transform } from '../../../src/shared/runtime/se3';
 import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';

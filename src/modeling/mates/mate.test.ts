@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 // v0.6 Task 5: arm.mate(name, aRef, bRef, type) capture API.

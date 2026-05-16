@@ -10,7 +10,7 @@
 
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
-import type { FaceSelector } from '../../capture/proxy';
+import type { FaceSelector } from '../capture/proxy';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';

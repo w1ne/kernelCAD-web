@@ -1,6 +1,6 @@
 // src/intent/patternValidation.ts
 //
-// Shared pattern-arg validators. Hoisted out of src/capture/proxy.ts so the
+// Shared pattern-arg validators. Hoisted out of src/modeling/capture/proxy.ts so the
 // MCP add_pattern_feature tool can validate structured input with the same
 // predicates the capture proxy uses at script-eval time.
 

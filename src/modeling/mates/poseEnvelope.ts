@@ -1,5 +1,5 @@
-import type { Assembly } from '../../capture/assembly';
-import type { NumericPoses } from '../../capture/forwardKinematics';
+import type { Assembly } from '../capture/assembly';
+import type { NumericPoses } from '../capture/forwardKinematics';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';

@@ -5,7 +5,7 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureKind } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
-import type { CaptureSession } from '../../capture/captureSession';
+import type { CaptureSession } from '../capture/captureSession';
 
 export interface LoadedScript {
   source: string;

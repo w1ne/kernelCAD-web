@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 
 // Helper: get the rotateAxis transform that .alongAxis() appended (or null

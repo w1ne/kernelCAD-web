@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { solveMates } from './solver';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 
 // v0.6 Task 6: solveMates(arm) — tree-FK over the mate graph for all 7 mate

@@ -28,7 +28,7 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
-import type { SketchCommand } from '../../../capture/sketch';
+import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import {
   applyCreatedRefs,

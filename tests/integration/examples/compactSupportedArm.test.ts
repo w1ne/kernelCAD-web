@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
-import { Scene } from '../../../src/authoring/validation/scene';
+import { Scene } from '../../../src/modeling/validation/scene';
 import { inspectAssemblyTool } from '../../../src/agent/mcp/tools/inspectAssembly';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 import { runScript } from '../../../src/modeling/runtime/runScript';

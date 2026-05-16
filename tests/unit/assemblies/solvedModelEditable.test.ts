@@ -10,7 +10,7 @@
 // and are covered in a separate test file (Tasks 3-5).
 
 import { describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import type { Param } from '../../../src/shared/intent/types';
 

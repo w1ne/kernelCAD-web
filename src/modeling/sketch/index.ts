@@ -4,8 +4,8 @@
 // which registers a sketch-kind FeatureRecord whose metadata encodes the
 // rendered string + opts. The OCCT lowerer dispatches on `metadata.textContent`.
 
-import type { CaptureSession } from '../../capture/captureSession';
-import { Sketch } from '../../capture/sketch';
+import type { CaptureSession } from '../capture/captureSession';
+import { Sketch } from '../capture/sketch';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';

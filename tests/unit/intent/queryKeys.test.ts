@@ -26,7 +26,7 @@ describe('queryKeys (single source of truth)', () => {
   it('all consumers import from the same source (modules load cleanly)', async () => {
     // The compile-time `keyof` checks above are the actual drift guard.
     // This test just ensures all 3 consumer files load without import errors.
-    const fromCaptureSession = await import('../../../src/capture/captureSession');
+    const fromCaptureSession = await import('../../../src/modeling/capture/captureSession');
     const fromEdgeSelection = await import('../../../src/kernel/backends/occt/edgeSelection');
     const fromListApi = await import('../../../src/agent/mcp/tools/listApi');
     expect(fromCaptureSession).toBeDefined();

@@ -18,7 +18,7 @@
     "skipLibCheck": true
   },
   "include": ["src/agent/cli/**/*", "src/agent/script-runtime/**/*",
-              "src/agent/render/**/*", "src/capture/**/*",
+              "src/agent/render/**/*",
               "src/authoring/validation/**/*", "src/authoring/runtime/**/*",
               "src/kernel/backends/**/*",
               "src/shared/diagnostics/**/*",

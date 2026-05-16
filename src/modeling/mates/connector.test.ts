@@ -5,7 +5,7 @@ import {
   type Connector,
   type ConnectorOrigin,
 } from './connector';
-import { CaptureSession } from '../../capture/captureSession';
+import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 

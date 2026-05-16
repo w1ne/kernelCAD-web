@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 import { runScript } from '../../../src/modeling/runtime/runScript';
-import { Scene } from '../../../src/authoring/validation/scene';
+import { Scene } from '../../../src/modeling/validation/scene';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-hand/two-finger-coupled-gripper.kcad.ts';
