@@ -6,7 +6,7 @@ import { shellStore } from '../store/shellStore';
 
 const setCodeMock = vi.fn();
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({ setCode: setCodeMock }),
 }));
 

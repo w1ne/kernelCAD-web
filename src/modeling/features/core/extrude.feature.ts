@@ -1,4 +1,4 @@
-import { ExtrudeIcon } from '../../../components/CustomIcons';
+import { ExtrudeIcon } from '../../../shared/icons/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
 

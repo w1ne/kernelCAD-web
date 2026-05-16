@@ -6,7 +6,7 @@
 // is a valid success — tells the agent "no canonical pattern available
 // for this intent; proceed without cookbook help."
 
-import { loadSnippets, search } from '../../../cookbook/index';
+import { loadSnippets, search } from '../../cookbook/index';
 
 export interface LookupCookbookInput {
   query: string;

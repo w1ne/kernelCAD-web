@@ -13,16 +13,16 @@ module.exports = {
         {
             name: 'components-cannot-import-worker',
             severity: 'error',
-            comment: 'UI components should not import worker implementation details.',
-            from: { path: '^src/components' },
-            to: { path: '^src/lib/worker\\.ts' }
+            comment: 'UI components must not import the OCCT worker entrypoint directly; they should use the geometryEngine wrapper in shared/worker.',
+            from: { path: '^src/studio/components' },
+            to: { path: '^src/kernel/backends/occt/worker\\.ts' }
         },
         {
             name: 'contexts-cannot-import-components',
             severity: 'warn',
             comment: 'Contexts should not depend on UI components.',
-            from: { path: '^src/context' },
-            to: { path: '^src/components' }
+            from: { path: '^src/studio/context' },
+            to: { path: '^src/studio/components' }
         },
         {
             name: 'shared-stays-leaf',

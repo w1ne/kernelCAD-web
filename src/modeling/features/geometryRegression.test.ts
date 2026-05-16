@@ -1,6 +1,6 @@
 import { describe, it, beforeAll } from 'vitest';
-import { expectGeometryMatch } from '../../test/geometryValidators';
-import { initReplicad, executeGeometry } from '../../test/regressionTestHelpers';
+import { expectGeometryMatch } from '../../../tests/geometryValidators';
+import { initReplicad, executeGeometry } from '../../../tests/regressionTestHelpers';
 
 describe('Geometry Regression Suite', () => {
     beforeAll(async () => {

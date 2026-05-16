@@ -58,7 +58,7 @@ vi.mock('../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => recompute,
 }));
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
         code: '',
         setCode: vi.fn(),

@@ -5,7 +5,7 @@
 // every adapted diagnostic falls back to line 1 unless a future server
 // enrichment surfaces precise locations.
 
-import type { ScriptReviewSummary } from '../../context/GeometryContext';
+import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { CompilerDiagnostic, DiagnosticSeverity } from '../../shared/diagnostics/diagnostic';
 import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 

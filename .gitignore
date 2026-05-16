@@ -52,3 +52,6 @@ site/brand
 # Portfolio attempt log (append-only, not source-controlled)
 eval/portfolio-attempts.jsonl
 .claude/
+
+# Refactor / ad-hoc debug scaffolds
+/.debug-*.ts

@@ -1,4 +1,4 @@
-import { PlaneIcon } from '../../../components/CustomIcons';
+import { PlaneIcon } from '../../../shared/icons/CustomIcons';
 import { type Feature } from '../types';
 
 export const OffsetPlaneFeature: Feature = {

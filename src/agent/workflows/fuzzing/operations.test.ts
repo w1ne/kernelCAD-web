@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import * as fc from 'fast-check';
-import { executeGeometry, initReplicad } from '../../../test/regressionTestHelpers';
+import { executeGeometry, initReplicad } from '../../../../tests/regressionTestHelpers';
 
 const runFuzz = process.env.KERNELCAD_FUZZ === '1';
 const describeIfFuzz = runFuzz ? describe : describe.skip;

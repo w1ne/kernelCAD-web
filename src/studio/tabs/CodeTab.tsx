@@ -6,7 +6,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
-import { useWorkbench } from '../../context/WorkbenchContext';
+import { useWorkbench } from '../context/WorkbenchContext';
 
 /**
  * Monaco-backed Code tab for the Studio shell.

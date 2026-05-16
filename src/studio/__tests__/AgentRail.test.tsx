@@ -6,7 +6,7 @@ import { shellStore } from '../store/useShellStore';
 
 // AgentRail composes StagedEditSlot which (Slice 1.5+) reads useWorkbench.
 // Mock the context so the rail can render in isolation.
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({ setCode: vi.fn() }),
 }));
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Header } from '../components/Layout/Header';
+import { Header } from './components/Layout/Header';
 import { Toolbar } from './Toolbar';
 import { Viewport } from './Viewport';
 import { Inspector } from './Inspector';
@@ -11,15 +11,15 @@ import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
-import { StatusBar } from '../components/Layout/StatusBar';
-import ProjectManagerDialog from '../components/Dialogs/ProjectManagerDialog';
-import { FloatingAgent } from '../features/ai/FloatingAgent';
-import { SmartWidget } from '../features/ai/SmartWidget';
-import { useWorkbench } from '../context/WorkbenchContext';
+import { StatusBar } from './components/Layout/StatusBar';
+import ProjectManagerDialog from './components/Dialogs/ProjectManagerDialog';
+import { FloatingAgent } from './features-ui/ai/FloatingAgent';
+import { SmartWidget } from './features-ui/ai/SmartWidget';
+import { useWorkbench } from './context/WorkbenchContext';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
-import { useProject } from '../context/ProjectContext';
+import { useProject } from './context/ProjectContext';
 
 /**
  * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /

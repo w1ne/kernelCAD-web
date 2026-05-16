@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import type { ScriptReviewSummary } from '../../context/GeometryContext';
+import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 
 const workbenchValue: {
@@ -19,7 +19,7 @@ const workbenchValue: {
     scriptParams: [],
 };
 
-vi.mock('../../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => workbenchValue,
 }));
 

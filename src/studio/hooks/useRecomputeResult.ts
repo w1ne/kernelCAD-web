@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useWorkbench } from '../../context/WorkbenchContext';
+import { useWorkbench } from '../context/WorkbenchContext';
 import { reviewToValidity } from '../adapters/reviewToValidity';
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';

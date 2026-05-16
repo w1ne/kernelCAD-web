@@ -25,9 +25,9 @@
               "src/shared/worker/geometryHelpers.ts", "src/shared/worker/safeSketch.ts",
               "src/shared/worker/userGlobals.ts", "src/shared/worker/withTemporaryGlobals.ts",
               "src/shared/worker/workerTypes.ts",
-              "src/cookbook/**/*", "src/modeling/**/*", "src/kernel/naming/**/*",
+              "src/agent/cookbook/**/*", "src/modeling/**/*", "src/kernel/naming/**/*",
               "src/shared/types/**/*"],
-  "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
+  "exclude": ["src/studio/**/*",
               "src/modeling/features/**/*", "src/modeling/HeadlessKernel.ts",
               "src/kernel/backends/occt/worker.ts",
               "tests/**/*", "**/*.test.ts"]

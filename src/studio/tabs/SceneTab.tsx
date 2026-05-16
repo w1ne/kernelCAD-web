@@ -4,8 +4,8 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
-import SceneBrowser from '../../components/SceneBrowser';
-import { useWorkbench } from '../../context/WorkbenchContext';
+import SceneBrowser from '../components/SceneBrowser';
+import { useWorkbench } from '../context/WorkbenchContext';
 import { extractHistoryItems } from '../../shared/codeGeneration/codeAnalysis';
 
 /**

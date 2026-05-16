@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initReplicad, executeGeometry } from '../../test/regressionTestHelpers';
+import { initReplicad, executeGeometry } from '../../../tests/regressionTestHelpers';
 
 describe('Sketcher Reliability', () => {
     beforeAll(async () => {

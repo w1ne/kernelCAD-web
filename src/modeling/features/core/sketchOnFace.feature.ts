@@ -1,4 +1,4 @@
-import { SketchIcon } from '../../../components/CustomIcons';
+import { SketchIcon } from '../../../shared/icons/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
 

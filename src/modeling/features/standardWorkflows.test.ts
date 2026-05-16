@@ -1,6 +1,6 @@
 import { describe, it, beforeAll } from 'vitest';
-import { initReplicad, executeGeometry } from '../../test/regressionTestHelpers';
-import { expectGeometryMatch } from '../../test/geometryValidators';
+import { initReplicad, executeGeometry } from '../../../tests/regressionTestHelpers';
+import { expectGeometryMatch } from '../../../tests/geometryValidators';
 import { generateSketchCode } from '../../shared/codeGeneration/sketchCodegen';
 import { generateBooleanCode, generateFilletCode } from './core/modifiers.feature';
 import { CodeAnalyzer } from '../../shared/codeGeneration/index';

@@ -20,7 +20,7 @@ vi.mock('../../hooks/useFeatureSelection', () => ({
     }),
 }));
 
-vi.mock('../../../context/WorkbenchContext', () => ({
+vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
         code: '',
         setCode: vi.fn(),

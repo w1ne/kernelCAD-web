@@ -1,4 +1,4 @@
-import { RevolveIcon } from '../../../components/CustomIcons';
+import { RevolveIcon } from '../../../shared/icons/CustomIcons';
 import { type Feature } from '../types';
 import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
 

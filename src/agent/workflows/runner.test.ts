@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, vi } from 'vitest';
-import { initReplicad, executeGeometry } from '../../test/regressionTestHelpers';
+import { initReplicad, executeGeometry } from '../../../tests/regressionTestHelpers';
 import { getWorkflows } from './registry';
 
 // Dynamic import of all workflow definitions
