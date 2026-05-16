@@ -26,6 +26,9 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
   project.addSourceFilesAtPaths(join(opts.projectRoot, 'tests/**/*.{ts,tsx}'));
   project.addSourceFilesAtPaths(join(opts.projectRoot, 'scripts/**/*.{ts,tsx,mjs}'));
   project.addSourceFilesAtPaths(join(opts.projectRoot, 'eval/**/*.{ts,tsx}'));
+  // Root-level config files (vite.config.ts, vitest.config.ts, etc.) can carry
+  // dynamic imports referencing src/ paths.
+  project.addSourceFilesAtPaths(join(opts.projectRoot, '*.config.{ts,tsx}'));
 
   // Normalize mapping into absolute paths (forward: old→new and reverse: new→old).
   const absMap = new Map<string, string>();
@@ -51,6 +54,7 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
     // OLD location. Otherwise the importer's current location IS its old location.
     const importerOldAbs = reverseMap.get(importerAbs) ?? importerAbs;
     const importerOldDir = dirname(importerOldAbs);
+    const importerMoved = importerOldAbs !== importerAbs;
     const candidatesWithoutExt = [
       resolve(importerOldDir, specifier),
       resolve(importerOldDir, specifier + '.ts'),
@@ -58,22 +62,34 @@ export async function rewriteImports(opts: RewriteOpts): Promise<void> {
       resolve(importerOldDir, specifier, 'index.ts'),
       resolve(importerOldDir, specifier, 'index.tsx'),
     ];
-    // Find which of these the mapping is aware of.
-    let oldAbs: string | null = null;
+    // First pass: find the target in the move map (moved targets).
     let newAbs: string | null = null;
     for (const cand of candidatesWithoutExt) {
-      // Try cand + known extensions
       for (const ext of ['', '.ts', '.tsx']) {
         const probe = cand + ext;
         if (absMap.has(probe)) {
-          oldAbs = probe;
           newAbs = absMap.get(probe)!;
           break;
         }
       }
-      if (oldAbs) break;
+      if (newAbs) break;
     }
-    if (!oldAbs || !newAbs) return null;
+    // Second pass: if target wasn't moved BUT importer moved, the relative
+    // specifier still needs rewriting because the importer's depth changed.
+    // Find the target on disk so we can re-render against the new importer dir.
+    if (!newAbs && importerMoved) {
+      for (const cand of candidatesWithoutExt) {
+        for (const ext of ['', '.ts', '.tsx']) {
+          const probe = cand + ext;
+          if (existsSync(probe)) {
+            newAbs = probe; // target didn't move; new location = old location
+            break;
+          }
+        }
+        if (newAbs) break;
+      }
+    }
+    if (!newAbs) return null;
 
     const newImporterDir = dirname(importerAbs);
     let rel = relative(newImporterDir, newAbs);

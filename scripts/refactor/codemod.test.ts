@@ -113,4 +113,48 @@ describe('rewriteImports codemod', () => {
     const updated = await readFile(join(root, 'src/lazy.ts'), 'utf8');
     expect(updated).toContain(`import('./sub/foo')`);
   });
+
+  it('rewrites importer-side depth when importer moves but target does NOT', async () => {
+    // Regression for PR-1 dispatch failure: src/capture/proxy.ts imported
+    // '../runtime/paramRef'. Capture moved under src/shared/ but runtime did
+    // not. The specifier still needs '../../runtime/paramRef' so resolution
+    // works from the importer's new depth.
+    await writeFile(join(root, 'src/sibling.ts'), `export const z = 2;\n`);
+    await writeFile(
+      join(root, 'src/mover.ts'),
+      `import { z } from './sibling';\nexport const y = z;\n`,
+    );
+    const { rename } = await import('node:fs/promises');
+    await mkdir(join(root, 'src/shared'), { recursive: true });
+    await rename(join(root, 'src/mover.ts'), join(root, 'src/shared/mover.ts'));
+
+    await rewriteImports({
+      projectRoot: root,
+      mapping: { 'src/mover.ts': 'src/shared/mover.ts' },
+    });
+
+    const updated = await readFile(join(root, 'src/shared/mover.ts'), 'utf8');
+    expect(updated).toContain(`import { z } from '../sibling';`);
+  });
+
+  it('rewrites dynamic imports in root-level *.config.ts files', async () => {
+    // Regression for PR-1: vite.config.ts at repo root carried `import('./src/capture/...')`
+    // which the codemod missed because it only scanned src/tests/scripts/eval.
+    await writeFile(join(root, 'src/target.ts'), `export const v = 1;\n`);
+    await writeFile(
+      join(root, 'vite.config.ts'),
+      `export default { build: { lazy: () => import('./src/target') } };\n`,
+    );
+    const { rename } = await import('node:fs/promises');
+    await mkdir(join(root, 'src/sub'), { recursive: true });
+    await rename(join(root, 'src/target.ts'), join(root, 'src/sub/target.ts'));
+
+    await rewriteImports({
+      projectRoot: root,
+      mapping: { 'src/target.ts': 'src/sub/target.ts' },
+    });
+
+    const updated = await readFile(join(root, 'vite.config.ts'), 'utf8');
+    expect(updated).toContain(`import('./src/sub/target')`);
+  });
 });
