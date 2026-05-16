@@ -12,7 +12,7 @@ import { runTask } from '../eval/runner';
 import { appendPortfolioAttempt } from '../eval/portfolio/portfolioAttemptsLog';
 import type { PortfolioAttempt, PortfolioAttemptStatus } from '../eval/portfolio/portfolioAttemptsLog';
 import type { FailureModeTag } from '../eval/portfolio/failureMode';
-import type { DiagnosticCode } from '../src/diagnostics/codes';
+import type { DiagnosticCode } from '../src/shared/diagnostics/codes';
 import { makeAgent } from '../eval/run';
 
 interface Args { slug: string; model: string; notes: string; }

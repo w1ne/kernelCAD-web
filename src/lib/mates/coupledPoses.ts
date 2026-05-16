@@ -1,4 +1,4 @@
-import type { NumericPoses } from '../../capture/forwardKinematics';
+import type { NumericPoses } from '../../shared/capture/forwardKinematics';
 import type { MateRecord } from './mate';
 
 export interface MateCouplingRecord {

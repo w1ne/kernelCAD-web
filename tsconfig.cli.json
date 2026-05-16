@@ -18,12 +18,13 @@
     "skipLibCheck": true
   },
   "include": ["src/cli/**/*", "src/script-runtime/**/*", "src/capture/**/*",
+              "src/shared/capture/**/*",
               "src/compute/**/*", "src/intent/**/*", "src/backends/**/*",
-              "src/diagnostics/**/*",
+              "src/shared/diagnostics/**/*",
               "src/lib/geometryHelpers.ts", "src/lib/safeSketch.ts",
               "src/lib/userGlobals.ts", "src/lib/withTemporaryGlobals.ts", "src/lib/workerTypes.ts",
               "src/cookbook/**/*", "src/modules/**/*", "src/naming/**/*",
-              "src/types/**/*"],
+              "src/shared/types/**/*"],
   "exclude": ["src/components/**/*", "src/features/**/*", "src/studio/**/*",
               "src/backends/occt/worker.ts",
               "tests/**/*", "**/*.test.ts"]

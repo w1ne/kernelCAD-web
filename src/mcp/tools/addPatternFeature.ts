@@ -7,7 +7,7 @@
 import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
 import { validateLinear, validateCircular, validateGridAxis } from '../../intent/patternValidation';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 type Vec3Tuple = [number, number, number];
 

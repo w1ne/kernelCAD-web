@@ -12,7 +12,7 @@
 import { Command } from 'commander';
 import { writeFile } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
-import { headlessRender, composite2x2, ALL_VIEWS } from '../../render/headlessRender';
+import { headlessRender, composite2x2, ALL_VIEWS } from '../../shared/render/headlessRender';
 
 export interface RenderInput {
   file: string;

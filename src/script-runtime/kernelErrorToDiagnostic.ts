@@ -11,10 +11,10 @@
 //
 // featureId flows one direction: throw site → KernelError constructor →
 // diagnostic. No caller override needed or possible.
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
-import { withNextAction } from '../diagnostics/diagnostic';
-import type { DiagnosticCode } from '../diagnostics/codes';
-import { HINT_TEMPLATES } from '../diagnostics/codes';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
+import { withNextAction } from '../shared/diagnostics/diagnostic';
+import type { DiagnosticCode } from '../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../shared/diagnostics/codes';
 import { isKernelError } from '../intent/kernelError';
 
 export function kernelErrorToDiagnostic(

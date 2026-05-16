@@ -9,7 +9,7 @@
 
 import { chromium, type Browser, type Page } from 'playwright';
 import sharp from 'sharp';
-import { loadScriptFeatures } from '../script-runtime/scriptLoader';
+import { loadScriptFeatures } from '../../script-runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../capture/featureMeshing';
 import { serializeForBridge } from '../capture/featureMeshSerialize';
 import type { RenderView } from './views';

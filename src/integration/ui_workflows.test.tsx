@@ -5,7 +5,7 @@ import React from 'react';
 import App from '../App';
 import * as GeometryEngine from '../lib/geometryEngine';
 import { initFeatures } from '../features/init';
-import type { EditorLike } from '../types/editor';
+import type { EditorLike } from '../shared/types/editor';
 import { parseCode } from '../lib/ast';
 
 const runUIE2E = process.env.KERNELCAD_UI_E2E === '1';

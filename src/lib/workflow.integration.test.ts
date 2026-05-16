@@ -17,7 +17,7 @@ import {
     generateChamferCode,
     generateBooleanCode
 } from '../features/core/modifiers.feature';
-import type { SketchData } from '../types/sketch';
+import type { SketchData } from '../shared/types/sketch';
 
 const createCodeContext = (code = '') => new CodeAnalyzer(code).createContext();
 

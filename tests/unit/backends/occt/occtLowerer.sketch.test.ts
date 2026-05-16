@@ -4,7 +4,7 @@ import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../src/intent/featureRecord';
 import type { Param } from '../../../../src/intent/types';
-import type { SketchCommand } from '../../../../src/capture/sketch';
+import type { SketchCommand } from '../../../../src/shared/capture/sketch';
 
 const mm = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
 const str = (s: string): Param => ({ expression: `'${s}'`, unit: 'unitless', evaluated: 0 });

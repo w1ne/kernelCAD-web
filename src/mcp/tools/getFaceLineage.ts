@@ -11,7 +11,7 @@
 //     `feature.created-ref.fallback-used` warning anywhere in the run.
 
 import type { FaceRef, EdgeRef, FeatureKind } from '../../intent/types';
-import type { DiagnosticCode } from '../../diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 import type { FaceSnapshot } from '../../backends/occt/createdRefs';
 import { runMcpScript } from '../runMcpScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';

@@ -22,7 +22,7 @@ import { pickFace } from './edgeSelection';
 import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
 import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import { classifyHoleFace, type BoreFrame, type HoleRefName } from './holeClassifier';

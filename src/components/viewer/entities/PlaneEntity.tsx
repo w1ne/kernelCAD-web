@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { SketchPlaneEntity } from "../../../types/plane";
+import type { SketchPlaneEntity } from "../../../shared/types/plane";
 import { useWorkbench } from "../../../context/WorkbenchContext";
-import { CAD_COLORS } from "../../../constants/colors";
+import { CAD_COLORS } from "../../../shared/constants/colors";
 
 export function PlaneLayer({ planes }: { planes: SketchPlaneEntity[] }) {
     const { hiddenIds } = useWorkbench();

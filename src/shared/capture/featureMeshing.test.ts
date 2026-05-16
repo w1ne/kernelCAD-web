@@ -1,7 +1,7 @@
 // src/capture/featureMeshing.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../backends/occt/occtBackend';
-import { runScript } from '../script-runtime/runScript';
+import { initOcct } from '../../backends/occt/occtBackend';
+import { runScript } from '../../script-runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
 
 beforeAll(async () => {
@@ -59,7 +59,7 @@ describe('meshFeaturesPerFeature', () => {
     // commands, which the lowerer rejects with an error diagnostic and emits
     // feature.failed. Both nodes must appear in the records array so
     // DependencyGraph can register them before addEdge is called.
-    const recA: import('../intent/featureRecord').FeatureRecord = {
+    const recA: import('../../intent/featureRecord').FeatureRecord = {
       id: 'feat-a',
       kind: 'box',
       inputs: {},
@@ -71,7 +71,7 @@ describe('meshFeaturesPerFeature', () => {
       transforms: [],
       suppressed: false,
     };
-    const recB: import('../intent/featureRecord').FeatureRecord = {
+    const recB: import('../../intent/featureRecord').FeatureRecord = {
       id: 'feat-b',
       kind: 'sketch',
       // references recA so the edge is registered; but the lowerer will fail

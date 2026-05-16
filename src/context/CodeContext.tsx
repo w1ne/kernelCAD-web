@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CommandManager } from '../commands/CommandManager';
 import { defaultCode } from '../lib/geometryEngine';
-import type { EditorLike } from '../types/editor';
+import type { EditorLike } from '../shared/types/editor';
 import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
 import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
 import type { HistoryItem } from '../lib/codeAnalysis';

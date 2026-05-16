@@ -4,7 +4,7 @@
 // Exists so an agent can pre-populate retry strategies without rummaging
 // through SKILL.md.
 
-import { DIAGNOSTIC_CODES, HINT_TEMPLATES, type DiagnosticCode } from '../../diagnostics/codes';
+import { DIAGNOSTIC_CODES, HINT_TEMPLATES, type DiagnosticCode } from '../../shared/diagnostics/codes';
 
 export type ListDiagnosticCodesInput = Record<string, never>;
 

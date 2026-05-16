@@ -1,7 +1,7 @@
 import { addNurbsSurface } from '../edits/addNurbsSurface';
 import type { AddNurbsSurfaceInput } from '../edits/addNurbsSurface';
 import { evaluateScriptTool } from './evaluateScript';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 export type { AddNurbsSurfaceInput };
 

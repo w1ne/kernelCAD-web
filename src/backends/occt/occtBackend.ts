@@ -5,10 +5,10 @@ import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
-import type { SketchCommand } from '../../capture/sketch';
+import type { SketchCommand } from '../../shared/capture/sketch';
 import { isSameEdge } from './edgeQueries';
 import { encodeBinaryStl } from '../../script-runtime/exportStlBinary';
-import { resolveColor } from '../../render/palette';
+import { resolveColor } from '../../shared/render/palette';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;

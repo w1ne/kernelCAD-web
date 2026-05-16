@@ -21,7 +21,7 @@ import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
 import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
-import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 interface LowerResult {
   shape: OcctBackend | undefined;

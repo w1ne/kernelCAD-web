@@ -9,7 +9,7 @@ import { basename, extname, isAbsolute, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadFont, getFont } from 'replicad';
 import { KernelError } from '../../intent/kernelError';
-import type { DiagnosticCode } from '../../diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 
 /** Branded path type — distinguishes a font file path from a logical font name. */
 export type FontPath = string & { readonly _brand: 'FontPath' };

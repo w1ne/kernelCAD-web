@@ -27,7 +27,7 @@
 // vec3-origin face-inference path (project origin onto BREP, pick closest
 // face) is queued for v0.7.x.
 
-import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
+import type { Assembly, AssemblyPartStored } from '../../shared/capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureId, Param } from '../../intent/types';
 import type { Connector } from './connector';

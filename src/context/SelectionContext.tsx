@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { SketchData, SketchModeState } from '../types/sketch';
-import type { SketchPlaneEntity } from '../types/plane';
+import type { SketchData, SketchModeState } from '../shared/types/sketch';
+import type { SketchPlaneEntity } from '../shared/types/plane';
 
 export interface SelectionContextType {
     // Face selection

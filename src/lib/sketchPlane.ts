@@ -1,4 +1,4 @@
-import type { SketchPlaneEntity } from '../types/plane';
+import type { SketchPlaneEntity } from '../shared/types/plane';
 
 type Vec3 = [number, number, number];
 

@@ -23,7 +23,7 @@
 // which calls `solveMates(arm)` (see `./solver.ts`) and translates the
 // `SolveStatus` into mate-aware diagnostic codes.
 
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../../shared/capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { Vec3 } from '../../intent/types';
 import type { InterferencePair } from '../../script-runtime/checkInterference';

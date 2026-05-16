@@ -27,8 +27,8 @@ import { Scene } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';
 import { KernelError } from '../../../src/intent/kernelError';
 import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
-import type { Shape } from '../../../src/capture/proxy';
-import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
+import type { Shape } from '../../../src/shared/capture/proxy';
+import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 interface LowerResult {
   shape: OcctBackend | undefined;

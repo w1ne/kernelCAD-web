@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { SurfaceProxy } from '../../../src/capture/surfaceProxy';
+import { SurfaceProxy } from '../../../src/shared/capture/surfaceProxy';
 
 describe('CaptureSession surface records', () => {
   it('addNurbsSurface returns SurfaceProxy with deterministic id surface_1', () => {

@@ -1,5 +1,5 @@
 // eval/portfolio/failureMode.ts
-import { DIAGNOSTIC_CODES, type DiagnosticCode } from '../../src/diagnostics/codes';
+import { DIAGNOSTIC_CODES, type DiagnosticCode } from '../../src/shared/diagnostics/codes';
 
 /** Locked taxonomy per spec Open Item #7. */
 export type FailureMode =

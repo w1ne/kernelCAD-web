@@ -1,7 +1,7 @@
 // tests/unit/backends/occt/loftFromSketches.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import type { SketchCommand } from '../../../../src/capture/sketch';
+import type { SketchCommand } from '../../../../src/shared/capture/sketch';
 import { toParam } from '../../../../src/runtime/editableHelpers';
 
 const mm = (n: number) => toParam(n, 'mm');

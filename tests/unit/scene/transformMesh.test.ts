@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Transform } from '../../../src/runtime/se3';
-import { transformFeatureMesh } from '../../../src/capture/transformMesh';
-import type { FeatureMesh } from '../../../src/capture/featureMeshing';
+import { transformFeatureMesh } from '../../../src/shared/capture/transformMesh';
+import type { FeatureMesh } from '../../../src/shared/capture/featureMeshing';
 
 const triangle: FeatureMesh = {
   featureId: 'm',

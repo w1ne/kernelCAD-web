@@ -1,7 +1,7 @@
 // src/mcp/tools/removeFeature.ts
 import { removeFeature } from '../edits/removeFeature';
 import { evaluateScriptTool } from './evaluateScript';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 export interface RemoveFeatureInput {
   code: string;

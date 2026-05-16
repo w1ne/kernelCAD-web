@@ -29,7 +29,7 @@ import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../../../src/backends/sceneBackend';
 import { Transform } from '../../../src/runtime/se3';
-import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 interface LowerResult {
   shape: unknown;

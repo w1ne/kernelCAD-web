@@ -17,9 +17,9 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../backends/sceneBackend';
 import type { OcctBackend } from '../backends/occt/occtBackend';
-import { Shape } from '../capture/proxy';
+import { Shape } from '../shared/capture/proxy';
 import { Scene } from '../intent/scene';
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {

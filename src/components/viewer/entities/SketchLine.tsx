@@ -2,7 +2,7 @@ import { type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { useEffect, useMemo } from "react";
 import type { SketchGeometry } from "../../../lib/geometryEngine";
-import { CAD_COLORS } from "../../../constants/colors";
+import { CAD_COLORS } from "../../../shared/constants/colors";
 
 interface SketchLineProps {
     sketch: SketchGeometry;

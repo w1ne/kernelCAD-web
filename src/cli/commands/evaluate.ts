@@ -1,11 +1,11 @@
 // src/cli/commands/evaluate.ts
 import { Command } from 'commander';
-import { formatHuman } from '../../diagnostics/formatter';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { withNextActions } from '../../diagnostics/diagnostic';
+import { formatHuman } from '../../shared/diagnostics/formatter';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../../shared/capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,

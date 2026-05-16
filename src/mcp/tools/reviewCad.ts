@@ -1,7 +1,7 @@
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
-import type { Assembly } from '../../capture/assembly';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { withNextActions } from '../../diagnostics/diagnostic';
+import type { Assembly } from '../../shared/capture/assembly';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import {
   summarizeMechanismFitness,
   type MechanismFitnessResult,

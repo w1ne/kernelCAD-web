@@ -2,7 +2,7 @@
  * Code generation from sketch entities to Replicad code
  */
 
-import type { SketchData, SketchEntity, Point2D } from '../types/sketch';
+import type { SketchData, SketchEntity, Point2D } from '../shared/types/sketch';
 import { formatPlaneForSketcher } from './planeUtils';
 
 // Helper to format numbers for code generation

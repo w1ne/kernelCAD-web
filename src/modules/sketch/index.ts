@@ -5,12 +5,12 @@
 // rendered string + opts. The OCCT lowerer dispatches on `metadata.textContent`.
 
 import type { CaptureSession } from '../../capture/captureSession';
-import { Sketch } from '../../capture/sketch';
+import { Sketch } from '../../shared/capture/sketch';
 import { KernelError } from '../../intent/kernelError';
 import { toParam } from '../../runtime/editableHelpers';
 import type { Editable } from '../../runtime/paramRef';
 import type { Param } from '../../intent/types';
-import type { DiagnosticCode } from '../../diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 
 export interface SketchTextOpts {
   /** Logical font family name OR a `fontPath('/path/to/font.ttf')` value.

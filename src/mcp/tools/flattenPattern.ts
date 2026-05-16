@@ -8,7 +8,7 @@ import { runScript } from '../../script-runtime/runScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import { OcctLowerer } from '../../backends/occt/occtLowerer';
 import { flattenPattern } from '../../backends/occt/flattenPattern';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
 import type { Vec2 } from '../../intent/region';
 

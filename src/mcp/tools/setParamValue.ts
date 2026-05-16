@@ -1,7 +1,7 @@
 // src/mcp/tools/setParamValue.ts
 import { setParamValue } from '../edits/setParamValue';
 import { evaluateScriptTool } from './evaluateScript';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 export interface SetParamValueInput {
   code: string;

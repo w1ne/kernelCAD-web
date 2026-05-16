@@ -1,6 +1,6 @@
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureKind, Vec3 } from '../intent/types';
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { RuntimeMesh } from './runtimeMesh';
 
 // Canonical backend target enum. 'faceted-mesh' is reserved for a future fallback

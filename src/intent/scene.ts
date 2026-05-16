@@ -10,7 +10,7 @@
 // scene-graph slice. Lowerer dispatch, meshing, and the toCompound / toUnion
 // implementations land in follow-up tasks.
 
-import type { Shape } from '../capture/proxy';
+import type { Shape } from '../shared/capture/proxy';
 import type { Connector } from '../lib/mates/connector';
 import type { MateRecord } from '../lib/mates/mate';
 import type { PoseEnvelopeDiagnostic } from '../lib/mates/poseEnvelope';

@@ -1,7 +1,7 @@
 // src/mcp/tools/addFeature.ts
 import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 export interface AddFeatureInput {
   code: string;

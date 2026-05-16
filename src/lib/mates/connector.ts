@@ -5,7 +5,7 @@
 // Type tag governs which mates can attach (see mateTypes.ts).
 
 import type { Vec3 } from '../../intent/types';
-import type { Shape } from '../../capture/proxy';
+import type { Shape } from '../../shared/capture/proxy';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import { resolveTopologyOriginOnBackend } from '../../backends/occt/connectorTopology';
 

@@ -1,7 +1,7 @@
 // tests/unit/backends/occt/sweepFromSketch.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import type { SketchCommand } from '../../../../src/capture/sketch';
+import type { SketchCommand } from '../../../../src/shared/capture/sketch';
 import { helix } from '../../../../src/modules/helix';
 import { toParam } from '../../../../src/runtime/editableHelpers';
 

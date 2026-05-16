@@ -8,11 +8,11 @@ import { CameraController } from './CameraController';
 import type { FeatureEvent } from '../../compute/featureEvents';
 import type { TerminalLine } from './TerminalPane';
 import type { FaceGeometry } from '../../lib/workerTypes';
-import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
-import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
-import { resolveColor } from '../../render/palette';
-import { pbrFromColor } from '../../render/materialRoles';
-import type { RenderView } from '../../render/views';
+import type { FeatureMeshSerialized } from '../../shared/capture/featureMeshSerialize';
+import { rehydrateFromBridge } from '../../shared/capture/featureMeshSerialize';
+import { resolveColor } from '../../shared/render/palette';
+import { pbrFromColor } from '../../shared/render/materialRoles';
+import type { RenderView } from '../../shared/render/views';
 export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';

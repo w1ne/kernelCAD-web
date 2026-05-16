@@ -2,12 +2,12 @@ import * as THREE from "three";
 import { useCallback, useMemo, useEffect } from "react";
 import { type ThreeEvent } from "@react-three/fiber";
 import type { GeometryResult, FaceGeometry } from "../../../lib/geometryEngine";
-import type { ViewMode3D } from "../../../types/viewMode";
+import type { ViewMode3D } from "../../../shared/types/viewMode";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import { useUI } from "../../../context/UIContext";
-import { CAD_COLORS, CAD_COLORS_HEX } from "../../../constants/colors";
+import { CAD_COLORS, CAD_COLORS_HEX } from "../../../shared/constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
-import { DEFAULT_COLOR, resolveColor } from "../../../render/palette";
+import { DEFAULT_COLOR, resolveColor } from "../../../shared/render/palette";
 
 interface ShapeProps {
     geometry: GeometryResult;

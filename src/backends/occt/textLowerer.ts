@@ -7,7 +7,7 @@
 
 import * as replicad from 'replicad';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import { resolveAndLoadFont } from '../../lib/fonts';
 import { KernelError } from '../../intent/kernelError';

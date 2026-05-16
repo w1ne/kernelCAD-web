@@ -50,7 +50,7 @@
 // origin). This matches spec open-question 5/2 resolution: vec3-origin
 // requirement for v0.7.4, topology support is a v0.7.x followup.
 
-import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
+import type { Assembly, AssemblyPartStored } from '../../shared/capture/assembly';
 import type { Vec3 } from '../../intent/types';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { MateType } from './mateTypes';

@@ -8,8 +8,8 @@ import type {
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../intent/types';
 import { isValidPlaneSpec } from '../../intent/types';
-import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
-import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
+import { forwardKinematics, type NumericPoses } from '../../shared/capture/forwardKinematics';
+import type { AssemblyJointStored, AssemblyPartStored } from '../../shared/capture/assembly';
 import { mateFk, type ResolvedMatePart } from '../../lib/mates/solver';
 import { expandCoupledPoses, type MateCouplingRecord } from '../../lib/mates/coupledPoses';
 import type { Connector } from '../../lib/mates/connector';
@@ -17,7 +17,7 @@ import type { MateRecord } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';
 import { resolveTopologyOriginOnBackend } from './connectorTopology';
 import { KernelError } from '../../intent/kernelError';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
@@ -46,7 +46,7 @@ import {
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
 import { retagInstance } from './patternHistory';
-import { HINT_TEMPLATES } from '../../diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -617,7 +617,7 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         try {
-          shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
+          shape = OcctBackend.fromSketchCommands(commands as import('../../shared/capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           // Narrow degenerate-arc cases (radiusArc-only for now) to the kept

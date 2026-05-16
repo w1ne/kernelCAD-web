@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Loader2, MousePointer2 } from 'lucide-react';
-import type { StudioLayoutMode } from '../../types/layout';
-import type { ViewMode3D } from '../../types/viewMode';
+import type { StudioLayoutMode } from '../../shared/types/layout';
+import type { ViewMode3D } from '../../shared/types/viewMode';
 
 interface StatusBarProps {
     isComputing: boolean;

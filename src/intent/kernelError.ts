@@ -5,7 +5,7 @@
 // with the same code that the catalogue registers a hint for, instead of
 // the generic `cli.script-exception` fallback.
 
-import type { DiagnosticCode } from '../diagnostics/codes';
+import type { DiagnosticCode } from '../shared/diagnostics/codes';
 
 export class KernelError extends Error {
   readonly code: DiagnosticCode;

@@ -4,7 +4,7 @@
 // Surfaces the structured `ValidatorResult` (status + diagnostics + counts)
 // so agents can recover from authoring errors using the per-code hint.
 
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../../shared/capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
 import { validateAssemblyWithMates } from '../../lib/mates/validator';

@@ -1,6 +1,6 @@
 import Viewer from '../Viewer';
 import type { GeometryResult, SketchGeometry } from '../../lib/geometryEngine';
-import type { ViewMode3D } from '../../types/viewMode';
+import type { ViewMode3D } from '../../shared/types/viewMode';
 
 interface ViewerPanelProps {
     geometries: GeometryResult[];

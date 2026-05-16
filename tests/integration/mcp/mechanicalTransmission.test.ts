@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../src/backends/occt/occtBackend';
 import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
-import type { Assembly } from '../../../src/capture/assembly';
+import type { Assembly } from '../../../src/shared/capture/assembly';
 import { reviewMechanicalTransmission } from '../../../src/lib/mates/mechanicalTransmission';
 import { inspectAssemblyTool } from '../../../src/mcp/tools/inspectAssembly';
 import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';

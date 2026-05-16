@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { decomposeUISketchEntities, syncUIEntities } from '../bridge';
-import { type LineEntity, type RectangleEntity, type SketchEntity as UISketchEntity } from '../../../types/sketch';
+import { type LineEntity, type RectangleEntity, type SketchEntity as UISketchEntity } from '../../../shared/types/sketch';
 import { type Point as SolverPoint, type SketchEntity as SolverEntity } from '../types';
 import { ConstraintSolver } from '../solver';
 

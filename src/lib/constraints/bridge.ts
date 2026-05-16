@@ -1,4 +1,4 @@
-import { type SketchEntity as UISketchEntity, type Point2D } from '../../types/sketch';
+import { type SketchEntity as UISketchEntity, type Point2D } from '../../shared/types/sketch';
 import { type SketchEntity as SolverEntity, type Point as SolverPoint, type Line as SolverLine, type Circle as SolverCircle } from './types';
 
 export interface EntityBridgeResult {

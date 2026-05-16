@@ -7,7 +7,7 @@
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { GeometryResult } from '../lib/workerTypes';
 import type { ValidatorResult, ValidatorStatus } from '../lib/mates/validator';
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { ParamTable } from '../runtime/paramTable';
 
 /**

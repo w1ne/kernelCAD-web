@@ -1,7 +1,7 @@
 // src/backends/occt/edgeSelection.ts
 import type { Edge, Face } from 'replicad';
 import type { FeatureRecord, FaceLabelsMap } from '../../intent/featureRecord';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { CanonicalFace, EdgeRef } from '../../intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';

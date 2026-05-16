@@ -1,7 +1,7 @@
 // src/mcp/tools/evaluateScript.ts
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { withNextActions } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface EvaluateScriptInput {

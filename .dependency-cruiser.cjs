@@ -23,6 +23,13 @@ module.exports = {
             comment: 'Contexts should not depend on UI components.',
             from: { path: '^src/context' },
             to: { path: '^src/components' }
+        },
+        {
+            name: 'shared-stays-leaf',
+            severity: 'error',
+            comment: 'shared/ may not import from any other layer. Files with cross-layer deps stay outside shared/ until those deps are broken (e.g., captureSession.ts has a kernel/buildModel runtime-late import — carved out of PR-1, see follow-up).',
+            from: { path: '^src/shared/' },
+            to: { path: '^src/(kernel|modeling|authoring|agent|studio)/' }
         }
     ],
     options: {

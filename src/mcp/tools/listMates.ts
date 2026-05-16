@@ -3,7 +3,7 @@
 // v0.6 MCP tool — read the declared mate records on the active assembly.
 // Wraps the internal `arm.__mates()` accessor (capture/assembly.ts T6).
 
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../../shared/capture/assembly';
 import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';

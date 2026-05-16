@@ -14,7 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { checkInterference, pairKey } from '../../script-runtime/checkInterference';
-import { formatHuman } from '../../diagnostics/formatter';
+import { formatHuman } from '../../shared/diagnostics/formatter';
 
 export interface InterferenceCliInput {
   file: string;

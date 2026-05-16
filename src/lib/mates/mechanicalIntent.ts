@@ -1,4 +1,4 @@
-import type { Assembly, MechanicalJointIntentRecord } from '../../capture/assembly';
+import type { Assembly, MechanicalJointIntentRecord } from '../../shared/capture/assembly';
 import type { Vec3 } from '../../runtime/se3';
 import { parseConnectorRef, type MateRecord } from './mate';
 import { solveMates } from './solver';

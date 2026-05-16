@@ -3,8 +3,8 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport } from '../../script-runtime/export';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { withNextActions } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 

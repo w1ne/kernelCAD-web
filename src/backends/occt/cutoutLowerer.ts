@@ -25,10 +25,10 @@ import { pickFace } from './edgeSelection';
 import { cutWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
 import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
-import type { SketchCommand } from '../../capture/sketch';
+import type { SketchCommand } from '../../shared/capture/sketch';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import {
   applyCreatedRefs,

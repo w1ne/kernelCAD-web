@@ -4,7 +4,7 @@ import { expectGeometryMatch } from '../test/geometryValidators';
 import { generateSketchCode } from '../lib/sketchCodegen';
 import { generateBooleanCode, generateFilletCode } from './core/modifiers.feature';
 import { CodeAnalyzer } from '../lib/codeGeneration';
-import type { SketchData } from '../types/sketch';
+import type { SketchData } from '../shared/types/sketch';
 
 describe('Standard Workflow Validation', () => {
     beforeAll(async () => {

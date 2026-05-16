@@ -2,7 +2,7 @@
 
 import CodeEditor from '../Editor';
 import { AlertCircle } from 'lucide-react';
-import type { EditorLike } from '../../types/editor';
+import type { EditorLike } from '../../shared/types/editor';
 
 interface EditorPanelProps {
     code: string;

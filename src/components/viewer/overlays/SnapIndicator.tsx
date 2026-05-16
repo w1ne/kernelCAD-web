@@ -1,5 +1,5 @@
 import type { SnapResult } from "../../../features/interaction/SnapManager";
-import { CAD_COLORS_HEX } from "../../../constants/colors";
+import { CAD_COLORS_HEX } from "../../../shared/constants/colors";
 
 export function SnapIndicator({ snap }: { snap: SnapResult | null }) {
     if (!snap) return null;

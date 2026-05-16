@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import type { EditorLike } from '../types/editor';
+import type { EditorLike } from '../shared/types/editor';
 
 interface CodeEditorProps {
     value: string;

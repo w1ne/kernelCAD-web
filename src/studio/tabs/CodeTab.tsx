@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import MonacoEditor from '@monaco-editor/react';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import type { EditorLike } from '../../types/editor';
+import type { EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { useWorkbench } from '../../context/WorkbenchContext';

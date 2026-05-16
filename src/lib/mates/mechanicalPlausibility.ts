@@ -1,4 +1,4 @@
-import type { Assembly } from '../../capture/assembly';
+import type { Assembly } from '../../shared/capture/assembly';
 import type { ShapeBackend } from '../../backends/backend';
 import type { Vec3 } from '../../intent/types';
 import { Transform } from '../../runtime/se3';

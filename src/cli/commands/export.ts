@@ -3,9 +3,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { initOcct } from '../../backends/occt/occtBackend';
 import { runAndExport, type ExportFormat } from '../../script-runtime/export';
-import { formatHuman } from '../../diagnostics/formatter';
-import type { CompilerDiagnostic } from '../../diagnostics/diagnostic';
-import { withNextActions } from '../../diagnostics/diagnostic';
+import { formatHuman } from '../../shared/diagnostics/formatter';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 
 export interface ExportInput {

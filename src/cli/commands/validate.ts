@@ -57,7 +57,7 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // stream pass --include-interference (and get the same epsilon
   // semantics as `kernelcad interference`).
   let interferencePairs: import('../../script-runtime/checkInterference').InterferencePair[] = [];
-  let kernelDiagnostics: import('../../diagnostics/diagnostic').CompilerDiagnostic[] = [];
+  let kernelDiagnostics: import('../../shared/diagnostics/diagnostic').CompilerDiagnostic[] = [];
   if (input.includeInterference) {
     const interferenceR = await checkInterference({
       code,

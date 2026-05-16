@@ -4,7 +4,7 @@ import type { ShapeBackend } from '../backends/backend';
 import { initOcct } from '../backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import type { CompilerDiagnostic } from '../diagnostics/diagnostic';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureId } from '../intent/types';
 import type { CaptureSession } from '../capture/captureSession';

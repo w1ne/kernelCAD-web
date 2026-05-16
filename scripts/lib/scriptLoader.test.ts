@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { meshFeaturesPerFeature } from '../../src/capture/featureMeshing';
+import { meshFeaturesPerFeature } from '../../src/shared/capture/featureMeshing';
 
 describe('loadScriptFeatures', () => {
   it('extracts ordered feature list from bracket-with-hole.kcad.ts', async () => {

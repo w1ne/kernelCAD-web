@@ -22,7 +22,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { writePortfolioMeta, type PortfolioCategory, type PortfolioDifficulty, type PortfolioMeta } from './lib/portfolioMeta';
 import { loadScriptFeatures } from './lib/scriptLoader';
-import { meshFeaturesPerFeature } from '../src/capture/featureMeshing';
+import { meshFeaturesPerFeature } from '../src/shared/capture/featureMeshing';
 import { encodeBinaryStl } from '../src/script-runtime/exportStlBinary';
 
 interface Args {

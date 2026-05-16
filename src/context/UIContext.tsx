@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { StudioLayoutMode } from '../types/layout';
-import type { ViewMode3D } from '../types/viewMode';
+import type { StudioLayoutMode } from '../shared/types/layout';
+import type { ViewMode3D } from '../shared/types/viewMode';
 
 export interface UIContextType {
     viewMode: 'code' | 'gui';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateSketchCode } from './sketchCodegen';
-import { type SketchData } from '../types/sketch';
+import { type SketchData } from '../shared/types/sketch';
 
 describe('sketchCodegen', () => {
     it('should generate a sketch with .close() for a closed path', () => {
