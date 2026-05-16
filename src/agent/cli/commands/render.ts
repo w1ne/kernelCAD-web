@@ -21,6 +21,9 @@ export interface RenderInput {
   width: number;
   height: number;
   baseUrl: string;
+  hideReferenceImages: boolean;
+  /** Additional `--pose <az,el>` captures, repeatable on the CLI. */
+  poses?: string[];
 }
 
 export interface RenderCliResult {
@@ -38,7 +41,9 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       viewportWidth: input.width,
       viewportHeight: input.height,
       views: ALL_VIEWS,
+      poses: input.poses,
       baseUrl: input.baseUrl,
+      hideReferenceImages: input.hideReferenceImages,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -59,11 +64,31 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       await writeFile(outPath, buf);
       written.push(outPath);
     }
+    // Also emit pose-keyed PNGs alongside the view tiles.
+    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
+      const [az, el] = poseKey.split(',').map((s) => s.trim());
+      const suffix = `pose-${az}-${el}.png`;
+      const outPath = input.out
+        ? input.out.replace(/\.png$/i, `.${suffix}`)
+        : join(dir, `${stem}.${suffix}`);
+      await writeFile(outPath, buf);
+      written.push(outPath);
+    }
   } else {
     const outPath = input.out ?? join(dir, `${stem}.png`);
     const grid = await composite2x2(result.pngsByView, input.width, input.height);
     await writeFile(outPath, grid);
     written.push(outPath);
+    // In composite mode, pose captures still emit as separate files next to
+    // the composite output. Resolves the `node ... render --pose <az,el> -o
+    // /tmp/<stem>.png` flow which expects `/tmp/<stem>.pose-<az>-<el>.png`.
+    for (const [poseKey, buf] of Object.entries(result.pngsByPose ?? {})) {
+      const [az, el] = poseKey.split(',').map((s) => s.trim());
+      const suffix = `pose-${az}-${el}.png`;
+      const posePath = (input.out ?? join(dir, `${stem}.png`)).replace(/\.png$/i, `.${suffix}`);
+      await writeFile(posePath, buf);
+      written.push(posePath);
+    }
   }
 
   return { exitCode: 0, outputPaths: written };
@@ -82,12 +107,21 @@ export function renderCommand(): Command {
       'studio dev server URL (run `npm run dev` first)',
       'http://localhost:5173',
     )
+    .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
+    .option(
+      '--pose <az,el>',
+      'capture an arbitrary az,el pose (degrees; az=0,el=0 is front, +az is CCW around Z, +el lifts the camera). Repeatable.',
+      (value: string, prev: string[]) => prev.concat([value]),
+      [] as string[],
+    )
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
       width: number;
       height: number;
       baseUrl: string;
+      hideReferenceImages: boolean;
+      pose: string[];
     }) => {
       const r = await renderScript({
         file,
@@ -96,6 +130,8 @@ export function renderCommand(): Command {
         width: opts.width,
         height: opts.height,
         baseUrl: opts.baseUrl,
+        hideReferenceImages: opts.hideReferenceImages,
+        poses: opts.pose,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../scripts/lib/gallery-score-schema.json",
+  "iteration": "slice-a-task-16-temples-clean-render",
+  "render": "eval-pose-30-15.png",
+  "reference": "../../../eval/tasks/eyewear-wayfarer-front/reference.jpg",
+  "pose": "30,15",
+  "evalPoseUsedByHarness": "30,15",
+  "kcadVersion": "0.8.0",
+  "thresholds": {
+    "silhouetteIoU": 0.45,
+    "composite": 0.30,
+    "ssim": 0.35
+  },
+  "perGate": {
+    "silhouetteIoU": 0.6753401325644867,
+    "ssim": 0.16520275547053628,
+    "perceptualHash": 0.46875
+  },
+  "composite": 0.48098089292340424,
+  "gateStatus": {
+    "silhouetteIoU >= 0.45": true,
+    "composite >= 0.30": true,
+    "ssim >= 0.35": false
+  },
+  "diagnostics": [
+    {
+      "code": "image.silhouette.partial",
+      "severity": "warning",
+      "message": "Silhouette IoU 0.675 below 0.8 — outline matches the reference category but mismatches in proportion or corner shape.",
+      "hint": "Largest silhouette mismatch in the lower-left quadrant — focus geometry edits there. (XOR pixel counts: UL=1775, UR=3704, LL=7730, LR=2612)."
+    },
+    {
+      "code": "image.structure.mismatch",
+      "severity": "warning",
+      "message": "SSIM 0.165 below 0.6 — interior structure (lens placement, surface features) does not match.",
+      "hint": "Check whether features called out in the reference (camera position, LED, lens insert, surface texture) are present in the render at the correct position."
+    },
+    {
+      "code": "image.layout.mismatch",
+      "severity": "info",
+      "message": "Perceptual hash similarity 0.469 below 0.7 — coarse layout differs from the reference.",
+      "hint": "The render and reference are placed differently in the frame (cropping, scale, or rotation). Re-check render viewport and model centering."
+    }
+  ],
+  "history": {
+    "v24.iso": { "composite": 0.2506, "silhouetteIoU": 0.2759, "pose": "iso" },
+    "v28.iso": { "composite": 0.3257, "silhouetteIoU": 0.4375, "pose": "iso" },
+    "v28.pose30-15": { "composite": 0.4986, "silhouetteIoU": 0.7023, "pose": "30,15", "ssim": 0.1892, "note": "previous CLI pose impl (since removed); not reproducible under current pipeline" },
+    "slice-a-task-16.pose30-15": { "composite": 0.3740, "silhouetteIoU": 0.5102, "ssim": 0.1359, "pose": "30,15", "note": "Slice A rewrite using referenceImage + variable chamfer + variable fillet + .mirror('yz') + PBR material; --pose plumbing re-added through CLI / headlessRender / DemoPlayer." },
+    "slice-a-task-16-temples.pose30-15": { "composite": 0.4871, "silhouetteIoU": 0.6754, "ssim": 0.1646, "perceptualHash": 0.500, "pose": "30,15", "note": "Added 60mm acetate temples (12mm Z cross-section, 5mm X, -5° downrake) extending from the upper-outer hinge corners in +Y. Authored as one right-side box, mirrored across YZ for symmetry. Brow curve and material PBR unchanged from the previous iteration. Render was contaminated by TanStack Router dev badge in the bottom-right corner; numbers reflect the contaminated render." },
+    "slice-a-task-16-temples-clean-render.pose30-15": { "composite": 0.4810, "silhouetteIoU": 0.6753, "ssim": 0.1652, "perceptualHash": 0.469, "pose": "30,15", "note": "Re-render after #173 fix (headlessRender now navigates with ?headless=1 to suppress Studio dev chrome). Scores essentially unchanged from the contaminated render because the badge was a small fraction of the normalized 256x256 image; the fix is a correctness fix, not a quality-jump fix. Same model geometry as the previous iteration." }
+  },
+  "note": "Slice A Task 16 + temples, re-rendered after #173 fix (clean headless render, no TanStack badge). Image-similarity numbers above are produced by `kernelcad render --pose 30,15 --hide-reference-images` + scoreRenderVsReference.ts against examples/gallery/meta-glasses/eval-pose-30-15.png. silhouetteIoU 0.675 (was 0.675 contaminated), SSIM 0.165 (was 0.165 contaminated), composite 0.481 (was 0.487 contaminated). SSIM still below the 0.35 target — same reasons as before: the reference photo's smooth Wayfarer brow needs a real NURBS curve (Slice B), and the photo's ground-plane / shadow / texture content remains unmodeled. The prompt/reference mismatch is now tracked in #174."
+}

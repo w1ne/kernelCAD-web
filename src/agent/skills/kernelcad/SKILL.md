@@ -20,6 +20,11 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-sdf`.
 - Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
 
+## Key globals available today
+
+- `referenceImage(path, opts)` — show a reference photo as a plane overlay in the Studio viewport. No OCCT geometry; hidden during scoring. Supports `.png`, `.jpg`, `.jpeg`, `.webp`. See `kernelcad-authoring` for the full signature.
+- `Shape.material(opts)` — apply a PBR material (baseColor, metalness, roughness, clearcoat, clearcoatRoughness, ior, transmission) to a shape. Must be called on leaf parts before they enter a boolean. Use instead of `.color()` when the reference shows gloss or specular highlights. See `kernelcad-authoring` Materials section for idiomatic examples.
+
 ## Universal conventions
 
 - **Units**: millimetres, degrees, Z-up right-handed.

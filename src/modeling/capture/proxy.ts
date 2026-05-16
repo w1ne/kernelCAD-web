@@ -19,6 +19,7 @@ import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
+import type { PBRMaterial } from '../../shared/intent/material';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 
@@ -168,6 +169,81 @@ export class Shape {
       (record as { metadata: Record<string, unknown> }).metadata = {};
     }
     (record.metadata as Record<string, unknown>).color = name;
+    return this;
+  }
+
+  /**
+   * Apply a PBR material to this shape. Material lives at the leaf-shape
+   * level; identity dies at boolean operations (same as `.color()`).
+   *
+   * Numeric fields are clamped to [0, 1] except `ior` which is clamped to
+   * [1.0, 2.5]. Clamped values emit a `feature.material.value-clamped`
+   * soft warning so the agent can adjust.
+   */
+  material(opts: PBRMaterial): Shape {
+    if (!opts || typeof opts.baseColor !== 'string' || opts.baseColor.length === 0) {
+      throw new KernelError(
+        'feature.material.invalid-base-color',
+        `Shape.material: baseColor is required and must be a non-empty string; got ${formatScalarForError(opts?.baseColor)}.`,
+        this.id,
+        'Pass a CSS color string or a registered role token to baseColor.',
+      );
+    }
+
+    const cleaned: PBRMaterial = { baseColor: opts.baseColor };
+    let anyClamped = false;
+    const maybeAssign = (
+      key: keyof PBRMaterial,
+      raw: number | undefined,
+      min: number,
+      max: number,
+    ): void => {
+      if (raw === undefined) return;
+      if (!Number.isFinite(raw)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field '${key}' must be a finite number; got ${raw}.`,
+          this.id,
+          'Fix the named field on the call args; check type, sign, and units.',
+        );
+      }
+      const clamped = Math.max(min, Math.min(max, raw));
+      if (clamped !== raw) anyClamped = true;
+      (cleaned as Record<keyof PBRMaterial, unknown>)[key] = clamped;
+    };
+    maybeAssign('metalness', opts.metalness, 0, 1);
+    maybeAssign('roughness', opts.roughness, 0, 1);
+    maybeAssign('clearcoat', opts.clearcoat, 0, 1);
+    maybeAssign('clearcoatRoughness', opts.clearcoatRoughness, 0, 1);
+    maybeAssign('ior', opts.ior, 1.0, 2.5);
+    maybeAssign('transmission', opts.transmission, 0, 1);
+    maybeAssign('sheen', opts.sheen, 0, 1);
+
+    const records = this.session.getRecords();
+    const record = records.find(r => r.id === this.id);
+    if (record === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `Shape.material: feature record '${this.id}' not found in session.`,
+        this.id,
+        'Call .material() on a Shape produced by the current session.',
+      );
+    }
+    if (record.metadata === undefined) {
+      (record as { metadata: Record<string, unknown> }).metadata = {};
+    }
+    (record.metadata as Record<string, unknown>).material = cleaned;
+
+    if (anyClamped) {
+      this.session.warnings.push({
+        code: 'feature.material.value-clamped',
+        hint: 'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
+        message: 'Shape.material: numeric fields were clamped to allowed ranges.',
+        recordId: this.id,
+        phase: 'build',
+      });
+    }
+
     return this;
   }
 

@@ -59,15 +59,23 @@ export class Sketch {
   }
 
   /**
-   * Revolve the sketch 360° around the Z axis. The path coordinates are
+   * Revolve the sketch around the Z axis. The path coordinates are
    * interpreted as `(radial-X, axial-Z)` — first coord = distance from axis,
    * second coord = height along axis. Profile must stay on x ≥ 0.
    *
-   * Returns a `Shape` (3D solid). Validation (axis-cross, empty profile)
-   * happens at lowering time and surfaces as `feature.revolve.*` diagnostics.
+   * @param opts.angleDeg sweep angle in degrees (default 360). Use a partial
+   *   revolve (e.g. 180) instead of revolving 360 and subtracting a half-space
+   *   box — the kernel-native partial revolve produces cleaner topology and
+   *   avoids the boolean-cut tessellation slivers that fail open3d's
+   *   `is_watertight()` check on conical surfaces.
+   *
+   * Returns a `Shape` (3D solid). Validation (axis-cross, empty profile,
+   * angle range) happens at lowering time and surfaces as `feature.revolve.*`
+   * diagnostics.
    */
-  revolve(opts?: { faceLabels?: FaceLabelsMap }): Shape {
+  revolve(opts?: { angleDeg?: number; faceLabels?: FaceLabelsMap }): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'revolve');
+    const angleDeg = opts?.angleDeg ?? 360;
     return this.session.createShape({
       kind: 'revolve',
       inputs: {
@@ -75,6 +83,7 @@ export class Sketch {
       },
       params: {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
+        angleDeg: { expression: String(angleDeg), unit: 'deg', evaluated: angleDeg },
       },
       metadata: faceLabels ? { faceLabels } : undefined,
     });

@@ -75,6 +75,18 @@
       </div>
     </section>
 
+    <section class="gallery" id="gallery" hidden>
+      <div class="gallery-header">
+        <h2 class="gallery-headline">Built with kernelCAD</h2>
+        <p class="gallery-sub">Every release ships with a build. Click any to see the prompt that built it.</p>
+        <a class="gallery-submit"
+           href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
+          Submit your build →
+        </a>
+      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </section>
+
     <section class="signup" id="signup">
       <h2 class="signup-headline">Get notified when we ship</h2>
       <p class="signup-sub">~1 email per release. No spam. Unsubscribe anytime.</p>
@@ -111,6 +123,36 @@
 
   </div>
 
+  <dialog id="gallery-lightbox">
+    <div class="lightbox-inner">
+      <button class="lightbox-close" aria-label="Close" type="button">×</button>
+      <video class="lightbox-video" autoplay muted loop playsinline controls></video>
+      <div class="lightbox-body">
+        <h3 class="lightbox-title"></h3>
+        <p class="lightbox-meta"></p>
+        <pre class="lightbox-prompt"></pre>
+        <div class="lightbox-ctas">
+          <form class="lightbox-subscribe" action="/api/subscribe" method="POST">
+            <input type="email" name="email" placeholder="you@example.com" required aria-label="Email address" />
+            <input type="hidden" name="source" />
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+          </form>
+          <div class="lightbox-secondary">
+            <a class="lightbox-star" href="https://github.com/w1ne/kernelCAD-web" target="_blank" rel="noopener">★ Star on GitHub</a>
+            <a class="lightbox-source" href="#" target="_blank" rel="noopener">View source ↗</a>
+            <a class="lightbox-app" href="#" target="_blank" rel="noopener" hidden>Open in app ↗</a>
+          </div>
+        </div>
+        <p class="lightbox-footer">
+          <a class="gallery-submit"
+             href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
+            Submit your build →
+          </a>
+        </p>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     // load demo video + version from build-time generated demo.json
     fetch('/demo.json')
@@ -120,6 +162,105 @@
         const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
         document.getElementById('demo-video').src = `/demo.mp4?v=${demoCacheKey}`;
         document.getElementById('demo-version').textContent = d.version;
+      });
+
+    // Lazy-load <model-viewer> once when the gallery section is in the DOM.
+    if (document.querySelector('section.gallery')) {
+      import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
+        .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+    }
+
+    // Render the curated gallery from /gallery.json
+    function formatRelativeDate(iso) {
+      const then = new Date(iso + 'T00:00:00Z');
+      const now = new Date();
+      const ms = now.getTime() - then.getTime();
+      const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+      if (days <= 0) return 'Today';
+      if (days === 1) return 'Yesterday';
+      if (days <= 7) return days + 'd ago';
+      return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    fetch('/gallery.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((g) => {
+        if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
+        const section = document.getElementById('gallery');
+        const grid = document.getElementById('gallery-grid');
+        for (const entry of g.entries) {
+          const tile = document.createElement('div');
+          tile.className = 'gallery-tile';
+          tile.dataset.slug = entry.slug;
+          tile.innerHTML = `
+            <model-viewer
+              class="tile-viewer"
+              src="${entry.modelUrl}"
+              poster="${entry.posterUrl}"
+              auto-rotate
+              auto-rotate-delay="0"
+              rotation-per-second="20deg"
+              camera-controls
+              touch-action="pan-y"
+              interaction-prompt="none"
+              reveal="auto"
+              disable-zoom
+              loading="lazy"
+            ></model-viewer>
+            <div class="tile-chip tile-chip-bl">
+              <span class="version">${entry.version}</span>
+              <span class="title">${entry.title}</span>
+              <span class="relative-date" title="${entry.createdAt}">${formatRelativeDate(entry.createdAt)}</span>
+            </div>
+            <div class="tile-chip tile-chip-br">
+              <span class="author">by @${entry.author.handle}</span>
+            </div>
+            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
+          `;
+          tile.__entry = entry;
+          tile.addEventListener('click', () => openLightbox(entry));
+          grid.appendChild(tile);
+        }
+        const dialog = document.getElementById('gallery-lightbox');
+        const video = dialog.querySelector('.lightbox-video');
+        const title = dialog.querySelector('.lightbox-title');
+        const meta = dialog.querySelector('.lightbox-meta');
+        const promptEl = dialog.querySelector('.lightbox-prompt');
+        const sourceInput = dialog.querySelector('input[name="source"]');
+        const sourceLink = dialog.querySelector('.lightbox-source');
+        const appLink = dialog.querySelector('.lightbox-app');
+        const closeBtn = dialog.querySelector('.lightbox-close');
+
+        function openLightbox(entry) {
+          video.src = entry.videoUrl;
+          title.textContent = entry.title;
+          meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
+          promptEl.textContent = entry.prompt;
+          sourceInput.value = `gallery-lightbox:${entry.slug}`;
+          sourceLink.href = entry.code;
+          if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }
+          else { appLink.hidden = true; }
+          dialog.showModal();
+        }
+        function closeLightbox() {
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+          dialog.close();
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        dialog.addEventListener('click', (e) => {
+          if (e.target === dialog) closeLightbox();
+        });
+        dialog.addEventListener('close', () => {
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+        });
+
+        // Expose for tile click handlers (closure captured above).
+        window.__kernelcadOpenLightbox = openLightbox;
+        section.hidden = false;
       });
 
     // copy install command on click

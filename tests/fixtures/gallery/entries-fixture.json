@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "slug": "fixture-build",
+      "title": "Fixture build",
+      "author": { "handle": "kernelcad", "url": "https://x.com/kernelcad" },
+      "version": "v0.6.4",
+      "prompt": "Test entry for integration test.",
+      "source": "curated",
+      "video": "short-clip.mp4",
+      "codeLocal": "simple-box.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web",
+      "tags": ["test"],
+      "featured": false,
+      "createdAt": "2026-05-15",
+      "appUrl": null
+    }
+  ]
+}

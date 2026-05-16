@@ -355,6 +355,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sheetMetal',       // W2.2
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
+    'referenceImage',   // virtual — no BREP; defense-in-depth guard
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -914,8 +915,24 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
+        // Optional partial-revolve `angleDeg` param. Default 360 (full).
+        // Range: (0, 360]. Out-of-range values are caught here and surfaced
+        // as `feature.invalid-args` rather than letting replicad throw a
+        // less-specific error.
+        const angleDeg = r.params.angleDeg ? Number(r.params.angleDeg.evaluated) : 360;
+        if (!Number.isFinite(angleDeg) || angleDeg <= 0 || angleDeg > 360) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `revolve angleDeg must be in (0, 360]; got ${angleDeg}.`,
+            hint: 'Pass an angle in (0, 360]. Use 360 (default) for a full revolve, e.g. 180 for a half revolve.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
         try {
-          shape = OcctBackend.revolveFromSketch(sketchInput);
+          shape = OcctBackend.revolveFromSketch(sketchInput, angleDeg);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           diagnostics.push({
@@ -2260,6 +2277,12 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         break;
+      }
+      case 'referenceImage': {
+        // Virtual record — no BREP output. recomputeEngine gates on
+        // metadata.virtual === true and skips the lowerer, so this arm is
+        // defense-in-depth for callers that invoke the lowerer directly.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       default:
         return {

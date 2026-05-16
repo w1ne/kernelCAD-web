@@ -25,7 +25,10 @@ declare const window: {
   __demoPlayer?: {
     loadFeatureMeshes: (perFeature: unknown, bounds: unknown) => unknown;
     forceFullOpacity: () => void;
+    showOnlyTailFeatures: () => void;
     setRenderView: (view: RenderView) => void;
+    setRenderPose: (azDeg: number, elDeg: number) => void;
+    setReferenceImagesVisible: (visible: boolean) => void;
   };
 };
 
@@ -37,12 +40,19 @@ export interface HeadlessRenderOpts {
   viewportHeight: number;
   /** Subset of views to capture; defaults to all four. */
   views?: readonly RenderView[];
+  /** Additional arbitrary-pose captures keyed by `"<az>,<el>"`. */
+  poses?: readonly string[];
   /** URL of a running studio dev server; defaults to localhost:5173. */
   baseUrl?: string;
+  /** When true, hides the `__referenceImages` overlay group before taking
+   *  screenshots. Useful for clean engineering-view captures without overlays. */
+  hideReferenceImages?: boolean;
 }
 
 export interface HeadlessRenderResult {
   pngsByView: Partial<Record<RenderView, Buffer>>;
+  /** Captured pose screenshots keyed by `"<az>,<el>"`. */
+  pngsByPose: Record<string, Buffer>;
   bounds: { min: [number, number, number]; max: [number, number, number] };
 }
 
@@ -73,7 +83,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       viewport: { width: opts.viewportWidth, height: opts.viewportHeight },
     });
     page = await context.newPage();
-    await page.goto(`${baseUrl}/demo-player`);
+    // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
+    // chrome) in src/studio/routes/__root.tsx so the captured PNG contains
+    // only scene pixels. See issue #173.
+    await page.goto(`${baseUrl}/demo-player?headless=1`);
     await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
 
     // 3. Load meshes + skip the fade-in animation.
@@ -82,6 +95,16 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       { feats: serialized, b: meshing.bounds },
     );
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
+    // Hide intermediate construction-debris feature groups so engineering
+    // captures show only the final shape — not stacked cutter boxes, sketch
+    // profiles, or pre-fillet bodies. This is the headless-render analog of
+    // running the AnimationEngine's build transitions to completion.
+    await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
+
+    // 3b. Optionally hide reference-image overlays for clean engineering views.
+    if (opts.hideReferenceImages) {
+      await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
+    }
 
     // 4. Per-view: snap camera, screenshot, collect.
     const pngsByView: Partial<Record<RenderView, Buffer>> = {};
@@ -91,7 +114,26 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       pngsByView[view] = buf;
     }
 
-    return { pngsByView, bounds: meshing.bounds };
+    // 5. Per-pose: parse "<az>,<el>", set camera, screenshot, collect.
+    const pngsByPose: Record<string, Buffer> = {};
+    if (opts.poses) {
+      for (const poseKey of opts.poses) {
+        const [azStr, elStr] = poseKey.split(',').map((s) => s.trim());
+        const az = Number(azStr);
+        const el = Number(elStr);
+        if (!Number.isFinite(az) || !Number.isFinite(el)) {
+          throw new Error(`headlessRender: invalid --pose value '${poseKey}' (expected '<az>,<el>')`);
+        }
+        await page.evaluate(
+          ({ a, e }) => window.__demoPlayer!.setRenderPose(a, e),
+          { a: az, e: el },
+        );
+        const buf = await page.screenshot({ type: 'png' });
+        pngsByPose[poseKey] = buf;
+      }
+    }
+
+    return { pngsByView, pngsByPose, bounds: meshing.bounds };
   } finally {
     // captureDemo has a known timeout-on-close issue; mirror its tolerance.
     if (browser) {

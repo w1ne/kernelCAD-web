@@ -79,6 +79,20 @@ selectEdge(shape: Shape, query: EdgeQuery): Promise<EdgeSegment>;  // throws if 
 // Returns the standard capture-proxy Shape — composes with translate/rotate/color
 // and arm.part(...) like any primitive.
 lib.fromSTEP(path: string): Promise<Shape>;
+
+// Reference-image overlay — virtual node (no OCCT geometry). The renderer draws
+// the image on the chosen plane for tracing or design review. Path resolved
+// relative to the calling .kcad.ts file. Supported formats: .png .jpg .jpeg .webp.
+// Validation errors (missing file, bad format, invalid plane) are pushed as
+// diagnostics on the returned handle rather than thrown.
+referenceImage(path: string, opts: {
+  plane: 'xy' | 'xz' | 'yz' | { plane: 'xy' | 'xz' | 'yz'; offset?: number };
+  anchor?: 'origin' | [number, number, number];  // default 'origin'
+  scale?: 'fit-bbox' | number | { width?: number; height?: number };  // default 'fit-bbox'
+  opacity?: number;   // [0, 1], default 0.5
+  flipU?: boolean;    // default false
+  flipV?: boolean;    // default false
+}): ReferenceImageHandle;
 ```
 
 ### Shape methods (chainable)
@@ -103,8 +117,12 @@ lib.fromSTEP(path: string): Promise<Shape>;
 .alongAxis(axis: [number, number, number]): Shape
 
 // Tag this shape with a render-time role color (geometry unchanged). Booleans drop
-// the color so identity lives at leaf parts. Tokens: 'servo' | 'gear' | 'beam' |
-// 'shaft' | 'plate' | 'pin' | 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
+// the color so identity lives at leaf parts: a `.color()` call applied to a
+// composed/unioned shape silently has NO effect on the underlying leaf parts —
+// each part must be colored BEFORE it enters a boolean. Coloring the post-union
+// root is a no-op; don't infer from a uniform-grey render that "renderer ignores
+// .color()". Tokens: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' |
+// 'frame' | 'tool'. Hex escape hatch: any '#rrggbb'.
 .color(name: 'servo' | 'gear' | 'beam' | 'shaft' | 'plate' | 'pin' | 'frame' | 'tool' | `#${string}`): Shape
 
 // Booleans (each returns a NEW Shape that captures a 'boolean' feature record):
@@ -299,8 +317,12 @@ kernelcad evaluate path/to/script.kcad.ts --json
 kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
 
-# Render a 4-view PNG (front/right/top/iso) for visual review
-kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+# Render a 4-view PNG (front/right/top/iso) for visual review.
+# Always pass --width 1920 --height 1080: the demo-player page layout is
+# fixed at 1920×1080 (terminal pane 640 + viewer pane 1280); rendering at
+# the CLI default 1024×1024 silently clips the viewer pane and crops the
+# model on the right side.
+kernelcad render path/to/script.kcad.ts --width 1920 --height 1080 -o /tmp/out.png
 
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts
@@ -426,6 +448,94 @@ After authoring, run before reporting done:
 | G-conventions | Units mm + degrees, Z-up, all transforms after edge/face features when face-ref names matter |
 
 For visual / reference-driven tasks the gate set extends — see `kernelcad-from-reference`.
+
+## Materials
+
+`Shape.material(opts)` applies a PBR material to a shape. Use it instead of
+`.color()` when the reference shows gloss, specular highlights, or translucency.
+
+**Critical rule:** apply `.material()` to leaf parts BEFORE they enter a boolean.
+A `.material()` call on a post-union root is a no-op — the kernel cannot
+retroactively assign material to the input leaves of a boolean.
+
+Common presets:
+
+```typescript
+// Glossy acetate (eyewear, cases)
+part.material({
+  baseColor: '#0a0a0a',
+  metalness: 0.0,
+  roughness: 0.15,
+  clearcoat: 0.8,
+  clearcoatRoughness: 0.05,
+  ior: 1.55,
+});
+
+// Brushed aluminum (enclosures, brackets)
+part.material({
+  baseColor: '#b0b0b0',
+  metalness: 1.0,
+  roughness: 0.3,
+});
+
+// Clear glass (lenses, domes)
+part.material({
+  baseColor: '#ffffff',
+  metalness: 0.0,
+  roughness: 0.0,
+  transmission: 0.95,
+  ior: 1.5,
+});
+
+// Matte plastic (housings, brackets)
+part.material({
+  baseColor: '#2a2a2a',
+  metalness: 0.0,
+  roughness: 0.65,
+});
+```
+
+For schematic coloring (servo, frame, gear, beam, shaft, plate, pin, tool) where
+photo-accuracy is not required, the role-token shortcut `.color('servo')` etc.
+is sufficient and cleaner. Use `.material()` only when the reference demands it.
+
+## Reference images
+
+`referenceImage(path, opts)` places a reference photo as a plane overlay in the
+Studio viewport. It is a virtual node — no OCCT geometry is created, and the
+image is hidden during scoring (`--hide-reference-images`).
+
+```typescript
+// Front-view overlay (XZ plane) — typical for flat products facing the camera
+referenceImage('./reference.jpg', {
+  plane: 'xz',
+  anchor: 'origin',
+  scale: 'fit-bbox',   // auto-scales to match the model's bounding box
+  opacity: 0.4,        // ghost behind the model; adjust to taste
+});
+
+// Top-down overlay (XY plane) — for PCBs, floor plans, plate layouts
+referenceImage('./top-view.jpg', {
+  plane: 'xy',
+  anchor: 'origin',
+  scale: 'fit-bbox',
+  opacity: 0.3,
+});
+
+// Side overlay (YZ plane) — for profiles, silhouettes from the right
+referenceImage('./side.png', {
+  plane: 'yz',
+  anchor: 'origin',
+  scale: { width: 130 },   // explicit width in mm; height auto-computed
+  opacity: 0.5,
+  flipU: true,             // mirror horizontal if the reference is from the left
+});
+```
+
+Multiple `referenceImage()` calls are allowed — one per view plane. Path is
+resolved relative to the calling `.kcad.ts` file. Supported formats: `.png`,
+`.jpg`, `.jpeg`, `.webp`. Validation errors (missing file, bad format, invalid
+plane) are pushed as diagnostics on the returned handle rather than thrown.
 
 ## Related skills
 

@@ -1,0 +1,1 @@
+../../eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts

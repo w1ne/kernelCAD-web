@@ -3,8 +3,10 @@ import type { FeatureId, FeatureKind, FeatureRef } from '../../shared/intent/typ
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
 import type { ShapeBackend } from '../../kernel/backends/backend';
+import type { PBRMaterial } from '../../shared/intent/material';
+import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
-import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend, initOcct, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -32,6 +34,14 @@ export interface FeatureMesh {
    *  or `#rrggbb` hex). Renderer resolves via `resolveColor()`; absent means
    *  use the renderer's default. */
   color?: string;
+  /** Full PBR material from FeatureRecord.metadata.material (or promoted from
+   *  metadata.color). Present when the record has material metadata. The renderer
+   *  (Task 8+) prefers this over the legacy `color` string field. */
+  material?: PBRMaterial;
+  /** True for virtual (non-geometry) records such as referenceImage. */
+  virtual?: boolean;
+  /** Reference image payload; present when featureKind === 'referenceImage'. */
+  referenceImage?: ReferenceImageMetadata;
 }
 
 export interface Bounds {
@@ -153,9 +163,31 @@ export async function meshFeaturesPerFeature(
   // Lookup table for record metadata.color so we can attach it onto each
   // FeatureMesh when feature.compiled fires. Renderer resolves via ROLE_PALETTE.
   const colorByFeatureId = new Map<FeatureId, string>();
+  // Lookup table for full PBR material derived from record metadata.
+  const materialByFeatureId = new Map<FeatureId, PBRMaterial>();
   for (const r of records) {
     const color = (r.metadata as { color?: unknown } | undefined)?.color;
     if (typeof color === 'string') colorByFeatureId.set(r.id, color);
+    const pbr = pbrFromMetadata(r.metadata as Record<string, unknown> | undefined);
+    if (pbr !== undefined) materialByFeatureId.set(r.id, pbr);
+  }
+
+  // Emit virtual records (referenceImage etc.) directly — they produce no OCCT
+  // geometry, but the renderer needs their payload to materialize overlays.
+  for (const r of records) {
+    if (r.metadata?.virtual === true) {
+      const refImg = r.kind === 'referenceImage'
+        ? (r.metadata as unknown as ReferenceImageMetadata)
+        : undefined;
+      features.push({
+        featureId: r.id,
+        featureKind: r.kind,
+        predecessors: [],
+        faces: [],
+        virtual: true,
+        ...(refImg !== undefined ? { referenceImage: refImg } : {}),
+      });
+    }
   }
 
   // Pre-compute the construction-input closure (records whose meshes are
@@ -237,6 +269,7 @@ export async function meshFeaturesPerFeature(
       }
 
       const color = colorByFeatureId.get(event.featureId);
+      const material = materialByFeatureId.get(event.featureId);
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,
@@ -246,6 +279,7 @@ export async function meshFeaturesPerFeature(
         volume: meshed.volume,
         edges: meshed.edges,
         ...(color !== undefined ? { color } : {}),
+        ...(material !== undefined ? { material } : {}),
       });
 
       // Aggregate bounds from this feature's vertices

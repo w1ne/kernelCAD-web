@@ -9,11 +9,110 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
+import { type PBRMaterial } from '../../../shared/intent/material';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
 
 let initialized = false;
+
+/**
+ * Export-grade mesher. Builds an OCCT `BRepMesh_IncrementalMesh_2` with
+ * `isRelative=true` (linear tolerance is scaled by each edge's length), then
+ * reads back per-face triangulation via replicad's `face.triangulation()`.
+ *
+ * Why bypass `shape.mesh()`: replicad's `mesh()` always re-runs `_mesh()`
+ * with absolute (non-relative) deflection, which produces seam slivers on
+ * adjacent curved faces (cones, sweeps) — the resulting STL fails open3d's
+ * `is_watertight()` check even when the BREP is topologically perfect.
+ * Relative-deflection mode + a tight angularTolerance produces matched
+ * boundary discretization across faces, eliminating the slivers.
+ *
+ * Cost: ~3-4x slower mesh on cone-heavy parts, negligible on box / plate.
+ * Used only for STL export; the preview path keeps the coarse defaults.
+ */
+function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
+  const oc = getOC();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = (shape as any).wrapped;
+  // Wipe any cached preview-grade triangulation so the fresh mesher actually
+  // runs. `theForce=true` removes triangulation on all faces, not just those
+  // marked dirty.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (oc as any).BRepTools.Clean(wrapped, true);
+  // Fresh tessellation with relative-deflection mode. The ctor performs the
+  // meshing and stamps each face's triangulation in-place.
+  // BRepMesh_IncrementalMesh_2(theShape, theLinDeflection, isRelative,
+  //                            theAngDeflection, isInParallel)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mesher = new (oc as any).BRepMesh_IncrementalMesh_2(
+    wrapped,
+    0.01, // linear deflection — scaled per-edge because isRelative=true,
+          //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
+          //   30 mm slant; 0.6 mm on a 60 mm radius) — finer than the
+          //   absolute-mode 0.05 default, with uniform refinement across
+          //   face boundaries.
+    true, // isRelative — tolerance is fraction of edge length
+    0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
+          //   0.05 reduces chord error on curved surfaces. Note: tightening
+          //   further does not eliminate OCCT-mesher self-intersection on
+          //   adjacent cone rings (a known mesher limitation, not tolerance
+          //   sensitivity) — see cqe-task14 follow-up for the welding +
+          //   self-intersection fix.
+    false, // isInParallel
+  );
+  try {
+    // Read per-face triangulation directly. This is the same loop as
+    // replicad's `Shape3D.mesh()` minus the redundant _mesh() call that
+    // would overwrite our relative-mode triangulation with the absolute-mode
+    // default.
+    const rawTriangles: number[] = [];
+    const rawVertices: number[] = [];
+    for (const face of shape.faces) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tri = (face as any).triangulation(rawVertices.length / 3) as {
+        vertices: number[];
+        trianglesIndexes: number[];
+      } | null;
+      if (!tri) continue;
+      for (let i = 0; i < tri.trianglesIndexes.length; i++) rawTriangles.push(tri.trianglesIndexes[i]);
+      for (let i = 0; i < tri.vertices.length; i++) rawVertices.push(tri.vertices[i]);
+    }
+    // Weld coincident vertices across face boundaries. OCCT's shape-level
+    // mesher emits matching points on shared edges, but the per-face
+    // read-back appends each face's vertex array independently — so a shared
+    // edge ends up with two index sequences referring to coordinate-equal
+    // but index-distinct vertices. open3d's `is_watertight()` requires each
+    // edge to be shared by exactly two triangles via the *same* indices, so
+    // without welding it reports the mesh as non-manifold (every shared edge
+    // looks like four boundary edges instead of one shared edge).
+    //
+    // Quantize to 1e-7 mm — well below any geometric tolerance — to absorb
+    // any floating-point drift between the per-face coordinate reads.
+    const Q = 1e7;
+    const canonical = new Map<string, number>();
+    const vertices: number[] = [];
+    const remap = new Int32Array(rawVertices.length / 3);
+    for (let i = 0; i < rawVertices.length; i += 3) {
+      const x = rawVertices[i];
+      const y = rawVertices[i + 1];
+      const z = rawVertices[i + 2];
+      const key = `${Math.round(x * Q)},${Math.round(y * Q)},${Math.round(z * Q)}`;
+      let idx = canonical.get(key);
+      if (idx === undefined) {
+        idx = vertices.length / 3;
+        vertices.push(x, y, z);
+        canonical.set(key, idx);
+      }
+      remap[i / 3] = idx;
+    }
+    const triangles: number[] = new Array(rawTriangles.length);
+    for (let i = 0; i < rawTriangles.length; i++) triangles[i] = remap[rawTriangles[i]];
+    return { vertices, triangles };
+  } finally {
+    mesher.delete();
+  }
+}
 
 /**
  * Initialize OpenCascade WASM and bind it to Replicad.
@@ -305,9 +404,17 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
-   * Revolve a sketch-tagged OcctBackend 360° around the Z axis. The sketch's
+   * Revolve a sketch-tagged OcctBackend around the Z axis. The sketch's
    * 2D drawing is lifted onto the XZ plane (so the path's first coord is
    * radial-X, second coord is axial-Z) and revolved around `[0,0,1]`.
+   *
+   * @param sketch the sketch-tagged backend whose drawing is the profile.
+   * @param angleDeg sweep angle in degrees. Default 360 (full revolve).
+   *   Values in (0, 360) produce a partial revolve via replicad's native
+   *   `angle` option (preserves topology / face identity better than
+   *   revolving 360 and cutting with a boolean half-space). Values outside
+   *   `(0, 360]` are rejected by the caller (lowerer) — this method
+   *   does not re-validate.
    *
    * The returned `OcctBackend` is a normal 3D solid with no `kind` tag.
    *
@@ -315,15 +422,21 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If Replicad rejects the geometry (e.g. self-intersecting
    *   profile). Caller must catch and map to a diagnostic.
    */
-  static revolveFromSketch(sketch: OcctBackend): OcctBackend {
+  static revolveFromSketch(sketch: OcctBackend, angleDeg: number = 360): OcctBackend {
     if (sketch.kind !== 'sketch' || !sketch._drawing) {
       throw new Error('OcctBackend.revolveFromSketch: input is not a sketch.');
     }
     const lifted = sketch._drawing.sketchOnPlane('XZ');
     const single = lifted as unknown as {
-      revolve: (axis?: [number, number, number]) => ReplicadShape3D;
+      revolve: (
+        axis?: [number, number, number],
+        opts?: { origin?: [number, number, number]; angle?: number },
+      ) => ReplicadShape3D;
     };
-    return new OcctBackend(single.revolve([0, 0, 1]));
+    if (angleDeg === 360) {
+      return new OcctBackend(single.revolve([0, 0, 1]));
+    }
+    return new OcctBackend(single.revolve([0, 0, 1], { angle: angleDeg }));
   }
 
   /**
@@ -872,6 +985,7 @@ export class OcctBackend implements ShapeBackend {
   }
 
   getMesh(): RuntimeMesh {
+    // Viewport/preview mesh — keep coarse for fast interactive render.
     const meshed = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
     const positions = new Float32Array(meshed.vertices);
     const normalsSrc = meshed.normals ?? new Array(meshed.vertices.length).fill(0);
@@ -889,7 +1003,16 @@ export class OcctBackend implements ShapeBackend {
   }
 
   async exportSTLAsync(): Promise<Uint8Array> {
-    const mesh = this.shape.mesh({ tolerance: 0.05, angularTolerance: 0.3 });
+    // Export-grade tessellation. The coarse preview values (0.05 / 0.3 rad)
+    // emit self-intersecting triangle slivers on curved surfaces (revolved
+    // cones, spheres, swept arcs) — open3d's `is_watertight()` rejects any
+    // mesh with self-intersections, even when the geometry is topologically
+    // manifold and within tolerance. Tightening to 0.001 mm / 0.05 rad +
+    // relative-deflection mode (linear tolerance scaled by edge length)
+    // produces matched triangulations across adjacent curved faces and
+    // eliminates the slivers on cqe-* geometry. ~3-4x slower mesh on cone-
+    // heavy parts, negligible cost on box / plate parts.
+    const mesh = meshShapeForExport(this.shape);
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
     return Uint8Array.from(buf);
   }
@@ -1103,6 +1226,23 @@ export async function exportSceneToSTEPAsync(
   const blob = replicad.exportSTEP(shapeConfigs as any);
   const buf = await blob.arrayBuffer();
   return new Uint8Array(buf);
+}
+
+/**
+ * Build a PBR record from FeatureRecord.metadata. Priority:
+ *   1. metadata.material (full PBR) — used directly.
+ *   2. metadata.color (legacy flat color) — promoted to { baseColor }.
+ *   3. neither — undefined; renderer falls back to DEFAULT_MESH_COLOR.
+ */
+export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): PBRMaterial | undefined {
+  if (!metadata) return undefined;
+  if (metadata.material && typeof metadata.material === 'object') {
+    return metadata.material as PBRMaterial;
+  }
+  if (typeof metadata.color === 'string') {
+    return { baseColor: metadata.color };
+  }
+  return undefined;
 }
 
 /**

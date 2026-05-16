@@ -141,6 +141,12 @@ export class RecomputeEngine {
     for (const id of order) {
       const r = idToRecord.get(id)!;
       if (r.suppressed) continue;
+      if (r.metadata?.virtual === true) {
+        // Virtual records (referenceImage today; future construction-only kinds)
+        // produce no BREP. Mark healthy and skip the lowerer entirely.
+        health.set(r.id, 'healthy');
+        continue;
+      }
       const recordForLower: FeatureRecord = opts?.paramTable
         ? resolveParams(r, opts.paramTable) as FeatureRecord
         : r;

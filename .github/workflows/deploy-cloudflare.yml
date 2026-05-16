@@ -38,9 +38,11 @@ jobs:
       - name: Install Playwright Chromium (for brand asset rendering)
         run: npx playwright install --with-deps chromium
 
-      - name: Build demo + brand assets
+      - name: Build demo + curated gallery + brand assets
         run: |
           npx tsx site/scripts/build-demo.ts
+          npx tsx site/scripts/build-gallery.ts
+          bash site/scripts/link-public.sh
           node site/scripts/render-brand.mjs
 
       - name: Deploy to Cloudflare Pages (kernelcad-marketing)

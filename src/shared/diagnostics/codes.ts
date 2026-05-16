@@ -61,7 +61,15 @@ export type DiagnosticCode =
   | 'feature.flattenPattern.multi-bend-unsupported'
   // SDF (2) — W2.3
   | 'feature.sdf.field-undefined'
-  | 'feature.sdf.materialize-resolution-out-of-range';
+  | 'feature.sdf.materialize-resolution-out-of-range'
+  // Reference image (4) — Slice A
+  | 'feature.reference-image.path-not-found'
+  | 'feature.reference-image.invalid-plane'
+  | 'feature.reference-image.scale-out-of-range'
+  | 'feature.reference-image.format-unsupported'
+  // Material (2) — Slice A
+  | 'feature.material.invalid-base-color'
+  | 'feature.material.value-clamped';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -101,6 +109,12 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.flattenPattern.multi-bend-unsupported',
   'feature.sdf.field-undefined',
   'feature.sdf.materialize-resolution-out-of-range',
+  'feature.reference-image.path-not-found',
+  'feature.reference-image.invalid-plane',
+  'feature.reference-image.scale-out-of-range',
+  'feature.reference-image.format-unsupported',
+  'feature.material.invalid-base-color',
+  'feature.material.value-clamped',
 ] as const;
 
 export interface HintTemplate {
@@ -191,6 +205,18 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.',
     'feature.sdf.materialize-resolution-out-of-range':
       'sdf.materialize resolution must be an integer in [10, 200]. Use 30-60 for typical brackets; 80-120 for fine smooth-blends; <30 only when previewing. 200 is the cap to prevent OOM (200^3 = 8M voxels).',
+    'feature.reference-image.path-not-found':
+      "Pass a path that exists relative to the .kcad.ts file.",
+    'feature.reference-image.invalid-plane':
+      "Plane must be 'xy', 'xz', 'yz', or { plane: <cardinal>, offset?: number }.",
+    'feature.reference-image.scale-out-of-range':
+      "Pass a scale > 0 and ≤ 10000 mm, or use 'fit-bbox'.",
+    'feature.reference-image.format-unsupported':
+      'Supported formats: .png, .jpg, .jpeg, .webp.',
+    'feature.material.invalid-base-color':
+      'Pass a CSS color string or a registered role token to baseColor.',
+    'feature.material.value-clamped':
+      'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

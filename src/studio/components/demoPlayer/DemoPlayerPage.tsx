@@ -12,6 +12,10 @@ import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMes
 import { rehydrateFromBridge } from '../../../modeling/capture/featureMeshSerialize';
 import { resolveColor } from '../../../shared/render/palette';
 import { pbrFromColor } from '../../../shared/render/materialRoles';
+import type { PBRMaterial } from '../../../shared/intent/material';
+import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
+import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
+import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -55,14 +59,27 @@ export interface DemoPlayerWindow {
    *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
    *  appear at full visibility. */
   setRenderView(view: RenderView): void;
+  /** Snap camera to an arbitrary az/el pose (degrees). az=0 looks down -Y
+   *  (front view); az increases CCW around +Z (top-down); el increases looking
+   *  up (positive el = camera above the horizon). Used by `kernelcad render
+   *  --pose <az,el>` for headless reference-photo-pose scoring. */
+  setRenderPose(azDeg: number, elDeg: number): void;
   /** Set every loaded FeatureMesh material to opacity 1.0 and re-render.
    *  Used by `kernelcad render` to skip the build-animation fade-in. */
   forceFullOpacity(): void;
+  /** Hide every feature-mesh group that another feature lists as a
+   *  predecessor — i.e. keep only the tail records visible. Used by
+   *  `kernelcad render` so intermediate construction debris (cutter
+   *  boxes, pre-fillet bodies) doesn't bleed through the final shape in
+   *  headless captures. */
+  showOnlyTailFeatures(): void;
   /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
   loadFeatureMeshes(
     perFeature: FeatureMeshSerialized[],
     bounds: { min: [number, number, number]; max: [number, number, number] },
   ): { groupCount: number };
+  /** Show or hide the reference-image overlay group (`__referenceImages`). */
+  setReferenceImagesVisible(visible: boolean): void;
   /** Debug: dump scene state. */
   dumpScene(): {
     childCount: number;
@@ -87,43 +104,32 @@ const VIEWER_H = 1080;
 const TERMINAL_W = 640;
 const TERMINAL_H = 1080;
 
-/** Default mesh color when a feature has no .color() metadata. Held as a
- *  number for THREE; mirrors the long-standing "neutral CAD silver" tone the
- *  demo player has always rendered. resolveColor() returns hex strings, which
- *  THREE.Material.color.set() also accepts. */
-const DEFAULT_MESH_COLOR = 0xc8d2e0;
-
 function buildMeshFromFace(
   face: FaceGeometry,
   name: string,
-  color: number | string,
-  pbr: { metalness: number; roughness: number },
+  material: THREE.Material,
 ): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
   geom.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
   geom.setIndex(new THREE.BufferAttribute(face.indices, 1));
   geom.computeBoundingSphere();
-  // MeshStandardMaterial — physically-based shading driven by the role
-  // (servo/shaft/plate/...) attached at .color() time. Pairs with the
-  // three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // MeshPhysicalMaterial — physically-based shading driven by the role
+  // (servo/shaft/plate/...) attached at .color() or .material() time. Pairs
+  // with the three-point + rim lighting + ACES tone mapping in ViewerPane.
+  // The caller applies transparent/opacity/side/polygonOffset render state.
   // polygonOffset — assemblies fan into N FeatureMeshes; adjacent parts
   // whose surfaces touch (column on plate, servo case flush against
   // bracket) produce coplanar geometry. Depth bias kills Z-fighting
   // without geometric epsilons.
-  const mat = new THREE.MeshStandardMaterial({
-    color,
-    metalness: pbr.metalness,
-    roughness: pbr.roughness,
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide,
-    flatShading: false,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-  });
-  const mesh = new THREE.Mesh(geom, mat);
+  material.transparent = true;
+  material.opacity = 0;
+  (material as THREE.MeshPhysicalMaterial).side = THREE.DoubleSide;
+  (material as THREE.MeshPhysicalMaterial).flatShading = false;
+  material.polygonOffset = true;
+  material.polygonOffsetFactor = 1;
+  material.polygonOffsetUnits = 1;
+  const mesh = new THREE.Mesh(geom, material);
   mesh.name = name;
   return mesh;
 }
@@ -250,6 +256,36 @@ export function DemoPlayerPage(): React.JSX.Element {
         );
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
+      setRenderPose: (azDeg, elDeg) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        const bbox = new THREE.Box3();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+        });
+        if (bbox.isEmpty()) return;
+        const dx = bbox.max.x - bbox.min.x;
+        const dy = bbox.max.y - bbox.min.y;
+        const dz = bbox.max.z - bbox.min.z;
+        const maxExtent = Math.max(dx, dy, dz);
+        const fov = ctx.camera.fov * (Math.PI / 180);
+        const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
+        // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
+        // az increases CCW around +Z; el lifts the camera above the horizon.
+        const az = (azDeg * Math.PI) / 180;
+        const el = (elDeg * Math.PI) / 180;
+        const cosEl = Math.cos(el);
+        const x = distance * Math.sin(az) * cosEl;
+        const y = -distance * Math.cos(az) * cosEl;
+        const z = distance * Math.sin(el);
+        ctx.camera.up.set(0, 0, 1);
+        ctx.camera.position.set(x, y, z);
+        ctx.camera.lookAt(0, 0, 0);
+        ctx.camera.near = Math.max(0.1, distance / 100);
+        ctx.camera.far = distance * 20;
+        ctx.camera.updateProjectionMatrix();
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
       forceFullOpacity: () => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
@@ -263,12 +299,37 @@ export function DemoPlayerPage(): React.JSX.Element {
         });
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
+      showOnlyTailFeatures: () => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        // Collect every feature-mesh group + every group that another
+        // feature lists as a predecessor. The set difference is the tail.
+        const allGroups: THREE.Group[] = [];
+        const predecessorIds = new Set<string>();
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Group && obj.userData[KCAD_FEATURE_GROUP_KEY]) {
+            allGroups.push(obj);
+            const preds = obj.userData.predecessors as readonly string[] | undefined;
+            if (preds) {
+              for (const p of preds) predecessorIds.add(p);
+            }
+          }
+        });
+        for (const group of allGroups) {
+          group.visible = !predecessorIds.has(group.name);
+        }
+        ctx.renderer.render(ctx.scene, ctx.camera);
+      },
       loadFeatureMeshes: (perFeature, bounds) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const scene = sceneRef.current.scene;
-        // Clear any prior groups (re-load support).
+        // Clear any prior groups (re-load support). Also clear any prior
+        // reference-image group so re-loads start clean.
         for (const child of [...scene.children]) {
-          if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
+          if (child instanceof THREE.Group && (
+            child.userData[KCAD_FEATURE_GROUP_KEY] ||
+            child.name === '__referenceImages'
+          )) {
             scene.remove(child);
             child.traverse((o) => {
               if (o instanceof THREE.Mesh) {
@@ -280,7 +341,18 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
 
         let groupCount = 0;
+        // Separate virtual referenceImage records from geometry records.
+        const geometryFeatures: typeof perFeature = [];
+        const referenceImageFeatures: typeof perFeature = [];
         for (const ser of perFeature) {
+          if (ser.featureKind === 'referenceImage' && ser.referenceImage) {
+            referenceImageFeatures.push(ser);
+          } else {
+            geometryFeatures.push(ser);
+          }
+        }
+
+        for (const ser of geometryFeatures) {
           const fm = rehydrateFromBridge(ser);
           const group = new THREE.Group();
           group.name = fm.featureId;
@@ -289,17 +361,30 @@ export function DemoPlayerPage(): React.JSX.Element {
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
           group.visible = true;
-          // Resolve role-token / hex color via the shared palette.
-          // Unknown / missing → DEFAULT_MESH_COLOR (preserves prior behavior).
-          const resolved = resolveColor(fm.color);
-          const colorForMesh: number | string = resolved ?? DEFAULT_MESH_COLOR;
-          const pbr = pbrFromColor(fm.color);
+          // Prefer the full PBR record emitted by the bridge serializer (Task 7+).
+          // Fall back to the legacy color string path: pbrFromColor resolves role
+          // tokens ('servo', 'gear', ...) to metalness/roughness profiles and we
+          // promote the result to a minimal PBRMaterial so buildMaterialFromPBR
+          // handles both paths uniformly.
+          // When neither field is present the helper defaults to DEFAULT_MESH_COLOR.
+          let pbrForFaces: PBRMaterial | undefined;
+          if (fm.material !== undefined) {
+            pbrForFaces = fm.material;
+          } else if (fm.color !== undefined) {
+            const legacyProfile = pbrFromColor(fm.color);
+            const resolvedBase = resolveColor(fm.color) ?? String(DEFAULT_MESH_COLOR);
+            pbrForFaces = {
+              baseColor: resolvedBase,
+              metalness: legacyProfile.metalness,
+              roughness: legacyProfile.roughness,
+            };
+          }
           for (const face of fm.faces) {
+            const material = buildMaterialFromPBR(pbrForFaces);
             const mesh = buildMeshFromFace(
               face,
               `${fm.featureId}-face-${face.faceId}`,
-              colorForMesh,
-              pbr,
+              material,
             );
             group.add(mesh);
           }
@@ -308,6 +393,8 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
 
         // Center & camera-fit using supplied bounds (skip if nothing was loaded).
+        // We compute scene bbox before adding reference images so the camera fits
+        // the actual model geometry, not the (potentially larger) overlay planes.
         if (perFeature.length > 0) {
           const [minX, minY, minZ] = bounds.min;
           const [maxX, maxY, maxZ] = bounds.max;
@@ -323,7 +410,78 @@ export function DemoPlayerPage(): React.JSX.Element {
           });
         }
 
+        // Reference-image overlays: build a dedicated group so they can be
+        // hidden without disturbing geometry groups. TextureLoader is async;
+        // we fire-and-forget — the group is added to the scene synchronously
+        // (empty) and meshes are appended as textures resolve.
+        if (referenceImageFeatures.length > 0) {
+          const riGroup = new THREE.Group();
+          riGroup.name = '__referenceImages';
+          scene.add(riGroup);
+
+          // Compute sceneBbox from the model geometry for 'fit-bbox' scale.
+          const sceneBbox = new THREE.Box3();
+          scene.traverse((obj) => {
+            if (obj instanceof THREE.Mesh && obj.parent !== riGroup) {
+              sceneBbox.expandByObject(obj);
+            }
+          });
+
+          for (const ser of referenceImageFeatures) {
+            const ri = ser.referenceImage as ReferenceImageMetadata;
+            // In the browser context, reference image paths are absolute
+            // filesystem paths recorded at capture time. Vite's dev server
+            // doesn't serve arbitrary host-fs files via a static URL, so we
+            // load via a data URL: fetch the file through the Node-side
+            // /__kernelcad/image endpoint (if present) or fall back to a
+            // transparent 1×1 PNG so the scene doesn't crash. In practice,
+            // callers that need real texture display should supply a URL
+            // via a resolved asset system; this path handles the dev-server
+            // case where the path is absolute on the host.
+            //
+            // Strategy: try /__kernelcad/image?path=<encoded>, fall back to
+            // a 1×1 transparent data URL so the overlay still shows up in
+            // the group (the visibility toggle test doesn't need real pixels).
+            const textureUrl = `/__kernelcad/image?path=${encodeURIComponent(ri.path)}`;
+            const loader = new THREE.TextureLoader();
+            loader.loadAsync(textureUrl).then((tex) => {
+              const mesh = buildReferenceImagePlane(ri, tex, sceneBbox);
+              riGroup.add(mesh);
+              if (sceneRef.current) {
+                sceneRef.current.renderer.render(
+                  sceneRef.current.scene,
+                  sceneRef.current.camera,
+                );
+              }
+            }).catch(() => {
+              // Texture load failed (path not accessible from dev server).
+              // Create a 1×1 transparent canvas texture as a stand-in so the
+              // mesh is still registered in the group (visibility toggle works).
+              const canvas = document.createElement('canvas');
+              canvas.width = 1; canvas.height = 1;
+              const fallbackTex = new THREE.CanvasTexture(canvas);
+              const mesh = buildReferenceImagePlane(ri, fallbackTex, sceneBbox);
+              riGroup.add(mesh);
+              if (sceneRef.current) {
+                sceneRef.current.renderer.render(
+                  sceneRef.current.scene,
+                  sceneRef.current.camera,
+                );
+              }
+            });
+          }
+        }
+
         return { groupCount };
+      },
+      setReferenceImagesVisible: (visible) => {
+        if (!sceneRef.current) return;
+        const ctx = sceneRef.current;
+        const group = ctx.scene.getObjectByName('__referenceImages');
+        if (group) {
+          group.visible = visible;
+          ctx.renderer.render(ctx.scene, ctx.camera);
+        }
       },
       dumpScene: () => {
         const scene = sceneRef.current?.scene;

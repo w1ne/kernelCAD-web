@@ -1,6 +1,8 @@
 // src/modeling/capture/featureMeshSerialize.ts
 import type { FeatureMesh } from './featureMeshing';
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
+import type { PBRMaterial } from '../../shared/intent/material';
+import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 
 export interface FaceGeometrySerialized {
   vertices: number[];
@@ -22,9 +24,18 @@ export interface FeatureMeshSerialized {
   faces: FaceGeometrySerialized[];
   volume?: number;
   edges?: number[];
-  /** Color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
-   *  ROLE_PALETTE; absent means use the renderer's default material color. */
+  /** Legacy color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
+   *  ROLE_PALETTE; absent means use the renderer's default material color.
+   *  Prefer `material` when present — it carries full PBR data. */
   color?: string;
+  /** Full PBR material derived from FeatureRecord.metadata.material (or promoted
+   *  from metadata.color). The renderer (Task 8+) reads this in preference to
+   *  the legacy `color` string field. */
+  material?: PBRMaterial;
+  /** True for virtual (non-geometry) records such as referenceImage. */
+  virtual?: boolean;
+  /** Reference image payload; present when featureKind === 'referenceImage'. */
+  referenceImage?: ReferenceImageMetadata;
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -44,6 +55,9 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     volume: m.volume,
     edges: m.edges ? Array.from(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
+    ...(m.material !== undefined ? { material: m.material } : {}),
+    ...(m.virtual === true ? { virtual: true } : {}),
+    ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
   };
 }
 
@@ -64,5 +78,8 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     volume: s.volume,
     edges: s.edges ? new Float32Array(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),
+    ...(s.material !== undefined ? { material: s.material } : {}),
+    ...(s.virtual === true ? { virtual: true } : {}),
+    ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
   };
 }
