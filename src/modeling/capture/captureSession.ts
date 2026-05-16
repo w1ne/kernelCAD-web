@@ -232,7 +232,7 @@ export class CaptureSession {
     const validExts = new Set(['.png', '.jpg', '.jpeg', '.webp']);
     if (!validExts.has(ext)) {
       diagnostics.push({
-        target: 'host',
+        target: 'export-occt',
         code: 'feature.reference-image.format-unsupported',
         severity: 'error',
         message: `referenceImage: unsupported file format '${ext || '(no extension)'}'. Supported: .png, .jpg, .jpeg, .webp.`,
@@ -249,7 +249,7 @@ export class CaptureSession {
       fileExists = existsSync(resolvedPath);
       if (!fileExists) {
         diagnostics.push({
-          target: 'host',
+          target: 'export-occt',
           code: 'feature.reference-image.path-not-found',
           severity: 'error',
           message: `referenceImage: file not found at '${resolvedPath}'.`,
@@ -261,7 +261,7 @@ export class CaptureSession {
     // ── 3. Validate plane ────────────────────────────────────────────────────
     if (!isValidPlaneSpec(args.plane)) {
       diagnostics.push({
-        target: 'host',
+        target: 'export-occt',
         code: 'feature.reference-image.invalid-plane',
         severity: 'error',
         message: `referenceImage: invalid plane '${JSON.stringify(args.plane)}'. Must be 'xy', 'xz', 'yz', or { plane, offset? }.`,
@@ -283,7 +283,7 @@ export class CaptureSession {
     if (typeof scale === 'number') {
       if (!Number.isFinite(scale) || scale <= 0 || scale > 10000) {
         diagnostics.push({
-          target: 'host',
+          target: 'export-occt',
           code: 'feature.reference-image.scale-out-of-range',
           severity: 'warn',
           message: `referenceImage: scale ${scale} is out of range. Must be in (0, 10000] mm.`,
@@ -314,7 +314,10 @@ export class CaptureSession {
       kind: 'referenceImage',
       params: {},
       inputs: {},
-      metadata,
+      // ReferenceImageMetadata's typed fields fit FeatureMetadata's
+      // [key: string]: unknown catch-all, but TS doesn't infer the index
+      // signature from a structural-shape interface — cast through unknown.
+      metadata: metadata as unknown as Record<string, unknown>,
     });
 
     return r.id;

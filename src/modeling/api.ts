@@ -456,7 +456,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const record = session.getRecords().find(r => r.id === id)!;
       // Cast metadata — ReferenceImageMetadata is stored under the [key: string]: unknown
       // index signature of FeatureMetadata, so we re-surface it with proper typing here.
-      const metadata = record.metadata as import('../shared/intent/referenceImageRecord').ReferenceImageMetadata;
+      const metadata = record.metadata as unknown as import('../shared/intent/referenceImageRecord').ReferenceImageMetadata;
       return { id, metadata };
     },
   };
