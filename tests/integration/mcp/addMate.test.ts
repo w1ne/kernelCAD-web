@@ -5,7 +5,7 @@
 // connector-not-found error path.
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
 import { addMateTool } from '../../../src/mcp/tools/addMate';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';

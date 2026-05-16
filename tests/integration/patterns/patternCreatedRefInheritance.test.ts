@@ -13,10 +13,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { createApi } from '../../../src/modules/api';
-import { resolveFaceRef } from '../../../src/naming/resolveFaceRef';
+import { resolveFaceRef } from '../../../src/kernel/naming/resolveFaceRef';
 
 describe('W2.1 — created refs inherit through pattern instances', () => {
   beforeAll(async () => { await initOcct(); });

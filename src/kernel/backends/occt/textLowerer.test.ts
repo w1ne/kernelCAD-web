@@ -1,7 +1,7 @@
 // src/backends/occt/textLowerer.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from './occtBackend';
-import { runScript } from '../../script-runtime/runScript';
+import { runScript } from '../../../script-runtime/runScript';
 
 // Extract a sketch backend's underlying Drawing for bbox inspection.
 async function lowerToDrawing(code: string) {

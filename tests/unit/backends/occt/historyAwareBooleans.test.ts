@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
-import { cutWithHistory, fuseWithHistory, intersectWithHistory } from '../../../../src/backends/occt/historyAwareBooleans';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { cutWithHistory, fuseWithHistory, intersectWithHistory } from '../../../../src/kernel/backends/occt/historyAwareBooleans';
 
 describe('historyAwareBooleans', () => {
   beforeAll(async () => { await initOcct(); });

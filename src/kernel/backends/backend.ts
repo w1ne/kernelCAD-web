@@ -1,12 +1,14 @@
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { FeatureKind, Vec3 } from '../intent/types';
-import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
+import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureKind, Vec3 } from '../../intent/types';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { RuntimeMesh } from './runtimeMesh';
 
-// Canonical backend target enum. 'faceted-mesh' is reserved for a future fallback
-// path (Manifold / mesh-only); v0.1 ships only 'export-occt'.
-export const BACKEND_TARGETS = ['export-occt', 'faceted-mesh'] as const;
-export type BackendTarget = (typeof BACKEND_TARGETS)[number];
+// BackendTarget moved to shared/types/backendTarget so shared/diagnostics can
+// depend on it without breaking shared-stays-leaf. Re-exported here for
+// backwards compatibility with existing kernel-internal consumers.
+import type { BackendTarget } from '../../shared/types/backendTarget';
+export { BACKEND_TARGETS } from '../../shared/types/backendTarget';
+export type { BackendTarget };
 
 export interface ShapeBackend {
   readonly target: BackendTarget;
@@ -45,7 +47,7 @@ export interface ResolvedInputs {
    * never read it.
    */
   surfaces?: Map<
-    import('../intent/surfaceRecord').SurfaceId,
+    import('../../intent/surfaceRecord').SurfaceId,
     import('./occt/nurbsSurfaceLowerer').BuiltSurface
   >;
 }

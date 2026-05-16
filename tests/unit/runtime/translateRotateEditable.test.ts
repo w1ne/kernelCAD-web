@@ -14,7 +14,7 @@
 // Spec: kernelCAD-private/docs/specs/2026-05-08-translate-rotate-editable-design.md
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
 import type { ShapeTransform } from '../../../src/intent/featureRecord';

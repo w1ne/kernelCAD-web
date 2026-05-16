@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { listAssembliesTool } from '../../../../src/mcp/tools/listAssemblies';
 
 // Vec3Param assertion helper: assembly Vec3 surfaces are now stored as

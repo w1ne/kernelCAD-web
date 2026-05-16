@@ -20,11 +20,11 @@
 // (single fused OcctBackend, summed volume, exportSTLAsync on the model)
 // will fail under this change; their migration is Task 14.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
-import { isSceneBackend, type SceneBackend } from '../../../src/backends/sceneBackend';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
+import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { Transform } from '../../../src/runtime/se3';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 

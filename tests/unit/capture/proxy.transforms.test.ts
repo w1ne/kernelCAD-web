@@ -1,6 +1,6 @@
 // tests/unit/capture/proxy.transforms.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { formatScalarForError } from '../../../src/intent/types';
 

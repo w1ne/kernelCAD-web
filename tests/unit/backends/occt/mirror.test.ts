@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runScript } from '../../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 beforeAll(async () => { await initOcct(); }, 60000);
 

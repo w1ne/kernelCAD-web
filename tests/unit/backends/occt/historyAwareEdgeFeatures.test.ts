@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
-import { filletWithHistory, chamferWithHistory } from '../../../../src/backends/occt/historyAwareEdgeFeatures';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { filletWithHistory, chamferWithHistory } from '../../../../src/kernel/backends/occt/historyAwareEdgeFeatures';
 
 describe('historyAwareEdgeFeatures', () => {
   beforeAll(async () => { await initOcct(); });

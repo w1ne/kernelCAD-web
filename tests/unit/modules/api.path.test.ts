@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 
 describe('top-level path() API', () => {
@@ -13,7 +13,7 @@ describe('top-level path() API', () => {
 
   it('lowers an L-bracket profile through the full pipeline', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return path()
       .moveTo(0, 0)
       .lineTo(20, 0)

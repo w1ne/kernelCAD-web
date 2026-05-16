@@ -1,6 +1,6 @@
 // src/lib/fonts/index.test.ts
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import {
   ensureBundledFontLoaded,
   resolveAndLoadFont,

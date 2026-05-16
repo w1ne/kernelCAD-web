@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { initOcct } from '../../src/backends/occt/occtBackend';
+import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/capture/captureSession';
 import { createApi } from '../../src/modules/api';
 

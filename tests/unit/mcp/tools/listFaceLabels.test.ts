@@ -1,7 +1,7 @@
 // tests/unit/mcp/tools/listFaceLabels.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { listFaceLabelsTool } from '../../../../src/mcp/tools/listFaceLabels';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('listFaceLabelsTool', () => {
   beforeAll(async () => { await initOcct(); });

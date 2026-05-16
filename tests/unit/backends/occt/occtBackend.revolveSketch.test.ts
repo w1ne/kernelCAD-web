@@ -1,6 +1,6 @@
 // tests/unit/backends/occt/occtBackend.revolveSketch.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import type { SketchCommand } from '../../../../src/capture/sketch';
 import { toParam } from '../../../../src/runtime/editableHelpers';
 

@@ -14,9 +14,9 @@
 // The parser is purely syntactic — it does not validate that any feature
 // exists. The resolver below handles non-existence with the spec §D.2 hints.
 
-import type { HistoryMap, FaceHash } from '../naming/evolutionRecord';
-import type { FaceSnapshot } from '../backends/occt/createdRefs';
-import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
+import type { HistoryMap, FaceHash } from '../kernel/naming/evolutionRecord';
+import type { FaceSnapshot } from '../kernel/backends/occt/createdRefs';
+import { DEFAULT_SNAPSHOT_TOLERANCE } from '../kernel/backends/occt/createdRefs';
 
 export type ParsedSelector =
   | { kind: 'collective'; refName: string }

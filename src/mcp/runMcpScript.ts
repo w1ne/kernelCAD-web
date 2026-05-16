@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { initOcct } from '../backends/occt/occtBackend';
+import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { kernelErrorToDiagnostic } from '../script-runtime/kernelErrorToDiagnostic';
 import { runScript, type RunScriptResult } from '../script-runtime/runScript';
 

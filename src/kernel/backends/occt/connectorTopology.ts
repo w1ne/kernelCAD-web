@@ -32,12 +32,12 @@
 // a v0.7 problem and out of scope for T2.
 
 import type { Edge, Face } from 'replicad';
-import type { Vec3 } from '../../intent/types';
-import type { FeatureId } from '../../intent/types';
-import type { FeatureRecord, FaceLabelsMap, CanonicalFace } from '../../intent/featureRecord';
+import type { Vec3 } from '../../../intent/types';
+import type { FeatureId } from '../../../intent/types';
+import type { FeatureRecord, FaceLabelsMap, CanonicalFace } from '../../../intent/featureRecord';
 import type { FaceQuery } from './edgeQueries';
 import type { OcctBackend } from './occtBackend';
-import type { TopologyQuery } from '../../lib/mates/connector';
+import type { TopologyQuery } from '../../../lib/mates/connector';
 import { resolveFaceQuery } from './edgeQueries';
 
 type CanonicalFaceName = CanonicalFace;

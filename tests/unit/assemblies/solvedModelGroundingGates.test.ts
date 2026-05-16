@@ -15,7 +15,7 @@ import { beforeAll, describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import type { MateLoadLimit, MateRecord } from '../../../src/lib/mates/mate';
 import { createApi } from '../../../src/modules/api';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 function makeArm() {
   const session = new CaptureSession();

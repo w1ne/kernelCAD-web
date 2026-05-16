@@ -38,7 +38,7 @@ export interface FaceLineage {
    *  Enables `<kind><N>.<ref>` (e.g., `hole1.wall`) selector resolution. */
   featureOrdinal?: number;
   /** Feature kind that emitted this label. Needed for ordinal resolution. */
-  featureKind?: import('../intent/types').FeatureKind;
+  featureKind?: import('../../intent/types').FeatureKind;
   /** Geometric fingerprint captured ONCE at face creation. Immutable.
    *  `refreshSnapshots` must not overwrite this. The geometry-snapshot
    *  fallback resolver compares against this when the topology route

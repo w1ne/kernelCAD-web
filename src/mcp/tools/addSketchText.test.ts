@@ -1,6 +1,6 @@
 // src/mcp/tools/addSketchText.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { addSketchTextTool } from './addSketchText';
 
 describe('add_sketch_text MCP tool', () => {

@@ -17,7 +17,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildModel } from '../../../src/kernel/buildModel';
 import { KernelError, isKernelError } from '../../../src/intent/kernelError';
 
@@ -135,7 +135,7 @@ describe('solvedAssembly recompute-time diagnostics', () => {
 
     model.session.paramTable.set('yawDeg', Number.NaN);
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const engine = new RecomputeEngine(new OcctLowerer());
     const result = await engine.run(model.records, {
       paramTable: model.session.paramTable,

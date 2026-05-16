@@ -4,7 +4,7 @@
 // only by record-count growth (closes rc.7 I-6).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('Shape.lower() lazy cache (rc.7 I-6)', () => {
   beforeAll(async () => { await initOcct(); });

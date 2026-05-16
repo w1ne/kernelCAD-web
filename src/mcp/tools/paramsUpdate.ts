@@ -1,4 +1,4 @@
-import type { ShapeBackend } from '../../backends/backend';
+import type { ShapeBackend } from '../../kernel/backends/backend';
 import { isKernelError } from '../../intent/kernelError';
 import type { SoftWarning } from '../../runtime/softWarning';
 import { getActiveMcpSession, setActiveMcpSession } from '../activeSession';

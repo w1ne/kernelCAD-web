@@ -1,6 +1,6 @@
 // src/compute/featureEvents.ts
 import type { FeatureId, FeatureKind } from '../intent/types';
-import type { ShapeBackend } from '../backends/backend';
+import type { ShapeBackend } from '../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
 export type FeatureEvent =

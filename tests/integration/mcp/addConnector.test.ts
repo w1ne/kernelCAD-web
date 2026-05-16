@@ -5,7 +5,7 @@
 // duplicate-name error path (surfaced via the standard MCP error envelope).
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
 import { addConnectorTool } from '../../../src/mcp/tools/addConnector';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';

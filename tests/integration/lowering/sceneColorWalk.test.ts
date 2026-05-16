@@ -17,7 +17,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { lookupSourceColor } from '../../../src/backends/occt/lookupSourceColor';
+import { lookupSourceColor } from '../../../src/kernel/backends/occt/lookupSourceColor';
 
 describe('lookupSourceColor', () => {
   it('returns color set directly on the source Shape (after a fillet)', async () => {

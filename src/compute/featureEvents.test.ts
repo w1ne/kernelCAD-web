@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { RecomputeEngine } from './recomputeEngine';
 import type { FeatureEvent } from './featureEvents';
 import type { FeatureRecord } from '../intent/featureRecord';
-import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
+import type { FeatureLowerer, ShapeBackend } from '../kernel/backends/backend';
 
 // Minimal mock backend that returns a marker shape per feature
 const mockShape = (id: string): ShapeBackend =>

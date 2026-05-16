@@ -7,7 +7,7 @@ import {
 } from './connector';
 import { CaptureSession } from '../../capture/captureSession';
 import { createApi } from '../../modules/api';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 
 describe('Connector (numeric origin)', () => {
   it('creates a frame connector with Vec3 origin', () => {

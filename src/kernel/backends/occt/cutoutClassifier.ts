@@ -6,7 +6,7 @@
 // to slice-1's classifyCutoutFace.
 
 import type { Face } from 'replicad';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../../intent/types';
 
 export type CutoutRefName = 'wall' | 'floor' | 'wall-back';
 

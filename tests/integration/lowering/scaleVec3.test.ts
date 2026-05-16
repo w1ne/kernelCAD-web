@@ -5,10 +5,10 @@
 // lowers via gp_GTrsf + BRepBuilderAPI_GTransform.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 interface LowerResult {

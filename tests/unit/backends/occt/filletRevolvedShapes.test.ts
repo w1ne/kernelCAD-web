@@ -9,8 +9,8 @@
 // diagnostic (e.g., `OCCT fillet failed: 8479736`). After the fix, fillets
 // on cylinder/extrudeCircle-built shapes succeed.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
+import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../src/intent/featureRecord';
 import type { Param } from '../../../../src/intent/types';
 

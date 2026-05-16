@@ -52,10 +52,10 @@
 // run. The recompute is cached at `validateAssemblyWithMates` time when
 // Phase 6 wires this in — the dead-code module re-lowers on each call.
 
-import { initOcct } from '../../backends/occt/occtBackend';
-import { createOcctLowerer } from '../../backends/occt/occtLowerer';
-import type { OcctBackend } from '../../backends/occt/occtBackend';
-import { isSceneBackend } from '../../backends/sceneBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
+import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import type { Vec3 } from '../../intent/types';

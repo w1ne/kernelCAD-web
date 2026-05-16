@@ -1,5 +1,5 @@
 import type { Assembly, TransmissionIntentRecord } from '../../capture/assembly';
-import type { RuntimeMesh } from '../../backends/runtimeMesh';
+import type { RuntimeMesh } from '../../kernel/backends/runtimeMesh';
 import type { Vec3 } from '../../intent/types';
 import { Transform } from '../../runtime/se3';
 import { buildPoseEnvelopeSamples, type PoseEnvelopeSample } from './poseEnvelope';

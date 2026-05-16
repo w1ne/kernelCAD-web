@@ -7,7 +7,7 @@
 import type { Vec3 } from '../../intent/types';
 import type { Shape } from '../../capture/proxy';
 import type { FeatureRecord } from '../../intent/featureRecord';
-import { resolveTopologyOriginOnBackend } from '../../backends/occt/connectorTopology';
+import { resolveTopologyOriginOnBackend } from '../../kernel/backends/occt/connectorTopology';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';
 

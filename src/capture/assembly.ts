@@ -1,4 +1,4 @@
-import { lookupSourceColor } from '../backends/occt/lookupSourceColor';
+import { lookupSourceColor } from '../kernel/backends/occt/lookupSourceColor';
 import { KernelError } from '../intent/kernelError';
 import { Scene, type SceneDiagnostic, type ScenePart } from '../intent/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
@@ -1357,9 +1357,9 @@ export class Assembly {
     sceneShape: Shape,
   ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    const { initOcct } = await import('../backends/occt/occtBackend');
-    const { isSceneBackend } = await import('../backends/sceneBackend');
+    const { createOcctLowerer } = await import('../kernel/backends/occt/occtLowerer');
+    const { initOcct } = await import('../kernel/backends/occt/occtBackend');
+    const { isSceneBackend } = await import('../kernel/backends/sceneBackend');
     const { detectInterferences } = await import('../script-runtime/checkInterference');
 
     await initOcct();

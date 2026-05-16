@@ -9,7 +9,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/codes';
 
 beforeAll(async () => {

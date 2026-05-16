@@ -1,7 +1,7 @@
 // src/mcp/tools/exportStl.ts
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../script-runtime/export';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';

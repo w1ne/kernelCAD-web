@@ -23,9 +23,9 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import type { FeatureId } from '../../intent/types';
-import { computeBendAllowance } from '../../modules/sheetMetal';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import type { FeatureId } from '../../../intent/types';
+import { computeBendAllowance } from '../../../modules/sheetMetal';
 
 export interface BendAxisSpec {
   /** A point on the bend axis line, in world coordinates (slice-1 sheets

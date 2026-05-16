@@ -1,11 +1,11 @@
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
-import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../lib/geometryHelpers';
-import { createSafeReplicad, SafeSketcher } from '../../lib/safeSketch';
-import { withTemporaryGlobals } from '../../lib/withTemporaryGlobals';
-import { createUserGlobals } from '../../lib/userGlobals';
-import { createV01ApiGlobals, unwrapV01Shape } from '../../lib/v01ApiShim';
+import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../../lib/geometryHelpers';
+import { createSafeReplicad, SafeSketcher } from '../../../lib/safeSketch';
+import { withTemporaryGlobals } from '../../../lib/withTemporaryGlobals';
+import { createUserGlobals } from '../../../lib/userGlobals';
+import { createV01ApiGlobals, unwrapV01Shape } from '../../../lib/v01ApiShim';
 import {
   type ExecutionResult,
   type GeometryResult,
@@ -13,7 +13,7 @@ import {
   type WorkerRequest,
   type WorkerResponse,
   WorkerRequestSchema,
-} from '../../lib/workerTypes';
+} from '../../../lib/workerTypes';
 import { meshShape, meshWireToSketch, getWire, isRecord, getFn } from './meshing';
 
 const DEBUG = false;

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
-import { initOcct } from '../backends/occt/occtBackend';
+import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { createV01ApiGlobals, unwrapV01Shape } from './v01ApiShim';
 
 beforeAll(async () => {

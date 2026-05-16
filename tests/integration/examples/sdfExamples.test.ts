@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
 import { getShapeInfoTool } from '../../../src/mcp/tools/getShapeInfo';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

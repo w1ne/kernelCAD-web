@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../../src/mcp/activeSession';
 import { evaluateScriptTool } from '../../../../src/mcp/tools/evaluateScript';
 import { paramsListTool } from '../../../../src/mcp/tools/paramsList';

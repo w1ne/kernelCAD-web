@@ -1,7 +1,7 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../../intent/types';
 
 /**
  * Pure OCCT-direct constructors for NURBS surfaces, thicken, and shell-wrap.

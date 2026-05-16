@@ -1,6 +1,6 @@
 // tests/unit/capture/sketch.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 
 describe('path() builder + Sketch capture', () => {
@@ -76,7 +76,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.extrude works on the closed sketch', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // Square 10x10 extruded by 5 → volume 500
     const code = `return path().moveTo(0,0).lineTo(10,0).lineTo(10,10).lineTo(0,10).close().extrude(5);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -113,7 +113,7 @@ describe('path() builder + Sketch capture', () => {
     // the lowerer's try/catch. The script should still run; the diagnostic should be
     // surfaced when the recompute lowers the sketch.
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return path().tangentArc(10, 5).lineTo(10, 0).close().extrude(2);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -157,7 +157,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('emits feature.revolve.crosses-axis when profile has x < 0', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       return path()
         .moveTo(-1, 0)
@@ -175,7 +175,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('rejects revolve on a degenerate (no-segment) profile', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // moveTo+close (no line segments) — area is zero. Either the sketch fails
     // to lower (Replicad rejects degenerate drawing) or the revolve validator
     // catches it. Both are valid rejection paths for an empty profile.
@@ -191,7 +191,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.revolve produces a valid solid for a washer profile', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       return path()
         .moveTo(10, 0)
@@ -269,7 +269,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('emits feature.sketch.degenerate-arc when radiusArc has invalid radius', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // chord 20, radius 5 → 5 < 10 → degenerate
     const code = `return path().moveTo(0, 0).radiusArc(20, 0, 5).close().extrude(1);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -323,7 +323,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('box.fillet(1, { atZ: 5 }) produces a filleted solid (volume reduced from 500)', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).fillet(1, { atZ: 5 });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -338,7 +338,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('box.fillet(1, { atZ: 999 }) emits feature.edge-feature.no-edges-match', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).fillet(1, { atZ: 999 });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -350,7 +350,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('box.fillet(1, { face: "top" }) (canonical) still works after EdgeSelector widening', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).fillet(1, { face: 'top' });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -418,7 +418,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch extrude + fillet by non-canonical label produces correct filleted solid', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // Use a non-canonical label name ('topRim') so it doesn't collide with canonical 'top'.
     const code = `
       return path().moveTo(0,0)
@@ -442,7 +442,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Two concurrent recomputes against different scripts resolve labels correctly (no global-state contamination)', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // Script A: labeled-rim sketch + fillet by label 'rimA'
     const codeA = `
       return path().moveTo(0,0)
@@ -481,7 +481,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('I1: buildEdgeFeatureRef rejects unknown EdgeQuery keys at lowering', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // Add a key that is NOT in the EDGE_QUERY_KEYS whitelist; capture takes it
     // (the type system can't enforce extra keys at runtime), but lowering should diagnose.
     const code = `return box(10,10,5).fillet(1, { atZ: 5, foo: true });`;
@@ -495,7 +495,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('I1: valid 14-key EdgeQuery passes through cleanly (regression check)', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10,10,5).fillet(1, { atZ: 5, parallel: [1,0,0], tolerance: 0.5 });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -505,7 +505,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('B1: box.chamfer(0.5, { atZ: 5 }) chamfers top edges', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).chamfer(0.5, { atZ: 5 });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -520,7 +520,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('B1: box.shell(1, { face: { atZ: 5 } }) hollows out leaving the top open', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).shell(1, { face: { atZ: 5 } });`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -569,7 +569,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.sweep end-to-end pipe via RecomputeEngine produces a valid solid (volume ≈ 4 × 50 = 200)', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       return profile.sweep([[0,0,0], [0,0,50]]);
@@ -586,7 +586,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.sweep with rail of 1 point → feature.sweep.invalid-rail diagnostic', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       return profile.sweep([[0,0,0]]);
@@ -601,7 +601,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.sweep with NaN in rail → feature.sweep.invalid-rail', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const profile = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       return profile.sweep([[0,0,0], [0, NaN, 10]]);
@@ -616,7 +616,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.sweep with helix rail and frenet=true produces a valid spring solid', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const rail = helix({ radius: 8, pitch: 4, turns: 2, pointsPerTurn: 16 });
       const profile = path().moveTo(-0.5,-0.5).lineTo(0.5,-0.5).lineTo(0.5,0.5).lineTo(-0.5,0.5).close();
@@ -632,7 +632,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('rail.length > 5000 emits feature.sweep.invalid-rail with hint to reduce pointsPerTurn', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       // Synthesize a 5001-point rail directly (faster than helix(...) at high resolution).
       const rail = [];
@@ -710,7 +710,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.loft end-to-end via RecomputeEngine: 2-square frustum produces volume in [260, 300]', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
@@ -728,7 +728,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Sketch.loft([]) (empty array) → feature.loft.empty-sections', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       return s1.loft([]);
@@ -743,7 +743,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('opts.planes length mismatch → feature.loft.invalid-planes', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
@@ -760,7 +760,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('I-B: loft with missing upstream sketch input emits feature.loft.bad-sketch', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     // Construct a script that produces an upstream sketch that fails to lower
     // (lineTo as first command violates the moveTo-first invariant), so when
     // the loft tries to read sketch_1, it's absent from inputs.byKey.
@@ -786,7 +786,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('I-A: loft success path with explicit { planes: [...] } at axial origins', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
@@ -810,7 +810,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('I-A: loft success path with non-axial planes origin', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `
       const s1 = path().moveTo(-1,-1).lineTo(1,-1).lineTo(1,1).lineTo(-1,1).close();
       const s2 = path().moveTo(-2,-2).lineTo(2,-2).lineTo(2,2).lineTo(-2,2).close();
@@ -893,7 +893,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Shape.fillet([{edges, radius: -1}]) → feature.fillet.invalid-group at lowering', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).fillet([{ edges: { atZ: 5 }, radius: -1 }]);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -915,7 +915,7 @@ describe('path() builder + Sketch capture', () => {
 
   it('Shape.fillet([]) (empty array) → feature.fillet.empty-groups at lowering', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return box(10, 10, 5).fillet([]);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());
@@ -1091,7 +1091,7 @@ describe('path() builder + Sketch capture', () => {
 
     it('reflected sketch extrudes to a valid solid with the same volume as the original', async () => {
       const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-      const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+      const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
       // 10x5 rectangle extruded by 2 = volume 100
       const codeOriginal = `return path().moveTo(0,0).lineTo(10,0).lineTo(10,5).lineTo(0,5).close().extrude(2);`;
       const codeReflected = `return path().moveTo(0,0).lineTo(10,0).lineTo(10,5).lineTo(0,5).close().reflect('x').extrude(2);`;
@@ -1125,7 +1125,7 @@ describe('path() builder + Sketch capture', () => {
 
     it('I4: upstream sketch failure cascades to reflected sketch via recompute.input.missing', async () => {
       const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-      const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+      const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
       // The upstream sketch is invalid (lineTo without moveTo first), so it
       // fails to lower and is never added to the shapes map. The reflected
       // sketch has inputs.source pointing at the upstream; the engine detects

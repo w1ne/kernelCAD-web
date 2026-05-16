@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { getFaceLineageTool } from './getFaceLineage';
 
 describe('get_face_lineage', () => {

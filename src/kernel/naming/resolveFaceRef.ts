@@ -14,13 +14,13 @@
  *    as a warn-severity diagnostic in `result.warnings`).
  */
 
-import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
-import type { FaceRef } from '../intent/types';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { FaceRef } from '../../intent/types';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FaceHash } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
-import { HINT_TEMPLATES } from '../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
 
 export type ResolveResult =
   | { ok: true; faceHash: FaceHash; warnings?: CompilerDiagnostic[] }

@@ -9,7 +9,7 @@
 import * as replicad from 'replicad';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
-import { OcctBackend, initOcct } from '../../backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { Shape } from '../../capture/proxy';
 import type { CaptureSession } from '../../capture/captureSession';
 import { KernelError } from '../../intent/kernelError';

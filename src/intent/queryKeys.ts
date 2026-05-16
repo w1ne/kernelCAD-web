@@ -14,7 +14,7 @@
 // key in the array fails at compile time. The Exclude-extends-never check
 // below also catches the REVERSE direction: a key added to the type but
 // missing from the array (rc.9 review I1).
-import type { EdgeQuery, FaceQuery } from '../backends/occt/edgeQueries';
+import type { EdgeQuery, FaceQuery } from '../kernel/backends/occt/edgeQueries';
 
 export const EDGE_QUERY_KEYS: ReadonlyArray<keyof EdgeQuery> = [
   'atZ', 'atX', 'atY', 'near', 'within', 'parallel', 'perpendicular',

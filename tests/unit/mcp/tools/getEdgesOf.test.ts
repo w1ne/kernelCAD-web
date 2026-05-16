@@ -1,7 +1,7 @@
 // tests/unit/mcp/tools/getEdgesOf.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getEdgesOfTool } from '../../../../src/mcp/tools/getEdgesOf';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('getEdgesOfTool', () => {
   beforeAll(async () => { await initOcct(); });

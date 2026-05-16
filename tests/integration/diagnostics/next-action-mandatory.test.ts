@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
 import { exportStlTool } from '../../../src/mcp/tools/exportStl';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { NEXT_ACTIONS } from '../../../src/shared/diagnostics/nextAction';
 
 beforeAll(async () => { await initOcct(); });

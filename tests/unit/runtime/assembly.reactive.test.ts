@@ -19,8 +19,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { Vec3Param } from '../../../src/intent/types';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modules/api';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
 import { resolveParams } from '../../../src/runtime/resolveParams';
 

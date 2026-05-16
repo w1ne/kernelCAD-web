@@ -1,7 +1,7 @@
 // tests/unit/mcp/tools/getShapeInfo.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getShapeInfoTool } from '../../../../src/mcp/tools/getShapeInfo';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('getShapeInfoTool', () => {
   beforeAll(async () => { await initOcct(); });

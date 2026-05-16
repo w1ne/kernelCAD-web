@@ -13,8 +13,8 @@
 import type { Edge, Face } from 'replicad';
 import { measureArea } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import { KernelError } from '../../intent/kernelError';
-import type { Vec3 } from '../../intent/types';
+import { KernelError } from '../../../intent/kernelError';
+import type { Vec3 } from '../../../intent/types';
 export type { Vec3 };
 
 export type BoundingRegion = {

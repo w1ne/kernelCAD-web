@@ -1,6 +1,6 @@
 // src/capture/featureMeshing.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../backends/occt/occtBackend';
+import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { runScript } from '../script-runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
 

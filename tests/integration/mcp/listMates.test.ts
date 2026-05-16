@@ -4,7 +4,7 @@
 // surface over the active assembly's `__mates()` accessor.
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
 import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
 import { listMatesTool } from '../../../src/mcp/tools/listMates';

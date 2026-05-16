@@ -1,7 +1,7 @@
 // src/mcp/tools/listTopology.ts
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../backends/occt/occtLowerer';
-import { OcctBackend } from '../../backends/occt/occtBackend';
+import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListTopologyInput {

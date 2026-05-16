@@ -13,9 +13,9 @@
 // outline modulo floating-point noise — no per-bend un-rotation arithmetic
 // is needed.
 
-import type { FeatureRecord } from '../../intent/featureRecord';
-import { KernelError } from '../../intent/kernelError';
-import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../intent/region';
+import type { FeatureRecord } from '../../../intent/featureRecord';
+import { KernelError } from '../../../intent/kernelError';
+import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../../intent/region';
 
 /**
  * Flatten the bent sheet-metal Shape identified by `terminalId` to a Region.

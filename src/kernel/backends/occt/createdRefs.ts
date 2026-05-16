@@ -11,7 +11,7 @@
 // migration to LowererResult.createdRefs is Phase 3.
 
 import { measureArea, type Face } from 'replicad';
-import type { Vec3, FeatureKind, FeatureId } from '../../intent/types';
+import type { Vec3, FeatureKind, FeatureId } from '../../../intent/types';
 import type { HistoryMap, FaceHash, FaceLineage } from '../../naming/evolutionRecord';
 
 /** Geometric fingerprint captured at face creation. Centroid + normal +

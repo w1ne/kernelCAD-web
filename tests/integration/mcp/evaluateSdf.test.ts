@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateSdfTool } from '../../../src/mcp/tools/evaluateSdf';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 beforeAll(async () => { await initOcct(); });
 

@@ -1,6 +1,6 @@
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureId } from '../intent/types';
-import type { FeatureLowerer, ShapeBackend } from '../backends/backend';
+import type { FeatureLowerer, ShapeBackend } from '../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../shared/diagnostics/codes';
 import { DependencyGraph } from './dependencyGraph';

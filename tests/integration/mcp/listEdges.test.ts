@@ -6,7 +6,7 @@ import { listFaceLabelsTool } from '../../../src/mcp/tools/listFaceLabels';
 
 describe('list_edges MCP tool', () => {
   beforeAll(async () => {
-    const { initOcct } = await import('../../../src/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
   });
 
@@ -30,7 +30,7 @@ describe('list_edges MCP tool', () => {
 
 describe('list_faces MCP tool', () => {
   beforeAll(async () => {
-    const { initOcct } = await import('../../../src/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
   });
 

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { runScript } from './runScript';
-import { initOcct } from '../backends/occt/occtBackend';
+import { initOcct } from '../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FeatureKind } from '../intent/types';
 import type { ParamTable } from '../runtime/paramTable';

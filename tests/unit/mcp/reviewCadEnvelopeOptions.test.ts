@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PoseEnvelopeReviewOptions, PoseEnvelopeReviewResult } from '../../../src/lib/mates/poseEnvelope';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
 
 const reviewPoseEnvelopeSpy = vi.fn<

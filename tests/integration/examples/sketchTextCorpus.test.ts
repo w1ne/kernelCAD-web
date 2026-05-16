@@ -1,7 +1,7 @@
 // tests/integration/examples/sketchTextCorpus.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { resolve } from 'node:path';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { readFileSync } from 'node:fs';
 

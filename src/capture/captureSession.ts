@@ -22,7 +22,7 @@ import type { SoftWarning } from '../runtime/softWarning';
 import { collectParamRefs } from '../runtime/resolveParams';
 import { toParam } from '../runtime/editableHelpers';
 import type { Editable } from '../runtime/paramRef';
-import type { ShapeBackend } from '../backends/backend';
+import type { ShapeBackend } from '../kernel/backends/backend';
 import { KernelError } from '../intent/kernelError';
 import type { Connector } from '../lib/mates/connector';
 import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
@@ -91,14 +91,14 @@ export function buildFaceInputRef(
     return {
       kind: 'face',
       featureId: baseId,
-      ref: { kind: 'query', query: faceVal as import('../backends/occt/edgeQueries').FaceQuery },
+      ref: { kind: 'query', query: faceVal as import('../kernel/backends/occt/edgeQueries').FaceQuery },
     };
   }
   // Bare FaceQuery object (no { face: ... } wrapper)
   return {
     kind: 'face',
     featureId: baseId,
-    ref: { kind: 'query', query: face as import('../backends/occt/edgeQueries').FaceQuery },
+    ref: { kind: 'query', query: face as import('../kernel/backends/occt/edgeQueries').FaceQuery },
   };
 }
 
@@ -896,7 +896,7 @@ function buildEdgeFeatureRef(
       value: {
         kind: 'face',
         featureId: baseId,
-        ref: { kind: 'query', query: faceVal as import('../backends/occt/edgeQueries').FaceQuery },
+        ref: { kind: 'query', query: faceVal as import('../kernel/backends/occt/edgeQueries').FaceQuery },
       },
     };
   }
@@ -936,7 +936,7 @@ function buildEdgeFeatureRef(
         value: {
           kind: 'edge',
           featureId: baseId,
-          ref: { kind: 'query', query: selector as import('../backends/occt/edgeQueries').EdgeQuery },
+          ref: { kind: 'query', query: selector as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
         },
       };
     }
@@ -947,7 +947,7 @@ function buildEdgeFeatureRef(
       value: {
         kind: 'edge',
         featureId: baseId,
-        ref: { kind: 'query', query: selector as import('../backends/occt/edgeQueries').EdgeQuery },
+        ref: { kind: 'query', query: selector as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
       },
     };
   }
@@ -957,7 +957,7 @@ function buildEdgeFeatureRef(
     value: {
       kind: 'edge',
       featureId: baseId,
-      ref: { kind: 'query', query: selector as unknown as import('../backends/occt/edgeQueries').EdgeQuery },
+      ref: { kind: 'query', query: selector as unknown as import('../kernel/backends/occt/edgeQueries').EdgeQuery },
     },
   };
 }

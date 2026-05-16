@@ -10,7 +10,7 @@ import {
   selectEdge as selectEdgeBackend,
   type EdgeQuery,
   type EdgeSegment,
-} from '../backends/occt/edgeQueries';
+} from '../kernel/backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { createSketchModule, type SketchModule } from './sketch';
 import { fontPath, type FontPath } from '../lib/fonts';

@@ -5,19 +5,19 @@ import type {
   LowerResult,
   ShapeBackend,
 } from '../backend';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../intent/types';
-import { isValidPlaneSpec } from '../../intent/types';
-import { forwardKinematics, type NumericPoses } from '../../capture/forwardKinematics';
-import type { AssemblyJointStored, AssemblyPartStored } from '../../capture/assembly';
-import { mateFk, type ResolvedMatePart } from '../../lib/mates/solver';
-import { expandCoupledPoses, type MateCouplingRecord } from '../../lib/mates/coupledPoses';
-import type { Connector } from '../../lib/mates/connector';
-import type { MateRecord } from '../../lib/mates/mate';
-import type { MateType } from '../../lib/mates/mateTypes';
+import type { FeatureRecord } from '../../../intent/featureRecord';
+import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../intent/types';
+import { isValidPlaneSpec } from '../../../intent/types';
+import { forwardKinematics, type NumericPoses } from '../../../capture/forwardKinematics';
+import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
+import { mateFk, type ResolvedMatePart } from '../../../lib/mates/solver';
+import { expandCoupledPoses, type MateCouplingRecord } from '../../../lib/mates/coupledPoses';
+import type { Connector } from '../../../lib/mates/connector';
+import type { MateRecord } from '../../../lib/mates/mate';
+import type { MateType } from '../../../lib/mates/mateTypes';
 import { resolveTopologyOriginOnBackend } from './connectorTopology';
-import { KernelError } from '../../intent/kernelError';
-import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { KernelError } from '../../../intent/kernelError';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
 import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
@@ -25,10 +25,10 @@ import {
 import { pickEdges, pickFace } from './edgeSelection';
 import { computeDihedralPublic } from './edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
-import { findRootSheetMetalRecord } from '../../modules/sheetMetal';
+import { findRootSheetMetalRecord } from '../../../modules/sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../sceneBackend';
 import { lookupSourceColor } from './lookupSourceColor';
-import { Transform } from '../../runtime/se3';
+import { Transform } from '../../../runtime/se3';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -46,7 +46,7 @@ import {
 import { propagateTransformHistory } from '../../naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../naming/evolutionRecord';
 import { retagInstance } from './patternHistory';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../../shared/diagnostics/codes';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -154,7 +154,7 @@ export function applyVariableEdgeFeature(
   }
 
   // N3 fix: runtime-narrow inputs.base to a 'feature' ref before extracting id.
-  const baseRef = feature.inputs.base as import('../../intent/types').FeatureRef | undefined;
+  const baseRef = feature.inputs.base as import('../../../intent/types').FeatureRef | undefined;
   if (!baseRef || (baseRef as { kind?: string }).kind !== 'feature') {
     diagnostics.push({
       target: 'export-occt',
@@ -166,7 +166,7 @@ export function applyVariableEdgeFeature(
     });
     return { ok: false, diagnostics };
   }
-  const narrowedBase: import('../../intent/types').FeatureRef = baseRef as { kind: 'feature'; id: import('../../intent/types').FeatureId };
+  const narrowedBase: import('../../../intent/types').FeatureRef = baseRef as { kind: 'feature'; id: import('../../../intent/types').FeatureId };
 
   // Per-group resolution loop. Build a synthetic one-input FeatureRecord
   // per group so we can reuse pickEdges' canonical/label/query/segments
@@ -190,8 +190,8 @@ export function applyVariableEdgeFeature(
     }
 
     // I1 fix: replace silent-drop conditional spreads with an explicit kind switch.
-    const ref = feature.inputs[`edge_group_${i}`] as import('../../intent/types').FeatureRef | undefined;
-    const synthInputs: Record<string, import('../../intent/types').FeatureRef> = {
+    const ref = feature.inputs[`edge_group_${i}`] as import('../../../intent/types').FeatureRef | undefined;
+    const synthInputs: Record<string, import('../../../intent/types').FeatureRef> = {
       base: narrowedBase,
     };
     if (ref) {
@@ -311,8 +311,8 @@ export function createOcctLowerer(
     scriptDir?: string;
     /** W1.3: surface-record lookup. Optional for callers that don't ship NURBS. */
     getSurfaceRecord?: (
-      id: import('../../intent/surfaceRecord').SurfaceId,
-    ) => import('../../intent/surfaceRecord').SurfaceRecord | undefined;
+      id: import('../../../intent/surfaceRecord').SurfaceId,
+    ) => import('../../../intent/surfaceRecord').SurfaceRecord | undefined;
   },
 ): OcctLowerer {
   const lowerer = new OcctLowerer();
@@ -368,7 +368,7 @@ export class OcctLowerer implements FeatureLowerer {
    *  surface ref consumption per surface id; reused across `surfaceThicken`
    *  / `surfaceToShape` records that point at the same surface. */
   surfaceCache: Map<
-    import('../../intent/surfaceRecord').SurfaceId,
+    import('../../../intent/surfaceRecord').SurfaceId,
     import('./nurbsSurfaceLowerer').BuiltSurface
   > = new Map();
 
@@ -376,8 +376,8 @@ export class OcctLowerer implements FeatureLowerer {
    *  time. Provided by `createOcctLowerer(session)`; undefined if the lowerer
    *  was instantiated without a session (legacy / unit-test code paths). */
   getSurfaceRecord?: (
-    id: import('../../intent/surfaceRecord').SurfaceId,
-  ) => import('../../intent/surfaceRecord').SurfaceRecord | undefined;
+    id: import('../../../intent/surfaceRecord').SurfaceId,
+  ) => import('../../../intent/surfaceRecord').SurfaceRecord | undefined;
 
   /**
    * Resolve the Replicad Face referenced by `record.inputs.surface`. Order of
@@ -617,7 +617,7 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         try {
-          shape = OcctBackend.fromSketchCommands(commands as import('../../capture/sketch').SketchCommand[]);
+          shape = OcctBackend.fromSketchCommands(commands as import('../../../capture/sketch').SketchCommand[]);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           // Narrow degenerate-arc cases (radiusArc-only for now) to the kept

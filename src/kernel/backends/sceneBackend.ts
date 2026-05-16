@@ -1,5 +1,5 @@
 import type { ShapeBackend, BackendTarget } from './backend';
-import type { Transform } from '../runtime/se3';
+import type { Transform } from '../../runtime/se3';
 
 export interface SceneBackendPart {
   readonly name: string;

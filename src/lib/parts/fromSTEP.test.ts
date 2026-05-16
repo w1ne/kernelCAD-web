@@ -11,9 +11,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../../capture/captureSession';
 import { createApi } from '../../modules/api';
-import { OcctBackend, initOcct } from '../../backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
+import { OcctLowerer } from '../../kernel/backends/occt/occtLowerer';
 
 let stepPath: string;
 let tmpDir: string;

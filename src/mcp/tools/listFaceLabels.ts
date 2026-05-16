@@ -7,7 +7,7 @@
 // shape before referencing labels in fillet/chamfer/shell.
 
 import type { CanonicalFace } from '../../intent/types';
-import type { FaceQuery } from '../../backends/occt/edgeQueries';
+import type { FaceQuery } from '../../kernel/backends/occt/edgeQueries';
 import type { FaceLabelsMap } from '../../intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
 

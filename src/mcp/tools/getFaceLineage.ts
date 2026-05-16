@@ -12,11 +12,11 @@
 
 import type { FaceRef, EdgeRef, FeatureKind } from '../../intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/codes';
-import type { FaceSnapshot } from '../../backends/occt/createdRefs';
+import type { FaceSnapshot } from '../../kernel/backends/occt/createdRefs';
 import { runMcpScript } from '../runMcpScript';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { createOcctLowerer } from '../../backends/occt/occtLowerer';
-import { OcctBackend } from '../../backends/occt/occtBackend';
+import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { parseFaceSelector } from '../../runtime/selectorParser';
 
 export interface GetFaceLineageInput {

@@ -7,7 +7,7 @@
 //     emits 'feature.invalid-args' + a hint substring.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { kernelErrorToDiagnostic } from '../../../src/script-runtime/kernelErrorToDiagnostic';
 

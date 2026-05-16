@@ -1,7 +1,7 @@
 // tests/unit/backends/occt/patternHistory.test.ts
 import { describe, it, expect } from 'vitest';
-import { retagInstance } from '../../../../src/backends/occt/patternHistory';
-import type { HistoryMap, FaceLineage } from '../../../../src/naming/evolutionRecord';
+import { retagInstance } from '../../../../src/kernel/backends/occt/patternHistory';
+import type { HistoryMap, FaceLineage } from '../../../../src/kernel/naming/evolutionRecord';
 
 const lineageWith = (featureId: string | undefined, labelName?: string): FaceLineage => ({
   rootHash: 'root',

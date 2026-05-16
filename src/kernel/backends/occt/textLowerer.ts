@@ -6,11 +6,11 @@
 // then applies alignment, position, and rotation as 2D Drawing transforms.
 
 import * as replicad from 'replicad';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { FeatureRecord } from '../../../intent/featureRecord';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from './occtBackend';
-import { resolveAndLoadFont } from '../../lib/fonts';
-import { KernelError } from '../../intent/kernelError';
+import { resolveAndLoadFont } from '../../../lib/fonts';
+import { KernelError } from '../../../intent/kernelError';
 
 export interface TextMetadata {
   textContent: string;

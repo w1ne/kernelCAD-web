@@ -2,12 +2,12 @@
 import type { FeatureId, FeatureKind, FeatureRef } from '../intent/types';
 import type { FeatureRecord } from '../intent/featureRecord';
 import type { FaceGeometry } from '../lib/workerTypes';
-import type { ShapeBackend } from '../backends/backend';
-import { OcctLowerer } from '../backends/occt/occtLowerer';
-import { OcctBackend, initOcct } from '../backends/occt/occtBackend';
+import type { ShapeBackend } from '../kernel/backends/backend';
+import { OcctLowerer } from '../kernel/backends/occt/occtLowerer';
+import { OcctBackend, initOcct } from '../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import { meshShape } from '../backends/occt/meshing';
-import { isSceneBackend } from '../backends/sceneBackend';
+import { meshShape } from '../kernel/backends/occt/meshing';
+import { isSceneBackend } from '../kernel/backends/sceneBackend';
 import { transformFeatureMesh } from './transformMesh';
 
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */

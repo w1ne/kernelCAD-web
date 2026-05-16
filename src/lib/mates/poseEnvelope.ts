@@ -1,8 +1,8 @@
 import type { Assembly } from '../../capture/assembly';
 import type { NumericPoses } from '../../capture/forwardKinematics';
-import { createOcctLowerer } from '../../backends/occt/occtLowerer';
-import { initOcct } from '../../backends/occt/occtBackend';
-import { isSceneBackend } from '../../backends/sceneBackend';
+import { createOcctLowerer } from '../../kernel/backends/occt/occtLowerer';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
+import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import type { Vec3 } from '../../intent/types';
 import { currentValue } from '../../runtime/editableHelpers';

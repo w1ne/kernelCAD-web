@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runAndExport, type ExportFormat } from '../../script-runtime/export';
 import { formatHuman } from '../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';

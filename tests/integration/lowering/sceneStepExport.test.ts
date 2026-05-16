@@ -25,11 +25,11 @@
 // part is independently selectable in downstream CAD viewers.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { runAndExport } from '../../../src/script-runtime/export';
-import { initOcct, exportSceneToSTEPAsync } from '../../../src/backends/occt/occtBackend';
+import { initOcct, exportSceneToSTEPAsync } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
-import { isSceneBackend, type SceneBackend } from '../../../src/backends/sceneBackend';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
+import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
 
 describe('Scene STEP export preserves part names + colors', () => {
   beforeAll(async () => { await initOcct(); });

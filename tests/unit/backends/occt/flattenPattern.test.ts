@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import { flattenPattern } from '../../../../src/backends/occt/flattenPattern';
+import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
+import { flattenPattern } from '../../../../src/kernel/backends/occt/flattenPattern';
 
 describe('flattenPattern — single-bend roundtrip', () => {
   beforeAll(async () => { await initOcct(); });

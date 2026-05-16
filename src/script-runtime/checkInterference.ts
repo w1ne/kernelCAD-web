@@ -14,9 +14,9 @@
 
 import { runScript } from './runScript';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import { createOcctLowerer } from '../backends/occt/occtLowerer';
-import { isSceneBackend, type SceneBackend } from '../backends/sceneBackend';
-import type { OcctBackend } from '../backends/occt/occtBackend';
+import { createOcctLowerer } from '../kernel/backends/occt/occtLowerer';
+import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
+import type { OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { Shape } from '../capture/proxy';
 import { Scene } from '../intent/scene';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';

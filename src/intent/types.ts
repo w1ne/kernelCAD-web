@@ -75,7 +75,7 @@ export type FaceRef =
   | { kind: 'created'; rewriteId: RewriteId; slot: string }
   | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef }
   | { kind: 'label'; name: string }
-  | { kind: 'query'; query: import('../backends/occt/edgeQueries').FaceQuery };
+  | { kind: 'query'; query: import('../kernel/backends/occt/edgeQueries').FaceQuery };
 
 export type EdgeRef =
   | { kind: 'tracked'; edgeName: string; selector: 'edge'|'start'|'end'|'midpoint' }
@@ -83,7 +83,7 @@ export type EdgeRef =
       selector: 'edge'|'start'|'end'|'midpoint' }
   | { kind: 'propagated'; rewriteId: RewriteId; source: EdgeRef;
       selector: 'edge'|'start'|'end'|'midpoint' }
-  | { kind: 'query'; query: import('../backends/occt/edgeQueries').EdgeQuery }
+  | { kind: 'query'; query: import('../kernel/backends/occt/edgeQueries').EdgeQuery }
   | { kind: 'segment'; segmentId: string }
   | { kind: 'segments'; segmentIds: string[] };
 

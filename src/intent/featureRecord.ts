@@ -3,7 +3,7 @@ import type {
 } from './types';
 // Re-export so consumers can import CanonicalFace from the same module as FaceLabelsMap.
 export type { CanonicalFace };
-import type { FaceQuery } from '../backends/occt/edgeQueries';
+import type { FaceQuery } from '../kernel/backends/occt/edgeQueries';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }

@@ -6,10 +6,10 @@
 // `wall-back`) resolve via FaceSelector.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
+import { OcctLowerer } from '../../../../src/kernel/backends/occt/occtLowerer';
 
 async function lowerScript(code: string): Promise<{
   shape: OcctBackend;

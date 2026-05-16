@@ -15,7 +15,7 @@
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { initOcct } from '../../backends/occt/occtBackend';
+import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runScript } from '../../script-runtime/runScript';
 import { checkInterference } from '../../script-runtime/checkInterference';
 import { validateAssembly, type ValidatorResult } from '../../lib/mates/validator';

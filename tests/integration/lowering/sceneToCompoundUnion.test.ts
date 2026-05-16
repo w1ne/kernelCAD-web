@@ -19,10 +19,10 @@
 //     overlap; equal if disjoint), and chains via .fillet().
 //   - hand-constructed Scene with no exportFn throws a clear KernelError.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
+import { OcctLowerer } from '../../../src/kernel/backends/occt/occtLowerer';
 import { Scene } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';
 import { KernelError } from '../../../src/intent/kernelError';

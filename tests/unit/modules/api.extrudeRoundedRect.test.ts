@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
 
 describe('extrudeRoundedRect top-level API', () => {
@@ -20,7 +20,7 @@ describe('extrudeRoundedRect top-level API', () => {
 
   it('lowers + recomputes successfully', async () => {
     const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { OcctLowerer } = await import('../../../src/kernel/backends/occt/occtLowerer');
     const code = `return extrudeRoundedRect(40, 20, 3, 4);`;
     const result = await runScript({ code, fileName: 'test.kcad.ts' });
     const engine = new RecomputeEngine(new OcctLowerer());

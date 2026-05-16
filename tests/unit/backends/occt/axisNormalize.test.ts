@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeAxis } from '../../../../src/backends/occt/occtLowerer';
+import { normalizeAxis } from '../../../../src/kernel/backends/occt/occtLowerer';
 
 describe('normalizeAxis', () => {
   it('normalizes [0, 0, 2] to [0, 0, 1]', () => {
