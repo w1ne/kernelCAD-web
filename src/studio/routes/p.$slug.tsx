@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { FunnelViewer } from '../funnel/components/FunnelViewer';
-import { CodePane } from '../funnel/components/CodePane';
-import { ExportButtons } from '../funnel/components/ExportButtons';
-import { SignInButton } from '../funnel/components/SignInButton';
-import { useSession } from '../funnel/hooks/useSession';
-import { fetchProjectBySlug, type ProjectRow } from '../funnel/lib/apiClient';
+import { FunnelViewer } from '../../funnel/components/FunnelViewer';
+import { CodePane } from '../../funnel/components/CodePane';
+import { ExportButtons } from '../../funnel/components/ExportButtons';
+import { SignInButton } from '../../funnel/components/SignInButton';
+import { useSession } from '../../funnel/hooks/useSession';
+import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,

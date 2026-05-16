@@ -7,8 +7,8 @@
  * auto-executes whenever `code` changes; inner component reads geometry from
  * context and feeds Viewer with the same props Viewport.tsx uses.
  */
-import Viewer from '../../components/Viewer';
-import { WorkbenchProvider, useWorkbench } from '../../context/WorkbenchContext';
+import Viewer from '../../studio/components/Viewer';
+import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
 
 export interface FunnelViewerProps {
   code: string;

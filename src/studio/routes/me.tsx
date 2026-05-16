@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { useSession } from '../funnel/hooks/useSession';
-import { listMyProjects, type ProjectRow } from '../funnel/lib/apiClient';
+import { useSession } from '../../funnel/hooks/useSession';
+import { listMyProjects, type ProjectRow } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/me')({
   component: MePage,

@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { FunnelViewer } from '../funnel/components/FunnelViewer';
-import { CodePane } from '../funnel/components/CodePane';
-import { SuggestionChips } from '../funnel/components/SuggestionChips';
-import { ErrorPanel } from '../funnel/components/ErrorPanel';
-import { SignInButton } from '../funnel/components/SignInButton';
-import { useGeneration } from '../funnel/hooks/useGeneration';
-import { useSession } from '../funnel/hooks/useSession';
-import { fetchGeneration, saveProject, type GenerationRow } from '../funnel/lib/apiClient';
+import { FunnelViewer } from '../../funnel/components/FunnelViewer';
+import { CodePane } from '../../funnel/components/CodePane';
+import { SuggestionChips } from '../../funnel/components/SuggestionChips';
+import { ErrorPanel } from '../../funnel/components/ErrorPanel';
+import { SignInButton } from '../../funnel/components/SignInButton';
+import { useGeneration } from '../../funnel/hooks/useGeneration';
+import { useSession } from '../../funnel/hooks/useSession';
+import { fetchGeneration, saveProject, type GenerationRow } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/g/$genId')({
   component: AnonGenPage,
