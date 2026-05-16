@@ -1,4 +1,52 @@
-# kernelCAD v0.7.5
+# kernelCAD v0.8.0
+
+## v0.8.0 — 2026-05-16 — NURBS Slice A: PBR material + reference-image overlay + from-reference skill rewrite
+
+v0.8.0 unlocks the visible-quality lane of the from-reference loop. Shapes carry full PBR materials; the Studio viewport can show a reference photograph behind the model; the from-reference skill tree prescribes when to reach for variable fillet, mirror, and PBR; and the `eyewear-wayfarer-front` eval artifact uses all of them.
+
+### Added — PBR material on Shape
+
+- `Shape.material({ baseColor, metalness?, roughness?, clearcoat?, clearcoatRoughness?, ior?, transmission?, sheen? }): Shape`. Identity breaks at boolean operations (same convention as `.color()`). Numeric fields clamped to `[0, 1]` (`ior` to `[1.0, 2.5]`) with a `feature.material.value-clamped` soft warning when clamping occurs. Throws on non-finite numeric input (consistent with `rotate` / `alongAxis`).
+- Renderer now constructs `THREE.MeshPhysicalMaterial` (replaces `MeshStandardMaterial`). All fields are honored: clearcoat, IOR, transmission, sheen.
+- Existing `.color('#hex')` and `.color('servo')` callers continue to work; they promote to `{ baseColor }` at the bridge layer.
+
+### Added — referenceImage construction-only geometry
+
+- `referenceImage(path, { plane, anchor?, scale?, opacity?, flipU?, flipV? }): ReferenceImageHandle`. Loads a PNG/JPG/JPEG/WEBP as a textured `THREE.PlaneGeometry` overlay in the Studio viewport. Plane spec, file existence, format, and scale all validated at capture time. The record is marked `metadata.virtual = true` and skipped by the OCCT lowerer.
+- `kernelcad render --hide-reference-images` flag; the eval render path passes it by default so scoring never sees the overlay.
+
+### Added — from-reference skill tree
+
+- `kernelcad-from-reference` refactored into 5 sub-skills: `prepare-prompt`, `blockout-model`, `use-the-available-kernel`, `image-replicator`, `render-inspect`. The orchestrator names the required reading order.
+- `use-the-available-kernel/SKILL.md` is the new prescriptive skill — 7 rules for when to reach for which primitive (variable fillet for non-uniform corners, mirror for symmetric parts, surfaceFromCurves for varying cross-sections, NURBS curves for organic silhouettes, surfaceFromBoundary for 4-bounded patches, PBR material for glossy products, referenceImage for reference-driven authoring).
+
+### Added — diagnostics (6 new codes)
+
+- `feature.reference-image.path-not-found` (error)
+- `feature.reference-image.invalid-plane` (error)
+- `feature.reference-image.scale-out-of-range` (warning)
+- `feature.reference-image.format-unsupported` (error)
+- `feature.material.invalid-base-color` (error)
+- `feature.material.value-clamped` (info)
+
+### Eval artifact — eyewear-wayfarer-front
+
+- Rewritten from 425 LoC to 322 LoC, demonstrably using `referenceImage`, `Shape.material({PBR})`, `.mirror('yz')`, variable `.fillet`, variable `.chamfer`. Includes temples and a smoother brow curve.
+- Score at pose 30,15: silhouetteIoU **0.675** (gate 0.45 ✓), composite **0.487** (gate 0.30 ✓), ssim **0.165** (gate 0.35 ✗ — see below). Lift from pre-Slice-A: +32% silhouette, +30% composite, +21% SSIM.
+- Harness adds `'SSIM >= 0.35 vs photo'` to scored gates. **The gate fails today** — the residual gap is structural (NURBS-quality brow curve, ground plane / shadow in render, finer OCCT BRepMesh tessellation, full-length temples). Closing it is on the next slice's roadmap. The gate is kept at 0.35 per the don't-tamper-with-gates rule; `entries.json` `meta-glasses.featured` stays `false`.
+
+### Fixed
+
+- `--pose <az,el>` CLI flag was dropped in the develop-merge layer-consolidation refactor and is re-added through `render.ts` / `headlessRender.ts` / `DemoPlayerPage.tsx`. The eval pipeline had been silently broken since the merge.
+- `showOnlyTailFeatures()` added to the demo-player imperative API so headless renders don't include intermediate construction debris.
+- Production Cloudflare Pages deploy was building `build-demo` + `render-brand` but missing `build-gallery.ts` + `link-public.sh`. CI now builds the gallery JSON; the static gallery section is no longer empty in production.
+- `scripts/lib/exportGlb.ts` repointed from pre-refactor `src/cli/` and `src/backends/` paths to the post-refactor `src/agent/cli/` and `src/kernel/backends/` paths.
+
+### Deferred to next polish slice
+
+- Viewport toolbar toggle for reference-images visibility.
+- Export filters for `metadata.virtual` records (STL / STEP / GLB).
+- MCP tools `add_material` and `add_reference_image`.
 
 ## v0.7.5 — 2026-05-16 — Kinematic grounding gates
 
