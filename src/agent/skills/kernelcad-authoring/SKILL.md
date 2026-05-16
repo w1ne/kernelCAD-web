@@ -449,6 +449,94 @@ After authoring, run before reporting done:
 
 For visual / reference-driven tasks the gate set extends — see `kernelcad-from-reference`.
 
+## Materials
+
+`Shape.material(opts)` applies a PBR material to a shape. Use it instead of
+`.color()` when the reference shows gloss, specular highlights, or translucency.
+
+**Critical rule:** apply `.material()` to leaf parts BEFORE they enter a boolean.
+A `.material()` call on a post-union root is a no-op — the kernel cannot
+retroactively assign material to the input leaves of a boolean.
+
+Common presets:
+
+```typescript
+// Glossy acetate (eyewear, cases)
+part.material({
+  baseColor: '#0a0a0a',
+  metalness: 0.0,
+  roughness: 0.15,
+  clearcoat: 0.8,
+  clearcoatRoughness: 0.05,
+  ior: 1.55,
+});
+
+// Brushed aluminum (enclosures, brackets)
+part.material({
+  baseColor: '#b0b0b0',
+  metalness: 1.0,
+  roughness: 0.3,
+});
+
+// Clear glass (lenses, domes)
+part.material({
+  baseColor: '#ffffff',
+  metalness: 0.0,
+  roughness: 0.0,
+  transmission: 0.95,
+  ior: 1.5,
+});
+
+// Matte plastic (housings, brackets)
+part.material({
+  baseColor: '#2a2a2a',
+  metalness: 0.0,
+  roughness: 0.65,
+});
+```
+
+For schematic coloring (servo, frame, gear, beam, shaft, plate, pin, tool) where
+photo-accuracy is not required, the role-token shortcut `.color('servo')` etc.
+is sufficient and cleaner. Use `.material()` only when the reference demands it.
+
+## Reference images
+
+`referenceImage(path, opts)` places a reference photo as a plane overlay in the
+Studio viewport. It is a virtual node — no OCCT geometry is created, and the
+image is hidden during scoring (`--hide-reference-images`).
+
+```typescript
+// Front-view overlay (XZ plane) — typical for flat products facing the camera
+referenceImage('./reference.jpg', {
+  plane: 'xz',
+  anchor: 'origin',
+  scale: 'fit-bbox',   // auto-scales to match the model's bounding box
+  opacity: 0.4,        // ghost behind the model; adjust to taste
+});
+
+// Top-down overlay (XY plane) — for PCBs, floor plans, plate layouts
+referenceImage('./top-view.jpg', {
+  plane: 'xy',
+  anchor: 'origin',
+  scale: 'fit-bbox',
+  opacity: 0.3,
+});
+
+// Side overlay (YZ plane) — for profiles, silhouettes from the right
+referenceImage('./side.png', {
+  plane: 'yz',
+  anchor: 'origin',
+  scale: { width: 130 },   // explicit width in mm; height auto-computed
+  opacity: 0.5,
+  flipU: true,             // mirror horizontal if the reference is from the left
+});
+```
+
+Multiple `referenceImage()` calls are allowed — one per view plane. Path is
+resolved relative to the calling `.kcad.ts` file. Supported formats: `.png`,
+`.jpg`, `.jpeg`, `.webp`. Validation errors (missing file, bad format, invalid
+plane) are pushed as diagnostics on the returned handle rather than thrown.
+
 ## Related skills
 
 - `kernelcad-features` — load when adding fillets, chamfers, shells, holes, or cutouts.
