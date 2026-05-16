@@ -1,5 +1,5 @@
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
-import type { Assembly, AssemblyPartStored, TransmissionIntentRecord } from '../../shared/capture/assembly';
+import type { Assembly, AssemblyPartStored, TransmissionIntentRecord } from '../../capture/assembly';
 import type { Vec3 } from '../../intent/types';
 import {
   reviewMechanicalPlausibility,

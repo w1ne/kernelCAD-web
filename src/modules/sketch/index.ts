@@ -5,7 +5,7 @@
 // rendered string + opts. The OCCT lowerer dispatches on `metadata.textContent`.
 
 import type { CaptureSession } from '../../capture/captureSession';
-import { Sketch } from '../../shared/capture/sketch';
+import { Sketch } from '../../capture/sketch';
 import { KernelError } from '../../intent/kernelError';
 import { toParam } from '../../runtime/editableHelpers';
 import type { Editable } from '../../runtime/paramRef';

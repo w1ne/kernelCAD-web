@@ -5,7 +5,7 @@
 // serializes each `Transform` to a plain `{ translation, rotateAxis,
 // rotateDeg }` object via the existing `decomposeToTranslateAndRotate()`.
 
-import type { Assembly } from '../../shared/capture/assembly';
+import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
 import { solveMates, type SolveStatus } from '../../lib/mates/solver';
 import { getActiveMcpSession } from '../activeSession';

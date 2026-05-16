@@ -1,32 +1,32 @@
-import { lookupSourceColor } from '../../backends/occt/lookupSourceColor';
-import { KernelError } from '../../intent/kernelError';
-import { Scene, type SceneDiagnostic, type ScenePart } from '../../intent/scene';
-import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../intent/types';
-import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../../intent/types';
+import { lookupSourceColor } from '../backends/occt/lookupSourceColor';
+import { KernelError } from '../intent/kernelError';
+import { Scene, type SceneDiagnostic, type ScenePart } from '../intent/scene';
+import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
+import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
 import {
   makeConnector,
   type Connector,
   type ConnectorOrigin,
   type ConnectorType,
-} from '../../lib/mates/connector';
-import type { MateCouplingRecord } from '../../lib/mates/coupledPoses';
+} from '../lib/mates/connector';
+import type { MateCouplingRecord } from '../lib/mates/coupledPoses';
 import {
   parseConnectorRef,
   type MateLimitRange,
   type MatePose,
   type MateRecord,
-} from '../../lib/mates/mate';
-import { isCompatiblePair, type MateType } from '../../lib/mates/mateTypes';
+} from '../lib/mates/mate';
+import { isCompatiblePair, type MateType } from '../lib/mates/mateTypes';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
-} from '../../lib/mates/poseEnvelope';
-import { solveMates } from '../../lib/mates/solver';
-import { validateAssemblyWithMates } from '../../lib/mates/validator';
-import { currentValue, toParam, toVec3Param } from '../../runtime/editableHelpers';
-import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../runtime/paramRef';
-import { Transform } from '../../runtime/se3';
-import type { CaptureSession } from '../../capture/captureSession';
+} from '../lib/mates/poseEnvelope';
+import { solveMates } from '../lib/mates/solver';
+import { validateAssemblyWithMates } from '../lib/mates/validator';
+import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
+import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
+import { Transform } from '../runtime/se3';
+import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
 
@@ -847,7 +847,7 @@ export class Assembly {
    * Used by `validateJointAxisBinding` (and any future gate that lowers the
    * assembly itself) to avoid duplicating the ~85-line metadata builder.
    */
-  __buildMateMetadata(): import('../../capture/captureSession').SolvedAssemblyMateMetadata | undefined {
+  __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
     if (this.mates.length === 0) return undefined;
     return this.buildMateMetadata();
   }
@@ -976,7 +976,7 @@ export class Assembly {
    * connectors don't influence FK and stay out of the FeatureRecord to
    * keep the recorded metadata minimal.
    */
-  private buildMateMetadata(): import('../../capture/captureSession').SolvedAssemblyMateMetadata {
+  private buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata {
     // 1. Collect (partName, connectorName) pairs referenced by any mate.
     const refsByPartName = new Map<string, Set<string>>();
     for (const m of this.mates) {
@@ -1008,7 +1008,7 @@ export class Assembly {
     //    auto-resolves ParamRefs through `resolveParams` (same scheme as
     //    encoded joint poses on `metadata.poses`). Capture-time validation
     //    already rejects pose on fastened/planar mates (see `mate()` above).
-    const encodedMates: import('../../capture/captureSession').EncodedMateRecord[] = this.mates.map((m) => {
+    const encodedMates: import('./captureSession').EncodedMateRecord[] = this.mates.map((m) => {
       if (m.pose === undefined) {
         return { name: m.name, a: m.a, b: m.b, type: m.type };
       }
@@ -1201,7 +1201,7 @@ export class Assembly {
     // each bbox-overlapping pair), so we deliberately skip it under
     // `'warn'` / `'off'` to keep the everyday capture-time `arm.solvedModel()`
     // call cheap — interference is opt-in via the gate.
-    const interferencePromise: Promise<readonly import('../../script-runtime/checkInterference').InterferencePair[] | undefined> =
+    const interferencePromise: Promise<readonly import('../script-runtime/checkInterference').InterferencePair[] | undefined> =
       mode === 'error'
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
@@ -1228,7 +1228,7 @@ export class Assembly {
     // full rationale.
     const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
     const envelopeResultPromise: Promise<
-      import('../../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
+      import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
     > =
       posesGate === 'envelope'
         ? reviewPoseEnvelope(this, {
@@ -1355,12 +1355,12 @@ export class Assembly {
    */
   private async computeInterferencesForGate(
     sceneShape: Shape,
-  ): Promise<readonly import('../../script-runtime/checkInterference').InterferencePair[]> {
-    const { RecomputeEngine } = await import('../../compute/recomputeEngine');
-    const { createOcctLowerer } = await import('../../backends/occt/occtLowerer');
-    const { initOcct } = await import('../../backends/occt/occtBackend');
-    const { isSceneBackend } = await import('../../backends/sceneBackend');
-    const { detectInterferences } = await import('../../script-runtime/checkInterference');
+  ): Promise<readonly import('../script-runtime/checkInterference').InterferencePair[]> {
+    const { RecomputeEngine } = await import('../compute/recomputeEngine');
+    const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
+    const { initOcct } = await import('../backends/occt/occtBackend');
+    const { isSceneBackend } = await import('../backends/sceneBackend');
+    const { detectInterferences } = await import('../script-runtime/checkInterference');
 
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));

@@ -13,7 +13,7 @@
 // safe anchor (default collides) or the diagnostic is non-actionable
 // (missing localization, ball mate, etc.).
 
-import type { Assembly } from '../../shared/capture/assembly';
+import type { Assembly } from '../../capture/assembly';
 import type { MateRecord } from './mate';
 import type { PoseEnvelopeDiagnostic } from './poseEnvelope';
 import { currentValue } from '../../runtime/editableHelpers';

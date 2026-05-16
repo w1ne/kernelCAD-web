@@ -7,15 +7,15 @@ import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec,
 import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData,
 } from '../intent/surfaceRecord';
-import { Shape } from '../shared/capture/proxy';
-import { Sketch } from '../shared/capture/sketch';
-import { SurfaceProxy } from '../shared/capture/surfaceProxy';
+import { Shape } from './proxy';
+import { Sketch } from './sketch';
+import { SurfaceProxy } from './surfaceProxy';
 import type {
   AssemblyConnectorFrameStored,
   AssemblyConnectorRef,
   AssemblyPartOpts,
   AssemblyPartRef,
-} from '../shared/capture/assembly';
+} from './assembly';
 import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../intent/queryKeys';
 import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
 import type { SoftWarning } from '../runtime/softWarning';
@@ -61,7 +61,7 @@ export interface EncodedMateRecord {
     | { kind: 'ball'; value: [Param, Param, Param] };
 }
 
-export { validateFaceLabels } from '../shared/capture/faceLabels';
+export { validateFaceLabels } from './faceLabels';
 
 /** Build an `inputs.face` FeatureRef from a FaceSelector. Mirrors the
  *  face-handling branches of `buildEdgeFeatureRef` but specialized to
@@ -69,7 +69,7 @@ export { validateFaceLabels } from '../shared/capture/faceLabels';
  *  edges ref. */
 export function buildFaceInputRef(
   baseId: import('../intent/types').FeatureId,
-  face: import('../shared/capture/proxy').FaceSelector | string,
+  face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
   // `{ face: <something> }` wrapper form
   if (typeof face === 'object' && face !== null && 'face' in face) {
@@ -651,7 +651,7 @@ export class CaptureSession {
     base: Shape,
     valueParamName: 'radius' | 'distance' | 'thickness',
     value: Editable<number>,
-    selector?: import('../shared/capture/proxy').EdgeSelector | { face: import('../shared/capture/proxy').FaceSelector | string },
+    selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
@@ -688,7 +688,7 @@ export class CaptureSession {
     base: Shape,
     angleParam: Param,
     radiusParam: Param,
-    selector: import('../shared/capture/proxy').EdgeSelector | { face: import('../shared/capture/proxy').FaceSelector | string },
+    selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`bend: base shape '${base.id}' is not from this CaptureSession`);
@@ -713,7 +713,7 @@ export class CaptureSession {
     base: Shape,
     valueKey: 'radius' | 'distance',
     groups: Array<{
-      edges: import('../shared/capture/proxy').EdgeSelector;
+      edges: import('./proxy').EdgeSelector;
       radius?: Editable<number>;
       distance?: Editable<number>;
     }>,
@@ -862,7 +862,7 @@ const EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS_ARR);
  */
 function buildEdgeFeatureRef(
   baseId: string,
-  selector: import('../shared/capture/proxy').EdgeSelector | { face: import('../shared/capture/proxy').FaceSelector | string },
+  selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
 ): { key: 'face' | 'edges'; value: FeatureRef } {
   // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
   // property and NOT having the EdgeSegment full-schema markers.

@@ -83,8 +83,8 @@ function kernelCadMeshEndpoint(): Plugin {
 
           const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }] = await Promise.all([
             import('./src/script-runtime/scriptLoader'),
-            import('./src/shared/capture/featureMeshing'),
-            import('./src/shared/capture/featureMeshSerialize'),
+            import('./src/capture/featureMeshing'),
+            import('./src/capture/featureMeshSerialize'),
           ]);
           const loaded = await loadScriptFeatures(scriptPath);
           const meshing = await meshFeaturesPerFeature(

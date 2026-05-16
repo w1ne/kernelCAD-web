@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Scene, type ScenePart } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';
-import type { Shape } from '../../../src/shared/capture/proxy';
+import type { Shape } from '../../../src/capture/proxy';
 import { KernelError } from '../../../src/intent/kernelError';
 
 const stubShape = { id: 'stub' } as unknown as Shape;

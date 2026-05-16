@@ -5,7 +5,7 @@
 // capture/assembly.ts (T5). Capture-time errors (type-mismatch, connector-
 // not-found) bubble out as structured MCP error envelopes.
 
-import type { Assembly } from '../../shared/capture/assembly';
+import type { Assembly } from '../../capture/assembly';
 import { isKernelError } from '../../intent/kernelError';
 import type { MateLimitRange, MatePose } from '../../lib/mates/mate';
 import type { MateType } from '../../lib/mates/mateTypes';

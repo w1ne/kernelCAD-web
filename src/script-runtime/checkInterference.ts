@@ -17,7 +17,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../backends/sceneBackend';
 import type { OcctBackend } from '../backends/occt/occtBackend';
-import { Shape } from '../shared/capture/proxy';
+import { Shape } from '../capture/proxy';
 import { Scene } from '../intent/scene';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 

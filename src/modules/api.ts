@@ -1,9 +1,9 @@
 import type { CaptureSession } from '../capture/captureSession';
-import { validateFaceLabels } from '../shared/capture/faceLabels';
-import { makeAssembly, type Assembly } from '../shared/capture/assembly';
-import { Shape } from '../shared/capture/proxy';
-import { Sketch, makePath, type PathBuilder } from '../shared/capture/sketch';
-import type { SurfaceProxy } from '../shared/capture/surfaceProxy';
+import { validateFaceLabels } from '../capture/faceLabels';
+import { makeAssembly, type Assembly } from '../capture/assembly';
+import { Shape } from '../capture/proxy';
+import { Sketch, makePath, type PathBuilder } from '../capture/sketch';
+import type { SurfaceProxy } from '../capture/surfaceProxy';
 import type { Param, Vec3 } from '../intent/types';
 import {
   selectEdges as selectEdgesBackend,

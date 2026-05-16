@@ -14,7 +14,7 @@
 // SceneBackend is encountered.
 
 import type { FeatureMesh } from './featureMeshing';
-import type { Transform } from '../../runtime/se3';
+import type { Transform } from '../runtime/se3';
 
 export function transformFeatureMesh(mesh: FeatureMesh, t: Transform): FeatureMesh {
   const transformedFaces = mesh.faces.map((f) => {

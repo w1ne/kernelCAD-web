@@ -1,4 +1,4 @@
-import type { Assembly, TransmissionIntentRecord } from '../../shared/capture/assembly';
+import type { Assembly, TransmissionIntentRecord } from '../../capture/assembly';
 import type { RuntimeMesh } from '../../backends/runtimeMesh';
 import type { Vec3 } from '../../intent/types';
 import { Transform } from '../../runtime/se3';

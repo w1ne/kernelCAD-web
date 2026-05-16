@@ -5,9 +5,9 @@
 // or Assembly state. Math is unchanged from the original Assembly.solve
 // body — this file just owns the graph walk + SE(3) composition.
 
-import { KernelError } from '../../intent/kernelError';
-import type { FeatureId } from '../../intent/types';
-import { Transform, type Vec3 as Se3Vec3 } from '../../runtime/se3';
+import { KernelError } from '../intent/kernelError';
+import type { FeatureId } from '../intent/types';
+import { Transform, type Vec3 as Se3Vec3 } from '../runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from './assembly';
 
 /**

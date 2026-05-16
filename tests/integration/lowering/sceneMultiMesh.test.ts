@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { meshFeaturesPerFeature } from '../../../src/shared/capture/featureMeshing';
+import { meshFeaturesPerFeature } from '../../../src/capture/featureMeshing';
 
 beforeAll(async () => { await initOcct(); });
 

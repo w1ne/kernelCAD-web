@@ -1,13 +1,13 @@
 // src/capture/featureMeshing.ts
-import type { FeatureId, FeatureKind, FeatureRef } from '../../intent/types';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FaceGeometry } from '../../lib/workerTypes';
-import type { ShapeBackend } from '../../backends/backend';
-import { OcctLowerer } from '../../backends/occt/occtLowerer';
-import { OcctBackend, initOcct } from '../../backends/occt/occtBackend';
-import { RecomputeEngine } from '../../compute/recomputeEngine';
-import { meshShape } from '../../backends/occt/meshing';
-import { isSceneBackend } from '../../backends/sceneBackend';
+import type { FeatureId, FeatureKind, FeatureRef } from '../intent/types';
+import type { FeatureRecord } from '../intent/featureRecord';
+import type { FaceGeometry } from '../lib/workerTypes';
+import type { ShapeBackend } from '../backends/backend';
+import { OcctLowerer } from '../backends/occt/occtLowerer';
+import { OcctBackend, initOcct } from '../backends/occt/occtBackend';
+import { RecomputeEngine } from '../compute/recomputeEngine';
+import { meshShape } from '../backends/occt/meshing';
+import { isSceneBackend } from '../backends/sceneBackend';
 import { transformFeatureMesh } from './transformMesh';
 
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */
@@ -122,7 +122,7 @@ function computeConstructionClosure(
 
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
-  paramTable?: import('../../runtime/paramTable').ParamTable,
+  paramTable?: import('../runtime/paramTable').ParamTable,
   /** v0.5: when records contain `importedStep` features, pass the
    *  originating session so the lowerer can find the pre-imported
    *  OcctBackend instances. Optional — scripts without `lib.fromSTEP`
@@ -132,8 +132,8 @@ export async function meshFeaturesPerFeature(
   session?: {
     importedGeometry: Map<FeatureId, ShapeBackend>;
     getSurfaceRecord?: (
-      id: import('../../intent/surfaceRecord').SurfaceId,
-    ) => import('../../intent/surfaceRecord').SurfaceRecord | undefined;
+      id: import('../intent/surfaceRecord').SurfaceId,
+    ) => import('../intent/surfaceRecord').SurfaceRecord | undefined;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();

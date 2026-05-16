@@ -5,7 +5,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../kernel/buildModel';
-import type { Assembly } from '../../shared/capture/assembly';
+import type { Assembly } from '../../capture/assembly';
 import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,

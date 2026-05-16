@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState, useEffect, u
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../lib/geometryEngine';
 import { remapSketchNames } from '../lib/sketchNaming';
 import { parseCode } from '../lib/ast';
-import { rehydrateFromBridge, type FeatureMeshSerialized } from '../shared/capture/featureMeshSerialize';
+import { rehydrateFromBridge, type FeatureMeshSerialized } from '../capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../runtime/paramTable';
 import type { FeatureRecord } from '../intent/featureRecord';
 

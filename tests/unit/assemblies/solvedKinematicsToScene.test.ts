@@ -18,7 +18,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import { SolvedKinematics } from '../../../src/shared/capture/assembly';
+import { SolvedKinematics } from '../../../src/capture/assembly';
 import { createApi } from '../../../src/modules/api';
 import { Scene } from '../../../src/intent/scene';
 import { Transform } from '../../../src/runtime/se3';

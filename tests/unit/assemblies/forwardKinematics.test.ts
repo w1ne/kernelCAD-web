@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   forwardKinematics,
   type NumericPoses,
-} from '../../../src/shared/capture/forwardKinematics';
+} from '../../../src/capture/forwardKinematics';
 import type {
   AssemblyJointStored,
   AssemblyPartStored,
-} from '../../../src/shared/capture/assembly';
+} from '../../../src/capture/assembly';
 
 /**
  * The helper only reads a small subset of the AssemblyPartStored /

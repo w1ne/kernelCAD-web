@@ -3,8 +3,8 @@
 // Kept in a separate module to avoid circular dependencies between
 // captureSession.ts (imports Sketch) and sketch.ts (needs this validator).
 
-import { KernelError } from '../../intent/kernelError';
-import type { FaceLabelsMap } from '../../intent/featureRecord';
+import { KernelError } from '../intent/kernelError';
+import type { FaceLabelsMap } from '../intent/featureRecord';
 
 const CANONICAL_FACES = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
 

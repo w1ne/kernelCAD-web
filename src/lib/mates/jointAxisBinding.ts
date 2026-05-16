@@ -56,7 +56,7 @@ import { initOcct } from '../../backends/occt/occtBackend';
 import { createOcctLowerer } from '../../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../backends/occt/occtBackend';
 import { isSceneBackend } from '../../backends/sceneBackend';
-import type { Assembly, AssemblyPartStored } from '../../shared/capture/assembly';
+import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
 import { RecomputeEngine } from '../../compute/recomputeEngine';
 import type { Vec3 } from '../../intent/types';
 import { Transform } from '../../runtime/se3';

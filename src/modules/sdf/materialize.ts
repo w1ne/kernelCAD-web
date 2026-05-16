@@ -12,7 +12,7 @@
 // 6. Return the Shape (kind 'sdfMaterialize') for downstream booleans/fillets/exports.
 
 import type { CaptureSession } from '../../capture/captureSession';
-import type { Shape } from '../../shared/capture/proxy';
+import type { Shape } from '../../capture/proxy';
 import { OcctBackend, initOcct } from '../../backends/occt/occtBackend';
 import { KernelError } from '../../intent/kernelError';
 import type { Vec3 } from '../../intent/types';
