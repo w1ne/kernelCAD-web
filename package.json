@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "cp site/_redirects dist/_redirects 2>/dev/null || echo '/*  /index.html  200' > dist/_redirects; cp site/_headers dist/_headers 2>/dev/null || true",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",

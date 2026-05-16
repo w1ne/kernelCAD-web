@@ -1,18 +1,15 @@
-# site/wrangler.toml
+# site/wrangler.toml — Phase 2B Task 6
 #
-# Cloudflare Pages config for the kernelCAD marketing site (kernelcad.com).
-# The site itself is built static via `npm run site:build`; this file is
-# read by Cloudflare Pages Functions for runtime bindings (D1, env vars,
-# etc.).
+# Cloudflare Pages config for kernelcad.com.
+# CF Pages serves the Vite-built Studio bundle from ../dist (the repo root's
+# dist/ output). The marketing-only site/ dir is no longer the build output.
 #
-# IMPORTANT: the database_id below is filled in by the one-time
-# .github/workflows/setup-user-tracking.yml workflow on first run. Until
-# then, the placeholder produces a clear "binding missing" error in the
-# Pages Function logs, which is preferable to silent misroute.
+# D1 binding kept for backward-compat: Pages Functions at site/functions/
+# still handle the subscriber-capture endpoint.
 
 name = "kernelcad-web"
 compatibility_date = "2026-04-01"
-pages_build_output_dir = "."
+pages_build_output_dir = "../dist"
 
 [[d1_databases]]
 binding = "DB"
