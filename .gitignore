@@ -52,3 +52,6 @@ site/brand
 # Portfolio attempt log (append-only, not source-controlled)
 eval/portfolio-attempts.jsonl
 .claude/
+
+# TanStack Router generated route tree (regenerated at dev/build time)
+src/routeTree.gen.ts
