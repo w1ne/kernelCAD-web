@@ -190,12 +190,6 @@ export class Shape {
       );
     }
 
-    const clamp = (v: number | undefined, min: number, max: number): number | undefined => {
-      if (v === undefined) return undefined;
-      if (!Number.isFinite(v)) return undefined;
-      return Math.max(min, Math.min(max, v));
-    };
-
     const cleaned: PBRMaterial = { baseColor: opts.baseColor };
     let anyClamped = false;
     const maybeAssign = (
@@ -205,9 +199,17 @@ export class Shape {
       max: number,
     ): void => {
       if (raw === undefined) return;
-      const clamped = clamp(raw, min, max);
+      if (!Number.isFinite(raw)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field '${key}' must be a finite number; got ${raw}.`,
+          this.id,
+          'Fix the named field on the call args; check type, sign, and units.',
+        );
+      }
+      const clamped = Math.max(min, Math.min(max, raw));
       if (clamped !== raw) anyClamped = true;
-      if (clamped !== undefined) (cleaned as Record<keyof PBRMaterial, unknown>)[key] = clamped;
+      (cleaned as Record<keyof PBRMaterial, unknown>)[key] = clamped;
     };
     maybeAssign('metalness', opts.metalness, 0, 1);
     maybeAssign('roughness', opts.roughness, 0, 1);

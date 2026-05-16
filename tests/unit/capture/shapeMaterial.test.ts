@@ -39,7 +39,25 @@ describe('Shape.material()', () => {
       roughness: 0,    // clamped
       ior: 2.5,        // clamped
     });
-    expect(session.warnings.length).toBeGreaterThan(warnsBefore);
+    expect(session.warnings.length).toBe(warnsBefore + 1);
     expect(session.warnings[session.warnings.length - 1].code).toBe('feature.material.value-clamped');
+  });
+
+  it('throws on non-finite numeric input', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const s = kcad.box(10, 10, 10);
+    expect(() => s.material({ baseColor: '#fff', roughness: Number.NaN })).toThrow(/finite/);
+    expect(() => s.material({ baseColor: '#fff', metalness: Number.POSITIVE_INFINITY })).toThrow(/finite/);
+  });
+
+  it('coexists with color() on the same shape', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const s = kcad.box(10, 10, 10);
+    s.color('#aabbcc').material({ baseColor: '#0a0a0a', clearcoat: 0.8 });
+    const record = session.getRecords().find(r => r.id === s.id)!;
+    expect(record.metadata?.color).toBe('#aabbcc');
+    expect(record.metadata?.material).toEqual({ baseColor: '#0a0a0a', clearcoat: 0.8 });
   });
 });
