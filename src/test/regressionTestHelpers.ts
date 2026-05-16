@@ -1,8 +1,8 @@
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
 import opencascade from 'replicad-opencascadejs';
-import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude, findPlanarFace } from '../lib/geometryHelpers';
-import { createSafeReplicad, SafeSketcher } from '../lib/safeSketch';
+import { startSketch, makeCompound, fillet, chamfer, sketchOnFace, extrude, findPlanarFace } from '../shared/worker/geometryHelpers';
+import { createSafeReplicad, SafeSketcher } from '../shared/worker/safeSketch';
 
 const DEBUG = process.env.KERNELCAD_TEST_LOG === '1';
 

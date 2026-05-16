@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, type ReactNode, useRef, useCallback } from 'react';
-import type { Constraint, SketchEntity, SolverState } from '../lib/constraints/types';
-import { ConstraintSolver } from '../lib/constraints/solver';
+import type { Constraint, SketchEntity, SolverState } from '../modeling/constraints/types';
+import { ConstraintSolver } from '../modeling/constraints/solver';
 
 export interface SketchingContextType {
     entities: Map<string, SketchEntity>;

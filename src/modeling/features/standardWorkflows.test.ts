@@ -1,9 +1,9 @@
 import { describe, it, beforeAll } from 'vitest';
 import { initReplicad, executeGeometry } from '../../test/regressionTestHelpers';
 import { expectGeometryMatch } from '../../test/geometryValidators';
-import { generateSketchCode } from '../../lib/sketchCodegen';
+import { generateSketchCode } from '../../shared/codeGeneration/sketchCodegen';
 import { generateBooleanCode, generateFilletCode } from './core/modifiers.feature';
-import { CodeAnalyzer } from '../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../shared/codeGeneration/index';
 import type { SketchData } from '../../shared/types/sketch';
 
 describe('Standard Workflow Validation', () => {

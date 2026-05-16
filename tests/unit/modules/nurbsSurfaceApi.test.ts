@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
-import { isKernelError } from '../../../src/intent/kernelError';
+import { isKernelError } from '../../../src/shared/intent/kernelError';
 
 /** Assert that calling `fn` throws a KernelError with the given code. */
 function expectKernelErrorCode(fn: () => unknown, code: string): void {

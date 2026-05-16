@@ -13,9 +13,9 @@
 // The smooth-blend surface bulges outward of either input near the blend
 // region, never further than k (provable from the polynomial smin formula).
 
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import type { SdfField } from './index';
-import { KernelError } from '../../intent/kernelError';
+import { KernelError } from '../../shared/intent/kernelError';
 
 export function smoothBlend(a: SdfField, b: SdfField, k: number): SdfField {
   if (typeof k !== 'number' || !Number.isFinite(k) || k <= 0) {

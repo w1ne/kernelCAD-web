@@ -20,8 +20,8 @@
 //     hidden behind a boolean's cutter chain is intentionally NOT reachable
 //     unless the user explicitly recolours the boolean result.
 
-import type { FeatureRecord } from '../../../intent/featureRecord';
-import type { FeatureId, FeatureRef } from '../../../intent/types';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import type { FeatureId, FeatureRef } from '../../../shared/intent/types';
 
 /**
  * Walk inputs.shape → upstream metadata.color to find the nearest color

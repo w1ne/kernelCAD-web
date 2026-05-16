@@ -44,6 +44,13 @@ module.exports = {
             comment: 'modeling/ may only import from modeling/, kernel/, capture/, or shared/.',
             from: { path: '^src/modeling/' },
             to: { path: '^src/(authoring|agent|studio)/' }
+        },
+        {
+            name: 'authoring-no-upward',
+            severity: 'error',
+            comment: 'authoring/ may only import from authoring/, modeling/, kernel/, capture/, or shared/.',
+            from: { path: '^src/authoring/' },
+            to: { path: '^src/(agent|studio)/' }
         }
     ],
     options: {

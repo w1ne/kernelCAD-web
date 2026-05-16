@@ -5,10 +5,10 @@ import React from 'react';
 import { WorkbenchProvider } from '../context/WorkbenchContext';
 import { useWorkbench } from '../context/WorkbenchContext';
 import SceneBrowser from '../components/SceneBrowser';
-import { GeometryEngine } from '../lib/geometryEngine';
+import { GeometryEngine } from '../shared/worker/geometryEngine';
 
 // Mock GeometryEngine
-vi.mock('../lib/geometryEngine', async (importOriginal) => {
+vi.mock('../shared/worker/geometryEngine', async (importOriginal) => {
     const actual = await importOriginal<any>();
     return {
         ...actual,

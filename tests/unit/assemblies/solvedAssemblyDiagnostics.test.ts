@@ -19,7 +19,7 @@ import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildModel } from '../../../src/modeling/buildModel';
-import { KernelError, isKernelError } from '../../../src/intent/kernelError';
+import { KernelError, isKernelError } from '../../../src/shared/intent/kernelError';
 
 /** Run `fn` and assert it throws a KernelError whose `hint` matches `re`.
  *  toThrow(re) only matches against `error.message`; for our spec'd hint

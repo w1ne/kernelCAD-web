@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateBooleanCode, generateFilletCode } from './core/modifiers.feature';
-import { CodeAnalyzer } from '../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../shared/codeGeneration/index';
 
 describe('Naming Collision Regression Suite', () => {
     it('should generate unique names for sequential boolean operations', () => {

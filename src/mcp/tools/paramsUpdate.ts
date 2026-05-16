@@ -1,6 +1,6 @@
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import { isKernelError } from '../../intent/kernelError';
-import type { SoftWarning } from '../../runtime/softWarning';
+import { isKernelError } from '../../shared/intent/kernelError';
+import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface ParamsUpdateInput {

@@ -1,4 +1,4 @@
-import type { FeatureId } from '../../intent/types';
+import type { FeatureId } from '../../shared/intent/types';
 
 export interface ReorderResult {
   valid: boolean;

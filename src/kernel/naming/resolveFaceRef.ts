@@ -15,7 +15,7 @@
  */
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import type { FaceRef } from '../../intent/types';
+import type { FaceRef } from '../../shared/intent/types';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FaceHash } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';

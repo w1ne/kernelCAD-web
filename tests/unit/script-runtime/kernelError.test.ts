@@ -1,6 +1,6 @@
 // tests/unit/script-runtime/kernelError.test.ts
 import { describe, it, expect } from 'vitest';
-import { KernelError, isKernelError } from '../../../src/intent/kernelError';
+import { KernelError, isKernelError } from '../../../src/shared/intent/kernelError';
 import { kernelErrorToDiagnostic } from '../../../src/script-runtime/kernelErrorToDiagnostic';
 
 describe('KernelError', () => {

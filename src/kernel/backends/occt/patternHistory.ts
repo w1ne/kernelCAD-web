@@ -10,7 +10,7 @@
 // readable; isolates the retag rule for unit testing.
 
 import type { HistoryMap } from '../../naming/evolutionRecord';
-import type { FeatureId } from '../../../intent/types';
+import type { FeatureId } from '../../../shared/intent/types';
 
 /** Return a new HistoryMap whose lineage entries with `featureId === sourceId`
  *  are tagged `featureId = '<sourceId>_pattern_<i>'`. All other lineage fields

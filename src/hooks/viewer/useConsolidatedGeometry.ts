@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useMemo } from "react";
-import type { FaceGeometry } from "../../lib/geometryEngine";
+import type { FaceGeometry } from "../../shared/worker/geometryEngine";
 
 export function useConsolidatedGeometry(faces: FaceGeometry[]) {
     return useMemo(() => {

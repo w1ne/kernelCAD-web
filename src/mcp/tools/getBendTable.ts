@@ -10,7 +10,7 @@ import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { computeBendAllowance } from '../../modeling/sheetMetal';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 
 export interface GetBendTableInput {
   file?: string;

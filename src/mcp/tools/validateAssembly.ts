@@ -5,7 +5,7 @@
 // so agents can recover from authoring errors using the per-code hint.
 
 import type { Assembly } from '../../capture/assembly';
-import { isKernelError } from '../../intent/kernelError';
+import { isKernelError } from '../../shared/intent/kernelError';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../modeling/mates/validator';
 import { getActiveMcpSession } from '../activeSession';

@@ -6,9 +6,9 @@
 // API addition (this file is the single source of truth for "what can a
 // .kcad.ts script call?").
 
-import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../intent/queryKeys';
+import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../shared/intent/queryKeys';
 import { SUPPORTED_CONSTRAINT_TYPES } from './constraints';
-import type { ConstraintType } from '../../lib/constraints/types';
+import type { ConstraintType } from '../../modeling/constraints/types';
 
 export type ListApiInput = Record<string, never>;
 

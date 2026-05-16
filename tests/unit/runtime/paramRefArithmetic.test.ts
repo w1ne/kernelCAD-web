@@ -6,10 +6,10 @@
 // rejection, and dependency-collection over composed expressions.
 
 import { describe, it, expect } from 'vitest';
-import { makeParamRef, isParamRef, type ParamRefExpr } from '../../../src/runtime/paramRef';
-import { ParamTable } from '../../../src/runtime/paramTable';
-import { resolveExpr, resolveParams, collectParamRefs } from '../../../src/runtime/resolveParams';
-import { toParam } from '../../../src/runtime/editableHelpers';
+import { makeParamRef, isParamRef, type ParamRefExpr } from '../../../src/shared/runtime/paramRef';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
+import { resolveExpr, resolveParams, collectParamRefs } from '../../../src/shared/runtime/resolveParams';
+import { toParam } from '../../../src/shared/runtime/editableHelpers';
 
 function declared(table: ParamTable, name: string, value: number): void {
   table.declare(name, 'number', value);

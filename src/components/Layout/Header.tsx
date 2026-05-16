@@ -1,6 +1,6 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen } from 'lucide-react';
-import { exportSTEP, exportSTL } from '../../lib/geometryEngine';
+import { exportSTEP, exportSTL } from '../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
 

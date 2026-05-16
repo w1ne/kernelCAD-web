@@ -1,5 +1,5 @@
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureId, FeatureRef } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { FeatureId, FeatureRef } from '../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListAssembliesInput {

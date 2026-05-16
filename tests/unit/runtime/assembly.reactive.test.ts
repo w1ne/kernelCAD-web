@@ -16,13 +16,13 @@
 //      `recompute.lowering.exception`.
 
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { Vec3Param } from '../../../src/intent/types';
+import type { Vec3Param } from '../../../src/shared/intent/types';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
-import { resolveParams } from '../../../src/runtime/resolveParams';
+import { resolveParams } from '../../../src/shared/runtime/resolveParams';
 
 beforeAll(async () => { await initOcct(); });
 

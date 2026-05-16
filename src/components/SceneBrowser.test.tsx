@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SceneBrowser from './SceneBrowser';
-import type { HistoryItem } from '../lib/codeAnalysis';
+import type { HistoryItem } from '../shared/codeGeneration/codeAnalysis';
 // React unused
 
 afterEach(() => {

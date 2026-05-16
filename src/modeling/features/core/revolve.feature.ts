@@ -1,6 +1,6 @@
 import { RevolveIcon } from '../../../components/CustomIcons';
 import { type Feature } from '../types';
-import { type CodeGenerationContext } from '../../../lib/codeGeneration';
+import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
 
 export const RevolveFeature: Feature = {
     id: 'revolve',

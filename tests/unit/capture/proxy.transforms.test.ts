@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runScript } from '../../../src/script-runtime/runScript';
-import { formatScalarForError } from '../../../src/intent/types';
+import { formatScalarForError } from '../../../src/shared/intent/types';
 
 describe('Shape transform validators (capture-time)', () => {
   beforeAll(async () => { await initOcct(); });

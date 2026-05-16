@@ -1,6 +1,6 @@
 // src/capture/featureMeshSerialize.ts
 import type { FeatureMesh } from './featureMeshing';
-import type { FaceGeometry } from '../lib/workerTypes';
+import type { FaceGeometry } from '../shared/worker/workerTypes';
 
 export interface FaceGeometrySerialized {
   vertices: number[];

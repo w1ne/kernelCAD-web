@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { RecomputeEngine } from './recomputeEngine';
 import type { FeatureEvent } from './featureEvents';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 
 // Minimal mock backend that returns a marker shape per feature
@@ -10,7 +10,7 @@ const mockShape = (id: string): ShapeBackend =>
 
 const mockLowerer: FeatureLowerer = {
   target: 'export-occt',
-  supports: new Set(['box', 'cylinder']) as ReadonlySet<import('../../intent/types').FeatureKind>,
+  supports: new Set(['box', 'cylinder']) as ReadonlySet<import('../../shared/intent/types').FeatureKind>,
   async lower(record) {
     return { shape: mockShape(record.id), diagnostics: [] };
   },
@@ -55,7 +55,7 @@ describe('RecomputeEngine event emission', () => {
   it('emits feature.failed when lowering throws', async () => {
     const failingLowerer: FeatureLowerer = {
       target: 'export-occt',
-      supports: new Set(['box']) as ReadonlySet<import('../../intent/types').FeatureKind>,
+      supports: new Set(['box']) as ReadonlySet<import('../../shared/intent/types').FeatureKind>,
       async lower() {
         throw new Error('boom');
       },

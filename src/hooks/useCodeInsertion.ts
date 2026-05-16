@@ -1,5 +1,5 @@
 import { useWorkbench } from '../context/WorkbenchContext';
-import { InsertShapeCommand } from '../commands/implementations/InsertShapeCommand';
+import { InsertShapeCommand } from '../authoring/commands/implementations/InsertShapeCommand';
 
 export function useCodeInsertion() {
     const { editorInstance, commandManager, codeContext, mutateCode } = useWorkbench();

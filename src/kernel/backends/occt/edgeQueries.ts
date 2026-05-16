@@ -13,68 +13,16 @@
 import type { Edge, Face } from 'replicad';
 import { measureArea } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import { KernelError } from '../../../intent/kernelError';
-import type { Vec3 } from '../../../intent/types';
+import { KernelError } from '../../../shared/intent/kernelError';
+import type { Vec3 } from '../../../shared/intent/types';
 export type { Vec3 };
 
-export type BoundingRegion = {
-  xMin?: number; xMax?: number;
-  yMin?: number; yMax?: number;
-  zMin?: number; zMax?: number;
-};
-
-export type EdgeQuery = {
-  atZ?: number;
-  atX?: number;
-  atY?: number;
-  /**
-   * Sort matching edges by distance to this point — closest first.
-   * NOTE: this is a SORT, not a FILTER. `near` alone returns all edges
-   * (sorted); combine with `within`, `tolerance`, or other keys to filter.
-   * `selectEdge` uses `near` to pick a single result from multiple matches.
-   */
-  near?: Vec3;
-  within?: BoundingRegion;
-  parallel?: Vec3;
-  perpendicular?: Vec3;
-  convex?: boolean;
-  concave?: boolean;
-  minAngle?: number;     // dihedral, degrees
-  maxAngle?: number;
-  ofCurveType?: 'LINE' | 'CIRCLE' | 'BSPLINE';
-  tolerance?: number;     // default 1.0
-  angleTolerance?: number; // default 10 (degrees)
-};
-
-export type FaceQuery = {
-  atZ?: number;
-  atX?: number;
-  atY?: number;
-  parallelTo?: 'XY' | 'YZ' | 'XZ' | Vec3;
-  inPlane?: 'XY' | 'YZ' | 'XZ';
-  ofSurfaceType?: 'PLANE' | 'CYLINDER' | 'SPHERE' | 'CONE' | 'TORUS' | 'BSPLINE';
-  containsPoint?: Vec3;
-  near?: Vec3;
-  tolerance?: number;
-  // v0.2-finish additions
-  byNormal?: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z';
-  minArea?: number;
-  maxArea?: number;
-  boundingBoxIn?: BoundingRegion;
-};
-
-export type EdgeSegment = {
-  id: string;
-  midpoint: Vec3;
-  direction: Vec3;
-  length: number;
-  curveType: string;
-  convex: boolean | null;
-  dihedralAngleDeg: number | null;
-  normalA: Vec3 | null;
-  normalB: Vec3 | null;
-  boundary: boolean;
-};
+// Type definitions live in src/shared/intent/queryTypes.ts so intent types
+// (featureRecord, queryKeys, types) can reference FaceQuery/EdgeQuery without
+// an upward shared→kernel dep. Re-exported here for back-compat with all
+// existing kernel-relative imports.
+export type { BoundingRegion, EdgeQuery, FaceQuery, EdgeSegment } from '../../../shared/intent/queryTypes';
+import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../../shared/intent/queryTypes';
 
 const DEFAULT_POS_TOL = 1.0;
 

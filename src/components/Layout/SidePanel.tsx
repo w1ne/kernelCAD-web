@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { extractHistoryItems, type HistoryItem } from '../../lib/codeAnalysis';
+import { extractHistoryItems, type HistoryItem } from '../../shared/codeGeneration/codeAnalysis';
 import { AIAssistant } from '../../features/ai/AIAssistant';
 
 interface SidePanelProps {

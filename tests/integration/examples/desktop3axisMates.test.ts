@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
 import { runScript } from '../../../src/script-runtime/runScript';
 import { checkInterference } from '../../../src/script-runtime/checkInterference';
-import { Scene } from '../../../src/intent/scene';
+import { Scene } from '../../../src/authoring/validation/scene';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';

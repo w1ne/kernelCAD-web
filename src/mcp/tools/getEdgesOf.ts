@@ -3,7 +3,7 @@ import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { pickEdges } from '../../kernel/backends/occt/edgeSelection';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
 
 export interface GetEdgesOfInput {

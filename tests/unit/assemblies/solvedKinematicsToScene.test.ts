@@ -20,8 +20,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { SolvedKinematics } from '../../../src/capture/assembly';
 import { createApi } from '../../../src/modeling/api';
-import { Scene } from '../../../src/intent/scene';
-import { Transform } from '../../../src/runtime/se3';
+import { Scene } from '../../../src/authoring/validation/scene';
+import { Transform } from '../../../src/shared/runtime/se3';
 
 beforeEach(() => {
   // Reset the warn-once flag so each test observes a fresh emission (see

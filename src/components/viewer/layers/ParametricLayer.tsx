@@ -3,7 +3,7 @@ import { TransformControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
-import { computeCentroid } from "../../../lib/sketchHelpers";
+import { computeCentroid } from "../../../shared/sketch/sketchHelpers";
 
 export function ParametricLayer() {
     const { entities, selectedEntityIds, selectEntity, updateEntity, solve } = useWorkbench();

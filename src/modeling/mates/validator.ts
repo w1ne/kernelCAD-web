@@ -24,8 +24,8 @@
 // `SolveStatus` into mate-aware diagnostic codes.
 
 import type { Assembly } from '../../capture/assembly';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { Vec3 } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { Vec3 } from '../../shared/intent/types';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
 import { validateJointAxisBinding } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';

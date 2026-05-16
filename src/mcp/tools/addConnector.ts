@@ -7,9 +7,9 @@
 // this tool after authoring a script that constructs the parts.
 
 import type { Assembly } from '../../capture/assembly';
-import { isKernelError } from '../../intent/kernelError';
+import { isKernelError } from '../../shared/intent/kernelError';
 import type { ConnectorOrigin, ConnectorType } from '../../modeling/mates/connector';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface AddConnectorInput {

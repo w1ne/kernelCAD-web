@@ -10,14 +10,14 @@
 //   - `usedFallback` is true when the lowering emitted at least one
 //     `feature.created-ref.fallback-used` warning anywhere in the run.
 
-import type { FaceRef, EdgeRef, FeatureKind } from '../../intent/types';
+import type { FaceRef, EdgeRef, FeatureKind } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 import type { FaceSnapshot } from '../../kernel/backends/occt/createdRefs';
 import { runMcpScript } from '../runMcpScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { parseFaceSelector } from '../../runtime/selectorParser';
+import { parseFaceSelector } from '../../kernel/naming/selectorParser';
 
 export interface GetFaceLineageInput {
   file?: string;

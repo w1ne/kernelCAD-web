@@ -17,7 +17,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
-import type { ShapeTransform } from '../../../src/intent/featureRecord';
+import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
 
 beforeAll(async () => { await initOcct(); });
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useMemo, useEffect } from "react";
-import type { GeometryResult, FaceGeometry } from "../../../lib/geometryEngine";
+import type { GeometryResult, FaceGeometry } from "../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../shared/constants/colors";
 
 function FaceEdgeOutline({ face }: { face: FaceGeometry }) {

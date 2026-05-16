@@ -8,8 +8,8 @@
 //   - `flattenPattern(...)` (backends/occt/flattenPattern.ts)
 //   - `get_bend_table` MCP tool (mcp/tools/getBendTable.ts)
 
-import { KernelError } from '../intent/kernelError';
-import type { FeatureRecord } from '../intent/featureRecord';
+import { KernelError } from '../shared/intent/kernelError';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
 
 export interface BendAllowanceInputs {
   /** Bend angle in degrees. Sign-agnostic for BA itself (sign drives fold direction in lowering). */

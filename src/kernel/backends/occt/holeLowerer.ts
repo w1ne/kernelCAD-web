@@ -21,9 +21,9 @@ import { OcctBackend } from './occtBackend';
 import { pickFace } from './edgeSelection';
 import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
 import { resolveFaceQuery } from './edgeQueries';
-import type { FeatureRecord } from '../../../intent/featureRecord';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { Vec3 } from '../../../intent/types';
+import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import { classifyHoleFace, type BoreFrame, type HoleRefName } from './holeClassifier';
 import {
@@ -34,7 +34,7 @@ import {
   surfaceTypeOf,
   type CreatedRefSpec,
 } from './createdRefs';
-import type { FeatureKind } from '../../../intent/types';
+import type { FeatureKind } from '../../../shared/intent/types';
 
 export interface HoleLowerResult {
   backend: OcctBackend;

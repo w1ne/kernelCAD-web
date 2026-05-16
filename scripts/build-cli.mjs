@@ -34,6 +34,6 @@ await esbuild.build({
 copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
 copyDir('src/skills', 'dist/cli/skills');
 mkdirSync('dist/cli/fonts', { recursive: true });
-copyFileSync('src/lib/fonts/LiberationSans-Regular.ttf', 'dist/cli/fonts/LiberationSans-Regular.ttf');
-copyFileSync('src/lib/fonts/LICENSE-FONTS.md', 'dist/cli/fonts/LICENSE-FONTS.md');
+copyFileSync('src/shared/fonts/LiberationSans-Regular.ttf', 'dist/cli/fonts/LiberationSans-Regular.ttf');
+copyFileSync('src/shared/fonts/LICENSE-FONTS.md', 'dist/cli/fonts/LICENSE-FONTS.md');
 console.log('dist/cli/index.js built');

@@ -9,8 +9,8 @@ import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import type { Vec3 } from '../../intent/types';
-import type { Vec2 } from '../../intent/region';
+import type { Vec3 } from '../../shared/intent/types';
+import type { Vec2 } from '../../shared/intent/region';
 
 export interface FlattenPatternInput {
   /** Path to a .kcad.ts script. Either `file` or `code` is required. */

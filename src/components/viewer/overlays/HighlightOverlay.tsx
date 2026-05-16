@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { HoverResult } from "../../../features/interaction/HoverManager";
-import type { GeometryResult } from "../../../lib/geometryEngine";
+import type { GeometryResult } from "../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../shared/constants/colors";
 import { FaceSelectionOverlay } from "../entities/ShapeGeometry";
 

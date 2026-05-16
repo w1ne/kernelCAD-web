@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { runScript } from './runScript';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { FeatureKind } from '../intent/types';
-import type { ParamTable } from '../runtime/paramTable';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { FeatureKind } from '../shared/intent/types';
+import type { ParamTable } from '../shared/runtime/paramTable';
 import type { CaptureSession } from '../capture/captureSession';
 
 export interface LoadedScript {

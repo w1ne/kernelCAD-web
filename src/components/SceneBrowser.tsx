@@ -1,5 +1,5 @@
 import React from 'react';
-import type { HistoryItem } from '../lib/codeAnalysis';
+import type { HistoryItem } from '../shared/codeGeneration/codeAnalysis';
 import type { SketchPlaneEntity } from '../shared/types/plane';
 import { Box, Cylinder, Layers, SquaresSubtract, SquaresUnite, SquaresIntersect, SquareRoundCorner, Circle, Square, Plane, Eye, EyeOff, ChevronRight, ChevronDown, SquareArrowUp, Rotate3D } from 'lucide-react';
 import { ChamferIcon } from '../icons/cad';

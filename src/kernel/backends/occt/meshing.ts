@@ -8,7 +8,7 @@
 
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
-import type { FaceGeometry, GeometryResult, SketchGeometry } from '../../../lib/workerTypes';
+import type { FaceGeometry, GeometryResult, SketchGeometry } from '../../../shared/worker/workerTypes';
 
 const DEBUG = false;
 

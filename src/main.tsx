@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { initFeatures } from './modeling/features/init'
-import { GeometryEngine } from './lib/geometryEngine'
+import { GeometryEngine } from './shared/worker/geometryEngine'
 
 initFeatures();
 

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
-import { ConstraintSolver } from '../lib/constraints/solver';
-import type { SolverState, SketchEntity } from '../lib/constraints/types';
+import { ConstraintSolver } from '../modeling/constraints/solver';
+import type { SolverState, SketchEntity } from '../modeling/constraints/types';
 
 const runE2E = process.env.KERNELCAD_E2E === '1';
 const describeE2E = runE2E ? describe : describe.skip;

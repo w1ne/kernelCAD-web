@@ -5,7 +5,7 @@
 // region). Primitives compute AABB exactly; combinators take the union of
 // inputs' AABBs padded by the blend radius `k`.
 
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 
 export interface SdfField {
   /** Evaluate signed distance at a point. Negative = inside, 0 = surface,

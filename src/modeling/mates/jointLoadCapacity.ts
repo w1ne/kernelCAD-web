@@ -51,7 +51,7 @@
 // requirement for v0.7.4, topology support is a v0.7.x followup.
 
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import { parseConnectorRef, type MateRecord } from './mate';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';

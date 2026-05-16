@@ -1,5 +1,5 @@
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureKind, Vec3 } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { FeatureKind, Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { RuntimeMesh } from './runtimeMesh';
 
@@ -47,7 +47,7 @@ export interface ResolvedInputs {
    * never read it.
    */
   surfaces?: Map<
-    import('../../intent/surfaceRecord').SurfaceId,
+    import('../../shared/intent/surfaceRecord').SurfaceId,
     import('./occt/nurbsSurfaceLowerer').BuiltSurface
   >;
 }

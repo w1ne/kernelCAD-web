@@ -12,7 +12,7 @@ import { SelectionProvider, useSelection, type SelectionContextType } from './Se
 import { GeometryProvider, useGeometry, type GeometryContextType } from './GeometryContext';
 import { useFaceSelection } from '../hooks/useFaceSelection';
 import { SketchingProvider, useSketching, type SketchingContextType } from './SketchingContext';
-import { type CodeGenerationContext } from '../lib/codeGeneration';
+import { type CodeGenerationContext } from '../shared/codeGeneration/index';
 
 // Combined type for backward compatibility
 export interface WorkbenchContextType extends

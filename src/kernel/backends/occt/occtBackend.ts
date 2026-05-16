@@ -3,7 +3,7 @@ import { getOC } from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
-import type { Vec3, PlaneSpec, CardinalPlane } from '../../../intent/types';
+import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../capture/sketch';
 import { isSameEdge } from './edgeQueries';
@@ -601,7 +601,7 @@ export class OcctBackend implements ShapeBackend {
    * lives at capture time in `Shape.transform(t)` — both layers stay in sync
    * because both call `Transform.decomposeToTranslateAndRotate()`.
    */
-  applyTransform(t: import('../../../runtime/se3').Transform): OcctBackend {
+  applyTransform(t: import('../../../shared/runtime/se3').Transform): OcctBackend {
     const { translate, rotateAxis, rotateDeg } = t.decomposeToTranslateAndRotate();
     const [tx, ty, tz] = translate;
     const hasRotate = rotateDeg !== 0;

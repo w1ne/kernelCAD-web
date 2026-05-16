@@ -4,9 +4,9 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import type { Vec3 } from '../../intent/types';
-import { currentValue } from '../../runtime/editableHelpers';
-import type { Editable } from '../../runtime/paramRef';
+import type { Vec3 } from '../../shared/intent/types';
+import { currentValue } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences } from '../../script-runtime/checkInterference';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
 import { expandCoupledPoses } from './coupledPoses';
@@ -320,7 +320,7 @@ export async function reviewPoseEnvelope(
 
 function collectConnectorPoses(
   arm: Assembly,
-  partTransforms: ReadonlyMap<string, import('../../runtime/se3').Transform>,
+  partTransforms: ReadonlyMap<string, import('../../shared/runtime/se3').Transform>,
   sampleName: string,
   trackConnectors: ReadonlySet<string> | undefined,
   out: TrackedConnectorPose[],

@@ -1,4 +1,4 @@
-import type { FeatureId, ScriptLocation } from '../../intent/types';
+import type { FeatureId, ScriptLocation } from '../intent/types';
 import type { BackendTarget } from '../types/backendTarget';
 import type { DiagnosticCode } from './codes';
 import type { NextAction } from './nextAction';

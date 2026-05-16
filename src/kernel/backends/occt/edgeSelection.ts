@@ -1,12 +1,12 @@
 // src/backends/occt/edgeSelection.ts
 import type { Edge, Face } from 'replicad';
-import type { FeatureRecord, FaceLabelsMap } from '../../../intent/featureRecord';
+import type { FeatureRecord, FaceLabelsMap } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { CanonicalFace, EdgeRef } from '../../../intent/types';
+import type { CanonicalFace, EdgeRef } from '../../../shared/intent/types';
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
-import { EDGE_QUERY_KEYS } from '../../../intent/queryKeys';
+import { EDGE_QUERY_KEYS } from '../../../shared/intent/queryKeys';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
 import {
@@ -14,7 +14,7 @@ import {
   findLineageMatches,
   findFallbackSnapshot,
   resolveBySnapshot,
-} from '../../../runtime/selectorParser';
+} from '../../naming/selectorParser';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;

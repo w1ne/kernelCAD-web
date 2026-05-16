@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateFilletCode, generateChamferCode, generateBooleanCode } from './modifiers.feature';
-import { CodeAnalyzer } from '../../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../../shared/codeGeneration/index';
 
 const createCtx = () => new CodeAnalyzer('').createContext();
 

@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { getReturnedVariables } from '../lib/ast';
-import type { GeometryResult } from '../lib/geometryEngine';
+import { getReturnedVariables } from '../shared/codeGeneration/ast';
+import type { GeometryResult } from '../shared/worker/geometryEngine';
 import type { SketchModeState } from '../shared/types/sketch';
-import { buildFaceSketchPlaneEntity } from '../lib/sketchPlane';
+import { buildFaceSketchPlaneEntity } from '../shared/sketch/sketchPlane';
 
 export interface FaceSelection {
     shapeIndex: number;

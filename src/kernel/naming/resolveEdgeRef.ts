@@ -6,7 +6,7 @@
 // resolved face. Full edge-lineage parity (separate EdgeLineage with
 // featureId/featureKind/snapshotAtCreate) is deferred to a follow-up patch.
 
-import type { EdgeRef } from '../../intent/types';
+import type { EdgeRef } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FaceHash } from './evolutionRecord';

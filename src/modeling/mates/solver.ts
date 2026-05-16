@@ -33,8 +33,8 @@
 
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
 import type { NumericPoses } from '../../capture/forwardKinematics';
-import { KernelError } from '../../intent/kernelError';
-import type { FeatureId } from '../../intent/types';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { FeatureId } from '../../shared/intent/types';
 // Newton-Raphson machinery for articulated closed loops (T7.x): the
 // finite-diff Jacobian + small-matrix linear solver from
 // `../numeric/jacobian.ts` (unit-tested there). For the v0.6.0 fastened-
@@ -42,10 +42,10 @@ import type { FeatureId } from '../../intent/types';
 // lands pose-driven articulation and free DOFs make Newton iteration
 // meaningful. Keeping these imports here makes the wiring point explicit
 // and stops future readers from rebuilding helpers that already exist.
-import { norm2 } from '../../lib/numeric/jacobian';
-import { currentValue } from '../../runtime/editableHelpers';
-import type { Editable } from '../../runtime/paramRef';
-import { Transform, type Vec3 as Se3Vec3 } from '../../runtime/se3';
+import { norm2 } from '../../shared/numeric/jacobian';
+import { currentValue } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
+import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import {
   resolveConnectorOrigin,
   type Connector,

@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { FeatureRecord } from '../../../intent/featureRecord';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ValidatorResult } from '../../../modeling/mates/validator';
 import type { StudioRecomputeResult } from '../../types';
 

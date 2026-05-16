@@ -16,7 +16,7 @@
 //   4. Sample the field at the point. Return `{ distance, inside, aabb, kind }`.
 
 import { runMcpScript } from '../runMcpScript';
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 
 export interface EvaluateSdfInput {
   file?: string;

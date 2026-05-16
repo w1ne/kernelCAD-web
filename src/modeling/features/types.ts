@@ -1,5 +1,5 @@
 import { type LucideIcon, type LucideProps } from 'lucide-react';
-import { type CodeGenerationContext } from '../../lib/codeGeneration';
+import { type CodeGenerationContext } from '../../shared/codeGeneration/index';
 import { z } from 'zod';
 
 export interface HeadlessContext {

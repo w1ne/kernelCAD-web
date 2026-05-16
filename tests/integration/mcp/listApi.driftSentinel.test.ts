@@ -8,7 +8,7 @@ import { createApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { Shape } from '../../../src/capture/proxy';
 import { Sketch, PathBuilder } from '../../../src/capture/sketch';
-import { Scene } from '../../../src/intent/scene';
+import { Scene } from '../../../src/authoring/validation/scene';
 import { SurfaceProxy } from '../../../src/capture/surfaceProxy';
 
 describe('list_api drift sentinels', () => {

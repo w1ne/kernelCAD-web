@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { GeometryResult } from "../../../lib/geometryEngine";
+import type { GeometryResult } from "../../../shared/worker/geometryEngine";
 
 export function computeGeometryBounds(
     geometries: GeometryResult[],

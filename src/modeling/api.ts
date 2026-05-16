@@ -4,7 +4,7 @@ import { makeAssembly, type Assembly } from '../capture/assembly';
 import { Shape } from '../capture/proxy';
 import { Sketch, makePath, type PathBuilder } from '../capture/sketch';
 import type { SurfaceProxy } from '../capture/surfaceProxy';
-import type { Param, Vec3 } from '../intent/types';
+import type { Param, Vec3 } from '../shared/intent/types';
 import {
   selectEdges as selectEdgesBackend,
   selectEdge as selectEdgeBackend,
@@ -13,18 +13,18 @@ import {
 } from '../kernel/backends/occt/edgeQueries';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { createSketchModule, type SketchModule } from './sketch/index';
-import { fontPath, type FontPath } from '../lib/fonts';
-import { fromSTEP as libFromSTEP } from '../lib/parts/fromSTEP';
+import { fontPath, type FontPath } from '../shared/fonts/index';
+import { fromSTEP as libFromSTEP } from './parts/fromSTEP';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize, type MaterializeOpts } from './sdf/materialize';
 import type { SdfField } from './sdf/index';
-import { KernelError } from '../intent/kernelError';
+import { KernelError } from '../shared/intent/kernelError';
 import { validateThickness, validateKFactor } from './sheetMetal';
-import type { FaceLabelsMap } from '../intent/featureRecord';
-import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../runtime/paramRef';
-import type { ParamMetadata } from '../runtime/paramTable';
-import { toParam } from '../runtime/editableHelpers';
+import type { FaceLabelsMap } from '../shared/intent/featureRecord';
+import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
+import type { ParamMetadata } from '../shared/runtime/paramTable';
+import { toParam } from '../shared/runtime/editableHelpers';
 
 export interface ApiContext {
   session: CaptureSession;

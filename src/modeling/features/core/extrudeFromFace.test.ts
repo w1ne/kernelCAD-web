@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateExtrudeFromFaceCode } from './extrudeFromFace.feature';
-import { CodeAnalyzer } from '../../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../../shared/codeGeneration/index';
 
 describe('ExtrudeFromFace Code Generation', () => {
     it('should generate code to extrude from a face with unique variable names', () => {

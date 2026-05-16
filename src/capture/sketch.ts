@@ -1,13 +1,13 @@
 // src/capture/sketch.ts
-import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../intent/types';
-import { isValidAxisSpec } from '../intent/types';
+import type { FeatureId, FeatureRef, Vec3, AxisSpec, Param } from '../shared/intent/types';
+import { isValidAxisSpec } from '../shared/intent/types';
 import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
-import { KernelError } from '../intent/kernelError';
-import type { FaceLabelsMap } from '../intent/featureRecord';
-import { type Editable } from '../runtime/paramRef';
-import { toParam } from '../runtime/editableHelpers';
+import { KernelError } from '../shared/intent/kernelError';
+import type { FaceLabelsMap } from '../shared/intent/featureRecord';
+import { type Editable } from '../shared/runtime/paramRef';
+import { toParam } from '../shared/runtime/editableHelpers';
 
 export type SketchCommand =
   | { kind: 'moveTo'; x: Param; y: Param }

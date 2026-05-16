@@ -6,7 +6,7 @@ import { isSceneBackend } from '../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../shared/diagnostics/nextAction';
 import { Shape } from '../capture/proxy';
-import { Scene } from '../intent/scene';
+import { Scene } from '../authoring/validation/scene';
 
 export type ExportFormat = 'stl' | 'step';
 

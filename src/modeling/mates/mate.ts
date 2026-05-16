@@ -7,7 +7,7 @@
 // builder surfaces these records on `scene.mates` returned by
 // `Assembly.model()` / `Assembly.solvedModel()`.
 
-import type { Editable } from '../../runtime/paramRef';
+import type { Editable } from '../../shared/runtime/paramRef';
 import type { MateType } from './mateTypes';
 
 /**

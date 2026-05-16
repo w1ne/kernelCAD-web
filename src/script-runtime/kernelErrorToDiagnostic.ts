@@ -15,7 +15,7 @@ import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import { withNextAction } from '../shared/diagnostics/diagnostic';
 import type { DiagnosticCode } from '../shared/diagnostics/codes';
 import { HINT_TEMPLATES } from '../shared/diagnostics/codes';
-import { isKernelError } from '../intent/kernelError';
+import { isKernelError } from '../shared/intent/kernelError';
 
 export function kernelErrorToDiagnostic(
   e: unknown,

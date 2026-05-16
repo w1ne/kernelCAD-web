@@ -1,5 +1,5 @@
-import { ConstraintSolver } from '../../lib/constraints/solver';
-import type { Constraint, ConstraintType, SketchEntity } from '../../lib/constraints/types';
+import { ConstraintSolver } from '../../modeling/constraints/solver';
+import type { Constraint, ConstraintType, SketchEntity } from '../../modeling/constraints/types';
 
 export const SUPPORTED_CONSTRAINT_TYPES: ConstraintType[] = [
   'COINCIDENT',

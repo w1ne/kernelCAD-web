@@ -28,8 +28,8 @@
 // face) is queued for v0.7.x.
 
 import type { Assembly, AssemblyPartStored } from '../../capture/assembly';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureId, Param } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { FeatureId, Param } from '../../shared/intent/types';
 import type { Connector } from './connector';
 import { parseConnectorRef } from './mate';
 import type { ValidatorDiagnostic } from './validator';

@@ -1,7 +1,7 @@
 // src/components/demoPlayer/AnimationEngine.ts
 import * as THREE from 'three';
 import type { FeatureEvent } from '../../modeling/compute/featureEvents';
-import type { FeatureKind } from '../../intent/types';
+import type { FeatureKind } from '../../shared/intent/types';
 
 type TransitionKind = 'add' | 'boolean.cut' | 'boolean.fuse' | 'modifier' | 'transform' | 'fallback';
 

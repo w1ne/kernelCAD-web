@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { useEffect, useMemo, useState } from "react";
-import type { GeometryResult, SketchGeometry } from "../lib/geometryEngine";
+import type { GeometryResult, SketchGeometry } from "../shared/worker/geometryEngine";
 import type { ViewMode3D } from "../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";

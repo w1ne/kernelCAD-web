@@ -18,7 +18,7 @@ import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { isSceneBackend, type SceneBackend } from '../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { Shape } from '../capture/proxy';
-import { Scene } from '../intent/scene';
+import { Scene } from '../authoring/validation/scene';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */

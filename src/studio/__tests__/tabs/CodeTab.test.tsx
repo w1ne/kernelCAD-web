@@ -2,7 +2,7 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { FeatureRecord } from '../../../intent/featureRecord';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { StudioRecomputeResult } from '../../types';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();

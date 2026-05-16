@@ -6,7 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
 import { useEffect, useState } from 'react';
-import { parseCode } from './lib/ast';
+import { parseCode } from './shared/codeGeneration/ast';
 import { DemoPlayerPage } from './components/demoPlayer/DemoPlayerPage';
 
 function isCodeParsable(code: string): boolean {

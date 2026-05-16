@@ -1,6 +1,6 @@
 import { SquaresIntersect, SquaresSubtract, SquaresUnite } from 'lucide-react';
 import { type Feature } from '../types';
-import { type CodeGenerationContext } from '../../../lib/codeGeneration';
+import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
 import { FilletIcon, ChamferIcon } from '../../../components/CustomIcons';
 
 export const FilletFeature: Feature = {

@@ -5,12 +5,12 @@ import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from './backends/occt/occtLowerer';
 import { RecomputeEngine } from './compute/recomputeEngine';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { FeatureId } from '../intent/types';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { FeatureId } from '../shared/intent/types';
 import type { CaptureSession } from '../capture/captureSession';
-import type { SoftWarning } from '../runtime/softWarning';
+import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript } from '../script-runtime/runScript';
-import { KernelError } from '../intent/kernelError';
+import { KernelError } from '../shared/intent/kernelError';
 
 export interface BuildModelInput {
   code: string;

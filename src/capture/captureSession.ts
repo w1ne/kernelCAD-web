@@ -1,12 +1,12 @@
 import {
   createFeatureIdGenerator, createSurfaceIdGenerator,
   type FeatureIdGenerator, type SurfaceIdGenerator,
-} from '../intent/featureId';
-import type { FeatureRecord, ShapeTransform } from '../intent/featureRecord';
-import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../intent/types';
+} from '../shared/intent/featureId';
+import type { FeatureRecord, ShapeTransform } from '../shared/intent/featureRecord';
+import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../shared/intent/types';
 import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData,
-} from '../intent/surfaceRecord';
+} from '../shared/intent/surfaceRecord';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -16,14 +16,14 @@ import type {
   AssemblyPartOpts,
   AssemblyPartRef,
 } from './assembly';
-import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../intent/queryKeys';
-import { ParamTable, type SerializedParamTable } from '../runtime/paramTable';
-import type { SoftWarning } from '../runtime/softWarning';
-import { collectParamRefs } from '../runtime/resolveParams';
-import { toParam } from '../runtime/editableHelpers';
-import type { Editable } from '../runtime/paramRef';
+import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../shared/intent/queryKeys';
+import { ParamTable, type SerializedParamTable } from '../shared/runtime/paramTable';
+import type { SoftWarning } from '../shared/runtime/softWarning';
+import { collectParamRefs } from '../shared/runtime/resolveParams';
+import { toParam } from '../shared/runtime/editableHelpers';
+import type { Editable } from '../shared/runtime/paramRef';
 import type { ShapeBackend } from '../kernel/backends/backend';
-import { KernelError } from '../intent/kernelError';
+import { KernelError } from '../shared/intent/kernelError';
 import type { Connector } from '../modeling/mates/connector';
 import type { MateCouplingRecord } from '../modeling/mates/coupledPoses';
 import type { MateType } from '../modeling/mates/mateTypes';
@@ -68,7 +68,7 @@ export { validateFaceLabels } from './faceLabels';
  *  callers (hole/holes/cutout) that always want a face ref, never an
  *  edges ref. */
 export function buildFaceInputRef(
-  baseId: import('../intent/types').FeatureId,
+  baseId: import('../shared/intent/types').FeatureId,
   face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
   // `{ face: <something> }` wrapper form
@@ -811,7 +811,7 @@ export class CaptureSession {
   /** Slice-3 namespace: edit-after-build operations.
    *  See spec §E.6, §F.1, §F.2. */
   readonly params = {
-    list: (): import('../runtime/paramTable').ParamEntry[] => this.paramTable.list(),
+    list: (): import('../shared/runtime/paramTable').ParamEntry[] => this.paramTable.list(),
 
     update: async (edits: ParamUpdateEdit[]): Promise<ParamUpdateResult> => this.runParamUpdate(edits),
   };

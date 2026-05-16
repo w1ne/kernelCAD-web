@@ -9,8 +9,8 @@ import {
 import type { MateLoadLimit, MateRecord } from './mate';
 import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { CaptureSession } from '../../capture/captureSession';
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { Param, Vec3Param } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { Param, Vec3Param } from '../../shared/intent/types';
 import { createApi } from '../api';
 
 const p = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });

@@ -8,7 +8,7 @@ import {
   findLineageMatches,
   findFallbackSnapshot,
   resolveBySnapshot,
-} from '../../../src/runtime/selectorParser';
+} from '../../../src/kernel/naming/selectorParser';
 import type { HistoryMap } from '../../../src/kernel/naming/evolutionRecord';
 import type { FaceSnapshot } from '../../../src/kernel/backends/occt/createdRefs';
 

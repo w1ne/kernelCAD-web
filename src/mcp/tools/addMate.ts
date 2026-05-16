@@ -6,7 +6,7 @@
 // not-found) bubble out as structured MCP error envelopes.
 
 import type { Assembly } from '../../capture/assembly';
-import { isKernelError } from '../../intent/kernelError';
+import { isKernelError } from '../../shared/intent/kernelError';
 import type { MateLimitRange, MatePose } from '../../modeling/mates/mate';
 import type { MateType } from '../../modeling/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';

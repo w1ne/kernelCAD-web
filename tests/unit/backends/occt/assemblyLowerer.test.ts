@@ -5,7 +5,7 @@ import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer'
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { createApi } from '../../../../src/modeling/api';
 import { isSceneBackend, type SceneBackend } from '../../../../src/kernel/backends/sceneBackend';
-import { Transform } from '../../../../src/runtime/se3';
+import { Transform } from '../../../../src/shared/runtime/se3';
 
 describe('OCCT assembly lowerer', () => {
   beforeAll(async () => { await initOcct(); });

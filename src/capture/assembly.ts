@@ -1,8 +1,8 @@
 import { lookupSourceColor } from '../kernel/backends/occt/lookupSourceColor';
-import { KernelError } from '../intent/kernelError';
-import { Scene, type SceneDiagnostic, type ScenePart } from '../intent/scene';
-import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../intent/types';
-import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../intent/types';
+import { KernelError } from '../shared/intent/kernelError';
+import { Scene, type SceneDiagnostic, type ScenePart } from '../authoring/validation/scene';
+import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../shared/intent/types';
+import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../shared/intent/types';
 import {
   makeConnector,
   type Connector,
@@ -23,9 +23,9 @@ import {
 } from '../modeling/mates/poseEnvelope';
 import { solveMates } from '../modeling/mates/solver';
 import { validateAssemblyWithMates } from '../modeling/mates/validator';
-import { currentValue, toParam, toVec3Param } from '../runtime/editableHelpers';
-import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../runtime/paramRef';
-import { Transform } from '../runtime/se3';
+import { currentValue, toParam, toVec3Param } from '../shared/runtime/editableHelpers';
+import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../shared/runtime/paramRef';
+import { Transform } from '../shared/runtime/se3';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';

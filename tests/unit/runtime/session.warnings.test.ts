@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
-import type { SoftWarning } from '../../../src/runtime/softWarning';
+import type { SoftWarning } from '../../../src/shared/runtime/softWarning';
 
 const sample: SoftWarning = {
   code: 'feature.face-ref.not-resolvable',

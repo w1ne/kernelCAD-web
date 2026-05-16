@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeGeometryBounds } from './cameraBounds';
-import type { GeometryResult } from '../../../lib/geometryEngine';
+import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 
 function geom(vertices: number[]): GeometryResult {
     return {

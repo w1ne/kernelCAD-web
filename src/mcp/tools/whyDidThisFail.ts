@@ -10,7 +10,7 @@
 
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import type { FeatureKind } from '../../intent/types';
+import type { FeatureKind } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';

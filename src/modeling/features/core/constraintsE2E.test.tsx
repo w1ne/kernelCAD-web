@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { SketchingProvider, useSketching } from '../../../context/SketchingContext';
 import { useEffect, useRef } from 'react';
-import type { SketchEntity } from '../../../lib/constraints/types';
+import type { SketchEntity } from '../../constraints/types';
 
 // Helper component with stable callback pattern
 const TestRunner = ({

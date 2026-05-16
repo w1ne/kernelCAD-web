@@ -10,7 +10,7 @@
 import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { StudioRecomputeResult } from '../types';
 import { shellStore } from '../store/shellStore';
 

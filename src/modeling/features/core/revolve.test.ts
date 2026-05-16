@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateRevolveCode } from './revolve.feature';
-import { CodeAnalyzer } from '../../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../../shared/codeGeneration/index';
 
 describe('RevolveFeature', () => {
     describe('generateRevolveCode', () => {

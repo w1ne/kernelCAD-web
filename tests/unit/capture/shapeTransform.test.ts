@@ -8,8 +8,8 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
-import { Transform } from '../../../src/runtime/se3';
-import type { ShapeTransform } from '../../../src/intent/featureRecord';
+import { Transform } from '../../../src/shared/runtime/se3';
+import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
 
 /** Inline equivalent of a `transformsForId` helper — find the FeatureRecord
  *  for `id` and return its ShapeTransform[]. Mirrors the captureSession.test.ts

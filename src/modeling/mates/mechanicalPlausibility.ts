@@ -1,7 +1,7 @@
 import type { Assembly } from '../../capture/assembly';
 import type { ShapeBackend } from '../../kernel/backends/backend';
-import type { Vec3 } from '../../intent/types';
-import { Transform } from '../../runtime/se3';
+import type { Vec3 } from '../../shared/intent/types';
+import { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import { solveMates } from './solver';
 

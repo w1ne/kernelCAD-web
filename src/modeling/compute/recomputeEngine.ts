@@ -1,14 +1,14 @@
-import type { FeatureRecord } from '../../intent/featureRecord';
-import type { FeatureId } from '../../intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { FeatureId } from '../../shared/intent/types';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
-import { KernelError } from '../../intent/kernelError';
-import type { ParamTable } from '../../runtime/paramTable';
-import { resolveParams } from '../../runtime/resolveParams';
-import type { SoftWarningPhase, SoftWarningSink } from '../../runtime/softWarning';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { ParamTable } from '../../shared/runtime/paramTable';
+import { resolveParams } from '../../shared/runtime/resolveParams';
+import type { SoftWarningPhase, SoftWarningSink } from '../../shared/runtime/softWarning';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -64,7 +64,7 @@ function selectorRoot(label: string): string {
 function findGatedLineageWarning(
   record: FeatureRecord,
   opts: RecomputeOptions | undefined,
-): import('../../runtime/softWarning').SoftWarning | undefined {
+): import('../../shared/runtime/softWarning').SoftWarning | undefined {
   const faceRef = record.inputs.face;
   if (!faceRef || faceRef.kind !== 'face' || faceRef.ref.kind !== 'label') return undefined;
   const featureName = selectorRoot(faceRef.ref.name);

@@ -1,11 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { CommandManager } from '../commands/CommandManager';
-import { defaultCode } from '../lib/geometryEngine';
+import { CommandManager } from '../authoring/commands/CommandManager';
+import { defaultCode } from '../shared/worker/geometryEngine';
 import type { EditorLike } from '../shared/types/editor';
-import { CodeAnalyzer, type CodeGenerationContext } from '../lib/codeGeneration';
-import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../lib/ast';
-import type { HistoryItem } from '../lib/codeAnalysis';
-import { CodeMutationService, type CodeMutationDiagnostics, type CodeTransform } from '../lib/CodeMutationService';
+import { CodeAnalyzer, type CodeGenerationContext } from '../shared/codeGeneration/index';
+import { deleteVariableDeclarationAST, deleteVariableDeclarationByLineFallback, deleteVariableDeclarationByNameAndLineAST, parseCode } from '../shared/codeGeneration/ast';
+import type { HistoryItem } from '../shared/codeGeneration/codeAnalysis';
+import { CodeMutationService, type CodeMutationDiagnostics, type CodeTransform } from '../shared/codeGeneration/CodeMutationService';
 
 export interface CodeContextType {
     code: string;

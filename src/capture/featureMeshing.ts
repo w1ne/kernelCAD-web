@@ -1,7 +1,7 @@
 // src/capture/featureMeshing.ts
-import type { FeatureId, FeatureKind, FeatureRef } from '../intent/types';
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { FaceGeometry } from '../lib/workerTypes';
+import type { FeatureId, FeatureKind, FeatureRef } from '../shared/intent/types';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { FaceGeometry } from '../shared/worker/workerTypes';
 import type { ShapeBackend } from '../kernel/backends/backend';
 import { OcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { OcctBackend, initOcct } from '../kernel/backends/occt/occtBackend';
@@ -122,7 +122,7 @@ function computeConstructionClosure(
 
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
-  paramTable?: import('../runtime/paramTable').ParamTable,
+  paramTable?: import('../shared/runtime/paramTable').ParamTable,
   /** v0.5: when records contain `importedStep` features, pass the
    *  originating session so the lowerer can find the pre-imported
    *  OcctBackend instances. Optional — scripts without `lib.fromSTEP`
@@ -132,8 +132,8 @@ export async function meshFeaturesPerFeature(
   session?: {
     importedGeometry: Map<FeatureId, ShapeBackend>;
     getSurfaceRecord?: (
-      id: import('../intent/surfaceRecord').SurfaceId,
-    ) => import('../intent/surfaceRecord').SurfaceRecord | undefined;
+      id: import('../shared/intent/surfaceRecord').SurfaceId,
+    ) => import('../shared/intent/surfaceRecord').SurfaceRecord | undefined;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();

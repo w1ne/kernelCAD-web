@@ -5,7 +5,7 @@ import { WorkbenchProvider, useWorkbench } from '../context/WorkbenchContext';
 import { useEffect } from 'react';
 
 // Mock Geometry Engine
-vi.mock('../lib/geometryEngine', () => {
+vi.mock('../shared/worker/geometryEngine', () => {
     const mockInstance = {
         initialize: vi.fn().mockResolvedValue(true),
         executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),

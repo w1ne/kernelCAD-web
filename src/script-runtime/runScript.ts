@@ -1,7 +1,7 @@
 import { CaptureSession } from '../capture/captureSession';
 import { createApi } from '../modeling/api';
-import type { FeatureRecord } from '../intent/featureRecord';
-import type { ParamTable } from '../runtime/paramTable';
+import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { ParamTable } from '../shared/runtime/paramTable';
 import { transpileTs } from './transpile';
 import { runIsolated } from './isolation';
 

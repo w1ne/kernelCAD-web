@@ -7,7 +7,7 @@ import { AnimationEngine } from './AnimationEngine';
 import { CameraController } from './CameraController';
 import type { FeatureEvent } from '../../modeling/compute/featureEvents';
 import type { TerminalLine } from './TerminalPane';
-import type { FaceGeometry } from '../../lib/workerTypes';
+import type { FaceGeometry } from '../../shared/worker/workerTypes';
 import type { FeatureMeshSerialized } from '../../capture/featureMeshSerialize';
 import { rehydrateFromBridge } from '../../capture/featureMeshSerialize';
 import { resolveColor } from '../../shared/render/palette';

@@ -14,7 +14,7 @@ export interface HelixOptions {
   startAngle?: number;     // radians; default 0
 }
 
-import type { Vec3 } from '../intent/types';
+import type { Vec3 } from '../shared/intent/types';
 export type RailPoint = Vec3;
 
 /**

@@ -24,7 +24,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { FeatureId } from '../../../intent/types';
+import type { FeatureId } from '../../../shared/intent/types';
 import { computeBendAllowance } from '../../sheetMetal';
 
 export interface BendAxisSpec {

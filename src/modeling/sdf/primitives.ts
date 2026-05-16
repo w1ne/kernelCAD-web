@@ -7,9 +7,9 @@
 // Math reference: Inigo Quilez's SDF primitive catalogue. The exact formulas
 // used below are pinned in the W2.3 design spec table 5.
 
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import type { SdfField } from './index';
-import { KernelError } from '../../intent/kernelError';
+import { KernelError } from '../../shared/intent/kernelError';
 
 function assertPositiveFinite(value: number, label: string): void {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {

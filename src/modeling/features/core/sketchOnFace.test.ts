@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateSketchOnFaceCode } from './sketchOnFace.feature';
-import { CodeAnalyzer } from '../../../lib/codeGeneration';
+import { CodeAnalyzer } from '../../../shared/codeGeneration/index';
 
 describe('SketchOnFaceFeature', () => {
     it('should generate code to sketch on a face', () => {

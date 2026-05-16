@@ -4,9 +4,9 @@
 // can be a numeric Vec3 (this task) or a topology query (Task 2).
 // Type tag governs which mates can attach (see mateTypes.ts).
 
-import type { Vec3 } from '../../intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import type { Shape } from '../../capture/proxy';
-import type { FeatureRecord } from '../../intent/featureRecord';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { resolveTopologyOriginOnBackend } from '../backends/occt/connectorTopology';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';

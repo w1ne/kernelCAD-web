@@ -25,8 +25,8 @@ export async function initHeadless() {
 }
 
 import type { HeadlessContext } from './features/types';
-import { CodeAnalyzer } from '../lib/codeGeneration/CodeAnalyzer';
-import type { CodeGenerationContext } from '../lib/codeGeneration';
+import { CodeAnalyzer } from '../shared/codeGeneration/CodeAnalyzer';
+import type { CodeGenerationContext } from '../shared/codeGeneration/index';
 
 export interface ExecutionResult {
     shape?: unknown; // Replicad shape

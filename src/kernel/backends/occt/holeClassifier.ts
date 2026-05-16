@@ -6,7 +6,7 @@
 // switch). Behaviorally identical to slice-1's classifyHoleFace.
 
 import type { Face } from 'replicad';
-import type { Vec3 } from '../../../intent/types';
+import type { Vec3 } from '../../../shared/intent/types';
 
 export type HoleRefName =
   | 'wall'

@@ -1,4 +1,4 @@
-import type { FeatureKind, Param } from '../../intent/types';
+import type { FeatureKind, Param } from '../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListFeaturesInput {

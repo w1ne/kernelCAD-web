@@ -14,8 +14,8 @@
 import type { CaptureSession } from '../../capture/captureSession';
 import type { Shape } from '../../capture/proxy';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
-import { KernelError } from '../../intent/kernelError';
-import type { Vec3 } from '../../intent/types';
+import { KernelError } from '../../shared/intent/kernelError';
+import type { Vec3 } from '../../shared/intent/types';
 import type { SdfField } from './index';
 import { runMarchingCubes } from './marchingCubes';
 

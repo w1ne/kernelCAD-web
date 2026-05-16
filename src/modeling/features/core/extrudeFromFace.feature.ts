@@ -1,8 +1,8 @@
 import { ArrowUpFromLine } from 'lucide-react';
 import { type Feature } from '../types';
-import { CodeBuilder } from '../../../lib/CodeBuilder';
-import { type CodeGenerationContext } from '../../../lib/codeGeneration';
-import { insertStatementsAndReplaceReturnAtIndex, promoteReturnExpressionAtIndexToVariable } from '../../../lib/ast';
+import { CodeBuilder } from '../../../shared/codeGeneration/CodeBuilder';
+import { type CodeGenerationContext } from '../../../shared/codeGeneration/index';
+import { insertStatementsAndReplaceReturnAtIndex, promoteReturnExpressionAtIndexToVariable } from '../../../shared/codeGeneration/ast';
 
 interface ExtrudeParams {
     distance: number;

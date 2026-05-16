@@ -24,7 +24,7 @@ const mockEngine = {
   executeCode: vi.fn(),
 };
 
-vi.mock('../lib/geometryEngine', () => ({
+vi.mock('../shared/worker/geometryEngine', () => ({
   GeometryEngine: {
     getInstance: () => mockEngine,
   },

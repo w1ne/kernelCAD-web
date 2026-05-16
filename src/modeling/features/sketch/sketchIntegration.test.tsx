@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { convertSketchEntitiesToConstraints } from '../../../lib/constraints/sketchConverter';
+import { convertSketchEntitiesToConstraints } from '../../constraints/sketchConverter';
 import type { SketchEntity } from '../../../shared/types/sketch';
-import type { SolverState, Point as SolverPoint, Line as SolverLine } from '../../../lib/constraints/types';
-import { ConstraintSolver } from '../../../lib/constraints/solver';
+import type { SolverState, Point as SolverPoint, Line as SolverLine } from '../../constraints/types';
+import { ConstraintSolver } from '../../constraints/solver';
 
 describe('Sketch to Constraint Integration', () => {
     it('should convert a line with length constraint into solver entities and constraints', () => {

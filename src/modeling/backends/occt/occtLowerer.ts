@@ -5,9 +5,9 @@ import type {
   LowerResult,
   ShapeBackend,
 } from '../../../kernel/backends/backend';
-import type { FeatureRecord } from '../../../intent/featureRecord';
-import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../intent/types';
-import { isValidPlaneSpec } from '../../../intent/types';
+import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import type { FeatureId, FeatureKind, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../../shared/intent/types';
+import { isValidPlaneSpec } from '../../../shared/intent/types';
 import { forwardKinematics, type NumericPoses } from '../../../capture/forwardKinematics';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
 import { mateFk, type ResolvedMatePart } from '../../mates/solver';
@@ -16,7 +16,7 @@ import type { Connector } from '../../mates/connector';
 import type { MateRecord } from '../../mates/mate';
 import type { MateType } from '../../mates/mateTypes';
 import { resolveTopologyOriginOnBackend } from './connectorTopology';
-import { KernelError } from '../../../intent/kernelError';
+import { KernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
@@ -28,7 +28,7 @@ import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
 import { findRootSheetMetalRecord } from '../../sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../../kernel/backends/sceneBackend';
 import { lookupSourceColor } from '../../../kernel/backends/occt/lookupSourceColor';
-import { Transform } from '../../../runtime/se3';
+import { Transform } from '../../../shared/runtime/se3';
 import * as replicad from 'replicad';
 import {
   cutWithHistory,
@@ -154,7 +154,7 @@ export function applyVariableEdgeFeature(
   }
 
   // N3 fix: runtime-narrow inputs.base to a 'feature' ref before extracting id.
-  const baseRef = feature.inputs.base as import('../../../intent/types').FeatureRef | undefined;
+  const baseRef = feature.inputs.base as import('../../../shared/intent/types').FeatureRef | undefined;
   if (!baseRef || (baseRef as { kind?: string }).kind !== 'feature') {
     diagnostics.push({
       target: 'export-occt',
@@ -166,7 +166,7 @@ export function applyVariableEdgeFeature(
     });
     return { ok: false, diagnostics };
   }
-  const narrowedBase: import('../../../intent/types').FeatureRef = baseRef as { kind: 'feature'; id: import('../../../intent/types').FeatureId };
+  const narrowedBase: import('../../../shared/intent/types').FeatureRef = baseRef as { kind: 'feature'; id: import('../../../shared/intent/types').FeatureId };
 
   // Per-group resolution loop. Build a synthetic one-input FeatureRecord
   // per group so we can reuse pickEdges' canonical/label/query/segments
@@ -190,8 +190,8 @@ export function applyVariableEdgeFeature(
     }
 
     // I1 fix: replace silent-drop conditional spreads with an explicit kind switch.
-    const ref = feature.inputs[`edge_group_${i}`] as import('../../../intent/types').FeatureRef | undefined;
-    const synthInputs: Record<string, import('../../../intent/types').FeatureRef> = {
+    const ref = feature.inputs[`edge_group_${i}`] as import('../../../shared/intent/types').FeatureRef | undefined;
+    const synthInputs: Record<string, import('../../../shared/intent/types').FeatureRef> = {
       base: narrowedBase,
     };
     if (ref) {
@@ -311,8 +311,8 @@ export function createOcctLowerer(
     scriptDir?: string;
     /** W1.3: surface-record lookup. Optional for callers that don't ship NURBS. */
     getSurfaceRecord?: (
-      id: import('../../../intent/surfaceRecord').SurfaceId,
-    ) => import('../../../intent/surfaceRecord').SurfaceRecord | undefined;
+      id: import('../../../shared/intent/surfaceRecord').SurfaceId,
+    ) => import('../../../shared/intent/surfaceRecord').SurfaceRecord | undefined;
   },
 ): OcctLowerer {
   const lowerer = new OcctLowerer();
@@ -368,7 +368,7 @@ export class OcctLowerer implements FeatureLowerer {
    *  surface ref consumption per surface id; reused across `surfaceThicken`
    *  / `surfaceToShape` records that point at the same surface. */
   surfaceCache: Map<
-    import('../../../intent/surfaceRecord').SurfaceId,
+    import('../../../shared/intent/surfaceRecord').SurfaceId,
     import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface
   > = new Map();
 
@@ -376,8 +376,8 @@ export class OcctLowerer implements FeatureLowerer {
    *  time. Provided by `createOcctLowerer(session)`; undefined if the lowerer
    *  was instantiated without a session (legacy / unit-test code paths). */
   getSurfaceRecord?: (
-    id: import('../../../intent/surfaceRecord').SurfaceId,
-  ) => import('../../../intent/surfaceRecord').SurfaceRecord | undefined;
+    id: import('../../../shared/intent/surfaceRecord').SurfaceId,
+  ) => import('../../../shared/intent/surfaceRecord').SurfaceRecord | undefined;
 
   /**
    * Resolve the Replicad Face referenced by `record.inputs.surface`. Order of

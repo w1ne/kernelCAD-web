@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import type { FeatureRecord } from '../../../src/intent/featureRecord';
-import type { Param } from '../../../src/intent/types';
+import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
+import type { Param } from '../../../src/shared/intent/types';
 
 const mm = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
 const ul = (n: number): Param => ({ expression: String(n), unit: 'unitless', evaluated: n });

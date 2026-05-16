@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useCallback, useMemo, useEffect } from "react";
 import { type ThreeEvent } from "@react-three/fiber";
-import type { GeometryResult, FaceGeometry } from "../../../lib/geometryEngine";
+import type { GeometryResult, FaceGeometry } from "../../../shared/worker/geometryEngine";
 import type { ViewMode3D } from "../../../shared/types/viewMode";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import { useUI } from "../../../context/UIContext";

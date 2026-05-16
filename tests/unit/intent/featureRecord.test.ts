@@ -1,6 +1,6 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { FeatureRecord, FaceLabelsMap, CanonicalFace } from '../../../src/intent/featureRecord';
-import type { Param } from '../../../src/intent/types';
+import type { FeatureRecord, FaceLabelsMap, CanonicalFace } from '../../../src/shared/intent/featureRecord';
+import type { Param } from '../../../src/shared/intent/types';
 import type { FaceQuery } from '../../../src/kernel/backends/occt/edgeQueries';
 
 describe('FeatureRecord', () => {

@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import React from 'react';
 import App from '../App';
-import * as GeometryEngine from '../lib/geometryEngine';
+import * as GeometryEngine from '../shared/worker/geometryEngine';
 import { initFeatures } from '../modeling/features/init';
 import type { EditorLike } from '../shared/types/editor';
-import { parseCode } from '../lib/ast';
+import { parseCode } from '../shared/codeGeneration/ast';
 
 const runUIE2E = process.env.KERNELCAD_UI_E2E === '1';
 const describeUI = runUIE2E ? describe : describe.skip;
@@ -15,7 +15,7 @@ vi.mock('../components/Viewer', () => ({
     default: () => <div data-testid="viewer-mock" />,
 }));
 
-vi.mock('../lib/geometryEngine', () => ({
+vi.mock('../shared/worker/geometryEngine', () => ({
     init: vi.fn().mockResolvedValue(undefined),
     executeCode: vi.fn().mockResolvedValue([]),
     exportSTEP: vi.fn().mockResolvedValue(new Blob()),

@@ -2,7 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useEffect, useRef } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";
-import type { GeometryResult } from "../../../lib/geometryEngine";
+import type { GeometryResult } from "../../../shared/worker/geometryEngine";
 import { computeGeometryBounds } from "./cameraBounds";
 
 // Using the exported constants if needed, but they are defined in Viewer.tsx conventionally.

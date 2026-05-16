@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Transform } from '../../../src/runtime/se3';
+import { Transform } from '../../../src/shared/runtime/se3';
 import { transformFeatureMesh } from '../../../src/capture/transformMesh';
 import type { FeatureMesh } from '../../../src/capture/featureMeshing';
 

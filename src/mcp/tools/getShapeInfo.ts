@@ -1,7 +1,7 @@
 // src/mcp/tools/getShapeInfo.ts
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import type { FeatureKind } from '../../intent/types';
+import type { FeatureKind } from '../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
 
 export interface GetShapeInfoInput {

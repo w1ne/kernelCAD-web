@@ -6,9 +6,9 @@
 // so agents can disambiguate. Lets agents discover the label vocabulary on a
 // shape before referencing labels in fillet/chamfer/shell.
 
-import type { CanonicalFace } from '../../intent/types';
+import type { CanonicalFace } from '../../shared/intent/types';
 import type { FaceQuery } from '../../kernel/backends/occt/edgeQueries';
-import type { FaceLabelsMap } from '../../intent/featureRecord';
+import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
 
 export interface ListFaceLabelsInput {

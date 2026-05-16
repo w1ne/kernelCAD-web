@@ -110,7 +110,7 @@ describe('Shape.reflect(plane)', () => {
     // Shape.reflect() validates at capture time, so malformed specs can only
     // arrive via direct IR construction. This test exercises the lowerer's
     // transform-loop validation gate directly.
-    const records: import('../../../../src/intent/featureRecord').FeatureRecord[] = [
+    const records: import('../../../../src/shared/intent/featureRecord').FeatureRecord[] = [
       {
         id: 'box-1',
         kind: 'box',

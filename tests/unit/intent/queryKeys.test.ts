@@ -1,6 +1,6 @@
 // tests/unit/intent/queryKeys.test.ts
 import { describe, it, expect } from 'vitest';
-import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../../src/intent/queryKeys';
+import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../../src/shared/intent/queryKeys';
 
 describe('queryKeys (single source of truth)', () => {
   it('EDGE_QUERY_KEYS is the canonical key list (compile-time exhaustiveness in queryKeys.ts)', () => {

@@ -3,11 +3,11 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
 import { WorkbenchProvider } from '../../context/WorkbenchContext';
-import * as geometryEngine from '../../lib/geometryEngine';
+import * as geometryEngine from '../../shared/worker/geometryEngine';
 
 // Mock Geometry Engine exports
-vi.mock('../../lib/geometryEngine', async () => {
-    const actual = await vi.importActual('../../lib/geometryEngine');
+vi.mock('../../shared/worker/geometryEngine', async () => {
+    const actual = await vi.importActual('../../shared/worker/geometryEngine');
     const mockInstance = {
         initialize: vi.fn().mockResolvedValue(true),
         executeCode: vi.fn().mockResolvedValue({ geometries: [], sketches: [] }),

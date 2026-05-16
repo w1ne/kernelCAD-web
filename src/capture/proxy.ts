@@ -1,7 +1,7 @@
-import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../intent/types';
-import { KernelError } from '../intent/kernelError';
-import type { ShapeTransform } from '../intent/featureRecord';
+import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../shared/intent/types';
+import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../shared/intent/types';
+import { KernelError } from '../shared/intent/kernelError';
+import type { ShapeTransform } from '../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../kernel/backends/occt/edgeQueries';
@@ -9,18 +9,18 @@ import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
-} from '../intent/holeValidation';
+} from '../authoring/validation/holeValidation';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
-} from '../intent/cutoutValidation';
-import { isParamRef, type Editable } from '../runtime/paramRef';
-import { toParam, toVec3Param } from '../runtime/editableHelpers';
-import { Transform } from '../runtime/se3';
+} from '../authoring/validation/cutoutValidation';
+import { isParamRef, type Editable } from '../shared/runtime/paramRef';
+import { toParam, toVec3Param } from '../shared/runtime/editableHelpers';
+import { Transform } from '../shared/runtime/se3';
 import type { ColorToken } from '../shared/render/palette';
 import { validateBendArgs } from '../modeling/sheetMetal';
-import type { Region } from '../intent/region';
+import type { Region } from '../shared/intent/region';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -612,7 +612,7 @@ export class Shape {
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
     const r = await engine.run(
-      records as readonly import('../intent/featureRecord').FeatureRecord[],
+      records as readonly import('../shared/intent/featureRecord').FeatureRecord[],
       {
         paramTable: this.session.paramTable,
         warningSink: (warning) => this.session.warnings.push(warning),

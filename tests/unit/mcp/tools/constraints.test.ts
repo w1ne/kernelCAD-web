@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ConstraintType, SketchEntity } from '../../../../src/lib/constraints/types';
+import type { ConstraintType, SketchEntity } from '../../../../src/modeling/constraints/types';
 import {
   addConstraintTool,
   listConstraintsTool,

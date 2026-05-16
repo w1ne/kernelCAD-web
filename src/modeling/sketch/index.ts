@@ -6,10 +6,10 @@
 
 import type { CaptureSession } from '../../capture/captureSession';
 import { Sketch } from '../../capture/sketch';
-import { KernelError } from '../../intent/kernelError';
-import { toParam } from '../../runtime/editableHelpers';
-import type { Editable } from '../../runtime/paramRef';
-import type { Param } from '../../intent/types';
+import { KernelError } from '../../shared/intent/kernelError';
+import { toParam } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
+import type { Param } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/codes';
 
 export interface SketchTextOpts {

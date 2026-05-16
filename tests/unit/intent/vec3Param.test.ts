@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { isValidEditableVec3, type Vec3Param } from '../../../src/intent/types';
-import { toVec3Param, resolveVec3Param } from '../../../src/runtime/editableHelpers';
-import { makeParamRef } from '../../../src/runtime/paramRef';
-import { ParamTable } from '../../../src/runtime/paramTable';
+import { isValidEditableVec3, type Vec3Param } from '../../../src/shared/intent/types';
+import { toVec3Param, resolveVec3Param } from '../../../src/shared/runtime/editableHelpers';
+import { makeParamRef } from '../../../src/shared/runtime/paramRef';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
 
 describe('Vec3Param helpers', () => {
   it('isValidEditableVec3 accepts plain numeric Vec3', () => {

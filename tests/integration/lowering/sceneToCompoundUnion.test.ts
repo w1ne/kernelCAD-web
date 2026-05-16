@@ -23,9 +23,9 @@ import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBac
 import { runScript } from '../../../src/script-runtime/runScript';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
-import { Scene } from '../../../src/intent/scene';
-import { Transform } from '../../../src/runtime/se3';
-import { KernelError } from '../../../src/intent/kernelError';
+import { Scene } from '../../../src/authoring/validation/scene';
+import { Transform } from '../../../src/shared/runtime/se3';
+import { KernelError } from '../../../src/shared/intent/kernelError';
 import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
 import type { Shape } from '../../../src/capture/proxy';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { projectService, type KernelCADProject, type ProjectMetadata } from '../lib/projectService';
-import { defaultCode } from '../lib/geometryEngine';
+import { projectService, type KernelCADProject, type ProjectMetadata } from '../authoring/projectService';
+import { defaultCode } from '../shared/worker/geometryEngine';
 
 interface ProjectContextType {
     activeProjectId: string | null;

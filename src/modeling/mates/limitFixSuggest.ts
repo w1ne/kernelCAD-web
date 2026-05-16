@@ -16,8 +16,8 @@
 import type { Assembly } from '../../capture/assembly';
 import type { MateRecord } from './mate';
 import type { PoseEnvelopeDiagnostic } from './poseEnvelope';
-import { currentValue } from '../../runtime/editableHelpers';
-import type { Editable } from '../../runtime/paramRef';
+import { currentValue } from '../../shared/runtime/editableHelpers';
+import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferencesForPoses } from './poseEnvelope';
 
 export interface SuggestedLimits {
