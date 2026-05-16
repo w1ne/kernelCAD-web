@@ -60,4 +60,10 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.flattenPattern.multi-bend-unsupported':{ kind: 'rewrite-feature', guidance: 'flatten an upstream Shape with <= 2 bends (slice-1 limit)' },
   'feature.sdf.field-undefined':              { kind: 'call-introspection-tool', tool: 'evaluate_sdf' },
   'feature.sdf.materialize-resolution-out-of-range': { kind: 'fix-arg', field: 'resolution' },
+  'feature.reference-image.path-not-found':   { kind: 'check-file-path' },
+  'feature.reference-image.invalid-plane':    { kind: 'fix-arg', field: 'plane' },
+  'feature.reference-image.scale-out-of-range': { kind: 'fix-arg', field: 'scale' },
+  'feature.reference-image.format-unsupported': { kind: 'fix-arg', field: 'path' },
+  'feature.material.invalid-base-color':      { kind: 'fix-arg', field: 'baseColor' },
+  'feature.material.value-clamped':           { kind: 'fix-arg', field: 'see-message' },
 };
