@@ -1,13 +1,35 @@
 name: CI
 
+# Path-filters skip CI on truly content-only changes (top-level README/LICENSE/
+# CHANGELOG, plus docs/ which is human-written prose). Anything that COULD
+# affect runtime — src/, tests/, scripts/, eval/, site/, package*.json,
+# tsconfig*.json, .github/workflows/ — still triggers CI.
 on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+      - 'RELEASE_NOTES.md'
+      - 'docs/**'
+      - 'doc/**'
+      - 'archive/**'
   pull_request:
     branches:
       - master
       - develop
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+      - 'RELEASE_NOTES.md'
+      - 'docs/**'
+      - 'doc/**'
+      - 'archive/**'
   workflow_dispatch:
 
 permissions:
