@@ -6,6 +6,8 @@ import {
   type ValidatorDiagnostic,
   type ValidatorDiagnosticCode,
 } from './validator';
+import type { MateLoadLimit, MateRecord } from './mate';
+import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { CaptureSession } from '../../capture/captureSession';
 import type { FeatureRecord } from '../../intent/featureRecord';
 import type { Param, Vec3Param } from '../../intent/types';
@@ -162,7 +164,12 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     arm.mate('a-b', 'a.top', 'b.bot', 'fastened');
     const result = await validateAssemblyWithMates(arm);
     expect(result.status).toBe('solved');
-    expect(result.diagnostics).toHaveLength(0);
+    // v0.7.4 Gate 1 emits info-severity "deferred" notes for vec3-origin
+    // sides on fastened mates (the v0.7.x followup wires vec3-origin face
+    // inference). Filter those out — this test is about clean-status, not
+    // about Gate 1's deferred-note behaviour (covered in mountingHoleConsistency.test.ts).
+    const nonDeferred = result.diagnostics.filter((d) => d.severity !== 'info');
+    expect(nonDeferred).toHaveLength(0);
   });
 
   it('reports assembly.mate.over-constrained on an inconsistent triangle', async () => {
@@ -246,12 +253,21 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(info?.severity).toBe('info');
   });
 
-  it('type-system accepts the 9 v0.6 diagnostic codes', () => {
+  it('type-system accepts the 17 v0.6 + v0.6.2 + v0.7.4 diagnostic codes', () => {
     // Capture-time codes (`type-mismatch`, `connector-not-found`) are thrown
     // as `KernelError` by `arm.mate(...)` and never surface through the
     // validator — but external consumers (lowerer, MCP error-chain echoes)
     // still need them in the union. This test pins the union shape so a
     // future refactor can't silently drop them.
+    //
+    // v0.6.2 grew the union by 5: 4 envelope-folded codes
+    // (assembly.pose.out-of-limits, assembly.pose-envelope.{solve-failed,
+    // interference, connector-unresolved}) + 1 new code
+    // (assembly.mate.limit-missing).
+    //
+    // v0.7.4 grew the union by 3 kinematic-grounding gates:
+    // assembly.mounting-hole.mismatch, assembly.joint-axis.unbound,
+    // assembly.joint.load-exceeded.
     const codes: ValidatorDiagnosticCode[] = [
       'assembly.part.floating',
       'assembly.part.orphan',
@@ -262,8 +278,21 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
       'assembly.mate.connector-not-found',
       'assembly.loop.unclosed',
       'assembly.solver.did-not-converge',
+      'assembly.pose.out-of-limits',
+      'assembly.pose-envelope.solve-failed',
+      'assembly.pose-envelope.interference',
+      'assembly.pose-envelope.connector-unresolved',
+      'assembly.mate.limit-missing',
+      'assembly.mounting-hole.mismatch',
+      'assembly.joint-axis.unbound',
+      'assembly.joint.load-exceeded',
     ];
-    expect(codes).toHaveLength(9);
+    // When bumping this number: update the literal, the it(...) title above,
+    // AND the inline comment listing what's in the union.
+    expect(
+      codes.length,
+      'ValidatorDiagnosticCode union changed — update count, it() title, and member-list comment together',
+    ).toBe(17);
     // Smoke-check that the capture-time codes survive on a hand-crafted
     // `ValidatorDiagnostic` (compile-time check; runtime is trivial).
     const typeMismatch: ValidatorDiagnostic = {
@@ -294,5 +323,120 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(result.diagnostics).toHaveLength(0);
     expect(result.partCount).toBe(2);
     expect(result.jointCount).toBe(1);
+  });
+});
+
+describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', () => {
+  it('folds PoseEnvelopeDiagnostic codes into ValidatorDiagnostic', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('p', kcad.box(1, 1, 1)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.part('q', kcad.box(1, 1, 1)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'p.o', 'q.o', 'fastened');
+
+    const envelope: PoseEnvelopeReviewResult = {
+      samples: [],
+      diagnostics: [
+        { code: 'assembly.pose-envelope.interference', severity: 'error',
+          message: 'at limit', hint: 'hint-int',
+          sampleName: 'm:max', mateName: 'm', partA: 'p', partB: 'q', volumeMm3: 50 },
+        { code: 'assembly.pose-envelope.solve-failed', severity: 'error',
+          message: 'solver fail', hint: 'hint-solve', sampleName: 'm:min' },
+      ],
+      interferencePairs: [],
+      connectorPoses: [],
+      connectorWorkspace: [],
+    };
+
+    const result = await validateAssemblyWithMates(arm, undefined, envelope);
+    const codes = result.diagnostics.map((d) => d.code);
+    expect(codes).toContain('assembly.pose-envelope.interference');
+    expect(codes).toContain('assembly.pose-envelope.solve-failed');
+  });
+
+  it('emits assembly.mate.limit-missing warning per articulated mate without declared limits', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('p', kcad.box(1, 1, 1)).connector('o', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('q', kcad.box(1, 1, 1)).connector('o', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('m', 'p.o', 'q.o', 'revolute');   // no limitsDeg
+
+    const result = await validateAssemblyWithMates(arm);
+    const limitMissing = result.diagnostics.filter((d) => d.code === 'assembly.mate.limit-missing');
+    expect(limitMissing).toHaveLength(1);
+    expect(limitMissing[0].severity).toBe('warning');
+    expect(limitMissing[0].mateName).toBe('m');
+  });
+
+  it('does not emit limit-missing for fastened/planar mates', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('p', kcad.box(1, 1, 1)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.part('q', kcad.box(1, 1, 1)).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'p.o', 'q.o', 'fastened');
+
+    const result = await validateAssemblyWithMates(arm);
+    const limitMissing = result.diagnostics.filter((d) => d.code === 'assembly.mate.limit-missing');
+    expect(limitMissing).toHaveLength(0);
+  });
+
+  it('does not emit limit-missing for revolute mate WITH declared limitsDeg', async () => {
+    const { arm, kcad } = makeArm();
+    arm.part('p', kcad.box(1, 1, 1)).connector('o', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('q', kcad.box(1, 1, 1)).connector('o', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('m', 'p.o', 'q.o', 'revolute', { limitsDeg: [-90, 90] });
+
+    const result = await validateAssemblyWithMates(arm);
+    expect(result.diagnostics.filter((d) => d.code === 'assembly.mate.limit-missing')).toHaveLength(0);
+  });
+});
+
+describe('validateAssemblyWithMates — v0.7.4 externalLoads flow-through (Phase 6)', () => {
+  it('emits assembly.joint.load-exceeded when externalLoads flow through to Gate 3, absent otherwise', async () => {
+    // Phase 6 integration check: `validateAssemblyWithMates(arm, ifaces,
+    // envelope, externalLoads)` must hand the 4th arg to
+    // `validateJointLoadCapacity` so the gate fires on exceed. Building the
+    // same fixture twice (once with externalLoads, once without) and
+    // asserting the diagnostic-count delta pins the wiring — if the 4th
+    // arg were dropped on the floor (the Phase 2 placeholder behaviour), the
+    // "with" call would have the same zero-load-exceeded count as the
+    // "without" call.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10), { at: [50, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [-50, 0, 0] }, axis: [0, 0, 1] });
+    arm
+      .part('b', kcad.box(10, 10, 10), { at: [0, 0, 0] })
+      .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('hinge', 'a.c', 'b.c', 'revolute', { limitsDeg: [-90, 90] });
+    // Patch maxLoad onto the just-pushed mate. `arm.mate(...)` doesn't yet
+    // accept `maxLoad`; see the parallel pattern in jointLoadCapacity.test.ts.
+    const mates = arm.__mates() as MateRecord[];
+    (mates[0] as { maxLoad?: MateLoadLimit }).maxLoad = { torque: 10 };
+
+    // r = 50 mm, F = 1000 N perpendicular → 50 N·m > 10 N·m cap.
+    const externalLoads = { a: { force: [0, 0, -1000] as [number, number, number] } };
+
+    const withLoads = await validateAssemblyWithMates(arm, undefined, undefined, externalLoads);
+    const withoutLoads = await validateAssemblyWithMates(arm, undefined, undefined, undefined);
+
+    const exceededWith = withLoads.diagnostics.filter((d) => d.code === 'assembly.joint.load-exceeded' && d.severity === 'error');
+    const exceededWithout = withoutLoads.diagnostics.filter((d) => d.code === 'assembly.joint.load-exceeded' && d.severity === 'error');
+    expect(exceededWith).toHaveLength(1);
+    expect(exceededWithout).toHaveLength(0);
+    expect(exceededWith[0].mateName).toBe('hinge');
+    expect(exceededWith[0].hint).toMatch(/joint-load-exceeded/);
+  });
+});
+
+describe('v0.7.4 diagnostic codes — compile-time check', () => {
+  it('declares assembly.mounting-hole.mismatch, assembly.joint-axis.unbound, assembly.joint.load-exceeded in ValidatorDiagnosticCode', () => {
+    // `satisfies` enforces at compile-time that each literal is a member of
+    // `ValidatorDiagnosticCode`. The runtime `.toHaveLength(3)` exists only
+    // so vitest counts this as a real test; the type-level guarantee is the
+    // load-bearing part.
+    const codes = [
+      'assembly.mounting-hole.mismatch',
+      'assembly.joint-axis.unbound',
+      'assembly.joint.load-exceeded',
+    ] as const satisfies readonly ValidatorDiagnosticCode[];
+    expect(codes).toHaveLength(3);
   });
 });

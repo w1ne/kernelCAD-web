@@ -303,12 +303,37 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 
 `kernelcad evaluate` flips the default to `'error'` via the `KERNELCAD_VALIDATE_DEFAULT=error` env var, so authoring scripts surface malformed assemblies as CLI failures.
 
+Under `validate:'error'`, kinematic grounding gates fire — mounting-hole consistency, joint-axis binding, declared-load capacity.
+
 ```typescript
 const scene = await arm.solvedModel({}, { validate: 'warn' });
 for (const w of scene.warnings) {
   console.log(w.code, w.message, w.hint);
 }
 ```
+
+#### Worked example — reading a Gate 1 hint and repairing the mate
+
+A common Gate 1 failure: a `fastened` mate names two faces, but the holes drilled on those faces don't match (different diameters, different depths, or one side has no hole at all). The diagnostic carries everything the agent needs to fix the source — no second tool call required.
+
+```typescript
+// BROKEN — base plate has an M5 clearance hole (Ø5 mm); bracket has Ø6 mm.
+const base = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
+const bracket = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+arm.part('base', base).connector('mount', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
+arm.part('bracket', bracket).connector('mount', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
+arm.mate('screw', 'base.mount', 'bracket.mount', 'fastened');
+
+// Throws assembly.mounting-hole.mismatch with hint:
+//   "invalid-args.assembly.mounting-hole-mismatch — mate 'screw' (fastened) expects
+//    compatible hole features on both bound faces. Side 'base.mount': Ø5 mm through.
+//    Side 'bracket.mount': Ø6 mm through. Adjust the diameter or depth on the side
+//    that does not match, or change the connector origin to a face that already
+//    exposes a matching hole."
+await arm.solvedModel({}, { validate: 'error' });
+```
+
+The hint names the mate, both connectors, both observed hole specs, and the two recovery moves. The fix is to make `bracket`'s hole `diameter: 5` (matching the base) — one edit, no further introspection needed.
 
 ### MCP companions
 
@@ -512,6 +537,9 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.gripper-aperture.connector-missing` | pose-envelope — fingertip connector ref not observed |
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
+| `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |
+| `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
+| `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
 
 ## Verification gates
 

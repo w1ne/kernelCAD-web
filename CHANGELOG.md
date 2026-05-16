@@ -1,4 +1,15 @@
-# kernelCAD v0.7.4
+# kernelCAD v0.7.5
+
+## v0.7.5 — 2026-05-16 — Kinematic grounding gates
+
+v0.7.5 closes the design-time mechanism feasibility gap inside `Assembly.solvedModel({validate:'error'})`. Three gates run in the harness path: mounting-hole consistency (a `fastened` mate now refuses to ship when the two bound faces don't expose matching hole features), joint-axis binding (revolute / prismatic / cylindrical axes must intersect both bound parts' BREP — no axes floating in space), and declared-load capacity (joints with `maxLoad` declared verify that the assembly's `externalLoads` don't exceed the joint's stated capacity). All three emit one-code-per-gate diagnostics with structured recovery hints; all three flow through the existing `review_cad` MCP path.
+
+The load gate is a stub — N·m / N magnitudes only, no FEA, no friction, no cross-joint propagation. Agents stating `maxLoad` get a sanity gate, not a structural certification.
+
+- New `MateRecord.maxLoad?: { force?: number; torque?: number }` field; new `solvedModel(poses, { externalLoads })` opt.
+- Three new diagnostic codes: `assembly.mounting-hole.mismatch`, `assembly.joint-axis.unbound`, `assembly.joint.load-exceeded`. Local `ValidatorDiagnosticCode` union 14 → 17.
+- Six new eval-corpus tasks under `eval/tasks/kinematic-grounding-*` (3 negative + 1 positive + 2 repair-loop pair).
+- Composes with v0.7.4's `posesGate: 'envelope'` opt-in. The v0.6.2 plan's IMPLICIT envelope auto-wire (under `validate:'error'` + any mate has limits) was retired during the v0.7.4 → develop merge in favor of the explicit `posesGate: 'envelope'` API surface — see PR #157's `posesGate=default does NOT throw even with envelope-only errors` regression. The safety-net role of the implicit path is preserved by the `assembly.mate.limit-missing` warning that still fires from `validateAssemblyWithMates` for articulated mates without declared limits; agents who want envelope coverage now opt in via `posesGate: 'envelope'` (or `kernelcad evaluate --envelope`). Gates 1-3 remain implicit under `validate:'error'`.
 
 ## v0.7.4 — 2026-05-15 — Pose-envelope review-loop closure (workstream 5a)
 
@@ -67,7 +78,7 @@ v0.7.4 closes the pose-envelope mechanism-validity bridge from v0.6: agents decl
 
 ### Non-goals (deferred to later workstreams)
 
-This slice does NOT ship full mechanism functional validity. Mounting-hole consistency, joint-axis-to-structure binding, swept-volume self-collision beyond mate-driven motion, workspace reachability for declared end-effectors, and static-load capacity remain on the v0.7 mechanism-feasibility layer roadmap. The pose-envelope reviewer here proves envelope kinematics, not mechanism intent.
+This slice does NOT ship full mechanism functional validity. Mounting-hole consistency, joint-axis-to-structure binding, swept-volume self-collision beyond mate-driven motion, workspace reachability for declared end-effectors, and static-load capacity remain on the v0.7 mechanism-feasibility layer roadmap. The pose-envelope reviewer here proves envelope kinematics, not mechanism intent. (Three of those — mounting-hole consistency, joint-axis binding, declared-load capacity — land in v0.7.5.)
 
 ## v0.7.3 — 2026-05-15 — SDF authoring (slice 1)
 

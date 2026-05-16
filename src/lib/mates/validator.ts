@@ -25,9 +25,23 @@
 
 import type { Assembly } from '../../capture/assembly';
 import type { FeatureRecord } from '../../intent/featureRecord';
+import type { Vec3 } from '../../intent/types';
 import type { InterferencePair } from '../../script-runtime/checkInterference';
+import { validateJointAxisBinding } from './jointAxisBinding';
+import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { parseConnectorRef } from './mate';
+import { validateMountingHoleConsistency } from './mountingHoleConsistency';
+import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
+
+/**
+ * v0.7.4 — per-part external loads pass-through type used by
+ * `validateAssemblyWithMates`'s optional 4th arg and by the not-yet-wired
+ * Gate 3 (`jointLoadCapacity.ts`, Phase 5). Forces in Newtons (world frame),
+ * torques in N·m. Same shape as the `externalLoads` option on
+ * `Assembly.solvedModel`.
+ */
+export type ExternalLoadMap = Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
 
 export type ValidatorStatus =
   | 'solved'
@@ -49,7 +63,30 @@ export type ValidatorDiagnosticCode =
   | 'assembly.mate.type-mismatch'
   | 'assembly.mate.connector-not-found'
   | 'assembly.loop.unclosed'
-  | 'assembly.solver.did-not-converge';
+  | 'assembly.solver.did-not-converge'
+  // v0.6.2 — fold from PoseEnvelopeDiagnosticCode (Gap 1).
+  // These appear in the validator stream only when
+  // `validateAssemblyWithMates(arm, _, poseEnvelopeResult)` is called with
+  // an envelope result; capture-time `solvedModel({validate:'error'})`
+  // wires this up automatically when at least one mate has scalar limits.
+  | 'assembly.pose.out-of-limits'
+  | 'assembly.pose-envelope.solve-failed'
+  | 'assembly.pose-envelope.interference'
+  | 'assembly.pose-envelope.connector-unresolved'
+  // v0.6.2 — new (Gap 4). Warning-severity per articulated mate
+  // (revolute/prismatic/cylindrical/pin_slot) without declared
+  // limitsDeg/limitsMm. Ball mates with per-axis limit triples are not
+  // sampled by the envelope (yet) and are exempt from this check.
+  | 'assembly.mate.limit-missing'
+  // v0.7.4 — kinematic-grounding gates. Emitted by the per-gate modules
+  // `mountingHoleConsistency.ts`, `jointAxisBinding.ts`,
+  // `jointLoadCapacity.ts` (modules are dead code until Phase 6 wires them
+  // into `validateAssemblyWithMates`). All three are severity `error` under
+  // `validate:'error'`; downstream consumers (lowerer, MCP error-chain
+  // echoes) reference these codes so the union must include them.
+  | 'assembly.mounting-hole.mismatch'
+  | 'assembly.joint-axis.unbound'
+  | 'assembly.joint.load-exceeded';
 
 export interface ValidatorDiagnostic {
   readonly code: ValidatorDiagnosticCode;
@@ -72,6 +109,13 @@ export interface ValidatorDiagnostic {
   readonly partA?: string;
   readonly partB?: string;
   readonly volumeMm3?: number;
+  // v0.6.2 — envelope-fold additions. Carried 1:1 from
+  // `PoseEnvelopeDiagnostic`; set only on diagnostics with code
+  // `assembly.pose.*` / `assembly.pose-envelope.*`.
+  readonly sampleName?: string;
+  readonly pose?: number | readonly [number, number, number];
+  readonly limits?: readonly [number, number];
+  readonly connectorRef?: string;
 }
 
 export interface ValidatorResult {
@@ -244,6 +288,13 @@ function collectJoints(records: readonly FeatureRecord[]): JointInfo[] {
 export async function validateAssemblyWithMates(
   arm: Assembly,
   interferencePairs?: readonly InterferencePair[],
+  poseEnvelopeResult?: PoseEnvelopeReviewResult,
+  // v0.7.4 — per-part external loads consumed by Gate 3
+  // (`validateJointLoadCapacity`). When undefined, Gate 3 fast-returns and
+  // no `assembly.joint.load-exceeded` diagnostics are emitted regardless of
+  // declared `maxLoad`. See `validateJointLoadCapacity` for the gate's
+  // per-mate-type semantics.
+  externalLoads?: ExternalLoadMap,
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -282,6 +333,10 @@ export async function validateAssemblyWithMates(
   //    exit keeps `validateAssemblyWithMates` cheap for v0.5-only scenes
   //    (regression check: legacy `arm.fixed` callers see identical output).
   if (arm.__mates().length === 0) {
+    // No mates means no envelope to fold and no articulated mates to
+    // check for limits — but be defensive and still fold the envelope
+    // diagnostics if a caller hands us a result for an empty assembly.
+    foldEnvelopeDiagnostics(diagnostics, poseEnvelopeResult);
     return finalizeResult(diagnostics, arm.__parts().length, arm.__joints().length, null);
   }
 
@@ -338,12 +393,92 @@ export async function validateAssemblyWithMates(
     }
   }
 
+  // 5. v0.6.2 — fold envelope diagnostics (Gap 1 from the spec). Called
+  //    automatically by `Assembly.solvedModel({validate:'error'})` when at
+  //    least one mate has scalar limits; external callers (CLI, MCP) can
+  //    pass a `reviewPoseEnvelope` result explicitly. Codes carried 1:1.
+  foldEnvelopeDiagnostics(diagnostics, poseEnvelopeResult);
+
+  // 6. v0.6.2 — emit assembly.mate.limit-missing warning per articulated
+  //    mate without declared limits (Gap 4). The pose-envelope sampler
+  //    only walks mates whose `limitsDeg ?? limitsMm` is defined; a mate
+  //    without limits is invisible to envelope review, which is a silent
+  //    correctness hole for agents (the mechanism could still collide
+  //    somewhere in its undeclared travel range). Surface that explicitly
+  //    so callers either declare limits or accept the partial check.
+  //
+  //    Fastened/planar mates are 0-DOF (or planar's 3 in-plane DOFs are
+  //    not pose-driven), so they are exempt. Ball mates exposed via the
+  //    per-axis Euler triple are also exempt — `buildPoseEnvelopeSamples`
+  //    only reads scalar `limitsDeg ?? limitsMm`, and the `MateRecord`
+  //    schema stores the ball triple in a different field (see mate.ts).
+  //    If a ball mate's scalar `limitsDeg` field is undefined, the check
+  //    below treats it as exempt; if a future schema change merges the
+  //    triple into scalar `limitsDeg`, this check will need to inspect
+  //    the field's shape.
+  for (const mate of arm.__mates()) {
+    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
+    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    diagnostics.push({
+      code: 'assembly.mate.limit-missing',
+      severity: 'warning',
+      mateName: mate.name,
+      message: `Mate '${mate.name}' (${mate.type}) has no declared limits; envelope check cannot verify its travel range.`,
+      hint: `invalid-args.assembly.mate-limit-missing — declare limitsDeg:[min,max] (or limitsMm for prismatic) on '${mate.name}' so the kernel can verify the mechanism does not self-collide across its declared range.`,
+    });
+  }
+
+  // 7. v0.7.4 — kinematic grounding gates. Run order: cheap pure gates first
+  //    (Gate 3, Gate 1), expensive BREP gate last (Gate 2) so an earlier
+  //    error can short-circuit when desired. For now we run all three so the
+  //    agent sees the full picture per single solvedModel call (per plan
+  //    Step 2 — no short-circuit, agent gets full diagnostic chain).
+  diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
+  diagnostics.push(...validateMountingHoleConsistency(arm));
+  diagnostics.push(...await validateJointAxisBinding(arm));
+
   return finalizeResult(
     diagnostics,
     arm.__parts().length,
     arm.__joints().length,
     solveResult.status,
   );
+}
+
+/**
+ * v0.6.2 — fold `PoseEnvelopeDiagnostic` entries into the validator's
+ * diagnostic stream 1:1. Codes are part of `ValidatorDiagnosticCode` so
+ * downstream consumers (lowerer, MCP error-chain echoes, the
+ * `validate:'error'` throw path on `Assembly.solvedModel`) get a single
+ * pipe of structured failure info. No severity escalation: warnings stay
+ * warnings, errors stay errors.
+ */
+function foldEnvelopeDiagnostics(
+  out: ValidatorDiagnostic[],
+  envelope: PoseEnvelopeReviewResult | undefined,
+): void {
+  if (!envelope) return;
+  for (const ed of envelope.diagnostics) {
+    // Skip codes that don't belong in the validator union (defensive: the
+    // `gripper-aperture.connector-missing` envelope code is not folded —
+    // it's a UX-layer aperture-tracking diagnostic, not a structural
+    // validity concern).
+    if (ed.code === 'assembly.gripper-aperture.connector-missing') continue;
+    out.push({
+      code: ed.code,
+      severity: ed.severity,
+      message: ed.message,
+      hint: ed.hint,
+      ...(ed.sampleName !== undefined ? { sampleName: ed.sampleName } : {}),
+      ...(ed.mateName !== undefined ? { mateName: ed.mateName } : {}),
+      ...(ed.pose !== undefined ? { pose: ed.pose } : {}),
+      ...(ed.limits !== undefined ? { limits: ed.limits } : {}),
+      ...(ed.partA !== undefined ? { partA: ed.partA } : {}),
+      ...(ed.partB !== undefined ? { partB: ed.partB } : {}),
+      ...(ed.volumeMm3 !== undefined ? { volumeMm3: ed.volumeMm3 } : {}),
+      ...(ed.connectorRef !== undefined ? { connectorRef: ed.connectorRef } : {}),
+    });
+  }
 }
 
 /** Parse `"part.connector"` safely (returns undefined on malformed refs

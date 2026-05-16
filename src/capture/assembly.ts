@@ -840,6 +840,19 @@ export class Assembly {
   }
 
   /**
+   * Internal accessor — exposes `buildMateMetadata` to validator gates that
+   * need to register a `solvedAssembly` FeatureRecord directly (skipping the
+   * `solvedModel(...)` round-trip + its capture-time `solveMates` pass).
+   * Mirrors the `__parts()` / `__mates()` underscore convention; not public.
+   * Used by `validateJointAxisBinding` (and any future gate that lowers the
+   * assembly itself) to avoid duplicating the ~85-line metadata builder.
+   */
+  __buildMateMetadata(): import('./captureSession').SolvedAssemblyMateMetadata | undefined {
+    if (this.mates.length === 0) return undefined;
+    return this.buildMateMetadata();
+  }
+
+  /**
    * Build a SolvedKinematics for the supplied joint poses. Walks the
    * body-tree (parts as nodes, joints as edges) computing per-part world
    * transforms via SE(3) composition. Each part has at most one parent
@@ -1070,11 +1083,15 @@ export class Assembly {
     opts?: {
       validate?: 'warn' | 'error' | 'off';
       /**
-       * Which poses the validation gate covers. Orthogonal to `validate`
-       * (which controls severity).
+       * v0.7.4 — Which poses the validation gate covers. Orthogonal to
+       * `validate` (which controls severity).
        *
        * - `'default'` (default) → the existing behavior: gate runs over the
-       *   default/capture-time pose only. No pose-envelope review runs.
+       *   default/capture-time pose only. (When `validate === 'error'` AND
+       *   at least one mate declares `limitsDeg`/`limitsMm`, the v0.6.2
+       *   safety-net described below auto-runs the envelope review even
+       *   without an explicit `posesGate` opt-in — see the implicit-path
+       *   block further down.)
        * - `'envelope'` → after the existing default-pose gate, run
        *   `reviewPoseEnvelope(this, { samplesPerMate, combinatorial,
        *   includeInterference: true })` and fold the envelope diagnostics
@@ -1091,6 +1108,20 @@ export class Assembly {
       samplesPerMate?: number;
       /** Forwarded to `reviewPoseEnvelope` when `posesGate === 'envelope'`. */
       combinatorial?: boolean;
+      /**
+       * v0.7.5 — optional per-part external loads for the Gate 3 stub
+       * (`validateJointLoadCapacity`). Keys are part names already registered
+       * on this Assembly via `arm.part(name, ...)`; values are world-frame
+       * force (N) and/or torque (N·m) vectors. Unknown keys throw
+       * `feature.invalid-args` at capture-entry below — silent ignore would
+       * mask agent typos (per spec open-question 5 resolution). The Gate 3
+       * check runs only under `validate: 'error'`; under `'warn'` / `'off'`
+       * the loads are validated for key membership and otherwise ignored.
+       *
+       * Forwarded as the 4th arg to `validateAssemblyWithMates`, which
+       * composes Gate 3 with the v0.7.5 grounding gates.
+       */
+      externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
     },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
@@ -1100,6 +1131,23 @@ export class Assembly {
         undefined,
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
+    }
+    // v0.7.4 — validate externalLoads keys at capture entry so agent typos
+    // surface immediately, not silently. Per spec open-question 5 resolution
+    // (error on typo, not silent ignore).
+    if (opts?.externalLoads !== undefined) {
+      const knownParts = this.parts.map((p) => p.name);
+      const knownSet = new Set(knownParts);
+      for (const key of Object.keys(opts.externalLoads)) {
+        if (!knownSet.has(key)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.solvedModel: externalLoads['${key}'] does not match any part on assembly '${this.name}'.`,
+            undefined,
+            `invalid-args.assembly.external-load-unknown-part — externalLoads['${key}'] does not match any part; known parts: ${knownParts.join(', ')}.`,
+          );
+        }
+      }
     }
     // Synchronous phase — must throw (not reject) so existing
     // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time
@@ -1158,25 +1206,58 @@ export class Assembly {
         ? this.computeInterferencesForGate(sceneShape)
         : Promise.resolve(undefined);
 
-    // T6: optional pose-envelope review runs AFTER the default-pose
-    // validator so its diagnostics layer on top of the existing gate.
-    // `posesGate` is orthogonal to `validate` — see the opts JSDoc above.
+    // v0.7.4 — pose-envelope review is now EXPLICIT-only via the
+    // `posesGate: 'envelope'` opt (workstream 5a / PR #157). The v0.6.2 plan
+    // had proposed an IMPLICIT auto-wire (run envelope when `validate:'error'`
+    // AND any mate has limits), but workstream 5a's settled API surface in
+    // PR #157 chose the explicit opt instead and ships a regression test
+    // (`src/capture/posesGate.test.ts`) asserting that `posesGate: 'default'`
+    // does NOT throw on envelope-only errors — even under `validate:'error'`.
+    //
+    // The implicit-auto-wire codepath is therefore dropped on merge to develop;
+    // its safety-net role is preserved via TWO complementary surfaces:
+    //   - `assembly.mate.limit-missing` warning fires from
+    //     `validateAssemblyWithMates` unconditionally for articulated mates
+    //     without declared limits — the AUTHORING surface, not the envelope
+    //     output. This nudges agents to declare limits in the first place.
+    //   - The `posesGate: 'envelope'` opt remains the path to actually run
+    //     envelope review; agents wanting the v0.6.2 auto-coverage simply
+    //     pass `posesGate: 'envelope'` (or use `kernelcad evaluate --envelope`).
+    //
+    // See the v0.7.5 CHANGELOG entry and the merge commit message for the
+    // full rationale.
     const posesGate: 'default' | 'envelope' = opts?.posesGate ?? 'default';
-    const envelopePromise: Promise<readonly PoseEnvelopeDiagnostic[]> =
+    const envelopeResultPromise: Promise<
+      import('../lib/mates/poseEnvelope').PoseEnvelopeReviewResult | undefined
+    > =
       posesGate === 'envelope'
         ? reviewPoseEnvelope(this, {
             ...(opts?.samplesPerMate !== undefined ? { samplesPerMate: opts.samplesPerMate } : {}),
             ...(opts?.combinatorial !== undefined ? { combinatorial: opts.combinatorial } : {}),
             includeInterference: true,
-          }).then((r) => r.diagnostics)
-        : Promise.resolve([] as readonly PoseEnvelopeDiagnostic[]);
+          })
+        : Promise.resolve(undefined);
 
     return Promise.all([
       interferencePromise,
       mateTransformsPromise,
-    ]).then(async ([interferencePairs, mateT]) => {
-      const result = await validateAssemblyWithMates(this, interferencePairs);
-      const envelopeDiagnostics = await envelopePromise;
+      envelopeResultPromise,
+    ]).then(async ([interferencePairs, mateT, envelopeResult]) => {
+      // v0.7.5 — `validateAssemblyWithMates` 3rd-arg (`poseEnvelopeResult`)
+      // is left undefined: the explicit `posesGate: 'envelope'` path keeps
+      // its diagnostics in a separate stream so the dedicated throw-by-code-
+      // counts block below can fire on them under `'error'` and aggregate
+      // them on scene.warnings under `'warn'`. The validator still emits
+      // `assembly.mate.limit-missing` warnings, Gate 1/2/3 diagnostics, and
+      // every v0.5/v0.6 base check.
+      const result = await validateAssemblyWithMates(
+        this,
+        interferencePairs,
+        undefined,
+        opts?.externalLoads,
+      );
+      const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
+        envelopeResult ? envelopeResult.diagnostics : [];
       return { result, mateT, envelopeDiagnostics };
     }).then(
       ({ result, mateT, envelopeDiagnostics }) => {

@@ -180,7 +180,11 @@ function toAttemptResult(input: {
   const blockingReasons = fitness?.blockingReasons.map((reason) => reason.message) ?? [];
   const reviewFacts = [
     ...input.review.diagnostics
-    .filter((diagnostic) => diagnostic.severity !== 'error')
+    // v0.7.4: info-severity diagnostics (Gate 1's vec3-origin deferred
+    // notes) are not actionable repair facts; treat them like errors here
+    // (which are also excluded from `reviewFacts`). Keep `warning` so quality
+    // signals continue to gate the loop.
+    .filter((diagnostic) => diagnostic.severity === 'warning')
     .filter((diagnostic) => !input.allowReviewWarnings.includes(diagnostic.code))
     .map((diagnostic) => ({
       code: diagnostic.code,
