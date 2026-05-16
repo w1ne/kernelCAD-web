@@ -16,7 +16,12 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     if (!mountRef.current) return;
     const mount = mountRef.current;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
+    // Neutral grey background (sampled from the table region of the eyewear
+    // reference photo, ~#888). Pure black backgrounds make the SSIM scorer
+    // see ~30-40% of the image as a structural mismatch (reference shows
+    // table + soft shadow). Greying the background closes that gap before
+    // the ground plane even casts a shadow.
+    scene.background = new THREE.Color(0x888888);
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
     camera.position.set(120, 80, 120);
     camera.lookAt(0, 0, 0);
@@ -29,15 +34,41 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
+    // Shadow map on so the ground plane (added in DemoPlayerPage.loadFeatureMeshes)
+    // receives a soft cast shadow from the model — mirrors the soft table shadow
+    // visible in product-photo references (eyewear-wayfarer-front etc.).
+    // shadowMap is not present on the jsdom-mocked WebGLRenderer used in
+    // unit tests; guard for that.
+    if (renderer.shadowMap) {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
     mount.appendChild(renderer.domElement);
 
     // Three-point + rim lighting. Scene-attached (not camera-attached) so
     // the rotation phase reveals geometry naturally as parts pass under
     // each light. Fixed positions in world frame; intensities tuned for
-    // the current dark-charcoal background.
-    const ambient = new THREE.AmbientLight(0xffffff, 0.25);
-    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    // the warmer-grey studio background.
+    //
+    // Warmer studio tint: the key light gets a slight peach (0xfff4e0) to
+    // match indoor product-photo lighting; the fill stays cool sky-blue to
+    // separate planes facing away from key; the rim is white-bright.
+    const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+    const key = new THREE.DirectionalLight(0xfff4e0, 1.2);
     key.position.set(80, 120, 100);
+    key.castShadow = true;
+    // Shadow camera bounds — sized to comfortably contain the eyewear-scale
+    // scenes (~200 mm extent) at 80-120 mm light offset. Larger scenes will
+    // get clipped shadows but the visual fidelity gain on hero shots
+    // (eyewear-wayfarer-front, etc.) outweighs that trade.
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.near = 1;
+    key.shadow.camera.far = 600;
+    key.shadow.camera.left = -300;
+    key.shadow.camera.right = 300;
+    key.shadow.camera.top = 300;
+    key.shadow.camera.bottom = -300;
+    key.shadow.bias = -0.0005;
     const fill = new THREE.DirectionalLight(0xa9c0e0, 0.5);
     fill.position.set(-100, 50, -40);
     const rim = new THREE.DirectionalLight(0xffffff, 0.7);

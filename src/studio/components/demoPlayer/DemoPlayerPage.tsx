@@ -16,6 +16,7 @@ import type { PBRMaterial } from '../../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
 import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
+import { buildGroundPlane } from './buildGroundPlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -104,6 +105,21 @@ const VIEWER_H = 1080;
 const TERMINAL_W = 640;
 const TERMINAL_H = 1080;
 
+/**
+ * Returns true if `mesh` is a descendant of a non-model auxiliary group
+ * (`__groundPlane`, `__referenceImages`). Used to filter such meshes out
+ * of bbox computations and mesh-counting diagnostics — the model bbox
+ * should drive camera framing, not the table or overlay planes.
+ */
+function isInExcludedGroup(obj: THREE.Object3D): boolean {
+  let cur: THREE.Object3D | null = obj;
+  while (cur) {
+    if (cur.name === '__groundPlane' || cur.name === '__referenceImages') return true;
+    cur = cur.parent;
+  }
+  return false;
+}
+
 function buildMeshFromFace(
   face: FaceGeometry,
   name: string,
@@ -131,6 +147,11 @@ function buildMeshFromFace(
   material.polygonOffsetUnits = 1;
   const mesh = new THREE.Mesh(geom, material);
   mesh.name = name;
+  // castShadow on every feature mesh so the ground plane below renders a
+  // soft shadow under the model (mirrors product-photo references that show
+  // table shadow; closes a structural SSIM gap on hero shots).
+  mesh.castShadow = true;
+  mesh.receiveShadow = false;
   return mesh;
 }
 
@@ -243,9 +264,13 @@ export function DemoPlayerPage(): React.JSX.Element {
         // groups are already centered at origin; just re-aim the camera).
         // Recompute aggregate bounds from current scene contents to
         // tolerate scenes loaded without explicit fit.
+        // Filter __groundPlane and __referenceImages — they extend far past
+        // the model and would push the camera out, defeating mobile framing.
         const bbox = new THREE.Box3();
         ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+          if (obj instanceof THREE.Mesh && !isInExcludedGroup(obj)) {
+            bbox.expandByObject(obj);
+          }
         });
         if (bbox.isEmpty()) return;
         const minV = bbox.min, maxV = bbox.max;
@@ -259,9 +284,13 @@ export function DemoPlayerPage(): React.JSX.Element {
       setRenderPose: (azDeg, elDeg) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
+        // See setRenderView: skip __groundPlane / __referenceImages so they
+        // don't enlarge the bbox the camera fits to.
         const bbox = new THREE.Box3();
         ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+          if (obj instanceof THREE.Mesh && !isInExcludedGroup(obj)) {
+            bbox.expandByObject(obj);
+          }
         });
         if (bbox.isEmpty()) return;
         const dx = bbox.max.x - bbox.min.x;
@@ -328,7 +357,8 @@ export function DemoPlayerPage(): React.JSX.Element {
         for (const child of [...scene.children]) {
           if (child instanceof THREE.Group && (
             child.userData[KCAD_FEATURE_GROUP_KEY] ||
-            child.name === '__referenceImages'
+            child.name === '__referenceImages' ||
+            child.name === '__groundPlane'
           )) {
             scene.remove(child);
             child.traverse((o) => {
@@ -404,10 +434,17 @@ export function DemoPlayerPage(): React.JSX.Element {
               child.position.set(-cx, -cy, -cz);
             }
           }
-          fitCameraToBounds(sceneRef.current.camera, {
-            min: [minX - cx, minY - cy, minZ - cz],
-            max: [maxX - cx, maxY - cy, maxZ - cz],
-          });
+          const centeredBounds = {
+            min: [minX - cx, minY - cy, minZ - cz] as [number, number, number],
+            max: [maxX - cx, maxY - cy, maxZ - cz] as [number, number, number],
+          };
+          fitCameraToBounds(sceneRef.current.camera, centeredBounds);
+
+          // Ground plane — added after centering so it sits at the model's
+          // bottom in centered scene coordinates. Named __groundPlane and
+          // filtered from bbox/mesh-count helpers above.
+          const ground = buildGroundPlane(centeredBounds);
+          scene.add(ground);
         }
 
         // Reference-image overlays: build a dedicated group so they can be
@@ -420,9 +457,11 @@ export function DemoPlayerPage(): React.JSX.Element {
           scene.add(riGroup);
 
           // Compute sceneBbox from the model geometry for 'fit-bbox' scale.
+          // Exclude reference-image and ground-plane meshes — the bbox should
+          // reflect just the authored model, not scene chrome.
           const sceneBbox = new THREE.Box3();
           scene.traverse((obj) => {
-            if (obj instanceof THREE.Mesh && obj.parent !== riGroup) {
+            if (obj instanceof THREE.Mesh && !isInExcludedGroup(obj)) {
               sceneBbox.expandByObject(obj);
             }
           });
@@ -499,7 +538,9 @@ export function DemoPlayerPage(): React.JSX.Element {
         const sampleOpacities: number[] = [];
         const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
         scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) {
+          // Skip __groundPlane / __referenceImages — those are scene chrome,
+          // not part of the agent's authored model; tests count model meshes.
+          if (obj instanceof THREE.Mesh && !isInExcludedGroup(obj)) {
             meshCount++;
             const mat = obj.material as THREE.MeshStandardMaterial;
             if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
