@@ -51,6 +51,14 @@ interface ToolRegistryEntry {
   handler: ToolHandler;
 }
 
+/**
+ * Registry of every MCP tool — pairs each definition with its handler.
+ *
+ * Public contract — depended on by kernelCAD-server (vendor/kernelcad/ submodule).
+ * The shape of `ToolRegistryEntry` (`{ definition: McpToolDefinition, handler: ToolHandler }`)
+ * is the source of truth; `TOOLS` and the in-process Map indexes are derived from it.
+ * Do NOT change the entry shape or remove entries without bumping the consumer SHA explicitly.
+ */
 export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   {
     definition: {
@@ -854,6 +862,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
 ];
 
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));
+const toolDefinitions = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.definition]));
 
 /**
  * Flat array of all tool definitions, in registry order.
@@ -890,6 +899,5 @@ export async function callMcpTool(name: string, input: Record<string, unknown>):
  * @returns The McpToolDefinition, or undefined if no tool by that name exists
  */
 export function getToolDefinition(name: string): McpToolDefinition | undefined {
-  const entry = TOOL_REGISTRY.find(e => e.definition.name === name);
-  return entry?.definition;
+  return toolDefinitions.get(name);
 }

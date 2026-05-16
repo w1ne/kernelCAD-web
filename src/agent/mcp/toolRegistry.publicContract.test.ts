@@ -8,6 +8,8 @@ import {
 } from './toolRegistry';
 
 describe('toolRegistry public contract', () => {
+  // 'list_api' is a stable, always-registered tool used as a contract anchor below.
+  // If you rename or remove it, update the references in this file.
   it('exports TOOL_REGISTRY as a non-empty array of entries with definition+handler', () => {
     expect(Array.isArray(TOOL_REGISTRY)).toBe(true);
     expect(TOOL_REGISTRY.length).toBeGreaterThan(0);
@@ -42,12 +44,9 @@ describe('toolRegistry public contract', () => {
     expect(getToolDefinition('nonexistent_tool_xyz')).toBeUndefined();
   });
 
-  it('type McpToolDefinition is exported', () => {
-    const _typeCheck: McpToolDefinition = {
-      name: 'x',
-      description: 'y',
-      inputSchema: { type: 'object', properties: {} },
-    };
-    expect(_typeCheck.name).toBe('x');
+  it('type McpToolDefinition is exported and compatible with getToolDefinition return', () => {
+    // Assignment compiles only if McpToolDefinition matches the returned shape.
+    const def: McpToolDefinition | undefined = getToolDefinition('list_api');
+    expect(def).toBeDefined();
   });
 });
