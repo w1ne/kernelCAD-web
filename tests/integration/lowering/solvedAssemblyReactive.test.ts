@@ -16,12 +16,12 @@
 // we keep the legacy bbox semantics by routing through `.toUnion()`.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../src/backends/occt/occtLowerer';
-import { buildModel, updateModelParams } from '../../../src/kernel/buildModel';
-import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../src/modeling/runtime/runScript';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { buildModel, updateModelParams } from '../../../src/modeling/buildModel';
+import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 interface LowerResult {
   shape: OcctBackend | undefined;

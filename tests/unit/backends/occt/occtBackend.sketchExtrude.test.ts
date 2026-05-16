@@ -1,8 +1,8 @@
 // tests/unit/backends/occt/occtBackend.sketchExtrude.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
-import type { SketchCommand } from '../../../../src/capture/sketch';
-import { toParam } from '../../../../src/runtime/editableHelpers';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import type { SketchCommand } from '../../../../src/modeling/capture/sketch';
+import { toParam } from '../../../../src/shared/runtime/editableHelpers';
 
 const mm = (n: number) => toParam(n, 'mm');
 const ul = (n: number) => toParam(n, 'unitless');

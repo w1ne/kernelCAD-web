@@ -1,12 +1,12 @@
 // tests/integration/mcp/listEdges.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { listEdgesTool } from '../../../src/mcp/tools/listEdges';
-import { listFacesTool } from '../../../src/mcp/tools/listFaces';
-import { listFaceLabelsTool } from '../../../src/mcp/tools/listFaceLabels';
+import { listEdgesTool } from '../../../src/agent/mcp/tools/listEdges';
+import { listFacesTool } from '../../../src/agent/mcp/tools/listFaces';
+import { listFaceLabelsTool } from '../../../src/agent/mcp/tools/listFaceLabels';
 
 describe('list_edges MCP tool', () => {
   beforeAll(async () => {
-    const { initOcct } = await import('../../../src/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
   });
 
@@ -30,7 +30,7 @@ describe('list_edges MCP tool', () => {
 
 describe('list_faces MCP tool', () => {
   beforeAll(async () => {
-    const { initOcct } = await import('../../../src/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
   });
 

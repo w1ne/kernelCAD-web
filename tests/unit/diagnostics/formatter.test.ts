@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatJson, formatHuman } from '../../../src/diagnostics/formatter';
-import type { CompilerDiagnostic } from '../../../src/diagnostics/diagnostic';
+import { formatJson, formatHuman } from '../../../src/shared/diagnostics/formatter';
+import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 describe('formatter', () => {
   it('formats a list of diagnostics as JSON', () => {

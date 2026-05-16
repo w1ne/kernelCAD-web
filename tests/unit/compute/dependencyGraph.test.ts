@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DependencyGraph } from '../../../src/compute/dependencyGraph';
+import { DependencyGraph } from '../../../src/modeling/compute/dependencyGraph';
 
 describe('DependencyGraph', () => {
   it('topological sort respects dependencies', () => {

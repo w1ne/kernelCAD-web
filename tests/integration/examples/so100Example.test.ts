@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 
 const EXAMPLE_PATH = 'examples/robot-arm/so100/so100.kcad.ts';
 

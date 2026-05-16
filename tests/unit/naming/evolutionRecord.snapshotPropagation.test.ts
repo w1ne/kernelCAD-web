@@ -9,17 +9,17 @@
 //     unmatched lineage entries untouched.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import {
   propagateTransformHistory,
   type HistoryMap,
   type FaceLineage,
-} from '../../../src/naming/evolutionRecord';
+} from '../../../src/kernel/naming/evolutionRecord';
 import {
   refreshSnapshots,
   captureAllFaceSnapshots,
-} from '../../../src/backends/occt/createdRefs';
-import type { FaceSnapshot } from '../../../src/backends/occt/createdRefs';
+} from '../../../src/kernel/backends/occt/createdRefs';
+import type { FaceSnapshot } from '../../../src/kernel/backends/occt/createdRefs';
 
 function makeLineageWithSnapshot(rootHash: string, centroid: [number, number, number]): FaceLineage {
   const snapshot: FaceSnapshot = { centroid, normal: [0, 0, 1], area: 100 };

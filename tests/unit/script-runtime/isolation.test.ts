@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runIsolated } from '../../../src/script-runtime/isolation';
+import { runIsolated } from '../../../src/modeling/runtime/isolation';
 
 describe('runIsolated', () => {
   it('exposes injected globals to the script', () => {

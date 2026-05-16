@@ -1,9 +1,9 @@
 // tests/unit/backends/occt/occtLowerer.extrudeRoundedRect.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
-import type { FeatureRecord } from '../../../../src/intent/featureRecord';
-import type { Param } from '../../../../src/intent/types';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import type { FeatureRecord } from '../../../../src/shared/intent/featureRecord';
+import type { Param } from '../../../../src/shared/intent/types';
 
 const mm = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
 const str = (s: string): Param => ({ expression: `'${s}'`, unit: 'unitless', evaluated: 0 });

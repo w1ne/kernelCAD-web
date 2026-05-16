@@ -8,9 +8,9 @@
 //     would substitute.
 
 import { describe, it, expect } from 'vitest';
-import { resolveParams, collectParamRefs } from '../../../src/runtime/resolveParams';
-import { ParamTable } from '../../../src/runtime/paramTable';
-import type { Param } from '../../../src/intent/types';
+import { resolveParams, collectParamRefs } from '../../../src/shared/runtime/resolveParams';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
+import type { Param } from '../../../src/shared/intent/types';
 
 const literal = (n: number, unit: 'mm' | 'deg' | 'unitless' = 'mm'): Param => ({
   expression: String(n),

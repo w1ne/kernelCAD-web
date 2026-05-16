@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/diagnostics/codes';
+import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/codes';
 
 describe('diagnostic catalogue invariants', () => {
   it('emits exactly 37 codes', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
 
 // Vec3Param assertion helper: assembly Vec3 surfaces store as
 // { x: Param, y: Param, z: Param } since Task 5 widened them to EditableVec3.

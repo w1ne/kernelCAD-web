@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { makeRegion, isValidRegion, type Region, type BendLineRecord } from '../../../src/intent/region';
+import { makeRegion, isValidRegion, type Region, type BendLineRecord } from '../../../src/shared/intent/region';
 
 describe('Region — closed planar outline with bend-line metadata', () => {
   it('rectangular region from outer wire only', () => {

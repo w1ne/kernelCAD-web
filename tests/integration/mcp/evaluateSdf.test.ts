@@ -5,13 +5,13 @@
 // SdfField binding from session.sdfFields, and samples it at a point.
 //
 // Plan-vs-API deviation: the plan called for `globalThis['<name>']` binding,
-// but the script sandbox in `src/script-runtime/isolation.ts` strips
+// but the script sandbox in `src/modeling/runtime/isolation.ts` strips
 // `globalThis`/`require`/etc to prevent host escape. The slice-1 contract is
 // instead `sdf.bind(name, field)` which writes to `session.sdfFields`.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateSdfTool } from '../../../src/mcp/tools/evaluateSdf';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { evaluateSdfTool } from '../../../src/agent/mcp/tools/evaluateSdf';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 beforeAll(async () => { await initOcct(); });
 

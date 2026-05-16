@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { routeDiagnosticToSelection } from '../logic/diagnosticRouter';
-import type { ValidatorDiagnostic, ValidatorStatus } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
 
 /**
  * Always-visible inspector view of the validator result. Peer to the

@@ -5,8 +5,8 @@
 // `feature.invalid-args` per discipline gate D-1.
 
 import { describe, it, expect } from 'vitest';
-import { ParamTable } from '../../../src/runtime/paramTable';
-import { isKernelError } from '../../../src/intent/kernelError';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
+import { isKernelError } from '../../../src/shared/intent/kernelError';
 
 describe('ParamTable.declare', () => {
   it('accepts a valid numeric param with metadata', () => {

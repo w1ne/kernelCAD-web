@@ -1,6 +1,6 @@
 // tests/unit/mcp/edits/removeFeature.test.ts
 import { describe, it, expect } from 'vitest';
-import { removeFeature } from '../../../../src/mcp/edits/removeFeature';
+import { removeFeature } from '../../../../src/agent/mcp/edits/removeFeature';
 
 describe('removeFeature primitive', () => {
   it('removes a single matching line', () => {

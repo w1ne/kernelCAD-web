@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateScript } from '../../../src/cli/commands/evaluate';
+import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 
 describe('pattern examples', () => {
   it('evaluates the servo vented plate grid-pattern example', async () => {

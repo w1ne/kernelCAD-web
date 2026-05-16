@@ -3,8 +3,8 @@
 // Verifies the polynomial smooth-min combinator and AABB padding.
 
 import { describe, it, expect } from 'vitest';
-import { sphere } from '../../../../src/modules/sdf/primitives';
-import { smoothBlend } from '../../../../src/modules/sdf/smoothBlend';
+import { sphere } from '../../../../src/modeling/sdf/primitives';
+import { smoothBlend } from '../../../../src/modeling/sdf/smoothBlend';
 
 describe('sdf.smoothBlend', () => {
   it('AABB is the union of inputs padded by k on each face', () => {

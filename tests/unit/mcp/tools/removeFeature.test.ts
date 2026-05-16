@@ -1,7 +1,7 @@
 // tests/unit/mcp/tools/removeFeature.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { removeFeatureTool } from '../../../../src/mcp/tools/removeFeature';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { removeFeatureTool } from '../../../../src/agent/mcp/tools/removeFeature';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('removeFeatureTool', () => {
   beforeAll(async () => { await initOcct(); });

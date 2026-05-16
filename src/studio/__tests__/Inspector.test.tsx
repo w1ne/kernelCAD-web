@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudioRecomputeResult } from '../types';
-import { ParamTable } from '../../runtime/paramTable';
+import { ParamTable } from '../../shared/runtime/paramTable';
 
 const mockUseRecomputeResult = vi.fn<() => StudioRecomputeResult>();
 

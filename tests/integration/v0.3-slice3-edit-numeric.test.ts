@@ -5,10 +5,10 @@
 // new diameter; verify relowered/skipped granularity is correct.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { runScript } from '../../src/script-runtime/runScript';
-import { initOcct } from '../../src/backends/occt/occtBackend';
-import { CaptureSession } from '../../src/capture/captureSession';
-import { createApi } from '../../src/modules/api';
+import { runScript } from '../../src/modeling/runtime/runScript';
+import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
+import { CaptureSession } from '../../src/modeling/capture/captureSession';
+import { createApi } from '../../src/modeling/api';
 
 describe('v0.3 slice-3 — params.update on numeric param', () => {
   beforeAll(async () => { await initOcct(); });

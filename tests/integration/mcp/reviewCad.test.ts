@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
-import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 describe('review_cad MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);

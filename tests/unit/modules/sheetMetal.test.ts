@@ -4,7 +4,7 @@ import {
   validateKFactor,
   validateBendArgs,
   validateThickness,
-} from '../../../src/modules/sheetMetal';
+} from '../../../src/modeling/sheetMetal';
 
 describe('computeBendAllowance — K-factor bend allowance', () => {
   it('90 degree, r=3, k=0.38, t=2 mm → (pi/2) * 3.76', () => {

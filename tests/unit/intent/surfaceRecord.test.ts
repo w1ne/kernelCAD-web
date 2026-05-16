@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { SurfaceRecord, NurbsSurfaceData } from '../../../src/intent/surfaceRecord';
-import { createSurfaceIdGenerator } from '../../../src/intent/featureId';
+import type { SurfaceRecord, NurbsSurfaceData } from '../../../src/shared/intent/surfaceRecord';
+import { createSurfaceIdGenerator } from '../../../src/shared/intent/featureId';
 
 describe('SurfaceRecord shape', () => {
   it('NurbsSurfaceData structurally accepts the planar 2x2 test surface', () => {

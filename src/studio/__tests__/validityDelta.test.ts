@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeValidityDelta } from '../logic/validityDelta';
-import type { ValidatorDiagnostic, ValidatorResult } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic, ValidatorResult } from '../../modeling/mates/validator';
 
 function result(
     status: ValidatorResult['status'],

@@ -29,9 +29,7 @@
     "src/**/*.test.*",
     "src/**/*.spec.*",
     "src/**/__tests__/**",
-    "src/cli/**",
-    "src/integration/**",
-    "src/test/**",
-    "src/workflows/**"
+    "src/agent/cli/**",
+    "src/agent/workflows/**"
   ]
 }

@@ -1,5 +1,5 @@
-import Viewer from '../components/Viewer';
-import { useWorkbench } from '../context/WorkbenchContext';
+import Viewer from './components/Viewer';
+import { useWorkbench } from './context/WorkbenchContext';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { ParamChips } from './ParamChips';
 import { SelectionHighlight } from './SelectionHighlight';

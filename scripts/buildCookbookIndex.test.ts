@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderCookbookSection } from './buildCookbookIndex';
-import type { Snippet } from '../src/cookbook/index';
+import type { Snippet } from '../src/agent/cookbook/index';
 
 const fixture: Snippet[] = [
   {

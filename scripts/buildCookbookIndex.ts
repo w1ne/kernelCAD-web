@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync } from 'node:fs';
-import { loadSnippets, type Snippet } from '../src/cookbook/index';
+import { loadSnippets, type Snippet } from '../src/agent/cookbook/index';
 
-const SKILL_PATH = 'src/skills/kernelcad-authoring/SKILL.md';
+const SKILL_PATH = 'src/agent/skills/kernelcad-authoring/SKILL.md';
 const START_MARKER = '<!-- COOKBOOK:START -->';
 const END_MARKER = '<!-- COOKBOOK:END -->';
 

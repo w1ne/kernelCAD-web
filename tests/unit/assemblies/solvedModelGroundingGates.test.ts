@@ -12,10 +12,10 @@
 // See plans/2026-05-15-v0.7-kinematic-grounding.md §Phase 6 Step 1.
 
 import { beforeAll, describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import type { MateLoadLimit, MateRecord } from '../../../src/lib/mates/mate';
-import { createApi } from '../../../src/modules/api';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import type { MateLoadLimit, MateRecord } from '../../../src/modeling/mates/mate';
+import { createApi } from '../../../src/modeling/api';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 function makeArm() {
   const session = new CaptureSession();

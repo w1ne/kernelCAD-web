@@ -4,10 +4,10 @@
 // dispatching to the lowerer; lowerers always see resolved Params.
 
 import { describe, it, expect } from 'vitest';
-import { RecomputeEngine } from '../../../src/compute/recomputeEngine';
-import { ParamTable } from '../../../src/runtime/paramTable';
-import type { FeatureRecord } from '../../../src/intent/featureRecord';
-import type { FeatureLowerer, ResolvedInputs, LowerResult } from '../../../src/backends/backend';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
+import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
+import type { FeatureLowerer, ResolvedInputs, LowerResult } from '../../../src/kernel/backends/backend';
 
 class CapturingLowerer implements FeatureLowerer {
   readonly target = 'export-occt' as const;

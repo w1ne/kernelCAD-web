@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('OcctBackend', () => {
   beforeAll(async () => {

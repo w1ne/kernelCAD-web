@@ -1,4 +1,4 @@
-import type { ValidatorDiagnostic } from '../../lib/mates/validator';
+import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
 import type { SelectedFeatureId } from '../types';
 
 /**

@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CaptureSession } from '../../../../src/capture/captureSession';
-import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
-import { createApi } from '../../../../src/modules/api';
+import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
+import { createApi } from '../../../../src/modeling/api';
 
 describe('OCCT pattern lowerer', () => {
   beforeAll(async () => { await initOcct(); });
@@ -76,7 +76,7 @@ describe('OCCT pattern lowerer', () => {
     if (!pattern) throw new Error('pattern did not lower');
     // The hole's FeatureId is 'hole_1' in this session. Pattern lowerer
     // retags lineage entries to 'hole_1_pattern_0'..'hole_1_pattern_2'.
-    const historyMap = (pattern as import('../../../../src/backends/occt/occtBackend').OcctBackend).historyMap;
+    const historyMap = (pattern as import('../../../../src/kernel/backends/occt/occtBackend').OcctBackend).historyMap;
     expect(historyMap).toBeDefined();
     const taggedIds = new Set<string>();
     for (const lineage of historyMap!.values()) {

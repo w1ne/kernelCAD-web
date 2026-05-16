@@ -1,7 +1,7 @@
 // tests/unit/diagnostics/nextAction.test.ts
 import { describe, it, expect } from 'vitest';
-import { DIAGNOSTIC_CODES } from '../../../src/diagnostics/codes';
-import { NEXT_ACTIONS, type NextAction } from '../../../src/diagnostics/nextAction';
+import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/codes';
+import { NEXT_ACTIONS, type NextAction } from '../../../src/shared/diagnostics/nextAction';
 
 function isWellFormed(a: NextAction): boolean {
   switch (a.kind) {

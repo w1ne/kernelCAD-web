@@ -5,7 +5,7 @@
 // near-surface, opposite-side.
 
 import { describe, it, expect } from 'vitest';
-import { sphere, box, cylinder, torus } from '../../../../src/modules/sdf/primitives';
+import { sphere, box, cylinder, torus } from '../../../../src/modeling/sdf/primitives';
 
 describe('sdf.sphere', () => {
   const s = sphere(10);

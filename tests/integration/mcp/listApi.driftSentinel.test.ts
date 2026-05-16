@@ -3,13 +3,13 @@
 // Drift sentinel: the `list_api` curated surface must match the real
 // runtime API. Future API additions that miss `listApi.ts` fail this test.
 import { describe, it, expect } from 'vitest';
-import { listApiTool } from '../../../src/mcp/tools/listApi';
-import { createApi } from '../../../src/modules/api';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { Shape } from '../../../src/capture/proxy';
-import { Sketch, PathBuilder } from '../../../src/capture/sketch';
-import { Scene } from '../../../src/intent/scene';
-import { SurfaceProxy } from '../../../src/capture/surfaceProxy';
+import { listApiTool } from '../../../src/agent/mcp/tools/listApi';
+import { createApi } from '../../../src/modeling/api';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { Shape } from '../../../src/modeling/capture/proxy';
+import { Sketch, PathBuilder } from '../../../src/modeling/capture/sketch';
+import { Scene } from '../../../src/modeling/validation/scene';
+import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {

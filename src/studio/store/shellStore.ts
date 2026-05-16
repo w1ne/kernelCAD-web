@@ -1,4 +1,4 @@
-import type { ValidatorResult } from '../../lib/mates/validator';
+import type { ValidatorResult } from '../../modeling/mates/validator';
 import type { SelectedFeatureId } from '../types';
 
 // Studio shell store — UI-only state, no model semantics.

@@ -14,7 +14,7 @@ describe('testQualityAudit', () => {
   });
 
   it('allows explicit environment-gated suites but reports them as supplemental', () => {
-    const result = auditTestText('src/integration/ui_workflows.test.tsx', [
+    const result = auditTestText('tests/integration/ui_workflows.test.tsx', [
       'const describeUI = runUIE2E ? describe : describe.skip;',
     ].join('\n'));
 
