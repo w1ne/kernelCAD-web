@@ -1,0 +1,6 @@
+{
+  "src/authoring/validation/holeValidation.ts": "src/modeling/validation/holeValidation.ts",
+  "src/authoring/validation/cutoutValidation.ts": "src/modeling/validation/cutoutValidation.ts",
+  "src/authoring/validation/scene.ts": "src/modeling/validation/scene.ts",
+  "src/authoring/validation/scene.test.ts": "src/modeling/validation/scene.test.ts"
+}

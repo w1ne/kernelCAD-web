@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ValidatorDiagnostic } from '../lib/mates/validator';
+import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { routeDiagnosticToSelection } from './logic/diagnosticRouter';
 

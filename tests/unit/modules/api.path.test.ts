@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 describe('top-level path() API', () => {
   beforeAll(async () => { await initOcct(); });
@@ -12,8 +12,8 @@ describe('top-level path() API', () => {
   });
 
   it('lowers an L-bracket profile through the full pipeline', async () => {
-    const { RecomputeEngine } = await import('../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/backends/occt/occtLowerer');
+    const { RecomputeEngine } = await import('../../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../src/modeling/backends/occt/occtLowerer');
     const code = `return path()
       .moveTo(0, 0)
       .lineTo(20, 0)

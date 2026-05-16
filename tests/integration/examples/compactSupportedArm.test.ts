@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
-import { Scene } from '../../../src/intent/scene';
-import { inspectAssemblyTool } from '../../../src/mcp/tools/inspectAssembly';
-import { reviewCadTool } from '../../../src/mcp/tools/reviewCad';
-import { runScript } from '../../../src/script-runtime/runScript';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
+import { Scene } from '../../../src/modeling/validation/scene';
+import { inspectAssemblyTool } from '../../../src/agent/mcp/tools/inspectAssembly';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
+import { runScript } from '../../../src/modeling/runtime/runScript';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/compact-supported-arm.kcad.ts';

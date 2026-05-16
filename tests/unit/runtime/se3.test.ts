@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Transform, type Vec3 } from '../../../src/runtime/se3';
+import { Transform, type Vec3 } from '../../../src/shared/runtime/se3';
 
 function near(a: Vec3, b: Vec3, eps = 1e-6): void {
   expect(Math.abs(a[0] - b[0])).toBeLessThan(eps);

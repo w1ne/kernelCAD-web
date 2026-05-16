@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import { tmpdir } from 'node:os';
 import { mkdtempSync, symlinkSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateOutputPath } from '../../../src/script-runtime/safeOutputPath';
+import { validateOutputPath } from '../../../src/agent/script-runtime/safeOutputPath';
 
 describe('validateOutputPath', () => {
   describe('accepts safe paths', () => {

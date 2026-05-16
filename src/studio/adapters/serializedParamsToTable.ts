@@ -5,8 +5,8 @@
 // Studio inspector ParamsTab consumes the real `ParamTable` class so
 // it can read `size()`, `list()`, etc. consistently with future writes.
 
-import { ParamTable } from '../../runtime/paramTable';
-import type { SerializedParamEntry } from '../../runtime/paramTable';
+import { ParamTable } from '../../shared/runtime/paramTable';
+import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 
 export function serializedParamsToTable(entries: readonly SerializedParamEntry[]): ParamTable | null {
     if (!entries || entries.length === 0) return null;

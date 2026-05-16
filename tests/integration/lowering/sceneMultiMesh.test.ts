@@ -13,9 +13,9 @@
 //   - leave the existing single-shape path (plain ShapeBackend) untouched.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { runScript } from '../../../src/script-runtime/runScript';
-import { meshFeaturesPerFeature } from '../../../src/capture/featureMeshing';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../src/modeling/runtime/runScript';
+import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
 
 beforeAll(async () => { await initOcct(); });
 

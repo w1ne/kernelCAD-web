@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
-import { KernelError } from '../../../src/intent/kernelError';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
+import { KernelError } from '../../../src/shared/intent/kernelError';
 
 describe('CaptureSession', () => {
   it('records features in capture order', () => {

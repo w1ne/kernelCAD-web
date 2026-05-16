@@ -125,7 +125,10 @@ arm.mate('left-curl', 'gripper-palm.left-hinge', 'left-finger.hinge', 'revolute'
   pose: gripDeg,
   limitsDeg: [0, 30],
 });
-arm.mate('right-curl', 'gripper-palm.right-hinge', 'right-finger.hinge', 'revolute');
+arm.mate('right-curl', 'gripper-palm.right-hinge', 'right-finger.hinge', 'revolute', {
+  // Mirror of left-curl via coupleMates ratio -1 below: left ∈ [0, 30] → right ∈ [-30, 0].
+  limitsDeg: [-30, 0],
+});
 arm.coupleMates('right-curl', { source: 'left-curl', ratio: -1 });
 arm.transmission('finger-synchronizer', {
   kind: 'gear-pair',

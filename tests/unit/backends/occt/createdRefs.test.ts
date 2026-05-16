@@ -7,14 +7,14 @@
 //     pre-existing fields (canonicalName, rootFeatureId).
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import {
   captureAllFaceSnapshots,
   applyCreatedRefs,
   faceHashOf,
   type CreatedRefSpec,
-} from '../../../../src/backends/occt/createdRefs';
-import type { HistoryMap, FaceLineage } from '../../../../src/naming/evolutionRecord';
+} from '../../../../src/kernel/backends/occt/createdRefs';
+import type { HistoryMap, FaceLineage } from '../../../../src/kernel/naming/evolutionRecord';
 
 describe('captureAllFaceSnapshots', () => {
   beforeAll(async () => { await initOcct(); });
@@ -157,9 +157,9 @@ describe('applyCreatedRefs', () => {
 describe('holeLowerer surfaceType propagation', () => {
   beforeAll(async () => { await initOcct(); });
   it('hole lowerer writes surfaceType=CYLINDRE on the bore wall', async () => {
-    const { runScript } = await import('../../../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../../src/backends/occt/occtLowerer');
+    const { runScript } = await import('../../../../src/modeling/runtime/runScript');
+    const { RecomputeEngine } = await import('../../../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../../../src/modeling/backends/occt/occtLowerer');
     const code = `
       const base = box(40, 40, 20);
       return base.hole('top', { u: 0, v: 0, diameter: 10, depth: 8 });
@@ -199,7 +199,7 @@ describe('snapshotAtCreate immutability', () => {
     expect(original).toBeDefined();
     // Force a fake snapshot into the live map for that hash, then refresh:
     // Use a manual `refreshSnapshots` re-call with the same faces (idempotent) and assert.
-    const { refreshSnapshots } = await import('../../../../src/backends/occt/createdRefs');
+    const { refreshSnapshots } = await import('../../../../src/kernel/backends/occt/createdRefs');
     refreshSnapshots(map, faces);
     const after = map.get(firstHash)!;
     expect(after.snapshotAtCreate).toEqual(original);   // unchanged

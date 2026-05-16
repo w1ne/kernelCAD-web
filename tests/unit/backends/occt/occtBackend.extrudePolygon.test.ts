@@ -1,6 +1,6 @@
 // tests/unit/backends/occt/occtBackend.extrudePolygon.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('OcctBackend.extrudePolygon', () => {
   beforeAll(async () => { await initOcct(); });

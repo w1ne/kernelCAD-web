@@ -4,8 +4,8 @@
 // Phase 4 will wire emission paths; this phase verifies the log + drain mechanics.
 
 import { describe, it, expect } from 'vitest';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import type { SoftWarning } from '../../../src/runtime/softWarning';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import type { SoftWarning } from '../../../src/shared/runtime/softWarning';
 
 const sample: SoftWarning = {
   code: 'feature.face-ref.not-resolvable',

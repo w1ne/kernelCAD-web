@@ -1,0 +1,19 @@
+import { evaluateScript } from '../../oracle/kernelcad-client';
+import type { HarnessResult } from '../../types';
+
+// Negative-task pattern (v0.7.5 kinematic-grounding eval corpus): the
+// expert solution calls `arm.solvedModel({}, { validate: 'warn' })` and
+// throws from the script if `scene.warnings` does not include the
+// expected diagnostic code. So a clean evaluate <=> the Gate 1
+// `assembly.mounting-hole.mismatch` diagnostic fired as designed; a
+// non-clean evaluate means either the gate did not fire or the script
+// is malformed for some other reason.
+export default async function harness(scriptPath: string): Promise<HarnessResult> {
+  const ev = await evaluateScript(scriptPath);
+  return {
+    gates: {
+      'evaluates clean (gate fired as designed)': ev.ok,
+    },
+    scored: {},
+  };
+}

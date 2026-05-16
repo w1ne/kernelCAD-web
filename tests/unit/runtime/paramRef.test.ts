@@ -3,7 +3,7 @@
 // Phase-1 unit tests for the symbolic parameter reference type.
 
 import { describe, it, expect } from 'vitest';
-import { isParamRef, makeParamRef, type ParamRef } from '../../../src/runtime/paramRef';
+import { isParamRef, makeParamRef, type ParamRef } from '../../../src/shared/runtime/paramRef';
 
 describe('paramRef', () => {
   it('factory returns a branded ref with $param + _type', () => {

@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DIAGNOSTIC_CODES } from '../../../src/diagnostics/codes';
+import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/codes';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = resolvePath(__dirname, '../../../src');

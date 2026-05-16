@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Check, X } from 'lucide-react';
 import { useShellStore, shellStore } from './store/useShellStore';
-import { useWorkbench } from '../context/WorkbenchContext';
+import { useWorkbench } from './context/WorkbenchContext';
 import type { StagedEdit } from './store/shellStore';
 
 // Slice 1.5: real body. Reads stagedEdit from the shell store. When

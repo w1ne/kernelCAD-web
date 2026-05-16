@@ -8,10 +8,10 @@
 // neither does).
 
 import { describe, expect, it } from 'vitest';
-import type { Param, Vec3Param } from '../../../src/intent/types';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
-import type { ParamRefExpr } from '../../../src/runtime/paramRef';
+import type { Param, Vec3Param } from '../../../src/shared/intent/types';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
+import type { ParamRefExpr } from '../../../src/shared/runtime/paramRef';
 
 function asVec3Param(v: unknown): Vec3Param {
   return v as Vec3Param;

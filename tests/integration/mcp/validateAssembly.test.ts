@@ -6,10 +6,10 @@
 // recover from authoring errors.
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { validateAssemblyTool } from '../../../src/mcp/tools/validateAssembly';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { validateAssemblyTool } from '../../../src/agent/mcp/tools/validateAssembly';
 
 describe('validate_assembly MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
@@ -33,7 +33,12 @@ describe('validate_assembly MCP tool', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.status).toBe('solved');
-      expect(r.diagnostics).toEqual([]);
+      // v0.7.4 Gate 1 emits info-severity "deferred" notes per vec3-origin
+      // side on fastened mates (the topology-bound face inference path is a
+      // v0.7.x followup). Filter those out — this test asserts clean status,
+      // not the deferred-note behaviour (covered by mountingHoleConsistency.test.ts).
+      const errorsAndWarnings = r.diagnostics.filter((d) => d.severity !== 'info');
+      expect(errorsAndWarnings).toEqual([]);
       expect(r.partCount).toBe(2);
       expect(r.jointCount).toBe(0);
     }

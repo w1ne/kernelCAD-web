@@ -1,8 +1,8 @@
 // tests/unit/naming/resolveFaceRef.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../src/backends/occt/occtBackend';
-import { resolveFaceRef } from '../../../src/naming/resolveFaceRef';
-import type { HistoryMap, FaceLineage } from '../../../src/naming/evolutionRecord';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { resolveFaceRef } from '../../../src/kernel/naming/resolveFaceRef';
+import type { HistoryMap, FaceLineage } from '../../../src/kernel/naming/evolutionRecord';
 
 describe('resolveFaceRef', () => {
   beforeAll(async () => { await initOcct(); });

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { OcctBackend } from '../../../src/backends/occt/occtBackend';
-import { propagateTransformHistory } from '../../../src/naming/evolutionRecord';
-import type { HistoryMap, FaceLineage } from '../../../src/naming/evolutionRecord';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { propagateTransformHistory } from '../../../src/kernel/naming/evolutionRecord';
+import type { HistoryMap, FaceLineage } from '../../../src/kernel/naming/evolutionRecord';
 
 describe('propagateTransformHistory', () => {
   beforeAll(async () => { await initOcct(); });

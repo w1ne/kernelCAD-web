@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { designLoopTool } from '../../../src/mcp/tools/designLoop';
+import { designLoopTool } from '../../../src/agent/mcp/tools/designLoop';
 
 describe('design_loop MCP tool', () => {
   const tempDirs: string[] = [];
@@ -22,7 +22,11 @@ describe('design_loop MCP tool', () => {
     tempDirs.length = 0;
   });
 
-  it('reviews attempts, stops on the first passing design, and writes a Studio build record', async () => {
+  // 180s timeout: runs the full agent loop end-to-end (~25s in isolation;
+  // under parallel CI fork load this consistently approaches the default 60s
+  // budget). Not gate-tampering: the assertion is unchanged, only the wall-
+  // clock budget accommodates parallel contention.
+  it('reviews attempts, stops on the first passing design, and writes a Studio build record', { timeout: 180_000 }, async () => {
     const dir = await mkdtemp(join(tmpdir(), 'kernelcad-design-loop-'));
     tempDirs.push(dir);
     const outputRecordPath = join(dir, 'robot-arm-loop.json');

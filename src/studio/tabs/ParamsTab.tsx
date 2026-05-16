@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
-import type { ParamEntry } from '../../runtime/paramTable';
+import type { ParamEntry } from '../../shared/runtime/paramTable';
 
 /**
  * Read-only inspector tab listing script-declared params from `param()`.

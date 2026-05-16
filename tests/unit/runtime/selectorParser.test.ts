@@ -8,9 +8,9 @@ import {
   findLineageMatches,
   findFallbackSnapshot,
   resolveBySnapshot,
-} from '../../../src/runtime/selectorParser';
-import type { HistoryMap } from '../../../src/naming/evolutionRecord';
-import type { FaceSnapshot } from '../../../src/backends/occt/createdRefs';
+} from '../../../src/kernel/naming/selectorParser';
+import type { HistoryMap } from '../../../src/kernel/naming/evolutionRecord';
+import type { FaceSnapshot } from '../../../src/kernel/backends/occt/createdRefs';
 
 const sampleSnap: FaceSnapshot = { centroid: [1, 2, 3], normal: [0, 0, 1], area: 100 };
 

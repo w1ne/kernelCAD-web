@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadSnippets } from '../src/cookbook/index';
+import { loadSnippets } from '../src/agent/cookbook/index';
 
 try {
   const snippets = loadSnippets();

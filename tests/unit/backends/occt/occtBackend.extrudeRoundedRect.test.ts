@@ -1,6 +1,6 @@
 // tests/unit/backends/occt/occtBackend.extrudeRoundedRect.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { OcctBackend, initOcct } from '../../../../src/backends/occt/occtBackend';
+import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('OcctBackend.extrudeRoundedRect', () => {
   beforeAll(async () => { await initOcct(); });

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { callMcpTool, TOOL_REGISTRY } from '../../../src/mcp/toolRegistry';
-import { inspectAssemblyTool } from '../../../src/mcp/tools/inspectAssembly';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { callMcpTool, TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry';
+import { inspectAssemblyTool } from '../../../src/agent/mcp/tools/inspectAssembly';
 
 describe('inspect_assembly MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);

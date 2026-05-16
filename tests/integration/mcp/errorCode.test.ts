@@ -5,13 +5,13 @@
 // produces error diagnostics. Uniform structured-failure protocol across
 // the entire MCP surface.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getShapeInfoTool } from '../../../src/mcp/tools/getShapeInfo';
-import { listFeaturesTool } from '../../../src/mcp/tools/listFeatures';
-import { listTopologyTool } from '../../../src/mcp/tools/listTopology';
+import { getShapeInfoTool } from '../../../src/agent/mcp/tools/getShapeInfo';
+import { listFeaturesTool } from '../../../src/agent/mcp/tools/listFeatures';
+import { listTopologyTool } from '../../../src/agent/mcp/tools/listTopology';
 
 describe('MCP tools — errorCode on lowering-error path (rc.7 I-4)', () => {
   beforeAll(async () => {
-    const { initOcct } = await import('../../../src/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
   });
 

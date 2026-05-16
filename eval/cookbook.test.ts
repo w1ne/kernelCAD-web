@@ -8,7 +8,7 @@ import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import { injectCookbook } from './cookbook-injector';
 
 function loadCombinedSkillMd(): string {
-  const root = resolve('src/skills');
+  const root = resolve('src/agent/skills');
   const dirs = readdirSync(root, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(root, e.name, 'SKILL.md')))
     .map((e) => e.name)

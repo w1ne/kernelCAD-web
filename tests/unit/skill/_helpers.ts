@@ -12,11 +12,11 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Load all skill SKILL.md files from src/skills/ and concatenate them.
- * Mirrors the logic in src/cli/commands/skill.ts renderOnefile().
+ * Load all skill SKILL.md files from src/agent/skills/ and concatenate them.
+ * Mirrors the logic in src/agent/cli/commands/skill.ts renderOnefile().
  */
 export function loadCombinedSkillMd(): string {
-  const skillsRoot = resolvePath(__dirname, '../../../src/skills');
+  const skillsRoot = resolvePath(__dirname, '../../../src/agent/skills');
   const dirs = readdirSync(skillsRoot, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
     .map((e) => e.name)

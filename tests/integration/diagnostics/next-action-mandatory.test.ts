@@ -9,10 +9,10 @@
 // via the central `withNextActions` helper unit tests in
 // tests/unit/diagnostics/nextAction.test.ts).
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { exportStlTool } from '../../../src/mcp/tools/exportStl';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { NEXT_ACTIONS } from '../../../src/diagnostics/nextAction';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { exportStlTool } from '../../../src/agent/mcp/tools/exportStl';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { NEXT_ACTIONS } from '../../../src/shared/diagnostics/nextAction';
 
 beforeAll(async () => { await initOcct(); });
 

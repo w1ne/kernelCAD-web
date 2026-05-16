@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { exportScript } from '../../src/cli/commands/export';
-import { initOcct } from '../../src/backends/occt/occtBackend';
+import { exportScript } from '../../src/agent/cli/commands/export';
+import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { mkdtempSync, statSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
@@ -40,9 +40,9 @@ describe('v0.1 acceptance demo', () => {
     const out = join(tmp, 'plate.step');
     const r = await exportScript({ file: DEMO, format: 'step', out });
     expect(r.exitCode).toBe(0);
-    const { runScript } = await import('../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { runScript } = await import('../../src/modeling/runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/modeling/backends/occt/occtLowerer');
     const { readFile } = await import('node:fs/promises');
     const code = await readFile(DEMO, 'utf8');
     const run = await runScript({ code, fileName: DEMO });
@@ -71,9 +71,9 @@ describe('v0.2-alpha rounded-bracket fixture', () => {
   });
 
   it('rounded-bracket has strictly less volume than the un-filleted equivalent', async () => {
-    const { runScript } = await import('../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { runScript } = await import('../../src/modeling/runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/modeling/backends/occt/occtLowerer');
     const { readFile } = await import('node:fs/promises');
 
     const fixturePath = join(__dirname, 'fixtures/rounded-bracket.kcad.ts');
@@ -114,9 +114,9 @@ describe('v0.2-alpha hollow-box fixture', () => {
 
 
   it('hollow-box has dramatically less volume than the solid equivalent', async () => {
-    const { runScript } = await import('../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { runScript } = await import('../../src/modeling/runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/modeling/backends/occt/occtLowerer');
     const { readFile } = await import('node:fs/promises');
 
     const fixturePath = join(__dirname, 'fixtures/hollow-box.kcad.ts');
@@ -415,9 +415,9 @@ describe('v0.4-rc13 symmetric-bracket mirror fixture', () => {
   });
 
   it('symmetric-bracket volume matches analytic prediction within tolerance', async () => {
-    const { runScript } = await import('../../src/script-runtime/runScript');
-    const { RecomputeEngine } = await import('../../src/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../src/backends/occt/occtLowerer');
+    const { runScript } = await import('../../src/modeling/runtime/runScript');
+    const { RecomputeEngine } = await import('../../src/modeling/compute/recomputeEngine');
+    const { OcctLowerer } = await import('../../src/modeling/backends/occt/occtLowerer');
     const { readFile } = await import('node:fs/promises');
 
     const fixturePath = join(__dirname, 'fixtures/symmetric-bracket.kcad.ts');

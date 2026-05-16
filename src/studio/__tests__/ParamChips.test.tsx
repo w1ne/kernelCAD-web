@@ -1,7 +1,7 @@
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { ParamTable } from '../../runtime/paramTable';
+import { ParamTable } from '../../shared/runtime/paramTable';
 import type { StudioRecomputeResult } from '../types';
 
 const mockResult = vi.hoisted(() => ({

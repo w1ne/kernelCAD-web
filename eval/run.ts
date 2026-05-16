@@ -9,7 +9,7 @@ import type { AgentClient, AgentResponse, TaskResult } from './types';
 const MODEL = process.env.EVAL_MODEL ?? 'claude-sonnet-4-6';
 const TASKS_DIR = resolve('eval/tasks');
 const RUNS_DIR = resolve('eval/runs');
-const SKILLS_ROOT = resolve('src/skills');
+const SKILLS_ROOT = resolve('src/agent/skills');
 
 function loadCombinedSkillMd(): string {
   const dirs = readdirSync(SKILLS_ROOT, { withFileTypes: true })

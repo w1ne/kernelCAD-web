@@ -1,4 +1,4 @@
-import type { FeatureKind } from '../../src/intent/types';
+import type { FeatureKind } from '../../src/shared/intent/types';
 
 export interface FeatureSpec {
   id: string;

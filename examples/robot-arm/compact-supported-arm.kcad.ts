@@ -129,6 +129,21 @@ const toolPalm = arm.part(
     .union(box(14, 4, 3, true).translate(107, -18, 6))
     .union(box(14, 4, 3, true).translate(107, 18, -6))
     .union(box(14, 4, 3, true).translate(107, -18, -6))
+    // v0.7.4 — grip-axis binding post. Gate 2 requires the joint axis
+    // (Z-line through gripAxis) to intersect the tool-palm BREP. The two
+    // side bearing tabs (above) bracket the grip-driver at y = ±8 but
+    // leave y = 0 empty. This 2x2 post sits directly above the grip-driver
+    // (z ∈ [gripAxis[2] + 4, gripAxis[2] + 6]; driver z ∈ [gripAxis[2] − 2, gripAxis[2] + 2])
+    // so the Z-line passes through its ±X / ±Y side faces.
+    .union(box(2, 2, 2, true).translate(gripAxis[0], 0, gripAxis[2] + 5))
+    // v0.7.4 — left/right hinge binding posts. Gate 2 requires the curl
+    // mate axes (Z-lines through leftHinge / rightHinge) to intersect the
+    // tool-palm BREP. The pin-mount boxes stop short at |y| = 20; the
+    // hinges are at |y| = 22. Small 2x2 tabs sit just above the hinge
+    // pins (pin z ∈ [-4, 4]; tab z ∈ [5, 7]) so they bind the Z-axis
+    // without colliding with the pin parts.
+    .union(box(2, 2, 2, true).translate(leftHinge[0], leftHinge[1], 6))
+    .union(box(2, 2, 2, true).translate(rightHinge[0], rightHinge[1], 6))
     .color('tool'),
 );
 
@@ -165,6 +180,13 @@ const leftFinger = arm.part(
   box(fingerLen, 5, 5, true)
     .translate(6 + fingerLen / 2, 0, 0)
     .union(box(12, 4, 6, true).translate(0, 5, 0))
+    // v0.7.4 — hinge binding stub. Gate 2 requires the curl mate axis
+    // (Z-line through finger-local origin) to intersect the finger BREP.
+    // The knuckle box (y ∈ [3, 7]) and the finger body (x ∈ [6, 40]) both
+    // miss the axis line at (0, 0, z); this 2x2 stub sits above both the
+    // left-hinge-pin (pin z ∈ [-4, 4]) AND the tool-palm hinge binding
+    // post (z ∈ [5, 7]) so it binds the Z-axis without collision.
+    .union(box(2, 2, 2, true).translate(0, 0, 9))
     .color('tool'),
 );
 
@@ -173,6 +195,7 @@ const rightFinger = arm.part(
   box(fingerLen, 5, 5, true)
     .translate(6 + fingerLen / 2, 0, 0)
     .union(box(12, 4, 6, true).translate(0, -5, 0))
+    .union(box(2, 2, 2, true).translate(0, 0, 9))
     .color('tool'),
 );
 

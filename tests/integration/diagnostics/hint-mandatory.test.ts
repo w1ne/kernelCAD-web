@@ -8,9 +8,9 @@
 // `evaluate_script` MCP tool and asserts on the wire diagnostic shape.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { DIAGNOSTIC_CODES } from '../../../src/diagnostics/codes';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/codes';
 
 beforeAll(async () => {
   await initOcct();

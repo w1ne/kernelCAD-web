@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
-import { runScript } from '../../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
-import type { CompilerDiagnostic } from '../../../../src/diagnostics/diagnostic';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../../src/modeling/runtime/runScript';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
+import type { CompilerDiagnostic } from '../../../../src/shared/diagnostics/diagnostic';
 
 async function lowerScript(code: string) {
   const { records } = await runScript({ code, fileName: 'test.kcad.ts' });

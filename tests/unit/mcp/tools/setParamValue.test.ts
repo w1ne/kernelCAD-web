@@ -1,7 +1,7 @@
 // tests/unit/mcp/tools/setParamValue.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { setParamValueTool } from '../../../../src/mcp/tools/setParamValue';
-import { initOcct } from '../../../../src/backends/occt/occtBackend';
+import { setParamValueTool } from '../../../../src/agent/mcp/tools/setParamValue';
+import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('setParamValueTool', () => {
   beforeAll(async () => { await initOcct(); });

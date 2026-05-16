@@ -1,5 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
-import type { FeatureKind } from '../../../src/intent/types';
+import type { FeatureKind } from '../../../src/shared/intent/types';
 
 describe('FeatureKind includes the sheet-metal slice-1 names', () => {
   it('sheetMetal is in FeatureKind', () => {

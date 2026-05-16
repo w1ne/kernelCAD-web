@@ -14,10 +14,10 @@
 // Spec: kernelCAD-private/docs/specs/2026-05-08-revolverect-demotion-and-pathbuilder-editable-design.md
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { CaptureSession } from '../../../src/capture/captureSession';
-import { createApi } from '../../../src/modules/api';
-import type { SketchCommand } from '../../../src/capture/sketch';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { CaptureSession } from '../../../src/modeling/capture/captureSession';
+import { createApi } from '../../../src/modeling/api';
+import type { SketchCommand } from '../../../src/modeling/capture/sketch';
 
 beforeAll(async () => { await initOcct(); });
 

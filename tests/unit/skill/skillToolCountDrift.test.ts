@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { TOOLS } from '../../../src/mcp/server';
+import { TOOLS } from '../../../src/agent/mcp/server';
 import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 
 const SKILL_MD = loadCombinedSkillMd();

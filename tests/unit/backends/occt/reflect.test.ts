@@ -1,9 +1,9 @@
 // tests/unit/backends/occt/reflect.test.ts
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct, OcctBackend } from '../../../../src/backends/occt/occtBackend';
-import { runScript } from '../../../../src/script-runtime/runScript';
-import { RecomputeEngine } from '../../../../src/compute/recomputeEngine';
-import { OcctLowerer } from '../../../../src/backends/occt/occtLowerer';
+import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../../src/modeling/runtime/runScript';
+import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 
 beforeAll(async () => { await initOcct(); }, 60000);
 
@@ -110,7 +110,7 @@ describe('Shape.reflect(plane)', () => {
     // Shape.reflect() validates at capture time, so malformed specs can only
     // arrive via direct IR construction. This test exercises the lowerer's
     // transform-loop validation gate directly.
-    const records: import('../../../../src/intent/featureRecord').FeatureRecord[] = [
+    const records: import('../../../../src/shared/intent/featureRecord').FeatureRecord[] = [
       {
         id: 'box-1',
         kind: 'box',

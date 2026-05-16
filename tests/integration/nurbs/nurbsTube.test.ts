@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import harness from '../../../eval/tasks/nurbs-tube/harness';
 
 describe('corpus: nurbs-tube', () => {

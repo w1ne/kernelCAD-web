@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { evaluateAndBuildScript } from '../../../src/cli/commands/evaluate';
+import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis.kcad.ts';

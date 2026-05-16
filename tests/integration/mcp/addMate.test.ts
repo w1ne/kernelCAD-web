@@ -5,11 +5,11 @@
 // connector-not-found error path.
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { initOcct } from '../../../src/backends/occt/occtBackend';
-import { clearActiveMcpSession } from '../../../src/mcp/activeSession';
-import { addMateTool } from '../../../src/mcp/tools/addMate';
-import { evaluateScriptTool } from '../../../src/mcp/tools/evaluateScript';
-import { listMatesTool } from '../../../src/mcp/tools/listMates';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { clearActiveMcpSession } from '../../../src/agent/mcp/activeSession';
+import { addMateTool } from '../../../src/agent/mcp/tools/addMate';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { listMatesTool } from '../../../src/agent/mcp/tools/listMates';
 
 describe('add_mate MCP tool', () => {
   beforeAll(async () => { await initOcct(); }, 60000);

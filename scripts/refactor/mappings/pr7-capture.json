@@ -1,0 +1,15 @@
+{
+  "src/capture/assembly.ts": "src/modeling/capture/assembly.ts",
+  "src/capture/captureSession.ts": "src/modeling/capture/captureSession.ts",
+  "src/capture/faceLabels.ts": "src/modeling/capture/faceLabels.ts",
+  "src/capture/featureMeshSerialize.test.ts": "src/modeling/capture/featureMeshSerialize.test.ts",
+  "src/capture/featureMeshSerialize.ts": "src/modeling/capture/featureMeshSerialize.ts",
+  "src/capture/featureMeshing.test.ts": "src/modeling/capture/featureMeshing.test.ts",
+  "src/capture/featureMeshing.ts": "src/modeling/capture/featureMeshing.ts",
+  "src/capture/forwardKinematics.ts": "src/modeling/capture/forwardKinematics.ts",
+  "src/capture/posesGate.test.ts": "src/modeling/capture/posesGate.test.ts",
+  "src/capture/proxy.ts": "src/modeling/capture/proxy.ts",
+  "src/capture/sketch.ts": "src/modeling/capture/sketch.ts",
+  "src/capture/surfaceProxy.ts": "src/modeling/capture/surfaceProxy.ts",
+  "src/capture/transformMesh.ts": "src/modeling/capture/transformMesh.ts"
+}
