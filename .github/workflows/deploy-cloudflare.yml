@@ -27,6 +27,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
