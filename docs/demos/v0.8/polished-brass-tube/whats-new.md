@@ -6,9 +6,9 @@ polished-brass-tube
 
 ## Why memorable
 
-- Recognizable in one second: a single mirror-bright brass tube that reads as metal at a glance, not as a wireframe primitive.
-- New tool central: the v0.8 `Shape.material({metalness, roughness, clearcoat})` call replaces flat `.color()` — the specular highlight sliding around the surface during rotation is the visible signature.
-- Reads at 360°: the rotate phase sweeps the camera a full turn so the highlight tracks the light source and the wall thickness is legible from every angle, not just the hero pose.
+- Recognizable in one second: a chunky mirror-bright brass cuff that reads as polished metal at a glance, not as a wireframe primitive.
+- New tool central: the v0.8 `Shape.material({metalness, roughness, clearcoat})` call replaces flat `.color()` — the warm specular highlight gliding around the surface during rotation is the visible signature.
+- Reads at 360°: the rotate phase sweeps the camera a full turn so the highlight tracks the light source and the wall thickness, rim curvature, and brass tone are legible from every angle, not just the hero pose.
 
 ## What's new
 
