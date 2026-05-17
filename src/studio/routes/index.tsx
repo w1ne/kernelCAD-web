@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { PromptBox } from '../../funnel/components/PromptBox';
 import { EmailSignup } from '../../funnel/components/EmailSignup';
+import { GallerySection } from '../../funnel/components/GallerySection';
 import { SignInModal } from '../../funnel/components/SignInModal';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
@@ -128,6 +129,10 @@ function LandingPage() {
             </div>
           )}
         </header>
+
+        {/* Curated gallery — fed by /gallery.json (built by site/scripts/build-gallery.ts
+            and overlaid onto dist/ by the marketing deploy job). */}
+        <GallerySection />
 
         {/* Email opt-in — fallback signal collection until the prompt funnel
             reaches "fully working slice" status. Remove when generation
