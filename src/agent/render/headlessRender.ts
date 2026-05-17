@@ -106,10 +106,35 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
     }
 
+    // Belt-and-suspenders: nuke ANY dev chrome before each screenshot. The
+    // headless URL param + __root.tsx suppression doesn't always catch the
+    // TanStack Router devtools badge — it gets re-injected by HMR or React
+    // double-render after mesh load. Removing the offending DOM nodes here
+    // guarantees zero badge pixels in the screenshot.
+    const stripDevChrome = `
+      () => {
+        const sels = [
+          '[data-testid="tsr-devtools"]',
+          '.TanStackRouterDevtools',
+          '[data-tanstack-router-devtools]',
+          'vite-error-overlay',
+        ];
+        for (const sel of sels) document.querySelectorAll(sel).forEach((n) => n.remove());
+        // Heuristic: any fixed-position element with "TanStack" in text content.
+        document.querySelectorAll('*').forEach((el) => {
+          const cs = (el instanceof Element) ? getComputedStyle(el) : null;
+          if (cs && cs.position === 'fixed' && /TanStack/i.test(el.textContent || '') && el.children.length < 8) {
+            el.remove();
+          }
+        });
+      }
+    `;
+
     // 4. Per-view: snap camera, screenshot, collect.
     const pngsByView: Partial<Record<RenderView, Buffer>> = {};
     for (const view of views) {
       await page.evaluate((v) => window.__demoPlayer!.setRenderView(v), view);
+      await page.evaluate(stripDevChrome);
       const buf = await page.screenshot({ type: 'png' });
       pngsByView[view] = buf;
     }
@@ -128,6 +153,7 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
           ({ a, e }) => window.__demoPlayer!.setRenderPose(a, e),
           { a: az, e: el },
         );
+        await page.evaluate(stripDevChrome);
         const buf = await page.screenshot({ type: 'png' });
         pngsByPose[poseKey] = buf;
       }

@@ -667,6 +667,12 @@ export function DemoPlayerPage(): React.JSX.Element {
     };
   }, [isDemoApiReady]);
 
+  // Headless renders (kernelcad render, scoreReference) navigate with
+  // ?headless=1. Suppress the TerminalPane so the ViewerPane (and its model)
+  // fills the entire viewport. Without this, TerminalPane's 640px sidebar eats
+  // half the canvas at 1024×1024 capture → silhouette IoU bimodality.
+  const isHeadless = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('headless') === '1';
   return (
     <div
       data-testid="demo-player"
@@ -678,15 +684,17 @@ export function DemoPlayerPage(): React.JSX.Element {
         overflow: 'hidden',
       }}
     >
-      <TerminalPane
-        lines={terminalLines}
-        width={TERMINAL_W}
-        height={TERMINAL_H}
-        getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
-      />
+      {!isHeadless && (
+        <TerminalPane
+          lines={terminalLines}
+          width={TERMINAL_W}
+          height={TERMINAL_H}
+          getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
+        />
+      )}
       <ViewerPane
         version={version}
-        width={VIEWER_W}
+        width={isHeadless ? VIEWER_W + TERMINAL_W : VIEWER_W}
         height={VIEWER_H}
         onSceneReady={handleSceneReady}
       />
