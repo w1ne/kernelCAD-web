@@ -507,8 +507,15 @@ export class OcctBackend implements ShapeBackend {
     // Lift via the shared helper (handles sketch-kind check + multi-face guard).
     const { face } = OcctBackend.liftSketchToFace(sketch, 'XY');
     const profileWire = face().outerWire();
-    // Sweep.
-    const swept = replicad.genericSweep(profileWire, spineWire, { frenet: opts.frenet ?? false });
+    // Sweep. Default `forceProfileSpineOthogonality: true` (replicad's typo'd
+    // spelling preserved on-wire) — without it, a perpendicular profile on a
+    // planar rail silently collapses to a flat shape because the spine's
+    // tangent is co-planar with the profile. Replicad's own `Sketch.sweepSketch`
+    // sets this to true by default for the same reason.
+    const swept = replicad.genericSweep(profileWire, spineWire, {
+      frenet: opts.frenet ?? false,
+      forceProfileSpineOthogonality: true,
+    });
     return new OcctBackend(swept);
   }
 
