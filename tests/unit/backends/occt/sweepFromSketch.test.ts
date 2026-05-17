@@ -70,6 +70,37 @@ describe('OcctBackend.sweepFromSketch', () => {
     expect(swept.volume()).toBeGreaterThan(0);
   });
 
+  it('planar XY rail with XY-lifted profile produces a non-degenerate tube (regression: Exp-A cqe-task10)', () => {
+    // Without `forceProfileSpineOthogonality: true`, a perpendicular profile
+    // swept along a planar rail (both in XY) silently collapses to a flat
+    // band: the profile plane never rotates with the spine tangent. Exp-A
+    // cqe-task10 surfaced this — agent tried Sketch.sweep with a 64-point
+    // XY half-circle rail and got Z extent = 0, had to fall back to revolve.
+    // The default flip means the profile now twists with the spine tangent,
+    // producing the expected tube cross-section.
+    const sketch = OcctBackend.fromSketchCommands(square2x2);
+    // Half-circle rail in the XY plane: 16 points sampling x = 10·cos(θ),
+    // y = 10·sin(θ) for θ ∈ [0, π]. Profile lies in XY (perpendicular to the
+    // rail's tangent at θ=0); the orthogonality flag rotates it with the spine.
+    const rail: [number, number, number][] = [];
+    const N = 16;
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI;
+      rail.push([10 * Math.cos(t), 10 * Math.sin(t), 0]);
+    }
+    const swept = OcctBackend.sweepFromSketch(sketch, rail);
+    // The swept tube must have positive volume AND non-trivial Z extent.
+    // Profile height is 2mm (from y=-1 to y=+1 in the 2×2 square lifted to
+    // XY); after orthogonality-rotation that maps to Z extent ≈ 2mm.
+    expect(swept.volume()).toBeGreaterThan(0);
+    const bbox = (swept.getReplicadShape() as unknown as {
+      boundingBox: { bounds: [[number, number, number], [number, number, number]] };
+    }).boundingBox.bounds;
+    const zExtent = bbox[1][2] - bbox[0][2];
+    expect(zExtent).toBeGreaterThan(1.5);
+    expect(zExtent).toBeLessThan(3);
+  });
+
   it('throws on rail with fewer than 2 points', () => {
     const sketch = OcctBackend.fromSketchCommands(square2x2);
     expect(() => OcctBackend.sweepFromSketch(sketch, [[0, 0, 0]]))
