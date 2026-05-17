@@ -171,17 +171,6 @@
     }
 
     // Render the curated gallery from /gallery.json
-    function formatRelativeDate(iso) {
-      const then = new Date(iso + 'T00:00:00Z');
-      const now = new Date();
-      const ms = now.getTime() - then.getTime();
-      const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-      if (days <= 0) return 'Today';
-      if (days === 1) return 'Yesterday';
-      if (days <= 7) return days + 'd ago';
-      return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-
     fetch('/gallery.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((g) => {
@@ -207,15 +196,6 @@
               disable-zoom
               loading="lazy"
             ></model-viewer>
-            <div class="tile-chip tile-chip-bl">
-              <span class="version">${entry.version}</span>
-              <span class="title">${entry.title}</span>
-              <span class="relative-date" title="${entry.createdAt}">${formatRelativeDate(entry.createdAt)}</span>
-            </div>
-            <div class="tile-chip tile-chip-br">
-              <span class="author">by @${entry.author.handle}</span>
-            </div>
-            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
           `;
           tile.__entry = entry;
           tile.addEventListener('click', () => openLightbox(entry));
