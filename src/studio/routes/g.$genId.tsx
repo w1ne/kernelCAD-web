@@ -79,37 +79,34 @@ function AnonGenPage() {
     );
   }
 
-  // Full Studio shell with the generated code preloaded. Floating overlay
-  // gives one-click save + prompt context without taking real estate from
-  // the workbench. The shell's own Header handles export / view modes /
-  // local project management.
-  return (
-    <div className="relative w-screen h-screen overflow-hidden">
-      <App initialCode={gen.code} />
-
-      <div className="pointer-events-none absolute top-3 right-3 z-50 flex items-start gap-3">
-        <div className="pointer-events-auto rounded-lg border border-rule bg-vellum/95 backdrop-blur px-3 py-2 shadow-sm max-w-md">
-          <p className="font-mono text-[10px] text-ink-faint tracking-widest uppercase">Prompt</p>
-          <p className="text-xs text-ink mt-0.5 line-clamp-2">{gen.prompt}</p>
-        </div>
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={savingState === 'saving'}
-            className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans shadow-sm"
-          >
-            {session
-              ? savingState === 'saving'
-                ? 'Saving…'
-                : savingState === 'error'
-                  ? 'Retry save'
-                  : 'Save this'
-              : 'Sign in to save'}
-          </button>
-          {!session && <SignInButton redirectTo={window.location.href}>Sign in</SignInButton>}
-        </div>
-      </div>
+  const headerLeft = (
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono shrink-0">
+        Prompt
+      </span>
+      <span className="text-xs text-gray-300 truncate max-w-[420px]" title={gen.prompt}>
+        {gen.prompt}
+      </span>
     </div>
   );
+
+  const headerRight = session ? (
+    <button
+      type="button"
+      onClick={() => void handleSave()}
+      disabled={savingState === 'saving'}
+      className="px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+    >
+      {savingState === 'saving' ? 'Saving…' : savingState === 'error' ? 'Retry save' : 'Save'}
+    </button>
+  ) : (
+    <SignInButton
+      redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+    >
+      Sign in to save
+    </SignInButton>
+  );
+
+  return <App initialCode={gen.code} headerLeft={headerLeft} headerRight={headerRight} />;
 }

@@ -5,9 +5,10 @@ import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DevLab } from './devlab/DevLab';
 import { devLabScenarios } from './devlab/scenarios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
 import { DemoPlayerPage } from './components/demoPlayer/DemoPlayerPage';
+import { StudioChromeProvider } from './context/StudioChromeContext';
 
 function isCodeParsable(code: string): boolean {
   try {
@@ -120,9 +121,15 @@ interface AppProps {
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
    * the full Studio shell rather than a stripped viewer. */
   initialCode?: string;
+  /** Funnel-route chrome injected into the Studio Header (left of toolbar).
+   * Use for prompt context or saved-project metadata pills. */
+  headerLeft?: ReactNode;
+  /** Funnel-route chrome injected into the Studio Header (right cluster).
+   * Use for Save / Sign-in / per-project actions. */
+  headerRight?: ReactNode;
 }
 
-export default function App({ initialCode: initialCodeProp }: AppProps = {}) {
+export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
   if (isDemoPlayerRoute()) {
     return <DemoPlayerPage />;
   }
@@ -133,9 +140,11 @@ export default function App({ initialCode: initialCodeProp }: AppProps = {}) {
 
   return (
     <WorkbenchProvider initialCode={initialCode}>
-      <ErrorBoundary>
-        <AppContent isDevLab={isDevLab} />
-      </ErrorBoundary>
+      <StudioChromeProvider value={{ headerLeft, headerRight }}>
+        <ErrorBoundary>
+          <AppContent isDevLab={isDevLab} />
+        </ErrorBoundary>
+      </StudioChromeProvider>
     </WorkbenchProvider>
   );
 }

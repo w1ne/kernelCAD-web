@@ -3,8 +3,10 @@ import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as 
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
+import { useStudioChrome } from '../../context/StudioChromeContext';
 
 export function Header() {
+    const { headerLeft, headerRight } = useStudioChrome();
     const {
         viewMode, setViewMode, viewMode3D, setViewMode3D,
         isComputing, code, commandManager, setActiveDialog
@@ -35,7 +37,7 @@ export function Header() {
 
     return (
         <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-4 justify-between select-none shrink-0" data-testid="header">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 min-w-0">
                 <button
                     onClick={() => setActiveDialog('projectManager')}
                     aria-label="Open project manager"
@@ -47,9 +49,21 @@ export function Header() {
                         <FolderOpen size={12} className="text-gray-500 group-hover:text-blue-400" />
                     </span>
                 </button>
+                {headerLeft && (
+                    <>
+                        <div className="h-6 w-px bg-[#333]" />
+                        <div className="flex items-center gap-2 min-w-0">{headerLeft}</div>
+                    </>
+                )}
             </div>
 
             <div className="flex gap-2 items-center">
+                {headerRight && (
+                    <>
+                        <div className="flex items-center gap-2">{headerRight}</div>
+                        <div className="h-6 w-px bg-[#333] mx-2" />
+                    </>
+                )}
                 {/* Mode Toggle */}
                 <div className="flex bg-[#222] rounded p-0.5 mr-2" data-testid="mode-toggle">
                     <button
