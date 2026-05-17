@@ -10,12 +10,42 @@ kernelCAD primitives. This is an orchestrator skill that names sub-skills and
 their order. Read this first; then load each sub-skill in sequence as you
 work through the stages.
 
-## Required reading order
+## Decision tree (1 screen — start here)
 
-1. `prepare-prompt/SKILL.md` — turn the user's ask into a Real Object Brief.
-2. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
-3. `use-the-available-kernel/SKILL.md` — hard rules for which kernelCAD primitives to reach for. **The most important sub-skill.**
-4. `image-replicator/SKILL.md` — the render→score→iterate loop.
+```
+Have a written spec with numeric dimensions? → just read kernelcad-authoring
+                                                + use-the-available-kernel,
+                                                build single-pass, score.
+Have a reference photo only? ──┬─ Extract numeric dimensions FIRST
+                               │  (measure visually OR if STL available
+                               │   use trimesh to extract bbox+landmarks),
+                               │  then proceed as if you had a spec.
+                               │
+                               └─ Don't iterate against the 2D-photo scorer —
+                                  R5/R16/R18 empirical: it's gameable. Use
+                                  the geometric scorer (scripts/scoreMeshVsMesh.ts)
+                                  if an STL reference is shipped.
+
+Building an organic-curve outline (brow, grip, sneaker)?
+   → use path().smoothSpline() — chained sagittaArc hits solver cliffs.
+
+Building an acetate-bevel-style chamfer on post-cut topology?
+   → just call .chamfer(d). The kernel auto-skips edges shorter than 2×d
+     and emits a clean warning. Do NOT "skip and document."
+
+Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
+   Single-pass with a detailed spec OUTPERFORMS visual or scored iteration.
+   Adding the photo to a good spec REGRESSES (R3). Closed-loop scorer-only
+   iteration plateaus FAR below single-pass (R2 / R16). Only iterate when
+   you have a CLEAR signal pointing at a SPECIFIC defect.
+```
+
+## Required reading order (only if the decision tree didn't tell you what to do)
+
+1. `use-the-available-kernel/SKILL.md` — **the most important sub-skill.** Hard rules for which primitive to reach for.
+2. `prepare-prompt/SKILL.md` — turn the user's ask into a Real Object Brief.
+3. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
+4. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
 5. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
 
 ## Hard rules across all sub-skills

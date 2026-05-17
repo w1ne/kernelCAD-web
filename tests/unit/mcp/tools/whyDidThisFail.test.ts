@@ -17,7 +17,10 @@ describe('whyDidThisFailTool', () => {
     expect(last.diagnostics).toEqual([]);
   });
 
-  it('returns the failing feature with kernel-failed diagnostic + inline hint', async () => {
+  it('returns the failing feature with short-edges-skipped diagnostic + inline hint', async () => {
+    // r=100 on a 10mm box: M2's edge-length pre-filter (2*r = 200mm) skips
+    // every edge — surfaces as `feature.edge-feature.short-edges-skipped`
+    // with severity=error, not the generic `feature.kernel-failed`.
     const result = await whyDidThisFailTool({
       code: `return box(10, 10, 10).fillet(100);`,
     });
@@ -26,8 +29,8 @@ describe('whyDidThisFailTool', () => {
     const last = result.chain![result.chain!.length - 1];
     expect(last.health).toBe('error');
     expect(last.diagnostics.length).toBeGreaterThan(0);
-    expect(last.diagnostics[0].code).toBe('feature.kernel-failed');
-    expect(last.diagnostics[0].hint).toMatch(/smaller radius/i);
+    expect(last.diagnostics[0].code).toBe('feature.edge-feature.short-edges-skipped');
+    expect(last.diagnostics[0].hint).toMatch(/radius/i);
   });
 
   it('walks upstream chain in topological order; healthy box appears before failing fillet', async () => {

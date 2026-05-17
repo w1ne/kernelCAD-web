@@ -69,7 +69,9 @@ export type DiagnosticCode =
   | 'feature.reference-image.format-unsupported'
   // Material (2) — Slice A
   | 'feature.material.invalid-base-color'
-  | 'feature.material.value-clamped';
+  | 'feature.material.value-clamped'
+  // Edge-feature partial success (1) — M2
+  | 'feature.edge-feature.short-edges-skipped';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -115,6 +117,7 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.reference-image.format-unsupported',
   'feature.material.invalid-base-color',
   'feature.material.value-clamped',
+  'feature.edge-feature.short-edges-skipped',
 ] as const;
 
 export interface HintTemplate {
@@ -217,6 +220,8 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'Pass a CSS color string or a registered role token to baseColor.',
     'feature.material.value-clamped':
       'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
+    'feature.edge-feature.short-edges-skipped':
+      'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

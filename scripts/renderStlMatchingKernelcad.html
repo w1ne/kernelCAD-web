@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>html,body{margin:0;background:#0a0a0a;}canvas{display:block;}</style>
+</head>
+<body>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/three/build/three.module.js", "three/addons/": "/node_modules/three/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+const params = new URLSearchParams(window.location.search);
+const stlUrls = params.getAll('stl');
+const azDeg = Number(params.get('az') ?? '30');
+const elDeg = Number(params.get('el') ?? '15');
+const size = Number(params.get('size') ?? '1024');
+const fovDeg = Number(params.get('fov') ?? '50');
+// Rotate STL geometry to align with kernelCAD's coord convention (Y=depth, Z=up).
+// Most STLs use Z=up natively; some use Y=up. Override via ?rotate=xdeg,ydeg,zdeg
+const rotateStr = params.get('rotate') ?? '-90,0,0';
+const [rotX, rotY, rotZ] = rotateStr.split(',').map(Number);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(size, size);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x909090);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(1, -2, 2.5); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.8); fill.position.set(-1.5, -1, 0.5); scene.add(fill);
+
+const camera = new THREE.PerspectiveCamera(fovDeg, 1, 0.1, 10000);
+
+const loader = new STLLoader();
+const group = new THREE.Group();
+scene.add(group);
+
+async function loadAll() {
+  for (const url of stlUrls) {
+    const geom = await new Promise((res, rej) => loader.load(url, res, undefined, rej));
+    geom.computeVertexNormals();
+    const mat = new THREE.MeshPhysicalMaterial({ color: 0x6c6c6c, metalness: 0, roughness: 0.15, clearcoat: 0.8, clearcoatRoughness: 0.05 });
+    const mesh = new THREE.Mesh(geom, mat);
+    group.add(mesh);
+  }
+  // Apply orientation rotation (degrees → radians) — maps STL's coord system to kernelCAD's.
+  group.rotation.set((rotX * Math.PI) / 180, (rotY * Math.PI) / 180, (rotZ * Math.PI) / 180);
+  group.updateMatrixWorld(true);
+  // Center group at origin (so framing math matches kernelCAD's "center at origin" assumption)
+  const bbox = new THREE.Box3().setFromObject(group);
+  const center = bbox.getCenter(new THREE.Vector3());
+  group.position.sub(center);
+  // Recompute bbox of the centered group
+  const bbox2 = new THREE.Box3().setFromObject(group);
+  const dx = bbox2.max.x - bbox2.min.x;
+  const dy = bbox2.max.y - bbox2.min.y;
+  const dz = bbox2.max.z - bbox2.min.z;
+  const maxExtent = Math.max(dx, dy, dz);
+  // EXACT same math as DemoPlayerPage.tsx setRenderPose
+  const fov = camera.fov * (Math.PI / 180);
+  const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
+  const az = (azDeg * Math.PI) / 180;
+  const el = (elDeg * Math.PI) / 180;
+  const cosEl = Math.cos(el);
+  const x = distance * Math.sin(az) * cosEl;
+  const y = -distance * Math.cos(az) * cosEl;
+  const z = distance * Math.sin(el);
+  camera.up.set(0, 0, 1);
+  camera.position.set(x, y, z);
+  camera.lookAt(0, 0, 0);
+  camera.near = Math.max(0.1, distance / 100);
+  camera.far = distance * 20;
+  camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+  // Signal ready
+  window.__stlReady = true;
+  window.__bbox = { dx, dy, dz, maxExtent, distance };
+}
+loadAll().catch((e) => { window.__stlError = String(e); });
+</script>
+</body>
+</html>

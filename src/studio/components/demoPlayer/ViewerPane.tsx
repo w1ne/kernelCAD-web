@@ -16,7 +16,12 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     if (!mountRef.current) return;
     const mount = mountRef.current;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
+    // Background luma 144 (#909090). Chosen to match the eval reference photos'
+    // typical studio-gray backdrop so SSIM doesn't get dominated by background
+    // pixel mismatch. Flat gray (no ground plane) keeps all 4 corners at the
+    // same luma so silhouetteMask's corner-bg sample stays consistent — see
+    // memory/kernelcad_silhouette_iou_bg_pitfall.md.
+    scene.background = new THREE.Color(0x909090);
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
     camera.position.set(120, 80, 120);
     camera.lookAt(0, 0, 0);

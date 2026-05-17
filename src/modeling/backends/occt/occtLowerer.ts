@@ -1243,6 +1243,51 @@ export class OcctLowerer implements FeatureLowerer {
         } else {
           edgesForFillet = sharpEdges;
         }
+        // M2: pre-filter edges below 2 × radius. The OCCT BlendChain solver
+        // rejects fillet radii larger than half the target edge length;
+        // historically this caused the WHOLE fillet operation to fail (see
+        // E3, R6, R19 in the agent-eval rounds — they all had to "skip and
+        // document" their front-face perimeter fillet/chamfer because the
+        // R=3 lens-cutout corner edges were sub-1mm). Filtering pre-call
+        // means the long edges get filleted and the agent gets a clean
+        // info diagnostic naming the skipped count.
+        const filletMinEdgeLength = 2 * radius;
+        const longFilletEdges: import('replicad').Edge[] = [];
+        let skippedFilletEdges = 0;
+        for (const e of edgesForFillet) {
+          // Edge.length is the arc length via BRepAdaptor_Curve; safe on
+          // straight, arc, and spline edges. Throws if the edge has no
+          // underlying curve (degenerate); skip those defensively.
+          let len: number;
+          try { len = e.length; } catch { skippedFilletEdges++; continue; }
+          if (len >= filletMinEdgeLength) longFilletEdges.push(e); else skippedFilletEdges++;
+        }
+        if (skippedFilletEdges > 0 && longFilletEdges.length === 0) {
+          // All target edges shorter than 2×radius — the fillet didn't run at
+          // all. Surface as `error` (not `warn`) so the chain walker reports
+          // the feature as failed; agent should retry with a smaller radius.
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.edge-feature.short-edges-skipped',
+            featureId: r.id,
+            severity: 'error',
+            message: `fillet skipped: all ${skippedFilletEdges} target edges are shorter than 2 × radius = ${filletMinEdgeLength.toFixed(2)} mm`,
+            hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+          });
+          shape = base;
+          break;
+        }
+        if (skippedFilletEdges > 0) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.edge-feature.short-edges-skipped',
+            featureId: r.id,
+            severity: 'warn',
+            message: `fillet skipped ${skippedFilletEdges} of ${edgesForFillet.length} target edges shorter than 2 × radius = ${filletMinEdgeLength.toFixed(2)} mm; chamfering the remaining ${longFilletEdges.length}.`,
+            hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+          });
+          edgesForFillet = longFilletEdges;
+        }
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
@@ -1335,11 +1380,49 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: base, diagnostics };
         }
         drainResolvedWarnings(r, diagnostics);
+        // M2: pre-filter edges below 2 × distance. Same rationale as fillet:
+        // OCCT blend solver rejects chamfer distances larger than half the
+        // target edge length. Filter pre-call so long edges get chamfered
+        // and the agent gets a clean diagnostic naming the skipped count.
+        const chamferMinEdgeLength = 2 * distance;
+        const longChamferEdges: import('replicad').Edge[] = [];
+        let skippedChamferEdges = 0;
+        for (const e of edgesResult as import('replicad').Edge[]) {
+          let len: number;
+          try { len = e.length; } catch { skippedChamferEdges++; continue; }
+          if (len >= chamferMinEdgeLength) longChamferEdges.push(e); else skippedChamferEdges++;
+        }
+        if (skippedChamferEdges > 0 && longChamferEdges.length === 0) {
+          // All target edges shorter than 2×distance — chamfer didn't run.
+          // `error` so the chain walker flags the feature as failed.
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.edge-feature.short-edges-skipped',
+            featureId: r.id,
+            severity: 'error',
+            message: `chamfer skipped: all ${skippedChamferEdges} target edges are shorter than 2 × distance = ${chamferMinEdgeLength.toFixed(2)} mm`,
+            hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+          });
+          shape = base;
+          break;
+        }
+        let edgesForChamfer: import('replicad').Edge[] = edgesResult as import('replicad').Edge[];
+        if (skippedChamferEdges > 0) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.edge-feature.short-edges-skipped',
+            featureId: r.id,
+            severity: 'warn',
+            message: `chamfer skipped ${skippedChamferEdges} of ${(edgesResult as import('replicad').Edge[]).length} target edges shorter than 2 × distance = ${chamferMinEdgeLength.toFixed(2)} mm; chamfering the remaining ${longChamferEdges.length}.`,
+            hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+          });
+          edgesForChamfer = longChamferEdges;
+        }
         try {
           // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
           // edge's underlying TopoDS_Edge handle.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const edgeRefs: EdgeRefForFilleting[] = edgesResult.map((e: any) => ({
+          const edgeRefs: EdgeRefForFilleting[] = edgesForChamfer.map((e: any) => ({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));

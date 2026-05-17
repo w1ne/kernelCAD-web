@@ -24,9 +24,11 @@ interface Fixture {
 
 const FIXTURES: Fixture[] = [
   {
-    name: 'fillet too large → kernel-failed',
+    // M2 pre-filter intercepts r>=5 fillets on a 10mm box, so the surfaced
+    // code is short-edges-skipped (more specific than kernel-failed).
+    name: 'fillet too large → short-edges-skipped',
     code: `return box(10, 10, 10).fillet(20);`,
-    expectCode: 'feature.kernel-failed',
+    expectCode: 'feature.edge-feature.short-edges-skipped',
   },
   {
     name: 'shell missing thickness via proxy → still carries hint',

@@ -33,6 +33,22 @@ function RootLayout() {
   const headless = isHeadlessRender();
   return (
     <>
+      {headless && (
+        // Belt-and-suspenders: even though we don't render TanStackRouterDevtools
+        // when headless, vite HMR or React Strict Mode can briefly mount it.
+        // The badge is injected into <body> via a portal, so a global rule on
+        // any element WITH the data attribute kills it.
+        <style>{`
+          [data-testid="tsr-devtools"],
+          .TanStackRouterDevtools,
+          [data-tanstack-router-devtools] {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          /* Vite error overlay too — never let it bleed into a render. */
+          vite-error-overlay { display: none !important; }
+        `}</style>
+      )}
       <Outlet />
       {!headless && (
         <Suspense fallback={null}>

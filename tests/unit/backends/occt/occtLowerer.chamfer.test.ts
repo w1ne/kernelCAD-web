@@ -39,7 +39,9 @@ describe('OcctLowerer chamfer', () => {
     expect(result.shape.volume()).toBeLessThan(8000);
   });
 
-  it('emits feature.chamfer.failed when OCCT throws', async () => {
+  it('emits short-edges-skipped when distance exceeds half the edge length', async () => {
+    // d=100 on a 10mm box: M2's pre-filter (2*d = 200mm) catches every edge
+    // before OCCT does, surfacing a more specific code than kernel-failed.
     const base = OcctBackend.box(10, 10, 10);
     const r: FeatureRecord = {
       id: 'chamfer_3', kind: 'chamfer',
@@ -50,6 +52,6 @@ describe('OcctLowerer chamfer', () => {
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
     expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.kernel-failed');
+    expect(errs[0].code).toBe('feature.edge-feature.short-edges-skipped');
   });
 });

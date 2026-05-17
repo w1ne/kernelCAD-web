@@ -264,20 +264,54 @@ export function DemoPlayerPage(): React.JSX.Element {
           if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
         });
         if (bbox.isEmpty()) return;
-        const dx = bbox.max.x - bbox.min.x;
-        const dy = bbox.max.y - bbox.min.y;
-        const dz = bbox.max.z - bbox.min.z;
-        const maxExtent = Math.max(dx, dy, dz);
-        const fov = ctx.camera.fov * (Math.PI / 180);
-        const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
         // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
         // az increases CCW around +Z; el lifts the camera above the horizon.
         const az = (azDeg * Math.PI) / 180;
         const el = (elDeg * Math.PI) / 180;
         const cosEl = Math.cos(el);
-        const x = distance * Math.sin(az) * cosEl;
-        const y = -distance * Math.cos(az) * cosEl;
-        const z = distance * Math.sin(el);
+        // Camera direction (unit vector from origin TO camera).
+        const camDir = new THREE.Vector3(
+          Math.sin(az) * cosEl,
+          -Math.cos(az) * cosEl,
+          Math.sin(el),
+        );
+        // Build the screen-aligned basis at origin (camera target).
+        const worldUp = new THREE.Vector3(0, 0, 1);
+        const right = new THREE.Vector3().crossVectors(worldUp, camDir).normalize();
+        const up = new THREE.Vector3().crossVectors(camDir, right).normalize();
+        // Project all 8 bbox corners onto the screen-plane axes. The max
+        // |right-component| / aspect and |up-component| set the required
+        // horizontal/vertical half-extents that must fit the FOV.
+        const corners: [number, number, number][] = [
+          [bbox.min.x, bbox.min.y, bbox.min.z],
+          [bbox.max.x, bbox.min.y, bbox.min.z],
+          [bbox.min.x, bbox.max.y, bbox.min.z],
+          [bbox.max.x, bbox.max.y, bbox.min.z],
+          [bbox.min.x, bbox.min.y, bbox.max.z],
+          [bbox.max.x, bbox.min.y, bbox.max.z],
+          [bbox.min.x, bbox.max.y, bbox.max.z],
+          [bbox.max.x, bbox.max.y, bbox.max.z],
+        ];
+        const aspect = ctx.camera.aspect;
+        let halfHoriz = 0;
+        let halfVert = 0;
+        for (const c of corners) {
+          const v = new THREE.Vector3(c[0], c[1], c[2]);
+          const h = Math.abs(v.dot(right));
+          const u = Math.abs(v.dot(up));
+          if (h > halfHoriz) halfHoriz = h;
+          if (u > halfVert) halfVert = u;
+        }
+        const fovY = ctx.camera.fov * (Math.PI / 180);
+        const tanHalfFovY = Math.tan(fovY / 2);
+        const tanHalfFovX = tanHalfFovY * aspect;
+        // distance needed so projected radius fits both axes (with 5% margin).
+        const distFromVert = halfVert / tanHalfFovY;
+        const distFromHoriz = halfHoriz / tanHalfFovX;
+        const distance = Math.max(distFromVert, distFromHoriz) * 1.05;
+        const x = distance * camDir.x;
+        const y = distance * camDir.y;
+        const z = distance * camDir.z;
         ctx.camera.up.set(0, 0, 1);
         ctx.camera.position.set(x, y, z);
         ctx.camera.lookAt(0, 0, 0);
@@ -667,6 +701,12 @@ export function DemoPlayerPage(): React.JSX.Element {
     };
   }, [isDemoApiReady]);
 
+  // Headless renders (kernelcad render, scoreReference) navigate with
+  // ?headless=1. Suppress the TerminalPane so the ViewerPane (and its model)
+  // fills the entire viewport. Without this, TerminalPane's 640px sidebar eats
+  // half the canvas at 1024×1024 capture → silhouette IoU bimodality.
+  const isHeadless = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('headless') === '1';
   return (
     <div
       data-testid="demo-player"
@@ -678,15 +718,17 @@ export function DemoPlayerPage(): React.JSX.Element {
         overflow: 'hidden',
       }}
     >
-      <TerminalPane
-        lines={terminalLines}
-        width={TERMINAL_W}
-        height={TERMINAL_H}
-        getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
-      />
+      {!isHeadless && (
+        <TerminalPane
+          lines={terminalLines}
+          width={TERMINAL_W}
+          height={TERMINAL_H}
+          getElapsedMs={() => Math.max(0, elapsedMsRef.current - terminalOriginRef.current)}
+        />
+      )}
       <ViewerPane
         version={version}
-        width={VIEWER_W}
+        width={isHeadless ? VIEWER_W + TERMINAL_W : VIEWER_W}
         height={VIEWER_H}
         onSceneReady={handleSceneReady}
       />

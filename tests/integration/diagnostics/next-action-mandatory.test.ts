@@ -19,7 +19,9 @@ beforeAll(async () => { await initOcct(); });
 interface Fixture { name: string; code: string; expectCode?: string; }
 
 const FIXTURES: Fixture[] = [
-  { name: 'fillet too large → kernel-failed', code: `return box(10,10,10).fillet(20);`, expectCode: 'feature.kernel-failed' },
+  // M2 pre-filter on 10mm edges intercepts r>=5 fillets before OCCT, so
+  // the surfaced code is short-edges-skipped, not the generic kernel-failed.
+  { name: 'fillet too large → short-edges-skipped', code: `return box(10,10,10).fillet(20);`, expectCode: 'feature.edge-feature.short-edges-skipped' },
   { name: 'sphere with faceLabels → face-ref.not-applicable', code: `return sphere(5, { faceLabels: { lid: 'top' } } as any);`, expectCode: 'feature.face-ref.not-applicable' },
   { name: 'unknown label → label.unknown-name', code: `const s = path().moveTo(0,0).lineTo(10,0).lineTo(10,10).lineTo(0,10).close().extrude(5); return s.fillet(1, { face: 'nope' } as any);`, expectCode: 'feature.label.unknown-name' },
   // Deviation from plan: original fixture `box(10,10,10);` (no return) produces
@@ -65,9 +67,9 @@ const EXPORT_FIXTURES: ExportFixture[] = [
     expectCode: 'export.feature-not-found',
   },
   {
-    name: 'export_stl upstream kernel failure → feature.kernel-failed',
+    name: 'export_stl upstream kernel failure → short-edges-skipped',
     code: `return box(10,10,10).fillet(20);`,
-    expectCode: 'feature.kernel-failed',
+    expectCode: 'feature.edge-feature.short-edges-skipped',
   },
 ];
 
