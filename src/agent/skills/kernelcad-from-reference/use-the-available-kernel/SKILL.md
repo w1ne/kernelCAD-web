@@ -60,22 +60,31 @@ Do NOT uniform-extrude a single silhouette. The resulting slab is what the
 scorer detects as a "fake" body — the silhouette gate passes, but the SSIM gate
 fails because the depth profile is wrong.
 
-## Rule 4 — Organic curves → NURBS curve or chained arcs
+## Rule 4 — Organic curves → smoothSpline
 
-For silhouettes with smooth, non-arc transitions (Wayfarer brows, handle curves),
-use NURBS curve authoring when available in a follow-up slice. Until then,
-chain at most 3 `tangentArc` / `sagittaArc` segments and keep tangent
-reachability conservative:
+For silhouettes with smooth, non-arc transitions (Wayfarer brows, ergonomic
+grips, sneaker silhouettes), USE the C1-smooth spline:
 
 ```ts
 const brow = path()
   .moveTo(-28, 0)
-  .sagittaArc(-14, 5, 3)
-  .sagittaArc(0, 6, 2)
-  .sagittaArc(14, 5, 3)
-  .sagittaArc(28, 0, 3)
+  .smoothSpline(-14, 5)
+  .smoothSpline(0, 6)
+  .smoothSpline(14, 5)
+  .smoothSpline(28, 0)
   .close();
 ```
+
+Each `smoothSpline(x, y)` inherits its start tangent from the previous segment,
+so chained calls interpolate smoothly through many points without C0 kinks.
+
+**Why this matters:** chained `sagittaArc` segments hit OCCT BlendChain solver
+cliffs at sub-arc joins — the tangent discontinuity at each join becomes a
+sub-mm coplanar edge that breaks downstream fillet/chamfer. Round-6 empirical:
+Agent D found the operating window for chained sagittaArcs is sagitta=0..2.9
+mm, with a hard cliff at 2.95; Agent R15 had to fall back to ellipse-shaped
+lens openings because their multi-arc brow kept failing. smoothSpline does
+not have this failure mode.
 
 Do NOT fake a curved brow with a single long arc — the chord bulge is visible
 in the top view. Do NOT use lineTo for organic curves — the SSIM score tanks.
@@ -130,6 +139,63 @@ referenceImage('./reference.jpg', {
 
 The eval scorer automatically excludes reference images during scoring
 (`--hide-reference-images` flag). They do not pollute the score.
+
+## Rule 8 — Trust the chamfer/fillet auto-skip; don't pre-disable
+
+When you call `.chamfer(d)` or `.fillet(r)` on a body with post-cut topology
+(e.g., front-face perimeter after lens openings were subtracted), the kernel
+will auto-skip any target edges shorter than 2 × d (or 2 × r) and emit a
+warning naming the skipped count. The chamfer **succeeds** on the long edges.
+
+Pre-empirical pattern (BAD — leaves the acetate bevel off entirely):
+
+```ts
+// "OCCT will reject this, skip and document" — DO NOT do this
+const bodyFinished = bodyWithBores;  // chamfer skipped
+```
+
+Post-fix pattern (GOOD — accept partial chamfer, agent gets a clear warn):
+
+```ts
+const bodyFinished = bodyWithBores.chamfer(0.6);
+// You'll get a warning like:
+//   WARN [feature.edge-feature.short-edges-skipped] chamfer_3:
+//   chamfer skipped 8 of 24 target edges shorter than 2 × distance = 1.20 mm;
+//   chamfering the remaining 16.
+// The 16 long edges are correctly chamfered. The 8 short ones (lens-corner
+// transitions) were never going to chamfer at d=0.6 anyway.
+```
+
+If you want only the LONG edges chamfered with no warning, scope the edge
+query: `chamfer(0.6, { face: 'top', minEdgeLength: 1.5 })` (when query
+extensions ship). Until then, accept the auto-skip; the warning is
+informational, not an error.
+
+## Rule 9 — Score against 3D geometry, not photos (when available)
+
+Round-6 agent eval revealed the 2D-pixel scorer (`scoreRenderVsReference`)
+is gameable. R5 inflated body depth 10→75mm and scored #1 vs photo (composite
+0.580); R16 left lens cuts disconnected and scored higher than the fixed
+version; R18 added a floating bbox-extending box outside the body and gained
++0.5 silhouette IoU. All three "hacks" optimize against render artifacts,
+not against geometry.
+
+If the eval task ships a reference STL (check `eval/tasks/<task>/reference.stl`),
+USE the geometric scorer:
+
+```bash
+kernelcad export stl my-build.kcad.ts -o build.stl
+npx tsx scripts/scoreMeshVsMesh.ts \
+  --generated build.stl \
+  --reference eval/tasks/<task>/reference.stl --json
+```
+
+Output: chamfer distance (mm), Hausdorff 99p, bbox IoU. These are pure
+geometric metrics; there is no render artifact to exploit. Optimize against
+THIS, not the photo composite, when you have an STL to compare against.
+
+The 2D-photo scorer remains useful as a sanity check (does it look like the
+photo?) but should not be the primary optimization target.
 
 ## When NOT to apply a rule
 
