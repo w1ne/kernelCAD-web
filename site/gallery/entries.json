@@ -1,6 +1,31 @@
 {
   "entries": [
     {
+      "slug": "pink-pocket-watch",
+      "title": "Pop-Art Pocket Watch (Pink × Yellow)",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.7.0",
+      "prompt": "A pop-art octagonal pocket watch with two concentric octagons: a pink outer frame ~50 mm corner-to-corner and a yellow inner case ~36 mm flat-to-flat, the case studded with eight dark hex screws at each of its octagon vertices. The teal dial inside carries a fine waffle tapisserie texture, four cardinal numerals at 12, 6 and 9, eight yellow stick hour markers, two yellow hands, and a pink-ringed seconds subdial at 3 o'clock under a small domed NURBS sapphire crystal. A small yellow crown rises from the top of the case into the mouth of a pink lanyard loop, with a short pink ribbon strap above.",
+      "source": "curated",
+      "video": "../../docs/demos/v0.7/pocket-watch/demo.mp4",
+      "codeLocal": "../../examples/portfolio/pocket-watch/build.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/portfolio/pocket-watch/build.kcad.ts",
+      "tags": [
+        "pop-art",
+        "pocket-watch",
+        "octagonal",
+        "nurbs-dome",
+        "multi-color",
+        "assembly"
+      ],
+      "featured": true,
+      "createdAt": "2026-05-15",
+      "appUrl": null
+    },
+    {
       "slug": "meta-glasses",
       "title": "Ray-Ban Meta \u2014 Wayfarer (front face)",
       "author": {
