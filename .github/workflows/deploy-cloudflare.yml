@@ -1,8 +1,13 @@
 name: Deploy to Cloudflare Pages
 
-# Auto-deploys two Cloudflare Pages projects on every push:
-#   - kernelcad-marketing  ← site/ (kernelcad.com)
-#   - kernelcad-app        ← dist/ (app.kernelcad.com, Vite build with base=/)
+# Auto-deploys two Cloudflare Pages projects on every push.
+#
+# Both projects serve the Studio Vite app (dist/) so the prompt-funnel
+# landing route (/) renders at kernelcad.com AND app.kernelcad.com. The
+# marketing project bundles site/functions/ (CF Pages Functions for the
+# /api/subscribe D1 endpoint) and site/public/ overlays (brand assets,
+# rendered hero demo.mp4) on top of dist/. kernelcad.com is bound to
+# kernelcad-marketing; app.kernelcad.com is bound to kernelcad-app.
 
 on:
   push:
@@ -44,20 +49,34 @@ jobs:
       - name: Install Playwright Chromium (for brand asset rendering)
         run: npx playwright install --with-deps chromium
 
+      - name: Build Vite app (Studio funnel — kernelcad.com landing)
+        env:
+          VITE_BASE_PATH: /
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: npm run build
+
       - name: Build demo + curated gallery + brand assets
         run: |
           npx tsx site/scripts/build-demo.ts
           npx tsx site/scripts/build-gallery.ts
-          bash site/scripts/link-public.sh
           node site/scripts/render-brand.mjs
+
+      - name: Overlay site/ assets + functions on dist/
+        run: |
+          # CF Pages Functions for /api/subscribe (D1-backed).
+          cp -r site/functions dist/functions
+          # site/public/ has favicon.svg, og-image.png, demo.mp4, brand/,
+          # gallery JSON — overlay onto dist/ so kernelcad.com serves them.
+          cp -r site/public/. dist/
 
       - name: Deploy to Cloudflare Pages (kernelcad-marketing)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: site
-          command: pages deploy . --project-name=kernelcad-marketing --branch=main --commit-dirty=true
+          command: pages deploy dist --project-name=kernelcad-marketing --branch=main --commit-dirty=true
 
   app:
     name: Deploy visual debugger app
@@ -76,6 +95,9 @@ jobs:
       - name: Build Vite app (root-rooted base path for app.kernelcad.com)
         env:
           VITE_BASE_PATH: /
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
       - name: Deploy to Cloudflare Pages (kernelcad-app)
