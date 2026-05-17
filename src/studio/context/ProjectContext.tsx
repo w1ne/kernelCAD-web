@@ -17,14 +17,35 @@ interface ProjectContextType {
 // eslint-disable-next-line react-refresh/only-export-components
 export const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
-export function ProjectProvider({ children }: { children: React.ReactNode }) {
+const EPHEMERAL_ID = '__funnel_ephemeral__';
+
+export function ProjectProvider({ children, initialCode, projectName }: {
+    children: React.ReactNode;
+    initialCode?: string;
+    projectName?: string;
+}) {
     const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
     const [projects, setProjects] = useState<ProjectMetadata[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [projectVersion, setProjectVersion] = useState(0);
+    const [ephemeralProject, setEphemeralProject] = useState<KernelCADProject | null>(null);
 
     // Initial load and migration
     useEffect(() => {
+        if (initialCode !== undefined) {
+            // Funnel route: do NOT hydrate from localStorage. Build an in-memory
+            // project so the editor + header still work, but never persist.
+            const proj = projectService.createProject(initialCode, {
+                viewMode: 'code',
+                viewMode3D: 'shadedWithEdges',
+                sidePanelVisible: true,
+                showSketches: true,
+            }, projectName ?? 'Generated');
+            setEphemeralProject(proj);
+            setActiveProjectId(EPHEMERAL_ID);
+            return;
+        }
+
         const migratedId = projectService.migrateLegacyIfNeeded();
         const list = projectService.listProjects();
         setProjects(list);
@@ -50,11 +71,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
             setProjects(projectService.listProjects());
             setActiveProjectId(id);
         }
-    }, []);
+    }, [initialCode, projectName]);
 
     // Derive active project data
     const activeProject = useMemo(() => {
         if (!activeProjectId) return null;
+        if (activeProjectId === EPHEMERAL_ID) return ephemeralProject;
         // projectVersion is used to force re-memoization on save
         const proj = projectService.getProject(activeProjectId);
         if (activeProjectId) {
@@ -62,7 +84,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         }
         return proj;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeProjectId, projectVersion]);
+    }, [activeProjectId, projectVersion, ephemeralProject]);
 
     const openProject = useCallback((id: string) => {
         setActiveProjectId(id);
@@ -98,6 +120,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     const renameActiveProject = useCallback((newName: string) => {
         if (!activeProjectId || !activeProject) return;
+        if (activeProjectId === EPHEMERAL_ID) {
+            setEphemeralProject(p => (p ? { ...p, name: newName } : p));
+            return;
+        }
         const updated = { ...activeProject, name: newName };
         projectService.saveProject(activeProjectId, updated);
         setProjects(projectService.listProjects());
@@ -106,6 +132,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     const saveActiveProject = useCallback((updates: Partial<KernelCADProject>) => {
         if (!activeProjectId || !activeProject) return;
+        if (activeProjectId === EPHEMERAL_ID) {
+            // Funnel route: keep edits in memory; never write to localStorage.
+            setEphemeralProject(p => (p ? { ...p, ...updates } : p));
+            return;
+        }
         setIsSaving(true);
         const updated = { ...activeProject, ...updates };
         projectService.saveProject(activeProjectId, updated);

@@ -265,7 +265,7 @@ import { ProjectProvider } from './ProjectContext';
  */
 export function WorkbenchProvider({ children, initialCode }: { children: ReactNode; initialCode?: string }) {
     return (
-        <ProjectProvider>
+        <ProjectProvider initialCode={initialCode}>
             <CodeProvider initialCode={initialCode}>
                 <WorkbenchStateProvider>
                     <UIProvider>
