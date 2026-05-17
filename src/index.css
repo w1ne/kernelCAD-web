@@ -39,8 +39,11 @@
 body {
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
     background-color: #000;
 }
+
+/* Studio workbench routes (StudioShell, DemoPlayerPage, AnonGenPage,
+ * ProjectPage) provide their own h-screen overflow-hidden container, so the
+ * body no longer needs the global viewport lock. Removing it lets the
+ * landing route (/) scroll past the fold so users can reach the "Built with
+ * kernelCAD" gallery and the "Get notified" email signup below the prompt. */
