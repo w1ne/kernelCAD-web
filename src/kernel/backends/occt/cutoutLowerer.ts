@@ -117,6 +117,7 @@ function drawingFromCommands(commands: readonly SketchCommand[]): replicad.Drawi
       const sagitta = (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
       pen = pen.sagittaArcTo([cx, cy], sagitta);
     }
+    else if (c.kind === 'smoothSpline') pen = pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
   }
   return pen.close();
 }

@@ -356,6 +356,8 @@ export class OcctBackend implements ShapeBackend {
         const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
         const signedSagitta = Math.sign(cr) * sagittaMagnitude;
         pen = pen.sagittaArcTo([cx, cy], signedSagitta) as typeof pen;
+      } else if (c.kind === 'smoothSpline') {
+        pen = pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
       }
       // Update position after every non-close command (all have explicit x/y endpoint)
       if ('x' in c && 'y' in c) {

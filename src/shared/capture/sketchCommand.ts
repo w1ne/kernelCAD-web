@@ -21,4 +21,10 @@ export type SketchCommand =
   | { kind: 'sagittaArc'; x: Param; y: Param; sagitta: Param }
   | { kind: 'bulgeArc'; x: Param; y: Param; bulge: Param }
   | { kind: 'radiusArc'; x: Param; y: Param; radius: Param }
+  // C1-smooth spline segment from current pen position to (x, y). The
+  // tangent at the start is inherited from the prior segment (so the join
+  // is smooth), and the end tangent is chosen automatically by replicad's
+  // smoothSplineTo. Useful for organic outlines (Wayfarer brow, ergonomic
+  // grips) where chained arcs hit OCCT BlendChain solver cliffs.
+  | { kind: 'smoothSpline'; x: Param; y: Param }
   | { kind: 'close' };

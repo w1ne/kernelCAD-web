@@ -131,6 +131,7 @@ export const PATH_BUILDER_METHODS: ApiEntry[] = [
   { name: 'sagittaArc', signature: '(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder', description: 'Arc by chord + perpendicular bulge height. Sign chooses bulge side. All scalars accept ParamRef for parametric authoring.' },
   { name: 'bulgeArc', signature: '(x: Editable<number>, y: Editable<number>, bulge: Editable<number>) => PathBuilder', description: 'Arc by chord + DXF bulge factor (tan(angle/4)). All scalars accept ParamRef for parametric authoring.' },
   { name: 'radiusArc', signature: '(x: Editable<number>, y: Editable<number>, radius: Editable<number>) => PathBuilder', description: 'Arc by chord + explicit radius. Always minor arc; sign chooses bulge side. All scalars accept ParamRef for parametric authoring.' },
+  { name: 'smoothSpline', signature: '(x: Editable<number>, y: Editable<number>) => PathBuilder', description: 'C1-smooth spline segment from current position to (x, y); inherits start tangent from prior segment. Chain multiple calls for organic outlines (eyewear brow, ergonomic grips, sneaker silhouettes). Coords accept ParamRef for parametric authoring.' },
   { name: 'label', signature: '(name: string) => PathBuilder', description: 'Tag the previous segment so it can be referenced later in fillet/chamfer/shell as `{face: name}`.' },
   { name: 'close', signature: '() => Sketch', description: 'Close the path; returns a Sketch that can be extruded/revolved/swept.' },
 ];
