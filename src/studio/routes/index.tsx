@@ -102,7 +102,7 @@ function LandingPage() {
             <PromptBox onSubmit={handleSubmit} disabled={isBusy} />
             {!session && !sessionLoading && (
               <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                Free with sign-in · daily quota · upgrade for more.
+                5 free generations with sign-in · upgrade after to keep generating.
               </p>
             )}
           </div>
@@ -139,7 +139,7 @@ function LandingPage() {
         open={signInOpen}
         onClose={() => setSignInOpen(false)}
         title="Sign in to generate"
-        description="Generation runs on your free daily quota. Pick up where you left off — we'll auto-submit your prompt after sign-in."
+        description="New accounts get 5 free generations. Your prompt picks up right where you left off after sign-in."
       />
     </main>
   );

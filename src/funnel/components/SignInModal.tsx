@@ -25,7 +25,7 @@ export function SignInModal({
   open,
   onClose,
   title = 'Sign in to generate',
-  description = 'Generation is gated on a free account. We resume your prompt automatically after sign-in.',
+  description = '5 free generations to start — your prompt resumes automatically after sign-in.',
   redirectTo,
 }: SignInModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -91,7 +91,7 @@ export function SignInModal({
         </div>
 
         <p className="mt-5 text-xs text-ink-faint font-mono tracking-wide">
-          Free tier · daily quota · upgrade for more
+          5 free generations · upgrade after to keep generating
         </p>
       </div>
     </div>
