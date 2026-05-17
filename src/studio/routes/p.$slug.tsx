@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import App from '../App';
-import { ExportButtons } from '../../funnel/components/ExportButtons';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { useSession } from '../../funnel/hooks/useSession';
 import { fetchProjectBySlug, type ProjectRow } from '../../funnel/lib/apiClient';
@@ -35,27 +34,31 @@ function ProjectPage() {
     );
   }
 
-  // Full Studio shell with the saved project code preloaded. Floating
-  // overlay carries project metadata + export buttons. The shell's own
-  // Header handles view modes / local project state.
-  return (
-    <div className="relative w-screen h-screen overflow-hidden">
-      <App initialCode={project.current_code} />
-
-      <div className="pointer-events-none absolute top-3 right-3 z-50 flex items-start gap-3">
-        <div className="pointer-events-auto rounded-lg border border-rule bg-vellum/95 backdrop-blur px-3 py-2 shadow-sm max-w-md">
-          <p className="font-mono text-[10px] text-ink-faint tracking-widest uppercase">
-            Project · {project.privacy}
-          </p>
-          <p className="font-serif text-sm font-medium text-ink mt-0.5 line-clamp-1">
-            {project.title}
-          </p>
-        </div>
-        <div className="pointer-events-auto flex items-center gap-2">
-          <ExportButtons slug={project.slug} signedIn={!!session} />
-          {!session && <SignInButton>Sign in</SignInButton>}
-        </div>
-      </div>
+  const headerLeft = (
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-xs text-gray-200 font-medium truncate max-w-[280px]" title={project.title}>
+        {project.title}
+      </span>
+      <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
+        {project.privacy}
+      </span>
     </div>
+  );
+
+  const headerRight = !session ? (
+    <SignInButton
+      redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+    >
+      Sign in
+    </SignInButton>
+  ) : null;
+
+  return (
+    <App
+      initialCode={project.current_code}
+      headerLeft={headerLeft}
+      headerRight={headerRight ?? undefined}
+    />
   );
 }
