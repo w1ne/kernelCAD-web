@@ -138,6 +138,13 @@ export interface ValidateAssemblyInput {
 export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult {
   const parts = collectParts(input.records);
   const joints = collectJoints(input.records);
+  // v0.6 mates flow into the record stream via solvedAssembly metadata
+  // (Assembly.solvedModel records its mate list there for the lowerer). Walk
+  // those so the floating-part gate sees mate-only assemblies as connected.
+  // Without this, Exp-B/C/D agents repeatedly saw spurious "floating"
+  // warnings on otherwise-correct mate-only graphs (ball-joint, gear-pair,
+  // robotic-arm, screw-in-block — surfaced 4× in the agent eval batches).
+  const mateEdges = collectMateEdges(input.records);
   const diagnostics: ValidatorDiagnostic[] = [];
 
   // Build an undirected adjacency map: part name -> set of neighbour names.
@@ -148,6 +155,11 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
     if (!a || !b) continue;
     adj.get(a)?.add(b);
     adj.get(b)?.add(a);
+  }
+  for (const [a, b] of mateEdges) {
+    if (!adj.has(a) || !adj.has(b)) continue;
+    adj.get(a)!.add(b);
+    adj.get(b)!.add(a);
   }
 
   // Check 1 — floating parts (zero joints).
@@ -229,6 +241,29 @@ function collectParts(records: readonly FeatureRecord[]): PartInfo[] {
     const meta = r.metadata as { partName?: string } | undefined;
     const partName = meta?.partName;
     if (typeof partName === 'string') out.push({ partName, recordId: r.id });
+  }
+  return out;
+}
+
+/**
+ * Walk `solvedAssembly` records and pull v0.6 mate edges into a flat list
+ * of `[aPartName, bPartName]` pairs. Mate refs are `'partName.connectorName'`
+ * strings; we slice off the connector and keep the part. Returns [] when no
+ * solvedAssembly record carries mates (v0.5-only assemblies or pre-solve
+ * record streams).
+ */
+function collectMateEdges(records: readonly FeatureRecord[]): readonly (readonly [string, string])[] {
+  const out: [string, string][] = [];
+  for (const r of records) {
+    if (r.kind !== 'solvedAssembly') continue;
+    const meta = r.metadata as { mates?: ReadonlyArray<{ a: string; b: string }> } | undefined;
+    const mates = meta?.mates;
+    if (!Array.isArray(mates)) continue;
+    for (const m of mates) {
+      const a = typeof m.a === 'string' ? m.a.split('.')[0] : undefined;
+      const b = typeof m.b === 'string' ? m.b.split('.')[0] : undefined;
+      if (a && b) out.push([a, b]);
+    }
   }
   return out;
 }
