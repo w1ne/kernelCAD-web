@@ -2177,6 +2177,41 @@ export class OcctLowerer implements FeatureLowerer {
           // FeatureId appears in `connectorsByPartId`.
           for (const [partId, mT] of mateWorldT) {
             if (partId in connectorsByPartId) {
+              // Exp-B four-bolt-flange surfaced this: when a part has an
+              // authored `at:` AND is positioned by mate FK, the `at:` is
+              // silently dropped — the agent only learns about it 2 reasoning
+              // steps later via a Gate 2 axis-mismatch. Emit an info-level
+              // diagnostic so the conflict surfaces at the override point.
+              const partRec = records.find((rec) => rec.id === partId);
+              // `resolvePartPlacement` defaults `at` to [0,0,0] even when the
+              // user passed nothing — so we can't just check for presence.
+              // Only fire the diagnostic when `at` is a non-trivial vec3
+              // (any coord magnitude > 1e-6 mm) AND was authored by the user
+              // (the placedBy/connect path leaves `at` synthesized from the
+              // connector pair — that's not a conflict, it's how connect
+              // was designed; skip those).
+              const partMeta = partRec?.metadata as
+                | { at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+                    placedBy?: unknown;
+                    partName?: string }
+                | undefined;
+              const partAt = partMeta?.at;
+              const ax = partAt?.x?.evaluated ?? 0;
+              const ay = partAt?.y?.evaluated ?? 0;
+              const az = partAt?.z?.evaluated ?? 0;
+              const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
+              const placedByConnect = partMeta?.placedBy !== undefined;
+              if (partRec && atIsNonTrivial && !placedByConnect) {
+                const partName = partMeta?.partName ?? partId;
+                diagnostics.push({
+                  target: this.target,
+                  code: 'assembly.placement-ignored-by-mate-fk',
+                  featureId: partRec.id,
+                  severity: 'info',
+                  message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
+                  hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
+                });
+              }
               worldT.set(partId, mT);
             }
           }

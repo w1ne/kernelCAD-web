@@ -67,4 +67,5 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.material.invalid-base-color':      { kind: 'fix-arg', field: 'baseColor' },
   'feature.material.value-clamped':           { kind: 'fix-arg', field: 'see-message' },
   'feature.edge-feature.short-edges-skipped': { kind: 'fix-arg', field: 'radius-or-distance' },
+  'assembly.placement-ignored-by-mate-fk':    { kind: 'fix-arg', field: 'at' },
 };

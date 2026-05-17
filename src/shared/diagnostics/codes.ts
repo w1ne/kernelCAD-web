@@ -71,7 +71,12 @@ export type DiagnosticCode =
   | 'feature.material.invalid-base-color'
   | 'feature.material.value-clamped'
   // Edge-feature partial success (1) — M2
-  | 'feature.edge-feature.short-edges-skipped';
+  | 'feature.edge-feature.short-edges-skipped'
+  // Assembly UX (1) — Exp-B four-bolt-flange surfaced: a part's `at:`
+  // placement is silently dropped when the part is reached by mate FK.
+  // Info-severity so the agent learns about the override before the Gate 2
+  // axis-mismatch error path (two reasoning steps removed from root cause).
+  | 'assembly.placement-ignored-by-mate-fk';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -118,6 +123,7 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.material.invalid-base-color',
   'feature.material.value-clamped',
   'feature.edge-feature.short-edges-skipped',
+  'assembly.placement-ignored-by-mate-fk',
 ] as const;
 
 export interface HintTemplate {
@@ -222,6 +228,8 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'Numeric PBR fields are clamped to [0, 1] (ior to [1.0, 2.5]).',
     'feature.edge-feature.short-edges-skipped':
       'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
+    'assembly.placement-ignored-by-mate-fk':
+      "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
