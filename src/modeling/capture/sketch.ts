@@ -281,6 +281,14 @@ export class Sketch {
           const [x, y] = reflectXY(cmd.x, cmd.y);
           return { ...cmd, x, y, radius: negateScalar(cmd.radius) };
         }
+        case 'smoothSpline': {
+          // smoothSpline inherits its start tangent from the prior segment
+          // (which is also reflected here), so we only flip the endpoint.
+          // The end tangent is auto-chosen by replicad; reflection of the
+          // surrounding context picks the correct mirrored tangent.
+          const [x, y] = reflectXY(cmd.x, cmd.y);
+          return { ...cmd, x, y };
+        }
         case 'close':
           return cmd;
         default: {
@@ -447,6 +455,28 @@ export class PathBuilder {
       y: toParam(y, 'mm'),
       radius: toParam(radius, 'mm'),
     });
+    return this;
+  }
+
+  /**
+   * C1-smooth spline segment from current pen position to (x, y). Replicad's
+   * `smoothSplineTo` underneath. The start tangent is inherited from the
+   * prior segment (smooth join); the end tangent is auto-chosen.
+   *
+   * Pick this for organic outlines (eyewear brow, ergonomic grips, sneaker
+   * silhouettes) where chained sagittaArcs hit OCCT BlendChain solver
+   * cliffs at sub-arc joins. Chain several `smoothSpline` calls to
+   * interpolate through many points; each segment joins the previous one
+   * smoothly.
+   *
+   * Throws at lowering time if called as the first command — no prior
+   * tangent to inherit.
+   *
+   * @param x endpoint X
+   * @param y endpoint Y
+   */
+  smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder {
+    this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
     return this;
   }
 

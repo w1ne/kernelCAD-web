@@ -267,6 +267,51 @@ describe('path() builder + Sketch capture', () => {
     });
   });
 
+  it('captures smoothSpline with endpoint', async () => {
+    const code = `return path().moveTo(0, 0).lineTo(10, 0).smoothSpline(20, 8).smoothSpline(15, 20).lineTo(0, 20).close().extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: unknown[] }).commands;
+    expect(commands).toContainEqual({
+      kind: 'smoothSpline',
+      x: { expression: '20', unit: 'mm', evaluated: 20 },
+      y: { expression: '8', unit: 'mm', evaluated: 8 },
+    });
+    expect(commands).toContainEqual({
+      kind: 'smoothSpline',
+      x: { expression: '15', unit: 'mm', evaluated: 15 },
+      y: { expression: '20', unit: 'mm', evaluated: 20 },
+    });
+  });
+
+  it('smoothSpline lowers to a valid solid through OCCT', async () => {
+    // Curved bracket profile: line + 3 spline segments + line + close.
+    // Verifies the kind: 'smoothSpline' case in occtBackend.fromSketchCommands.
+    const code = `return path().moveTo(0, 0).lineTo(20, 0).smoothSpline(40, 10).smoothSpline(50, 30).smoothSpline(20, 35).lineTo(0, 35).close().extrude(5);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    // Both the sketch and the extrude land in the record set.
+    expect(result.records.some(r => r.kind === 'sketch')).toBe(true);
+    expect(result.records.some(r => r.kind === 'extrude')).toBe(true);
+    // Sketch metadata captured all 3 smoothSpline commands.
+    const sketchRec = result.records.find(r => r.kind === 'sketch')!;
+    const commands = (sketchRec.metadata as { commands: Array<{ kind: string }> }).commands;
+    expect(commands.filter(c => c.kind === 'smoothSpline')).toHaveLength(3);
+  });
+
+  it('Sketch.reflect across X preserves smoothSpline kind and flips endpoint Y', async () => {
+    // Sketch.reflect('x') flips Y on every command. Verifies the smoothSpline
+    // case in sketch.ts:applyReflectInPlace.
+    const code = `const s = path().moveTo(0, 0).lineTo(10, 0).smoothSpline(20, 8).close(); const r = s.reflect('x'); return r.extrude(1);`;
+    const result = await runScript({ code, fileName: 'test.kcad.ts' });
+    const sketches = result.records.filter(r => r.kind === 'sketch');
+    expect(sketches.length).toBeGreaterThanOrEqual(2);
+    const reflected = sketches[sketches.length - 1];
+    const reflectedCommands = (reflected.metadata as { commands: Array<{ kind: string; y?: { evaluated: number } }> }).commands;
+    const spline = reflectedCommands.find(c => c.kind === 'smoothSpline');
+    expect(spline).toBeDefined();
+    expect(spline!.y!.evaluated).toBe(-8);  // Y flipped by reflect('x')
+  });
+
   it('emits feature.sketch.degenerate-arc when radiusArc has invalid radius', async () => {
     const { RecomputeEngine } = await import('../../../src/modeling/compute/recomputeEngine');
     const { OcctLowerer } = await import('../../../src/modeling/backends/occt/occtLowerer');
