@@ -1263,11 +1263,14 @@ export class OcctLowerer implements FeatureLowerer {
           if (len >= filletMinEdgeLength) longFilletEdges.push(e); else skippedFilletEdges++;
         }
         if (skippedFilletEdges > 0 && longFilletEdges.length === 0) {
+          // All target edges shorter than 2×radius — the fillet didn't run at
+          // all. Surface as `error` (not `warn`) so the chain walker reports
+          // the feature as failed; agent should retry with a smaller radius.
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.edge-feature.short-edges-skipped',
             featureId: r.id,
-            severity: 'warn',
+            severity: 'error',
             message: `fillet skipped: all ${skippedFilletEdges} target edges are shorter than 2 × radius = ${filletMinEdgeLength.toFixed(2)} mm`,
             hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
           });
@@ -1390,11 +1393,13 @@ export class OcctLowerer implements FeatureLowerer {
           if (len >= chamferMinEdgeLength) longChamferEdges.push(e); else skippedChamferEdges++;
         }
         if (skippedChamferEdges > 0 && longChamferEdges.length === 0) {
+          // All target edges shorter than 2×distance — chamfer didn't run.
+          // `error` so the chain walker flags the feature as failed.
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.edge-feature.short-edges-skipped',
             featureId: r.id,
-            severity: 'warn',
+            severity: 'error',
             message: `chamfer skipped: all ${skippedChamferEdges} target edges are shorter than 2 × distance = ${chamferMinEdgeLength.toFixed(2)} mm`,
             hint: 'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
           });
