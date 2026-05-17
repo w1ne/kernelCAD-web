@@ -133,8 +133,13 @@ async function main(): Promise<void> {
   const browser: Browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   const page: Page = await context.newPage();
+  // Heavy NURBS / referenceImage scenes (v0.8 eyewear-wayfarer-front) can
+  // block the WASM meshing thread for >30 s between frames. The default 30 s
+  // Playwright timeout aborts the capture mid-rotation. Bump the per-call
+  // ceiling on the page so screenshot + waitFor* all inherit headroom.
+  page.setDefaultTimeout(180000);
   await page.goto('http://127.0.0.1:5173/demo-player');
-  await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
+  await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 30000 });
   await page.evaluate((v) => window.__demoPlayer!.setVersion(v), args.module);
 
   console.log('demo-player ready');
