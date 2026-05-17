@@ -1,11 +1,11 @@
 {
   "taskId": "polished-brass-tube",
   "module": "v0.8",
-  "capturedAt": "2026-05-17T10:33:21.860Z",
+  "capturedAt": "2026-05-17T12:03:34.145Z",
   "durationMs": 17500,
   "truncated": false,
-  "gitSha": "80d01e6b203a44a326f335b46ee188535b3ae276",
+  "gitSha": "c2b1fc4c3569f2da2ca3c19cff67d33c4d73b85a",
   "heroArtifact": "polished-brass-tube",
   "catalogSource": "memorable-builds-policy/v0.8",
-  "overrideApprovedBy": "v0.8 NURBS Slice A — Shape.material({PBR}) headline tool: polished-brass-tube is the smallest scene that visibly proves the new PBR pipeline (metalness=1.0 + low roughness + clearcoat → moving specular highlight on rotate). v0.8 catalog slugs (stool/drone/skateboard-truck) require larger assembly work not yet shipped."
+  "overrideApprovedBy": "v0.8 NURBS Slice A — Shape.material({PBR}) headline tool: polished-brass-cuff is the smallest scene that visibly proves the new PBR pipeline (metalness=0.95 + roughness + clearcoat → moving specular highlight on rotate). v0.8 catalog slugs (stool/drone/skateboard-truck) require larger assembly work not yet shipped."
 }

@@ -138,7 +138,10 @@ async function main(): Promise<void> {
   // Playwright timeout aborts the capture mid-rotation. Bump the per-call
   // ceiling on the page so screenshot + waitFor* all inherit headroom.
   page.setDefaultTimeout(180000);
-  await page.goto('http://127.0.0.1:5173/demo-player');
+  // ?headless=1 suppresses the TanStack Router devtools badge that __root.tsx
+  // mounts in DEV builds. captureDemo runs against the Vite dev server, so
+  // without this flag the devtools panel bleeds into every captured frame.
+  await page.goto('http://127.0.0.1:5173/demo-player?headless=1');
   await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 30000 });
   await page.evaluate((v) => window.__demoPlayer!.setVersion(v), args.module);
 
