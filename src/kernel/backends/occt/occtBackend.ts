@@ -625,7 +625,8 @@ export class OcctBackend implements ShapeBackend {
         // explicitly via the SketchCommand coordinates.
         lifted.push(buildNurbsSketchOnPlane(s._commands, p.plane));
       } else {
-        lifted.push(s._drawing!.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof s._drawing.sketchOnPlane>[1]));
+        const drawing = s._drawing!;
+        lifted.push(drawing.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof drawing.sketchOnPlane>[1]));
       }
     }
     // Replicad's Sketch.loftWith expects the receiver as the first section

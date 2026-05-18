@@ -264,12 +264,12 @@ export function buildNurbsSketchOnPlane(
     const c = commands[i];
     if (c.kind === 'lineTo') {
       const p = ensurePen();
-      pen = p.lineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
+      pen = p.lineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'tangentArc') {
       const p = ensurePen();
-      pen = p.tangentArcTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
+      pen = p.tangentArcTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'threePointsArc') {
@@ -277,17 +277,17 @@ export function buildNurbsSketchOnPlane(
       pen = p.threePointsArcTo(
         [c.x.evaluated, c.y.evaluated],
         [c.midX.evaluated, c.midY.evaluated],
-      ) as typeof pen;
+      ) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'sagittaArc') {
       const p = ensurePen();
-      pen = p.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as typeof pen;
+      pen = p.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'bulgeArc') {
       const p = ensurePen();
-      pen = p.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as typeof pen;
+      pen = p.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'radiusArc') {
@@ -306,12 +306,12 @@ export function buildNurbsSketchOnPlane(
       const sagittaMagnitude = Math.abs(cr) - Math.sqrt(cr * cr - halfChord * halfChord);
       const signedSagitta = Math.sign(cr) * sagittaMagnitude;
       const p = ensurePen();
-      pen = p.sagittaArcTo([cx, cy], signedSagitta) as typeof pen;
+      pen = p.sagittaArcTo([cx, cy], signedSagitta) as replicad.DrawingPen;
       currentX = cx;
       currentY = cy;
     } else if (c.kind === 'smoothSpline') {
       const p = ensurePen();
-      pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as typeof pen;
+      pen = p.smoothSplineTo([c.x.evaluated, c.y.evaluated]) as replicad.DrawingPen;
       currentX = c.x.evaluated;
       currentY = c.y.evaluated;
     } else if (c.kind === 'spline' || c.kind === 'nurbsSegment' || c.kind === 'hermiteG2_2d') {
@@ -342,7 +342,7 @@ export function buildNurbsSketchOnPlane(
   const isAtStart = Math.hypot(currentX - startX, currentY - startY) < 1e-9;
   if (pen !== null) {
     if (!isAtStart) {
-      pen = pen.lineTo([startX, startY]) as typeof pen;
+      pen = pen.lineTo([startX, startY]) as replicad.DrawingPen;
     }
     commitPenRun();
   } else if (!isAtStart) {
