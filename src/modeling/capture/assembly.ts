@@ -130,6 +130,24 @@ export interface AssemblyJointRef {
   kind: 'revolute' | 'prismatic' | 'fixed' | 'ball';
 }
 
+/**
+ * Returned by `Assembly.subAssembly(name, other)`. Lets the caller mate
+ * INTO the imported parts without manually re-spelling the namespace
+ * prefix. See the JSDoc on `Assembly.subAssembly` for the full pattern.
+ */
+export interface SubAssemblyHandle {
+  /** The `${name}_` prefix prepended to every imported part/mate name. */
+  readonly prefix: string;
+  /** Build a mate connector ref (`prefix_origPart.conn`) for use with
+   *  `arm.mate(...)`. Throws if `origPartName` is not in the imported
+   *  assembly. With no `connectorName`, returns just the namespaced part
+   *  name (useful when caller assembles the ref themselves). */
+  ref(origPartName: string, connectorName?: string): string;
+  /** Look up the imported part's `AssemblyPartRef` by its ORIGINAL name
+   *  (pre-prefix). Throws on unknown names. */
+  part(origPartName: string): AssemblyPartRef;
+}
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -318,6 +336,123 @@ export class Assembly {
       );
     }
     return part;
+  }
+
+  /**
+   * Compose another assembly into this one as a sub-assembly (Slice 1:
+   * flattening import). Surfaced by Exp-E nested-sub-assembly: every CAD
+   * competitor (Fusion / Onshape / ForgeCAD) treats sub-assemblies as
+   * first-class, but kernelCAD had no composition API at all — agents had
+   * to flatten by hand, losing the namespace boundary.
+   *
+   * This Slice copies all of `other`'s parts and mates into `this`, with
+   * every imported name prefixed by `${name}_`. The prefix uses underscore
+   * (not dot) so connector-ref parsing still works: `'gripper_wrist.in'`
+   * parses as part='gripper_wrist', connector='in' under the existing
+   * single-dot split.
+   *
+   * Returned handle exposes `.ref(origPart, conn?)` and `.part(origPart)`
+   * so the caller can mate INTO the imported parts without manually
+   * spelling the prefix.
+   *
+   *   const gripper = kcad.assembly('gripper');
+   *   gripper.part('wrist', box(10,10,10)).connector('in', {...});
+   *   const robot = kcad.assembly('robot');
+   *   robot.part('arm', box(80,20,20)).connector('out', {...});
+   *   const sub = robot.subAssembly('grip', gripper);
+   *   robot.mate('attach', 'arm.out', sub.ref('wrist', 'in'), 'fastened');
+   *
+   * Future slices (not in this MVP): true nested solver semantics
+   * (per-sub-assembly root selection, sub-assembly instancing for N
+   * identical bolts, cross-assembly mates with their own resolution).
+   */
+  subAssembly(name: string, other: Assembly): SubAssemblyHandle {
+    if (other === this) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.subAssembly: cannot import an assembly into itself ('${this.name}').`,
+        undefined,
+        'Pass a DIFFERENT Assembly handle, captured via a separate kcad.assembly(otherName) call.',
+      );
+    }
+    if (typeof name !== 'string' || name.length === 0 || name.includes('.') || name.includes('_')) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.subAssembly: name '${name}' must be a non-empty string without '.' or '_' (the underscore is reserved for the namespace separator, the dot for connector refs).`,
+        undefined,
+        "Use a simple identifier like 'grip' or 'leftArm'.",
+      );
+    }
+    const prefix = `${name}_`;
+    // 1. Copy parts. Use this.part(...) so the v0.5 record + connectors +
+    //    placement validation all run as if the user authored each part
+    //    directly — sub-assembly is observationally identical to a flat
+    //    authoring (Slice 1 semantics).
+    const importedByOriginalName = new Map<string, AssemblyPartRef>();
+    for (const op of other.__parts()) {
+      const newName = `${prefix}${op.name}`;
+      const newRef = this.part(newName, op.originalShape, {
+        ...(op.connectors !== undefined ? { connectors: op.connectors } : {}),
+      });
+      // Copy v0.6 mateConnectors (the .connector(name, opts) chain output)
+      // by shallow-copying the array contents. The new part already owns an
+      // empty mateConnectors array per `part()`; populate it now so post-
+      // import mate authoring resolves the refs.
+      for (const conn of op.mateConnectors) {
+        newRef.mateConnectors.push(conn);
+      }
+      importedByOriginalName.set(op.name, newRef);
+    }
+    // 2. Copy mates. Remap the partName portion of each `a` / `b` ref by
+    //    prepending the prefix, leaving the connectorName intact. Mate
+    //    names are also prefixed so name-uniqueness within `this` holds.
+    const remapRef = (ref: string): string => {
+      const dot = ref.indexOf('.');
+      // parseConnectorRef will throw on a bad ref upstream; defensively
+      // pass through anything we can't split (the upstream throw is the
+      // canonical surface — we don't want to invent diagnostics here).
+      if (dot < 1) return ref;
+      return `${prefix}${ref.slice(0, dot)}.${ref.slice(dot + 1)}`;
+    };
+    for (const om of other.__mates()) {
+      this.mates.push({
+        name: `${prefix}${om.name}`,
+        a: remapRef(om.a),
+        b: remapRef(om.b),
+        type: om.type,
+        ...(om.pose !== undefined ? { pose: om.pose } : {}),
+        ...(om.limitsDeg !== undefined ? { limitsDeg: om.limitsDeg } : {}),
+        ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
+      });
+    }
+    return {
+      prefix,
+      ref: (origPartName: string, connectorName?: string): string => {
+        if (!importedByOriginalName.has(origPartName)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `subAssembly('${name}').ref: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
+            undefined,
+            "Pass the ORIGINAL part name (before prefixing). Use sub.part(name) to grab the imported AssemblyPartRef.",
+          );
+        }
+        return connectorName !== undefined
+          ? `${prefix}${origPartName}.${connectorName}`
+          : `${prefix}${origPartName}`;
+      },
+      part: (origPartName: string): AssemblyPartRef => {
+        const ref = importedByOriginalName.get(origPartName);
+        if (!ref) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `subAssembly('${name}').part: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
+            undefined,
+            'Pass the ORIGINAL part name (before prefixing).',
+          );
+        }
+        return ref;
+      },
+    };
   }
 
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
