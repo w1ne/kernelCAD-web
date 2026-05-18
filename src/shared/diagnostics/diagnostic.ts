@@ -1,8 +1,8 @@
 import type { FeatureId, ScriptLocation } from '../intent/types';
 import type { BackendTarget } from '../types/backendTarget';
-import type { DiagnosticCode } from './codes';
+import type { DiagnosticCode } from './registry';
+import { NEXT_ACTIONS } from './registry';
 import type { NextAction } from './nextAction';
-import { NEXT_ACTIONS } from './nextAction';
 
 export type { BackendTarget };
 export type { DiagnosticCode };

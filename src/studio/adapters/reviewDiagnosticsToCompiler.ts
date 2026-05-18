@@ -7,7 +7,7 @@
 
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 import type { CompilerDiagnostic, DiagnosticSeverity } from '../../shared/diagnostics/diagnostic';
-import type { DiagnosticCode } from '../../shared/diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 
 export function reviewDiagnosticsToCompiler(
     review: ScriptReviewSummary | null,
