@@ -45,8 +45,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
     );
 
     const joints = useMemo(
-        () => extractJointSnapshots(workbench.featureRecords ?? []),
-        [workbench.featureRecords],
+        () => extractJointSnapshots(workbench.featureRecords ?? [], paramTable),
+        [workbench.featureRecords, paramTable],
     );
 
     // Publish validity into the shell store so BottomDrawer +
