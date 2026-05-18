@@ -1,4 +1,178 @@
-# kernelCAD v0.8.0
+# kernelCAD v0.11.0
+
+## v0.11.0 — 2026-05-18 — NURBS Slice D: 2D path NURBS authoring
+
+Closes the 2D path-NURBS gap flagged in memory `kernelcad_path_nurbs_gap` (2026-05-17). `PathBuilder` now offers three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives, so 2D sketch outlines can include explicit B-spline segments instead of polylines or arc chains. After Slice D, all NURBS authoring lanes (3D curves, 3D surfaces, 2D paths) have parity. The `eyewear-wayfarer-front` eval artifact replaces its perfectly circular lens cutouts with `path().spline(...)` rounded-rectangle profiles.
+
+### Added — 2D NURBS path segments
+
+- `path().spline(points, opts?)` — N-waypoint B-spline interpolation. Threads a degree-3 B-spline through every waypoint; `points[0]` must match current pen position. Lowers via `replicad.makeBSplineApproximation` for the pen-friendly path.
+- `path().nurbsSegment(controlPoints, opts?)` — explicit B-spline segment defined by a control polygon. Optional `degree` (default 3), rational `weights`, and an explicit `knots` vector. Lowers via direct OCCT (`Geom_BSplineCurve_1` / `_2`).
+- `path().hermiteG2(a, b)` — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). Reuses Slice B's quintic-Hermite solver in 2D.
+- All three methods accept `Editable<number>` coords so symbolic params survive into capture.
+
+### Added — 4 new diagnostic codes
+
+- `feature.path.spline.degenerate-points` — fewer than 2 points, NaN coord, or duplicate consecutive points within 1e-9 mm.
+- `feature.path.nurbs-segment.degenerate-controls` — fewer than `degree + 1` control points, non-finite coord, or `controlPoints[0]` not matching current pen position within 1e-6 mm.
+- `feature.path.nurbs-segment.weights-non-positive` — weight ≤ 0 (zero collapses the basis; negative is undefined for B-splines).
+- `feature.path.hermite-g2.start-mismatch` — Hermite start point ≠ current pen position within 1e-6 mm.
+
+Every code carries an inline hint template; the canonical list is also exposed via `list_diagnostic_codes`.
+
+### Added — MCP tools
+
+- `add_path_spline({ code, chain_anchor, points, tension?, binding_name? })` — inject a `.spline(...)` call into an existing PathBuilder chain at the named `chain_anchor` variable. The injection lands immediately before any `.close()` in the chain (or before the statement terminator if `.close()` is absent).
+- `add_path_nurbs_segment({ code, chain_anchor, controlPoints, degree?, weights?, knots?, binding_name? })` — inject a `.nurbsSegment(...)` call into an existing PathBuilder chain. Validates the control net + opts before edit.
+- `add_path_hermite_g2({ code, chain_anchor, a, b, binding_name? })` — inject a `.hermiteG2(a, b)` call into an existing PathBuilder chain. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }`.
+
+Each tool returns the modified code + diagnostics from re-evaluating; side-effect-free.
+
+### Added — sketch lowerer: mixed-source wire composition
+
+- `OcctBackend.fromSketchCommands` extended to recognise `spline`, `nurbsSegment`, and `hermiteG2_2d` command kinds. The lowerer composes the resulting OCCT NURBS edges with replicad-drawn line/arc edges via `BRepBuilderAPI_MakeWire`, producing a single closed wire that flows through `extrudeFromSketch`, hole subtraction, and the rest of the Shape pipeline.
+- `hasNurbsSegments(commands)` and `buildNurbsSketchOnPlane(commands, plane)` route mixed sketches through the NURBS-aware path; pure line/arc sketches still take the legacy replicad pen path with no overhead.
+
+### Eval artifact — eyewear-wayfarer-front Slice D lens refinement
+
+- `eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts` (196 LoC, within the 200-LoC budget): the Slice C `surfaceFromBoundary` Coons-patch front face is preserved untouched; only the lens-opening cutouts change.
+- Slice C cut perfect circles via `cylinder().alongAxis([0, 1, 0])`. Slice D authors the same opening as a `path().moveTo(...).spline([rounded-rectangle waypoints]).close().extrude(through_body_depth)` — a slightly squarish-rounded shape closer to the real brand-typical lens silhouette than a pure circle.
+- Evaluates clean to a single positive-volume Shape (~102 914 mm³); bbox 154 × 46.6 × 28 mm clears the existing `>= 100 mm in some axis` harness gate.
+- The Slice C rim fillet is deferred: the new NURBS-meets-NURBS edge category (squarish-rounded cutout meeting the Coons patch front face) is not yet handled by OCCT's `BRepFilletAPI_MakeFillet`. The authoring intent (G2 continuity on NURBS-adjacent edges) remains documented in `kernelcad-nurbs/SKILL.md`; the fix waits for a follow-up kernel slice.
+
+### Skill docs
+
+- `kernelcad-nurbs/SKILL.md` — new section "2D NURBS path segments" documenting `path().spline / .nurbsSegment / .hermiteG2`, the 4 new diagnostic codes, and three real-world gotchas (skinned-surface loft incompatibility, `makeBSplineApproximation` y-extent overshoot at default tolerance, defensive wire-discontinuity tolerance).
+- `kernelcad-authoring/SKILL.md` — PathBuilder method list extended with the 3 new methods; cookbook auto-generated section regenerated.
+- `kernelcad-mcp/SKILL.md` — documents `add_path_spline` / `add_path_nurbs_segment` / `add_path_hermite_g2` next to their Slice C / B siblings.
+- `kernelcad/SKILL.md` decision tree updated to route freeform 2D outlines to `kernelcad-nurbs`.
+
+### Cookbook snippets
+
+- `cookbook/snippets/path-spline-organic-outline.md` — N-waypoint B-spline outline for an eyewear-style brow profile.
+- `cookbook/snippets/path-nurbs-segment-explicit.md` — explicit B-spline control polygon outline.
+- `cookbook/snippets/path-hermite-g2-blend-2d.md` — 2D quintic Hermite as a G2-continuous transition between two existing path runs.
+
+### Known limitations
+
+- **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. The Slice D eyewear refinement routes lens cutouts through extrude-then-subtract for this reason.
+- **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Task 3 measurement). Tighten the tolerance via `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control when precision beats convenience.
+- **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer. Acceptable for v1; explicit gap-gating is queued for a follow-up slice.
+
+## v0.10.0 — 2026-05-18 — NURBS Slice C: Coons patch + G1/G2 fillet continuity + hermiteG2
+
+Final slice of the NURBS-wrap iteration. Closes the freeform authoring loop with the surface-modeling primitives industrial designers actually use: Coons patch from 4 boundary curves, G1/G2 continuity control on fillets, and quintic Hermite transition curves that bridge two existing curves with G2 continuity. The `eyewear-wayfarer-front` eval artifact is rewritten on top of the new stack — a single `surfaceFromBoundary` Coons patch replaces the Slice B `variableSweep` halves.
+
+### Added — Coons patch surface
+
+- `surfaceFromBoundary(curves, opts?): Surface` — fills the interior of 4 boundary `Curve3D` refs with a single NURBS face. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. The 4 curves walk an ordered loop: `curves[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left.
+- `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 per-edge array; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
+- Corner-coincidence validation runs at capture time within 1e-6 mm — adjacent endpoints that don't share a Vec3 emit `feature.surface-from-boundary.corner-mismatch`.
+- The result is a `Surface` peer to `Shape` — chain `.thicken(t)` or `.toShape()` to enter the Shape pipeline (same escape methods as `nurbsSurface` / `surfaceFromCurves`).
+
+### Added — quintic Hermite G2 transition curves
+
+- `hermiteG2(a, b): Curve3D` — 6-control-point clamped-uniform NURBS curve that interpolates two endpoints with matching positions, first derivatives (tangents), and (optional) second derivatives (curvatures). Default curvature is `[0, 0, 0]` (degrades to G1 / lifted cubic Hermite).
+- Solved pure-JS at capture time via the quintic-Hermite → Bezier conversion; emitted into a degree-5 nurbsCurve and lowered through the existing `Geom_BSplineCurve` path.
+- Use to bridge two existing `nurbsCurve` flanks into a single G2-continuous compound spine for `variableSweep` or as a boundary edge of `surfaceFromBoundary`.
+
+### Added — G1/G2 fillet continuity
+
+- `Shape.fillet(radius, edges?, { continuity })` — explicit-continuity overload accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). Maps to `BRepFilletAPI_MakeFillet::SetFilletShape`.
+- Document G1-vs-G2 BREP-identity gotcha: constant-radius fillets between planar faces or between a planar face and a cylindrical face produce BREP-identical output under both continuity grades. OCCT's rational-fillet path only diverges where the adjacent faces carry non-trivial parametric curvature (any of the NURBS surface primitives).
+
+### Added — MCP tools
+
+- `add_surface_from_boundary({ code, curve_bindings, continuity?, sampling?, binding_name? })` — insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration before the last top-level return. Regex-validates that every `curve_bindings[i]` is already declared in the source.
+- `add_hermite_g2({ code, a, b, binding_name? })` — insert a `hermiteG2(a, b)` declaration where each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }`. Validates Vec3 shapes before emission; capture-time validators (`feature.hermite-g2.degenerate-tangent` / `feature.hermite-g2.non-finite-input`) cover the physics.
+
+### Added — 8 new diagnostic codes
+
+- `feature.surface-from-boundary.corner-mismatch`
+- `feature.surface-from-boundary.too-few-curves`
+- `feature.surface-from-boundary.too-many-curves`
+- `feature.surface-from-boundary.continuity-orphan`
+- `feature.surface-from-boundary.degenerate-patch`
+- `feature.fillet.continuity-not-applicable`
+- `feature.hermite-g2.degenerate-tangent`
+- `feature.hermite-g2.non-finite-input`
+
+Every code carries an inline hint template; the canonical list is also exposed via `list_diagnostic_codes`.
+
+### Eval artifact — eyewear-wayfarer-front Slice C rewrite
+
+- `eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts` final rewrite uses a single `surfaceFromBoundary` Coons patch over 4 boundary curves (spline3d top + bottom, degree-1 nurbsCurve sides), thickened into the front-face body. A reference `hermiteG2` bridges the two brow flanks for forward-compat with downstream `variableSweep` slices.
+- 169 LoC; evaluates clean to a single positive-volume Shape (~99 570 mm³); bbox 154 × 28 × 47.9 mm clears the existing geometric gates.
+- Fillet authoring requests `continuity: 'G2'` on the NURBS-adjacent edge in spirit; the shipping artifact downgrades to G1 because OCCT's rational fillet path fails to lower this particular acetate-meets-cylinder pair today (kernel limitation flagged for a follow-up slice).
+
+### Skill docs
+
+- `kernelcad-nurbs/SKILL.md` extended with Coons-patch, quintic Hermite, and G1/G2 fillet sections plus the 8 new diagnostic codes and the G1-vs-G2 BREP-identity gotcha.
+- `kernelcad-mcp/SKILL.md` documents `add_surface_from_boundary` + `add_hermite_g2` next to `add_nurbs_curve`.
+- `kernelcad/SKILL.md` decision-tree entry covers the new Slice C globals + the G2 fillet continuity option.
+
+### Other
+
+- Cookbook snippets `coons-patch-rectangular` and `hermite-g2-blend` surface the Slice C primitives to `lookup_cookbook`.
+- `list_api` GLOBALS sentinel adds `hermiteG2` (Coons patch was already advertised at Slice C Task 1).
+- NURBS-wrap iteration (Slices A/B/C, 2026-05-16 spec) closes here. Next workstreams: F1 (custom-trimmed OCCT.wasm), F2 (Manifold mesh sibling), F3 (OpenNURBS round-trip).
+
+## v0.9.0 — 2026-05-18 — NURBS Slice B: 3D parametric curves + multi-section sweeps
+
+v0.9.0 unlocks the freeform-spine lane of NURBS authoring. Scripts can now build 3D parametric curves (`nurbsCurve`, `spline3d`) and sweep blended profiles along them (`variableSweep`). Both bind directly to OpenCascade.js (no replicad wrapper for these paths), producing `Geom_BSplineCurve` edges and `BRepOffsetAPI_MakePipeShell` solids. The `eyewear-wayfarer-front` eval artifact is rewritten on top of the new API — a `spline3d` brow spine + two `variableSweep` halves replace the straight-rectangle baseline.
+
+### Added — Curve3D as a peer type
+
+- `nurbsCurve(controlPoints, opts?): Curve3D` — explicit-control-net B-spline. `degree` defaults to 3; pass `weights` for a rational curve, `knots` for a custom knot vector (otherwise clamped-uniform is generated). Closes via `closed: true` with matching first/last control points.
+- `spline3d(points, opts?): Curve3D` — Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points. `tension` defaults to 0.5 (centripetal); endpoints reflected via phantom points so the curve passes through first and last waypoints exactly.
+- `Curve3D` exposes synchronous evaluation through `BRepAdaptor_Curve`: `.sample(n)`, `.pointAt(t)`, `.tangentAt(t)` (unit vector), `.length()` (arc length in mm), `.domain()` (always `[0, 1]`). Per-session cache keeps repeat calls cheap.
+- Curves park their lowered `TopoDS_Edge` on `session.importedGeometry` and are consumed by `variableSweep` (and future `surfaceFromBoundary` / G2 blends in Slice C).
+
+### Added — multi-section sweep
+
+- `variableSweep(spine, sections, opts?): Shape` — sweeps the `sections[i].profile` along the spine, blending between sections at the section's `t ∈ [0, 1]` spine parameter. Lowers to `BRepOffsetAPI_MakePipeShell` (direct OCCT — no replicad wrapper).
+- Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as the rail), or a `Vec3[]` (auto-converted to a `nurbsCurve` of degree `min(3, points.length - 1)`).
+- Sections must be strictly increasing in `t`; the first MUST sit at `t = 0` and the last at `t = 1` (full-spine coverage). Continuity defaults to `'C1'`. Frenet / corrected-Frenet / discrete / `{ up: Vec3 }` orientations all supported.
+- Defense-in-depth: section locations must be sub-shapes of the spine wire (per `BRepOffsetAPI_MakePipeShell::Add_2`). Today `t = 0` maps to the spine's first vertex and `t = 1` to its last; intermediate `t` is queued for a follow-up.
+
+### Added — MCP tools
+
+- `add_nurbs_curve({ code, controlPoints, degree?, weights?, knots?, closed?, binding_name? })` — insert a `nurbsCurve(...)` declaration before the last top-level `return`. Auto-counts `_curve_N` bindings.
+- `add_variable_sweep({ code, spine_binding, sections, closed?, continuity?, binding_name? })` — insert a `variableSweep(...)` declaration. Validates the `spine_binding` and each `sections[i].profile_binding` exist in the script via regex.
+
+### Added — diagnostics (11 new codes)
+
+- `feature.curve3d.degenerate-controls` — fewer than `degree + 1` control points.
+- `feature.curve3d.weights-length-mismatch` — weights array length ≠ controlPoints length.
+- `feature.curve3d.weights-non-positive` — zero or negative weight (undefined for B-splines).
+- `feature.curve3d.knots-length-mismatch` — knot count ≠ `controlPoints.length + degree + 1`.
+- `feature.curve3d.closed-endpoints-mismatch` — `closed: true` with unequal first/last control points (warning).
+- `feature.variable-sweep.sections-out-of-order` — t values not strictly increasing.
+- `feature.variable-sweep.sections-not-spanning` — first t ≠ 0 or last t ≠ 1, or fewer than 2 sections.
+- `feature.variable-sweep.spine-too-short` — spine shorter than the smallest profile bounding diameter.
+- `feature.variable-sweep.profile-not-planar` — profile sketch is non-planar.
+- `feature.variable-sweep.profile-empty` — profile sketch is empty.
+- `feature.variable-sweep.frenet-degenerate` — Frenet undefined where spine curvature vanishes.
+
+### Eval artifact — eyewear-wayfarer-front (Slice B rewrite)
+
+- Rewritten from 322 LoC to 171 LoC. The straight-rectangle body is replaced with a `spline3d` brow spine + two `variableSweep` halves stitched at X = 0. Each half tapers from a temple profile (50mm × 9mm) to a bridge profile (56mm × 12mm). Lens openings carved with `cylinder().alongAxis([0, 1, 0])` cutouts; tinted lens inserts filled in; glossy acetate PBR clearcoat retained from Slice A; `referenceImage` overlay retained for authoring fidelity.
+- Geometry verified: 18 feature records, 0 diagnostics, volume ~38,099 mm³, bbox X∈[-70, 74], Y∈[-4.5, 12], Z∈[-44, 44].
+- SSIM ≥ 0.45 gate not exercised this slice — the local image-similarity scorer module (`src/lib/imageSimilarity/score.ts`) is missing from the branch and surfaces as `ERR_MODULE_NOT_FOUND` when the harness runs. Restoring or rebuilding the scorer is on the roadmap; the geometric gates (evaluates clean, non-empty solid, eyewear-wide bbox, no interferences) all pass.
+
+### Skill docs
+
+- `kernelcad-nurbs` skill extended with Curve3D (control-net + Catmull-Rom convenience), variableSweep (multi-section sweep), the 11 new diagnostic codes, and the spine-vertex gotcha for `BRepOffsetAPI_MakePipeShell::Add_2`.
+- `kernelcad-mcp` skill documents the two new MCP tools.
+- Top-level `kernelcad` skill decision tree updated.
+
+### Other
+
+- Sweep gains a `transitionMode: 'right' | 'transformed' | 'round'` option exposed through `Sketch.sweep(rail, opts)` (the OCCT corner-transition mode for swept solids over rails with interior kinks).
+- Exporters lock in `metadata.virtual` filtering with regression tests + a new `export.virtual-record` diagnostic when an explicit `feature_id` resolves to a virtual record.
+- Drift sentinels updated: `nurbsCurve`, `spline3d`, `variableSweep` documented in `listApi.ts GLOBALS`.
+
+---
 
 ## v0.8.0 — 2026-05-16 — NURBS Slice A: PBR material + reference-image overlay + from-reference skill rewrite
 

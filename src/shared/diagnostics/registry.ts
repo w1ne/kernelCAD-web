@@ -739,6 +739,195 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'An accepted visual review is missing screenshotPath, findings, or required check coverage.',
   },
+  // NURBS Slice B (5) — Curve3D / nurbsCurve capture-time validation.
+  'feature.curve3d.degenerate-controls': {
+    hintTemplate:
+      'nurbsCurve needs at least degree+1 control points. Add more control points or reduce the degree.',
+    nextAction: { kind: 'fix-arg', field: 'controlPoints' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'nurbsCurve received fewer than degree+1 control points.',
+  },
+  'feature.curve3d.weights-length-mismatch': {
+    hintTemplate:
+      'nurbsCurve weights array must match controlPoints length. Pass one weight per control point.',
+    nextAction: { kind: 'fix-arg', field: 'weights' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'nurbsCurve weights array length does not match controlPoints length.',
+  },
+  'feature.curve3d.weights-non-positive': {
+    hintTemplate:
+      'nurbsCurve weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines).',
+    nextAction: { kind: 'fix-arg', field: 'weights' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'nurbsCurve weights array contains zero or negative values.',
+  },
+  'feature.curve3d.knots-length-mismatch': {
+    hintTemplate:
+      'nurbsCurve knot vector length must equal controlPoints.length + degree + 1.',
+    nextAction: { kind: 'fix-arg', field: 'knots' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'nurbsCurve knot vector length is not controlPoints.length + degree + 1.',
+  },
+  'feature.curve3d.closed-endpoints-mismatch': {
+    hintTemplate:
+      'nurbsCurve closed=true but first and last control points differ; OCCT will close internally but the user-visible control net is misleading. Match the endpoints or drop closed.',
+    nextAction: { kind: 'fix-arg', field: 'controlPoints' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'nurbsCurve was authored with closed=true but the first and last control points are not coincident.',
+  },
+  // NURBS Slice B — variableSweep PipeShell validation.
+  'feature.variable-sweep.sections-out-of-order': {
+    hintTemplate:
+      'variableSweep sections must be strictly increasing in t. Sort sections by t ascending.',
+    nextAction: { kind: 'fix-arg', field: 'sections' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep received sections whose t values are not strictly increasing.',
+  },
+  'feature.variable-sweep.sections-not-spanning': {
+    hintTemplate:
+      'variableSweep sections must span the full spine: first section at t=0 and last section at t=1 are required.',
+    nextAction: { kind: 'fix-arg', field: 'sections' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep sections do not include t=0 or t=1.',
+  },
+  'feature.variable-sweep.spine-too-short': {
+    hintTemplate:
+      'variableSweep spine is shorter than the smallest profile bounding diameter, so the sweep would self-intersect. Lengthen the spine or shrink the profiles.',
+    nextAction: { kind: 'fix-arg', field: 'spine' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep spine length is below the smallest profile bounding diameter.',
+  },
+  'feature.variable-sweep.profile-not-planar': {
+    hintTemplate:
+      'variableSweep profiles must be planar sketches. Use a 2D path()/close() chain (or surfaceFromBoundary for non-planar sections in a later slice).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use a planar path().close() sketch for each section' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep received a non-planar profile sketch.',
+  },
+  'feature.variable-sweep.profile-empty': {
+    hintTemplate:
+      'variableSweep profile sketch is empty. Close the path() before passing it as a profile.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'close the path() before passing as a profile' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep received an empty/unclosed profile sketch.',
+  },
+  'feature.variable-sweep.frenet-degenerate': {
+    hintTemplate:
+      'Frenet orientation is undefined where the spine curvature vanishes (straight segments). Pass orientation: { up: Vec3 } or "corrected-frenet" for spines with straight stretches.',
+    nextAction: { kind: 'fix-arg', field: 'orientation' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'variableSweep with Frenet orientation hit a zero-curvature span on the spine.',
+  },
+  // NURBS Slice C (6) — surfaceFromBoundary (Coons patch) + G2 fillet.
+  'feature.surface-from-boundary.corner-mismatch': {
+    hintTemplate:
+      'surfaceFromBoundary requires adjacent boundary curves to share endpoints within 1e-6 mm (c1.end == c2.start, c2.end == c3.start, c3.end == c4.start, c4.end == c1.start). Snap the endpoints or rebuild the boundary curves so they form a closed loop.',
+    nextAction: { kind: 'fix-arg', field: 'curveRefs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'surfaceFromBoundary boundary curves do not share corner endpoints within tolerance.',
+  },
+  'feature.surface-from-boundary.too-few-curves': {
+    hintTemplate:
+      'surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order (bottom, right, top, left).',
+    nextAction: { kind: 'fix-arg', field: 'curveRefs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'surfaceFromBoundary received fewer than 4 boundary curves.',
+  },
+  'feature.surface-from-boundary.too-many-curves': {
+    hintTemplate:
+      'surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order — if the loop has more than 4 sides, split the patch into adjacent quads.',
+    nextAction: { kind: 'fix-arg', field: 'curveRefs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'surfaceFromBoundary received more than 4 boundary curves.',
+  },
+  'feature.surface-from-boundary.continuity-orphan': {
+    hintTemplate:
+      "surfaceFromBoundary continuity 'C1' / 'C2' requires the neighbors map to identify which existing surface to be tangent (or curvature-continuous) to on each side. Either drop the continuity flag or supply opts.neighbors so the kernel can resolve the tangency target.",
+    nextAction: { kind: 'fix-arg', field: 'neighbors' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'surfaceFromBoundary requested C1/C2 continuity without a neighbors map identifying the tangency target.',
+  },
+  'feature.surface-from-boundary.degenerate-patch': {
+    hintTemplate:
+      'BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'BRepOffsetAPI_MakeFilling returned no face for the supplied boundary curves.',
+  },
+  'feature.fillet.continuity-not-applicable': {
+    hintTemplate:
+      "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",
+    nextAction: { kind: 'rewrite-feature', guidance: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces" },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: "fillet requested G2 continuity but adjacent faces are only G1.",
+  },
+  // NURBS Slice C — hermiteG2 quintic transition curve (pure-JS solver).
+  'feature.hermite-g2.degenerate-tangent': {
+    hintTemplate:
+      'hermiteG2 received a tangent with zero magnitude on one or both endpoints. The quintic Hermite scales the tangent into the inner control points; a zero tangent collapses two control points onto the endpoint, producing a cusp rather than a smooth transition. Supply a non-zero tangent (magnitude in the order of the chord length between the endpoints).',
+    nextAction: { kind: 'fix-arg', field: 'tangent' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'hermiteG2 received a zero-magnitude tangent on one or both endpoints.',
+  },
+  'feature.hermite-g2.non-finite-input': {
+    hintTemplate:
+      'hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream — typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.',
+    nextAction: { kind: 'fix-arg', field: 'see-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'hermiteG2 received NaN or Infinity in an endpoint argument.',
+  },
+  // NURBS Slice D (4) — 2D path NURBS authoring (PathBuilder .spline / .nurbsSegment / .hermiteG2).
+  'feature.path.spline.degenerate-points': {
+    hintTemplate:
+      'path().spline expects at least 2 distinct finite Vec2 waypoints; the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, and ensure the array has length >= 2.',
+    nextAction: { kind: 'fix-arg', field: 'points' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().spline received fewer than 2 distinct finite waypoints.',
+  },
+  'feature.path.nurbs-segment.degenerate-controls': {
+    hintTemplate:
+      'path().nurbsSegment expects at least degree+1 finite Vec2 control points, with the first control point matching the current pen position within 1e-6 mm. Add more control points or reduce the degree, and align controlPoints[0] with the current position (or call moveTo first).',
+    nextAction: { kind: 'fix-arg', field: 'controlPoints' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().nurbsSegment received fewer than degree+1 finite control points or the first control did not match the pen position.',
+  },
+  'feature.path.nurbs-segment.weights-non-positive': {
+    hintTemplate:
+      'path().nurbsSegment weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines). Replace any zero / negative weight with a positive value, and ensure the array length matches controlPoints.',
+    nextAction: { kind: 'fix-arg', field: 'weights' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().nurbsSegment weights contain zero or negative values, or length does not match controlPoints.',
+  },
+  'feature.path.hermite-g2.start-mismatch': {
+    hintTemplate:
+      "path().hermiteG2 requires `a.point` to match the path's current pen position within 1e-6 mm. Either align a.point with the prior segment's endpoint, or call moveTo(a.point.x, a.point.y) before hermiteG2.",
+    nextAction: { kind: 'fix-arg', field: 'a.point' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: "path().hermiteG2 received `a.point` not matching the current pen position within tolerance.",
+  },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {
     hintTemplate:

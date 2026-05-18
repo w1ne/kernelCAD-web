@@ -1,6 +1,8 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
+import { buildNurbsSketchOnPlane } from './pathNurbsLowerer';
+import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import type { Vec3 } from '../../../shared/intent/types';
 
 /**
@@ -210,19 +212,37 @@ export function buildSkinnedSurface(
   }
   // Lift each sketch onto its target plane. Mirrors OcctBackend.loftFromSketches'
   // section-prep pass but inlined here so we can request the shell variant.
+  //
+  // Two paths:
+  //   - Pen-only sketches (`_drawing` populated): lift via
+  //     `Drawing.sketchOnPlane(plane, origin)` exactly as before.
+  //   - NURBS-bearing sketches (`_hasNurbs` set + `_commands` populated,
+  //     `_drawing` null — Slice D Task 3 leaves the pen empty because it
+  //     can't construct `spline` / `nurbsSegment` / `hermiteG2_2d` edges):
+  //     build the section wire directly on the target plane via
+  //     `buildNurbsSketchOnPlane`, which returns a `replicad.Sketch` whose
+  //     `.loftWith(...)` works the same way as the pen-derived Sketch.
+  //     The `origin` offset isn't applied here (matches
+  //     `OcctBackend.loftFromSketches`'s NURBS branch — path coordinates
+  //     must already encode their final position).
   const lifted: unknown[] = [];
   for (let i = 0; i < sectionShapes.length; i++) {
     const s = sectionShapes[i] as unknown as {
       kind?: string;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       _drawing?: any;
+      _hasNurbs?: boolean;
+      _commands?: SketchCommand[];
     };
-    const drawing = s._drawing;
-    if (s.kind !== 'sketch' || !drawing) {
+    if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
       throw new Error(`buildSkinnedSurface: input ${i} is not a sketch-tagged OcctBackend`);
     }
     const p = planes[i];
-    lifted.push(drawing.sketchOnPlane(p.plane, p.origin));
+    if (s._hasNurbs && s._commands) {
+      lifted.push(buildNurbsSketchOnPlane(s._commands, p.plane));
+    } else {
+      lifted.push(s._drawing!.sketchOnPlane(p.plane, p.origin));
+    }
   }
   const [first, ...rest] = lifted;
   // returnShell=true → BRepOffsetAPI_ThruSections returns a TopoDS_Shell of

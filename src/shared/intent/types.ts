@@ -149,7 +149,12 @@ export type FeatureKind =
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
-  | 'variableSweep';
+  | 'variableSweep'
+  // NURBS Slice C: Coons patch from 4 boundary curves (BRepOffsetAPI_MakeFilling
+  //   per 2026-05-18 audit) and quintic Hermite transition curve (degree-5
+  //   nurbsCurve via JS-side Bezier control-point math).
+  | 'surfaceFromBoundary'
+  | 'hermiteG2';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings
