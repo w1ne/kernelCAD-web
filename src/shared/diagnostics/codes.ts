@@ -80,7 +80,19 @@ export type DiagnosticCode =
   // Assembly UX (1) — Exp-D four-bolt-flange-v2 surfaced: agent declared
   // mates then ended with arm.model() (not solvedModel), so mate FK never
   // runs and parts stack at local origin. Same shape as placement-ignored.
-  | 'assembly.mates-ignored-by-model-call';
+  | 'assembly.mates-ignored-by-model-call'
+  // NURBS Slice B (11) — Curve3D + variableSweep capture-side validation.
+  | 'feature.curve3d.degenerate-controls'
+  | 'feature.curve3d.weights-length-mismatch'
+  | 'feature.curve3d.weights-non-positive'
+  | 'feature.curve3d.knots-length-mismatch'
+  | 'feature.curve3d.closed-endpoints-mismatch'
+  | 'feature.variable-sweep.sections-out-of-order'
+  | 'feature.variable-sweep.sections-not-spanning'
+  | 'feature.variable-sweep.spine-too-short'
+  | 'feature.variable-sweep.profile-not-planar'
+  | 'feature.variable-sweep.profile-empty'
+  | 'feature.variable-sweep.frenet-degenerate';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -129,6 +141,17 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.edge-feature.short-edges-skipped',
   'assembly.placement-ignored-by-mate-fk',
   'assembly.mates-ignored-by-model-call',
+  'feature.curve3d.degenerate-controls',
+  'feature.curve3d.weights-length-mismatch',
+  'feature.curve3d.weights-non-positive',
+  'feature.curve3d.knots-length-mismatch',
+  'feature.curve3d.closed-endpoints-mismatch',
+  'feature.variable-sweep.sections-out-of-order',
+  'feature.variable-sweep.sections-not-spanning',
+  'feature.variable-sweep.spine-too-short',
+  'feature.variable-sweep.profile-not-planar',
+  'feature.variable-sweep.profile-empty',
+  'feature.variable-sweep.frenet-degenerate',
 ] as const;
 
 export interface HintTemplate {
@@ -237,6 +260,28 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
     'assembly.mates-ignored-by-model-call':
       "The assembly declared mates but the script ended with arm.model() (which skips mate FK). Replace with arm.solvedModel({}) so the mate solver runs and parts pose correctly.",
+    'feature.curve3d.degenerate-controls':
+      'nurbsCurve needs at least degree+1 control points. Add more control points or reduce the degree.',
+    'feature.curve3d.weights-length-mismatch':
+      'nurbsCurve weights array must match controlPoints length. Pass one weight per control point.',
+    'feature.curve3d.weights-non-positive':
+      'nurbsCurve weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines).',
+    'feature.curve3d.knots-length-mismatch':
+      'nurbsCurve knot vector length must equal controlPoints.length + degree + 1.',
+    'feature.curve3d.closed-endpoints-mismatch':
+      'nurbsCurve closed=true but first and last control points differ; OCCT will close internally but the user-visible control net is misleading. Match the endpoints or drop closed.',
+    'feature.variable-sweep.sections-out-of-order':
+      'variableSweep sections must be strictly increasing in t. Sort sections by t ascending.',
+    'feature.variable-sweep.sections-not-spanning':
+      'variableSweep sections must span the full spine: first section at t=0 and last section at t=1 are required.',
+    'feature.variable-sweep.spine-too-short':
+      'variableSweep spine is shorter than the smallest profile bounding diameter, so the sweep would self-intersect. Lengthen the spine or shrink the profiles.',
+    'feature.variable-sweep.profile-not-planar':
+      'variableSweep profiles must be planar sketches. Use a 2D path()/close() chain (or surfaceFromBoundary for non-planar sections in a later slice).',
+    'feature.variable-sweep.profile-empty':
+      'variableSweep profile sketch is empty. Close the path() before passing it as a profile.',
+    'feature.variable-sweep.frenet-degenerate':
+      'Frenet orientation is undefined where the spine curvature vanishes (straight segments). Pass orientation: { up: Vec3 } or "corrected-frenet" for spines with straight stretches.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
