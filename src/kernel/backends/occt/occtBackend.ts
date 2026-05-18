@@ -478,6 +478,14 @@ export class OcctBackend implements ShapeBackend {
    * @param opts.frenet if true, profile rotates with the rail's tangent + curvature
    *   (use for helices, twisted rails); if false (default), profile keeps fixed
    *   world-up vector (use for straight pipes, planar polyline rails)
+   * @param opts.transitionMode how corners between consecutive rail edges are
+   *   bridged: `'right'` (default — sharp corner, matches replicad's own
+   *   default), `'transformed'` (extend tangents past the corner — useful
+   *   for slight kinks where 'right' would clip the profile), `'round'`
+   *   (insert a tangent arc — needed when the profile diameter exceeds the
+   *   corner clearance). The choice only matters when the rail has interior
+   *   vertices; for smooth single-edge spines the three modes are
+   *   indistinguishable.
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If `rail.length < 2`.
@@ -486,7 +494,7 @@ export class OcctBackend implements ShapeBackend {
   static sweepFromSketch(
     sketch: OcctBackend,
     rail: [number, number, number][],
-    opts: { frenet?: boolean } = {},
+    opts: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round' } = {},
   ): OcctBackend {
     // The kind/_drawing check is now inside liftSketchToFace; keep the
     // explicit message for the rail check (different concern).
@@ -515,6 +523,7 @@ export class OcctBackend implements ShapeBackend {
     const swept = replicad.genericSweep(profileWire, spineWire, {
       frenet: opts.frenet ?? false,
       forceProfileSpineOthogonality: true,
+      transitionMode: opts.transitionMode ?? 'right',
     });
     return new OcctBackend(swept);
   }
