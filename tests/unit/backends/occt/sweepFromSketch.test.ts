@@ -112,4 +112,33 @@ describe('OcctBackend.sweepFromSketch', () => {
     expect(() => OcctBackend.sweepFromSketch(cube, [[0, 0, 0], [0, 0, 10]]))
       .toThrow(/not a sketch/);
   });
+
+  describe('transitionMode option', () => {
+    // L-bend rail with a sharp 90° interior corner so each mode actually
+    // exercises a different BRepBuilderAPI_TransitionMode.
+    const lBendRail: [number, number, number][] = [[0, 0, 0], [0, 0, 30], [30, 0, 30]];
+
+    it("'right' (default) sweeps the L-bend to a positive-volume solid", () => {
+      const sketch = OcctBackend.fromSketchCommands(square2x2);
+      const swept = OcctBackend.sweepFromSketch(sketch, lBendRail, { transitionMode: 'right' });
+      expect(swept.volume()).toBeGreaterThan(0);
+    });
+
+    it("'transformed' sweeps the L-bend to a positive-volume solid", () => {
+      const sketch = OcctBackend.fromSketchCommands(square2x2);
+      const swept = OcctBackend.sweepFromSketch(sketch, lBendRail, { transitionMode: 'transformed' });
+      expect(swept.volume()).toBeGreaterThan(0);
+    });
+
+    it("'round' sweeps the L-bend and produces a measurably different volume than 'right'", () => {
+      const sketch = OcctBackend.fromSketchCommands(square2x2);
+      const sharp = OcctBackend.sweepFromSketch(sketch, lBendRail, { transitionMode: 'right' });
+      const rounded = OcctBackend.sweepFromSketch(sketch, lBendRail, { transitionMode: 'round' });
+      expect(rounded.volume()).toBeGreaterThan(0);
+      // 'round' inserts a tangent-arc at the corner — the resulting solid
+      // has a measurably different volume than the sharp/right mode.
+      const delta = Math.abs(rounded.volume() - sharp.volume());
+      expect(delta).toBeGreaterThan(0.1);
+    });
+  });
 });
