@@ -114,20 +114,21 @@ export async function updateModelParams(
   await initOcct();
   // Slice 2E: reuse the per-session engine attached by `buildModel` so any
   // `onRelower` subscribers registered after the initial build still fire on
-  // this update. The engine must be attached — silently creating a fresh one
-  // would break the emitter contract for subscribers registered against a
-  // different instance.
+  // this update. Some callers bypass `buildModel` and drive `params.update`
+  // off a bare `runScript` result (eval corpus harnesses, legacy unit tests).
+  // For those paths, lazily attach a fresh engine to the session so
+  // subsequent updates reuse it. Studio's path always goes through
+  // `buildModel`, so its onRelower subscribers (registered against the
+  // session's attached engine) keep firing consistently.
   //
   // `session.engine` is typed as the structural `SessionRecomputeEngineHandle`
-  // (just `onRelower` + `emitRelower`) so `captureSession.ts` stays free of
-  // recompute imports per the architecture-boundary guard. The actual instance
-  // is a RecomputeEngine; cast back here to access `.run`.
-  const handle = session.engine;
+  // so `captureSession.ts` stays free of recompute imports per the
+  // architecture-boundary guard. The actual instance is a RecomputeEngine.
+  let handle = session.engine;
   if (!handle) {
-    throw new Error(
-      'updateModelParams: session has no engine attached. ' +
-      'Call buildModel(...) first to attach the engine, or attach manually via session.setEngine().',
-    );
+    const fresh = new RecomputeEngine(createOcctLowerer(session));
+    session.setEngine(fresh);
+    handle = fresh;
   }
   const engine = handle as RecomputeEngine;
   const warningsBefore = session.warnings.length;
