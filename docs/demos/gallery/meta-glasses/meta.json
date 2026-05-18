@@ -1,11 +1,11 @@
 {
-  "taskId": "meta-glasses",
+  "taskId": "glasses-capture-v2",
   "module": "gallery",
-  "capturedAt": "2026-05-15T16:36:46.568Z",
-  "durationMs": 25700,
+  "capturedAt": "2026-05-18T15:40:05.846Z",
+  "durationMs": 23600,
   "truncated": false,
-  "gitSha": "c92eafa325c8467ad69280c1c288fc2a13528a89",
+  "gitSha": "50f126ed099a3b5e3bbd0e6bb24e6e390247b45d",
   "heroArtifact": "meta-glasses",
   "catalogSource": "memorable-builds-policy/gallery",
-  "overrideApprovedBy": "gallery-curated: front-face curated entry"
+  "overrideApprovedBy": "gallery-curated: post-rewrite for visual fidelity"
 }
