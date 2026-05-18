@@ -214,6 +214,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>): PathBuilder  // Arc by chord + perpendicular bulge. Sign chooses side.
 .bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
 .radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
+.smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
+.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // (Slice D) N-waypoint B-spline interpolation through every point. See kernelcad-nurbs.
+.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
+.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
 .label(name: string): PathBuilder               // Tag the prior segment for fillet/chamfer/shell by name.
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
@@ -356,12 +360,17 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
 | chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
 | clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous. |
+| coons-patch-rectangular | You need a freeform NURBS surface whose silhouette is defined by 4 stitched boundary curves authored as nurbsCurve(). Walk the loop in declaration order (bottom, right, top, left), call surfaceFromBoundary, then thicken into a solid. |
 | extrude-rounded-rect-plate | You want a flat plate with rounded corners; use the dedicated rounded-rect extrude rather than building corners by hand. |
 | fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
+| hermite-g2-blend | You have a pair of existing NURBS curves whose tangents and curvatures match at the join point and you want a G2-continuous compound spine (so a downstream variableSweep does not kink at the join). Author the flanks via nurbsCurve, then drop a hermiteG2 between them with matching endpoint tangents and curvatures. |
 | mirror-half-part | The part is symmetric across a cardinal plane; build only one half and call mirror to produce the complete symmetric part. |
 | non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
 | parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |
+| path-hermite-g2-blend-2d | You're authoring a freeform 2D outline that should transition from one prescribed point + tangent (+ curvature) to another with G2 continuity (no visible curvature crease where adjacent neighbours meet). Drop a single .hermiteG2(a, b) call into the chain; a.point must match the current pen position. Tangent magnitude is the first derivative (typical ~ chord length, NOT unit length). |
+| path-nurbs-segment-explicit | You have an explicit B-spline control polygon (programmatic generation, round-tripping from external CAD, when precise shape control beats waypoint convenience) and want a 2D path segment authored from the control net directly. The first control point must match the current pen position within 1e-6 mm; the pen ends at the last control point. |
+| path-spline-organic-outline | You need a freeform 2D outline (eyewear brow, ergonomic grip silhouette, sneaker midsole) authored as a sequence of measured waypoints, and arc primitives + smoothSpline are too rigid. Drop a single .spline([...]) call into the path() chain after moveTo; the path interpolates through every waypoint at degree 3. |
 | revolve-rectangular-profile | You want a thin cylindrical wall, ring, or tube — author the rectangular profile via path() with the inner radius as the x offset, then call .revolve() to sweep it around Z. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
 | union-of-stacked-primitives | You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap. |
