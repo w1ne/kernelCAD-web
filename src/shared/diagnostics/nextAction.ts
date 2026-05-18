@@ -88,4 +88,8 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.fillet.continuity-not-applicable':        { kind: 'rewrite-feature', guidance: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces" },
   'feature.hermite-g2.degenerate-tangent':           { kind: 'fix-arg', field: 'tangent' },
   'feature.hermite-g2.non-finite-input':             { kind: 'fix-arg', field: 'see-message' },
+  'feature.path.spline.degenerate-points':           { kind: 'fix-arg', field: 'points' },
+  'feature.path.nurbs-segment.degenerate-controls':  { kind: 'fix-arg', field: 'controlPoints' },
+  'feature.path.nurbs-segment.weights-non-positive': { kind: 'fix-arg', field: 'weights' },
+  'feature.path.hermite-g2.start-mismatch':          { kind: 'fix-arg', field: 'a.point' },
 };

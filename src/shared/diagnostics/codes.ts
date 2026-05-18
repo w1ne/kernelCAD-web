@@ -105,7 +105,14 @@ export type DiagnosticCode =
   // NURBS Slice C — hermiteG2 quintic transition curve.
   // Pure-JS solver; emits these on input the math can't fit.
   | 'feature.hermite-g2.degenerate-tangent'
-  | 'feature.hermite-g2.non-finite-input';
+  | 'feature.hermite-g2.non-finite-input'
+  // NURBS Slice D (4) — 2D path NURBS authoring (.spline / .nurbsSegment /
+  // .hermiteG2 on PathBuilder). Capture-time validation per
+  // 2026-05-18-nurbs-slice-d-2d-path-authoring.md.
+  | 'feature.path.spline.degenerate-points'
+  | 'feature.path.nurbs-segment.degenerate-controls'
+  | 'feature.path.nurbs-segment.weights-non-positive'
+  | 'feature.path.hermite-g2.start-mismatch';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -173,6 +180,10 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.fillet.continuity-not-applicable',
   'feature.hermite-g2.degenerate-tangent',
   'feature.hermite-g2.non-finite-input',
+  'feature.path.spline.degenerate-points',
+  'feature.path.nurbs-segment.degenerate-controls',
+  'feature.path.nurbs-segment.weights-non-positive',
+  'feature.path.hermite-g2.start-mismatch',
 ] as const;
 
 export interface HintTemplate {
@@ -319,6 +330,14 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'hermiteG2 received a tangent with zero magnitude on one or both endpoints. The quintic Hermite scales the tangent into the inner control points; a zero tangent collapses two control points onto the endpoint, producing a cusp rather than a smooth transition. Supply a non-zero tangent (magnitude in the order of the chord length between the endpoints).',
     'feature.hermite-g2.non-finite-input':
       'hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream — typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.',
+    'feature.path.spline.degenerate-points':
+      'path().spline expects at least 2 distinct finite Vec2 waypoints; the curve interpolates through every one. Remove duplicate consecutive points (closer than 1e-9 mm), replace any NaN / Infinity coords with finite values, and ensure the array has length >= 2.',
+    'feature.path.nurbs-segment.degenerate-controls':
+      'path().nurbsSegment expects at least degree+1 finite Vec2 control points, with the first control point matching the current pen position within 1e-6 mm. Add more control points or reduce the degree, and align controlPoints[0] with the current position (or call moveTo first).',
+    'feature.path.nurbs-segment.weights-non-positive':
+      'path().nurbsSegment weights must all be strictly positive (zero collapses the basis; negative is undefined for B-splines). Replace any zero / negative weight with a positive value, and ensure the array length matches controlPoints.',
+    'feature.path.hermite-g2.start-mismatch':
+      "path().hermiteG2 requires `a.point` to match the path's current pen position within 1e-6 mm. Either align a.point with the prior segment's endpoint, or call moveTo(a.point.x, a.point.y) before hermiteG2.",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

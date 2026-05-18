@@ -66,20 +66,21 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 65 codes', () => {
+  it('catalogue has exactly 69 codes', () => {
     // 46 baseline (milestone-C diagnostic-vocab spec)
     //  + 11 Slice B (Curve3D + variableSweep capture validation)
     //  +  6 Slice C (surfaceFromBoundary + G2 fillet)
     //  +  2 Slice C Task 5 (hermiteG2 quintic Hermite solver)
-    // = 65.
-    expect(catalogue.size).toBe(65);
+    //  +  4 Slice D (2D path NURBS — .spline / .nurbsSegment / .hermiteG2)
+    // = 69.
+    expect(catalogue.size).toBe(69);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 65 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 69 in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });

@@ -10,6 +10,25 @@ import { type Editable } from '../../shared/runtime/paramRef';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 
+/**
+ * 2D-Hermite endpoint shape — analogue of the 3D `HermiteEndpoint` used by
+ * Slice C's `hermiteG2`. All three fields are `[Editable<number>, Editable<number>]`
+ * tuples so ParamRef-driven points / tangents / curvatures are supported.
+ *
+ * `point`     — endpoint in mm.
+ * `tangent`   — first derivative of the curve at this endpoint (NOT the
+ *               unit tangent: magnitude controls how aggressively the
+ *               curve heads out of the endpoint; typical magnitude is in
+ *               the order of the chord length between the two endpoints).
+ * `curvature` — second derivative at this endpoint. Defaults to [0, 0],
+ *               which makes the resulting curve G1-only (still degree 5).
+ */
+export interface HermiteEndpoint2D {
+  point: [Editable<number>, Editable<number>];
+  tangent: [Editable<number>, Editable<number>];
+  curvature?: [Editable<number>, Editable<number>];
+}
+
 // Re-export so existing modeling/agent/authoring importers keep working.
 // The canonical definition lives in shared/capture/sketchCommand.ts as a
 // leaf module so the kernel can type-import it without depending on
@@ -242,6 +261,26 @@ export class Sketch {
 
     const negateScalar = (p: Param): Param => toParam(-p.evaluated, p.unit);
 
+    // Vector (direction-only) reflection. Same axis as the coordinate
+    // reflection above but WITHOUT the offset shift — used for derivatives
+    // (tangent, curvature) which carry no absolute-position component.
+    const reflectVec = (vx: Param, vy: Param): [Param, Param] => {
+      const xv = vx.evaluated;
+      const yv = vy.evaluated;
+      let nx: number;
+      let ny: number;
+      if (axis === 'x') {
+        nx = norm(xv); ny = norm(-yv);
+      } else if (axis === 'y') {
+        nx = norm(-xv); ny = norm(yv);
+      } else if (axis.axis === 'x') {
+        nx = norm(xv); ny = norm(-yv);
+      } else {
+        nx = norm(-xv); ny = norm(yv);
+      }
+      return [toParam(nx, vx.unit), toParam(ny, vy.unit)];
+    };
+
     // Arc sign-flip: reflection inverts winding. For arcs whose direction is
     // encoded as a sign on a scalar (sagitta, bulge, radius), negate the sign.
     // tangentArc has no explicit direction parameter — the tangent is inherited
@@ -288,6 +327,43 @@ export class Sketch {
           // surrounding context picks the correct mirrored tangent.
           const [x, y] = reflectXY(cmd.x, cmd.y);
           return { ...cmd, x, y };
+        }
+        case 'spline': {
+          // Reflect every waypoint; tension is a scalar magnitude (no flip).
+          const newPoints = cmd.points.map(p => {
+            const [x, y] = reflectXY(p.x, p.y);
+            return { x, y };
+          });
+          return { ...cmd, points: newPoints };
+        }
+        case 'nurbsSegment': {
+          // Reflect every control point; degree, weights, and knots are
+          // invariant under coordinate reflection.
+          const newControls = cmd.controlPoints.map(p => {
+            const [x, y] = reflectXY(p.x, p.y);
+            return { x, y };
+          });
+          return { ...cmd, controlPoints: newControls };
+        }
+        case 'hermiteG2_2d': {
+          // Reflect endpoints with the affine offset; reflect tangents and
+          // curvatures as pure direction vectors (no offset shift).
+          const [ax, ay] = reflectXY(cmd.ax, cmd.ay);
+          const [bx, by] = reflectXY(cmd.bx, cmd.by);
+          const [atx, aty] = reflectVec(cmd.atx, cmd.aty);
+          const [btx, bty] = reflectVec(cmd.btx, cmd.bty);
+          const [acx, acy] = cmd.acx !== undefined && cmd.acy !== undefined
+            ? reflectVec(cmd.acx, cmd.acy)
+            : [undefined, undefined];
+          const [bcx, bcy] = cmd.bcx !== undefined && cmd.bcy !== undefined
+            ? reflectVec(cmd.bcx, cmd.bcy)
+            : [undefined, undefined];
+          return {
+            ...cmd,
+            ax, ay, bx, by,
+            atx, aty, btx, bty,
+            acx, acy, bcx, bcy,
+          };
         }
         case 'close':
           return cmd;
@@ -477,6 +553,336 @@ export class PathBuilder {
    */
   smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder {
     this.commands.push({ kind: 'smoothSpline', x: toParam(x, 'mm'), y: toParam(y, 'mm') });
+    return this;
+  }
+
+  /**
+   * Read the current pen position by walking back through commands to the
+   * most recent endpoint. Returns the numeric (`evaluated`) (x, y) — used
+   * for capture-time geometric validation (.spline / .nurbsSegment /
+   * .hermiteG2 start-point checks). Returns `null` when no segment has
+   * been emitted yet (only `close` or empty path).
+   *
+   * The pen-position rule mirrors how replicad's `BaseSketcher2d` derives
+   * its pen pointer: the endpoint of the last drawing command (`moveTo`,
+   * `lineTo`, any `*Arc`, `smoothSpline`, `spline`, `nurbsSegment`,
+   * `hermiteG2_2d`) is the current pen.
+   *
+   * Hard-private (`#`) so the drift-sentinel does not see it as a public
+   * PathBuilder method.
+   */
+  #currentPenPosition(): { x: number; y: number } | null {
+    for (let i = this.commands.length - 1; i >= 0; i--) {
+      const cmd = this.commands[i];
+      switch (cmd.kind) {
+        case 'moveTo':
+        case 'lineTo':
+        case 'tangentArc':
+        case 'threePointsArc':
+        case 'sagittaArc':
+        case 'bulgeArc':
+        case 'radiusArc':
+        case 'smoothSpline':
+          return { x: cmd.x.evaluated, y: cmd.y.evaluated };
+        case 'spline': {
+          const last = cmd.points[cmd.points.length - 1];
+          return { x: last.x.evaluated, y: last.y.evaluated };
+        }
+        case 'nurbsSegment': {
+          const last = cmd.controlPoints[cmd.controlPoints.length - 1];
+          return { x: last.x.evaluated, y: last.y.evaluated };
+        }
+        case 'hermiteG2_2d':
+          return { x: cmd.bx.evaluated, y: cmd.by.evaluated };
+        case 'close':
+          // `close` is supposed to be terminal — keep scanning back for the
+          // last drawing command (defensive; nothing should append after
+          // close in practice).
+          continue;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * N-waypoint interpolation. The lowerer threads a NURBS-quality B-spline
+   * approximation through every supplied waypoint, leaving the pen at the
+   * last waypoint. `points[0]` MUST match the current pen position (i.e.
+   * `path().moveTo(p0).spline([p0, p1, ..., pN])`).
+   *
+   * Pick this for organic outlines (eyewear brow, ergonomic grips,
+   * sneaker silhouettes) when you have measured waypoints rather than a
+   * closed-form NURBS control-net. Higher visual quality than chaining
+   * `smoothSpline` because the underlying B-spline is degree-3 with
+   * smoothing.
+   *
+   * Throws (capture-time) on:
+   * - `points.length < 2` (degenerate);
+   * - any non-finite coordinate;
+   * - consecutive duplicate points (< 1e-9 mm apart).
+   *
+   * `opts.tension` is reserved for future Catmull-Rom-style stiffness
+   * control; ignored in v1.
+   *
+   * @param points waypoints to interpolate, in order from current pen to
+   *   the new endpoint
+   * @param opts.tension reserved (Catmull-Rom stiffness; v2)
+   */
+  spline(
+    points: Array<[Editable<number>, Editable<number>]>,
+    opts?: { tension?: Editable<number> },
+  ): PathBuilder {
+    if (!Array.isArray(points) || points.length < 2) {
+      throw new KernelError(
+        'feature.path.spline.degenerate-points',
+        `path().spline: need at least 2 waypoints; got ${points?.length ?? 0}.`,
+        undefined,
+        'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
+      );
+    }
+    const paramPoints: Array<{ x: Param; y: Param }> = [];
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i];
+      if (!Array.isArray(pt) || pt.length !== 2) {
+        throw new KernelError(
+          'feature.path.spline.degenerate-points',
+          `path().spline: waypoint ${i} is not a [x, y] tuple.`,
+          undefined,
+          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
+        );
+      }
+      const x = toParam(pt[0], 'mm');
+      const y = toParam(pt[1], 'mm');
+      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+        throw new KernelError(
+          'feature.path.spline.degenerate-points',
+          `path().spline: waypoint ${i} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          undefined,
+          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
+        );
+      }
+      paramPoints.push({ x, y });
+    }
+    // Reject consecutive duplicates (closer than 1e-9 mm).
+    for (let i = 1; i < paramPoints.length; i++) {
+      const dx = paramPoints[i].x.evaluated - paramPoints[i - 1].x.evaluated;
+      const dy = paramPoints[i].y.evaluated - paramPoints[i - 1].y.evaluated;
+      if (Math.hypot(dx, dy) < 1e-9) {
+        throw new KernelError(
+          'feature.path.spline.degenerate-points',
+          `path().spline: waypoints ${i - 1} and ${i} are coincident (< 1e-9 mm apart).`,
+          undefined,
+          'path.spline.degenerate-points — pass at least 2 finite Vec2 waypoints (the path interpolates through every one).',
+        );
+      }
+    }
+    this.commands.push({
+      kind: 'spline',
+      points: paramPoints,
+      tension: opts?.tension !== undefined ? toParam(opts.tension, 'unitless') : undefined,
+    });
+    return this;
+  }
+
+  /**
+   * Explicit B-spline segment from `controlPoints[0]` to `controlPoints[N-1]`.
+   * `controlPoints[0]` MUST match the current pen position within 1e-6 mm.
+   *
+   * Pick this when the control-net is the natural mental model (explicit
+   * NURBS authoring, round-tripping from external CAD, programmatic
+   * generation from a formula). For waypoint interpolation, use `.spline()`.
+   *
+   * Throws (capture-time) on:
+   * - fewer than `degree + 1` control points;
+   * - any non-finite control-point coord;
+   * - `controlPoints[0]` not matching current pen position within 1e-6;
+   * - `weights` length != controlPoints length;
+   * - any weight ≤ 0 (zero collapses the basis; negative is undefined);
+   * - `knots` length != controlPoints.length + degree + 1 (when provided).
+   *
+   * Knot vector defaults to a clamped uniform vector
+   * (`[0,...,0, ..., 1,...,1]` with multiplicity `degree+1` at each end).
+   *
+   * @param controlPoints B-spline control polygon (≥ degree+1 points)
+   * @param opts.degree spline degree (default 3); must satisfy
+   *   `1 ≤ degree ≤ controlPoints.length - 1`
+   * @param opts.weights rational-NURBS weights (one per control point)
+   * @param opts.knots explicit knot vector (overrides clamped uniform default)
+   */
+  nurbsSegment(
+    controlPoints: Array<[Editable<number>, Editable<number>]>,
+    opts?: { degree?: number; weights?: number[]; knots?: number[] },
+  ): PathBuilder {
+    const degree = opts?.degree ?? 3;
+    if (!Number.isInteger(degree) || degree < 1) {
+      throw new KernelError(
+        'feature.path.nurbs-segment.degenerate-controls',
+        `path().nurbsSegment: degree must be an integer ≥ 1; got ${degree}.`,
+        undefined,
+        'path.nurbs-segment.degenerate-controls — degree must be an integer in [1, controlPoints.length - 1].',
+      );
+    }
+    if (!Array.isArray(controlPoints) || controlPoints.length < degree + 1) {
+      throw new KernelError(
+        'feature.path.nurbs-segment.degenerate-controls',
+        `path().nurbsSegment: need at least degree+1 = ${degree + 1} control points; got ${controlPoints?.length ?? 0}.`,
+        undefined,
+        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+      );
+    }
+    const paramControls: Array<{ x: Param; y: Param }> = [];
+    for (let i = 0; i < controlPoints.length; i++) {
+      const cp = controlPoints[i];
+      if (!Array.isArray(cp) || cp.length !== 2) {
+        throw new KernelError(
+          'feature.path.nurbs-segment.degenerate-controls',
+          `path().nurbsSegment: control point ${i} is not a [x, y] tuple.`,
+          undefined,
+          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+        );
+      }
+      const x = toParam(cp[0], 'mm');
+      const y = toParam(cp[1], 'mm');
+      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+        throw new KernelError(
+          'feature.path.nurbs-segment.degenerate-controls',
+          `path().nurbsSegment: control point ${i} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          undefined,
+          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+        );
+      }
+      paramControls.push({ x, y });
+    }
+    // First control point must match current pen position within 1e-6 mm.
+    const pen = this.#currentPenPosition();
+    if (pen === null) {
+      throw new KernelError(
+        'feature.path.nurbs-segment.degenerate-controls',
+        `path().nurbsSegment: no current pen position — call moveTo(x, y) before nurbsSegment.`,
+        undefined,
+        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+      );
+    }
+    const dx0 = paramControls[0].x.evaluated - pen.x;
+    const dy0 = paramControls[0].y.evaluated - pen.y;
+    if (Math.hypot(dx0, dy0) > 1e-6) {
+      throw new KernelError(
+        'feature.path.nurbs-segment.degenerate-controls',
+        `path().nurbsSegment: controlPoints[0] = (${paramControls[0].x.evaluated}, ${paramControls[0].y.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        undefined,
+        'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+      );
+    }
+    // Weights validation.
+    let paramWeights: Param[] | undefined;
+    if (opts?.weights !== undefined) {
+      if (!Array.isArray(opts.weights) || opts.weights.length !== controlPoints.length) {
+        throw new KernelError(
+          'feature.path.nurbs-segment.degenerate-controls',
+          `path().nurbsSegment: weights length (${opts.weights?.length ?? 0}) must equal controlPoints length (${controlPoints.length}).`,
+          undefined,
+          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+        );
+      }
+      for (let i = 0; i < opts.weights.length; i++) {
+        const w = opts.weights[i];
+        if (!Number.isFinite(w) || w <= 0) {
+          throw new KernelError(
+            'feature.path.nurbs-segment.weights-non-positive',
+            `path().nurbsSegment: weight[${i}] = ${w} must be a strictly positive finite number.`,
+            undefined,
+            'path.nurbs-segment.weights-non-positive — weights must be strictly positive (zero collapses the basis; negative is undefined for B-splines).',
+          );
+        }
+      }
+      paramWeights = opts.weights.map((w) => toParam(w, 'unitless'));
+    }
+    // Knots validation.
+    let paramKnots: Param[] | undefined;
+    if (opts?.knots !== undefined) {
+      const expectedKnotLen = controlPoints.length + degree + 1;
+      if (!Array.isArray(opts.knots) || opts.knots.length !== expectedKnotLen) {
+        throw new KernelError(
+          'feature.path.nurbs-segment.degenerate-controls',
+          `path().nurbsSegment: knots length (${opts.knots?.length ?? 0}) must equal controlPoints.length + degree + 1 (${expectedKnotLen}).`,
+          undefined,
+          'path.nurbs-segment.degenerate-controls — provide at least degree+1 finite Vec2 control points, with the first matching the current pen position within 1e-6 mm.',
+        );
+      }
+      paramKnots = opts.knots.map((k) => toParam(k, 'unitless'));
+    }
+    this.commands.push({
+      kind: 'nurbsSegment',
+      controlPoints: paramControls,
+      degree: toParam(degree, 'unitless'),
+      weights: paramWeights,
+      knots: paramKnots,
+    });
+    return this;
+  }
+
+  /**
+   * 2D quintic-Hermite transition curve between two endpoints, each
+   * carrying a prescribed point + first derivative (tangent) + optional
+   * second derivative (curvature). The 2D analogue of Slice C's 3D
+   * `hermiteG2`. `a.point` MUST match the current pen position within
+   * 1e-6 mm; the pen ends at `b.point`.
+   *
+   * Pick this for G2-continuous blends between adjacent path runs
+   * (eyewear bridge ↔ brow, sneaker midsole transitions, ergonomic grip
+   * fillet transitions). The curvature term is optional — without it the
+   * curve is degree-5 but only G1; with it the curve is G2-continuous
+   * with any neighbour that shares the endpoint frame.
+   *
+   * Throws (capture-time) on:
+   * - `a.point` not matching current pen position within 1e-6 mm
+   *   (`feature.path.hermite-g2.start-mismatch`).
+   * - Other invalid inputs (zero tangent, NaN/Infinity coords) surface at
+   *   lowering time via `feature.hermite-g2.*` once the solver runs.
+   *
+   * @param a start endpoint (must match current pen position)
+   * @param b end endpoint
+   */
+  hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder {
+    const ax = toParam(a.point[0], 'mm');
+    const ay = toParam(a.point[1], 'mm');
+    const bx = toParam(b.point[0], 'mm');
+    const by = toParam(b.point[1], 'mm');
+    const atx = toParam(a.tangent[0], 'mm');
+    const aty = toParam(a.tangent[1], 'mm');
+    const btx = toParam(b.tangent[0], 'mm');
+    const bty = toParam(b.tangent[1], 'mm');
+    const acx = a.curvature !== undefined ? toParam(a.curvature[0], 'mm') : undefined;
+    const acy = a.curvature !== undefined ? toParam(a.curvature[1], 'mm') : undefined;
+    const bcx = b.curvature !== undefined ? toParam(b.curvature[0], 'mm') : undefined;
+    const bcy = b.curvature !== undefined ? toParam(b.curvature[1], 'mm') : undefined;
+
+    // Start-point validation: a.point must match the current pen position.
+    const pen = this.#currentPenPosition();
+    if (pen === null) {
+      throw new KernelError(
+        'feature.path.hermite-g2.start-mismatch',
+        `path().hermiteG2: no current pen position — call moveTo(${ax.evaluated}, ${ay.evaluated}) before hermiteG2.`,
+        undefined,
+        "path.hermite-g2.start-mismatch — align `a.point` with the path's current position, or call moveTo first.",
+      );
+    }
+    const dx0 = ax.evaluated - pen.x;
+    const dy0 = ay.evaluated - pen.y;
+    if (Math.hypot(dx0, dy0) > 1e-6) {
+      throw new KernelError(
+        'feature.path.hermite-g2.start-mismatch',
+        `path().hermiteG2: a.point = (${ax.evaluated}, ${ay.evaluated}) does not match current pen position (${pen.x}, ${pen.y}) within 1e-6 mm.`,
+        undefined,
+        "path.hermite-g2.start-mismatch — align `a.point` with the path's current position, or call moveTo first.",
+      );
+    }
+
+    this.commands.push({
+      kind: 'hermiteG2_2d',
+      ax, ay, atx, aty, acx, acy,
+      bx, by, btx, bty, bcx, bcy,
+    });
     return this;
   }
 
