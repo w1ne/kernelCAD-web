@@ -2,6 +2,7 @@ import type { CaptureSession } from './captureSession';
 import type { FeatureId } from '../../shared/intent/types';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import { KernelError } from '../../shared/intent/kernelError';
+import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 
 /**
  * Capture-time proxy for a 3D parametric curve produced by `nurbsCurve()`.
@@ -42,19 +43,19 @@ export interface Curve3D {
 }
 
 export class Curve3DProxy implements Curve3D {
-  constructor(
-    public readonly id: FeatureId,
-    public readonly metadata: Curve3DMetadata,
-    private readonly session: CaptureSession,
-  ) {}
+  readonly id: FeatureId;
+  readonly metadata: Curve3DMetadata;
+  private readonly session: CaptureSession;
+
+  constructor(id: FeatureId, metadata: Curve3DMetadata, session: CaptureSession) {
+    this.id = id;
+    this.metadata = metadata;
+    this.session = session;
+  }
 
   private evaluator() {
-    // Dynamic import keeps OCCT off the capture-only hot path and avoids
-    // a static cycle (curveProxy -> captureSession -> curveProxy).
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-    const mod = require('../backends/occt/curve3dEval') as typeof import('../backends/occt/curve3dEval');
     try {
-      return mod.lazyEvalCurve(this.session, this.id, this.metadata);
+      return lazyEvalCurve(this.session, this.id, this.metadata);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       throw new KernelError(
