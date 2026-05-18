@@ -72,6 +72,20 @@ export interface KernelCadApi {
   box(x: Editable<number>, y: Editable<number>, z: Editable<number>, centered?: boolean, opts?: FaceLabelOpts): Shape;
   cylinder(h: Editable<number>, r: Editable<number>, segments?: number, opts?: FaceLabelOpts): Shape;
   sphere(r: Editable<number>, opts?: FaceLabelOpts): Shape;
+  /**
+   * Solid torus centered on world origin, axis along world +Z.
+   *
+   * Built via `path().circle(majorR, 0, minorR).revolve()` — a polyline
+   * approximation of the minor-radius profile revolved 360° about Z.
+   * Surfaced 2× in agent-eval (eyebolt + others): there was no
+   * convenience primitive for this canonical rotational shape; agents
+   * emitted trig in TS to build the polyline circle by hand.
+   *
+   * @param majorR distance from world origin to profile center
+   * @param minorR profile circle radius
+   * @param segments profile polyline segments (default 48)
+   */
+  torus(majorR: number, minorR: number, segments?: number): Shape;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudePolygon(points: [number, number][], depth: Editable<number>, opts?: FaceLabelOpts): Shape;
@@ -270,6 +284,39 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         params: { r: mm(r) },
         inputs: {},
       });
+    },
+    torus(majorR, minorR, segments = 48) {
+      if (!Number.isFinite(majorR) || !Number.isFinite(minorR)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `torus: majorR (${majorR}) and minorR (${minorR}) must be finite numbers.`,
+          'torus',
+          'Pass numeric literals for majorR and minorR.',
+        );
+      }
+      if (majorR <= 0 || minorR <= 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `torus: majorR (${majorR}) and minorR (${minorR}) must be > 0.`,
+          'torus',
+          'Pass positive numeric radii.',
+        );
+      }
+      if (minorR >= majorR) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `torus: minorR (${minorR}) must be < majorR (${majorR}) to produce a non-self-intersecting torus (the profile circle would cross the rotation axis at minorR >= majorR).`,
+          'torus',
+          'Pick minorR < majorR. Typical: minorR ~= 0.2-0.4 × majorR for a chunky ring; minorR << majorR for a thin ring.',
+        );
+      }
+      // Build the profile in the XY (sketch) plane as a polyline circle
+      // centered at (majorR, 0). The session's revolve op rotates about
+      // the Y axis of the sketch plane by default, which maps to world Z
+      // after the standard XY sketch frame — producing a torus whose axis
+      // is world Z.
+      const profile = makePath(session).circle(majorR, 0, minorR, segments);
+      return profile.revolve();
     },
     extrudeRect(w, h, height, opts) {
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
