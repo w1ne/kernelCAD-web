@@ -1,11 +1,23 @@
 import { useCallback, useState } from 'react';
 import { parseSseStream, startGeneration, type Artifact, type GenerateEvent } from '../lib/generateClient';
 
+/** Codes emitted by the client when generation fails outside the server's
+ *  own error stream. Server-relayed `error` events carry their own codes
+ *  (relayed through verbatim), so the wire shape stays open. */
+export type FunnelClientErrorCode =
+  | 'network'
+  | 'rate_limited'
+  | 'no_body'
+  | 'missing_generation_id'
+  | 'stream_closed';
+
+export type FunnelErrorCode = FunnelClientErrorCode | `http_${number}` | (string & {});
+
 export type GenerationPhase =
   | { state: 'idle' }
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
   | { state: 'done'; generationId: string; anonId: string; artifact: Artifact }
-  | { state: 'error'; code: string; message: string; generationId?: string };
+  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string };
 
 export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
@@ -30,7 +42,7 @@ export function useGeneration() {
     if (!res.ok) {
       setPhase({
         state: 'error',
-        code: res.status === 429 ? 'rate_limited' : 'http_' + res.status,
+        code: res.status === 429 ? 'rate_limited' : `http_${res.status}`,
         message: await res.text().catch(() => `HTTP ${res.status}`),
       });
       return;
