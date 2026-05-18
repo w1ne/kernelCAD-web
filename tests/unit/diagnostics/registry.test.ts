@@ -19,6 +19,7 @@ const ALLOWED_GROUPS = new Set([
   'cli',
   'export',
   'assembly',
+  'mesher',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the
