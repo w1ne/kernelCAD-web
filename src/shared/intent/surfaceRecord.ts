@@ -39,14 +39,38 @@ export interface SurfaceFromCurvesData {
 }
 
 /**
+ * Data payload for `surfaceFromBoundary([c1, c2, c3, c4])` — a Coons patch
+ * filling the interior of 4 boundary curves. Lowers to OCCT's
+ * `BRepOffsetAPI_MakeFilling` (audited 2026-05-18; the plan's
+ * `BRepFill_Filling` name is not exposed in this bundle, but
+ * `BRepOffsetAPI_MakeFilling` is the same algorithm under a different name).
+ *
+ * `curveIds[0]` = bottom, `curveIds[1]` = right, `curveIds[2]` = top,
+ * `curveIds[3]` = left. The capture-time corner-coincidence check requires
+ * `curve[i].end ≈ curve[(i+1)%4].start` within 1e-6 mm.
+ */
+export interface CoonsPatchData {
+  kind: 'coonsPatch';
+  curveIds: [FeatureId, FeatureId, FeatureId, FeatureId];
+  /** Per-edge continuity flag, in the same order as `curveIds`. Maps to
+   *  `GeomAbs_C0 | GeomAbs_C1 | GeomAbs_C2` at lower time. */
+  continuity: ['C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2'];
+  /** Sampling density per boundary curve (NbPtsOnCur on
+   *  `BRepOffsetAPI_MakeFilling`). Defaults to 15 when absent. */
+  sampling?: number;
+}
+
+/**
  * Capture-time record for a Surface. Parallel to `FeatureRecord` but lives
  * on `CaptureSession.surfaceRecords`. Carries enough data for the lowerer
  * to rebuild the surface from session state alone.
  */
 export interface SurfaceRecord {
   id: SurfaceId;
-  kind: 'nurbsSurface' | 'surfaceFromCurves';
+  kind: 'nurbsSurface' | 'surfaceFromCurves' | 'coonsPatch';
   params: Record<string, Param>;
-  data: NurbsSurfaceData | SurfaceFromCurvesData;
+  data: NurbsSurfaceData | SurfaceFromCurvesData | CoonsPatchData;
   scriptLocation?: ScriptLocation;
+  /** Optional structured diagnostics from capture-time validation. */
+  diagnostics?: import('../diagnostics/diagnostic').CompilerDiagnostic[];
 }

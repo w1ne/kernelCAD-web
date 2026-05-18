@@ -6,11 +6,12 @@ import type { FeatureRecord, ShapeTransform } from '../../shared/intent/featureR
 import type { FeatureId, FeatureKind, FeatureRef, Param, PatternSpec, PlaneSpec, Vec3, Vec3Param } from '../../shared/intent/types';
 import { isValidPlaneSpec } from '../../shared/intent/types';
 import type {
-  SurfaceRecord, SurfaceId, NurbsSurfaceData,
+  SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData,
 } from '../../shared/intent/surfaceRecord';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import { Curve3DProxy } from './curveProxy';
+import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
 import { imageDimensions } from './imageDimensions';
 import { existsSync } from 'node:fs';
@@ -244,6 +245,93 @@ export class CaptureSession {
       id, kind: 'surfaceFromCurves', params: {},
       data: { kind: 'surfaceFromCurves', sectionIds },
     });
+    return new SurfaceProxy(id, this);
+  }
+
+  /**
+   * NURBS Slice C: capture a Coons-patch surface built from 4 boundary curves.
+   * The 4 `curveIds` must reference `curve3d` feature records already on the
+   * session, in walk order (bottom, right, top, left). Endpoint-coincidence
+   * is verified within 1e-6 mm via the curves' `pointAt(0)` / `pointAt(1)`
+   * (OCCT must be initialised, since the proxy evaluator lowers each curve
+   * lazily on first sample).
+   *
+   * Validation diagnostics ride on the `SurfaceRecord.diagnostics` field
+   * (mirrors the `addCurve3D` pattern of producing the record regardless of
+   * validation outcome so agents can inspect and correct errors).
+   */
+  addSurfaceFromBoundary(args: {
+    curveIds: [FeatureId, FeatureId, FeatureId, FeatureId];
+    continuity: ['C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2'];
+    sampling?: number;
+  }): SurfaceProxy {
+    const id = this.surfaceIdGen.next();
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    // Validation 1: each curveId must resolve to a curve3d record on the session.
+    const curveMetas: (Curve3DMetadata | undefined)[] = args.curveIds.map((cid) => {
+      const rec = this.records.find((r) => r.id === cid);
+      if (!rec || rec.kind !== 'curve3d') return undefined;
+      const m = (rec.metadata as { curve3d?: unknown } | undefined)?.curve3d;
+      return isCurve3DMetadataLite(m) ? (m as Curve3DMetadata) : undefined;
+    });
+
+    // Validation 2: corner-coincidence within 1e-6 mm using the curve evaluators.
+    // We use lazy evaluation (which requires initOcct) so that the endpoint
+    // points reflect the actual curve, not just the control polygon. If
+    // the evaluators fail (e.g. OCCT not initialised at capture time), we
+    // gracefully fall back to the first/last control-point pair — clamped
+    // NURBS curves interpolate their endpoints, so this is exact for the
+    // common case.
+    const corners: ({ start: [number, number, number]; end: [number, number, number] } | undefined)[] =
+      curveMetas.map((m, i) => {
+        if (!m) return undefined;
+        try {
+          const ev = lazyEvalCurve(this, args.curveIds[i], m);
+          return { start: ev.pointAt(0), end: ev.pointAt(1) };
+        } catch {
+          // Clamped uniform NURBS curves interpolate their endpoints.
+          const cp = m.controlPoints;
+          return {
+            start: cp[0] as [number, number, number],
+            end: cp[cp.length - 1] as [number, number, number],
+          };
+        }
+      });
+
+    if (corners.every((c): c is { start: [number, number, number]; end: [number, number, number] } => c !== undefined)) {
+      const eps = 1e-6;
+      const close = (a: [number, number, number], b: [number, number, number]): boolean =>
+        Math.abs(a[0] - b[0]) <= eps && Math.abs(a[1] - b[1]) <= eps && Math.abs(a[2] - b[2]) <= eps;
+      for (let i = 0; i < 4; i++) {
+        const next = (i + 1) % 4;
+        if (!close(corners[i].end, corners[next].start)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.surface-from-boundary.corner-mismatch',
+            severity: 'error',
+            message:
+              `surfaceFromBoundary: curve[${i}].end (${corners[i].end.join(',')}) does not match curve[${next}].start (${corners[next].start.join(',')}) within 1e-6 mm.`,
+            hint: HINT_TEMPLATES['feature.surface-from-boundary.corner-mismatch'].template,
+          });
+        }
+      }
+    }
+
+    const data: CoonsPatchData = {
+      kind: 'coonsPatch',
+      curveIds: args.curveIds,
+      continuity: args.continuity,
+      ...(args.sampling !== undefined ? { sampling: args.sampling } : {}),
+    };
+    const record: SurfaceRecord = {
+      id,
+      kind: 'coonsPatch',
+      params: {},
+      data,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+    this.surfaceRecords.push(record);
     return new SurfaceProxy(id, this);
   }
 
@@ -1204,6 +1292,17 @@ export class CaptureSession {
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/** Lightweight structural check for Curve3DMetadata used by
+ *  `addSurfaceFromBoundary` — avoids importing the full type-guard while still
+ *  catching missing-controls / missing-degree without throwing. */
+function isCurve3DMetadataLite(v: unknown): v is Curve3DMetadata {
+  if (typeof v !== 'object' || v === null) return false;
+  const m = v as { controlPoints?: unknown; degree?: unknown };
+  if (!Array.isArray(m.controlPoints) || m.controlPoints.length === 0) return false;
+  if (typeof m.degree !== 'number' || !Number.isInteger(m.degree) || m.degree < 1) return false;
+  return true;
 }
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);
