@@ -66,6 +66,7 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.reference-image.format-unsupported': { kind: 'fix-arg', field: 'path' },
   'feature.material.invalid-base-color':      { kind: 'fix-arg', field: 'baseColor' },
   'feature.material.value-clamped':           { kind: 'fix-arg', field: 'see-message' },
+  'feature.material.face-label-no-match':     { kind: 'fix-arg', field: 'face' },
   'feature.edge-feature.short-edges-skipped': { kind: 'fix-arg', field: 'radius-or-distance' },
   'assembly.placement-ignored-by-mate-fk':    { kind: 'fix-arg', field: 'at' },
   'assembly.mates-ignored-by-model-call':     { kind: 'rewrite-feature', guidance: 'replace arm.model() with arm.solvedModel({}) so the mate solver runs' },

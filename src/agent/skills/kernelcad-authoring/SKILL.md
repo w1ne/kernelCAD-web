@@ -499,6 +499,35 @@ For schematic coloring (servo, frame, gear, beam, shaft, plate, pin, tool) where
 photo-accuracy is not required, the role-token shortcut `.color('servo')` etc.
 is sufficient and cleaner. Use `.material()` only when the reference demands it.
 
+### Per-face materials
+
+For parts where different faces need different materials (eyewear rim vs. lens
+vs. temple-hinge boss; brushed body + polished crown; etc.), pass a `face`
+field referencing a face label declared on a creating op:
+
+```typescript
+const frame = box(140, 50, 6, false, {
+  faceLabels: { front: 'front', back: 'back', top: 'top' },
+});
+frame.material({ face: 'front', baseColor: '#0a0a0a', clearcoat: 1, roughness: 0.1 });  // glossy acetate front
+frame.material({ face: 'back',  baseColor: '#1a1a1a', roughness: 0.7 });                // matte interior
+frame.material({ baseColor: '#cccccc', roughness: 0.5 });                                // default for unlabeled faces
+```
+
+Rules:
+- `face` must be a label declared upstream via the creator's `faceLabels` option
+  (or via `path().label(...)` for sketch-derived shapes).
+- Calls accumulate on the shape — multiple `.material({ face: ... })` calls
+  build up per-face entries. A second call with the same `face` overwrites.
+- A call **without** `face` sets the shape-level default (applies to any face
+  not covered by a per-face entry).
+- If a label fails to resolve at mesh time (typo, transform stripped lineage,
+  no upstream `faceLabels` entry), the build continues and a soft
+  `feature.material.face-label-no-match` warning is emitted; the affected faces
+  fall back to the shape-level default.
+- Per-face identity dies at boolean operations (same as `.color()` and the
+  whole-shape `.material()`). Apply per-face materials AFTER all booleans.
+
 ## Reference images
 
 `referenceImage(path, opts)` places a reference photo as a plane overlay in the
