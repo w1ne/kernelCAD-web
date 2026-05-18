@@ -13,8 +13,8 @@
 // diagnostic. No caller override needed or possible.
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextAction } from '../../shared/diagnostics/diagnostic';
-import type { DiagnosticCode } from '../../shared/diagnostics/codes';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { isKernelError } from '../../shared/intent/kernelError';
 
 export function kernelErrorToDiagnostic(

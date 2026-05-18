@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/codes';
+import { DIAGNOSTIC_CODES } from '../../../src/shared/diagnostics/registry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = resolvePath(__dirname, '../../../src');
@@ -66,21 +66,21 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 69 codes', () => {
-    // 46 baseline (milestone-C diagnostic-vocab spec)
+  it('catalogue has exactly 70 codes', () => {
+    // 47 baseline (milestone-C diagnostic-vocab spec + multi-material shadowing + assembly.mates-ignored-by-model-call)
     //  + 11 Slice B (Curve3D + variableSweep capture validation)
     //  +  6 Slice C (surfaceFromBoundary + G2 fillet)
     //  +  2 Slice C Task 5 (hermiteG2 quintic Hermite solver)
     //  +  4 Slice D (2D path NURBS — .spline / .nurbsSegment / .hermiteG2)
-    // = 69.
-    expect(catalogue.size).toBe(69);
+    // = 70.
+    expect(catalogue.size).toBe(70);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 69 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the ${DIAGNOSTIC_CODES.length} in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });

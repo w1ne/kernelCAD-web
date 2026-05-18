@@ -89,3 +89,86 @@ export async function listMyProjects(): Promise<ProjectRow[]> {
   if (error) throw new Error(error.message);
   return (data as ProjectRow[] | null) ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// Billing / plan
+// ---------------------------------------------------------------------------
+
+export type PlanTier = 'free' | 'pro';
+
+export interface MyPlan {
+  plan: PlanTier;
+  generationsRemaining: number;
+  currentPeriodEnd: string | null;
+}
+
+export interface CheckoutSession {
+  url: string;
+}
+
+export interface BillingPortalSession {
+  url: string;
+}
+
+/** Authed GET against the kernelCAD-server billing/plan endpoint.
+ * Mirrors saveProject's auth + non-2xx handling exactly. */
+export async function fetchMyPlan(): Promise<MyPlan> {
+  const supabase = getSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const base = import.meta.env.VITE_API_BASE_URL;
+  const res = await fetch(`${base}/api/v1/me/plan`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+  }
+  return res.json();
+}
+
+/** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
+ * the caller should redirect to (window.location.href = url). */
+export async function createCheckoutSession(): Promise<CheckoutSession> {
+  const supabase = getSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const base = import.meta.env.VITE_API_BASE_URL;
+  const res = await fetch(`${base}/api/v1/billing/create-checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+  }
+  return res.json();
+}
+
+/** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL
+ * for the signed-in pro user to manage / cancel their subscription. */
+export async function openBillingPortal(): Promise<BillingPortalSession> {
+  const supabase = getSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const base = import.meta.env.VITE_API_BASE_URL;
+  const res = await fetch(`${base}/api/v1/billing/portal`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+  }
+  return res.json();
+}

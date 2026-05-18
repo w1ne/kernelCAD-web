@@ -7,8 +7,17 @@ import { getSupabase } from '../../funnel/lib/supabaseClient';
 // import useSession. Without this, the OAuth redirect lands at `/` with the
 // access_token in the URL hash but the hash is never consumed because the
 // landing route doesn't import the auth hook. This call is safe (singleton).
+//
+// Skip in headless render mode (capture-demo, kernelcad render): those flows
+// don't need auth state and shouldn't require Supabase env vars to be present
+// on the rendering box (otherwise demo refresh hard-fails in any env without
+// .env.local — what broke the gallery between 2026-05-15 and 2026-05-18).
+// Detected via ?headless=1 to mirror isHeadlessRender() below.
 if (typeof window !== 'undefined') {
-  getSupabase();
+  const isHeadless = new URLSearchParams(window.location.search).get('headless') === '1';
+  if (!isHeadless) {
+    getSupabase();
+  }
 }
 
 const TanStackRouterDevtools = import.meta.env.DEV

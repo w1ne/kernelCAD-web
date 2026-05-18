@@ -185,7 +185,15 @@ export function DemoPlayerPage(): React.JSX.Element {
   const cameraCtrlRef = useRef<CameraController | null>(null);
   const elapsedMsRef = useRef(0);
   const terminalOriginRef = useRef(0);
-  const [version, setVersion] = useState('v0.21');
+  // Default to the package version that vite injects at build time so the
+  // watermark stays in sync with shipped releases. captureDemo overrides
+  // via setVersion() to the module string (e.g. "v0.6", "gallery"); the
+  // kernelcad render CLI doesn't, so this default is what static renders
+  // show. Previously hardcoded "v0.21", which silently went stale across
+  // every minor release after v0.2.
+  const [version, setVersion] = useState(
+    typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'DEV',
+  );
   const [isDemoApiReady, setIsDemoApiReady] = useState(false);
   const [scriptLoadStatus, setScriptLoadStatus] = useState<
     { kind: 'idle' | 'loading' | 'error'; message?: string }
@@ -409,7 +417,11 @@ export function DemoPlayerPage(): React.JSX.Element {
             };
           }
           for (const face of fm.faces) {
-            const material = buildMaterialFromPBR(pbrForFaces);
+            // Per-face material override (Shape.material({ face: '<label>', ... }))
+            // takes precedence over the shape-level default. Unmatched faces fall
+            // back to pbrForFaces (whole-shape material → legacy color → default).
+            const perFacePbr = fm.materialByFaceId?.[face.faceId];
+            const material = buildMaterialFromPBR(perFacePbr ?? pbrForFaces);
             const mesh = buildMeshFromFace(
               face,
               `${fm.featureId}-face-${face.faceId}`,

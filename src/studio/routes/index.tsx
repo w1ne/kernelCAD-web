@@ -4,8 +4,10 @@ import { PromptBox } from '../../funnel/components/PromptBox';
 import { EmailSignup } from '../../funnel/components/EmailSignup';
 import { GallerySection } from '../../funnel/components/GallerySection';
 import { SignInModal } from '../../funnel/components/SignInModal';
+import { RateLimitedPanel } from '../../funnel/components/RateLimitedPanel';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
+import { createCheckoutSession } from '../../funnel/lib/apiClient';
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
@@ -20,6 +22,24 @@ function LandingPage() {
   const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
   const [signInOpen, setSignInOpen] = useState(false);
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+
+  const handleUpgrade = useCallback(async () => {
+    // Unauthenticated rate-limit (e.g. anon path) → push into sign-in first.
+    if (!session) {
+      setSignInOpen(true);
+      return;
+    }
+    setUpgradeBusy(true);
+    try {
+      const { url } = await createCheckoutSession();
+      window.location.href = url;
+    } catch {
+      // Stay on page; the user can retry. Don't swallow silently in the
+      // rendered UI — surface via the panel's busy state clearing.
+      setUpgradeBusy(false);
+    }
+  }, [session]);
 
   const handleSubmit = useCallback(
     (prompt: string) => {
@@ -121,7 +141,14 @@ function LandingPage() {
           )}
 
           {/* Error */}
-          {phase.state === 'error' && (
+          {phase.state === 'error' && phase.code === 'rate_limited' && (
+            <RateLimitedPanel
+              authenticated={!!session}
+              onUpgrade={handleUpgrade}
+              busy={upgradeBusy}
+            />
+          )}
+          {phase.state === 'error' && phase.code !== 'rate_limited' && (
             <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-copper bg-vellum-soft p-4 text-ink text-left">
               <p className="font-serif font-medium text-lg">Generation didn't finish</p>
               <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{phase.code}</p>

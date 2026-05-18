@@ -51,7 +51,7 @@ import {
 import { propagateTransformHistory } from '../../../kernel/naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../../kernel/naming/evolutionRecord';
 import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
-import { HINT_TEMPLATES } from '../../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization
@@ -1089,11 +1089,25 @@ export class OcctLowerer implements FeatureLowerer {
             }
           }
           const frenet = (r.params.frenet?.evaluated ?? 0) > 0.5;
+          const rawTransition = (r.metadata as { transitionMode?: unknown } | undefined)?.transitionMode;
+          const ALLOWED_MODES = ['right', 'transformed', 'round'] as const;
+          if (rawTransition !== undefined && !ALLOWED_MODES.includes(rawTransition as typeof ALLOWED_MODES[number])) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `sweep.transitionMode must be one of 'right' | 'transformed' | 'round'; got ${JSON.stringify(rawTransition)}.`,
+              hint: "Pass transitionMode: 'right' (default, sharp), 'transformed' (extend tangents), or 'round' (tangent-arc corner).",
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const transitionMode = (rawTransition ?? 'right') as 'right' | 'transformed' | 'round';
           try {
             shape = OcctBackend.sweepFromSketch(
               sketchInput,
               rail as [number, number, number][],
-              { frenet },
+              { frenet, transitionMode },
             );
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);

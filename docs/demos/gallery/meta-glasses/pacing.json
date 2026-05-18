@@ -1,8 +1,8 @@
 {
   "preRollMs": 0,
-  "rotateStartMs": 15700,
+  "rotateStartMs": 13600,
   "rotateDurationMs": 8000,
-  "totalDurationMs": 25700,
+  "totalDurationMs": 23600,
   "features": {
     "extrude_1": {
       "startAtMs": 0,
@@ -28,68 +28,56 @@
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
-    "extrude_5": {
+    "cylinder_1": {
       "startAtMs": 4000,
       "durationMs": 500,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
-    "boolean_1": {
+    "cylinder_2": {
       "startAtMs": 5000,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "cylinder_3": {
+      "startAtMs": 6000,
+      "durationMs": 500,
+      "pauseMsAfter": 200,
+      "cameraNudgeMs": 300
+    },
+    "boolean_1": {
+      "startAtMs": 7000,
       "durationMs": 600,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
     "boolean_2": {
-      "startAtMs": 6100,
+      "startAtMs": 8100,
       "durationMs": 600,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
     "boolean_3": {
-      "startAtMs": 7200,
+      "startAtMs": 9200,
       "durationMs": 600,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
     "boolean_4": {
-      "startAtMs": 8300,
+      "startAtMs": 10300,
       "durationMs": 600,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 300
-    },
-    "cylinder_1": {
-      "startAtMs": 9400,
-      "durationMs": 500,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
     "boolean_5": {
-      "startAtMs": 10400,
+      "startAtMs": 11400,
       "durationMs": 600,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 300
-    },
-    "cylinder_2": {
-      "startAtMs": 11500,
-      "durationMs": 500,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300
     },
     "boolean_6": {
       "startAtMs": 12500,
-      "durationMs": 600,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 300
-    },
-    "cylinder_3": {
-      "startAtMs": 13600,
-      "durationMs": 500,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 300
-    },
-    "boolean_7": {
-      "startAtMs": 14600,
       "durationMs": 600,
       "pauseMsAfter": 200,
       "cameraNudgeMs": 300

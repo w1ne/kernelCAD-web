@@ -11,6 +11,8 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { transformFeatureMesh } from './transformMesh';
+import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
+import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */
 function extractRawShape(backend: ShapeBackend): unknown {
@@ -38,6 +40,12 @@ export interface FeatureMesh {
    *  metadata.color). Present when the record has material metadata. The renderer
    *  (Task 8+) prefers this over the legacy `color` string field. */
   material?: PBRMaterial;
+  /** Per-face PBR materials keyed by the integer `faceId` of `faces[i]`.
+   *  Populated when `FeatureRecord.metadata.materialByLabel` resolves at least
+   *  one label against the meshed shape (`Shape.material({ face, ... })`
+   *  per-face API). The renderer prefers this entry over `material` on a
+   *  face-by-face basis; unmatched faces fall back to `material`. */
+  materialByFaceId?: Record<number, PBRMaterial>;
   /** True for virtual (non-geometry) records such as referenceImage. */
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
@@ -49,10 +57,52 @@ export interface Bounds {
   max: [number, number, number];
 }
 
+/** Soft warning emitted when `Shape.material({ face })` referenced a label
+ *  that failed to resolve at mesh time. Surfaced via `MeshFeaturesResult`
+ *  so the caller can route to the diagnostic stream of choice (recompute
+ *  engine warnings, MCP response, etc.). The build does NOT fail — the
+ *  affected faces simply fall back to the shape-level material. */
+export interface PerFaceMaterialWarning {
+  code: 'feature.material.face-label-no-match';
+  featureId: FeatureId;
+  label: string;
+  detail: string;
+}
+
+/** Diagnostic emitted when a leaf record with its own explicit material is
+ *  consumed by a downstream boolean.fuse (union/intersect) whose head record
+ *  also has its own material. The kernel's boolean operation produces a single
+ *  post-fuse mesh whose faces inherit the head record's material — the leaf's
+ *  material is therefore invisible on the static silhouette (post-fuse render
+ *  in `kernelcad render` and after the build animation settles in
+ *  `npm run capture-demo`). The leaf material IS visible during the staged
+ *  build animation while predecessor groups are still fading.
+ *
+ *  Authors who want a multi-material static render today must either:
+ *    (a) split the construction so the material-bearing leaf is not unioned
+ *        into a parent that also has its own material, OR
+ *    (b) author the leaf as a separate `assemblyPart` (assembly fan-out path
+ *        preserves per-part materials in the static render).
+ *
+ *  Tracked as a follow-up code fix in
+ *  `docs/specs/per-leaf-material-survives-static-render.md`. */
+export interface MaterialShadowingWarning {
+  leafFeatureId: FeatureId;
+  leafFeatureKind: FeatureKind;
+  shadowingFeatureId: FeatureId;
+  shadowingFeatureKind: FeatureKind;
+  message: string;
+}
+
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
   failedFeatureIds: FeatureId[];  // empty array if no failures
+  /** Soft warnings collected during per-face material label resolution.
+   *  Optional — absent when no labels were referenced. */
+  perFaceMaterialWarnings?: PerFaceMaterialWarning[];
+  /** Multi-material diagnostic. See `MaterialShadowingWarning` for context. */
+  materialShadowingWarnings: MaterialShadowingWarning[];
 }
 
 /**
@@ -165,11 +215,27 @@ export async function meshFeaturesPerFeature(
   const colorByFeatureId = new Map<FeatureId, string>();
   // Lookup table for full PBR material derived from record metadata.
   const materialByFeatureId = new Map<FeatureId, PBRMaterial>();
+  // Lookup table for per-face PBR overrides (label → PBR). Resolution into
+  // face-index keys happens at feature.compiled time when we hold the OCCT
+  // shape.
+  const materialByLabelByFeatureId = new Map<FeatureId, Record<string, PBRMaterial>>();
+  // Recordbook for diagnostics — surface unresolved labels as warnings.
+  const warnings: Array<{
+    code: 'feature.material.face-label-no-match';
+    featureId: FeatureId;
+    label: string;
+    detail: string;
+  }> = [];
   for (const r of records) {
     const color = (r.metadata as { color?: unknown } | undefined)?.color;
     if (typeof color === 'string') colorByFeatureId.set(r.id, color);
     const pbr = pbrFromMetadata(r.metadata as Record<string, unknown> | undefined);
     if (pbr !== undefined) materialByFeatureId.set(r.id, pbr);
+    const perFace = (r.metadata as { materialByLabel?: Record<string, PBRMaterial> } | undefined)
+      ?.materialByLabel;
+    if (perFace !== undefined && Object.keys(perFace).length > 0) {
+      materialByLabelByFeatureId.set(r.id, perFace);
+    }
   }
 
   // Emit virtual records (referenceImage etc.) directly — they produce no OCCT
@@ -270,6 +336,78 @@ export async function meshFeaturesPerFeature(
 
       const color = colorByFeatureId.get(event.featureId);
       const material = materialByFeatureId.get(event.featureId);
+
+      // Per-face material resolution. For each label in materialByLabel,
+      // resolve label → Face via the same machinery the edge-feature
+      // lowerers use (resolveFaceLabelToFace), hash the matched face, then
+      // walk `shape.faces` (the iteration source for meshShape's faceId
+      // integer) to find the index whose hash matches. Attach the PBR to
+      // that integer index. Unresolved labels surface a soft warning;
+      // unmatched faces fall back to the shape-level `material`.
+      let materialByFaceId: Record<number, PBRMaterial> | undefined;
+      const perFaceMap = materialByLabelByFeatureId.get(event.featureId);
+      if (perFaceMap !== undefined && event.shape instanceof OcctBackend) {
+        const base = event.shape;
+        // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
+        // not O(F * L). The replicad shape.faces iteration order matches
+        // meshShape's faceId assignment (see meshing.ts:meshShape).
+        const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
+        const faceIdByHash = new Map<string, number>();
+        replicadFaces.forEach((f, idx) => {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            faceIdByHash.set(faceHashOf(f as any), idx);
+          } catch {
+            // skip un-hashable faces; they simply won't get per-face overrides
+          }
+        });
+
+        const record = records.find(r => r.id === event.featureId);
+        if (record !== undefined) {
+          for (const [label, pbr] of Object.entries(perFaceMap)) {
+            const resolved = resolveFaceLabelToFace(record, base, label, records);
+            if ('error' in resolved) {
+              // Resolver collisions / canonical-not-applicable etc. — surface as
+              // soft no-match warning so the build continues. The error fields
+              // (code, severity 'error') are owned by the resolver; we lift
+              // only the label so the agent knows which call failed.
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: resolved.error.message,
+              });
+              continue;
+            }
+            let hash: string;
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              hash = faceHashOf(resolved.face as any);
+            } catch {
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: `Resolved face for '${label}' could not be hashed.`,
+              });
+              continue;
+            }
+            const idx = faceIdByHash.get(hash);
+            if (idx === undefined) {
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: `Resolved face hash '${hash}' for label '${label}' not present in the meshed face set.`,
+              });
+              continue;
+            }
+            if (materialByFaceId === undefined) materialByFaceId = {};
+            materialByFaceId[idx] = pbr;
+          }
+        }
+      }
+
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,
@@ -280,6 +418,7 @@ export async function meshFeaturesPerFeature(
         edges: meshed.edges,
         ...(color !== undefined ? { color } : {}),
         ...(material !== undefined ? { material } : {}),
+        ...(materialByFaceId !== undefined ? { materialByFaceId } : {}),
       });
 
       // Aggregate bounds from this feature's vertices
@@ -299,5 +438,110 @@ export async function meshFeaturesPerFeature(
     max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
-  return { features, bounds, failedFeatureIds };
+  const materialShadowingWarnings = detectMaterialShadowing(
+    features,
+    materialByFeatureId,
+  );
+  for (const w of materialShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
+  }
+
+  return {
+    features,
+    bounds,
+    failedFeatureIds,
+    materialShadowingWarnings,
+    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
+  };
+}
+
+/**
+ * Walk the post-mesh DAG forward from each material-bearing leaf. Emit a
+ * warning for every (leaf, shadowing-boolean) pair where the leaf is reachable
+ * via a chain of union/intersect predecessors from a downstream record that
+ * also carries its own material. The leaf's material survives only on the
+ * intermediate group during the build animation; the post-fuse silhouette
+ * carries the head record's material.
+ *
+ * Walk semantics:
+ *   - Visit each leaf with a material exactly once.
+ *   - Reverse-adjacency lookup is built from `feature.predecessors`.
+ *   - We follow boolean fuse-style edges only (op === 'union' | 'intersect').
+ *     subtract edges represent cutters that DON'T enter the post-fuse mesh,
+ *     so a leaf consumed only as a `subtract` cutter never produces a
+ *     shadowing warning.
+ *   - The first material-bearing descendant on each forward path is the
+ *     "shadowing" record reported.
+ */
+function detectMaterialShadowing(
+  features: readonly FeatureMesh[],
+  materialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
+): MaterialShadowingWarning[] {
+  const featureById = new Map<FeatureId, FeatureMesh>();
+  for (const f of features) featureById.set(f.featureId, f);
+
+  // Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
+  // `descendantsByPredecessor.get(id)` when those descendants list it as a
+  // predecessor AND the descendant's op is union/intersect (or no-op, for
+  // non-boolean records that just consume the shape — modifiers/transforms
+  // preserve material reachability).
+  const descendantsByPredecessor = new Map<FeatureId, FeatureId[]>();
+  for (const f of features) {
+    if (f.virtual) continue;
+    // Subtract booleans don't carry the predecessor's volume into the
+    // post-fuse mesh — the cutter is consumed. Skip those edges so a
+    // hole-cutter with .material() doesn't spuriously warn.
+    if (f.op === 'subtract') continue;
+    for (const predId of f.predecessors) {
+      const list = descendantsByPredecessor.get(predId);
+      if (list) list.push(f.featureId);
+      else descendantsByPredecessor.set(predId, [f.featureId]);
+    }
+  }
+
+  const out: MaterialShadowingWarning[] = [];
+  for (const leaf of features) {
+    if (leaf.virtual) continue;
+    if (!materialByFeatureId.has(leaf.featureId)) continue;
+
+    // BFS forward; stop at the first material-bearing descendant on each
+    // branch. We only need one shadower per leaf for the diagnostic; if
+    // there's a chain (.union().union().union()), the FIRST one with its
+    // own material is the load-bearing one.
+    const visited = new Set<FeatureId>([leaf.featureId]);
+    const queue: FeatureId[] = [];
+    const seedDescendants = descendantsByPredecessor.get(leaf.featureId);
+    if (seedDescendants) queue.push(...seedDescendants);
+
+    let shadower: FeatureMesh | undefined;
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      if (materialByFeatureId.has(id)) {
+        shadower = featureById.get(id);
+        break;
+      }
+      const next = descendantsByPredecessor.get(id);
+      if (next) queue.push(...next);
+    }
+
+    if (shadower) {
+      out.push({
+        leafFeatureId: leaf.featureId,
+        leafFeatureKind: leaf.featureKind,
+        shadowingFeatureId: shadower.featureId,
+        shadowingFeatureKind: shadower.featureKind,
+        message:
+          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own material but is unioned into ` +
+          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own material. ` +
+          `The leaf material is visible during the build animation only; the static render ` +
+          `(kernelcad render, post-rotate capture-demo) shows the head material on the fused silhouette. ` +
+          `To preserve per-leaf material in the static render, split the construction so the leaf is not ` +
+          `unioned into a material-bearing parent, or author the leaf as a separate assemblyPart.`,
+      });
+    }
+  }
+
+  return out;
 }

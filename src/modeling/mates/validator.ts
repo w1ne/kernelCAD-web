@@ -31,8 +31,9 @@ import { validateJointAxisBinding } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { parseConnectorRef } from './mate';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
-import type { PoseEnvelopeReviewResult } from './poseEnvelope';
+import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
+import { validateWorkspaceReachability } from './workspaceReachability';
 
 /**
  * v0.7.4 — per-part external loads pass-through type used by
@@ -86,7 +87,13 @@ export type ValidatorDiagnosticCode =
   // echoes) reference these codes so the union must include them.
   | 'assembly.mounting-hole.mismatch'
   | 'assembly.joint-axis.unbound'
-  | 'assembly.joint.load-exceeded';
+  | 'assembly.joint.load-exceeded'
+  // v0.7 Slice 1 — workspace-reachability gate. Emitted by
+  // `workspaceReachability.ts` when an `arm.workspace(...)` declared target
+  // lies outside the sampled `ConnectorWorkspace` AABB minus tolerance.
+  // Severity `error` under `validate:'error'`; `info` when the gate runs
+  // without an envelope (declarations are inert until `posesGate:'envelope'`).
+  | 'assembly.workspace.unreachable';
 
 export interface ValidatorDiagnostic {
   readonly code: ValidatorDiagnosticCode;
@@ -330,6 +337,16 @@ export async function validateAssemblyWithMates(
   // declared `maxLoad`. See `validateJointLoadCapacity` for the gate's
   // per-mate-type semantics.
   externalLoads?: ExternalLoadMap,
+  // v0.7 Slice 1 — sampled connector workspaces consumed by
+  // `validateWorkspaceReachability`. Passed separately from
+  // `poseEnvelopeResult` so the workspace gate can read AABBs without
+  // pulling the envelope's diagnostic stream through the validator's
+  // double-fold (assembly.ts:1388 deliberately keeps envelope diagnostics
+  // in their own bucket; the workspace gate's diagnostics are domain-distinct
+  // and folded into the validator stream normally). When undefined AND the
+  // assembly has workspace targets, the gate emits info-severity diagnostics
+  // pointing the agent at `posesGate: 'envelope'`.
+  connectorWorkspace?: readonly ConnectorWorkspace[],
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -471,6 +488,14 @@ export async function validateAssemblyWithMates(
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
   diagnostics.push(...await validateJointAxisBinding(arm));
+
+  // 8. v0.7 Slice 1 — workspace-reachability gate. Pure: takes the sampled
+  //    `ConnectorWorkspace[]` produced by `reviewPoseEnvelope` and checks
+  //    each `arm.workspace(...)` declared target against the matching AABB
+  //    (minus toleranceMm). Emits `assembly.workspace.unreachable` (error)
+  //    per out-of-range target, OR an info-severity hint per declaration
+  //    when no envelope was sampled (gate inert).
+  diagnostics.push(...validateWorkspaceReachability(arm, connectorWorkspace));
 
   return finalizeResult(
     diagnostics,
