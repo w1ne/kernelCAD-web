@@ -4,6 +4,7 @@ import { makeAssembly, type Assembly } from './capture/assembly';
 import { Shape } from './capture/proxy';
 import { Sketch, makePath, type PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
+import type { Curve3D } from './capture/curveProxy';
 import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
 import {
   selectEdges as selectEdgesBackend,
@@ -129,6 +130,51 @@ export interface KernelCadApi {
    * of the resulting surface. Returns a `Surface` peer to `Shape`.
    */
   surfaceFromCurves(sections: Sketch[]): SurfaceProxy;
+
+  /**
+   * NURBS Slice B: a 3D parametric curve specified by an explicit
+   * `Geom_BSplineCurve` control net. `degree` defaults to 3 (cubic). Pass
+   * `weights` for a rational curve, `knots` for a custom knot vector
+   * (otherwise clamped-uniform is generated). Returns a `Curve3D` peer.
+   *
+   * The curve lowers to a `TopoDS_Edge` and is consumed by `variableSweep`
+   * (spine input) and — in later slices — `surfaceFromBoundary`. The proxy
+   * also exposes synchronous `sample` / `pointAt` / `tangentAt` / `length`.
+   */
+  nurbsCurve(
+    controlPoints: Vec3[],
+    opts?: { degree?: number; weights?: number[]; knots?: number[]; closed?: boolean },
+  ): Curve3D;
+
+  /**
+   * NURBS Slice B: Catmull-Rom convenience that interpolates the supplied
+   * points through a cubic NURBS curve. Returns a `Curve3D`. Equivalent to
+   * `nurbsCurve(controlNet, { degree: 3 })` after a Catmull-Rom-to-Bezier
+   * conversion; see implementation comments for the formula.
+   */
+  spline3d(
+    points: Vec3[],
+    opts?: { tension?: number; closed?: boolean },
+  ): Curve3D;
+
+  /**
+   * NURBS Slice B: multi-section sweep. Sweeps each `section.profile` along
+   * the `spine`, blending between sections at the section's `t ∈ [0, 1]`
+   * spine parameter. Lowers to `BRepOffsetAPI_MakePipeShell` (direct OCCT —
+   * no replicad wrapper).
+   *
+   * `spine` accepts a `Curve3D`, a planar `Sketch` (its lifted wire is used
+   * as the rail), or a `Vec3[]` (auto-converted to a `nurbsCurve` of degree
+   * `min(3, points.length - 1)`).
+   *
+   * Sections must be strictly increasing in `t`; the first section MUST sit
+   * at `t = 0` and the last at `t = 1`. Continuity defaults to `'C1'`.
+   */
+  variableSweep(
+    spine: Curve3D | Sketch | Vec3[],
+    sections: Array<{ t: number; profile: Sketch }>,
+    opts?: { closed?: boolean; continuity?: 'C0' | 'C1' | 'C2' },
+  ): Shape;
 
   /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
   sketch: SketchModule;
@@ -447,6 +493,145 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         );
       }
       return session.addSurfaceFromCurves(sections.map(s => s.id));
+    },
+
+    nurbsCurve(controlPoints, opts) {
+      const degree = opts?.degree ?? 3;
+      return session.addCurve3D({
+        metadata: {
+          controlPoints,
+          degree,
+          ...(opts?.weights !== undefined ? { weights: opts.weights } : {}),
+          ...(opts?.knots !== undefined ? { knots: opts.knots } : {}),
+          closed: opts?.closed ?? false,
+        },
+      });
+    },
+
+    spline3d(points, opts) {
+      // Catmull-Rom-to-cubic-Bezier conversion. The standard formula maps
+      // four interpolation points (P0, P1, P2, P3) to four Bezier control
+      // points (B0..B3) for the cubic segment connecting P1 and P2:
+      //
+      //   B0 = P1
+      //   B1 = P1 + (P2 - P0) * (1 - τ) / 6
+      //   B2 = P2 - (P3 - P1) * (1 - τ) / 6
+      //   B3 = P2
+      //
+      // where τ ∈ [0, 1] is the tension (0 = standard Catmull-Rom, 1 =
+      // straight-line; our default 0.5 is the canonical "centripetal" value).
+      //
+      // We then concatenate every Bezier segment into a single clamped
+      // uniform cubic B-spline. For N input points we get (N - 1) segments
+      // and (N - 1) * 3 + 1 control points (each adjacent pair of segments
+      // shares one endpoint).
+      //
+      // Endpoint handling: we duplicate the first and last points (Phantom
+      // Point approach) to define tangents at the ends — this preserves the
+      // C1 property of Catmull-Rom interpolation at the boundary.
+      if (!Array.isArray(points) || points.length < 2) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spline3d: need at least 2 points; got ${points?.length ?? 0}.`,
+          undefined,
+          'invalid-args.spline3d.points — pass at least 2 Vec3 points to interpolate.',
+        );
+      }
+      const tension = opts?.tension ?? 0.5;
+      const scale = (1 - tension) / 6;
+
+      // Extend with phantom endpoints (mirror across first/last actual point).
+      const subt = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+      const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+      const scl = (a: Vec3, k: number): Vec3 => [a[0] * k, a[1] * k, a[2] * k];
+
+      const p0 = points[0];
+      const pN = points[points.length - 1];
+      const phantom0 = subt(p0, subt(points[1], p0));            // p0 - (p1 - p0)
+      const phantomN = add(pN, subt(pN, points[points.length - 2])); // pN + (pN - p(N-1))
+      const extended: Vec3[] = [phantom0, ...points, phantomN];
+
+      // Build control net: every segment contributes 3 control points
+      // (B0..B2); the final B3 of the last segment caps the net.
+      const controlNet: Vec3[] = [];
+      for (let i = 1; i < extended.length - 2; i++) {
+        const P0 = extended[i - 1];
+        const P1 = extended[i];
+        const P2 = extended[i + 1];
+        const P3 = extended[i + 2];
+        const B0 = P1;
+        const B1 = add(P1, scl(subt(P2, P0), scale));
+        const B2 = subt(P2, scl(subt(P3, P1), scale));
+        if (i === 1) controlNet.push(B0);
+        // Each segment contributes B1, B2, and B3 (= P2). The next segment's
+        // B0 IS this segment's B3, so we never push the shared endpoint twice.
+        controlNet.push(B1, B2, P2);
+      }
+
+      return session.addCurve3D({
+        metadata: {
+          controlPoints: controlNet,
+          degree: 3,
+          closed: opts?.closed ?? false,
+        },
+      });
+    },
+
+    variableSweep(spine, sections, opts) {
+      // Resolve spine to a FeatureId. Accepts: Curve3D, Sketch, or Vec3[].
+      let spineId: import('../shared/intent/types').FeatureId;
+      if (Array.isArray(spine)) {
+        // Auto-convert Vec3[] to a nurbsCurve.
+        if (spine.length < 2) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `variableSweep: spine Vec3[] needs at least 2 points; got ${spine.length}.`,
+            undefined,
+            'invalid-args.variableSweep.spine — pass at least 2 points or a Curve3D.',
+          );
+        }
+        const curve = session.addCurve3D({
+          metadata: {
+            controlPoints: spine,
+            degree: Math.min(3, spine.length - 1),
+            closed: false,
+          },
+        });
+        spineId = curve.id;
+      } else if (typeof spine === 'object' && spine !== null && 'sample' in spine) {
+        // Curve3D
+        spineId = (spine as Curve3D).id;
+      } else if (typeof spine === 'object' && spine !== null && 'id' in spine) {
+        // Sketch (handled by the lowerer via its lifted wire).
+        spineId = (spine as Sketch).id;
+      } else {
+        throw new KernelError(
+          'feature.invalid-args',
+          `variableSweep: spine must be a Curve3D, Sketch, or Vec3[]; got ${typeof spine}.`,
+          undefined,
+          'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d), a Sketch (path().…close()), or a Vec3[].',
+        );
+      }
+
+      if (!Array.isArray(sections) || sections.length < 2) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `variableSweep: need at least 2 sections; got ${sections?.length ?? 0}.`,
+          undefined,
+          'invalid-args.variableSweep.sections — pass at least 2 { t, profile } sections.',
+        );
+      }
+
+      const sweepId = session.addVariableSweep({
+        spineId,
+        sections: sections.map((s) => ({ t: s.t, profileId: s.profile.id })),
+        ...(opts?.closed !== undefined ? { closed: opts.closed } : {}),
+        ...(opts?.continuity !== undefined ? { continuity: opts.continuity } : {}),
+      });
+
+      // Return a Shape proxy pointing at the new variableSweep record so
+      // the agent can chain .fillet() / .union() / etc.
+      return new Shape(sweepId, session);
     },
 
     sketch: createSketchModule(session),
