@@ -1849,8 +1849,27 @@ export class OcctLowerer implements FeatureLowerer {
         const meta = r.metadata as {
           assemblyName?: string;
           partIds?: FeatureId[];
+          declaredMateCount?: number;
         } | undefined;
         const partIds = meta?.partIds ?? [];
+        // Exp-D four-bolt-flange-v2 surfaced this: an agent declared mates
+        // on the assembly, then ended the script with arm.model() (not
+        // solvedModel({})). model() skips mate FK entirely — parts stack
+        // at local-frame origin and downstream interference / scoring
+        // gates lie. Emit an info diag at the model() lowering so the
+        // mate-FK skip surfaces explicitly, not via downstream symptoms.
+        const declaredMateCount = meta?.declaredMateCount ?? 0;
+        if (declaredMateCount > 0) {
+          const assemblyName = meta?.assemblyName ?? '<unnamed>';
+          diagnostics.push({
+            target: this.target,
+            code: 'assembly.mates-ignored-by-model-call',
+            featureId: r.id,
+            severity: 'info',
+            message: `assembly '${assemblyName}' declared ${declaredMateCount} mate(s) but the script returned arm.model() (which skips mate FK); parts will pose at their local-frame origin, not their mate-derived world positions.`,
+            hint: 'Replace `arm.model()` with `arm.solvedModel({})` (or `arm.solvedModel(poses)`) so the mate solver runs and parts pose correctly. arm.model() is the unposed view — useful only when the assembly declares no mates.',
+          });
+        }
         if (partEntries.length !== partIds.length) {
           diagnostics.push({
             target: this.target,

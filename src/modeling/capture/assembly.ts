@@ -1333,7 +1333,13 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.model().',
       );
     }
-    const sceneShape = this.session.assemblyModel(this.name, this.parts);
+    // Stash the mate count so the lowerer can emit the
+    // `assembly.mates-ignored-by-model-call` info diagnostic when
+    // model() is used in lieu of solvedModel() on a mate-bearing
+    // assembly. Without this, mates declared on `arm` never reach the
+    // FK pipeline — parts stack at local-frame origin and downstream
+    // interferences/scoring lies. Surfaced by Exp-D four-bolt-flange-v2.
+    const sceneShape = this.session.assemblyModel(this.name, this.parts, this.mates.length);
     return this.makeScene(sceneShape);
   }
 
