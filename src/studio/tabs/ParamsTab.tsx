@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
+import { useParamUpdate, type ParamUpdater } from '../hooks/useParamUpdate';
 import type { ParamEntry } from '../../shared/runtime/paramTable';
 import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 
@@ -13,6 +14,11 @@ import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
  */
 export function ParamsTab(): JSX.Element {
     const { paramTable, joints, updateParam } = useRecomputeResult();
+    // Single shared updater for every row in this tab. Numeric scrubs get
+    // a debounced send so slider drag doesn't fire one POST + one full
+    // relower per pointer-move; boolean toggles are single high-intent
+    // clicks, so they fire immediately via `commit`.
+    const updater = useParamUpdate(updateParam, { source: 'ParamsTab' });
 
     // Slice 2C: hide params that are surfaced as joint poses in JointsTab so
     // the same scalar isn't edited from two places. `poseParamNames` may
@@ -43,7 +49,7 @@ export function ParamsTab(): JSX.Element {
         <div className="flex flex-col" data-testid="params-tab">
             <ul className="flex flex-col divide-y divide-[#1f1f1f]">
                 {entries.map((entry) => (
-                    <ParamRow key={entry.name} entry={entry} updateParam={updateParam} />
+                    <ParamRow key={entry.name} entry={entry} updater={updater} />
                 ))}
             </ul>
         </div>
@@ -52,12 +58,10 @@ export function ParamsTab(): JSX.Element {
 
 interface ParamRowProps {
     readonly entry: ParamEntry;
-    readonly updateParam?: (
-        edits: { name: string; value: number | boolean }[],
-    ) => Promise<void>;
+    readonly updater: ParamUpdater;
 }
 
-function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
+function ParamRow({ entry, updater }: ParamRowProps): JSX.Element {
     if (entry.type === 'boolean') {
         return (
             <li
@@ -71,8 +75,7 @@ function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
                     type="checkbox"
                     checked={entry.value as boolean}
                     onChange={(e) => {
-                        updateParam?.([{ name: entry.name, value: e.target.checked }])
-                            ?.catch((err) => console.warn('[ParamsTab] updateParam failed', err));
+                        updater.commit([{ name: entry.name, value: e.target.checked }]);
                     }}
                     aria-label={`${entry.name} value`}
                     data-testid={`param-checkbox-${entry.name}`}
@@ -96,8 +99,7 @@ function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
                 min={min}
                 max={max}
                 onChange={(next) => {
-                    updateParam?.([{ name: entry.name, value: next }])
-                        ?.catch((err) => console.warn('[ParamsTab] updateParam failed', err));
+                    updater.commitDebounced([{ name: entry.name, value: next }]);
                 }}
             />
         </li>
