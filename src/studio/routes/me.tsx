@@ -1,16 +1,38 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useSession } from '../../funnel/hooks/useSession';
-import { listMyProjects, type ProjectRow } from '../../funnel/lib/apiClient';
+import {
+  createCheckoutSession,
+  fetchMyPlan,
+  listMyProjects,
+  openBillingPortal,
+  type MyPlan,
+  type ProjectRow,
+} from '../../funnel/lib/apiClient';
+import { PlanCard } from '../../funnel/components/PlanCard';
+
+type CheckoutStatus = 'success' | 'cancel' | undefined;
 
 export const Route = createFileRoute('/me')({
   component: MePage,
+  validateSearch: (s: Record<string, unknown>): { checkout?: CheckoutStatus } => ({
+    checkout:
+      s.checkout === 'success' || s.checkout === 'cancel'
+        ? (s.checkout as CheckoutStatus)
+        : undefined,
+  }),
 });
 
 function MePage() {
   const { session, loading } = useSession();
   const navigate = useNavigate();
+  const { checkout } = Route.useSearch();
   const [projects, setProjects] = useState<ProjectRow[] | null>(null);
+  const [plan, setPlan] = useState<MyPlan | null>(null);
+  const [planErr, setPlanErr] = useState<string | null>(null);
+  const [billingBusy, setBillingBusy] = useState(false);
+  const [billingErr, setBillingErr] = useState<string | null>(null);
+  const [checkoutBanner, setCheckoutBanner] = useState<CheckoutStatus>(undefined);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,8 +44,42 @@ function MePage() {
   useEffect(() => {
     if (session) {
       listMyProjects().then(setProjects).catch(e => setErr(String(e)));
+      fetchMyPlan().then(setPlan).catch(e => setPlanErr(String(e)));
     }
   }, [session]);
+
+  // One-shot inline banner for ?checkout=success|cancel post-Stripe redirect.
+  // No toast library available in the repo — keep this as a simple banner.
+  useEffect(() => {
+    if (!checkout) return;
+    setCheckoutBanner(checkout);
+    // Strip the query param so a refresh doesn't re-show the banner.
+    navigate({ to: '/me', search: {}, replace: true });
+  }, [checkout, navigate]);
+
+  const handleUpgrade = async () => {
+    setBillingBusy(true);
+    setBillingErr(null);
+    try {
+      const { url } = await createCheckoutSession();
+      window.location.href = url;
+    } catch (e) {
+      setBillingErr(e instanceof Error ? e.message : String(e));
+      setBillingBusy(false);
+    }
+  };
+
+  const handleManage = async () => {
+    setBillingBusy(true);
+    setBillingErr(null);
+    try {
+      const { url } = await openBillingPortal();
+      window.location.href = url;
+    } catch (e) {
+      setBillingErr(e instanceof Error ? e.message : String(e));
+      setBillingBusy(false);
+    }
+  };
 
   if (loading || !session) {
     return (
@@ -54,7 +110,51 @@ function MePage() {
       </header>
 
       <section className="px-6 py-10 max-w-4xl mx-auto">
-        <h1 className="font-serif text-3xl font-medium text-ink">Your projects</h1>
+        {checkoutBanner === 'success' && (
+          <div
+            role="status"
+            className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink"
+          >
+            <p className="font-serif font-medium">You're on Pro</p>
+            <p className="text-sm text-ink-soft mt-1">
+              Subscription active — generate as much as you like.
+            </p>
+          </div>
+        )}
+        {checkoutBanner === 'cancel' && (
+          <div
+            role="status"
+            className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink"
+          >
+            <p className="font-serif font-medium">Checkout cancelled</p>
+            <p className="text-sm text-ink-soft mt-1">
+              No charge was made. You can upgrade any time from this page.
+            </p>
+          </div>
+        )}
+
+        {plan && (
+          <PlanCard
+            plan={plan.plan}
+            generationsRemaining={plan.generationsRemaining}
+            currentPeriodEnd={plan.currentPeriodEnd}
+            onUpgrade={handleUpgrade}
+            onManage={handleManage}
+            busy={billingBusy}
+          />
+        )}
+        {planErr && !plan && (
+          <p className="text-ink-faint font-mono text-xs">
+            Couldn't load plan info: {planErr}
+          </p>
+        )}
+        {billingErr && (
+          <p className="text-copper font-mono text-xs mt-2">
+            Billing error: {billingErr}
+          </p>
+        )}
+
+        <h1 className="font-serif text-3xl font-medium text-ink mt-10">Your projects</h1>
 
         {!projects && (
           <p className="text-ink-faint font-mono text-sm mt-4">Loading projects…</p>
