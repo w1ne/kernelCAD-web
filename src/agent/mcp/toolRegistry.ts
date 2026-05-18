@@ -1,8 +1,10 @@
 import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
+import { addHermiteG2Tool } from './tools/addHermiteG2';
 import { addNurbsCurveTool } from './tools/addNurbsCurve';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
 import { addSketchTextTool } from './tools/addSketchText';
@@ -318,6 +320,69 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addNurbsCurveTool(input as unknown as Parameters<typeof addNurbsCurveTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_surface_from_boundary',
+      description:
+        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Fills the interior of 4 boundary Curve3D refs with a single NURBS face via OCCT BRepOffsetAPI_MakeFilling — the canonical Coons-patch primitive. The 4 curves walk an ordered loop: `curve_bindings[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          curve_bindings: {
+            type: 'array',
+            description: 'Tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.',
+            items: { type: 'string' },
+            minItems: 4,
+            maxItems: 4,
+          },
+          continuity: {
+            description: "Continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+          },
+          sampling: { type: 'integer', minimum: 1, description: 'OCCT NbPtsOnCur sampling parameter (default 15).' },
+          binding_name: { type: 'string', description: 'JS const name for the new Surface binding (default: _surface_<N>).' },
+        },
+        required: ['code', 'curve_bindings'],
+      },
+    },
+    handler: input => addSurfaceFromBoundaryTool(input as unknown as Parameters<typeof addSurfaceFromBoundaryTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_hermite_g2',
+      description:
+        "Insert a `hermiteG2(a, b)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds a quintic Hermite Curve3D that interpolates two endpoints with matching positions, tangents, and (optional) curvatures — used to bridge two existing curves with G2 continuity. The returned binding has type Curve3D (peer to nurbsCurve / spline3d) — consume it via `add_variable_sweep` (spine input), `add_surface_from_boundary` (boundary curve), or downstream Curve3D-accepting features. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude controls how aggressively the curve heads out of the endpoint (typical magnitude ~ chord length). Curvature defaults to [0, 0, 0] which makes the curve G1 only (lifted cubic Hermite). Returns the modified code + diagnostics. Capture-time emits `feature.hermite-g2.degenerate-tangent` if a tangent has magnitude < 1e-12 and `feature.hermite-g2.non-finite-input` on any NaN/Infinity. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          a: {
+            type: 'object',
+            description: 'Start endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Endpoint position in mm.' },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'First derivative of the curve at this endpoint.' },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Optional second derivative; defaults to [0, 0, 0] (G1-only).' },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: 'End endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
+        },
+        required: ['code', 'a', 'b'],
+      },
+    },
+    handler: input => addHermiteG2Tool(input as unknown as Parameters<typeof addHermiteG2Tool>[0]),
   },
   {
     definition: {
