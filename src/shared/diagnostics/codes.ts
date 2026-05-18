@@ -101,7 +101,11 @@ export type DiagnosticCode =
   | 'feature.surface-from-boundary.too-many-curves'
   | 'feature.surface-from-boundary.continuity-orphan'
   | 'feature.surface-from-boundary.degenerate-patch'
-  | 'feature.fillet.continuity-not-applicable';
+  | 'feature.fillet.continuity-not-applicable'
+  // NURBS Slice C — hermiteG2 quintic transition curve.
+  // Pure-JS solver; emits these on input the math can't fit.
+  | 'feature.hermite-g2.degenerate-tangent'
+  | 'feature.hermite-g2.non-finite-input';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -167,6 +171,8 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.surface-from-boundary.continuity-orphan',
   'feature.surface-from-boundary.degenerate-patch',
   'feature.fillet.continuity-not-applicable',
+  'feature.hermite-g2.degenerate-tangent',
+  'feature.hermite-g2.non-finite-input',
 ] as const;
 
 export interface HintTemplate {
@@ -309,6 +315,10 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.',
     'feature.fillet.continuity-not-applicable':
       "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",
+    'feature.hermite-g2.degenerate-tangent':
+      'hermiteG2 received a tangent with zero magnitude on one or both endpoints. The quintic Hermite scales the tangent into the inner control points; a zero tangent collapses two control points onto the endpoint, producing a cusp rather than a smooth transition. Supply a non-zero tangent (magnitude in the order of the chord length between the endpoints).',
+    'feature.hermite-g2.non-finite-input':
+      'hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream — typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.',
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
