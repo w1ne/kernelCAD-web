@@ -4,6 +4,9 @@ import { addFeatureTool } from './tools/addFeature';
 import { addHermiteG2Tool } from './tools/addHermiteG2';
 import { addNurbsCurveTool } from './tools/addNurbsCurve';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addPathHermiteG2Tool } from './tools/addPathHermiteG2';
+import { addPathNurbsSegmentTool } from './tools/addPathNurbsSegment';
+import { addPathSplineTool } from './tools/addPathSpline';
 import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
@@ -383,6 +386,100 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addHermiteG2Tool(input as unknown as Parameters<typeof addHermiteG2Tool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_spline',
+      description:
+        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding (e.g. `const brow = path().moveTo(0,0)`).' },
+          points: {
+            type: 'array',
+            description: 'Waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            minItems: 2,
+          },
+          tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'points'],
+      },
+    },
+    handler: input => addPathSplineTool(input as unknown as Parameters<typeof addPathSplineTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_nurbs_segment',
+      description:
+        "Insert a `.nurbsSegment(controlPoints, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. `controlPoints` is a `Vec2[]` (mm) — at least `degree + 1` entries; `controlPoints[0]` must match the current pen position within 1e-6 mm; the pen ends at `controlPoints[N-1]`. Optional `degree` defaults to 3; `weights` for rational NURBS (strictly positive); `knots` for an explicit clamped knot vector (length must equal `controlPoints.length + degree + 1`). Use for explicit B-spline outlines where the control net is the natural mental model (NURBS round-tripping, programmatic profile generation). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
+          controlPoints: {
+            type: 'array',
+            description: 'Control-net vertices as Vec2 pairs in mm; at least degree+1 entries.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+          },
+          degree: { type: 'integer', minimum: 1, description: 'B-spline degree (default 3).' },
+          weights: {
+            type: 'array',
+            description: 'Optional rational weights (one per control point; strictly positive).',
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: 'Optional explicit knot vector; length must equal controlPoints.length + degree + 1.',
+            items: { type: 'number' },
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'controlPoints'],
+      },
+    },
+    handler: input => addPathNurbsSegmentTool(input as unknown as Parameters<typeof addPathNurbsSegmentTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_hermite_g2',
+      description:
+        "Insert a `.hermiteG2(a, b)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm. `a.point` must match the current pen position within 1e-6 mm; the pen ends at `b.point`. `curvature` defaults to `[0, 0]` (degrades to G1 / lifted cubic Hermite); pass matching curvatures on both endpoints for G2-continuous blends (eyewear bridge ↔ brow transitions, sneaker midsole transitions). Tangent magnitude is the first derivative, NOT unit length — typical magnitude is the chord length between endpoints. Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
+          a: {
+            type: 'object',
+            description: 'Start endpoint; point must match current pen position within 1e-6 mm.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: 'End endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'a', 'b'],
+      },
+    },
+    handler: input => addPathHermiteG2Tool(input as unknown as Parameters<typeof addPathHermiteG2Tool>[0]),
   },
   {
     definition: {

@@ -1,6 +1,6 @@
 ---
 name: kernelcad-nurbs
-description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity. Use for freeform geometry that primitives + sketches cannot express.
+description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity AND 2D NURBS path segments (path().spline / .nurbsSegment / .hermiteG2). Use for freeform geometry that primitives + sketches cannot express.
 ---
 
 # kernelCAD — NURBS surfaces & curves
@@ -164,6 +164,54 @@ Emitted when the requested `'G2'` continuity cannot improve the blend at the cho
 ### G1-vs-G2 BREP-identity gotcha — planar/cylindrical fillets
 
 **Constant-radius fillets between planar faces or between a planar face and a cylindrical face produce BREP-identical output under both `'G1'` and `'G2'`.** OCCT's rational-fillet path only diverges from the polynomial path when the adjacent faces carry non-trivial parametric curvature (`nurbsSurface` / `surfaceFromBoundary` / `surfaceFromCurves`). Thread `continuity: 'G2'` through your authoring layer for forward-compatibility with future surface-adjacent fillets, but do NOT gate on a different lowered BREP — verify the upgrade on a NURBS-adjacent edge, not on a box corner. Eyewear front faces lifted from `surfaceFromBoundary` ARE NURBS-adjacent; cylindrical lens openings cut through a flat box are NOT.
+
+## 2D NURBS path segments (Slice D)
+
+The `PathBuilder` returned by `path()` accepts three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives. Use them when the existing arc family cannot express the desired 2D outline (eyewear brow, sneaker midsole, ergonomic grip silhouette, lens-opening cutouts that aren't perfect circles).
+
+```ts
+// .spline(points) — N-waypoint B-spline interpolation. Threads a degree-3
+// B-spline through every waypoint; first must match current pen position.
+const brow = path()
+  .moveTo(-60, 0)
+  .spline([[-60, 0], [-30, 8], [0, 12], [30, 8], [60, 0]])
+  .close();
+
+// .nurbsSegment(controlPoints, opts?) — explicit B-spline control polygon.
+// controlPoints[0] must match current pen position; opts.degree default 3.
+const explicit = path()
+  .moveTo(0, 0)
+  .nurbsSegment([[0, 0], [5, 10], [15, 10], [20, 0]], { degree: 3 })
+  .lineTo(20, -5)
+  .close();
+
+// .hermiteG2(a, b) — 2D quintic-Hermite transition. a.point must match the
+// current pen position. tangent magnitude is the first derivative (typical
+// magnitude ~ chord length, NOT unit length). curvature optional — defaults
+// to [0, 0] (degrades to G1).
+const transition = path()
+  .moveTo(-10, 0)
+  .hermiteG2(
+    { point: [-10, 0], tangent: [0, 5], curvature: [0, 0] },
+    { point: [ 10, 0], tangent: [0, -5], curvature: [0, 0] },
+  )
+  .close();
+```
+
+All three methods accept `Editable<number>` coords so symbolic params survive into capture. Coords are mm; the lowerer composes the resulting OCCT edges with replicad-drawn edges via `BRepBuilderAPI_MakeWire`.
+
+### 2D path NURBS diagnostic codes
+
+- `feature.path.spline.degenerate-points` (error) — fewer than 2 points, NaN coord, or two consecutive duplicates within 1e-9 mm. Hint: pass ≥ 2 distinct finite Vec2 waypoints.
+- `feature.path.nurbs-segment.degenerate-controls` (error) — fewer than `degree + 1` control points, non-finite coord, or `controlPoints[0]` not matching current pen position within 1e-6 mm. Hint: provide at least degree+1 finite Vec2 control points with the first matching the current pen position.
+- `feature.path.nurbs-segment.weights-non-positive` (error) — weight ≤ 0. Hint: weights must be strictly positive (zero collapses the basis; negative is undefined for B-splines).
+- `feature.path.hermite-g2.start-mismatch` (error) — `a.point` not matching current pen position within 1e-6 mm. Hint: align `a.point` with the path's current position, or call `moveTo` first.
+
+### Gotchas (real, not hypothetical)
+
+1. **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. For freeform sections that need lofting, use Slice C's `surfaceFromBoundary` (Coons patch) or stick to line/arc primitives in the section profile.
+2. **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Slice D Task 3). If overshoot pollutes the silhouette, either tighten the tolerance through `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control where precision beats convenience.
+3. **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer — this is acceptable for v1; explicit gap-gating is queued for a follow-up slice.
 
 ## Related skills
 
