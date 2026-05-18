@@ -1,8 +1,10 @@
 import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
+import { addNurbsCurveTool } from './tools/addNurbsCurve';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
+import { addVariableSweepTool } from './tools/addVariableSweep';
 import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
@@ -283,6 +285,70 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_nurbs_curve',
+      description:
+        "Insert a `nurbsCurve(controlPoints, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input) or downstream Curve3D-accepting features. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          controlPoints: {
+            type: 'array',
+            description: 'Control points as Vec3 triples in mm; at least 2 entries.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          degree: { type: 'integer', minimum: 1, description: 'Curve degree; default 3 (cubic).' },
+          weights: {
+            type: 'array',
+            description: 'Optional rational weights, one per control point (same length as controlPoints).',
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: 'Optional explicit knot vector; missing => clamped-uniform inferred.',
+            items: { type: 'number' },
+          },
+          closed: { type: 'boolean', description: 'Optional periodic/closed-curve flag.' },
+          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
+        },
+        required: ['code', 'controlPoints'],
+      },
+    },
+    handler: input => addNurbsCurveTool(input as unknown as Parameters<typeof addNurbsCurveTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_variable_sweep',
+      description:
+        "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          spine_binding: { type: 'string', description: 'Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source.' },
+          sections: {
+            type: 'array',
+            description: 'Varying cross-sections along the spine; at least 2 entries, strictly increasing in `t`.',
+            items: {
+              type: 'object',
+              properties: {
+                t: { type: 'number', description: 'Spine parameter in [0, 1].' },
+                profile_binding: { type: 'string', description: 'Existing Sketch variable name for this section.' },
+              },
+              required: ['t', 'profile_binding'],
+            },
+          },
+          closed: { type: 'boolean', description: 'Optional closed-sweep flag.' },
+          continuity: { type: 'string', enum: ['C0', 'C1', 'C2'], description: "Inter-section continuity; default 'C1'." },
+          binding_name: { type: 'string', description: 'JS const name for the new Shape binding (default: _sweep_<N>).' },
+        },
+        required: ['code', 'spine_binding', 'sections'],
+      },
+    },
+    handler: input => addVariableSweepTool(input as unknown as Parameters<typeof addVariableSweepTool>[0]),
   },
   {
     definition: {
