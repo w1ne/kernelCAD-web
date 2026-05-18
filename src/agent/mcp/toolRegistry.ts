@@ -1,8 +1,15 @@
 import { addConnectorTool } from './tools/addConnector';
 import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
 import { addFeatureTool } from './tools/addFeature';
+import { addHermiteG2Tool } from './tools/addHermiteG2';
+import { addNurbsCurveTool } from './tools/addNurbsCurve';
 import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
+import { addPathHermiteG2Tool } from './tools/addPathHermiteG2';
+import { addPathNurbsSegmentTool } from './tools/addPathNurbsSegment';
+import { addPathSplineTool } from './tools/addPathSpline';
+import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
+import { addVariableSweepTool } from './tools/addVariableSweep';
 import { addSketchTextTool } from './tools/addSketchText';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
@@ -283,6 +290,227 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_nurbs_curve',
+      description:
+        "Insert a `nurbsCurve(controlPoints, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input) or downstream Curve3D-accepting features. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          controlPoints: {
+            type: 'array',
+            description: 'Control points as Vec3 triples in mm; at least 2 entries.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          degree: { type: 'integer', minimum: 1, description: 'Curve degree; default 3 (cubic).' },
+          weights: {
+            type: 'array',
+            description: 'Optional rational weights, one per control point (same length as controlPoints).',
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: 'Optional explicit knot vector; missing => clamped-uniform inferred.',
+            items: { type: 'number' },
+          },
+          closed: { type: 'boolean', description: 'Optional periodic/closed-curve flag.' },
+          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
+        },
+        required: ['code', 'controlPoints'],
+      },
+    },
+    handler: input => addNurbsCurveTool(input as unknown as Parameters<typeof addNurbsCurveTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_surface_from_boundary',
+      description:
+        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Fills the interior of 4 boundary Curve3D refs with a single NURBS face via OCCT BRepOffsetAPI_MakeFilling — the canonical Coons-patch primitive. The 4 curves walk an ordered loop: `curve_bindings[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          curve_bindings: {
+            type: 'array',
+            description: 'Tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.',
+            items: { type: 'string' },
+            minItems: 4,
+            maxItems: 4,
+          },
+          continuity: {
+            description: "Continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge). Default 'C0'.",
+          },
+          sampling: { type: 'integer', minimum: 1, description: 'OCCT NbPtsOnCur sampling parameter (default 15).' },
+          binding_name: { type: 'string', description: 'JS const name for the new Surface binding (default: _surface_<N>).' },
+        },
+        required: ['code', 'curve_bindings'],
+      },
+    },
+    handler: input => addSurfaceFromBoundaryTool(input as unknown as Parameters<typeof addSurfaceFromBoundaryTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_hermite_g2',
+      description:
+        "Insert a `hermiteG2(a, b)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds a quintic Hermite Curve3D that interpolates two endpoints with matching positions, tangents, and (optional) curvatures — used to bridge two existing curves with G2 continuity. The returned binding has type Curve3D (peer to nurbsCurve / spline3d) — consume it via `add_variable_sweep` (spine input), `add_surface_from_boundary` (boundary curve), or downstream Curve3D-accepting features. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude controls how aggressively the curve heads out of the endpoint (typical magnitude ~ chord length). Curvature defaults to [0, 0, 0] which makes the curve G1 only (lifted cubic Hermite). Returns the modified code + diagnostics. Capture-time emits `feature.hermite-g2.degenerate-tangent` if a tangent has magnitude < 1e-12 and `feature.hermite-g2.non-finite-input` on any NaN/Infinity. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          a: {
+            type: 'object',
+            description: 'Start endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Endpoint position in mm.' },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'First derivative of the curve at this endpoint.' },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Optional second derivative; defaults to [0, 0, 0] (G1-only).' },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: 'End endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'JS const name for the new Curve3D binding (default: _curve_<N>).' },
+        },
+        required: ['code', 'a', 'b'],
+      },
+    },
+    handler: input => addHermiteG2Tool(input as unknown as Parameters<typeof addHermiteG2Tool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_spline',
+      description:
+        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding (e.g. `const brow = path().moveTo(0,0)`).' },
+          points: {
+            type: 'array',
+            description: 'Waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            minItems: 2,
+          },
+          tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'points'],
+      },
+    },
+    handler: input => addPathSplineTool(input as unknown as Parameters<typeof addPathSplineTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_nurbs_segment',
+      description:
+        "Insert a `.nurbsSegment(controlPoints, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. `controlPoints` is a `Vec2[]` (mm) — at least `degree + 1` entries; `controlPoints[0]` must match the current pen position within 1e-6 mm; the pen ends at `controlPoints[N-1]`. Optional `degree` defaults to 3; `weights` for rational NURBS (strictly positive); `knots` for an explicit clamped knot vector (length must equal `controlPoints.length + degree + 1`). Use for explicit B-spline outlines where the control net is the natural mental model (NURBS round-tripping, programmatic profile generation). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
+          controlPoints: {
+            type: 'array',
+            description: 'Control-net vertices as Vec2 pairs in mm; at least degree+1 entries.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+          },
+          degree: { type: 'integer', minimum: 1, description: 'B-spline degree (default 3).' },
+          weights: {
+            type: 'array',
+            description: 'Optional rational weights (one per control point; strictly positive).',
+            items: { type: 'number' },
+          },
+          knots: {
+            type: 'array',
+            description: 'Optional explicit knot vector; length must equal controlPoints.length + degree + 1.',
+            items: { type: 'number' },
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'controlPoints'],
+      },
+    },
+    handler: input => addPathNurbsSegmentTool(input as unknown as Parameters<typeof addPathNurbsSegmentTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_path_hermite_g2',
+      description:
+        "Insert a `.hermiteG2(a, b)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm. `a.point` must match the current pen position within 1e-6 mm; the pen ends at `b.point`. `curvature` defaults to `[0, 0]` (degrades to G1 / lifted cubic Hermite); pass matching curvatures on both endpoints for G2-continuous blends (eyewear bridge ↔ brow transitions, sneaker midsole transitions). Tangent magnitude is the first derivative, NOT unit length — typical magnitude is the chord length between endpoints. Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          chain_anchor: { type: 'string', description: 'JS identifier of an existing PathBuilder binding.' },
+          a: {
+            type: 'object',
+            description: 'Start endpoint; point must match current pen position within 1e-6 mm.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          b: {
+            type: 'object',
+            description: 'End endpoint.',
+            properties: {
+              point: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              tangent: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+              curvature: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            },
+            required: ['point', 'tangent'],
+          },
+          binding_name: { type: 'string', description: 'Reserved for future use; the segment injection mutates the chain anchor in place.' },
+        },
+        required: ['code', 'chain_anchor', 'a', 'b'],
+      },
+    },
+    handler: input => addPathHermiteG2Tool(input as unknown as Parameters<typeof addPathHermiteG2Tool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_variable_sweep',
+      description:
+        "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          spine_binding: { type: 'string', description: 'Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source.' },
+          sections: {
+            type: 'array',
+            description: 'Varying cross-sections along the spine; at least 2 entries, strictly increasing in `t`.',
+            items: {
+              type: 'object',
+              properties: {
+                t: { type: 'number', description: 'Spine parameter in [0, 1].' },
+                profile_binding: { type: 'string', description: 'Existing Sketch variable name for this section.' },
+              },
+              required: ['t', 'profile_binding'],
+            },
+          },
+          closed: { type: 'boolean', description: 'Optional closed-sweep flag.' },
+          continuity: { type: 'string', enum: ['C0', 'C1', 'C2'], description: "Inter-section continuity; default 'C1'." },
+          binding_name: { type: 'string', description: 'JS const name for the new Shape binding (default: _sweep_<N>).' },
+        },
+        required: ['code', 'spine_binding', 'sections'],
+      },
+    },
+    handler: input => addVariableSweepTool(input as unknown as Parameters<typeof addVariableSweepTool>[0]),
   },
   {
     definition: {

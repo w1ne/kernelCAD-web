@@ -7,6 +7,7 @@ import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/type
 import type { RuntimeMesh } from '../runtimeMesh';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
+import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
@@ -167,6 +168,16 @@ export class OcctBackend implements ShapeBackend {
   readonly historyMap?: import('../../naming/evolutionRecord').HistoryMap;
   private _drawing: replicad.Drawing | null = null;
   private _commands: SketchCommand[] | null = null;
+  // When `_commands` contains at least one Slice D NURBS segment (`spline`,
+  // `nurbsSegment`, `hermiteG2_2d`) the replicad 2D pen can't build the path
+  // (the pen has no NURBS segment constructor — see the
+  // `docs/audit/2026-05-18-slice-d-path-nurbs-symbols.md` audit). For those
+  // sketches `_drawing` is left null and consumers (`extrudeFromSketch`,
+  // `revolveFromSketch`, `liftSketchToFace`, `loftFromSketches`) lower the
+  // SketchCommand[] freshly per target plane via `buildNurbsSketchOnPlane`
+  // — composing a mixed wire from replicad pen-run edges + direct-OCCT
+  // NURBS edges.
+  private _hasNurbs: boolean = false;
 
   constructor(
     shape: ReplicadShape3D,
@@ -326,6 +337,17 @@ export class OcctBackend implements ShapeBackend {
     if (first.kind !== 'moveTo') {
       throw new Error('OcctBackend.fromSketchCommands: first command must be moveTo.');
     }
+    // NURBS Slice D — when the command list contains any of the three new
+    // segment kinds, the replicad 2D pen can't build the path. Defer wire
+    // construction to consumption time so the lowerer can target the right
+    // plane (XY / XZ / YZ). `_drawing` stays null; `_hasNurbs` flips on so
+    // every consumer dispatches to `buildNurbsSketchOnPlane`.
+    if (hasNurbsSegments(commands)) {
+      const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
+      back._commands = commands;
+      back._hasNurbs = true;
+      return back;
+    }
     let pen = replicad.draw([first.x.evaluated, first.y.evaluated]);
     let currentX = first.x.evaluated;
     let currentY = first.y.evaluated;
@@ -394,13 +416,19 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If `depth <= 0`.
    */
   static extrudeFromSketch(sketch: OcctBackend, depth: number): OcctBackend {
-    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+    if (sketch.kind !== 'sketch' || (!sketch._drawing && !sketch._hasNurbs)) {
       throw new Error('OcctBackend.extrudeFromSketch: input is not a sketch.');
     }
     if (depth <= 0) {
       throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
     }
-    const lifted = sketch._drawing.sketchOnPlane('XY');
+    if (sketch._hasNurbs && sketch._commands) {
+      // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
+      // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
+      const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
+      return new OcctBackend(built.extrude(depth) as ReplicadShape3D);
+    }
+    const lifted = sketch._drawing!.sketchOnPlane('XY');
     const single = lifted as unknown as { extrude: (d: number) => ReplicadShape3D };
     return new OcctBackend(single.extrude(depth));
   }
@@ -425,10 +453,25 @@ export class OcctBackend implements ShapeBackend {
    *   profile). Caller must catch and map to a diagnostic.
    */
   static revolveFromSketch(sketch: OcctBackend, angleDeg: number = 360): OcctBackend {
-    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+    if (sketch.kind !== 'sketch' || (!sketch._drawing && !sketch._hasNurbs)) {
       throw new Error('OcctBackend.revolveFromSketch: input is not a sketch.');
     }
-    const lifted = sketch._drawing.sketchOnPlane('XZ');
+    if (sketch._hasNurbs && sketch._commands) {
+      // NURBS path — build the wire on XZ (so path-y becomes world-z) and
+      // revolve around world Z, matching the Drawing-side behaviour.
+      const built = buildNurbsSketchOnPlane(sketch._commands, 'XZ');
+      const revolvable = built as unknown as {
+        revolve: (
+          axis?: [number, number, number],
+          opts?: { origin?: [number, number, number]; angle?: number },
+        ) => ReplicadShape3D;
+      };
+      if (angleDeg === 360) {
+        return new OcctBackend(revolvable.revolve([0, 0, 1]));
+      }
+      return new OcctBackend(revolvable.revolve([0, 0, 1], { angle: angleDeg }));
+    }
+    const lifted = sketch._drawing!.sketchOnPlane('XZ');
     const single = lifted as unknown as {
       revolve: (
         axis?: [number, number, number],
@@ -450,15 +493,29 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If the drawing produces multiple faces (Sketches plural).
+   *
+   * Public so direct-OCCT lowerers (e.g. `variableSweepLowerer`) that need
+   * the lifted profile wire can reuse it without duplicating the cast +
+   * multi-face guard.
    */
-  private static liftSketchToFace(
+  static liftSketchToFace(
     sketch: OcctBackend,
     plane: 'XY' | 'XZ' | 'YZ',
   ): { face: () => { outerWire: () => replicad.Wire } } {
-    if (sketch.kind !== 'sketch' || !sketch._drawing) {
+    if (sketch.kind !== 'sketch' || (!sketch._drawing && !sketch._hasNurbs)) {
       throw new Error('OcctBackend.liftSketchToFace: input is not a sketch.');
     }
-    const lifted = sketch._drawing.sketchOnPlane(plane);
+    if (sketch._hasNurbs && sketch._commands) {
+      const built = buildNurbsSketchOnPlane(sketch._commands, plane);
+      // The NURBS path always produces a single closed `replicad.Sketch`
+      // (assembleWire either returns one wire or throws); the multi-face
+      // guard below is therefore a no-op here, but we keep the same shape
+      // of the returned object so callers (`sweepFromSketch`,
+      // `variableSweepLowerer`) don't branch.
+      const liftedSketch = built as unknown as { face: () => { outerWire: () => replicad.Wire } };
+      return { face: liftedSketch.face.bind(liftedSketch) };
+    }
+    const lifted = sketch._drawing!.sketchOnPlane(plane);
     if (typeof (lifted as { face?: unknown }).face !== 'function') {
       throw new Error('SWEEP_MULTI_FACE_PROFILE: profile drawing produces multiple faces; sweep accepts a single closed loop');
     }
@@ -565,11 +622,21 @@ export class OcctBackend implements ShapeBackend {
     const lifted: unknown[] = [];
     for (let i = 0; i < sketches.length; i++) {
       const s = sketches[i];
-      if (s.kind !== 'sketch' || !s._drawing) {
+      if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
         throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
       }
       const p = planes[i];
-      lifted.push(s._drawing.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof s._drawing.sketchOnPlane>[1]));
+      if (s._hasNurbs && s._commands) {
+        // NURBS path — build the sketch directly on the target plane. The
+        // `origin` offset isn't applied (loft for NURBS-bearing sketches
+        // currently assumes the path coordinates are already in their final
+        // position). If a non-zero origin is needed, the path can encode it
+        // explicitly via the SketchCommand coordinates.
+        lifted.push(buildNurbsSketchOnPlane(s._commands, p.plane));
+      } else {
+        const drawing = s._drawing!;
+        lifted.push(drawing.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof drawing.sketchOnPlane>[1]));
+      }
     }
     // Replicad's Sketch.loftWith expects the receiver as the first section
     // and an array (or one) of "other" sections.

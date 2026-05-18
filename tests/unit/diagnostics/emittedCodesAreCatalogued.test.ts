@@ -66,8 +66,15 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 48 codes', () => {
-    expect(catalogue.size).toBe(48);
+  it('catalogue has exactly 71 codes', () => {
+    // 47 baseline (milestone-C diagnostic-vocab spec + multi-material shadowing + assembly.mates-ignored-by-model-call)
+    //  + 11 Slice B (Curve3D + variableSweep capture validation)
+    //  +  6 Slice C (surfaceFromBoundary + G2 fillet)
+    //  +  2 Slice C Task 5 (hermiteG2 quintic Hermite solver)
+    //  +  4 Slice D (2D path NURBS — .spline / .nurbsSegment / .hermiteG2)
+    //  +  1 K1 watertight enrichment (mesher.cone-self-intersection from #204)
+    // = 71.
+    expect(catalogue.size).toBe(71);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

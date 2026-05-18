@@ -22,6 +22,11 @@ import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
 } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
+import { lowerCurve3D } from './curve3dLowerer';
+import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
+import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
+import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
+import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
@@ -413,6 +418,8 @@ export class OcctLowerer implements FeatureLowerer {
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
     'referenceImage',   // virtual — no BREP; defense-in-depth guard
+    'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
+    'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -449,6 +456,7 @@ export class OcctLowerer implements FeatureLowerer {
     r: FeatureRecord,
     inputs: ResolvedInputs,
     diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
   ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
     const surfaceRef = r.inputs.surface;
     if (!surfaceRef || surfaceRef.kind !== 'surface') {
@@ -526,6 +534,25 @@ export class OcctLowerer implements FeatureLowerer {
           origin: [0, 0, i * 10] as [number, number, number],
         }));
         surface = buildSkinnedSurface(sectionShapes, planes);
+      } else if (surfRec.data.kind === 'coonsPatch') {
+        // NURBS Slice C: Coons patch via BRepOffsetAPI_MakeFilling. The
+        // upstream curve3d records are looked up by id from the all-records
+        // table threaded in by `lower()`; the lowerer parks each freshly-
+        // lowered edge on `importedGeometry` so downstream consumers reuse
+        // it (mirrors variableSweep's lazy-edge resolution).
+        if (!allRecords) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `${r.kind}: coonsPatch ${sid} needs the all-records table to resolve boundary curves.`,
+            hint: 'recompute.input.missing — surfaceFromBoundary requires the lowerer to receive the full records list.',
+          });
+          return undefined;
+        }
+        const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
+        surface = { kind: 'face', face };
       } else {
         diagnostics.push({
           target: this.target,
@@ -539,13 +566,16 @@ export class OcctLowerer implements FeatureLowerer {
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      const isCoons = surfRec.data.kind === 'coonsPatch';
       diagnostics.push({
         target: this.target,
-        code: 'feature.kernel-failed',
+        code: isCoons ? 'feature.surface-from-boundary.degenerate-patch' : 'feature.kernel-failed',
         featureId: r.id,
         severity: 'error',
         message: `${r.kind}: surface build failed: ${msg}`,
-        hint: 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
+        hint: isCoons
+          ? HINT_TEMPLATES['feature.surface-from-boundary.degenerate-patch'].template
+          : 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
       });
       return undefined;
     }
@@ -1252,7 +1282,7 @@ export class OcctLowerer implements FeatureLowerer {
           throw new Error('fillet: no base shape');
         }
         // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
-        const meta = r.metadata as { variable?: boolean } | undefined;
+        const meta = r.metadata as { variable?: boolean; continuity?: 'G1' | 'G2' } | undefined;
         if (meta?.variable === true) {
           const result = applyVariableEdgeFeature('fillet', base, r, allRecords);
           diagnostics.push(...result.diagnostics);
@@ -1262,6 +1292,9 @@ export class OcctLowerer implements FeatureLowerer {
           shape = result.shape;
           break;
         }
+        // Slice C Task 6: optional continuity grade (G1 default; G2 calls
+        // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
+        const filletContinuity = meta?.continuity ?? 'G1';
         const radius = r.params.radius?.evaluated;
         if (radius === undefined) {
           diagnostics.push({
@@ -1331,7 +1364,7 @@ export class OcctLowerer implements FeatureLowerer {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
-          const filletResult = filletWithHistory(base, edgeRefs, radius);
+          const filletResult = filletWithHistory(base, edgeRefs, radius, filletContinuity);
           const newMap = mergeEdgeFeatureHistory(base.historyMap, filletResult);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
@@ -1361,6 +1394,21 @@ export class OcctLowerer implements FeatureLowerer {
             return { shape: base, diagnostics };
           }
           const msg = e.message;
+          // Slice C Task 6: when G2 was requested and OCCT reports IsDone=false,
+          // the geometry is the genuine "G2 not applicable here" case (adjacent
+          // faces are themselves only G1). Surface the specific diagnostic so
+          // the agent can downgrade to G1 or refit upstream faces.
+          if (filletContinuity === 'G2' && /BRepFilletAPI_MakeFillet failed/.test(msg)) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.fillet.continuity-not-applicable',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT fillet failed with continuity: 'G2' — adjacent faces are not G2-compatible.`,
+              hint: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces.",
+            });
+            return { shape: base, diagnostics };
+          }
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',
@@ -2380,7 +2428,7 @@ export class OcctLowerer implements FeatureLowerer {
         // W1.3 NURBS: consume the upstream Surface (resolved via session hook
         // or pre-populated by the recompute engine into `inputs.surfaces`) and
         // offset both sides via BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
         if (!face) {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -2403,7 +2451,7 @@ export class OcctLowerer implements FeatureLowerer {
       }
       case 'surfaceToShape': {
         // W1.3 NURBS: wrap the Replicad Face as a single-face TopoDS_Shell.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
         if (!face) {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -2428,6 +2476,240 @@ export class OcctLowerer implements FeatureLowerer {
         // metadata.virtual === true and skips the lowerer, so this arm is
         // defense-in-depth for callers that invoke the lowerer directly.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'curve3d': {
+        // NURBS Slice B: lower a 3D NURBS curve to a `TopoDS_Edge` backed by
+        // a `Geom_BSplineCurve`. The edge is parked on
+        // `session.importedGeometry` so downstream consumers (variableSweep,
+        // surfaceFromBoundary, lazy Curve3DProxy evaluators) can reach it.
+        // Like `referenceImage`, this record contributes no `Shape` — the
+        // capture layer marks it `metadata.virtual = true`.
+        const meta = r.metadata as { curve3d?: unknown } | undefined;
+        const m = meta?.curve3d;
+        if (!isCurve3DMetadata(m)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.curve3d.degenerate-controls',
+            featureId: r.id,
+            severity: 'error',
+            message: `curve3d record '${r.id}' is missing valid metadata.curve3d.`,
+            hint: 'Build the record via session.addCurve3D({ metadata }) so the validators run.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          const { edge } = lowerCurve3D(m);
+          // Park the raw OCCT edge on the importedGeometry map. The map is
+          // typed as ShapeBackend (the same slot fromSTEP / sdfMaterialize
+          // use); curve3d stores a TopoDS_Edge instead, and the consumer
+          // (variableSweep lowerer, lazy proxy) is responsible for retrieving
+          // it with the matching expectation.
+          this.importedGeometry.set(r.id, edge as unknown as ShapeBackend);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT BSplineCurve build failed: ${msg}`,
+            hint: 'kernel-failed — verify the control points, knots, and degree form a valid NURBS curve.',
+          });
+        }
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'variableSweep': {
+        // NURBS Slice B Task 8: variable-section sweep via
+        // `BRepOffsetAPI_MakePipeShell`. Direct OCCT (no replicad wrapper
+        // around the builder). Spine resolution order:
+        //   1. `importedGeometry[spineId]` — if a prior caller pre-parked
+        //      the edge (e.g. via direct curve3d lowering for tests).
+        //   2. The upstream curve3d record (looked up via `inputs.records`),
+        //      lowered on-demand. This is the engine-driven path: curve3d
+        //      records are `metadata.virtual === true`, so the engine skips
+        //      their lowering and we materialise the edge here.
+        //   3. A sketch input (in `byKey.spine`) lifted to its outer wire's
+        //      first edge — supports straight-line / planar sketch spines.
+        // Profiles always resolved from `byKey` — each section input is a
+        // sketch lowered upstream.
+        const meta = r.metadata as { variableSweep?: unknown } | undefined;
+        const m = meta?.variableSweep;
+        if (!isVariableSweepMetadata(m)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `variableSweep record '${r.id}' is missing valid metadata.variableSweep.`,
+            hint: 'Build the record via session.addVariableSweep({...}) (or the kcad.variableSweep public API) so the validators run.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Resolve spine edge. The spine input is a FeatureRef.
+        const spineId = m.spineRef.kind === 'feature' ? m.spineRef.id : undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let spineEdge: any = spineId ? this.importedGeometry.get(spineId) : undefined;
+
+        // Step 2: if the upstream is a virtual curve3d record and the edge
+        // is not yet parked, lower it on-demand. This is the normal path
+        // for engine-driven runs because the engine skips virtual records.
+        if (!spineEdge && spineId && allRecords) {
+          const upstream = allRecords.find((u) => u.id === spineId);
+          if (upstream?.kind === 'curve3d') {
+            const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
+            const cm = upMeta?.curve3d;
+            if (!isCurve3DMetadata(cm)) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.curve3d.degenerate-controls',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: spine curve3d '${spineId}' is missing valid metadata.curve3d.`,
+                hint: 'Build the spine via nurbsCurve(...) / spline3d(...) so the validators run.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+            try {
+              const { edge } = lowerCurve3D(cm);
+              spineEdge = edge;
+              // Cache the edge on importedGeometry so subsequent recompute
+              // passes (params.update) and other downstream consumers reuse
+              // the lowered edge instead of rebuilding it.
+              this.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: failed to lower curve3d spine '${spineId}': ${msg}`,
+                hint: 'kernel-failed — verify the spine nurbsCurve control points, knots, and degree form a valid NURBS curve.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          }
+        }
+
+        if (!spineEdge) {
+          const sketchInput = inputs.byKey.spine as OcctBackend | undefined;
+          if (sketchInput) {
+            try {
+              const { face } = OcctBackend.liftSketchToFace(sketchInput, 'XY');
+              // The lifted sketch face's outer wire's first edge — replicad
+              // wraps `wire.wrapped` as TopoDS_Wire; extract its first edge
+              // via TopExp_Explorer. Single-edge sketch wires are the
+              // common case (a straight-line spine sketch); multi-edge
+              // wires would need full-wire spine support in lowerVariableSweep.
+              const wire = face().outerWire();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const oc = (replicad as any).getOC();
+              const exp = new oc.TopExp_Explorer_2(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (wire as any).wrapped,
+                oc.TopAbs_ShapeEnum.TopAbs_EDGE,
+                oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+              );
+              if (exp.More()) {
+                spineEdge = oc.TopoDS.Edge_1(exp.Current());
+              }
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.invalid-args',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: failed to lift spine sketch: ${msg}`,
+                hint: 'invalid-args.variableSweep.spine — pass a Curve3D (preferred) or a single-edge Sketch as the spine.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          }
+        }
+        if (!spineEdge) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `variableSweep: spine input could not be resolved (no parked Curve3D edge and no sketch backend).`,
+            hint: 'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d) or a Sketch (path().…close()).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Resolve each section's profile wire from the sketch in
+        // `byKey.section_${i}`. The capture layer guarantees one input
+        // per section in addVariableSweep().
+        const lowered: VariableSweepSectionLowered[] = [];
+        for (let i = 0; i < m.sections.length; i++) {
+          const profileInput = inputs.byKey[`section_${i}`] as OcctBackend | undefined;
+          if (!profileInput) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `variableSweep: missing input 'section_${i}' — upstream sketch did not lower successfully.`,
+              hint: 'Every section profile must be a Sketch that lowers cleanly — check upstream sketch diagnostics first.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          let profileWire;
+          try {
+            const { face } = OcctBackend.liftSketchToFace(profileInput, 'XY');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            profileWire = (face().outerWire() as any).wrapped;
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.kernel-failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `variableSweep: failed to lift section ${i} profile: ${msg}`,
+              hint: 'kernel-failed — each section profile must be a single closed sketch loop.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          lowered.push({
+            t: m.sections[i].t,
+            profileWire,
+            locationPnt: [0, 0, 0], // unused for t=0/t=1 — see lowerVariableSweep
+          });
+        }
+
+        try {
+          shape = lowerVariableSweep(spineEdge, lowered, {
+            ...(m.continuity !== undefined ? { continuity: m.continuity } : {}),
+            ...(m.closed !== undefined ? { closed: m.closed } : {}),
+            ...(m.orientation !== undefined ? { orientation: m.orientation } : {}),
+            // Sketch-derived profiles are always lifted onto the XY plane at
+            // z=0 — let OCCT translate them to the spine station via the
+            // `WithContact=true` arm of `BRepOffsetAPI_MakePipeShell::Add_2`.
+            // `withCorrection=true` rotates each profile perpendicular to
+            // the spine tangent at its vertex — required when the spine
+            // tangent is non-vertical (e.g. a sketch spine in the XY plane,
+            // where without correction profile and spine are coplanar and
+            // the swept volume collapses).
+            withContact: true,
+            withCorrection: true,
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT variable-section sweep failed: ${msg}`,
+            hint: 'kernel-failed — check spine length, profile planarity, t-span coverage, and that profile wires are closed and single-loop.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        break;
       }
       default:
         return {

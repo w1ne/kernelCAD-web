@@ -27,4 +27,32 @@ export type SketchCommand =
   // smoothSplineTo. Useful for organic outlines (Wayfarer brow, ergonomic
   // grips) where chained arcs hit OCCT BlendChain solver cliffs.
   | { kind: 'smoothSpline'; x: Param; y: Param }
+  // NURBS Slice D — 2D path NURBS authoring.
+  //
+  // `spline` — N-waypoint interpolation. `points[0]` MUST match the current
+  // pen position (i.e. the path already moved there); the lowerer threads
+  // a B-spline approximation through every waypoint, leaving the pen at
+  // `points[N-1]`. Use for organic outlines (eyewear brow, ergonomic
+  // grips) when you have measured waypoints rather than a closed-form
+  // control-net.
+  | { kind: 'spline'; points: Array<{ x: Param; y: Param }>; tension?: Param }
+  // `nurbsSegment` — explicit B-spline segment. `controlPoints[0]` MUST
+  // match the current pen position; `controlPoints[N-1]` becomes the new
+  // pen position. Validates `degree+1 <= controlPoints.length`.
+  // Optional `weights` array (length must equal controlPoints) makes the
+  // segment rational; optional `knots` overrides the default clamped
+  // uniform knot vector. Use for explicit NURBS authoring where the
+  // control-net is the primary mental model.
+  | { kind: 'nurbsSegment'; controlPoints: Array<{ x: Param; y: Param }>; degree: Param; weights?: Param[]; knots?: Param[] }
+  // `hermiteG2_2d` — quintic Hermite transition between two endpoints with
+  // matching tangent (and optional curvature) — the 2D analogue of
+  // Slice C's 3D `hermiteG2`. `(ax, ay)` MUST match the current pen
+  // position within 1e-6 mm; the pen ends at `(bx, by)`. Used for G2-
+  // continuous blends between adjacent path runs (eyewear bridge → brow,
+  // sneaker midsole transitions).
+  | {
+      kind: 'hermiteG2_2d';
+      ax: Param; ay: Param; atx: Param; aty: Param; acx?: Param; acy?: Param;
+      bx: Param; by: Param; btx: Param; bty: Param; bcx?: Param; bcy?: Param;
+    }
   | { kind: 'close' };
