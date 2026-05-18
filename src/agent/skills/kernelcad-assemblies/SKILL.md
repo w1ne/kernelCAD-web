@@ -481,6 +481,25 @@ interface RepairContext {
 - **Numeric vec3 connectors only for workspace.** Topology-bound connector origins surface `assembly.pose-envelope.connector-unresolved` (warning) and are skipped from `connectorWorkspace`. Switch the tracked connector to `{ kind: 'vec3', value: [...] }` for inclusion.
 - **`limitsDeg`/`limitsMm` required.** Mates without declared limits are not sampled — they contribute only the `current` pose. The pose-envelope review is silent on infinite-travel mates by design.
 
+### Declarative workspace targets — `arm.workspace(connectorRef, opts)`
+
+v0.7 Slice 1 adds a capture-time API for declaring "this connector MUST be able to reach these world-frame points across the mechanism's declared mate-limit range":
+
+```typescript
+arm.workspace('elbow_tip', {
+  reachable: [[200, 0, 100], [0, 200, 100], [-200, 0, 100]],
+  toleranceMm: 5,   // optional, default 5
+});
+```
+
+Behavior:
+
+- The capture-time call records intent only — no kernel call, no synchronous failure.
+- At validate-time, when `solvedModel({}, { validate: 'error', posesGate: 'envelope' })` produces a sampled `ConnectorWorkspace`, the validator checks each declared target against the matching connector's sampled AABB minus `toleranceMm`. If a target lies further outside than tolerance, the validator emits `assembly.workspace.unreachable` (severity `error`) carrying the target, the delta in mm, the closest sampled point, and a recovery hint.
+- When `arm.workspace(...)` is declared without `posesGate: 'envelope'`, the gate is inert and emits one `info`-severity entry per declaration pointing the agent at the `posesGate` opt.
+- AABB-only containment in this slice; a target inside the AABB but outside the true (convex) reachable hull is NOT flagged — convex-hull refinement is queued for the next slice.
+- The connector ref must name an existing connector with a numeric `vec3` origin. Topology-bound origins are skipped by the envelope sampler (which also raises `assembly.pose-envelope.connector-unresolved` for them); the workspace gate emits a distinct `assembly.workspace.unreachable` (error) on the targeted declaration so the recovery hint points at THIS declaration, not just the generic envelope warning.
+
 ## Drive transmissions
 
 Mate coupling is not physical transmission. If you use `arm.coupleMates(driven, { source, ratio })`, also declare how motion gets from the actuator/input mate to the driven output:
@@ -540,6 +559,7 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
 | `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
+| `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
 
 ## Verification gates
 

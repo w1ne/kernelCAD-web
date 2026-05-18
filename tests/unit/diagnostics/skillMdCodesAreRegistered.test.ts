@@ -49,6 +49,7 @@ const KNOWN_ORPHANS: ReadonlySet<string> = new Set([
   'assembly.visual.review-check-failed',
   'assembly.visual.review-evidence-weak',
   'assembly.visual.review-incomplete',
+  'assembly.workspace.unreachable',
 ]);
 
 // Match `<group>.<segment>.<segment>(.<segment>)*` where group is one of the
