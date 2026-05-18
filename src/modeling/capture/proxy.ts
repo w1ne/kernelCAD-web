@@ -22,6 +22,9 @@ import type { ColorToken } from '../../shared/render/palette';
 import type { PBRMaterial } from '../../shared/intent/material';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
+import {
+  type FilletContinuity, isFilletContinuity,
+} from '../../shared/intent/filletContinuityRecord';
 
 type CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
@@ -465,16 +468,33 @@ export class Shape {
     return this.session.boolean('intersection', this, others);
   }
 
-  // Single-radius form (rc.6 — unchanged).
-  fillet(radius: Editable<number>, edges?: EdgeSelector): Shape;
+  // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).
+  fillet(
+    radius: Editable<number>,
+    edges?: EdgeSelector,
+    opts?: { continuity?: FilletContinuity },
+  ): Shape;
   // Variable-radius form (rc.11).
   fillet(groups: Array<{ edges: EdgeSelector; radius: Editable<number> }>): Shape;
   fillet(
     radiusOrGroups: Editable<number> | Array<{ edges: EdgeSelector; radius: Editable<number> }>,
     edges?: EdgeSelector,
+    opts?: { continuity?: FilletContinuity },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
-      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges);
+      let continuity: FilletContinuity | undefined;
+      if (opts !== undefined && opts.continuity !== undefined) {
+        if (!isFilletContinuity(opts.continuity)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `fillet: continuity must be 'G1' or 'G2'.`,
+            this.id,
+            `invalid-args.fillet.continuity — got ${String(opts.continuity)}`,
+          );
+        }
+        continuity = opts.continuity;
+      }
+      return this.session.edgeFeature('fillet', this, 'radius', radiusOrGroups, edges, { continuity });
     }
     return this.session.variableEdgeFeature('fillet', this, 'radius', radiusOrGroups);
   }

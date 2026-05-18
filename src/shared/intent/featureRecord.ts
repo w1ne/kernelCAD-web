@@ -7,6 +7,7 @@ import type { FaceQuery } from './queryTypes';
 import type { PBRMaterial } from './material';
 import type { Curve3DMetadata } from './curve3dRecord';
 import type { VariableSweepMetadata } from './variableSweepRecord';
+import type { FilletContinuity } from './filletContinuityRecord';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -35,6 +36,11 @@ export interface FeatureMetadata {
   /** NURBS Slice B: multi-section sweep spec consumed by the variableSweep
    *  lowerer (BRepOffsetAPI_MakePipeShell). */
   variableSweep?: VariableSweepMetadata;
+  /** NURBS Slice C Task 6: continuity grade on `Shape.fillet`. Default `'G1'`
+   *  (existing OCCT behaviour); `'G2'` selects a curvature-continuous blend
+   *  via `BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)`. Stored
+   *  on the fillet `FeatureRecord` and read by the OCCT lowerer. */
+  continuity?: FilletContinuity;
   /**
    * Catch-all for feature-kind-specific keys (commands, poses, partIds,
    * bendRecord, etc.) accessed via cast in individual lowerers. Promote a

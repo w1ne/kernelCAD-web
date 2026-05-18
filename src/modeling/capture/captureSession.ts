@@ -1102,6 +1102,7 @@ export class CaptureSession {
     valueParamName: 'radius' | 'distance' | 'thickness',
     value: Editable<number>,
     selector?: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
+    opts?: { continuity?: import('../../shared/intent/filletContinuityRecord').FilletContinuity },
   ): Shape {
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`${kind}: base shape '${base.id}' is not from this CaptureSession`);
@@ -1116,10 +1117,17 @@ export class CaptureSession {
       if (ref.key === 'edges') inputs.edges = ref.value;
     }
 
+    // Slice C Task 6: only `fillet` consumes continuity today; chamfer/shell ignore it.
+    const metadata: import('../../shared/intent/featureRecord').FeatureMetadata | undefined =
+      (kind === 'fillet' && opts?.continuity !== undefined)
+        ? { continuity: opts.continuity }
+        : undefined;
+
     return this.createShape({
       kind,
       params: { [valueParamName]: toParam(value, 'mm') },
       inputs,
+      ...(metadata !== undefined ? { metadata } : {}),
     });
   }
 
