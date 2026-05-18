@@ -360,7 +360,6 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | blind-pocket-from-top | You want a pocket cut into the top face only — the cylinder is shorter than the plate so it does not reach the bottom face. |
 | chamfer-rotated-face | You rotated a primitive and now want to chamfer one of its canonical faces by name (face-name semantics survive transforms). |
 | clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin; cylinder height extends beyond the plate so the cut is unambiguous. |
-| coons-patch-rectangular | You need a freeform NURBS surface whose silhouette is defined by 4 stitched boundary curves authored as nurbsCurve(). Walk the loop in declaration order (bottom, right, top, left), call surfaceFromBoundary, then thicken into a solid. |
 | extrude-rounded-rect-plate | You want a flat plate with rounded corners; use the dedicated rounded-rect extrude rather than building corners by hand. |
 | fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
