@@ -9,6 +9,7 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../../modeling/mates/validator';
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ValidateAssemblyInput {
   assembly?: string;
@@ -71,3 +72,15 @@ export async function validateAssemblyTool(input: ValidateAssemblyInput): Promis
     };
   }
 }
+
+export const validateAssemblyMcpTool = defineMCPTool<ValidateAssemblyInput>({
+  name: 'validate_assembly',
+  description: 'Run the mate-aware assembly validator (validateAssemblyWithMates) on the active assembly. Returns { status, diagnostics, partCount, jointCount } where diagnostics carry per-code hints agents use to recover.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      assembly: { type: 'string' },
+    },
+  },
+  handler: validateAssemblyTool,
+});

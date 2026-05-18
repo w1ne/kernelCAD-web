@@ -3,6 +3,7 @@ import { dirname, relative, resolve } from 'node:path';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
 import { reviewCadTool, type RepairContext, type ReviewCadInput, type ReviewCadOutput } from './reviewCad';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -554,3 +555,89 @@ function publicRecordUrl(outputRecordPath: string): string | undefined {
   if (rel.startsWith('..')) return undefined;
   return `/${rel.split(/[\\/]/).join('/')}`;
 }
+
+export const designLoopMcpTool = defineMCPTool<DesignLoopInput>({
+  name: 'design_loop',
+  description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
+      attempts: {
+        type: 'array',
+        description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visualReview? }. File attempts can be replayed by Studio build records.',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            file: { type: 'string' },
+            code: { type: 'string' },
+            visualReview: {
+              type: 'object',
+              description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshotPath, concrete findings, and all required checks passing.',
+              properties: {
+                accepted: { type: 'boolean' },
+                screenshotPath: { type: 'string' },
+                findings: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+                checks: {
+                  type: 'array',
+                  description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, canonical-views-physically-coherent.',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      code: { type: 'string' },
+                      passed: { type: 'boolean' },
+                      finding: { type: 'string' },
+                      screenshotPath: { type: 'string' },
+                    },
+                    required: ['code', 'passed', 'finding'],
+                  },
+                },
+              },
+              required: ['accepted', 'findings'],
+            },
+          },
+        },
+      },
+      assembly: { type: 'string' },
+      preserveInterfaces: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'External mates, connector refs, part names, or behavioral interfaces the agent must preserve between attempts.',
+      },
+      includePoseEnvelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+      includeInterference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
+      samplesPerMate: {
+        type: 'integer',
+        minimum: 1,
+        description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+      },
+      combinatorial: {
+        type: 'boolean',
+        description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+      },
+      epsilonMm3: { type: 'number', description: 'Forwarded to review_cad.' },
+      trackConnectors: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Connector refs to track across sampled poses.',
+      },
+      gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
+      stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+      requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
+      allowReviewWarnings: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok.',
+      },
+      outputRecordPath: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
+      recordTitle: { type: 'string', description: 'Optional title for the build record.' },
+    },
+    required: ['goal', 'attempts'],
+  },
+  handler: designLoopTool,
+});

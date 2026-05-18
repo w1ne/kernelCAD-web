@@ -8,6 +8,7 @@ import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
 import { validateLinear, validateCircular, validateGridAxis } from '../../../shared/intent/patternValidation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { defineMCPTool } from '../defineMCPTool';
 
 type Vec3Tuple = [number, number, number];
 
@@ -89,3 +90,33 @@ export async function addPatternFeatureTool(
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
   return { ok: true, new_code: edit.new_code, diagnostics: evalResult.diagnostics };
 }
+
+export const addPatternFeatureMcpTool = defineMCPTool<AddPatternFeatureInput>({
+  name: 'add_pattern_feature',
+  description:
+    "Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      code:      { type: 'string', description: 'The .kcad.ts source code.' },
+      target:    { type: 'string', description: 'Variable name of the Shape to pattern (inserted verbatim as the LHS receiver).' },
+      kind:      { type: 'string', enum: ['linear', 'circular', 'grid'] },
+      linear:    { type: 'object', description: 'Required when kind=linear.', properties: {
+        count: { type: 'integer', minimum: 2 },
+        direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+        spacing: { type: 'number' },
+      }, required: ['count', 'direction', 'spacing'] },
+      circular:  { type: 'object', description: 'Required when kind=circular.', properties: {
+        count: { type: 'integer', minimum: 2 },
+        axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+        angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
+      }, required: ['count', 'axis'] },
+      grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
+        x: { type: 'object' }, y: { type: 'object' },
+      }, required: ['x', 'y'] },
+      assign_to: { type: 'string', description: "Optional const-binding name; emits `const <assign_to> = <target>.patternX(...);`. Omit for statement form." },
+    },
+    required: ['code', 'target', 'kind'],
+  },
+  handler: addPatternFeatureTool,
+});

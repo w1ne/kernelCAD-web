@@ -7,6 +7,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ExportStlInput {
   file?: string;
@@ -98,3 +99,25 @@ export async function exportStlTool(input: ExportStlInput): Promise<ExportStlOut
     diagnostics: withNextActions(result.diagnostics),
   };
 }
+
+export const exportStlMcpTool = defineMCPTool<ExportStlInput>({
+  name: 'export_stl',
+  description:
+    'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
+    'Optional { feature_id } selects which feature to export (default: last). ' +
+    'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
+    'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
+    'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      output_path: { type: 'string', description: 'Destination path for the binary STL file. Required.' },
+      feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+    },
+    required: ['output_path'],
+  },
+  handler: exportStlTool,
+  metadata: { mutatesSession: false, category: 'export' },
+});

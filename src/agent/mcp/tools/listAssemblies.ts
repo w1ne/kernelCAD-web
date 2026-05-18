@@ -1,6 +1,7 @@
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListAssembliesInput {
   file?: string;
@@ -170,3 +171,18 @@ function objectMetadata(value: unknown): Record<string, unknown> {
     ? value as Record<string, unknown>
     : {};
 }
+
+export const listAssembliesMcpTool = defineMCPTool<ListAssembliesInput>({
+  name: 'list_assemblies',
+  description:
+    'List assembly intent captured by a kernelCAD script: assemblies, parts, named connectors, ' +
+    'fixed connections, joints, and aggregate assembly models. Pass either { file } or { code }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+    },
+  },
+  handler: listAssembliesTool,
+});

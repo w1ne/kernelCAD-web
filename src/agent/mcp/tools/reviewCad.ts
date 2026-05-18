@@ -25,6 +25,7 @@ import {
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../../modeling/mates/validator';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ReviewCadInput {
   file?: string;
@@ -388,3 +389,40 @@ function buildSuggestedRepairPrompt(
   const designBlock = designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
   return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts}`;
 }
+
+export const reviewCadMcpTool = defineMCPTool<ReviewCadInput>({
+  name: 'review_cad',
+  description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+      designGoal: { type: 'string', description: 'Original user design prompt or goal. Included in suggestedRepairPrompt so topology-redesign repairs restart from the intended physical design instead of local coordinate nudges.' },
+      preserveInterfaces: {
+        type: 'array',
+        description: 'External mates, connector refs, part names, or behavioral interfaces the repair agent must preserve during redesign.',
+        items: { type: 'string' },
+      },
+      includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
+      includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
+      samplesPerMate: {
+        type: 'integer',
+        minimum: 1,
+        description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
+      },
+      combinatorial: {
+        type: 'boolean',
+        description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
+      },
+      epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
+      trackConnectors: {
+        type: 'array',
+        description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
+        items: { type: 'string' },
+      },
+    },
+  },
+  handler: reviewCadTool,
+});

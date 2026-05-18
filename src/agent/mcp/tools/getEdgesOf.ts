@@ -5,6 +5,7 @@ import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { pickEdges } from '../../../kernel/backends/occt/edgeSelection';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface GetEdgesOfInput {
   file?: string;
@@ -96,3 +97,20 @@ export async function getEdgesOfTool(input: GetEdgesOfInput): Promise<GetEdgesOf
 
   return { ok: true, edges };
 }
+
+export const getEdgesOfMcpTool = defineMCPTool<GetEdgesOfInput>({
+  name: 'get_edges_of',
+  description:
+    "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string' },
+      code: { type: 'string' },
+      feature_id: { type: 'string' },
+      face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'] },
+    },
+    required: ['face_name'],
+  },
+  handler: getEdgesOfTool,
+});

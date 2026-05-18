@@ -2,6 +2,7 @@ import type { ShapeBackend } from '../../../kernel/backends/backend';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { SoftWarning } from '../../../shared/runtime/softWarning';
 import { getActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ParamsUpdateInput {
   edits: Array<{ name: string; value: number | boolean }>;
@@ -74,3 +75,28 @@ function serializeShapePreview(shape: ShapeBackend, featureId: string): Serializ
     bbox: { min: bbox.min, max: bbox.max },
   };
 }
+
+export const paramsUpdateMcpTool = defineMCPTool<ParamsUpdateInput>({
+  name: 'params_update',
+  description:
+    'Edit one or more session parameters and re-lower the affected records. Validates every edit before applying any (atomic). Returns the updated shape, the list of records that re-lowered, and any soft warnings (e.g., named feature refs that became passthroughs because a boolean param gated their feature off).',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      edits: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            value: {},
+          },
+          required: ['name', 'value'],
+        },
+      },
+    },
+    required: ['edits'],
+  },
+  handler: paramsUpdateTool,
+  metadata: { mutatesSession: true },
+});

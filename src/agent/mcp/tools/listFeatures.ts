@@ -1,5 +1,6 @@
 import type { FeatureKind, Param } from '../../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListFeaturesInput {
   file?: string;
@@ -52,3 +53,18 @@ export async function listFeaturesTool(
 
   return { features };
 }
+
+export const listFeaturesMcpTool = defineMCPTool<ListFeaturesInput>({
+  name: 'list_features',
+  description:
+    'List the features captured by a kernelCAD script — kind, id, params, inputs, ' +
+    'transforms count, suppression. Pass either { file } or { code }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+    },
+  },
+  handler: listFeaturesTool,
+});

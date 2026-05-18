@@ -3,6 +3,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListTopologyInput {
   file?: string;
@@ -80,3 +81,18 @@ export async function listTopologyTool(input: ListTopologyInput): Promise<ListTo
 
   return { ok: true, hasTrackedTopology, faceNames, edgeCount };
 }
+
+export const listTopologyMcpTool = defineMCPTool<ListTopologyInput>({
+  name: 'list_topology',
+  description:
+    'List the canonical face names available on a feature (top/bottom/left/right/front/back for box; top/bottom for cylinder; none for sphere or non-primitives) plus the total edge count. Pass { file?, code?, feature_id? }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string' },
+      code: { type: 'string' },
+      feature_id: { type: 'string' },
+    },
+  },
+  handler: listTopologyTool,
+});

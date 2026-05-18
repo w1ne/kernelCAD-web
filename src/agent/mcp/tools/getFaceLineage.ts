@@ -18,6 +18,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { parseFaceSelector } from '../../../kernel/naming/selectorParser';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface GetFaceLineageInput {
   file?: string;
@@ -154,3 +155,20 @@ function parseSelector(
   // featureId to resolve to; reject so the caller surfaces a useful error.
   return null;
 }
+
+export const getFaceLineageMcpTool = defineMCPTool<GetFaceLineageInput>({
+  name: 'get_face_lineage',
+  description:
+    'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
+      ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
+    },
+    required: ['feature_id', 'ref'],
+  },
+  handler: getFaceLineageTool,
+});

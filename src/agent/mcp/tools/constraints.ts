@@ -1,5 +1,6 @@
 import { ConstraintSolver } from '../../../modeling/constraints/solver';
 import type { Constraint, ConstraintType, SketchEntity } from '../../../modeling/constraints/types';
+import { defineMCPTool } from '../defineMCPTool';
 
 export const SUPPORTED_CONSTRAINT_TYPES: ConstraintType[] = [
   'COINCIDENT',
@@ -239,3 +240,54 @@ function cloneConstraint(constraint: Constraint): Constraint {
     entities: [...(constraint.entities ?? [])],
   };
 }
+
+export const solveSketchMcpTool = defineMCPTool<SolveSketchInput>({
+  name: 'solve_sketch',
+  description:
+    'Solve a 2D sketch constraint set. Side-effect-free: pass { entities, constraints } and receive solved entities plus the original constraints. Entities are POINT, LINE, and CIRCLE records; constraints use the kernelCAD constraint vocabulary.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      entities: {
+        type: 'array',
+        description: 'Sketch entities to solve. Lines reference point ids; circles reference a center point id.',
+        items: { type: 'object' },
+      },
+      constraints: {
+        type: 'array',
+        description: 'Constraints to apply to the entities.',
+        items: { type: 'object' },
+      },
+    },
+    required: ['entities', 'constraints'],
+  },
+  handler: solveSketchTool,
+});
+
+export const addConstraintMcpTool = defineMCPTool<AddConstraintInput>({
+  name: 'add_constraint',
+  description:
+    'Append one validated sketch constraint to a constraint list. Side-effect-free: pass { constraints, constraint } and receive the updated list.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      constraints: { type: 'array', items: { type: 'object' } },
+      constraint: { type: 'object' },
+    },
+    required: ['constraint'],
+  },
+  handler: addConstraintTool,
+});
+
+export const listConstraintsMcpTool = defineMCPTool<ListConstraintsInput>({
+  name: 'list_constraints',
+  description:
+    'List supported sketch constraint types and echo the provided constraint list. Use before add_constraint or solve_sketch to discover the vocabulary.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      constraints: { type: 'array', items: { type: 'object' } },
+    },
+  },
+  handler: listConstraintsTool,
+});

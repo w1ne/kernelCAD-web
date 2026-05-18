@@ -14,6 +14,7 @@ import type { FeatureKind } from '../../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface WhyDidThisFailInput {
   file?: string;
@@ -120,3 +121,18 @@ export async function whyDidThisFailTool(input: WhyDidThisFailInput): Promise<Wh
     chain,
   };
 }
+
+export const whyDidThisFailMcpTool = defineMCPTool<WhyDidThisFailInput>({
+  name: 'why_did_this_fail',
+  description:
+    "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call list_diagnostic_codes for the full catalogue. Pass { file?, code?, feature_id? }.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string' },
+      code: { type: 'string' },
+      feature_id: { type: 'string' },
+    },
+  },
+  handler: whyDidThisFailTool,
+});

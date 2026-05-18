@@ -9,6 +9,7 @@
 import { EDGE_QUERY_KEYS, FACE_QUERY_KEYS } from '../../../shared/intent/queryKeys';
 import { SUPPORTED_CONSTRAINT_TYPES } from './constraints';
 import type { ConstraintType } from '../../../modeling/constraints/types';
+import { defineMCPTool } from '../defineMCPTool';
 
 export type ListApiInput = Record<string, never>;
 
@@ -218,3 +219,14 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     constraints: CONSTRAINT_CAPABILITY,
   };
 }
+
+export const listApiMcpTool = defineMCPTool<ListApiInput>({
+  name: 'list_api',
+  description:
+    'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+  },
+  handler: listApiTool,
+});

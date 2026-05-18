@@ -1,4 +1,5 @@
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export type ParamsListInput = object;
 
@@ -31,3 +32,14 @@ export async function paramsListTool(): Promise<ParamsListOutput> {
     })),
   };
 }
+
+export const paramsListMcpTool = defineMCPTool<ParamsListInput>({
+  name: 'params_list',
+  description:
+    'List all parameters declared on the active session, with current values, defaults, and metadata. Read-only.',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+  },
+  handler: () => paramsListTool(),
+});

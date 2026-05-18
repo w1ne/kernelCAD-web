@@ -7,6 +7,7 @@ import type { Assembly } from '../../../modeling/capture/assembly';
 import type { MateLimitRange, MatePose } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListMatesInput {
   assembly?: string;
@@ -61,3 +62,15 @@ export async function listMatesTool(input: ListMatesInput): Promise<ListMatesOut
     })),
   };
 }
+
+export const listMatesMcpTool = defineMCPTool<ListMatesInput>({
+  name: 'list_mates',
+  description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      assembly: { type: 'string' },
+    },
+  },
+  handler: listMatesTool,
+});

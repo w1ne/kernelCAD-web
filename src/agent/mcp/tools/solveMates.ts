@@ -9,6 +9,7 @@ import type { Assembly } from '../../../modeling/capture/assembly';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import { solveMates, type SolveStatus } from '../../../modeling/mates/solver';
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface SolveMatesInput {
   assembly?: string;
@@ -86,3 +87,16 @@ export async function solveMatesTool(input: SolveMatesInput): Promise<SolveMates
     };
   }
 }
+
+export const solveMatesMcpTool = defineMCPTool<SolveMatesInput>({
+  name: 'solve_mates',
+  description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      assembly: { type: 'string' },
+      poses: { type: 'object', description: 'Optional numeric pose overrides keyed by mate name.' },
+    },
+  },
+  handler: solveMatesTool,
+});

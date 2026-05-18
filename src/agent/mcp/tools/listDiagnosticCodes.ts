@@ -12,6 +12,7 @@ import {
   type DiagnosticSeverityLevel,
 } from '../../../shared/diagnostics/registry';
 import type { NextAction } from '../../../shared/diagnostics/nextAction';
+import { defineMCPTool } from '../defineMCPTool';
 
 export type ListDiagnosticCodesInput = Record<string, never>;
 
@@ -56,3 +57,17 @@ export async function listDiagnosticCodesTool(
     }),
   };
 }
+
+export const listDiagnosticCodesMcpTool = defineMCPTool<ListDiagnosticCodesInput>({
+  name: 'list_diagnostic_codes',
+  description:
+    'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
+    'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
+    'retry strategies. Hints are also inline on every emitted diagnostic — ' +
+    'this tool just gives you the canonical list up front.',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+  },
+  handler: listDiagnosticCodesTool,
+});

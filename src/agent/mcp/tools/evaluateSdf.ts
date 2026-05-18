@@ -17,6 +17,7 @@
 
 import { runMcpScript } from '../runMcpScript';
 import type { Vec3 } from '../../../shared/intent/types';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface EvaluateSdfInput {
   file?: string;
@@ -136,3 +137,31 @@ export async function evaluateSdfTool(input: EvaluateSdfInput): Promise<Evaluate
     kind: field.kind,
   };
 }
+
+export const evaluateSdfMcpTool = defineMCPTool<EvaluateSdfInput>({
+  name: 'evaluate_sdf',
+  description:
+    'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
+    'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
+    '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
+    'calling sdf.materialize (which is the expensive step). The script must bind the SdfField via ' +
+    "sdf.bind('<name>', field) and pass that name as fieldName. " +
+    'Hint: pass either { file } or { code }, plus { fieldName, point: [x,y,z] }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      fieldName: { type: 'string', description: "sdf.bind binding name holding the SdfField." },
+      point: {
+        type: 'array',
+        items: { type: 'number' },
+        minItems: 3,
+        maxItems: 3,
+        description: 'Sample point [x, y, z] in mm.',
+      },
+    },
+    required: ['fieldName', 'point'],
+  },
+  handler: evaluateSdfTool,
+});

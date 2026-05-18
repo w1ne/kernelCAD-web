@@ -3,6 +3,7 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import type { FeatureKind } from '../../../shared/intent/types';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface GetShapeInfoInput {
   file?: string;
@@ -74,3 +75,22 @@ export async function getShapeInfoTool(
     },
   };
 }
+
+export const getShapeInfoMcpTool = defineMCPTool<GetShapeInfoInput>({
+  name: 'get_shape_info',
+  description:
+    'Run + recompute a script, return volume/surfaceArea/bbox for one feature (default: last). ' +
+    'Pass { file?, code?, feature_id? }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      feature_id: {
+        type: 'string',
+        description: 'Feature id to inspect. Defaults to the last captured feature.',
+      },
+    },
+  },
+  handler: getShapeInfoTool,
+});

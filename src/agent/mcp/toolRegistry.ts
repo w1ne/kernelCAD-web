@@ -1,864 +1,96 @@
-import { addConnectorTool } from './tools/addConnector';
-import { addConstraintTool, listConstraintsTool, solveSketchTool } from './tools/constraints';
-import { addFeatureTool } from './tools/addFeature';
-import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
-import { addPatternFeatureTool } from './tools/addPatternFeature';
-import { addSketchTextTool } from './tools/addSketchText';
-import { addMateTool } from './tools/addMate';
-import { evaluateScriptTool } from './tools/evaluateScript';
-import { evaluateSdfTool } from './tools/evaluateSdf';
-import { exportStlTool } from './tools/exportStl';
-import { getEdgesOfTool } from './tools/getEdgesOf';
-import { getShapeInfoTool } from './tools/getShapeInfo';
-import { inspectAssemblyTool } from './tools/inspectAssembly';
-import { listApiTool } from './tools/listApi';
-import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
-import { listEdgesTool } from './tools/listEdges';
-import { listFaceLabelsTool } from './tools/listFaceLabels';
-import { getFaceLineageTool } from './tools/getFaceLineage';
-import { listAssembliesTool } from './tools/listAssemblies';
-import { listFacesTool } from './tools/listFaces';
-import { listFeaturesTool } from './tools/listFeatures';
-import { listMatesTool } from './tools/listMates';
-import { listTopologyTool } from './tools/listTopology';
-import { lookupCookbookTool } from './tools/lookupCookbook';
-import { paramsListTool } from './tools/paramsList';
-import { paramsUpdateTool } from './tools/paramsUpdate';
-import { removeFeatureTool } from './tools/removeFeature';
-import { designLoopTool } from './tools/designLoop';
-import { reviewCadTool } from './tools/reviewCad';
-import { setParamValueTool } from './tools/setParamValue';
-import { solveMatesTool } from './tools/solveMates';
-import { validateAssemblyTool } from './tools/validateAssembly';
-import { whyDidThisFailTool } from './tools/whyDidThisFail';
-import { flattenPatternTool } from './tools/flattenPattern';
-import { getBendTableTool } from './tools/getBendTable';
+// src/agent/mcp/toolRegistry.ts
+//
+// Flat manifest of every MCP tool — pairs each definition with its handler.
+// Tool descriptors live alongside their implementations in tools/<name>.ts
+// (built via the `defineMCPTool` helper); this file is a thin import-and-list.
+//
+// Public contract — depended on by kernelCAD-server (vendor/kernelcad/ submodule).
+// The shape of `ToolRegistryEntry` (`{ definition: McpToolDefinition, handler }`)
+// is the source of truth; `TOOLS` and the in-process Map indexes are derived from it.
+// Do NOT change the entry shape or remove entries without bumping the consumer SHA explicitly.
 
-export interface McpToolDefinition {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: 'object';
-    properties: Record<string, unknown>;
-    required?: string[];
-  };
-}
+import type { ToolRegistryEntry } from './defineMCPTool';
+export type { McpToolDefinition, ToolHandler } from './defineMCPTool';
+import type { McpToolDefinition } from './defineMCPTool';
 
-type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
+import { addConnectorMcpTool } from './tools/addConnector';
+import {
+  addConstraintMcpTool,
+  listConstraintsMcpTool,
+  solveSketchMcpTool,
+} from './tools/constraints';
+import { addFeatureMcpTool } from './tools/addFeature';
+import { addNurbsSurfaceMcpTool } from './tools/addNurbsSurface';
+import { addPatternFeatureMcpTool } from './tools/addPatternFeature';
+import { addSketchTextMcpTool } from './tools/addSketchText';
+import { addMateMcpTool } from './tools/addMate';
+import { designLoopMcpTool } from './tools/designLoop';
+import { evaluateScriptMcpTool } from './tools/evaluateScript';
+import { evaluateSdfMcpTool } from './tools/evaluateSdf';
+import { exportStlMcpTool } from './tools/exportStl';
+import { flattenPatternMcpTool } from './tools/flattenPattern';
+import { getBendTableMcpTool } from './tools/getBendTable';
+import { getEdgesOfMcpTool } from './tools/getEdgesOf';
+import { getFaceLineageMcpTool } from './tools/getFaceLineage';
+import { getShapeInfoMcpTool } from './tools/getShapeInfo';
+import { inspectAssemblyMcpTool } from './tools/inspectAssembly';
+import { listApiMcpTool } from './tools/listApi';
+import { listAssembliesMcpTool } from './tools/listAssemblies';
+import { listDiagnosticCodesMcpTool } from './tools/listDiagnosticCodes';
+import { listEdgesMcpTool } from './tools/listEdges';
+import { listFaceLabelsMcpTool } from './tools/listFaceLabels';
+import { listFacesMcpTool } from './tools/listFaces';
+import { listFeaturesMcpTool } from './tools/listFeatures';
+import { listMatesMcpTool } from './tools/listMates';
+import { listTopologyMcpTool } from './tools/listTopology';
+import { lookupCookbookMcpTool } from './tools/lookupCookbook';
+import { paramsListMcpTool } from './tools/paramsList';
+import { paramsUpdateMcpTool } from './tools/paramsUpdate';
+import { removeFeatureMcpTool } from './tools/removeFeature';
+import { reviewCadMcpTool } from './tools/reviewCad';
+import { setParamValueMcpTool } from './tools/setParamValue';
+import { solveMatesMcpTool } from './tools/solveMates';
+import { validateAssemblyMcpTool } from './tools/validateAssembly';
+import { whyDidThisFailMcpTool } from './tools/whyDidThisFail';
 
-interface ToolRegistryEntry {
-  definition: McpToolDefinition;
-  handler: ToolHandler;
-}
-
-/**
- * Registry of every MCP tool — pairs each definition with its handler.
- *
- * Public contract — depended on by kernelCAD-server (vendor/kernelcad/ submodule).
- * The shape of `ToolRegistryEntry` (`{ definition: McpToolDefinition, handler: ToolHandler }`)
- * is the source of truth; `TOOLS` and the in-process Map indexes are derived from it.
- * Do NOT change the entry shape or remove entries without bumping the consumer SHA explicitly.
- */
 export const TOOL_REGISTRY: ToolRegistryEntry[] = [
-  {
-    definition: {
-      name: 'evaluate_script',
-      description:
-        'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
-        'Pass either { file: "<path>" } or { code: "<inline source>" }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => evaluateScriptTool(input as Parameters<typeof evaluateScriptTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_features',
-      description:
-        'List the features captured by a kernelCAD script — kind, id, params, inputs, ' +
-        'transforms count, suppression. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => listFeaturesTool(input as Parameters<typeof listFeaturesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_assemblies',
-      description:
-        'List assembly intent captured by a kernelCAD script: assemblies, parts, named connectors, ' +
-        'fixed connections, joints, and aggregate assembly models. Pass either { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        },
-      },
-    },
-    handler: input => listAssembliesTool(input as Parameters<typeof listAssembliesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'inspect_assembly',
-      description:
-        'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors, mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-        },
-      },
-    },
-    handler: input => inspectAssemblyTool(input as Parameters<typeof inspectAssemblyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_shape_info',
-      description:
-        'Run + recompute a script, return volume/surfaceArea/bbox for one feature (default: last). ' +
-        'Pass { file?, code?, feature_id? }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: {
-            type: 'string',
-            description: 'Feature id to inspect. Defaults to the last captured feature.',
-          },
-        },
-      },
-    },
-    handler: input => getShapeInfoTool(input as Parameters<typeof getShapeInfoTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_topology',
-      description: 'List the canonical face names available on a feature (top/bottom/left/right/front/back for box; top/bottom for cylinder; none for sphere or non-primitives) plus the total edge count. Pass { file?, code?, feature_id? }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          feature_id: { type: 'string' },
-        },
-      },
-    },
-    handler: input => listTopologyTool(input as Parameters<typeof listTopologyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_edges_of',
-      description: "Return the boundary edges of a named canonical face on an un-transformed primitive — index, centroid, length, isClosed. Pass { file?, code?, feature_id?, face_name: 'top' | ... }.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          feature_id: { type: 'string' },
-          face_name: { type: 'string', enum: ['top', 'bottom', 'left', 'right', 'front', 'back'] },
-        },
-        required: ['face_name'],
-      },
-    },
-    handler: input => getEdgesOfTool(input as unknown as Parameters<typeof getEdgesOfTool>[0]),
-  },
-  {
-    definition: {
-      name: 'why_did_this_fail',
-      description: "Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call list_diagnostic_codes for the full catalogue. Pass { file?, code?, feature_id? }.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          feature_id: { type: 'string' },
-        },
-      },
-    },
-    handler: input => whyDidThisFailTool(input as Parameters<typeof whyDidThisFailTool>[0]),
-  },
-  {
-    definition: {
-      name: 'set_param_value',
-      description: 'Edit a param() default value in a kernelCAD script. Returns the modified code as text plus diagnostics from re-evaluating the result. Caller persists the new code via standard file-write tools (this tool has no side effects).',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
-          new_value: { description: 'The new default value — number for numeric params, string for expressions.' },
-        },
-        required: ['code', 'param_name', 'new_value'],
-      },
-    },
-    handler: input => setParamValueTool(input as unknown as Parameters<typeof setParamValueTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_feature',
-      description: 'Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `list_api` to see `featureKindFaceLabels` for the full value schema.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          feature_code: { type: 'string', description: 'Single-statement source line to insert (e.g. `const hole = cylinder(5, 2).translate(10, 10, -1);`).' },
-        },
-        required: ['code', 'feature_code'],
-      },
-    },
-    handler: input => addFeatureTool(input as unknown as Parameters<typeof addFeatureTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_nurbs_surface',
-      description:
-        "Insert a nurbsSurface(...) or surfaceFromCurves(...) call into the user's .kcad.ts. The returned Surface is captured but produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Returns the modified code + diagnostics. Slice-1 limitation: weights are accepted but currently ignored (TColStd_Array2OfReal not exposed in WASM bindings); surfaces are non-rational.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'Current .kcad.ts source.' },
-          controls: {
-            type: 'array',
-            description: 'Control-point grid for direct construction (controls[u][v] = [x, y, z], mm).',
-            items: {
-              type: 'array',
-              items: { type: 'array', items: { type: 'number' } },
-            },
-          },
-          weights: {
-            type: 'array',
-            description: 'Optional rational weights, same grid shape as controls. Ignored in slice-1.',
-            items: { type: 'array', items: { type: 'number' } },
-          },
-          degree: {
-            type: 'object',
-            description: 'Degrees in U and V; each in [1, nU-1] / [1, nV-1].',
-            properties: {
-              u: { type: 'integer', minimum: 1 },
-              v: { type: 'integer', minimum: 1 },
-            },
-            required: ['u', 'v'],
-          },
-          knots: {
-            type: 'object',
-            description: 'Optional explicit knot vectors; missing => clamped uniform inferred.',
-            properties: {
-              u: { type: 'array', items: { type: 'number' } },
-              v: { type: 'array', items: { type: 'number' } },
-            },
-          },
-          periodic: {
-            type: 'object',
-            description: 'Optional periodic flags per parametric direction.',
-            properties: {
-              u: { type: 'boolean' },
-              v: { type: 'boolean' },
-            },
-          },
-          section_sketch_ids: {
-            type: 'array',
-            description: 'Existing sketch FeatureIds (2 or more) to skin a surface through, in order.',
-            items: { type: 'string' },
-          },
-          binding_name: {
-            type: 'string',
-            description: 'JS const name for the new Surface binding (default: surface_<N>).',
-          },
-        },
-        required: ['code'],
-      },
-    },
-    handler: input => addNurbsSurfaceTool(input as unknown as Parameters<typeof addNurbsSurfaceTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_sketch_text',
-      description: 'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code:     { type: 'string', description: 'The .kcad.ts source code.' },
-          content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
-          size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
-          font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
-          align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
-          position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
-          rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
-          bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
-        },
-        required: ['code', 'content', 'size'],
-      },
-    },
-    handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_pattern_feature',
-      description: "Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code:      { type: 'string', description: 'The .kcad.ts source code.' },
-          target:    { type: 'string', description: 'Variable name of the Shape to pattern (inserted verbatim as the LHS receiver).' },
-          kind:      { type: 'string', enum: ['linear', 'circular', 'grid'] },
-          linear:    { type: 'object', description: 'Required when kind=linear.', properties: {
-            count: { type: 'integer', minimum: 2 },
-            direction: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
-            spacing: { type: 'number' },
-          }, required: ['count', 'direction', 'spacing'] },
-          circular:  { type: 'object', description: 'Required when kind=circular.', properties: {
-            count: { type: 'integer', minimum: 2 },
-            axis: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
-            angleDeg: { type: 'number', description: 'Optional; defaults to 360.' },
-          }, required: ['count', 'axis'] },
-          grid:      { type: 'object', description: 'Required when kind=grid.', properties: {
-            x: { type: 'object' }, y: { type: 'object' },
-          }, required: ['x', 'y'] },
-          assign_to: { type: 'string', description: "Optional const-binding name; emits `const <assign_to> = <target>.patternX(...);`. Omit for statement form." },
-        },
-        required: ['code', 'target', 'kind'],
-      },
-    },
-    handler: input => addPatternFeatureTool(input as unknown as Parameters<typeof addPatternFeatureTool>[0]),
-  },
-  {
-    definition: {
-      name: 'remove_feature',
-      description: 'Remove a single line from a kernelCAD script identified by a substring match. Returns the modified code plus diagnostics from re-evaluating. Refuses to remove the line containing the return statement. Side-effect-free.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          match: { type: 'string', description: 'A substring that uniquely identifies the line to remove (e.g. `const hole = cylinder(5,`).' },
-        },
-        required: ['code', 'match'],
-      },
-    },
-    handler: input => removeFeatureTool(input as unknown as Parameters<typeof removeFeatureTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_edges',
-      description:
-        'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, and boundary status. Use this to discover what edges are available before calling fillet/chamfer. Pass either { file } or { code }; query is an optional EdgeQuery object.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
-          query: { type: 'object', description: 'Optional EdgeQuery filter (atZ, parallel, convex, ofCurveType, etc).' },
-        },
-      },
-    },
-    handler: input => listEdgesTool(input as Parameters<typeof listEdgesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_faces',
-      description:
-        'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id, centroid, normal, surfaceType, area, and label. Use for face introspection before shell/face references. Pass either { file } or { code }; query is an optional FaceQuery object.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
-          query: { type: 'object', description: 'Optional FaceQuery filter (atZ, parallelTo, ofSurfaceType, etc).' },
-        },
-      },
-    },
-    handler: input => listFacesTool(input as Parameters<typeof listFacesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_face_labels',
-      description:
-        'List user-applied labels visible in a script: both sketch-segment labels (path().label(\'rim\')) and creating-op faceLabels (box(..., { faceLabels: { ... } })). Each result includes its source so the agent can disambiguate. Lets agents discover the label vocabulary on a shape before referencing labels in fillet/chamfer/shell.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId; defaults to scanning all features.' },
-        },
-      },
-    },
-    handler: input => listFaceLabelsTool(input as Parameters<typeof listFaceLabelsTool>[0]),
-  },
-  {
-    definition: {
-      name: 'get_face_lineage',
-      description:
-        'Walk the HistoryMap of a lowered feature and return the chain of lineage entries that produced a named face ref. Inputs: feature_id ("auto" for last) and ref (string selector "name.slot" or a structured FaceRef / EdgeRef). Returns { chain, usedFallback }. Ships create/modify ops in this slice; split/delete classification is deferred.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          feature_id: { type: 'string', description: 'Feature id, or "auto" for the last feature.' },
-          ref: { description: 'Selector string ("name.slot") or structured FaceRef / EdgeRef.' },
-        },
-        required: ['feature_id', 'ref'],
-      },
-    },
-    handler: input => getFaceLineageTool(input as unknown as Parameters<typeof getFaceLineageTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_api',
-      description:
-        'List the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-    },
-    handler: input => listApiTool(input as Parameters<typeof listApiTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_diagnostic_codes',
-      description:
-        'Return the kernelCAD 26-code diagnostic catalogue with hint templates. ' +
-        'Tiny one-shot call; useful for an agent that wants to pre-populate ' +
-        'retry strategies. Hints are also inline on every emitted diagnostic — ' +
-        'this tool just gives you the canonical list up front.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-    },
-    handler: input => listDiagnosticCodesTool(input as Parameters<typeof listDiagnosticCodesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'export_stl',
-      description:
-        'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
-        'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
-        'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
-        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          output_path: { type: 'string', description: 'Destination path for the binary STL file. Required.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
-        },
-        required: ['output_path'],
-      },
-    },
-    handler: input => exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]),
-  },
-  {
-    definition: {
-      name: 'lookup_cookbook',
-      description:
-        'Search the kernelCAD cookbook for canonical pattern snippets. ' +
-        'Returns top-k snippets matching the natural-language query, ' +
-        'ranked by BM25 over title/tags/keywords/trigger. ' +
-        'Use when you need a canonical pattern for fillet-after-subtract, ' +
-        'non-overlapping booleans, sketch-to-extrude flows, etc. ' +
-        'Returns empty if no snippet scores above the relevance floor — ' +
-        'proceed without cookbook help in that case.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description:
-              'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket").',
-          },
-          k: {
-            type: 'number',
-            description: 'Max snippets to return. Default 3, max 5.',
-            default: 3,
-          },
-        },
-        required: ['query'],
-      },
-    },
-    handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
-  },
-  {
-    definition: {
-      name: 'params_list',
-      description:
-        'List all parameters declared on the active session, with current values, defaults, and metadata. Read-only.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-    },
-    handler: () => paramsListTool(),
-  },
-  {
-    definition: {
-      name: 'params_update',
-      description:
-        'Edit one or more session parameters and re-lower the affected records. Validates every edit before applying any (atomic). Returns the updated shape, the list of records that re-lowered, and any soft warnings (e.g., named feature refs that became passthroughs because a boolean param gated their feature off).',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          edits: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                value: {},
-              },
-              required: ['name', 'value'],
-            },
-          },
-        },
-        required: ['edits'],
-      },
-    },
-    handler: input => paramsUpdateTool(input as unknown as Parameters<typeof paramsUpdateTool>[0]),
-  },
-  {
-    definition: {
-      name: 'solve_sketch',
-      description:
-        'Solve a 2D sketch constraint set. Side-effect-free: pass { entities, constraints } and receive solved entities plus the original constraints. Entities are POINT, LINE, and CIRCLE records; constraints use the kernelCAD constraint vocabulary.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          entities: {
-            type: 'array',
-            description: 'Sketch entities to solve. Lines reference point ids; circles reference a center point id.',
-            items: { type: 'object' },
-          },
-          constraints: {
-            type: 'array',
-            description: 'Constraints to apply to the entities.',
-            items: { type: 'object' },
-          },
-        },
-        required: ['entities', 'constraints'],
-      },
-    },
-    handler: input => solveSketchTool(input as unknown as Parameters<typeof solveSketchTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_constraint',
-      description:
-        'Append one validated sketch constraint to a constraint list. Side-effect-free: pass { constraints, constraint } and receive the updated list.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          constraints: { type: 'array', items: { type: 'object' } },
-          constraint: { type: 'object' },
-        },
-        required: ['constraint'],
-      },
-    },
-    handler: input => addConstraintTool(input as unknown as Parameters<typeof addConstraintTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_constraints',
-      description:
-        'List supported sketch constraint types and echo the provided constraint list. Use before add_constraint or solve_sketch to discover the vocabulary.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          constraints: { type: 'array', items: { type: 'object' } },
-        },
-      },
-    },
-    handler: input => listConstraintsTool(input as unknown as Parameters<typeof listConstraintsTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_connector',
-      description:
-        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand or a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }). Returns the registered connector\'s { partName, name, type }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string', description: 'Assembly name; defaults to the only/first assembly on the active session.' },
-          part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
-          name: { type: 'string', description: 'Connector name (unique within the part).' },
-          type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] (vec3 shorthand) or a structured ConnectorOrigin.' },
-          axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
-          normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
-        },
-        required: ['part', 'name', 'type', 'origin'],
-      },
-    },
-    handler: input => addConnectorTool(input as unknown as Parameters<typeof addConnectorTool>[0]),
-  },
-  {
-    definition: {
-      name: 'add_mate',
-      description:
-        'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-          name: { type: 'string', description: 'Mate name (unique within the assembly).' },
-          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
-          pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
-          limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
-          limitsMm: { type: 'array', description: 'Optional [minMm, maxMm] range for prismatic mates.' },
-        },
-        required: ['name', 'a', 'b', 'type'],
-      },
-    },
-    handler: input => addMateTool(input as unknown as Parameters<typeof addMateTool>[0]),
-  },
-  {
-    definition: {
-      name: 'list_mates',
-      description: 'List the mate records declared on the active assembly. Read-only; reads arm.__mates() under the hood. Returns { mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-        },
-      },
-    },
-    handler: input => listMatesTool(input as unknown as Parameters<typeof listMatesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'validate_assembly',
-      description: 'Run the mate-aware assembly validator (validateAssemblyWithMates) on the active assembly. Returns { status, diagnostics, partCount, jointCount } where diagnostics carry per-code hints agents use to recover.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-        },
-      },
-    },
-    handler: input => validateAssemblyTool(input as unknown as Parameters<typeof validateAssemblyTool>[0]),
-  },
-  {
-    definition: {
-      name: 'solve_mates',
-      description: 'Run the v0.6 mate-graph solver on the active assembly. Returns { status, poses, iterations? } where each pose is a serialized Transform ({ translation, rotateAxis, rotateDeg }). Optional poses overrides mate pose values by mate name.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          assembly: { type: 'string' },
-          poses: { type: 'object', description: 'Optional numeric pose overrides keyed by mate name.' },
-        },
-      },
-    },
-    handler: input => solveMatesTool(input as unknown as Parameters<typeof solveMatesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'review_cad',
-      description: 'Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
-          designGoal: { type: 'string', description: 'Original user design prompt or goal. Included in suggestedRepairPrompt so topology-redesign repairs restart from the intended physical design instead of local coordinate nudges.' },
-          preserveInterfaces: {
-            type: 'array',
-            description: 'External mates, connector refs, part names, or behavioral interfaces the repair agent must preserve during redesign.',
-            items: { type: 'string' },
-          },
-          includePoseEnvelope: { type: 'boolean', description: 'Whether to sample declared mate limits. Default true.' },
-          includeInterference: { type: 'boolean', description: 'Whether sampled poses run BREP interference checks. Default true.' },
-          samplesPerMate: {
-            type: 'integer',
-            minimum: 1,
-            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
-          },
-          combinatorial: {
-            type: 'boolean',
-            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
-          },
-          epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
-          trackConnectors: {
-            type: 'array',
-            description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
-            items: { type: 'string' },
-          },
-        },
-      },
-    },
-    handler: input => reviewCadTool(input as unknown as Parameters<typeof reviewCadTool>[0]),
-  },
-  {
-    definition: {
-      name: 'design_loop',
-      description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          goal: { type: 'string', description: 'Original user design goal. Fed into every review_cad repair prompt.' },
-          attempts: {
-            type: 'array',
-            description: 'Ordered design attempts. Each item is { id?, title?, file? or code?, visualReview? }. File attempts can be replayed by Studio build records.',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                title: { type: 'string' },
-                file: { type: 'string' },
-                code: { type: 'string' },
-                visualReview: {
-                  type: 'object',
-                  description: 'Evidence from the reviewing agent after rendering/opening screenshots. Accepted reviews must include screenshotPath, concrete findings, and all required checks passing.',
-                  properties: {
-                    accepted: { type: 'boolean' },
-                    screenshotPath: { type: 'string' },
-                    findings: {
-                      type: 'array',
-                      items: { type: 'string' },
-                    },
-                    checks: {
-                      type: 'array',
-                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, canonical-views-physically-coherent.',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          code: { type: 'string' },
-                          passed: { type: 'boolean' },
-                          finding: { type: 'string' },
-                          screenshotPath: { type: 'string' },
-                        },
-                        required: ['code', 'passed', 'finding'],
-                      },
-                    },
-                  },
-                  required: ['accepted', 'findings'],
-                },
-              },
-            },
-          },
-          assembly: { type: 'string' },
-          preserveInterfaces: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'External mates, connector refs, part names, or behavioral interfaces the agent must preserve between attempts.',
-          },
-          includePoseEnvelope: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
-          includeInterference: { type: 'boolean', description: 'Forwarded to review_cad. Default true.' },
-          samplesPerMate: {
-            type: 'integer',
-            minimum: 1,
-            description: 'Pose-envelope samples per declared-limit mate. 1 (default) = corners only; >=3 adds uniform interior points between min and max. Total samples per non-locked mate = samplesPerMate.',
-          },
-          combinatorial: {
-            type: 'boolean',
-            description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
-          },
-          epsilonMm3: { type: 'number', description: 'Forwarded to review_cad.' },
-          trackConnectors: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Connector refs to track across sampled poses.',
-          },
-          gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
-          stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
-          requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
-          allowReviewWarnings: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Warning diagnostic codes the original prompt explicitly allows. Other review warnings keep the loop iterating even if review_cad is functionally ok.',
-          },
-          outputRecordPath: { type: 'string', description: 'Optional JSON path to write a Studio-compatible build record.' },
-          recordTitle: { type: 'string', description: 'Optional title for the build record.' },
-        },
-        required: ['goal', 'attempts'],
-      },
-    },
-    handler: input => designLoopTool(input as unknown as Parameters<typeof designLoopTool>[0]),
-  },
-  {
-    definition: {
-      name: 'flatten_pattern',
-      description:
-        'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
-        '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
-        'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-          featureId: { type: 'string' },
-        },
-      },
-    },
-    handler: input => flattenPatternTool(input as unknown as Parameters<typeof flattenPatternTool>[0]) as Promise<unknown>,
-  },
-  {
-    definition: {
-      name: 'get_bend_table',
-      description:
-        'List every sheetMetalBend in a script with its computed K-factor bend allowance, ' +
-        'axis line, angle, radius, and parent sheetMetal thickness + kFactor. Pass { file } or { code }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string' },
-          code: { type: 'string' },
-        },
-      },
-    },
-    handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
-  },
-  {
-    definition: {
-      name: 'evaluate_sdf',
-      description:
-        'Sample the signed distance from an in-script sdf.* field at a 3D point. ' +
-        'Returns { distance, inside, aabb, kind }. Distance is in mm; negative = inside the surface, ' +
-        '0 = exactly on the surface, positive = outside. Use this to verify SDF composition before ' +
-        'calling sdf.materialize (which is the expensive step). The script must bind the SdfField via ' +
-        "sdf.bind('<name>', field) and pass that name as fieldName. " +
-        'Hint: pass either { file } or { code }, plus { fieldName, point: [x,y,z] }.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          fieldName: { type: 'string', description: "sdf.bind binding name holding the SdfField." },
-          point: {
-            type: 'array',
-            items: { type: 'number' },
-            minItems: 3,
-            maxItems: 3,
-            description: 'Sample point [x, y, z] in mm.',
-          },
-        },
-        required: ['fieldName', 'point'],
-      },
-    },
-    handler: input => evaluateSdfTool(input as unknown as Parameters<typeof evaluateSdfTool>[0]),
-  },
+  evaluateScriptMcpTool,
+  listFeaturesMcpTool,
+  listAssembliesMcpTool,
+  inspectAssemblyMcpTool,
+  getShapeInfoMcpTool,
+  listTopologyMcpTool,
+  getEdgesOfMcpTool,
+  whyDidThisFailMcpTool,
+  setParamValueMcpTool,
+  addFeatureMcpTool,
+  addNurbsSurfaceMcpTool,
+  addSketchTextMcpTool,
+  addPatternFeatureMcpTool,
+  removeFeatureMcpTool,
+  listEdgesMcpTool,
+  listFacesMcpTool,
+  listFaceLabelsMcpTool,
+  getFaceLineageMcpTool,
+  listApiMcpTool,
+  listDiagnosticCodesMcpTool,
+  exportStlMcpTool,
+  lookupCookbookMcpTool,
+  paramsListMcpTool,
+  paramsUpdateMcpTool,
+  solveSketchMcpTool,
+  addConstraintMcpTool,
+  listConstraintsMcpTool,
+  addConnectorMcpTool,
+  addMateMcpTool,
+  listMatesMcpTool,
+  validateAssemblyMcpTool,
+  solveMatesMcpTool,
+  reviewCadMcpTool,
+  designLoopMcpTool,
+  flattenPatternMcpTool,
+  getBendTableMcpTool,
+  evaluateSdfMcpTool,
 ];
 
 const toolHandlers = new Map(TOOL_REGISTRY.map(entry => [entry.definition.name, entry.handler]));

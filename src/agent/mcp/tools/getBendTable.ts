@@ -11,6 +11,7 @@ import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { computeBendAllowance } from '../../../modeling/sheetMetal';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface GetBendTableInput {
   file?: string;
@@ -89,3 +90,18 @@ export async function getBendTableTool(input: GetBendTableInput): Promise<GetBen
     diagnostics: r.diagnostics,
   };
 }
+
+export const getBendTableMcpTool = defineMCPTool<GetBendTableInput>({
+  name: 'get_bend_table',
+  description:
+    'List every sheetMetalBend in a script with its computed K-factor bend allowance, ' +
+    'axis line, angle, radius, and parent sheetMetal thickness + kFactor. Pass { file } or { code }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string' },
+      code: { type: 'string' },
+    },
+  },
+  handler: getBendTableTool,
+});

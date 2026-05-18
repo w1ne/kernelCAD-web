@@ -9,6 +9,7 @@ import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { selectEdges, type EdgeQuery, type EdgeSegment } from '../../../kernel/backends/occt/edgeQueries';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListEdgesInput {
   file?: string;
@@ -58,3 +59,19 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
   const edges = selectEdges(shape, input.query ?? {});
   return { ok: true, edges };
 }
+
+export const listEdgesMcpTool = defineMCPTool<ListEdgesInput>({
+  name: 'list_edges',
+  description:
+    'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, and boundary status. Use this to discover what edges are available before calling fillet/chamfer. Pass either { file } or { code }; query is an optional EdgeQuery object.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
+      query: { type: 'object', description: 'Optional EdgeQuery filter (atZ, parallel, convex, ofCurveType, etc).' },
+    },
+  },
+  handler: listEdgesTool,
+});

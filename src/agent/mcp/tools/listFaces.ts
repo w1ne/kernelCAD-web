@@ -8,6 +8,7 @@ import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { resolveFaceQuery, type FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
 import type { Face } from 'replicad';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListFacesInput {
   file?: string;
@@ -82,3 +83,19 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
 
   return { ok: true, faces };
 }
+
+export const listFacesMcpTool = defineMCPTool<ListFacesInput>({
+  name: 'list_faces',
+  description:
+    'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id, centroid, normal, surfaceType, area, and label. Use for face introspection before shell/face references. Pass either { file } or { code }; query is an optional FaceQuery object.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      feature_id: { type: 'string', description: 'Optional FeatureId to inspect; defaults to last returned shape.' },
+      query: { type: 'object', description: 'Optional FaceQuery filter (atZ, parallelTo, ofSurfaceType, etc).' },
+    },
+  },
+  handler: listFacesTool,
+});

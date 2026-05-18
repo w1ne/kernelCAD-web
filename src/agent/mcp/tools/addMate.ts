@@ -10,6 +10,7 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 import type { MateLimitRange, MatePose } from '../../../modeling/mates/mate';
 import type { MateType } from '../../../modeling/mates/mateTypes';
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface AddMateInput {
   assembly?: string;
@@ -83,3 +84,25 @@ export async function addMateTool(input: AddMateInput): Promise<AddMateOutput> {
     };
   }
 }
+
+export const addMateMcpTool = defineMCPTool<AddMateInput>({
+  name: 'add_mate',
+  description:
+    'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      assembly: { type: 'string' },
+      name: { type: 'string', description: 'Mate name (unique within the assembly).' },
+      a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+      b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+      type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
+      pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
+      limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
+      limitsMm: { type: 'array', description: 'Optional [minMm, maxMm] range for prismatic mates.' },
+    },
+    required: ['name', 'a', 'b', 'type'],
+  },
+  handler: addMateTool,
+  metadata: { mutatesSession: true, category: 'assembly' },
+});

@@ -11,6 +11,7 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
 import type { Vec3 } from '../../../shared/intent/types';
 import { getActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface AddConnectorInput {
   assembly?: string;
@@ -90,3 +91,24 @@ function resolveAssembly(
   }
   return { ok: true, value: assemblies.values().next().value as Assembly };
 }
+
+export const addConnectorMcpTool = defineMCPTool<AddConnectorInput>({
+  name: 'add_connector',
+  description:
+    'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand or a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }). Returns the registered connector\'s { partName, name, type }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      assembly: { type: 'string', description: 'Assembly name; defaults to the only/first assembly on the active session.' },
+      part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
+      name: { type: 'string', description: 'Connector name (unique within the part).' },
+      type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
+      origin: { description: 'Origin as [x, y, z] (vec3 shorthand) or a structured ConnectorOrigin.' },
+      axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
+      normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
+    },
+    required: ['part', 'name', 'type', 'origin'],
+  },
+  handler: addConnectorTool,
+  metadata: { mutatesSession: true, category: 'assembly' },
+});

@@ -3,6 +3,7 @@ import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/e
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -46,3 +47,18 @@ export async function evaluateScriptTool(
     diagnostics: withNextActions(r.diagnostics),
   };
 }
+
+export const evaluateScriptMcpTool = defineMCPTool<EvaluateScriptInput>({
+  name: 'evaluate_script',
+  description:
+    'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
+    'Pass either { file: "<path>" } or { code: "<inline source>" }.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+    },
+  },
+  handler: evaluateScriptTool,
+});

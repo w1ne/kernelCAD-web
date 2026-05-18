@@ -7,6 +7,7 @@
 import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface AddSketchTextInput {
   /** The .kcad.ts source code to edit. */
@@ -67,3 +68,24 @@ export async function addSketchTextTool(input: AddSketchTextInput): Promise<AddS
     diagnostics: evalResult.diagnostics,
   };
 }
+
+export const addSketchTextMcpTool = defineMCPTool<AddSketchTextInput>({
+  name: 'add_sketch_text',
+  description:
+    'Insert a sketch.text(...) call into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature. Default font is the runtime-bundled Liberation Sans; pass `font` as a `.ttf` path to load a custom font.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      code:     { type: 'string', description: 'The .kcad.ts source code.' },
+      content:  { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
+      size:     { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
+      font:     { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
+      align:    { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to position. Default left.' },
+      position: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2, description: '[x, y] anchor in mm. Default [0, 0].' },
+      rotation: { type: 'number', description: 'CCW rotation in degrees around position. Default 0.' },
+      bindAs:   { type: 'string', description: 'Optional local variable name; emits const <bindAs> = sketch.text(...).' },
+    },
+    required: ['code', 'content', 'size'],
+  },
+  handler: addSketchTextTool,
+});

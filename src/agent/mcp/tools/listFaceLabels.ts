@@ -10,6 +10,7 @@ import type { CanonicalFace } from '../../../shared/intent/types';
 import type { FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
 import type { FaceLabelsMap } from '../../../shared/intent/featureRecord';
 import { runMcpScript } from '../runMcpScript';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface ListFaceLabelsInput {
   file?: string;
@@ -106,3 +107,18 @@ export async function listFaceLabelsTool(input: ListFaceLabelsInput): Promise<Li
 
   return { ok: true, labels };
 }
+
+export const listFaceLabelsMcpTool = defineMCPTool<ListFaceLabelsInput>({
+  name: 'list_face_labels',
+  description:
+    "List user-applied labels visible in a script: both sketch-segment labels (path().label('rim')) and creating-op faceLabels (box(..., { faceLabels: { ... } })). Each result includes its source so the agent can disambiguate. Lets agents discover the label vocabulary on a shape before referencing labels in fillet/chamfer/shell.",
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      feature_id: { type: 'string', description: 'Optional FeatureId; defaults to scanning all features.' },
+    },
+  },
+  handler: listFaceLabelsTool,
+});

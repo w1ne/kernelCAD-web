@@ -7,6 +7,7 @@
 // for this intent; proceed without cookbook help."
 
 import { loadSnippets, search } from '../../cookbook/index';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface LookupCookbookInput {
   query: string;
@@ -49,3 +50,32 @@ export async function lookupCookbookTool(input: LookupCookbookInput): Promise<Lo
   }));
   return { ok: true, hits };
 }
+
+export const lookupCookbookMcpTool = defineMCPTool<LookupCookbookInput>({
+  name: 'lookup_cookbook',
+  description:
+    'Search the kernelCAD cookbook for canonical pattern snippets. ' +
+    'Returns top-k snippets matching the natural-language query, ' +
+    'ranked by BM25 over title/tags/keywords/trigger. ' +
+    'Use when you need a canonical pattern for fillet-after-subtract, ' +
+    'non-overlapping booleans, sketch-to-extrude flows, etc. ' +
+    'Returns empty if no snippet scores above the relevance floor — ' +
+    'proceed without cookbook help in that case.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      query: {
+        type: 'string',
+        description:
+          'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket").',
+      },
+      k: {
+        type: 'number',
+        description: 'Max snippets to return. Default 3, max 5.',
+        default: 3,
+      },
+    },
+    required: ['query'],
+  },
+  handler: lookupCookbookTool,
+});

@@ -10,6 +10,7 @@ import {
   reviewMechanicalTransmission,
   type MechanicalTransmissionDiagnostic,
 } from '../../../modeling/mates/mechanicalTransmission';
+import { defineMCPTool } from '../defineMCPTool';
 
 type Bbox = { min: Vec3; max: Vec3 };
 type AssemblyMateConnector = AssemblyPartStored['mateConnectors'][number];
@@ -238,3 +239,18 @@ function buildNextActionPrompt(unexplainedGeometry: readonly InspectAssemblyRevi
   ).join('\n');
   return `The assembly contains geometry the agent must explain or repair before accepting the design as physical:\n${facts}\nRemove arbitrary/floating solids, bridge them into a load path, or explicitly document why the disconnected geometry is intentional.`;
 }
+
+export const inspectAssemblyMcpTool = defineMCPTool<InspectAssemblyInput>({
+  name: 'inspect_assembly',
+  description:
+    'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors, mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+      code: { type: 'string', description: 'Inline kernelCAD script source.' },
+      assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+    },
+  },
+  handler: inspectAssemblyTool,
+});

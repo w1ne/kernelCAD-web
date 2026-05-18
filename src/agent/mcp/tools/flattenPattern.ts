@@ -11,6 +11,7 @@ import { flattenPattern } from '../../../kernel/backends/occt/flattenPattern';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { Vec2 } from '../../../shared/intent/region';
+import { defineMCPTool } from '../defineMCPTool';
 
 export interface FlattenPatternInput {
   /** Path to a .kcad.ts script. Either `file` or `code` is required. */
@@ -100,3 +101,20 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
     };
   }
 }
+
+export const flattenPatternMcpTool = defineMCPTool<FlattenPatternInput>({
+  name: 'flatten_pattern',
+  description:
+    'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
+    '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
+    'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string' },
+      code: { type: 'string' },
+      featureId: { type: 'string' },
+    },
+  },
+  handler: flattenPatternTool,
+});
