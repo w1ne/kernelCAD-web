@@ -10,6 +10,7 @@ vi.mock('../../src/funnel/lib/supabaseClient', () => ({
 }));
 
 import {
+  authedFetch,
   createCheckoutSession,
   fetchMyPlan,
   openBillingPortal,
@@ -108,5 +109,41 @@ describe('openBillingPortal', () => {
   it('throws on non-2xx', async () => {
     mockFetchOnce('no portal session', { status: 400 });
     await expect(openBillingPortal()).rejects.toThrow(/no portal session/);
+  });
+});
+
+describe('authedFetch', () => {
+  it('serializes the body and forwards Authorization on POST', async () => {
+    const fetchMock = mockFetchOnce({ ok: true });
+    const result = await authedFetch<{ ok: boolean }>(
+      'POST',
+      '/api/v1/save',
+      { hello: 'world' },
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/api/v1/save');
+    expect(init.method).toBe('POST');
+    expect(init.body).toBe(JSON.stringify({ hello: 'world' }));
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer jwt-token-123');
+    expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json');
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('omits Authorization and body when no session and no body provided', async () => {
+    getSession.mockResolvedValueOnce({ data: { session: null } });
+    const fetchMock = mockFetchOnce({ plan: 'free' });
+    await authedFetch<unknown>('GET', '/api/v1/me/plan');
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.method).toBe('GET');
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
+    expect(init.body).toBeUndefined();
+  });
+
+  it('throws an Error containing the response body on non-2xx', async () => {
+    mockFetchOnce('upstream exploded', { status: 500 });
+    await expect(authedFetch('POST', '/api/v1/save', {})).rejects.toThrow(/upstream exploded/);
   });
 });
