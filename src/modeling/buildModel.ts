@@ -117,18 +117,24 @@ export async function updateModelParams(
   // this update. The engine must be attached — silently creating a fresh one
   // would break the emitter contract for subscribers registered against a
   // different instance.
-  const engine = session.engine;
-  if (!engine) {
+  //
+  // `session.engine` is typed as the structural `SessionRecomputeEngineHandle`
+  // (just `onRelower` + `emitRelower`) so `captureSession.ts` stays free of
+  // recompute imports per the architecture-boundary guard. The actual instance
+  // is a RecomputeEngine; cast back here to access `.run`.
+  const handle = session.engine;
+  if (!handle) {
     throw new Error(
       'updateModelParams: session has no engine attached. ' +
       'Call buildModel(...) first to attach the engine, or attach manually via session.setEngine().',
     );
   }
+  const engine = handle as RecomputeEngine;
   const warningsBefore = session.warnings.length;
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
-    warningSink: warning => session.warnings.push(warning),
+    warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
     gatedFeatureNames: session.gatedFeatureNames,
   });
