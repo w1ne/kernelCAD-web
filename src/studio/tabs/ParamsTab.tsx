@@ -6,11 +6,10 @@ import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 /**
  * Inspector tab listing script-declared params from `param()`.
  *
- * Slice 2A: numeric rows are now interactive. The slider/input commits
- * through `updateParam` from `useRecomputeResult`, which POSTs to
+ * Slice 2A/2B: both numeric and boolean rows are interactive. Edits
+ * commit through `updateParam` from `useRecomputeResult`, which POSTs to
  * `/__kernelcad/params`; the SSE `relower` event re-fetches mesh +
- * review so the param table refreshes with the new value. Boolean rows
- * remain read-only (their interactive variant lands in a later slice).
+ * review so the param table refreshes with the new value.
  */
 export function ParamsTab(): JSX.Element {
     const { paramTable, updateParam } = useRecomputeResult();
@@ -59,7 +58,10 @@ function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
                 <input
                     type="checkbox"
                     checked={entry.value as boolean}
-                    disabled
+                    onChange={(e) => {
+                        updateParam?.([{ name: entry.name, value: e.target.checked }])
+                            ?.catch((err) => console.warn('[ParamsTab] updateParam failed', err));
+                    }}
                     aria-label={`${entry.name} value`}
                     data-testid={`param-checkbox-${entry.name}`}
                 />
