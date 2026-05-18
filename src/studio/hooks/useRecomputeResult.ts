@@ -49,6 +49,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
         shellStore.publishValidity(validity);
     }, [validity]);
 
+    const updateParam = (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam;
+
     return useMemo<StudioRecomputeResult>(
         () => ({
             features: workbench.featureRecords ?? [],
@@ -57,8 +59,16 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             recomputeMs: workbench.recomputeMs ?? 0,
-            updateParam: (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam,
+            updateParam,
         }),
-        [workbench, validity, paramTable, diagnostics],
+        [
+            workbench.featureRecords,
+            workbench.geometries,
+            workbench.recomputeMs,
+            updateParam,
+            validity,
+            paramTable,
+            diagnostics,
+        ],
     );
 }

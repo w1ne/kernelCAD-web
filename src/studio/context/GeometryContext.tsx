@@ -340,13 +340,22 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
     // PR description). Mirrors the production path — same fetch, same
     // validation — so a `window.__kernelcad.updateParam([...])` call
-    // exercises the full SSE round-trip end-to-end.
+    // exercises the full SSE round-trip end-to-end. DEV-only: the global
+    // surface is gated behind `import.meta.env.DEV` so it never ships to
+    // production bundles.
     useEffect(() => {
+        if (!import.meta.env.DEV) return;
         if (typeof window === 'undefined') return;
         (window as { __kernelcad?: Record<string, unknown> }).__kernelcad = {
             ...(window as { __kernelcad?: Record<string, unknown> }).__kernelcad,
             sessionToken,
             updateParam,
+        };
+        return () => {
+            // Cleanup is reached only when the install above ran, so the
+            // DEV gate is implicit. Re-check `window` defensively for SSR.
+            if (typeof window === 'undefined') return;
+            delete (window as { __kernelcad?: Record<string, unknown> }).__kernelcad;
         };
     }, [sessionToken, updateParam]);
 
