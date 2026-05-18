@@ -407,12 +407,8 @@ export class Assembly {
     //    prepending the prefix, leaving the connectorName intact. Mate
     //    names are also prefixed so name-uniqueness within `this` holds.
     const remapRef = (ref: string): string => {
-      const dot = ref.indexOf('.');
-      // parseConnectorRef will throw on a bad ref upstream; defensively
-      // pass through anything we can't split (the upstream throw is the
-      // canonical surface — we don't want to invent diagnostics here).
-      if (dot < 1) return ref;
-      return `${prefix}${ref.slice(0, dot)}.${ref.slice(dot + 1)}`;
+      const { partName, connectorName } = parseConnectorRef(ref);
+      return `${prefix}${partName}.${connectorName}`;
     };
     for (const om of other.__mates()) {
       this.mates.push({
@@ -425,33 +421,29 @@ export class Assembly {
         ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
       });
     }
+    const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
+      const ref = importedByOriginalName.get(origPartName);
+      if (ref) return ref;
+      const known = [...importedByOriginalName.keys()].join(', ') || '(none)';
+      const extraHint = method === 'ref'
+        ? ' Use sub.part(name) to grab the imported AssemblyPartRef.'
+        : '';
+      throw new KernelError(
+        'feature.invalid-args',
+        `subAssembly('${name}').${method}: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${known}.`,
+        undefined,
+        `Pass the ORIGINAL part name (before prefixing).${extraHint}`,
+      );
+    };
     return {
       prefix,
       ref: (origPartName: string, connectorName?: string): string => {
-        if (!importedByOriginalName.has(origPartName)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `subAssembly('${name}').ref: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
-            undefined,
-            "Pass the ORIGINAL part name (before prefixing). Use sub.part(name) to grab the imported AssemblyPartRef.",
-          );
-        }
+        requireImportedPart(origPartName, 'ref');
         return connectorName !== undefined
           ? `${prefix}${origPartName}.${connectorName}`
           : `${prefix}${origPartName}`;
       },
-      part: (origPartName: string): AssemblyPartRef => {
-        const ref = importedByOriginalName.get(origPartName);
-        if (!ref) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `subAssembly('${name}').part: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
-            undefined,
-            'Pass the ORIGINAL part name (before prefixing).',
-          );
-        }
-        return ref;
-      },
+      part: (origPartName: string): AssemblyPartRef => requireImportedPart(origPartName, 'part'),
     };
   }
 
