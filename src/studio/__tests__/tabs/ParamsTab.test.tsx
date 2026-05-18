@@ -81,7 +81,7 @@ describe('ParamsTab', () => {
         expect(input2.value).toBe('4');
     });
 
-    it('renders a disabled checkbox for boolean params', () => {
+    it('renders an interactive checkbox for boolean params', () => {
         const table = new ParamTable();
         table.declare('chamfered', 'boolean', true);
         mockUseRecomputeResult.mockReturnValue(withTable(table));
@@ -90,7 +90,7 @@ describe('ParamsTab', () => {
 
         const checkbox = screen.getByTestId('param-checkbox-chamfered') as HTMLInputElement;
         expect(checkbox).toBeTruthy();
-        expect(checkbox.disabled).toBe(true);
+        expect(checkbox.disabled).toBe(false);
         expect(checkbox.checked).toBe(true);
         expect(screen.getByTestId('param-row-chamfered').textContent).toContain('chamfered');
     });
