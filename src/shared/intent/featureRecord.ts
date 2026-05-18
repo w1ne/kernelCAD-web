@@ -6,6 +6,7 @@ export type { CanonicalFace };
 import type { FaceQuery } from './queryTypes';
 import type { PBRMaterial } from './material';
 import type { Curve3DMetadata } from './curve3dRecord';
+import type { VariableSweepMetadata } from './variableSweepRecord';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -31,6 +32,9 @@ export interface FeatureMetadata {
   /** NURBS Slice B: control-net spec for a `curve3d` feature. Read by the
    *  Curve3D lowerer to build a `Geom_BSplineCurve`. */
   curve3d?: Curve3DMetadata;
+  /** NURBS Slice B: multi-section sweep spec consumed by the variableSweep
+   *  lowerer (BRepOffsetAPI_MakePipeShell). */
+  variableSweep?: VariableSweepMetadata;
   /**
    * Catch-all for feature-kind-specific keys (commands, poses, partIds,
    * bendRecord, etc.) accessed via cast in individual lowerers. Promote a
