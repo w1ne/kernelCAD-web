@@ -9,6 +9,7 @@ import { BottomDrawer } from './BottomDrawer';
 import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
+import { JointsTab } from './tabs/JointsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
 import { StatusBar } from './components/Layout/StatusBar';
@@ -90,6 +91,7 @@ export function StudioShell() {
         scene: <SceneTab />,
         code: <CodeTab />,
         params: <ParamsTab />,
+        joints: <JointsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
     };
