@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
+import { useParamUpdate } from '../hooks/useParamUpdate';
 import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
 
@@ -18,6 +19,10 @@ const ROTATIONAL_TYPES = new Set(['revolute', 'cylindrical', 'pin_slot', 'ball']
 
 export function JointsTab(): JSX.Element {
     const { joints, updateParam } = useRecomputeResult();
+    // Joint sliders are the heaviest scrub UI (one drag → full record-chain
+    // relower per pointer-move on a 50+ part assembly). Route through the
+    // debounced commit so 60 FPS drag becomes 10 commits/sec.
+    const updater = useParamUpdate(updateParam, { source: 'JointsTab' });
     const posed = joints ?? [];
 
     if (posed.length === 0) {
@@ -32,7 +37,6 @@ export function JointsTab(): JSX.Element {
     }
 
     const handleReset = (): void => {
-        if (!updateParam) return;
         const edits: { name: string; value: number }[] = [];
         for (const j of posed) {
             for (const pname of j.poseParamNames) {
@@ -40,7 +44,7 @@ export function JointsTab(): JSX.Element {
             }
         }
         if (edits.length === 0) return;
-        updateParam(edits)?.catch((err) => console.warn('[JointsTab] reset failed', err));
+        updater.commit(edits);
     };
 
     const partCount = new Set(posed.flatMap((j) => [j.mate.a.split('.')[0], j.mate.b.split('.')[0]])).size;
@@ -54,9 +58,7 @@ export function JointsTab(): JSX.Element {
                         key={snap.mate.name}
                         snap={snap}
                         onChange={(name, value) => {
-                            updateParam?.([{ name, value }])?.catch((err) =>
-                                console.warn('[JointsTab] updateParam failed', err),
-                            );
+                            updater.commitDebounced([{ name, value }]);
                         }}
                     />
                 ))}

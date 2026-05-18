@@ -5,6 +5,7 @@ import type {
 export type { CanonicalFace };
 import type { FaceQuery } from './queryTypes';
 import type { PBRMaterial } from './material';
+import type { Curve3DMetadata } from './curve3dRecord';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -34,6 +35,9 @@ export interface FeatureMetadata {
   /** true for capture-graph nodes that produce no OcctBackend geometry
    *  (referenceImage today; future construction-only feature kinds may set this). */
   virtual?: boolean;
+  /** NURBS Slice B: control-net spec for a `curve3d` feature. Read by the
+   *  Curve3D lowerer to build a `Geom_BSplineCurve`. */
+  curve3d?: Curve3DMetadata;
   /**
    * Catch-all for feature-kind-specific keys (commands, poses, partIds,
    * bendRecord, etc.) accessed via cast in individual lowerers. Promote a
