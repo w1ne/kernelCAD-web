@@ -24,6 +24,46 @@ export async function fetchGeneration(genId: string): Promise<GenerationRow | nu
   return (data as GenerationRow | null) ?? null;
 }
 
+// ---------------------------------------------------------------------------
+// authedFetch — single source of truth for kernelCAD-server HTTP calls.
+//
+// Pattern collapsed:
+//   1. resolve Supabase session (Authorization header is optional when no
+//      session — Studio routes are reachable anon for some endpoints).
+//   2. fetch VITE_API_BASE_URL + path with JSON content-type.
+//   3. on non-2xx, throw an Error whose message is the response body (or
+//      `HTTP <status>` fallback). Tests assert on the body text.
+//   4. on success, parse + return JSON as T.
+// ---------------------------------------------------------------------------
+
+export async function authedFetch<T>(
+  method: 'GET' | 'POST',
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const supabase = getSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const base = import.meta.env.VITE_API_BASE_URL;
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  if (!res.ok) {
+    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+  }
+  return res.json() as Promise<T>;
+}
+
+// ---------------------------------------------------------------------------
+// Projects
+// ---------------------------------------------------------------------------
+
 export interface SaveProjectInput {
   generationId: string;
   anonId?: string;
@@ -38,23 +78,7 @@ export interface SaveProjectResult {
 }
 
 export async function saveProject(input: SaveProjectInput): Promise<SaveProjectResult> {
-  const supabase = getSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const base = import.meta.env.VITE_API_BASE_URL;
-  const res = await fetch(`${base}/api/v1/save`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
-    },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-  }
-  return res.json();
+  return authedFetch<SaveProjectResult>('POST', '/api/v1/save', input);
 }
 
 export interface ProjectRow {
@@ -110,65 +134,19 @@ export interface BillingPortalSession {
   url: string;
 }
 
-/** Authed GET against the kernelCAD-server billing/plan endpoint.
- * Mirrors saveProject's auth + non-2xx handling exactly. */
+/** Authed GET against the kernelCAD-server billing/plan endpoint. */
 export async function fetchMyPlan(): Promise<MyPlan> {
-  const supabase = getSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const base = import.meta.env.VITE_API_BASE_URL;
-  const res = await fetch(`${base}/api/v1/me/plan`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
-    },
-  });
-  if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-  }
-  return res.json();
+  return authedFetch<MyPlan>('GET', '/api/v1/me/plan');
 }
 
 /** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
  * the caller should redirect to (window.location.href = url). */
 export async function createCheckoutSession(): Promise<CheckoutSession> {
-  const supabase = getSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const base = import.meta.env.VITE_API_BASE_URL;
-  const res = await fetch(`${base}/api/v1/billing/create-checkout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
-    },
-  });
-  if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-  }
-  return res.json();
+  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout');
 }
 
 /** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL
  * for the signed-in pro user to manage / cancel their subscription. */
 export async function openBillingPortal(): Promise<BillingPortalSession> {
-  const supabase = getSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const base = import.meta.env.VITE_API_BASE_URL;
-  const res = await fetch(`${base}/api/v1/billing/portal`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
-    },
-  });
-  if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
-  }
-  return res.json();
+  return authedFetch<BillingPortalSession>('POST', '/api/v1/billing/portal');
 }
