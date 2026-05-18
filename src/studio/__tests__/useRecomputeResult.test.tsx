@@ -11,6 +11,7 @@ const workbenchValue: {
     recomputeMs: number;
     scriptReview: ScriptReviewSummary | null;
     scriptParams: SerializedParamEntry[];
+    updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
 } = {
     geometries: [],
     featureRecords: [],
@@ -78,5 +79,22 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         expect(result.current.paramTable).toBeNull();
         expect(result.current.diagnostics).toEqual([]);
         expect(result.current.recomputeMs).toBe(0);
+    });
+
+    it('exposes updateParam from the workbench so ParamsTab can drive live edits', async () => {
+        // Slice 2E.bridge: WorkbenchContext owns the sessionToken + SSE stream
+        // and exposes `updateParam(edits)` that POSTs to /__kernelcad/params.
+        // useRecomputeResult forwards it so any inspector tab (ParamsTab today,
+        // FormulasTab tomorrow) can call it without reaching into the workbench.
+        const updateParam = vi.fn(async () => undefined);
+        workbenchValue.featureRecords = [];
+        workbenchValue.updateParam = updateParam;
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.updateParam).toBe(updateParam);
+        await result.current.updateParam?.([{ name: 'w', value: 70 }]);
+        expect(updateParam).toHaveBeenCalledWith([{ name: 'w', value: 70 }]);
     });
 });

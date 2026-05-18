@@ -52,46 +52,146 @@ function kernelCadMeshEndpoint(): Plugin {
     name: 'kernelcad-mesh-endpoint',
     apply: 'serve',
     configureServer(server) {
+      // Slice 2E.bridge: lazily-initialised pool + middlewares. We can't import
+      // the pool at module top because it pulls in `src/modeling/buildModel`,
+      // which transitively boots OCCT — Vite's config is loaded synchronously
+      // and we want OCCT init delayed until the first request. Build the pool
+      // on demand, then close over it for the session/events/params handlers.
+      type PoolBundle = {
+        pool: import('./src/server/sessionPool').SessionPool;
+        sessionHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+        eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+        paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+      };
+      let poolBundlePromise: Promise<PoolBundle> | undefined;
+      function ensureOcctShims(): void {
+        // The Node-side OCCT package is an Emscripten CommonJS artifact that
+        // reads `__dirname` to locate its sibling WASM file. The CLI bundle
+        // injects this in its esbuild banner; the Vite dev endpoint needs the
+        // same shim before dynamically importing the meshing/build paths.
+        const occtPackageDir = resolve(repoRoot, 'node_modules/replicad-opencascadejs/src');
+        Object.assign(globalThis, {
+          __dirname: occtPackageDir,
+          __filename: resolve(occtPackageDir, 'replicad_single.js'),
+          require,
+        });
+      }
+      function getPoolBundle(): Promise<PoolBundle> {
+        if (!poolBundlePromise) {
+          poolBundlePromise = (async () => {
+            ensureOcctShims();
+            const [
+              { createSessionPool },
+              { createSessionEndpoint },
+              { createEventsEndpoint },
+              { createParamsEndpoint },
+              { buildModelFromFile },
+            ] = await Promise.all([
+              import('./src/server/sessionPool'),
+              import('./src/server/middleware/sessionEndpoint'),
+              import('./src/server/middleware/eventsEndpoint'),
+              import('./src/server/middleware/paramsEndpoint'),
+              import('./src/modeling/buildModel'),
+            ]);
+            const pool = createSessionPool({
+              build: (scriptPath) => buildModelFromFile({ file: scriptPath }),
+              ttlMs: 5 * 60 * 1000,
+            });
+            // Periodic eviction of idle sessions. The interval is unref'd so
+            // it doesn't keep the Vite dev process alive past shutdown.
+            const interval = setInterval(() => pool.prune(), 60_000);
+            interval.unref?.();
+            return {
+              pool,
+              sessionHandler: createSessionEndpoint({ pool, resolveScript: resolveExampleScript }),
+              eventsHandler: createEventsEndpoint({ pool, heartbeatMs: 15_000 }),
+              paramsHandler: createParamsEndpoint({ pool }),
+            };
+          })();
+        }
+        return poolBundlePromise;
+      }
+
+      server.middlewares.use('/__kernelcad/session', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.sessionHandler(req, res);
+      });
+      server.middlewares.use('/__kernelcad/events', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.eventsHandler(req, res);
+      });
+      server.middlewares.use('/__kernelcad/params', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.paramsHandler(req, res);
+      });
+
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
           const script = url.searchParams.get('script');
-          if (!script) {
+          const sessionToken = url.searchParams.get('session');
+          if (!script && !sessionToken) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'missing script query parameter' }));
+            res.end(JSON.stringify({ error: 'missing script or session query parameter' }));
             return;
           }
 
-          const scriptPath = resolveExampleScript(script);
-          if (!scriptPath) {
-            res.statusCode = 400;
-            res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
-            return;
-          }
-
-          // The Node-side OCCT package is an Emscripten CommonJS artifact that
-          // reads `__dirname` to locate its sibling WASM file. The CLI bundle
-          // injects this in its esbuild banner; the Vite dev endpoint needs
-          // the same shim before dynamically importing the meshing path.
-          const occtPackageDir = resolve(repoRoot, 'node_modules/replicad-opencascadejs/src');
-          Object.assign(globalThis, {
-            __dirname: occtPackageDir,
-            __filename: resolve(occtPackageDir, 'replicad_single.js'),
-            require,
-          });
+          ensureOcctShims();
 
           const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
           ]);
-          const loaded = await loadScriptFeatures(scriptPath);
+
+          // Slice 2E.bridge: with a session token, mesh against the pooled
+          // CaptureSession so the BuiltModel that `params.update` mutates and
+          // the renderer reads from share the same record list + param table.
+          // Without a token, fall back to the legacy per-request build.
+          let source: string;
+          let records: readonly import('./src/shared/intent/featureRecord').FeatureRecord[];
+          let paramTable: import('./src/shared/runtime/paramTable').ParamTable;
+          let meshSession: {
+            importedGeometry: Map<string, unknown>;
+            getSurfaceRecord?: (id: string) => unknown;
+          };
+
+          if (sessionToken) {
+            const bundle = await getPoolBundle();
+            const entry = bundle.pool.get(sessionToken);
+            if (!entry) {
+              res.statusCode = 404;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'unknown session token' }));
+              return;
+            }
+            const { readFile } = await import('node:fs/promises');
+            source = await readFile(entry.scriptPath, 'utf-8');
+            records = entry.model.records;
+            paramTable = entry.model.session.paramTable;
+            meshSession = entry.model.session as unknown as typeof meshSession;
+          } else {
+            const scriptPath = resolveExampleScript(script);
+            if (!scriptPath) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
+              return;
+            }
+            const loaded = await loadScriptFeatures(scriptPath);
+            source = loaded.source;
+            records = loaded.features.map((f) => f.record);
+            paramTable = loaded.paramTable;
+            meshSession = loaded.session as unknown as typeof meshSession;
+          }
+
           const meshing = await meshFeaturesPerFeature(
-            loaded.features.map((f) => f.record),
-            loaded.paramTable,
-            loaded.session,
+            records,
+            paramTable,
+            // The mesher accepts the optional session-shaped helper; the
+            // pooled CaptureSession satisfies the structural type.
+            meshSession as Parameters<typeof meshFeaturesPerFeature>[2],
           );
           if (meshing.failedFeatureIds.length > 0) {
             res.statusCode = 500;
@@ -111,11 +211,11 @@ function kernelCadMeshEndpoint(): Plugin {
           // non-JSON-safe metadata values silently; the kernel guarantees
           // ids/kinds/params are JSON-safe.
           res.end(JSON.stringify({
-            source: loaded.source,
+            source,
             features: meshing.features.map(serializeForBridge),
-            featureRecords: loaded.features.map((f) => f.record),
+            featureRecords: records,
             bounds: meshing.bounds,
-            params: loaded.paramTable.serialize(),
+            params: paramTable.serialize(),
           }));
         } catch (error) {
           res.statusCode = 500;

@@ -238,7 +238,23 @@ describe('GeometryContext latest-intent-wins', () => {
       '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
     );
 
+    // Slice 2E.bridge order: (1) GET /session → token, (2) GET /mesh?session=<token>,
+    // (3) GET /review?session=<token>&script=<path>. Studio short-circuits the
+    // session fetch when EventSource isn't available (jsdom doesn't ship one
+    // by default); the test below mocks EventSource so the SSE effect attaches
+    // but doesn't fire any events during the assertion window.
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener() {}
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
     const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-abc' }),
+      } as Response)
       .mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -306,13 +322,18 @@ describe('GeometryContext latest-intent-wins', () => {
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
     });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1,
-      '/__kernelcad/mesh?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
+      '/__kernelcad/session?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
     );
     expect(fetchMock).toHaveBeenNthCalledWith(2,
-      '/__kernelcad/review?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
+      '/__kernelcad/mesh?session=tok-abc',
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3,
+      '/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
     );
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
     expect(screen.getByTestId('face-count').textContent).toBe('1');
