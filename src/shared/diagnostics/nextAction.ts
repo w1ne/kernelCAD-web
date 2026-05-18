@@ -80,4 +80,10 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.variable-sweep.profile-not-planar':    { kind: 'rewrite-feature', guidance: 'use a planar path().close() sketch for each section' },
   'feature.variable-sweep.profile-empty':         { kind: 'rewrite-feature', guidance: 'close the path() before passing as a profile' },
   'feature.variable-sweep.frenet-degenerate':     { kind: 'fix-arg', field: 'orientation' },
+  'feature.surface-from-boundary.corner-mismatch':   { kind: 'fix-arg', field: 'curveRefs' },
+  'feature.surface-from-boundary.too-few-curves':    { kind: 'fix-arg', field: 'curveRefs' },
+  'feature.surface-from-boundary.too-many-curves':   { kind: 'fix-arg', field: 'curveRefs' },
+  'feature.surface-from-boundary.continuity-orphan': { kind: 'fix-arg', field: 'neighbors' },
+  'feature.surface-from-boundary.degenerate-patch':  { kind: 'rewrite-feature', guidance: 'rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary' },
+  'feature.fillet.continuity-not-applicable':        { kind: 'rewrite-feature', guidance: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces" },
 };

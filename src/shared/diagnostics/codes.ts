@@ -92,7 +92,16 @@ export type DiagnosticCode =
   | 'feature.variable-sweep.spine-too-short'
   | 'feature.variable-sweep.profile-not-planar'
   | 'feature.variable-sweep.profile-empty'
-  | 'feature.variable-sweep.frenet-degenerate';
+  | 'feature.variable-sweep.frenet-degenerate'
+  // NURBS Slice C (6) — surfaceFromBoundary (Coons patch) + G2 fillet.
+  // surfaceFromBoundary lowers to BRepOffsetAPI_MakeFilling per the
+  // 2026-05-18 OCCT symbol audit (docs/audit/2026-05-18-slice-c-occt-symbols.md).
+  | 'feature.surface-from-boundary.corner-mismatch'
+  | 'feature.surface-from-boundary.too-few-curves'
+  | 'feature.surface-from-boundary.too-many-curves'
+  | 'feature.surface-from-boundary.continuity-orphan'
+  | 'feature.surface-from-boundary.degenerate-patch'
+  | 'feature.fillet.continuity-not-applicable';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -152,6 +161,12 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.variable-sweep.profile-not-planar',
   'feature.variable-sweep.profile-empty',
   'feature.variable-sweep.frenet-degenerate',
+  'feature.surface-from-boundary.corner-mismatch',
+  'feature.surface-from-boundary.too-few-curves',
+  'feature.surface-from-boundary.too-many-curves',
+  'feature.surface-from-boundary.continuity-orphan',
+  'feature.surface-from-boundary.degenerate-patch',
+  'feature.fillet.continuity-not-applicable',
 ] as const;
 
 export interface HintTemplate {
@@ -282,6 +297,18 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'variableSweep profile sketch is empty. Close the path() before passing it as a profile.',
     'feature.variable-sweep.frenet-degenerate':
       'Frenet orientation is undefined where the spine curvature vanishes (straight segments). Pass orientation: { up: Vec3 } or "corrected-frenet" for spines with straight stretches.',
+    'feature.surface-from-boundary.corner-mismatch':
+      'surfaceFromBoundary requires adjacent boundary curves to share endpoints within 1e-6 mm (c1.end == c2.start, c2.end == c3.start, c3.end == c4.start, c4.end == c1.start). Snap the endpoints or rebuild the boundary curves so they form a closed loop.',
+    'feature.surface-from-boundary.too-few-curves':
+      'surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order (bottom, right, top, left).',
+    'feature.surface-from-boundary.too-many-curves':
+      'surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order — if the loop has more than 4 sides, split the patch into adjacent quads.',
+    'feature.surface-from-boundary.continuity-orphan':
+      "surfaceFromBoundary continuity 'C1' / 'C2' requires the neighbors map to identify which existing surface to be tangent (or curvature-continuous) to on each side. Either drop the continuity flag or supply opts.neighbors so the kernel can resolve the tangency target.",
+    'feature.surface-from-boundary.degenerate-patch':
+      'BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.',
+    'feature.fillet.continuity-not-applicable':
+      "continuity: 'G2' was requested but the adjacent faces along the target edge are themselves only G1-continuous, so the resulting blend can be no smoother than G1. Either accept the G1 result, refit the upstream faces as NURBS so they are G2 internally, or apply a smaller fillet that fits inside a single smooth region.",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {
