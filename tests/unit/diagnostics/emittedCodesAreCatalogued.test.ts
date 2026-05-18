@@ -66,15 +66,19 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 46 codes', () => {
-    expect(catalogue.size).toBe(46);
+  it('catalogue has exactly 63 codes', () => {
+    // 46 baseline (milestone-C diagnostic-vocab spec)
+    //  + 11 Slice B (Curve3D + variableSweep capture validation)
+    //  +  6 Slice C (surfaceFromBoundary + G2 fillet)
+    // = 63.
+    expect(catalogue.size).toBe(63);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 43 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 63 in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });
