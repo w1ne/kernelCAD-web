@@ -554,7 +554,7 @@ export class CaptureSession {
     });
   }
 
-  assemblyModel(assemblyName: string, parts: readonly AssemblyPartRef[]): Shape {
+  assemblyModel(assemblyName: string, parts: readonly AssemblyPartRef[], declaredMateCount: number = 0): Shape {
     if (parts.length === 0) {
       throw new Error('assembly.model requires at least one part');
     }
@@ -574,6 +574,11 @@ export class CaptureSession {
       metadata: {
         assemblyName,
         partIds: parts.map(part => part.id),
+        // Non-zero when the Assembly had `arm.mate(...)` calls but the
+        // script ended with `arm.model()` (not `solvedModel()`). The
+        // lowerer reads this and emits the info diag so the agent
+        // notices the mate FK is being skipped.
+        ...(declaredMateCount > 0 ? { declaredMateCount } : {}),
       },
     });
   }
