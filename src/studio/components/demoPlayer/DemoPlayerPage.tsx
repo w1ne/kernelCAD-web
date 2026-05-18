@@ -185,7 +185,15 @@ export function DemoPlayerPage(): React.JSX.Element {
   const cameraCtrlRef = useRef<CameraController | null>(null);
   const elapsedMsRef = useRef(0);
   const terminalOriginRef = useRef(0);
-  const [version, setVersion] = useState('v0.21');
+  // Default to the package version that vite injects at build time so the
+  // watermark stays in sync with shipped releases. captureDemo overrides
+  // via setVersion() to the module string (e.g. "v0.6", "gallery"); the
+  // kernelcad render CLI doesn't, so this default is what static renders
+  // show. Previously hardcoded "v0.21", which silently went stale across
+  // every minor release after v0.2.
+  const [version, setVersion] = useState(
+    typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'DEV',
+  );
   const [isDemoApiReady, setIsDemoApiReady] = useState(false);
   const [scriptLoadStatus, setScriptLoadStatus] = useState<
     { kind: 'idle' | 'loading' | 'error'; message?: string }
@@ -281,24 +289,19 @@ export function DemoPlayerPage(): React.JSX.Element {
         const up = new THREE.Vector3().crossVectors(camDir, right).normalize();
         // Project all 8 bbox corners onto the screen-plane axes. The max
         // |right-component| / aspect and |up-component| set the required
-        // horizontal/vertical half-extents that must fit the FOV.
-        const corners: [number, number, number][] = [
-          [bbox.min.x, bbox.min.y, bbox.min.z],
-          [bbox.max.x, bbox.min.y, bbox.min.z],
-          [bbox.min.x, bbox.max.y, bbox.min.z],
-          [bbox.max.x, bbox.max.y, bbox.min.z],
-          [bbox.min.x, bbox.min.y, bbox.max.z],
-          [bbox.max.x, bbox.min.y, bbox.max.z],
-          [bbox.min.x, bbox.max.y, bbox.max.z],
-          [bbox.max.x, bbox.max.y, bbox.max.z],
-        ];
+        // horizontal/vertical half-extents that must fit the FOV. Operate on
+        // raw min/max components so we don't allocate 8 Vector3s per call.
         const aspect = ctx.camera.aspect;
+        const rx = right.x, ry = right.y, rz = right.z;
+        const ux = up.x, uy = up.y, uz = up.z;
+        const xs = [bbox.min.x, bbox.max.x];
+        const ys = [bbox.min.y, bbox.max.y];
+        const zs = [bbox.min.z, bbox.max.z];
         let halfHoriz = 0;
         let halfVert = 0;
-        for (const c of corners) {
-          const v = new THREE.Vector3(c[0], c[1], c[2]);
-          const h = Math.abs(v.dot(right));
-          const u = Math.abs(v.dot(up));
+        for (const cx of xs) for (const cy of ys) for (const cz of zs) {
+          const h = Math.abs(cx * rx + cy * ry + cz * rz);
+          const u = Math.abs(cx * ux + cy * uy + cz * uz);
           if (h > halfHoriz) halfHoriz = h;
           if (u > halfVert) halfVert = u;
         }
@@ -414,7 +417,11 @@ export function DemoPlayerPage(): React.JSX.Element {
             };
           }
           for (const face of fm.faces) {
-            const material = buildMaterialFromPBR(pbrForFaces);
+            // Per-face material override (Shape.material({ face: '<label>', ... }))
+            // takes precedence over the shape-level default. Unmatched faces fall
+            // back to pbrForFaces (whole-shape material → legacy color → default).
+            const perFacePbr = fm.materialByFaceId?.[face.faceId];
+            const material = buildMaterialFromPBR(perFacePbr ?? pbrForFaces);
             const mesh = buildMeshFromFace(
               face,
               `${fm.featureId}-face-${face.faceId}`,

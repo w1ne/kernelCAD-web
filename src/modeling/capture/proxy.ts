@@ -179,8 +179,19 @@ export class Shape {
    * Numeric fields are clamped to [0, 1] except `ior` which is clamped to
    * [1.0, 2.5]. Clamped values emit a `feature.material.value-clamped`
    * soft warning so the agent can adjust.
+   *
+   * Per-face form: passing `face: '<label>'` applies the material to faces
+   * matching that label only. The label must resolve against an upstream
+   * `metadata.faceLabels` entry (declared on a creating op like
+   * `box(..., { faceLabels: { rim: 'top' } })`). Calls accumulate on the
+   * record's `metadata.materialByLabel` map; subsequent calls with the same
+   * `face` overwrite. A call with no `face` sets the whole-shape default
+   * (applies to faces not matched by any per-face entry). Labels that fail
+   * to resolve at mesh time emit a soft `feature.material.face-label-no-match`
+   * warning — the build continues with the unmatched faces using the
+   * shape-level default.
    */
-  material(opts: PBRMaterial): Shape {
+  material(opts: PBRMaterial & { face?: string }): Shape {
     if (!opts || typeof opts.baseColor !== 'string' || opts.baseColor.length === 0) {
       throw new KernelError(
         'feature.material.invalid-base-color',
@@ -188,6 +199,20 @@ export class Shape {
         this.id,
         'Pass a CSS color string or a registered role token to baseColor.',
       );
+    }
+
+    // Validate `face` if present — must be a non-empty string label.
+    let faceLabel: string | undefined;
+    if (opts.face !== undefined) {
+      if (typeof opts.face !== 'string' || opts.face.length === 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: 'face' must be a non-empty string label; got ${formatScalarForError(opts.face)}.`,
+          this.id,
+          "Pass a face-label string declared upstream via `<creator>(..., { faceLabels: { <label>: <CanonicalFace|FaceQuery> } })`.",
+        );
+      }
+      faceLabel = opts.face;
     }
 
     const cleaned: PBRMaterial = { baseColor: opts.baseColor };
@@ -232,7 +257,17 @@ export class Shape {
     if (record.metadata === undefined) {
       (record as { metadata: Record<string, unknown> }).metadata = {};
     }
-    (record.metadata as Record<string, unknown>).material = cleaned;
+    const metadata = record.metadata as Record<string, unknown>;
+    if (faceLabel !== undefined) {
+      // Per-face: route to materialByLabel, leave whole-shape material
+      // untouched (the two forms compose — whole-shape acts as default for
+      // unmatched faces).
+      const existing = (metadata.materialByLabel as Record<string, PBRMaterial> | undefined) ?? {};
+      // Last-write-wins on the same label.
+      metadata.materialByLabel = { ...existing, [faceLabel]: cleaned };
+    } else {
+      metadata.material = cleaned;
+    }
 
     if (anyClamped) {
       this.session.warnings.push({

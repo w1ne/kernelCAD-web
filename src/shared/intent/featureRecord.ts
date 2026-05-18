@@ -5,6 +5,7 @@ import type {
 export type { CanonicalFace };
 import type { FaceQuery } from './queryTypes';
 import type { PBRMaterial } from './material';
+import type { Curve3DMetadata } from './curve3dRecord';
 
 export type ShapeTransform =
   | { op: 'translate'; vec: Vec3Param }
@@ -24,9 +25,19 @@ export interface FeatureMetadata {
   faceLabels?: FaceLabelsMap;
   /** PBR material applied by `Shape.material()`. Identity dies at booleans. */
   material?: PBRMaterial;
+  /** Per-face PBR materials keyed by face-label name. Populated by
+   *  `Shape.material({ face: '<label>', ... })`. Labels must resolve against
+   *  an upstream `metadata.faceLabels` entry (same machinery as edge/face
+   *  selection); see `src/modeling/capture/featureMeshing.ts` for resolution.
+   *  Sibling to `material` — the whole-shape default applies to unmatched
+   *  faces; identity dies at booleans (same as `material` and `color`). */
+  materialByLabel?: Record<string, PBRMaterial>;
   /** true for capture-graph nodes that produce no OcctBackend geometry
    *  (referenceImage today; future construction-only feature kinds may set this). */
   virtual?: boolean;
+  /** NURBS Slice B: control-net spec for a `curve3d` feature. Read by the
+   *  Curve3D lowerer to build a `Geom_BSplineCurve`. */
+  curve3d?: Curve3DMetadata;
   /**
    * Catch-all for feature-kind-specific keys (commands, poses, partIds,
    * bendRecord, etc.) accessed via cast in individual lowerers. Promote a

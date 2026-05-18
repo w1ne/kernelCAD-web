@@ -23,6 +23,11 @@ import {
 } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
 import { validateAssemblyWithMates } from '../mates/validator';
+import {
+  validateWorkspaceTargetOpts,
+  type WorkspaceTargetOpts,
+  type WorkspaceTargetRecord,
+} from '../mates/workspaceTarget';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
@@ -297,6 +302,13 @@ export class Assembly {
   private readonly mateCouplings: MateCouplingRecord[] = [];
   private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
   private readonly transmissionIntents: TransmissionIntentRecord[] = [];
+  /**
+   * v0.7 Slice 1 — declarative workspace-reachability targets from
+   * `arm.workspace(connectorRef, opts)`. Consumed by
+   * `validateWorkspaceReachability` against the sampled pose-envelope's
+   * `ConnectorWorkspace[]`. Empty for assemblies that never call workspace().
+   */
+  private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -407,12 +419,8 @@ export class Assembly {
     //    prepending the prefix, leaving the connectorName intact. Mate
     //    names are also prefixed so name-uniqueness within `this` holds.
     const remapRef = (ref: string): string => {
-      const dot = ref.indexOf('.');
-      // parseConnectorRef will throw on a bad ref upstream; defensively
-      // pass through anything we can't split (the upstream throw is the
-      // canonical surface — we don't want to invent diagnostics here).
-      if (dot < 1) return ref;
-      return `${prefix}${ref.slice(0, dot)}.${ref.slice(dot + 1)}`;
+      const { partName, connectorName } = parseConnectorRef(ref);
+      return `${prefix}${partName}.${connectorName}`;
     };
     for (const om of other.__mates()) {
       this.mates.push({
@@ -425,33 +433,29 @@ export class Assembly {
         ...(om.limitsMm !== undefined ? { limitsMm: om.limitsMm } : {}),
       });
     }
+    const requireImportedPart = (origPartName: string, method: 'ref' | 'part'): AssemblyPartRef => {
+      const ref = importedByOriginalName.get(origPartName);
+      if (ref) return ref;
+      const known = [...importedByOriginalName.keys()].join(', ') || '(none)';
+      const extraHint = method === 'ref'
+        ? ' Use sub.part(name) to grab the imported AssemblyPartRef.'
+        : '';
+      throw new KernelError(
+        'feature.invalid-args',
+        `subAssembly('${name}').${method}: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${known}.`,
+        undefined,
+        `Pass the ORIGINAL part name (before prefixing).${extraHint}`,
+      );
+    };
     return {
       prefix,
       ref: (origPartName: string, connectorName?: string): string => {
-        if (!importedByOriginalName.has(origPartName)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `subAssembly('${name}').ref: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
-            undefined,
-            "Pass the ORIGINAL part name (before prefixing). Use sub.part(name) to grab the imported AssemblyPartRef.",
-          );
-        }
+        requireImportedPart(origPartName, 'ref');
         return connectorName !== undefined
           ? `${prefix}${origPartName}.${connectorName}`
           : `${prefix}${origPartName}`;
       },
-      part: (origPartName: string): AssemblyPartRef => {
-        const ref = importedByOriginalName.get(origPartName);
-        if (!ref) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `subAssembly('${name}').part: '${origPartName}' is not a part of the imported assembly '${other.name}'. Known parts: ${[...importedByOriginalName.keys()].join(', ') || '(none)'}.`,
-            undefined,
-            'Pass the ORIGINAL part name (before prefixing).',
-          );
-        }
-        return ref;
-      },
+      part: (origPartName: string): AssemblyPartRef => requireImportedPart(origPartName, 'part'),
     };
   }
 
@@ -716,6 +720,35 @@ export class Assembly {
     return this;
   }
 
+  /**
+   * v0.7 Slice 1 — declarative workspace-reachability targets.
+   *
+   * Persists "this connector MUST be able to reach these world-frame points
+   * across the mechanism's declared mate-limit range". The check itself runs
+   * at validate-time when `solvedModel({}, { validate: 'error', posesGate:
+   * 'envelope' })` produces a sampled `ConnectorWorkspace`; if a declared
+   * target falls outside the sampled AABB (minus `toleranceMm`), the
+   * validator emits a single `assembly.workspace.unreachable` diagnostic.
+   *
+   * No kernel call at capture time — `arm.workspace(...)` only records the
+   * intent. The connector ref's existence is verified by the validator pass
+   * (lets sub-assembly imports defer connector materialisation past the
+   * workspace declaration).
+   *
+   *   arm.workspace('elbow_tip', {
+   *     reachable: [[200, 0, 100], [0, 200, 100], [-200, 0, 100]],
+   *     toleranceMm: 5,   // optional, default 5
+   *   });
+   *
+   * AABB-only containment (no convex-hull) in v0.7 Slice 1; the precision
+   * floor is documented in the emitted diagnostic. Slice 2 will switch to a
+   * convex-hull check.
+   */
+  workspace(connectorRef: string, opts: WorkspaceTargetOpts): this {
+    this.workspaceTargets.push(validateWorkspaceTargetOpts(connectorRef, opts));
+    return this;
+  }
+
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
     validateMechanicalIntentName('name', name);
     if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
@@ -945,6 +978,17 @@ export class Assembly {
     return this.mateCouplings;
   }
 
+  /**
+   * Internal accessor — read-only view of `arm.workspace(...)` records for
+   * the v0.7 Slice 1 reachability gate. Mirrors `__mates()` / `__parts()`.
+   * Not public; the agent-facing surface is the `arm.workspace(...)`
+   * declaration itself plus the `assembly.workspace.unreachable`
+   * diagnostic surfaced on `scene.warnings` / through the validator throw.
+   */
+  __workspaceTargets(): readonly WorkspaceTargetRecord[] {
+    return this.workspaceTargets;
+  }
+
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
     return this.mechanicalJointIntents;
   }
@@ -1144,8 +1188,14 @@ export class Assembly {
     //    encoded joint poses on `metadata.poses`). Capture-time validation
     //    already rejects pose on fastened/planar mates (see `mate()` above).
     const encodedMates: import('./captureSession').EncodedMateRecord[] = this.mates.map((m) => {
+      // Slice 2C: round-trip limit ranges through the encoded record so the
+      // Studio's JointsTab can render limit marks on slider tracks.
+      const limits = {
+        ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+        ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+      };
       if (m.pose === undefined) {
-        return { name: m.name, a: m.a, b: m.b, type: m.type };
+        return { name: m.name, a: m.a, b: m.b, type: m.type, ...limits };
       }
       if (Array.isArray(m.pose)) {
         return {
@@ -1161,6 +1211,7 @@ export class Assembly {
               toParam(m.pose[2], 'deg'),
             ],
           },
+          ...limits,
         };
       }
       // Scalar pose. Unit is cosmetic on the Param (lowerer reads .evaluated);
@@ -1171,6 +1222,7 @@ export class Assembly {
         b: m.b,
         type: m.type,
         pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
+        ...limits,
       };
     });
     return {
@@ -1385,11 +1437,19 @@ export class Assembly {
       // them on scene.warnings under `'warn'`. The validator still emits
       // `assembly.mate.limit-missing` warnings, Gate 1/2/3 diagnostics, and
       // every v0.5/v0.6 base check.
+      //
+      // v0.7 Slice 1 — the 5th arg (`connectorWorkspace`) is the AABB-only
+      // sampled view of `envelopeResult` consumed by the workspace gate.
+      // We pass it separately from `poseEnvelopeResult` so the existing
+      // envelope-throw aggregation logic below stays the sole consumer of
+      // envelope diagnostics (avoids double-folding) while still letting
+      // `validateWorkspaceReachability` read the connector AABBs.
       const result = await validateAssemblyWithMates(
         this,
         interferencePairs,
         undefined,
         opts?.externalLoads,
+        envelopeResult?.connectorWorkspace,
       );
       const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
         envelopeResult ? envelopeResult.diagnostics : [];

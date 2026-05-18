@@ -2,7 +2,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -110,6 +110,27 @@ export interface RecomputeOptions {
 export class RecomputeEngine {
   private readonly lowerer: FeatureLowerer;
   constructor(lowerer: FeatureLowerer) { this.lowerer = lowerer; }
+
+  private relowerSubs = new Set<(affectedIds: string[]) => void>();
+
+  /** Subscribe to re-lower events. Returns an unsubscribe function. */
+  onRelower(cb: (affectedIds: string[]) => void): () => void {
+    this.relowerSubs.add(cb);
+    return () => { this.relowerSubs.delete(cb); };
+  }
+
+  /** Engine→host hook. Called by buildModel.updateModelParams (and any
+   *  future re-lower code path) after a re-lower completes, with the set
+   *  of feature IDs whose shape was rebuilt. Subscribers registered via
+   *  onRelower() see this fire. Subscriber errors are caught + logged so
+   *  one bad listener can't break others. */
+  emitRelower(affectedIds: readonly string[]): void {
+    const snapshot = [...affectedIds];
+    for (const cb of this.relowerSubs) {
+      try { cb(snapshot); }
+      catch (err) { console.error('RecomputeEngine.onRelower subscriber threw:', err); }
+    }
+  }
 
   async run(records: readonly FeatureRecord[], opts?: RecomputeOptions): Promise<RecomputeResult> {
     const shapes = opts?.seedShapes ? new Map(opts.seedShapes) : new Map<FeatureId, ShapeBackend>();

@@ -13,7 +13,7 @@ import { imageDimensions } from './imageDimensions';
 import { existsSync } from 'node:fs';
 import { resolve as resolvePath, extname } from 'node:path';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';
@@ -57,7 +57,13 @@ export interface SolvedAssemblyMateMetadata {
 
 /** Mate record with `pose` encoded for the recompute pipeline. Mirrors
  *  `EncodedPose` on joints — scalar Params for revolute/prismatic/etc.,
- *  triple for ball. */
+ *  triple for ball.
+ *
+ *  Slice 2C — `limitsDeg`/`limitsMm` round-trip from the live `MateRecord`
+ *  through the encoded metadata onto the `solvedAssembly` FeatureRecord so
+ *  the Studio's JointsTab can draw slider limit marks against the same
+ *  numbers the validator gates use. Drops gracefully on legacy records
+ *  (the fields are optional). */
 export interface EncodedMateRecord {
   readonly name: string;
   readonly a: string;
@@ -66,6 +72,8 @@ export interface EncodedMateRecord {
   readonly pose?:
     | { kind: 'scalar'; value: Param }
     | { kind: 'ball'; value: [Param, Param, Param] };
+  readonly limitsDeg?: readonly [number, number];
+  readonly limitsMm?: readonly [number, number];
 }
 
 export { validateFaceLabels } from './faceLabels';
@@ -116,6 +124,16 @@ export interface FeatureSpec {
   metadata?: Record<string, unknown>;
 }
 
+/** Slice 2E: structural shape of the RecomputeEngine handle stored on a
+ *  CaptureSession. Declared here (not imported) so this file stays clean of
+ *  recompute/orchestration types per the architectural-boundary guard at
+ *  `tests/unit/kernel/architectureBoundary.test.ts`. The real RecomputeEngine
+ *  class satisfies this shape structurally; callers can cast back to it. */
+export interface SessionRecomputeEngineHandle {
+  onRelower(cb: (affectedIds: string[]) => void): () => void;
+  emitRelower(affectedIds: readonly string[]): void;
+}
+
 /** Slice-3: input + result of `session.params.update`. See spec §E.6. */
 export interface ParamUpdateEdit {
   name: string;
@@ -153,6 +171,28 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
+   *  first run. Reused by `params.update` so `onRelower` subscribers added
+   *  after the initial build still receive re-lower events.
+   *
+   *  Stored as a minimal structural type (not the real `RecomputeEngine`
+   *  class) so this file stays free of recompute/orchestration types — the
+   *  architectural-boundary guard at
+   *  `tests/unit/kernel/architectureBoundary.test.ts` forbids that direction.
+   *  Callers that need the full class API receive a structurally-compatible
+   *  object and re-cast at the boundary. */
+  private engineRef: SessionRecomputeEngineHandle | undefined;
+  /** Slice 2E: read-only accessor. Returns `undefined` until `buildModel`
+   *  attaches the per-session engine on the first run. */
+  get engine(): SessionRecomputeEngineHandle | undefined {
+    return this.engineRef;
+  }
+  /** Slice 2E: internal — `buildModel` calls this once per session to attach
+   *  the engine. Subsequent `params.update` calls reuse the attached engine
+   *  so `onRelower` subscriptions persist across updates. */
+  setEngine(engine: SessionRecomputeEngineHandle): void {
+    this.engineRef = engine;
+  }
   /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
    *  side import runs at script time; the lowerer pulls the OcctBackend
    *  from this map by feature id when it sees an `importedStep` record.
@@ -925,6 +965,7 @@ export class CaptureSession {
     this.paramTable.clear();
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
+    this.engineRef = undefined;
   }
 
   /** Slice-3: drain the warning log. Returns the accumulated warnings and

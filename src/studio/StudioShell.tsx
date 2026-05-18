@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Header } from './components/Layout/Header';
 import { Toolbar } from './Toolbar';
@@ -9,6 +9,7 @@ import { BottomDrawer } from './BottomDrawer';
 import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
+import { JointsTab } from './tabs/JointsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
 import { StatusBar } from './components/Layout/StatusBar';
@@ -86,10 +87,26 @@ export function StudioShell() {
         shellStore.setAgentRailOpen(!agentRailOpen);
     }, [agentRailOpen]);
 
+    const [referenceImagesVisible, setReferenceImagesVisible] = useState(true);
+    const referenceImagesPresent = useMemo(
+        () => recompute.features.some((f) => f.kind === 'referenceImage'),
+        [recompute.features],
+    );
+    const handleToggleReferenceImages = useCallback(() => {
+        setReferenceImagesVisible((prev) => {
+            const next = !prev;
+            if (typeof window !== 'undefined') {
+                window.__demoPlayer?.setReferenceImagesVisible(next);
+            }
+            return next;
+        });
+    }, []);
+
     const tabSlots = {
         scene: <SceneTab />,
         code: <CodeTab />,
         params: <ParamsTab />,
+        joints: <JointsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
     };
@@ -112,6 +129,9 @@ export function StudioShell() {
                 onRun={handleRun}
                 agentRailOpen={agentRailOpen}
                 onToggleAgentRail={handleToggleAgentRail}
+                referenceImagesPresent={referenceImagesPresent}
+                referenceImagesVisible={referenceImagesVisible}
+                onToggleReferenceImages={handleToggleReferenceImages}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
