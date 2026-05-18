@@ -337,6 +337,19 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         }
     }, [sessionToken]);
 
+    // Slice 2E.bridge: smoke hook for browser-console verification (see the
+    // PR description). Mirrors the production path — same fetch, same
+    // validation — so a `window.__kernelcad.updateParam([...])` call
+    // exercises the full SSE round-trip end-to-end.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        (window as { __kernelcad?: Record<string, unknown> }).__kernelcad = {
+            ...(window as { __kernelcad?: Record<string, unknown> }).__kernelcad,
+            sessionToken,
+            updateParam,
+        };
+    }, [sessionToken, updateParam]);
+
     // Execution Loop
     useEffect(() => {
         if (studioScript) return;
