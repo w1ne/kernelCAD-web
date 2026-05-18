@@ -194,6 +194,14 @@ export class RecomputeEngine {
         // resolveSurfaceFaceForRecord) — skip here.
         if (ref.kind === 'surface') continue;
         const upstreamId = ref.kind === 'feature' ? ref.id : (ref as { featureId: FeatureId }).featureId;
+        // Virtual upstream records (curve3d today; referenceImage) produce no
+        // ShapeBackend on `shapes` — they side-effect onto session-level maps
+        // like `importedGeometry`. Skip the missing-shape check; the
+        // downstream lowerer arm is responsible for resolving the virtual
+        // input (e.g. variableSweep finds its curve3d spine via the records
+        // list passed in `inputs.records`).
+        const upstreamRecord = idToRecord.get(upstreamId);
+        if (upstreamRecord?.metadata?.virtual === true) continue;
         const s = shapes.get(upstreamId);
         if (!s) {
           inputsOk = false;
