@@ -80,7 +80,13 @@ export type DiagnosticCode =
   // Assembly UX (1) — Exp-D four-bolt-flange-v2 surfaced: agent declared
   // mates then ended with arm.model() (not solvedModel), so mate FK never
   // runs and parts stack at local origin. Same shape as placement-ignored.
-  | 'assembly.mates-ignored-by-model-call';
+  | 'assembly.mates-ignored-by-model-call'
+  // Mesher (1) — Exp-D cqe-task14 surfaced: open3d is_watertight() rejects
+  // STL exports whose source script used .revolve(), because OCCT
+  // BRepMesh emits self-intersecting triangles on revolved cone faces.
+  // Symptom ("Mesh is not manifold") is shallow; this code names the
+  // cause and points at workarounds.
+  | 'mesher.cone-self-intersection';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -129,6 +135,7 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.edge-feature.short-edges-skipped',
   'assembly.placement-ignored-by-mate-fk',
   'assembly.mates-ignored-by-model-call',
+  'mesher.cone-self-intersection',
 ] as const;
 
 export interface HintTemplate {
@@ -237,6 +244,8 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
     'assembly.mates-ignored-by-model-call':
       "The assembly declared mates but the script ended with arm.model() (which skips mate FK). Replace with arm.solvedModel({}) so the mate solver runs and parts pose correctly.",
+    'mesher.cone-self-intersection':
+      "Open3d's is_watertight() rejected the STL because OCCT's BRepMesh emits self-intersecting triangles on revolved cone faces (the K1 mesher gap). Geometry is likely correct — only the export tessellation is degenerate. Workarounds: (a) remesh the exported STL via Manifold before scoring, (b) raise mesh deflection on export to merge offending triangles, (c) re-author the cone surface via nurbsSurfaceLowerer instead of .revolve(). Track gap-closure progress under K1.",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

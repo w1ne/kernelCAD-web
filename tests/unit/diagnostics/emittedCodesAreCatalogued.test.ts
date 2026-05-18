@@ -66,15 +66,15 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 46 codes', () => {
-    expect(catalogue.size).toBe(46);
+  it('catalogue has exactly 47 codes', () => {
+    expect(catalogue.size).toBe(47);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
     const stale = [...emittedCodes()].filter((c) => !catalogue.has(c)).sort();
     expect(
       stale,
-      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 43 in DIAGNOSTIC_CODES.`,
+      `Stale codes still emitted in src/: ${JSON.stringify(stale)}.\nMigration policy: every code must be one of the 47 in DIAGNOSTIC_CODES.`,
     ).toEqual([]);
   });
 });

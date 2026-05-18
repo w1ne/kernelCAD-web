@@ -69,4 +69,5 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.edge-feature.short-edges-skipped': { kind: 'fix-arg', field: 'radius-or-distance' },
   'assembly.placement-ignored-by-mate-fk':    { kind: 'fix-arg', field: 'at' },
   'assembly.mates-ignored-by-model-call':     { kind: 'rewrite-feature', guidance: 'replace arm.model() with arm.solvedModel({}) so the mate solver runs' },
+  'mesher.cone-self-intersection':            { kind: 'rewrite-feature', guidance: 'remesh STL via Manifold, raise mesh deflection, or re-author the cone via nurbsSurfaceLowerer' },
 };
