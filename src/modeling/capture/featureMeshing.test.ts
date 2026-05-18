@@ -105,6 +105,57 @@ describe('meshFeaturesPerFeature', () => {
     expect(plainMesh!.color).toBeUndefined();
   });
 
+  describe('material shadowing diagnostic', () => {
+    it('warns when a material-bearing leaf is unioned into a material-bearing head', async () => {
+      const code = `
+        const body = box(20, 20, 10).material({ baseColor: '#101010', metalness: 0, roughness: 0.3 });
+        const lensInsert = box(10, 10, 2)
+          .translate(5, 5, 8)
+          .material({ baseColor: '#3050a0', metalness: 0, roughness: 0.1 });
+        return body.union(lensInsert).material({ baseColor: '#808080' });
+      `;
+      const { records } = await runScript({ code, fileName: 'shadow.kcad.ts' });
+      const { materialShadowingWarnings } = await meshFeaturesPerFeature(records);
+      // Expect lensInsert (and possibly body) to be flagged as shadowed by the
+      // final post-fuse boolean record's material.
+      const shadowedKinds = materialShadowingWarnings.map((w) => w.leafFeatureKind);
+      expect(shadowedKinds).toContain('box');
+      const lensInsertWarning = materialShadowingWarnings.find(
+        (w) => w.leafFeatureKind === 'box' && w.shadowingFeatureKind === 'boolean',
+      );
+      expect(lensInsertWarning).toBeDefined();
+      expect(lensInsertWarning!.message).toMatch(/build animation/);
+    });
+
+    it('does not warn when a subtract cutter has its own material', async () => {
+      // Cutter is consumed by the subtract; it doesn't enter the post-fuse mesh.
+      const code = `
+        const plate = box(20, 20, 5);
+        const hole = cylinder(8, 3).translate(10, 10, -1).material({ baseColor: '#ff0000' });
+        return plate.subtract(hole);
+      `;
+      const { records } = await runScript({ code, fileName: 'cutter.kcad.ts' });
+      const { materialShadowingWarnings } = await meshFeaturesPerFeature(records);
+      expect(materialShadowingWarnings).toEqual([]);
+    });
+
+    it('does not warn when the boolean head has no own material', async () => {
+      // Leaf has material; head boolean does not. The leaf's material is the
+      // ONLY explicit material in the chain, so even though the post-fuse mesh
+      // shows the head record's faces, there's no competing parent material to
+      // shadow it with. We elect to keep the diagnostic quiet here so the
+      // common single-material-on-leaf pattern doesn't spam warnings.
+      const code = `
+        const body = box(20, 20, 10);
+        const insert = box(10, 10, 2).translate(5, 5, 8).material({ baseColor: '#3050a0' });
+        return body.union(insert);
+      `;
+      const { records } = await runScript({ code, fileName: 'no-head-mat.kcad.ts' });
+      const { materialShadowingWarnings } = await meshFeaturesPerFeature(records);
+      expect(materialShadowingWarnings).toEqual([]);
+    });
+  });
+
   it('does not fail valid renderless sketch profiles used by cutouts', async () => {
     const code = `
       const profile = path()
