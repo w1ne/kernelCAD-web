@@ -43,6 +43,15 @@ export interface StudioRecomputeResult {
     readonly paramTable: ParamTable | null;
     readonly diagnostics: readonly CompilerDiagnostic[];
     readonly recomputeMs: number;
+    /**
+     * Slice 2E.bridge — POST `edits` to the server's `/__kernelcad/params`
+     * endpoint via the pooled `CaptureSession`. Returns once the server has
+     * acked; the actual refresh of `paramTable` / `validity` happens on the
+     * SSE `relower` push that follows. `undefined` when no session token has
+     * been issued yet (e.g. the legacy in-process script path) — UI should
+     * fall back to disabling the live-edit controls.
+     */
+    readonly updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
 }
 
 /**

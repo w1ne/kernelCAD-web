@@ -17,17 +17,13 @@ import type { StudioRecomputeResult } from '../types';
  * (Slice 1.2). SceneTab falls back to its legacy rows when features is
  * empty.
  *
- * Slice 2E note: the kernel-side `RecomputeEngine.onRelower` emitter
- * fires on every `session.params.update` (see
- * `src/modeling/buildModel.ts`). Studio is a separate browser process
- * from the CaptureSession (the session lives in the Node dev-server
- * middleware that backs `/__kernelcad/mesh`), so live-refreshing this
- * hook on relower requires a server-to-client push (SSE / WebSocket)
- * that doesn't exist yet. Until that push lands, ParamsTab refreshes
- * happen on the next `/__kernelcad/mesh` fetch (driven by code changes
- * or the manual Validate button). The emitter is already in place so
- * the server side can publish onto an SSE channel without further
- * kernel changes.
+ * Slice 2E.bridge: the SSE channel that closes the kernel→browser loop
+ * is wired up. `WorkbenchContext` (via `GeometryContext`) opens an
+ * `EventSource` against `/__kernelcad/events?session=<token>` and re-
+ * fetches mesh+review on each `relower` event, so `scriptParams` and
+ * `scriptReview` stay live. `updateParam` (POST `/__kernelcad/params`)
+ * is forwarded through this hook so any inspector tab can drive edits
+ * without reaching into the workbench directly.
  */
 export function useRecomputeResult(): StudioRecomputeResult {
     const workbench = useWorkbench();
@@ -61,7 +57,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             recomputeMs: workbench.recomputeMs ?? 0,
+            updateParam: (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam,
         }),
-        [workbench.featureRecords, workbench.geometries, workbench.recomputeMs, validity, paramTable, diagnostics],
+        [workbench, validity, paramTable, diagnostics],
     );
 }

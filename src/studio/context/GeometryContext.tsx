@@ -45,9 +45,17 @@ export interface GeometryContextType {
     recomputeMs: number;
     staleMainResponsesDropped: number;
     stalePreviewResponsesDropped: number;
+    /** Slice 2E.bridge: token issued by `GET /__kernelcad/session` for the
+     *  current script. `null` until the first session fetch lands; remains
+     *  `null` for the legacy in-process script path (no studioScript). */
+    sessionToken: string | null;
     // Execute code to update geometries
     executeGeometry: (code: string) => Promise<void>;
     setPreviewCode: (code: string | null) => void;
+    /** Slice 2E.bridge: POST edits to the pooled CaptureSession's
+     *  `params.update`. Returns once the server has acked; the SSE
+     *  `relower` push that follows refreshes `scriptParams` + `scriptReview`. */
+    updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -98,6 +106,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [recomputeMs, setRecomputeMs] = useState<number>(0);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const [stalePreviewResponsesDropped, setStalePreviewResponsesDropped] = useState(0);
+    const [sessionToken, setSessionToken] = useState<string | null>(null);
+    // Slice 2E.bridge: tracks whether the GET /session attempt has settled
+    // so the mesh effect knows to wait. 'idle' → no studio script (legacy
+    // in-process path); 'pending' → fetch in flight; 'resolved' → token set;
+    // 'failed' → session fetch failed, mesh effect falls back to by-script.
+    const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
     const mainRevisionRef = useRef(0);
     const previewRevisionRef = useRef(0);
     const studioScript = readStudioScriptParam();
@@ -129,16 +143,27 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         };
     }, [engine]);
 
-    useEffect(() => {
-        if (!studioScript) return;
-
+    // Slice 2E.bridge: fetch the studio mesh + review for the current script,
+    // optionally against a pooled session token so the data is read from the
+    // same long-lived CaptureSession that SSE `relower` events fire from.
+    // Returns the new revision number so callers can detect staleness.
+    const fetchMeshAndReview = useCallback((
+        script: string,
+        token: string | null,
+        opts?: { keepExistingOnError?: boolean },
+    ): { revision: number; promise: Promise<void> } => {
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
         setIsComputing(true);
-        let cancelled = false;
-
         const fetchStart = performance.now();
-        fetch(`/__kernelcad/mesh?script=${encodeURIComponent(studioScript)}`)
+        const meshUrl = token
+            ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
+            : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
+        const reviewUrl = token
+            ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}`
+            : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
+
+        const promise = fetch(meshUrl)
             .then(async (response) => {
                 const payload = await response.json();
                 if (!response.ok) {
@@ -153,7 +178,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 };
             })
             .then((payload) => {
-                if (cancelled || revision !== mainRevisionRef.current) {
+                if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
                     return;
                 }
@@ -171,7 +196,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     status: 'success',
                     executionCountAtRecord: revision,
                 });
-                fetch(`/__kernelcad/review?script=${encodeURIComponent(studioScript)}`)
+                fetch(reviewUrl)
                     .then(async (response) => {
                         const reviewPayload = await response.json();
                         if (!response.ok) {
@@ -181,23 +206,25 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         return reviewPayload as ScriptReviewSummary;
                     })
                     .then((reviewPayload) => {
-                        if (cancelled || revision !== mainRevisionRef.current) return;
+                        if (revision !== mainRevisionRef.current) return;
                         setScriptReview(reviewPayload);
                     })
                     .catch(() => {
-                        if (cancelled || revision !== mainRevisionRef.current) return;
+                        if (revision !== mainRevisionRef.current) return;
                         setScriptReview(null);
                     });
             })
             .catch((err: unknown) => {
-                if (cancelled || revision !== mainRevisionRef.current) {
+                if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
                     return;
                 }
                 const message = err instanceof Error ? err.message : String(err);
                 setError(message);
-                setScriptParams([]);
-                setScriptReview(null);
+                if (!opts?.keepExistingOnError) {
+                    setScriptParams([]);
+                    setScriptReview(null);
+                }
                 pushExecutionRecord({
                     revision,
                     status: 'error',
@@ -206,16 +233,109 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 });
             })
             .finally(() => {
-                if (!cancelled && revision === mainRevisionRef.current) {
+                if (revision === mainRevisionRef.current) {
                     setIsComputing(false);
                     setExecutionCount(prev => prev + 1);
                 }
             });
+        return { revision, promise };
+    }, [pushExecutionRecord]);
 
-        return () => {
-            cancelled = true;
+    // Slice 2E.bridge: acquire the session token for the script. The pool
+    // reuses an existing session if one already exists for this script, so
+    // a tab refresh doesn't lose params edits. The mesh effect below waits
+    // for `sessionStatus` to settle before fetching, so we never make two
+    // mesh requests (one by-script, one by-session) on initial load.
+    useEffect(() => {
+        if (!studioScript) {
+            setSessionToken(null);
+            setSessionStatus('idle');
+            return;
+        }
+        let cancelled = false;
+        setSessionStatus('pending');
+        setSessionToken(null);
+        fetch(`/__kernelcad/session?script=${encodeURIComponent(studioScript)}`)
+            .then(async (r) => {
+                const body = await r.json();
+                if (!r.ok) throw new Error(body?.error ?? r.statusText);
+                return body as { sessionToken: string };
+            })
+            .then(({ sessionToken: token }) => {
+                if (cancelled) return;
+                setSessionToken(token);
+                setSessionStatus('resolved');
+            })
+            .catch(() => {
+                if (cancelled) return;
+                // Fall back to the legacy per-request mesh path: token stays
+                // null and the mesh effect fetches by-script.
+                setSessionStatus('failed');
+            });
+        return () => { cancelled = true; };
+    }, [studioScript]);
+
+    // Initial mesh fetch — gated on `sessionStatus` so we make exactly one
+    // mesh request on load. When the session is resolved we fetch by-token
+    // (renderer reads from the same CaptureSession SSE/params write to);
+    // when failed we fetch by-script (legacy in-process build).
+    useEffect(() => {
+        if (!studioScript) return;
+        if (sessionStatus === 'pending' || sessionStatus === 'idle') return;
+        const { promise } = fetchMeshAndReview(studioScript, sessionToken);
+        void promise;
+    }, [studioScript, sessionStatus, sessionToken, fetchMeshAndReview]);
+
+    // Slice 2E.bridge: SSE subscription. Opens an EventSource against the
+    // pooled CaptureSession's onRelower channel. Each `relower` frame
+    // triggers a fresh mesh+review fetch so ParamsTab / ValidityDrawer
+    // reflect the kernel's latest state without a full script re-run.
+    useEffect(() => {
+        if (!studioScript || !sessionToken) return;
+        const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
+        const es = new EventSource(url);
+        const onRelower = () => {
+            fetchMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
         };
-    }, [studioScript, pushExecutionRecord]);
+        es.addEventListener('relower', onRelower);
+        // The browser auto-reconnects on transient drops; we only log here.
+        es.onerror = () => {
+            // EventSource will retry on its own; a sustained outage surfaces
+            // as a stale ParamsTab — which is acceptable degradation.
+            // Intentionally silent: no console noise during dev reloads.
+        };
+        return () => {
+            es.removeEventListener('relower', onRelower);
+            es.close();
+        };
+    }, [studioScript, sessionToken, fetchMeshAndReview]);
+
+    // Slice 2E.bridge: callback exposed to consumers (forwarded by
+    // `useRecomputeResult`). Awaits the server ack; the SSE push that
+    // follows is what actually refreshes context state.
+    const updateParam = useCallback(async (
+        edits: { name: string; value: number | boolean }[],
+    ) => {
+        if (!sessionToken) {
+            throw new Error('updateParam called before a session token was issued');
+        }
+        const res = await fetch(
+            `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+            {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ edits }),
+            },
+        );
+        if (!res.ok) {
+            let message = res.statusText;
+            try {
+                const body = await res.json();
+                if (typeof body?.error === 'string') message = body.error;
+            } catch { /* keep statusText fallback */ }
+            throw new Error(message);
+        }
+    }, [sessionToken]);
 
     // Execution Loop
     useEffect(() => {
@@ -434,9 +554,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         recomputeMs,
         staleMainResponsesDropped,
         stalePreviewResponsesDropped,
+        sessionToken,
         executeGeometry,
         setPreviewCode,
-    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, executeGeometry]);
+        updateParam,
+    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }
