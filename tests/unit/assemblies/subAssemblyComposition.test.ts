@@ -37,7 +37,7 @@ describe('Assembly.subAssembly', () => {
   });
 
   it('imports the other assembly\'s mates with refs remapped', async () => {
-    const { kcad, session } = makeKcad();
+    const { kcad } = makeKcad();
     const gripper = kcad.assembly('gripper');
     gripper.part('wrist', kcad.box(10, 10, 10))
       .connector('out', { type: 'frame', origin: { kind: 'vec3', value: [5, 0, 0] } });
@@ -61,8 +61,6 @@ describe('Assembly.subAssembly', () => {
       code: 'return null;',
     });
     expect(ev).toBeDefined();
-    // Force the session to lower — confirm no errors.
-    session; // silence linter; the model session is the one we built above
   });
 
   it('lets the outer assembly mate into the imported sub via .ref(part, conn)', async () => {
