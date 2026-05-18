@@ -1009,8 +1009,14 @@ export class Assembly {
     //    encoded joint poses on `metadata.poses`). Capture-time validation
     //    already rejects pose on fastened/planar mates (see `mate()` above).
     const encodedMates: import('./captureSession').EncodedMateRecord[] = this.mates.map((m) => {
+      // Slice 2C: round-trip limit ranges through the encoded record so the
+      // Studio's JointsTab can render limit marks on slider tracks.
+      const limits = {
+        ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+        ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+      };
       if (m.pose === undefined) {
-        return { name: m.name, a: m.a, b: m.b, type: m.type };
+        return { name: m.name, a: m.a, b: m.b, type: m.type, ...limits };
       }
       if (Array.isArray(m.pose)) {
         return {
@@ -1026,6 +1032,7 @@ export class Assembly {
               toParam(m.pose[2], 'deg'),
             ],
           },
+          ...limits,
         };
       }
       // Scalar pose. Unit is cosmetic on the Param (lowerer reads .evaluated);
@@ -1036,6 +1043,7 @@ export class Assembly {
         b: m.b,
         type: m.type,
         pose: { kind: 'scalar', value: toParam(m.pose, 'deg') },
+        ...limits,
       };
     });
     return {

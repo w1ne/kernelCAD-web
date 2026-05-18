@@ -9,6 +9,7 @@ import type { GeometryResult } from '../shared/worker/workerTypes';
 import type { ValidatorResult, ValidatorStatus } from '../modeling/mates/validator';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { ParamTable } from '../shared/runtime/paramTable';
+import type { JointPoseSnapshot } from './adapters/featureRecordsToMates';
 
 /**
  * All inspector tabs the shell knows about. Phase 1 surfaces `scene` and
@@ -43,6 +44,13 @@ export interface StudioRecomputeResult {
     readonly paramTable: ParamTable | null;
     readonly diagnostics: readonly CompilerDiagnostic[];
     readonly recomputeMs: number;
+    /**
+     * Slice 2C — assembly joints with declared pose, extracted from
+     * `solvedAssembly` FeatureRecords. Empty array when the script doesn't
+     * build an assembly, or builds one with no posed mates. JointsTab uses
+     * `poseParamNames` to drive `updateParam` on slider scrub.
+     */
+    readonly joints: readonly JointPoseSnapshot[];
     /**
      * Slice 2E.bridge — POST `edits` to the server's `/__kernelcad/params`
      * endpoint via the pooled `CaptureSession`. Returns once the server has
