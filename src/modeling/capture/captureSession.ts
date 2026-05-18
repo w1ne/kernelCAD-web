@@ -13,7 +13,7 @@ import { imageDimensions } from './imageDimensions';
 import { existsSync } from 'node:fs';
 import { resolve as resolvePath, extname } from 'node:path';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Shape } from './proxy';
 import { Sketch } from './sketch';
 import { SurfaceProxy } from './surfaceProxy';

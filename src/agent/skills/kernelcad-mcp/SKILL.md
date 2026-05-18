@@ -30,7 +30,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 ### Diagnostics
 
 - `why_did_this_fail({ file? code?, feature_id? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic). Use when `code` is `recompute.input.missing` to find the root cause.
-- `list_diagnostic_codes({})` — return the 30-code diagnostic catalogue with hint templates (one-shot; useful at session start to pre-populate retry strategies).
+- `list_diagnostic_codes({})` — return the full diagnostic catalogue with hint templates, structured next-actions, and per-code metadata (one-shot; useful at session start to pre-populate retry strategies).
 - `list_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 

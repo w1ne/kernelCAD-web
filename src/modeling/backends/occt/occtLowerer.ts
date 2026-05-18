@@ -46,7 +46,7 @@ import {
 import { propagateTransformHistory } from '../../../kernel/naming/evolutionRecord';
 import type { HistoryMap, FaceLineage } from '../../../kernel/naming/evolutionRecord';
 import { retagInstance } from '../../../kernel/backends/occt/patternHistory';
-import { HINT_TEMPLATES } from '../../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 
 // ---------------------------------------------------------------------------
 // Shared helpers: Vec3Param resolution + axis normalization

@@ -2,7 +2,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FeatureId } from '../../shared/intent/types';
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { DependencyGraph } from './dependencyGraph';
 import type { FeatureEventSink } from './featureEvents';
 import { KernelError } from '../../shared/intent/kernelError';
