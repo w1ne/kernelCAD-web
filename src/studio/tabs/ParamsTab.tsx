@@ -82,7 +82,8 @@ function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
                 min={min}
                 max={max}
                 onChange={(next) => {
-                    void updateParam?.([{ name: entry.name, value: next }]);
+                    updateParam?.([{ name: entry.name, value: next }])
+                        ?.catch((err) => console.warn('[ParamsTab] updateParam failed', err));
                 }}
             />
         </li>
