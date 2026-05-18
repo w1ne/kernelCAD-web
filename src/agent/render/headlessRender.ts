@@ -106,13 +106,16 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
     }
 
-    // Belt-and-suspenders: nuke ANY dev chrome before each screenshot. The
-    // headless URL param + __root.tsx suppression doesn't always catch the
-    // TanStack Router devtools badge — it gets re-injected by HMR or React
-    // double-render after mesh load. Removing the offending DOM nodes here
-    // guarantees zero badge pixels in the screenshot.
-    const stripDevChrome = `
-      () => {
+    // Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
+    // first screenshot. The headless URL param + __root.tsx suppression doesn't
+    // always catch the TanStack Router devtools badge — it can get re-injected
+    // by React StrictMode double-render at mount. We run this once, post-load:
+    // by then any mount-time re-injection has settled, and there is no HMR in
+    // headless production (no file watcher). If a late re-injection ever bites
+    // again, wire this through a MutationObserver — don't re-add the per-frame
+    // scan.
+    await page.evaluate(`
+      (() => {
         const sels = [
           '[data-testid="tsr-devtools"]',
           '.TanStackRouterDevtools',
@@ -127,14 +130,13 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
             el.remove();
           }
         });
-      }
-    `;
+      })()
+    `);
 
     // 4. Per-view: snap camera, screenshot, collect.
     const pngsByView: Partial<Record<RenderView, Buffer>> = {};
     for (const view of views) {
       await page.evaluate((v) => window.__demoPlayer!.setRenderView(v), view);
-      await page.evaluate(stripDevChrome);
       const buf = await page.screenshot({ type: 'png' });
       pngsByView[view] = buf;
     }
@@ -153,7 +155,6 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
           ({ a, e }) => window.__demoPlayer!.setRenderPose(a, e),
           { a: az, e: el },
         );
-        await page.evaluate(stripDevChrome);
         const buf = await page.screenshot({ type: 'png' });
         pngsByPose[poseKey] = buf;
       }

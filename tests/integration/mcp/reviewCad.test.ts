@@ -394,7 +394,11 @@ describe('review_cad MCP tool', () => {
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
-      expect(r.diagnostics).toEqual([]);
+      // Filter out info-level advisories (assembly.mates-ignored-by-model-call
+      // fires here because the fixture intentionally returns arm.model() on a
+      // mate-bearing assembly to test the fitness-repair flow). The fitness
+      // failure is what's being asserted, not the absence of info diags.
+      expect(r.diagnostics.filter((d) => d.severity !== 'info')).toEqual([]);
       expect(r.fitness?.blockingReasons.map((reason) => reason.code)).toEqual([
         'assembly.mechanism.no-tracked-workspace',
         'assembly.mechanism.no-tracked-travel',
