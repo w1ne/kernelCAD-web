@@ -60,6 +60,24 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       };
     }
     targetId = feature_id;
+    // Reject virtual records (referenceImage today) early — they
+    // produce no BREP, so the downstream r.shapes.get would surface
+    // a misleading "did not lower successfully" message.
+    if (record.metadata?.virtual === true) {
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.virtual-record',
+          featureId: feature_id,
+          severity: 'error',
+          message: `feature_id '${feature_id}' is a virtual record (kind '${record.kind}'); virtual records produce no BREP and cannot be exported.`,
+          hint: "Drop feature_id to export the script's return value, or pass a feature_id that points at a BREP-producing feature.",
+          nextAction: NEXT_ACTIONS['export.virtual-record'],
+        }],
+      };
+    }
   } else {
     const ret = run.returnValue;
     if (ret instanceof Shape) {

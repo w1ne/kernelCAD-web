@@ -46,9 +46,13 @@ export type DiagnosticCode =
   | 'cli.script-exception'
   | 'cli.file-read'
   | 'cli.export-exception'
-  // Export (2)
+  // Export (3)
   | 'export.feature-not-found'
   | 'export.no-shape'
+  // Slice A: feature_id targets a virtual record (referenceImage, etc.)
+  // that produces no BREP. Surfaces sooner than a generic "did not lower
+  // successfully" and points the agent at the right alternative.
+  | 'export.virtual-record'
   // NURBS surfaces (2) — W1.3
   | 'feature.nurbs.degenerate-controls'
   | 'feature.nurbs.degree-mismatch'
@@ -111,6 +115,7 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'cli.export-exception',
   'export.feature-not-found',
   'export.no-shape',
+  'export.virtual-record',
   'feature.nurbs.degenerate-controls',
   'feature.nurbs.degree-mismatch',
   'feature.pattern.source-not-found',
@@ -201,6 +206,8 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'The feature_id passed to export_stl was not found. Use list_features to see available IDs.',
     'export.no-shape':
       'The script did not return a shape. End the script with `return <shape>`.',
+    'export.virtual-record':
+      "The targeted feature is a virtual capture-graph node (e.g. referenceImage) that produces no BREP. Drop feature_id to export the script's return value, or pass a feature_id that points at a BREP-producing feature.",
     'feature.nurbs.degenerate-controls':
       'NURBS surface control-net must be a non-empty rectangular Vec3 grid spanning a 2D extent. Fix the controls grid shape (every row must have the same length; every point must be a finite Vec3).',
     'feature.nurbs.degree-mismatch':
