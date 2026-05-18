@@ -86,4 +86,6 @@ export const NEXT_ACTIONS: Record<DiagnosticCode, NextAction> = {
   'feature.surface-from-boundary.continuity-orphan': { kind: 'fix-arg', field: 'neighbors' },
   'feature.surface-from-boundary.degenerate-patch':  { kind: 'rewrite-feature', guidance: 'rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary' },
   'feature.fillet.continuity-not-applicable':        { kind: 'rewrite-feature', guidance: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces" },
+  'feature.hermite-g2.degenerate-tangent':           { kind: 'fix-arg', field: 'tangent' },
+  'feature.hermite-g2.non-finite-input':             { kind: 'fix-arg', field: 'see-message' },
 };

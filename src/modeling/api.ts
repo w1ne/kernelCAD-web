@@ -14,6 +14,7 @@ import {
 } from '../kernel/backends/occt/edgeQueries';
 import type { ReferenceImageHandle, ReferenceImageScale } from '../shared/intent/referenceImageRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
+import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/index';
 import { fromSTEP as libFromSTEP } from './parts/fromSTEP';
@@ -156,6 +157,22 @@ export interface KernelCadApi {
     points: Vec3[],
     opts?: { tension?: number; closed?: boolean },
   ): Curve3D;
+
+  /**
+   * NURBS Slice C: quintic Hermite transition curve between two endpoints
+   * with prescribed tangent and (optional) curvature on each side. Returns
+   * a degree-5 `Curve3D` (6-control-point Bezier under a clamped-uniform
+   * knot vector).
+   *
+   * Use this to build a G2 blend curve between two existing curves — sample
+   * each neighbour's `pointAt(t)`, `tangentAt(t)` (and, if the neighbour is
+   * itself a `Curve3D`, its second-derivative for G2; otherwise omit
+   * `curvature` to fall back to G1).
+   *
+   * Throws `KernelError` on non-finite inputs or a zero-magnitude tangent;
+   * the curve3d record is not registered in that case.
+   */
+  hermiteG2(a: HermiteEndpoint, b: HermiteEndpoint): Curve3D;
 
   /**
    * NURBS Slice B: multi-section sweep. Sweeps each `section.profile` along
@@ -573,6 +590,17 @@ export function createApi(ctx: ApiContext): KernelCadApi {
           controlPoints: controlNet,
           degree: 3,
           closed: opts?.closed ?? false,
+        },
+      });
+    },
+
+    hermiteG2(a, b) {
+      const controlPoints = solveHermiteG2(a, b);
+      return session.addCurve3D({
+        metadata: {
+          controlPoints,
+          degree: 5,
+          closed: false,
         },
       });
     },
