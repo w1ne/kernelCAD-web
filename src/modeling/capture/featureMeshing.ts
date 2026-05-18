@@ -69,6 +69,31 @@ export interface PerFaceMaterialWarning {
   detail: string;
 }
 
+/** Diagnostic emitted when a leaf record with its own explicit material is
+ *  consumed by a downstream boolean.fuse (union/intersect) whose head record
+ *  also has its own material. The kernel's boolean operation produces a single
+ *  post-fuse mesh whose faces inherit the head record's material — the leaf's
+ *  material is therefore invisible on the static silhouette (post-fuse render
+ *  in `kernelcad render` and after the build animation settles in
+ *  `npm run capture-demo`). The leaf material IS visible during the staged
+ *  build animation while predecessor groups are still fading.
+ *
+ *  Authors who want a multi-material static render today must either:
+ *    (a) split the construction so the material-bearing leaf is not unioned
+ *        into a parent that also has its own material, OR
+ *    (b) author the leaf as a separate `assemblyPart` (assembly fan-out path
+ *        preserves per-part materials in the static render).
+ *
+ *  Tracked as a follow-up code fix in
+ *  `docs/specs/per-leaf-material-survives-static-render.md`. */
+export interface MaterialShadowingWarning {
+  leafFeatureId: FeatureId;
+  leafFeatureKind: FeatureKind;
+  shadowingFeatureId: FeatureId;
+  shadowingFeatureKind: FeatureKind;
+  message: string;
+}
+
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
@@ -76,6 +101,8 @@ export interface MeshFeaturesResult {
   /** Soft warnings collected during per-face material label resolution.
    *  Optional — absent when no labels were referenced. */
   perFaceMaterialWarnings?: PerFaceMaterialWarning[];
+  /** Multi-material diagnostic. See `MaterialShadowingWarning` for context. */
+  materialShadowingWarnings: MaterialShadowingWarning[];
 }
 
 /**
@@ -411,10 +438,110 @@ export async function meshFeaturesPerFeature(
     max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
+  const materialShadowingWarnings = detectMaterialShadowing(
+    features,
+    materialByFeatureId,
+  );
+  for (const w of materialShadowingWarnings) {
+    console.warn(`meshFeaturesPerFeature: material shadowing — ${w.message}`);
+  }
+
   return {
     features,
     bounds,
     failedFeatureIds,
+    materialShadowingWarnings,
     ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
   };
+}
+
+/**
+ * Walk the post-mesh DAG forward from each material-bearing leaf. Emit a
+ * warning for every (leaf, shadowing-boolean) pair where the leaf is reachable
+ * via a chain of union/intersect predecessors from a downstream record that
+ * also carries its own material. The leaf's material survives only on the
+ * intermediate group during the build animation; the post-fuse silhouette
+ * carries the head record's material.
+ *
+ * Walk semantics:
+ *   - Visit each leaf with a material exactly once.
+ *   - Reverse-adjacency lookup is built from `feature.predecessors`.
+ *   - We follow boolean fuse-style edges only (op === 'union' | 'intersect').
+ *     subtract edges represent cutters that DON'T enter the post-fuse mesh,
+ *     so a leaf consumed only as a `subtract` cutter never produces a
+ *     shadowing warning.
+ *   - The first material-bearing descendant on each forward path is the
+ *     "shadowing" record reported.
+ */
+function detectMaterialShadowing(
+  features: readonly FeatureMesh[],
+  materialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
+): MaterialShadowingWarning[] {
+  const featureById = new Map<FeatureId, FeatureMesh>();
+  for (const f of features) featureById.set(f.featureId, f);
+
+  // Reverse adjacency for fuse-style edges only. A leaf at `id` flows into
+  // `descendantsByPredecessor.get(id)` when those descendants list it as a
+  // predecessor AND the descendant's op is union/intersect (or no-op, for
+  // non-boolean records that just consume the shape — modifiers/transforms
+  // preserve material reachability).
+  const descendantsByPredecessor = new Map<FeatureId, FeatureId[]>();
+  for (const f of features) {
+    if (f.virtual) continue;
+    // Subtract booleans don't carry the predecessor's volume into the
+    // post-fuse mesh — the cutter is consumed. Skip those edges so a
+    // hole-cutter with .material() doesn't spuriously warn.
+    if (f.op === 'subtract') continue;
+    for (const predId of f.predecessors) {
+      const list = descendantsByPredecessor.get(predId);
+      if (list) list.push(f.featureId);
+      else descendantsByPredecessor.set(predId, [f.featureId]);
+    }
+  }
+
+  const out: MaterialShadowingWarning[] = [];
+  for (const leaf of features) {
+    if (leaf.virtual) continue;
+    if (!materialByFeatureId.has(leaf.featureId)) continue;
+
+    // BFS forward; stop at the first material-bearing descendant on each
+    // branch. We only need one shadower per leaf for the diagnostic; if
+    // there's a chain (.union().union().union()), the FIRST one with its
+    // own material is the load-bearing one.
+    const visited = new Set<FeatureId>([leaf.featureId]);
+    const queue: FeatureId[] = [];
+    const seedDescendants = descendantsByPredecessor.get(leaf.featureId);
+    if (seedDescendants) queue.push(...seedDescendants);
+
+    let shadower: FeatureMesh | undefined;
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      if (materialByFeatureId.has(id)) {
+        shadower = featureById.get(id);
+        break;
+      }
+      const next = descendantsByPredecessor.get(id);
+      if (next) queue.push(...next);
+    }
+
+    if (shadower) {
+      out.push({
+        leafFeatureId: leaf.featureId,
+        leafFeatureKind: leaf.featureKind,
+        shadowingFeatureId: shadower.featureId,
+        shadowingFeatureKind: shadower.featureKind,
+        message:
+          `leaf '${leaf.featureId}' (${leaf.featureKind}) has its own material but is unioned into ` +
+          `'${shadower.featureId}' (${shadower.featureKind}) which also has its own material. ` +
+          `The leaf material is visible during the build animation only; the static render ` +
+          `(kernelcad render, post-rotate capture-demo) shows the head material on the fused silhouette. ` +
+          `To preserve per-leaf material in the static render, split the construction so the leaf is not ` +
+          `unioned into a material-bearing parent, or author the leaf as a separate assemblyPart.`,
+      });
+    }
+  }
+
+  return out;
 }

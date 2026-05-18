@@ -103,11 +103,29 @@ export class Sketch {
    *   for helices, twisted rails, and any non-planar curve where you want
    *   the profile to track the rail (springs, threads).
    *
-   * Returns a `Shape` (3D solid). Validation (rail length, finite values)
-   * happens at lowering time and surfaces as `feature.sweep.*` diagnostics.
+   * Pick `opts.transitionMode` (only relevant for rails with interior corners):
+   * - `'right'` (default): sharp corner — the profile clips at the corner
+   *   plane. Works for most pipe-like sweeps with mild bends.
+   * - `'transformed'`: extends profile tangents past the corner. Use for
+   *   slight kinks where `'right'` would visibly truncate the profile.
+   * - `'round'`: inserts a tangent arc at the corner. Needed when the
+   *   profile diameter exceeds the corner clearance — without this, OCCT
+   *   rejects the sweep entirely. Costlier than the other modes.
+   *
+   * Returns a `Shape` (3D solid). Validation (rail length, finite values,
+   * transitionMode string) happens at lowering time and surfaces as
+   * `feature.sweep.*` / `feature.invalid-args` diagnostics.
    */
-  sweep(rail: Vec3[], opts: { frenet?: boolean; faceLabels?: FaceLabelsMap } = {}): Shape {
+  sweep(
+    rail: Vec3[],
+    opts: {
+      frenet?: boolean;
+      transitionMode?: 'right' | 'transformed' | 'round';
+      faceLabels?: FaceLabelsMap;
+    } = {},
+  ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
+    const transitionMode = opts.transitionMode ?? 'right';
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -117,7 +135,11 @@ export class Sketch {
         profileKind: { expression: "'sketch'", unit: 'unitless', evaluated: 0 },
         frenet: { expression: String(opts.frenet ?? false), unit: 'unitless', evaluated: opts.frenet ? 1 : 0 },
       },
-      metadata: { rail, ...(faceLabels ? { faceLabels } : {}) },
+      metadata: {
+        rail,
+        transitionMode,
+        ...(faceLabels ? { faceLabels } : {}),
+      },
     });
   }
 
