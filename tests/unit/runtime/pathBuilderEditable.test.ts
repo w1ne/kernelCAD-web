@@ -18,6 +18,8 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import type { SketchCommand } from '../../../src/modeling/capture/sketch';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 
 beforeAll(async () => { await initOcct(); });
 
@@ -138,6 +140,9 @@ describe('PathBuilder Editable — end-to-end lowering', () => {
 describe('PathBuilder Editable — params.update reactivity', () => {
   it('updating r changes the revolved shape volume', async () => {
     const session = new CaptureSession();
+    // Slice 2E: `params.update` requires an attached engine; `buildModel` does
+    // this automatically, but this test drives the session directly.
+    session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
     const api = createApi({ session });
     const r = api.param('r', 5);
     // Washer profile: inner radius r, outer radius r+10, height 5.

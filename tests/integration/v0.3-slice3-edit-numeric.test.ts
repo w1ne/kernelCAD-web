@@ -9,12 +9,22 @@ import { runScript } from '../../src/modeling/runtime/runScript';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/modeling/capture/captureSession';
 import { createApi } from '../../src/modeling/api';
+import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
+
+// Slice 2E: `session.params.update` requires an engine attached to the session
+// (normally done by `buildModel`). Tests that drive `CaptureSession` directly
+// must attach one manually.
+function attachEngine(session: CaptureSession): void {
+  session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
+}
 
 describe('v0.3 slice-3 — params.update on numeric param', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('edits boltDia and re-lowers only affected records', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     const dia = api.param('boltDia', 5, { min: 1, max: 20 });
     const plate = api.box(60, 40, 5).hole('top', { u: 0, v: 0, diameter: dia, depth: 'through' });
@@ -43,6 +53,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('multi-edit applies atomically and re-lowers from earliest affected', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     const w = api.param('w', 60);
     const dia = api.param('boltDia', 5);
@@ -61,6 +72,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('edit of unreferenced param re-lowers nothing', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     api.param('orphan', 99); // declared but unused
     const w = api.param('w', 60);
@@ -74,6 +86,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('rejects edit with unknown name (atomic — no edits apply)', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     api.param('boltDia', 5);
     api.box(60, 40, 5);
@@ -88,6 +101,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('rejects edit out-of-range and atomically rolls back', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     api.param('boltDia', 5, { min: 1, max: 10 });
     let err: unknown;
@@ -98,6 +112,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('rejects edit with type-mismatch', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     api.param('toggle', true);
     let err: unknown;
@@ -111,6 +126,7 @@ describe('v0.3 slice-3 — params.update on numeric param', () => {
 
   it('params.list returns current entries', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     api.param('a', 5, { min: 1, max: 10 });
     api.param('b', true);

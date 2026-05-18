@@ -119,11 +119,11 @@ export class RecomputeEngine {
     return () => { this.relowerSubs.delete(cb); };
   }
 
-  /** Internal — fire all subscribers with the set of feature IDs whose
-   *  shape was rebuilt in the most recent re-lower. Tolerant: subscriber
-   *  errors are caught + logged so one bad listener can't break others.
-   *  Public so `updateModelParams` (outside this class) can fire after each
-   *  params.update; tests reach it via the same name. Treat as internal. */
+  /** Engine→host hook. Called by buildModel.updateModelParams (and any
+   *  future re-lower code path) after a re-lower completes, with the set
+   *  of feature IDs whose shape was rebuilt. Subscribers registered via
+   *  onRelower() see this fire. Subscriber errors are caught + logged so
+   *  one bad listener can't break others. */
   emitRelower(affectedIds: readonly string[]): void {
     const snapshot = [...affectedIds];
     for (const cb of this.relowerSubs) {

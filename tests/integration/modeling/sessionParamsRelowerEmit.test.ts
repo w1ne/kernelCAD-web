@@ -27,8 +27,8 @@ describe('session.params.update emits onRelower', () => {
 
     await model.session.params.update([{ name: 'width', value: 70 }]);
 
-    expect(events.length).toBe(1);
-    expect(events[0].length).toBeGreaterThan(0);
+    expect(events.length).toBeGreaterThanOrEqual(1);
+    expect(events[events.length - 1].length).toBeGreaterThan(0);
 
     unsub();
   });

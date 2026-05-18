@@ -13,10 +13,10 @@ describe('RecomputeEngine.onRelower', () => {
     });
     // Trigger a re-lower by calling the public emit helper directly
     // (full params.update integration covered in PR 3 integration test)
-    (engine as unknown as { emitRelower: (ids: string[]) => void }).emitRelower(['feat_1', 'feat_2']);
+    engine.emitRelower(['feat_1', 'feat_2']);
     expect(received).toEqual([['feat_1', 'feat_2']]);
     unsubscribe();
-    (engine as unknown as { emitRelower: (ids: string[]) => void }).emitRelower(['feat_3']);
+    engine.emitRelower(['feat_3']);
     expect(received).toEqual([['feat_1', 'feat_2']]);
   });
 });
