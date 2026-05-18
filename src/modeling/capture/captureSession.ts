@@ -31,7 +31,6 @@ import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
-import type { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Connector } from '../mates/connector';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateType } from '../mates/mateTypes';
@@ -117,6 +116,16 @@ export interface FeatureSpec {
   metadata?: Record<string, unknown>;
 }
 
+/** Slice 2E: structural shape of the RecomputeEngine handle stored on a
+ *  CaptureSession. Declared here (not imported) so this file stays clean of
+ *  recompute/orchestration types per the architectural-boundary guard at
+ *  `tests/unit/kernel/architectureBoundary.test.ts`. The real RecomputeEngine
+ *  class satisfies this shape structurally; callers can cast back to it. */
+export interface SessionRecomputeEngineHandle {
+  onRelower(cb: (affectedIds: string[]) => void): () => void;
+  emitRelower(affectedIds: readonly string[]): void;
+}
+
 /** Slice-3: input + result of `session.params.update`. See spec §E.6. */
 export interface ParamUpdateEdit {
   name: string;
@@ -156,20 +165,24 @@ export class CaptureSession {
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
   /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
    *  first run. Reused by `params.update` so `onRelower` subscribers added
-   *  after the initial build still receive re-lower events. Internal — the
-   *  shape is `unknown` to avoid the runtime cycle (RecomputeEngine pulls in
-   *  the OCCT lowerer which transitively imports session machinery); callers
-   *  cast back through `getEngine()`. */
-  private engineRef: RecomputeEngine | undefined;
+   *  after the initial build still receive re-lower events.
+   *
+   *  Stored as a minimal structural type (not the real `RecomputeEngine`
+   *  class) so this file stays free of recompute/orchestration types — the
+   *  architectural-boundary guard at
+   *  `tests/unit/kernel/architectureBoundary.test.ts` forbids that direction.
+   *  Callers that need the full class API receive a structurally-compatible
+   *  object and re-cast at the boundary. */
+  private engineRef: SessionRecomputeEngineHandle | undefined;
   /** Slice 2E: read-only accessor. Returns `undefined` until `buildModel`
    *  attaches the per-session engine on the first run. */
-  get engine(): RecomputeEngine | undefined {
+  get engine(): SessionRecomputeEngineHandle | undefined {
     return this.engineRef;
   }
   /** Slice 2E: internal — `buildModel` calls this once per session to attach
    *  the engine. Subsequent `params.update` calls reuse the attached engine
    *  so `onRelower` subscriptions persist across updates. */
-  setEngine(engine: RecomputeEngine): void {
+  setEngine(engine: SessionRecomputeEngineHandle): void {
     this.engineRef = engine;
   }
   /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
