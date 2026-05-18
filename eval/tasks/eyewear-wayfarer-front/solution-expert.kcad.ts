@@ -110,27 +110,54 @@ const left = nurbsCurve([TL, BL], { degree: 1 });
 const frontPatch = surfaceFromBoundary([bottom, right, top, left]);
 const body = frontPatch.thicken(BODY_DEPTH);
 
-// ---------------- Lens openings (cylinders subtracted along Y) -----------
+// ---------------- Lens openings (squarish-rounded cutouts via 2D NURBS) ---
+// Slice D refinement: replace the perfectly circular cutouts with a slightly
+// squarish-rounded profile authored via `path().spline(...)`. The outline is
+// a rounded rectangle (LENS_W x LENS_H) with corner-radius LENS_CORNER,
+// matching the brand-typical lens silhouette better than a pure circle. The
+// path lies in XY (its native plane); the resulting sketch is extruded along
+// Z and then `alongAxis([0,1,0])` re-orients the cut tube along Y so it can
+// subtract through the body just like the prior cylindrical cutout.
+const LENS_W = LENS_R * 2;            // X extent of lens opening
+const LENS_H = LENS_R * 1.7;          // Z extent (slightly shorter than wide)
+const LENS_CORNER = LENS_R * 0.45;    // corner-rounding (Wayfarer-ish square-with-fillets)
 const LENS_CUT_DEPTH = BODY_DEPTH * 4;
-const leftLens = cylinder(LENS_CUT_DEPTH, LENS_R)
+
+function lensCutoutSketch() {
+  const hx = LENS_W / 2;
+  const hy = LENS_H / 2;
+  const k = LENS_CORNER;
+  // Walk CCW starting at the bottom-mid; each corner is a 3-waypoint spline
+  // that smoothly interpolates from one straight side into the next.
+  return path()
+    .moveTo(-hx + k, -hy)
+    .lineTo(hx - k, -hy)
+    .spline([[hx - k, -hy], [hx, -hy + k * 0.4], [hx, -hy + k]])
+    .lineTo(hx, hy - k)
+    .spline([[hx, hy - k], [hx - k * 0.4, hy], [hx - k, hy]])
+    .lineTo(-hx + k, hy)
+    .spline([[-hx + k, hy], [-hx, hy - k * 0.4], [-hx, hy - k]])
+    .lineTo(-hx, -hy + k)
+    .spline([[-hx, -hy + k], [-hx + k * 0.4, -hy], [-hx + k, -hy]])
+    .close();
+}
+
+const leftLens = lensCutoutSketch().extrude(LENS_CUT_DEPTH)
   .alongAxis([0, 1, 0])
   .translate(-LENS_CX, -LENS_CUT_DEPTH / 2, 0);
-const rightLens = cylinder(LENS_CUT_DEPTH, LENS_R)
+const rightLens = lensCutoutSketch().extrude(LENS_CUT_DEPTH)
   .alongAxis([0, 1, 0])
   .translate(LENS_CX, -LENS_CUT_DEPTH / 2, 0);
 const bodyWithEyes = body.subtract(leftLens).subtract(rightLens);
 
-// ---------------- Fillet on the front-face edges ------------------------
-// The face this fillet rounds is the NURBS Coons-patch front surface meeting
-// the cylindrical lens openings — that's the only edge category where G2
-// continuity is geometrically different from G1 (per the G1-vs-G2 BREP-
-// identity gotcha in kernelcad-nurbs/SKILL.md). Today's OCCT G2 path fails
-// to lower this particular acetate-meets-cylinder pair (kernel limitation
-// flagged for a follow-up slice), so the shipping artifact uses G1 with a
-// small radius. The authoring intent ('G2' continuity on NURBS-adjacent
-// edges) is documented here and in the skill so the agent surface still
-// reads as the canonical Coons-patch authoring loop.
-const filleted = bodyWithEyes.fillet(0.5);
+// ---------------- Front-face fillet (deferred) ----------------------------
+// The Slice C build applied a small constant fillet to the NURBS-adjacent
+// rim. Slice D's squarish-rounded lens openings introduce a second NURBS
+// boundary (the spline-cornered cutout) that meets the Coons-patch front
+// face — OCCT's fillet pipeline cannot resolve the resulting edge category
+// today, so the shipping artifact ships the un-filleted bodyWithEyes. The
+// G1/G2 continuity authoring intent is still documented in
+// kernelcad-nurbs/SKILL.md; the fix waits for a follow-up kernel slice.
 
 // ---------------- Tinted lens inserts (PBR before any boolean) ----------
 function lensInsert(cx: number) {
@@ -154,7 +181,7 @@ function lensInsert(cx: number) {
 void browLeftFlank;
 void browRightFlank;
 void browBridgeRef;
-const glasses = filleted
+const glasses = bodyWithEyes
   .union(lensInsert(-LENS_CX))
   .union(lensInsert(LENS_CX))
   .material({

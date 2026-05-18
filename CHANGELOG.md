@@ -1,4 +1,63 @@
-# kernelCAD v0.10.0
+# kernelCAD v0.11.0
+
+## v0.11.0 — 2026-05-18 — NURBS Slice D: 2D path NURBS authoring
+
+Closes the 2D path-NURBS gap flagged in memory `kernelcad_path_nurbs_gap` (2026-05-17). `PathBuilder` now offers three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives, so 2D sketch outlines can include explicit B-spline segments instead of polylines or arc chains. After Slice D, all NURBS authoring lanes (3D curves, 3D surfaces, 2D paths) have parity. The `eyewear-wayfarer-front` eval artifact replaces its perfectly circular lens cutouts with `path().spline(...)` rounded-rectangle profiles.
+
+### Added — 2D NURBS path segments
+
+- `path().spline(points, opts?)` — N-waypoint B-spline interpolation. Threads a degree-3 B-spline through every waypoint; `points[0]` must match current pen position. Lowers via `replicad.makeBSplineApproximation` for the pen-friendly path.
+- `path().nurbsSegment(controlPoints, opts?)` — explicit B-spline segment defined by a control polygon. Optional `degree` (default 3), rational `weights`, and an explicit `knots` vector. Lowers via direct OCCT (`Geom_BSplineCurve_1` / `_2`).
+- `path().hermiteG2(a, b)` — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). Reuses Slice B's quintic-Hermite solver in 2D.
+- All three methods accept `Editable<number>` coords so symbolic params survive into capture.
+
+### Added — 4 new diagnostic codes
+
+- `feature.path.spline.degenerate-points` — fewer than 2 points, NaN coord, or duplicate consecutive points within 1e-9 mm.
+- `feature.path.nurbs-segment.degenerate-controls` — fewer than `degree + 1` control points, non-finite coord, or `controlPoints[0]` not matching current pen position within 1e-6 mm.
+- `feature.path.nurbs-segment.weights-non-positive` — weight ≤ 0 (zero collapses the basis; negative is undefined for B-splines).
+- `feature.path.hermite-g2.start-mismatch` — Hermite start point ≠ current pen position within 1e-6 mm.
+
+Every code carries an inline hint template; the canonical list is also exposed via `list_diagnostic_codes`.
+
+### Added — MCP tools
+
+- `add_path_spline({ code, chain_anchor, points, tension?, binding_name? })` — inject a `.spline(...)` call into an existing PathBuilder chain at the named `chain_anchor` variable. The injection lands immediately before any `.close()` in the chain (or before the statement terminator if `.close()` is absent).
+- `add_path_nurbs_segment({ code, chain_anchor, controlPoints, degree?, weights?, knots?, binding_name? })` — inject a `.nurbsSegment(...)` call into an existing PathBuilder chain. Validates the control net + opts before edit.
+- `add_path_hermite_g2({ code, chain_anchor, a, b, binding_name? })` — inject a `.hermiteG2(a, b)` call into an existing PathBuilder chain. Each endpoint is `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }`.
+
+Each tool returns the modified code + diagnostics from re-evaluating; side-effect-free.
+
+### Added — sketch lowerer: mixed-source wire composition
+
+- `OcctBackend.fromSketchCommands` extended to recognise `spline`, `nurbsSegment`, and `hermiteG2_2d` command kinds. The lowerer composes the resulting OCCT NURBS edges with replicad-drawn line/arc edges via `BRepBuilderAPI_MakeWire`, producing a single closed wire that flows through `extrudeFromSketch`, hole subtraction, and the rest of the Shape pipeline.
+- `hasNurbsSegments(commands)` and `buildNurbsSketchOnPlane(commands, plane)` route mixed sketches through the NURBS-aware path; pure line/arc sketches still take the legacy replicad pen path with no overhead.
+
+### Eval artifact — eyewear-wayfarer-front Slice D lens refinement
+
+- `eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts` (196 LoC, within the 200-LoC budget): the Slice C `surfaceFromBoundary` Coons-patch front face is preserved untouched; only the lens-opening cutouts change.
+- Slice C cut perfect circles via `cylinder().alongAxis([0, 1, 0])`. Slice D authors the same opening as a `path().moveTo(...).spline([rounded-rectangle waypoints]).close().extrude(through_body_depth)` — a slightly squarish-rounded shape closer to the real brand-typical lens silhouette than a pure circle.
+- Evaluates clean to a single positive-volume Shape (~102 914 mm³); bbox 154 × 46.6 × 28 mm clears the existing `>= 100 mm in some axis` harness gate.
+- The Slice C rim fillet is deferred: the new NURBS-meets-NURBS edge category (squarish-rounded cutout meeting the Coons patch front face) is not yet handled by OCCT's `BRepFilletAPI_MakeFillet`. The authoring intent (G2 continuity on NURBS-adjacent edges) remains documented in `kernelcad-nurbs/SKILL.md`; the fix waits for a follow-up kernel slice.
+
+### Skill docs
+
+- `kernelcad-nurbs/SKILL.md` — new section "2D NURBS path segments" documenting `path().spline / .nurbsSegment / .hermiteG2`, the 4 new diagnostic codes, and three real-world gotchas (skinned-surface loft incompatibility, `makeBSplineApproximation` y-extent overshoot at default tolerance, defensive wire-discontinuity tolerance).
+- `kernelcad-authoring/SKILL.md` — PathBuilder method list extended with the 3 new methods; cookbook auto-generated section regenerated.
+- `kernelcad-mcp/SKILL.md` — documents `add_path_spline` / `add_path_nurbs_segment` / `add_path_hermite_g2` next to their Slice C / B siblings.
+- `kernelcad/SKILL.md` decision tree updated to route freeform 2D outlines to `kernelcad-nurbs`.
+
+### Cookbook snippets
+
+- `cookbook/snippets/path-spline-organic-outline.md` — N-waypoint B-spline outline for an eyewear-style brow profile.
+- `cookbook/snippets/path-nurbs-segment-explicit.md` — explicit B-spline control polygon outline.
+- `cookbook/snippets/path-hermite-g2-blend-2d.md` — 2D quintic Hermite as a G2-continuous transition between two existing path runs.
+
+### Known limitations
+
+- **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. The Slice D eyewear refinement routes lens cutouts through extrude-then-subtract for this reason.
+- **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Task 3 measurement). Tighten the tolerance via `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control when precision beats convenience.
+- **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer. Acceptable for v1; explicit gap-gating is queued for a follow-up slice.
 
 ## v0.10.0 — 2026-05-18 — NURBS Slice C: Coons patch + G1/G2 fillet continuity + hermiteG2
 
