@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('catalogue codes are unique (no duplicates)', () => {
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
+  it('emits exactly 48 codes', () => {
+    expect(DIAGNOSTIC_CODES).toHaveLength(48);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(48);
   });
 
   it('every code has a non-empty hint template', () => {
