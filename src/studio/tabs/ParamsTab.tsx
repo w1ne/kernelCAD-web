@@ -12,9 +12,21 @@ import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
  * review so the param table refreshes with the new value.
  */
 export function ParamsTab(): JSX.Element {
-    const { paramTable, updateParam } = useRecomputeResult();
+    const { paramTable, joints, updateParam } = useRecomputeResult();
 
-    const entries: ParamEntry[] = paramTable && paramTable.size() > 0 ? paramTable.list() : [];
+    // Slice 2C: hide params that are surfaced as joint poses in JointsTab so
+    // the same scalar isn't edited from two places. `poseParamNames` may
+    // contain `null` for numeric-literal poses; only string entries filter.
+    const jointPoseNames = new Set<string>();
+    for (const j of joints ?? []) {
+        for (const n of j.poseParamNames ?? []) {
+            if (typeof n === 'string') jointPoseNames.add(n);
+        }
+    }
+
+    const entries: ParamEntry[] = paramTable && paramTable.size() > 0
+        ? paramTable.list().filter((e) => !jointPoseNames.has(e.name))
+        : [];
 
     if (entries.length === 0) {
         return (

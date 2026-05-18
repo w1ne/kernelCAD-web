@@ -66,4 +66,66 @@ describe('ParamsTab interactive numeric scrub', () => {
         render(<ParamsTab />);
         expect(screen.getByTestId('params-empty-state')).toBeTruthy();
     });
+
+    it('hides params that are exposed as joint poses', () => {
+        const table = new ParamTable();
+        table.declare('shoulder', 'number', 15, { min: -30, max: 110 });
+        table.declare('width', 'number', 50);
+        vi.spyOn(useRecomputeResultModule, 'useRecomputeResult').mockReturnValue({
+            features: [],
+            geometries: [],
+            validity: null,
+            paramTable: table,
+            diagnostics: [],
+            recomputeMs: 0,
+            joints: [
+                {
+                    mate: {
+                        name: 'shoulder',
+                        a: 'base.connA',
+                        b: 'arm.connB',
+                        type: 'revolute',
+                        limitsDeg: [-30, 110] as const,
+                    },
+                    pose: 15,
+                    poseParamNames: ['shoulder'],
+                },
+            ],
+            updateParam: vi.fn(),
+        } as unknown as ReturnType<typeof useRecomputeResultModule.useRecomputeResult>);
+        render(<ParamsTab />);
+        expect(screen.queryByTestId('param-row-shoulder')).toBeNull();
+        expect(screen.queryByTestId('param-row-width')).toBeTruthy();
+    });
+
+    it('keeps params with null poseParamNames entries visible', () => {
+        // Numeric-literal poses surface as `null` in `poseParamNames` — the
+        // filter must ignore `null` entries so unrelated params keep rendering.
+        const table = new ParamTable();
+        table.declare('width', 'number', 50);
+        vi.spyOn(useRecomputeResultModule, 'useRecomputeResult').mockReturnValue({
+            features: [],
+            geometries: [],
+            validity: null,
+            paramTable: table,
+            diagnostics: [],
+            recomputeMs: 0,
+            joints: [
+                {
+                    mate: {
+                        name: 'shoulder',
+                        a: 'base.connA',
+                        b: 'arm.connB',
+                        type: 'revolute',
+                        limitsDeg: [-30, 110] as const,
+                    },
+                    pose: 15,
+                    poseParamNames: [null],
+                },
+            ],
+            updateParam: vi.fn(),
+        } as unknown as ReturnType<typeof useRecomputeResultModule.useRecomputeResult>);
+        render(<ParamsTab />);
+        expect(screen.queryByTestId('param-row-width')).toBeTruthy();
+    });
 });
