@@ -76,7 +76,11 @@ export type DiagnosticCode =
   // placement is silently dropped when the part is reached by mate FK.
   // Info-severity so the agent learns about the override before the Gate 2
   // axis-mismatch error path (two reasoning steps removed from root cause).
-  | 'assembly.placement-ignored-by-mate-fk';
+  | 'assembly.placement-ignored-by-mate-fk'
+  // Assembly UX (1) — Exp-D four-bolt-flange-v2 surfaced: agent declared
+  // mates then ended with arm.model() (not solvedModel), so mate FK never
+  // runs and parts stack at local origin. Same shape as placement-ignored.
+  | 'assembly.mates-ignored-by-model-call';
 
 export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.invalid-args',
@@ -124,6 +128,7 @@ export const DIAGNOSTIC_CODES: readonly DiagnosticCode[] = [
   'feature.material.value-clamped',
   'feature.edge-feature.short-edges-skipped',
   'assembly.placement-ignored-by-mate-fk',
+  'assembly.mates-ignored-by-model-call',
 ] as const;
 
 export interface HintTemplate {
@@ -230,6 +235,8 @@ function buildHintTemplates(): Record<DiagnosticCode, HintTemplate> {
       'OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.',
     'assembly.placement-ignored-by-mate-fk':
       "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
+    'assembly.mates-ignored-by-model-call':
+      "The assembly declared mates but the script ended with arm.model() (which skips mate FK). Replace with arm.solvedModel({}) so the mate solver runs and parts pose correctly.",
   };
   const out = {} as Record<DiagnosticCode, HintTemplate>;
   for (const code of DIAGNOSTIC_CODES) {

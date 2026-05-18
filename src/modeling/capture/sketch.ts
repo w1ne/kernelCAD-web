@@ -519,6 +519,79 @@ export class PathBuilder {
   }
 
   /**
+   * Author a closed circle at `(cx, cy)` of radius `r` as a polyline-
+   * approximated profile. Returns the resulting `Sketch` directly — there
+   * is no current pen position to reuse, and chaining further segments
+   * onto a circle would be ambiguous.
+   *
+   * Implementation: emits `moveTo(cx + r, cy)` + N-1 `lineTo` segments
+   * around the circle + `close`. N=48 by default (good for revolves,
+   * extrusions, and silhouette work). Override `segments` for finer detail.
+   *
+   * Surfaced 2× across Exp-B (eyebolt) and others: agents had to emit
+   * trig in TS to build polyline circles because chained `sagittaArc`
+   * collapses to zero-area when closing the same chord, and there was
+   * no first-class circle primitive at the path level.
+   *
+   * **Limitation:** `cx`, `cy`, `r` must be NUMERIC at capture time. The
+   * circle math (cos/sin of segment angles) can't be deferred to runtime
+   * if the inputs are ParamRefs. Param-driven circles can be authored via
+   * a higher-level helper later if needed.
+   */
+  circle(cx: number, cy: number, r: number, segments: number = 48): Sketch {
+    if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(r)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `path.circle(cx, cy, r): all of cx (${cx}), cy (${cy}), r (${r}) must be finite numbers.`,
+        undefined,
+        'Pass numeric literals for cx, cy, r. ParamRef-driven circles are not supported in this slice.',
+      );
+    }
+    if (r <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `path.circle: radius must be > 0; got ${r}.`,
+        undefined,
+        'Pass a positive radius.',
+      );
+    }
+    if (!Number.isInteger(segments) || segments < 3) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `path.circle: segments must be an integer >= 3; got ${segments}.`,
+        undefined,
+        'Pass a segment count >= 3. Defaults to 48; use higher for smoother revolves.',
+      );
+    }
+    if (this.commands.length > 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        'path.circle(): the path already has other commands. circle() must be the only operation on a fresh path.',
+        undefined,
+        'Call path().circle(cx, cy, r) without prior moveTo / lineTo / etc.',
+      );
+    }
+    // Start at (cx + r, cy) and walk counterclockwise. Use lineTo for each
+    // chord; the final close() closes the loop.
+    this.commands.push({ kind: 'moveTo', x: toParam(cx + r, 'mm'), y: toParam(cy, 'mm') });
+    for (let i = 1; i < segments; i++) {
+      const theta = (2 * Math.PI * i) / segments;
+      this.commands.push({
+        kind: 'lineTo',
+        x: toParam(cx + r * Math.cos(theta), 'mm'),
+        y: toParam(cy + r * Math.sin(theta), 'mm'),
+      });
+    }
+    this.commands.push({ kind: 'close' });
+    return this.session.createSketch({
+      kind: 'sketch',
+      inputs: {},
+      params: {},
+      metadata: { commands: this.commands },
+    });
+  }
+
+  /**
    * Close the path and register the sketch FeatureRecord. Returns a `Sketch`
    * proxy whose only method is `.extrude(depth)`.
    */
