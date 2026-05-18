@@ -14,6 +14,9 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
         onRun: vi.fn(),
         agentRailOpen: false,
         onToggleAgentRail: vi.fn(),
+        referenceImagesPresent: false,
+        referenceImagesVisible: true,
+        onToggleReferenceImages: vi.fn(),
         ...overrides,
     };
     render(<Toolbar {...props} />);
@@ -67,5 +70,28 @@ describe('Toolbar', () => {
     it('falls back to placeholder name when project is null', () => {
         renderToolbar({ project: null });
         expect(screen.getByText('Untitled Project')).toBeDefined();
+    });
+
+    it('omits the reference-images toggle when no reference image is present', () => {
+        renderToolbar({ referenceImagesPresent: false });
+        expect(screen.queryByRole('button', { name: /reference images?/i })).toBeNull();
+    });
+
+    it('renders the reference-images toggle when a reference image is present', () => {
+        renderToolbar({ referenceImagesPresent: true, referenceImagesVisible: true });
+        const btn = screen.getByRole('button', { name: 'Hide reference images' });
+        expect(btn.getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('reflects hidden state in the reference-images toggle', () => {
+        renderToolbar({ referenceImagesPresent: true, referenceImagesVisible: false });
+        const btn = screen.getByRole('button', { name: 'Show reference images' });
+        expect(btn.getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('fires onToggleReferenceImages when reference-images button clicked', () => {
+        const props = renderToolbar({ referenceImagesPresent: true });
+        fireEvent.click(screen.getByRole('button', { name: /reference images?/i }));
+        expect(props.onToggleReferenceImages).toHaveBeenCalledTimes(1);
     });
 });
