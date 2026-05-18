@@ -409,7 +409,11 @@ export function DemoPlayerPage(): React.JSX.Element {
             };
           }
           for (const face of fm.faces) {
-            const material = buildMaterialFromPBR(pbrForFaces);
+            // Per-face material override (Shape.material({ face: '<label>', ... }))
+            // takes precedence over the shape-level default. Unmatched faces fall
+            // back to pbrForFaces (whole-shape material → legacy color → default).
+            const perFacePbr = fm.materialByFaceId?.[face.faceId];
+            const material = buildMaterialFromPBR(perFacePbr ?? pbrForFaces);
             const mesh = buildMeshFromFace(
               face,
               `${fm.featureId}-face-${face.faceId}`,

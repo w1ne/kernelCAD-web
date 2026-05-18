@@ -11,6 +11,8 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { transformFeatureMesh } from './transformMesh';
+import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
+import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */
 function extractRawShape(backend: ShapeBackend): unknown {
@@ -38,6 +40,12 @@ export interface FeatureMesh {
    *  metadata.color). Present when the record has material metadata. The renderer
    *  (Task 8+) prefers this over the legacy `color` string field. */
   material?: PBRMaterial;
+  /** Per-face PBR materials keyed by the integer `faceId` of `faces[i]`.
+   *  Populated when `FeatureRecord.metadata.materialByLabel` resolves at least
+   *  one label against the meshed shape (`Shape.material({ face, ... })`
+   *  per-face API). The renderer prefers this entry over `material` on a
+   *  face-by-face basis; unmatched faces fall back to `material`. */
+  materialByFaceId?: Record<number, PBRMaterial>;
   /** True for virtual (non-geometry) records such as referenceImage. */
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
@@ -49,10 +57,25 @@ export interface Bounds {
   max: [number, number, number];
 }
 
+/** Soft warning emitted when `Shape.material({ face })` referenced a label
+ *  that failed to resolve at mesh time. Surfaced via `MeshFeaturesResult`
+ *  so the caller can route to the diagnostic stream of choice (recompute
+ *  engine warnings, MCP response, etc.). The build does NOT fail — the
+ *  affected faces simply fall back to the shape-level material. */
+export interface PerFaceMaterialWarning {
+  code: 'feature.material.face-label-no-match';
+  featureId: FeatureId;
+  label: string;
+  detail: string;
+}
+
 export interface MeshFeaturesResult {
   features: FeatureMesh[];
   bounds: Bounds;
   failedFeatureIds: FeatureId[];  // empty array if no failures
+  /** Soft warnings collected during per-face material label resolution.
+   *  Optional — absent when no labels were referenced. */
+  perFaceMaterialWarnings?: PerFaceMaterialWarning[];
 }
 
 /**
@@ -165,11 +188,27 @@ export async function meshFeaturesPerFeature(
   const colorByFeatureId = new Map<FeatureId, string>();
   // Lookup table for full PBR material derived from record metadata.
   const materialByFeatureId = new Map<FeatureId, PBRMaterial>();
+  // Lookup table for per-face PBR overrides (label → PBR). Resolution into
+  // face-index keys happens at feature.compiled time when we hold the OCCT
+  // shape.
+  const materialByLabelByFeatureId = new Map<FeatureId, Record<string, PBRMaterial>>();
+  // Recordbook for diagnostics — surface unresolved labels as warnings.
+  const warnings: Array<{
+    code: 'feature.material.face-label-no-match';
+    featureId: FeatureId;
+    label: string;
+    detail: string;
+  }> = [];
   for (const r of records) {
     const color = (r.metadata as { color?: unknown } | undefined)?.color;
     if (typeof color === 'string') colorByFeatureId.set(r.id, color);
     const pbr = pbrFromMetadata(r.metadata as Record<string, unknown> | undefined);
     if (pbr !== undefined) materialByFeatureId.set(r.id, pbr);
+    const perFace = (r.metadata as { materialByLabel?: Record<string, PBRMaterial> } | undefined)
+      ?.materialByLabel;
+    if (perFace !== undefined && Object.keys(perFace).length > 0) {
+      materialByLabelByFeatureId.set(r.id, perFace);
+    }
   }
 
   // Emit virtual records (referenceImage etc.) directly — they produce no OCCT
@@ -270,6 +309,78 @@ export async function meshFeaturesPerFeature(
 
       const color = colorByFeatureId.get(event.featureId);
       const material = materialByFeatureId.get(event.featureId);
+
+      // Per-face material resolution. For each label in materialByLabel,
+      // resolve label → Face via the same machinery the edge-feature
+      // lowerers use (resolveFaceLabelToFace), hash the matched face, then
+      // walk `shape.faces` (the iteration source for meshShape's faceId
+      // integer) to find the index whose hash matches. Attach the PBR to
+      // that integer index. Unresolved labels surface a soft warning;
+      // unmatched faces fall back to the shape-level `material`.
+      let materialByFaceId: Record<number, PBRMaterial> | undefined;
+      const perFaceMap = materialByLabelByFeatureId.get(event.featureId);
+      if (perFaceMap !== undefined && event.shape instanceof OcctBackend) {
+        const base = event.shape;
+        // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
+        // not O(F * L). The replicad shape.faces iteration order matches
+        // meshShape's faceId assignment (see meshing.ts:meshShape).
+        const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
+        const faceIdByHash = new Map<string, number>();
+        replicadFaces.forEach((f, idx) => {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            faceIdByHash.set(faceHashOf(f as any), idx);
+          } catch {
+            // skip un-hashable faces; they simply won't get per-face overrides
+          }
+        });
+
+        const record = records.find(r => r.id === event.featureId);
+        if (record !== undefined) {
+          for (const [label, pbr] of Object.entries(perFaceMap)) {
+            const resolved = resolveFaceLabelToFace(record, base, label, records);
+            if ('error' in resolved) {
+              // Resolver collisions / canonical-not-applicable etc. — surface as
+              // soft no-match warning so the build continues. The error fields
+              // (code, severity 'error') are owned by the resolver; we lift
+              // only the label so the agent knows which call failed.
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: resolved.error.message,
+              });
+              continue;
+            }
+            let hash: string;
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              hash = faceHashOf(resolved.face as any);
+            } catch {
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: `Resolved face for '${label}' could not be hashed.`,
+              });
+              continue;
+            }
+            const idx = faceIdByHash.get(hash);
+            if (idx === undefined) {
+              warnings.push({
+                code: 'feature.material.face-label-no-match',
+                featureId: event.featureId,
+                label,
+                detail: `Resolved face hash '${hash}' for label '${label}' not present in the meshed face set.`,
+              });
+              continue;
+            }
+            if (materialByFaceId === undefined) materialByFaceId = {};
+            materialByFaceId[idx] = pbr;
+          }
+        }
+      }
+
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,
@@ -280,6 +391,7 @@ export async function meshFeaturesPerFeature(
         edges: meshed.edges,
         ...(color !== undefined ? { color } : {}),
         ...(material !== undefined ? { material } : {}),
+        ...(materialByFaceId !== undefined ? { materialByFaceId } : {}),
       });
 
       // Aggregate bounds from this feature's vertices
@@ -299,5 +411,10 @@ export async function meshFeaturesPerFeature(
     max: features.length > 0 ? [maxX, maxY, maxZ] : [0, 0, 0],
   };
 
-  return { features, bounds, failedFeatureIds };
+  return {
+    features,
+    bounds,
+    failedFeatureIds,
+    ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
+  };
 }
