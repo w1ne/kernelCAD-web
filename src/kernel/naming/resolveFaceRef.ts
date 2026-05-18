@@ -20,7 +20,7 @@ import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FaceHash } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
-import { HINT_TEMPLATES } from '../../shared/diagnostics/codes';
+import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 
 export type ResolveResult =
   | { ok: true; faceHash: FaceHash; warnings?: CompilerDiagnostic[] }
