@@ -193,6 +193,29 @@ export interface KernelCadApi {
     opts?: { closed?: boolean; continuity?: 'C0' | 'C1' | 'C2' },
   ): Shape;
 
+  /**
+   * NURBS Slice C: build a Coons-patch surface filling the interior of 4
+   * boundary curves. The 4 curves form an ordered loop:
+   *   curves[0] = bottom, curves[1] = right, curves[2] = top, curves[3] = left.
+   * Adjacent endpoints must coincide within 1e-6 mm (the kernel emits
+   * `feature.surface-from-boundary.corner-mismatch` otherwise).
+   *
+   * `opts.continuity` is either a single grade applied to all 4 edges, or an
+   * array of 4 grades (one per edge). Maps to OCCT's `GeomAbs_C0/C1/C2` on
+   * `BRepOffsetAPI_MakeFilling.Add_1(edge, order, true)`. `opts.sampling`
+   * controls `NbPtsOnCur` (defaults to 15 at lower time).
+   *
+   * Returns a `Surface` peer to `Shape`. Use `.thicken(t)` to get a closed
+   * solid, or `.toShape()` to wrap as a zero-volume single-face shell.
+   */
+  surfaceFromBoundary(
+    curves: [Curve3D, Curve3D, Curve3D, Curve3D],
+    opts?: {
+      continuity?: 'C0' | 'C1' | 'C2' | ('C0' | 'C1' | 'C2')[];
+      sampling?: number;
+    },
+  ): SurfaceProxy;
+
   /** 2D sketch primitives namespace. Currently: `sketch.text(content, opts)`. */
   sketch: SketchModule;
 
@@ -660,6 +683,52 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       // Return a Shape proxy pointing at the new variableSweep record so
       // the agent can chain .fillet() / .union() / etc.
       return new Shape(sweepId, session);
+    },
+
+    surfaceFromBoundary(curves, opts) {
+      // 1. Curve-count gate. Producing a SurfaceProxy here would force the
+      //    caller into a wrong-arity contract, so we throw KernelError up
+      //    front (matches the surfaceFromCurves pattern).
+      if (!Array.isArray(curves) || curves.length < 4) {
+        throw new KernelError(
+          'feature.surface-from-boundary.too-few-curves',
+          `surfaceFromBoundary: need 4 boundary curves; got ${curves?.length ?? 0}.`,
+          undefined,
+          'surface-from-boundary.too-few-curves — pass an array of 4 Curve3D refs in walk order (bottom, right, top, left).',
+        );
+      }
+      if (curves.length > 4) {
+        throw new KernelError(
+          'feature.surface-from-boundary.too-many-curves',
+          `surfaceFromBoundary: need exactly 4 boundary curves; got ${curves.length}.`,
+          undefined,
+          'surface-from-boundary.too-many-curves — if the loop has more than 4 sides, split the patch into adjacent quads.',
+        );
+      }
+      // 2. Continuity normalisation: a single grade applies to all 4 edges;
+      //    an array must be length 4.
+      const contIn = opts?.continuity;
+      let contArr: ['C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2', 'C0' | 'C1' | 'C2'];
+      if (contIn === undefined) {
+        contArr = ['C0', 'C0', 'C0', 'C0'];
+      } else if (Array.isArray(contIn)) {
+        if (contIn.length !== 4) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `surfaceFromBoundary: continuity array must be length 4; got ${contIn.length}.`,
+            undefined,
+            'invalid-args.surfaceFromBoundary.continuity — pass a single grade or an array of 4 grades (one per edge).',
+          );
+        }
+        contArr = [contIn[0], contIn[1], contIn[2], contIn[3]];
+      } else {
+        contArr = [contIn, contIn, contIn, contIn];
+      }
+      return session.addSurfaceFromBoundary({
+        curveIds: [curves[0].id, curves[1].id, curves[2].id, curves[3].id],
+        continuity: contArr,
+        ...(opts?.sampling !== undefined ? { sampling: opts.sampling } : {}),
+      });
     },
 
     sketch: createSketchModule(session),

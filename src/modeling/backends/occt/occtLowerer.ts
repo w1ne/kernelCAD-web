@@ -26,6 +26,7 @@ import { lowerCurve3D } from './curve3dLowerer';
 import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
+import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
@@ -455,6 +456,7 @@ export class OcctLowerer implements FeatureLowerer {
     r: FeatureRecord,
     inputs: ResolvedInputs,
     diagnostics: CompilerDiagnostic[],
+    allRecords?: readonly FeatureRecord[],
   ): import('../../../kernel/backends/occt/nurbsSurfaceLowerer').BuiltSurface | undefined {
     const surfaceRef = r.inputs.surface;
     if (!surfaceRef || surfaceRef.kind !== 'surface') {
@@ -532,6 +534,25 @@ export class OcctLowerer implements FeatureLowerer {
           origin: [0, 0, i * 10] as [number, number, number],
         }));
         surface = buildSkinnedSurface(sectionShapes, planes);
+      } else if (surfRec.data.kind === 'coonsPatch') {
+        // NURBS Slice C: Coons patch via BRepOffsetAPI_MakeFilling. The
+        // upstream curve3d records are looked up by id from the all-records
+        // table threaded in by `lower()`; the lowerer parks each freshly-
+        // lowered edge on `importedGeometry` so downstream consumers reuse
+        // it (mirrors variableSweep's lazy-edge resolution).
+        if (!allRecords) {
+          diagnostics.push({
+            target: this.target,
+            code: 'recompute.input.missing',
+            featureId: r.id,
+            severity: 'error',
+            message: `${r.kind}: coonsPatch ${sid} needs the all-records table to resolve boundary curves.`,
+            hint: 'recompute.input.missing — surfaceFromBoundary requires the lowerer to receive the full records list.',
+          });
+          return undefined;
+        }
+        const { face } = lowerCoonsPatch(surfRec.data, allRecords, this.importedGeometry);
+        surface = { kind: 'face', face };
       } else {
         diagnostics.push({
           target: this.target,
@@ -545,13 +566,16 @@ export class OcctLowerer implements FeatureLowerer {
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      const isCoons = surfRec.data.kind === 'coonsPatch';
       diagnostics.push({
         target: this.target,
-        code: 'feature.kernel-failed',
+        code: isCoons ? 'feature.surface-from-boundary.degenerate-patch' : 'feature.kernel-failed',
         featureId: r.id,
         severity: 'error',
         message: `${r.kind}: surface build failed: ${msg}`,
-        hint: 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
+        hint: isCoons
+          ? HINT_TEMPLATES['feature.surface-from-boundary.degenerate-patch'].template
+          : 'kernel-failed — fix the control net / degree / sections per the diagnostic message.',
       });
       return undefined;
     }
@@ -2372,7 +2396,7 @@ export class OcctLowerer implements FeatureLowerer {
         // W1.3 NURBS: consume the upstream Surface (resolved via session hook
         // or pre-populated by the recompute engine into `inputs.surfaces`) and
         // offset both sides via BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
         if (!face) {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
@@ -2395,7 +2419,7 @@ export class OcctLowerer implements FeatureLowerer {
       }
       case 'surfaceToShape': {
         // W1.3 NURBS: wrap the Replicad Face as a single-face TopoDS_Shell.
-        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics);
+        const face = this.resolveSurfaceFaceForRecord(r, inputs, diagnostics, allRecords);
         if (!face) {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
