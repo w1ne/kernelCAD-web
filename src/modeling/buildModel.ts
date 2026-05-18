@@ -56,7 +56,10 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
   await initOcct();
   const run = await runScript(input);
   const session = run.session;
+  // Slice 2E: attach a per-session engine so `params.update` reuses it and
+  // `onRelower` subscriptions added after the initial build still fire.
   const engine = new RecomputeEngine(createOcctLowerer(session));
+  session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const result = await engine.run(run.records, {
     paramTable: session.paramTable,
@@ -109,7 +112,13 @@ export async function updateModelParams(
 
   const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
   await initOcct();
-  const engine = new RecomputeEngine(createOcctLowerer(session));
+  // Slice 2E: reuse the per-session engine attached by `buildModel` so any
+  // `onRelower` subscribers registered after the initial build still fire on
+  // this update. Fall back to a fresh engine for sessions that never went
+  // through `buildModel` (e.g. tests that construct `CaptureSession` directly
+  // and drive `updateModelParams`).
+  const engine = session.engine ?? new RecomputeEngine(createOcctLowerer(session));
+  if (!session.engine) session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
@@ -139,6 +148,11 @@ export async function updateModelParams(
     tailId,
     tailShape,
   };
+
+  // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
+  // this update. Studio's WorkbenchContext subscribes server-side via the
+  // session engine to live-refresh ParamsTab without a Validate press.
+  engine.emitRelower(relowered);
 
   return {
     model: nextModel,

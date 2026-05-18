@@ -31,6 +31,7 @@ import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { KernelError } from '../../shared/intent/kernelError';
+import type { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Connector } from '../mates/connector';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
 import type { MateType } from '../mates/mateTypes';
@@ -153,6 +154,24 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
+   *  first run. Reused by `params.update` so `onRelower` subscribers added
+   *  after the initial build still receive re-lower events. Internal — the
+   *  shape is `unknown` to avoid the runtime cycle (RecomputeEngine pulls in
+   *  the OCCT lowerer which transitively imports session machinery); callers
+   *  cast back through `getEngine()`. */
+  private engineRef: RecomputeEngine | undefined;
+  /** Slice 2E: read-only accessor. Returns `undefined` until `buildModel`
+   *  attaches the per-session engine on the first run. */
+  get engine(): RecomputeEngine | undefined {
+    return this.engineRef;
+  }
+  /** Slice 2E: internal — `buildModel` calls this once per session to attach
+   *  the engine. Subsequent `params.update` calls reuse the attached engine
+   *  so `onRelower` subscriptions persist across updates. */
+  setEngine(engine: RecomputeEngine): void {
+    this.engineRef = engine;
+  }
   /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
    *  side import runs at script time; the lowerer pulls the OcctBackend
    *  from this map by feature id when it sees an `importedStep` record.
@@ -920,6 +939,7 @@ export class CaptureSession {
     this.paramTable.clear();
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
+    this.engineRef = undefined;
   }
 
   /** Slice-3: drain the warning log. Returns the accumulated warnings and

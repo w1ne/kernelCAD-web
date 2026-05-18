@@ -121,8 +121,10 @@ export class RecomputeEngine {
 
   /** Internal — fire all subscribers with the set of feature IDs whose
    *  shape was rebuilt in the most recent re-lower. Tolerant: subscriber
-   *  errors are caught + logged so one bad listener can't break others. */
-  protected emitRelower(affectedIds: readonly string[]): void {
+   *  errors are caught + logged so one bad listener can't break others.
+   *  Public so `updateModelParams` (outside this class) can fire after each
+   *  params.update; tests reach it via the same name. Treat as internal. */
+  emitRelower(affectedIds: readonly string[]): void {
     const snapshot = [...affectedIds];
     for (const cb of this.relowerSubs) {
       try { cb(snapshot); }
