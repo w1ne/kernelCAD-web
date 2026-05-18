@@ -1,4 +1,61 @@
-# kernelCAD v0.8.0
+# kernelCAD v0.9.0
+
+## v0.9.0 — 2026-05-18 — NURBS Slice B: 3D parametric curves + multi-section sweeps
+
+v0.9.0 unlocks the freeform-spine lane of NURBS authoring. Scripts can now build 3D parametric curves (`nurbsCurve`, `spline3d`) and sweep blended profiles along them (`variableSweep`). Both bind directly to OpenCascade.js (no replicad wrapper for these paths), producing `Geom_BSplineCurve` edges and `BRepOffsetAPI_MakePipeShell` solids. The `eyewear-wayfarer-front` eval artifact is rewritten on top of the new API — a `spline3d` brow spine + two `variableSweep` halves replace the straight-rectangle baseline.
+
+### Added — Curve3D as a peer type
+
+- `nurbsCurve(controlPoints, opts?): Curve3D` — explicit-control-net B-spline. `degree` defaults to 3; pass `weights` for a rational curve, `knots` for a custom knot vector (otherwise clamped-uniform is generated). Closes via `closed: true` with matching first/last control points.
+- `spline3d(points, opts?): Curve3D` — Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points. `tension` defaults to 0.5 (centripetal); endpoints reflected via phantom points so the curve passes through first and last waypoints exactly.
+- `Curve3D` exposes synchronous evaluation through `BRepAdaptor_Curve`: `.sample(n)`, `.pointAt(t)`, `.tangentAt(t)` (unit vector), `.length()` (arc length in mm), `.domain()` (always `[0, 1]`). Per-session cache keeps repeat calls cheap.
+- Curves park their lowered `TopoDS_Edge` on `session.importedGeometry` and are consumed by `variableSweep` (and future `surfaceFromBoundary` / G2 blends in Slice C).
+
+### Added — multi-section sweep
+
+- `variableSweep(spine, sections, opts?): Shape` — sweeps the `sections[i].profile` along the spine, blending between sections at the section's `t ∈ [0, 1]` spine parameter. Lowers to `BRepOffsetAPI_MakePipeShell` (direct OCCT — no replicad wrapper).
+- Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as the rail), or a `Vec3[]` (auto-converted to a `nurbsCurve` of degree `min(3, points.length - 1)`).
+- Sections must be strictly increasing in `t`; the first MUST sit at `t = 0` and the last at `t = 1` (full-spine coverage). Continuity defaults to `'C1'`. Frenet / corrected-Frenet / discrete / `{ up: Vec3 }` orientations all supported.
+- Defense-in-depth: section locations must be sub-shapes of the spine wire (per `BRepOffsetAPI_MakePipeShell::Add_2`). Today `t = 0` maps to the spine's first vertex and `t = 1` to its last; intermediate `t` is queued for a follow-up.
+
+### Added — MCP tools
+
+- `add_nurbs_curve({ code, controlPoints, degree?, weights?, knots?, closed?, binding_name? })` — insert a `nurbsCurve(...)` declaration before the last top-level `return`. Auto-counts `_curve_N` bindings.
+- `add_variable_sweep({ code, spine_binding, sections, closed?, continuity?, binding_name? })` — insert a `variableSweep(...)` declaration. Validates the `spine_binding` and each `sections[i].profile_binding` exist in the script via regex.
+
+### Added — diagnostics (11 new codes)
+
+- `feature.curve3d.degenerate-controls` — fewer than `degree + 1` control points.
+- `feature.curve3d.weights-length-mismatch` — weights array length ≠ controlPoints length.
+- `feature.curve3d.weights-non-positive` — zero or negative weight (undefined for B-splines).
+- `feature.curve3d.knots-length-mismatch` — knot count ≠ `controlPoints.length + degree + 1`.
+- `feature.curve3d.closed-endpoints-mismatch` — `closed: true` with unequal first/last control points (warning).
+- `feature.variable-sweep.sections-out-of-order` — t values not strictly increasing.
+- `feature.variable-sweep.sections-not-spanning` — first t ≠ 0 or last t ≠ 1, or fewer than 2 sections.
+- `feature.variable-sweep.spine-too-short` — spine shorter than the smallest profile bounding diameter.
+- `feature.variable-sweep.profile-not-planar` — profile sketch is non-planar.
+- `feature.variable-sweep.profile-empty` — profile sketch is empty.
+- `feature.variable-sweep.frenet-degenerate` — Frenet undefined where spine curvature vanishes.
+
+### Eval artifact — eyewear-wayfarer-front (Slice B rewrite)
+
+- Rewritten from 322 LoC to 171 LoC. The straight-rectangle body is replaced with a `spline3d` brow spine + two `variableSweep` halves stitched at X = 0. Each half tapers from a temple profile (50mm × 9mm) to a bridge profile (56mm × 12mm). Lens openings carved with `cylinder().alongAxis([0, 1, 0])` cutouts; tinted lens inserts filled in; glossy acetate PBR clearcoat retained from Slice A; `referenceImage` overlay retained for authoring fidelity.
+- Geometry verified: 18 feature records, 0 diagnostics, volume ~38,099 mm³, bbox X∈[-70, 74], Y∈[-4.5, 12], Z∈[-44, 44].
+- SSIM ≥ 0.45 gate not exercised this slice — the local image-similarity scorer module (`src/lib/imageSimilarity/score.ts`) is missing from the branch and surfaces as `ERR_MODULE_NOT_FOUND` when the harness runs. Restoring or rebuilding the scorer is on the roadmap; the geometric gates (evaluates clean, non-empty solid, eyewear-wide bbox, no interferences) all pass.
+
+### Skill docs
+
+- `kernelcad-nurbs` skill extended with Curve3D (control-net + Catmull-Rom convenience), variableSweep (multi-section sweep), the 11 new diagnostic codes, and the spine-vertex gotcha for `BRepOffsetAPI_MakePipeShell::Add_2`.
+- `kernelcad-mcp` skill documents the two new MCP tools.
+- Top-level `kernelcad` skill decision tree updated.
+
+### Other
+
+- Sweep gains a `transitionMode: 'right' | 'transformed' | 'round'` option exposed through `Sketch.sweep(rail, opts)` (the OCCT corner-transition mode for swept solids over rails with interior kinks).
+- Exporters lock in `metadata.virtual` filtering with regression tests + a new `export.virtual-record` diagnostic when an explicit `feature_id` resolves to a virtual record.
+- Drift sentinels updated: `nurbsCurve`, `spline3d`, `variableSweep` documented in `listApi.ts GLOBALS`.
+
+---
 
 ## v0.8.0 — 2026-05-16 — NURBS Slice A: PBR material + reference-image overlay + from-reference skill rewrite
 
