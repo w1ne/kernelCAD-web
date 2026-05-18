@@ -18,9 +18,10 @@
 //   CADQUERYEVAL_UV_BIN        — path to the `uv` binary (defaults to `uv` on PATH).
 
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { HINT_TEMPLATES } from '../../src/shared/diagnostics/codes';
 
 const LOCAL_BUILD = './dist/cli/index.js';
 const DEFAULT_CADQUERYEVAL_PROJECT = '/home/andrii/projects/cadqueryeval';
@@ -171,6 +172,45 @@ function summarize(
   return `failed checks: [${failed.join(', ')}] (chamfer=${parsed.chamfer_distance ?? 'n/a'}, h95=${parsed.hausdorff_95p ?? 'n/a'})`;
 }
 
+/**
+ * Detects `.revolve(...)` invocations in a script source. Tolerates
+ * whitespace/newlines between the receiver and the call, and matches
+ * both standalone (`sketch.revolve(...)`) and method-chained
+ * (`path()\n  .revolve(...)`) forms. Conservative — only matches the
+ * literal `.revolve` method name with an arg list opening; comments
+ * containing the word `revolve` do not trigger.
+ */
+function sourceUsesRevolve(source: string): boolean {
+  return /\.\s*revolve\s*\(/.test(source);
+}
+
+/**
+ * Conditionally lifts the opaque "Mesh is not manifold" symptom that
+ * the Python cqe scorer (open3d is_watertight) emits into a structured
+ * `mesher.cone-self-intersection` hint. Triggered only when BOTH
+ *   1. the scorer reported `is_watertight === false`, AND
+ *   2. the source script invoked `.revolve(...)`
+ * which is the K1 mesher-gap signature surfaced by Exp-D cqe-task14.
+ * Non-revolve watertight failures (mesh-import producing non-manifold
+ * edges, sketch shells with un-closed perimeters, etc.) flow through
+ * untouched so the diagnostic remains accurate.
+ *
+ * Pure function — returns a new result; never mutates input.
+ */
+export function annotateK1ConeIfApplicable(
+  result: CadQueryEvalScoreResult,
+  sourceScript: string,
+): CadQueryEvalScoreResult {
+  if (result.is_watertight !== false) return result;
+  if (!sourceUsesRevolve(sourceScript)) return result;
+  const hint = HINT_TEMPLATES['mesher.cone-self-intersection'].template;
+  return {
+    ...result,
+    reason: `${result.reason} — ${hint}`,
+    errors: [...result.errors, `[mesher.cone-self-intersection] ${hint}`],
+  };
+}
+
 export async function runCadQueryEvalScorer(
   scriptPath: string,
   referenceStlPath: string,
@@ -273,7 +313,7 @@ export async function runCadQueryEvalScorer(
   const allBinariesPassed = binaryChecks.every((v) => v === true);
   const passed = allBinariesPassed && errors.length === 0;
 
-  return {
+  const result: CadQueryEvalScoreResult = {
     passed,
     reason: summarize(parsed, passed, errors),
     is_watertight: (parsed.is_watertight ?? null) as boolean | null,
@@ -298,4 +338,20 @@ export async function runCadQueryEvalScorer(
     exportMs,
     scoreMs,
   };
+
+  // K1 mesher-gap enrichment: if open3d rejected watertight AND the
+  // source used .revolve(), the symptom is almost certainly OCCT
+  // BRepMesh's self-intersecting triangles on cone faces. Read the
+  // source once at this chokepoint so every cqe task benefits without
+  // per-harness wiring.
+  let sourceScript = '';
+  try {
+    sourceScript = readFileSync(scriptPath, 'utf8');
+  } catch {
+    // Defensive — scriptPath came from a successful kernelcad export, so
+    // it should always exist. If the read fails, skip enrichment rather
+    // than masking the underlying scoring result.
+    return result;
+  }
+  return annotateK1ConeIfApplicable(result, sourceScript);
 }
