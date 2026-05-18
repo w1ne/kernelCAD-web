@@ -1,16 +1,19 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import type { ParamEntry } from '../../shared/runtime/paramTable';
+import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 
 /**
- * Read-only inspector tab listing script-declared params from `param()`.
+ * Inspector tab listing script-declared params from `param()`.
  *
- * Slice 1 displays current values so a reviewing human can see what the
- * agent has set. Interactive scrub is deferred to a later slice; today,
- * editing happens via the Code tab.
+ * Slice 2A: numeric rows are now interactive. The slider/input commits
+ * through `updateParam` from `useRecomputeResult`, which POSTs to
+ * `/__kernelcad/params`; the SSE `relower` event re-fetches mesh +
+ * review so the param table refreshes with the new value. Boolean rows
+ * remain read-only (their interactive variant lands in a later slice).
  */
 export function ParamsTab(): JSX.Element {
-    const { paramTable } = useRecomputeResult();
+    const { paramTable, updateParam } = useRecomputeResult();
 
     const entries: ParamEntry[] = paramTable && paramTable.size() > 0 ? paramTable.list() : [];
 
@@ -29,17 +32,21 @@ export function ParamsTab(): JSX.Element {
         <div className="flex flex-col" data-testid="params-tab">
             <ul className="flex flex-col divide-y divide-[#1f1f1f]">
                 {entries.map((entry) => (
-                    <ParamRow key={entry.name} entry={entry} />
+                    <ParamRow key={entry.name} entry={entry} updateParam={updateParam} />
                 ))}
             </ul>
-            <div className="px-3 py-2 text-[11px] text-gray-500">
-                Edit in code · open the Code tab to change values
-            </div>
         </div>
     );
 }
 
-function ParamRow({ entry }: { entry: ParamEntry }): JSX.Element {
+interface ParamRowProps {
+    readonly entry: ParamEntry;
+    readonly updateParam?: (
+        edits: { name: string; value: number | boolean }[],
+    ) => Promise<void>;
+}
+
+function ParamRow({ entry, updateParam }: ParamRowProps): JSX.Element {
     if (entry.type === 'boolean') {
         return (
             <li
@@ -63,35 +70,22 @@ function ParamRow({ entry }: { entry: ParamEntry }): JSX.Element {
     const value = entry.value as number;
     const min = entry.meta?.min;
     const max = entry.meta?.max;
-    const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
-    const pct = hasRange ? Math.max(0, Math.min(1, (value - (min as number)) / ((max as number) - (min as number)))) : 0;
 
     return (
         <li
-            className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+            className="text-xs text-gray-300"
             data-testid={`param-row-${entry.name}`}
         >
-            <span className="flex-1 truncate" title={entry.name}>
-                {entry.name}
-            </span>
-            {hasRange && (
-                <div
-                    className="relative h-1 w-20 rounded bg-[#222]"
-                    data-testid={`param-range-${entry.name}`}
-                    aria-label={`${entry.name} range`}
-                >
-                    <div
-                        className="absolute inset-y-0 left-0 rounded bg-[#3b82f6]"
-                        style={{ width: `${pct * 100}%` }}
-                    />
-                </div>
-            )}
-            <span className="tabular-nums text-gray-200">{formatNumber(value)}</span>
+            <NumericScrubInput
+                name={entry.name}
+                value={value}
+                min={min}
+                max={max}
+                onChange={(next) => {
+                    updateParam?.([{ name: entry.name, value: next }])
+                        ?.catch((err) => console.warn('[ParamsTab] updateParam failed', err));
+                }}
+            />
         </li>
     );
-}
-
-function formatNumber(v: number): string {
-    if (Number.isInteger(v)) return String(v);
-    return v.toFixed(3).replace(/\.?0+$/, '');
 }
