@@ -57,7 +57,7 @@ describe('ParamsTab', () => {
         expect(screen.queryByTestId('params-tab')).toBeNull();
     });
 
-    it('renders one row per number param with value and range bar when min/max set', () => {
+    it('renders one row per number param with a scrub slider when min/max set', () => {
         const table = new ParamTable();
         table.declare('wallThickness', 'number', 2.5, { min: 1, max: 5 });
         table.declare('boreRadius', 'number', 4, { min: 0, max: 10 });
@@ -67,16 +67,18 @@ describe('ParamsTab', () => {
 
         expect(screen.getByTestId('params-tab')).toBeTruthy();
         expect(screen.queryAllByTestId(/^param-row-/)).toHaveLength(2);
-        expect(screen.getByTestId('param-range-wallThickness')).toBeTruthy();
-        expect(screen.getByTestId('param-range-boreRadius')).toBeTruthy();
+        expect(screen.getByTestId('scrub-slider-wallThickness')).toBeTruthy();
+        expect(screen.getByTestId('scrub-slider-boreRadius')).toBeTruthy();
 
         const row1 = screen.getByTestId('param-row-wallThickness');
         expect(row1.textContent).toContain('wallThickness');
-        expect(row1.textContent).toContain('2.5');
+        const input1 = screen.getByTestId('scrub-input-wallThickness') as HTMLInputElement;
+        expect(input1.value).toBe('2.5');
 
         const row2 = screen.getByTestId('param-row-boreRadius');
         expect(row2.textContent).toContain('boreRadius');
-        expect(row2.textContent).toContain('4');
+        const input2 = screen.getByTestId('scrub-input-boreRadius') as HTMLInputElement;
+        expect(input2.value).toBe('4');
     });
 
     it('renders a disabled checkbox for boolean params', () => {
