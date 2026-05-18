@@ -28,6 +28,23 @@ export interface LowerVariableSweepOpts {
   continuity?: 'C0' | 'C1' | 'C2';
   closed?: boolean;
   orientation?: SweepOrientation;
+  /**
+   * When true, OCCT translates each profile wire so it makes contact with
+   * the spine vertex it's anchored to (`BRepOffsetAPI_MakePipeShell::Add_2`'s
+   * `WithContact=true`). The dispatch arm in `occtLowerer` uses this for
+   * sketch-derived profiles (always lifted at z=0); callers that supply
+   * pre-positioned profile wires (e.g. the lowerer's unit test) leave this
+   * `false` so OCCT honours the caller-supplied placement. Default: `false`.
+   */
+  withContact?: boolean;
+  /**
+   * When true, OCCT reorients each profile wire to be perpendicular to the
+   * spine tangent at its location vertex (`Add_2`'s `WithCorrection=true`).
+   * Required for sketch-derived profiles that live in the XY plane swept
+   * along an XY-plane spine; without correction the profile is parallel to
+   * the spine direction and the swept volume collapses. Default: `false`.
+   */
+  withCorrection?: boolean;
 }
 
 /**
@@ -131,11 +148,15 @@ export function lowerVariableSweep(
   pipeShell.SetTransitionMode(transitionMode);
 
   // Add each profile, anchored at a spine-owned vertex.
-  // WithContact=false, WithCorrection=false: profiles are honored at the
-  // caller-supplied placement. Callers (the dispatch arm in occtLowerer)
-  // are responsible for translating/rotating each profile wire onto the
-  // spine station before calling — this keeps the lowerer geometry-pure
-  // and the OCCT-side bbox predictable for the smoke test.
+  // `withContact` controls `BRepOffsetAPI_MakePipeShell::Add_2`'s third
+  // argument: when true, OCCT translates the profile so its anchor matches
+  // the spine vertex (used for sketch-lifted profiles in the dispatch arm);
+  // when false, the caller is responsible for pre-positioning each profile
+  // (used by direct-OCCT unit tests).
+  // `withCorrection` is the fourth argument: when true, OCCT also rotates
+  // each profile to be perpendicular to the spine tangent at its vertex.
+  const withContact = opts.withContact ?? false;
+  const withCorrection = opts.withCorrection ?? false;
   for (const s of sections) {
     let vertex;
     if (s.t === 0) {
@@ -147,7 +168,7 @@ export function lowerVariableSweep(
         `lowerVariableSweep: section t=${s.t} is between 0 and 1; only t=0 and t=1 are supported today (intermediate stations require spine subdivision).`,
       );
     }
-    pipeShell.Add_2(s.profileWire, vertex, false, false);
+    pipeShell.Add_2(s.profileWire, vertex, withContact, withCorrection);
   }
 
   const progress = new oc.Message_ProgressRange_1();

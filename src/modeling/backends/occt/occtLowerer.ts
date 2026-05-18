@@ -2465,20 +2465,17 @@ export class OcctLowerer implements FeatureLowerer {
       case 'variableSweep': {
         // NURBS Slice B Task 8: variable-section sweep via
         // `BRepOffsetAPI_MakePipeShell`. Direct OCCT (no replicad wrapper
-        // around the builder). Spine sourced from `importedGeometry` (the
-        // curve3d arm parks an edge there) OR from a sketch input lifted
-        // to its outer wire. Profiles always resolved from `byKey` —
-        // each section input is a sketch.
-        //
-        // Integration note: when the spine is a `curve3d` record (today's
-        // primary spine source via `nurbsCurve()` + `spline3d()`), the
-        // upstream recompute engine's input-resolution check fails with
-        // `recompute.input.missing` before reaching this arm (curve3d is
-        // a virtual record and `shapes.get(spineId)` returns undefined).
-        // The sketch-spine path works end-to-end today; the curve3d-spine
-        // path is reachable only by direct lowerer invocation (Task 8
-        // smoke test does this) and awaits a future recompute-engine
-        // change to pass through virtual-record refs.
+        // around the builder). Spine resolution order:
+        //   1. `importedGeometry[spineId]` — if a prior caller pre-parked
+        //      the edge (e.g. via direct curve3d lowering for tests).
+        //   2. The upstream curve3d record (looked up via `inputs.records`),
+        //      lowered on-demand. This is the engine-driven path: curve3d
+        //      records are `metadata.virtual === true`, so the engine skips
+        //      their lowering and we materialise the edge here.
+        //   3. A sketch input (in `byKey.spine`) lifted to its outer wire's
+        //      first edge — supports straight-line / planar sketch spines.
+        // Profiles always resolved from `byKey` — each section input is a
+        // sketch lowered upstream.
         const meta = r.metadata as { variableSweep?: unknown } | undefined;
         const m = meta?.variableSweep;
         if (!isVariableSweepMetadata(m)) {
@@ -2493,14 +2490,52 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
 
-        // Resolve spine edge. The spine input is a FeatureRef; if it
-        // points at a curve3d record, the edge is parked in
-        // `importedGeometry`. If it points at a Sketch, the sketch was
-        // lowered upstream and is available in `byKey.spine` — lift it
-        // to a TopoDS_Edge via its outer wire's first edge.
+        // Resolve spine edge. The spine input is a FeatureRef.
         const spineId = m.spineRef.kind === 'feature' ? m.spineRef.id : undefined;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let spineEdge: any = spineId ? this.importedGeometry.get(spineId) : undefined;
+
+        // Step 2: if the upstream is a virtual curve3d record and the edge
+        // is not yet parked, lower it on-demand. This is the normal path
+        // for engine-driven runs because the engine skips virtual records.
+        if (!spineEdge && spineId && allRecords) {
+          const upstream = allRecords.find((u) => u.id === spineId);
+          if (upstream?.kind === 'curve3d') {
+            const upMeta = upstream.metadata as { curve3d?: unknown } | undefined;
+            const cm = upMeta?.curve3d;
+            if (!isCurve3DMetadata(cm)) {
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.curve3d.degenerate-controls',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: spine curve3d '${spineId}' is missing valid metadata.curve3d.`,
+                hint: 'Build the spine via nurbsCurve(...) / spline3d(...) so the validators run.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+            try {
+              const { edge } = lowerCurve3D(cm);
+              spineEdge = edge;
+              // Cache the edge on importedGeometry so subsequent recompute
+              // passes (params.update) and other downstream consumers reuse
+              // the lowered edge instead of rebuilding it.
+              this.importedGeometry.set(spineId, edge as unknown as ShapeBackend);
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: failed to lower curve3d spine '${spineId}': ${msg}`,
+                hint: 'kernel-failed — verify the spine nurbsCurve control points, knots, and degree form a valid NURBS curve.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          }
+        }
+
         if (!spineEdge) {
           const sketchInput = inputs.byKey.spine as OcctBackend | undefined;
           if (sketchInput) {
@@ -2595,6 +2630,16 @@ export class OcctLowerer implements FeatureLowerer {
             ...(m.continuity !== undefined ? { continuity: m.continuity } : {}),
             ...(m.closed !== undefined ? { closed: m.closed } : {}),
             ...(m.orientation !== undefined ? { orientation: m.orientation } : {}),
+            // Sketch-derived profiles are always lifted onto the XY plane at
+            // z=0 — let OCCT translate them to the spine station via the
+            // `WithContact=true` arm of `BRepOffsetAPI_MakePipeShell::Add_2`.
+            // `withCorrection=true` rotates each profile perpendicular to
+            // the spine tangent at its vertex — required when the spine
+            // tangent is non-vertical (e.g. a sketch spine in the XY plane,
+            // where without correction profile and spine are coplanar and
+            // the swept volume collapses).
+            withContact: true,
+            withCorrection: true,
           });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
