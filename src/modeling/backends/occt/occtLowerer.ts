@@ -1268,7 +1268,7 @@ export class OcctLowerer implements FeatureLowerer {
           throw new Error('fillet: no base shape');
         }
         // rc.12: variable-radius form is delegated to applyVariableEdgeFeature.
-        const meta = r.metadata as { variable?: boolean } | undefined;
+        const meta = r.metadata as { variable?: boolean; continuity?: 'G1' | 'G2' } | undefined;
         if (meta?.variable === true) {
           const result = applyVariableEdgeFeature('fillet', base, r, allRecords);
           diagnostics.push(...result.diagnostics);
@@ -1278,6 +1278,9 @@ export class OcctLowerer implements FeatureLowerer {
           shape = result.shape;
           break;
         }
+        // Slice C Task 6: optional continuity grade (G1 default; G2 calls
+        // BRepFilletAPI_MakeFillet.SetContinuity(GeomAbs_G2, 1e-4)).
+        const filletContinuity = meta?.continuity ?? 'G1';
         const radius = r.params.radius?.evaluated;
         if (radius === undefined) {
           diagnostics.push({
@@ -1347,7 +1350,7 @@ export class OcctLowerer implements FeatureLowerer {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
           }));
-          const filletResult = filletWithHistory(base, edgeRefs, radius);
+          const filletResult = filletWithHistory(base, edgeRefs, radius, filletContinuity);
           const newMap = mergeEdgeFeatureHistory(base.historyMap, filletResult);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const wrapped = replicad.cast(filletResult.shape as any) as replicad.Shape3D;
@@ -1377,6 +1380,21 @@ export class OcctLowerer implements FeatureLowerer {
             return { shape: base, diagnostics };
           }
           const msg = e.message;
+          // Slice C Task 6: when G2 was requested and OCCT reports IsDone=false,
+          // the geometry is the genuine "G2 not applicable here" case (adjacent
+          // faces are themselves only G1). Surface the specific diagnostic so
+          // the agent can downgrade to G1 or refit upstream faces.
+          if (filletContinuity === 'G2' && /BRepFilletAPI_MakeFillet failed/.test(msg)) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.fillet.continuity-not-applicable',
+              featureId: r.id,
+              severity: 'error',
+              message: `OCCT fillet failed with continuity: 'G2' — adjacent faces are not G2-compatible.`,
+              hint: "drop continuity: 'G2' (adjacent faces are only G1) or refit the upstream faces as NURBS surfaces.",
+            });
+            return { shape: base, diagnostics };
+          }
           diagnostics.push({
             target: 'export-occt',
             code: 'feature.kernel-failed',

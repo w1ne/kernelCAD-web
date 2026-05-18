@@ -16,6 +16,7 @@
 import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
+import type { FilletContinuity } from '../../../shared/intent/filletContinuityRecord';
 
 export interface EdgeFeatureHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -144,6 +145,12 @@ function enumerateAndRecord(
  * Apply a fillet of `radius` to the specified edges of `body`, capturing
  * face/edge evolution history from BRepFilletAPI_MakeFillet.
  *
+ * `continuity` (Slice C Task 6): `'G1'` (default) leaves the OCCT default
+ * (`ChFi3d_Polynomial` / `GeomAbs_G1`). `'G2'` calls
+ * `SetContinuity(GeomAbs_G2, 1e-4)` *before* adding edges so the internal
+ * blend surface is curvature-continuous. The construction-time fillet form
+ * stays `ChFi3d_Rational` (matches the historical default in this codebase).
+ *
  * @throws {Error} If any edge hash is not found on the body.
  * @throws {Error} If the fillet builder fails (IsDone() === false).
  */
@@ -151,6 +158,7 @@ export function filletWithHistory(
   body: OcctBackend,
   edges: readonly EdgeRefForFilleting[],
   radius: number,
+  continuity: FilletContinuity = 'G1',
 ): EdgeFeatureHistoryResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
@@ -163,6 +171,12 @@ export function filletWithHistory(
   }
 
   const builder = new oc.BRepFilletAPI_MakeFillet(bodyShape, oc.ChFi3d_FilletShape.ChFi3d_Rational);
+  if (continuity === 'G2') {
+    // Internal blend surface curvature-continuity. 1e-4 angular tolerance
+    // matches the OCCT default for G2 internal continuity (`BRepFilletAPI`
+    // accepts any angle tol > 0; the audit recommends 1e-4 for sub-mm builds).
+    builder.SetContinuity(oc.GeomAbs_Shape.GeomAbs_G2, 1e-4);
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const progress = new (oc as any).Message_ProgressRange_1();
   try {
@@ -173,7 +187,7 @@ export function filletWithHistory(
     builder.Build(progress);
     if (!builder.IsDone()) {
       throw new Error(
-        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}, ${edges.length} edges)`,
+        `filletWithHistory: BRepFilletAPI_MakeFillet failed (radius ${radius}, ${edges.length} edges, continuity ${continuity})`,
       );
     }
     const resultShape = builder.Shape();
