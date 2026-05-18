@@ -1,4 +1,62 @@
-# kernelCAD v0.9.0
+# kernelCAD v0.10.0
+
+## v0.10.0 — 2026-05-18 — NURBS Slice C: Coons patch + G1/G2 fillet continuity + hermiteG2
+
+Final slice of the NURBS-wrap iteration. Closes the freeform authoring loop with the surface-modeling primitives industrial designers actually use: Coons patch from 4 boundary curves, G1/G2 continuity control on fillets, and quintic Hermite transition curves that bridge two existing curves with G2 continuity. The `eyewear-wayfarer-front` eval artifact is rewritten on top of the new stack — a single `surfaceFromBoundary` Coons patch replaces the Slice B `variableSweep` halves.
+
+### Added — Coons patch surface
+
+- `surfaceFromBoundary(curves, opts?): Surface` — fills the interior of 4 boundary `Curve3D` refs with a single NURBS face. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. The 4 curves walk an ordered loop: `curves[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left.
+- `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 per-edge array; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
+- Corner-coincidence validation runs at capture time within 1e-6 mm — adjacent endpoints that don't share a Vec3 emit `feature.surface-from-boundary.corner-mismatch`.
+- The result is a `Surface` peer to `Shape` — chain `.thicken(t)` or `.toShape()` to enter the Shape pipeline (same escape methods as `nurbsSurface` / `surfaceFromCurves`).
+
+### Added — quintic Hermite G2 transition curves
+
+- `hermiteG2(a, b): Curve3D` — 6-control-point clamped-uniform NURBS curve that interpolates two endpoints with matching positions, first derivatives (tangents), and (optional) second derivatives (curvatures). Default curvature is `[0, 0, 0]` (degrades to G1 / lifted cubic Hermite).
+- Solved pure-JS at capture time via the quintic-Hermite → Bezier conversion; emitted into a degree-5 nurbsCurve and lowered through the existing `Geom_BSplineCurve` path.
+- Use to bridge two existing `nurbsCurve` flanks into a single G2-continuous compound spine for `variableSweep` or as a boundary edge of `surfaceFromBoundary`.
+
+### Added — G1/G2 fillet continuity
+
+- `Shape.fillet(radius, edges?, { continuity })` — explicit-continuity overload accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). Maps to `BRepFilletAPI_MakeFillet::SetFilletShape`.
+- Document G1-vs-G2 BREP-identity gotcha: constant-radius fillets between planar faces or between a planar face and a cylindrical face produce BREP-identical output under both continuity grades. OCCT's rational-fillet path only diverges where the adjacent faces carry non-trivial parametric curvature (any of the NURBS surface primitives).
+
+### Added — MCP tools
+
+- `add_surface_from_boundary({ code, curve_bindings, continuity?, sampling?, binding_name? })` — insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration before the last top-level return. Regex-validates that every `curve_bindings[i]` is already declared in the source.
+- `add_hermite_g2({ code, a, b, binding_name? })` — insert a `hermiteG2(a, b)` declaration where each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }`. Validates Vec3 shapes before emission; capture-time validators (`feature.hermite-g2.degenerate-tangent` / `feature.hermite-g2.non-finite-input`) cover the physics.
+
+### Added — 8 new diagnostic codes
+
+- `feature.surface-from-boundary.corner-mismatch`
+- `feature.surface-from-boundary.too-few-curves`
+- `feature.surface-from-boundary.too-many-curves`
+- `feature.surface-from-boundary.continuity-orphan`
+- `feature.surface-from-boundary.degenerate-patch`
+- `feature.fillet.continuity-not-applicable`
+- `feature.hermite-g2.degenerate-tangent`
+- `feature.hermite-g2.non-finite-input`
+
+Every code carries an inline hint template; the canonical list is also exposed via `list_diagnostic_codes`.
+
+### Eval artifact — eyewear-wayfarer-front Slice C rewrite
+
+- `eval/tasks/eyewear-wayfarer-front/solution-expert.kcad.ts` final rewrite uses a single `surfaceFromBoundary` Coons patch over 4 boundary curves (spline3d top + bottom, degree-1 nurbsCurve sides), thickened into the front-face body. A reference `hermiteG2` bridges the two brow flanks for forward-compat with downstream `variableSweep` slices.
+- 169 LoC; evaluates clean to a single positive-volume Shape (~99 570 mm³); bbox 154 × 28 × 47.9 mm clears the existing geometric gates.
+- Fillet authoring requests `continuity: 'G2'` on the NURBS-adjacent edge in spirit; the shipping artifact downgrades to G1 because OCCT's rational fillet path fails to lower this particular acetate-meets-cylinder pair today (kernel limitation flagged for a follow-up slice).
+
+### Skill docs
+
+- `kernelcad-nurbs/SKILL.md` extended with Coons-patch, quintic Hermite, and G1/G2 fillet sections plus the 8 new diagnostic codes and the G1-vs-G2 BREP-identity gotcha.
+- `kernelcad-mcp/SKILL.md` documents `add_surface_from_boundary` + `add_hermite_g2` next to `add_nurbs_curve`.
+- `kernelcad/SKILL.md` decision-tree entry covers the new Slice C globals + the G2 fillet continuity option.
+
+### Other
+
+- Cookbook snippets `coons-patch-rectangular` and `hermite-g2-blend` surface the Slice C primitives to `lookup_cookbook`.
+- `list_api` GLOBALS sentinel adds `hermiteG2` (Coons patch was already advertised at Slice C Task 1).
+- NURBS-wrap iteration (Slices A/B/C, 2026-05-16 spec) closes here. Next workstreams: F1 (custom-trimmed OCCT.wasm), F2 (Manifold mesh sibling), F3 (OpenNURBS round-trip).
 
 ## v0.9.0 — 2026-05-18 — NURBS Slice B: 3D parametric curves + multi-section sweeps
 

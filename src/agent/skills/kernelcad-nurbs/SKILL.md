@@ -1,6 +1,6 @@
 ---
 name: kernelcad-nurbs
-description: NURBS surfaces (nurbsSurface, surfaceFromCurves, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d) AND multi-section sweeps (variableSweep). Use for freeform geometry that primitives + sketches cannot express.
+description: NURBS surfaces (nurbsSurface, surfaceFromCurves, surfaceFromBoundary, .thicken, .toShape) AND NURBS curves (nurbsCurve, spline3d, hermiteG2) AND multi-section sweeps (variableSweep) AND G1/G2 fillet continuity. Use for freeform geometry that primitives + sketches cannot express.
 ---
 
 # kernelCAD — NURBS surfaces & curves
@@ -103,6 +103,67 @@ Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as t
 ### variableSweep gotcha — section locations must be on the spine
 
 `BRepOffsetAPI_MakePipeShell::Add_2` requires a location `TopoDS_Vertex` that is one of the spine wire's own sub-shapes. Today the lowerer maps `t=0` to the spine's first vertex and `t=1` to its last vertex; intermediate `t` values are not yet supported (spine subdivision lands as a follow-up). Authoring scripts can still target intermediate spine positions by routing through `nurbsCurve` segments stitched into the spine.
+
+## Coons-patch surfaces — surfaceFromBoundary (Slice C)
+
+`surfaceFromBoundary(curves, opts?)` fills the interior of 4 boundary `Curve3D`s with a single NURBS face. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. Use for the front face of an eyewear shell, an ergonomic palm rest, or any 4-bounded freeform panel.
+
+```ts
+const bottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
+const right  = nurbsCurve([[50, 0, 0], [50, 12, 0.5], [50, 25, 0]]);
+const top    = nurbsCurve([[50, 25, 0], [25, 25, 1], [0, 25, 0]]);
+const left   = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
+const panel  = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
+```
+
+The 4 curves walk an ordered loop: `curves[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left. Adjacent endpoints must coincide within 1e-6 mm — share the corner Vec3 across both meeting curves. `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 array per edge; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
+
+The result is a `Surface` peer — chain `.thicken(t)` to get a closed solid or `.toShape()` to wrap as a zero-volume single-face shell for downstream face-aware features.
+
+### surfaceFromBoundary diagnostic codes
+
+- `feature.surface-from-boundary.corner-mismatch` (error) — adjacent boundary endpoints don't coincide within 1e-6 mm. Hint: share the corner Vec3 across the two meeting curves' control nets.
+- `feature.surface-from-boundary.too-few-curves` (error) — fewer than 4 curves passed. Hint: build all 4 edges; a 3-sided patch is not supported.
+- `feature.surface-from-boundary.too-many-curves` (error) — more than 4 curves passed. Hint: collapse to 4 by stitching adjacent curves with `hermiteG2`.
+- `feature.surface-from-boundary.continuity-orphan` (error) — `opts.continuity` is an array but its length is not 4. Hint: pass a single grade or an array of 4 grades (one per edge).
+- `feature.surface-from-boundary.degenerate-patch` (error) — OCCT `BRepOffsetAPI_MakeFilling` failed to produce a face (typically because two opposite boundary curves overlap or the loop is non-planar at the corners). Hint: render the 4 input curves and check the loop is a closed quadrilateral with non-degenerate corners.
+
+## Quintic Hermite transitions — hermiteG2 (Slice C)
+
+`hermiteG2(a, b)` builds a 6-control-point quintic NURBS `Curve3D` that interpolates two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). Use to bridge two existing `nurbsCurve` flanks into a single G2-continuous compound spine that `variableSweep` can sweep without showing a kink at the join.
+
+```ts
+const flankL = nurbsCurve([[-30, 0, 0], [-20, 4, 0], [-10, 4, 0]]);
+const flankR = nurbsCurve([[ 10, 4, 0], [ 20, 4, 0], [ 30, 0, 0]]);
+const bridge = hermiteG2(
+  { point: [-10, 4, 0], tangent: [10, 0, 0], curvature: [0, -0.05, 0] },
+  { point: [ 10, 4, 0], tangent: [10, 0, 0], curvature: [0, -0.05, 0] },
+);
+```
+
+**Tangent magnitude matters.** It is the *first derivative*, NOT the unit tangent — magnitude controls how aggressively the curve heads out of the endpoint. Typical magnitude is in the order of the chord length between the two endpoints. A tangent of `[1, 0, 0]` between points 30 mm apart will sag dramatically; `[15, 0, 0]` shapes a balanced bridge. Curvature defaults to `[0, 0, 0]`, which makes the curve only G1 (lifted cubic Hermite). For true G2 continuity to a neighbouring `spline3d` or `nurbsCurve`, evaluate the neighbour's `.tangentAt(t)` and `.pointAt(t)` (curvature has no synchronous getter today — use a numerical second-derivative estimate via three sample points).
+
+### hermiteG2 diagnostic codes
+
+- `feature.hermite-g2.non-finite-input` (error) — any `NaN`/`Infinity` in `point`, `tangent`, or `curvature`. Hint: confirm every Vec3 entry is a finite number.
+- `feature.hermite-g2.degenerate-tangent` (error) — tangent magnitude < 1e-12 on either endpoint. Hint: pass a non-zero tangent vector; for a unit start direction, scale by chord length.
+
+## G1/G2 fillet continuity (Slice C)
+
+`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
+
+```ts
+const panel = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
+const filleted = panel.fillet(1.5, undefined, { continuity: 'G2' });
+```
+
+### feature.fillet.continuity-not-applicable warning
+
+Emitted when the requested `'G2'` continuity cannot improve the blend at the chosen edge. Hint: requesting `'G2'` on a fillet whose adjacent faces are only G1-continuous downgrades to G1 internally.
+
+### G1-vs-G2 BREP-identity gotcha — planar/cylindrical fillets
+
+**Constant-radius fillets between planar faces or between a planar face and a cylindrical face produce BREP-identical output under both `'G1'` and `'G2'`.** OCCT's rational-fillet path only diverges from the polynomial path when the adjacent faces carry non-trivial parametric curvature (`nurbsSurface` / `surfaceFromBoundary` / `surfaceFromCurves`). Thread `continuity: 'G2'` through your authoring layer for forward-compatibility with future surface-adjacent fillets, but do NOT gate on a different lowered BREP — verify the upgrade on a NURBS-adjacent edge, not on a box corner. Eyewear front faces lifted from `surfaceFromBoundary` ARE NURBS-adjacent; cylindrical lens openings cut through a flat box are NOT.
 
 ## Related skills
 
