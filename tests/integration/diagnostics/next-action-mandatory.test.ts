@@ -12,7 +12,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { exportStlTool } from '../../../src/agent/mcp/tools/exportStl';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { NEXT_ACTIONS } from '../../../src/shared/diagnostics/nextAction';
+import { NEXT_ACTIONS } from '../../../src/shared/diagnostics/registry';
 
 beforeAll(async () => { await initOcct(); });
 

@@ -4,7 +4,7 @@ import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/nextAction';
+import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 

@@ -10,7 +10,7 @@ import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Param } from '../../shared/intent/types';
-import type { DiagnosticCode } from '../../shared/diagnostics/codes';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 
 export interface SketchTextOpts {
   /** Logical font family name OR a `fontPath('/path/to/font.ttf')` value.

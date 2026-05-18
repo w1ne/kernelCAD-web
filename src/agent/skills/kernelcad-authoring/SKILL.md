@@ -300,7 +300,7 @@ failed because an upstream feature failed (`code` is
 `recompute.input.missing`), call `why_did_this_fail` to walk the chain
 and find the root cause.
 
-The full code catalogue (26 codes) is enumerated by the
+The full code catalogue is enumerated by the
 `list_diagnostic_codes` MCP tool. Call it once at session start if you
 want to pre-populate retry strategies.
 
