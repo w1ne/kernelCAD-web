@@ -57,7 +57,13 @@ export interface SolvedAssemblyMateMetadata {
 
 /** Mate record with `pose` encoded for the recompute pipeline. Mirrors
  *  `EncodedPose` on joints — scalar Params for revolute/prismatic/etc.,
- *  triple for ball. */
+ *  triple for ball.
+ *
+ *  Slice 2C — `limitsDeg`/`limitsMm` round-trip from the live `MateRecord`
+ *  through the encoded metadata onto the `solvedAssembly` FeatureRecord so
+ *  the Studio's JointsTab can draw slider limit marks against the same
+ *  numbers the validator gates use. Drops gracefully on legacy records
+ *  (the fields are optional). */
 export interface EncodedMateRecord {
   readonly name: string;
   readonly a: string;
@@ -66,6 +72,8 @@ export interface EncodedMateRecord {
   readonly pose?:
     | { kind: 'scalar'; value: Param }
     | { kind: 'ball'; value: [Param, Param, Param] };
+  readonly limitsDeg?: readonly [number, number];
+  readonly limitsMm?: readonly [number, number];
 }
 
 export { validateFaceLabels } from './faceLabels';

@@ -3,6 +3,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { reviewToValidity } from '../adapters/reviewToValidity';
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
+import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
 import { shellStore } from '../store/shellStore';
 import type { StudioRecomputeResult } from '../types';
 
@@ -43,6 +44,11 @@ export function useRecomputeResult(): StudioRecomputeResult {
         [workbench.scriptReview],
     );
 
+    const joints = useMemo(
+        () => extractJointSnapshots(workbench.featureRecords ?? [], paramTable),
+        [workbench.featureRecords, paramTable],
+    );
+
     // Publish validity into the shell store so BottomDrawer +
     // ValidityDeltaHeader see the delta (current ↔ previous).
     useEffect(() => {
@@ -59,6 +65,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             recomputeMs: workbench.recomputeMs ?? 0,
+            joints,
             updateParam,
         }),
         [
@@ -69,6 +76,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             validity,
             paramTable,
             diagnostics,
+            joints,
         ],
     );
 }
