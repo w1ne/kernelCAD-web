@@ -827,6 +827,41 @@ function resolveFromMetadataHit(
 
 // ─── End Task 4 helpers ────────────────────────────────────────────────────────
 
+/** Public re-export of label→Face resolution. Used by featureMeshing.ts for
+ *  per-face material assignment (`Shape.material({ face: '<label>', ... })`).
+ *  Wraps the file-private `resolveLabeledFace` so callers outside this module
+ *  can reuse the same metadata/sketch-segment resolution machinery the
+ *  edge-feature lowerers use, instead of re-implementing it.
+ *
+ *  Difference from `resolveLabeledFace`: edge/face features are downstream
+ *  consumers (e.g. fillet on rim), so `findFaceLabelInMetadata` walks only
+ *  strictly upstream records. `Shape.material({face})` mutates the SAME
+ *  record that declared the label (a primitive declares its own
+ *  `faceLabels` and applies `.material({face})` to itself), so we also
+ *  check the consumer's own metadata before falling through to the
+ *  upstream-only path. */
+export function resolveFaceLabelToFace(
+  consumer: FeatureRecord,
+  base: OcctBackend,
+  label: string,
+  records: readonly FeatureRecord[] | undefined,
+): { face: Face } | { error: CompilerDiagnostic } {
+  // Self-declared label path: primitive (box/cylinder/extrude/...) carries
+  // both the `faceLabels` map and the `.material({face})` call. The
+  // upstream-only walk inside `resolveLabeledFace` skips its own record, so
+  // we have to handle this case explicitly here.
+  const ownLabels =
+    (consumer.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
+  if (ownLabels && Object.prototype.hasOwnProperty.call(ownLabels, label)) {
+    const hit: MetadataLabelHit = {
+      origin: consumer,
+      resolved: ownLabels[label] as CanonicalFace | FaceQuery,
+    };
+    return resolveFromMetadataHit(consumer, base, hit);
+  }
+  return resolveLabeledFace(consumer, base, label, records);
+}
+
 function resolveLabeledFace(
   record: FeatureRecord,
   base: OcctBackend,

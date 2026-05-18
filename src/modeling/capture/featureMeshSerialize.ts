@@ -32,6 +32,11 @@ export interface FeatureMeshSerialized {
    *  from metadata.color). The renderer (Task 8+) reads this in preference to
    *  the legacy `color` string field. */
   material?: PBRMaterial;
+  /** Per-face PBR materials keyed by the integer `faceId`. Populated when
+   *  `FeatureRecord.metadata.materialByLabel` resolves at least one label
+   *  against the meshed shape. The renderer prefers this entry over `material`
+   *  on a face-by-face basis. */
+  materialByFaceId?: Record<number, PBRMaterial>;
   /** True for virtual (non-geometry) records such as referenceImage. */
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
@@ -56,6 +61,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     edges: m.edges ? Array.from(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
+    ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
     ...(m.virtual === true ? { virtual: true } : {}),
     ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
   };
@@ -79,6 +85,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     edges: s.edges ? new Float32Array(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),
+    ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
     ...(s.virtual === true ? { virtual: true } : {}),
     ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
   };
