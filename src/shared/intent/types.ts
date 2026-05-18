@@ -145,7 +145,11 @@ export type FeatureKind =
   // W1.3 NURBS surfaces — escape paths from a `Surface` into the Shape pipeline.
   | 'surfaceThicken' | 'surfaceToShape'
   // Slice A: reference-image overlay node (capture-only, no OCCT output).
-  | 'referenceImage';
+  | 'referenceImage'
+  // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
+  //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
+  | 'curve3d'
+  | 'variableSweep';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings
