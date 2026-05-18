@@ -9,6 +9,9 @@ import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData,
 } from '../../shared/intent/surfaceRecord';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
+import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
+import { Curve3DProxy } from './curveProxy';
+import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
 import { imageDimensions } from './imageDimensions';
 import { existsSync } from 'node:fs';
 import { resolve as resolvePath, extname } from 'node:path';
@@ -365,6 +368,198 @@ export class CaptureSession {
 
   getSurfaceRecords(): readonly SurfaceRecord[] {
     return this.surfaceRecords;
+  }
+
+  /**
+   * NURBS Slice B: capture a `curve3d` feature record.
+   *
+   * Validates the control net / weights / knots / closed flag against the
+   * Slice B diagnostic codes. Following the `addReferenceImage` pattern,
+   * validation diagnostics are stashed in `metadata.diagnostics` rather than
+   * thrown — the record is always produced so agents can inspect and correct
+   * errors incrementally.
+   *
+   * Returns a `Curve3DProxy` (peer to `Shape`/`Surface`). The proxy's
+   * evaluation methods (`sample`, `pointAt`, `tangentAt`, `length`) lower
+   * the curve through `lazyEvalCurve` on first use.
+   */
+  addCurve3D(args: { metadata: Curve3DMetadata }): Curve3DProxy {
+    const m = args.metadata;
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    // Validation 1: degenerate control net (controlPoints.length < degree + 1).
+    if (m.controlPoints.length < m.degree + 1) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.curve3d.degenerate-controls',
+        severity: 'error',
+        message: `nurbsCurve: need at least ${m.degree + 1} control points for degree=${m.degree}; got ${m.controlPoints.length}.`,
+        hint: HINT_TEMPLATES['feature.curve3d.degenerate-controls'].template,
+      });
+    }
+
+    // Validation 2: weights length must match controlPoints length.
+    if (m.weights !== undefined) {
+      if (m.weights.length !== m.controlPoints.length) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.curve3d.weights-length-mismatch',
+          severity: 'error',
+          message: `nurbsCurve: weights.length (${m.weights.length}) does not match controlPoints.length (${m.controlPoints.length}).`,
+          hint: HINT_TEMPLATES['feature.curve3d.weights-length-mismatch'].template,
+        });
+      } else if (!m.weights.every((w) => Number.isFinite(w) && w > 0)) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.curve3d.weights-non-positive',
+          severity: 'error',
+          message: `nurbsCurve: all weights must be finite and > 0; got ${JSON.stringify(m.weights)}.`,
+          hint: HINT_TEMPLATES['feature.curve3d.weights-non-positive'].template,
+        });
+      }
+    }
+
+    // Validation 3: knot vector length.
+    if (m.knots !== undefined) {
+      const expected = m.controlPoints.length + m.degree + 1;
+      if (m.knots.length !== expected) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.curve3d.knots-length-mismatch',
+          severity: 'error',
+          message: `nurbsCurve: knot vector length should be ${expected} (controlPoints.length + degree + 1); got ${m.knots.length}.`,
+          hint: HINT_TEMPLATES['feature.curve3d.knots-length-mismatch'].template,
+        });
+      }
+    }
+
+    // Validation 4: closed=true but endpoints differ (info — OCCT closes
+    // internally, but the user-visible control net is misleading).
+    if (m.closed === true && m.controlPoints.length >= 2) {
+      const first = m.controlPoints[0];
+      const last = m.controlPoints[m.controlPoints.length - 1];
+      const eps = 1e-6;
+      if (
+        Math.abs(first[0] - last[0]) > eps ||
+        Math.abs(first[1] - last[1]) > eps ||
+        Math.abs(first[2] - last[2]) > eps
+      ) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.curve3d.closed-endpoints-mismatch',
+          severity: 'warn',
+          message: `nurbsCurve: closed=true but first (${first.join(',')}) and last (${last.join(',')}) control points differ.`,
+          hint: HINT_TEMPLATES['feature.curve3d.closed-endpoints-mismatch'].template,
+        });
+      }
+    }
+
+    const metadata: Record<string, unknown> = {
+      curve3d: m,
+      // Mark virtual so the lowerer / mesher / serializer can skip this
+      // record when iterating user-visible geometry. The OCCT edge still
+      // lowers — it's just not a `Shape` and doesn't render as a mesh.
+      virtual: true,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const record = this.register({
+      kind: 'curve3d',
+      params: {},
+      inputs: {},
+      metadata,
+    });
+
+    return new Curve3DProxy(record.id, m, this);
+  }
+
+  /**
+   * NURBS Slice B: capture a `variableSweep` feature record.
+   *
+   * The spine is referenced by id (typically a `curve3d` feature, but the
+   * lowerer also accepts a `Sketch` via its lifted wire). Each section
+   * carries a normalized parameter `t ∈ [0, 1]` and the FeatureId of a
+   * Sketch profile.
+   *
+   * Validates t-ordering and [0, 1] spanning. Validation diagnostics are
+   * stashed in `metadata.diagnostics` (mirror addReferenceImage pattern).
+   */
+  addVariableSweep(args: {
+    spineId: FeatureId;
+    sections: { t: number; profileId: FeatureId }[];
+    closed?: boolean;
+    continuity?: 'C0' | 'C1' | 'C2';
+  }): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    if (args.sections.length < 2) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.variable-sweep.sections-not-spanning',
+        severity: 'error',
+        message: `variableSweep: need at least 2 sections; got ${args.sections.length}.`,
+        hint: HINT_TEMPLATES['feature.variable-sweep.sections-not-spanning'].template,
+      });
+    } else {
+      // Strictly increasing t.
+      for (let i = 1; i < args.sections.length; i++) {
+        if (args.sections[i].t <= args.sections[i - 1].t) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.variable-sweep.sections-out-of-order',
+            severity: 'error',
+            message: `variableSweep: sections must be strictly increasing in t; got t[${i}]=${args.sections[i].t} <= t[${i - 1}]=${args.sections[i - 1].t}.`,
+            hint: HINT_TEMPLATES['feature.variable-sweep.sections-out-of-order'].template,
+          });
+          break;
+        }
+      }
+      // Spanning [0, 1].
+      const first = args.sections[0].t;
+      const last = args.sections[args.sections.length - 1].t;
+      if (Math.abs(first - 0) > 1e-9 || Math.abs(last - 1) > 1e-9) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.variable-sweep.sections-not-spanning',
+          severity: 'error',
+          message: `variableSweep: sections must span [0, 1] inclusive; got t[0]=${first}, t[last]=${last}.`,
+          hint: HINT_TEMPLATES['feature.variable-sweep.sections-not-spanning'].template,
+        });
+      }
+    }
+
+    const inputs: Record<string, FeatureRef> = {
+      spine: { kind: 'feature', id: args.spineId },
+    };
+    args.sections.forEach((s, i) => {
+      inputs[`section_${i}`] = { kind: 'feature', id: s.profileId };
+    });
+
+    const sweepMeta: VariableSweepMetadata = {
+      spineRef: { kind: 'feature', id: args.spineId },
+      sections: args.sections.map(
+        (s): VariableSweepSection => ({
+          t: s.t,
+          profileRef: { kind: 'feature', id: s.profileId },
+        }),
+      ),
+      ...(args.closed !== undefined ? { closed: args.closed } : {}),
+      continuity: args.continuity ?? 'C1',
+    };
+
+    const metadata: Record<string, unknown> = {
+      variableSweep: sweepMeta,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const record = this.register({
+      kind: 'variableSweep',
+      params: {},
+      inputs,
+      metadata,
+    });
+
+    return record.id;
   }
 
   register(spec: FeatureSpec): FeatureRecord {
