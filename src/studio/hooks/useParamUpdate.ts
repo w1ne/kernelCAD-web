@@ -57,12 +57,16 @@ export function useParamUpdate(
   // Stash callbacks in refs so the returned `commit` / `commitDebounced`
   // identities stay stable across renders. Consumers pass them into
   // event handlers; an unstable identity would invalidate their memos.
+  // Ref-sync runs in a layout effect so the refs read by `commit` and
+  // `commitDebounced` (both invoked from user events, never during render)
+  // see the most recent props without making the callback identities
+  // depend on those props.
   const updateRef = useRef(updateParam);
-  updateRef.current = updateParam;
   const onErrorRef = useRef<UseParamUpdateOptions['onError']>(userOnError);
-  onErrorRef.current = userOnError;
   const sourceRef = useRef(source);
-  sourceRef.current = source;
+  useEffect(() => { updateRef.current = updateParam; });
+  useEffect(() => { onErrorRef.current = userOnError; });
+  useEffect(() => { sourceRef.current = source; });
 
   // Per-name last-wins coalesce buffer. A single debounced flush sends
   // one batch containing the most recent value per param name.
