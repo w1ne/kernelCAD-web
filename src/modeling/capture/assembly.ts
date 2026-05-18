@@ -23,6 +23,11 @@ import {
 } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
 import { validateAssemblyWithMates } from '../mates/validator';
+import {
+  validateWorkspaceTargetOpts,
+  type WorkspaceTargetOpts,
+  type WorkspaceTargetRecord,
+} from '../mates/workspaceTarget';
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
@@ -297,6 +302,13 @@ export class Assembly {
   private readonly mateCouplings: MateCouplingRecord[] = [];
   private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
   private readonly transmissionIntents: TransmissionIntentRecord[] = [];
+  /**
+   * v0.7 Slice 1 — declarative workspace-reachability targets from
+   * `arm.workspace(connectorRef, opts)`. Consumed by
+   * `validateWorkspaceReachability` against the sampled pose-envelope's
+   * `ConnectorWorkspace[]`. Empty for assemblies that never call workspace().
+   */
+  private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -708,6 +720,35 @@ export class Assembly {
     return this;
   }
 
+  /**
+   * v0.7 Slice 1 — declarative workspace-reachability targets.
+   *
+   * Persists "this connector MUST be able to reach these world-frame points
+   * across the mechanism's declared mate-limit range". The check itself runs
+   * at validate-time when `solvedModel({}, { validate: 'error', posesGate:
+   * 'envelope' })` produces a sampled `ConnectorWorkspace`; if a declared
+   * target falls outside the sampled AABB (minus `toleranceMm`), the
+   * validator emits a single `assembly.workspace.unreachable` diagnostic.
+   *
+   * No kernel call at capture time — `arm.workspace(...)` only records the
+   * intent. The connector ref's existence is verified by the validator pass
+   * (lets sub-assembly imports defer connector materialisation past the
+   * workspace declaration).
+   *
+   *   arm.workspace('elbow_tip', {
+   *     reachable: [[200, 0, 100], [0, 200, 100], [-200, 0, 100]],
+   *     toleranceMm: 5,   // optional, default 5
+   *   });
+   *
+   * AABB-only containment (no convex-hull) in v0.7 Slice 1; the precision
+   * floor is documented in the emitted diagnostic. Slice 2 will switch to a
+   * convex-hull check.
+   */
+  workspace(connectorRef: string, opts: WorkspaceTargetOpts): this {
+    this.workspaceTargets.push(validateWorkspaceTargetOpts(connectorRef, opts));
+    return this;
+  }
+
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
     validateMechanicalIntentName('name', name);
     if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
@@ -935,6 +976,17 @@ export class Assembly {
 
   __mateCouplings(): readonly MateCouplingRecord[] {
     return this.mateCouplings;
+  }
+
+  /**
+   * Internal accessor — read-only view of `arm.workspace(...)` records for
+   * the v0.7 Slice 1 reachability gate. Mirrors `__mates()` / `__parts()`.
+   * Not public; the agent-facing surface is the `arm.workspace(...)`
+   * declaration itself plus the `assembly.workspace.unreachable`
+   * diagnostic surfaced on `scene.warnings` / through the validator throw.
+   */
+  __workspaceTargets(): readonly WorkspaceTargetRecord[] {
+    return this.workspaceTargets;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
@@ -1385,11 +1437,19 @@ export class Assembly {
       // them on scene.warnings under `'warn'`. The validator still emits
       // `assembly.mate.limit-missing` warnings, Gate 1/2/3 diagnostics, and
       // every v0.5/v0.6 base check.
+      //
+      // v0.7 Slice 1 — the 5th arg (`connectorWorkspace`) is the AABB-only
+      // sampled view of `envelopeResult` consumed by the workspace gate.
+      // We pass it separately from `poseEnvelopeResult` so the existing
+      // envelope-throw aggregation logic below stays the sole consumer of
+      // envelope diagnostics (avoids double-folding) while still letting
+      // `validateWorkspaceReachability` read the connector AABBs.
       const result = await validateAssemblyWithMates(
         this,
         interferencePairs,
         undefined,
         opts?.externalLoads,
+        envelopeResult?.connectorWorkspace,
       );
       const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
         envelopeResult ? envelopeResult.diagnostics : [];
