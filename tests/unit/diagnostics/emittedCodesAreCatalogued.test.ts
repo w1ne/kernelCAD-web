@@ -66,8 +66,8 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 46 codes', () => {
-    expect(catalogue.size).toBe(46);
+  it('catalogue has exactly 57 codes', () => {
+    expect(catalogue.size).toBe(57);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
