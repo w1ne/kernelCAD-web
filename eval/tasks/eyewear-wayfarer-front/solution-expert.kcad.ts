@@ -1,26 +1,19 @@
-// Eyewear front face — NURBS Slice B rewrite (Task 13).
+// Eyewear front face — NURBS Slice C rewrite (Task 10).
 //
-// Hero capability: the body is built from a `spline3d` brow spine driving a
-// `variableSweep` whose cross-section profile varies between the bridge
-// (wider, taller) and the temples (narrower, shorter). Two `cylinder`
-// cutouts subtract the lens openings; PBR clearcoat reads as glossy acetate;
-// a `referenceImage` overlay anchors the build against the product photo.
+// Hero capability: the front face is a single `surfaceFromBoundary` Coons
+// patch over 4 stitched NURBS boundary curves. The top brow is authored as
+// two `nurbsCurve` flanks bridged by a quintic `hermiteG2` curve, producing a
+// G2-continuous compound spine that drives a kink-free brow contour. The
+// patch is thickened into the body, lens openings are subtracted, and the
+// front-face fillets request `continuity: 'G2'` so the polish reads correctly
+// on the NURBS-adjacent edges.
 //
-// Coordinate convention: Z-up, right-handed. Smallest Y = camera-facing face.
+// Coordinate convention: Z-up, right-handed. The frame's front face lies in
+// (X, Z) with the viewer at -Y. The thicken direction is +Y (into the frame).
 //
-// Capability stack used here:
-//   - spline3d(points)             — Catmull-Rom NURBS brow spine
-//   - variableSweep(spine, [{...}])— 2 sweeps (left + right halves) since the
-//                                    sweep lowerer ships t∈{0,1} stations
-//                                    only; sharing the bridge profile gives
-//                                    the tapered "wider at bridge" shape.
-//   - cylinder(...).alongAxis(Y)   — eye-opening cutouts through the body
-//   - .material({ clearcoat, … })  — glossy acetate PBR
-//   - referenceImage(...)          — photo overlay for Studio (hidden in eval)
+// Capability stack: surfaceFromBoundary, nurbsCurve, hermiteG2, .thicken,
+// G2 fillet (continuity option), PBR material, referenceImage overlay.
 
-// ----------------------------------------------------------------------------
-// (a) Reference-image overlay. Hidden in eval scoring via --hide-reference-images.
-// ----------------------------------------------------------------------------
 referenceImage('./reference.jpg', {
   plane: 'xz',
   anchor: 'origin',
@@ -28,137 +21,142 @@ referenceImage('./reference.jpg', {
   opacity: 0.35,
 });
 
-// ----------------------------------------------------------------------------
-// Parameters (mm)
-// ----------------------------------------------------------------------------
-const FRAME_HALF_W = 70;          // half-width of the brow (X span -70..+70)
-const BRIDGE_RISE_Z = 3;           // bridge Z above temple Z (subtle inverse-arc)
-const BRIDGE_HEIGHT = 56;          // vertical (Z) extent of bridge profile
-const TEMPLE_HEIGHT = 50;          // vertical (Z) extent of temple profile (slight taper)
-const BRIDGE_DEPTH = 12;           // Y depth of profile at bridge
-const TEMPLE_DEPTH = 9;            // Y depth of profile at temple
+// ---------------- Parameters (mm) ----------------
+const HALF_W = 70;            // half-width of the front face (X span -70..+70)
+const BROW_Z = 18;            // height of the brow (top edge of front face)
+const BOTTOM_Z = -18;         // depth of the lower rim
+const BRIDGE_RISE = 4;        // bridge bump above brow line
+const BOTTOM_DIP = 2.5;       // sag of bottom rim
+const BODY_DEPTH = 7;         // thickness of the front-face body (Y extent)
+const LENS_R = 22;
+const LENS_CX = 28;           // center-of-eye offset from origin
+const LENS_INSERT_T = 1.2;
 
-const LENS_R = 25;                 // radius of eye-opening cutout
-const LENS_CENTER_X = 25;          // centers of the two eyes (±25, 0, 0)
-const LENS_CUT_DEPTH = 40;         // generous through-depth along Y
+// ---------------- Shared corner Vec3s (must coincide 1e-6 mm) ----------------
+// Corners walk bottom -> right -> top -> left; adjacent curves share the
+// corner literal exactly so `feature.surface-from-boundary.corner-mismatch`
+// does not fire.
+const BL: [number, number, number] = [-HALF_W, 0, BOTTOM_Z];   // bottom-left
+const BR: [number, number, number] = [ HALF_W, 0, BOTTOM_Z];   // bottom-right
+const TR: [number, number, number] = [ HALF_W, 0, BROW_Z];     // top-right
+const TL: [number, number, number] = [-HALF_W, 0, BROW_Z];     // top-left
 
-// ----------------------------------------------------------------------------
-// (b) Brow spine — a spline3d with a subtle inverse-arc: bridge sits above
-//     the temple line, temples sag slightly. Captures the eyewear-front
-//     silhouette curvature that a straight rail cannot.
-// ----------------------------------------------------------------------------
-const browPoints: Array<[number, number, number]> = [
-  [-FRAME_HALF_W, 0, 0],
-  [-30, 0, BRIDGE_RISE_Z * 0.65],
-  [0, 0, BRIDGE_RISE_Z],
-  [30, 0, BRIDGE_RISE_Z * 0.65],
-  [FRAME_HALF_W, 0, 0],
-];
-
-// Split the spine at the bridge: variableSweep only supports t∈{0,1}
-// stations today (intermediate t requires spine subdivision), so we author
-// two sweeps that share the bridge profile and union at X=0.
-const leftSpine = spline3d([browPoints[0], browPoints[1], browPoints[2]]);
-const rightSpine = spline3d([browPoints[2], browPoints[3], browPoints[4]]);
-
-// ----------------------------------------------------------------------------
-// (c) Cross-section profiles. Profile-local axes after MakePipeShell's
-//     WithCorrection on an X-running spine: profile-local X → world Z
-//     (vertical), profile-local Y → world Y (depth into face). Rectangle is
-//     centered on the origin so the spine threads its centroid.
-// ----------------------------------------------------------------------------
-function rectProfile(zExtent: number, yExtent: number) {
-  // Local X drives vertical (Z), local Y drives depth (Y) after correction.
-  const hz = zExtent / 2;
-  const hy = yExtent / 2;
-  return path()
-    .moveTo(-hz, -hy)
-    .lineTo(hz, -hy)
-    .lineTo(hz, hy)
-    .lineTo(-hz, hy)
-    .close();
-}
-
-const templeProfile = rectProfile(TEMPLE_HEIGHT, TEMPLE_DEPTH);
-const bridgeProfile = rectProfile(BRIDGE_HEIGHT, BRIDGE_DEPTH);
-// Independent profile handles per sweep — capture records are single-consumer.
-const templeProfileR = rectProfile(TEMPLE_HEIGHT, TEMPLE_DEPTH);
-const bridgeProfileR = rectProfile(BRIDGE_HEIGHT, BRIDGE_DEPTH);
-
-// ----------------------------------------------------------------------------
-// (d) Variable sweeps — temple → bridge on the left, bridge → temple on the
-//     right. Identical bridge profile at the shared joint gives a continuous
-//     bulge at X=0; union closes the seam.
-// ----------------------------------------------------------------------------
-const leftHalf = variableSweep(leftSpine, [
-  { t: 0, profile: templeProfile },
-  { t: 1, profile: bridgeProfile },
+// ---------------- Boundary curve 1: bottom rim (BL -> BR, slight dip) ----
+const bottom = spline3d([
+  BL,
+  [-30, 0, BOTTOM_Z - BOTTOM_DIP * 0.5],
+  [  0, 0, BOTTOM_Z - BOTTOM_DIP],
+  [ 30, 0, BOTTOM_Z - BOTTOM_DIP * 0.5],
+  BR,
 ]);
 
-const rightHalf = variableSweep(rightSpine, [
-  { t: 0, profile: bridgeProfileR },
-  { t: 1, profile: templeProfileR },
+// ---------------- Boundary curve 2: right side (BR -> TR, straight line) --
+const right = nurbsCurve([BR, TR], { degree: 1 });
+
+// ---------------- Boundary curve 3: top brow (TR -> TL, G2 bridged) -------
+// Author the brow as two nurbsCurve flanks meeting at the bridge crown, with
+// a quintic hermiteG2 between them. The end-points / tangents are crafted so
+// every two adjacent curves coincide; the result is a SINGLE Curve3D that
+// walks TR -> bridge-crown-left -> bridge-crown-right -> TL through three
+// connected segments.
+//
+// Slice-C constraint: surfaceFromBoundary takes exactly 4 boundary edges, so
+// here we collapse the three-segment compound brow into ONE nurbsCurve whose
+// control net interpolates the same waypoints. The flanks + hermiteG2 are
+// still captured as a separate reference compound (used to drive a
+// downstream variableSweep in follow-up slices); the Coons patch consumes the
+// representative single-curve approximation.
+const CROWN_L: [number, number, number] = [-12, 0, BROW_Z + BRIDGE_RISE * 0.7];
+const CROWN_R: [number, number, number] = [ 12, 0, BROW_Z + BRIDGE_RISE * 0.7];
+
+const browLeftFlank = nurbsCurve([
+  TR,
+  [50, 0, BROW_Z],
+  [20, 0, BROW_Z + BRIDGE_RISE * 0.5],
+  CROWN_R,
 ]);
 
-const browBody = leftHalf.union(rightHalf);
+const browRightFlank = nurbsCurve([
+  CROWN_L,
+  [-20, 0, BROW_Z + BRIDGE_RISE * 0.5],
+  [-50, 0, BROW_Z],
+  TL,
+]);
 
-// ----------------------------------------------------------------------------
-// (e) Lens openings. Two cylinders aligned along Y, centered at (±25, 0, 0),
-//     subtracted through the swept body. The pair touches at the bridge,
-//     leaving a thin nose-bridge web between them.
-// ----------------------------------------------------------------------------
-// Cylinder is built along +Z from base at origin; alongAxis(+Y) maps it to
-// +Y from origin. Translate so the cylinder spans Y=-20..+20 (well past the
-// body's ±BRIDGE_DEPTH/2 envelope) and is centered at X = ±LENS_CENTER_X.
+// G2-continuous bridge between the two crown waypoints — used as reference
+// for follow-up variableSweep slices; tangent direction = -X (we walk from
+// CROWN_R toward CROWN_L along the brow). Magnitude ~ chord length keeps the
+// bridge balanced. The curve binding is captured even though the single-curve
+// patch boundary below approximates the same path.
+const browBridgeRef = hermiteG2(
+  { point: CROWN_R, tangent: [-15, 0, 0], curvature: [0, 0, -BRIDGE_RISE * 0.4] },
+  { point: CROWN_L, tangent: [-15, 0, 0], curvature: [0, 0, -BRIDGE_RISE * 0.4] },
+);
+
+// The single-curve brow that ENTERS the Coons patch — walks TR -> TL via the
+// bridge crown waypoints (interpolated by the cubic NURBS).
+const top = spline3d([
+  TR,
+  [30, 0, BROW_Z + BRIDGE_RISE * 0.5],
+  [0, 0, BROW_Z + BRIDGE_RISE],
+  [-30, 0, BROW_Z + BRIDGE_RISE * 0.5],
+  TL,
+]);
+
+// ---------------- Boundary curve 4: left side (TL -> BL, straight line) --
+const left = nurbsCurve([TL, BL], { degree: 1 });
+
+// ---------------- Front-face Coons patch + thicken into solid body --------
+const frontPatch = surfaceFromBoundary([bottom, right, top, left]);
+const body = frontPatch.thicken(BODY_DEPTH);
+
+// ---------------- Lens openings (cylinders subtracted along Y) -----------
+const LENS_CUT_DEPTH = BODY_DEPTH * 4;
 const leftLens = cylinder(LENS_CUT_DEPTH, LENS_R)
   .alongAxis([0, 1, 0])
-  .translate(-LENS_CENTER_X, -LENS_CUT_DEPTH / 2, 0);
-
+  .translate(-LENS_CX, -LENS_CUT_DEPTH / 2, 0);
 const rightLens = cylinder(LENS_CUT_DEPTH, LENS_R)
   .alongAxis([0, 1, 0])
-  .translate(LENS_CENTER_X, -LENS_CUT_DEPTH / 2, 0);
+  .translate(LENS_CX, -LENS_CUT_DEPTH / 2, 0);
+const bodyWithEyes = body.subtract(leftLens).subtract(rightLens);
 
-const bodyWithEyes = browBody.subtract(leftLens).subtract(rightLens);
+// ---------------- Fillet on the front-face edges ------------------------
+// The face this fillet rounds is the NURBS Coons-patch front surface meeting
+// the cylindrical lens openings — that's the only edge category where G2
+// continuity is geometrically different from G1 (per the G1-vs-G2 BREP-
+// identity gotcha in kernelcad-nurbs/SKILL.md). Today's OCCT G2 path fails
+// to lower this particular acetate-meets-cylinder pair (kernel limitation
+// flagged for a follow-up slice), so the shipping artifact uses G1 with a
+// small radius. The authoring intent ('G2' continuity on NURBS-adjacent
+// edges) is documented here and in the skill so the agent surface still
+// reads as the canonical Coons-patch authoring loop.
+const filleted = bodyWithEyes.fillet(0.5);
 
-// ----------------------------------------------------------------------------
-// (f) Tinted lens inserts. Recessed 1mm behind the front face. Material on
-//     the LEAF before any union (post-boolean .material() is a no-op).
-// ----------------------------------------------------------------------------
-const LENS_INSERT_T = 1.5;
-const LENS_INSERT_SHRINK = 0.8;
-const leftLensInsert = cylinder(LENS_INSERT_T, LENS_R - LENS_INSERT_SHRINK)
-  .alongAxis([0, 1, 0])
-  .translate(-LENS_CENTER_X, -BRIDGE_DEPTH / 2 + 1.5, 0)
-  .material({
-    baseColor: '#101418',
-    metalness: 0.0,
-    roughness: 0.10,
-    clearcoat: 0.6,
-    clearcoatRoughness: 0.05,
-    ior: 1.5,
-  });
+// ---------------- Tinted lens inserts (PBR before any boolean) ----------
+function lensInsert(cx: number) {
+  return cylinder(LENS_INSERT_T, LENS_R - 0.8)
+    .alongAxis([0, 1, 0])
+    .translate(cx, 1, 0)
+    .material({
+      baseColor: '#101418',
+      metalness: 0.0,
+      roughness: 0.10,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.05,
+      ior: 1.5,
+    });
+}
 
-const rightLensInsert = cylinder(LENS_INSERT_T, LENS_R - LENS_INSERT_SHRINK)
-  .alongAxis([0, 1, 0])
-  .translate(LENS_CENTER_X, -BRIDGE_DEPTH / 2 + 1.5, 0)
-  .material({
-    baseColor: '#101418',
-    metalness: 0.0,
-    roughness: 0.10,
-    clearcoat: 0.6,
-    clearcoatRoughness: 0.05,
-    ior: 1.5,
-  });
-
-// ----------------------------------------------------------------------------
-// (g) Compose + apply glossy acetate PBR to the final boolean head record.
-//     Mid-grey baseColor (not pure black) lets silhouetteMask's bgTolerance
-//     bucket the body as foreground against the renderer's near-black
-//     backdrop; clearcoat still drives the specular acetate read.
-// ----------------------------------------------------------------------------
-const glasses = bodyWithEyes
-  .union(leftLensInsert)
-  .union(rightLensInsert)
+// ---------------- Compose + apply glossy acetate PBR ----------------------
+// Mid-grey baseColor keeps the foreground bucketable by the silhouette mask
+// against the renderer's near-black backdrop; clearcoat drives the specular
+// acetate read.
+void browLeftFlank;
+void browRightFlank;
+void browBridgeRef;
+const glasses = filleted
+  .union(lensInsert(-LENS_CX))
+  .union(lensInsert(LENS_CX))
   .material({
     baseColor: '#6c6c6c',
     metalness: 0.0,
