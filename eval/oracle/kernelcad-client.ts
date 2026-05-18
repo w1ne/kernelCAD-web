@@ -44,9 +44,16 @@ export async function evaluateScript(scriptPath: string): Promise<EvaluateResult
   // The CLI may print the JSON to stdout regardless of exit code; try to parse.
   try {
     const parsed = JSON.parse(r.stdout);
+    // Info-severity diagnostics are advisory (e.g. assembly.placement-ignored-
+    // by-mate-fk, assembly.mates-ignored-by-model-call); they don't fail the
+    // evaluate. Only warn/error severity should flip `ok` to false.
+    const diagnostics: Array<{ severity?: string }> = Array.isArray(parsed.diagnostics)
+      ? parsed.diagnostics
+      : [];
+    const blocking = diagnostics.filter((d) => d.severity !== 'info');
     return {
-      ok: !!parsed.ok && Array.isArray(parsed.diagnostics) && parsed.diagnostics.length === 0,
-      diagnostics: Array.isArray(parsed.diagnostics) ? parsed.diagnostics : [],
+      ok: !!parsed.ok && blocking.length === 0,
+      diagnostics,
       featureCount: parsed.featureCount,
     };
   } catch {
