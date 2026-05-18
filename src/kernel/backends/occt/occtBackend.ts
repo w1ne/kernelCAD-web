@@ -450,8 +450,12 @@ export class OcctBackend implements ShapeBackend {
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If the drawing produces multiple faces (Sketches plural).
+   *
+   * Public so direct-OCCT lowerers (e.g. `variableSweepLowerer`) that need
+   * the lifted profile wire can reuse it without duplicating the cast +
+   * multi-face guard.
    */
-  private static liftSketchToFace(
+  static liftSketchToFace(
     sketch: OcctBackend,
     plane: 'XY' | 'XZ' | 'YZ',
   ): { face: () => { outerWire: () => replicad.Wire } } {

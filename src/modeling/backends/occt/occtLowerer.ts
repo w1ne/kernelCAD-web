@@ -24,6 +24,8 @@ import {
 } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerCurve3D } from './curve3dLowerer';
 import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
+import { lowerVariableSweep, type VariableSweepSectionLowered } from './variableSweepLowerer';
+import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
@@ -416,6 +418,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sdfMaterialize',   // W2.3
     'referenceImage',   // virtual — no BREP; defense-in-depth guard
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
+    'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -2458,6 +2461,154 @@ export class OcctLowerer implements FeatureLowerer {
           });
         }
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'variableSweep': {
+        // NURBS Slice B Task 8: variable-section sweep via
+        // `BRepOffsetAPI_MakePipeShell`. Direct OCCT (no replicad wrapper
+        // around the builder). Spine sourced from `importedGeometry` (the
+        // curve3d arm parks an edge there) OR from a sketch input lifted
+        // to its outer wire. Profiles always resolved from `byKey` —
+        // each section input is a sketch.
+        //
+        // Integration note: when the spine is a `curve3d` record (today's
+        // primary spine source via `nurbsCurve()` + `spline3d()`), the
+        // upstream recompute engine's input-resolution check fails with
+        // `recompute.input.missing` before reaching this arm (curve3d is
+        // a virtual record and `shapes.get(spineId)` returns undefined).
+        // The sketch-spine path works end-to-end today; the curve3d-spine
+        // path is reachable only by direct lowerer invocation (Task 8
+        // smoke test does this) and awaits a future recompute-engine
+        // change to pass through virtual-record refs.
+        const meta = r.metadata as { variableSweep?: unknown } | undefined;
+        const m = meta?.variableSweep;
+        if (!isVariableSweepMetadata(m)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `variableSweep record '${r.id}' is missing valid metadata.variableSweep.`,
+            hint: 'Build the record via session.addVariableSweep({...}) (or the kcad.variableSweep public API) so the validators run.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Resolve spine edge. The spine input is a FeatureRef; if it
+        // points at a curve3d record, the edge is parked in
+        // `importedGeometry`. If it points at a Sketch, the sketch was
+        // lowered upstream and is available in `byKey.spine` — lift it
+        // to a TopoDS_Edge via its outer wire's first edge.
+        const spineId = m.spineRef.kind === 'feature' ? m.spineRef.id : undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let spineEdge: any = spineId ? this.importedGeometry.get(spineId) : undefined;
+        if (!spineEdge) {
+          const sketchInput = inputs.byKey.spine as OcctBackend | undefined;
+          if (sketchInput) {
+            try {
+              const { face } = OcctBackend.liftSketchToFace(sketchInput, 'XY');
+              // The lifted sketch face's outer wire's first edge — replicad
+              // wraps `wire.wrapped` as TopoDS_Wire; extract its first edge
+              // via TopExp_Explorer. Single-edge sketch wires are the
+              // common case (a straight-line spine sketch); multi-edge
+              // wires would need full-wire spine support in lowerVariableSweep.
+              const wire = face().outerWire();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const oc = (replicad as any).getOC();
+              const exp = new oc.TopExp_Explorer_2(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (wire as any).wrapped,
+                oc.TopAbs_ShapeEnum.TopAbs_EDGE,
+                oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
+              );
+              if (exp.More()) {
+                spineEdge = oc.TopoDS.Edge_1(exp.Current());
+              }
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              diagnostics.push({
+                target: 'export-occt',
+                code: 'feature.invalid-args',
+                featureId: r.id,
+                severity: 'error',
+                message: `variableSweep: failed to lift spine sketch: ${msg}`,
+                hint: 'invalid-args.variableSweep.spine — pass a Curve3D (preferred) or a single-edge Sketch as the spine.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+          }
+        }
+        if (!spineEdge) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `variableSweep: spine input could not be resolved (no parked Curve3D edge and no sketch backend).`,
+            hint: 'invalid-args.variableSweep.spine — pass a Curve3D (nurbsCurve/spline3d) or a Sketch (path().…close()).',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+
+        // Resolve each section's profile wire from the sketch in
+        // `byKey.section_${i}`. The capture layer guarantees one input
+        // per section in addVariableSweep().
+        const lowered: VariableSweepSectionLowered[] = [];
+        for (let i = 0; i < m.sections.length; i++) {
+          const profileInput = inputs.byKey[`section_${i}`] as OcctBackend | undefined;
+          if (!profileInput) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `variableSweep: missing input 'section_${i}' — upstream sketch did not lower successfully.`,
+              hint: 'Every section profile must be a Sketch that lowers cleanly — check upstream sketch diagnostics first.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          let profileWire;
+          try {
+            const { face } = OcctBackend.liftSketchToFace(profileInput, 'XY');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            profileWire = (face().outerWire() as any).wrapped;
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.kernel-failed',
+              featureId: r.id,
+              severity: 'error',
+              message: `variableSweep: failed to lift section ${i} profile: ${msg}`,
+              hint: 'kernel-failed — each section profile must be a single closed sketch loop.',
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          lowered.push({
+            t: m.sections[i].t,
+            profileWire,
+            locationPnt: [0, 0, 0], // unused for t=0/t=1 — see lowerVariableSweep
+          });
+        }
+
+        try {
+          shape = lowerVariableSweep(spineEdge, lowered, {
+            ...(m.continuity !== undefined ? { continuity: m.continuity } : {}),
+            ...(m.closed !== undefined ? { closed: m.closed } : {}),
+            ...(m.orientation !== undefined ? { orientation: m.orientation } : {}),
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT variable-section sweep failed: ${msg}`,
+            hint: 'kernel-failed — check spine length, profile planarity, t-span coverage, and that profile wires are closed and single-loop.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        break;
       }
       default:
         return {
