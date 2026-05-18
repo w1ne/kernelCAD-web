@@ -32,7 +32,6 @@ function MePage() {
   const [planErr, setPlanErr] = useState<string | null>(null);
   const [billingBusy, setBillingBusy] = useState(false);
   const [billingErr, setBillingErr] = useState<string | null>(null);
-  const [checkoutBanner, setCheckoutBanner] = useState<CheckoutStatus>(undefined);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,14 +47,9 @@ function MePage() {
     }
   }, [session]);
 
-  // One-shot inline banner for ?checkout=success|cancel post-Stripe redirect.
-  // No toast library available in the repo — keep this as a simple banner.
-  useEffect(() => {
-    if (!checkout) return;
-    setCheckoutBanner(checkout);
-    // Strip the query param so a refresh doesn't re-show the banner.
+  const dismissCheckoutBanner = () => {
     navigate({ to: '/me', search: {}, replace: true });
-  }, [checkout, navigate]);
+  };
 
   const handleUpgrade = async () => {
     setBillingBusy(true);
@@ -110,22 +104,38 @@ function MePage() {
       </header>
 
       <section className="px-6 py-10 max-w-4xl mx-auto">
-        {checkoutBanner === 'success' && (
+        {checkout === 'success' && (
           <div
             role="status"
-            className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink"
+            className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink relative"
           >
+            <button
+              type="button"
+              onClick={dismissCheckoutBanner}
+              aria-label="Dismiss"
+              className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none"
+            >
+              ×
+            </button>
             <p className="font-serif font-medium">You're on Pro</p>
             <p className="text-sm text-ink-soft mt-1">
               Subscription active — generate as much as you like.
             </p>
           </div>
         )}
-        {checkoutBanner === 'cancel' && (
+        {checkout === 'cancel' && (
           <div
             role="status"
-            className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink"
+            className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink relative"
           >
+            <button
+              type="button"
+              onClick={dismissCheckoutBanner}
+              aria-label="Dismiss"
+              className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none"
+            >
+              ×
+            </button>
             <p className="font-serif font-medium">Checkout cancelled</p>
             <p className="text-sm text-ink-soft mt-1">
               No charge was made. You can upgrade any time from this page.
