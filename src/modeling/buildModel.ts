@@ -56,7 +56,10 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
   await initOcct();
   const run = await runScript(input);
   const session = run.session;
+  // Slice 2E: attach a per-session engine so `params.update` reuses it and
+  // `onRelower` subscriptions added after the initial build still fire.
   const engine = new RecomputeEngine(createOcctLowerer(session));
+  session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const result = await engine.run(run.records, {
     paramTable: session.paramTable,
@@ -109,12 +112,30 @@ export async function updateModelParams(
 
   const { seedShapes, relowered, skipped } = buildSeedShapes(session, model.records, editedNames);
   await initOcct();
-  const engine = new RecomputeEngine(createOcctLowerer(session));
+  // Slice 2E: reuse the per-session engine attached by `buildModel` so any
+  // `onRelower` subscribers registered after the initial build still fire on
+  // this update. Some callers bypass `buildModel` and drive `params.update`
+  // off a bare `runScript` result (eval corpus harnesses, legacy unit tests).
+  // For those paths, lazily attach a fresh engine to the session so
+  // subsequent updates reuse it. Studio's path always goes through
+  // `buildModel`, so its onRelower subscribers (registered against the
+  // session's attached engine) keep firing consistently.
+  //
+  // `session.engine` is typed as the structural `SessionRecomputeEngineHandle`
+  // so `captureSession.ts` stays free of recompute imports per the
+  // architecture-boundary guard. The actual instance is a RecomputeEngine.
+  let handle = session.engine;
+  if (!handle) {
+    const fresh = new RecomputeEngine(createOcctLowerer(session));
+    session.setEngine(fresh);
+    handle = fresh;
+  }
+  const engine = handle as RecomputeEngine;
   const warningsBefore = session.warnings.length;
   const result = await engine.run(model.records, {
     paramTable: session.paramTable,
     seedShapes,
-    warningSink: warning => session.warnings.push(warning),
+    warningSink: (warning: SoftWarning) => session.warnings.push(warning),
     warningPhase: 'update',
     gatedFeatureNames: session.gatedFeatureNames,
   });
@@ -139,6 +160,11 @@ export async function updateModelParams(
     tailId,
     tailShape,
   };
+
+  // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
+  // this update. Studio's WorkbenchContext subscribes server-side via the
+  // session engine to live-refresh ParamsTab without a Validate press.
+  engine.emitRelower(relowered);
 
   return {
     model: nextModel,

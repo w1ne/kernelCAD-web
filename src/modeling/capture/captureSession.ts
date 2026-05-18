@@ -116,6 +116,16 @@ export interface FeatureSpec {
   metadata?: Record<string, unknown>;
 }
 
+/** Slice 2E: structural shape of the RecomputeEngine handle stored on a
+ *  CaptureSession. Declared here (not imported) so this file stays clean of
+ *  recompute/orchestration types per the architectural-boundary guard at
+ *  `tests/unit/kernel/architectureBoundary.test.ts`. The real RecomputeEngine
+ *  class satisfies this shape structurally; callers can cast back to it. */
+export interface SessionRecomputeEngineHandle {
+  onRelower(cb: (affectedIds: string[]) => void): () => void;
+  emitRelower(affectedIds: readonly string[]): void;
+}
+
 /** Slice-3: input + result of `session.params.update`. See spec §E.6. */
 export interface ParamUpdateEdit {
   name: string;
@@ -153,6 +163,28 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
+   *  first run. Reused by `params.update` so `onRelower` subscribers added
+   *  after the initial build still receive re-lower events.
+   *
+   *  Stored as a minimal structural type (not the real `RecomputeEngine`
+   *  class) so this file stays free of recompute/orchestration types — the
+   *  architectural-boundary guard at
+   *  `tests/unit/kernel/architectureBoundary.test.ts` forbids that direction.
+   *  Callers that need the full class API receive a structurally-compatible
+   *  object and re-cast at the boundary. */
+  private engineRef: SessionRecomputeEngineHandle | undefined;
+  /** Slice 2E: read-only accessor. Returns `undefined` until `buildModel`
+   *  attaches the per-session engine on the first run. */
+  get engine(): SessionRecomputeEngineHandle | undefined {
+    return this.engineRef;
+  }
+  /** Slice 2E: internal — `buildModel` calls this once per session to attach
+   *  the engine. Subsequent `params.update` calls reuse the attached engine
+   *  so `onRelower` subscriptions persist across updates. */
+  setEngine(engine: SessionRecomputeEngineHandle): void {
+    this.engineRef = engine;
+  }
   /** v0.5: pre-lowered geometry for `lib.fromSTEP(...)` imports. The host-
    *  side import runs at script time; the lowerer pulls the OcctBackend
    *  from this map by feature id when it sees an `importedStep` record.
@@ -925,6 +957,7 @@ export class CaptureSession {
     this.paramTable.clear();
     this.warnings.length = 0;
     this.gatedFeatureNames.clear();
+    this.engineRef = undefined;
   }
 
   /** Slice-3: drain the warning log. Returns the accumulated warnings and

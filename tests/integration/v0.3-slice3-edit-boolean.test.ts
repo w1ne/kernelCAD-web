@@ -2,6 +2,15 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/modeling/capture/captureSession';
 import { createApi } from '../../src/modeling/api';
+import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
+
+// Slice 2E: `session.params.update` requires an engine attached to the session
+// (normally done by `buildModel`). Tests that drive `CaptureSession` directly
+// must attach one manually.
+function attachEngine(session: CaptureSession): void {
+  session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
+}
 
 function cablePortProfile(api: ReturnType<typeof createApi>) {
   return api.path()
@@ -17,6 +26,7 @@ describe('v0.3 slice-3 — boolean param gating', () => {
 
   it('build-time enabled=false gates a named cutout and warns on downstream face ref', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     const addCablePort = api.param('addCablePort', false);
     const plate = api.box(80, 50, 6)
@@ -43,6 +53,7 @@ describe('v0.3 slice-3 — boolean param gating', () => {
 
   it('params.update gates and ungates a named cutout with per-call warnings', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     const addCablePort = api.param('addCablePort', true);
     const plate = api.box(80, 50, 6)
@@ -76,6 +87,7 @@ describe('v0.3 slice-3 — boolean param gating', () => {
 
   it('keeps typos fatal instead of treating them as gated lineage warnings', async () => {
     const session = new CaptureSession();
+    attachEngine(session);
     const api = createApi({ session });
     const addCablePort = api.param('addCablePort', false);
     const plate = api.box(80, 50, 6)

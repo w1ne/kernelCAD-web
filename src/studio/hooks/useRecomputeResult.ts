@@ -16,6 +16,18 @@ import type { StudioRecomputeResult } from '../types';
  * still empty pending a worker-side `FeatureRecord` serialization
  * (Slice 1.2). SceneTab falls back to its legacy rows when features is
  * empty.
+ *
+ * Slice 2E note: the kernel-side `RecomputeEngine.onRelower` emitter
+ * fires on every `session.params.update` (see
+ * `src/modeling/buildModel.ts`). Studio is a separate browser process
+ * from the CaptureSession (the session lives in the Node dev-server
+ * middleware that backs `/__kernelcad/mesh`), so live-refreshing this
+ * hook on relower requires a server-to-client push (SSE / WebSocket)
+ * that doesn't exist yet. Until that push lands, ParamsTab refreshes
+ * happen on the next `/__kernelcad/mesh` fetch (driven by code changes
+ * or the manual Validate button). The emitter is already in place so
+ * the server side can publish onto an SSE channel without further
+ * kernel changes.
  */
 export function useRecomputeResult(): StudioRecomputeResult {
     const workbench = useWorkbench();

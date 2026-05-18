@@ -18,6 +18,8 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
 import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 
 beforeAll(async () => { await initOcct(); });
 
@@ -105,6 +107,9 @@ describe('Shape.rotate accepts Editable<number> — per-component capture', () =
 describe('Shape.translate Editable — params.update reactivity', () => {
   it('updating x translates the box; bbox center shifts by the delta', async () => {
     const session = new CaptureSession();
+    // Slice 2E: `params.update` requires an attached engine; `buildModel` does
+    // this automatically, but this test drives the session directly.
+    session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
     const api = createApi({ session });
     const x = api.param('x', 5);
     const shape = api.box(10, 10, 10).translate(x, 0, 0);
