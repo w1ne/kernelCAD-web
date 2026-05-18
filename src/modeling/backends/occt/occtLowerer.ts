@@ -22,6 +22,8 @@ import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
   buildNurbsFace, buildSkinnedSurface, thickenFace, faceToShape,
 } from '../../../kernel/backends/occt/nurbsSurfaceLowerer';
+import { lowerCurve3D } from './curve3dLowerer';
+import { isCurve3DMetadata } from '../../../shared/intent/curve3dRecord';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
@@ -413,6 +415,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
     'referenceImage',   // virtual — no BREP; defense-in-depth guard
+    'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -2413,6 +2416,47 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer, so this arm is
         // defense-in-depth for callers that invoke the lowerer directly.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'curve3d': {
+        // NURBS Slice B: lower a 3D NURBS curve to a `TopoDS_Edge` backed by
+        // a `Geom_BSplineCurve`. The edge is parked on
+        // `session.importedGeometry` so downstream consumers (variableSweep,
+        // surfaceFromBoundary, lazy Curve3DProxy evaluators) can reach it.
+        // Like `referenceImage`, this record contributes no `Shape` — the
+        // capture layer marks it `metadata.virtual = true`.
+        const meta = r.metadata as { curve3d?: unknown } | undefined;
+        const m = meta?.curve3d;
+        if (!isCurve3DMetadata(m)) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.curve3d.degenerate-controls',
+            featureId: r.id,
+            severity: 'error',
+            message: `curve3d record '${r.id}' is missing valid metadata.curve3d.`,
+            hint: 'Build the record via session.addCurve3D({ metadata }) so the validators run.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        try {
+          const { edge } = lowerCurve3D(m);
+          // Park the raw OCCT edge on the importedGeometry map. The map is
+          // typed as ShapeBackend (the same slot fromSTEP / sdfMaterialize
+          // use); curve3d stores a TopoDS_Edge instead, and the consumer
+          // (variableSweep lowerer, lazy proxy) is responsible for retrieving
+          // it with the matching expectation.
+          this.importedGeometry.set(r.id, edge as unknown as ShapeBackend);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            featureId: r.id,
+            severity: 'error',
+            message: `OCCT BSplineCurve build failed: ${msg}`,
+            hint: 'kernel-failed — verify the control points, knots, and degree form a valid NURBS curve.',
+          });
+        }
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       default:
