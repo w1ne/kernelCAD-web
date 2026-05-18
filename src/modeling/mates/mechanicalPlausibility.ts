@@ -1,12 +1,26 @@
 import type { Assembly } from '../capture/assembly';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { Vec3 } from '../../shared/intent/types';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import { solveMates } from './solver';
 
 type Bbox = { min: Vec3; max: Vec3 };
 
+/**
+ * Mechanical-plausibility review attaches one of five `assembly.mechanical.*`
+ * codes per diagnostic. Each code is registered in the central
+ * `DIAGNOSTIC_REGISTRY` (`src/shared/diagnostics/registry.ts`) so the
+ * `code` literal here is a single-element `Extract` of `DiagnosticCode` —
+ * the type system enforces that any new mechanical-plausibility code goes
+ * through the registry first.
+ *
+ * Per-code interfaces retain their own structured payload fields
+ * (`partName`, `componentCount`, etc.) because the consumers
+ * (`inspectAssembly`, `reviewCad`, `mechanismFitness`) need that richer
+ * shape — those are downstream of the code itself.
+ */
 export type MechanicalPlausibilityDiagnostic =
   | PartDisconnectedDiagnostic
   | ConnectorNotInSolidDiagnostic
@@ -15,7 +29,7 @@ export type MechanicalPlausibilityDiagnostic =
   | MateContactMissingDiagnostic;
 
 export interface PartDisconnectedDiagnostic {
-  readonly code: 'assembly.mechanical.part-disconnected';
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.part-disconnected'>;
   readonly severity: 'warning';
   readonly message: string;
   readonly hint: string;
@@ -27,7 +41,7 @@ export interface PartDisconnectedDiagnostic {
 }
 
 export interface ConnectorNotInSolidDiagnostic {
-  readonly code: 'assembly.mechanical.connector-not-in-solid';
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.connector-not-in-solid'>;
   readonly severity: 'error';
   readonly message: string;
   readonly hint: string;
@@ -40,7 +54,7 @@ export interface ConnectorNotInSolidDiagnostic {
 }
 
 export interface MateContactMissingDiagnostic {
-  readonly code: 'assembly.mechanical.mate-contact-missing';
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.mate-contact-missing'>;
   readonly severity: 'error';
   readonly message: string;
   readonly hint: string;
@@ -56,7 +70,7 @@ export interface MateContactMissingDiagnostic {
 }
 
 export interface RevoluteUnsupportedDiagnostic {
-  readonly code: 'assembly.mechanical.revolute-unsupported';
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.revolute-unsupported'>;
   readonly severity: 'error';
   readonly message: string;
   readonly hint: string;
@@ -69,7 +83,7 @@ export interface RevoluteUnsupportedDiagnostic {
 }
 
 export interface RevoluteContactMissingDiagnostic {
-  readonly code: 'assembly.mechanical.revolute-contact-missing';
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.revolute-contact-missing'>;
   readonly severity: 'error';
   readonly message: string;
   readonly hint: string;

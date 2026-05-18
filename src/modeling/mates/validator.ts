@@ -26,6 +26,7 @@
 import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
 import { validateJointAxisBinding } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
@@ -53,47 +54,36 @@ export type ValidatorStatus =
   | 'redundant-ok'               // v0.6 — mates over-determine but agree
   | 'did-not-converge';          // v0.6 — solver iter-cap hit
 
-export type ValidatorDiagnosticCode =
-  // v0.5 MVP codes (do not remove)
+/**
+ * Codes the assembly validator pipeline may attach to a `ValidatorDiagnostic`.
+ * Derived from the central `DIAGNOSTIC_REGISTRY` so adding/removing an
+ * `assembly.*` code goes through a single source of truth — see
+ * `src/shared/diagnostics/registry.ts`. Narrower than `DiagnosticCode`:
+ * non-validator codes (visual review, mechanical-plausibility, transmission)
+ * stay out of this alias deliberately because the validator does not emit
+ * them — they enter the same MCP error-chain through their own pipelines.
+ */
+export type ValidatorDiagnosticCode = Extract<
+  DiagnosticCode,
   | 'assembly.part.floating'
   | 'assembly.part.orphan'
   | 'assembly.interference.overlap'
-  // v0.6 new codes
   | 'assembly.part.under-constrained'
   | 'assembly.mate.over-constrained'
   | 'assembly.mate.type-mismatch'
   | 'assembly.mate.connector-not-found'
   | 'assembly.loop.unclosed'
   | 'assembly.solver.did-not-converge'
-  // v0.6.2 — fold from PoseEnvelopeDiagnosticCode (Gap 1).
-  // These appear in the validator stream only when
-  // `validateAssemblyWithMates(arm, _, poseEnvelopeResult)` is called with
-  // an envelope result; capture-time `solvedModel({validate:'error'})`
-  // wires this up automatically when at least one mate has scalar limits.
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
   | 'assembly.pose-envelope.interference'
   | 'assembly.pose-envelope.connector-unresolved'
-  // v0.6.2 — new (Gap 4). Warning-severity per articulated mate
-  // (revolute/prismatic/cylindrical/pin_slot) without declared
-  // limitsDeg/limitsMm. Ball mates with per-axis limit triples are not
-  // sampled by the envelope (yet) and are exempt from this check.
   | 'assembly.mate.limit-missing'
-  // v0.7.4 — kinematic-grounding gates. Emitted by the per-gate modules
-  // `mountingHoleConsistency.ts`, `jointAxisBinding.ts`,
-  // `jointLoadCapacity.ts` (modules are dead code until Phase 6 wires them
-  // into `validateAssemblyWithMates`). All three are severity `error` under
-  // `validate:'error'`; downstream consumers (lowerer, MCP error-chain
-  // echoes) reference these codes so the union must include them.
   | 'assembly.mounting-hole.mismatch'
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.load-exceeded'
-  // v0.7 Slice 1 — workspace-reachability gate. Emitted by
-  // `workspaceReachability.ts` when an `arm.workspace(...)` declared target
-  // lies outside the sampled `ConnectorWorkspace` AABB minus tolerance.
-  // Severity `error` under `validate:'error'`; `info` when the gate runs
-  // without an envelope (declarations are inert until `posesGate:'envelope'`).
-  | 'assembly.workspace.unreachable';
+  | 'assembly.workspace.unreachable'
+>;
 
 export interface ValidatorDiagnostic {
   readonly code: ValidatorDiagnosticCode;
