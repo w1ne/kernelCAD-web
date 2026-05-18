@@ -63,4 +63,58 @@ describe('NumericScrubInput', () => {
     expect(container.querySelector('[title="lo"]')).not.toBeNull();
     expect(container.querySelector('[title="hi"]')).not.toBeNull();
   });
+
+  it('preserves user draft when external value changes mid-edit', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <NumericScrubInput name="width" value={50} onChange={onChange} />
+    );
+    const input = screen.getByTestId('scrub-input-width') as HTMLInputElement;
+    input.focus();
+    fireEvent.change(input, { target: { value: '7' } });
+    // External value update while user is typing
+    rerender(<NumericScrubInput name="width" value={99} onChange={onChange} />);
+    // Draft should still be "7" (in-progress edit)
+    expect(input.value).toBe('7');
+  });
+
+  it('commits on Enter key', () => {
+    const onChange = vi.fn();
+    render(<NumericScrubInput name="width" value={50} onChange={onChange} />);
+    const input = screen.getByTestId('scrub-input-width') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '88' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onChange).toHaveBeenCalledWith(88);
+  });
+
+  it('shows out-of-range indicator when value exceeds declared max', () => {
+    render(
+      <NumericScrubInput name="width" value={150} min={0} max={100} onChange={() => {}} />
+    );
+    const input = screen.getByTestId('scrub-input-width') as HTMLInputElement;
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('scrub handle drag updates value', () => {
+    const onChange = vi.fn();
+    render(
+      <NumericScrubInput name="width" value={50} min={0} max={100} onChange={onChange} />
+    );
+    const handle = screen.getByTestId('scrub-handle-width');
+    // setPointerCapture + releasePointerCapture aren't in JSDOM by default; stub them.
+    (handle as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture = () => {};
+    (handle as unknown as { releasePointerCapture: (id: number) => void }).releasePointerCapture =
+      () => {};
+    (handle as unknown as { hasPointerCapture: (id: number) => boolean }).hasPointerCapture =
+      () => false;
+    fireEvent.pointerDown(handle, {
+      pointerId: 1,
+      clientX: 100,
+      button: 0,
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 110 }); // 10px drag * step (1) = +10
+    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 110 });
+    expect(onChange).toHaveBeenCalledWith(60);
+  });
 });

@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon } from 'lucide-react';
 
 interface ToolbarProps {
     project: { name: string } | null;
@@ -8,6 +8,13 @@ interface ToolbarProps {
     onRun: () => void;
     agentRailOpen: boolean;
     onToggleAgentRail: () => void;
+    /** True iff at least one referenceImage record is present in the current
+     *  scene. The toggle button only renders when this is true; otherwise the
+     *  toolbar slot stays empty so casual scripts don't see a dead button. */
+    referenceImagesPresent: boolean;
+    /** Current visibility of the `__referenceImages` overlay group. */
+    referenceImagesVisible: boolean;
+    onToggleReferenceImages: () => void;
 }
 
 export function Toolbar({
@@ -18,6 +25,9 @@ export function Toolbar({
     onRun,
     agentRailOpen,
     onToggleAgentRail,
+    referenceImagesPresent,
+    referenceImagesVisible,
+    onToggleReferenceImages,
 }: ToolbarProps) {
     return (
         <div
@@ -66,6 +76,22 @@ export function Toolbar({
                     <Play size={12} />
                     Run
                 </button>
+                {referenceImagesPresent && (
+                    <button
+                        type="button"
+                        onClick={onToggleReferenceImages}
+                        aria-label={referenceImagesVisible ? 'Hide reference images' : 'Show reference images'}
+                        aria-pressed={referenceImagesVisible}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                            referenceImagesVisible
+                                ? 'bg-[#333] text-white'
+                                : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                        }`}
+                    >
+                        <ImageIcon size={12} />
+                        Reference
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={onToggleAgentRail}

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import type { JSX } from 'react';
 
 export interface NumericScrubInputProps {
@@ -23,9 +23,12 @@ export interface NumericScrubInputProps {
 export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
     const { name, value, onChange, min, max, step: stepProp, unit, limitMarks } = props;
     const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
-    const step = stepProp ?? (hasRange ? Math.max((max - min) / 100, 0.01) : 1);
+    const rawStep = stepProp ?? (hasRange ? Math.max((max - min) / 100, 0.01) : 1);
+    // Guard: step must be > 0 for a sensible slider/scrub increment.
+    const step = rawStep > 0 ? rawStep : 1;
     const [lastSyncedValue, setLastSyncedValue] = useState<number>(value);
-    const [draft, setDraft] = useState<string>(String(value));
+    const [draft, setDraft] = useState<string>(Number.isFinite(value) ? String(value) : '');
+    const [scrubStart, setScrubStart] = useState<{ x: number; baseValue: number } | null>(null);
 
     // Sync draft when external value changes (e.g. another component updated the param).
     // Guard with focus check so user's in-progress typing isn't clobbered. The focus
@@ -38,39 +41,75 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
         document.activeElement?.getAttribute('data-scrub-name') === name;
     if (value !== lastSyncedValue && !isFocused) {
         setLastSyncedValue(value);
-        setDraft(String(value));
+        setDraft(Number.isFinite(value) ? String(value) : '');
     }
 
-    const clamp = useCallback(
-        (v: number): number => {
-            let out = v;
-            if (typeof min === 'number') out = Math.max(min, out);
-            if (typeof max === 'number') out = Math.min(max, out);
-            return out;
-        },
-        [min, max]
-    );
+    const clamp = (v: number): number => {
+        let out = v;
+        if (typeof min === 'number') out = Math.max(min, out);
+        if (typeof max === 'number') out = Math.min(max, out);
+        return out;
+    };
 
-    const commit = useCallback(
-        (raw: string) => {
-            const n = Number(raw);
-            if (!Number.isFinite(n)) {
-                setDraft(String(value));
-                return;
-            }
-            const next = clamp(n);
-            setDraft(String(next));
-            if (next !== value) onChange(next);
-        },
-        [clamp, onChange, value]
-    );
+    const commit = (raw: string): void => {
+        const n = Number(raw);
+        if (!Number.isFinite(n)) {
+            setDraft(Number.isFinite(value) ? String(value) : '');
+            return;
+        }
+        const next = clamp(n);
+        setDraft(String(next));
+        if (next !== value) onChange(next);
+    };
 
     const pct = hasRange ? Math.max(0, Math.min(1, (value - min) / (max - min))) : 0;
+    const isOutOfRange =
+        hasRange &&
+        Number.isFinite(value) &&
+        (value < (min as number) || value > (max as number));
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLSpanElement>): void => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setScrubStart({ x: e.clientX, baseValue: value });
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLSpanElement>): void => {
+        if (!scrubStart) return;
+        const dx = e.clientX - scrubStart.x;
+        const multiplier = e.altKey ? 0.1 : e.shiftKey ? 10 : 1;
+        const next = clamp(scrubStart.baseValue + dx * step * multiplier);
+        if (next !== value) onChange(next);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLSpanElement>): void => {
+        if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+        }
+        setScrubStart(null);
+    };
+
+    const inputClassBase =
+        'bg-[#1f1f1f] text-white border rounded px-1.5 py-0.5 w-16 font-mono text-xs text-right';
+    const inputClass = isOutOfRange
+        ? `${inputClassBase} border-red-500 ring-1 ring-red-500`
+        : `${inputClassBase} border-[#333]`;
+    const outOfRangeTitle = isOutOfRange
+        ? `value (${value}) is outside declared range [${min}, ${max}] — clamped from script override`
+        : undefined;
 
     return (
         <div className="flex flex-col gap-1 px-3 py-2" data-testid={`scrub-${name}`}>
             <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-gray-300 truncate" title={name}>
+                <span
+                    className="text-xs text-gray-300 truncate cursor-ew-resize select-none border-b border-dashed border-gray-700"
+                    title={`${name} (drag to scrub, ⌥ fine, ⇧ coarse)`}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                    data-testid={`scrub-handle-${name}`}
+                >
                     {name}
                 </span>
                 <div className="flex items-center gap-1">
@@ -87,8 +126,10 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') commit((e.target as HTMLInputElement).value);
                         }}
-                        className="bg-[#1f1f1f] text-white border border-[#333] rounded px-1.5 py-0.5 w-16 font-mono text-xs text-right"
+                        className={inputClass}
                         aria-label={`${name} value`}
+                        aria-invalid={isOutOfRange || undefined}
+                        title={outOfRangeTitle}
                     />
                     {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
                 </div>
@@ -105,6 +146,7 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
                         className="w-full appearance-none bg-transparent h-1.5"
                         data-testid={`scrub-slider-${name}`}
                         aria-label={`${name} slider`}
+                        aria-valuetext={`${value}${unit ?? ''}`}
                     />
                     <div className="absolute inset-0 pointer-events-none">
                         <div className="h-1.5 bg-[#1f1f1f] rounded relative top-[2px]">

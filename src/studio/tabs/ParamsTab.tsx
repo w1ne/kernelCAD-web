@@ -1,18 +1,38 @@
 import type { JSX } from 'react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
+import { useParamUpdate, type ParamUpdater } from '../hooks/useParamUpdate';
 import type { ParamEntry } from '../../shared/runtime/paramTable';
+import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 
 /**
- * Read-only inspector tab listing script-declared params from `param()`.
+ * Inspector tab listing script-declared params from `param()`.
  *
- * Slice 1 displays current values so a reviewing human can see what the
- * agent has set. Interactive scrub is deferred to a later slice; today,
- * editing happens via the Code tab.
+ * Slice 2A/2B: both numeric and boolean rows are interactive. Edits
+ * commit through `updateParam` from `useRecomputeResult`, which POSTs to
+ * `/__kernelcad/params`; the SSE `relower` event re-fetches mesh +
+ * review so the param table refreshes with the new value.
  */
 export function ParamsTab(): JSX.Element {
-    const { paramTable } = useRecomputeResult();
+    const { paramTable, joints, updateParam } = useRecomputeResult();
+    // Single shared updater for every row in this tab. Numeric scrubs get
+    // a debounced send so slider drag doesn't fire one POST + one full
+    // relower per pointer-move; boolean toggles are single high-intent
+    // clicks, so they fire immediately via `commit`.
+    const updater = useParamUpdate(updateParam, { source: 'ParamsTab' });
 
-    const entries: ParamEntry[] = paramTable && paramTable.size() > 0 ? paramTable.list() : [];
+    // Slice 2C: hide params that are surfaced as joint poses in JointsTab so
+    // the same scalar isn't edited from two places. `poseParamNames` may
+    // contain `null` for numeric-literal poses; only string entries filter.
+    const jointPoseNames = new Set<string>();
+    for (const j of joints ?? []) {
+        for (const n of j.poseParamNames ?? []) {
+            if (typeof n === 'string') jointPoseNames.add(n);
+        }
+    }
+
+    const entries: ParamEntry[] = paramTable && paramTable.size() > 0
+        ? paramTable.list().filter((e) => !jointPoseNames.has(e.name))
+        : [];
 
     if (entries.length === 0) {
         return (
@@ -29,17 +49,19 @@ export function ParamsTab(): JSX.Element {
         <div className="flex flex-col" data-testid="params-tab">
             <ul className="flex flex-col divide-y divide-[#1f1f1f]">
                 {entries.map((entry) => (
-                    <ParamRow key={entry.name} entry={entry} />
+                    <ParamRow key={entry.name} entry={entry} updater={updater} />
                 ))}
             </ul>
-            <div className="px-3 py-2 text-[11px] text-gray-500">
-                Edit in code · open the Code tab to change values
-            </div>
         </div>
     );
 }
 
-function ParamRow({ entry }: { entry: ParamEntry }): JSX.Element {
+interface ParamRowProps {
+    readonly entry: ParamEntry;
+    readonly updater: ParamUpdater;
+}
+
+function ParamRow({ entry, updater }: ParamRowProps): JSX.Element {
     if (entry.type === 'boolean') {
         return (
             <li
@@ -52,7 +74,9 @@ function ParamRow({ entry }: { entry: ParamEntry }): JSX.Element {
                 <input
                     type="checkbox"
                     checked={entry.value as boolean}
-                    disabled
+                    onChange={(e) => {
+                        updater.commit([{ name: entry.name, value: e.target.checked }]);
+                    }}
                     aria-label={`${entry.name} value`}
                     data-testid={`param-checkbox-${entry.name}`}
                 />
@@ -63,35 +87,21 @@ function ParamRow({ entry }: { entry: ParamEntry }): JSX.Element {
     const value = entry.value as number;
     const min = entry.meta?.min;
     const max = entry.meta?.max;
-    const hasRange = typeof min === 'number' && typeof max === 'number' && max > min;
-    const pct = hasRange ? Math.max(0, Math.min(1, (value - (min as number)) / ((max as number) - (min as number)))) : 0;
 
     return (
         <li
-            className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+            className="text-xs text-gray-300"
             data-testid={`param-row-${entry.name}`}
         >
-            <span className="flex-1 truncate" title={entry.name}>
-                {entry.name}
-            </span>
-            {hasRange && (
-                <div
-                    className="relative h-1 w-20 rounded bg-[#222]"
-                    data-testid={`param-range-${entry.name}`}
-                    aria-label={`${entry.name} range`}
-                >
-                    <div
-                        className="absolute inset-y-0 left-0 rounded bg-[#3b82f6]"
-                        style={{ width: `${pct * 100}%` }}
-                    />
-                </div>
-            )}
-            <span className="tabular-nums text-gray-200">{formatNumber(value)}</span>
+            <NumericScrubInput
+                name={entry.name}
+                value={value}
+                min={min}
+                max={max}
+                onChange={(next) => {
+                    updater.commitDebounced([{ name: entry.name, value: next }]);
+                }}
+            />
         </li>
     );
-}
-
-function formatNumber(v: number): string {
-    if (Number.isInteger(v)) return String(v);
-    return v.toFixed(3).replace(/\.?0+$/, '');
 }

@@ -19,7 +19,21 @@ function fixture(overrides: Partial<StudioRecomputeResult> = {}): StudioRecomput
         paramTable: null,
         diagnostics: [],
         recomputeMs: 0,
+        joints: [],
         ...overrides,
+    };
+}
+
+function jointFixture(name: string) {
+    return {
+        mate: {
+            name,
+            a: `${name}.a`,
+            b: `${name}.b`,
+            type: 'revolute' as const,
+        },
+        pose: 0,
+        poseParamNames: [name],
     };
 }
 
@@ -75,15 +89,39 @@ describe('getVisibleTabs', () => {
         });
     }
 
-    it('reserved tabs (joints/sections/cut/animation/render) are never returned (Phase 2 baseline)', () => {
+    it('reserved tabs (sections/cut/animation/render) are never returned (Phase 2 baseline)', () => {
         const result = fixture({
             paramTable: paramTableWith(1),
             validity: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
         });
         const tabs = getVisibleTabs(result);
-        for (const reserved of ['joints', 'sections', 'cut', 'animation', 'render'] as TabId[]) {
+        for (const reserved of ['sections', 'cut', 'animation', 'render'] as TabId[]) {
             expect(tabs).not.toContain(reserved);
         }
+    });
+
+    it('joints tab surfaces when at least one mate with pose is present (Slice 2C)', () => {
+        const result = fixture({ joints: [jointFixture('shoulder')] });
+        expect(getVisibleTabs(result)).toContain('joints');
+    });
+
+    it('joints tab is hidden when joints[] is empty', () => {
+        expect(getVisibleTabs(fixture({ joints: [] }))).not.toContain('joints');
+    });
+
+    it('joints tab orders after params, before validity', () => {
+        const result = fixture({
+            paramTable: paramTableWith(1),
+            joints: [jointFixture('elbow')],
+            validity: { status: 'solved', diagnostics: [], partCount: 2, jointCount: 1 },
+        });
+        expect(getVisibleTabs(result)).toEqual([
+            'scene',
+            'code',
+            'params',
+            'joints',
+            'validity',
+        ]);
     });
 
     it('export tab surfaces when geometries.length > 0 (Slice 1.4)', () => {
