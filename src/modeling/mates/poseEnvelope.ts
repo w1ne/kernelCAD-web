@@ -5,6 +5,7 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
+import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences } from '../runtime/detectInterferences';
@@ -18,12 +19,23 @@ import {
 import type { MatePose, MateRecord } from './mate';
 import { solveMates } from './solver';
 
-export type PoseEnvelopeDiagnosticCode =
+/**
+ * Codes the pose-envelope review may attach to a `PoseEnvelopeDiagnostic`.
+ * Derived from the central `DIAGNOSTIC_REGISTRY` so the envelope pipeline
+ * shares a single source of truth with the rest of the assembly validators
+ * — see `src/shared/diagnostics/registry.ts`. The four pose / envelope
+ * codes plus the gripper-aperture warning live here because they are
+ * emitted only by this module's review pass; the validator folds them in
+ * via `foldEnvelopeDiagnostics()`.
+ */
+export type PoseEnvelopeDiagnosticCode = Extract<
+  DiagnosticCode,
   | 'assembly.pose.out-of-limits'
   | 'assembly.pose-envelope.solve-failed'
   | 'assembly.pose-envelope.interference'
   | 'assembly.pose-envelope.connector-unresolved'
-  | 'assembly.gripper-aperture.connector-missing';
+  | 'assembly.gripper-aperture.connector-missing'
+>;
 
 export interface PoseEnvelopeDiagnostic {
   readonly code: PoseEnvelopeDiagnosticCode;

@@ -5,12 +5,13 @@
 // DIAGNOSTIC_REGISTRY — i.e. the skill files never invent a code that the
 // kernel does not actually emit.
 //
-// Known out-of-registry codes are listed in KNOWN_ORPHANS below; these are
-// assembly-validator codes that flow through a separate pipeline today and
-// have not yet been folded into the central registry. The gate asserts no
-// NEW orphan literals creep into skill markdown. Closing each KNOWN_ORPHAN
-// is a future follow-up: either add a registry entry or remove the MD
-// reference.
+// Historically the assembly validators emitted a parallel set of codes
+// that lived in local unions (`ValidatorDiagnosticCode`,
+// `PoseEnvelopeDiagnosticCode`, `MechanicalPlausibilityDiagnostic`) and
+// the gate kept a KNOWN_ORPHANS allowlist for the 24 codes that flowed
+// outside the registry. That allowlist is now empty: every assembly
+// diagnostic code is registered in DIAGNOSTIC_REGISTRY and the parallel
+// unions are derived from it via `Extract<DiagnosticCode, ...>`.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -21,36 +22,11 @@ import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILLS_DIR = resolvePath(__dirname, '../../../src/agent/skills');
 
-// Codes referenced in skill markdown that are emitted outside the kernel
-// diagnostic vocabulary (assembly validators, mechanical-plausibility,
-// pose-envelope, etc.). Each is a future follow-up to either fold into
-// DIAGNOSTIC_REGISTRY or rename in MD.
-const KNOWN_ORPHANS: ReadonlySet<string> = new Set([
-  'assembly.connector.topology-not-resolvable',
-  'assembly.gripper-aperture.connector-missing',
-  'assembly.interference.overlap',
-  'assembly.joint-axis.unbound',
-  'assembly.joint.load-exceeded',
-  'assembly.loop.unclosed',
-  'assembly.mate.connector-not-found',
-  'assembly.mate.over-constrained',
-  'assembly.mate.type-mismatch',
-  'assembly.mounting-hole.mismatch',
-  'assembly.part.floating',
-  'assembly.part.orphan',
-  'assembly.part.under-constrained',
-  'assembly.pose-envelope.connector-unresolved',
-  'assembly.pose-envelope.interference',
-  'assembly.pose-envelope.solve-failed',
-  'assembly.pose.out-of-limits',
-  'assembly.solver.did-not-converge',
-  'assembly.transmission.missing-for-coupled-mate',
-  'assembly.transmission.path-disconnected',
-  'assembly.visual.review-check-failed',
-  'assembly.visual.review-evidence-weak',
-  'assembly.visual.review-incomplete',
-  'assembly.workspace.unreachable',
-]);
+// Retained as a (now-empty) allowlist so future deliberate orphans can be
+// recorded here with a follow-up note rather than silently passing the
+// gate. The "stale allowlist" guard below fails CI if anything in here
+// becomes registered, keeping the set honest.
+const KNOWN_ORPHANS: ReadonlySet<string> = new Set<string>();
 
 // Match `<group>.<segment>.<segment>(.<segment>)*` where group is one of the
 // known top-level namespaces. Requires at least one inner dot so we don't
