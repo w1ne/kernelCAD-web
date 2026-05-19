@@ -146,6 +146,8 @@ export type FeatureKind =
   | 'surfaceThicken' | 'surfaceToShape'
   // Slice A: reference-image overlay node (capture-only, no OCCT output).
   | 'referenceImage'
+  // W2: HDRI / IBL render-environment node (capture-only, no OCCT output).
+  | 'renderEnvironment'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
