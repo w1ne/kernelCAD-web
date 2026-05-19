@@ -14,6 +14,8 @@ import { resolveColor } from '../../../shared/render/palette';
 import { pbrFromColor } from '../../../shared/render/materialRoles';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
+import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
+import { applyEnvironment } from '../../../shared/render/environment';
 import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import type { RenderView } from '../../../shared/render/views';
@@ -80,6 +82,11 @@ export interface DemoPlayerWindow {
   ): { groupCount: number };
   /** Show or hide the reference-image overlay group (`__referenceImages`). */
   setReferenceImagesVisible(visible: boolean): void;
+  /** Apply (or clear) an HDRI environment. Used by the CLI's
+   *  `--environment` flag to override the script's setting, and by the
+   *  studio toolbar's preview-only visibility toggle. Pass null to fall
+   *  back to the default three-light rig. */
+  setRenderEnvironment(spec: RenderEnvironmentSpec | null): Promise<void>;
   /** Debug: dump scene state. */
   dumpScene(): {
     childCount: number;
@@ -378,12 +385,22 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
 
         let groupCount = 0;
-        // Separate virtual referenceImage records from geometry records.
+        // Separate virtual referenceImage / renderEnvironment records from geometry records.
         const geometryFeatures: typeof perFeature = [];
         const referenceImageFeatures: typeof perFeature = [];
+        let renderEnvSpec: RenderEnvironmentSpec | null = null;
         for (const ser of perFeature) {
           if (ser.featureKind === 'referenceImage' && ser.referenceImage) {
             referenceImageFeatures.push(ser);
+          } else if (ser.featureKind === 'renderEnvironment' && ser.renderEnvironment) {
+            // Last-wins per design: later script call overwrites earlier.
+            const env = ser.renderEnvironment;
+            renderEnvSpec = {
+              ...(env.preset !== undefined ? { preset: env.preset } : {}),
+              ...(env.url !== undefined ? { url: env.url } : {}),
+              intensity: env.intensity,
+              rotation: env.rotation,
+            };
           } else {
             geometryFeatures.push(ser);
           }
@@ -513,6 +530,17 @@ export function DemoPlayerPage(): React.JSX.Element {
           }
         }
 
+        // Apply HDRI / IBL environment if the script declared one (or clear
+        // any prior env when the new mesh-load doesn't include one). Async,
+        // but we don't await — meshes are already on screen; env will pop in
+        // when the .hdr finishes loading + PMREM finishes prefiltering.
+        if (sceneRef.current) {
+          const ctx = sceneRef.current;
+          void applyEnvironment(ctx.renderer, ctx.scene, renderEnvSpec).then(() => {
+            ctx.renderer.render(ctx.scene, ctx.camera);
+          });
+        }
+
         return { groupCount };
       },
       setReferenceImagesVisible: (visible) => {
@@ -523,6 +551,12 @@ export function DemoPlayerPage(): React.JSX.Element {
           group.visible = visible;
           ctx.renderer.render(ctx.scene, ctx.camera);
         }
+      },
+      setRenderEnvironment: async (spec) => {
+        if (!sceneRef.current) return;
+        const ctx = sceneRef.current;
+        await applyEnvironment(ctx.renderer, ctx.scene, spec);
+        ctx.renderer.render(ctx.scene, ctx.camera);
       },
       dumpScene: () => {
         const scene = sceneRef.current?.scene;
