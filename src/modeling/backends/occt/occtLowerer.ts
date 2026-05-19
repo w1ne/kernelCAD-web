@@ -2477,6 +2477,11 @@ export class OcctLowerer implements FeatureLowerer {
         // defense-in-depth for callers that invoke the lowerer directly.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
+      case 'renderEnvironment': {
+        // Virtual record — no BREP output. Same defense-in-depth pattern as
+        // 'referenceImage'; recomputeEngine skips this kind via metadata.virtual.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
       case 'curve3d': {
         // NURBS Slice B: lower a 3D NURBS curve to a `TopoDS_Edge` backed by
         // a `Geom_BSplineCurve`. The edge is parked on
