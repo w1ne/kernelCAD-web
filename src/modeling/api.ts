@@ -13,6 +13,11 @@ import {
   type EdgeSegment,
 } from '../kernel/backends/occt/edgeQueries';
 import type { ReferenceImageHandle, ReferenceImageScale } from '../shared/intent/referenceImageRecord';
+import type {
+  RenderEnvironmentHandle,
+  RenderEnvironmentMetadata,
+  RenderEnvironmentSpec,
+} from '../shared/intent/renderEnvironmentRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
@@ -271,6 +276,18 @@ export interface KernelCadApi {
       flipV?: boolean;
     },
   ): ReferenceImageHandle;
+
+  /**
+   * Set the HDRI / IBL lighting environment for the rendered scene. Pass
+   * either a built-in preset key or a `.hdr` URL; intensity (default 1.0)
+   * scales `envMapIntensity` on all PBR materials, and rotation (degrees,
+   * default 0) rotates the env map around the world Y axis.
+   *
+   * Default behavior (script never calls this) is the existing three-light
+   * rig — no env map applied. Multiple calls register multiple records; the
+   * last one wins at render time.
+   */
+  setRenderEnvironment(spec: RenderEnvironmentSpec): RenderEnvironmentHandle;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -786,6 +803,13 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       // Cast metadata — ReferenceImageMetadata is stored under the [key: string]: unknown
       // index signature of FeatureMetadata, so we re-surface it with proper typing here.
       const metadata = record.metadata as unknown as import('../shared/intent/referenceImageRecord').ReferenceImageMetadata;
+      return { id, metadata };
+    },
+
+    setRenderEnvironment(spec) {
+      const id = session.addRenderEnvironment(spec);
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as RenderEnvironmentMetadata;
       return { id, metadata };
     },
   };
