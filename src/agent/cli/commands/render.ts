@@ -24,6 +24,8 @@ export interface RenderInput {
   hideReferenceImages: boolean;
   /** Additional `--pose <az,el>` captures, repeatable on the CLI. */
   poses?: string[];
+  /** HDRI / IBL environment override. Preset key, URL, or 'none' to suppress. */
+  environment?: string;
 }
 
 export interface RenderCliResult {
@@ -44,6 +46,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       poses: input.poses,
       baseUrl: input.baseUrl,
       hideReferenceImages: input.hideReferenceImages,
+      ...(input.environment !== undefined ? { environment: input.environment } : {}),
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -109,6 +112,10 @@ export function renderCommand(): Command {
     )
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .option(
+      '--environment <preset|url|none>',
+      "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL, or 'none' to force the default three-light rig",
+    )
+    .option(
       '--pose <az,el>',
       'capture an arbitrary az,el pose (degrees; az=0,el=0 is front, +az is CCW around Z, +el lifts the camera). Repeatable.',
       (value: string, prev: string[]) => prev.concat([value]),
@@ -122,6 +129,7 @@ export function renderCommand(): Command {
       baseUrl: string;
       hideReferenceImages: boolean;
       pose: string[];
+      environment?: string;
     }) => {
       const r = await renderScript({
         file,
@@ -132,6 +140,7 @@ export function renderCommand(): Command {
         baseUrl: opts.baseUrl,
         hideReferenceImages: opts.hideReferenceImages,
         poses: opts.pose,
+        ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;

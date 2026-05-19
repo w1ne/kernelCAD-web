@@ -29,6 +29,7 @@ declare const window: {
     setRenderView: (view: RenderView) => void;
     setRenderPose: (azDeg: number, elDeg: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
+    setRenderEnvironment: (spec: unknown) => Promise<void>;
   };
 };
 
@@ -47,6 +48,11 @@ export interface HeadlessRenderOpts {
   /** When true, hides the `__referenceImages` overlay group before taking
    *  screenshots. Useful for clean engineering-view captures without overlays. */
   hideReferenceImages?: boolean;
+  /** Override the script's setRenderEnvironment() (or apply one when the
+   *  script set none). Preset keys map to bundled HDRIs; 'none' suppresses
+   *  any env (CI fallback for the black-frame gate); any other string is
+   *  treated as a URL. */
+  environment?: 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse' | 'none' | string;
 }
 
 export interface HeadlessRenderResult {
@@ -104,6 +110,24 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {
       await page.evaluate(() => window.__demoPlayer?.setReferenceImagesVisible(false));
+    }
+
+    // 3c. CLI --environment override: takes precedence over the script's
+    // setRenderEnvironment(). 'none' explicitly clears any env (CI fallback
+    // for the black-frame gate). Bundled preset keys map to /hdri/<slug>_1k.hdr;
+    // any other string is treated as a URL verbatim.
+    if (opts.environment !== undefined) {
+      const envArg = opts.environment;
+      const PRESETS = new Set(['studio', 'softbox', 'neutral', 'outdoor', 'warehouse']);
+      const spec: unknown = envArg === 'none'
+        ? null
+        : PRESETS.has(envArg)
+          ? { preset: envArg }
+          : { url: envArg };
+      await page.evaluate(
+        (s) => window.__demoPlayer!.setRenderEnvironment(s),
+        spec,
+      );
     }
 
     // Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
