@@ -15,6 +15,14 @@ interface ToolbarProps {
     /** Current visibility of the `__referenceImages` overlay group. */
     referenceImagesVisible: boolean;
     onToggleReferenceImages: () => void;
+    /** True iff at least one renderEnvironment record is present. */
+    renderEnvironmentPresent?: boolean;
+    /** Whether the HDRI env is currently applied. False = renderer falls back
+     *  to the default three-light rig even though the script set one. */
+    renderEnvironmentVisible?: boolean;
+    /** Display label for the active preset ('studio', 'softbox', 'custom', …). */
+    renderEnvironmentPresetLabel?: string;
+    onToggleRenderEnvironment?: () => void;
 }
 
 export function Toolbar({
@@ -28,6 +36,10 @@ export function Toolbar({
     referenceImagesPresent,
     referenceImagesVisible,
     onToggleReferenceImages,
+    renderEnvironmentPresent = false,
+    renderEnvironmentVisible = true,
+    renderEnvironmentPresetLabel = '',
+    onToggleRenderEnvironment,
 }: ToolbarProps) {
     return (
         <div
@@ -90,6 +102,22 @@ export function Toolbar({
                     >
                         <ImageIcon size={12} />
                         Reference
+                    </button>
+                )}
+                {renderEnvironmentPresent && (
+                    <button
+                        type="button"
+                        data-testid="toolbar-render-environment"
+                        onClick={onToggleRenderEnvironment}
+                        aria-label={renderEnvironmentVisible ? 'Disable HDRI environment' : 'Enable HDRI environment'}
+                        aria-pressed={renderEnvironmentVisible}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                            renderEnvironmentVisible
+                                ? 'bg-[#333] text-white'
+                                : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                        }`}
+                    >
+                        Env: {renderEnvironmentPresetLabel}
                     </button>
                 )}
                 <button
