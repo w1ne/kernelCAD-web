@@ -44,7 +44,6 @@ const LENS_CZ      = -1;        // z offset of lens center
 const LENS_CORNER_R = 5.5;      // corner rounding (squarish-rounded NURBS)
 
 // Bridge / nose notch
-const BRIDGE_HALF_GAP = 8;      // inner edge of each lens = ±BRIDGE_HALF_GAP
 const NOSE_NOTCH_HALF_W = 4;    // half-width of inverted-V cut
 const NOSE_NOTCH_DEPTH  = 4.5;  // depth of cut INTO bridge from top
 // Top of the V-notch sits BELOW the brow line so the cut does not reach the
