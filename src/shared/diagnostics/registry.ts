@@ -386,6 +386,35 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'referenceImage() was called with a file extension outside the supported raster set.',
   },
+  // Render environment (4) — W2 HDRI/IBL
+  'feature.render-environment.conflicting-spec': {
+    hintTemplate: "Pass either { preset } or { url }, not both.",
+    nextAction: { kind: 'fix-arg', field: 'spec' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'setRenderEnvironment() received both preset and url; the spec is ambiguous.',
+  },
+  'feature.render-environment.missing-spec': {
+    hintTemplate: "Pass a preset key ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse') or a custom { url }.",
+    nextAction: { kind: 'fix-arg', field: 'spec' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'setRenderEnvironment() received neither preset nor url; nothing to load.',
+  },
+  'feature.render-environment.unknown-preset': {
+    hintTemplate: "Valid presets: 'studio', 'softbox', 'neutral', 'outdoor', 'warehouse'.",
+    nextAction: { kind: 'fix-arg', field: 'preset' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'setRenderEnvironment() received a preset key that is not one of the bundled HDRIs.',
+  },
+  'feature.render-environment.intensity-out-of-range': {
+    hintTemplate: 'Pass an intensity in (0, 100].',
+    nextAction: { kind: 'fix-arg', field: 'intensity' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'setRenderEnvironment() received an intensity outside the (0, 100] range.',
+  },
   // Material (3) — Slice A + per-face
   'feature.material.invalid-base-color': {
     hintTemplate: 'Pass a CSS color string or a registered role token to baseColor.',
