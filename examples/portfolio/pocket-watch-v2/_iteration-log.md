@@ -109,3 +109,25 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Composition still right-biased — the camera fitter sees the bail high above the body and frames around the whole column.
 
 **Decision:** commit, then iter 4 tries to fillet the horn step. If fillet fails (OCCT often refuses high-curvature unions), fall back to an extra mid-section box.
+
+## iter 4 — three-step pendant (smoother taper)
+
+**What changed:**
+- Horn now stacks THREE boxes: wide lower shoulders + medium mid + narrow upper finial. Each step also tapers in Y (depth) by 5% — wider depth at the base, narrower toward the bail.
+- Tried `.fillet(0.4)` on the union to smooth the step edges — OCCT refused (non-G1 union seam, known limitation). Reverted; the stepped look is left in.
+- Crown stays on the upper side; its X is computed against the LOWER horn's width because the hex prism's bbox in Z reaches DOWN into the lower-horn Z range.
+
+**Render:** `iter-4.png`
+
+**Diff against the reference:**
+- Three-step pendant reads as a gradual taper, much closer to the reference than iter 3's two-step.
+- The transitions are still HARD STEPS (visible right-angle ledges at each step) rather than a smooth curve. The reference has a smooth fillet at every transition.
+- Composition is still right-jammed.
+- Crystal, dial, hands, subdial readable. Frame colour acceptable but could be slightly more saturated.
+
+**3 worst issues, ranked:**
+1. Stepped transitions still read as "tiered cake" / "stairs" rather than a sculpted taper. A smooth profile would need a loft or a sweep along a curved rail.
+2. Composition right-bias persists.
+3. Material rendering reads slightly desaturated vs the reference's coral.
+
+**Decision:** commit. Try a `loft` between the lower and upper trapezoid profiles for iter 5 — that's the kernelCAD-native way to get a smooth taper.

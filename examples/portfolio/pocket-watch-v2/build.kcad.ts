@@ -185,18 +185,25 @@ const PINK_MAT = {
 };
 const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-// Horn = two stacked boxes for a stepped-taper "neck → shoulders" look.
-// Lower box (wide shoulders) spans the case-top flat; upper box (narrower
-// neck) rises to meet the bail.
-const HORN_LOWER_H = HORN_HEIGHT_Z * 0.45;
-const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H;
+// Horn = three stacked boxes for a smoother taper toward the bail. Lower
+// shoulders → mid neck → upper finial. Three steps give a closer
+// approximation to the reference's sculpted profile than two boxes.
+const HORN_LOWER_H = HORN_HEIGHT_Z * 0.40;
+const HORN_MID_H   = HORN_HEIGHT_Z * 0.30;
+const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H - HORN_MID_H;
 const HORN_LOWER_W = HORN_BASE_W_X;
+const HORN_MID_W   = (HORN_BASE_W_X + HORN_TOP_W_X) / 2 + 0.5;   // halfway between
 const HORN_UPPER_W = HORN_TOP_W_X;
-const hornLower = box(HORN_LOWER_W, HORN_DEPTH_Y, HORN_LOWER_H, true)
+const hornLower = box(HORN_LOWER_W, HORN_DEPTH_Y,           HORN_LOWER_H, true)
   .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H / 2);
-const hornUpper = box(HORN_UPPER_W, HORN_DEPTH_Y, HORN_UPPER_H, true)
-  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_UPPER_H / 2);
-const horn = hornLower.union(hornUpper).material(PINK_MAT);
+const hornMid   = box(HORN_MID_W,   HORN_DEPTH_Y * 0.95,    HORN_MID_H,   true)
+  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H / 2);
+const hornUpper = box(HORN_UPPER_W, HORN_DEPTH_Y * 0.85,    HORN_UPPER_H, true)
+  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H + HORN_UPPER_H / 2);
+// Tried .fillet(0.4) on the union to smooth the horizontal step edges;
+// OCCT refused (non-G1 union seam — known limitation). We accept a
+// stepped pendant for now; iter 5 explores loft as an alternative.
+const horn = hornLower.union(hornMid).union(hornUpper).material(PINK_MAT);
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at
@@ -430,11 +437,13 @@ for (let k = 0; k < 6; k += 1) {
 // Crown placement: high enough on the horn that we're ABOVE the frame's
 // angled top-right edge (no overlap with the octagon body), and outboard
 // enough in X that the crown's hex prism doesn't poke into the horn.
-// Crown on the upper horn's +X face, set well outboard so the hex prism's
-// 6-vertex bbox (~±1.1 in YZ) doesn't reach the lower horn's wider X face.
-// Crown Z is at the upper horn's mid-height to clear the lower-upper seam.
-const crownZ = HORN_BASE_Z + HORN_LOWER_H + HORN_UPPER_H * 0.5;
-const crownInnerX = HORN_UPPER_W / 2 + 0.6;
+// Crown on the MID horn's +X face. Mid-horn is narrower than lower-horn
+// but wider than upper-horn — a clean place to anchor the crown where the
+// hex prism's bbox clears both adjacent steps.
+const crownZ = HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H * 0.5;
+// Crown must clear the wider LOWER horn's bbox too (the hex prism extends
+// ±1.1 in Z, so the bottom of the crown reaches into the lower-horn Z range).
+const crownInnerX = HORN_LOWER_W / 2 + 0.4;
 const crownOuterX = crownInnerX + CROWN_LEN;
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
   .material(YELLOW_MAT)
