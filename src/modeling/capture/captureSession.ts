@@ -923,6 +923,14 @@ export class CaptureSession {
     return new Sketch(r.id, this);
   }
 
+  /** Build a `Sketch` wrapper around an already-registered feature id. Used
+   *  by `Shape.projectCurve` (which registers a `projectCurve` record but
+   *  needs to hand back a `Sketch` so the caller can chain `.extrude(d)`).
+   *  Does not register a new record. */
+  sketchFromId(id: FeatureId): Sketch {
+    return new Sketch(id, this);
+  }
+
   appendTransform(id: string, t: ShapeTransform): void {
     // O(n) lookup is deliberate v0.1 simplicity; revisit if profiling shows it.
     const r = this.records.find(x => x.id === id);

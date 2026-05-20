@@ -749,8 +749,10 @@ export class Shape {
   }
 
   /**
-   * W3: Wrap a 2D closed curve onto a 3D face. Pair with `.extrude(...)` /
-   * `.cut(...)` to land an engraved logo or label insert on a curved body.
+   * W3: Wrap a 2D closed curve onto a 3D face. Returns a `Sketch` — chain
+   * `.extrude(depth)` to land an engraved logo or label insert on a curved
+   * body. The Sketch's underlying OcctBackend is a face-bound sketch, so the
+   * extrude direction follows the face normal.
    *
    * `asEdge: true` is captured but currently deferred at lower time —
    * `BRepProj_Projection` is not exposed by the bundled OCCT.
@@ -760,14 +762,14 @@ export class Shape {
     face: FaceSelector | CanonicalFace | string;
     scaleMode?: 'original' | 'native' | 'bounds';
     asEdge?: boolean;
-  }): Shape {
+  }): import('./sketch').Sketch {
     const id = this.session.addProjectCurve(this.id, {
       source: opts.source,
       face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,
       scaleMode: opts.scaleMode,
       asEdge: opts.asEdge,
     });
-    return new Shape(id, this.session);
+    return this.session.sketchFromId(id);
   }
 
   /**

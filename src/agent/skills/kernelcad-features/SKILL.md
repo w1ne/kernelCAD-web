@@ -95,16 +95,25 @@ The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, 
 
 ### `Shape.projectCurve({...})`
 
-Wraps a 2D closed curve onto a 3D face along the face normal. Returns a sketch-tagged Shape that composes with `.extrude(d)` / `.cut(...)`:
+Wraps a 2D closed curve onto a 3D face along the face normal. Returns a `Sketch` (face-bound) that composes with `.extrude(d)` to land a raised silhouette, or pair with the parent's `.subtract(...)` for an engraved logo:
 
 ```typescript
-// Bottle body with a brand silhouette projected onto the side
-const bottle = cylinder(120, 30).rotate([1, 0, 0], 90);
-const logo = path()
-  .moveTo(-8, -5).lineTo(8, -5).lineTo(8, 5).lineTo(-8, 5).close().build();
-const branded = bottle
-  .projectCurve({ source: { kind: 'sketchCommands', commands: logo.commands }, face: 'front' })
-  .extrude(0.4);   // raise the silhouette 0.4 mm off the cylinder
+// Bottle body with a brand silhouette projected and raised on the top face.
+// The source curve is expressed as a SketchCommand[] (the same wire format
+// emitted by `path().moveTo(...).lineTo(...).close()`).
+const mm = (n) => ({ expression: String(n), unit: 'mm', evaluated: n });
+const logoCommands = [
+  { kind: 'moveTo', x: mm(-8), y: mm(-5) },
+  { kind: 'lineTo', x: mm( 8), y: mm(-5) },
+  { kind: 'lineTo', x: mm( 8), y: mm( 5) },
+  { kind: 'lineTo', x: mm(-8), y: mm( 5) },
+  { kind: 'close' },
+];
+const bottle = cylinder(120, 30);
+const raised = bottle
+  .projectCurve({ source: { kind: 'sketchCommands', commands: logoCommands }, face: 'top' })
+  .extrude(0.4);  // extrude along the face normal — raises the silhouette
+const branded = bottle.union(raised);
 ```
 
 | Field | Type | Notes |
