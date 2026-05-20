@@ -22,6 +22,7 @@
 
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../../shared/intent/types';
+import { isPBRMaterial, type PBRMaterial } from '../../../shared/intent/material';
 
 /**
  * Walk inputs.shape → upstream metadata.color to find the nearest color
@@ -69,6 +70,53 @@ export function lookupSourceColor(
 
     const color = (record.metadata as { color?: unknown } | undefined)?.color;
     if (typeof color === 'string') return color;
+
+    cursor = nextUpstreamId(record);
+  }
+
+  return undefined;
+}
+
+/**
+ * Walk inputs.shape → upstream `metadata.material` to find the nearest PBR
+ * material attribution on or above the source Shape passed to
+ * `assembly.part(name, sourceShape)`.
+ *
+ * Mirrors `lookupSourceColor` but reads `metadata.material` (a `PBRMaterial`
+ * record set by `Shape.material({...})`). The walker uses the same upstream
+ * pointer rule (shape > base > target) and the same boolean-stops-color
+ * convention — material identity, like color identity, dies at boolean
+ * operations.
+ *
+ * Returns the first `metadata.material` encountered (a valid PBRMaterial), or
+ * `undefined` if no material is set on the upstream chain. Pairs with
+ * `lookupSourceColor` — the assembly fan-out should call both; the renderer
+ * prefers `material` over `color` when both are present (full PBR > legacy
+ * role-token string).
+ */
+export function lookupSourceMaterial(
+  partRecord: FeatureRecord,
+  allRecords: readonly FeatureRecord[],
+): PBRMaterial | undefined {
+  if (partRecord.kind !== 'assemblyPart') return undefined;
+
+  const recordById = new Map<FeatureId, FeatureRecord>(
+    allRecords.map((r) => [r.id, r]),
+  );
+
+  const shapeInput = partRecord.inputs.shape as FeatureRef | undefined;
+  if (!shapeInput || shapeInput.kind !== 'feature') return undefined;
+
+  const seen = new Set<FeatureId>();
+  let cursor: FeatureId | undefined = shapeInput.id;
+
+  while (cursor !== undefined && !seen.has(cursor)) {
+    seen.add(cursor);
+    const record = recordById.get(cursor);
+    if (record === undefined) return undefined;
+
+    const material = (record.metadata as { material?: unknown } | undefined)?.material;
+    if (isPBRMaterial(material)) return material;
 
     cursor = nextUpstreamId(record);
   }

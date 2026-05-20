@@ -307,6 +307,7 @@ export async function meshFeaturesPerFeature(
           features.push({
             ...transformed,
             ...(part.color !== undefined ? { color: part.color } : {}),
+            ...(part.material !== undefined ? { material: part.material } : {}),
           });
           // Aggregate bounds from FK-transformed vertices.
           for (const f of transformed.faces) {

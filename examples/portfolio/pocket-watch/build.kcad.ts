@@ -33,8 +33,7 @@ const FRAME_FLAT = 23.0;          // half flat-to-flat of the pink octagon
 const CASE_FLAT = 17.5;           // half flat-to-flat of the yellow octagon
 const DIAL_RADIUS = 12.0;         // teal dial radius
 const DIAL_DEPTH = 1.6;           // dial plate thickness in Y
-const LOOP_BASE_Z = FRAME_FLAT + 0.6; // top of frame (in Z)
-const LOOP_TOP_Z = 36.0;          // apex of lanyard loop
+const LOOP_BASE_Z = FRAME_FLAT + 0.6; // top of frame (in Z) — base elevation the loop feet rest on
 
 // --- helpers -----------------------------------------------------------------
 
@@ -270,9 +269,11 @@ for (let ix = -TAP_HALF; ix <= TAP_HALF; ix += 1) {
 // CRYSTAL — domed NURBS sapphire bubble over the WHOLE dial. Real pocket
 // watch crystals span the full dial face. Authored as a NURBS surface (5x5
 // control grid with a bell-curve rise) then thickened into a closed solid.
-// The dome curvature reads cleanly in the iso/right views.
+// The dome curvature reads cleanly in the iso/right views. v0.8 PBR material
+// (high transmission, low roughness, sapphire IOR 1.76) renders it as a
+// glassy lens — the dial and numerals stay visible THROUGH the dome.
 // =============================================================================
-const DOME_HALF = DIAL_RADIUS * 0.83;  // dome covers 83% of the dial radius (passes the ≥80% gate); leaves a ~2mm annulus between the dome rim and the dial perimeter where numerals stay visible OUTSIDE the dome
+const DOME_HALF = DIAL_RADIUS * 1.05;  // dome rim slightly overlaps the bezel (5% past the dial radius), as on a real pocket-watch crystal. With transmission the numerals underneath read cleanly through the glass.
 // Build the control grid in POLAR coordinates so the footprint is a circle of
 // radius DOME_HALF rather than a square 2*DOME_HALF on a side. The grid maps
 // (i, j) → (radius, angle). i is the radial index (i = 0 collapses to the
@@ -327,7 +328,19 @@ const crystalDome = crystalSurf
   .thicken(CRYSTAL_THICK)
   .rotate([1, 0, 0], 90)
   .translate(0, CRYSTAL_BASE_Y, 0)
-  .color('#dfeef4');
+  // v0.8 PBR: sapphire IOR=1.76, near-zero roughness, transmission=0.95 so
+  // the dial + numerals + hands read THROUGH the dome. Thin clearcoat adds
+  // a polished-finish highlight. Slight cool tint matches anti-reflective
+  // coating on real sapphire crystals.
+  .material({
+    baseColor: '#e6f1f5',
+    metalness: 0,
+    roughness: 0.05,
+    ior: 1.76,
+    transmission: 0.95,
+    clearcoat: 0.4,
+    clearcoatRoughness: 0.05,
+  });
 const crystal = watch.part('domed nurbs sapphire crystal over the dial', crystalDome);
 watch.fixed('crystal mounted above the dial', caseFinal, crystal, { origin: [0, CRYSTAL_BASE_Y, 0] });
 
@@ -335,17 +348,15 @@ watch.fixed('crystal mounted above the dial', caseFinal, crystal, { origin: [0, 
 // NUMERALS — generic 12 / 6 / 9 on the dial face (sketch.text). "3" position
 // is occupied by the subdial.
 // =============================================================================
-// Place numerals just outside the dome rim (DOME_HALF = DIAL_RADIUS * 0.85)
-// so the bell-curve dome doesn't occlude them from the front view. The slot
-// between the dome rim and the bezel is where real watches put numerals on
-// many crystals — they sit on the dial face and the crystal arches over the
-// center. This keeps G1 (dome spans the dial) and G4 (numerals readable)
-// compatible despite the renderer's opaque-color limitation.
+// Numerals sit on the dial face UNDER the transparent crystal dome — the v0.8
+// PBR transmission lets them read cleanly through the glass. NUMERAL_RADIUS is
+// inside the dial (well within DIAL_RADIUS) and inside DOME_HALF so the
+// numerals visually live under the dome rather than outside it.
 const NUMERAL_SIZE = 1.6;
-// Centers placed so the glyph footprint sits just outside DOME_HALF and well
-// inside DIAL_RADIUS. NUMERAL_RADIUS is the glyph centroid in the
-// radial direction.
-const NUMERAL_RADIUS = DOME_HALF + NUMERAL_SIZE * 0.6;
+// Stick markers live at r = DIAL_RADIUS - 1.8 = 10.2. Numerals sit further
+// inside so they don't collide with the stick at 12/9/6 positions, and so
+// they read clearly under the dome curvature even from oblique angles.
+const NUMERAL_RADIUS = 8.0;
 const numerals = [
   ['12', 0,    NUMERAL_RADIUS],
   ['6',  0,   -NUMERAL_RADIUS],
@@ -463,43 +474,58 @@ const crownPart = watch.part('yellow crown', crown);
 watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [0, 0, CROWN_STEM_END_Z] });
 
 // =============================================================================
-// LANYARD LOOP — pink sweep arching above the frame top.
+// LANYARD LOOP — pink half-torus mounted on a short bail post above the frame.
 // =============================================================================
-// The loop's two ends must NOT intersect the frame body. Frame top face at
-// Z = FRAME_FLAT = 23, octagon corner at Z = FRAME_FLAT/cos(22.5°) ≈ 24.9.
-// LOOP_BASE_Z = FRAME_FLAT + 0.6 = 23.6 sits just above the flat-top face but
-// the sloped vertices reach Z ~ 24.9 at |x| ~ FRAME_FLAT*tan(22.5°) ≈ 9.5.
-// So at |x| > 9.5 the frame is BELOW Z=23. Our loop start at x = ±9.0 sits
-// at z = 23.6 → that's still on the flat top region, fine.
-// Loop ends are at z = LOOP_BASE_Z = 23.6, which is OUTSIDE the frame
-// (frame top flat ends at z = FRAME_FLAT = 23.0). So no intersection.
+// Built as the top half of a torus whose axis runs along world +Y. The torus
+// hole therefore opens along ±Y, so the camera (looking from -Y) sees the
+// circular through-hole — a real chain could be threaded through it.
+//
+// Reuses the `torus(majorR, minorR)` kernel primitive instead of hand-rolling
+// a swept profile.
+//
+// The torus is lifted clear of the crown so its lower tube doesn't pass
+// through the crown knob (knob top at z = 24.8, radius 1.7; torus tube at the
+// bottom of the major ring is centered at x = 0, so it would interfere if
+// loopCenterZ - LOOP_MAJOR_R were near the crown z-band). A small pink "bail
+// post" cylinder bridges the gap between the frame top (z = FRAME_FLAT = 23)
+// and the bottom of the half-torus, so the loop reads as physically attached
+// to the watch case.
+const LOOP_MAJOR_R = 5.0;    // through-hole radius
+const LOOP_TUBE_R  = 1.2;    // tube cross-section radius (chain can slide on this)
+// Center the torus so its inner-ring bottom (loopCenterZ - LOOP_MAJOR_R +
+// LOOP_TUBE_R) and tube CENTERLINE (loopCenterZ - LOOP_MAJOR_R) both clear
+// the crown knob top (z = 24.8, radius 1.7) by ≥ LOOP_TUBE_R + 0.3 mm.
+const loopCenterZ  = 31.5;
+const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 37.7 — apex of the upper tube outer surface
+// Bail post: thin pink cylinder rising from above the crown knob to the
+// bottom of the torus tube. The post starts above the knob top (z = 24.8) so
+// it doesn't intersect the crown, sits coaxial with the watch axis (x = 0,
+// y = 0), and rises until it's embedded in the torus tube — the union welds
+// post + half-torus into a single bail piece.
+const BAIL_POST_BASE_Z = CROWN_STEM_END_Z + CROWN_KNOB_LEN + 0.4;  // 25.2 — 0.4 mm above crown knob top
+const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.5;  // 26.9 — sinks ~0.5 mm into the torus tube
+const BAIL_POST_R      = 0.9;                                // narrow pink wire connecting case to bail
+const BAIL_POST_LEN    = BAIL_POST_TOP_Z - BAIL_POST_BASE_Z;
 
-// Also push the loop ends ABOVE the crown so we don't intersect the crown.
-// Crown knob max z = 20+1.6=21.6; loop base z = 23.6 → safely above.
-// Build the loop as an extruded 2D arch silhouette (a "bow") in the sketch
-// XY plane, then rotate so the extrusion axis maps to world Y. The arch
-// silhouette is much more robust than a frenet-swept rectangle on a polyline
-// rail (which produces a fan of facets at low polyline resolution).
-const loopHalfX = 8.5;
-const LOOP_THICKNESS_RADIAL = 2.4;   // wall thickness of the arch
-const LOOP_DEPTH_Y = 3.6;            // Y depth of the arch
-const loopOuterApex = LOOP_TOP_Z;
-const loopInnerApex = LOOP_TOP_Z - LOOP_THICKNESS_RADIAL;
-const loopBaseInnerX = loopHalfX - 0.6;
-const loopBaseOuterX = loopHalfX + LOOP_THICKNESS_RADIAL - 0.6;
-// Sketch coords: (sketch_x, sketch_y) → after extrude(D), rotate(X,+90)
-// and translate, sketch_x maps to world X, sketch_y maps to world Z,
-// extrude direction maps to world -Y so the solid spans Y in [-D, 0].
-const loopProfile2D = path()
-  .moveTo(-loopBaseOuterX, LOOP_BASE_Z)
-  .threePointsArc(loopBaseOuterX, LOOP_BASE_Z, 0, loopOuterApex)
-  .lineTo(loopBaseInnerX, LOOP_BASE_Z)
-  .threePointsArc(-loopBaseInnerX, LOOP_BASE_Z, 0, loopInnerApex)
-  .close();
-const loopShape = loopProfile2D
-  .extrude(LOOP_DEPTH_Y)
+// Full torus: axis = world +Z by default. Rotate(+90° about world X) to
+// re-orient axis along world +Y; the hole then opens along ±Y, facing the
+// camera at -Y. Then translate up to the loop center.
+const loopFull = torus(LOOP_MAJOR_R, LOOP_TUBE_R, 64)
   .rotate([1, 0, 0], 90)
-  .translate(0, LOOP_DEPTH_Y / 2, 0)  // re-center on Y=0
+  .translate(0, 0, loopCenterZ);
+// Cut away everything at z < LOOP_BASE_Z to leave just the upper half. The
+// cutter is a wide box centered well below LOOP_BASE_Z, sized so it cleanly
+// straddles the torus footprint in X and Y. With loopCenterZ raised above
+// the crown, the cutter is now redundant for the torus body itself; we keep
+// it so any future lowering of loopCenterZ still produces a clean half-loop.
+const loopCutter = box(40, 30, 100, true).translate(0, 0, LOOP_BASE_Z - 50);
+// Build the bail post and union it into the loop shape so a single pink part
+// carries both the post + half-torus geometry — this matches how real bails
+// are forged as one piece.
+const bailPost = cylZ(BAIL_POST_LEN, BAIL_POST_R, BAIL_POST_BASE_Z, 24);
+const loopShape = loopFull
+  .subtract(loopCutter)
+  .union(bailPost)
   .color('#f8b3c0');
 const loop = watch.part('pink lanyard loop', loopShape);
 watch.fixed('lanyard loop attached to frame top', frame, loop, { origin: [0, 0, LOOP_BASE_Z] });
@@ -507,9 +533,9 @@ watch.fixed('lanyard loop attached to frame top', frame, loop, { origin: [0, 0, 
 // =============================================================================
 // PINK RIBBON STRAP — short flat band rising from the loop apex.
 // =============================================================================
-// Ribbon must not intersect the loop. Loop's apex (outer arch) sits exactly
-// at z = LOOP_TOP_Z. Place the ribbon bottom 0.6 mm above that.
-const ribbonBottomZ = LOOP_TOP_Z + 0.6;
+// Ribbon must not intersect the loop. Loop apex (outer surface) sits at
+// z = LOOP_TOP_Z_ACTUAL. Place the ribbon bottom 0.6 mm above that.
+const ribbonBottomZ = LOOP_TOP_Z_ACTUAL + 0.6;
 const ribbonHeight = 8.0;
 const ribbonCenterZ = ribbonBottomZ + ribbonHeight / 2;
 const ribbon = box(6.0, 0.9, ribbonHeight, true)
