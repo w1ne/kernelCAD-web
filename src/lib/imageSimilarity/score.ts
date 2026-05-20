@@ -148,6 +148,31 @@ async function sampleBackgroundGrey(pngBuf: Buffer): Promise<number> {
   return Math.round(corners.reduce((a, b) => a + b, 0) / corners.length);
 }
 
+/**
+ * Population standard deviation of the four 1×1 corner grayscale values of
+ * `pngBuf`. Used by the `trace_from_image` router (`src/agent/vision/router.ts`)
+ * to decide whether a reference photo has a uniform-enough background for the
+ * opencv silhouette backend, or whether the vision-LLM backend should be used
+ * instead. Threshold convention (router): `< 8` = uniform; `>= 8` = cluttered.
+ *
+ * Co-located with {@link sampleBackgroundGrey} since both probe the same four
+ * pixels — the mean tells us *what* the background colour is; the stddev tells
+ * us *how confident* we are that there even is a single background colour.
+ */
+export async function cornerColorStdDev(pngBuf: Buffer): Promise<number> {
+  const { data, info } = await sharp(pngBuf).grayscale().raw().toBuffer({ resolveWithObject: true });
+  const { width, height } = info;
+  const corners = [
+    data[0],
+    data[width - 1],
+    data[(height - 1) * width],
+    data[(height - 1) * width + (width - 1)],
+  ];
+  const mean = corners.reduce((a, b) => a + b, 0) / corners.length;
+  const variance = corners.reduce((acc, v) => acc + (v - mean) * (v - mean), 0) / corners.length;
+  return Math.sqrt(variance);
+}
+
 // ─── Silhouette mask ────────────────────────────────────────────────────────
 
 function silhouetteMask(grey: Uint8Array, tolerance: number): Uint8Array {

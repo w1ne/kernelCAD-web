@@ -7,6 +7,7 @@ import { addNurbsSurfaceTool } from './tools/addNurbsSurface';
 import { addPathHermiteG2Tool } from './tools/addPathHermiteG2';
 import { addPathNurbsSegmentTool } from './tools/addPathNurbsSegment';
 import { addPathSplineTool } from './tools/addPathSpline';
+import { traceFromImageTool } from './tools/traceFromImage';
 import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
@@ -412,6 +413,58 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addPathSplineTool(input as unknown as Parameters<typeof addPathSplineTool>[0]),
+  },
+  {
+    definition: {
+      name: 'trace_from_image',
+      description:
+        "Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (Claude vision; named points/cluttered backgrounds; caller-supplied ANTHROPIC_API_KEY), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` — the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5–10% off on dense landmarks. Per-feature `confidence` is reported. Caller pays for any vision-LLM API spend via their own ANTHROPIC_API_KEY. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          imageUrl: {
+            type: 'string',
+            description: 'URL or path to the reference image. Supports file://, http(s)://, data:image/...;base64,..., or a bare filesystem path.',
+          },
+          hint: {
+            type: 'string',
+            description: 'Optional free-text hint forwarded to vision-LLM backends (e.g. "a pair of eyewear; trace the upper brow only").',
+          },
+          features: {
+            type: 'array',
+            description: 'Features to trace. Defaults to a single { label: "silhouette", kind: "silhouette" } when omitted.',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string', description: 'Caller-chosen identifier (echoed in the response).' },
+                kind: {
+                  type: 'string',
+                  enum: ['silhouette', 'curve', 'point', 'bbox'],
+                  description: 'Geometric shape of the requested feature.',
+                },
+                region: {
+                  type: 'string',
+                  description: 'Optional free-text region hint forwarded to vision-LLM backends; ignored by opencv.',
+                },
+              },
+              required: ['label', 'kind'],
+            },
+          },
+          maxWaypointsPerFeature: {
+            type: 'integer',
+            description: 'Cap on waypoints per feature. Defaults to 12 (suitable for medium-inflection outlines).',
+            minimum: 2,
+          },
+          backend: {
+            type: 'string',
+            enum: ['opencv', 'vision-llm', 'hybrid', 'auto'],
+            description: 'Force a specific backend; default `auto` routes by corner-color stddev.',
+          },
+        },
+        required: ['imageUrl'],
+      },
+    },
+    handler: input => traceFromImageTool(input as unknown as Parameters<typeof traceFromImageTool>[0]),
   },
   {
     definition: {

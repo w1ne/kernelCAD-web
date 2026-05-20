@@ -18,7 +18,8 @@ export type DiagnosticGroup =
   | 'cli'
   | 'export'
   | 'assembly'
-  | 'mesher';
+  | 'mesher'
+  | 'tool';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -997,6 +998,47 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: "path().hermiteG2 received `a.point` not matching the current pen position within tolerance.",
+  },
+  // W4 §3 — trace_from_image MCP tool diagnostics (5).
+  'tool.trace-from-image.invalid-image-url': {
+    hintTemplate:
+      "Pass a non-empty `imageUrl` — a file:// path, http(s):// URL, data:image/...;base64,... URI, or a bare filesystem path.",
+    nextAction: { kind: 'fix-arg', field: 'imageUrl' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'trace_from_image was called with a missing, empty, or otherwise unparseable imageUrl.',
+  },
+  'tool.trace-from-image.no-features-requested': {
+    hintTemplate:
+      "Pass at least one feature in `features`, or omit the `features` field to fall back to the default silhouette request.",
+    nextAction: { kind: 'fix-arg', field: 'features' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'trace_from_image was called with an explicitly empty features array.',
+  },
+  'tool.trace-from-image.image-fetch-failed': {
+    hintTemplate:
+      "Verify the imageUrl resolves to a readable PNG/JPEG/WebP/GIF — check the path/URL, the file's existence, and network access for http(s) URLs.",
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'trace_from_image could not fetch or decode the image at the supplied URL.',
+  },
+  'tool.trace-from-image.backend-failed': {
+    hintTemplate:
+      "The selected backend threw while extracting features. Re-call with a different `backend` (e.g. `vision-llm` if `opencv` failed on a cluttered photo), tighten `region` on the requested features, or inspect the diagnostic message for the underlying error.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'tool',
+    description: 'The trace_from_image backend (opencv / vision-llm / hybrid) threw while extracting features.',
+  },
+  'tool.trace-from-image.opencv-cannot-label': {
+    hintTemplate:
+      "opencv only extracts a single silhouette — it cannot label point/bbox features. Either drop the point/bbox features, or switch backend to `hybrid` so the LLM labels them on top of the opencv silhouette.",
+    nextAction: { kind: 'fix-arg', field: 'backend' },
+    defaultSeverity: 'warn',
+    group: 'tool',
+    description: 'A point/bbox feature was requested but the opencv backend was forced, so only the silhouette polyline could be returned.',
   },
   // K1 watertight gap enrichment — STL export tessellation self-intersects on revolved cones.
   'mesher.cone-self-intersection': {
