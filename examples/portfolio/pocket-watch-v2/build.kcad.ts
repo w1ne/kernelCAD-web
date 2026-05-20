@@ -68,10 +68,10 @@ const CRYSTAL_RISE = 2.2;                       // taller dome so the arch reads
 
 // Top of the frame in Z (top flat of the octagon, the edge the pendant grows out of).
 const FRAME_TOP_Z = FRAME_FLAT;                // 11.0
-// Octagon corners reach ABOVE the flat to z = FRAME_FLAT / cos(22.5°) ≈ 11.91.
-// Anything sitting at z ∈ [FRAME_FLAT, 11.91] visually merges with the
-// octagon corners. The pendant must extend WELL beyond ~12 to read.
-const FRAME_CORNER_Z = FRAME_FLAT / Math.cos(Math.PI / 8);  // 11.91
+// (Frame corners reach above the flat to z = FRAME_FLAT / cos(22.5°) ≈
+// 11.91. Anything sitting at z ∈ [FRAME_FLAT, 11.91] visually merges
+// with the octagon corners; the pendant extends well beyond ~12 mm.)
+
 
 // Pendant: one taller sculpted block (horn) that reads as the sculpted neck
 // rising above the octagon. Authored as a single trapezoid that starts well
@@ -95,9 +95,9 @@ const HORN_BASE_Z = FRAME_TOP_Z - 0.05;       // hair below for clean fuse
 const HORN_TOP_Z = 17.5;                      // taller sculpted pendant — the reference's pendant reads about 30% as tall as the body, not 10%
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
-// Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
-// top of the horn.
-const TAB_TOP_Z = HORN_TOP_Z;
+// Tab is folded into the horn (single shape). The bail attaches at the
+// very top of the horn — see BAIL_CENTER_Z below.
+
 
 // Crown sits on TOP of the pendant horn (between horn top and bail).
 const CROWN_FLAT = 0.9;
@@ -151,20 +151,9 @@ function octagonVertices(radius) {
   return pts;
 }
 
-// Trapezoidal prism in the XZ plane, extruded along Y. Uses the same Y
-// centering convention as octagonPrismY (translate -depth/2) so the prism
-// fuses with the octagon at every cross-section.
-function trapezoidPrismY(baseW, topW, baseZ, topZ, depth) {
-  const pts = [
-    [-baseW / 2, baseZ],
-    [ baseW / 2, baseZ],
-    [ topW / 2,  topZ],
-    [-topW / 2,  topZ],
-  ];
-  return extrudePolygon(pts, depth)
-    .rotate([1, 0, 0], -90)
-    .translate(0, -depth / 2, 0);
-}
+// (A trapezoidPrismY helper lived here in earlier iterations; the
+// final build uses a 3-section roundedRectSketch loft for the horn
+// instead — see the FRAME block below.)
 
 // Flat 2D text on the dial face. frontFaceY = the Y of the rear face of the
 // glyph (closest-to-dial side).
@@ -275,13 +264,6 @@ const horn = sectionLower
     ],
   })
   .material(PINK_MAT);
-
-// Provide horn-step sizes as fallbacks for crown placement maths below
-// (kept so the existing crown-position formulas continue to compile).
-const HORN_LOWER_H = HORN_HEIGHT_Z * 0.40;
-const HORN_MID_H = HORN_HEIGHT_Z * 0.30;
-const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H - HORN_MID_H;
-const HORN_MID_W = (HORN_BASE_W_X + HORN_TOP_W_X) / 2 + 0.5;
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at
@@ -559,7 +541,6 @@ for (let k = 0; k < 6; k += 1) {
 // Crown sits ON TOP of the lofted horn, axis along +Z. The base of the
 // crown is at HORN_TOP_Z; the crown extends UP by CROWN_LEN.
 const crownBaseZ = HORN_TOP_Z;
-const crownTopZ = crownBaseZ + CROWN_LEN;
 // pre-Z extrusion → world +Z. No rotation needed; the hex faces toward
 // the camera (i.e. axis is +Z, hex face is the XY plane).
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
