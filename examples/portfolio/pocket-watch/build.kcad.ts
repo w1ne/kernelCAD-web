@@ -35,19 +35,6 @@ const DIAL_RADIUS = 12.0;         // teal dial radius
 const DIAL_DEPTH = 1.6;           // dial plate thickness in Y
 const LOOP_BASE_Z = FRAME_FLAT + 0.6; // top of frame (in Z) — base elevation the loop feet rest on
 
-// =============================================================================
-// PENDANT block — pink rectangular slab between the case top and the bail.
-// Reference photo shows a substantial pink pendant carrying the crown out of
-// its top center and supporting the bail via two short stub mounts. The
-// pendant sits flush ON the frame top flat at z = FRAME_FLAT.
-// =============================================================================
-const PEND_HALF_X     = 5.0;                  // half-width (X). Total width = 10 mm (~half of case flat).
-const PEND_HALF_Y     = CASE_DEPTH / 2;       // 4.0. Matches case depth in Y so the pendant reads "flush" from the front.
-const PEND_HEIGHT_Z   = 5.5;                  // Tall enough to read clearly from front + iso.
-const PEND_BASE_Z     = FRAME_FLAT;           // 23.0 — pendant base sits on frame top flat.
-const PEND_TOP_Z      = PEND_BASE_Z + PEND_HEIGHT_Z;   // 28.5 — top face the crown + bail attach to.
-const PEND_FILLET_R   = 0.8;                  // rounded top corners.
-
 // --- helpers -----------------------------------------------------------------
 
 // Y-aligned cylinder. The +Y end-cap sits at `yMax`; the -Y end-cap is at
@@ -158,14 +145,18 @@ const frameOuter = octagonPrismY(FRAME_FLAT, FRAME_DEPTH);
 // Pocket bigger than the case so there's a small visible pink rim around the
 // case (0.8 mm on each octagon flat) and zero interference.
 const casePocket = octagonPrismY(CASE_FLAT + 0.8, FRAME_DEPTH + 2.0);
-// Crown bore through the frame's top flat. The crown sits on the CENTERLINE
-// (x = 0) — it emerges from the TOP of the PENDANT block above the frame,
-// per the reference photo. The pendant carries the crown out of its top
-// center; the frame still needs a generous through-bore so the crown stem
-// can pass into the case body underneath.
-const CROWN_X_OFFSET = 0;
+// Crown bore through the frame's top flat. The crown is OFFSET to the side so
+// it reads as a distinct part from the bail (which stays centered at x=0).
+// CROWN_X_OFFSET chosen so (a) bail-to-crown centerline separation = 5 mm
+// (> 4 mm gate requirement); (b) the bore footprint (radius 1.7 mm) stays
+// clear of the casePocket diagonal flat — casePocket half-flat = CASE_FLAT+0.8
+// = 18.3 mm so its top-flat inner edge in X is at 18.3·tan(π/8) ≈ 7.58 mm;
+// requires x_center + bore_radius < 7.58, i.e., x_center < 5.88. Using 5.0
+// leaves 0.88 mm of margin so the bore intersects ONLY the casePocket top
+// face (not the diagonal corner) and produces clean long fillet edges.
+const CROWN_X_OFFSET = 5.0;
 const frameCrownBore = cylinder(16.0, 1.7, 32)
-  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.5);   // generous bore through the frame top, centered
+  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.5);   // generous bore through the frame top, offset to crown's axis
 const frame = watch.part(
   'pink octagonal outer frame',
   frameOuter
@@ -186,12 +177,11 @@ const caseRaw = octagonPrismY(CASE_FLAT, CASE_DEPTH);
 const dialPocket = cylY(DIAL_POCKET_DEPTH + 0.4, DIAL_RADIUS + 0.4, DIAL_Y_BACK + 0.4);
 
 // Crown bore: vertical Z-axis cylinder through case top, recessed enough that
-// it leaves a tiny tube the crown stem passes through. Crown is on the
-// centerline (x = 0) — the case bore sits directly under the pendant bore so
-// the stem threads through both.
+// it leaves a tiny tube the crown stem passes through. Offset by CROWN_X_OFFSET
+// so the crown is decoupled from the bail centerline.
 const CROWN_BORE_R = 1.55;
 const crownBore = cylinder(12.0, CROWN_BORE_R, 32)
-  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.78);  // bore starts inside the case, extends up; centered
+  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.78);  // bore starts inside the case, extends up; offset matches crown axis
 
 const caseShape = caseRaw
   .subtract(dialPocket)
@@ -471,115 +461,27 @@ const pinionPart = watch.part('central pinion cap', pinion);
 watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // =============================================================================
-// PENDANT — pink rectangular slab above the case top, carrying the crown out
-// of its top center and supporting the bail via 2 stub mounts. Matches the
-// reference photo's silhouette: substantial block, rounded top corners, two
-// horizontal side screws.
+// CROWN — yellow knob at top of case (+Z), OFFSET to the side of the bail so
+// the two read as distinct parts in front + iso views (real pocket watches
+// have the crown at the 1-2 o'clock position on the case rim, not coaxial
+// with the bail centerline).
 // =============================================================================
-// Build the pendant footprint as an extruded rectangle (X = ±PEND_HALF_X,
-// Y = ±PEND_HALF_Y), extruded in +Z by PEND_HEIGHT_Z, then translated up so
-// the base sits on the frame top flat.
-const pendantRectPts = [
-  [-PEND_HALF_X, -PEND_HALF_Y],
-  [ PEND_HALF_X, -PEND_HALF_Y],
-  [ PEND_HALF_X,  PEND_HALF_Y],
-  [-PEND_HALF_X,  PEND_HALF_Y],
-];
-// extrudePolygon takes XY points and extrudes +Z by `depth`. The rectangle
-// already lies on XY with the correct X, Y spans; we just translate up to
-// PEND_BASE_Z. No rotation needed.
-const pendantRaw = extrudePolygon(pendantRectPts, PEND_HEIGHT_Z).translate(0, 0, PEND_BASE_Z);
-
-// Pendant crown bore — vertical through the pendant, aligned with crown stem.
-// Pendant top z = 28.5; bore extends from z = 23 (pendant base) all the way up
-// past the top so the top face is the only one the crown stem emerges from.
-const PEND_BORE_R = CROWN_BORE_R + 0.1;   // 1.65 mm — gives 0.05 mm clearance over the stem (CROWN_BORE_R-0.1 = 1.45)
-const pendantCrownBore = cylinder(PEND_HEIGHT_Z + 2.0, PEND_BORE_R, 32)
-  .translate(0, 0, PEND_BASE_Z - 1.0);
-
-// Side-screw counterbores — Royal-Oak-style horizontal hex screws set into the
-// pendant's ±X side faces. Counterbore axis runs along ±X (we drill in along
-// the X axis to recess the hex head).
-const PEND_SCREW_R = 1.1;
-const PEND_SCREW_CB_DEPTH = 0.8;
-const PEND_SCREW_Z = PEND_BASE_Z + PEND_HEIGHT_Z * 0.55;   // 26.0 — roughly centered on the visible side face
-function pendantSideCounterbore(xSide) {
-  // X-aligned cylinder: build along default +Z then re-axis to +X. Default
-  // cylinder is base-at-origin extending +Z by `length`; after alongAxis([1,0,0])
-  // it extends along +X (base at origin, far end at +X = length).
-  // We want the counterbore to straddle the outer face at x = xSide * PEND_HALF_X.
-  // Length L = PEND_SCREW_CB_DEPTH + 0.4 = 1.2. Origin shift in X must place the
-  // far end past the outer face and the near end inside the pendant solid:
-  //   xSide=+1: origin at PEND_HALF_X - 0.6, far end at PEND_HALF_X + 0.6 → spans [4.4, 5.6] ✓
-  //   xSide=-1: origin at -PEND_HALF_X - 0.6, far end at -PEND_HALF_X + 0.6 → spans [-5.6, -4.4] ✓
-  // (Since the cylinder always extends +X, for xSide=-1 we put the base PAST
-  // the outer face and let the far end reach into the pendant solid.)
-  const L = PEND_SCREW_CB_DEPTH + 0.4;
-  const baseX = xSide > 0 ? (PEND_HALF_X - 0.6) : (-PEND_HALF_X - 0.6);
-  return cylinder(L, PEND_SCREW_R + 0.3, 24)
-    .alongAxis([1, 0, 0])
-    .translate(baseX, 0, PEND_SCREW_Z);
-}
-// Fillet the rectangular prism BEFORE drilling holes — filleting after
-// subtracts produces sub-mm edges OCCT's blend solver chokes on. Filleting
-// before locks in the rounded outer profile, then we drill straight bores
-// and counterbores. Pendant fillet rounds all edges of the raw rectangular
-// prism — small radius keeps it as a slab rather than a pillow.
-const pendantBody = pendantRaw
-  .fillet(PEND_FILLET_R)
-  .subtract(pendantCrownBore)
-  .subtract(pendantSideCounterbore(+1))
-  .subtract(pendantSideCounterbore(-1))
-  .color('#f8b3c0');
-const pendant = watch.part('pink pendant block above case', pendantBody);
-watch.fixed('pendant seated on frame top', frame, pendant, { origin: [0, 0, PEND_BASE_Z] });
-
-// Two horizontal pendant-side hex screws — dark hex prisms recessed into the
-// counterbores. Hex axis runs along ±X. Built by extruding a hex polygon (which
-// extrudes along +Z), then rotating so the prism axis becomes ±X.
-function pendantSideScrew(xSide) {
-  const pts = [];
-  for (let k = 0; k < 6; k += 1) {
-    const a = (k / 6) * Math.PI * 2;
-    pts.push([Math.cos(a) * PEND_SCREW_R, Math.sin(a) * PEND_SCREW_R]);
-  }
-  // extrudePolygon: glyph in XY, extrudes +Z by SCREW_T. We re-axis the prism
-  // so the extrusion direction maps to ±X (along the screw bore axis):
-  //   rotate([0,1,0], +90°): pre +Z → post +X  (use for xSide = +1)
-  //   rotate([0,1,0], -90°): pre +Z → post -X  (use for xSide = -1)
-  // After rotation the prism spans X ∈ [0, +SCREW_T] (xSide=+1) or X ∈ [-SCREW_T, 0] (xSide=-1).
-  // We sink the screw INTO the pendant by SCREW_INSET so the prism is fully
-  // inside the counterbore hole (not protruding into the pendant solid).
-  // Counterbore spans x ∈ [PEND_HALF_X - (CB-0.2), PEND_HALF_X + (CB-0.2)] = [4.4, 5.6].
-  // Place screw so its OUTER face sits inside the counterbore, e.g. at
-  // x = PEND_HALF_X - 0.1 = 4.9, inner face at x = 4.9 - SCREW_T = 4.4 — exactly
-  // matching the counterbore floor.
-  const SCREW_T = 0.5;
-  const rotateAngle = xSide > 0 ? 90 : -90;
-  const outerFaceX = xSide > 0 ? (PEND_HALF_X - 0.1) : (-PEND_HALF_X + 0.1);
-  // For xSide=+1: post-rotation X span [0, T] → need to shift so X_max = outerFaceX, i.e. translate +X by (outerFaceX - T).
-  // For xSide=-1: post-rotation X span [-T, 0] → need to shift so X_min = outerFaceX, i.e. translate +X by (outerFaceX + T).
-  const xShift = xSide > 0 ? (outerFaceX - SCREW_T) : (outerFaceX + SCREW_T);
-  return extrudePolygon(pts, SCREW_T)
-    .rotate([0, 1, 0], rotateAngle)
-    .translate(xShift, 0, PEND_SCREW_Z)
-    .color('#2c2c2e');
-}
-const pendantScrewR = watch.part('pendant side hex screw right', pendantSideScrew(+1));
-const pendantScrewL = watch.part('pendant side hex screw left',  pendantSideScrew(-1));
-watch.fixed('pendant right screw', pendant, pendantScrewR, { origin: [+PEND_HALF_X, 0, PEND_SCREW_Z] });
-watch.fixed('pendant left screw',  pendant, pendantScrewL, { origin: [-PEND_HALF_X, 0, PEND_SCREW_Z] });
-
-// =============================================================================
-// CROWN — yellow knob on the CENTERLINE, emerging from the pendant TOP. The
-// hex-prism knob reads as a faceted winding wheel. Stem runs from inside the
-// case bore up through the pendant bore to a knob seated just above the
-// pendant top face.
-// =============================================================================
+// Crown axis is at (CROWN_X_OFFSET = 5.0, 0, ·). Bore was carved at this
+// offset; stem and knob ride on the same axis.
+// Bore spans Z = [13.65, 25.65]. Case top (octagon corner) at z = CASE_FLAT /
+// cos(22.5°) = 18.94, flat top at z=17.5. Stem rises from inside the case
+// bore (z=15) up past the frame top (z=23.6) and ends in the air, alongside
+// the bail. The bail itself is centered at x=0; with CROWN_X_OFFSET = 5.0 the
+// crown's knob (vertex radius 1.7 mm) is at x ∈ [3.3, 6.7], well clear of
+// the bail post (radius 0.9 mm at x=0). Horizontal centerline separation
+// = 5 mm (>> 4 mm minimum); closest surface-to-surface gap = 5 − 1.7 − 0.9
+// = 2.4 mm of air between the bail post and the crown knob faces.
 const CROWN_STEM_START_Z = 15.0;
-const CROWN_STEM_END_Z   = PEND_TOP_Z + 0.4;   // 28.9 — stem exits the pendant top with 0.4 mm overhang
+const CROWN_STEM_END_Z   = 23.6;     // exits the frame top
 const CROWN_STEM_LEN     = CROWN_STEM_END_Z - CROWN_STEM_START_Z;
 const CROWN_KNOB_LEN     = 1.2;
+// Knurled hex-prism knob (6 facets) — reads as a winding wheel, not a generic
+// disk. The hex outline reads as faceted knurling from front and iso views.
 const KNOB_R = 1.7;
 const knobHexPts = [];
 for (let k = 0; k < 6; k += 1) {
@@ -594,107 +496,84 @@ const crownKnob = extrudePolygon(knobHexPts, CROWN_KNOB_LEN)
   .color('#e8c84a');
 const crown = crownStem.union(crownKnob);
 const crownPart = watch.part('yellow crown', crown);
-watch.fixed('crown through pendant top', pendant, crownPart, { origin: [CROWN_X_OFFSET, 0, CROWN_STEM_END_Z] });
+watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [CROWN_X_OFFSET, 0, CROWN_STEM_END_Z] });
 
 // =============================================================================
-// BAIL — slim pink OVAL ring with 2 stub mounts attaching to the pendant top.
-// The reference photo shows a thin oval ring, taller than wide (~1.3:1 aspect),
-// suspended above the pendant by 2 short stub posts ~3 mm apart.
+// LANYARD LOOP — pink half-torus mounted on a short bail post above the frame.
+// The bail is centered at x = 0 (above the top of the case flat) while the
+// crown sits at x = CROWN_X_OFFSET = 6 mm. Horizontal separation between bail
+// centerline and crown centerline = 6 mm, which is > 4 mm + bail-post-radius
+// + crown-knob-radius (0.9 + 1.7 = 2.6 mm), so the two parts read as visibly
+// distinct from front + iso views.
 // =============================================================================
-// Oval geometry: outer ellipse with semi-axes (OVAL_AX_X, OVAL_AX_Z) and inner
-// hole inset by RING_WALL. Ring is extruded along world +Y so the through-hole
-// opens along ±Y, facing the camera (which looks from -Y toward +Y).
-const OVAL_AX_X   = 2.6;    // semi-axis in X (horizontal)
-const OVAL_AX_Z   = 3.4;    // semi-axis in Z (vertical) → aspect 3.4 / 2.6 ≈ 1.31:1, taller than wide
-const RING_WALL   = 0.8;    // tube radius / wall thickness (radial)
-const BAIL_Y_DEPTH = 1.6;   // ring depth along Y (≈ 2 × tube radius — reads as a tube cross-section)
-// Polygon-approximate the outer + inner ellipses with N segments each.
-const OVAL_SEGMENTS = 64;
-function ellipsePts(ax, az, n) {
-  const pts = [];
-  for (let i = 0; i < n; i += 1) {
-    const a = (i / n) * Math.PI * 2;
-    pts.push([Math.cos(a) * ax, Math.sin(a) * az]);
-  }
-  return pts;
-}
-const ovalOuterPts = ellipsePts(OVAL_AX_X, OVAL_AX_Z, OVAL_SEGMENTS);
-const ovalInnerPts = ellipsePts(OVAL_AX_X - RING_WALL, OVAL_AX_Z - RING_WALL, OVAL_SEGMENTS);
-// Center of the oval (world):
-//   x = 0, y = 0, z = BAIL_CENTER_Z
-// We want the bail TOP (apex outer = BAIL_CENTER_Z + OVAL_AX_Z) to sit at
-// ~PEND_TOP_Z + STUB_LEN + OVAL_AX_Z. With STUB_LEN ≈ 1.5 the apex is around
-// 28.5 + 1.5 + 3.4 = 33.4. Total stack above frame top = 33.4 - 23 = 10.4 mm,
-// well within the 13-15 mm target spec window.
-// Bail stub length tuned so the oval bottom CLEARS the crown knob top by ≥ 0.3 mm.
-// Crown knob top z = PEND_TOP_Z + 0.4 + CROWN_KNOB_LEN = 28.5 + 0.4 + 1.2 = 30.1.
-// To clear by 0.3 mm we need BAIL_BOTTOM_Z ≥ 30.4 → BAIL_CENTER_Z ≥ 30.4 + OVAL_AX_Z = 33.8.
-// So stub length ≥ 33.8 - PEND_TOP_Z - OVAL_AX_Z = 33.8 - 28.5 - 3.4 = 1.9. Use 2.0.
-const BAIL_STUB_LEN = 2.0;
-const BAIL_CENTER_Z = PEND_TOP_Z + BAIL_STUB_LEN + OVAL_AX_Z;   // 33.9
-const BAIL_BOTTOM_Z = BAIL_CENTER_Z - OVAL_AX_Z;                // 30.5 (outer bottom edge of ring) — 0.4 mm clearance above crown knob top
-const BAIL_TOP_Z    = BAIL_CENTER_Z + OVAL_AX_Z;                // 37.3 (outer apex of ring)
-// Build outer oval prism extruded along Y, centered on Y=0:
-function ovalPrismY(pts, depth) {
-  // extrudePolygon: glyph XY, extrudes +Z. rotate([1,0,0], -90°): (x,y,z) → (x,z,-y).
-  // Pre-rotation, glyph X → world X, glyph Y → world Z, extrusion +Z → world -Y.
-  // After translate(0, -depth/2, 0) we span Y ∈ [-depth/2, +depth/2]? Let's check:
-  // pre-rotation Z ∈ [0, depth]. After rotation Z_pre maps to -Y_world, so
-  // post-rotation Y_world ∈ [-depth, 0]. Translate by (0, +depth/2, 0) → Y_world ∈ [-depth/2, depth/2]. Good.
-  return extrudePolygon(pts, depth).rotate([1, 0, 0], -90).translate(0, depth / 2, 0);
-}
-const ovalOuter = ovalPrismY(ovalOuterPts, BAIL_Y_DEPTH).translate(0, 0, BAIL_CENTER_Z);
-const ovalInner = ovalPrismY(ovalInnerPts, BAIL_Y_DEPTH + 0.4).translate(0, 0, BAIL_CENTER_Z);   // slightly longer so subtract cleanly removes the through-hole
-const ovalRing = ovalOuter.subtract(ovalInner);
+// Built as the top half of a torus whose axis runs along world +Y. The torus
+// hole therefore opens along ±Y, so the camera (looking from -Y) sees the
+// circular through-hole — a real chain could be threaded through it.
+//
+// Reuses the `torus(majorR, minorR)` kernel primitive instead of hand-rolling
+// a swept profile.
+//
+// The bail post lands on the case top FLAT (frame top at z ≈ FRAME_FLAT + 0.6 =
+// 23.6) and the torus sits just above it. With the crown moved off-axis to
+// x = 6, the bail no longer has to "lift over" the crown knob — bail post and
+// torus can sit at their natural height above the case top.
+const LOOP_MAJOR_R = 5.0;    // through-hole radius
+const LOOP_TUBE_R  = 1.2;    // tube cross-section radius (chain can slide on this)
+// Lower the loop center toward the frame top so the bail reads as snugly
+// attached. Tube outer-bottom = loopCenterZ - LOOP_MAJOR_R - LOOP_TUBE_R.
+// With loopCenterZ = 30.5, tube outer-bottom = 24.3, leaving room for a
+// short, stout bail post above the frame top (z ≈ 23.6).
+const loopCenterZ  = 30.5;
+const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 36.7 — apex of upper tube outer surface
+// Bail post: thin pink cylinder rising from the frame top up into the torus
+// tube. Centered at world (x=0, y=0) — directly above the case top flat. Since
+// the crown is now at x = 6, the bail no longer interferes with it regardless
+// of vertical band. The post sinks into the torus tube on its top end so the
+// union welds post + half-torus into a single bail piece.
+// Post base at FRAME_FLAT = 23: flush with frame top flat. No socket needed —
+// post bottom face touches the frame top surface (zero-gap contact, but BREP
+// volumes don't overlap so there's no interference). Slight overlap into the
+// frame causes fillet/short-edge failures, so we keep them just touching.
+const BAIL_POST_BASE_Z = FRAME_FLAT;                           // 23 — flush with frame top flat
+const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.5;  // 26.1 — sinks ~0.5 mm into torus tube
+const BAIL_POST_R      = 0.9;                                  // narrow pink wire connecting case to bail
+const BAIL_POST_LEN    = BAIL_POST_TOP_Z - BAIL_POST_BASE_Z;
 
-// Two stub posts under the bail, attaching to the pendant top. Stubs are 1.6 mm
-// apart in X (centerline-to-centerline = 3.2 mm).
-const STUB_R = 0.55;
-const STUB_X = 1.6;             // ±1.6 → stubs 3.2 mm apart, well clear of crown knob (KNOB_R = 1.7 at x = 0)
-// Verify stub vs crown clearance: stub at x = 1.6, knob at x = 0 with vertex radius 1.7 → minimum gap
-// = 1.6 − 1.7 = -0.1 mm in X. BUT the stubs sit at z ≥ PEND_TOP_Z + 0 = 28.5
-// and the knob occupies z ∈ [PEND_TOP_Z + 0.4, PEND_TOP_Z + 0.4 + 1.2] = [28.9, 30.1].
-// So in the overlap z-band [28.9, PEND_TOP_Z + STUB_LEN] = [28.9, 30.0], the knob
-// and stubs MAY overlap. We need to push the stubs farther out.
-// Knob is a hex prism of vertex radius 1.7 — its X extent at any Z is [-1.7, 1.7].
-// Stub radius 0.55 — to leave 0.3 mm clearance, stub centerline at x ≥ 1.7 + 0.55 + 0.3 = 2.55.
-// Bumping STUB_X to 2.6 keeps stubs 5.2 mm apart, well clear of the knob.
-const STUB_X_SAFE = 2.6;
-function bailStub(xOffset) {
-  // Cylinder along +Z from PEND_TOP_Z up into the oval bottom.
-  // Top end embedded into the oval bottom by 0.3 mm so the union welds cleanly.
-  const len = BAIL_STUB_LEN + 0.3;
-  return cylZ(len, STUB_R, PEND_TOP_Z, 24).translate(xOffset, 0, 0);
-}
-const stubR = bailStub(+STUB_X_SAFE);
-const stubL = bailStub(-STUB_X_SAFE);
-const bailShape = ovalRing.union(stubL).union(stubR).color('#f8b3c0');
-const bail = watch.part('pink oval bail with stub mounts', bailShape);
-watch.fixed('bail attached to pendant top', pendant, bail, { origin: [0, 0, PEND_TOP_Z] });
+// Full torus: axis = world +Z by default. Rotate(+90° about world X) to
+// re-orient axis along world +Y; the hole then opens along ±Y, facing the
+// camera at -Y. Then translate up to the loop center.
+const loopFull = torus(LOOP_MAJOR_R, LOOP_TUBE_R, 64)
+  .rotate([1, 0, 0], 90)
+  .translate(0, 0, loopCenterZ);
+// Cut away everything at z < LOOP_BASE_Z to leave just the upper half. The
+// cutter is a wide box centered well below LOOP_BASE_Z, sized so it cleanly
+// straddles the torus footprint in X and Y. With loopCenterZ raised above
+// the crown, the cutter is now redundant for the torus body itself; we keep
+// it so any future lowering of loopCenterZ still produces a clean half-loop.
+const loopCutter = box(40, 30, 100, true).translate(0, 0, LOOP_BASE_Z - 50);
+// Build the bail post and union it into the loop shape so a single pink part
+// carries both the post + half-torus geometry — this matches how real bails
+// are forged as one piece.
+const bailPost = cylZ(BAIL_POST_LEN, BAIL_POST_R, BAIL_POST_BASE_Z, 24);
+const loopShape = loopFull
+  .subtract(loopCutter)
+  .union(bailPost)
+  .color('#f8b3c0');
+const loop = watch.part('pink lanyard loop', loopShape);
+watch.fixed('lanyard loop attached to frame top', frame, loop, { origin: [0, 0, LOOP_BASE_Z] });
 
 // =============================================================================
-// PINK RIBBON STRAP — short flat band threaded through the bail's opening,
-// leaning forward ~15° so it's visible from the iso pose.
+// PINK RIBBON STRAP — short flat band rising from the loop apex.
 // =============================================================================
-// Ribbon must NOT interfere with the bail. The bail through-hole spans
-// Y ∈ [-BAIL_Y_DEPTH/2, +BAIL_Y_DEPTH/2] = [-0.8, +0.8]. We place the ribbon
-// in front of the bail (Y < 0 side) and tip it back through the opening, but
-// keep the box body OUTSIDE the bail volume by leaning it forward (-Y) and
-// up (+Z). Body span — keep entirely in Y < -1.0 so there's clear air to the
-// bail tube cross-section.
-const ribbonWidth  = 4.5;    // X-extent: narrower than the oval (oval is 2 * OVAL_AX_X = 5.2 mm wide)
-const ribbonThickness = 0.6; // Y-extent at neutral
-const ribbonHeight = 7.5;    // Z-extent
-// Place ribbon center in front of the bail apex: x=0, lean angle = -15° tilted
-// so the top is closer to camera (toward -Y). Apex of bail outer = BAIL_TOP_Z.
-// Ribbon bottom sits ~0.5 mm above the bail apex.
-const ribbonCenterZ = BAIL_TOP_Z + ribbonHeight / 2 - 1.0;   // start ~1 mm below apex so the bottom enters the bail "frame" visually
-const ribbonForwardY = -OVAL_AX_X - 0.5;                      // shift forward (toward camera) so it sits in front of the bail tube
-const ribbon = box(ribbonWidth, ribbonThickness, ribbonHeight, true)
-  .rotate([1, 0, 0], -15)
-  .translate(0, ribbonForwardY, ribbonCenterZ)
+// Ribbon must not intersect the loop. Loop apex (outer surface) sits at
+// z = LOOP_TOP_Z_ACTUAL. Place the ribbon bottom 0.6 mm above that.
+const ribbonBottomZ = LOOP_TOP_Z_ACTUAL + 0.6;
+const ribbonHeight = 8.0;
+const ribbonCenterZ = ribbonBottomZ + ribbonHeight / 2;
+const ribbon = box(6.0, 0.9, ribbonHeight, true)
+  .translate(0, 0, ribbonCenterZ)
   .color('#f8b3c0');
 const ribbonPart = watch.part('pink ribbon strap', ribbon);
-watch.fixed('ribbon above bail', bail, ribbonPart, { origin: [0, ribbonForwardY, ribbonCenterZ] });
+watch.fixed('ribbon attached at loop apex', loop, ribbonPart, { origin: [0, 0, ribbonBottomZ] });
 
 return watch.model();
