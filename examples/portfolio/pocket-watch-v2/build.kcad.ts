@@ -173,9 +173,11 @@ function faceText(value, size, x, z, frontFaceY, color) {
 // HDRI environment lights up transmissive materials. Without an explicit
 // setRenderEnvironment, the sapphire dome's transmission renders flat — the
 // dial shows through but there is no specular streak that sells "glass with
-// a reflection". Use the 'studio' preset (studio_small_03_1k.hdr, ~1.7MB)
-// which has a discrete key softbox + dark surroundings, exactly what a
-// curved sapphire crystal needs to pick up a single bright highlight.
+// a reflection". Use the 'studio' preset (studio_small_03_1k.hdr) which
+// has a discrete key softbox + dark surroundings — the dark surroundings
+// give the dome a high-contrast specular streak that reads cleanly as
+// glass at the iso pose. (A 'softbox' preset was also tested; its
+// uniform soft fill produced a weaker specular and slightly darker pink.)
 setRenderEnvironment({ preset: 'studio', intensity: 1.0 });
 
 // Override the camera target. The default behaviour aims at the bbox
