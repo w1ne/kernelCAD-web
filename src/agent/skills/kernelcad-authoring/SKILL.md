@@ -108,6 +108,24 @@ setRenderEnvironment(spec: {
   intensity?: number;  // (0, 100], default 1.0
   rotation?: number;   // degrees around Y, default 0
 }): RenderEnvironmentHandle;
+
+// Override the camera look-at target for `setRenderPose` and headless
+// engineering renders. Default is the bbox centroid; that auto-fit skews
+// when a build has tall asymmetric features (pocket-watch with pendant +
+// bail above origin, scope with offset eyepiece, lamp with tall shaft).
+// Pass an explicit (x, y, z) in the script's world frame to re-aim the
+// camera; the renderer translates it into its recentered scene frame
+// automatically. Virtual record — no OCCT geometry produced. Multiple
+// calls register multiple records; the renderer applies the last one.
+setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
+
+// Override the camera framing distance (mm from target). Convenience wrap
+// over setCameraTarget's optional `distance` field — inherits the most
+// recent target (or world origin when no setCameraTarget call has
+// happened) and pins the camera at the supplied distance along the pose
+// direction. Use when the auto-fit extents-projection reads too tight or
+// too loose at the chosen pose / aspect.
+setCameraDistance(distance: number): CameraTargetHandle;
 ```
 
 ### Shape methods (chainable)

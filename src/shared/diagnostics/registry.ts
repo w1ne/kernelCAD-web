@@ -457,6 +457,21 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'setRenderEnvironment() received an intensity outside the (0, 100] range; the kernel clamped it to 1.',
   },
+  // Camera target (2) — script-callable look-at override
+  'feature.camera-target.non-finite-target': {
+    hintTemplate: 'setCameraTarget: x, y, z must each be finite numbers (no NaN / Infinity).',
+    nextAction: { kind: 'fix-arg', field: 'x' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'setCameraTarget() received a NaN or non-finite coordinate; the kernel substitutes 0 for the bad axis.',
+  },
+  'feature.camera-target.invalid-distance': {
+    hintTemplate: 'setCameraTarget: distance must be a positive finite number; omit to use auto-fit.',
+    nextAction: { kind: 'fix-arg', field: 'distance' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'setCameraTarget() received a non-positive or non-finite distance override; the kernel ignores the override and falls back to the auto-fit distance.',
+  },
   // Material (3) — Slice A + per-face
   'feature.material.invalid-base-color': {
     hintTemplate: 'Pass a CSS color string or a registered role token to baseColor.',

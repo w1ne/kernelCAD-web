@@ -17,6 +17,9 @@ import type {
   RenderEnvironmentSpec,
   RenderEnvironmentHandle,
 } from '../shared/intent/renderEnvironmentRecord';
+import type {
+  CameraTargetHandle,
+} from '../shared/intent/cameraTargetRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
@@ -287,6 +290,31 @@ export interface KernelCadApi {
    * last one wins at render time.
    */
   setRenderEnvironment(spec: RenderEnvironmentSpec): RenderEnvironmentHandle;
+
+  /**
+   * Override the camera look-at target for setRenderPose / engineering-view
+   * renders. Default behavior (no call) is to aim the camera at the bbox
+   * centroid; that auto-fit skews when geometry is highly asymmetric (tall
+   * pendants, off-centre eyepieces). Pass an explicit (x, y, z) to re-aim.
+   *
+   * Multiple calls register multiple records; the renderer applies the last
+   * one at render time. Validation errors (non-finite coords, negative
+   * distance) are stashed on `handle.metadata.diagnostics` rather than
+   * thrown — a default-safe record (target = bbox centroid axis-by-axis) is
+   * still produced.
+   */
+  setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
+
+  /**
+   * Override the camera framing distance (mm from target). Convenience wrap
+   * over the optional `distance` field on the underlying cameraTarget
+   * record — pulls the current camera target (or [0, 0, 0] if no
+   * setCameraTarget call has been made) and attaches the supplied distance.
+   * Used to push or pull the camera relative to the auto-fit when the
+   * extents-projection fit reads too tight or too loose at the chosen
+   * pose / aspect.
+   */
+  setCameraDistance(distance: number): CameraTargetHandle;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -809,6 +837,34 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const id = session.addRenderEnvironment(spec);
       const record = session.getRecords().find(r => r.id === id)!;
       const metadata = record.metadata as unknown as import('../shared/intent/renderEnvironmentRecord').RenderEnvironmentMetadata;
+      return { id, metadata };
+    },
+
+    setCameraTarget(x, y, z) {
+      const id = session.addCameraTarget({ x, y, z });
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as import('../shared/intent/cameraTargetRecord').CameraTargetMetadata;
+      return { id, metadata };
+    },
+
+    setCameraDistance(distance) {
+      // Inherit the most recently captured camera target (last-wins ordering
+      // matches what the renderer applies). When no setCameraTarget call
+      // has happened yet, default to the world origin — the renderer will
+      // still respect the distance override and orbit the pose around (0,
+      // 0, 0).
+      const records = session.getRecords();
+      let target: [number, number, number] = [0, 0, 0];
+      for (const r of records) {
+        if (r.kind !== 'cameraTarget') continue;
+        const meta = r.metadata as unknown as import('../shared/intent/cameraTargetRecord').CameraTargetMetadata;
+        if (Array.isArray(meta.target) && meta.target.length === 3) {
+          target = [meta.target[0], meta.target[1], meta.target[2]];
+        }
+      }
+      const id = session.addCameraTarget({ x: target[0], y: target[1], z: target[2], distance });
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as import('../shared/intent/cameraTargetRecord').CameraTargetMetadata;
       return { id, metadata };
     },
   };

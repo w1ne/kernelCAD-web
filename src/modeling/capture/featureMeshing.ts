@@ -6,6 +6,7 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
+import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import { OcctBackend, initOcct, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
@@ -66,6 +67,8 @@ export interface FeatureMesh {
   referenceImage?: ReferenceImageMetadata;
   /** Render-environment payload; present when featureKind === 'renderEnvironment'. */
   renderEnvironment?: RenderEnvironmentMetadata;
+  /** Camera-target payload; present when featureKind === 'cameraTarget'. */
+  cameraTarget?: CameraTargetMetadata;
 }
 
 export interface Bounds {
@@ -265,6 +268,9 @@ export async function meshFeaturesPerFeature(
       const renderEnv = r.kind === 'renderEnvironment'
         ? (r.metadata as unknown as RenderEnvironmentMetadata)
         : undefined;
+      const cameraTgt = r.kind === 'cameraTarget'
+        ? (r.metadata as unknown as CameraTargetMetadata)
+        : undefined;
       features.push({
         featureId: r.id,
         featureKind: r.kind,
@@ -273,6 +279,7 @@ export async function meshFeaturesPerFeature(
         virtual: true,
         ...(refImg !== undefined ? { referenceImage: refImg } : {}),
         ...(renderEnv !== undefined ? { renderEnvironment: renderEnv } : {}),
+        ...(cameraTgt !== undefined ? { cameraTarget: cameraTgt } : {}),
       });
     }
   }
