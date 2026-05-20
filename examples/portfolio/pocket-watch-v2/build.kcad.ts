@@ -80,7 +80,10 @@ const FRAME_CORNER_Z = FRAME_FLAT / Math.cos(Math.PI / 8);  // 11.91
 const HORN_BASE_W_X = 9.5;                     // base sits across the top flat of the frame
 const HORN_TOP_W_X = 5.5;
 const HORN_DEPTH_Y = 5.0;
-const HORN_BASE_Z = FRAME_TOP_Z - 1.5;         // base sits inside the octagon for clean union
+// Horn base sits just inside the frame octagon's top corner Z so the
+// loft fuses cleanly. Going much deeper overlaps the yellow case which
+// is at world Z ≤ CASE_FLAT/cos(22.5°).
+const HORN_BASE_Z = FRAME_TOP_Z - 1.0;
 const HORN_TOP_Z = 15.5;                       // top a few mm above frame corners (11.91) — shorter than iter 2
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
@@ -185,25 +188,43 @@ const PINK_MAT = {
 };
 const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-// Horn = three stacked boxes for a smoother taper toward the bail. Lower
-// shoulders → mid neck → upper finial. Three steps give a closer
-// approximation to the reference's sculpted profile than two boxes.
-const HORN_LOWER_H = HORN_HEIGHT_Z * 0.40;
-const HORN_MID_H   = HORN_HEIGHT_Z * 0.30;
-const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H - HORN_MID_H;
+// Horn as a LOFT between two rectangular sketches: a wide bottom and a
+// narrow top, at different Z heights. Loft produces a continuous taper
+// (no visible steps). Width tapers in X; depth tapers in Y.
 const HORN_LOWER_W = HORN_BASE_W_X;
-const HORN_MID_W   = (HORN_BASE_W_X + HORN_TOP_W_X) / 2 + 0.5;   // halfway between
 const HORN_UPPER_W = HORN_TOP_W_X;
-const hornLower = box(HORN_LOWER_W, HORN_DEPTH_Y,           HORN_LOWER_H, true)
-  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H / 2);
-const hornMid   = box(HORN_MID_W,   HORN_DEPTH_Y * 0.95,    HORN_MID_H,   true)
-  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H / 2);
-const hornUpper = box(HORN_UPPER_W, HORN_DEPTH_Y * 0.85,    HORN_UPPER_H, true)
-  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H + HORN_UPPER_H / 2);
-// Tried .fillet(0.4) on the union to smooth the horizontal step edges;
-// OCCT refused (non-G1 union seam — known limitation). We accept a
-// stepped pendant for now; iter 5 explores loft as an alternative.
-const horn = hornLower.union(hornMid).union(hornUpper).material(PINK_MAT);
+const HORN_LOWER_D = HORN_DEPTH_Y;
+const HORN_UPPER_D = HORN_DEPTH_Y * 0.85;
+
+function rectSketch(w, d) {
+  return path()
+    .moveTo(-w / 2, -d / 2)
+    .lineTo( w / 2, -d / 2)
+    .lineTo( w / 2,  d / 2)
+    .lineTo(-w / 2,  d / 2)
+    .close();
+}
+const sectionLower = rectSketch(HORN_LOWER_W, HORN_LOWER_D);
+const sectionUpper = rectSketch(HORN_UPPER_W, HORN_UPPER_D);
+
+// Sections sit in the XY plane (path() builds in XY). Place them at
+// world Z = HORN_BASE_Z and Z = HORN_TOP_Z respectively. The loft engine
+// stacks them along Z by default.
+const horn = sectionLower
+  .loft(sectionUpper, {
+    planes: [
+      { normal: [0, 0, 1], origin: [0, 0, HORN_BASE_Z] },
+      { normal: [0, 0, 1], origin: [0, 0, HORN_TOP_Z] },
+    ],
+  })
+  .material(PINK_MAT);
+
+// Provide horn-step sizes as fallbacks for crown placement maths below
+// (kept so the existing crown-position formulas continue to compile).
+const HORN_LOWER_H = HORN_HEIGHT_Z * 0.40;
+const HORN_MID_H = HORN_HEIGHT_Z * 0.30;
+const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H - HORN_MID_H;
+const HORN_MID_W = (HORN_BASE_W_X + HORN_TOP_W_X) / 2 + 0.5;
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at

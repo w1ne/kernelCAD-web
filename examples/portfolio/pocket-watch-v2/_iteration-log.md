@@ -131,3 +131,25 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Material rendering reads slightly desaturated vs the reference's coral.
 
 **Decision:** commit. Try a `loft` between the lower and upper trapezoid profiles for iter 5 — that's the kernelCAD-native way to get a smooth taper.
+
+## iter 5 — lofted pendant (smooth taper)
+
+**What changed:**
+- Replaced the three stacked boxes with a `path().loft(other)` between two rectangular sections: a wide-deep section at the case top and a narrow-shallow section at the bail. Loft engine produces a continuous taper — no visible steps.
+- Horn base sunk into the frame's top corner Z so the loft fuses cleanly with the octagon.
+- Crown placement formulas kept the old HORN_LOWER/MID/UPPER variables for stability.
+
+**Render:** `iter-5.png`
+
+**Diff against the reference:**
+- Pendant taper is now SMOOTH — looks like one sculpted block, not a tiered cake. This reads MUCH closer to the reference than iter 4's three-step.
+- BUT there's a visible step at the horn-base / frame-top junction. The loft creates the horn as its own primitive, then it unions with the frame; the union seam shows a hard right-angle ledge where the loft's bottom face meets the frame octagon's top flat. Reference has a smooth fillet there.
+- Composition still right-biased.
+- Crystal + dial + crown + bail all clean.
+
+**3 worst issues, ranked:**
+1. The visible horn-base ledge breaks the "one-continuous-body" illusion at the horn / frame junction.
+2. Composition still right-biased. The pendant column is ~50% of total vertical extent.
+3. Frame coral colour reads slightly muted vs the reference's saturated pop-art coral.
+
+**Decision:** commit. Iter 6 widens the horn's BASE section so it matches the frame's top-flat width — that may visually hide the union ledge, since the horn-base and frame-top will share the same X edge.
