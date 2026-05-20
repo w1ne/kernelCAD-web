@@ -30,6 +30,7 @@ import type { Vec3 } from '../../../shared/intent/types';
 import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
+import { drawingFromCommands } from './sketchToDrawing';
 import {
   applyCreatedRefs,
   captureAllFaceSnapshots,
@@ -85,41 +86,6 @@ function profileBboxRadius(commands: readonly SketchCommand[]): number {
     }
   }
   return maxR;
-}
-
-/** Build a replicad Drawing from a SketchCommand[] — a self-contained
- *  alternative to OcctBackend.fromSketchCommands that returns the Drawing
- *  (not a 3D solid) so we can sketchOnPlane on it. */
-function drawingFromCommands(commands: readonly SketchCommand[]): replicad.Drawing {
-  const closeIdx = commands.findIndex(c => c.kind === 'close');
-  if (closeIdx === -1) throw new Error('cutoutLowerer.drawingFromCommands: missing close');
-  const first = commands[0];
-  if (first.kind !== 'moveTo') throw new Error('cutoutLowerer.drawingFromCommands: first command must be moveTo');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let pen: any = replicad.draw([first.x.evaluated, first.y.evaluated]);
-  for (let i = 1; i < closeIdx; i++) {
-    const c = commands[i];
-    if (c.kind === 'lineTo') pen = pen.lineTo([c.x.evaluated, c.y.evaluated]);
-    else if (c.kind === 'tangentArc') pen = pen.tangentArcTo([c.x.evaluated, c.y.evaluated]);
-    else if (c.kind === 'threePointsArc') pen = pen.threePointsArcTo([c.x.evaluated, c.y.evaluated], [c.midX.evaluated, c.midY.evaluated]);
-    else if (c.kind === 'sagittaArc') pen = pen.sagittaArcTo([c.x.evaluated, c.y.evaluated], c.sagitta.evaluated);
-    else if (c.kind === 'bulgeArc') pen = pen.bulgeArcTo([c.x.evaluated, c.y.evaluated], c.bulge.evaluated);
-    else if (c.kind === 'radiusArc') {
-      // radius → sagitta conversion (positive bulges left of chord)
-      const cx = c.x.evaluated;
-      const cy = c.y.evaluated;
-      const cr = c.radius.evaluated;
-      const dx = cx - first.x.evaluated, dy = cy - first.y.evaluated;
-      const chord = Math.hypot(dx, dy);
-      const halfChord = chord / 2;
-      const r = Math.abs(cr);
-      if (r < halfChord) throw new Error(`cutoutLowerer: radiusArc |radius|=${r} < chord/2=${halfChord}`);
-      const sagitta = (cr >= 0 ? 1 : -1) * (r - Math.sqrt(r * r - halfChord * halfChord));
-      pen = pen.sagittaArcTo([cx, cy], sagitta);
-    }
-    else if (c.kind === 'smoothSpline') pen = pen.smoothSplineTo([c.x.evaluated, c.y.evaluated]);
-  }
-  return pen.close();
 }
 
 interface ResolvedEntry {

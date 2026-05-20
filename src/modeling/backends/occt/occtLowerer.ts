@@ -28,6 +28,7 @@ import { lowerVariableSweep, type VariableSweepSectionLowered } from './variable
 import { isVariableSweepMetadata } from '../../../shared/intent/variableSweepRecord';
 import { lowerCoonsPatch } from './coonsPatchLowerer';
 import { lowerEmbossText } from './embossTextLowerer';
+import { lowerProjectCurve } from './projectCurveLowerer';
 import { pickEdges, pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries';
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
@@ -423,6 +424,7 @@ export class OcctLowerer implements FeatureLowerer {
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
     'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
     'embossText',       // W3: emboss/engrave text onto a face (raise or recess via signed depth)
+    'projectCurve',     // W3: project a closed 2D curve onto a face (open-wire mode deferred)
   ]);
 
   /** v0.5: pre-lowered geometry for `importedStep` records, populated by
@@ -2742,6 +2744,31 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         const res = await lowerEmbossText(r, parentBackend, allRecords, this.scriptDir);
+        if (!res.ok) {
+          diagnostics.push(...res.diagnostics);
+          return { shape: parentBackend, diagnostics };
+        }
+        shape = res.backend;
+        break;
+      }
+      case 'projectCurve': {
+        // W3: project a 2D closed curve onto a target face. The lowerer
+        // returns a sketch-tagged OcctBackend (face-bound sketch). Downstream
+        // chains (`.extrude(d)` / `.cut(...)`) consume it via the normal
+        // sketch pipeline.
+        const parentBackend = inputs.byKey.parent as OcctBackend | undefined;
+        if (!parentBackend) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.invalid-args',
+            featureId: r.id,
+            severity: 'error',
+            message: `projectCurve requires an input named 'parent'.`,
+            hint: 'Chain projectCurve onto a solid via Shape.projectCurve({...}); the parent input is the body holding the target face.',
+          });
+          return { shape: undefined as unknown as ShapeBackend, diagnostics };
+        }
+        const res = await lowerProjectCurve(r, parentBackend, allRecords);
         if (!res.ok) {
           diagnostics.push(...res.diagnostics);
           return { shape: parentBackend, diagnostics };
