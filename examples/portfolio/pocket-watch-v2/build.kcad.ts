@@ -218,32 +218,59 @@ const PINK_MAT = {
 };
 const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-// Horn as a LOFT between two rectangular sketches: a wide bottom and a
-// narrow top, at different Z heights. Loft produces a continuous taper
-// (no visible steps). Width tapers in X; depth tapers in Y.
-const HORN_LOWER_W = HORN_BASE_W_X;
-const HORN_UPPER_W = HORN_TOP_W_X;
-const HORN_LOWER_D = HORN_DEPTH_Y;
-const HORN_UPPER_D = HORN_DEPTH_Y * 0.85;
+// Horn as a multi-section LOFT through rounded-rectangle cross-sections.
+// Rectangular sections produce sharp rectangular shoulders (the v2 honest
+// verdict's biggest authoring-gap); replacing them with rounded-corner
+// "stadium-ish" sections via path.tangentArc gives the horn the soft
+// curved-shoulder profile visible in the reference photo.
+//
+// Three sections stacked along Z make the horn neck:
+//   - base (wider): matches the frame top flat in X, slightly narrower in Y
+//   - waist (narrowest): forms the "necking" pinch ~60% up
+//   - top (narrow oval): meets the crown
+const HORN_BASE_W   = HORN_BASE_W_X;            // X width at base
+const HORN_BASE_D   = HORN_DEPTH_Y * 0.92;      // Y depth at base
+const HORN_BASE_R   = 1.4;                       // base corner radius (mm)
+const HORN_WAIST_W  = HORN_TOP_W_X * 0.85;      // narrowest mid-pinch
+const HORN_WAIST_D  = HORN_DEPTH_Y * 0.78;
+const HORN_WAIST_R  = 1.5;
+const HORN_TOP_W    = HORN_TOP_W_X;
+const HORN_TOP_D    = HORN_DEPTH_Y * 0.82;
+const HORN_TOP_R    = 1.5;
+const HORN_WAIST_Z  = HORN_BASE_Z + HORN_HEIGHT_Z * 0.62;
 
-function rectSketch(w, d) {
+// Rounded-rectangle 2D sketch via 4 tangent arcs at the corners. (path's
+// tangentArc requires a prior straight segment to set the tangent; we
+// stitch line → arc → line → arc... around the perimeter.) Centred at
+// origin in the XY plane.
+function roundedRectSketch(w, d, r) {
+  // Clamp radius to half the smaller side so arcs don't self-intersect.
+  const rr = Math.min(r, w / 2 - 0.05, d / 2 - 0.05);
+  const hw = w / 2, hd = d / 2;
   return path()
-    .moveTo(-w / 2, -d / 2)
-    .lineTo( w / 2, -d / 2)
-    .lineTo( w / 2,  d / 2)
-    .lineTo(-w / 2,  d / 2)
+    .moveTo(-hw + rr, -hd)
+    .lineTo( hw - rr, -hd)
+    .tangentArc( hw, -hd + rr)
+    .lineTo( hw,  hd - rr)
+    .tangentArc( hw - rr,  hd)
+    .lineTo(-hw + rr,  hd)
+    .tangentArc(-hw,  hd - rr)
+    .lineTo(-hw, -hd + rr)
+    .tangentArc(-hw + rr, -hd)
     .close();
 }
-const sectionLower = rectSketch(HORN_LOWER_W, HORN_LOWER_D);
-const sectionUpper = rectSketch(HORN_UPPER_W, HORN_UPPER_D);
 
-// Sections sit in the XY plane (path() builds in XY). Place them at
-// world Z = HORN_BASE_Z and Z = HORN_TOP_Z respectively. The loft engine
-// stacks them along Z by default.
+const sectionLower = roundedRectSketch(HORN_BASE_W, HORN_BASE_D, HORN_BASE_R);
+const sectionWaist = roundedRectSketch(HORN_WAIST_W, HORN_WAIST_D, HORN_WAIST_R);
+const sectionUpper = roundedRectSketch(HORN_TOP_W, HORN_TOP_D, HORN_TOP_R);
+
+// 3-section loft along +Z. Each section is placed on its own XY plane at
+// the right Z height. Loft engine sweeps a NURBS surface between sections.
 const horn = sectionLower
-  .loft(sectionUpper, {
+  .loft([sectionWaist, sectionUpper], {
     planes: [
       { normal: [0, 0, 1], origin: [0, 0, HORN_BASE_Z] },
+      { normal: [0, 0, 1], origin: [0, 0, HORN_WAIST_Z] },
       { normal: [0, 0, 1], origin: [0, 0, HORN_TOP_Z] },
     ],
   })
