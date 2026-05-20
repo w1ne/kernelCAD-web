@@ -517,14 +517,12 @@ watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [CROW
 // 23.6) and the torus sits just above it. With the crown moved off-axis to
 // x = 6, the bail no longer has to "lift over" the crown knob — bail post and
 // torus can sit at their natural height above the case top.
-const LOOP_MAJOR_R = 5.0;    // through-hole radius
-const LOOP_TUBE_R  = 1.2;    // tube cross-section radius (chain can slide on this)
+const LOOP_MAJOR_R = 3.2;    // through-hole radius (delicate ring, not a Mickey-Mouse ear)
+const LOOP_TUBE_R  = 0.7;    // tube cross-section radius — slim wire so depth-along-camera-Y also stays ~0.7 mm
 // Lower the loop center toward the frame top so the bail reads as snugly
 // attached. Tube outer-bottom = loopCenterZ - LOOP_MAJOR_R - LOOP_TUBE_R.
-// With loopCenterZ = 30.5, tube outer-bottom = 24.3, leaving room for a
-// short, stout bail post above the frame top (z ≈ 23.6).
-const loopCenterZ  = 30.5;
-const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 36.7 — apex of upper tube outer surface
+const loopCenterZ  = 27.5;
+const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // ~31.4 — apex of upper tube outer surface
 // Bail post: thin pink cylinder rising from the frame top up into the torus
 // tube. Centered at world (x=0, y=0) — directly above the case top flat. Since
 // the crown is now at x = 6, the bail no longer interferes with it regardless
@@ -535,14 +533,14 @@ const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 36.7 —
 // volumes don't overlap so there's no interference). Slight overlap into the
 // frame causes fillet/short-edge failures, so we keep them just touching.
 const BAIL_POST_BASE_Z = FRAME_FLAT;                           // 23 — flush with frame top flat
-const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.5;  // 26.1 — sinks ~0.5 mm into torus tube
-const BAIL_POST_R      = 0.9;                                  // narrow pink wire connecting case to bail
-const BAIL_POST_LEN    = BAIL_POST_TOP_Z - BAIL_POST_BASE_Z;
+const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.4;  // sinks ~0.3 mm into torus tube
+const BAIL_POST_R      = 0.6;                                  // narrow pink wire connecting case to bail
+const BAIL_POST_LEN    = Math.max(0.6, BAIL_POST_TOP_Z - BAIL_POST_BASE_Z);
 
 // Full torus: axis = world +Z by default. Rotate(+90° about world X) to
 // re-orient axis along world +Y; the hole then opens along ±Y, facing the
 // camera at -Y. Then translate up to the loop center.
-const loopFull = torus(LOOP_MAJOR_R, LOOP_TUBE_R, 64)
+const loopFull = torus(LOOP_MAJOR_R, LOOP_TUBE_R, 48)
   .rotate([1, 0, 0], 90)
   .translate(0, 0, loopCenterZ);
 // Cut away everything at z < LOOP_BASE_Z to leave just the upper half. The
@@ -562,18 +560,9 @@ const loopShape = loopFull
 const loop = watch.part('pink lanyard loop', loopShape);
 watch.fixed('lanyard loop attached to frame top', frame, loop, { origin: [0, 0, LOOP_BASE_Z] });
 
-// =============================================================================
-// PINK RIBBON STRAP — short flat band rising from the loop apex.
-// =============================================================================
-// Ribbon must not intersect the loop. Loop apex (outer surface) sits at
-// z = LOOP_TOP_Z_ACTUAL. Place the ribbon bottom 0.6 mm above that.
-const ribbonBottomZ = LOOP_TOP_Z_ACTUAL + 0.6;
-const ribbonHeight = 8.0;
-const ribbonCenterZ = ribbonBottomZ + ribbonHeight / 2;
-const ribbon = box(6.0, 0.9, ribbonHeight, true)
-  .translate(0, 0, ribbonCenterZ)
-  .color('#f8b3c0');
-const ribbonPart = watch.part('pink ribbon strap', ribbon);
-watch.fixed('ribbon attached at loop apex', loop, ribbonPart, { origin: [0, 0, ribbonBottomZ] });
+// (Ribbon omitted in this iteration — a flat extruded plank does not read
+// as a fabric ribbon at the iso pose and inflates the model's Z extent,
+// breaking the camera-fit framing. The bail-only top assembly matches the
+// reference silhouette more closely.)
 
 return watch.model();
