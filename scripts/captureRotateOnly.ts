@@ -57,7 +57,8 @@ async function main(): Promise<void> {
     const ctx = await browser.newContext({ viewport: { width: W, height: H } });
     const page = await ctx.newPage();
     page.setDefaultTimeout(180000);
-    await page.goto('http://127.0.0.1:5173/demo-player?headless=1');
+    const port = process.env.VITE_PORT ?? '5173';
+    await page.goto(`http://127.0.0.1:${port}/demo-player?headless=1`);
     await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 30000 });
     await page.evaluate(() => window.__demoPlayer!.setVersion('v0.7'));
 

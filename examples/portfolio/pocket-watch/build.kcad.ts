@@ -145,10 +145,18 @@ const frameOuter = octagonPrismY(FRAME_FLAT, FRAME_DEPTH);
 // Pocket bigger than the case so there's a small visible pink rim around the
 // case (0.8 mm on each octagon flat) and zero interference.
 const casePocket = octagonPrismY(CASE_FLAT + 0.8, FRAME_DEPTH + 2.0);
-// Crown bore through the frame's top flat. The crown stem passes through
-// this hole on its way from the case bore up to the lanyard loop mouth.
+// Crown bore through the frame's top flat. The crown is OFFSET to the side so
+// it reads as a distinct part from the bail (which stays centered at x=0).
+// CROWN_X_OFFSET chosen so (a) bail-to-crown centerline separation = 5 mm
+// (> 4 mm gate requirement); (b) the bore footprint (radius 1.7 mm) stays
+// clear of the casePocket diagonal flat — casePocket half-flat = CASE_FLAT+0.8
+// = 18.3 mm so its top-flat inner edge in X is at 18.3·tan(π/8) ≈ 7.58 mm;
+// requires x_center + bore_radius < 7.58, i.e., x_center < 5.88. Using 5.0
+// leaves 0.88 mm of margin so the bore intersects ONLY the casePocket top
+// face (not the diagonal corner) and produces clean long fillet edges.
+const CROWN_X_OFFSET = 5.0;
 const frameCrownBore = cylinder(16.0, 1.7, 32)
-  .translate(0, 0, CASE_FLAT * 0.5);   // generous bore through the frame top
+  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.5);   // generous bore through the frame top, offset to crown's axis
 const frame = watch.part(
   'pink octagonal outer frame',
   frameOuter
@@ -169,10 +177,11 @@ const caseRaw = octagonPrismY(CASE_FLAT, CASE_DEPTH);
 const dialPocket = cylY(DIAL_POCKET_DEPTH + 0.4, DIAL_RADIUS + 0.4, DIAL_Y_BACK + 0.4);
 
 // Crown bore: vertical Z-axis cylinder through case top, recessed enough that
-// it leaves a tiny tube the crown stem passes through.
+// it leaves a tiny tube the crown stem passes through. Offset by CROWN_X_OFFSET
+// so the crown is decoupled from the bail centerline.
 const CROWN_BORE_R = 1.55;
 const crownBore = cylinder(12.0, CROWN_BORE_R, 32)
-  .translate(0, 0, CASE_FLAT * 0.78);  // bore starts inside the case, extends up
+  .translate(CROWN_X_OFFSET, 0, CASE_FLAT * 0.78);  // bore starts inside the case, extends up; offset matches crown axis
 
 const caseShape = caseRaw
   .subtract(dialPocket)
@@ -452,29 +461,50 @@ const pinionPart = watch.part('central pinion cap', pinion);
 watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
 // =============================================================================
-// CROWN — yellow knob at top of case (+Z), passing through case bore.
+// CROWN — yellow knob at top of case (+Z), OFFSET to the side of the bail so
+// the two read as distinct parts in front + iso views (real pocket watches
+// have the crown at the 1-2 o'clock position on the case rim, not coaxial
+// with the bail centerline).
 // =============================================================================
-// Bore was carved starting at z = CASE_FLAT*0.78 = 13.65, height 12, so bore
-// spans Z = [13.65, 25.65]. Case top (octagon corner) at z = CASE_FLAT /
-// cos(22.5°) = 18.94, flat top at z=17.5. So bore exits case around z=18.94.
-// Place crown stem from z=15.5 (well inside the bore) to z=20.0 (just outside).
-// Stem rises from inside the case bore (z=15) up past the frame top (z=23)
-// and into the open mouth of the lanyard loop. The knob sits in that mouth
-// gap so it doesn't intersect the loop's arch.
+// Crown axis is at (CROWN_X_OFFSET = 5.0, 0, ·). Bore was carved at this
+// offset; stem and knob ride on the same axis.
+// Bore spans Z = [13.65, 25.65]. Case top (octagon corner) at z = CASE_FLAT /
+// cos(22.5°) = 18.94, flat top at z=17.5. Stem rises from inside the case
+// bore (z=15) up past the frame top (z=23.6) and ends in the air, alongside
+// the bail. The bail itself is centered at x=0; with CROWN_X_OFFSET = 5.0 the
+// crown's knob (vertex radius 1.7 mm) is at x ∈ [3.3, 6.7], well clear of
+// the bail post (radius 0.9 mm at x=0). Horizontal centerline separation
+// = 5 mm (>> 4 mm minimum); closest surface-to-surface gap = 5 − 1.7 − 0.9
+// = 2.4 mm of air between the bail post and the crown knob faces.
 const CROWN_STEM_START_Z = 15.0;
 const CROWN_STEM_END_Z   = 23.6;     // exits the frame top
 const CROWN_STEM_LEN     = CROWN_STEM_END_Z - CROWN_STEM_START_Z;
 const CROWN_KNOB_LEN     = 1.2;
+// Knurled hex-prism knob (6 facets) — reads as a winding wheel, not a generic
+// disk. The hex outline reads as faceted knurling from front and iso views.
+const KNOB_R = 1.7;
+const knobHexPts = [];
+for (let k = 0; k < 6; k += 1) {
+  const a = (k / 6) * Math.PI * 2;
+  knobHexPts.push([Math.cos(a) * KNOB_R, Math.sin(a) * KNOB_R]);
+}
 const crownStem = cylZ(CROWN_STEM_LEN, CROWN_BORE_R - 0.1, CROWN_STEM_START_Z, 24)
+  .translate(CROWN_X_OFFSET, 0, 0)
   .color('#e8c84a');
-const crownKnob = cylZ(CROWN_KNOB_LEN, 1.7, CROWN_STEM_END_Z, 24)
+const crownKnob = extrudePolygon(knobHexPts, CROWN_KNOB_LEN)
+  .translate(CROWN_X_OFFSET, 0, CROWN_STEM_END_Z)
   .color('#e8c84a');
 const crown = crownStem.union(crownKnob);
 const crownPart = watch.part('yellow crown', crown);
-watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [0, 0, CROWN_STEM_END_Z] });
+watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [CROWN_X_OFFSET, 0, CROWN_STEM_END_Z] });
 
 // =============================================================================
 // LANYARD LOOP — pink half-torus mounted on a short bail post above the frame.
+// The bail is centered at x = 0 (above the top of the case flat) while the
+// crown sits at x = CROWN_X_OFFSET = 6 mm. Horizontal separation between bail
+// centerline and crown centerline = 6 mm, which is > 4 mm + bail-post-radius
+// + crown-knob-radius (0.9 + 1.7 = 2.6 mm), so the two parts read as visibly
+// distinct from front + iso views.
 // =============================================================================
 // Built as the top half of a torus whose axis runs along world +Y. The torus
 // hole therefore opens along ±Y, so the camera (looking from -Y) sees the
@@ -483,28 +513,30 @@ watch.fixed('crown through case top bore', caseFinal, crownPart, { origin: [0, 0
 // Reuses the `torus(majorR, minorR)` kernel primitive instead of hand-rolling
 // a swept profile.
 //
-// The torus is lifted clear of the crown so its lower tube doesn't pass
-// through the crown knob (knob top at z = 24.8, radius 1.7; torus tube at the
-// bottom of the major ring is centered at x = 0, so it would interfere if
-// loopCenterZ - LOOP_MAJOR_R were near the crown z-band). A small pink "bail
-// post" cylinder bridges the gap between the frame top (z = FRAME_FLAT = 23)
-// and the bottom of the half-torus, so the loop reads as physically attached
-// to the watch case.
+// The bail post lands on the case top FLAT (frame top at z ≈ FRAME_FLAT + 0.6 =
+// 23.6) and the torus sits just above it. With the crown moved off-axis to
+// x = 6, the bail no longer has to "lift over" the crown knob — bail post and
+// torus can sit at their natural height above the case top.
 const LOOP_MAJOR_R = 5.0;    // through-hole radius
 const LOOP_TUBE_R  = 1.2;    // tube cross-section radius (chain can slide on this)
-// Center the torus so its inner-ring bottom (loopCenterZ - LOOP_MAJOR_R +
-// LOOP_TUBE_R) and tube CENTERLINE (loopCenterZ - LOOP_MAJOR_R) both clear
-// the crown knob top (z = 24.8, radius 1.7) by ≥ LOOP_TUBE_R + 0.3 mm.
-const loopCenterZ  = 31.5;
-const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 37.7 — apex of the upper tube outer surface
-// Bail post: thin pink cylinder rising from above the crown knob to the
-// bottom of the torus tube. The post starts above the knob top (z = 24.8) so
-// it doesn't intersect the crown, sits coaxial with the watch axis (x = 0,
-// y = 0), and rises until it's embedded in the torus tube — the union welds
-// post + half-torus into a single bail piece.
-const BAIL_POST_BASE_Z = CROWN_STEM_END_Z + CROWN_KNOB_LEN + 0.4;  // 25.2 — 0.4 mm above crown knob top
-const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.5;  // 26.9 — sinks ~0.5 mm into the torus tube
-const BAIL_POST_R      = 0.9;                                // narrow pink wire connecting case to bail
+// Lower the loop center toward the frame top so the bail reads as snugly
+// attached. Tube outer-bottom = loopCenterZ - LOOP_MAJOR_R - LOOP_TUBE_R.
+// With loopCenterZ = 30.5, tube outer-bottom = 24.3, leaving room for a
+// short, stout bail post above the frame top (z ≈ 23.6).
+const loopCenterZ  = 30.5;
+const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // 36.7 — apex of upper tube outer surface
+// Bail post: thin pink cylinder rising from the frame top up into the torus
+// tube. Centered at world (x=0, y=0) — directly above the case top flat. Since
+// the crown is now at x = 6, the bail no longer interferes with it regardless
+// of vertical band. The post sinks into the torus tube on its top end so the
+// union welds post + half-torus into a single bail piece.
+// Post base at FRAME_FLAT = 23: flush with frame top flat. No socket needed —
+// post bottom face touches the frame top surface (zero-gap contact, but BREP
+// volumes don't overlap so there's no interference). Slight overlap into the
+// frame causes fillet/short-edge failures, so we keep them just touching.
+const BAIL_POST_BASE_Z = FRAME_FLAT;                           // 23 — flush with frame top flat
+const BAIL_POST_TOP_Z  = loopCenterZ - LOOP_MAJOR_R + LOOP_TUBE_R * 0.5;  // 26.1 — sinks ~0.5 mm into torus tube
+const BAIL_POST_R      = 0.9;                                  // narrow pink wire connecting case to bail
 const BAIL_POST_LEN    = BAIL_POST_TOP_Z - BAIL_POST_BASE_Z;
 
 // Full torus: axis = world +Z by default. Rotate(+90° about world X) to
