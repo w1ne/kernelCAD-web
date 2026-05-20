@@ -231,13 +231,13 @@ const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
 const HORN_BASE_W   = HORN_BASE_W_X;            // X width at base
 const HORN_BASE_D   = HORN_DEPTH_Y * 0.92;      // Y depth at base
 const HORN_BASE_R   = 1.4;                       // base corner radius (mm)
-const HORN_WAIST_W  = HORN_TOP_W_X * 0.85;      // narrowest mid-pinch
-const HORN_WAIST_D  = HORN_DEPTH_Y * 0.78;
-const HORN_WAIST_R  = 1.5;
-const HORN_TOP_W    = HORN_TOP_W_X;
-const HORN_TOP_D    = HORN_DEPTH_Y * 0.82;
+const HORN_WAIST_W  = HORN_TOP_W_X * 0.72;      // narrowest mid-pinch — tighter waist
+const HORN_WAIST_D  = HORN_DEPTH_Y * 0.70;
+const HORN_WAIST_R  = 1.4;
+const HORN_TOP_W    = HORN_TOP_W_X * 0.95;      // hair narrower top so the necking reads
+const HORN_TOP_D    = HORN_DEPTH_Y * 0.80;
 const HORN_TOP_R    = 1.5;
-const HORN_WAIST_Z  = HORN_BASE_Z + HORN_HEIGHT_Z * 0.62;
+const HORN_WAIST_Z  = HORN_BASE_Z + HORN_HEIGHT_Z * 0.65;
 
 // Rounded-rectangle 2D sketch via 4 tangent arcs at the corners. (path's
 // tangentArc requires a prior straight segment to set the tangent; we
