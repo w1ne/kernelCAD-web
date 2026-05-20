@@ -8,7 +8,7 @@ import { addProjectCurve, type AddProjectCurveInput } from '../edits/projectCurv
 import { evaluateScriptTool } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
-export interface ProjectCurveInput extends AddProjectCurveInput {}
+export type ProjectCurveInput = AddProjectCurveInput;
 
 export interface ProjectCurveOutput {
   ok: boolean;

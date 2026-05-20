@@ -8,7 +8,7 @@ import { addEmbossText, type AddEmbossTextInput } from '../edits/embossText';
 import { evaluateScriptTool } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
-export interface EmbossTextInput extends AddEmbossTextInput {}
+export type EmbossTextInput = AddEmbossTextInput;
 
 export interface EmbossTextOutput {
   ok: boolean;
