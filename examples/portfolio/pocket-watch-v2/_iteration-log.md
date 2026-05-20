@@ -84,3 +84,28 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Composition still slightly right-biased (the bail above the body adds 5+ mm of bbox vertical that the symmetric body doesn't have).
 
 **Decision:** commit, then iter 3 chamfers the horn's top corners to give it a tapered "neck" look.
+
+## iter 3 — stacked horn (shoulders + neck) + bail kisses horn
+
+**What changed:**
+- Horn split into TWO stacked boxes: wider lower "shoulders" + narrower upper "neck". Reads as a stepped taper, much closer to the reference's sculpted pendant than iter 2's plain rectangle. (Tried a single box with diagonal corner cutters first — produced a U-shaped tuning-fork; reverted.)
+- Bail's BAIL_CENTER_Z reduced to (HORN_TOP_Z + clearance) so the tube outer rim touches the horn top with ~0.03 mm air gap (interference-free, visually fused).
+- Crown moved to the upper-narrow horn's +X face and pushed 0.6 mm outboard so the hex prism's bbox clears the horn without interference.
+- Overall horn height tightened (HORN_TOP_Z from 18.0 → 15.5) — composition is less stretched vertically.
+
+**Render:** `iter-3.png`
+
+**Diff against the reference:**
+- Stacked pendant reads as "shoulders + neck" — closer to reference's sculpted horn.
+- Bail-horn junction is clean (no visible gap).
+- Crown is unambiguously a hex prism on the side of the pendant.
+- Coral pink reads brighter than iter 1; still slightly more muted than the reference's saturated coral.
+- Dial (12, 9, hands, tapisserie, subdial) visible through the dome.
+- Composition still right-biased — the pendant column above the case stretches the bbox.
+
+**3 worst issues, ranked:**
+1. The horn's stacked transition is a HARD STEP (a visible right-angle ledge where lower meets upper). Reference has a smooth fillet at this transition. Need a fillet or a smoother profile.
+2. The horn's lower box has square corners on its TOP (where it meets the upper box) — the inside corners look a bit awkward.
+3. Composition still right-biased — the camera fitter sees the bail high above the body and frames around the whole column.
+
+**Decision:** commit, then iter 4 tries to fillet the horn step. If fillet fails (OCCT often refuses high-curvature unions), fall back to an extra mid-section box.

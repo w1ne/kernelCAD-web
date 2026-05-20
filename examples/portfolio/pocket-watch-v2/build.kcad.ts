@@ -77,24 +77,24 @@ const FRAME_CORNER_Z = FRAME_FLAT / Math.cos(Math.PI / 8);  // 11.91
 // rising above the octagon. Authored as a single trapezoid that starts well
 // below the frame top (overlap so the union fuses) and reaches up to where
 // the bail's bottom tube touches.
-const HORN_BASE_W_X = 10.0;                    // base wider than the octagon corner span (~9.1)
+const HORN_BASE_W_X = 9.5;                     // base sits across the top flat of the frame
 const HORN_TOP_W_X = 5.5;
-const HORN_DEPTH_Y = 5.5;
+const HORN_DEPTH_Y = 5.0;
 const HORN_BASE_Z = FRAME_TOP_Z - 1.5;         // base sits inside the octagon for clean union
-const HORN_TOP_Z = 18.0;                       // top reaches well above frame corners (11.91)
+const HORN_TOP_Z = 15.5;                       // top a few mm above frame corners (11.91) — shorter than iter 2
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
 // Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
 // top of the horn.
 const TAB_TOP_Z = HORN_TOP_Z;
 
-// Bail — sits IMMEDIATELY above the horn top. Tube outer surface bottom is
-// at world Z = BAIL_CENTER_Z - BAIL_MAJOR_R - BAIL_TUBE_R; we set this to
-// HORN_TOP_Z + 0.05 (tiny clearance) to avoid interference while reading
-// as bonded.
+// Bail — tube outer surface bottom kisses the horn top with a small
+// 0.05 mm clearance (so interference-check passes while the gap is
+// invisible at render resolution). Slim tube (~1 mm OD) and modest major
+// radius for a delicate ring.
 const BAIL_MAJOR_R = 2.0;
 const BAIL_TUBE_R = 0.55;
-const BAIL_CENTER_Z = HORN_TOP_Z + 0.05 + BAIL_MAJOR_R + BAIL_TUBE_R;
+const BAIL_CENTER_Z = HORN_TOP_Z + 0.03 + BAIL_MAJOR_R + BAIL_TUBE_R;
 
 // Strap omitted in iter 1+: it stretched the bbox vertically and the
 // camera-fitter pushed the watch body into the corner. The real-world strap
@@ -185,12 +185,18 @@ const PINK_MAT = {
 };
 const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-// Horn built as a centred box (simple X×Y×Z) for predictable placement.
-// Width tapers via two corner cuts below — see horn-corner-cut block.
-const HORN_Z_CENTER = (HORN_BASE_Z + HORN_TOP_Z) / 2;
-const horn = box(HORN_BASE_W_X, HORN_DEPTH_Y, HORN_HEIGHT_Z, true)
-  .material(PINK_MAT)
-  .translate(0, 0, HORN_Z_CENTER);
+// Horn = two stacked boxes for a stepped-taper "neck → shoulders" look.
+// Lower box (wide shoulders) spans the case-top flat; upper box (narrower
+// neck) rises to meet the bail.
+const HORN_LOWER_H = HORN_HEIGHT_Z * 0.45;
+const HORN_UPPER_H = HORN_HEIGHT_Z - HORN_LOWER_H;
+const HORN_LOWER_W = HORN_BASE_W_X;
+const HORN_UPPER_W = HORN_TOP_W_X;
+const hornLower = box(HORN_LOWER_W, HORN_DEPTH_Y, HORN_LOWER_H, true)
+  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H / 2);
+const hornUpper = box(HORN_UPPER_W, HORN_DEPTH_Y, HORN_UPPER_H, true)
+  .translate(0, 0, HORN_BASE_Z + HORN_LOWER_H + HORN_UPPER_H / 2);
+const horn = hornLower.union(hornUpper).material(PINK_MAT);
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at
@@ -421,8 +427,14 @@ for (let k = 0; k < 6; k += 1) {
 }
 // Crown sits on the +X face of the horn box at the lower third of the horn.
 // The horn is a rectangular box of half-width HORN_BASE_W_X / 2.
-const crownZ = HORN_BASE_Z + HORN_HEIGHT_Z * 0.25;
-const crownInnerX = HORN_BASE_W_X / 2 + 0.01;   // sit just OUTSIDE the horn face (no overlap)
+// Crown placement: high enough on the horn that we're ABOVE the frame's
+// angled top-right edge (no overlap with the octagon body), and outboard
+// enough in X that the crown's hex prism doesn't poke into the horn.
+// Crown on the upper horn's +X face, set well outboard so the hex prism's
+// 6-vertex bbox (~±1.1 in YZ) doesn't reach the lower horn's wider X face.
+// Crown Z is at the upper horn's mid-height to clear the lower-upper seam.
+const crownZ = HORN_BASE_Z + HORN_LOWER_H + HORN_UPPER_H * 0.5;
+const crownInnerX = HORN_UPPER_W / 2 + 0.6;
 const crownOuterX = crownInnerX + CROWN_LEN;
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
   .material(YELLOW_MAT)
