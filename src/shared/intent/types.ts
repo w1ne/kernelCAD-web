@@ -156,7 +156,14 @@ export type FeatureKind =
   //   per 2026-05-18 audit) and quintic Hermite transition curve (degree-5
   //   nurbsCurve via JS-side Bezier control-point math).
   | 'surfaceFromBoundary'
-  | 'hermiteG2';
+  | 'hermiteG2'
+  // W3 — face authoring: emboss text onto a target face (raise or recess
+  // via signed depth) and project a 2D closed curve onto a 3D face for
+  // engraved logos / brand silhouettes. Open-wire projection (`asEdge:true`)
+  // is captured but deferred at lower time pending OCCT binding for
+  // `BRepProj_Projection`.
+  | 'embossText'
+  | 'projectCurve';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings
