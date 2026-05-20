@@ -92,7 +92,7 @@ const HORN_DEPTH_Y = FRAME_DEPTH;                                  // match fram
 // Horn base sits flush ON the frame's top flat (no overlap, since the
 // flat IS the horn's bottom). The horn rises from there.
 const HORN_BASE_Z = FRAME_TOP_Z - 0.05;       // hair below for clean fuse
-const HORN_TOP_Z = 13.0;                      // shorter pendant so the bbox isn't dominated by the vertical column
+const HORN_TOP_Z = 17.5;                      // taller sculpted pendant — the reference's pendant reads about 30% as tall as the body, not 10%
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
 // Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
@@ -335,6 +335,45 @@ for (let i = 0; i < screwVerts.length; i += 1) {
   const [x, z] = screwVerts[i];
   const screw = watch.part(`bezel hex screw ${i}`, hexHead(x, z));
   watch.fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
+}
+
+// SIDE SCREWS — two horizontal hex heads on the pendant's ±X faces. The
+// reference photo shows a small dark hex screw on each side of the
+// pendant's lower-shoulder (the widest part of the horn). We reuse the
+// bezel SCREW_R / SCREW_HEAD_T size for consistency, then orient the
+// hex prism so its axis lies along X (perpendicular to the pendant's
+// side face), with the head facing outward.
+const PENDANT_SCREW_R = SCREW_R * 0.95;                          // about the same size as the bezel screws
+const PENDANT_SCREW_T = SCREW_HEAD_T;
+const PENDANT_SCREW_Z = HORN_BASE_Z + HORN_HEIGHT_Z * 0.22;     // low on the shoulder, where the reference shows them
+// The horn's X half-width at PENDANT_SCREW_Z. Linearly interpolating
+// between base and waist (62% of height) gives an approximation good
+// enough for seating the head flush against the side face.
+const SHOULDER_T = (HORN_BASE_Z + HORN_HEIGHT_Z * 0.30 - HORN_BASE_Z) / (HORN_WAIST_Z - HORN_BASE_Z);
+const PENDANT_X_HALF = HORN_BASE_W * 0.5 + SHOULDER_T * (HORN_WAIST_W * 0.5 - HORN_BASE_W * 0.5);
+
+function pendantSideScrew(side) {  // side ∈ {-1, +1}
+  const pts = [];
+  for (let k = 0; k < 6; k += 1) {
+    const a = (k / 6) * Math.PI * 2;
+    pts.push([Math.cos(a) * PENDANT_SCREW_R, Math.sin(a) * PENDANT_SCREW_R]);
+  }
+  // Build the hex disc in XY (axis = +Z by default), then orient axis
+  // to X via alongAxis. Translate to the pendant side face with a small
+  // 0.04 mm outset so the head sits proud, not embedded.
+  const dirX = side >= 0 ? 1 : -1;
+  return extrudePolygon(pts, PENDANT_SCREW_T)
+    .alongAxis([dirX, 0, 0])
+    .translate(dirX * (PENDANT_X_HALF + 0.04), 0, PENDANT_SCREW_Z)
+    .color('#1c1c1e');
+}
+for (const side of [-1, 1]) {
+  const sideName = side > 0 ? 'right' : 'left';
+  const sc = pendantSideScrew(side);
+  const p = watch.part(`pendant ${sideName} hex screw`, sc);
+  watch.fixed(`pendant side screw seated on ${sideName} face`, frame, p, {
+    origin: [side * PENDANT_X_HALF, 0, PENDANT_SCREW_Z],
+  });
 }
 
 // DIAL — turquoise plate with subdial pocket. Material on the leaf cylinder.
