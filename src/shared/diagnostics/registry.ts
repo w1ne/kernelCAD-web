@@ -480,6 +480,56 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'Shape.material({ face }) referenced a face label that no upstream feature declares.',
   },
+  // Material — W1 extension (glass / anisotropy / textures)
+  'feature.material.thickness-negative': {
+    hintTemplate: 'Shape.material.thickness is in mm and must be non-negative. Use 0 for a thin shell or omit the field.',
+    nextAction: { kind: 'fix-arg', field: 'thickness' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Shape.material() received a negative thickness value; the kernel rejects it because Three.MeshPhysicalMaterial.thickness must be non-negative.',
+  },
+  'feature.material.attenuation-distance-invalid': {
+    hintTemplate: 'Shape.material.attenuationDistance must be positive finite mm, or Infinity for no attenuation. Use a positive distance like 10 (mm) for typical glass volumes.',
+    nextAction: { kind: 'fix-arg', field: 'attenuationDistance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Shape.material() received a non-positive or non-finite attenuationDistance.',
+  },
+  'feature.material.anisotropy-rotation-normalized': {
+    hintTemplate: 'anisotropyRotation is in degrees and was normalized to [0, 360). Adjust your call to a value in that range to avoid the soft warning.',
+    nextAction: { kind: 'fix-arg', field: 'anisotropyRotation' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'Shape.material() received an anisotropyRotation outside [0, 360); the kernel normalized the value into range.',
+  },
+  'feature.material.texture-not-found': {
+    hintTemplate: 'Shape.material({ textures: { ...: { path } } }) referenced a path that the texture loader could not resolve. Check the path is correct (absolute, relative-to-script, or https URL) and the file exists.',
+    nextAction: { kind: 'fix-arg', field: 'textures' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A TextureRef.path could not be resolved at load time.',
+  },
+  'feature.material.texture-unsupported-format': {
+    hintTemplate: 'Supported texture formats are .png, .jpg, .jpeg, .webp. Convert the image to one of these and retry.',
+    nextAction: { kind: 'fix-arg', field: 'textures' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A TextureRef.path used an extension outside the supported set (.png, .jpg, .jpeg, .webp).',
+  },
+  'feature.material.texture-oversize-warning': {
+    hintTemplate: 'Texture dimensions exceed 2048 px on at least one axis; rendering still works but consider downscaling to keep GPU memory and load time bounded.',
+    nextAction: { kind: 'fix-arg', field: 'textures' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A texture image was loaded with a dimension greater than 2048 px; emitted as a soft warning.',
+  },
+  'feature.material.texture-oversize-error': {
+    hintTemplate: 'Texture dimensions exceed 8192 px on at least one axis. Downscale the image (8K is the hard cap) and retry.',
+    nextAction: { kind: 'fix-arg', field: 'textures' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A texture image was loaded with a dimension greater than 8192 px; the kernel rejects it as oversized.',
+  },
   // Edge-feature partial success (1) — M2
   'feature.edge-feature.short-edges-skipped': {
     hintTemplate:

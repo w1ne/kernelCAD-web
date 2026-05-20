@@ -554,14 +554,43 @@ export function DemoPlayerPage(): React.JSX.Element {
           }
         }
 
-        // Apply HDRI / IBL environment if the script declared one. Async,
-        // but we don't await — meshes are already on screen; env will pop in
-        // when the .hdr finishes loading + PMREM finishes prefiltering.
+        // Detect any glass material (transmission > 0) on the loaded scene.
+        // Glass without an environment map renders as flat translucent plastic
+        // — three.js' refraction integrator needs an IBL probe to sample. So
+        // if the script didn't declare an environment but any material is
+        // glassy, auto-apply the bundled 'studio' preset. Gated strictly on
+        // `transmission > 0` so zero-transmission renders stay bit-identical
+        // and snapshot diffs remain scoped.
+        const anyGlass = geometryFeatures.some((ser) => {
+          if ((ser.material?.transmission ?? 0) > 0) return true;
+          const byFace = ser.materialByFaceId ?? {};
+          for (const m of Object.values(byFace)) {
+            if ((m?.transmission ?? 0) > 0) return true;
+          }
+          return false;
+        });
+        const effectiveEnv: RenderEnvironmentSpec | null =
+          renderEnvSpec ?? (anyGlass ? { preset: 'studio' } : null);
+
+        // Apply HDRI / IBL environment if the script declared one (or if the
+        // auto-glass fallback above kicked in). Async, but we don't await —
+        // meshes are already on screen; env will pop in when the .hdr
+        // finishes loading + PMREM finishes prefiltering.
         if (sceneRef.current) {
           const ctx = sceneRef.current;
-          void applyEnvironment(ctx.renderer, ctx.scene, renderEnvSpec).then(() => {
-            ctx.renderer.render(ctx.scene, ctx.camera);
-          });
+          // W2 helper is imported statically; if it ever fails (e.g. missing
+          // HDRI asset in a stripped CLI bundle), surface a console warning
+          // rather than blocking the scene.
+          try {
+            void applyEnvironment(ctx.renderer, ctx.scene, effectiveEnv).then(() => {
+              ctx.renderer.render(ctx.scene, ctx.camera);
+            });
+          } catch (e) {
+            console.warn(
+              '[kernelcad] applyEnvironment failed; glass will render flat:',
+              (e as Error).message,
+            );
+          }
         }
 
         return { groupCount };

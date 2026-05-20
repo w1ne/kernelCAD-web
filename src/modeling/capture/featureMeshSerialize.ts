@@ -9,6 +9,8 @@ export interface FaceGeometrySerialized {
   vertices: number[];
   indices: number[];
   normals: number[];
+  /** Bbox-planar UVs (one (u,v) per vertex). */
+  uv?: number[];
   faceId: number;
   plane?: FaceGeometry['plane'];
   cylinder?: FaceGeometry['cylinder'];
@@ -56,6 +58,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
       vertices: Array.from(f.vertices),
       indices: Array.from(f.indices),
       normals: Array.from(f.normals),
+      ...(f.uv !== undefined ? { uv: Array.from(f.uv) } : {}),
       faceId: f.faceId,
       plane: f.plane,
       cylinder: f.cylinder,
@@ -81,6 +84,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
       vertices: new Float32Array(f.vertices),
       indices: new Uint32Array(f.indices),
       normals: new Float32Array(f.normals),
+      ...(f.uv !== undefined ? { uv: new Float32Array(f.uv) } : {}),
       faceId: f.faceId,
       plane: f.plane,
       cylinder: f.cylinder,
