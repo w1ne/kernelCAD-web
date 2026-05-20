@@ -24,6 +24,8 @@ export interface RenderInput {
   hideReferenceImages: boolean;
   /** Additional `--pose <az,el>` captures, repeatable on the CLI. */
   poses?: string[];
+  /** HDRI environment override: preset key, custom URL, or 'none'. */
+  environment?: string;
 }
 
 export interface RenderCliResult {
@@ -44,6 +46,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       poses: input.poses,
       baseUrl: input.baseUrl,
       hideReferenceImages: input.hideReferenceImages,
+      environment: input.environment,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -114,6 +117,10 @@ export function renderCommand(): Command {
       (value: string, prev: string[]) => prev.concat([value]),
       [] as string[],
     )
+    .option(
+      '--environment <preset|url|none>',
+      "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig",
+    )
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
@@ -122,6 +129,7 @@ export function renderCommand(): Command {
       baseUrl: string;
       hideReferenceImages: boolean;
       pose: string[];
+      environment?: string;
     }) => {
       const r = await renderScript({
         file,
@@ -132,6 +140,7 @@ export function renderCommand(): Command {
         baseUrl: opts.baseUrl,
         hideReferenceImages: opts.hideReferenceImages,
         poses: opts.pose,
+        environment: opts.environment,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
