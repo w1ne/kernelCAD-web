@@ -93,6 +93,20 @@ referenceImage(path: string, opts: {
   flipU?: boolean;    // default false
   flipV?: boolean;    // default false
 }): ReferenceImageHandle;
+
+// HDRI / IBL environment for the rendered scene. Virtual node (no OCCT
+// geometry). Pass exactly one of `preset` (built-in PolyHaven CC0) or `url`
+// (custom .hdr served by the dev server). Default behavior when never called
+// is the existing three-light rig — strict backward compatibility with every
+// existing gallery hero. scene.background stays flat #909090 (env affects
+// only shading; silhouette IoU + SSIM gates intact). Validation errors are
+// pushed as diagnostics on the returned handle rather than thrown.
+setRenderEnvironment(spec: {
+  preset?: 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse';
+  url?: string;       // any .hdr served from /hdri/ (or absolute URL)
+  intensity?: number; // envMapIntensity multiplier; default 1.0
+  rotation?: number;  // Y-axis rotation in degrees; default 0
+}): RenderEnvironmentHandle;
 ```
 
 ### Shape methods (chainable)
