@@ -5,6 +5,7 @@ import type { FaceGeometry } from '../../shared/worker/workerTypes';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
+import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import { OcctBackend, initOcct, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
@@ -50,6 +51,8 @@ export interface FeatureMesh {
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
   referenceImage?: ReferenceImageMetadata;
+  /** Render-environment payload; present when featureKind === 'renderEnvironment'. */
+  renderEnvironment?: RenderEnvironmentMetadata;
 }
 
 export interface Bounds {
@@ -238,12 +241,16 @@ export async function meshFeaturesPerFeature(
     }
   }
 
-  // Emit virtual records (referenceImage etc.) directly — they produce no OCCT
-  // geometry, but the renderer needs their payload to materialize overlays.
+  // Emit virtual records (referenceImage, renderEnvironment, etc.) directly —
+  // they produce no OCCT geometry, but the renderer needs their payload to
+  // materialize overlays / IBL.
   for (const r of records) {
     if (r.metadata?.virtual === true) {
       const refImg = r.kind === 'referenceImage'
         ? (r.metadata as unknown as ReferenceImageMetadata)
+        : undefined;
+      const renderEnv = r.kind === 'renderEnvironment'
+        ? (r.metadata as unknown as RenderEnvironmentMetadata)
         : undefined;
       features.push({
         featureId: r.id,
@@ -252,6 +259,7 @@ export async function meshFeaturesPerFeature(
         faces: [],
         virtual: true,
         ...(refImg !== undefined ? { referenceImage: refImg } : {}),
+        ...(renderEnv !== undefined ? { renderEnvironment: renderEnv } : {}),
       });
     }
   }

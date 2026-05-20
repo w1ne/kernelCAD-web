@@ -418,6 +418,7 @@ export class OcctLowerer implements FeatureLowerer {
     'sheetMetalBend',   // W2.2
     'sdfMaterialize',   // W2.3
     'referenceImage',   // virtual — no BREP; defense-in-depth guard
+    'renderEnvironment',// W2: HDRI / IBL virtual record; defense-in-depth guard
     'curve3d',          // NURBS Slice B: 3D NURBS curve → TopoDS_Edge on session.importedGeometry
     'variableSweep',    // NURBS Slice B Task 8: BRepOffsetAPI_MakePipeShell along a 3D spine
   ]);
@@ -2475,6 +2476,12 @@ export class OcctLowerer implements FeatureLowerer {
         // Virtual record — no BREP output. recomputeEngine gates on
         // metadata.virtual === true and skips the lowerer, so this arm is
         // defense-in-depth for callers that invoke the lowerer directly.
+        return { shape: undefined as unknown as ShapeBackend, diagnostics };
+      }
+      case 'renderEnvironment': {
+        // Virtual record — no BREP output. recomputeEngine gates on
+        // metadata.virtual === true and skips the lowerer; this arm is
+        // defense-in-depth for direct callers.
         return { shape: undefined as unknown as ShapeBackend, diagnostics };
       }
       case 'curve3d': {
