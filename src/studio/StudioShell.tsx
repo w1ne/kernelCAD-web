@@ -102,6 +102,44 @@ export function StudioShell() {
         });
     }, []);
 
+    const [renderEnvironmentVisible, setRenderEnvironmentVisible] = useState(true);
+    const renderEnvironmentRecord = useMemo(
+        () => [...recompute.features].reverse().find((f) => f.kind === 'renderEnvironment'),
+        [recompute.features],
+    );
+    const renderEnvironmentPresent = renderEnvironmentRecord !== undefined;
+    const renderEnvironmentPresetLabel = useMemo(() => {
+        const meta = renderEnvironmentRecord?.metadata as { preset?: string; url?: string } | undefined;
+        if (!meta) return '';
+        if (meta.preset) return meta.preset;
+        return 'custom';
+    }, [renderEnvironmentRecord]);
+    const handleToggleRenderEnvironment = useCallback(() => {
+        setRenderEnvironmentVisible((prev) => {
+            const next = !prev;
+            if (typeof window !== 'undefined') {
+                const meta = renderEnvironmentRecord?.metadata as {
+                    preset?: string;
+                    url?: string;
+                    intensity?: number;
+                    rotation?: number;
+                } | undefined;
+                const spec = next && meta
+                    ? {
+                        ...(meta.preset
+                            ? { preset: meta.preset as 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse' }
+                            : {}),
+                        ...(meta.url ? { url: meta.url } : {}),
+                        intensity: meta.intensity,
+                        rotation: meta.rotation,
+                    }
+                    : null;
+                void window.__demoPlayer?.setRenderEnvironment(spec);
+            }
+            return next;
+        });
+    }, [renderEnvironmentRecord]);
+
     const tabSlots = {
         scene: <SceneTab />,
         code: <CodeTab />,
@@ -132,6 +170,10 @@ export function StudioShell() {
                 referenceImagesPresent={referenceImagesPresent}
                 referenceImagesVisible={referenceImagesVisible}
                 onToggleReferenceImages={handleToggleReferenceImages}
+                renderEnvironmentPresent={renderEnvironmentPresent}
+                renderEnvironmentVisible={renderEnvironmentVisible}
+                renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
+                onToggleRenderEnvironment={handleToggleRenderEnvironment}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
