@@ -45,8 +45,9 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 1. `use-the-available-kernel/SKILL.md` — **the most important sub-skill.** Hard rules for which primitive to reach for.
 2. `prepare-prompt/SKILL.md` — turn the user's ask into a Real Object Brief.
 3. `blockout-model/SKILL.md` — coarse parametric blockout in canonical views.
-4. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
-5. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
+4. `kernelcad-trace-from-image/SKILL.md` — convert pixel-space curves on a reference photo into normalized waypoints. Load only when an organic-curve outline (eyewear brow, ergonomic handle, sneaker midsole) would take more than ~60 seconds to eyeball off the photo.
+5. `image-replicator/SKILL.md` — the render→score→iterate loop (caveat: see Rule 9).
+6. `render-inspect/SKILL.md` — interpret diagnostic hints from `kernelcad evaluate`.
 
 ## Hard rules across all sub-skills
 

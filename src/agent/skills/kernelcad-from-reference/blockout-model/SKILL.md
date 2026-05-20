@@ -120,3 +120,15 @@ then `image-replicator/SKILL.md` to iterate.
 - **Skipping interference**: two primary masses that overlap in the blockout will
   produce artefacts in boolean operations in the detail pass. Fix overlaps in
   the blockout.
+
+## Next sub-skill
+
+Two paths after the blockout passes:
+
+- **Right-angled / parametric shape** (everything captured by box, cylinder,
+  rounded-rect, fillet/chamfer): proceed directly to `image-replicator/SKILL.md`
+  for the render→score→iterate loop.
+- **Organic curves** (eyewear brow, ergonomic handle, sneaker midsole — anything
+  where you'd otherwise eyeball waypoints off the reference): load
+  `kernelcad-trace-from-image/SKILL.md` FIRST to extract normalized waypoints
+  from the photo, then `image-replicator/SKILL.md`.
