@@ -92,20 +92,22 @@ const HORN_DEPTH_Y = FRAME_DEPTH;                                  // match fram
 // Horn base sits flush ON the frame's top flat (no overlap, since the
 // flat IS the horn's bottom). The horn rises from there.
 const HORN_BASE_Z = FRAME_TOP_Z - 0.05;       // hair below for clean fuse
-const HORN_TOP_Z = 14.5;
+const HORN_TOP_Z = 13.0;                      // shorter pendant so the bbox isn't dominated by the vertical column
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
 // Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
 // top of the horn.
 const TAB_TOP_Z = HORN_TOP_Z;
 
-// Bail — tube outer surface bottom kisses the horn top with a small
-// 0.05 mm clearance (so interference-check passes while the gap is
-// invisible at render resolution). Slim tube (~1 mm OD) and modest major
-// radius for a delicate ring.
-const BAIL_MAJOR_R = 2.0;
-const BAIL_TUBE_R = 0.55;
-const BAIL_CENTER_Z = HORN_TOP_Z + 0.03 + BAIL_MAJOR_R + BAIL_TUBE_R;
+// Crown sits on TOP of the pendant horn (between horn top and bail).
+const CROWN_FLAT = 0.9;
+const CROWN_LEN = 1.2;
+
+// Bail — sits above the crown. Tube outer surface bottom kisses the crown
+// top with a small clearance.
+const BAIL_MAJOR_R = 1.7;
+const BAIL_TUBE_R = 0.45;
+const BAIL_CENTER_Z = HORN_TOP_Z + CROWN_LEN + 0.03 + BAIL_MAJOR_R + BAIL_TUBE_R;
 
 // Strap omitted in iter 1+: it stretched the bbox vertically and the
 // camera-fitter pushed the watch body into the corner. The real-world strap
@@ -451,11 +453,11 @@ const pinion = cylY(PIN_THICK, 0.35, PIN_Y_BACK).color('#e6c84a');
 const pinionPart = watch.part('central pinion cap', pinion);
 watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
-// CROWN — yellow hex prism on the +X SIDE of the pendant horn. Pre-extrude
-// along +Z. rotate(Y, 90°) maps pre+Z → world+X so extrusion direction is
-// outward. Size enlarged so the hex faces actually read in the render.
-const CROWN_FLAT = 1.1;
-const CROWN_LEN = 2.0;
+// CROWN — yellow hex prism on TOP of the pendant horn (between horn top
+// and bail), axis along +Z so the crown reads as a small yellow knob
+// when viewed from the front. Reference shows it as a stubby cylinder/hex
+// at the very top of the neck, NOT on the side.
+// (CROWN_FLAT and CROWN_LEN defined above, near the bail dimensions.)
 const crownHexPts = [];
 for (let k = 0; k < 6; k += 1) {
   const a = (k / 6) * Math.PI * 2;
@@ -466,27 +468,17 @@ for (let k = 0; k < 6; k += 1) {
 // Crown placement: high enough on the horn that we're ABOVE the frame's
 // angled top-right edge (no overlap with the octagon body), and outboard
 // enough in X that the crown's hex prism doesn't poke into the horn.
-// Crown on the lofted horn's +X face. The loft tapers linearly in X from
-// HORN_BASE_W_X to HORN_TOP_W_X over [HORN_BASE_Z, HORN_TOP_Z]. Compute
-// the local half-width at crown Z, then offset outward by a small gap.
-const crownZ = HORN_BASE_Z + HORN_HEIGHT_Z * 0.35;
-const crownFrac = (crownZ - HORN_BASE_Z) / HORN_HEIGHT_Z;
-const hornHalfWidthAtZ = (HORN_BASE_W_X + (HORN_TOP_W_X - HORN_BASE_W_X) * crownFrac) / 2;
-// The crown's hex bbox extends ±1.1 in world Z. The horn LOFT widens as Z
-// decreases (toward HORN_BASE_Z), so the crown's BOTTOM rim sees a wider
-// horn than its centerline. Compute hornHalfWidth at the crown's BOTTOM
-// (most conservative) and use that for the X clearance.
-const crownBottomZ = crownZ - 1.1;
-const crownBottomFrac = Math.max(0, (crownBottomZ - HORN_BASE_Z) / HORN_HEIGHT_Z);
-const hornHalfWidthAtBottom = (HORN_BASE_W_X + (HORN_TOP_W_X - HORN_BASE_W_X) * crownBottomFrac) / 2;
-const crownInnerX = hornHalfWidthAtBottom + 0.25;
-const crownOuterX = crownInnerX + CROWN_LEN;
+// Crown sits ON TOP of the lofted horn, axis along +Z. The base of the
+// crown is at HORN_TOP_Z; the crown extends UP by CROWN_LEN.
+const crownBaseZ = HORN_TOP_Z;
+const crownTopZ = crownBaseZ + CROWN_LEN;
+// pre-Z extrusion → world +Z. No rotation needed; the hex faces toward
+// the camera (i.e. axis is +Z, hex face is the XY plane).
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
   .material(YELLOW_MAT)
-  .rotate([0, 1, 0], 90)            // pre-Z extrusion → world +X
-  .translate(crownInnerX, 0, crownZ);
-const crown = watch.part('yellow side crown', crownShape);
-watch.fixed('crown side-mounted on pendant horn', frame, crown, { origin: [crownInnerX, 0, crownZ] });
+  .translate(0, 0, crownBaseZ);
+const crown = watch.part('yellow top crown', crownShape);
+watch.fixed('crown on top of pendant horn', frame, crown, { origin: [0, 0, crownBaseZ] });
 
 // BAIL — slim pink torus built via path() + revolve(). The path-validator
 // only recognises lineTo / tangentArc as area-bearing segments, so we use

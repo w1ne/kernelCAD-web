@@ -178,3 +178,26 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Frame coral colour slightly muted vs reference (less saturated).
 
 **Decision:** commit, then iter 7 tightens vertical extent further AND/OR tries placing a foreground reference image overlay or adjusting the camera.
+
+## iter 7 — crown moved from horn-SIDE to horn-TOP
+
+**What changed:**
+- Re-read the reference photo more carefully: the small yellow crown sits at the VERY TOP of the pendant horn (just below the bail), NOT on the side. Earlier iterations placed it on the side.
+- Crown axis now along +Z (instead of along +X). Crown sits at HORN_TOP_Z and extends UP by CROWN_LEN.
+- Bail moved up by CROWN_LEN so the tube outer surface bottom touches the crown's top face.
+- Horn height slightly reduced (HORN_TOP_Z 14.5 → 13.0) and bail dimensions reduced (major 2.0→1.7, tube 0.55→0.45) for a tighter overall composition.
+
+**Render:** `iter-7.png`
+
+**Diff against the reference:**
+- The pendant stack now reads as: case → smooth tapered horn → small yellow crown nub → bail. This matches the reference's layout exactly.
+- Crown reads as a small yellow hex stub at the top of the pendant.
+- Composition LESS right-biased than iter 6 — but still right-biased.
+- The crystal is barely visible at this pose (dome is subtle, almost flat against the dial).
+
+**3 worst issues, ranked (and these may be terminal):**
+1. **Composition right-bias.** The camera-fitter centres on the bbox centroid, which is biased upward by the pendant. Without a way to set an explicit camera target or pose with a manual offset, this is hard to fully fix in the build script. Possible but invasive: add a balancing invisible part below the watch body. Punting on this.
+2. **Crystal dome flat.** The transmission material works but at the iso pose the dome arcs subtly enough that the dial reads as just-painted-on. Need a more pronounced dome OR a stronger material highlight.
+3. **Frame coral colour reads slightly muted vs the reference's pop-art saturated coral.** Could push the baseColor further (e.g. `#ff8c93`).
+
+**Decision:** commit. This is likely the convergence point for the geometric story; iter 8 will close out with one last tweak (e.g. brighter pink + slightly bigger dome).
