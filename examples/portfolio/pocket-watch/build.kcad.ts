@@ -455,17 +455,37 @@ watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FR
 // case top flat (which has an X-span of 2·CASE_FLAT·tan(π/8) ≈ 14.5 mm) so
 // it visually reads as a separate stub rather than a continuation of the
 // case. Depth matches the frame (Y = FRAME_DEPTH) so it sits flush front-back.
-const PENDANT_WIDTH = 8.5;
+// Tapered pendant — base wider than the top, so the silhouette steps inward
+// toward the bail (matches a real pocket-watch neck better than a flat-sided
+// block). Built as a polygon extrusion: trapezoidal cross-section in the
+// X-Z plane, extruded along Y by PENDANT_DEPTH.
+const PENDANT_BASE_HALF_X = 4.5;                    // base half-width (X)
+const PENDANT_TOP_HALF_X = 3.2;                     // top half-width (X) — narrower than base
 const PENDANT_HEIGHT = 4.0;
 const PENDANT_DEPTH = FRAME_DEPTH;
 const PENDANT_Z_BASE = FRAME_FLAT;                  // 23 — top of frame
 const PENDANT_Z_TOP = PENDANT_Z_BASE + PENDANT_HEIGHT;   // 27
-const pendantBlock = box(PENDANT_WIDTH, PENDANT_DEPTH, PENDANT_HEIGHT, true)
-  .translate(0, 0, PENDANT_Z_BASE + PENDANT_HEIGHT / 2)
-  // Fillet softens all 12 edges (~0.6 mm radius) — without this the pendant
-  // reads as a sharp box stuck onto the case. With the fillet, the silhouette
-  // matches the soft chamfered neck on the reference pocket watch.
-  .fillet(0.6)
+// Polygon vertices (XZ plane, CCW): bottom-left, bottom-right, top-right, top-left.
+// extrudePolygon extrudes along +Z by PENDANT_DEPTH; rotate(X, -90°) then maps
+// the polygon plane onto XY (originally XZ) and the extrusion direction onto
+// world -Y. Then translate to place the pendant base at world Z = PENDANT_Z_BASE.
+const pendantPts = [
+  [-PENDANT_BASE_HALF_X, 0],
+  [+PENDANT_BASE_HALF_X, 0],
+  [+PENDANT_TOP_HALF_X, PENDANT_HEIGHT],
+  [-PENDANT_TOP_HALF_X, PENDANT_HEIGHT],
+];
+const pendantBlock = extrudePolygon(pendantPts, PENDANT_DEPTH)
+  // rotate(X, +90°) maps original (x, y, z) → (x, -z, y), so polygon-Y becomes
+  // world-Z (height, preserves sign) and the +Z extrusion direction becomes
+  // world -Y. Then translate by +PENDANT_DEPTH/2 in Y to centre the prism on
+  // world Y = 0, and by PENDANT_Z_BASE in Z to set the base flush with the
+  // frame top.
+  .rotate([1, 0, 0], 90)
+  .translate(0, PENDANT_DEPTH / 2, PENDANT_Z_BASE)
+  // Fillet softens all edges — the trapezoidal taper + fillet matches the
+  // reference's soft, rounded neck silhouette.
+  .fillet(0.4)
   .color('#f8b3c0');
 const pendant = watch.part('pink pendant block above frame', pendantBlock);
 watch.fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_Z_BASE] });
@@ -476,8 +496,8 @@ watch.fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_
 // coaxial stack reads ambiguously; a small offset matches real pocket
 // watches' crowns sitting at the 1-2 o'clock side of the pendant neck).
 // =============================================================================
-const CROWN_X_OFFSET = 3.1;                         // offset to one side of the pendant top — clears the bail torus tube
-const CROWN_KNOB_R = 1.25;                          // knob radius — keep within the pendant's ±4.25 mm half-width footprint
+const CROWN_X_OFFSET = 2.7;                         // offset to one side of the pendant top — clears the bail torus tube
+const CROWN_KNOB_R = 1.2;                           // knob radius — keep within the pendant's ±3.2 mm tapered top
 const CROWN_KNOB_H = 1.7;                           // total knob height above pendant — visible from the iso pose
 const CROWN_STEM_R = 0.6;
 const CROWN_STEM_H = 0.45;                          // short stub between pendant top and the knob
@@ -510,8 +530,8 @@ watch.fixed('crown atop the pendant', pendant, crownPart, { origin: [CROWN_X_OFF
 // circular through-hole — a real chain could be threaded through it.
 const LOOP_MAJOR_R = 2.5;    // through-hole radius
 const LOOP_TUBE_R  = 0.55;   // tube cross-section radius
-const loopCenterZ  = PENDANT_Z_TOP + 4.5;             // 31.5 — center of torus; raised so tube bottom clears the crown knob
-const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // ~34.55 apex
+const loopCenterZ  = PENDANT_Z_TOP + 5.0;             // 32 — center of torus; raised so tube bottom clears the crown knob hex
+const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // ~35.05 apex
 // Bail post: thin pink cylinder rising from the pendant top up into the torus
 // tube. Centered at world x=0. Post base at PENDANT_Z_TOP (flush with pendant
 // top face) — no socket required since the volumes are tangent, not overlapping.
