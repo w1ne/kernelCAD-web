@@ -77,6 +77,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
             <Canvas
                 camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
+                gl={{
+                    toneMapping: THREE.ACESFilmicToneMapping,
+                    outputColorSpace: THREE.SRGBColorSpace,
+                }}
                 raycaster={{
                     params: {
                         Line: { threshold: 0.4 },
