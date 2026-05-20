@@ -91,6 +91,47 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'sketch',
     description: 'sketch.text() was called with empty or whitespace-only content.',
   },
+  // W3 face authoring — emboss text + project curve (5)
+  'feature.emboss-text.face-too-small': {
+    hintTemplate:
+      'The text block does not fit on the target face. Lower size, pick a larger face, or use scaleMode "bounds" so the glyphs are normalised to the face extent.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'size', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'embossText: the rendered glyph block exceeds the target face bounds and cannot be wrapped.',
+  },
+  'feature.emboss-text.depth-zero': {
+    hintTemplate:
+      'embossText.depth must be non-zero. Use a positive value to emboss out of the face, a negative value to engrave into it.',
+    nextAction: { kind: 'fix-arg', field: 'depth' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'embossText was called with depth === 0; no fuse or cut would change the geometry.',
+  },
+  'feature.project-curve.no-intersection': {
+    hintTemplate:
+      'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use closed-curve projection or shift the curve into the face bounds' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'projectCurve found no intersection between the supplied 2D curve and the target face, or the asEdge:true path is deferred.',
+  },
+  'feature.project-curve.curve-empty': {
+    hintTemplate:
+      'projectCurve received an empty curve source. Build the sketch via path().moveTo(...).lineTo(...).close() so the wire has at least one segment.',
+    nextAction: { kind: 'fix-arg', field: 'source.commands' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'projectCurve.source.commands was empty so no projection could be built.',
+  },
+  'feature.face.invalid-uv-anchor': {
+    hintTemplate:
+      'UV anchors must lie in [0, 1] (0=umin/vmin, 0.5=face centre, 1=umax/vmax). Clamp the anchor or recompute against the face bounds.',
+    nextAction: { kind: 'fix-arg', field: 'anchorU-or-anchorV' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A face-authoring feature received a UV anchor coordinate outside the [0, 1] parametric range.',
+  },
   // Face-ref state (5)
   'feature.face-ref.not-resolvable': {
     hintTemplate:
