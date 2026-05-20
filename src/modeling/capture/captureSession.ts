@@ -14,6 +14,10 @@ import type {
   RenderEnvironmentSpec,
 } from '../../shared/intent/renderEnvironmentRecord';
 import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
+import type {
+  CameraTargetMetadata,
+  CameraTargetSpec,
+} from '../../shared/intent/cameraTargetRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -527,6 +531,66 @@ export class CaptureSession {
 
     const r = this.register({
       kind: 'renderEnvironment',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * Capture a camera-target virtual feature. Validates that x, y, z (and the
+   * optional distance) are finite numbers; on invalid input a diagnostic is
+   * stashed on `metadata.diagnostics` and a default-safe record is still
+   * produced (matching the addRenderEnvironment / addReferenceImage pattern).
+   * Multiple calls register multiple records — the renderer applies the last
+   * one.
+   */
+  addCameraTarget(args: CameraTargetSpec): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    const xValid = Number.isFinite(args.x);
+    const yValid = Number.isFinite(args.y);
+    const zValid = Number.isFinite(args.z);
+    if (!xValid || !yValid || !zValid) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.camera-target.non-finite-target',
+        severity: 'error',
+        message: `setCameraTarget: x, y, z must be finite numbers; got (${args.x}, ${args.y}, ${args.z}).`,
+        hint: HINT_TEMPLATES['feature.camera-target.non-finite-target'].template,
+      });
+    }
+
+    let distance: number | undefined;
+    if (args.distance !== undefined) {
+      if (!Number.isFinite(args.distance) || args.distance <= 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.camera-target.invalid-distance',
+          severity: 'warn',
+          message: `setCameraTarget: distance ${args.distance} is not a positive finite number; ignoring override.`,
+          hint: HINT_TEMPLATES['feature.camera-target.invalid-distance'].template,
+        });
+      } else {
+        distance = args.distance;
+      }
+    }
+
+    const target: [number, number, number] = [
+      xValid ? args.x : 0,
+      yValid ? args.y : 0,
+      zValid ? args.z : 0,
+    ];
+    const metadata: CameraTargetMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      target,
+      ...(distance !== undefined ? { distance } : {}),
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'cameraTarget',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,

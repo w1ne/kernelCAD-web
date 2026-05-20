@@ -15,6 +15,7 @@ import { pbrFromColor } from '../../../shared/render/materialRoles';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
+import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
 import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
@@ -225,6 +226,18 @@ export function DemoPlayerPage(): React.JSX.Element {
   );
   const autoLoadedScriptRef = useRef<string | null>(null);
   const autoLoadedRecordRef = useRef<string | null>(null);
+  // Camera-target override captured from the script's setCameraTarget() call.
+  // `target` is in the SCRIPT'S world frame (before geometry recentering);
+  // `centroidOffset` is the per-load shift applied to geometry groups so the
+  // bbox centroid lands at world origin. setRenderPose / setRenderView
+  // subtract the offset to translate the target into the scene's recentered
+  // frame. `null` means no override → fall back to existing bbox-centroid
+  // auto-fit. Persists across setRenderPose calls within a load.
+  const cameraTargetRef = useRef<{
+    target: [number, number, number];
+    distance?: number;
+  } | null>(null);
+  const centroidOffsetRef = useRef<[number, number, number]>([0, 0, 0]);
 
   const handleSceneReady = useCallback((ctx: NonNullable<typeof sceneRef.current>) => {
     sceneRef.current = ctx;
@@ -302,20 +315,34 @@ export function DemoPlayerPage(): React.JSX.Element {
           -Math.cos(az) * cosEl,
           Math.sin(el),
         );
-        // Build the screen-aligned basis at origin (camera target).
+        // Resolve the camera target. Default: origin (the scene-frame centroid
+        // since loadFeatureMeshes recenters geometry to land the bbox centroid
+        // there). Override: if the script called setCameraTarget(x, y, z), use
+        // (x, y, z) - centroidOffset so the target lands at the same SCRIPT-
+        // frame point in the recentered scene frame.
+        const camTgt = cameraTargetRef.current;
+        const off = centroidOffsetRef.current;
+        const target = camTgt
+          ? new THREE.Vector3(
+              camTgt.target[0] - off[0],
+              camTgt.target[1] - off[1],
+              camTgt.target[2] - off[2],
+            )
+          : new THREE.Vector3(0, 0, 0);
+        // Build the screen-aligned basis at the target.
         const worldUp = new THREE.Vector3(0, 0, 1);
         const right = new THREE.Vector3().crossVectors(worldUp, camDir).normalize();
         const up = new THREE.Vector3().crossVectors(camDir, right).normalize();
-        // Project all 8 bbox corners onto the screen-plane axes. The max
-        // |right-component| / aspect and |up-component| set the required
-        // horizontal/vertical half-extents that must fit the FOV. Operate on
+        // Project all 8 bbox corners RELATIVE TO THE TARGET onto the screen-
+        // plane axes. The max |right-component| / aspect and |up-component|
+        // set the required half-extents that must fit the FOV. Operate on
         // raw min/max components so we don't allocate 8 Vector3s per call.
         const aspect = ctx.camera.aspect;
         const rx = right.x, ry = right.y, rz = right.z;
         const ux = up.x, uy = up.y, uz = up.z;
-        const xs = [bbox.min.x, bbox.max.x];
-        const ys = [bbox.min.y, bbox.max.y];
-        const zs = [bbox.min.z, bbox.max.z];
+        const xs = [bbox.min.x - target.x, bbox.max.x - target.x];
+        const ys = [bbox.min.y - target.y, bbox.max.y - target.y];
+        const zs = [bbox.min.z - target.z, bbox.max.z - target.z];
         let halfHoriz = 0;
         let halfVert = 0;
         for (const cx of xs) for (const cy of ys) for (const cz of zs) {
@@ -328,15 +355,18 @@ export function DemoPlayerPage(): React.JSX.Element {
         const tanHalfFovY = Math.tan(fovY / 2);
         const tanHalfFovX = tanHalfFovY * aspect;
         // distance needed so projected radius fits both axes (with 5% margin).
+        // setCameraDistance override (when present) skips the auto-fit and
+        // pins the camera at the user-supplied distance from the target.
         const distFromVert = halfVert / tanHalfFovY;
         const distFromHoriz = halfHoriz / tanHalfFovX;
-        const distance = Math.max(distFromVert, distFromHoriz) * 1.05;
-        const x = distance * camDir.x;
-        const y = distance * camDir.y;
-        const z = distance * camDir.z;
+        const autoDist = Math.max(distFromVert, distFromHoriz) * 1.05;
+        const distance = camTgt?.distance ?? autoDist;
+        const x = target.x + distance * camDir.x;
+        const y = target.y + distance * camDir.y;
+        const z = target.z + distance * camDir.z;
         ctx.camera.up.set(0, 0, 1);
         ctx.camera.position.set(x, y, z);
-        ctx.camera.lookAt(0, 0, 0);
+        ctx.camera.lookAt(target.x, target.y, target.z);
         ctx.camera.near = Math.max(0.1, distance / 100);
         ctx.camera.far = distance * 20;
         ctx.camera.updateProjectionMatrix();
@@ -409,10 +439,12 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
 
         let groupCount = 0;
-        // Separate virtual referenceImage / renderEnvironment records from geometry records.
+        // Separate virtual referenceImage / renderEnvironment / cameraTarget
+        // records from geometry records.
         const geometryFeatures: typeof perFeature = [];
         const referenceImageFeatures: typeof perFeature = [];
         let renderEnvSpec: RenderEnvironmentSpec | null = null;
+        let cameraTargetSpec: CameraTargetMetadata | null = null;
         for (const ser of perFeature) {
           if (ser.featureKind === 'referenceImage' && ser.referenceImage) {
             referenceImageFeatures.push(ser);
@@ -425,10 +457,26 @@ export function DemoPlayerPage(): React.JSX.Element {
               intensity: re.intensity,
               rotation: re.rotation,
             };
+          } else if (ser.featureKind === 'cameraTarget' && ser.cameraTarget) {
+            // Last-wins — same resolution rule as renderEnvironment.
+            cameraTargetSpec = ser.cameraTarget;
           } else {
             geometryFeatures.push(ser);
           }
         }
+        // Stash the camera-target override for setRenderPose / setRenderView.
+        // Reset to null on every load so a script without setCameraTarget()
+        // falls back cleanly to the existing bbox-centroid auto-fit.
+        cameraTargetRef.current = cameraTargetSpec
+          ? {
+              target: [
+                cameraTargetSpec.target[0],
+                cameraTargetSpec.target[1],
+                cameraTargetSpec.target[2],
+              ],
+              ...(cameraTargetSpec.distance !== undefined ? { distance: cameraTargetSpec.distance } : {}),
+            }
+          : null;
 
         for (const ser of geometryFeatures) {
           const fm = rehydrateFromBridge(ser);
@@ -486,6 +534,10 @@ export function DemoPlayerPage(): React.JSX.Element {
               child.position.set(-cx, -cy, -cz);
             }
           }
+          // Stash the centroid offset so setRenderPose can translate a
+          // script-frame setCameraTarget(x, y, z) into the recentered scene
+          // frame (target_scene = target_script - centroid).
+          centroidOffsetRef.current = [cx, cy, cz];
           fitCameraToBounds(sceneRef.current.camera, {
             min: [minX - cx, minY - cy, minZ - cz],
             max: [maxX - cx, maxY - cy, maxZ - cz],
