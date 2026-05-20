@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 115 codes', () => {
-    expect(DIAGNOSTIC_CODES).toHaveLength(115);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(115);
+  it('emits exactly 122 codes', () => {
+    expect(DIAGNOSTIC_CODES).toHaveLength(122);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(122);
   });
 
   it('every code has a non-empty hint template', () => {
