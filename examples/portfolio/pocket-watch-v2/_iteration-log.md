@@ -223,3 +223,107 @@ At this point 4+ iterations have made smaller and smaller deltas. iter 6 → 7 �
 - **PBR colour calibration** seems to darken `.material()` baseColor in the studio's tone-mapper
 
 I'm calling iter 8 the convergence point for vision-driven agent-CAD with this toolset.
+
+## Polish pass (iter 9–17) — closing the renderer-side gaps
+
+The v2 convergence honest verdict named three renderer / API gaps:
+camera target, glass via HDRI, and PBR colour calibration. The
+matching renderer-side slices landed shortly after as `setCameraTarget`
+(PR #261), `setRenderEnvironment` (PR #256), and NeutralToneMapping
+(PR #261). This polish pass picks up the build on top of those APIs.
+
+### iter 9 — baseline on the new renderer base
+
+Same geometry as iter 8, re-rendered on the new base (NeutralToneMapping
+already active). Pink already reads brighter without any code change.
+Watch still right-biased (cropped to lower right). Crystal still flat.
+
+### iter 10 — HDRI + setCameraTarget
+
+Added `setRenderEnvironment({ preset: 'studio' })` and
+`setCameraTarget(0, 0, 0)` at the top of the build script. Crystal
+NOW reads as glass — a specular highlight runs along the top edge of
+the dome, the dial shows through with slight refraction. Composition
+slightly improved but still right-biased.
+
+### iter 11 — full-frame capture (1920×1080) — composition fixed
+
+Diagnosed the persistent right-bias: the ViewerPane internally uses
+1920×1080 (1280 viewer + 640 terminal pane) when `?headless=1` is set
+on the studio URL. Capturing at `--width 1280 --height 720` gets the
+TOP-LEFT 1280×720 of that, putting the watch (at world-origin) into
+the right-half of the cropped PNG. Render at `--width 1920 --height
+1080` and the watch lands dead-centre. (The `setCameraDistance`
+experiments from this iter were a red herring; only the screenshot
+crop was broken.)
+
+### iter 12 — rounded multi-section loft for sculpted horn
+
+Replaced the 2-section rectangular `rectSketch` loft with a 3-section
+`roundedRectSketch` loft. Each section uses `path.tangentArc` to round
+the 4 corners; loft engine sweeps a continuous NURBS-blended surface
+between sections. Three sections (base / waist / top) put a 'necking'
+pinch ~62% up so the horn reads as a sculpted neck, not a tapered
+rectangular block. Closes the v2 verdict's Gap D (rectangular cross-
+section shoulders).
+
+### iter 13–14 — taller pendant + pendant-side hex screws
+
+iter 13 added two horizontal hex heads on the pendant's ±X faces (the
+reference shows a small dark hex screw at the lower shoulder of the
+horn on each side), but the pendant was too stunted (HORN_TOP_Z=13.0,
+total horn height ~2 mm) for the screws to read at the right height.
+iter 14 bumped HORN_TOP_Z from 13.0 to 17.5 mm so the horn reads as a
+proper sculpted neck (about 30% as tall as the body, matching the
+reference's proportions), and the screws land at lower-shoulder
+height (22% up from the base). Right side screw is visible at iso;
+the rotate video reveals both.
+
+### iter 15 — --no-watermark CLI flag
+
+Added a `--no-watermark` flag to `kernelcad render`. Wired through
+`headlessRender` → URL param `?nowatermark=1` →
+`DemoPlayerPage.noWatermark` → `ViewerPane.noWatermark` prop →
+conditional `<Watermark/>` render. Default behaviour unchanged
+(studio + tests + captureDemo retain the badge); the flag only
+suppresses it on opt-in for clean hero artifacts.
+
+### iter 16 — interference fix (pendant screws cleared horn surface)
+
+The rounded-loft horn's side surface curves outward at the lower
+shoulder where the screws sit, so a 0.04 mm outset placed the
+`alongAxis`-rotated hex head grazing the surface — two 0.057 mm³ BREP
+interferences. Bumped outset to 0.3 mm: zero interferences (96 parts,
+272 comparisons).
+
+### iter 17 — tighter pendant waist + slightly flared top
+
+Refined the loft proportions: waist X from 0.85× top-W to 0.72× (a
+narrower pinch), waist Y from 0.78× depth to 0.70×, waist Z from 62%
+to 65% of height. The vase / hourglass silhouette now reads crisper
+at the iso pose, closer to the sculpted-neck profile in the
+reference. This is the polish-pass convergence point — `hero-frame.png`
+points at this render.
+
+### Polish-pass honest verdict
+
+Matches the reference because:
+- Composition centred on the dial (vs prior right-bias)
+- Crystal reads as glass with a specular highlight (vs prior flat)
+- Pink reads bright + saturated under NeutralToneMapping (vs prior muted)
+- Pendant has sculpted hourglass / vase shape via rounded multi-section
+  loft (vs prior rectangular taper)
+- Eight bezel hex screws + two pendant-side hex screws + small yellow
+  crown nub + slim oval bail with visible through-hole all present
+- Clean hero artifact (no watermark) for public posts
+
+Still doesn't fully match because:
+- Ribbon / strap looping through the bail is omitted (stretches the
+  bbox vertically and was excluded from v2 for that reason); the
+  setCameraTarget API now CAN handle that, so a future iteration could
+  add a stitched ribbon
+- The pendant cross-section is still a rounded rectangle, not a true
+  ellipse — a 16-control-point NURBS section through `nurbsSurface`
+  would close that, at the cost of more boilerplate
+- Dial color reads slightly muted under the glass dome (transmission +
+  ior tinting); not a build defect — accurate optical behaviour
