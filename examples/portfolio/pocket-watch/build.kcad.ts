@@ -531,7 +531,6 @@ watch.fixed('crown atop the pendant', pendant, crownPart, { origin: [CROWN_X_OFF
 const LOOP_MAJOR_R = 2.5;    // through-hole radius
 const LOOP_TUBE_R  = 0.55;   // tube cross-section radius
 const loopCenterZ  = PENDANT_Z_TOP + 5.0;             // 32 — center of torus; raised so tube bottom clears the crown knob hex
-const LOOP_TOP_Z_ACTUAL = loopCenterZ + LOOP_MAJOR_R + LOOP_TUBE_R;  // ~35.05 apex
 // Bail post: thin pink cylinder rising from the pendant top up into the torus
 // tube. Centered at world x=0. Post base at PENDANT_Z_TOP (flush with pendant
 // top face) — no socket required since the volumes are tangent, not overlapping.
