@@ -182,9 +182,39 @@ export class Shape {
    * Apply a PBR material to this shape. Material lives at the leaf-shape
    * level; identity dies at boolean operations (same as `.color()`).
    *
-   * Numeric fields are clamped to [0, 1] except `ior` which is clamped to
-   * [1.0, 2.5]. Clamped values emit a `feature.material.value-clamped`
-   * soft warning so the agent can adjust.
+   * **Core fields** (all optional except `baseColor`):
+   * - `baseColor`: CSS color string or role token. Required, non-empty.
+   * - `metalness`, `roughness`: `[0, 1]` (clamped).
+   * - `clearcoat`, `clearcoatRoughness`, `sheen`, `transmission`: `[0, 1]`.
+   * - `ior`: `[1.0, 2.5]` (clamped).
+   *
+   * **Glass (volume absorption)** — populated when `transmission > 0`:
+   * - `thickness`: world units (mm); non-negative, finite.
+   * - `attenuationColor`: CSS color string for through-body tint.
+   * - `attenuationDistance`: mm at which `attenuationColor` is fully reached;
+   *   positive finite, or `Infinity` to disable absorption.
+   * The renderer auto-loads a neutral studio HDRI when any material in the
+   * scene has `transmission > 0` (no `setRenderEnvironment()` call needed).
+   *
+   * **Anisotropic specular** — brushed metals, hairline finishes:
+   * - `anisotropy`: `[0, 1]` (clamped). 0 = isotropic (default).
+   * - `anisotropyRotation`: degrees; normalized to `[0, 360)`. A soft
+   *   `feature.material.anisotropy-rotation-normalized` warning is emitted
+   *   when the input falls outside `[0, 360)`.
+   *
+   * **Image-texture maps** — `textures` accepts up to six optional slots:
+   * `albedo` / `normal` / `roughness` / `metalness` / `anisotropy` / `emissive`.
+   * Each is a `TextureRef` with `path` (required, non-empty), and optional
+   * `repeat`, `offset`, `rotation` (degrees). Paths resolve relative to the
+   * script file; `https://` URLs are fetched once and sha256-cached at
+   * `~/.cache/kernelcad/textures/`. Supported formats: `.png`, `.jpg`,
+   * `.jpeg`, `.webp`. Maximum dimension 8192px (hard error); ≥ 2048px emits a
+   * soft warning.
+   *
+   * Clamped numeric fields emit `feature.material.value-clamped`. Negative
+   * `thickness` throws `feature.material.thickness-negative`. Texture path
+   * problems surface as `feature.material.texture-not-found` /
+   * `texture-unsupported-format` / `texture-oversize-error`.
    *
    * Per-face form: passing `face: '<label>'` applies the material to faces
    * matching that label only. The label must resolve against an upstream

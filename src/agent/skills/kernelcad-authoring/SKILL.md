@@ -522,6 +522,71 @@ For schematic coloring (servo, frame, gear, beam, shaft, plate, pin, tool) where
 photo-accuracy is not required, the role-token shortcut `.color('servo')` etc.
 is sufficient and cleaner. Use `.material()` only when the reference demands it.
 
+### Glass, brushed metal, textured surfaces
+
+Three additional `PBRMaterial` fields cover the common photoreal archetypes:
+
+**Glass (volume absorption).** `transmission > 0` is light passing through;
+`thickness` (mm) and `attenuationColor` + `attenuationDistance` (mm) together
+shade the colored absorption through the body. The renderer auto-loads a
+neutral studio HDRI when any material in the scene has `transmission > 0`, so
+glass renders with realistic refraction without needing `setRenderEnvironment`.
+
+```typescript
+// Dark sunglass lens
+lens.material({
+  baseColor: '#ffffff',
+  transmission: 0.85,
+  ior: 1.5,
+  thickness: 3,
+  attenuationColor: '#1a1a2a',
+  attenuationDistance: 8,
+  roughness: 0.0,
+});
+```
+
+**Brushed / anisotropic metal.** `anisotropy` (0..1) stretches the specular
+highlight; `anisotropyRotation` (degrees, normalized to [0,360)) aligns the
+brush direction with a face axis.
+
+```typescript
+// Brushed aluminum hinge
+hinge.material({
+  baseColor: '#b0b0b0',
+  metalness: 1.0,
+  roughness: 0.3,
+  anisotropy: 0.8,
+  anisotropyRotation: 90,
+});
+```
+
+**Image-texture maps.** `textures` attaches up to six maps — `albedo`,
+`normal`, `roughness`, `metalness`, `anisotropy`, `emissive`. Paths resolve
+relative to the script file (mirrors `referenceImage()`); `https://` URLs are
+fetched once and sha256-cached at `~/.cache/kernelcad/textures/`.
+
+```typescript
+// Matte acetate frame with normal-mapped grain
+frame.material({
+  baseColor: '#1a1a1a',
+  roughness: 0.55,
+  textures: {
+    albedo: { path: './acetate-color.png' },
+    normal: { path: './acetate-normal.png' },
+    roughness: { path: './acetate-rough.png' },
+  },
+});
+```
+
+Supported texture formats: `.png`, `.jpg`, `.jpeg`, `.webp`. Maximum dimension
+8192px (hard error); textures over 2048px on the longest side surface a
+console warning. Each `TextureRef` accepts optional `repeat: [u, v]`,
+`offset: [u, v]`, and `rotation: <degrees>`.
+
+**For reproducible hero builds:** download URL textures and check the files
+into the script's directory before committing. Agent-fetched URLs land in
+`~/.cache/kernelcad/textures/` but that cache is not source-controlled.
+
 ### Per-face materials
 
 For parts where different faces need different materials (eyewear rim vs. lens
