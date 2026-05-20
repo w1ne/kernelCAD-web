@@ -202,8 +202,12 @@ const watch = assembly('pop-art octagonal pocket watch');
 // to every LEAF primitive that contributes mass to the final shape so the
 // lookup finds it. (The case-pocket cutter doesn't need it — it's negative
 // mass, removed from the output.)
+// Saturated coral pink. The previous #ff9aa3 read as pastel under
+// NeutralToneMapping; the reference's hue is a vivid coral closer to a
+// hot-pink-with-warm-undertones value. #ff5c8a is the first stop; if it
+// reads neon we'll dial back to #ff7da0 or #f97090.
 const PINK_MAT = {
-  baseColor: '#ff9aa3',
+  baseColor: '#ff5c8a',
   metalness: 0,
   roughness: 0.45,
 };
