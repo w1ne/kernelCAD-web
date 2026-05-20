@@ -89,14 +89,10 @@ const BAIL_MAJOR_R = 2.4;
 const BAIL_TUBE_R = 0.7;
 const BAIL_CENTER_Z = TAB_TOP_Z + BAIL_MAJOR_R + 0.1;
 
-// Strap stub
-const STRAP_W_X = 6.5;
-const STRAP_THICK_Y = 1.0;
-const STRAP_HEIGHT_Z = 16.0;
-// Strap sits ABOVE the bail (clears the torus). A real strap loops through;
-// for iter 0 we approximate with a short stub. Future iterations could fold
-// the strap with arcs.
-const STRAP_BASE_Z = BAIL_CENTER_Z + BAIL_MAJOR_R + BAIL_TUBE_R + 0.2;
+// Strap omitted in iter 1+: it stretched the bbox vertically and the
+// camera-fitter pushed the watch body into the corner. The real-world strap
+// loops through the bail; we'll add it back only if a future iteration
+// converges enough to spare the composition budget.
 
 // =============================================================================
 // Helpers
@@ -167,10 +163,21 @@ const watch = assembly('pop-art octagonal pocket watch');
 
 // FRAME (pink) — outer octagon with a pocket for the case, the pendant horn
 // and tab fused on top, the bail hole through the tab.
-const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH);
+//
+// Material rule: `.material()` on the union/subtract HEAD is a no-op. The
+// renderer's lookupSourceMaterial walks UP the chain. Apply the pink PBR
+// to every LEAF primitive that contributes mass to the final shape so the
+// lookup finds it. (The case-pocket cutter doesn't need it — it's negative
+// mass, removed from the output.)
+const PINK_MAT = {
+  baseColor: '#ec7a83',
+  metalness: 0,
+  roughness: 0.45,
+};
+const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-const horn = trapezoidPrismY(HORN_BASE_W_X, HORN_TOP_W_X, HORN_BASE_Z, HORN_TOP_Z, HORN_DEPTH_Y);
-const tab = trapezoidPrismY(TAB_BASE_W_X, TAB_TOP_W_X, TAB_BASE_Z, TAB_TOP_Z, TAB_DEPTH_Y);
+const horn = trapezoidPrismY(HORN_BASE_W_X, HORN_TOP_W_X, HORN_BASE_Z, HORN_TOP_Z, HORN_DEPTH_Y).material(PINK_MAT);
+const tab = trapezoidPrismY(TAB_BASE_W_X, TAB_TOP_W_X, TAB_BASE_Z, TAB_TOP_Z, TAB_DEPTH_Y).material(PINK_MAT);
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at
@@ -181,13 +188,15 @@ const pinkBody = frameOctagon
   .union(horn)
   .union(tab);
 
-const frame = watch.part(
-  'pink octagonal frame with sculpted pendant',
-  pinkBody.color('#d96a72'),
-);
+const frame = watch.part('pink octagonal frame with sculpted pendant', pinkBody);
 
 // CASE (yellow) — inner octagon with dial pocket and screw counterbores.
-const caseRaw = octagonPrismY(CASE_FLAT, CASE_DEPTH);
+const YELLOW_MAT = {
+  baseColor: '#f0d24a',
+  metalness: 0.25,
+  roughness: 0.4,
+};
+const caseRaw = octagonPrismY(CASE_FLAT, CASE_DEPTH).material(YELLOW_MAT);
 const dialPocket = cylY(DIAL_POCKET_DEPTH + 0.3, DIAL_RADIUS + 0.25, DIAL_Y_BACK + 0.3);
 
 const SCREW_VERT_R = CASE_FLAT * 0.93;
@@ -200,7 +209,10 @@ for (const [x, z] of screwVerts) {
     .translate(x, 0, z);
   caseBored = caseBored.subtract(cb);
 }
-const caseFinal = watch.part('yellow octagonal case', caseBored.color('#e6c84a'));
+// Case: warm mustard yellow with a slight brushed-metal sheen (material
+// applied at the caseRaw leaf above; the post-boolean .material() would be
+// a no-op).
+const caseFinal = watch.part('yellow octagonal case', caseBored);
 watch.fixed('case nested into frame pocket', frame, caseFinal, { origin: [0, 0, 0] });
 
 // HEX SCREWS — flat-black hex heads seated at each case vertex.
@@ -222,11 +234,16 @@ for (let i = 0; i < screwVerts.length; i += 1) {
   watch.fixed('screw seated in case counterbore', caseFinal, screw, { origin: [x, CASE_Y_FRONT, z] });
 }
 
-// DIAL — turquoise plate with subdial pocket.
-const dialRaw = cylY(DIAL_DEPTH, DIAL_RADIUS, DIAL_Y_BACK);
+// DIAL — turquoise plate with subdial pocket. Material on the leaf cylinder.
+const DIAL_MAT = {
+  baseColor: '#3fd2cf',
+  metalness: 0,
+  roughness: 0.55,
+};
+const dialRaw = cylY(DIAL_DEPTH, DIAL_RADIUS, DIAL_Y_BACK).material(DIAL_MAT);
 const subdialPocket = cylY(DIAL_DEPTH + 0.8, SUBDIAL_R + 0.1, DIAL_Y_BACK + 0.05)
   .translate(SUBDIAL_CX, 0, SUBDIAL_CZ);
-const dialPlate = dialRaw.subtract(subdialPocket).color('#3fc7c4');
+const dialPlate = dialRaw.subtract(subdialPocket);
 const dial = watch.part('turquoise tapisserie dial plate', dialPlate);
 watch.fixed('dial plate seated in case dial pocket', caseFinal, dial, { origin: [0, DIAL_Y_FRONT, 0] });
 
@@ -419,17 +436,10 @@ const bailPath = path()
 // so the through-hole opens along the camera axis.
 const bailShape = bailPath
   .revolve()
+  .material(PINK_MAT)
   .rotate([1, 0, 0], 90)
-  .translate(0, 0, BAIL_CENTER_Z)
-  .color('#d96a72');
+  .translate(0, 0, BAIL_CENTER_Z);
 const bail = watch.part('pink lanyard bail', bailShape);
 watch.fixed('bail mounted atop pendant tab', frame, bail, { origin: [0, 0, BAIL_CENTER_Z] });
-
-// STRAP STUB — short pink ribbon extending upward through the bail.
-const strapShape = box(STRAP_W_X, STRAP_THICK_Y, STRAP_HEIGHT_Z, true)
-  .translate(0, 0, STRAP_BASE_Z + STRAP_HEIGHT_Z / 2)
-  .color('#d96a72');
-const strap = watch.part('pink ribbon strap stub', strapShape);
-watch.fixed('strap threaded through bail', bail, strap, { origin: [0, 0, STRAP_BASE_Z] });
 
 return watch.model();

@@ -33,3 +33,27 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Crystal dome reads as opaque from this pose. The transmission material needs the HDRI environment to be present at render time; without it the glass falls back to the diffuse base colour.
 
 **Decision:** commit and continue. Drop the strap next, brighten the frame colour, and address the crystal in iter 2.
+
+## iter 1 — drop the strap, push materials to leaves
+
+**What changed:**
+- Strap removed entirely (was stretching the bbox vertically and pushing the watch into the bottom-right corner).
+- `.material()` calls moved from post-boolean (which is a no-op per kernelcad-authoring rule) to leaf primitives that the renderer's lookupSourceMaterial walks back through. Coral pink, mustard yellow, bright teal applied where they count.
+
+**Render:** `iter-1.png`
+
+**Diff against the reference:**
+- Frame colour STILL rendering dark. Either `lookupSourceMaterial` isn't reaching the leaf, or PR #254's renderer is using lookupSourceColor first and color-fallback overrides.
+- Bail clearly visible as a through-hole ring (good).
+- Yellow case + 8 black hex screws + the bezel insets are clean.
+- Dial detail (tapisserie waffle + numerals + subdial + hands) shows clearly from both the iso pose and the front view — this is a real win vs the v0.7 baseline which had the dome occluding too much.
+- The horn and tab geometry is technically present but reads as a tiny pink nub between the case top and the floating bail — there's a 2-3 mm vertical gap between the horn top and the bail bottom, so the pendant looks disconnected.
+- Crown is still a tiny yellow cube — the hex pattern doesn't read at this resolution.
+- The composition is STILL jammed to the right because the bail sits ~8 mm above the case top, stretching the bbox.
+
+**3 worst issues, ranked:**
+1. Bail floats — pendant stack (horn + tab) is too short to bridge the case-top to the bail. Either collapse the bail down to the tab top, OR thicken the tab so it visibly bridges.
+2. Frame colour still dark. Need to investigate whether leaf-material survives the union/subtract or whether the legacy `.color()` path overrides PBR.
+3. The bbox-driven camera framing keeps right-jamming the watch. Need to either tighten the model vertically OR set an explicit camera in the build.
+
+**Decision:** commit, then iter 2 collapses the bail down ONTO the tab top so the pendant reads as one continuous mass.
