@@ -19,7 +19,10 @@ import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
+import { resolveColor } from '../../shared/render/palette';
 import type { PBRMaterial } from '../../shared/intent/material';
+import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
+import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import {
@@ -246,6 +249,128 @@ export class Shape {
     maybeAssign('ior', opts.ior, 1.0, 2.5);
     maybeAssign('transmission', opts.transmission, 0, 1);
     maybeAssign('sheen', opts.sheen, 0, 1);
+    maybeAssign('anisotropy', opts.anisotropy, 0, 1);
+
+    // thickness — non-negative finite mm. Negative is a hard error.
+    if (opts.thickness !== undefined) {
+      if (!Number.isFinite(opts.thickness)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field 'thickness' must be a finite number; got ${opts.thickness}.`,
+          this.id,
+          'Fix the named field on the call args; check type, sign, and units.',
+        );
+      }
+      if (opts.thickness < 0) {
+        throw new KernelError(
+          'feature.material.thickness-negative',
+          `Shape.material: thickness must be non-negative mm; got ${opts.thickness}.`,
+          this.id,
+          'Pass a non-negative number of mm for the volume thickness, or omit the field.',
+        );
+      }
+      cleaned.thickness = opts.thickness;
+    }
+
+    // attenuationColor — route through resolveColor; on null return drop +
+    // soft warn (matches the value-clamped convention).
+    if (opts.attenuationColor !== undefined) {
+      if (typeof opts.attenuationColor !== 'string') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field 'attenuationColor' must be a string; got ${formatScalarForError(opts.attenuationColor)}.`,
+          this.id,
+          'Pass a CSS color string or a registered role token.',
+        );
+      }
+      const resolved = resolveColor(opts.attenuationColor);
+      if (resolved === undefined) {
+        anyClamped = true;
+      } else {
+        cleaned.attenuationColor = resolved;
+      }
+    }
+
+    // attenuationDistance — positive finite mm, or Infinity. Anything else
+    // is a hard error (zero / negative / NaN).
+    if (opts.attenuationDistance !== undefined) {
+      const ad = opts.attenuationDistance;
+      const isInf = ad === Number.POSITIVE_INFINITY;
+      if (!isInf && (!Number.isFinite(ad) || ad <= 0)) {
+        throw new KernelError(
+          'feature.material.attenuation-distance-invalid',
+          `Shape.material: attenuationDistance must be positive finite mm or Infinity; got ${ad}.`,
+          this.id,
+          'Pass a positive distance in mm (e.g. 10 for a typical glass volume) or Infinity for no attenuation.',
+        );
+      }
+      cleaned.attenuationDistance = ad;
+    }
+
+    // anisotropyRotation — degrees; normalize to [0, 360). If normalized
+    // value differs from raw, emit a soft warning so the agent can clean up
+    // its call.
+    if (opts.anisotropyRotation !== undefined) {
+      if (!Number.isFinite(opts.anisotropyRotation)) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field 'anisotropyRotation' must be a finite number; got ${opts.anisotropyRotation}.`,
+          this.id,
+          'Fix the named field on the call args; check type, sign, and units.',
+        );
+      }
+      const raw = opts.anisotropyRotation;
+      const norm = ((raw % 360) + 360) % 360;
+      cleaned.anisotropyRotation = norm;
+      if (norm !== raw) {
+        this.session.warnings.push({
+          code: 'feature.material.anisotropy-rotation-normalized',
+          hint: 'anisotropyRotation is in degrees and was normalized to [0, 360).',
+          message: `Shape.material: anisotropyRotation ${raw}° normalized to ${norm}°.`,
+          recordId: this.id,
+          phase: 'build',
+        });
+      }
+    }
+
+    // textures — validate each TextureRef.path is a non-empty string and
+    // pass through with defaults applied. Existence / format / dimension
+    // checks happen at load time (src/shared/textures/index.ts).
+    if (opts.textures !== undefined) {
+      if (typeof opts.textures !== 'object' || opts.textures === null) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `Shape.material: field 'textures' must be an object; got ${formatScalarForError(opts.textures)}.`,
+          this.id,
+          'Pass a TextureSet — { albedo?, normal?, roughness?, metalness?, anisotropy?, emissive? } of TextureRef.',
+        );
+      }
+      const cleanedTextures: TextureSet = {};
+      const slots: Array<keyof TextureSet> = [
+        'albedo',
+        'normal',
+        'roughness',
+        'metalness',
+        'anisotropy',
+        'emissive',
+      ];
+      for (const slot of slots) {
+        const raw = (opts.textures as TextureSet)[slot];
+        if (raw === undefined) continue;
+        if (!isTextureRef(raw)) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `Shape.material: textures.${slot} must be a TextureRef ({ path, ... }) with a non-empty 'path' string; got ${formatScalarForError(raw)}.`,
+            this.id,
+            'Pass { path: "<file-or-url>", repeat?, offset?, rotation? }.',
+          );
+        }
+        cleanedTextures[slot] = normalizeTextureRef(raw as TextureRef);
+      }
+      if (Object.keys(cleanedTextures).length > 0) {
+        cleaned.textures = cleanedTextures;
+      }
+    }
 
     const records = this.session.getRecords();
     const record = records.find(r => r.id === this.id);
