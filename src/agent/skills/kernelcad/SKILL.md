@@ -30,4 +30,14 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - **Units**: millimetres, degrees, Z-up right-handed.
 - **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`).
 - **Diagnostic-anchored hints**: when a kernelCAD tool throws, the error carries a `hint` field tied to a diagnostic code (`feature.*`, `assembly.*`, etc.). Read the hint — it carries the fix.
-- **Verification gates**: every authoring skill ends with a `## Verification gates` section. After authoring, walk the relevant gate set before reporting done — render → Read PNGs back → compare to reference. Never rationalize a visible defect (see `kernelcad-from-reference` for the canonical loop).
+
+## Mandatory visual-critique step (applies to ALL agents, every skill)
+
+If your task produced or modified any rendered artifact (`.png`, `.mp4`, `hero-frame`, demo video, score render), you MUST visually inspect it before reporting done. This is non-negotiable:
+
+1. **Read the rendered artifact yourself.** Use the `Read` tool on the PNG (your vision sees it) or sample 1–3 representative frames of an MP4.
+2. **Compare against the reference**, if one exists (a `/tmp/*.png` the user shared, the photo path your task started with, the prior hero-frame, or the explicit visual spec).
+3. **Describe what you actually see** in your final report — composition, proportions, visible defects. Not "all gates pass". Not "render complete". A one-sentence honest description: "watch is jammed against right edge, bail reads as solid disc, ribbon is a tilted plank".
+4. **If the artifact has a visible defect, DO NOT report done.** Either fix it, or report honestly: "iteration N regressed, here is what's wrong, recommend rollback".
+
+**Why this is a hard rule, not a guideline**: gate counts measure presence-of-parts (does the bail exist? is the count 96? interferences zero?), not whether the composition reads correctly. Subagent gate-success is preliminary. The human reviewer's eyes are the real scorer; the agent's `Read` of its own render is the proxy. Skipping this step has burned multiple iterations (pocket-watch 2026-05-20 shipped two regressions because gate-only verification declared success on broken compositions). The canonical iteration loop lives in `kernelcad-from-reference/image-replicator`; the rule applies whether you loaded that skill or not.
