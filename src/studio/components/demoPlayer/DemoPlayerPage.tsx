@@ -131,11 +131,23 @@ function buildMeshFromFace(
   // without geometric epsilons.
   material.transparent = true;
   material.opacity = 0;
-  (material as THREE.MeshPhysicalMaterial).side = THREE.DoubleSide;
-  (material as THREE.MeshPhysicalMaterial).flatShading = false;
-  material.polygonOffset = true;
-  material.polygonOffsetFactor = 1;
-  material.polygonOffsetUnits = 1;
+  // Transmission needs FrontSide rendering — DoubleSide produces self-occlusion
+  // artifacts in the transmission render pass. polygonOffset is also dropped on
+  // transmissive materials so the glass shader's depth handling stays clean.
+  const physMat = material as THREE.MeshPhysicalMaterial;
+  if (physMat.transmission !== undefined && physMat.transmission > 0) {
+    physMat.side = THREE.FrontSide;
+    physMat.flatShading = false;
+    // Glass-like materials don't need depth bias — they're never coplanar
+    // with structural parts.
+    material.polygonOffset = false;
+  } else {
+    physMat.side = THREE.DoubleSide;
+    physMat.flatShading = false;
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = 1;
+    material.polygonOffsetUnits = 1;
+  }
   const mesh = new THREE.Mesh(geom, material);
   mesh.name = name;
   return mesh;
@@ -337,7 +349,19 @@ export function DemoPlayerPage(): React.JSX.Element {
           if (obj instanceof THREE.Mesh) {
             const mat = obj.material as THREE.Material;
             mat.opacity = 1;
-            mat.transparent = false;
+            // Materials with PBR transmission > 0 require `transparent: true`
+            // so three.js routes them through the transmission render pass —
+            // forcing `transparent: false` here would defeat sapphire crystals
+            // and other glass-like materials in headless / post-build captures.
+            // Opaque materials still render correctly with `transparent: true`
+            // when opacity = 1, so it's safe to keep transparent enabled
+            // unconditionally; only the per-mesh opacity gets clobbered to 1.
+            const phys = mat as THREE.MeshPhysicalMaterial;
+            if (phys.transmission !== undefined && phys.transmission > 0) {
+              mat.transparent = true;
+            } else {
+              mat.transparent = false;
+            }
             mat.needsUpdate = true;
           }
         });

@@ -1,10 +1,10 @@
 {
   "taskId": "pocket-watch",
   "module": "v0.7",
-  "capturedAt": "2026-05-15T11:39:19.941Z",
+  "capturedAt": "2026-05-20T02:22:00Z",
   "durationMs": 29600,
   "truncated": true,
-  "gitSha": "9834c67d482f708e45ef63331628ed200fd5e397",
+  "gitSha": "1867fa0651db0bf0163be7fe97f474006cbecfdb",
   "heroArtifact": "pocket-watch",
   "catalogSource": "memorable-builds-policy/v0.7",
   "overrideApprovedBy": "shylenkoa: v0.7 hero direct from reference photo; catalog candidates (computer-mouse-shell / electric-guitar-body / perfume-bottle) lacked personality"
