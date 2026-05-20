@@ -68,26 +68,33 @@ const CRYSTAL_RISE = 1.5;
 
 // Top of the frame in Z (top flat of the octagon, the edge the pendant grows out of).
 const FRAME_TOP_Z = FRAME_FLAT;                // 11.0
-// Pendant horn dimensions
-const HORN_BASE_W_X = 8.0;
-const HORN_TOP_W_X = 6.0;
-const HORN_HEIGHT_Z = 3.5;
-const HORN_DEPTH_Y = 5.0;
-const HORN_BASE_Z = FRAME_TOP_Z - 0.4;         // overlaps the frame slightly so the boolean fuses cleanly
-const HORN_TOP_Z = HORN_BASE_Z + HORN_HEIGHT_Z;
+// Octagon corners reach ABOVE the flat to z = FRAME_FLAT / cos(22.5°) ≈ 11.91.
+// Anything sitting at z ∈ [FRAME_FLAT, 11.91] visually merges with the
+// octagon corners. The pendant must extend WELL beyond ~12 to read.
+const FRAME_CORNER_Z = FRAME_FLAT / Math.cos(Math.PI / 8);  // 11.91
 
-// Pendant tab (the flat oblong section between horn and bail)
-const TAB_BASE_W_X = 5.5;
-const TAB_TOP_W_X = 5.0;
-const TAB_HEIGHT_Z = 2.5;
-const TAB_DEPTH_Y = 3.5;
-const TAB_BASE_Z = HORN_TOP_Z - 0.05;
-const TAB_TOP_Z = TAB_BASE_Z + TAB_HEIGHT_Z;
+// Pendant: one taller sculpted block (horn) that reads as the sculpted neck
+// rising above the octagon. Authored as a single trapezoid that starts well
+// below the frame top (overlap so the union fuses) and reaches up to where
+// the bail's bottom tube touches.
+const HORN_BASE_W_X = 10.0;                    // base wider than the octagon corner span (~9.1)
+const HORN_TOP_W_X = 5.5;
+const HORN_DEPTH_Y = 5.5;
+const HORN_BASE_Z = FRAME_TOP_Z - 1.5;         // base sits inside the octagon for clean union
+const HORN_TOP_Z = 18.0;                       // top reaches well above frame corners (11.91)
+const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
-// Bail
-const BAIL_MAJOR_R = 2.4;
-const BAIL_TUBE_R = 0.7;
-const BAIL_CENTER_Z = TAB_TOP_Z + BAIL_MAJOR_R + 0.1;
+// Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
+// top of the horn.
+const TAB_TOP_Z = HORN_TOP_Z;
+
+// Bail — sits IMMEDIATELY above the horn top. Tube outer surface bottom is
+// at world Z = BAIL_CENTER_Z - BAIL_MAJOR_R - BAIL_TUBE_R; we set this to
+// HORN_TOP_Z + 0.05 (tiny clearance) to avoid interference while reading
+// as bonded.
+const BAIL_MAJOR_R = 2.0;
+const BAIL_TUBE_R = 0.55;
+const BAIL_CENTER_Z = HORN_TOP_Z + 0.05 + BAIL_MAJOR_R + BAIL_TUBE_R;
 
 // Strap omitted in iter 1+: it stretched the bbox vertically and the
 // camera-fitter pushed the watch body into the corner. The real-world strap
@@ -107,6 +114,8 @@ function cylY(depth, radius, yMax = 0, segments = 96) {
 }
 
 // Octagonal prism along Y (flat-top orientation), centered on Y=0.
+// Matches the v0.7 build's translate(-depth/2) which empirically produced
+// a case centred on Y=0 in the rendered scene.
 function octagonPrismY(flat, depth) {
   const r = flat / Math.cos(Math.PI / 8);
   const pts = [];
@@ -129,9 +138,9 @@ function octagonVertices(radius) {
   return pts;
 }
 
-// Trapezoidal prism in the XZ plane, extruded along Y. baseW and topW are
-// the X widths at baseZ and (baseZ+height) respectively. Result spans Y in
-// [-depth/2, +depth/2], centred on the XZ plane at the given baseZ/topZ.
+// Trapezoidal prism in the XZ plane, extruded along Y. Uses the same Y
+// centering convention as octagonPrismY (translate -depth/2) so the prism
+// fuses with the octagon at every cross-section.
 function trapezoidPrismY(baseW, topW, baseZ, topZ, depth) {
   const pts = [
     [-baseW / 2, baseZ],
@@ -170,14 +179,18 @@ const watch = assembly('pop-art octagonal pocket watch');
 // lookup finds it. (The case-pocket cutter doesn't need it — it's negative
 // mass, removed from the output.)
 const PINK_MAT = {
-  baseColor: '#ec7a83',
+  baseColor: '#f59ba1',
   metalness: 0,
   roughness: 0.45,
 };
 const frameOctagon = octagonPrismY(FRAME_FLAT, FRAME_DEPTH).material(PINK_MAT);
 const casePocket = octagonPrismY(CASE_FLAT + 0.6, FRAME_DEPTH + 2.0);
-const horn = trapezoidPrismY(HORN_BASE_W_X, HORN_TOP_W_X, HORN_BASE_Z, HORN_TOP_Z, HORN_DEPTH_Y).material(PINK_MAT);
-const tab = trapezoidPrismY(TAB_BASE_W_X, TAB_TOP_W_X, TAB_BASE_Z, TAB_TOP_Z, TAB_DEPTH_Y).material(PINK_MAT);
+// Horn built as a centred box (simple X×Y×Z) for predictable placement.
+// Width tapers via two corner cuts below — see horn-corner-cut block.
+const HORN_Z_CENTER = (HORN_BASE_Z + HORN_TOP_Z) / 2;
+const horn = box(HORN_BASE_W_X, HORN_DEPTH_Y, HORN_HEIGHT_Z, true)
+  .material(PINK_MAT)
+  .translate(0, 0, HORN_Z_CENTER);
 
 // No global fillet on the combined body — the horn/tab/frame seams create
 // non-G1 edges that the OCCT fillet engine refuses. We accept a hard edge at
@@ -185,8 +198,7 @@ const tab = trapezoidPrismY(TAB_BASE_W_X, TAB_TOP_W_X, TAB_BASE_Z, TAB_TOP_Z, TA
 // selection to fillet only the safe outer corners.
 const pinkBody = frameOctagon
   .subtract(casePocket)
-  .union(horn)
-  .union(tab);
+  .union(horn);
 
 const frame = watch.part('pink octagonal frame with sculpted pendant', pinkBody);
 
@@ -397,24 +409,25 @@ const pinion = cylY(PIN_THICK, 0.35, PIN_Y_BACK).color('#e6c84a');
 const pinionPart = watch.part('central pinion cap', pinion);
 watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FRONT, 0] });
 
-// CROWN — small yellow hex prism on the +X SIDE of the pendant horn.
-// Pre-rotation: hex extruded along +Z. After rotate(Z, 90°) the extrusion
-// direction maps to +X (world). Place its inner end at the horn surface and
-// outer end sticking out by CROWN_LEN.
-const CROWN_FLAT = 0.7;
-const CROWN_LEN = 1.4;
+// CROWN — yellow hex prism on the +X SIDE of the pendant horn. Pre-extrude
+// along +Z. rotate(Y, 90°) maps pre+Z → world+X so extrusion direction is
+// outward. Size enlarged so the hex faces actually read in the render.
+const CROWN_FLAT = 1.1;
+const CROWN_LEN = 2.0;
 const crownHexPts = [];
 for (let k = 0; k < 6; k += 1) {
   const a = (k / 6) * Math.PI * 2;
   crownHexPts.push([Math.cos(a) * CROWN_FLAT, Math.sin(a) * CROWN_FLAT]);
 }
-const crownInnerX = HORN_TOP_W_X / 2 - 0.2;   // anchored at the horn's +X face
+// Crown sits on the +X face of the horn box at the lower third of the horn.
+// The horn is a rectangular box of half-width HORN_BASE_W_X / 2.
+const crownZ = HORN_BASE_Z + HORN_HEIGHT_Z * 0.25;
+const crownInnerX = HORN_BASE_W_X / 2 + 0.01;   // sit just OUTSIDE the horn face (no overlap)
 const crownOuterX = crownInnerX + CROWN_LEN;
-const crownZ = HORN_BASE_Z + HORN_HEIGHT_Z * 0.5; // mid-height on horn
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
+  .material(YELLOW_MAT)
   .rotate([0, 1, 0], 90)            // pre-Z extrusion → world +X
-  .translate(crownInnerX, 0, crownZ)
-  .color('#e6c84a');
+  .translate(crownInnerX, 0, crownZ);
 const crown = watch.part('yellow side crown', crownShape);
 watch.fixed('crown side-mounted on pendant horn', frame, crown, { origin: [crownInnerX, 0, crownZ] });
 

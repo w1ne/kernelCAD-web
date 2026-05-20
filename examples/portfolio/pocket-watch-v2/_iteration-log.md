@@ -57,3 +57,30 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. The bbox-driven camera framing keeps right-jamming the watch. Need to either tighten the model vertically OR set an explicit camera in the build.
 
 **Decision:** commit, then iter 2 collapses the bail down ONTO the tab top so the pendant reads as one continuous mass.
+
+## iter 2 — switch pendant from extrudePolygon trapezoid to a centred box
+
+**What changed:**
+- Diagnosed that `extrudePolygon([XZ_pts], depth).rotate([1,0,0],-90).translate(0,-depth/2,0)` produces a prism centred at world Y = -depth (the v0.7 code's comment misdescribes the rotation), so the trapezoid horn was floating at world_Y far in front of the case in front-view and invisible. The case octagon "happens to look centred" because the iso camera centroids the whole scene.
+- Replaced the trapezoid horn with a centred `box(W, D, H, true).translate(0, 0, Z_center)` — predictable placement. Lost the taper but gained a horn that ACTUALLY appears between the case top and the bail.
+- Bail center pushed up to clear the new taller horn.
+- Crown re-anchored to the box's +X face.
+- Brighter `#f59ba1` coral pink (was `#ec7a83`).
+
+**Render:** `iter-2.png`
+
+**Diff against the reference:**
+- Pendant is finally a CONTINUOUS chunk of pink rising from the case to the bail — no floating bail, no Mickey-Mouse-ear effect. This is the biggest single improvement so far.
+- Coral colour is brighter, closer to reference's coral but still slightly desaturated.
+- Bail still has a 1-2 mm visible gap above the horn (need to set BAIL_CENTER_Z so the tube outer surface kisses the horn top).
+- Composition is more centred than iter 1 (the bail is no longer 15 mm above the case top).
+- Horn is a UNIFORM rectangle, while the reference shows a clearly tapered neck. Future iteration: chamfer or fillet the top corners.
+- Crystal dome visible but quite subtle from the iso pose.
+- Crown is finally readable as a hex prism on the horn face.
+
+**3 worst issues, ranked:**
+1. Horn is too RECTANGULAR — reference has a sculpted taper toward the bail.
+2. Small visible air gap between horn top and bail bottom.
+3. Composition still slightly right-biased (the bail above the body adds 5+ mm of bbox vertical that the symmetric body doesn't have).
+
+**Decision:** commit, then iter 3 chamfers the horn's top corners to give it a tapered "neck" look.
