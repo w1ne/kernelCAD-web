@@ -3,6 +3,7 @@ import type { FeatureMesh } from './featureMeshing';
 import type { FaceGeometry } from '../../shared/worker/workerTypes';
 import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
+import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 
 export interface FaceGeometrySerialized {
   vertices: number[];
@@ -41,6 +42,8 @@ export interface FeatureMeshSerialized {
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
   referenceImage?: ReferenceImageMetadata;
+  /** Render-environment payload; present when featureKind === 'renderEnvironment'. */
+  renderEnvironment?: RenderEnvironmentMetadata;
 }
 
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
@@ -64,6 +67,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
     ...(m.virtual === true ? { virtual: true } : {}),
     ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
+    ...(m.renderEnvironment !== undefined ? { renderEnvironment: m.renderEnvironment } : {}),
   };
 }
 
@@ -88,5 +92,6 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
     ...(s.virtual === true ? { virtual: true } : {}),
     ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
+    ...(s.renderEnvironment !== undefined ? { renderEnvironment: s.renderEnvironment } : {}),
   };
 }

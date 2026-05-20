@@ -93,6 +93,21 @@ referenceImage(path: string, opts: {
   flipU?: boolean;    // default false
   flipV?: boolean;    // default false
 }): ReferenceImageHandle;
+
+// HDRI / image-based lighting for the rendered scene (W2). Pass either a
+// built-in `preset` key or a custom .hdr `url` (mutually exclusive).
+// `intensity` (default 1.0; clamped to (0, 100]) scales envMapIntensity on
+// every PBR material; `rotation` (degrees, default 0) rotates the env map
+// around the world Y axis. Virtual record — no OCCT geometry produced.
+// Default behavior (script never calls this) is the existing three-light
+// rig. Multiple calls register multiple records; the renderer applies the
+// last one.
+setRenderEnvironment(spec: {
+  preset?: 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse';
+  url?: string;
+  intensity?: number;  // (0, 100], default 1.0
+  rotation?: number;   // degrees around Y, default 0
+}): RenderEnvironmentHandle;
 ```
 
 ### Shape methods (chainable)
