@@ -14,6 +14,19 @@ import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { transformFeatureMesh } from './transformMesh';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
+import { generatePlanarUVs } from './planarUv';
+
+/** Attach bbox-planar UVs to every face in-place (idempotent — pre-existing
+ *  uv arrays are preserved). Called after meshing so any consumer of
+ *  `material.textures` or `materialByFaceId` has a stable UV space without
+ *  requiring a conformal unwrap. */
+function attachPlanarUVs(faces: FaceGeometry[]): void {
+  for (const face of faces) {
+    if (face.uv === undefined) {
+      face.uv = generatePlanarUVs(face);
+    }
+  }
+}
 
 /** Extract the raw replicad shape so meshShape() can walk .faces / .meshEdges. */
 function extractRawShape(backend: ShapeBackend): unknown {
@@ -312,6 +325,7 @@ export async function meshFeaturesPerFeature(
             ...(meshed.edges ? { edges: meshed.edges } : {}),
           };
           const transformed = transformFeatureMesh(local, part.worldTransform);
+          attachPlanarUVs(transformed.faces);
           features.push({
             ...transformed,
             ...(part.color !== undefined ? { color: part.color } : {}),
@@ -417,6 +431,7 @@ export async function meshFeaturesPerFeature(
         }
       }
 
+      attachPlanarUVs(meshed.faces);
       features.push({
         featureId: event.featureId,
         featureKind: event.featureKind,

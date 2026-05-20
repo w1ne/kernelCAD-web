@@ -60,6 +60,8 @@ export const FaceGeometrySchema = z.object({
     vertices: Float32ArraySchema,
     indices: Uint32ArraySchema,
     normals: Float32ArraySchema,
+    /** Bbox-planar UVs (one (u,v) per vertex). Generated lazily in featureMeshing.ts. */
+    uv: Float32ArraySchema.optional(),
     faceId: z.number(),
     plane: z.object({
         origin: z.tuple([z.number(), z.number(), z.number()]),
@@ -114,6 +116,8 @@ export interface FaceGeometry {
     vertices: Float32Array;
     indices: Uint32Array;
     normals: Float32Array;
+    /** Bbox-planar UVs (one (u,v) per vertex). Generated lazily in featureMeshing.ts. */
+    uv?: Float32Array;
     faceId: number;
     plane?: {
         origin: [number, number, number];
