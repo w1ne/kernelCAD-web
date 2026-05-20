@@ -455,13 +455,17 @@ watch.fixed('pinion centered on dial', dial, pinionPart, { origin: [0, DIAL_Y_FR
 // case top flat (which has an X-span of 2·CASE_FLAT·tan(π/8) ≈ 14.5 mm) so
 // it visually reads as a separate stub rather than a continuation of the
 // case. Depth matches the frame (Y = FRAME_DEPTH) so it sits flush front-back.
-const PENDANT_WIDTH = 8.0;
+const PENDANT_WIDTH = 8.5;
 const PENDANT_HEIGHT = 4.0;
 const PENDANT_DEPTH = FRAME_DEPTH;
 const PENDANT_Z_BASE = FRAME_FLAT;                  // 23 — top of frame
 const PENDANT_Z_TOP = PENDANT_Z_BASE + PENDANT_HEIGHT;   // 27
 const pendantBlock = box(PENDANT_WIDTH, PENDANT_DEPTH, PENDANT_HEIGHT, true)
   .translate(0, 0, PENDANT_Z_BASE + PENDANT_HEIGHT / 2)
+  // Fillet softens all 12 edges (~0.6 mm radius) — without this the pendant
+  // reads as a sharp box stuck onto the case. With the fillet, the silhouette
+  // matches the soft chamfered neck on the reference pocket watch.
+  .fillet(0.6)
   .color('#f8b3c0');
 const pendant = watch.part('pink pendant block above frame', pendantBlock);
 watch.fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_Z_BASE] });
@@ -472,11 +476,11 @@ watch.fixed('pendant on top of frame', frame, pendant, { origin: [0, 0, PENDANT_
 // coaxial stack reads ambiguously; a small offset matches real pocket
 // watches' crowns sitting at the 1-2 o'clock side of the pendant neck).
 // =============================================================================
-const CROWN_X_OFFSET = 3.0;                         // offset to one side of the pendant top — clears the bail torus tube
-const CROWN_KNOB_R = 1.1;                           // knob radius — keep small so it stays within the pendant's ±4 mm half-width footprint
-const CROWN_KNOB_H = 1.4;                           // total knob height above pendant
-const CROWN_STEM_R = 0.55;
-const CROWN_STEM_H = 0.5;                           // short stub between pendant top and the knob
+const CROWN_X_OFFSET = 3.1;                         // offset to one side of the pendant top — clears the bail torus tube
+const CROWN_KNOB_R = 1.25;                          // knob radius — keep within the pendant's ±4.25 mm half-width footprint
+const CROWN_KNOB_H = 1.7;                           // total knob height above pendant — visible from the iso pose
+const CROWN_STEM_R = 0.6;
+const CROWN_STEM_H = 0.45;                          // short stub between pendant top and the knob
 // Knurled hex-prism knob (6 facets) — reads as a winding wheel.
 const knobHexPts = [];
 for (let k = 0; k < 6; k += 1) {
