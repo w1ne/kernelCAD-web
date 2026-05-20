@@ -60,7 +60,6 @@ describe('handleTextureRequest', () => {
     writeFileSync(imgPath, PNG_1X1);
     const req = createReq(`/?path=${encodeURIComponent(imgPath)}`);
     const res = createRes();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await handleTextureRequest(req as any, res as any);
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toBe('image/png');
@@ -71,7 +70,6 @@ describe('handleTextureRequest', () => {
   it('returns 400 when path query is missing', async () => {
     const req = createReq('/');
     const res = createRes();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await handleTextureRequest(req as any, res as any);
     expect(res.statusCode).toBe(400);
     const body = JSON.parse(res.body as string);
@@ -81,7 +79,6 @@ describe('handleTextureRequest', () => {
   it('returns 404 when the file does not exist', async () => {
     const req = createReq(`/?path=${encodeURIComponent(join(tmpDir, 'nope.png'))}`);
     const res = createRes();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await handleTextureRequest(req as any, res as any);
     expect(res.statusCode).toBe(404);
     const body = JSON.parse(res.body as string);
@@ -93,7 +90,6 @@ describe('handleTextureRequest', () => {
     writeFileSync(imgPath, PNG_1X1);
     const req = createReq(`/?path=${encodeURIComponent(imgPath)}`);
     const res = createRes();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await handleTextureRequest(req as any, res as any);
     expect(res.statusCode).toBe(415);
     const body = JSON.parse(res.body as string);

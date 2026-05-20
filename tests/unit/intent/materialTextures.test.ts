@@ -64,20 +64,17 @@ describe('normalizeTextureRef', () => {
   });
 
   it('throws when path is not a string', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(() => normalizeTextureRef({ path: 123 as any } as TextureRef)).toThrow(/path/);
   });
 
   it('throws when repeat is not a finite [number, number]', () => {
     expect(() =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       normalizeTextureRef({ path: 'a.png', repeat: [Number.NaN, 1] as any } as TextureRef),
     ).toThrow(/repeat/);
   });
 
   it('throws when offset is not a finite [number, number]', () => {
     expect(() =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       normalizeTextureRef({ path: 'a.png', offset: [1] as any } as TextureRef),
     ).toThrow(/offset/);
   });
