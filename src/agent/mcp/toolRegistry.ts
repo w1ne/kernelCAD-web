@@ -11,6 +11,8 @@ import { addSurfaceFromBoundaryTool } from './tools/addSurfaceFromBoundary';
 import { addPatternFeatureTool } from './tools/addPatternFeature';
 import { addVariableSweepTool } from './tools/addVariableSweep';
 import { addSketchTextTool } from './tools/addSketchText';
+import { embossTextTool } from './tools/embossText';
+import { projectCurveTool } from './tools/projectCurve';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
@@ -532,6 +534,52 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => addSketchTextTool(input as unknown as Parameters<typeof addSketchTextTool>[0]),
+  },
+  {
+    definition: {
+      name: 'emboss_text',
+      description: 'Insert a `<shape>.embossText({ text, face, size, depth, align?, anchor?, rotation?, scaleMode? })` chained call into a kernelCAD script before the last top-level return. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Side-effect-free; returns modified code plus diagnostics from re-evaluating. The emitted feature lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code:        { type: 'string', description: 'The .kcad.ts source code.' },
+          target:      { type: 'string', description: 'Variable name of the Shape to chain onto (inserted verbatim).' },
+          textContent: { type: 'string', description: 'Text content (UTF-8, non-empty, non-whitespace).' },
+          size:        { type: 'number', description: 'Glyph cap height in mm (positive finite).' },
+          depth:       { type: 'number', description: 'Signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero.' },
+          face:        { type: 'string', description: "Target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label." },
+          fontFamily:  { type: 'string', description: 'Optional logical font name or .ttf file path; defaults to bundled Liberation Sans.' },
+          align:       { type: 'string', enum: ['left', 'center', 'right'], description: 'Horizontal alignment relative to the UV anchor. Default center.' },
+          anchorU:     { type: 'number', description: 'U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5.' },
+          anchorV:     { type: 'number', description: 'V anchor in [0, 1] face-local. Default 0.5.' },
+          rotation:    { type: 'number', description: 'CCW rotation in degrees, in the face tangent plane. Default 0.' },
+          scaleMode:   { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          bindAs:      { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.embossText(...);`.' },
+        },
+        required: ['code', 'target', 'textContent', 'size', 'depth', 'face'],
+      },
+    },
+    handler: input => embossTextTool(input as unknown as Parameters<typeof embossTextTool>[0]),
+  },
+  {
+    definition: {
+      name: 'project_curve',
+      description: 'Insert a `<shape>.projectCurve({ curve, face, scaleMode?, asEdge? })` chained call into a kernelCAD script. Wraps a 2D closed curve onto a 3D face along the face normal; pair with `.extrude(d)` / `.cut(...)` for engraved logos or label inserts on curved bodies. `asEdge: true` is captured but currently deferred at lower time (BRepProj_Projection not bundled). Side-effect-free; returns modified code plus diagnostics.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code:            { type: 'string', description: 'The .kcad.ts source code.' },
+          target:          { type: 'string', description: 'Variable name of the Shape to chain onto.' },
+          curveExpression: { type: 'string', description: 'JS expression returning a closed sketch (e.g. `path().moveTo(0,0).lineTo(2,0).lineTo(2,2).close().build()`). Inserted verbatim as the `curve:` field.' },
+          face:            { type: 'string', description: "Target face — canonical name or label." },
+          scaleMode:       { type: 'string', enum: ['original', 'native', 'bounds'], description: 'Drawing.sketchOnFace scaling mode. Default original.' },
+          asEdge:          { type: 'boolean', description: 'Project as an open edge instead of a closed face-bound sketch. Currently deferred.' },
+          bindAs:          { type: 'string', description: 'Optional local variable name; emits `const <bindAs> = <target>.projectCurve(...);`.' },
+        },
+        required: ['code', 'target', 'curveExpression', 'face'],
+      },
+    },
+    handler: input => projectCurveTool(input as unknown as Parameters<typeof projectCurveTool>[0]),
   },
   {
     definition: {
