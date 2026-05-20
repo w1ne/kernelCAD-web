@@ -98,6 +98,6 @@ NOT valid reasons to leave a gate failing:
 
 - `kernelcad` — base API surface and decision tree.
 - `kernelcad-authoring` — parametric authoring fundamentals.
-- `kernelcad-features` — feature catalog (fillet, chamfer, shell, holes).
+- `kernelcad-features` — feature catalog (fillet, chamfer, shell, holes). For engraved brand text or wrapped logos on curved surfaces (Ray-Ban temple, bottle logo): see `kernelcad-features` § Face authoring — emboss & project. Highest-impact 'real product' signal.
 - `kernelcad-mcp` — MCP tool reference.
 - `kernelcad-nurbs` — freeform NURBS surfaces for organic sections.

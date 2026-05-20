@@ -47,6 +47,93 @@ Per-primitive canonical face applicability:
 - Cylinder: only `top` and `bottom` (the disc end-caps). Side faces have no canonical name.
 - Sphere: none. Sphere with any `{ face }` filter → error.
 
+## Face authoring — emboss & project
+
+Two face-bound features add geometry onto an existing body's face. They author *into* the face's local (u, v) parametric space rather than into the world frame, so the result rides the body through downstream transforms.
+
+Use them whenever a branded consumer product needs raised text, an engraved logo, or a label silhouette: eyewear temples with brand text, bottles with logos, appliance plates with model numbers. Flat-extruding glyphs in world coords reads as a toy — embossed/engraved text or a wrapped silhouette reads as a real product.
+
+### `Shape.embossText({...})`
+
+Raises or recesses text on a target face. Signed `depth` selects fuse vs cut:
+
+```typescript
+// Ray-Ban brand text raised 0.4 mm out of the temple's top face
+const tempRayBan = box(130, 4, 2)
+  .embossText({
+    textContent: 'Ray-Ban',
+    face: 'top',
+    size: 2,
+    depth: 0.4,           // > 0 ⇒ emboss out
+    align: 'center',
+    anchorU: 0.5, anchorV: 0.5,
+  });
+
+// CE compliance mark engraved 0.3 mm into the underside
+const compliance = tempRayBan.embossText({
+  textContent: 'CE',
+  face: 'bottom',
+  size: 1.2,
+  depth: -0.3,            // < 0 ⇒ engrave in
+  anchorU: 0.85, anchorV: 0.5,
+});
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `textContent` | `string` | UTF-8, non-empty, non-whitespace. |
+| `size` | `Editable<number>` | Glyph cap height in mm. |
+| `depth` | `Editable<number>` | Signed mm. Positive = emboss out (fuse); negative = engrave in (cut). Zero rejected. |
+| `face` | `FaceSelector \| string` | Canonical name (`'top'` etc.) or face label. |
+| `align` | `'left' \| 'center' \| 'right'` | Default `'center'`. |
+| `anchorU`, `anchorV` | `Editable<number>` | Face-local UV in `[0, 1]`. `0 = umin / vmin`, `0.5 = centre`, `1 = umax / vmax`. |
+| `rotation` | `Editable<number>` | CCW degrees in the face tangent plane. |
+| `scaleMode` | `'original' \| 'native' \| 'bounds'` | Default `'original'` (preserves mm size; planar faces only). |
+| `fontFamily` | `string?` | Logical name or `.ttf` path. Default Liberation Sans. |
+
+The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. Resulting embossed faces propagate through the lineage and can be targeted downstream by face label.
+
+### `Shape.projectCurve({...})`
+
+Wraps a 2D closed curve onto a 3D face along the face normal. Returns a `Sketch` (face-bound) that composes with `.extrude(d)` to land a raised silhouette, or pair with the parent's `.subtract(...)` for an engraved logo:
+
+```typescript
+// Bottle body with a brand silhouette projected and raised on the top face.
+// The source curve is expressed as a SketchCommand[] (the same wire format
+// emitted by `path().moveTo(...).lineTo(...).close()`).
+const mm = (n) => ({ expression: String(n), unit: 'mm', evaluated: n });
+const logoCommands = [
+  { kind: 'moveTo', x: mm(-8), y: mm(-5) },
+  { kind: 'lineTo', x: mm( 8), y: mm(-5) },
+  { kind: 'lineTo', x: mm( 8), y: mm( 5) },
+  { kind: 'lineTo', x: mm(-8), y: mm( 5) },
+  { kind: 'close' },
+];
+const bottle = cylinder(120, 30);
+const raised = bottle
+  .projectCurve({ source: { kind: 'sketchCommands', commands: logoCommands }, face: 'top' })
+  .extrude(0.4);  // extrude along the face normal — raises the silhouette
+const branded = bottle.union(raised);
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `source` | `ProjectCurveSource` | `{ kind: 'sketchCommands', commands }` or `{ kind: 'drawing', drawingJson }` (drawing-JSON branch is a follow-up). |
+| `face` | `FaceSelector \| string` | Canonical / label. |
+| `scaleMode` | `'original' \| 'native' \| 'bounds'` | Same as embossText. |
+| `asEdge` | `boolean?` | **DEFERRED.** When `true`, the lowerer emits `feature.project-curve.no-intersection` — the bundled OCCT does not export `BRepProj_Projection`. Use closed-curve projection until the follow-up shim lands. |
+
+### Recovery table
+
+| Diagnostic code | What it means | Fix |
+|---|---|---|
+| `feature.emboss-text.depth-zero` | `depth === 0` rejected at capture. | Pass a non-zero `depth`: positive = emboss, negative = engrave. |
+| `feature.emboss-text.face-too-small` | Glyph block exceeded the face bounds at wrap time. | Lower `size`, pick a larger face, or set `scaleMode: 'bounds'`. |
+| `feature.project-curve.curve-empty` | `source.commands` had zero entries. | Build the path via `path().moveTo(...).lineTo(...).close().build()` so the wire has at least one segment. |
+| `feature.project-curve.no-intersection` | Closed-curve case: the curve missed the face. Open-wire case (`asEdge:true`): deferred until OCCT bindings ship `BRepProj_Projection`. | Closed: clamp curve coords into the face bounds. Open: rewrite as a closed projection. |
+| `feature.face.invalid-uv-anchor` | `anchorU` / `anchorV` outside `[0, 1]`. | Clamp the anchor to `[0, 1]`. |
+| `sketch.text.empty-content` | `textContent` was empty or whitespace. | Pass a non-empty string with at least one printable glyph. |
+
 ## Hole and cutout vocabulary
 
 Three subtractive features ship with hard-coded **created face refs** so chained `.fillet()` / `.shell()` / further `.hole()` / `.cutout()` calls can address the new geometry by name without queries.

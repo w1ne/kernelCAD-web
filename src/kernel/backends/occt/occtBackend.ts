@@ -178,6 +178,13 @@ export class OcctBackend implements ShapeBackend {
   // — composing a mixed wire from replicad pen-run edges + direct-OCCT
   // NURBS edges.
   private _hasNurbs: boolean = false;
+  /** W3: face-bound replicad Sketch returned from `Drawing.sketchOnFace(face,
+   *  scaleMode)`. When set, `extrudeFromSketch` calls `sketch.extrude(d)`
+   *  directly so the extrusion follows the face normal (replicad's default for
+   *  face-bound sketches). `_drawing` / `_commands` are left null for this
+   *  branch — the sketch is already lifted into a 3D coordinate frame and
+   *  cannot be reused on another plane. */
+  private _faceBoundSketch: replicad.SketchInterface | null = null;
 
   constructor(
     shape: ReplicadShape3D,
@@ -406,6 +413,19 @@ export class OcctBackend implements ShapeBackend {
     return back;
   }
 
+  /** W3: wrap a face-bound `replicad.Sketch` (returned from
+   *  `drawing.sketchOnFace(face, scaleMode)`) as a sketch-tagged OcctBackend.
+   *  Composes with `extrudeFromSketch` / `.cut()` exactly like a sketch built
+   *  from `fromSketchCommands` / `fromDrawing`, except the extrude direction
+   *  is the face normal (replicad's `Sketch.extrude(d)` semantics) rather
+   *  than +Z. Used by `projectCurveLowerer` to escape a wrapped 2D curve into
+   *  the 3D Shape pipeline. */
+  static fromFaceBoundSketch(sketch: replicad.SketchInterface): OcctBackend {
+    const back = new OcctBackend(undefined as unknown as ReplicadShape3D, 'sketch');
+    back._faceBoundSketch = sketch;
+    return back;
+  }
+
   /**
    * Extrude a sketch-tagged OcctBackend into a 3D solid.
    *
@@ -416,11 +436,20 @@ export class OcctBackend implements ShapeBackend {
    * @throws {Error} If `depth <= 0`.
    */
   static extrudeFromSketch(sketch: OcctBackend, depth: number): OcctBackend {
-    if (sketch.kind !== 'sketch' || (!sketch._drawing && !sketch._hasNurbs)) {
+    if (
+      sketch.kind !== 'sketch'
+      || (!sketch._drawing && !sketch._hasNurbs && !sketch._faceBoundSketch)
+    ) {
       throw new Error('OcctBackend.extrudeFromSketch: input is not a sketch.');
     }
     if (depth <= 0) {
       throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
+    }
+    if (sketch._faceBoundSketch) {
+      // W3: extrude the already face-bound sketch directly. replicad
+      // extrudes along the face normal for face-bound sketches.
+      const fb = sketch._faceBoundSketch as unknown as { extrude: (d: number) => ReplicadShape3D };
+      return new OcctBackend(fb.extrude(depth));
     }
     if (sketch._hasNurbs && sketch._commands) {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured

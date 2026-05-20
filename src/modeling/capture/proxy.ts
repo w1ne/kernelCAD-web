@@ -714,6 +714,65 @@ export class Shape {
   }
 
   /**
+   * W3: Raise or recess text on a target face. `depth > 0` fuses (emboss out),
+   * `depth < 0` cuts (engrave in). UV anchors are face-local [0, 1] (0=umin,
+   * 1=umax). Returns a new Shape with the same lineage plus the new geometry.
+   *
+   * Pipeline at lower time: replicad `drawText(...) → drawing.sketchOnFace(face,
+   * scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`.
+   */
+  embossText(opts: {
+    textContent: string;
+    fontFamily?: string;
+    size: Editable<number>;
+    depth: Editable<number>;
+    align?: 'left' | 'center' | 'right';
+    anchorU?: Editable<number>;
+    anchorV?: Editable<number>;
+    rotation?: Editable<number>;
+    scaleMode?: 'original' | 'native' | 'bounds';
+    face: FaceSelector | CanonicalFace | string;
+  }): Shape {
+    const id = this.session.addEmbossText(this.id, {
+      textContent: opts.textContent,
+      ...(opts.fontFamily !== undefined ? { fontFamily: opts.fontFamily } : {}),
+      size: opts.size,
+      depth: opts.depth,
+      align: opts.align,
+      anchorU: opts.anchorU,
+      anchorV: opts.anchorV,
+      rotation: opts.rotation,
+      scaleMode: opts.scaleMode,
+      face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,
+    });
+    return new Shape(id, this.session);
+  }
+
+  /**
+   * W3: Wrap a 2D closed curve onto a 3D face. Returns a `Sketch` — chain
+   * `.extrude(depth)` to land an engraved logo or label insert on a curved
+   * body. The Sketch's underlying OcctBackend is a face-bound sketch, so the
+   * extrude direction follows the face normal.
+   *
+   * `asEdge: true` is captured but currently deferred at lower time —
+   * `BRepProj_Projection` is not exposed by the bundled OCCT.
+   */
+  projectCurve(opts: {
+    source: import('../../shared/intent/projectCurveRecord').ProjectCurveSource;
+    face: FaceSelector | CanonicalFace | string;
+    scaleMode?: 'original' | 'native' | 'bounds';
+    asEdge?: boolean;
+  }): import('./sketch').Sketch {
+    const id = this.session.addProjectCurve(this.id, {
+      source: opts.source,
+      face: typeof opts.face === 'string' ? { face: opts.face } : opts.face,
+      scaleMode: opts.scaleMode,
+      asEdge: opts.asEdge,
+    });
+    return this.session.sketchFromId(id);
+  }
+
+  /**
    * Lower this Shape eagerly — runs recompute against the records up to and
    * including this Shape, returns the resulting OcctBackend so script-runtime
    * helpers like `selectEdges` can introspect the lowered geometry.

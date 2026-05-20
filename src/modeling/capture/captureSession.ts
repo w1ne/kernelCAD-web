@@ -15,6 +15,12 @@ import type {
 } from '../../shared/intent/renderEnvironmentRecord';
 import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
+import type {
+  EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
+} from '../../shared/intent/embossTextRecord';
+import type {
+  ProjectCurveMetadata, ProjectCurveSource, ProjectCurveScaleMode,
+} from '../../shared/intent/projectCurveRecord';
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
@@ -724,6 +730,163 @@ export class CaptureSession {
     return record.id;
   }
 
+  /**
+   * W3: capture an `embossText` feature.
+   *
+   * Validates content, depth sign, and UV anchor range. Diagnostics are stashed
+   * in `metadata.diagnostics` (mirror `addReferenceImage`/`addCurve3D`); the
+   * record is always produced so the lowerer can surface the issues.
+   */
+  addEmbossText(
+    parentFeatureId: FeatureId,
+    args: {
+      textContent: string;
+      fontFamily?: string;
+      size: Editable<number>;
+      depth: Editable<number>;
+      align?: EmbossTextAlign;
+      anchorU?: Editable<number>;
+      anchorV?: Editable<number>;
+      rotation?: Editable<number>;
+      scaleMode?: EmbossTextScaleMode;
+      face: import('./proxy').FaceSelector | string;
+    },
+  ): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    // 1. Text content guard (mirrors sketch.text behaviour).
+    if (typeof args.textContent !== 'string' || args.textContent.trim().length === 0) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'sketch.text.empty-content',
+        severity: 'error',
+        message: `embossText: textContent must be a non-empty string with at least one printable glyph; got ${JSON.stringify(args.textContent)}.`,
+        hint: HINT_TEMPLATES['sketch.text.empty-content'].template,
+      });
+    }
+
+    // 2. Depth must be non-zero (sign selects fuse vs cut).
+    const depthParam = toParam(args.depth, 'mm');
+    if (depthParam.evaluated === 0) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.emboss-text.depth-zero',
+        severity: 'error',
+        message: `embossText: depth must be non-zero (positive=emboss out, negative=engrave in); got 0.`,
+        hint: HINT_TEMPLATES['feature.emboss-text.depth-zero'].template,
+      });
+    }
+
+    // 3. UV anchors in [0, 1].
+    const anchorUParam = toParam(args.anchorU ?? 0.5, 'unitless');
+    const anchorVParam = toParam(args.anchorV ?? 0.5, 'unitless');
+    const outOfRangeU = !(anchorUParam.evaluated >= 0 && anchorUParam.evaluated <= 1);
+    const outOfRangeV = !(anchorVParam.evaluated >= 0 && anchorVParam.evaluated <= 1);
+    if (outOfRangeU || outOfRangeV) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.face.invalid-uv-anchor',
+        severity: 'error',
+        message: `embossText: anchor must lie in [0, 1]; got anchorU=${anchorUParam.evaluated}, anchorV=${anchorVParam.evaluated}.`,
+        hint: HINT_TEMPLATES['feature.face.invalid-uv-anchor'].template,
+      });
+    }
+
+    const sizeParam = toParam(args.size, 'mm');
+    const rotationParam = toParam(args.rotation ?? 0, 'deg');
+
+    // Normalize face selector to FaceRef (mirror buildFaceInputRef path).
+    const faceInputRef = buildFaceInputRef(parentFeatureId, args.face);
+    const faceRef =
+      faceInputRef.kind === 'face'
+        ? faceInputRef.ref
+        : { kind: 'canonical' as const, face: 'top' as const };
+
+    const metadata: EmbossTextMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      textContent: args.textContent,
+      ...(args.fontFamily !== undefined ? { fontFamily: args.fontFamily } : {}),
+      size: sizeParam,
+      depth: depthParam,
+      align: args.align ?? 'center',
+      anchorU: anchorUParam,
+      anchorV: anchorVParam,
+      rotation: rotationParam,
+      scaleMode: args.scaleMode ?? 'original',
+      faceRef,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'embossText',
+      params: {},
+      inputs: {
+        parent: { kind: 'feature', id: parentFeatureId },
+        face: faceInputRef,
+      },
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * W3: capture a `projectCurve` feature.
+   *
+   * Closed-curve mode (default) wraps a 2D sketch onto a 3D face via
+   * `drawing.sketchOnFace(face, scaleMode)`. `asEdge:true` is captured but
+   * deferred at lower time (the bundled OCCT does not export
+   * `BRepProj_Projection`).
+   */
+  addProjectCurve(
+    parentFeatureId: FeatureId,
+    args: {
+      source: ProjectCurveSource;
+      face: import('./proxy').FaceSelector | string;
+      scaleMode?: ProjectCurveScaleMode;
+      asEdge?: boolean;
+    },
+  ): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    if (args.source.kind === 'sketchCommands') {
+      if (args.source.commands.length === 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.project-curve.curve-empty',
+          severity: 'error',
+          message: 'projectCurve: source.commands is empty; nothing to project.',
+          hint: HINT_TEMPLATES['feature.project-curve.curve-empty'].template,
+        });
+      }
+    } else if (args.source.kind === 'drawing') {
+      // Validation deferred to lowerer (deserialization step).
+    }
+
+    const faceInputRef = buildFaceInputRef(parentFeatureId, args.face);
+    const faceRef =
+      faceInputRef.kind === 'face'
+        ? faceInputRef.ref
+        : { kind: 'canonical' as const, face: 'top' as const };
+
+    const metadata: ProjectCurveMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      source: args.source,
+      scaleMode: args.scaleMode ?? 'original',
+      asEdge: args.asEdge ?? false,
+      faceRef,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'projectCurve',
+      params: {},
+      inputs: {
+        parent: { kind: 'feature', id: parentFeatureId },
+        face: faceInputRef,
+      },
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
   register(spec: FeatureSpec): FeatureRecord {
     const id = this.idGen.next(spec.kind);
     const r: FeatureRecord = {
@@ -758,6 +921,14 @@ export class CaptureSession {
   createSketch(spec: FeatureSpec): Sketch {
     const r = this.register(spec);
     return new Sketch(r.id, this);
+  }
+
+  /** Build a `Sketch` wrapper around an already-registered feature id. Used
+   *  by `Shape.projectCurve` (which registers a `projectCurve` record but
+   *  needs to hand back a `Sketch` so the caller can chain `.extrude(d)`).
+   *  Does not register a new record. */
+  sketchFromId(id: FeatureId): Sketch {
+    return new Sketch(id, this);
   }
 
   appendTransform(id: string, t: ShapeTransform): void {
