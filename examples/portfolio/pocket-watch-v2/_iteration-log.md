@@ -153,3 +153,28 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. Frame coral colour reads slightly muted vs the reference's saturated pop-art coral.
 
 **Decision:** commit. Iter 6 widens the horn's BASE section so it matches the frame's top-flat width — that may visually hide the union ledge, since the horn-base and frame-top will share the same X edge.
+
+## iter 6 — horn base = frame top flat (seam invisible)
+
+**What changed:**
+- HORN_BASE_W_X set to `2 * FRAME_FLAT * tan(π/8)` (~9.1 mm), exactly matching the frame octagon's top-flat width.
+- HORN_DEPTH_Y set to FRAME_DEPTH so the horn's bottom face also matches the frame's top-flat depth in Y.
+- HORN_BASE_Z pulled to `FRAME_TOP_Z - 0.05` so the horn fuses flush with the frame top.
+- Crown placement formula updated to use the LOFTED horn's per-Z linear width (interpolated between BASE and TOP at the crown's Z).
+- Crown's Z-extent (±1.1 mm of hex) accounted for: clearance computed against horn width at crown's BOTTOM rim, not centerline.
+
+**Render:** `iter-6.png`
+
+**Diff against the reference:**
+- The pendant now reads as ONE CONTINUOUS body with the frame — the union seam at the horn base is invisible because the horn's bottom face matches the frame's top flat exactly.
+- Smooth taper from frame top to bail — closest match to the reference's sculpted neck so far.
+- Crown is small but unambiguous.
+- Bail through-hole reads at the iso pose.
+- Composition still right-biased.
+
+**3 worst issues, ranked:**
+1. Composition right-bias — bbox-driven camera fitter pushes the watch into the bottom-right corner because the pendant column stretches the bbox vertically.
+2. Crystal dome is subtle from the iso pose — the dial is visible but doesn't read as glass.
+3. Frame coral colour slightly muted vs reference (less saturated).
+
+**Decision:** commit, then iter 7 tightens vertical extent further AND/OR tries placing a foreground reference image overlay or adjusting the camera.

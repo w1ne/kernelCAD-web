@@ -77,14 +77,22 @@ const FRAME_CORNER_Z = FRAME_FLAT / Math.cos(Math.PI / 8);  // 11.91
 // rising above the octagon. Authored as a single trapezoid that starts well
 // below the frame top (overlap so the union fuses) and reaches up to where
 // the bail's bottom tube touches.
-const HORN_BASE_W_X = 9.5;                     // base sits across the top flat of the frame
-const HORN_TOP_W_X = 5.5;
-const HORN_DEPTH_Y = 5.0;
-// Horn base sits just inside the frame octagon's top corner Z so the
-// loft fuses cleanly. Going much deeper overlaps the yellow case which
-// is at world Z ≤ CASE_FLAT/cos(22.5°).
-const HORN_BASE_Z = FRAME_TOP_Z - 1.0;
-const HORN_TOP_Z = 15.5;                       // top a few mm above frame corners (11.91) — shorter than iter 2
+// Horn BASE matches the frame's top-flat width: the octagon's top flat
+// runs in X from -FRAME_FLAT*tan(22.5°) to +FRAME_FLAT*tan(22.5°) (≈
+// ±4.55 mm). We use the FULL diagonal span between the two top corners
+// (±FRAME_FLAT/cos(22.5°) ≈ ±11.91 in X is the octagon corners; the top
+// flat is between corners at (±4.55, 11)). Setting HORN_BASE_W_X to
+// 2*FRAME_FLAT*tan(22.5°) = the top-flat width means the horn's bottom
+// face perfectly overlies the frame's top flat — the union seam becomes
+// invisible.
+const FRAME_TOP_FLAT_HALF = FRAME_FLAT * Math.tan(Math.PI / 8);   // ~4.55 mm
+const HORN_BASE_W_X = FRAME_TOP_FLAT_HALF * 2;                     // ~9.1 mm
+const HORN_TOP_W_X = 5.0;
+const HORN_DEPTH_Y = FRAME_DEPTH;                                  // match frame depth so horn bottom = frame top in Y too
+// Horn base sits flush ON the frame's top flat (no overlap, since the
+// flat IS the horn's bottom). The horn rises from there.
+const HORN_BASE_Z = FRAME_TOP_Z - 0.05;       // hair below for clean fuse
+const HORN_TOP_Z = 14.5;
 const HORN_HEIGHT_Z = HORN_TOP_Z - HORN_BASE_Z;
 
 // Tab is FOLDED INTO the horn (single shape). The bail attaches at the very
@@ -458,13 +466,20 @@ for (let k = 0; k < 6; k += 1) {
 // Crown placement: high enough on the horn that we're ABOVE the frame's
 // angled top-right edge (no overlap with the octagon body), and outboard
 // enough in X that the crown's hex prism doesn't poke into the horn.
-// Crown on the MID horn's +X face. Mid-horn is narrower than lower-horn
-// but wider than upper-horn — a clean place to anchor the crown where the
-// hex prism's bbox clears both adjacent steps.
-const crownZ = HORN_BASE_Z + HORN_LOWER_H + HORN_MID_H * 0.5;
-// Crown must clear the wider LOWER horn's bbox too (the hex prism extends
-// ±1.1 in Z, so the bottom of the crown reaches into the lower-horn Z range).
-const crownInnerX = HORN_LOWER_W / 2 + 0.4;
+// Crown on the lofted horn's +X face. The loft tapers linearly in X from
+// HORN_BASE_W_X to HORN_TOP_W_X over [HORN_BASE_Z, HORN_TOP_Z]. Compute
+// the local half-width at crown Z, then offset outward by a small gap.
+const crownZ = HORN_BASE_Z + HORN_HEIGHT_Z * 0.35;
+const crownFrac = (crownZ - HORN_BASE_Z) / HORN_HEIGHT_Z;
+const hornHalfWidthAtZ = (HORN_BASE_W_X + (HORN_TOP_W_X - HORN_BASE_W_X) * crownFrac) / 2;
+// The crown's hex bbox extends ±1.1 in world Z. The horn LOFT widens as Z
+// decreases (toward HORN_BASE_Z), so the crown's BOTTOM rim sees a wider
+// horn than its centerline. Compute hornHalfWidth at the crown's BOTTOM
+// (most conservative) and use that for the X clearance.
+const crownBottomZ = crownZ - 1.1;
+const crownBottomFrac = Math.max(0, (crownBottomZ - HORN_BASE_Z) / HORN_HEIGHT_Z);
+const hornHalfWidthAtBottom = (HORN_BASE_W_X + (HORN_TOP_W_X - HORN_BASE_W_X) * crownBottomFrac) / 2;
+const crownInnerX = hornHalfWidthAtBottom + 0.25;
 const crownOuterX = crownInnerX + CROWN_LEN;
 const crownShape = extrudePolygon(crownHexPts, CROWN_LEN)
   .material(YELLOW_MAT)
