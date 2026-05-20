@@ -32,7 +32,7 @@ import { computeDihedralPublic } from '../../../kernel/backends/occt/edgeQueries
 import { lowerSheetMetalBend, resolveBendAxis } from './sheetMetalLowerer';
 import { findRootSheetMetalRecord } from '../../sheetMetal';
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../../kernel/backends/sceneBackend';
-import { lookupSourceColor } from '../../../kernel/backends/occt/lookupSourceColor';
+import { lookupSourceColor, lookupSourceMaterial } from '../../../kernel/backends/occt/lookupSourceColor';
 import { Transform } from '../../../shared/runtime/se3';
 import * as replicad from 'replicad';
 import {
@@ -1944,11 +1944,13 @@ export class OcctLowerer implements FeatureLowerer {
           const partName =
             (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
           const color = partRec ? lookupSourceColor(partRec, records) : undefined;
+          const material = partRec ? lookupSourceMaterial(partRec, records) : undefined;
           return {
             name: partName,
             shape: partShape as OcctBackend,
             worldTransform: Transform.identity(),
             ...(color !== undefined ? { color } : {}),
+            ...(material !== undefined ? { material } : {}),
           };
         });
         const sceneBackend: SceneBackend = {
@@ -2324,11 +2326,13 @@ export class OcctLowerer implements FeatureLowerer {
           const partMeta = partRec.metadata as { partName?: string } | undefined;
           const partName = partMeta?.partName ?? partId;
           const color = lookupSourceColor(partRec, records);
+          const material = lookupSourceMaterial(partRec, records);
           return {
             name: partName,
             shape: partShape as OcctBackend,
             worldTransform: T,
             ...(color !== undefined ? { color } : {}),
+            ...(material !== undefined ? { material } : {}),
           };
         });
         const assemblyName =

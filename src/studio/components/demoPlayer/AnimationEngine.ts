@@ -80,7 +80,16 @@ function setOpacity(refs: GroupRefs, value: number): void {
 
 function setOpaque(refs: GroupRefs): void {
   for (const m of refs.mats) {
-    m.transparent = false;
+    // Materials with PBR transmission > 0 (sapphire crystal, clear plastic,
+    // etc.) MUST keep `transparent: true` so three.js routes them through
+    // the transmission render pass — forcing transparent=false here would
+    // make them render as flat opaque colors mid-animation.
+    const phys = m as THREE.MeshPhysicalMaterial;
+    if (phys.transmission !== undefined && phys.transmission > 0) {
+      m.transparent = true;
+    } else {
+      m.transparent = false;
+    }
     m.opacity = 1;
     m.needsUpdate = true;
   }
