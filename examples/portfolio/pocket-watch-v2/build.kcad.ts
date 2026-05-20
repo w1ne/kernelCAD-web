@@ -190,9 +190,11 @@ function faceText(value, size, x, z, frontFaceY, color) {
 setRenderEnvironment({ preset: 'studio', intensity: 1.0 });
 
 // Override the camera target. The default behaviour aims at the bbox
-// centroid, but the pendant + bail above the dial pull the centroid up,
-// pushing the watch into the lower-right corner. Aim at the dial centre
-// instead so the watch sits in the middle of the frame at the iso pose.
+// centroid; the pendant + bail above the dial pull the centroid up, so
+// auto-fit zooms out to fit the tall+narrow bbox, which reads as a
+// small watch sitting in the upper-right with too much background. Aim
+// at the world origin (which lands at the dial centre after geometry
+// recentering) so the dial reads as the visual centre of the frame.
 setCameraTarget(0, 0, 0);
 
 // =============================================================================
