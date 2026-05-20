@@ -53,6 +53,10 @@ export interface HeadlessRenderOpts {
    *  Preset keys map to bundled HDRIs; any other string is treated as a URL
    *  (relative paths are resolved against the dev server's `/hdri/` directory). */
   environment?: 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse' | 'none' | string;
+  /** Suppress the kernelCAD version watermark in the bottom-right of the
+   *  captured frame. Used for clean hero artifacts intended for public posts;
+   *  default false retains the watermark for traceability. */
+  noWatermark?: boolean;
 }
 
 export interface HeadlessRenderResult {
@@ -92,7 +96,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
     // chrome) in src/studio/routes/__root.tsx so the captured PNG contains
     // only scene pixels. See issue #173.
-    await page.goto(`${baseUrl}/demo-player?headless=1`);
+    // Build query string: headless=1 always, nowatermark=1 when requested.
+    const queryParts = ['headless=1'];
+    if (opts.noWatermark) queryParts.push('nowatermark=1');
+    await page.goto(`${baseUrl}/demo-player?${queryParts.join('&')}`);
     await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
 
     // 3. Load meshes + skip the fade-in animation.

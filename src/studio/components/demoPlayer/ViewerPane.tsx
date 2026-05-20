@@ -8,9 +8,14 @@ export interface ViewerPaneProps {
   onSceneReady: (ctx: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer }) => void;
   width: number;
   height: number;
+  /** Suppress the kernelCAD vN.N.N badge in the bottom-right of the viewport.
+   *  Used by the headless render CLI's `--no-watermark` flag for clean
+   *  hero artifacts intended for public posts; tests / studio default
+   *  retains the watermark for traceability. */
+  noWatermark?: boolean;
 }
 
-export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneProps): React.JSX.Element {
+export function ViewerPane({ version, onSceneReady, width, height, noWatermark = false }: ViewerPaneProps): React.JSX.Element {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,7 +135,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
   return (
     <div style={{ position: 'relative', width, height }}>
       <div ref={mountRef} />
-      <Watermark version={version} />
+      {!noWatermark && <Watermark version={version} />}
     </div>
   );
 }
