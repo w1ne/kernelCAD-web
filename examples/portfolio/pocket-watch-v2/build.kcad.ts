@@ -62,9 +62,9 @@ const PIN_Y_BACK = MIN_HAND_Y_FRONT - 0.04;
 // Crystal: rim sits in front of bezel, apex bulges further toward camera.
 // Rim distance from bezel front is sized so the dome shell (after thicken)
 // clears the pinion cap which sticks furthest forward of any dial-side part.
-const CRYSTAL_BASE_Y = CASE_Y_FRONT - 1.2;     // rim 1.2 mm in front of bezel
+const CRYSTAL_BASE_Y = CASE_Y_FRONT - 1.4;     // rim 1.4 mm in front of bezel
 const CRYSTAL_THICK = 0.3;
-const CRYSTAL_RISE = 1.5;
+const CRYSTAL_RISE = 2.2;                       // taller dome so the arch reads in the render
 
 // Top of the frame in Z (top flat of the octagon, the edge the pendant grows out of).
 const FRAME_TOP_Z = FRAME_FLAT;                // 11.0
@@ -192,7 +192,7 @@ const watch = assembly('pop-art octagonal pocket watch');
 // lookup finds it. (The case-pocket cutter doesn't need it — it's negative
 // mass, removed from the output.)
 const PINK_MAT = {
-  baseColor: '#f59ba1',
+  baseColor: '#ff9aa3',
   metalness: 0,
   roughness: 0.45,
 };

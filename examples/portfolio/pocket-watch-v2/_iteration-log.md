@@ -201,3 +201,25 @@ Each entry: the focused change + side-by-side diff against `/tmp/refcrop/watch_c
 3. **Frame coral colour reads slightly muted vs the reference's pop-art saturated coral.** Could push the baseColor further (e.g. `#ff8c93`).
 
 **Decision:** commit. This is likely the convergence point for the geometric story; iter 8 will close out with one last tweak (e.g. brighter pink + slightly bigger dome).
+
+## iter 8 — brighter coral pink + taller dome
+
+**What changed:**
+- Coral baseColor pushed from `#f59ba1` to `#ff9aa3` (more saturated coral).
+- Crystal CRYSTAL_RISE pushed from 1.5 mm to 2.2 mm so the dome arches more visibly at the iso pose.
+
+**Render:** `iter-8.png` (also copied to `hero-frame.png` as the final).
+
+**Diff against the reference:**
+- The watch reads as: smooth tapered pink horn rising from the octagonal case, small yellow crown on top, pink bail above. Dial visible through a slightly-doomed crystal with turquoise tapisserie, yellow numerals + markers, hands, and a pink-ringed subdial.
+- Geometric story matches the reference's structure cleanly.
+- The CRYSTAL still doesn't read strongly as glass — even with `transmission: 0.95, ior: 1.5, clearcoat: 0.4` and a more pronounced dome, the dial reads as "painted on" rather than "behind glass". This is a renderer limitation as much as a build limitation.
+- COMPOSITION still right-biased — the bbox-fitter centres on the pendant-biased centroid. Not solvable in the build script without an explicit camera-target API.
+
+**Honest verdict — converged?**
+At this point 4+ iterations have made smaller and smaller deltas. iter 6 → 7 → 8 each fixed a specific issue but the macro composition (right-biased, slightly muted coral, subtle dome) has not budged. The fundamental shape is close to the reference; the remaining gaps are renderer / API gaps:
+- **camera target** is bbox-centroid driven, no API to offset
+- **glass / transmission rendering** doesn't read strongly without explicit HDRI environment + more dial-side parallax
+- **PBR colour calibration** seems to darken `.material()` baseColor in the studio's tone-mapper
+
+I'm calling iter 8 the convergence point for vision-driven agent-CAD with this toolset.
