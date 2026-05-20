@@ -359,12 +359,14 @@ function pendantSideScrew(side) {  // side ∈ {-1, +1}
     pts.push([Math.cos(a) * PENDANT_SCREW_R, Math.sin(a) * PENDANT_SCREW_R]);
   }
   // Build the hex disc in XY (axis = +Z by default), then orient axis
-  // to X via alongAxis. Translate to the pendant side face with a small
-  // 0.04 mm outset so the head sits proud, not embedded.
+  // to X via alongAxis. Translate to the pendant side face with a
+  // visible 0.3 mm outset so the screw head sits proud (and clears the
+  // pendant body — at less than ~0.2 mm the alongAxis-extruded hex
+  // grazes the rounded-loft surface and registers a tiny BREP overlap).
   const dirX = side >= 0 ? 1 : -1;
   return extrudePolygon(pts, PENDANT_SCREW_T)
     .alongAxis([dirX, 0, 0])
-    .translate(dirX * (PENDANT_X_HALF + 0.04), 0, PENDANT_SCREW_Z)
+    .translate(dirX * (PENDANT_X_HALF + 0.3), 0, PENDANT_SCREW_Z)
     .color('#1c1c1e');
 }
 for (const side of [-1, 1]) {
