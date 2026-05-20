@@ -26,6 +26,9 @@ export interface RenderInput {
   poses?: string[];
   /** HDRI environment override: preset key, custom URL, or 'none'. */
   environment?: string;
+  /** Suppress the kernelCAD version watermark on the captured frames.
+   *  Used for clean hero artifacts intended for public posts. */
+  noWatermark?: boolean;
 }
 
 export interface RenderCliResult {
@@ -47,6 +50,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       baseUrl: input.baseUrl,
       hideReferenceImages: input.hideReferenceImages,
       environment: input.environment,
+      noWatermark: input.noWatermark,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -121,6 +125,11 @@ export function renderCommand(): Command {
       '--environment <preset|url|none>',
       "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig",
     )
+    .option(
+      '--no-watermark',
+      'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
+      false,
+    )
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
@@ -130,6 +139,7 @@ export function renderCommand(): Command {
       hideReferenceImages: boolean;
       pose: string[];
       environment?: string;
+      watermark: boolean;  // commander inverts --no-watermark to opts.watermark = false
     }) => {
       const r = await renderScript({
         file,
@@ -141,6 +151,7 @@ export function renderCommand(): Command {
         hideReferenceImages: opts.hideReferenceImages,
         poses: opts.pose,
         environment: opts.environment,
+        noWatermark: opts.watermark === false,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;

@@ -852,6 +852,11 @@ export function DemoPlayerPage(): React.JSX.Element {
   // half the canvas at 1024×1024 capture → silhouette IoU bimodality.
   const isHeadless = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('headless') === '1';
+  // ?nowatermark=1 suppresses the kernelCAD version badge for clean hero
+  // artifacts (public posts, gallery entries). Wired to the CLI's
+  // --no-watermark flag via headlessRender.
+  const noWatermark = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('nowatermark') === '1';
   return (
     <div
       data-testid="demo-player"
@@ -876,6 +881,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         width={isHeadless ? VIEWER_W + TERMINAL_W : VIEWER_W}
         height={VIEWER_H}
         onSceneReady={handleSceneReady}
+        noWatermark={noWatermark}
       />
       {scriptLoadStatus.kind !== 'idle' ? (
         <div
