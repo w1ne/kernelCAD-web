@@ -9,6 +9,11 @@ import type {
   SurfaceRecord, SurfaceId, NurbsSurfaceData, CoonsPatchData,
 } from '../../shared/intent/surfaceRecord';
 import type { ReferenceImageMetadata, ReferenceImageScale } from '../../shared/intent/referenceImageRecord';
+import type {
+  RenderEnvironmentMetadata,
+  RenderEnvironmentSpec,
+} from '../../shared/intent/renderEnvironmentRecord';
+import { isHdriPresetKey } from '../../shared/intent/renderEnvironmentRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
@@ -451,6 +456,75 @@ export class CaptureSession {
       metadata: metadata as unknown as Record<string, unknown>,
     });
 
+    return r.id;
+  }
+
+  /**
+   * Capture a render-environment (HDRI/IBL) virtual feature. Validates that
+   * exactly one of `preset` or `url` is given, that preset keys are known,
+   * and that intensity is in (0, 100]. Multiple calls register multiple
+   * records — the renderer applies the last one.
+   */
+  addRenderEnvironment(args: RenderEnvironmentSpec): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    const hasPreset = args.preset !== undefined;
+    const hasUrl = args.url !== undefined;
+    if (hasPreset && hasUrl) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.render-environment.conflicting-spec',
+        severity: 'error',
+        message: 'setRenderEnvironment: pass either { preset } or { url }, not both.',
+        hint: HINT_TEMPLATES['feature.render-environment.conflicting-spec'].template,
+      });
+    } else if (!hasPreset && !hasUrl) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.render-environment.missing-spec',
+        severity: 'error',
+        message: 'setRenderEnvironment: pass { preset } or { url }.',
+        hint: HINT_TEMPLATES['feature.render-environment.missing-spec'].template,
+      });
+    } else if (hasPreset && !isHdriPresetKey(args.preset)) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.render-environment.unknown-preset',
+        severity: 'error',
+        message: `setRenderEnvironment: unknown preset '${String(args.preset)}'.`,
+        hint: HINT_TEMPLATES['feature.render-environment.unknown-preset'].template,
+      });
+    }
+
+    const rawIntensity = args.intensity ?? 1;
+    const intensityValid = Number.isFinite(rawIntensity) && rawIntensity > 0 && rawIntensity <= 100;
+    if (!intensityValid) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.render-environment.intensity-out-of-range',
+        severity: 'warn',
+        message: `setRenderEnvironment: intensity ${rawIntensity} is out of range (0, 100].`,
+        hint: HINT_TEMPLATES['feature.render-environment.intensity-out-of-range'].template,
+      });
+    }
+    const intensity = intensityValid ? rawIntensity : 1;
+    const rotation = Number.isFinite(args.rotation) ? Number(args.rotation) : 0;
+
+    const metadata: RenderEnvironmentMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      ...(hasPreset && isHdriPresetKey(args.preset) ? { preset: args.preset } : {}),
+      ...(hasUrl ? { url: args.url } : {}),
+      intensity,
+      rotation,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'renderEnvironment',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
     return r.id;
   }
 
