@@ -82,13 +82,16 @@ export async function extractSilhouettePolyline(
     .toBuffer({ resolveWithObject: true });
   const { width, height } = info;
 
-  // matFromImageData needs an ImageData-like { data, width, height }.
+  // matFromImageData needs an ImageData-like { data, width, height }. `ImageData`
+  // itself is a DOM type and not present under `tsconfig.cli.json` (no DOM lib),
+  // so use a structural type that satisfies opencv's runtime expectations.
+  type ImageDataLike = { data: Uint8ClampedArray; width: number; height: number; colorSpace?: string };
   const src = cv.matFromImageData({
     data: new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength),
     width,
     height,
     colorSpace: 'srgb',
-  } as ImageData);
+  } as ImageDataLike as unknown as Parameters<typeof cv.matFromImageData>[0]);
 
   const grey = new cv.Mat();
   cv.cvtColor(src, grey, cv.COLOR_RGBA2GRAY);
