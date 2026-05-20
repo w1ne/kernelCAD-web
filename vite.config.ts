@@ -112,6 +112,11 @@ function kernelCadMeshEndpoint(): Plugin {
         return poolBundlePromise;
       }
 
+      server.middlewares.use('/__kernelcad/texture', async (req, res) => {
+        const { handleTextureRequest } = await import('./src/server/middleware/textureEndpoint');
+        await handleTextureRequest(req, res as unknown as import('node:http').ServerResponse);
+      });
+
       server.middlewares.use('/__kernelcad/session', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.sessionHandler(req, res);
