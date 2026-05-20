@@ -178,6 +178,24 @@ function faceText(value, size, x, z, frontFaceY, color) {
 }
 
 // =============================================================================
+// Renderer setup — HDRI environment + camera framing
+// =============================================================================
+//
+// HDRI environment lights up transmissive materials. Without an explicit
+// setRenderEnvironment, the sapphire dome's transmission renders flat — the
+// dial shows through but there is no specular streak that sells "glass with
+// a reflection". Use the 'studio' preset (studio_small_03_1k.hdr, ~1.7MB)
+// which has a discrete key softbox + dark surroundings, exactly what a
+// curved sapphire crystal needs to pick up a single bright highlight.
+setRenderEnvironment({ preset: 'studio', intensity: 1.0 });
+
+// Override the camera target. The default behaviour aims at the bbox
+// centroid, but the pendant + bail above the dial pull the centroid up,
+// pushing the watch into the lower-right corner. Aim at the dial centre
+// instead so the watch sits in the middle of the frame at the iso pose.
+setCameraTarget(0, 0, 0);
+
+// =============================================================================
 // Assembly
 // =============================================================================
 
