@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-export type PackageAuditKind = 'missing-prepack-build' | 'missing-bin-file-entry';
+export type PackageAuditKind =
+  | 'missing-prepack-build'
+  | 'missing-bin-file-entry'
+  | 'package-version-ahead-of-local-tag';
 
 export interface PackageAuditFinding {
   kind: PackageAuditKind;
@@ -16,6 +20,12 @@ interface PackageJsonShape {
   bin?: Record<string, string> | string;
   files?: string[];
   scripts?: Record<string, string>;
+  version?: string;
+}
+
+interface PackageAuditInput {
+  packageJsonText: string;
+  tagNames?: string[];
 }
 
 function binPaths(pkg: PackageJsonShape): string[] {
@@ -33,7 +43,36 @@ function fileEntryIncludesPath(files: string[], path: string): boolean {
 }
 
 export function auditPackageJsonText(text: string): PackageAuditResult {
-  const pkg = JSON.parse(text) as PackageJsonShape;
+  return auditPackageReleaseState({ packageJsonText: text });
+}
+
+function parseStableSemverTag(tagName: string): [number, number, number] | null {
+  const match = /^v(\d+)\.(\d+)\.(\d+)$/.exec(tagName.trim());
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+function compareSemver(a: [number, number, number], b: [number, number, number]): number {
+  for (let i = 0; i < 3; i += 1) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
+function highestStableTag(tagNames: string[]): [number, number, number] | null {
+  return tagNames
+    .map(parseStableSemverTag)
+    .filter((version): version is [number, number, number] => version !== null)
+    .sort(compareSemver)
+    .at(-1) ?? null;
+}
+
+function formatSemver(version: [number, number, number]): string {
+  return version.join('.');
+}
+
+export function auditPackageReleaseState(input: PackageAuditInput): PackageAuditResult {
+  const pkg = JSON.parse(input.packageJsonText) as PackageJsonShape;
   const blockers: PackageAuditFinding[] = [];
 
   if (pkg.scripts?.prepack !== 'npm run build:cli') {
@@ -53,6 +92,17 @@ export function auditPackageJsonText(text: string): PackageAuditResult {
     }
   }
 
+  if (input.tagNames) {
+    const packageVersion = pkg.version ? parseStableSemverTag(`v${pkg.version}`) : null;
+    const highestTag = highestStableTag(input.tagNames);
+    if (packageVersion && highestTag && compareSemver(packageVersion, highestTag) > 0) {
+      blockers.push({
+        kind: 'package-version-ahead-of-local-tag',
+        message: `package.json version ${pkg.version} is ahead of highest local stable tag v${formatSemver(highestTag)}`,
+      });
+    }
+  }
+
   return { blockers };
 }
 
@@ -61,7 +111,16 @@ export function formatPackageAuditReport(result: PackageAuditResult): string {
 }
 
 function main(): void {
-  const result = auditPackageJsonText(readFileSync('package.json', 'utf8'));
+  const strictTags = process.env.KERNELCAD_RELEASE_AUDIT_TAGS === '1';
+  const tagNames = strictTags
+    ? execFileSync('git', ['tag', '--list'], { encoding: 'utf8' })
+      .split('\n')
+      .filter(Boolean)
+    : undefined;
+  const result = auditPackageReleaseState({
+    packageJsonText: readFileSync('package.json', 'utf8'),
+    tagNames,
+  });
   const report = formatPackageAuditReport(result);
   if (report) console.error(report);
   if (result.blockers.length > 0) {
