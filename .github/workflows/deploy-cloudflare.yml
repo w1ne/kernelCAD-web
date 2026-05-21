@@ -1,13 +1,11 @@
 name: Deploy to Cloudflare Pages
 
-# Auto-deploys two Cloudflare Pages projects on every push.
+# Auto-deploys app.kernelcad.com on every push.
 #
-# Both projects serve the Studio Vite app (dist/) so the prompt-funnel
-# landing route (/) renders at kernelcad.com AND app.kernelcad.com. The
-# marketing project bundles site/functions/ (CF Pages Functions for the
-# /api/subscribe D1 endpoint) and site/public/ overlays (brand assets,
-# rendered hero demo.mp4) on top of dist/. kernelcad.com is bound to
-# kernelcad-marketing; app.kernelcad.com is bound to kernelcad-app.
+# kernelcad.com is deployed to the kernelcad-marketing Cloudflare Pages
+# project by the private kernelCAD-server workflow. Keep that deploy path
+# single-owned so public pushes cannot race or overwrite the production
+# marketing site and its Pages Functions bindings.
 
 on:
   push:
@@ -24,60 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  marketing:
-    name: Deploy marketing site
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install ffmpeg
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-          ffmpeg -version | head -1
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Chromium (for brand asset rendering)
-        run: npx playwright install --with-deps chromium
-
-      - name: Build Vite app (Studio funnel — kernelcad.com landing)
-        env:
-          VITE_BASE_PATH: /
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-        run: npm run build
-
-      - name: Build demo + curated gallery + brand assets
-        run: |
-          npx tsx site/scripts/build-demo.ts
-          npx tsx site/scripts/build-gallery.ts
-          node site/scripts/render-brand.mjs
-
-      - name: Overlay site/ assets + functions on dist/
-        run: |
-          # CF Pages Functions for /api/subscribe (D1-backed).
-          cp -r site/functions dist/functions
-          # site/public/ has favicon.svg, og-image.png, demo.mp4, brand/,
-          # gallery JSON — overlay onto dist/ so kernelcad.com serves them.
-          cp -r site/public/. dist/
-
-      - name: Deploy to Cloudflare Pages (kernelcad-marketing)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=kernelcad-marketing --branch=main --commit-dirty=true
-
   app:
     name: Deploy visual debugger app
     runs-on: ubuntu-latest
