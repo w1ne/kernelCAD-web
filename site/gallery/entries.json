@@ -54,13 +54,13 @@
     },
     {
       "slug": "meta-glasses",
-      "title": "Ray-Ban Meta \u2014 Wayfarer (front face)",
+      "title": "Ray-Ban Meta \u2014 Full Wayfarer-Style Smart Glasses",
       "author": {
         "handle": "kernelcad",
         "url": "https://x.com/kernelcad"
       },
-      "version": "v0.8.0",
-      "prompt": "# Build the front face of Ray-Ban Meta \u2014 Wayfarer\n\nReproduce the front face of a pair of Ray-Ban Meta smart glasses (Wayfarer variant) as a kernelCAD `.kcad.ts` script. Open the reference photo at `eval/tasks/eyewear-wayfarer-front/reference.jpg` before authoring.\n\nTargets:\n\n- Chunky black acetate body with smoothly curved outer silhouette \u2014 Wayfarer \"wing\" curves on the top-outer corners, gentle bottom curve.\n- Two trapezoidal lens openings with rounded inner+bottom corners.\n- Asymmetric camera+LED on the LEFT side only.\n- A small bridge with a narrow nose-notch.\n- Omit temples (front face only).\n\nReturn a single `Shape`. Z-up, mm.",
+      "version": "v0.11.0",
+      "prompt": "# Build full Ray-Ban Meta \u2014 Wayfarer-style smart glasses\n\nReproduce a complete pair of Ray-Ban Meta-style Wayfarer smart glasses as a kernelCAD `.kcad.ts` gallery model. Build the full physical product, not a front-face facade.\n\nTargets:\n\n- Chunky glossy black acetate Wayfarer frame with winged upper corners, tapered lower cheeks, and a narrow bridge/nose notch.\n- Two trapezoidal smoked lens inserts seated into shallow frame rebates.\n- Asymmetric smart-glasses hardware: recessed camera on the left upper outer corner and privacy LED on the opposite upper outer corner.\n- Full temples/arms with hinge blocks, hinge barrels, thick electronics housings, tapered rear sections, and downward ear bends.\n- Production details that belong on the object: right-side touch-control strip, speaker slots, microphone pinholes, and dark lens/camera glass materials.\n\nReturn named physical parts so the gallery GLB exposes frame, lenses, camera, LED, hinges, and temples. Z-up, millimetres.",
       "source": "curated",
       "video": "../../docs/demos/gallery/meta-glasses/demo.mp4",
       "codeLocal": "../../examples/gallery/meta-glasses.kcad.ts",
@@ -70,6 +70,9 @@
         "wearable",
         "wayfarer",
         "smart-glasses",
+        "full-assembly",
+        "reference-driven",
+        "words-to-geometry",
         "reproduction"
       ],
       "featured": false,
