@@ -8,7 +8,11 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseGalleryEntries, type GalleryEntry } from '../../scripts/lib/galleryEntries';
+import {
+  parseGalleryEntries,
+  validateMechanismReviewEvidenceFiles,
+  type GalleryEntry,
+} from '../../scripts/lib/galleryEntries';
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
@@ -18,7 +22,7 @@ export interface BuildGalleryOptions {
   publicDir: string;
 }
 
-interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
+interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal' | 'mechanismReview'> {
   videoUrl: string;
   posterUrl: string;
   modelUrl: string;
@@ -31,6 +35,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const raw = JSON.parse(readFileSync(opts.entriesPath, 'utf8'));
   const parsed = parseGalleryEntries(raw);
   const entriesDir = path.dirname(opts.entriesPath);
+  validateMechanismReviewEvidenceFiles(parsed.entries, entriesDir);
+
   const galleryOutDir = path.join(opts.publicDir, 'gallery');
   // Idempotent: wipe stale per-slug dirs from earlier builds so dropped
   // candidates don't leave orphans the dev symlink loop would re-link.
@@ -79,8 +85,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
 
-    const { video, codeLocal, ...rest } = entry;
-    void video; void codeLocal;
+    const { video, codeLocal, mechanismReview, ...rest } = entry;
+    void video; void codeLocal; void mechanismReview;
     published.push({
       ...rest,
       videoUrl: `/gallery/${entry.slug}/video.mp4`,
