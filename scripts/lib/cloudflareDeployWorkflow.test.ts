@@ -22,8 +22,9 @@ describe('Cloudflare Pages deploy workflow', () => {
       step.name?.includes('Deploy to Cloudflare Pages'),
     );
 
+    expect(deployStep?.with?.wranglerVersion).toBe('4.94.0');
     expect(deployStep?.with?.command).toBe(
-      'pages deploy dist --project-name=kernelcad-app --branch=main --commit-dirty=true',
+      'pages deploy dist --project-name=kernelcad-app --branch=main --commit-dirty=true --skip-caching',
     );
   });
 
