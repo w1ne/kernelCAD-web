@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="kernelCAD — a scriptable, headless-first CAD platform for AI agents. OpenCASCADE kernel. MCP server. Open source." />
+  <meta name="description" content="kernelCAD — editable .kcad.ts source, deterministic review, OpenCASCADE kernel, MCP server, and standard CAD exports." />
   <meta property="og:title" content="kernelCAD — CAD for agents" />
-  <meta property="og:description" content="A scriptable, headless-first CAD platform powered by the OpenCASCADE kernel." />
+  <meta property="og:description" content="Author editable .kcad.ts, run deterministic review_cad checks, and export STEP/STL." />
   <meta property="og:image" content="https://kernelcad.com/og-image.png" />
   <meta property="og:url" content="https://kernelcad.com" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -43,9 +43,9 @@
 
     <header class="hero">
       <div class="hero-copy">
-        <div class="proof-line">OpenCASCADE · MCP · STEP/STL</div>
+        <div class="proof-line">.kcad.ts · review_cad · STEP/STL</div>
         <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
-        <p class="subhead">A scriptable, headless-first CAD platform for generating, reviewing, and exporting physical parts.</p>
+        <p class="subhead">A scriptable CAD runtime for editable .kcad.ts source, deterministic review, and physical part exports.</p>
         <div class="modes" aria-label="Supported agent surfaces">
           <span class="mode">Codex</span><span class="sep">·</span>
           <span class="mode">Claude Code</span><span class="sep">·</span>
@@ -85,12 +85,12 @@
 
     <section class="capabilities" aria-label="kernelCAD capabilities">
       <div class="capability">
-        <span class="capability-name">Words to CAD</span>
-        <span class="capability-copy">plain-language prompts to editable CAD source and visible 3D artifacts</span>
+        <span class="capability-name">Editable Source</span>
+        <span class="capability-copy">.kcad.ts files with params, assemblies, NURBS, SDF, and sheet metal APIs</span>
       </div>
       <div class="capability">
-        <span class="capability-name">Review CAD</span>
-        <span class="capability-copy">diagnostics, mates, interferences, and visual evidence</span>
+        <span class="capability-name">review_cad</span>
+        <span class="capability-copy">deterministic review for diagnostics, mates, interferences, and visual evidence</span>
       </div>
       <div class="capability">
         <span class="capability-name">Export</span>
@@ -175,7 +175,7 @@
       <div class="lightbox-body">
         <h3 class="lightbox-title"></h3>
         <p class="lightbox-meta"></p>
-        <div class="lightbox-prompt-label">Text-to-CAD prompt</div>
+        <div class="lightbox-prompt-label">Build brief</div>
         <pre class="lightbox-prompt"></pre>
         <div class="lightbox-ctas">
           <form class="lightbox-subscribe" action="/api/subscribe" method="POST">
