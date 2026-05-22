@@ -41,8 +41,29 @@ test('renders the gallery section with one tile per entry', async ({ page }) => 
   await expect(gallery.locator('.gallery-tile[data-slug="one"] .title')).toHaveText('First');
 });
 
-test('first tile renders a model-viewer element with a non-empty src ending in .glb', async ({ page }) => {
+test('first tile starts as a poster and upgrades to model-viewer on interaction', async ({ page }) => {
+  await page.addInitScript(() => {
+    class IdleIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    }
+    Object.defineProperty(window, 'IntersectionObserver', {
+      configurable: true,
+      writable: true,
+      value: IdleIntersectionObserver,
+    });
+  });
   await page.goto('http://localhost:8000');
-  const mv = page.locator('.gallery-tile').first().locator('model-viewer');
-  await expect(mv).toHaveAttribute('src', /\.glb$/);
+  const tile = page.locator('.gallery-tile').first();
+  await expect(tile.locator('.tile-poster')).toBeVisible();
+  await expect(tile.locator('model-viewer')).toHaveCount(0);
+
+  await tile.hover();
+  const mv = tile.locator('model-viewer');
+  await expect(mv).toHaveAttribute('src', /\/gallery\/one\/model\.glb\?v=/);
+  await expect(mv).toHaveAttribute('poster', /\/og-image\.png\?v=/);
 });
