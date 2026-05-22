@@ -42,36 +42,63 @@
     </nav>
 
     <header class="hero">
-      <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
-      <p class="subhead">A scriptable, headless-first CAD platform powered by the OpenCASCADE kernel.</p>
-      <div class="modes">
-        <span class="mode">browser</span><span class="sep">·</span>
-        <span class="mode">terminal</span><span class="sep">·</span>
-        <span class="mode">MCP</span><span class="sep">·</span>
-        <span class="mode">open source</span>
+      <div class="hero-copy">
+        <div class="proof-line">OpenCASCADE · MCP · STEP/STL</div>
+        <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
+        <p class="subhead">A scriptable, headless-first CAD platform for generating, reviewing, and exporting physical parts.</p>
+        <div class="modes" aria-label="Supported agent surfaces">
+          <span class="mode">Codex</span><span class="sep">·</span>
+          <span class="mode">Claude Code</span><span class="sep">·</span>
+          <span class="mode">Cursor</span><span class="sep">·</span>
+          <span class="mode">CLI</span>
+        </div>
+        <div class="ctas-primary">
+          <a class="btn btn-primary" href="https://app.kernelcad.com">Try in browser →</a>
+          <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
+        </div>
+        <div class="install-stack" aria-label="Install commands">
+          <button class="install" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
+            <span class="install-command"><span class="prompt">$</span> claude mcp add kernelcad -- npx -y kernelcad mcp</span>
+            <span class="copy">copy</span>
+          </button>
+          <button class="install install-secondary" id="codex-mcp-btn" aria-label="Copy Codex MCP install command">
+            <span class="install-command"><span class="prompt">$</span> codex mcp add kernelcad -- npx -y kernelcad mcp</span>
+            <span class="copy">copy</span>
+          </button>
+          <button class="install install-secondary" id="install-btn" aria-label="Copy CLI install command">
+            <span class="install-command"><span class="prompt">$</span> npm install -g kernelcad</span>
+            <span class="copy">copy</span>
+          </button>
+        </div>
       </div>
-      <div class="ctas-primary">
-        <a class="btn btn-primary" href="https://app.kernelcad.com">Try in browser →</a>
-        <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
+      <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
+        <div class="demo-meta">
+          <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
+          <span class="artifact-label">polished-brass-tube.step</span>
+        </div>
+        <div class="demo-frame">
+          <img class="demo-poster-art" src="/demo-poster.png" alt="Generated polished brass tube artifact" />
+          <video id="demo-video" autoplay muted loop playsinline preload="metadata" poster="/demo-poster.png"></video>
+        </div>
       </div>
-      <div class="ctas-tertiary">
-        <a href="https://x.com/kernelcad">Follow on X</a>
-        <span class="sep">·</span>
-        <a href="https://www.linkedin.com/company/kernelcad">Follow on LinkedIn</a>
-      </div>
-      <button class="install" id="install-btn" aria-label="Copy install command">
-        <span><span class="prompt">$</span> npm install -g kernelcad</span>
-        <span class="copy">copy</span>
-      </button>
     </header>
 
-    <section class="demo-block">
-      <div class="demo-meta">
-        <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
-        <span>prompt → code → 3D · auto-rotating</span>
+    <section class="capabilities" aria-label="kernelCAD capabilities">
+      <div class="capability">
+        <span class="capability-name">Words to CAD</span>
+        <span class="capability-copy">plain-language prompts to editable CAD source and visible 3D artifacts</span>
       </div>
-      <div class="demo-frame">
-        <video id="demo-video" autoplay muted loop playsinline preload="metadata"></video>
+      <div class="capability">
+        <span class="capability-name">Review CAD</span>
+        <span class="capability-copy">diagnostics, mates, interferences, and visual evidence</span>
+      </div>
+      <div class="capability">
+        <span class="capability-name">Export</span>
+        <span class="capability-copy">STEP/STL artifacts with source-controlled provenance</span>
+      </div>
+      <div class="capability">
+        <span class="capability-name">Vendor Parts</span>
+        <span class="capability-copy">import real hardware with `lib.fromSTEP(...)`</span>
       </div>
     </section>
 
@@ -160,7 +187,14 @@
       .then(d => {
         if (!d) return;
         const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
-        document.getElementById('demo-video').src = `/demo.mp4?v=${demoCacheKey}`;
+        const demoVideo = document.getElementById('demo-video');
+        demoVideo.src = `/demo.mp4?v=${demoCacheKey}`;
+        if (d.poster) demoVideo.poster = `/${d.poster}?v=${demoCacheKey}`;
+        const posterArt = document.querySelector('.demo-poster-art');
+        if (posterArt && d.poster) posterArt.src = `/${d.poster}?v=${demoCacheKey}`;
+        demoVideo.addEventListener('timeupdate', () => {
+          if (demoVideo.currentTime > 2.5) posterArt?.classList.add('is-hidden');
+        });
         document.getElementById('demo-version').textContent = d.version;
       });
 
@@ -186,16 +220,18 @@
               class="tile-viewer"
               src="${entry.modelUrl}"
               poster="${entry.posterUrl}"
+              alt="${entry.title}"
               auto-rotate
               auto-rotate-delay="0"
               rotation-per-second="20deg"
-              camera-controls
-              touch-action="pan-y"
               interaction-prompt="none"
               reveal="auto"
               disable-zoom
-              loading="lazy"
-            ></model-viewer>
+              loading="lazy">
+            </model-viewer>
+            <span class="tile-chip tile-chip-bl title">${entry.title}</span>
+            <span class="tile-chip tile-chip-br"><span class="version">${entry.version}</span></span>
+            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
           `;
           tile.__entry = entry;
           tile.addEventListener('click', () => openLightbox(entry));
@@ -243,14 +279,22 @@
         section.hidden = false;
       });
 
-    // copy install command on click
-    document.getElementById('install-btn').addEventListener('click', () => {
-      navigator.clipboard.writeText('npm install -g kernelcad');
-      const copy = document.querySelector('.install .copy');
-      const orig = copy.textContent;
-      copy.textContent = 'copied';
-      setTimeout(() => { copy.textContent = orig; }, 1200);
-    });
+    function wireCopyButton(buttonId, command) {
+      const button = document.getElementById(buttonId);
+      if (!button) return;
+      button.addEventListener('click', () => {
+        navigator.clipboard.writeText(command);
+        const copy = button.querySelector('.copy');
+        const orig = copy.textContent;
+        copy.textContent = 'copied';
+        setTimeout(() => { copy.textContent = orig; }, 1200);
+      });
+    }
+
+    // copy command buttons
+    wireCopyButton('claude-mcp-btn', 'claude mcp add kernelcad -- npx -y kernelcad mcp');
+    wireCopyButton('codex-mcp-btn', 'codex mcp add kernelcad -- npx -y kernelcad mcp');
+    wireCopyButton('install-btn', 'npm install -g kernelcad');
 
     // Source attribution: ?ref=hn → hidden field on signup form
     const params = new URLSearchParams(window.location.search);

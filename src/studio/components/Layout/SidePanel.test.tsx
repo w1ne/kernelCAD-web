@@ -93,7 +93,7 @@ describe('SidePanel', () => {
         expect(mockSetHoveredItemId).not.toHaveBeenCalled();
     });
 
-    it('shows runtime params and review repair prompt in the build loop tab', () => {
+    it('shows runtime params and keeps non-blocking review facts collapsed by default', () => {
         render(<SidePanel onJumpToLine={vi.fn()} />);
 
         fireEvent.click(screen.getByRole('button', { name: /build loop/i }));
@@ -102,8 +102,18 @@ describe('SidePanel', () => {
         expect(screen.getByText('shoulderDeg')).toBeDefined();
         expect(screen.getByText('24')).toBeDefined();
         expect(screen.getByText('topology-redesign')).toBeDefined();
+        expect(screen.queryByText('assembly.mechanical.part-disconnected')).toBeNull();
+        expect(screen.getByRole('button', { name: /show 1 review detail/i })).toBeDefined();
+        expect(screen.getByText(/Redesign the elbow as a supported clevis joint/)).toBeDefined();
+    });
+
+    it('reveals collapsed non-blocking review facts on request', () => {
+        render(<SidePanel onJumpToLine={vi.fn()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: /build loop/i }));
+        fireEvent.click(screen.getByRole('button', { name: /show 1 review detail/i }));
+
         expect(screen.getByText('assembly.mechanical.part-disconnected')).toBeDefined();
         expect(screen.getByText(/Part base contains 2 disconnected solids/)).toBeDefined();
-        expect(screen.getByText(/Redesign the elbow as a supported clevis joint/)).toBeDefined();
     });
 });

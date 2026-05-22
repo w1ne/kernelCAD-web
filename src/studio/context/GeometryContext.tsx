@@ -56,6 +56,8 @@ export interface GeometryContextType {
      *  `params.update`. Returns once the server has acked; the SSE
      *  `relower` push that follows refreshes `scriptParams` + `scriptReview`. */
     updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    setGeometryTransformOverride: (partName: string, transform: number[]) => void;
+    clearGeometryTransformOverrides: () => void;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -75,6 +77,10 @@ function featureMeshesToGeometries(features: FeatureMeshSerialized[]): GeometryR
             volume: mesh.volume,
             edges: mesh.edges,
             color: mesh.color,
+            material: mesh.material,
+            transform: mesh.transform ? [...mesh.transform] : undefined,
+            assemblyFeatureId: mesh.assemblyFeatureId,
+            assemblyPartName: mesh.assemblyPartName,
         };
     });
 }
@@ -89,6 +95,7 @@ function readStoredShowSketches(): boolean {
 
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
+    const [geometryTransformOverrides, setGeometryTransformOverrides] = useState<Record<string, number[]>>({});
     const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
     const [previewCode, setPreviewCode] = useState<string | null>(null);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
@@ -115,6 +122,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const mainRevisionRef = useRef(0);
     const previewRevisionRef = useRef(0);
     const studioScript = readStudioScriptParam();
+    const displayGeometries = useMemo(
+        () => geometries.map((geometry) => {
+            if (!geometry.assemblyPartName) return geometry;
+            const transform = geometryTransformOverrides[geometry.assemblyPartName];
+            return transform ? { ...geometry, transform } : geometry;
+        }),
+        [geometries, geometryTransformOverrides],
+    );
 
     // Get singleton instance
     const engine = GeometryEngine.getInstance();
@@ -150,7 +165,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const fetchMeshAndReview = useCallback((
         script: string,
         token: string | null,
-        opts?: { keepExistingOnError?: boolean },
+        opts?: { keepExistingOnError?: boolean; skipReview?: boolean },
     ): { revision: number; promise: Promise<void> } => {
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
@@ -183,10 +198,11 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     return;
                 }
                 setGeometries(featureMeshesToGeometries(payload.features));
+                setGeometryTransformOverrides({});
                 setFeatureRecords(payload.featureRecords ?? []);
                 setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
                 setScriptParams(Object.values(payload.params ?? {}));
-                setScriptReview(null);
+                if (!opts?.skipReview) setScriptReview(null);
                 setSketchesGeometries([]);
                 setPreviewGeometries([]);
                 setError(null);
@@ -196,6 +212,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     status: 'success',
                     executionCountAtRecord: revision,
                 });
+                if (opts?.skipReview) return;
                 fetch(reviewUrl)
                     .then(async (response) => {
                         const reviewPayload = await response.json();
@@ -295,7 +312,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
         const es = new EventSource(url);
         const onRelower = () => {
-            fetchMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
+            fetchMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, skipReview: true });
         };
         es.addEventListener('relower', onRelower);
         // The browser auto-reconnects on transient drops; we only log here.
@@ -336,6 +353,15 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             throw new Error(message);
         }
     }, [sessionToken]);
+
+    const setGeometryTransformOverride = useCallback((partName: string, transform: number[]) => {
+        if (transform.length !== 16) return;
+        setGeometryTransformOverrides((prev) => ({ ...prev, [partName]: [...transform] }));
+    }, []);
+
+    const clearGeometryTransformOverrides = useCallback(() => {
+        setGeometryTransformOverrides({});
+    }, []);
 
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
     // PR description). Mirrors the production path — same fetch, same
@@ -397,6 +423,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     return;
                 }
                 setGeometries(result.geometries);
+                setGeometryTransformOverrides({});
                 const remappedSketches = remapSketchNames(result.sketches, code);
                 setSketchesGeometries(remappedSketches);
                 setError(null);
@@ -522,6 +549,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 return;
             }
             setGeometries(result.geometries);
+            setGeometryTransformOverrides({});
             const remappedSketches = remapSketchNames(result.sketches, codeToExecute);
             setSketchesGeometries(remappedSketches);
             setError(null);
@@ -558,7 +586,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     }, [engine, isReady, executionCount, pushExecutionRecord]);
 
     const value: GeometryContextType = useMemo(() => ({
-        geometries,
+        geometries: displayGeometries,
         previewGeometries,
         sketchesGeometries,
         showSketches,
@@ -580,7 +608,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         executeGeometry,
         setPreviewCode,
         updateParam,
-    }), [geometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam]);
+        setGeometryTransformOverride,
+        clearGeometryTransformOverrides,
+    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

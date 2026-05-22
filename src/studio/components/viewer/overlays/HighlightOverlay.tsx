@@ -3,6 +3,7 @@ import type { HoverResult } from "../../../features-ui/interaction/HoverManager"
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { FaceSelectionOverlay } from "../entities/ShapeGeometry";
+import { matrixFromGeometryTransform } from "../entities/geometryTransform";
 
 interface HighlightOverlayProps {
     hovered: HoverResult | null;
@@ -18,8 +19,16 @@ export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps)
             const shapeIndex = object.userData.shapeIndex as number;
             const faceId = id as number;
             if (typeof shapeIndex === 'number' && geometries[shapeIndex]) {
-                const face = geometries[shapeIndex].faces.find(f => f.faceId === faceId);
-                if (face) return <FaceSelectionOverlay face={face} isSelected={false} />;
+                const geometry = geometries[shapeIndex];
+                const face = geometry.faces.find(f => f.faceId === faceId);
+                const transformMatrix = matrixFromGeometryTransform(geometry);
+                if (face) {
+                    return (
+                        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+                            <FaceSelectionOverlay face={face} isSelected={false} />
+                        </group>
+                    );
+                }
             }
         }
     } else if (type === 'EDGE') {

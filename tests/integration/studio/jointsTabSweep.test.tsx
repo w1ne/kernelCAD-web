@@ -22,25 +22,44 @@ function snapshot(partial: Partial<JointPoseSnapshot> & { name?: string }): Join
         },
         pose: partial.pose ?? 15,
         poseParamNames: partial.poseParamNames ?? [partial.name ?? 'shoulder'],
+        ...(partial.preview !== undefined ? { preview: partial.preview } : {}),
     };
 }
 
 describe('JointsTab joint slider sweep', () => {
     it('renders one slider per posed mate and updates pose on drag', async () => {
         const updateMock = vi.fn().mockResolvedValue(undefined);
+        const transformMock = vi.fn();
         vi.spyOn(useRecomputeResultModule, 'useRecomputeResult').mockReturnValue({
             features: [],
-            geometries: [],
+            geometries: [
+                { faces: [], assemblyPartName: 'base', transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] },
+                { faces: [], assemblyPartName: 'arm', transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 10, 1] },
+            ],
             validity: null,
             paramTable: null,
             diagnostics: [],
             recomputeMs: 0,
-            joints: [snapshot({ name: 'shoulder', pose: 15 })],
+            joints: [snapshot({
+                name: 'shoulder',
+                pose: 15,
+                preview: {
+                    assemblyFeatureId: 'asm',
+                    parentPartName: 'base',
+                    childPartName: 'arm',
+                    parentConnectorOrigin: [0, 0, 0],
+                    parentConnectorAxis: [0, 0, 1],
+                },
+            })],
             updateParam: updateMock,
+            setGeometryTransformOverride: transformMock,
         } as unknown as ReturnType<typeof useRecomputeResultModule.useRecomputeResult>);
         render(<JointsTab />);
         const slider = screen.getByTestId('scrub-slider-shoulder') as HTMLInputElement;
         fireEvent.change(slider, { target: { value: '45' } });
+        expect(transformMock).toHaveBeenCalledWith('arm', expect.arrayContaining([
+            expect.any(Number),
+        ]));
         await waitFor(() =>
             expect(updateMock).toHaveBeenCalledWith([{ name: 'shoulder', value: 45 }]),
         );

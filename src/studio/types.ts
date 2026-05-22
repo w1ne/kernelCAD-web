@@ -60,6 +60,8 @@ export interface StudioRecomputeResult {
      * fall back to disabling the live-edit controls.
      */
     readonly updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    readonly setGeometryTransformOverride?: (partName: string, transform: number[]) => void;
+    readonly clearGeometryTransformOverrides?: () => void;
 }
 
 /**

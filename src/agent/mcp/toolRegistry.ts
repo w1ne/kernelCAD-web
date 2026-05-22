@@ -1033,6 +1033,14 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',
             items: { type: 'string' },
           },
+          gripperAperture: {
+            type: 'object',
+            description: 'Optional fingertip connector refs for gripper aperture travel reporting.',
+            properties: {
+              left: { type: 'string', description: 'Left fingertip connector ref such as "left-finger.tip".' },
+              right: { type: 'string', description: 'Right fingertip connector ref such as "right-finger.tip".' },
+            },
+          },
         },
       },
     },
@@ -1068,7 +1076,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
                     },
                     checks: {
                       type: 'array',
-                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, canonical-views-physically-coherent.',
+                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent.',
                       items: {
                         type: 'object',
                         properties: {

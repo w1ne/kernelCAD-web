@@ -65,6 +65,12 @@ All edit tools return the modified source plus diagnostics. Re-run `kernelcad ev
 - `add_constraint({ constraints?, constraint })` — validate and append one sketch constraint to a constraint list; returns the updated list. Side-effect-free.
 - `list_constraints({ constraints? })` — list supported sketch constraint types (`COINCIDENT`, `DISTANCE`, `HORIZONTAL`, `VERTICAL`, `PARALLEL`, `PERPENDICULAR`, `EQUAL_LENGTH`, `TANGENT`, `RADIUS`, `ANGLE`, `CONCENTRIC`, `SYMMETRIC`) and echo the provided constraint list.
 
+### Sheet metal and SDF probes
+
+- `flatten_pattern({ file? | code?, feature_id? })` — return an unfolded sheet-metal `Region` as JSON with outer ring, holes, and bend lines. Use before CAM/nesting assumptions.
+- `get_bend_table({ file? | code?, feature_id? })` — list sheet-metal bend records with K-factor bend allowance, axis line, and parent options.
+- `evaluate_sdf({ file? | code?, fieldName, point })` — sample a bound SDF field at `[x, y, z]`; returns distance/inside/AABB/kind without materializing the field.
+
 ### Assembly and mate tools
 
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a mate-style connector on a named part of the active assembly; requires a prior `evaluate_script`. `type` is one of `frame`/`axis`/`planar`/`ball`. `origin` accepts a `[x, y, z]` shorthand or a structured `ConnectorOrigin`.

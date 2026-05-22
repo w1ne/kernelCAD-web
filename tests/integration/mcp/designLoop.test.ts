@@ -10,7 +10,7 @@ describe('design_loop MCP tool', () => {
     { code: 'main-object-count', passed: true, finding: 'The screenshot shows one primary object, not duplicate assemblies.' },
     { code: 'proportions-match-reference', passed: true, finding: 'The major proportions match the requested object closely enough for this pass.' },
     { code: 'required-visible-features', passed: true, finding: 'The required visible features, labels, numerals, and dial details are present, legible, unobstructed, and not covered by surrounding geometry.' },
-    { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible; each secondary component is visibly supported by contact, fasteners, brackets, or a continuous path into the parent body.' },
+    { code: 'no-stray-or-floating-geometry', passed: true, finding: 'No stray, floating, or unexplained extra geometry is visible; each secondary component is visibly supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap.' },
     { code: 'attachment-plausibility', passed: true, finding: 'Visible lugs, spring bars, brackets, straps, and case-band interfaces connect through a plausible load-bearing geometry anchored into the parent case body, with seated exposed interfaces and no buried half-inserted hardware.' },
     { code: 'semantic-orientation-alignment', passed: true, finding: 'Hands, arrows, labels, and repeated indicators point in deliberate, reference-consistent directions.' },
     { code: 'device-depth-and-construction', passed: true, finding: 'Side and canonical views show real case thickness, bezel, case back, body layers, and non-facade device construction.' },
@@ -110,7 +110,7 @@ describe('design_loop MCP tool', () => {
       attempts: [
         {
           id: '01',
-          title: 'Functional but has unexplained disconnected solid',
+      title: 'Blocked because it has unexplained disconnected solid',
           code: `
             const arm = assembly('warning-bracket');
             arm.part('base',
@@ -152,11 +152,11 @@ describe('design_loop MCP tool', () => {
     expect(result.attempts[0]).toMatchObject({
       id: '01',
       ok: false,
-      functional: true,
+      functional: false,
       qualityOk: false,
     });
     expect(result.attempts[0].reviewFacts.some((fact) => fact.code === 'assembly.mechanical.part-disconnected')).toBe(true);
-    expect(result.attempts[0].nextActionPrompt).toContain('Functional CAD is not enough');
+    expect(result.attempts[0].nextActionPrompt).toContain('assembly.mechanical.part-disconnected');
     expect(result.attempts[1]).toMatchObject({
       id: '02',
       ok: true,

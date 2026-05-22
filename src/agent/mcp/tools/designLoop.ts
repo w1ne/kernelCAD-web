@@ -350,7 +350,7 @@ function visualReviewFacts(
   const failedCheckCode = 'assembly.visual.review-check-failed';
   const weakEvidenceCode = 'assembly.visual.review-evidence-weak';
   const fact = (code: string, message: string, hint: string) =>
-    allowReviewWarnings.includes(code)
+    !code.startsWith('assembly.visual.') && allowReviewWarnings.includes(code)
       ? []
       : [{ code, severity: 'warning', message, hint }];
 
@@ -463,9 +463,10 @@ function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
     const rejectsFloating = /\b(no\s+(?:stray|floating|disconnected|unsupported)|not\s+(?:floating|disconnected|unsupported)|nothing\s+(?:floating|disconnected|unsupported))\b/.test(finding);
     const namesSupport = /\b(contact|touch(?:es|ing)?|fasteners?|screws?|pins?|brackets?|mounts?|clips?|hinges?|socket|seated|supported|attached|connected|continuous\s+path|load(?:\s|-)*path|parent\s+(?:body|structure)|main\s+(?:body|structure|frame)|case|housing|frame)\b/.test(finding);
     const namesSecondary = /\b(secondary|strap|bracelet|button|crown|cover|panel|bracket|handle|lug|link|arm|wire|cable|accessory|part|component|geometry)\b/.test(finding);
-    if (rejectsFloating && namesSupport && namesSecondary) return [];
+    const rejectsAirGap = /\b(no\s+(?:visible\s+)?air\s*gap|not\s+separated|touch(?:es|ing)?|in\s+contact|near(?:\s|-)*contact|flush|seated|captured|passes\s+through|mounted\s+into)\b/.test(finding);
+    if (rejectsFloating && namesSupport && namesSecondary && rejectsAirGap) return [];
     return [
-      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact, fasteners, brackets, or a continuous path into the parent body; finding was "${check.finding}".`,
+      `no-stray-or-floating-geometry needs evidence that secondary components are supported by contact/near-contact, fasteners, brackets, or a continuous path into the parent body, with no visible air gap; finding was "${check.finding}".`,
     ];
   }
   if (check.code === 'device-depth-and-construction') {
@@ -483,8 +484,9 @@ function weakVisualCheckEvidence(check: DesignLoopVisualReviewCheck): string[] {
 function visualReviewEvidenceRequirements(): string[] {
   return [
     'For attachment-plausibility, name the interface geometry and prove it is seated/clearanced, not buried, half-inserted, embedded, or visually occluded.',
-    'For required-visible-features, prove dial details, numerals, labels, hands, markers, and other requested features are legible and unobstructed, not covered by casing or bezel geometry.',
-    'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact, fasteners, brackets, or a continuous path into the parent body.',
+    'For attachment-plausibility, user controls such as crowns, winding wheels, buttons, handles, knobs, sliders, or levers must mount to the functional body/neck/housing they actuate, not to decorative loops, straps, hangers, or other non-actuating hardware.',
+    'For required-visible-features, prove dial details, numerals, labels, hands, markers, and other requested features are legible and unobstructed, not covered by casing, bezel, or smoky/opaque transparent-cover geometry.',
+    'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, and explicitly rule out visible air gaps.',
     'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
   ];
 }
@@ -500,7 +502,7 @@ function buildQualityRepairPrompt(reviewFacts: readonly DesignLoopAttemptResult[
   const visual = reviewFacts.some((fact) => fact.code.startsWith('assembly.visual.'))
     ? '\nRender screenshots, inspect them as the vision-capable agent, and attach visualReview.screenshotPath plus concrete findings before accepting the attempt.'
     : '';
-  return `Functional CAD is not enough. The model still has unresolved review facts that an agent must explain or repair before accepting it as a physical object.\n${facts}\nEither redesign the geometry so these facts disappear, or explicitly justify and allow the warning code only when the disconnected/extra geometry has a real physical role.${visual}`;
+  return `Functional CAD is not enough. The model still has unresolved review facts that an agent must explain or repair before accepting it as a physical object.\n${facts}\nEither redesign the geometry so these facts disappear, or explicitly justify and allow the non-visual warning code only when the disconnected/extra geometry has a real physical role. Visual review gates cannot be allow-listed; use requireVisualReview: false only for explicit non-visual batch checks.${visual}`;
 }
 
 function buildRecord(input: DesignLoopInput, attempts: readonly DesignLoopAttemptResult[]): BuildRecord {

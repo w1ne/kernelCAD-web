@@ -171,4 +171,25 @@ describe('design_loop nextActionPrompt rendering from RepairContext', () => {
     expect(prompt).not.toMatch(/\[error\]/);
     expect(prompt).toMatch(/no repair needed|preserve the current design/i);
   });
+
+  it('does not allow allowReviewWarnings to suppress required visual evidence gates', async () => {
+    mockReviewCadTool.mockReset();
+    mockReviewCadTool.mockResolvedValue(cleanReviewOutput());
+
+    const result = await designLoopTool({
+      goal: 'Require screenshot-backed visual review for a release model.',
+      allowReviewWarnings: ['assembly.visual.review-required'],
+      attempts: [{ id: '01', title: 'No visual packet', code: 'return undefined;' }],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.attempts[0]).toMatchObject({
+      functional: true,
+      qualityOk: false,
+      ok: false,
+    });
+    expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'assembly.visual.review-required' }),
+    ]));
+  });
 });

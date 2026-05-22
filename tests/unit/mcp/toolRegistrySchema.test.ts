@@ -27,6 +27,46 @@ describe('toolRegistry pose-envelope schema options', () => {
     expect(prop.type).toBe('boolean');
   });
 
+  it('review_cad schema declares gripperAperture refs', () => {
+    const def = findTool('review_cad');
+    const prop = def.inputSchema.properties.gripperAperture as {
+      type: string;
+      properties?: Record<string, { type: string }>;
+    };
+    expect(prop).toBeDefined();
+    expect(prop.type).toBe('object');
+    expect(prop.properties?.left?.type).toBe('string');
+    expect(prop.properties?.right?.type).toBe('string');
+  });
+
+  it('design_loop visual review schema names every required visual check', () => {
+    const def = findTool('design_loop');
+    const attempts = def.inputSchema.properties.attempts as {
+      items: {
+        properties: {
+          visualReview: {
+            properties: {
+              checks: { description: string };
+            };
+          };
+        };
+      };
+    };
+    const description = attempts.items.properties.visualReview.properties.checks.description;
+    for (const code of [
+      'main-object-count',
+      'proportions-match-reference',
+      'required-visible-features',
+      'no-stray-or-floating-geometry',
+      'attachment-plausibility',
+      'semantic-orientation-alignment',
+      'device-depth-and-construction',
+      'canonical-views-physically-coherent',
+    ]) {
+      expect(description).toContain(code);
+    }
+  });
+
   it('design_loop schema declares samplesPerMate as integer with minimum 1', () => {
     const def = findTool('design_loop');
     const prop = def.inputSchema.properties.samplesPerMate as {
