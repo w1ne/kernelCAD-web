@@ -102,6 +102,24 @@
       </div>
     </section>
 
+    <section class="prompt-handoff" aria-label="Generate a CAD model from a prompt">
+      <div class="prompt-handoff-copy">
+        <span class="section-kicker">Start with words</span>
+        <h2 class="prompt-handoff-headline">Describe the part you want.</h2>
+      </div>
+      <form class="prompt-handoff-form" action="https://app.kernelcad.com/generate" method="GET">
+        <label class="sr-only" for="prompt-input">CAD prompt</label>
+        <textarea
+          id="prompt-input"
+          name="prompt"
+          rows="3"
+          placeholder="60x40x5 mm bracket with 4 M3 mounting holes"
+          required
+        ></textarea>
+        <button class="btn btn-primary" type="submit">Generate in app</button>
+      </form>
+    </section>
+
     <section class="gallery" id="gallery" hidden>
       <div class="gallery-header">
         <h2 class="gallery-headline">Built with kernelCAD</h2>
@@ -212,6 +230,9 @@
         const section = document.getElementById('gallery');
         const grid = document.getElementById('gallery-grid');
         for (const entry of g.entries) {
+          const orbit = entry.slug === 'royal-pop-pocket-watch'
+            ? { initial: '0deg 75deg auto', min: '-35deg 60deg auto', max: '35deg 85deg auto' }
+            : { initial: '45deg 75deg auto', min: 'auto auto auto', max: 'auto auto auto' };
           const tile = document.createElement('div');
           tile.className = 'gallery-tile';
           tile.dataset.slug = entry.slug;
@@ -224,6 +245,9 @@
               auto-rotate
               auto-rotate-delay="0"
               rotation-per-second="20deg"
+              camera-orbit="${orbit.initial}"
+              min-camera-orbit="${orbit.min}"
+              max-camera-orbit="${orbit.max}"
               interaction-prompt="none"
               reveal="auto"
               disable-zoom
