@@ -33,6 +33,13 @@ interface DemoJson {
   source?: unknown;
 }
 
+interface GalleryAsset {
+  key: 'modelUrl' | 'videoUrl' | 'posterUrl' | 'promptUrl';
+  path: string;
+  contentTypes: string[];
+  range?: boolean;
+}
+
 function result(ok: boolean, name: string, detail: string): ProbeResult {
   return { ok, name, detail };
 }
@@ -45,6 +52,62 @@ function expectedIterationForVersion(version: string): string {
   const match = /^v?(\d+)\.(\d+)\.\d+/.exec(version);
   if (!match) return version;
   return `v${match[1]}.${match[2]}`;
+}
+
+async function responseBytes(res: ProbeResponse): Promise<number> {
+  return (await res.arrayBuffer()).byteLength;
+}
+
+function contentType(res: ProbeResponse): string {
+  return res.headers.get('content-type') ?? 'missing content-type';
+}
+
+function hasExpectedContentType(actual: string, expected: string[]): boolean {
+  return expected.some((type) => actual.toLowerCase().includes(type));
+}
+
+function resolveSiteUrl(baseUrl: string, pathOrUrl: string): string {
+  return new URL(pathOrUrl, `${baseUrl}/`).toString();
+}
+
+function extractBuiltAssetPaths(html: string): string[] {
+  const paths = new Set<string>();
+  const attrRegex = /\b(?:href|src)=["']([^"']+)["']/g;
+  for (const match of html.matchAll(attrRegex)) {
+    const path = match[1];
+    if (/^\/assets\/[^?#]+\.(?:css|js)(?:[?#].*)?$/.test(path)) {
+      paths.add(path.replace(/[?#].*$/, ''));
+    }
+  }
+  return [...paths].sort();
+}
+
+function galleryAssetsFor(entry: Record<string, unknown>): GalleryAsset[] | undefined {
+  const assets: GalleryAsset[] = [
+    {
+      key: 'modelUrl',
+      path: String(entry.modelUrl ?? ''),
+      contentTypes: ['model/gltf-binary', 'application/octet-stream'],
+    },
+    {
+      key: 'videoUrl',
+      path: String(entry.videoUrl ?? ''),
+      contentTypes: ['video/mp4'],
+      range: true,
+    },
+    {
+      key: 'posterUrl',
+      path: String(entry.posterUrl ?? ''),
+      contentTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+    },
+    {
+      key: 'promptUrl',
+      path: String(entry.promptUrl ?? ''),
+      contentTypes: ['text/markdown', 'text/plain'],
+    },
+  ];
+
+  return assets.every((asset) => asset.path.length > 0) ? assets : undefined;
 }
 
 export function normalizeSiteBaseUrl(input: string): string {
@@ -62,11 +125,61 @@ export function buildProductionSiteChecks(opts: {
   baseUrl: string;
   expectedVersion: string;
   expectedDemoIteration?: string;
+  mode?: 'marketing' | 'app';
+  allGalleryAssets?: boolean;
   fetch: ProbeFetch;
 }): ProductionSiteCheck[] {
   const baseUrl = normalizeSiteBaseUrl(opts.baseUrl);
   const expectedDemoIteration =
     opts.expectedDemoIteration ?? expectedIterationForVersion(opts.expectedVersion);
+
+  if (opts.mode === 'app') {
+    return [
+      {
+        name: 'app built assets',
+        async run() {
+          const htmlRes = await opts.fetch(`${baseUrl}/`);
+          const htmlType = contentType(htmlRes);
+          if (htmlRes.status !== 200 || !htmlType.includes('text/html')) {
+            return result(
+              false,
+              this.name,
+              `expected 200 text/html from /, got ${htmlRes.status} ${htmlType}`,
+            );
+          }
+          const html = new TextDecoder().decode(await htmlRes.arrayBuffer());
+          const assets = extractBuiltAssetPaths(html);
+          if (assets.length === 0) {
+            return result(false, this.name, 'expected linked /assets/*.css or /assets/*.js');
+          }
+
+          let cssCount = 0;
+          let jsCount = 0;
+          for (const asset of assets) {
+            const res = await opts.fetch(resolveSiteUrl(baseUrl, asset));
+            const type = contentType(res);
+            const expectedTypes = asset.endsWith('.css')
+              ? ['text/css']
+              : ['application/javascript', 'text/javascript'];
+            if (res.status !== 200 || !hasExpectedContentType(type, expectedTypes)) {
+              return result(
+                false,
+                this.name,
+                `${asset} expected ${expectedTypes.join(' or ')}, got ${res.status} ${type}`,
+              );
+            }
+            const bytes = await responseBytes(res);
+            if (bytes <= 0) {
+              return result(false, this.name, `${asset} expected non-empty body, got ${bytes} bytes`);
+            }
+            if (asset.endsWith('.css')) cssCount += 1;
+            if (asset.endsWith('.js')) jsCount += 1;
+          }
+          return result(true, this.name, `${cssCount} css, ${jsCount} js assets ok`);
+        },
+      },
+    ];
+  }
 
   return [
     {
@@ -131,6 +244,59 @@ export function buildProductionSiteChecks(opts: {
           this.name,
           `${type} ${res.headers.get('content-range') ?? `${bytes.byteLength} bytes`}`,
         );
+      },
+    },
+    {
+      name: 'gallery assets',
+      async run() {
+        const res = await opts.fetch(`${baseUrl}/gallery.json`);
+        if (res.status !== 200) {
+          return result(false, this.name, `expected 200 from /gallery.json, got ${res.status}`);
+        }
+        const payload = await res.json();
+        if (!isObject(payload) || !Array.isArray(payload.entries)) {
+          return result(false, this.name, 'expected /gallery.json entries array');
+        }
+        if (payload.entries.length === 0) {
+          return result(false, this.name, 'expected /gallery.json to contain entries');
+        }
+
+        const entries = opts.allGalleryAssets ? payload.entries : payload.entries.slice(0, 2);
+        let assetCount = 0;
+        for (const entry of entries) {
+          if (!isObject(entry)) {
+            return result(false, this.name, 'expected gallery entry object');
+          }
+          const assets = galleryAssetsFor(entry);
+          if (!assets) {
+            return result(false, this.name, 'expected gallery entry asset URLs');
+          }
+          for (const asset of assets) {
+            const assetInit = asset.range ? { headers: { Range: 'bytes=0-1023' } } : undefined;
+            const assetRes = await opts.fetch(resolveSiteUrl(baseUrl, asset.path), assetInit);
+            const type = contentType(assetRes);
+            const okStatus = asset.range
+              ? assetRes.status === 200 || assetRes.status === 206
+              : assetRes.status === 200;
+            if (!okStatus || !hasExpectedContentType(type, asset.contentTypes)) {
+              return result(
+                false,
+                this.name,
+                `${asset.path} expected ${asset.contentTypes.join(' or ')}, got ${assetRes.status} ${type}`,
+              );
+            }
+            const bytes = await responseBytes(assetRes);
+            if (bytes <= 0) {
+              return result(
+                false,
+                this.name,
+                `${asset.path} expected non-empty body, got ${bytes} bytes`,
+              );
+            }
+            assetCount += 1;
+          }
+        }
+        return result(true, this.name, `${entries.length} entries, ${assetCount} assets ok`);
       },
     },
     {
