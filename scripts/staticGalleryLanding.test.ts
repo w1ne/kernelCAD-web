@@ -40,6 +40,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain('Text-to-CAD prompt');
     expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
     expect(redirects).toContain('/gallery.json  /public/gallery.json   200');
+    expect(redirects).toContain('/gallery/*     /public/gallery/:splat 200');
 
     const css = readFileSync(path.resolve(__dirname, '../site/style.css'), 'utf8');
     expect(css).toMatch(/\.gallery-tile \.tile-viewer[\s\S]*pointer-events:\s*none/);
