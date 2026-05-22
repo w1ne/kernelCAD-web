@@ -7,6 +7,8 @@ describe('marketing demo video cache busting', () => {
 
     expect(html).toContain("const demoCacheKey = encodeURIComponent");
     expect(html).toContain("`/demo.mp4?v=${demoCacheKey}`");
+    expect(html).toContain("document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`");
     expect(html).not.toContain("src = '/demo.mp4'");
+    expect(html).not.toContain('polished-brass-tube.step');
   });
 });

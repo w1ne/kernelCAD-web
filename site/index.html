@@ -74,10 +74,10 @@
       <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
         <div class="demo-meta">
           <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
-          <span class="artifact-label">polished-brass-tube.step</span>
+          <span class="artifact-label" id="demo-artifact">artifact.kcad.ts</span>
         </div>
         <div class="demo-frame">
-          <img class="demo-poster-art" src="/demo-poster.png" alt="Generated polished brass tube artifact" />
+          <img class="demo-poster-art" src="/demo-poster.png" alt="Generated kernelCAD artifact" />
           <video id="demo-video" autoplay muted loop playsinline preload="metadata" poster="/demo-poster.png"></video>
         </div>
       </div>
@@ -221,6 +221,8 @@
           if (demoVideo.currentTime > 2.5) posterArt?.classList.add('is-hidden');
         });
         document.getElementById('demo-version').textContent = d.version;
+        const artifact = d.heroArtifact || d.task || 'artifact';
+        document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`;
       });
 
     // Lazy-load <model-viewer> once when the gallery section is in the DOM.
