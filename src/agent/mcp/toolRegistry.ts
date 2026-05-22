@@ -331,7 +331,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_surface_from_boundary',
       description:
-        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Fills the interior of 4 boundary Curve3D refs with a single NURBS face via OCCT BRepOffsetAPI_MakeFilling — the canonical Coons-patch primitive. The 4 curves walk an ordered loop: `curve_bindings[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+        "Insert a `surfaceFromBoundary([c1, c2, c3, c4], opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. Builds the shipped filling surface: one NURBS face through 4 boundary Curve3D refs via OCCT BRepOffsetAPI_MakeFilling. The 4 curves must be passed in exact loop order: `curve_bindings[0]` = bottom, `curve_bindings[1]` = right, `curve_bindings[2]` = top, `curve_bindings[3]` = left; adjacent endpoints must coincide within 1e-6 mm or capture emits `feature.surface-from-boundary.corner-mismatch`. The result has type Surface — chain `.thicken(t)` or `.toShape()` via `add_feature` on the returned binding name. `opts.continuity` accepts a single grade ('C0' | 'C1' | 'C2') applied to all 4 edges or a length-4 array per edge; defaults to 'C0'. `opts.sampling` controls NbPtsOnCur (default 15). Validates every `curve_bindings[i]` is declared in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -540,7 +540,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_variable_sweep',
       description:
-        "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+        "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -548,7 +548,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           spine_binding: { type: 'string', description: 'Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source.' },
           sections: {
             type: 'array',
-            description: 'Varying cross-sections along the spine; at least 2 entries, strictly increasing in `t`.',
+            description: 'Varying cross-sections along the spine; at least 2 entries, strictly increasing in `t`, first t=0, last t=1.',
             items: {
               type: 'object',
               properties: {
