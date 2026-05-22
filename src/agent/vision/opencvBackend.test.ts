@@ -1,36 +1,43 @@
 // src/agent/vision/opencvBackend.test.ts
 //
 // Tests for the pure-JS opencv silhouette backend.
-//
-// SKIPPED: `@techstark/opencv-js`'s WASM does not auto-initialize in the Node
-// test environment via the `cv.Mat`/`cv.onRuntimeInitialized` polling pattern
-// in opencvBackend.ts:getCv(). The polling loop never resolves, causing tests
-// to hang indefinitely. Three W4 implementer agents got stuck on these tests
-// (each consumed ~80 cumulative CPU-minutes before being killed) before the
-// bug was diagnosed.
-//
-// The opencv backend itself is still imported by the orchestrator and will be
-// exercised end-to-end by the Task 7 wayfarer smoke test (which runs in the
-// real CLI process, not vitest's worker). The unit-test path needs a different
-// init wrapper — likely `await cv.onRuntimeInitialized` treated as a promise
-// rather than a callback.
-//
-// Follow-up: rewrite getCv() against the actual @techstark/opencv-js Node API
-// (see https://github.com/TechStark/opencv-js#readme for the supported init
-// patterns), then unskip these tests.
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import sharp from 'sharp';
-import { extractSilhouettePolyline } from './opencvBackend';
+import { promisify } from 'node:util';
 
 const FIXTURE_DIR = join(__dirname, '../../..', 'tests/fixtures/vision');
+const FAIL_FAST_MS = 4000;
+const execFileAsync = promisify(execFile);
 
-describe.skip('extractSilhouettePolyline', () => {
+async function withFailFast<T>(promise: Promise<T>): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`test-side fail-fast after ${FAIL_FAST_MS}ms`)),
+          FAIL_FAST_MS,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+describe('extractSilhouettePolyline', () => {
+  afterEach(() => {
+    vi.doUnmock('@techstark/opencv-js');
+    vi.resetModules();
+    delete process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS;
+  });
+
   it('extracts a polyline hugging the centered black square on a white background', async () => {
-    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
-    const polyline = await extractSilhouettePolyline(png, 12);
+    const polyline = await runExtractorInNode('uniform-bg-square.png', 12);
     // Must extract at least the 4 corners of the square.
     expect(polyline.length).toBeGreaterThanOrEqual(4);
     expect(polyline.length).toBeLessThanOrEqual(12);
@@ -53,13 +60,47 @@ describe.skip('extractSilhouettePolyline', () => {
     expect(minY).toBeLessThan(0.35);
     expect(maxY).toBeGreaterThan(0.65);
     expect(maxY).toBeLessThan(0.75);
-  }, 60000);
+  }, 5000);
 
-  it('throws when given an image with no foreground contour', async () => {
-    // Pure white 64×64 — no foreground when thresholding.
-    const png = await sharp(Buffer.alloc(64 * 64 * 3, 255), { raw: { width: 64, height: 64, channels: 3 } })
-      .png()
-      .toBuffer();
-    await expect(extractSilhouettePolyline(png, 8)).rejects.toThrow(/no foreground/i);
-  }, 60000);
+  it('times out instead of hanging when opencv never initializes', async () => {
+    process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS = '25';
+    vi.doMock('@techstark/opencv-js', () => ({ default: {} }));
+    const { extractSilhouettePolyline } = await import('./opencvBackend');
+    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
+
+    await expect(withFailFast(extractSilhouettePolyline(png, 12))).rejects.toThrow(
+      /opencv initialization timed out/i,
+    );
+  }, 1000);
 });
+
+async function runExtractorInNode(fixtureName: string, maxWaypoints: number): Promise<[number, number][]> {
+  const script = `
+    import { readFile } from 'node:fs/promises';
+    import { join } from 'node:path';
+    import { extractSilhouettePolyline } from './src/agent/vision/opencvBackend.ts';
+
+    const png = await readFile(join(${JSON.stringify(FIXTURE_DIR)}, ${JSON.stringify(fixtureName)}));
+    const polyline = await extractSilhouettePolyline(png, ${JSON.stringify(maxWaypoints)});
+    console.log(JSON.stringify(polyline));
+  `;
+  return runNodeExtractorScript(script);
+}
+
+async function runNodeExtractorScript(script: string): Promise<[number, number][]> {
+  try {
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      ['--import', 'tsx', '--input-type=module', '-e', script],
+      {
+        cwd: join(__dirname, '../../..'),
+        timeout: FAIL_FAST_MS,
+        killSignal: 'SIGKILL',
+      },
+    );
+    return JSON.parse(stdout.trim()) as [number, number][];
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(message);
+  }
+}
