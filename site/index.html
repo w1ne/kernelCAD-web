@@ -203,6 +203,7 @@
     // load demo video + version from build-time generated demo.json
     function cacheKeyedUrl(url, cacheKey) {
       if (!url) return url;
+      if (!cacheKey) return url;
       const separator = url.includes('?') ? '&' : '?';
       return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
     }
@@ -255,7 +256,7 @@
         if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
         const section = document.getElementById('gallery');
         const grid = document.getElementById('gallery-grid');
-        const galleryCacheKey = g.generatedAt || Date.now();
+        const galleryCacheKey = g.generatedAt;
         grid.textContent = '';
         for (const entry of g.entries) {
           const orbit = entry.slug === 'royal-pop-pocket-watch'
@@ -314,7 +315,7 @@
           meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
           promptEl.textContent = entry.prompt;
           if (entry.promptUrl) {
-            fetch(cacheKeyedUrl(entry.promptUrl, galleryCacheKey), { cache: 'no-store' })
+            fetch(entry.promptUrl)
               .then((r) => (r.ok ? r.text() : null))
               .then((promptText) => {
                 if (promptText) promptEl.textContent = promptText.trim();
