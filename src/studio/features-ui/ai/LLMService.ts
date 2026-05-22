@@ -6,35 +6,49 @@ export interface ChatMessage {
 
 const SYSTEM_PROMPT = `
 You are an expert CAD assistant for kernelCAD.
-Your goal is to help the user generate 3D geometry using the 'replicad' library.
+Your goal is to help the user author editable .kcad.ts source using kernelCAD APIs.
 
 CONTEXT:
-- You are running in a "Headless Kernel" environment.
-- The variable 'replicad' is available globally.
-- You can use standard Replicad API methods like 'makeBox', 'makeCylinder', 'makeSphere', 'sketch', 'draw', etc.
+- You are running in a kernelCAD workbench.
+- Prefer kernelCAD globals and APIs such as param, params, box, cylinder, sphere, sketch, path, assembly, connector, mate, model, lib.fromSTEP, NURBS helpers, SDF materialization, and sheet metal helpers when available.
+- Treat Replicad/OpenCASCADE as the underlying kernel layer, not the public authoring surface for new code.
+- Legacy Replicad-only snippets may be useful for explaining old files, but new answers should migrate toward editable .kcad.ts source.
 
 RULES:
-1. When asked to create geometry, return a SINGLE Markdown code block containing JavaScript code.
-2. The code MUST return a Shape or an array of Shapes.
-3. Do NOT use 'console.log' to return geometry; use the 'return' statement.
-4. Use descriptive variable names.
-5. If the user asks for a specific operation (e.g., fillet, chamfer), apply it to the shape.
+1. When asked to create or edit geometry, return a SINGLE Markdown code block containing .kcad.ts-compatible TypeScript.
+2. The code MUST return a Shape, Scene, assembly.model(), or an array of Shapes.
+3. Declare user-tunable dimensions with param or params instead of burying important numbers.
+4. Use assemblies, connectors, and mates for multi-part designs instead of floating independent solids.
+5. Include deterministic review intent in the surrounding answer: evaluate the file, then run review_cad before export.
+6. Use descriptive variable names and avoid console.log as the geometry result.
+7. If the user asks for specific surface or fabrication behavior, prefer kernelCAD NURBS, SDF, or sheet metal APIs as appropriate.
 
 EXAMPLE:
-User: "Create a box 10x10x10"
+User: "Create a 60x40x5 bracket with four M3 mounting holes"
 Model:
-Here is the code for a box:
-\`\`\`javascript
-const box = replicad.makeBox(10, 10, 10);
-return box;
+Here is editable .kcad.ts source:
+\`\`\`typescript
+const width = param('width', 60, { unit: 'mm' });
+const height = param('height', 40, { unit: 'mm' });
+const thickness = param('thickness', 5, { unit: 'mm' });
+const holeDia = param('holeDia', 3.2, { unit: 'mm' });
+
+let bracket = box(width, height, thickness);
+for (const x of [10, width - 10]) {
+  for (const y of [10, height - 10]) {
+    bracket = bracket.subtract(cylinder(thickness + 2, holeDia / 2).translate(x, y, -1));
+  }
+}
+return bracket.fillet(1);
 \`\`\`
 
-API GUIDELINES:
-- Replicad uses an Object-Oriented style for boolean operations.
+REVIEW GUIDELINES:
+- After authoring, tell the user to run evaluate and review_cad so diagnostics, assembly mates, interferences, and exportability are checked deterministically.
+- For legacy Replicad code, Replicad uses object-oriented boolean operations.
 - DO NOT use imaginary functional APIs like \`replicad.union\`, \`replicad.cut\`, or \`replicad.intersect\`.
-- CORRECT: \`shape1.fuse(shape2)\` (Union)
-- CORRECT: \`shape1.cut(tool)\` (Difference)
-- CORRECT: \`shape1.intersect(other)\` (Intersection)
+- Legacy-correct: \`shape1.fuse(shape2)\` (Union)
+- Legacy-correct: \`shape1.cut(tool)\` (Difference)
+- Legacy-correct: \`shape1.intersect(other)\` (Intersection)
 `;
 
 export class LLMService {
@@ -106,7 +120,7 @@ export class LLMService {
                 systemPromptWithContext += `- User has SELECTED object with ID: "${context.selectedId}"\n`;
             }
             if (context.code) {
-                systemPromptWithContext += `- Current Code in Editor:\n\`\`\`javascript\n${context.code}\n\`\`\`\n`;
+                systemPromptWithContext += `- Current Code in Editor:\n\`\`\`typescript\n${context.code}\n\`\`\`\n`;
                 systemPromptWithContext += `(When generating code, you can reference existing variables if they are in scope, or suggest edits.)\n`;
             }
         }
@@ -143,7 +157,7 @@ export class LLMService {
                 apiMessages.push({
                     role: 'user',
                     content: [
-                        { type: "text", text: "Analyze this image and generate code." },
+                        { type: "text", text: "Analyze this image and generate editable .kcad.ts source." },
                         { type: "image_url", image_url: { url: context.image } }
                     ]
                 });
@@ -206,15 +220,15 @@ export class LLMService {
 
         OUTPUT FORMAT:
         Return ONLY a raw JSON array (no markdown formatting).
-        Schema:
-        [
-            { "name": "Variation 1 Name", "code": "full javascript code...", "description": "Why this design is unique" },
-            { "name": "Variation 2 Name", "code": "full javascript code...", "description": "Why this design is unique" },
-            { "name": "Variation 3 Name", "code": "full javascript code...", "description": "Why this design is unique" }
-        ]
+         Schema:
+         [
+             { "name": "Variation 1 Name", "code": "full .kcad.ts-compatible source...", "description": "Why this design is unique" },
+             { "name": "Variation 2 Name", "code": "full .kcad.ts-compatible source...", "description": "Why this design is unique" },
+             { "name": "Variation 3 Name", "code": "full .kcad.ts-compatible source...", "description": "Why this design is unique" }
+         ]
         
-        ENSURE each variation's "code" is a complete, runnable script starting with imports or variable declarations and ending with a return statement or proper geometry assignment.
-        `;
+         ENSURE each variation's "code" is complete, editable .kcad.ts-compatible source with params where dimensions matter and a return statement or proper geometry assignment.
+         `;
 
         const response = await this.sendMessage([{ role: 'user', content: variationPrompt }]);
 

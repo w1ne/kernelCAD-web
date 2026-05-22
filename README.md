@@ -1,21 +1,21 @@
-# kernelCAD - AI-Native CAD Workbench
+# kernelCAD - CAD runtime for agents
 
-**kernelCAD** turns words to CAD: mechanical intent becomes validated,
-editable, manufacturable design artifacts.
+**kernelCAD** turns mechanical intent into editable `.kcad.ts` source,
+deterministic review evidence, and exportable manufacturing artifacts.
 
-The core loop maps words to geometry: words -> generated `.kcad.ts` ->
-rendered model -> validation checks -> guided revision -> export package.
+The core loop is source-first: design brief -> editable `.kcad.ts` ->
+evaluated model -> deterministic validation -> guided revision -> export package.
 
-kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks,
-and it is not just a Replicad wrapper. Replicad/OpenCASCADE are the kernel
-layer. kernelCAD is the agent-first workflow layer above the kernel: deterministic
-CAD source, feature history, diagnostics, validation, variants, and human review.
+kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks.
+Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
+layer above the kernel: deterministic CAD source, feature history, diagnostics,
+validation, variants, and human review.
 
 ## Philosophy
 
 1.  **Agent-First**: The primary interface is `.kcad.ts`, CLI, and MCP. The UI reviews and steers generated designs.
-2.  **Verifiable**: Geometry is deterministic source code with explicit feature history and diagnostics.
-3.  **Validation-Centered**: Useful CAD output needs checks for constraints, hardware fit, clearances, and exportability.
+2.  **Editable Source**: Geometry is deterministic source code with explicit feature history, params, assemblies, and diagnostics.
+3.  **Validation-Centered**: Useful CAD output needs deterministic review for constraints, hardware fit, clearances, and exportability.
 4.  **Workflow Over Primitives**: Product progress is measured by intent-level workflows, not by copying every traditional CAD button.
 
 ## Agent workflow
@@ -31,6 +31,7 @@ Use deterministic checks before visual judgment:
 
 ```bash
 kernelcad evaluate model.kcad.ts
+# then run review_cad from an MCP client connected through `kernelcad mcp`
 kernelcad export step model.kcad.ts -o model.step
 kernelcad export stl model.kcad.ts -o model.stl
 ```
@@ -64,10 +65,10 @@ and mechanism checks tied to physical components.
 ## Features
 
 -   **Headless Core**: Run CAD operations in Node.js or Web Workers without a DOM.
--   **Agent API**: JSON-serializable commands, introspection, and feedback loops.
+-   **Agent API**: kernelCAD APIs for params, assemblies, NURBS, SDF bodies, sheet metal workflows, introspection, and feedback loops.
 -   **Review Cockpit**: Browser-based 3D preview for inspecting generated designs and validation results.
 -   **Standard Exports**: STEP/STL generation.
--   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
+-   **Robust Kernel**: Built on OpenCASCADE, with Replicad kept as a kernel implementation detail where it is still used.
   
 ## Get Started
 

@@ -14,6 +14,13 @@ import { addVariableSweepTool } from './tools/addVariableSweep';
 import { addSketchTextTool } from './tools/addSketchText';
 import { embossTextTool } from './tools/embossText';
 import { projectCurveTool } from './tools/projectCurve';
+import { addAssemblyPartSourceTool } from './tools/addAssemblyPartSource';
+import { addPartConnectorSourceTool } from './tools/addPartConnectorSource';
+import { addMateSourceTool } from './tools/addMateSource';
+import { addMateCouplingSourceTool } from './tools/addMateCouplingSource';
+import { addTransmissionSourceTool } from './tools/addTransmissionSource';
+import { addWorkspaceTargetSourceTool } from './tools/addWorkspaceTargetSource';
+import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
@@ -916,6 +923,158 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listConstraintsTool(input as unknown as Parameters<typeof listConstraintsTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_assembly_part_source',
+      description:
+        'Durably insert `const <binding> = <assembly>.part(partName, shapeExpression, opts?)` before the final top-level return in a kernelCAD source string. Returns modified source plus diagnostics from re-evaluating it. Side-effect-free: caller persists the returned source.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...), e.g. "arm".' },
+          part_name: { type: 'string', description: 'Assembly-unique part name.' },
+          shape_expression: { type: 'string', description: 'JS expression for the Shape to pass to assembly.part, inserted verbatim.' },
+          binding_name: { type: 'string', description: 'Optional JS const name for the returned AssemblyPartRef. Defaults to a part-name-derived identifier.' },
+          at: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] assembly placement.' },
+        },
+        required: ['code', 'assembly_binding', 'part_name', 'shape_expression'],
+      },
+    },
+    handler: input => addAssemblyPartSourceTool(input as unknown as Parameters<typeof addAssemblyPartSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_part_connector_source',
+      description:
+        'Durably insert `<partBinding>.connector(name, { type, origin, axis?, normal? })` before the final top-level return. Use with the binding returned by add_assembly_part_source. Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_connector.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          part_binding: { type: 'string', description: 'JS identifier bound to an AssemblyPartRef, e.g. "basePart".' },
+          name: { type: 'string', description: 'Connector name unique within the part.' },
+          type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
+          origin: { description: 'Origin as [x, y, z] shorthand or structured ConnectorOrigin.' },
+          axis: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] axis.' },
+          normal: { type: 'array', items: { type: 'number' }, description: 'Optional [x, y, z] normal.' },
+        },
+        required: ['code', 'part_binding', 'name', 'type', 'origin'],
+      },
+    },
+    handler: input => addPartConnectorSourceTool(input as unknown as Parameters<typeof addPartConnectorSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_mate_source',
+      description:
+        'Durably insert `<assembly>.mate(name, a, b, type, opts?)` before the final top-level return. Connector refs use "<partName>.<connectorName>". Returns modified source plus diagnostics from re-evaluation. Side-effect-free; distinct from active-session add_mate.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
+          name: { type: 'string', description: 'Mate name unique within the assembly.' },
+          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
+          pose: { description: 'Optional mate pose.' },
+          limitsDeg: { type: 'array', items: { type: 'number' }, description: 'Optional [minDeg, maxDeg].' },
+          limitsMm: { type: 'array', items: { type: 'number' }, description: 'Optional [minMm, maxMm].' },
+        },
+        required: ['code', 'assembly_binding', 'name', 'a', 'b', 'type'],
+      },
+    },
+    handler: input => addMateSourceTool(input as unknown as Parameters<typeof addMateSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_mate_coupling_source',
+      description:
+        'Durably insert `<assembly>.coupleMates(driven, { source, ratio, offset? })` before the final top-level return. Returns modified source plus diagnostics from re-evaluation. Pair coupled mates with add_transmission_source so review_cad can see a physical drive path.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
+          driven: { type: 'string', description: 'Driven mate name.' },
+          source: { type: 'string', description: 'Source mate name.' },
+          ratio: { type: 'number', description: 'Driven pose = source pose * ratio + offset.' },
+          offset: { type: 'number', description: 'Optional pose offset.' },
+        },
+        required: ['code', 'assembly_binding', 'driven', 'source', 'ratio'],
+      },
+    },
+    handler: input => addMateCouplingSourceTool(input as unknown as Parameters<typeof addMateCouplingSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_transmission_source',
+      description:
+        'Durably insert `<assembly>.transmission(name, { kind, sourceMate, drivenMates, path, ... })` before the final top-level return. Supports the current script API kinds direct-horn, link-rod, four-bar, gear-pair, belt, and tendon. Returns modified source plus diagnostics from re-evaluation.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
+          name: { type: 'string' },
+          kind: { type: 'string', enum: ['direct-horn', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'] },
+          sourceMate: { type: 'string' },
+          drivenMates: { type: 'array', items: { type: 'string' } },
+          actuator: { type: 'string' },
+          input: { type: 'string' },
+          output: { type: 'string' },
+          path: { type: 'array', items: { type: 'string' } },
+          ratio: { type: 'number' },
+          notes: { type: 'string' },
+        },
+        required: ['code', 'assembly_binding', 'name', 'kind', 'sourceMate', 'drivenMates', 'path'],
+      },
+    },
+    handler: input => addTransmissionSourceTool(input as unknown as Parameters<typeof addTransmissionSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'add_workspace_target_source',
+      description:
+        'Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
+          connector_ref: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          reachable: {
+            type: 'array',
+            description: 'World-frame Vec3 targets the connector must be able to reach.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          toleranceMm: { type: 'number', description: 'Optional non-negative tolerance in mm.' },
+        },
+        required: ['code', 'assembly_binding', 'connector_ref', 'reachable'],
+      },
+    },
+    handler: input => addWorkspaceTargetSourceTool(input as unknown as Parameters<typeof addWorkspaceTargetSourceTool>[0]),
+  },
+  {
+    definition: {
+      name: 'set_scene_return_source',
+      description:
+        'Replace the final top-level return statement with `return <assembly>.model();` or `return <assembly>.solvedModel(poses, options?);`. Use solvedModel for mate-authored mechanisms so FK and validation run. Returns modified source plus diagnostics from re-evaluation.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The .kcad.ts source code.' },
+          assembly_binding: { type: 'string', description: 'JS identifier bound to assembly(...).' },
+          mode: { type: 'string', enum: ['model', 'solvedModel'] },
+          poses: { type: 'object', description: 'Optional solvedModel pose overrides keyed by mate name. Defaults to {}.' },
+          options: { type: 'object', description: "Optional solvedModel options such as { validate: 'warn', posesGate: 'envelope' }." },
+        },
+        required: ['code', 'assembly_binding', 'mode'],
+      },
+    },
+    handler: input => setSceneReturnSourceTool(input as unknown as Parameters<typeof setSceneReturnSourceTool>[0]),
   },
   {
     definition: {

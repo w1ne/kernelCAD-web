@@ -53,7 +53,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
     expect(html).toContain('cacheKeyedUrl(entry.videoUrl, galleryCacheKey)');
     expect(html).toContain('entry.promptUrl');
-    expect(html).toContain('Text-to-CAD prompt');
+    expect(html).toContain('Build brief');
     expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
     expect(redirects).toContain('/demo-poster.png /public/demo-poster.png 200');
     expect(redirects).toContain('/gallery.json  /public/gallery.json   200');
