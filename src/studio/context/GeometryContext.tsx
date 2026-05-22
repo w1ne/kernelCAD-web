@@ -93,6 +93,13 @@ function readStoredShowSketches(): boolean {
     return true;
 }
 
+function isAbortError(err: unknown): boolean {
+    return typeof err === 'object'
+        && err !== null
+        && 'name' in err
+        && err.name === 'AbortError';
+}
+
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [geometryTransformOverrides, setGeometryTransformOverrides] = useState<Record<string, number[]>>({});
@@ -121,6 +128,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const [sessionStatus, setSessionStatus] = useState<'idle' | 'pending' | 'resolved' | 'failed'>('idle');
     const mainRevisionRef = useRef(0);
     const previewRevisionRef = useRef(0);
+    const activeMeshFetchAbortRef = useRef<AbortController | null>(null);
+    const meshFetchBusyRef = useRef(false);
+    const meshFetchTrailingRef = useRef<{
+        script: string;
+        token: string | null;
+        opts?: { keepExistingOnError?: boolean; skipReview?: boolean };
+    } | null>(null);
     const studioScript = readStudioScriptParam();
     const displayGeometries = useMemo(
         () => geometries.map((geometry) => {
@@ -171,6 +185,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         setCurrentCodeRevision(revision);
         setIsComputing(true);
         const fetchStart = performance.now();
+        const abortController = typeof AbortController === 'function'
+            ? new AbortController()
+            : null;
+        activeMeshFetchAbortRef.current?.abort();
+        activeMeshFetchAbortRef.current = abortController;
+        const fetchInit: RequestInit | undefined = abortController
+            ? { signal: abortController.signal }
+            : undefined;
         const meshUrl = token
             ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
             : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
@@ -178,7 +200,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}`
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
-        const promise = fetch(meshUrl)
+        let aborted = false;
+        const promise = fetch(meshUrl, fetchInit)
             .then(async (response) => {
                 const payload = await response.json();
                 if (!response.ok) {
@@ -213,7 +236,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     executionCountAtRecord: revision,
                 });
                 if (opts?.skipReview) return;
-                fetch(reviewUrl)
+                return fetch(reviewUrl, fetchInit)
                     .then(async (response) => {
                         const reviewPayload = await response.json();
                         if (!response.ok) {
@@ -226,12 +249,20 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                         if (revision !== mainRevisionRef.current) return;
                         setScriptReview(reviewPayload);
                     })
-                    .catch(() => {
+                    .catch((err: unknown) => {
+                        if (isAbortError(err)) return;
                         if (revision !== mainRevisionRef.current) return;
                         setScriptReview(null);
                     });
             })
             .catch((err: unknown) => {
+                if (isAbortError(err)) {
+                    aborted = true;
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                    }
+                    return;
+                }
                 if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
                     return;
@@ -250,13 +281,47 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 });
             })
             .finally(() => {
-                if (revision === mainRevisionRef.current) {
+                if (activeMeshFetchAbortRef.current === abortController) {
+                    activeMeshFetchAbortRef.current = null;
+                }
+                if (revision === mainRevisionRef.current && !aborted) {
                     setIsComputing(false);
                     setExecutionCount(prev => prev + 1);
+                } else if (revision === mainRevisionRef.current) {
+                    setIsComputing(false);
                 }
             });
         return { revision, promise };
     }, [pushExecutionRecord]);
+
+    const requestMeshAndReview = useCallback((
+        script: string,
+        token: string | null,
+        opts?: { keepExistingOnError?: boolean; skipReview?: boolean },
+    ) => {
+        if (meshFetchBusyRef.current) {
+            meshFetchTrailingRef.current = { script, token, opts };
+            return;
+        }
+
+        meshFetchBusyRef.current = true;
+        const { promise } = fetchMeshAndReview(script, token, opts);
+        void promise.finally(() => {
+            meshFetchBusyRef.current = false;
+            const trailing = meshFetchTrailingRef.current;
+            meshFetchTrailingRef.current = null;
+            if (trailing) {
+                requestMeshAndReview(trailing.script, trailing.token, trailing.opts);
+            }
+        });
+    }, [fetchMeshAndReview]);
+
+    useEffect(() => {
+        return () => {
+            meshFetchTrailingRef.current = null;
+            activeMeshFetchAbortRef.current?.abort();
+        };
+    }, []);
 
     // Slice 2E.bridge: acquire the session token for the script. The pool
     // reuses an existing session if one already exists for this script, so
@@ -299,9 +364,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     useEffect(() => {
         if (!studioScript) return;
         if (sessionStatus === 'pending' || sessionStatus === 'idle') return;
-        const { promise } = fetchMeshAndReview(studioScript, sessionToken);
-        void promise;
-    }, [studioScript, sessionStatus, sessionToken, fetchMeshAndReview]);
+        requestMeshAndReview(studioScript, sessionToken);
+    }, [studioScript, sessionStatus, sessionToken, requestMeshAndReview]);
 
     // Slice 2E.bridge: SSE subscription. Opens an EventSource against the
     // pooled CaptureSession's onRelower channel. Each `relower` frame
@@ -312,7 +376,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
         const es = new EventSource(url);
         const onRelower = () => {
-            fetchMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, skipReview: true });
+            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, skipReview: true });
         };
         es.addEventListener('relower', onRelower);
         // The browser auto-reconnects on transient drops; we only log here.
@@ -325,7 +389,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             es.removeEventListener('relower', onRelower);
             es.close();
         };
-    }, [studioScript, sessionToken, fetchMeshAndReview]);
+    }, [studioScript, sessionToken, requestMeshAndReview]);
 
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
