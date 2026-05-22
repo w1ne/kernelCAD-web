@@ -24,14 +24,23 @@ function argValue(name: string): string | undefined {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
+function hasFlag(name: string): boolean {
+  return process.argv.includes(name);
+}
+
 async function main() {
   const baseUrl = argValue('--url') ?? 'https://kernelcad.com';
   const expectedVersion = argValue('--expected-version') ?? readPackageVersion();
   const expectedDemoIteration = argValue('--expected-demo-iteration');
+  const mode = argValue('--mode') === 'app' || new URL(baseUrl).hostname === 'app.kernelcad.com'
+    ? 'app'
+    : 'marketing';
   const checks = buildProductionSiteChecks({
     baseUrl,
     expectedVersion,
     expectedDemoIteration,
+    mode,
+    allGalleryAssets: hasFlag('--all-gallery-assets'),
     fetch,
   });
 
