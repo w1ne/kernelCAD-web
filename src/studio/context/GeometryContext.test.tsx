@@ -345,4 +345,88 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-review-ok').textContent).toBe('false');
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
   });
+
+  it('refreshes mesh but skips review when params relower over SSE', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    );
+
+    let relowerHandler: (() => void) | null = null;
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener(type: string, cb: () => void) {
+        if (type === 'relower') relowerHandler = cb;
+      }
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-abc' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {},
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'initial review',
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            heightAdjustMm: {
+              name: 'heightAdjustMm',
+              type: 'number',
+              value: 3,
+              defaultValue: 0,
+              meta: { min: 0, max: 6.12 },
+            },
+          },
+        }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(relowerHandler).not.toBeNull();
+
+    await act(async () => {
+      relowerHandler?.();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenNthCalledWith(4, '/__kernelcad/mesh?session=tok-abc');
+    expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
+    expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
+  });
 });

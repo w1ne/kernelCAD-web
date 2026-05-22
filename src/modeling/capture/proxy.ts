@@ -279,6 +279,7 @@ export class Shape {
     maybeAssign('ior', opts.ior, 1.0, 2.5);
     maybeAssign('transmission', opts.transmission, 0, 1);
     maybeAssign('sheen', opts.sheen, 0, 1);
+    maybeAssign('opacity', opts.opacity, 0, 1);
     maybeAssign('anisotropy', opts.anisotropy, 0, 1);
 
     // thickness — non-negative finite mm. Negative is a hard error.

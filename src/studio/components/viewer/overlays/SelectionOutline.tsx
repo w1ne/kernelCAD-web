@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { useMemo, useEffect } from "react";
 import type { GeometryResult, FaceGeometry } from "../../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../../shared/constants/colors";
+import { matrixFromGeometryTransform } from "../entities/geometryTransform";
 
 function FaceEdgeOutline({ face }: { face: FaceGeometry }) {
     const geometry = useMemo(() => {
@@ -39,9 +40,16 @@ function AnalyticalEdgeOutline({ edges }: { edges: Float32Array }) {
 
 function SelectedGeometryOutline({ geometry }: { geometry: GeometryResult | null | undefined }) {
     if (!geometry) return null;
-    if (geometry.edges) return <AnalyticalEdgeOutline edges={geometry.edges} />;
+    const transformMatrix = matrixFromGeometryTransform(geometry);
+    if (geometry.edges) {
+        return (
+            <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+                <AnalyticalEdgeOutline edges={geometry.edges} />
+            </group>
+        );
+    }
     return (
-        <group>
+        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
             {geometry.faces.map((face) => (
                 <FaceEdgeOutline key={face.faceId} face={face} />
             ))}

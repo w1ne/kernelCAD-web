@@ -10,6 +10,7 @@
 // ============================================================================
 
 import { z } from 'zod';
+import type { PBRMaterial } from '../intent/material';
 
 // ============================================================================
 // Request Messages (Main Thread → Worker)
@@ -81,6 +82,9 @@ export const GeometryResultSchema = z.object({
     volume: z.number().optional(),
     edges: Float32ArraySchema.optional(),
     color: z.string().optional(),
+    transform: z.array(z.number()).length(16).optional(),
+    assemblyFeatureId: z.string().optional(),
+    assemblyPartName: z.string().optional(),
 });
 
 export const SketchGeometrySchema = z.object({
@@ -137,6 +141,11 @@ export interface GeometryResult {
     volume?: number;
     edges?: Float32Array;
     color?: string;
+    material?: PBRMaterial;
+    /** Column-major 4x4 local-to-world matrix for viewport-side assembly posing. */
+    transform?: number[];
+    assemblyFeatureId?: string;
+    assemblyPartName?: string;
 }
 
 export interface SketchGeometry {

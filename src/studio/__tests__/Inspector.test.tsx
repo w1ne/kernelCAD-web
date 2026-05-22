@@ -52,6 +52,7 @@ describe('Inspector', () => {
 
         expect(screen.getByTestId('scene-slot').textContent).toBe('SCENE BODY');
         expect(screen.queryByTestId('code-slot')).toBeNull();
+        expect(screen.getByTestId('inspector').className).toContain('shrink-0');
     });
 
     it('switches active tab when a visible tab button is clicked', () => {

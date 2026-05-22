@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
+import { applyGeometryTransform } from "../entities/geometryTransform";
 
 export function computeGeometryBounds(
     geometries: GeometryResult[],
@@ -26,8 +27,9 @@ export function computeGeometryBounds(
                     continue;
                 }
                 sawVertex = true;
-                min.min(new THREE.Vector3(x, y, z));
-                max.max(new THREE.Vector3(x, y, z));
+                const point = applyGeometryTransform(new THREE.Vector3(x, y, z), geometry);
+                min.min(point);
+                max.max(point);
             }
         }
     }

@@ -29,6 +29,7 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
     } = useWorkbench();
 
     const [activeTab, setActiveTab] = useState<'scene' | 'loop' | 'ai'>('scene');
+    const [showReviewDetails, setShowReviewDetails] = useState(false);
     const reviewOk = scriptReview?.ok ?? null;
     const verdict = reviewOk === null ? 'No Review' : reviewOk ? 'Functional' : 'Needs Repair';
     const repairMode = scriptReview?.fitness?.repairMode ?? 'none';
@@ -158,15 +159,23 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
 
                         {nonBlockingDiagnostics.length > 0 && (
                             <div className="mb-4">
-                                <div className="mb-2 font-bold text-gray-400">REVIEW FACTS</div>
-                                <div className="space-y-2">
-                                    {nonBlockingDiagnostics.map((diagnostic, index) => (
-                                        <div key={`${diagnostic.code ?? 'fact'}-${index}`} className="border border-[#333327] bg-[#1c1c14] px-2 py-1.5">
-                                            <div className="font-mono text-[11px] text-yellow-200">{diagnostic.code}</div>
-                                            <div className="mt-1 text-gray-200">{diagnostic.message}</div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <button
+                                    type="button"
+                                    className="mb-2 text-left text-[11px] font-bold text-gray-400 hover:text-gray-200"
+                                    onClick={() => setShowReviewDetails((prev) => !prev)}
+                                >
+                                    {showReviewDetails ? 'HIDE' : 'SHOW'} {nonBlockingDiagnostics.length} REVIEW DETAIL{nonBlockingDiagnostics.length === 1 ? '' : 'S'}
+                                </button>
+                                {showReviewDetails && (
+                                    <div className="space-y-2">
+                                        {nonBlockingDiagnostics.map((diagnostic, index) => (
+                                            <div key={`${diagnostic.code ?? 'fact'}-${index}`} className="border border-[#333327] bg-[#1c1c14] px-2 py-1.5">
+                                                <div className="font-mono text-[11px] text-yellow-200">{diagnostic.code}</div>
+                                                <div className="mt-1 text-gray-200">{diagnostic.message}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
 

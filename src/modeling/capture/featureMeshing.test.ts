@@ -105,6 +105,70 @@ describe('meshFeaturesPerFeature', () => {
     expect(plainMesh!.color).toBeUndefined();
   });
 
+  it('enriches mesh identity from feature metadata without inventing source names', async () => {
+    const named: import('../../shared/intent/featureRecord').FeatureRecord = {
+      id: 'box-named',
+      kind: 'box',
+      inputs: {},
+      params: {
+        x: { expression: '10', evaluated: 10 },
+        y: { expression: '10', evaluated: 10 },
+        z: { expression: '10', evaluated: 10 },
+      },
+      transforms: [],
+      suppressed: false,
+      metadata: { name: 'mount-block' },
+    };
+    const unnamed: import('../../shared/intent/featureRecord').FeatureRecord = {
+      ...named,
+      id: 'box-1',
+      kind: 'box',
+      metadata: undefined,
+      params: {
+        x: { expression: '10', evaluated: 10 },
+        y: { expression: '10', evaluated: 10 },
+        z: { expression: '10', evaluated: 10 },
+      },
+    };
+
+    const namedResult = await meshFeaturesPerFeature([named]);
+    const namedMesh = namedResult.features.find((f) => f.featureId === 'box-named');
+    expect(namedMesh?.sourceMetadataName).toBe('mount-block');
+    expect(namedMesh?.displayName).toBe('mount-block');
+    expect(namedMesh?.filterNames).toEqual(['box-named', 'box', 'mount-block']);
+
+    const unnamedResult = await meshFeaturesPerFeature([unnamed]);
+    const unnamedMesh = unnamedResult.features.find((f) => f.featureId === 'box-1');
+    expect(unnamedMesh?.sourceMetadataName).toBeUndefined();
+    expect(unnamedMesh?.displayName).toBe('box-1');
+    expect(unnamedMesh?.filterNames).toEqual(['box-1', 'box']);
+  });
+
+  it('enriches assembly fan-out identity with part and source feature names', async () => {
+    const code = `
+      const arm = assembly('test');
+      const base = arm.part('base', box(10, 10, 10));
+      const link = arm.part('link', box(10, 10, 30));
+      arm.revolute('yaw', base, link, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      return arm.solvedModel({ yaw: 0 });
+    `;
+    const { records } = await runScript({ code, fileName: 'identity-assembly.kcad.ts' });
+    const assembly = records[records.length - 1];
+    assembly.metadata = { ...assembly.metadata, name: 'drive-train' };
+    const { features } = await meshFeaturesPerFeature(records);
+    const linkMesh = features.find((f) => f.featureId === `${assembly.id}__link`);
+
+    expect(linkMesh?.displayName).toBe('link');
+    expect(linkMesh?.sourceMetadataName).toBe('drive-train');
+    expect(linkMesh?.filterNames).toEqual([
+      `${assembly.id}__link`,
+      'solvedAssembly',
+      assembly.id,
+      'link',
+      'drive-train',
+    ]);
+  });
+
   describe('material shadowing diagnostic', () => {
     it('warns when a material-bearing leaf is unioned into a material-bearing head', async () => {
       const code = `

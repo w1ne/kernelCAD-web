@@ -91,7 +91,14 @@ const compliance = tempRayBan.embossText({
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Default `'original'` (preserves mm size; planar faces only). |
 | `fontFamily` | `string?` | Logical name or `.ttf` path. Default Liberation Sans. |
 
-The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. Resulting embossed faces propagate through the lineage and can be targeted downstream by face label.
+The emboss feature lowers via `replicad.drawText → drawing.sketchOnFace(face, scaleMode) → sketch.extrude(|depth|) → parent.fuse|.cut`. The fuse / cut runs through history-aware booleans (`fuseWithHistory` / `cutWithHistory`) so the newly-created glyph faces carry created-ref labels on the result `historyMap` and can be targeted downstream:
+
+| `depth` sign | Label on planar glyph face | Label on side walls |
+|---|---|---|
+| `depth > 0` (emboss) | `embossed-text` | `embossed-text-wall` |
+| `depth < 0` (engrave) | `engraved-text-floor` | `engraved-text-wall` |
+
+Use these names to chain further features against the embossed/engraved geometry — for example `result.fillet(0.1, { face: 'embossed-text-wall' })` to round the glyph side walls on a raised brand mark.
 
 ### `Shape.projectCurve({...})`
 

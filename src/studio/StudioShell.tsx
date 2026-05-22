@@ -198,7 +198,7 @@ export function StudioShell() {
             <BottomDrawer />
 
             <StatusBar
-                isComputing={false}
+                isComputing={workbench.isComputing}
                 error={workbench.error ?? null}
                 geometryCount={workbench.geometries?.length ?? 0}
                 selectedCount={workbench.selectedItemIds?.length ?? 0}
@@ -206,6 +206,7 @@ export function StudioShell() {
                 layoutMode={workbench.layoutMode}
                 activeCommandLabel={null}
                 interferences={interferenceCount}
+                recomputeMs={workbench.recomputeMs}
             />
 
             <ProjectManagerDialog

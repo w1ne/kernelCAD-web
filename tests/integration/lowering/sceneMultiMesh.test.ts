@@ -8,7 +8,8 @@
 //   - carry composite featureIds shaped `${assemblyFeatureId}__${partName}`,
 //   - declare the assembly feature as their sole predecessor,
 //   - preserve per-part color from `SceneBackendPart.color`,
-//   - apply the part's `worldTransform` to vertices/normals (FK-posed),
+//   - preserve each part mesh in local coordinates and carry `worldTransform`
+//     as viewport transform metadata,
 //   - aggregate bounds across all fanned meshes,
 //   - leave the existing single-shape path (plain ShapeBackend) untouched.
 
@@ -66,7 +67,7 @@ describe('meshing — SceneBackend fan-out', () => {
     expect(armMesh?.color).toBe('beam');
   });
 
-  it('applies worldTransform to vertices (FK-posed positions in world frame)', async () => {
+  it('keeps vertices local and carries worldTransform for viewport posing', async () => {
     // Long arm extending +X in its local frame. With yaw=90° about Z and
     // the joint origin at [0,0,0], every +X vertex in the local frame
     // rotates to +Y in world space.
@@ -84,11 +85,17 @@ describe('meshing — SceneBackend fan-out', () => {
     const armMesh = features.find(f => f.featureId === `${last.id}__arm`);
     expect(armMesh).toBeDefined();
 
-    // Walk all vertices of the arm mesh in world space; collect the
-    // per-axis extents. In its local frame the arm spans roughly x ∈ [0, 60].
-    // After 90° yaw about Z (joint origin at world origin), x-extent in local
-    // becomes y-extent in world; the world-space x-extent collapses to ≤ 10
-    // (the box's local Y half-width).
+    expect(armMesh!.assemblyPartName).toBe('arm');
+    expect(armMesh!.assemblyFeatureId).toBe(last.id);
+    expect(armMesh!.transform).toHaveLength(16);
+    expect(armMesh!.transform![0]).toBeCloseTo(0, 5);
+    expect(armMesh!.transform![1]).toBeCloseTo(1, 5);
+    expect(armMesh!.transform![4]).toBeCloseTo(-1, 5);
+    expect(armMesh!.transform![5]).toBeCloseTo(0, 5);
+
+    // Walk all vertices of the arm mesh in local space. The long local X
+    // extent must remain intact; the viewport transform is responsible for
+    // rotating it to world +Y.
     let maxX = -Infinity, maxY = -Infinity;
     let minX = Infinity, minY = Infinity;
     for (const face of armMesh!.faces) {
@@ -100,9 +107,8 @@ describe('meshing — SceneBackend fan-out', () => {
         if (v[i + 1] < minY) minY = v[i + 1];
       }
     }
-    // World Y-extent picks up the long arm; world X-extent stays small.
-    expect(maxY).toBeGreaterThan(55);
-    expect(maxX - minX).toBeLessThanOrEqual(15);
+    expect(maxX).toBeGreaterThan(55);
+    expect(maxY - minY).toBeLessThanOrEqual(15);
   });
 
   it('aggregates bounds across all fanned meshes', async () => {
@@ -140,8 +146,8 @@ describe('meshing — SceneBackend fan-out', () => {
   // `assemblyModel` shape lands in meshing, the SceneBackend fan-out is the
   // ONLY mesh source the renderer wants. Intermediate boxes/cylinders/fillets/
   // holes/booleans used to BUILD each part are construction debris — they'd
-  // render at LOCAL frame stacked at the origin and drown out the colored,
-  // FK-posed fan-out. Pre-Task-9 the renderer was getting both, producing a
+  // render at LOCAL frame stacked at the origin and drown out the colored
+  // assembly fan-out. Pre-Task-9 the renderer was getting both, producing a
   // gray-soup hero image; the closure filter scopes meshing to the fan-out.
 
   it('filter active: solvedAssembly suppresses construction-input intermediates', async () => {

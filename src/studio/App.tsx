@@ -20,6 +20,7 @@ function isCodeParsable(code: string): boolean {
 }
 
 import { useProject } from './context/ProjectContext';
+import { loadStudioScriptSource } from './scriptSource';
 
 function readScriptParam(): string | null {
   if (typeof window === 'undefined') return null;
@@ -41,18 +42,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     if (isDevLab || !scriptParam) return;
 
     let cancelled = false;
-    fetch(`/__kernelcad/mesh?script=${encodeURIComponent(scriptParam)}`)
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) {
-          const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-          throw new Error(message);
-        }
-        if (typeof payload?.source !== 'string') {
-          throw new Error('Script endpoint did not return source code.');
-        }
-        return payload.source as string;
-      })
+    loadStudioScriptSource(scriptParam)
       .then((source) => {
         if (cancelled) return;
         setCode(source);

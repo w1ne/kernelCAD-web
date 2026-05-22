@@ -30,6 +30,12 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - **Units**: millimetres, degrees, Z-up right-handed.
 - **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`).
 - **Diagnostic-anchored hints**: when a kernelCAD tool throws, the error carries a `hint` field tied to a diagnostic code (`feature.*`, `assembly.*`, etc.). Read the hint — it carries the fix.
+- **Words to CAD / Words to geometry**: preserve the prompt-to-geometry mapping. Important nouns and constraints from the user's words should become named source sections, parameters, parts, connectors, materials, tests, or visible artifacts; do not reduce the job to untraceable hand-tuned shapes.
+- **Source-first CAD**: the `.kcad.ts` file is the design source of truth. Generated screenshots, videos, STEP, STL, and score JSON are evidence/artifacts, not editable source. Change source, then regenerate explicit targets.
+- **No broad regeneration**: generate only the named output needed for the task (`kernelcad render`, `kernelcad export`, demo capture, portfolio capture). Do not run directory-wide artifact refreshes unless the user asked for a release/demo rebuild.
+- **Catalog parts over fake geometry**: for real hardware such as servos, motors, bearings, fasteners, connectors, sensors, and boards, prefer `lib.fromSTEP(...)` with a recorded source/provenance over hand-modeled placeholder boxes/cylinders. Use placeholders only for blockouts or when the real part is unavailable.
+- **Validation before screenshots**: use deterministic checks first (`kernelcad evaluate`, exports, `inspect_assembly`, `review_cad`, interference checks, scorer gates). Visual review is required evidence for rendered artifacts, but it does not replace geometry checks.
+- **Deterministic visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce an inspection bundle with a manifest and canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 
 ## Mandatory visual-critique step (applies to ALL agents, every skill)
 

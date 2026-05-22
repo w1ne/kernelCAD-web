@@ -142,12 +142,15 @@ export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Materi
     ior: pbr?.ior ?? 1.5,
     transmission: pbr?.transmission ?? 0,
     sheen: pbr?.sheen ?? 0,
+    opacity: pbr?.opacity ?? 1,
+    transparent: (pbr?.opacity ?? 1) < 1 || (pbr?.transmission ?? 0) > 0,
     thickness: pbr?.thickness ?? 0,
     attenuationColor: new THREE.Color(attenuationColorResolved),
     attenuationDistance: pbr?.attenuationDistance ?? Infinity,
     anisotropy: pbr?.anisotropy ?? 0,
     anisotropyRotation: ((pbr?.anisotropyRotation ?? 0) * Math.PI) / 180,
   });
+  material.userData.authoredOpacity = pbr?.opacity ?? 1;
 
   // Fire-and-forget texture attachment. Synchronous return value above is the
   // material that the renderer uses immediately; textures pop in on load.

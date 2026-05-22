@@ -13,25 +13,15 @@ import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
  * review so the param table refreshes with the new value.
  */
 export function ParamsTab(): JSX.Element {
-    const { paramTable, joints, updateParam } = useRecomputeResult();
+    const { paramTable, updateParam } = useRecomputeResult();
     // Single shared updater for every row in this tab. Numeric scrubs get
     // a debounced send so slider drag doesn't fire one POST + one full
     // relower per pointer-move; boolean toggles are single high-intent
     // clicks, so they fire immediately via `commit`.
-    const updater = useParamUpdate(updateParam, { source: 'ParamsTab' });
-
-    // Slice 2C: hide params that are surfaced as joint poses in JointsTab so
-    // the same scalar isn't edited from two places. `poseParamNames` may
-    // contain `null` for numeric-literal poses; only string entries filter.
-    const jointPoseNames = new Set<string>();
-    for (const j of joints ?? []) {
-        for (const n of j.poseParamNames ?? []) {
-            if (typeof n === 'string') jointPoseNames.add(n);
-        }
-    }
+    const updater = useParamUpdate(updateParam, { source: 'ParamsTab', debounceMs: 700 });
 
     const entries: ParamEntry[] = paramTable && paramTable.size() > 0
-        ? paramTable.list().filter((e) => !jointPoseNames.has(e.name))
+        ? paramTable.list()
         : [];
 
     if (entries.length === 0) {
@@ -101,6 +91,7 @@ function ParamRow({ entry, updater }: ParamRowProps): JSX.Element {
                 onChange={(next) => {
                     updater.commitDebounced([{ name: entry.name, value: next }]);
                 }}
+                onCommit={updater.flush}
             />
         </li>
     );

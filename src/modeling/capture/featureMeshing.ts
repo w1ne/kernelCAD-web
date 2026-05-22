@@ -61,6 +61,18 @@ export interface FeatureMesh {
    *  per-face API). The renderer prefers this entry over `material` on a
    *  face-by-face basis; unmatched faces fall back to `material`. */
   materialByFaceId?: Record<number, PBRMaterial>;
+  /** Stable human-readable mesh label for manifests and object filters. */
+  displayName?: string;
+  /** Deterministic names/ids that can match this mesh in inspection filters. */
+  filterNames?: readonly string[];
+  /** Original FeatureRecord.metadata.name when authored on the source record. */
+  sourceMetadataName?: string;
+  /** Assembly feature id when this mesh is a SceneBackend part fan-out. */
+  assemblyFeatureId?: FeatureId;
+  /** Assembly part name when this mesh is a SceneBackend part fan-out. */
+  assemblyPartName?: string;
+  /** Column-major 4x4 local-to-world transform for viewport-side posing. */
+  transform?: readonly number[];
   /** True for virtual (non-geometry) records such as referenceImage. */
   virtual?: boolean;
   /** Reference image payload; present when featureKind === 'referenceImage'. */
@@ -129,8 +141,8 @@ export interface MeshFeaturesResult {
  * SceneBackend fan-out path subsumes. Skipping these in the per-feature
  * meshing pass prevents intermediate primitives (boxes, fillets, holes,
  * boolean cutters, sketch profiles) from being emitted at LOCAL frame —
- * they would otherwise stack at the origin and drown out the colored,
- * FK-posed assembly fan-out.
+ * they would otherwise stack at the origin and drown out the colored
+ * assembly fan-out.
  *
  * Members of the closure:
  *   - Every `assemblyPart`, `assemblyJoint`, `assemblyConnect` record (these
@@ -199,6 +211,41 @@ function computeConstructionClosure(
   return closure;
 }
 
+function uniqueStrings(values: readonly (string | undefined)[]): string[] {
+  const out: string[] = [];
+  for (const value of values) {
+    if (value === undefined || value.length === 0 || out.includes(value)) continue;
+    out.push(value);
+  }
+  return out;
+}
+
+function metadataNameOf(record: FeatureRecord | undefined): string | undefined {
+  const name = (record?.metadata as { name?: unknown } | undefined)?.name;
+  return typeof name === 'string' && name.length > 0 ? name : undefined;
+}
+
+function meshIdentityFields(args: {
+  featureId: FeatureId;
+  featureKind: FeatureKind;
+  sourceMetadataName?: string;
+  assemblyFeatureId?: FeatureId;
+  assemblyPartName?: string;
+}): Pick<FeatureMesh, 'displayName' | 'filterNames' | 'sourceMetadataName'> {
+  const filterNames = uniqueStrings([
+    args.featureId,
+    args.featureKind,
+    args.assemblyFeatureId,
+    args.assemblyPartName,
+    args.sourceMetadataName,
+  ]);
+  return {
+    displayName: args.assemblyPartName ?? args.sourceMetadataName ?? args.featureId,
+    filterNames,
+    ...(args.sourceMetadataName !== undefined ? { sourceMetadataName: args.sourceMetadataName } : {}),
+  };
+}
+
 export async function meshFeaturesPerFeature(
   records: readonly FeatureRecord[],
   paramTable?: import('../../shared/runtime/paramTable').ParamTable,
@@ -226,6 +273,7 @@ export async function meshFeaturesPerFeature(
   const engine = new RecomputeEngine(lowerer);
   const features: FeatureMesh[] = [];
   const failedFeatureIds: FeatureId[] = [];
+  const recordById = new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
@@ -277,6 +325,11 @@ export async function meshFeaturesPerFeature(
         predecessors: [],
         faces: [],
         virtual: true,
+        ...meshIdentityFields({
+          featureId: r.id,
+          featureKind: r.kind,
+          sourceMetadataName: metadataNameOf(r),
+        }),
         ...(refImg !== undefined ? { referenceImage: refImg } : {}),
         ...(renderEnv !== undefined ? { renderEnvironment: renderEnv } : {}),
         ...(cameraTgt !== undefined ? { cameraTarget: cameraTgt } : {}),
@@ -300,7 +353,7 @@ export async function meshFeaturesPerFeature(
 
       // Construction-input closure: this record was an intermediate input
       // to an assemblyPart's source shape. Its geometry is already presented
-      // (FK-posed, in world frame, with role color) via the SceneBackend
+      // (with role color and viewport transform) via the SceneBackend
       // fan-out below. Emitting it here would re-render it at LOCAL frame
       // stacked at origin. Note: the SceneBackend feature itself
       // (solvedAssembly / assemblyModel / assemblyExport) is the consumer,
@@ -311,8 +364,9 @@ export async function meshFeaturesPerFeature(
 
       // SceneBackend (assembly multi-body) → fan out one FeatureMesh per
       // assembly part, with composite featureId, the assembly feature as
-      // the sole predecessor, per-part color, and FK-transformed vertices/
-      // normals/edges/plane via the shared transformFeatureMesh helper.
+      // the sole predecessor, per-part color, and a viewport transform.
+      // Keep vertices in each part's local frame so Studio can pose parts
+      // by changing group matrices instead of remeshing on every joint tick.
       if (isSceneBackend(event.shape)) {
         for (const part of event.shape.parts) {
           const meshed = meshShape(extractRawShape(part.shape));
@@ -331,14 +385,25 @@ export async function meshFeaturesPerFeature(
             volume: meshed.volume,
             ...(meshed.edges ? { edges: meshed.edges } : {}),
           };
-          const transformed = transformFeatureMesh(local, part.worldTransform);
-          attachPlanarUVs(transformed.faces);
+          attachPlanarUVs(local.faces);
           features.push({
-            ...transformed,
+            ...local,
+            assemblyFeatureId: event.featureId,
+            assemblyPartName: part.name,
+            transform: part.worldTransform.toMat4(),
+            ...meshIdentityFields({
+              featureId: local.featureId,
+              featureKind: local.featureKind,
+              assemblyFeatureId: event.featureId,
+              assemblyPartName: part.name,
+              sourceMetadataName: metadataNameOf(recordById.get(event.featureId)),
+            }),
             ...(part.color !== undefined ? { color: part.color } : {}),
             ...(part.material !== undefined ? { material: part.material } : {}),
           });
-          // Aggregate bounds from FK-transformed vertices.
+          // Aggregate bounds from FK-transformed vertices while keeping the
+          // emitted mesh local for viewport-side transforms.
+          const transformed = transformFeatureMesh(local, part.worldTransform);
           for (const f of transformed.faces) {
             for (let i = 0; i < f.vertices.length; i += 3) {
               const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
@@ -447,6 +512,11 @@ export async function meshFeaturesPerFeature(
         faces: meshed.faces,
         volume: meshed.volume,
         edges: meshed.edges,
+        ...meshIdentityFields({
+          featureId: event.featureId,
+          featureKind: event.featureKind,
+          sourceMetadataName: metadataNameOf(recordById.get(event.featureId)),
+        }),
         ...(color !== undefined ? { color } : {}),
         ...(material !== undefined ? { material } : {}),
         ...(materialByFaceId !== undefined ? { materialByFaceId } : {}),

@@ -765,7 +765,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A connector topology query (face/edge/vertex) did not resolve against the connector parent shape.',
   },
-  // Assembly mechanical-plausibility checks (5)
+  // Assembly mechanical-plausibility checks (6)
   'assembly.mechanical.part-disconnected': {
     hintTemplate:
       "Remove decorative/floating solids from this part, or add real bridge/bracket geometry so every solid in the part shares a physical load path.",
@@ -795,6 +795,17 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A fastened mate joins two parts whose modeled bodies do not share a usable contact area.',
+  },
+  'assembly.mechanical.fixed-contact-missing': {
+    hintTemplate:
+      "Move the fixed child into contact with its parent, or add a bracket, flange, stem, bridge, or mounting face so the fixed joint represents real attached geometry instead of an air gap.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'move or bridge fixed-joint parts so parent and child share a real contact patch',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A legacy assembly.fixed() joint joins two parts whose modeled bodies do not share a usable contact area.',
   },
   'assembly.mechanical.revolute-unsupported': {
     hintTemplate:
