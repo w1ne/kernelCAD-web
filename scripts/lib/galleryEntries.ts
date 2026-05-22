@@ -1,4 +1,10 @@
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { z } from 'zod';
+
+export const galleryMechanismReviewSchema = z.object({
+  evidence: z.string().min(1),
+});
 
 export const galleryEntrySchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'slug must be lowercase kebab-case'),
@@ -17,6 +23,7 @@ export const galleryEntrySchema = z.object({
   featured: z.boolean().default(false),
   createdAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   appUrl: z.string().url().nullable().default(null),
+  mechanismReview: galleryMechanismReviewSchema.optional(),
 });
 
 export const galleryEntriesFileSchema = z.object({
@@ -25,6 +32,64 @@ export const galleryEntriesFileSchema = z.object({
 
 export type GalleryEntry = z.infer<typeof galleryEntrySchema>;
 export type GalleryEntriesFile = z.infer<typeof galleryEntriesFileSchema>;
+
+export function isMechanismGalleryEntry(entry: GalleryEntry): boolean {
+  return entry.tags.includes('mechanism') || entry.mechanismReview !== undefined;
+}
+
+export function mechanismReviewEvidencePath(entry: GalleryEntry, entriesDir: string): string | null {
+  if (!isMechanismGalleryEntry(entry)) return null;
+  const evidence = entry.mechanismReview?.evidence ?? `../../examples/gallery/${entry.slug}/review.json`;
+  return path.resolve(entriesDir, evidence);
+}
+
+export function validateMechanismReviewEvidence(entry: GalleryEntry, evidence: unknown, evidencePath: string): void {
+  const prefix = `entry ${entry.slug}: mechanism review evidence ${evidencePath}`;
+  if (typeof evidence !== 'object' || evidence === null || Array.isArray(evidence)) {
+    throw new Error(`${prefix} must be a review_cad JSON object`);
+  }
+
+  const record = evidence as Record<string, unknown>;
+  if (record.tool !== 'review_cad') {
+    throw new Error(`${prefix} must declare tool "review_cad"`);
+  }
+  if (record.ok !== true) {
+    throw new Error(`${prefix} must have review_cad ok === true`);
+  }
+
+  const fitness = record.fitness;
+  if (typeof fitness !== 'object' || fitness === null || Array.isArray(fitness)) {
+    throw new Error(`${prefix} must include review_cad fitness`);
+  }
+
+  const fitnessRecord = fitness as Record<string, unknown>;
+  if (fitnessRecord.functional !== true) {
+    throw new Error(`${prefix} must have review_cad fitness.functional === true`);
+  }
+
+  const blockingReasons = fitnessRecord.blockingReasons;
+  if (!Array.isArray(blockingReasons)) {
+    throw new Error(`${prefix} must include review_cad fitness.blockingReasons`);
+  }
+  if (blockingReasons.length > 0) {
+    throw new Error(`${prefix} must have no review_cad fitness.blockingReasons`);
+  }
+}
+
+export function validateMechanismReviewEvidenceFiles(entries: readonly GalleryEntry[], entriesDir: string): void {
+  for (const entry of entries) {
+    const evidencePath = mechanismReviewEvidencePath(entry, entriesDir);
+    if (evidencePath === null) continue;
+    if (!existsSync(evidencePath)) {
+      throw new Error(`entry ${entry.slug}: mechanism review evidence not found at ${evidencePath}`);
+    }
+    validateMechanismReviewEvidence(
+      entry,
+      JSON.parse(readFileSync(evidencePath, 'utf8')),
+      evidencePath,
+    );
+  }
+}
 
 function quarterKey(date: string): string {
   const year = Number(date.slice(0, 4));

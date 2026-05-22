@@ -163,10 +163,10 @@ const pawlPivot = stool.part(
   'round pawl pivot boss on sleeve',
   cylinder(mm(10), mm(8), 48)
     .alongAxis([0, 1, 0])
-    .translate(sleeveRadius + mm(3), mm(-5), sleeveTopZ + mm(14))
+    .translate(sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8))
     .color('#41484e'),
 );
-stool.fixed('pawl pivot boss welded to outer sleeve', outerSleeve, pawlPivot, { origin: [sleeveRadius + mm(3), mm(-5), sleeveTopZ + mm(14)] });
+stool.fixed('pawl pivot boss welded to outer sleeve', outerSleeve, pawlPivot, { origin: [sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8)] });
 
 const pawlLever = stool.part(
   'curved-release pawl lever biting into rack teeth',
@@ -199,10 +199,10 @@ const spring = stool.part(
   'visible return spring from collar lug to pawl lever',
   cylinder(mm(36), mm(1.5), 16)
     .alongAxis([0.925, -0.185, -0.324])
-    .translate(sleeveRadius + mm(6), mm(3), sleeveTopZ + mm(37))
+    .translate(sleeveRadius + mm(6), mm(3), sleeveTopZ + mm(2))
     .color('#b8bdc1'),
 );
-stool.fixed('return spring pulls pawl lever back into rack', upperCollar, spring, { origin: [sleeveRadius + mm(8), mm(2), sleeveTopZ + mm(36)] });
+stool.fixed('return spring pulls pawl lever back into rack', upperCollar, spring, { origin: [sleeveRadius + mm(8), mm(2), sleeveTopZ + mm(2)] });
 
 const footRing = stool.part(
   'circular tubular foot ring welded around lower sleeve',

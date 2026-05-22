@@ -70,4 +70,73 @@ describe('buildGallery', () => {
       publicDir: path.join(tmp, 'public'),
     })).rejects.toThrow(/missing-video|video.*not.*found/i);
   });
+
+  it('rejects a mechanism entry before asset work when cached review evidence is missing', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
+    const entriesDir = path.join(tmp, 'gallery');
+    mkdirSync(entriesDir, { recursive: true });
+
+    const fixturesRoot = path.resolve(__dirname, '../../tests/fixtures/gallery');
+    copyFileSync(path.join(fixturesRoot, 'short-clip.mp4'), path.join(entriesDir, 'short-clip.mp4'));
+    copyFileSync(path.join(fixturesRoot, 'simple-box.kcad.ts'), path.join(entriesDir, 'simple-box.kcad.ts'));
+    writeFileSync(
+      path.join(entriesDir, 'entries.json'),
+      JSON.stringify({
+        entries: [{
+          slug: 'missing-review', title: 'Missing review',
+          author: { handle: 'k', url: 'https://x.com/k' },
+          version: 'v0.11.0', prompt: 'p', source: 'curated',
+          video: 'short-clip.mp4', codeLocal: 'simple-box.kcad.ts',
+          code: 'https://github.com/w1ne/kernelCAD-web',
+          tags: ['mechanism'], featured: false, createdAt: '2026-05-15', appUrl: null,
+          mechanismReview: { evidence: 'missing-review.json' },
+        }],
+      }),
+    );
+
+    await expect(buildGallery({
+      entriesPath: path.join(entriesDir, 'entries.json'),
+      publicDir: path.join(tmp, 'public'),
+    })).rejects.toThrow(/missing-review.*mechanism review evidence.*not found/i);
+  });
+
+  it('rejects a mechanism entry whose cached review_cad evidence is not passing', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
+    const entriesDir = path.join(tmp, 'gallery');
+    mkdirSync(entriesDir, { recursive: true });
+
+    const fixturesRoot = path.resolve(__dirname, '../../tests/fixtures/gallery');
+    copyFileSync(path.join(fixturesRoot, 'short-clip.mp4'), path.join(entriesDir, 'short-clip.mp4'));
+    copyFileSync(path.join(fixturesRoot, 'simple-box.kcad.ts'), path.join(entriesDir, 'simple-box.kcad.ts'));
+    writeFileSync(
+      path.join(entriesDir, 'failing-review.json'),
+      JSON.stringify({
+        tool: 'review_cad',
+        ok: false,
+        fitness: {
+          functional: false,
+          blockingReasons: [{ code: 'assembly.mechanical.fixed-contact-missing' }],
+        },
+      }),
+    );
+    writeFileSync(
+      path.join(entriesDir, 'entries.json'),
+      JSON.stringify({
+        entries: [{
+          slug: 'failing-review', title: 'Failing review',
+          author: { handle: 'k', url: 'https://x.com/k' },
+          version: 'v0.11.0', prompt: 'p', source: 'curated',
+          video: 'short-clip.mp4', codeLocal: 'simple-box.kcad.ts',
+          code: 'https://github.com/w1ne/kernelCAD-web',
+          tags: ['mechanism'], featured: false, createdAt: '2026-05-15', appUrl: null,
+          mechanismReview: { evidence: 'failing-review.json' },
+        }],
+      }),
+    );
+
+    await expect(buildGallery({
+      entriesPath: path.join(entriesDir, 'entries.json'),
+      publicDir: path.join(tmp, 'public'),
+    })).rejects.toThrow(/failing-review.*review_cad.*ok.*true/i);
+  });
 });
