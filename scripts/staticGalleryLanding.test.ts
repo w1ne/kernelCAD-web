@@ -11,6 +11,19 @@ describe('static gallery landing page', () => {
     expect(html).not.toContain("wireCopyButton('mcp-btn', 'kernelcad mcp')");
   });
 
+  it('places the prompt handoff before the built-with-kernelCAD gallery', () => {
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+
+    expect(html).toContain('action="https://app.kernelcad.com/generate"');
+    expect(html).toContain('name="prompt"');
+    expect(html).toContain('Describe the part you want');
+
+    const promptIdx = html.indexOf('class="prompt-handoff"');
+    const galleryIdx = html.indexOf('class="gallery"');
+    expect(promptIdx).toBeGreaterThan(-1);
+    expect(galleryIdx).toBeGreaterThan(promptIdx);
+  });
+
   it('renders gallery tiles with rotating model-viewer elements', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
@@ -22,5 +35,14 @@ describe('static gallery landing page', () => {
 
     const css = readFileSync(path.resolve(__dirname, '../site/style.css'), 'utf8');
     expect(css).toMatch(/\.gallery-tile \.tile-viewer[\s\S]*pointer-events:\s*none/);
+  });
+
+  it('keeps the royal watch gallery model rotating on the dial side', () => {
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+
+    expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
+    expect(html).toContain('min-camera-orbit="${orbit.min}"');
+    expect(html).toContain('max-camera-orbit="${orbit.max}"');
+    expect(html).toContain('camera-orbit="${orbit.initial}"');
   });
 });
