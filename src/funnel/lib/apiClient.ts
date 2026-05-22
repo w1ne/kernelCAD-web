@@ -150,3 +150,17 @@ export async function createCheckoutSession(): Promise<CheckoutSession> {
 export async function openBillingPortal(): Promise<BillingPortalSession> {
   return authedFetch<BillingPortalSession>('POST', '/api/v1/billing/portal');
 }
+
+// ---------------------------------------------------------------------------
+// MCP tokens
+// ---------------------------------------------------------------------------
+
+export interface McpTokenResult {
+  token: string;
+  tokenPrefix: string;
+}
+
+/** POST /api/v1/mcp/tokens — creates a one-time-visible token for cloud MCP. */
+export async function createMcpToken(): Promise<McpTokenResult> {
+  return authedFetch<McpTokenResult>('POST', '/api/v1/mcp/tokens');
+}

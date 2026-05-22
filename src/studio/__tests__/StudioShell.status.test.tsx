@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let workbenchComputing = false;
+let agentRailOpen = false;
 
 vi.mock('../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
@@ -24,7 +25,7 @@ vi.mock('../context/WorkbenchContext', () => ({
 }));
 
 vi.mock('../store/useShellStore', () => ({
-    useShellStore: () => ({ agentRailOpen: false, selectedFeatureId: null }),
+    useShellStore: () => ({ agentRailOpen, selectedFeatureId: null }),
     shellStore: {
         setAgentRailOpen: vi.fn(),
         proposeStagedEdit: vi.fn(),
@@ -54,8 +55,6 @@ vi.mock('../Inspector', () => ({ Inspector: () => <div data-testid="inspector" /
 vi.mock('../AgentRail', () => ({ AgentRail: () => <div data-testid="agent-rail" /> }));
 vi.mock('../BottomDrawer', () => ({ BottomDrawer: () => <div data-testid="bottom-drawer" /> }));
 vi.mock('../components/Dialogs/ProjectManagerDialog', () => ({ default: () => null }));
-vi.mock('../features-ui/ai/FloatingAgent', () => ({ FloatingAgent: () => null }));
-vi.mock('../features-ui/ai/SmartWidget', () => ({ SmartWidget: () => null }));
 vi.mock('../components/Layout/StatusBar', () => ({
     StatusBar: ({ isComputing }: { isComputing: boolean }) => (
         <div data-testid="status-is-computing">{String(isComputing)}</div>
@@ -68,6 +67,7 @@ afterEach(() => cleanup());
 
 beforeEach(() => {
     workbenchComputing = false;
+    agentRailOpen = false;
 });
 
 describe('StudioShell status plumbing', () => {
@@ -77,5 +77,15 @@ describe('StudioShell status plumbing', () => {
         render(<StudioShell />);
 
         expect(screen.getByTestId('status-is-computing').textContent).toBe('true');
+    });
+
+    it('places the open agent rail before the viewport', () => {
+        agentRailOpen = true;
+
+        render(<StudioShell />);
+
+        const rail = screen.getByTestId('agent-rail');
+        const viewport = screen.getByTestId('viewport');
+        expect(rail.compareDocumentPosition(viewport) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 });
