@@ -3,12 +3,15 @@ import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';
 import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { DevLab } from './devlab/DevLab';
-import { devLabScenarios } from './devlab/scenarios';
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
-import { DemoPlayerPage } from './components/demoPlayer/DemoPlayerPage';
 import { StudioChromeProvider } from './context/StudioChromeContext';
+
+const LazyDevLab = lazy(() =>
+  import('./devlab/DevLab').then(({ DevLab }) => ({
+    default: DevLab,
+  })),
+);
 
 function isCodeParsable(code: string): boolean {
   try {
@@ -98,12 +101,13 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     return () => clearTimeout(timeoutId);
   }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
 
-  return isDevLab ? <DevLab /> : <StudioShell />;
-}
-
-function isDemoPlayerRoute(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.location.pathname === '/demo-player';
+  return isDevLab ? (
+    <Suspense fallback={null}>
+      <LazyDevLab />
+    </Suspense>
+  ) : (
+    <StudioShell />
+  );
 }
 
 interface AppProps {
@@ -119,15 +123,12 @@ interface AppProps {
   headerRight?: ReactNode;
 }
 
-export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
-  if (isDemoPlayerRoute()) {
-    return <DemoPlayerPage />;
-  }
-
-  const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
-  const initialCode =
-    initialCodeProp ?? (isDevLab ? (devLabScenarios[0]?.code ?? undefined) : undefined);
-
+function AppProviders({
+  initialCode,
+  isDevLab,
+  headerLeft,
+  headerRight,
+}: AppProps & { isDevLab: boolean }) {
   return (
     <WorkbenchProvider initialCode={initialCode}>
       <StudioChromeProvider value={{ headerLeft, headerRight }}>
@@ -136,5 +137,55 @@ export default function App({ initialCode: initialCodeProp, headerLeft, headerRi
         </ErrorBoundary>
       </StudioChromeProvider>
     </WorkbenchProvider>
+  );
+}
+
+function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'headerRight'>) {
+  const [initialCode, setInitialCode] = useState<string | undefined>();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    import('./devlab/scenarios')
+      .then(({ devLabScenarios }) => {
+        if (cancelled) return;
+        setInitialCode(devLabScenarios[0]?.code);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!isLoaded) return null;
+
+  return (
+    <AppProviders
+      initialCode={initialCode}
+      isDevLab={true}
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+    />
+  );
+}
+
+export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
+  const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
+
+  if (isDevLab && initialCodeProp === undefined) {
+    return <DevLabApp headerLeft={headerLeft} headerRight={headerRight} />;
+  }
+
+  return (
+    <AppProviders
+      initialCode={initialCodeProp}
+      isDevLab={isDevLab}
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+    />
   );
 }
