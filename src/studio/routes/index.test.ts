@@ -12,20 +12,34 @@ describe('App root route (src/studio/routes/index.tsx)', () => {
 });
 
 /**
- * Generate-page contract: the prompt funnel remains available, but it no
- * longer owns app root. It keeps the three signal sections in order.
+ * Generate-page contract: the Words-to-CAD prompt stays visible to anonymous
+ * users, but generation is gated by auth. On submit, the route stores the
+ * prompt, opens sign-in, and resumes generation after OAuth returns with a
+ * session.
  */
 describe('Generate page (src/studio/routes/generate.tsx)', () => {
   const source = readFileSync('src/studio/routes/generate.tsx', 'utf8');
 
-  it('imports the three section components', () => {
+  it('imports the prompt app and sign-in modal components', () => {
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/PromptBox['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/GallerySection['"]/);
     expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/EmailSignup['"]/);
+    expect(source).toMatch(/from\s+['"]\.\.\/\.\.\/funnel\/components\/SignInModal['"]/);
   });
 
-  it('renders <PromptBox /> in the JSX tree', () => {
-    expect(source).toMatch(/<PromptBox\b/);
+  it('keeps the prompt visible before sign-in', () => {
+    const promptIdx = source.indexOf('<PromptBox');
+    const modalIdx = source.indexOf('<SignInModal');
+    expect(promptIdx).toBeGreaterThan(-1);
+    expect(modalIdx).toBeGreaterThan(promptIdx);
+  });
+
+  it('gates generation by stashing the prompt and opening sign-in', () => {
+    expect(source).toContain("const PENDING_PROMPT_KEY = 'kc:pendingPrompt'");
+    expect(source).toContain('window.localStorage.setItem(PENDING_PROMPT_KEY, prompt)');
+    expect(source).toContain('setSignInOpen(true)');
+    expect(source).toContain('window.localStorage.getItem(PENDING_PROMPT_KEY)');
+    expect(source).toContain('void submit(pending)');
   });
 
   it('renders <GallerySection /> in the JSX tree', () => {
@@ -36,7 +50,7 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
     expect(source).toMatch(/<EmailSignup\b/);
   });
 
-  it('orders the sections prompt → gallery → email (so the page reads top-to-bottom as designed)', () => {
+  it('orders the generate page sections prompt -> gallery -> email', () => {
     const promptIdx = source.indexOf('<PromptBox');
     const galleryIdx = source.indexOf('<GallerySection');
     const emailIdx = source.indexOf('<EmailSignup');

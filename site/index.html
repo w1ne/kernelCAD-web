@@ -175,6 +175,7 @@
       <div class="lightbox-body">
         <h3 class="lightbox-title"></h3>
         <p class="lightbox-meta"></p>
+        <div class="lightbox-prompt-label">Text-to-CAD prompt</div>
         <pre class="lightbox-prompt"></pre>
         <div class="lightbox-ctas">
           <form class="lightbox-subscribe" action="/api/subscribe" method="POST">
@@ -200,7 +201,13 @@
 
   <script>
     // load demo video + version from build-time generated demo.json
-    fetch('/demo.json')
+    function cacheKeyedUrl(url, cacheKey) {
+      if (!url) return url;
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
+    }
+
+    fetch(`/demo.json?v=${Date.now()}`, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
@@ -223,12 +230,14 @@
     }
 
     // Render the curated gallery from /gallery.json
-    fetch('/gallery.json')
+    fetch(`/gallery.json?v=${Date.now()}`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((g) => {
         if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
         const section = document.getElementById('gallery');
         const grid = document.getElementById('gallery-grid');
+        const galleryCacheKey = g.generatedAt || Date.now();
+        grid.textContent = '';
         for (const entry of g.entries) {
           const orbit = entry.slug === 'royal-pop-pocket-watch'
             ? { initial: '0deg 75deg auto', min: '-35deg 60deg auto', max: '35deg 85deg auto' }
@@ -239,8 +248,8 @@
           tile.innerHTML = `
             <model-viewer
               class="tile-viewer"
-              src="${entry.modelUrl}"
-              poster="${entry.posterUrl}"
+              src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"
+              poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
               alt="${entry.title}"
               auto-rotate
               auto-rotate-delay="0"
@@ -272,10 +281,18 @@
         const closeBtn = dialog.querySelector('.lightbox-close');
 
         function openLightbox(entry) {
-          video.src = entry.videoUrl;
+          video.src = cacheKeyedUrl(entry.videoUrl, galleryCacheKey);
           title.textContent = entry.title;
           meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
           promptEl.textContent = entry.prompt;
+          if (entry.promptUrl) {
+            fetch(cacheKeyedUrl(entry.promptUrl, galleryCacheKey), { cache: 'no-store' })
+              .then((r) => (r.ok ? r.text() : null))
+              .then((promptText) => {
+                if (promptText) promptEl.textContent = promptText.trim();
+              })
+              .catch(() => { /* keep embedded prompt fallback */ });
+          }
           sourceInput.value = `gallery-lightbox:${entry.slug}`;
           sourceLink.href = entry.code;
           if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }

@@ -30,11 +30,18 @@ describe('static gallery landing page', () => {
     expect(html).toContain('<model-viewer');
     expect(html).toContain('auto-rotate');
     expect(html).toContain('rotation-per-second="20deg"');
-    expect(html).toContain('src="${entry.modelUrl}"');
-    expect(html).toContain('poster="${entry.posterUrl}"');
+    expect(html).toContain('src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"');
+    expect(html).toContain('poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"');
+    expect(html).toContain('fetch(`/gallery.json?v=${Date.now()}`, { cache: ');
+    expect(html).toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
+    expect(html).toContain('cacheKeyedUrl(entry.videoUrl, galleryCacheKey)');
+    expect(html).toContain('entry.promptUrl');
+    expect(html).toContain('Text-to-CAD prompt');
+    expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
 
     const css = readFileSync(path.resolve(__dirname, '../site/style.css'), 'utf8');
     expect(css).toMatch(/\.gallery-tile \.tile-viewer[\s\S]*pointer-events:\s*none/);
+    expect(css).toContain('.lightbox-prompt-label');
   });
 
   it('keeps the royal watch gallery model rotating on the dial side', () => {

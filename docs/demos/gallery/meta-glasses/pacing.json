@@ -1,176 +1,74 @@
 {
   "preRollMs": 0,
-  "rotateStartMs": 19600,
+  "rotateStartMs": 16500,
   "rotateDurationMs": 8000,
-  "totalDurationMs": 29600,
+  "totalDurationMs": 26500,
   "features": {
     "assemblyPart_1": {
       "startAtMs": 0,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_2": {
-      "startAtMs": 700,
+      "startAtMs": 1500,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_3": {
-      "startAtMs": 1400,
+      "startAtMs": 3000,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_4": {
-      "startAtMs": 2100,
+      "startAtMs": 4500,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_5": {
-      "startAtMs": 2800,
+      "startAtMs": 6000,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_6": {
-      "startAtMs": 3500,
+      "startAtMs": 7500,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_7": {
-      "startAtMs": 4200,
+      "startAtMs": 9000,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
     "assemblyPart_8": {
-      "startAtMs": 4900,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_9": {
-      "startAtMs": 5600,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_10": {
-      "startAtMs": 6300,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_11": {
-      "startAtMs": 7000,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_12": {
-      "startAtMs": 7700,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_13": {
-      "startAtMs": 8400,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_14": {
-      "startAtMs": 9100,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_15": {
-      "startAtMs": 9800,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_16": {
       "startAtMs": 10500,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
-    "assemblyPart_17": {
-      "startAtMs": 11200,
+    "assemblyPart_9": {
+      "startAtMs": 12000,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
-    "assemblyPart_18": {
-      "startAtMs": 11900,
+    "assemblyPart_10": {
+      "startAtMs": 13500,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     },
-    "assemblyPart_19": {
-      "startAtMs": 12600,
+    "assemblyPart_11": {
+      "startAtMs": 15000,
       "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_20": {
-      "startAtMs": 13300,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_21": {
-      "startAtMs": 14000,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_22": {
-      "startAtMs": 14700,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_23": {
-      "startAtMs": 15400,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_24": {
-      "startAtMs": 16100,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_25": {
-      "startAtMs": 16800,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_26": {
-      "startAtMs": 17500,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_27": {
-      "startAtMs": 18200,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
-    },
-    "assemblyPart_28": {
-      "startAtMs": 18900,
-      "durationMs": 400,
-      "pauseMsAfter": 200,
-      "cameraNudgeMs": 100
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
     }
   }
 }

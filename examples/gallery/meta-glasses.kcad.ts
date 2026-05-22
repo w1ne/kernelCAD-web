@@ -4,7 +4,7 @@
 // the Wayfarer front silhouette from the visual experiments and adds the parts
 // that make the object read as Meta smart glasses: seated lenses, asymmetric
 // camera/privacy LED, hinge hardware, thick electronics temples, touch strip,
-// speaker slots, microphone ports, and ear bends.
+// and ear bends.
 //
 // Coordinate convention: X = left/right, Z = up, smallest Y is the
 // camera-facing front surface. Temples extend backward in +Y.
@@ -241,16 +241,6 @@ const cameraGlass = yCylinder(0.72, CAMERA_INNER_R, 56)
   })
   .color('#05070a');
 
-const cameraHighlight = yCylinder(0.12, 0.62, 20)
-  .translate(CAMERA_X - 0.75, CENTER_Y - 0.18, CAMERA_Z + 0.8)
-  .material({
-    baseColor: '#67727b',
-    metalness: 0,
-    roughness: 0.2,
-    clearcoat: 0.2,
-  })
-  .color('#67727b');
-
 const privacyLedDiffuser = yCylinder(0.64, PRIVACY_LED_R, 32)
   .translate(PRIVACY_LED_X, CENTER_Y - 0.08, PRIVACY_LED_Z)
   .material({
@@ -261,24 +251,6 @@ const privacyLedDiffuser = yCylinder(0.64, PRIVACY_LED_R, 32)
     clearcoatRoughness: 0.06,
   })
   .color('#d15a34');
-
-const noseShadow = frontBody(
-  path()
-    .moveTo(-4.2, FRAME_BOT_Z + 0.3)
-    .lineTo(4.2, FRAME_BOT_Z + 0.3)
-    .lineTo(0, FRAME_BOT_Z + 4.8)
-    .close(),
-  0.42,
-  -0.15,
-)
-  .translate(0, CENTER_Y, 0)
-  .material({
-    baseColor: '#0e0e0e',
-    metalness: 0,
-    roughness: 0.38,
-    clearcoat: 0.2,
-  })
-  .color('#101010');
 
 function darkBox(w, d, h, x, y, z) {
   return box(w, d, h, true)
@@ -296,62 +268,43 @@ function darkBoxRotX(w, d, h, x, y, z, deg) {
 }
 
 function sideTemple(sign: 1 | -1) {
-  const x = sign * 82.0;
+  const x = sign * 81.0;
   const parts = [];
 
-  // A real smart-glasses hinge area is thick and carries the electronics
-  // temple into the frame, so it should not look like a thin sunglass wire.
+  // Build each temple as one connected solid so the gallery video reads as a
+  // physical pair of glasses instead of many small pieces appearing in space.
+  const body = darkBox(8.8, 13.2, 17.4, sign * 77.0, 7.2, 7.0)
+    .union(darkBox(9.2, 48, 9.4, x, 31, 7.2))
+    .union(darkBoxRotX(7.4, 54, 7.7, sign * 80.0, 76, 5.3, -4))
+    .union(darkBoxRotX(5.8, 40, 6.2, sign * 78.5, 118, -1.8, -14))
+    .union(
+      cylinder(5.9, 2.85, 32)
+        .alongAxis([1, 0, 0])
+        .translate(sign * 78.5, 136, -6.4),
+    )
+    .material(RUBBER_DARK)
+    .color('#151718');
+
   parts.push({
-    name: sign < 0 ? 'left thick hinge block at frame corner' : 'right thick hinge block at frame corner',
-    shape: darkBox(8.2, 13.0, 19.0, sign * 77.0, 7.2, 7.4),
+    name: sign < 0 ? 'left connected electronics temple with ear bend' : 'right connected electronics temple with ear bend',
+    shape: body,
   });
 
   parts.push({
-    name: sign < 0 ? 'left upper hinge barrel' : 'right upper hinge barrel',
-    shape: cylinder(8.8, 2.2, 32)
+    name: sign < 0 ? 'left hinge barrel pair' : 'right hinge barrel pair',
+    shape: cylinder(8.2, 2.0, 32)
       .alongAxis([0, 0, 1])
-      .translate(sign * 77.0, 3.6, 15.8)
+      .translate(sign * 76.8, 3.35, 7.5)
       .material(METAL_PIN)
       .color('#c8c3b8'),
-  });
-  parts.push({
-    name: sign < 0 ? 'left lower hinge barrel' : 'right lower hinge barrel',
-    shape: cylinder(8.8, 2.2, 32)
-      .alongAxis([0, 0, 1])
-      .translate(sign * 77.0, 3.6, 0.2)
-      .material(METAL_PIN)
-      .color('#c8c3b8'),
-  });
-
-  // Thick electronics temple: three overlapping sections create a readable
-  // taper and a downward ear bend without relying on fragile swept profiles.
-  parts.push({
-    name: sign < 0 ? 'left thick electronics temple front section' : 'right thick electronics temple front section',
-    shape: darkBox(9.8, 46, 10.2, x, 31, 8.6),
-  });
-  parts.push({
-    name: sign < 0 ? 'left tapered temple mid section' : 'right tapered temple mid section',
-    shape: darkBoxRotX(8.4, 48, 8.6, sign * 81.2, 76, 6.2, -4),
-  });
-  parts.push({
-    name: sign < 0 ? 'left curved ear bend section' : 'right curved ear bend section',
-    shape: darkBoxRotX(6.6, 36, 7.0, sign * 79.2, 116, -0.8, -14),
-  });
-  parts.push({
-    name: sign < 0 ? 'left rounded temple tip' : 'right rounded temple tip',
-    shape: cylinder(6.8, 3.3, 32)
-      .alongAxis([1, 0, 0])
-      .translate(sign * 79.2, 133, -5.0)
-      .material(RUBBER_DARK)
-      .color('#151718'),
   });
 
   // Touchpad strip on the right temple, flush and glossy.
   if (sign > 0) {
     parts.push({
       name: 'right temple glossy touch-control strip',
-      shape: box(0.9, 33, 4.6, true)
-        .translate(sign * 87.35, 41, 9.6)
+      shape: box(0.8, 32, 4.0, true)
+        .translate(sign * 85.85, 41, 8.2)
         .material({
           baseColor: '#303336',
           metalness: 0,
@@ -360,27 +313,6 @@ function sideTemple(sign: 1 | -1) {
           clearcoatRoughness: 0.04,
         })
         .color('#303336'),
-    });
-  }
-
-  // Speaker slots and microphone pinholes: small negative-color inserts that
-  // sit on the temples as production details, not explanatory labels.
-  for (const y of [52, 59, 66]) {
-    parts.push({
-      name: `${sign < 0 ? 'left' : 'right'} temple speaker slot ${y}`,
-      shape: box(0.8, 5.2, 0.9, true)
-        .translate(sign * 86.95, y, 3.6)
-        .material({ baseColor: '#050505', roughness: 0.55 })
-        .color('#050505'),
-    });
-  }
-  for (const y of [18, 97]) {
-    parts.push({
-      name: `${sign < 0 ? 'left' : 'right'} temple microphone pinhole ${y}`,
-      shape: box(0.7, 1.5, 1.3, true)
-        .translate(sign * 86.95, y, 10.6)
-        .material({ baseColor: '#050505', roughness: 0.5 })
-        .color('#050505'),
     });
   }
 
@@ -393,9 +325,7 @@ const fullMetaGlassesParts = [
   { name: 'right smoked seated lens insert', shape: lensInsert(1) },
   { name: 'left recessed Meta camera bezel', shape: cameraBezel },
   { name: 'left recessed Meta camera glass', shape: cameraGlass },
-  { name: 'camera highlight seated inside glass', shape: cameraHighlight },
   { name: 'right privacy LED diffuser', shape: privacyLedDiffuser },
-  { name: 'dark inverted V bridge nose notch shadow', shape: noseShadow },
   ...sideTemple(-1),
   ...sideTemple(1),
 ];

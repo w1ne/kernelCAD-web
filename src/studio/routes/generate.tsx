@@ -127,7 +127,12 @@ function GeneratePage() {
             <PromptBox onSubmit={handleSubmit} disabled={isBusy} initialValue={initialPrompt} />
             {!session && !sessionLoading && (
               <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                5 free generations with sign-in - upgrade after to keep generating.
+                Sign in when you generate - agents build live in the app.
+              </p>
+            )}
+            {session && (
+              <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
+                Signed in as {session.user.email ?? 'kernelCAD user'}.
               </p>
             )}
           </div>
@@ -167,7 +172,7 @@ function GeneratePage() {
         open={signInOpen}
         onClose={() => setSignInOpen(false)}
         title="Sign in to generate"
-        description="New accounts get 5 free generations. Your prompt picks up right where you left off after sign-in."
+        description="Your prompt resumes in the app after sign-in, and agents build the CAD live there."
       />
     </main>
   );
