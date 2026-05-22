@@ -11,6 +11,38 @@ describe('App root route (src/studio/routes/index.tsx)', () => {
   });
 });
 
+describe('Initial Studio bundle import sentinels', () => {
+  const appSource = readFileSync('src/studio/App.tsx', 'utf8');
+  const mainSource = readFileSync('src/studio/main.tsx', 'utf8');
+  const demoPlayerRouteSource = readFileSync('src/studio/routes/demo-player.tsx', 'utf8');
+  const codeContextSource = readFileSync('src/studio/context/CodeContext.tsx', 'utf8');
+
+  it('does not warm the GeometryEngine before route content mounts', () => {
+    expect(mainSource).not.toMatch(/GeometryEngine/);
+    expect(mainSource).not.toMatch(/getInstance\(\)\.initialize\(\)/);
+  });
+
+  it('keeps route-only Studio surfaces out of App module imports', () => {
+    expect(appSource).not.toMatch(/import\s+\{\s*DevLab\s*\}\s+from\s+['"]\.\/devlab\/DevLab['"]/);
+    expect(appSource).not.toMatch(/import\s+\{\s*devLabScenarios\s*\}\s+from\s+['"]\.\/devlab\/scenarios['"]/);
+    expect(appSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"]\.\/components\/demoPlayer\/DemoPlayerPage['"]/);
+    expect(appSource).toContain("import('./devlab/DevLab')");
+    expect(appSource).toContain("import('./devlab/scenarios')");
+  });
+
+  it('lazy-loads the demo-player page from its route', () => {
+    expect(demoPlayerRouteSource).not.toMatch(/import\s+\{\s*DemoPlayerPage\s*\}\s+from\s+['"]\.\.\/components\/demoPlayer\/DemoPlayerPage['"]/);
+    expect(demoPlayerRouteSource).toContain("import('../components/demoPlayer/DemoPlayerPage')");
+  });
+
+  it('keeps AI and refactoring services behind dynamic imports', () => {
+    expect(codeContextSource).not.toMatch(/import\s+.*LLMService/);
+    expect(codeContextSource).not.toMatch(/import\s+.*RefactoringManager/);
+    expect(codeContextSource).toContain("import('../features-ui/ai/LLMService')");
+    expect(codeContextSource).toContain("import('../../modeling/features/modeling/RefactoringManager')");
+  });
+});
+
 /**
  * Generate-page contract: the Words-to-CAD prompt stays visible to anonymous
  * users, but generation is gated by auth. On submit, the route stores the

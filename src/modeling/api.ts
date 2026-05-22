@@ -201,8 +201,8 @@ export interface KernelCadApi {
   ): Shape;
 
   /**
-   * NURBS Slice C: build a Coons-patch surface filling the interior of 4
-   * boundary curves. The 4 curves form an ordered loop:
+   * NURBS Slice C: build the shipped filling surface: one NURBS face through
+   * 4 boundary curves. The 4 curves must be passed in exact loop order:
    *   curves[0] = bottom, curves[1] = right, curves[2] = top, curves[3] = left.
    * Adjacent endpoints must coincide within 1e-6 mm (the kernel emits
    * `feature.surface-from-boundary.corner-mismatch` otherwise).

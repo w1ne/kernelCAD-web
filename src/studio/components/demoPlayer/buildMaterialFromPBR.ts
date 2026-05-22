@@ -31,6 +31,53 @@ const TEXTURE_SLOTS: ReadonlyArray<{
   { key: 'emissive', prop: 'emissiveMap', colorSpace: THREE.SRGBColorSpace },
 ];
 
+const MATERIAL_TEXTURE_PROPS = [
+  'alphaMap',
+  'aoMap',
+  'anisotropyMap',
+  'bumpMap',
+  'clearcoatMap',
+  'clearcoatNormalMap',
+  'clearcoatRoughnessMap',
+  'displacementMap',
+  'emissiveMap',
+  'envMap',
+  'gradientMap',
+  'lightMap',
+  'map',
+  'metalnessMap',
+  'normalMap',
+  'roughnessMap',
+  'sheenColorMap',
+  'sheenRoughnessMap',
+  'specularColorMap',
+  'specularIntensityMap',
+  'thicknessMap',
+  'transmissionMap',
+] as const;
+
+export function disposeMaterialDeep(
+  materialOrMaterials: THREE.Material | THREE.Material[] | null | undefined,
+): void {
+  if (materialOrMaterials === null || materialOrMaterials === undefined) return;
+  const materials = Array.isArray(materialOrMaterials)
+    ? materialOrMaterials
+    : [materialOrMaterials];
+  const disposedTextures = new Set<THREE.Texture>();
+
+  for (const material of materials) {
+    const materialRecord = material as unknown as Record<string, unknown>;
+    for (const prop of MATERIAL_TEXTURE_PROPS) {
+      const value = materialRecord[prop];
+      if (value instanceof THREE.Texture && !disposedTextures.has(value)) {
+        disposedTextures.add(value);
+        value.dispose();
+      }
+    }
+    material.dispose();
+  }
+}
+
 /** Browser-side URL prefix for the dev-server texture route. */
 function browserTextureUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;

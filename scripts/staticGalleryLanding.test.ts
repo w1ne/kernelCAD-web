@@ -31,15 +31,22 @@ describe('static gallery landing page', () => {
     expect(galleryIdx).toBeGreaterThan(promptIdx);
   });
 
-  it('renders gallery tiles with rotating model-viewer elements', () => {
+  it('renders gallery tiles as posters before upgrading them to rotating model-viewer elements', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
     const redirects = readFileSync(path.resolve(__dirname, '../site/_redirects'), 'utf8');
 
-    expect(html).toContain('<model-viewer');
+    expect(html).toContain('function upgradeGalleryTile(tile, entry, galleryCacheKey)');
     expect(html).toContain('auto-rotate');
-    expect(html).toContain('rotation-per-second="20deg"');
-    expect(html).toContain('src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"');
-    expect(html).toContain('poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"');
+    expect(html).toContain("viewer.setAttribute('rotation-per-second', '20deg')");
+    expect(html).toContain("viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey))");
+    expect(html).toContain("viewer.setAttribute('poster', cacheKeyedUrl(entry.posterUrl, galleryCacheKey))");
+    expect(html).toContain('function upgradeGalleryTilesNearViewport(grid, galleryCacheKey)');
+    expect(html).toContain("tile.addEventListener('pointerenter'");
+    expect(html).toContain("tile.addEventListener('focus'");
+    const renderLoop = html.slice(html.indexOf('for (const entry of g.entries)'), html.indexOf('grid.appendChild(tile);'));
+    expect(renderLoop).toContain('class="tile-poster"');
+    expect(renderLoop).not.toContain('<model-viewer');
+    expect(renderLoop).not.toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
     expect(html).toContain("fetch('/gallery.json')");
     expect(html).toContain('function loadModelViewerNearGallery(section)');
     expect(html).toContain("import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')");
@@ -57,13 +64,30 @@ describe('static gallery landing page', () => {
     expect(css).toContain('.lightbox-prompt-label');
   });
 
+  it('keeps the React funnel gallery from loading model-viewer on section mount', () => {
+    const source = readFileSync(
+      path.resolve(__dirname, '../src/funnel/components/GallerySection.tsx'),
+      'utf8',
+    );
+    const gallerySectionSetup = source.slice(
+      source.indexOf('export function GallerySection()'),
+      source.indexOf('if (!entries || entries.length === 0) return null;'),
+    );
+
+    expect(gallerySectionSetup).not.toContain('useModelViewer();');
+    expect(source).toContain('function GalleryTile');
+    expect(source).toContain('IntersectionObserver');
+    expect(source).toContain('onPointerEnter');
+    expect(source).toContain('onFocus');
+  });
+
   it('keeps the royal watch gallery tile face-forward with its poster', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
     expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
     expect(html).toContain('class="tile-poster"');
-    expect(html).toContain('min-camera-orbit="${orbit.min}"');
-    expect(html).toContain('max-camera-orbit="${orbit.max}"');
-    expect(html).toContain('camera-orbit="${orbit.initial}"');
+    expect(html).toContain("viewer.setAttribute('min-camera-orbit', orbit.min)");
+    expect(html).toContain("viewer.setAttribute('max-camera-orbit', orbit.max)");
+    expect(html).toContain("viewer.setAttribute('camera-orbit', orbit.initial)");
   });
 });

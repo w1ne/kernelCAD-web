@@ -119,7 +119,7 @@ before Tasks 3-11 dispatch):
    downcast.
 3. Use `Add_1(edge, order, isBound)` (not `Add_2`) for the boundary-edge
    constraint variant. `Add_2` exists but takes a `Support` face — irrelevant
-   for the Coons-patch boundary, useful only if a future iteration adds
+   for the shipped filling-surface boundary, useful only if a future iteration adds
    tangency to an existing neighbour surface.
 4. In `OcctBackend.filletVariable`, set the rational-surface form at
    construction (`new BRepFilletAPI_MakeFillet(shape, ChFi3d_Rational)` when

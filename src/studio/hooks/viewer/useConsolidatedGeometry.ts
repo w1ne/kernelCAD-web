@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { FaceGeometry } from "../../../shared/worker/geometryEngine";
 
 export function useConsolidatedGeometry(faces: FaceGeometry[]) {
-    return useMemo(() => {
+    const result = useMemo(() => {
         if (faces.length === 0) return { geometry: null, faceMap: null };
         let totalVertices = 0;
         let totalIndices = 0;
@@ -46,4 +46,12 @@ export function useConsolidatedGeometry(faces: FaceGeometry[]) {
 
         return { geometry, faceMap };
     }, [faces]);
+
+    useEffect(() => {
+        return () => {
+            result.geometry?.dispose();
+        };
+    }, [result.geometry]);
+
+    return result;
 }

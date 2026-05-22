@@ -57,6 +57,20 @@ export function addVariableSweep(input: AddVariableSweepInput): AddFeatureResult
       };
     }
   }
+  for (let i = 1; i < input.sections.length; i++) {
+    if (input.sections[i].t <= input.sections[i - 1].t) {
+      return {
+        ok: false,
+        error: 'add_variable_sweep: section t values must be strictly increasing.',
+      };
+    }
+  }
+  if (input.sections[0].t !== 0 || input.sections[input.sections.length - 1].t !== 1) {
+    return {
+      ok: false,
+      error: 'add_variable_sweep: first t must be 0 and last t must be 1.',
+    };
+  }
   if (typeof input.spine_binding !== 'string' || !isValidIdentifier(input.spine_binding)) {
     return {
       ok: false,

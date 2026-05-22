@@ -1,10 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { DemoPlayerPage } from '../components/demoPlayer/DemoPlayerPage';
+import { Suspense, lazy } from 'react';
+
+const LazyDemoPlayerPage = lazy(() =>
+  import('../components/demoPlayer/DemoPlayerPage').then(({ DemoPlayerPage }) => ({
+    default: DemoPlayerPage,
+  })),
+);
 
 export const Route = createFileRoute('/demo-player')({
   component: DemoPlayerRoute,
 });
 
 function DemoPlayerRoute() {
-  return <DemoPlayerPage />;
+  return (
+    <Suspense fallback={null}>
+      <LazyDemoPlayerPage />
+    </Suspense>
+  );
 }
