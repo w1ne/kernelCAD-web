@@ -1,11 +1,11 @@
 {
-  "taskId": "glasses-capture-v2",
+  "taskId": "full-meta-glasses-capture-v1",
   "module": "gallery",
-  "capturedAt": "2026-05-18T15:40:05.846Z",
-  "durationMs": 23600,
-  "truncated": false,
-  "gitSha": "50f126ed099a3b5e3bbd0e6bb24e6e390247b45d",
+  "capturedAt": "2026-05-22T11:13:44.098Z",
+  "durationMs": 29600,
+  "truncated": true,
+  "gitSha": "7ef7546717f003084f5dc8d741a024c9acb6f167",
   "heroArtifact": "meta-glasses",
   "catalogSource": "memorable-builds-policy/gallery",
-  "overrideApprovedBy": "gallery-curated: post-rewrite for visual fidelity"
+  "overrideApprovedBy": "gallery-curated: full smart-glasses rewrite with temples, hinges, camera, LED, and production details"
 }
