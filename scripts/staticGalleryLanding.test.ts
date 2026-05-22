@@ -11,6 +11,13 @@ describe('static gallery landing page', () => {
     expect(html).not.toContain("wireCopyButton('mcp-btn', 'kernelcad mcp')");
   });
 
+  it('documents the same full marketing build command used by deploy', () => {
+    const readme = readFileSync(path.resolve(__dirname, '../site/README.md'), 'utf8');
+
+    expect(readme).toContain('npm run site:build');
+    expect(readme).not.toContain('build-demo.ts && node site/scripts/render-brand.mjs');
+  });
+
   it('places the prompt handoff before the built-with-kernelCAD gallery', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
@@ -33,7 +40,9 @@ describe('static gallery landing page', () => {
     expect(html).toContain('rotation-per-second="20deg"');
     expect(html).toContain('src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"');
     expect(html).toContain('poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"');
-    expect(html).toContain('fetch(`/gallery.json?v=${Date.now()}`, { cache: ');
+    expect(html).toContain("fetch('/gallery.json')");
+    expect(html).toContain('function loadModelViewerNearGallery(section)');
+    expect(html).toContain("import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')");
     expect(html).toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
     expect(html).toContain('cacheKeyedUrl(entry.videoUrl, galleryCacheKey)');
     expect(html).toContain('entry.promptUrl');
@@ -48,10 +57,11 @@ describe('static gallery landing page', () => {
     expect(css).toContain('.lightbox-prompt-label');
   });
 
-  it('keeps the royal watch gallery model rotating on the dial side', () => {
+  it('keeps the royal watch gallery tile face-forward with its poster', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
     expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
+    expect(html).toContain('class="tile-poster"');
     expect(html).toContain('min-camera-orbit="${orbit.min}"');
     expect(html).toContain('max-camera-orbit="${orbit.max}"');
     expect(html).toContain('camera-orbit="${orbit.initial}"');

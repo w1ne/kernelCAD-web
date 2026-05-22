@@ -207,7 +207,7 @@
       return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
     }
 
-    fetch(`/demo.json?v=${Date.now()}`, { cache: 'no-store' })
+    fetch('/demo.json')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
@@ -225,14 +225,31 @@
         document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`;
       });
 
-    // Lazy-load <model-viewer> once when the gallery section is in the DOM.
-    if (document.querySelector('section.gallery')) {
-      import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
-        .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+    let modelViewerLoading = null;
+    function loadModelViewer() {
+      if (!modelViewerLoading) {
+        modelViewerLoading = import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
+          .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+      }
+      return modelViewerLoading;
+    }
+
+    function loadModelViewerNearGallery(section) {
+      if (!('IntersectionObserver' in window)) {
+        loadModelViewer();
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          loadModelViewer();
+        }
+      }, { rootMargin: '500px 0px' });
+      observer.observe(section);
     }
 
     // Render the curated gallery from /gallery.json
-    fetch(`/gallery.json?v=${Date.now()}`, { cache: 'no-store' })
+    fetch('/gallery.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((g) => {
         if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
@@ -247,23 +264,30 @@
           const tile = document.createElement('div');
           tile.className = 'gallery-tile';
           tile.dataset.slug = entry.slug;
+          const mediaMarkup = entry.slug === 'royal-pop-pocket-watch'
+            ? `<img
+                class="tile-poster"
+                src="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
+                alt="${entry.title}"
+                loading="lazy">`
+            : `<model-viewer
+                class="tile-viewer"
+                src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"
+                poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
+                alt="${entry.title}"
+                auto-rotate
+                auto-rotate-delay="0"
+                rotation-per-second="20deg"
+                camera-orbit="${orbit.initial}"
+                min-camera-orbit="${orbit.min}"
+                max-camera-orbit="${orbit.max}"
+                interaction-prompt="none"
+                reveal="auto"
+                disable-zoom
+                loading="lazy">
+              </model-viewer>`;
           tile.innerHTML = `
-            <model-viewer
-              class="tile-viewer"
-              src="${cacheKeyedUrl(entry.modelUrl, galleryCacheKey)}"
-              poster="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
-              alt="${entry.title}"
-              auto-rotate
-              auto-rotate-delay="0"
-              rotation-per-second="20deg"
-              camera-orbit="${orbit.initial}"
-              min-camera-orbit="${orbit.min}"
-              max-camera-orbit="${orbit.max}"
-              interaction-prompt="none"
-              reveal="auto"
-              disable-zoom
-              loading="lazy">
-            </model-viewer>
+            ${mediaMarkup}
             <span class="tile-chip tile-chip-bl title">${entry.title}</span>
             <span class="tile-chip tile-chip-br"><span class="version">${entry.version}</span></span>
             ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
@@ -272,6 +296,8 @@
           tile.addEventListener('click', () => openLightbox(entry));
           grid.appendChild(tile);
         }
+        loadModelViewerNearGallery(section);
+
         const dialog = document.getElementById('gallery-lightbox');
         const video = dialog.querySelector('.lightbox-video');
         const title = dialog.querySelector('.lightbox-title');
