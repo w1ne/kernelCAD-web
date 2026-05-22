@@ -17,7 +17,7 @@ import type { ReferenceImageMetadata } from '../../../shared/intent/referenceIma
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
-import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
+import { buildMaterialFromPBR, DEFAULT_MESH_COLOR, disposeMaterialDeep } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
@@ -222,6 +222,11 @@ function buildMeshFromFace(
   const mesh = new THREE.Mesh(geom, material);
   mesh.name = name;
   return mesh;
+}
+
+function disposeMeshResources(mesh: THREE.Mesh): void {
+  mesh.geometry.dispose();
+  disposeMaterialDeep(mesh.material);
 }
 
 function wildcardMatches(pattern: string, text: string): boolean {
@@ -752,7 +757,7 @@ export function DemoPlayerPage(): React.JSX.Element {
             hidden.mesh.visible = hidden.visible;
           }
           for (const material of temporaryMaterials) {
-            material.dispose();
+            disposeMaterialDeep(material);
           }
           ctx.scene.background = originalBackground;
           ctx.renderer.render(ctx.scene, ctx.camera);
@@ -866,7 +871,7 @@ export function DemoPlayerPage(): React.JSX.Element {
             hidden.mesh.visible = hidden.visible;
           }
           for (const material of temporaryMaterials) {
-            material.dispose();
+            disposeMaterialDeep(material);
           }
           target.dispose();
           ctx.scene.background = originalBackground;
@@ -888,8 +893,7 @@ export function DemoPlayerPage(): React.JSX.Element {
             scene.remove(child);
             child.traverse((o) => {
               if (o instanceof THREE.Mesh) {
-                o.geometry.dispose();
-                (o.material as THREE.Material).dispose();
+                disposeMeshResources(o);
               }
             });
           }
@@ -1042,6 +1046,10 @@ export function DemoPlayerPage(): React.JSX.Element {
             const textureUrl = `/__kernelcad/image?path=${encodeURIComponent(ri.path)}`;
             const loader = new THREE.TextureLoader();
             loader.loadAsync(textureUrl).then((tex) => {
+              if (riGroup.parent !== scene) {
+                tex.dispose();
+                return;
+              }
               const mesh = buildReferenceImagePlane(ri, tex, sceneBbox);
               riGroup.add(mesh);
               if (sceneRef.current) {
@@ -1057,6 +1065,10 @@ export function DemoPlayerPage(): React.JSX.Element {
               const canvas = document.createElement('canvas');
               canvas.width = 1; canvas.height = 1;
               const fallbackTex = new THREE.CanvasTexture(canvas);
+              if (riGroup.parent !== scene) {
+                fallbackTex.dispose();
+                return;
+              }
               const mesh = buildReferenceImagePlane(ri, fallbackTex, sceneBbox);
               riGroup.add(mesh);
               if (sceneRef.current) {

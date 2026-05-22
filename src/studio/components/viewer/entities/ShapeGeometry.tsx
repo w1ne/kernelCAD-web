@@ -19,6 +19,30 @@ interface ShapeProps {
     name: string | undefined;
 }
 
+function bufferGeometryFromFace(face: FaceGeometry): THREE.BufferGeometry {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+    geometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
+    return geometry;
+}
+
+function GhostFaceMesh({ face }: { face: FaceGeometry }) {
+    const geometry = useMemo(() => bufferGeometryFromFace(face), [face]);
+
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+        };
+    }, [geometry]);
+
+    return (
+        <mesh geometry={geometry}>
+            <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.4} />
+        </mesh>
+    );
+}
+
 export function GhostShape({
     geometry,
 }: {
@@ -27,18 +51,9 @@ export function GhostShape({
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
     return (
         <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
-            {geometry.faces.map((face) => {
-                const threeGeometry = new THREE.BufferGeometry();
-                threeGeometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-                threeGeometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-                threeGeometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
-
-                return (
-                    <mesh key={face.faceId} geometry={threeGeometry}>
-                        <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.4} />
-                    </mesh>
-                );
-            })}
+            {geometry.faces.map((face) => (
+                <GhostFaceMesh key={face.faceId} face={face} />
+            ))}
         </group>
     );
 }
@@ -46,12 +61,14 @@ export function GhostShape({
 export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry, isSelected: boolean }) {
     const geometry = useMemo(() => {
         if (!face) return null;
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-        geo.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-        geo.setIndex(new THREE.BufferAttribute(face.indices, 1));
-        return geo;
+        return bufferGeometryFromFace(face);
     }, [face]);
+
+    useEffect(() => {
+        return () => {
+            geometry?.dispose();
+        };
+    }, [geometry]);
 
     if (!face || !geometry) return null;
 
