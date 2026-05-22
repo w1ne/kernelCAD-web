@@ -4,6 +4,7 @@ export interface PromptBoxProps {
   onSubmit: (prompt: string) => void;
   disabled?: boolean;
   examples?: string[];
+  initialValue?: string;
 }
 
 const DEFAULT_EXAMPLES = [
@@ -12,8 +13,8 @@ const DEFAULT_EXAMPLES = [
   'L-bracket 100x60x2 mm, 90° fold along x=50',
 ];
 
-export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES }: PromptBoxProps) {
-  const [value, setValue] = useState('');
+export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES, initialValue = '' }: PromptBoxProps) {
+  const [value, setValue] = useState(initialValue);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
