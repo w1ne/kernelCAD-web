@@ -26,6 +26,7 @@ describe('static gallery landing page', () => {
 
   it('renders gallery tiles with rotating model-viewer elements', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+    const redirects = readFileSync(path.resolve(__dirname, '../site/_redirects'), 'utf8');
 
     expect(html).toContain('<model-viewer');
     expect(html).toContain('auto-rotate');
@@ -38,6 +39,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain('entry.promptUrl');
     expect(html).toContain('Text-to-CAD prompt');
     expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
+    expect(redirects).toContain('/gallery.json  /public/gallery.json   200');
 
     const css = readFileSync(path.resolve(__dirname, '../site/style.css'), 'utf8');
     expect(css).toMatch(/\.gallery-tile \.tile-viewer[\s\S]*pointer-events:\s*none/);

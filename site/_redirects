@@ -1,5 +1,6 @@
 /demo.mp4      /public/demo.mp4       200
 /demo.json     /public/demo.json      200
+/gallery.json  /public/gallery.json   200
 /favicon.svg   /public/favicon.svg    200
 /og-image.png  /public/og-image.png   200
 /brand/*       /public/brand/:splat   200
