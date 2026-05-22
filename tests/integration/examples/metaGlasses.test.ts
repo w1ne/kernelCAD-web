@@ -16,8 +16,8 @@ describe('Meta glasses gallery example', () => {
 
     expect(loaded.features.length).toBeGreaterThanOrEqual(45);
     expect(source).toContain('full Wayfarer front frame');
-    expect(source).toContain('left thick electronics temple front section');
-    expect(source).toContain('right thick electronics temple front section');
+    expect(source).toContain('left connected electronics temple with ear bend');
+    expect(source).toContain('right connected electronics temple with ear bend');
     expect(source).toContain('right temple glossy touch-control strip');
     expect(source).toContain('left recessed Meta camera bezel');
     expect(source).toContain('right privacy LED diffuser');

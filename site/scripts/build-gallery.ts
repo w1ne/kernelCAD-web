@@ -22,6 +22,7 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   videoUrl: string;
   posterUrl: string;
   modelUrl: string;
+  promptUrl: string;
 }
 
 const GLB_SIZE_HARD_CAP = 500_000;
@@ -85,6 +86,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       videoUrl: `/gallery/${entry.slug}/video.mp4`,
       posterUrl: `/gallery/${entry.slug}/poster.jpg`,
       modelUrl: `/gallery/${entry.slug}/model.glb`,
+      promptUrl: `/gallery/${entry.slug}/prompt.md`,
     });
   }
 

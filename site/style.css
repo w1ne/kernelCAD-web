@@ -430,6 +430,7 @@ body {
   padding: 0;
   max-width: 880px;
   width: 90vw;
+  max-height: 92vh;
 }
 #gallery-lightbox::backdrop { background: rgba(0, 0, 0, 0.75); }
 .lightbox-inner {
@@ -439,6 +440,9 @@ body {
   overflow: hidden;
   padding: 0;
   position: relative;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
 }
 .lightbox-close {
   position: absolute; top: 12px; right: 12px;
@@ -448,10 +452,22 @@ body {
   cursor: pointer;
   z-index: 1;
 }
-.lightbox-video { width: 100%; display: block; background: #000; }
-.lightbox-body { padding: 1.5rem; }
+.lightbox-video { width: 100%; max-height: 48vh; display: block; background: #000; }
+.lightbox-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
 .lightbox-body h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
 .lightbox-meta { opacity: 0.6; font-size: 0.85rem; margin: 0 0 1rem; }
+.lightbox-prompt-label {
+  color: var(--blue);
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+}
 .lightbox-prompt {
   background: rgba(255, 255, 255, 0.05);
   padding: 0.85rem 1rem;
