@@ -55,7 +55,7 @@
   "src/skills/kernelcad-nurbs/SKILL.md": "src/agent/skills/kernelcad-nurbs/SKILL.md",
   "src/skills/kernelcad-params/SKILL.md": "src/agent/skills/kernelcad-params/SKILL.md",
   "src/skills/kernelcad-patterns/SKILL.md": "src/agent/skills/kernelcad-patterns/SKILL.md",
-  "src/skills/kernelcad-sdf/SKILL.md": "src/agent/skills/kernelcad-sdf/SKILL.md",
+  "src/skills/kernelcad-sdf/SKILL.md": "src/agent/skills/kernelcad-fields/SKILL.md",
   "src/skills/kernelcad-sheet-metal/SKILL.md": "src/agent/skills/kernelcad-sheet-metal/SKILL.md",
   "src/workflows/fuzzing_example.test.ts": "src/agent/workflows/fuzzing_example.test.ts",
   "src/workflows/registry.ts": "src/agent/workflows/registry.ts",
