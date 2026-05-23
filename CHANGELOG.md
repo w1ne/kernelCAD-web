@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added — Slice B-rest: SDFormat (Gazebo SDF) export + kernelcad-sdformat skill
+
+- Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).
+- Cylindrical and pin_slot stay lossy in SDF (the format lacks them too) and emit `export.sdf-gazebo.<kind>-lossy` warnings.
+- Structural validation (version, dangling link references) runs inside the emitter; no separate `validate_sdf` MCP tool.
+- Added the `kernelcad-sdformat` skill.
+
 ### Added — Slice B-rest: SRDF export + arm.planningGroup / endEffector / groupState API + kernelcad-srdf skill
 
 - Added SRDF export via `export_model({ format: 'srdf' })`. Planning groups, end-effectors, virtual joints, named group states, and explicit collision overrides declared via the new `arm.planningGroup`, `arm.endEffector`, `arm.virtualJoint`, `arm.groupState`, `arm.disableCollision` capture-time methods — all flat on `arm.*` (no vertical namespace prefix). The allowed-collision matrix auto-derives Adjacent (shared joint/mate) and User (explicit override) entries; sparse sampling emits `export.srdf.acm-sparse-sampling` as a warning.
