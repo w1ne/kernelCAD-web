@@ -77,8 +77,12 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  7 W1 material expansion (thickness-negative / attenuation-distance-invalid / anisotropy-rotation-normalized /
     //       texture-not-found / texture-unsupported-format / texture-oversize-warning / texture-oversize-error)
     //  +  2 camera-target override (non-finite-target / invalid-distance)
-    // = 125.
-    expect(catalogue.size).toBe(125);
+    //  +  1 assembly mechanical fixed-contact-missing (develop)
+    //  +  1 F-foundation @kc topology refs (feature.face-ref.snapshot-fallback-used)
+    // = 127, but the assembly mechanical fixed-contact-missing row above is
+    //   double-counted with the Assembly-fold bucket (bucket was last
+    //   itemised at 31 codes; live count = 32). Net catalogue = 126.
+    expect(catalogue.size).toBe(126);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

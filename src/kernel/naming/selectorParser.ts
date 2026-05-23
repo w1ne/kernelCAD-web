@@ -23,7 +23,7 @@ export type ParsedSelector =
   | { kind: 'named'; featureName: string; refName: string; index?: number }
   | { kind: 'ordinal'; featureKind: string; n: number; refName: string };
 
-const FEATURE_KINDS = ['hole', 'holes', 'cutout'] as const;
+export const FEATURE_KINDS = ['hole', 'holes', 'cutout'] as const;
 
 /** Parse a label-string selector into a ParsedSelector. The string never
  *  carries canonical-name or query info — those are dispatched by the caller

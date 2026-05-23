@@ -1,4 +1,5 @@
 import { lookupSourceColor } from '../../kernel/backends/occt/lookupSourceColor';
+import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
 import { Scene, type SceneDiagnostic, type ScenePart } from '../validation/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
@@ -316,6 +317,7 @@ export class Assembly {
   }
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
+    assertTopoRefSafeName(name, 'part-name', shape.id);
     if (opts.at !== undefined && !isValidEditableVec3(opts.at)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -2032,6 +2034,7 @@ function makePartRef(
     opts?: AssemblyConnectorOpts,
   ): AssemblyConnectorRef | AssemblyPartRef => {
     if (opts !== undefined) {
+      assertTopoRefSafeName(connectorName, 'connector-name', id);
       if (mateConnectors.some((c) => c.name === connectorName)) {
         throw new KernelError(
           'feature.invalid-args',

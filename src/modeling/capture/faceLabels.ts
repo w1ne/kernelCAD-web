@@ -5,6 +5,7 @@
 
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
+import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 
 const CANONICAL_FACES = ['top', 'bottom', 'left', 'right', 'front', 'back'] as const;
 
@@ -33,6 +34,9 @@ export function validateFaceLabels(
         'Use non-empty string keys in the faceLabels map.',
       );
     }
+    // F-foundation: face-label keys must be safe to embed in the
+    // @kc[owner/kind/name] topology-ref grammar.
+    assertTopoRefSafeName(label, 'face-label', featureKind);
     if (typeof value === 'string') {
       if (!(CANONICAL_FACES as readonly string[]).includes(value)) {
         throw new KernelError(
