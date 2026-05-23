@@ -62,4 +62,30 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
       }),
     ).toThrow(KernelError);
   });
+
+  it('accepts an alnum connector name', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('p1', box).connector('flange', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects a connector name containing the # modifier separator', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('p1', box).connector('flange#normal', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      }),
+    ).toThrow(KernelError);
+  });
 });
