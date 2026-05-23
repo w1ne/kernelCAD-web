@@ -286,12 +286,12 @@ function sideTemple(sign: 1 | -1) {
     .color('#151718');
 
   parts.push({
-    name: sign < 0 ? 'left connected electronics temple with ear bend' : 'right connected electronics temple with ear bend',
+    name: sign < 0 ? 'left-connected-electronics-temple-with-ear-bend' : 'right-connected-electronics-temple-with-ear-bend',
     shape: body,
   });
 
   parts.push({
-    name: sign < 0 ? 'left hinge barrel pair' : 'right hinge barrel pair',
+    name: sign < 0 ? 'left-hinge-barrel-pair' : 'right-hinge-barrel-pair',
     shape: cylinder(8.2, 2.0, 32)
       .alongAxis([0, 0, 1])
       .translate(sign * 76.8, 3.35, 7.5)
@@ -302,7 +302,7 @@ function sideTemple(sign: 1 | -1) {
   // Touchpad strip on the right temple, flush and glossy.
   if (sign > 0) {
     parts.push({
-      name: 'right temple glossy touch-control strip',
+      name: 'right-temple-glossy-touch-control-strip',
       shape: box(0.8, 32, 4.0, true)
         .translate(sign * 85.85, 41, 8.2)
         .material({
@@ -320,12 +320,12 @@ function sideTemple(sign: 1 | -1) {
 }
 
 const fullMetaGlassesParts = [
-  { name: 'full Wayfarer front frame with black acetate brow', shape: frame },
-  { name: 'left smoked seated lens insert', shape: lensInsert(-1) },
-  { name: 'right smoked seated lens insert', shape: lensInsert(1) },
-  { name: 'left recessed Meta camera bezel', shape: cameraBezel },
-  { name: 'left recessed Meta camera glass', shape: cameraGlass },
-  { name: 'right privacy LED diffuser', shape: privacyLedDiffuser },
+  { name: 'full-Wayfarer-front-frame-with-black-acetate-brow', shape: frame },
+  { name: 'left-smoked-seated-lens-insert', shape: lensInsert(-1) },
+  { name: 'right-smoked-seated-lens-insert', shape: lensInsert(1) },
+  { name: 'left-recessed-Meta-camera-bezel', shape: cameraBezel },
+  { name: 'left-recessed-Meta-camera-glass', shape: cameraGlass },
+  { name: 'right-privacy-LED-diffuser', shape: privacyLedDiffuser },
   ...sideTemple(-1),
   ...sideTemple(1),
 ];

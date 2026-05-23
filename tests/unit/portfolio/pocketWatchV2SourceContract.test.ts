@@ -10,7 +10,7 @@ describe('pocket-watch-v2 source contract', () => {
     const prompt = readFileSync(PROMPT, 'utf8');
 
     expect(prompt).toMatch(/slim oval bail/i);
-    expect(source).toMatch(/pink lanyard bail/i);
+    expect(source).toMatch(/pink-lanyard-bail/i);
     expect(source).toMatch(/bail mounted atop pendant/i);
     expect(source).toMatch(/rotate\(\[1, 0, 0\], 90\)\s*\.translate\(0, HORN_DEPTH_Y \/ 2, 0\)/);
     expect(source).not.toMatch(/Avoid a\s+separate torus bail/i);
