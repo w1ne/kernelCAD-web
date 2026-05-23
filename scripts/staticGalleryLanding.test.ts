@@ -11,6 +11,39 @@ describe('static gallery landing page', () => {
     expect(html).not.toContain("wireCopyButton('mcp-btn', 'kernelcad mcp')");
   });
 
+  it('exposes Claude Desktop on the supported-surfaces row and install stack', () => {
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+
+    // Chip lives inside the supported-surfaces row.
+    const modesStart = html.indexOf('aria-label="Supported agent surfaces"');
+    expect(modesStart).toBeGreaterThan(-1);
+    const modesEnd = html.indexOf('</div>', modesStart);
+    expect(modesEnd).toBeGreaterThan(modesStart);
+    const modesBlock = html.slice(modesStart, modesEnd);
+    expect(modesBlock).toContain('Claude Desktop');
+
+    // Claude Desktop chip is ordered FIRST (most consumer-facing).
+    const claudeDesktopIdx = modesBlock.indexOf('Claude Desktop');
+    const codexIdx = modesBlock.indexOf('Codex');
+    const claudeCodeIdx = modesBlock.indexOf('Claude Code');
+    const cursorIdx = modesBlock.indexOf('Cursor');
+    const cliChipIdx = modesBlock.indexOf('>CLI<');
+    expect(claudeDesktopIdx).toBeGreaterThan(-1);
+    expect(claudeDesktopIdx).toBeLessThan(codexIdx);
+    expect(claudeDesktopIdx).toBeLessThan(claudeCodeIdx);
+    expect(claudeDesktopIdx).toBeLessThan(cursorIdx);
+    expect(claudeDesktopIdx).toBeLessThan(cliChipIdx);
+
+    // Fourth install card: anchor (not a copy-button) that links to /app/connect.
+    const stackStart = html.indexOf('aria-label="Install commands"');
+    expect(stackStart).toBeGreaterThan(-1);
+    const stackEnd = html.indexOf('</div>', stackStart);
+    const stackBlock = html.slice(stackStart, stackEnd);
+    expect(stackBlock).toContain('id="claude-desktop-link"');
+    expect(stackBlock).toContain('href="/app/connect"');
+    expect(stackBlock).toContain('Use with Claude Desktop');
+  });
+
   it('documents the same full marketing build command used by deploy', () => {
     const readme = readFileSync(path.resolve(__dirname, '../site/README.md'), 'utf8');
 
