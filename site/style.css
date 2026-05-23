@@ -422,6 +422,14 @@ body {
   font-size: 0.65rem; font-weight: 600;
   padding: 3px 7px; border-radius: 3px;
 }
+.tile-studio-link {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  max-width: calc(100% - 16px);
+  white-space: nowrap;
+}
 
 /* ---------- Lightbox ---------- */
 #gallery-lightbox {
@@ -495,4 +503,26 @@ body {
 .lightbox-secondary { display: flex; flex-direction: column; gap: 0.4rem; }
 .lightbox-secondary a { font-size: 0.85rem; color: #fff; opacity: 0.8; }
 .lightbox-secondary a:hover { opacity: 1; }
+.tile-studio-link,
+.lightbox-studio-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.tile-studio-link:hover,
+.lightbox-studio-link:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.gallery-privacy-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.72;
+}
 .lightbox-footer { margin-top: 1rem; opacity: 0.6; font-size: 0.85rem; }

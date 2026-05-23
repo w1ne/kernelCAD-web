@@ -45,6 +45,9 @@ describe('static gallery landing page', () => {
     expect(html).toContain("tile.addEventListener('focus'");
     const renderLoop = html.slice(html.indexOf('for (const entry of g.entries)'), html.indexOf('grid.appendChild(tile);'));
     expect(renderLoop).toContain('class="tile-poster"');
+    expect(renderLoop).toContain('class="tile-studio-link"');
+    expect(renderLoop).toContain('href="${entry.studioUrl}"');
+    expect(renderLoop).toContain('Open in Studio');
     expect(renderLoop).not.toContain('<model-viewer');
     expect(renderLoop).not.toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
     expect(html).toContain("fetch('/gallery.json')");
@@ -55,6 +58,8 @@ describe('static gallery landing page', () => {
     expect(html).toContain('entry.promptUrl');
     expect(html).toContain('Build brief');
     expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
+    expect(html).toContain('class="lightbox-studio-link"');
+    expect(html).toContain('Free projects are public by link');
     expect(redirects).toContain('/demo-poster.png /public/demo-poster.png 200');
     expect(redirects).toContain('/gallery.json  /public/gallery.json   200');
     expect(redirects).toContain('/gallery/*     /public/gallery/:splat 200');

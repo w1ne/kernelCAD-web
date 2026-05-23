@@ -184,11 +184,13 @@
             <button type="submit" class="btn btn-primary">Subscribe</button>
           </form>
           <div class="lightbox-secondary">
+            <a class="lightbox-studio-link" href="#" target="_blank" rel="noopener">Open in Studio</a>
             <a class="lightbox-star" href="https://github.com/w1ne/kernelCAD-web" target="_blank" rel="noopener">★ Star on GitHub</a>
             <a class="lightbox-source" href="#" target="_blank" rel="noopener">View source ↗</a>
             <a class="lightbox-app" href="#" target="_blank" rel="noopener" hidden>Open in app ↗</a>
           </div>
         </div>
+        <p class="gallery-privacy-note">Free projects are public by link. Upgrade for private projects.</p>
         <p class="lightbox-footer">
           <a class="gallery-submit"
              href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
@@ -329,9 +331,15 @@
             <span class="tile-chip tile-chip-bl title">${entry.title}</span>
             <span class="tile-chip tile-chip-br"><span class="version">${entry.version}</span></span>
             ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
+            <a class="tile-studio-link" href="${entry.studioUrl}" target="_blank" rel="noopener">
+              Open in Studio
+            </a>
           `;
           tile.__entry = entry;
           armGalleryTileUpgrade(tile, entry, galleryCacheKey);
+          tile.querySelector('.tile-studio-link')?.addEventListener('click', (event) => {
+            event.stopPropagation();
+          });
           tile.addEventListener('click', () => {
             upgradeGalleryTile(tile, entry, galleryCacheKey);
             openLightbox(entry);
@@ -350,6 +358,7 @@
         const sourceInput = dialog.querySelector('input[name="source"]');
         const sourceLink = dialog.querySelector('.lightbox-source');
         const appLink = dialog.querySelector('.lightbox-app');
+        const studioLink = dialog.querySelector('.lightbox-studio-link');
         const closeBtn = dialog.querySelector('.lightbox-close');
 
         function openLightbox(entry) {
@@ -367,6 +376,7 @@
           }
           sourceInput.value = `gallery-lightbox:${entry.slug}`;
           sourceLink.href = entry.code;
+          studioLink.href = entry.studioUrl;
           if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }
           else { appLink.hidden = true; }
           dialog.showModal();
