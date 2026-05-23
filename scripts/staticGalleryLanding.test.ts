@@ -54,10 +54,13 @@ describe('static gallery landing page', () => {
     expect(html).toContain('function loadModelViewerNearGallery(section)');
     expect(html).toContain("import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')");
     expect(html).toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
-    expect(html).toContain('cacheKeyedUrl(entry.videoUrl, galleryCacheKey)');
+    expect(html).not.toContain('cacheKeyedUrl(entry.videoUrl, galleryCacheKey)');
+    expect(html).not.toContain('class="lightbox-video"');
     expect(html).toContain('entry.promptUrl');
     expect(html).toContain('Build brief');
-    expect(html).toContain('<video class="lightbox-video" autoplay muted loop playsinline controls>');
+    expect(html).toContain('<div class="lightbox-stage"></div>');
+    expect(html).toContain('function mountLightboxModel(entry, galleryCacheKey)');
+    expect(html).toContain("viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey))");
     expect(html).toContain('class="lightbox-studio-link"');
     expect(html).toContain('Free projects are public by link');
     expect(redirects).toContain('/demo-poster.png /public/demo-poster.png 200');
@@ -99,6 +102,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain('`${theta.toFixed(2)}deg 158deg auto`');
     expect(html).toContain("if (!orbit.faceForward)");
     expect(html).toContain('if (orbit.faceForward) animateRoyalWatchFace(viewer)');
+    expect(html).toContain('mountLightboxModel(entry, galleryCacheKey)');
     expect(html).toContain("viewer.setAttribute('min-camera-orbit', orbit.min)");
     expect(html).toContain("viewer.setAttribute('max-camera-orbit', orbit.max)");
     expect(html).toContain("viewer.setAttribute('camera-orbit', orbit.initial)");
