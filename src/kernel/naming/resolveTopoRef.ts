@@ -19,6 +19,7 @@ import type { TopoRef } from './topoRef';
 import {
   findLineageMatches,
   findFallbackSnapshot,
+  FEATURE_KINDS,
   type ParsedSelector,
 } from './selectorParser';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
@@ -41,7 +42,11 @@ export interface TopoResolveWarning {
 export type TopoResolveResult =
   | {
       readonly kind: 'ok';
-      readonly faceHash: FaceHash;
+      /** For `face` kind: the hash of the resolved face. For `edge`/`vertex`
+       *  kinds: the hash of the FACE whose boundary contains the entity
+       *  (mirrors the `faceHashForBoundaryEdges` convention in
+       *  `resolveEdgeRef.ts`, but kind-neutral). */
+      readonly entityHash: FaceHash;
       /** Which path resolved the ref: `lineage` (name-propagation primary) or
        *  `snapshot` (geometry fallback). `snapshot` carries a warning with the
        *  `feature.face-ref.snapshot-fallback-used` code. */
@@ -58,17 +63,14 @@ export type TopoResolveResult =
       readonly kind: 'not-resolvable';
       readonly code: 'feature.face-ref.not-resolvable';
       readonly message: string;
-      readonly nearestCandidates?: readonly FaceHash[];
     };
 
-const KIND_KINDS_NOT_HANDLED_HERE: ReadonlySet<TopoRef['kind']> = new Set([
+const DEFERRED_KINDS: ReadonlySet<TopoRef['kind']> = new Set([
   'connector',
   'part',
   'solid',
   'sketch',
 ]);
-
-const FEATURE_KIND_PREFIXES = ['hole', 'holes', 'cutout'] as const;
 
 /** Decompose the topo-ref owner into either an ordinal selector (`hole1`),
  *  a named selector (`mountingBolt`), or null when the segment list is empty.
@@ -80,7 +82,7 @@ function topoRefToParsedSelector(ref: TopoRef): ParsedSelector | null {
   const owner = ref.owner;
 
   // Ordinal form: owner is `<kind><N>` (e.g. `hole1`).
-  for (const kind of FEATURE_KIND_PREFIXES) {
+  for (const kind of FEATURE_KINDS) {
     if (owner.startsWith(kind)) {
       const tail = owner.slice(kind.length);
       if (/^\d+$/.test(tail)) {
@@ -177,7 +179,7 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
 
   // 3. Non-face/edge/vertex kinds → graceful not-resolvable; sibling slices
   //    (Assembly / Sketch / Connector context) dispatch their own resolution.
-  if (KIND_KINDS_NOT_HANDLED_HERE.has(ref.kind)) {
+  if (DEFERRED_KINDS.has(ref.kind)) {
     return {
       kind: 'not-resolvable',
       code: 'feature.face-ref.not-resolvable',
@@ -209,7 +211,7 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
   }
 
   if (lineageHits.length === 1) {
-    return { kind: 'ok', faceHash: lineageHits[0], path: 'lineage' };
+    return { kind: 'ok', entityHash: lineageHits[0], path: 'lineage' };
   }
   if (lineageHits.length >= 2) {
     return {
@@ -222,15 +224,10 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
 
   // 5. Snapshot fallback. Look for a fingerprint via the original parsed form
   //    (ordinal/named only — collective has no fallback path by design).
-  const originalParsed = topoRefToParsedSelector(ref);
-  if (originalParsed === null) {
-    return {
-      kind: 'not-resolvable',
-      code: 'feature.face-ref.not-resolvable',
-      message: `topology ref '${ref.raw}' produced no lineage hits and has no fallback selector.`,
-    };
-  }
-  const fingerprint = findFallbackSnapshot(map, originalParsed);
+  //    After step 4, `parsed` is guaranteed to be the original (non-collective)
+  //    form — collective only takes effect via an early return above.
+  const fallbackSelector = parsed;
+  const fingerprint = findFallbackSnapshot(map, fallbackSelector);
   if (fingerprint === null) {
     return {
       kind: 'not-resolvable',
@@ -238,7 +235,7 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
       message: `topology ref '${ref.raw}' produced no lineage hits and no fallback snapshot is available.`,
     };
   }
-  const surfaceType = findSurfaceTypeForFallback(map, originalParsed);
+  const surfaceType = findSurfaceTypeForFallback(map, fallbackSelector);
   if (surfaceType === undefined) {
     return {
       kind: 'not-resolvable',
@@ -257,7 +254,7 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
   if (matches.length === 1) {
     return {
       kind: 'ok',
-      faceHash: matches[0],
+      entityHash: matches[0],
       path: 'snapshot',
       warnings: [
         {

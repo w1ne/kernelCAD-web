@@ -36,7 +36,7 @@ describe('resolveTopoRef — name-propagation primary path', () => {
     const r = resolveTopoRef(parsed('@kc[base/face/top]'), ctx);
     expect(r.kind).toBe('ok');
     if (r.kind === 'ok') {
-      expect(r.faceHash).toBe('h-top');
+      expect(r.entityHash).toBe('h-top');
       expect(r.path).toBe('lineage');
     }
   });
@@ -61,7 +61,7 @@ describe('resolveTopoRef — name-propagation primary path', () => {
     };
     const r = resolveTopoRef(parsed('@kc[hole1/face/wall]'), ctx);
     expect(r.kind).toBe('ok');
-    if (r.kind === 'ok') expect(r.faceHash).toBe('h-wall');
+    if (r.kind === 'ok') expect(r.entityHash).toBe('h-wall');
   });
 });
 
