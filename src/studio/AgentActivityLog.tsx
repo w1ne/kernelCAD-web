@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createMcpToken } from '../funnel/lib/apiClient';
 
 /**
@@ -9,24 +9,21 @@ export const AgentActivityLog: React.FC = () => {
     const [copied, setCopied] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [tokenError, setTokenError] = useState<string | null>(null);
+    const [isMinting, setIsMinting] = useState(false);
 
-    useEffect(() => {
-        let active = true;
-        createMcpToken()
-            .then((result) => {
-                if (!active) return;
-                setToken(result.token);
-                setTokenError(null);
-            })
-            .catch((err: unknown) => {
-                if (!active) return;
-                setToken(null);
-                setTokenError(err instanceof Error ? err.message : String(err));
-            });
-        return () => {
-            active = false;
-        };
-    }, []);
+    const handleGenerateToken = async () => {
+        setIsMinting(true);
+        setTokenError(null);
+        try {
+            const result = await createMcpToken();
+            setToken(result.token);
+        } catch (err: unknown) {
+            setToken(null);
+            setTokenError(err instanceof Error ? err.message : String(err));
+        } finally {
+            setIsMinting(false);
+        }
+    };
 
     const copyCommand = async (id: string, command: string) => {
         await navigator.clipboard.writeText(command);
@@ -34,7 +31,7 @@ export const AgentActivityLog: React.FC = () => {
         window.setTimeout(() => setCopied((current) => (current === id ? null : current)), 1200);
     };
 
-    const tokenArg = token ?? '<sign-in-required>';
+    const tokenArg = token ?? '<click Generate to mint a token>';
     const commands = useMemo(() => [
         {
             id: 'claude',
@@ -63,10 +60,23 @@ export const AgentActivityLog: React.FC = () => {
                 </div>
                 <div className="mt-2 text-[10px] leading-snug text-gray-500">
                     {token
-                        ? 'Token ready. Copy a command below.'
+                        ? 'Token ready. Copy a command below. Generating again issues a fresh token; previous tokens stay valid.'
                         : tokenError
-                            ? 'Sign in to create a cloud MCP token automatically.'
-                            : 'Preparing cloud MCP token...'}
+                            ? 'Sign in to mint a cloud MCP token, then click Generate.'
+                            : isMinting
+                                ? 'Minting cloud MCP token...'
+                                : 'Click Generate to mint a token, then copy a command below.'}
+                </div>
+                <div className="mt-3">
+                    <button
+                        type="button"
+                        onClick={() => void handleGenerateToken()}
+                        disabled={isMinting}
+                        aria-label={token ? 'Generate a new cloud MCP token' : 'Generate a cloud MCP token'}
+                        className="rounded border border-[#3a3a3a] px-2 py-1 text-[11px] text-gray-200 hover:bg-[#222] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {isMinting ? 'Minting…' : token ? 'Generate new token' : 'Generate token'}
+                    </button>
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
                     {commands.map(({ id, label, command }) => (
@@ -77,7 +87,9 @@ export const AgentActivityLog: React.FC = () => {
                                     type="button"
                                     aria-label={`Copy ${label} MCP command`}
                                     onClick={() => void copyCommand(id, command)}
-                                    className="rounded border border-[#3a3a3a] px-2 py-0.5 text-[10px] text-gray-300 hover:bg-[#222] hover:text-white"
+                                    disabled={!token}
+                                    title={token ? undefined : 'Generate a token first'}
+                                    className="rounded border border-[#3a3a3a] px-2 py-0.5 text-[10px] text-gray-300 hover:bg-[#222] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent disabled:hover:text-gray-300"
                                 >
                                     {copied === id ? 'copied' : 'copy'}
                                 </button>
