@@ -257,7 +257,6 @@
 
     function upgradeGalleryTile(tile, entry, galleryCacheKey) {
       if (tile.dataset.modelViewerUpgraded === 'true') return;
-      if (entry.slug === 'royal-pop-pocket-watch') return;
 
       tile.dataset.modelViewerUpgraded = 'true';
       loadModelViewer();
@@ -285,7 +284,6 @@
     }
 
     function armGalleryTileUpgrade(tile, entry, galleryCacheKey) {
-      if (entry.slug === 'royal-pop-pocket-watch') return;
       const upgrade = () => upgradeGalleryTile(tile, entry, galleryCacheKey);
       tile.addEventListener('pointerenter', upgrade, { once: true });
       tile.addEventListener('focus', upgrade, { once: true });
@@ -305,7 +303,7 @@
       }, { rootMargin: '500px 0px' });
 
       for (const tile of tiles) {
-        if (tile.__entry?.slug !== 'royal-pop-pocket-watch') observer.observe(tile);
+        observer.observe(tile);
       }
     }
 

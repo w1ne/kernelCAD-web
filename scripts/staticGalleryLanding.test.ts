@@ -81,7 +81,7 @@ describe('static gallery landing page', () => {
     expect(source).toContain('onFocus');
   });
 
-  it('keeps the royal watch gallery tile face-forward with its poster', () => {
+  it('keeps the royal watch gallery tile face-forward while allowing model-viewer upgrade', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
     expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
@@ -89,5 +89,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain("viewer.setAttribute('min-camera-orbit', orbit.min)");
     expect(html).toContain("viewer.setAttribute('max-camera-orbit', orbit.max)");
     expect(html).toContain("viewer.setAttribute('camera-orbit', orbit.initial)");
+    expect(html).not.toContain("if (entry.slug === 'royal-pop-pocket-watch') return;");
+    expect(html).not.toContain("tile.__entry?.slug !== 'royal-pop-pocket-watch'");
   });
 });
