@@ -253,7 +253,7 @@
 
     function galleryTileOrbit(entry) {
       return entry.slug === 'royal-pop-pocket-watch'
-        ? { initial: '0deg 158deg auto', min: '-14deg 145deg auto', max: '14deg 168deg auto', faceForward: true }
+        ? { initial: '0deg 158deg auto', min: '-16deg 158deg auto', max: '16deg 158deg auto', faceForward: true }
         : { initial: '45deg 75deg auto', min: 'auto auto auto', max: 'auto auto auto' };
     }
 
@@ -261,9 +261,8 @@
       let frame = 0;
       const tick = (now) => {
         if (!viewer.isConnected) return;
-        const theta = Math.sin(now / 950) * 12;
-        const phi = 158 + Math.sin(now / 1350) * 4;
-        viewer.setAttribute('camera-orbit', `${theta.toFixed(2)}deg ${phi.toFixed(2)}deg auto`);
+        const theta = Math.sin(now / 1200) * 14;
+        viewer.setAttribute('camera-orbit', `${theta.toFixed(2)}deg 158deg auto`);
         frame = requestAnimationFrame(tick);
       };
       frame = requestAnimationFrame(tick);
