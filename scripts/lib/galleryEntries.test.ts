@@ -26,6 +26,47 @@ describe('parseGalleryEntries', () => {
     expect(result.entries[0].slug).toBe('desktop-3axis-mates');
   });
 
+  it('accepts curated entries because studioUrl can be derived from codeLocal', () => {
+    const result = parseGalleryEntries({ entries: [validEntry] });
+    expect(result.entries[0].codeLocal).toBe(validEntry.codeLocal);
+    expect(result.entries[0].appUrl).toBeNull();
+  });
+
+  it('accepts studio entries with appUrl and without codeLocal', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'saved-public-project',
+      source: 'studio' as const,
+      codeLocal: null,
+      appUrl: 'https://app.kernelcad.com/p/public-project',
+    };
+    const result = parseGalleryEntries({ entries: [entry] });
+    expect(result.entries[0].source).toBe('studio');
+    expect(result.entries[0].appUrl).toBe(entry.appUrl);
+  });
+
+  it('rejects studio entries without appUrl', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'broken-studio-entry',
+      source: 'studio' as const,
+      codeLocal: null,
+      appUrl: null,
+    };
+    expect(() => parseGalleryEntries({ entries: [entry] })).toThrow(/studio.*appUrl/i);
+  });
+
+  it('rejects studio entries when appUrl is omitted', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'omitted-studio-app-url',
+      source: 'studio' as const,
+      codeLocal: null,
+    };
+    delete (entry as Partial<typeof entry>).appUrl;
+    expect(() => parseGalleryEntries({ entries: [entry] })).toThrow(/studio.*appUrl/i);
+  });
+
   it('rejects entries missing required slug', () => {
     const bad = { ...validEntry } as Partial<typeof validEntry>;
     delete bad.slug;
@@ -53,12 +94,6 @@ describe('parseGalleryEntries', () => {
 
     const result = parseGalleryEntries({ entries: [first, second] });
     expect(result.entries).toHaveLength(2);
-  });
-
-  it('accepts source = studio for forward-compat', () => {
-    const studioEntry = { ...validEntry, slug: 'other', source: 'studio' as const };
-    const result = parseGalleryEntries({ entries: [studioEntry] });
-    expect(result.entries[0].source).toBe('studio');
   });
 
   it('rejects unknown source values', () => {
