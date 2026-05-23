@@ -76,6 +76,34 @@ describe('buildGallery', () => {
     })).rejects.toThrow(/missing-video|video.*not.*found/i);
   });
 
+  it('rejects studio entries without codeLocal after validating the video exists', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
+    const entriesDir = path.join(tmp, 'gallery');
+    mkdirSync(entriesDir, { recursive: true });
+
+    const fixturesRoot = path.resolve(__dirname, '../../tests/fixtures/gallery');
+    copyFileSync(path.join(fixturesRoot, 'short-clip.mp4'), path.join(entriesDir, 'short-clip.mp4'));
+    writeFileSync(
+      path.join(entriesDir, 'entries.json'),
+      JSON.stringify({
+        entries: [{
+          slug: 'studio-no-code-local', title: 'Studio no code local',
+          author: { handle: 'k', url: 'https://x.com/k' },
+          version: 'v0.11.0', prompt: 'p', source: 'studio',
+          video: 'short-clip.mp4', codeLocal: null,
+          code: 'https://github.com/w1ne/kernelCAD-web',
+          tags: [], featured: false, createdAt: '2026-05-15',
+          appUrl: 'https://app.kernelcad.com/studio/projects/studio-no-code-local',
+        }],
+      }),
+    );
+
+    await expect(buildGallery({
+      entriesPath: path.join(entriesDir, 'entries.json'),
+      publicDir: path.join(tmp, 'public'),
+    })).rejects.toThrow(/studio gallery entries without codeLocal are not buildable yet/i);
+  });
+
   it('rejects a mechanism entry before asset work when cached review evidence is missing', async () => {
     tmp = mkdtempSync(path.join(tmpdir(), 'gallery-build-'));
     const entriesDir = path.join(tmp, 'gallery');
