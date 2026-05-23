@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 125 codes', () => {
+  it('catalogue has exactly 139 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -82,8 +82,12 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // = 127, but the assembly mechanical fixed-contact-missing row above is
     //   double-counted with the Assembly-fold bucket (bucket was last
     //   itemised at 31 codes; live count = 32). Net catalogue = 126.
-    //  +  6 Slice C parts.* codes (parts.input.*, parts.fetch.*). Live count = 132.
-    expect(catalogue.size).toBe(132);
+    //  +  7 Slice A export trio (options-format-mismatch + six per-format
+    //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
+    //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
+    //  +  6 Slice C parts.* codes (parts.input.*, parts.fetch.*).
+    // Net catalogue = 139.
+    expect(catalogue.size).toBe(139);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

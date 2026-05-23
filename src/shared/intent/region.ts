@@ -75,3 +75,11 @@ export function isValidRegion(v: unknown): v is Region {
   if (!Array.isArray(r.bendLines)) return false;
   return true;
 }
+
+/** Narrowing alias for `isValidRegion`. Exists so call-sites that only need
+ *  the type-guard semantics (e.g. the DXF writer dispatch in
+ *  `runAndExport`) read cleanly without picking up the "validity" framing
+ *  used during construction. */
+export function isRegion(v: unknown): v is Region {
+  return isValidRegion(v);
+}
