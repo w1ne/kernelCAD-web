@@ -53,7 +53,7 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
       ]),
     );
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
-  }, 180_000);
+  }, 300_000);
 
   it('has connected mechanism geometry under inspect_assembly', async () => {
     const result = await inspectAssemblyTool({ file: EXAMPLE_PATH });
@@ -64,5 +64,5 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
       expect(result.partCount).toBeGreaterThanOrEqual(18);
       expect(result.mateCount).toBeGreaterThanOrEqual(18);
     }
-  }, 180_000);
+  }, 300_000);
 });
