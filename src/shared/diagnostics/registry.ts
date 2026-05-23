@@ -328,6 +328,62 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'The script produced no shape to export (no return value and no captured records).',
   },
+  'export.options-format-mismatch': {
+    hintTemplate:
+      'options.format must equal the top-level format. Set options.format to the same value, or omit options.',
+    nextAction: { kind: 'fix-arg', field: 'options.format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
+  },
+  'export.dxf.not-implemented': {
+    hintTemplate:
+      'DXF export is not yet implemented in this build. Pick a supported format (stl, step) for now; DXF lands later in this slice.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A DXF export was requested before the writer landed in the runtime.',
+  },
+  'export.3mf.not-implemented': {
+    hintTemplate:
+      '3MF export is not yet implemented in this build. Pick a supported format (stl, step) for now; 3MF lands later in this slice.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A 3MF export was requested before the writer landed in the runtime.',
+  },
+  'export.glb.not-implemented': {
+    hintTemplate:
+      'GLB export is not yet implemented in this build. Pick a supported format (stl, step) for now; GLB lands later in this slice.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A GLB export was requested before the writer landed in the runtime.',
+  },
+  'export.urdf.not-implemented': {
+    hintTemplate:
+      'URDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'URDF export is reserved on the export_model enum but not yet implemented.',
+  },
+  'export.srdf.not-implemented': {
+    hintTemplate:
+      'SRDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SRDF export is reserved on the export_model enum but not yet implemented.',
+  },
+  'export.sdf-gazebo.not-implemented': {
+    hintTemplate:
+      'Gazebo SDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'Gazebo SDF export is reserved on the export_model enum but not yet implemented.',
+  },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
     hintTemplate:

@@ -8,7 +8,28 @@ import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 
-export type ExportFormat = 'stl' | 'step';
+export type ExportFormat =
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb'
+  | 'urdf' | 'srdf' | 'sdf-gazebo';
+
+/** Per-format option payloads. The union member is selected by `format`. */
+export type ExportOptions =
+  | { format: 'stl' }
+  | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
+  | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
+  | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
+  | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'urdf' }
+  | { format: 'srdf' }
+  | { format: 'sdf-gazebo' };
+
+export interface DxfLayerSpec {
+  name: string;
+  color?: string;
+  lineWeight?: number;
+  lineType?: 'continuous' | 'dashed' | 'phantom';
+  filter?: 'all' | { partName: string };
+}
 
 export interface ExportInput {
   code: string;
@@ -19,6 +40,8 @@ export interface ExportInput {
   /** Optional: absolute directory of the source script. Threaded into the
    *  API context so `lib.fromSTEP('parts/foo.step')` resolves. */
   scriptDir?: string;
+  /** Per-format options. Discriminator `options.format` must equal top-level `format`. */
+  options?: ExportOptions;
 }
 
 export interface ExportResult {
@@ -29,6 +52,22 @@ export interface ExportResult {
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const { code, fileName, format, feature_id, scriptDir } = input;
+
+  if (input.options && input.options.format !== input.format) {
+    return {
+      bytes: new Uint8Array(),
+      featureCount: 0,
+      diagnostics: [{
+        target: 'export-occt',
+        code: 'export.options-format-mismatch',
+        severity: 'error',
+        message: `options.format ('${input.options.format}') must equal format ('${input.format}').`,
+        hint: 'Set options.format to the same value as the top-level format, or omit options.',
+        nextAction: NEXT_ACTIONS['export.options-format-mismatch'],
+      }],
+    };
+  }
+
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
@@ -133,9 +172,34 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const shape = lowered as OcctBackend;
-  const bytes = format === 'stl'
-    ? await shape.exportSTLAsync()
-    : await shape.exportSTEPAsync();
-
-  return { bytes, featureCount, diagnostics: r.diagnostics };
+  switch (format) {
+    case 'stl': {
+      const bytes = await shape.exportSTLAsync();
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case 'step': {
+      const bytes = await shape.exportSTEPAsync();
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case 'dxf':
+    case '3mf':
+    case 'glb':
+    case 'urdf':
+    case 'srdf':
+    case 'sdf-gazebo': {
+      const code = `export.${format}.not-implemented` as const;
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code,
+          severity: 'error',
+          message: `Export format '${format}' is not yet implemented in this build.`,
+          hint: `Pick a supported format (stl, step) for now; '${format}' will land in an upcoming slice.`,
+          nextAction: NEXT_ACTIONS[code],
+        }],
+      };
+    }
+  }
 }
