@@ -90,6 +90,10 @@ export async function resolveTopoRefTool(
   const result: TopoResolveResult = resolveTopoRef(parsed, {
     currentShape: shape,
     featureId: targetId,
+    // Forward records so the resolver can walk `metadata.faceLabels` —
+    // closes the round-trip with `list_faces`, which emits
+    // `@kc[<owner>/face/<label>]` for user-applied label names.
+    records: run.records,
   });
 
   const canonical = formatTopoRef({
