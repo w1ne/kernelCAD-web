@@ -47,3 +47,8 @@ export {
   type SnapshotTolerance,
   type SnapshotMatchResult,
 } from './geometrySnapshotFallback';
+
+// Re-exported so consumers using TopoResolveContext.currentShape: OcctBackend
+// can construct + type-narrow contexts without reaching past the naming/
+// directory boundary.
+export type { OcctBackend } from '../backends/occt/occtBackend';

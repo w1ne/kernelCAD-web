@@ -3,12 +3,17 @@
 // MCP tool: list edges of a kernelCAD shape with optional EdgeQuery filter.
 // Lets agents introspect any shape (primitives, booleans, transformed solids,
 // imported geometry) before running fillet/chamfer.
+//
+// F-surface F2: each edge summary now carries an `@kc[<owner>/edge/<name>]`
+// ref string so agents can hand the result directly back to face-ref-consuming
+// tools without having to format the ref themselves.
 
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { selectEdges, type EdgeQuery, type EdgeSegment } from '../../../kernel/backends/occt/edgeQueries';
 import { runMcpScript } from '../runMcpScript';
+import { formatTopoRef, type TopoKind } from '../../../kernel/naming';
 
 export interface ListEdgesInput {
   file?: string;
@@ -17,9 +22,11 @@ export interface ListEdgesInput {
   query?: EdgeQuery;
 }
 
+export type EdgeSummary = EdgeSegment & { ref: string };
+
 export interface ListEdgesOutput {
   ok: boolean;
-  edges?: EdgeSegment[];
+  edges?: ReadonlyArray<EdgeSummary>;
   error?: string;
   /** Structured diagnostic code on `ok=false`. Set on both failure paths:
    *  (1) script-runtime exception → `KernelError` code or
@@ -56,5 +63,14 @@ export async function listEdgesTool(input: ListEdgesInput): Promise<ListEdgesOut
   }
 
   const edges = selectEdges(shape, input.query ?? {});
-  return { ok: true, edges };
+  const owner = input.feature_id ?? run.records[run.records.length - 1].id;
+  const kind: TopoKind = 'edge';
+  // F-surface F2: pair each edge with a stable @kc[...] ref. The segment name
+  // is the EdgeSegment's `id` (e.g. `e0`); future slices may upgrade this to a
+  // labeled name once edgeLabels lands as a metadata sibling of faceLabels.
+  const edgesWithRefs: EdgeSummary[] = edges.map((e) => ({
+    ...e,
+    ref: formatTopoRef({ owner, kind, segments: [e.id] }),
+  }));
+  return { ok: true, edges: edgesWithRefs };
 }

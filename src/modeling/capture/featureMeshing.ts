@@ -260,6 +260,25 @@ export async function meshFeaturesPerFeature(
     getSurfaceRecord?: (
       id: import('../../shared/intent/surfaceRecord').SurfaceId,
     ) => import('../../shared/intent/surfaceRecord').SurfaceRecord | undefined;
+    /** Per-feature triangle mesh cache. When a featureId is present here AND
+     *  in `seedShapes`, the cached `FeatureMesh` is re-emitted directly,
+     *  skipping the expensive `meshShape()` call. Populated by this function
+     *  on the fresh pass and consumed on subsequent passes after a
+     *  `params.update`'s first-affected scan keeps upstream shapes cached. */
+    cachedFeatureMeshes?: Map<FeatureId, unknown>;
+    /** Per-assembly-part triangle mesh cache. Outer key = assembly featureId
+     *  (e.g. `solvedAssembly_1`); inner key = part name. Reused when the
+     *  assembly is re-lowered with the same per-part LOCAL shapes (typical
+     *  for pose-only `params.update`): triangle data is reused, only the
+     *  freshly-solved `worldTransform` is refreshed. */
+    cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, unknown>>;
+    /** Pre-lowered shapes from the previous build (populated by `buildModel`
+     *  and `params.update`'s `populateCache`). Used to derive a `seedShapes`
+     *  set for `engine.run` so unchanged records skip re-lowering. The seed
+     *  set covers (a) construction-closure records whose meshes only emit
+     *  via the assembly fan-out and (b) non-assembly records whose cached
+     *  `FeatureMesh` can be re-emitted directly. */
+    cachedShapes?: Map<FeatureId, ShapeBackend>;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
@@ -342,8 +361,43 @@ export async function meshFeaturesPerFeature(
   // records exist, so single-shape scripts are unaffected.
   const constructionClosure = computeConstructionClosure(records);
 
+  const cachedFeatureMeshes = session?.cachedFeatureMeshes as
+    | Map<FeatureId, FeatureMesh>
+    | undefined;
+  const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
+    | Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
+    | undefined;
+  const cachedShapesIn = session?.cachedShapes;
+
+  // Derive the seedShapes set for `engine.run`. A record can be safely
+  // skipped from re-lowering when its cached lowered shape is still in
+  // `session.cachedShapes` AND one of:
+  //   (a) the record is in the construction closure (its mesh emits only via
+  //       the downstream assembly fan-out — its own `feature.compiled` event
+  //       is filtered out below regardless), OR
+  //   (b) we have a cached `FeatureMesh` for it (we re-emit the cached mesh
+  //       directly after `engine.run` finishes).
+  // Records the engine MUST re-lower (the firstAffected and downstream of an
+  // edited param) are absent from `cachedShapes` after `populateCache`'s
+  // updater runs — `params.update`'s populate path overwrites entries with the
+  // freshly-lowered shapes, but invalidates the matching mesh cache entries.
+  const seedShapes = cachedShapesIn !== undefined
+    ? (() => {
+        const seed = new Map<FeatureId, ShapeBackend>();
+        for (const r of records) {
+          const cached = cachedShapesIn.get(r.id);
+          if (!cached) continue;
+          if (constructionClosure.has(r.id) || cachedFeatureMeshes?.has(r.id)) {
+            seed.set(r.id, cached);
+          }
+        }
+        return seed;
+      })()
+    : undefined;
+
   await engine.run(records, {
     paramTable,
+    ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
     onEvent: (event) => {
       if (event.kind === 'feature.failed') {
         failedFeatureIds.push(event.featureId);
@@ -368,24 +422,50 @@ export async function meshFeaturesPerFeature(
       // Keep vertices in each part's local frame so Studio can pose parts
       // by changing group matrices instead of remeshing on every joint tick.
       if (isSceneBackend(event.shape)) {
+        let partCache = cachedAssemblyPartMeshes?.get(event.featureId);
         for (const part of event.shape.parts) {
-          const meshed = meshShape(extractRawShape(part.shape));
-          if (!meshed) {
-            // Per-part shape failed to mesh; skip silently — the lowerer
-            // already populated the part shape, and the SceneBackend itself
-            // is not a single-shape unit so we don't fail the whole assembly.
-            continue;
+          // Pose-cache fast path: when the assembly is being re-lowered for a
+          // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
+          // backend instance is reused via the engine's seedShapes seed) and
+          // only `part.worldTransform` has refreshed. Reuse cached triangle
+          // data so we skip the expensive `meshShape()` call per part.
+          const cachedPart = partCache?.get(part.name);
+          let faces: FaceGeometry[];
+          let volume: number | undefined;
+          let edges: Float32Array | undefined;
+          if (cachedPart) {
+            faces = cachedPart.faces;
+            volume = cachedPart.volume;
+            edges = cachedPart.edges;
+          } else {
+            const meshed = meshShape(extractRawShape(part.shape));
+            if (!meshed) {
+              // Per-part shape failed to mesh; skip silently — the lowerer
+              // already populated the part shape, and the SceneBackend itself
+              // is not a single-shape unit so we don't fail the whole assembly.
+              continue;
+            }
+            faces = meshed.faces;
+            volume = meshed.volume;
+            edges = meshed.edges;
+            if (cachedAssemblyPartMeshes !== undefined) {
+              if (!partCache) {
+                partCache = new Map();
+                cachedAssemblyPartMeshes.set(event.featureId, partCache);
+              }
+              partCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
+            }
           }
           const local: FeatureMesh = {
             featureId: `${event.featureId}__${part.name}`,
             featureKind: event.featureKind,
             predecessors: [event.featureId],
             // op intentionally omitted (no boolean op for assembly parts)
-            faces: meshed.faces,
-            volume: meshed.volume,
-            ...(meshed.edges ? { edges: meshed.edges } : {}),
+            faces,
+            ...(volume !== undefined ? { volume } : {}),
+            ...(edges ? { edges } : {}),
           };
-          attachPlanarUVs(local.faces);
+          if (!cachedPart) attachPlanarUVs(local.faces);
           features.push({
             ...local,
             assemblyFeatureId: event.featureId,
@@ -504,7 +584,7 @@ export async function meshFeaturesPerFeature(
       }
 
       attachPlanarUVs(meshed.faces);
-      features.push({
+      const emitted: FeatureMesh = {
         featureId: event.featureId,
         featureKind: event.featureKind,
         predecessors: event.predecessors,
@@ -520,7 +600,12 @@ export async function meshFeaturesPerFeature(
         ...(color !== undefined ? { color } : {}),
         ...(material !== undefined ? { material } : {}),
         ...(materialByFaceId !== undefined ? { materialByFaceId } : {}),
-      });
+      };
+      features.push(emitted);
+      // Populate per-feature mesh cache so a subsequent `params.update` whose
+      // first-affected scan keeps this record's lowered shape can re-emit the
+      // cached mesh directly instead of calling `meshShape` again.
+      cachedFeatureMeshes?.set(event.featureId, emitted);
 
       // Aggregate bounds from this feature's vertices
       for (const f of meshed.faces) {
@@ -533,6 +618,33 @@ export async function meshFeaturesPerFeature(
       }
     },
   });
+
+  // Records whose lowered shape was passed in `seedShapes` are skipped by the
+  // recompute engine — `feature.compiled` is NOT emitted for them, so the
+  // onEvent path above never runs. Re-emit cached `FeatureMesh` entries for
+  // non-construction-closure records here so the response still carries
+  // those records' meshes. Construction-closure records emit only via the
+  // assembly fan-out, so they don't need a re-emit here.
+  if (seedShapes !== undefined && seedShapes.size > 0 && cachedFeatureMeshes) {
+    const emittedIds = new Set(features.map((f) => f.featureId));
+    for (const r of records) {
+      if (!seedShapes.has(r.id)) continue;
+      if (emittedIds.has(r.id)) continue;
+      if (constructionClosure.has(r.id)) continue;
+      const cached = cachedFeatureMeshes.get(r.id);
+      if (!cached) continue;
+      const mesh = cached as FeatureMesh;
+      features.push(mesh);
+      for (const f of mesh.faces) {
+        for (let i = 0; i < f.vertices.length; i += 3) {
+          const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+          if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+        }
+      }
+    }
+  }
 
   const bounds: Bounds = {
     min: features.length > 0 ? [minX, minY, minZ] : [0, 0, 0],

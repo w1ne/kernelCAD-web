@@ -89,3 +89,61 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
     ).toThrow(KernelError);
   });
 });
+
+describe('Assembly.part connectors inline-map — F-surface gate enforcement', () => {
+  it('rejects an inline connector-map key containing a dot', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('base', box, {
+        connectors: {
+          'flange.mount': { origin: [0, 0, 0] },
+        },
+      }),
+    ).toThrow(KernelError);
+  });
+
+  it('rejects an inline connector-map key containing a slash', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('base', box, {
+        connectors: {
+          'flange/mount': { origin: [0, 0, 0] },
+        },
+      }),
+    ).toThrow(KernelError);
+  });
+
+  it('rejects an inline connector-map key containing the # modifier separator', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('base', box, {
+        connectors: {
+          'flange#normal': { origin: [0, 0, 0] },
+        },
+      }),
+    ).toThrow(KernelError);
+  });
+
+  it('accepts an inline connector-map key matching the ref-safe grammar', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+    const arm = kcad.assembly('test');
+    const box = kcad.box(10, 10, 10);
+    expect(() =>
+      arm.part('base', box, {
+        connectors: {
+          'flange-mount': { origin: [0, 0, 0] },
+        },
+      }),
+    ).not.toThrow();
+  });
+});

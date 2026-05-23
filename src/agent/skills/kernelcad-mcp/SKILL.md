@@ -108,7 +108,150 @@ interface RepairContext {
 
 ### Export
 
-- `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `export_model({ file? | code?, output_path, format, feature_id?, options? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+
+  **Per-format options** (passed via `options`):
+  - `stl` — no options.
+  - `step` — `unit?: 'mm' | 'cm' | 'in'`.
+  - `dxf` — `unit?: 'mm' | 'cm' | 'in'` (default `mm`); `tolerance?: number` (chord tolerance for polyline flattening; mm; default 0.05); `layers?: DxfLayerSpec[]` (named layers for cut profiles; bend lines always emit on a dedicated `BEND` layer). Output is `LWPOLYLINE`-only; the input must be planar — non-planar geometry fails with `export.dxf.non-planar` and a `list_faces` next-action.
+  - `3mf` — `printUnit?: 'mm' | 'cm' | 'in'` (default `mm`); `embedSource?: boolean` (when `true`, the source script is attached to the 3MF under `Metadata/source.kcad.ts`). Watertightness is verified before write; non-manifold meshes fail with `export.3mf.not-watertight`.
+  - `glb` — `axis?: 'y-up' | 'z-up'` (default `y-up`; world-units convention is mm). `draco?: false` is reserved for a follow-up slice; passing `draco: true` is a static type error today and a runtime `export.glb.draco-glass-conflict` if the type is widened upstream.
+
+  PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
+
+- `export_stl({ file? | code?, output_path, feature_id? })` — *Deprecated alias for `export_model({ ..., format: 'stl' })`. Removal scheduled for the next minor version. Use `export_model` for all new code.*
+
+## Topology references — the `@kc[...]` grammar
+
+kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.
+
+### Form
+
+```
+ref       ::= '@kc[' path ']'
+path      ::= owner ( '/' kind ( '/' segment )* )?
+owner     ::= name | name '[' digit+ ']'
+kind      ::= 'face' | 'edge' | 'vertex' | 'connector' | 'sketch' | 'part' | 'solid'
+segment   ::= name | name '[' digit+ ']'
+name      ::= [A-Za-z][A-Za-z0-9_-]*
+modifier  ::= '#' ( 'normal' | 'axis' | 'center' )
+```
+
+The seven kinds carry distinct semantics:
+
+| Kind | Refers to |
+|---|---|
+| `face` | A single face of a shape (canonical or user-labeled). |
+| `edge` | A single edge of a shape (canonical box / cylinder / sketch-derived names). |
+| `vertex` | A single vertex. (v1: surface acceptance; resolver lift queued for v2.) |
+| `connector` | A named connector frame on an assembly part. |
+| `sketch` | A captured `sketch()` binding by name. |
+| `part` | A named assembly part (default kind when only `@kc[<owner>]` is given). |
+| `solid` | A top-level captured solid feature. |
+
+Three v1 modifiers attach a sub-aspect of the named entity:
+
+| Modifier | Meaning |
+|---|---|
+| `#normal` | The face-normal vector at the entity. |
+| `#axis` | The principal axis vector (cylinder edge, axis connector). |
+| `#center` | The entity's centroid. Default when no modifier is supplied on a `face` ref. |
+
+`segment` and `owner` accept an optional `[N]` index — used by batched feature emitters (`mountingHoles[2]`) and by indexed array entries inside the path. Spec §3.1 indexed segments survive round-tripping through `formatTopoRef`.
+
+### Reserved characters
+
+These characters are reserved by the grammar wrapper and the path separators; the capture-time uniqueness validator rejects any face label, part name, connector name, or feature name containing one of them:
+
+```
+. / * ? , # [ ] @ <whitespace>
+```
+
+Renaming offenders is the recovery path; the gate does not loosen.
+
+### Examples
+
+```
+@kc[base/face/top]                      # canonical face on a primitive
+@kc[base/face/lid]                      # user-declared faceLabel
+@kc[base/edge/top-front]                # canonical box edge
+@kc[shoulder-servo/connector/flange]    # connector on a named part
+@kc[hole1/face/wall]                    # ordinal feature ref: hole #1's wall
+@kc[mountingHoles[2]/face/wall]         # indexed access into a batched feature
+@kc[base/face/top#normal]               # sub-aspect modifier — face-normal vector
+@kc[servo/edge/top#axis]                # cylinder cap edge as an axis vector
+@kc[base/part]                          # bare part ref (kind defaults to 'part')
+```
+
+### When to use refs vs structured forms
+
+| Situation | Form |
+|---|---|
+| Agent passing a face/edge/connector handle between tools | `@kc[...]` string (canonical handoff) |
+| Output of `list_faces` / `list_edges` / `inspect_assembly` | always emits `ref: '@kc[...]'` strings |
+| Hand-authored `.kcad.ts` against canonical names | bare canonical name (e.g. `'top'`) — still accepted |
+| Programmatic / batch construction of selectors | structured form (e.g. `{ kind: 'face-center', name: 'lid' }`) — still accepted |
+| Cross-tool agent emission and resolution | `@kc[...]` string — most stable, lineage-walked first, snapshot-fallback second |
+
+The structured forms remain valid escape hatches. The `@kc[...]` string form is the preferred handoff because it survives the resolver's two-path lookup (lineage first, then geometry snapshot) and round-trips cleanly through MCP tool envelopes.
+
+### Tools that emit refs
+
+| MCP tool | Field |
+|---|---|
+| `list_faces` | `faces[i].ref` (string) and `faces[i].lineage` (struct). The legacy `faces[i].id: 'f<idx>'` stays one release with `deprecated: true`. |
+| `list_edges` | `edges[i].ref` (string). |
+| `inspect_assembly` | Topology-bound connector summaries carry `origin: '@kc[<part>/<kind>/<name>]'` plus a `resolved: [x, y, z]` numeric vec3 for direct downstream consumption. |
+
+### Tools that accept refs
+
+| MCP tool | Input slot |
+|---|---|
+| `add_mate` | `a` / `b` accept the legacy `'<partName>.<connectorName>'` dot form OR `'@kc[<partName>/connector/<connectorName>]'`. |
+| `add_connector` | `origin` accepts `[x, y, z]`, a structured `ConnectorOrigin`, OR `'@kc[<part>/face/<name>]'` (face-center default; `#normal` for the face-normal direction). |
+| `add_feature` | When the feature line includes a face selector (`hole`, `holes`, `cutout`, `shell`, `fillet`, `chamfer`), the selector accepts `@kc[<owner>/face/<name>]` strings, structured `{ face: <name> }` forms, or bare canonical names. |
+| `resolve_topo_ref` | The discovery primitive — pass `{ ref, file? | code? }` to confirm a ref still resolves on the current geometry. |
+
+Capture-time `Connector.origin` (the script API on `partRef.connector(name, opts)`) also accepts `origin: '@kc[<part>/face/<name>]'` directly; the ref is normalised to a structured `ConnectorOrigin` at capture-time so downstream review tools see the same shape they always did.
+
+### Resolution semantics
+
+When a ref is consumed, the resolver tries two paths in order:
+
+1. **Name-propagation** (primary). The ref's `<owner>/<kind>/<name>` tuple matches against the lineage map carried on every shape — canonical names, user-declared `faceLabels`, feature-kind + ordinal + label combinations.
+2. **Geometry-snapshot fallback**. When lineage returns zero hits but a snapshot captured at the ref's original creation still matches a current face within tolerance, the resolver recovers the entity geometrically and surfaces an info-severity warning.
+
+Three diagnostic codes surface through `KernelError.hint` and the MCP error envelope:
+
+- `feature.face-ref.not-resolvable` — both paths returned zero. Hint lists nearest current-face candidates.
+- `feature.face-ref.ambiguous-after-split` — lineage matched N >= 2 surviving descendants. Hint lists the N candidate refs.
+- `feature.face-ref.snapshot-fallback-used` — info-severity; resolution went through the snapshot path and is provisional. Tighten the ref or accept the warning.
+
+Read the hint — it carries the recovery move (paste a candidate ref, narrow the selector, or accept provisional resolution).
+
+### `resolve_topo_ref` — discovery primitive
+
+`resolve_topo_ref({ file? | code?, ref })` is the tool an agent calls when it already holds a ref (typically from a prior `list_faces` / `list_edges` / `inspect_assembly` call) and wants to confirm the ref still resolves on the current geometry, or wants to inspect what an upstream tool emitted.
+
+```json
+{
+  "name": "resolve_topo_ref",
+  "input": { "code": "<.kcad.ts source>", "ref": "@kc[base/face/top]" },
+  "output_ok": {
+    "ok": true,
+    "ref": "@kc[base/face/top]",
+    "entity": { "kind": "face", "hash": "...", "path": "lineage" }
+  },
+  "output_ambiguous": {
+    "ok": false,
+    "errorCode": "feature.face-ref.ambiguous-after-split",
+    "candidates": ["@kc[base/face/top-1]", "@kc[base/face/top-2]"],
+    "errorHint": "..."
+  }
+}
+```
+
+`entity.path` reports which resolver path succeeded — `'lineage'` (preferred, stable) or `'snapshot'` (geometric fallback, provisional). Use the ambiguity / not-resolvable hint to repair the ref, then re-call.
 
 ### Notes on script API vs MCP tools
 

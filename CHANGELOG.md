@@ -2,6 +2,140 @@
 
 ## Unreleased
 
+### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
+
+Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.
+
+#### New MCP tool — export_model
+
+- `export_model({ file? | code?, output_path, format, feature_id?, options? })` — single write-side export tool, format-enum dispatched. Discoverable via `list_api` as the one "export the model to a file" entry.
+- `format` enum: `'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'urdf' | 'srdf' | 'sdf-gazebo'`.
+- `options` is a discriminated union keyed by `options.format`; the discriminator must match the top-level `format` or capture throws `export.options-format-mismatch`. Per-format payload keys:
+  - `stl` — none.
+  - `step` — `unit?: 'mm' | 'cm' | 'in'`.
+  - `dxf` — `layers?: DxfLayerSpec[]`, `unit?`, `tolerance?: number`.
+  - `3mf` — `printUnit?`, `embedSource?: boolean`.
+  - `glb` — `axis?: 'y-up' | 'z-up'`, `draco?: false` (Draco reserved; throws `export.glb.draco-glass-conflict` if `true`).
+- `urdf` / `srdf` / `sdf-gazebo` are wired on the enum but throw `export.urdf.not-implemented` / `export.srdf.not-implemented` / `export.sdf-gazebo.not-implemented` until Slice B-rest fills them in.
+
+#### Deprecated — export_stl MCP tool
+
+- `export_stl` survives one more release as a thin shim that forwards verbatim to `export_model({ ..., format: 'stl' })`. Existing CLI / MCP / integration-test callers pass through unchanged.
+- Removal scheduled for the next minor. Migrate to `export_model` directly.
+
+#### Added — DXF writer (planar / sheet-metal)
+
+- Polyline-only output targeting the Slice E DFM consumer contract (pinned now so Slice E's flat-pattern pipeline lands without writer churn): `Region.outer` and each `Region.holes` lower to one `LWPOLYLINE` entity per loop on the XY plane.
+- Layer schema: `CUT` for the outer + hole loops by default; `BEND` reserved on the writer for fold lines once `Shape.flattenPattern()` ships. Custom layer mapping via `options.layers: DxfLayerSpec[]`.
+- mm units by default with an `$INSUNITS = 4` header; `options.unit` accepts `'mm' | 'cm' | 'in'`. Curved entities flattened to polylines at `options.tolerance` (default 0.01 mm chord deviation).
+- Refuses non-planar input: 3D solids without a single planar source face and multi-body Scenes both throw `export.dxf.non-planar` with a `list_faces` next-action hint.
+
+#### Added — 3MF writer (additive / print-ready)
+
+- Hand-rolled XML emitter — no `lib3mf-WASM` dependency. The 3MF archive is a zip of `[Content_Types].xml`, `_rels/.rels`, and `3D/3dmodel.model` produced via `fflate`.
+- Half-edge watertight gate (`assertWatertight`) runs before writing: every mesh edge must be referenced by exactly two triangles. Open shells and self-intersecting tessellations throw `export.3mf.not-watertight` (with a hint pointing at the K1 mesher gap — re-mesh via Manifold, raise OCCT mesh deflection, or re-author the surface via `nurbsSurfaceLowerer`).
+- Multi-part Scene support via the new `sceneToWorldFrameParts` helper: each `assembly.part(name, ...)` lands as one `<object>` with its own `<components>` and color resource, world-frame baked.
+- `options.printUnit` selects the embedded `<model unit="...">` attribute (default `mm`); `options.embedSource: true` stores the .kcad.ts source as a 3MF custom thumbnail-adjacent attachment for round-trip provenance.
+
+#### Added — GLB writer (visualization / AR / Three.js)
+
+- Y-up axis convention by default (`THREE.GLTFExporter` standard); `options.axis: 'z-up'` flips the root node for Blender / engineering pipelines.
+- PBR materials transcribed via `KHR_materials_*` extensions: clearcoat, transmission, ior, specular, sheen, and emissive_strength all round-trip from the `Shape.material({...})` author surface to GLB material indices.
+- Provenance block embedded in `asset.extras.kernelcad`: kernelCAD version, feature id, source-file basename, capture timestamp, and the discriminated `options.format = 'glb'` payload (modulo unsafe paths).
+- Draco mesh compression is reserved (`options.draco`); passing `true` throws `export.glb.draco-glass-conflict` — the diagnostic name nods at the most common collision (Draco encoders typically strip `KHR_materials_transmission` on glass parts, which would silently break the GLB). Slice B will ship a Draco-with-transmission-aware encoder.
+
+#### Added — Studio Export tab extension
+
+- Format selector widened from STL-only to all 5 working formats. Each picks up a format-aware options inputs (unit dropdown for STEP/DXF, layer field for DXF, printUnit for 3MF, axis radio for GLB).
+- A capture-time DXF planar gate runs in the UI: if the current feature is non-planar, the Export button disables and surfaces the `export.dxf.non-planar` hint inline.
+- URDF / SRDF / SDF-Gazebo are intentionally absent from the Studio UI selector until the writers ship — the format enum exposes them on the agent-facing API but the user-facing surface stays honest about what's implemented.
+
+#### Added — 4 new permanent diagnostic codes
+
+- `export.options-format-mismatch` — `options.format` discriminator does not match the top-level `format`.
+- `export.dxf.non-planar` — DXF export attempted on a non-planar 3D solid or a multi-body Scene; hint routes the agent to `list_faces` to pick a planar face.
+- `export.3mf.not-watertight` — exported mesh failed the half-edge watertight check (non-manifold edges from open shells or self-intersecting tessellations).
+- `export.glb.draco-glass-conflict` — Draco compression requested before the transmission-aware encoder ships.
+
+(Three additional sentinel codes — `export.urdf.not-implemented`, `export.srdf.not-implemented`, `export.sdf-gazebo.not-implemented` — guard the reserved enum slots until Slice B-rest fills them in.)
+
+#### Added — sceneToWorldFrameParts shared helper
+
+- New `src/kernel/backends/occt/sceneToWorldFrame.ts` — one canonical world-frame view of a `SceneBackend`, consumed by STEP, 3MF, and GLB writers.
+- Each part's shape is cloned BEFORE `applyTransform` is applied (replicad's translate/rotate mutate-and-destroy the source OCCT handle; cf. commit 1d597dd). Without the helper, a second exporter call on the same SceneBackend would see already-mutated shapes.
+- Color tokens are surfaced unresolved so per-format writers decide whether to resolve to hex (STEP, 3MF) or feed straight into a `THREE.MeshPhysicalMaterial` (GLB).
+
+#### Eval — cqe-task-export-trio
+
+- New integration eval round-trips a 2-part assembly through DXF (planar bracket), 3MF (multi-part), and GLB (PBR) in a single task. Scores 1.0 against the expert solution.
+### Added — `@kc[...]` topology-ref user-visible surface (F-surface)
+
+Lifts the F-foundation `@kc[owner/kind/name]` parser/resolver into the
+agent-visible surface so MCP tools both emit and accept refs end-to-end. A new
+discovery primitive, ref-aware diagnostics, and topology-bound connector
+origins close the long-standing mate-connector binding gap.
+
+#### Added — `resolve_topo_ref` MCP tool
+
+Discovery primitive that walks a captured snapshot and resolves an
+`@kc[<owner>/<kind>/<name>#<modifier>]` ref to its concrete shape, face, edge,
+vertex, or connector — returning the resolved record plus, for ambiguous
+queries, a list of candidate refs the agent can re-cite verbatim. Pairs with
+`list_faces` / `list_edges` so an agent can walk from "what's on this part?"
+to "give me the exact ref" without leaving the MCP surface.
+
+#### Changed — diagnostics emit `@kc[...]` refs
+
+- `list_faces` and `list_edges` now emit `@kc[...]` refs alongside the legacy
+  `id` field. The `id` field is deprecated and will be removed in the next
+  minor — switch callers to the `ref` field.
+- `inspect_assembly` connector summaries emit a string `origin` for
+  topology-bound origins, plus `resolved: [x,y,z]` for the cached numeric
+  value and `originRaw` for one-release transition. Coordinate-triple origins
+  continue to emit the structured Vec3 form unchanged.
+- `feature.face-ref.*` diagnostic codes (ambiguous-by-ordinal,
+  no-match-for-name, naming-unsafe-character, etc.) surface a structured
+  candidate-ref list through `KernelError.hint` per the "cite candidate refs"
+  prose — agents see the exact strings they need to re-try with.
+
+#### Changed — MCP input acceptance
+
+- `add_mate`, `add_connector`, `add_feature`, and the internal
+  `normalizeFaceSelector` helper accept `@kc[...]` strings alongside the
+  existing structured `{ part, faceLabel }` / `{ part, faceOrdinal }` forms.
+  Backward compatible — every existing input shape still works.
+- Both surface levels of mate/connector authoring are now ref-aware: capture
+  helpers consume refs at design time, MCP tools consume refs at agent time.
+
+#### Added — topology-bound connector origins
+
+`partRef.connector(name, { origin: '@kc[<part>/face|connector|edge|vertex/<name>]', ... })`
+binds the connector origin to a topology entity at capture time instead of
+requiring a manual `[x, y, z]` coordinate triple. The capture step resolves
+the ref against the part's snapshot, caches the resolved Vec3 in the
+serialized record, and a downstream mate via that connector survives an
+upstream fillet on the bound face. Closes the assembly mate-connector
+topology-binding gap.
+
+#### Added — eval task `topology-refs`
+
+Locks the round-trip property end-to-end: face refs emitted by `list_faces`
+survive being fed back through `add_mate` after an upstream fillet renumbers
+ordinals; the splitting-op case (a fillet that produces multiple new faces)
+surfaces an `ambiguous-by-ordinal` diagnostic with a candidate-ref list. The
+expert solution scores 1.0.
+
+#### Skill docs
+
+- `kernelcad/SKILL.md` — adds the `@kc[...]` ref grammar with a
+  derived-vs-source discipline note (refs are agent-routing artifacts, never
+  the design source of truth).
+- `kernelcad-mcp/SKILL.md` — documents `resolve_topo_ref`, the updated
+  list / inspect tool shapes, and the input-acceptance widening.
+- `kernelcad-assemblies/SKILL.md` — documents topology-bound connector
+  origins with worked examples for face / connector / edge / vertex
+  bindings.
+
 ### Breaking change — topology-ref-safe naming (F-foundation)
 
 Capture-time validation now rejects names containing any character reserved by

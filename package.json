@@ -79,6 +79,7 @@
     "astring": "^1.9.0",
     "cmdk": "^1.1.1",
     "commander": "^14.0.3",
+    "fflate": "^0.8.3",
     "framer-motion": "^12.33.0",
     "isosurface": "1.0.0",
     "lucide-react": "^0.563.0",
@@ -101,6 +102,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",
     "@eslint/js": "^9.39.1",
+    "@gltf-transform/core": "^4.3.0",
     "@playwright/test": "^1.58.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/router-cli": "^1.167.3",
@@ -114,6 +116,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "dependency-cruiser": "^17.3.7",
+    "dxf-parser": "^1.1.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
