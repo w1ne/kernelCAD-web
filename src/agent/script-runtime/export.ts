@@ -98,6 +98,70 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
     return { bytes, featureCount, diagnostics: r.diagnostics };
   }
 
+  // URDF / SRDF / SDF entry path: these are pure-XML formats that derive
+  // their entire payload from the captured Assembly (parts + joints + mates
+  // + planning metadata). No targetId / lowered-Shape lookup is required;
+  // the emitter lowers each part on its own. Resolve the Assembly from
+  // the session and dispatch to the per-format serializer.
+  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo') {
+    const ret = run.returnValue;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const assemblies = run.session.assemblies as Map<string, any>;
+    let arm: import('../../modeling/capture/assembly').Assembly | undefined;
+    if (ret instanceof Scene) {
+      arm = assemblies.get(ret.assemblyName);
+    }
+    if (!arm) {
+      const first = assemblies.values().next();
+      if (!first.done) arm = first.value as import('../../modeling/capture/assembly').Assembly;
+    }
+    if (!arm) {
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.no-shape',
+          severity: 'error',
+          message: `Export format '${format}' requires the script to return assembly.model() (or assembly.solvedModel(...)).`,
+          hint: 'End the script with `return arm.model();` after declaring at least one arm.part(...).',
+          nextAction: NEXT_ACTIONS['export.no-shape'],
+        }],
+      };
+    }
+    if (format === 'urdf') {
+      const { urdfSerialize } = await import('../../modeling/export/urdf/urdfSerializer');
+      const urdfOpts = (input.options as { density?: number; meshPrefix?: string; meshFormat?: 'stl' | 'dae' } | undefined) ?? {};
+      const out = await urdfSerialize(arm, urdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.urdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
+    if (format === 'srdf') {
+      const { srdfSerialize } = await import('../../modeling/export/srdf/srdfSerializer');
+      const srdfOpts = (input.options as { urdfPath?: string; samplesPerMate?: number; combinatorial?: boolean } | undefined) ?? {};
+      const out = await srdfSerialize(arm, srdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.srdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
+    // sdf-gazebo
+    {
+      const { sdfSerialize } = await import('../../modeling/export/sdformat/sdfSerializer');
+      const sdfOpts = (input.options as { density?: number; meshPrefix?: string; meshFormat?: 'stl' | 'dae' } | undefined) ?? {};
+      const out = await sdfSerialize(arm, sdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.sdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
+  }
+
   let targetId: string | undefined;
   if (feature_id !== undefined) {
     // Explicit feature_id: verify it exists in captured records
@@ -386,24 +450,10 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         throw e;
       }
     }
-    case 'urdf':
-    case 'srdf':
-    case 'sdf-gazebo': {
-      const code = `export.${format}.not-implemented` as const;
-      return {
-        bytes: new Uint8Array(),
-        featureCount,
-        diagnostics: [...r.diagnostics, {
-          target: 'export-occt',
-          code,
-          severity: 'error',
-          message: `Export format '${format}' is not yet implemented in this build.`,
-          hint: `Pick a supported format (stl, step) for now; '${format}' will land in an upcoming slice.`,
-          nextAction: NEXT_ACTIONS[code],
-        }],
-      };
-    }
   }
+  // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
+  // branch above, before targetId resolution. Unreachable here.
+  return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
 }
 
 /**

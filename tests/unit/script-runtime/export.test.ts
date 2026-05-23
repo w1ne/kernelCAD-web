@@ -100,13 +100,16 @@ describe('runAndExport', () => {
     ).toBeDefined();
   });
 
-  it('rejects urdf / srdf / sdf-gazebo in Slice A with the per-format not-implemented diagnostic', async () => {
+  it('rejects urdf / srdf / sdf-gazebo with export.no-shape when the script returns a Shape (not an Assembly)', async () => {
+    // Slice B-rest fills the URDF / SRDF / SDF format slots; a script that
+    // returns a single `box(...)` (no assembly captured) now trips the
+    // structured no-shape diagnostic instead of the per-format
+    // not-implemented placeholders Slice A originally emitted.
     const src = 'return box(10, 10, 10);';
     for (const format of ['urdf', 'srdf', 'sdf-gazebo'] as const) {
       const result = await runAndExport({ code: src, fileName: 'demo.kcad.ts', format });
       expect(result.bytes.length).toBe(0);
-      const diagCode = `export.${format}.not-implemented` as const;
-      expect(result.diagnostics.find(d => d.code === diagCode)).toBeDefined();
+      expect(result.diagnostics.find(d => d.code === 'export.no-shape')).toBeDefined();
     }
   });
 

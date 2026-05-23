@@ -2,7 +2,28 @@
 
 ## Unreleased
 
-### Added
+### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
+
+- Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).
+- Cylindrical and pin_slot stay lossy in SDF (the format lacks them too) and emit `export.sdf-gazebo.<kind>-lossy` warnings.
+- Structural validation (version, dangling link references) runs inside the emitter; no separate `validate_sdf` MCP tool.
+- Added the `kernelcad-sdformat` skill.
+
+### Added — Slice B-rest: SRDF export + arm.planningGroup / endEffector / groupState API + kernelcad-srdf skill
+
+- Added SRDF export via `export_model({ format: 'srdf' })`. Planning groups, end-effectors, virtual joints, named group states, and explicit collision overrides declared via the new `arm.planningGroup`, `arm.endEffector`, `arm.virtualJoint`, `arm.groupState`, `arm.disableCollision` capture-time methods — all flat on `arm.*` (no vertical namespace prefix). The allowed-collision matrix auto-derives Adjacent (shared joint/mate) and User (explicit override) entries; sparse sampling emits `export.srdf.acm-sparse-sampling` as a warning.
+- Refuses export without at least one planningGroup declaration via `export.srdf.planning-group-missing`.
+- Added the `kernelcad-srdf` skill.
+
+### Added — Slice B-rest: URDF export, validate_urdf, inspect_robot, kernelcad-urdf skill
+
+- Added URDF export via `export_model({ format: 'urdf' })`. Writes the `.urdf` body via the script-runtime; per-link STL meshes via the dedicated IO wrapper. Supports all 7 mate types; `cylindrical`, `pin_slot`, and `ball` mates emit lossy diagnostics with structured next-actions pointing to `format: 'sdf-gazebo'` for native support. Closed kinematic loops are refused with `export.urdf.closed-loop`.
+- Added `validate_urdf` and `inspect_robot` read-only MCP tools. `validate_urdf` parses an external `.urdf` and checks tree-shape + link-name uniqueness + dangling joint refs. `inspect_robot` previews an assembly as it would be exported, surfacing open issues before write.
+- Added the `kernelcad-urdf` skill.
+- Added `Shape.massProperties(density?)` returning `{ mass, com, inertia6 }`; per-part `density` option on `arm.part(...)`.
+- New diagnostic codes: `export.urdf.cylindrical-lossy`, `export.urdf.pin-slot-lossy`, `export.urdf.ball-decomposed`, `export.urdf.closed-loop`, `export.urdf.inertia-density-declared`. Removed Slice A's `export.urdf.not-implemented` placeholder.
+
+### Added — Slice E: dfm_preflight + kernelcad-shopcheck skill
 
 - `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public
   ordering rules. Required inputs: vendor, material, thickness. Findings carry
@@ -10,8 +31,8 @@
   change-thickness}` and an `@kc[...]` ref that round-trips through
   `resolve_topo_ref` back to the source feature.
 - `kernelcad-shopcheck` skill (orchestrator for `dfm_preflight`).
-- 24 new `dfm.*` diagnostic codes under the new `dfm` group (catalogue count
-  157). DXF file-input path accepts `dxf:` alongside `file:` / `code:`.
+- 24 new `dfm.*` diagnostic codes under the new `dfm` group. DXF file-input
+  path accepts `dxf:` alongside `file:` / `code:`.
 - `scripts/refreshCatalog.ts` + `shopcheck:refresh` npm script: 24-hour TS
   catalog refresh, sha256 provenance on every source page.
 - Eval tasks `shopcheck-bracket-preflight` and `shopcheck-repair-loop`.

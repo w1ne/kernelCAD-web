@@ -22,11 +22,11 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     expect(content).toMatch(/^---\nname: kernelcad/);
   });
 
-  it('installs all 13 skill subdirectories', () => {
+  it('installs all 16 skill subdirectories', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
     const dirs = readdirSync(tmp);
-    expect(dirs.length).toBe(13);
+    expect(dirs.length).toBe(16);
   });
 
   it('writes combined skill content to an explicit path via skill onefile', () => {
