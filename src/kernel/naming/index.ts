@@ -1,0 +1,49 @@
+// src/kernel/naming/index.ts
+//
+// Public-within-the-monorepo barrel for the topology-naming machinery.
+// Slices B (mates) / C (bundled connectors) / E (DFM findings) import
+// from here while F-foundation ships before F-surface — the user-visible
+// MCP / SKILL / KernelError.hint integration of @kc[...] refs lands in
+// F-surface (Tasks F2-F6).
+//
+// Internal use only. Do not re-export from src/index.ts until F-surface
+// is ready to lift the contract to the user-facing surface.
+
+export {
+  parseTopoRef,
+  formatTopoRef,
+  type TopoRef,
+  type TopoKind,
+  type TopoModifier,
+  type TopoRefParseError,
+  type FormatTopoRefParts,
+} from './topoRef';
+
+export {
+  resolveTopoRef,
+  type TopoResolveContext,
+  type TopoResolveResult,
+  type TopoResolveWarning,
+} from './resolveTopoRef';
+
+export {
+  assertTopoRefSafeName,
+  TOPO_REF_NAME_REGEX,
+  RESERVED_TOPO_REF_CHARS,
+} from './uniquenessValidator';
+
+// Lineage walk helpers — already shipped, re-exported so sibling slices
+// don't have to reach past the naming/ directory boundary.
+export {
+  findLineageMatches,
+  findFallbackSnapshot,
+  parseFaceSelector,
+  type ParsedSelector,
+  resolveBySnapshot,
+} from './selectorParser';
+
+export {
+  findByGeometrySnapshot,
+  type SnapshotTolerance,
+  type SnapshotMatchResult,
+} from './geometrySnapshotFallback';
