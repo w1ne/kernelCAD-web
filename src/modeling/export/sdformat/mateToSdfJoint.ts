@@ -1,7 +1,7 @@
 // src/modeling/export/sdformat/mateToSdfJoint.ts
 //
-// SDFormat (Gazebo SDF) joint lowering. Same shape as the URDF lowerer
-// except (a) ball is native (no decomposition), (b) <pose> replaces
+// SDFormat joint lowering. Same shape as the URDF lowerer except
+// (a) ball is native (no decomposition), (b) <pose> replaces
 // <origin xyz rpy>, (c) limits live inside <axis><limit><lower>/<upper>.
 // Cylindrical and pin_slot remain lossy — SDFormat lacks them too.
 

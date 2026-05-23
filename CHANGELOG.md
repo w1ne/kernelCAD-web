@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Added — Slice B-rest: SDFormat (Gazebo SDF) export + kernelcad-sdformat skill
+### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
 - Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).
 - Cylindrical and pin_slot stay lossy in SDF (the format lacks them too) and emit `export.sdf-gazebo.<kind>-lossy` warnings.
