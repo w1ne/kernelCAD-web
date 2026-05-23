@@ -42,7 +42,8 @@ jobs:
         run: npm i -g @openai/codex
       - run: npx -y skills add kernelcad/skills -a codex
       - run: node eval/dist-skills/bracket-prompt/runCodex.mjs
-        env: { OPENAI_API_KEY: ${{ secrets.EVAL_OPENAI_API_KEY }} }
+        env:
+          OPENAI_API_KEY: ${{ secrets.EVAL_OPENAI_API_KEY }}
 
   eval-cursor:
     runs-on: ubuntu-22.04

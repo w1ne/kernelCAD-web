@@ -18,6 +18,9 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Mechanical patterns (linear / circular / grid replication of a sub-feature) → also load `kernelcad-patterns`.
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
 - Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-fields`.
+- Exporting an assembly to URDF for a motion planner or simulator → also load `kernelcad-urdf`.
+- Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.
+- Exporting an assembly with closed kinematic loops or a native ball joint → also load `kernelcad-sdformat`.
 - Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
 
 ## Key globals available today

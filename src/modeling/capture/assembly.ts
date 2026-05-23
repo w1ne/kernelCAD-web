@@ -170,6 +170,12 @@ export interface AssemblyPartOpts {
     to: AssemblyConnectorRef;
     name?: string;
   };
+  /** Per-part material density in `kg/m^3`. Consumed by URDF / SDF export
+   *  inertial blocks. When omitted, the export defaults to 1000 (water)
+   *  and emits `export.urdf.inertia-density-declared` so the agent knows
+   *  the dynamics will be off for any non-water material. Typical values:
+   *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
+  density?: number;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -298,6 +304,48 @@ export interface AssemblyJointStored {
 export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
+  /** Per-part material density in kg/m^3, copied from `AssemblyPartOpts.density`.
+   *  Read by the URDF / SDF export inertial-block emitters. Undefined when
+   *  the script did not declare a density on `arm.part(...)`. */
+  readonly density?: number;
+}
+
+/** SRDF planning group. Either chain-form (base/tip) or enumeration. */
+export interface PlanningGroupRecord {
+  readonly name: string;
+  readonly chain?: { readonly baseLink: string; readonly tipLink: string };
+  readonly joints?: readonly string[];
+  readonly links?: readonly string[];
+}
+
+/** SRDF end-effector reference. */
+export interface EndEffectorRecord {
+  readonly name: string;
+  readonly parentLink: string;
+  readonly group: string;
+  readonly parentGroup: string;
+}
+
+/** SRDF virtual joint (e.g. world -> base fixed). */
+export interface VirtualJointRecord {
+  readonly name: string;
+  readonly type: 'fixed' | 'floating' | 'planar';
+  readonly parentFrame: string;
+  readonly childLink: string;
+}
+
+/** SRDF named group state — a pose snapshot tied to a planning group. */
+export interface GroupStateRecord {
+  readonly name: string;
+  readonly group: string;
+  readonly values: Readonly<Record<string, number>>;
+}
+
+/** SRDF allowed-collision override declared via arm.disableCollision(...). */
+export interface DisabledCollisionRecord {
+  readonly link1: string;
+  readonly link2: string;
+  readonly reason: 'Adjacent' | 'Never' | 'Default' | 'User';
 }
 
 export class Assembly {
@@ -319,6 +367,14 @@ export class Assembly {
    */
   private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
 
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. Empty when
+   *  the script did not declare any; SRDF export rejects in that case. */
+  private readonly planningGroups: PlanningGroupRecord[] = [];
+  private readonly endEffectors: EndEffectorRecord[] = [];
+  private readonly virtualJoints: VirtualJointRecord[] = [];
+  private readonly groupStates: GroupStateRecord[] = [];
+  private readonly disabledCollisions: DisabledCollisionRecord[] = [];
+
   constructor(name: string, session: CaptureSession) {
     this.name = name;
     this.session = session;
@@ -334,6 +390,16 @@ export class Assembly {
         'Pass at: [x, y, z], or omit it; coords may be number or ParamRef.',
       );
     }
+    if (opts.density !== undefined) {
+      if (!Number.isFinite(opts.density) || opts.density <= 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly part '${name}': density must be a positive finite number; got ${formatScalarForError(opts.density)}.`,
+          shape.id,
+          'Pass density: <kg/m^3>, or omit it to use the 1000 kg/m^3 default. Typical: steel 7850, aluminum 2700, ABS 1050.',
+        );
+      }
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
@@ -347,6 +413,7 @@ export class Assembly {
       ...part,
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
+      ...(opts.density !== undefined ? { density: opts.density } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -759,6 +826,104 @@ export class Assembly {
     return this;
   }
 
+  /**
+   * Declare an SRDF planning group. Either a chain form (base->tip) or an
+   * enumeration of joint / link names. Consumed by `export_model({
+   * format: 'srdf' })`.
+   */
+  planningGroup(
+    name: string,
+    opts: { chain?: { baseLink: string; tipLink: string }; joints?: string[]; links?: string[] },
+  ): this {
+    if (this.planningGroups.some(g => g.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup: duplicate group name '${name}'.`,
+        undefined,
+        'Each planning group must have a unique name. Pick a different name or remove the earlier declaration.',
+      );
+    }
+    if (!opts.chain
+      && (!opts.joints || opts.joints.length === 0)
+      && (!opts.links || opts.links.length === 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup '${name}' must declare chain, joints, or links.`,
+        undefined,
+        'Pass { chain: { baseLink, tipLink } } for a serial chain, or { joints: [...] } / { links: [...] } for an enumeration.',
+      );
+    }
+    this.planningGroups.push({
+      name,
+      ...(opts.chain !== undefined
+        ? { chain: { baseLink: opts.chain.baseLink, tipLink: opts.chain.tipLink } }
+        : {}),
+      ...(opts.joints !== undefined ? { joints: [...opts.joints] } : {}),
+      ...(opts.links !== undefined ? { links: [...opts.links] } : {}),
+    });
+    return this;
+  }
+
+  /** Declare an SRDF end-effector. */
+  endEffector(
+    name: string,
+    opts: { parentLink: string; group: string; parentGroup: string },
+  ): this {
+    if (!this.parts.some(p => p.name === opts.parentLink)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.endEffector '${name}': parentLink '${opts.parentLink}' is not a known part.`,
+        undefined,
+        `Declare the parent link via arm.part('${opts.parentLink}', ...) before calling arm.endEffector(...).`,
+      );
+    }
+    this.endEffectors.push({
+      name,
+      parentLink: opts.parentLink,
+      group: opts.group,
+      parentGroup: opts.parentGroup,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF virtual joint (world -> base linkage). */
+  virtualJoint(
+    name: string,
+    opts: { type: 'fixed' | 'floating' | 'planar'; parentFrame: string; childLink: string },
+  ): this {
+    this.virtualJoints.push({
+      name,
+      type: opts.type,
+      parentFrame: opts.parentFrame,
+      childLink: opts.childLink,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF named group state (a pose snapshot keyed by joint name). */
+  groupState(name: string, group: string, values: Record<string, number>): this {
+    if (!this.planningGroups.some(g => g.name === group)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.groupState '${name}' references unknown group '${group}'.`,
+        undefined,
+        `Declare arm.planningGroup('${group}', ...) before referencing it in arm.groupState(...).`,
+      );
+    }
+    this.groupStates.push({ name, group, values: { ...values } });
+    return this;
+  }
+
+  /** Declare an SRDF allowed-collision override. */
+  disableCollision(
+    link1: string,
+    link2: string,
+    opts: { reason: 'Adjacent' | 'Never' | 'Default' | 'User' },
+  ): this {
+    this.disabledCollisions.push({ link1, link2, reason: opts.reason });
+    return this;
+  }
+
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
     validateMechanicalIntentName('name', name);
     if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
@@ -997,6 +1162,31 @@ export class Assembly {
    */
   __workspaceTargets(): readonly WorkspaceTargetRecord[] {
     return this.workspaceTargets;
+  }
+
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. */
+  __planningGroups(): readonly PlanningGroupRecord[] {
+    return this.planningGroups;
+  }
+
+  /** SRDF end-effectors declared via `arm.endEffector(...)`. */
+  __endEffectors(): readonly EndEffectorRecord[] {
+    return this.endEffectors;
+  }
+
+  /** SRDF virtual joints declared via `arm.virtualJoint(...)`. */
+  __virtualJoints(): readonly VirtualJointRecord[] {
+    return this.virtualJoints;
+  }
+
+  /** SRDF named group states declared via `arm.groupState(...)`. */
+  __groupStates(): readonly GroupStateRecord[] {
+    return this.groupStates;
+  }
+
+  /** SRDF allowed-collision overrides declared via `arm.disableCollision(...)`. */
+  __disabledCollisions(): readonly DisabledCollisionRecord[] {
+    return this.disabledCollisions;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
