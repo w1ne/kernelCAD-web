@@ -34,7 +34,7 @@ describe('buildGallery', () => {
     expect(out.entries[0].posterUrl).toBe('/gallery/fixture-build/poster.jpg');
     expect(out.entries[0].modelUrl).toBe('/gallery/fixture-build/model.glb');
     expect(out.entries[0].promptUrl).toBe('/gallery/fixture-build/prompt.md');
-    expect(out.entries[0].studioUrl).toBe('/studio?gallery=fixture-build');
+    expect(out.entries[0].studioUrl).toBe('https://app.kernelcad.com/studio?gallery=fixture-build');
     expect(out.entries[0].sourceUrl).toBe('/gallery/fixture-build/source.kcad.ts');
 
     expect(existsSync(path.join(publicDir, 'gallery/fixture-build/video.mp4'))).toBe(true);

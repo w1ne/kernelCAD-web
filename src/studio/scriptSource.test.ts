@@ -60,6 +60,36 @@ describe('loadGalleryScriptSource', () => {
     expect(fetchMock).not.toHaveBeenCalledWith('/gallery/first-build/source.kcad.ts');
   });
 
+  it('loads app-hosted Studio gallery source from the marketing gallery origin', async () => {
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com' } });
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === 'https://kernelcad.com/gallery.json') {
+        return {
+          ok: true,
+          json: async () => ({
+            entries: [
+              {
+                slug: 'fixture-build',
+                sourceUrl: '/gallery/fixture-build/source.kcad.ts',
+              },
+            ],
+          }),
+        };
+      }
+
+      return {
+        ok: true,
+        text: async () => 'export default box(2, 2, 2);',
+      };
+    }) as unknown as typeof fetch;
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loadGalleryScriptSource('fixture-build')).resolves.toContain('box(2');
+    expect(fetchMock).toHaveBeenCalledWith('https://kernelcad.com/gallery.json');
+    expect(fetchMock).toHaveBeenCalledWith('https://kernelcad.com/gallery/fixture-build/source.kcad.ts');
+  });
+
   it('rejects gallery entries without sourceUrl', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
