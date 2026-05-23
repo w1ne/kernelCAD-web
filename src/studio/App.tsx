@@ -44,17 +44,19 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, saveActiveProject } = useProject();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [sourceLoadError, setSourceLoadError] = useState<string | null>(null);
+  const [loadedSourceRouteKey, setLoadedSourceRouteKey] = useState<string | null>(null);
+  const [sourceLoadError, setSourceLoadError] = useState<{ routeKey: string; message: string } | null>(null);
   const scriptParam = readScriptParam();
   const galleryParam = readGalleryParam();
   const isSourceRoute = !isDevLab && Boolean(scriptParam || galleryParam);
+  const sourceRouteKey = isSourceRoute
+    ? (galleryParam ? `gallery:${galleryParam}` : `script:${scriptParam}`)
+    : null;
 
   useEffect(() => {
-    if (isDevLab || (!scriptParam && !galleryParam)) return;
+    if (!sourceRouteKey) return;
 
     let cancelled = false;
-    setSourceLoadError(null);
-    setIsInitialized(false);
     const sourcePromise = galleryParam
       ? loadGalleryScriptSource(galleryParam)
       : loadStudioScriptSource(scriptParam as string);
@@ -64,18 +66,21 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
         if (cancelled) return;
         setCode(source);
         setViewMode('code');
+        setSourceLoadError(null);
+        setLoadedSourceRouteKey(sourceRouteKey);
         setIsInitialized(true);
       })
       .catch((error) => {
         if (cancelled) return;
         console.error('Failed to load Studio source:', error);
-        setSourceLoadError('Failed to load Studio source.');
+        setSourceLoadError({ routeKey: sourceRouteKey, message: 'Failed to load Studio source.' });
+        setLoadedSourceRouteKey(null);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [galleryParam, isDevLab, scriptParam, setCode, setViewMode]);
+  }, [galleryParam, scriptParam, setCode, setViewMode, sourceRouteKey]);
 
   // Sync active project -> workbench state
   useEffect(() => {
@@ -117,15 +122,19 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     return () => clearTimeout(timeoutId);
   }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam]);
 
-  if (isSourceRoute && sourceLoadError) {
+  const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
+    ? sourceLoadError.message
+    : null;
+
+  if (activeSourceLoadError) {
     return (
       <main role="alert" aria-live="polite">
-        <p>{sourceLoadError}</p>
+        <p>{activeSourceLoadError}</p>
       </main>
     );
   }
 
-  if (isSourceRoute && !isInitialized) {
+  if (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) {
     return (
       <main aria-live="polite">
         <p>Loading Studio source...</p>
