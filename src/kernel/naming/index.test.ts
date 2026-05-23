@@ -21,4 +21,12 @@ describe('src/kernel/naming barrel — F-foundation surface', () => {
     expect(typeof namingApi.findLineageMatches).toBe('function');
     expect(typeof namingApi.findByGeometrySnapshot).toBe('function');
   });
+
+  it('exposes OcctBackend as a type re-export', () => {
+    // Type-only re-exports cannot be probed at runtime — this assertion exists
+    // so the test file imports the symbol via the barrel and tsc verifies it.
+    type Backend = import('./index').OcctBackend;
+    const _check: Backend | undefined = undefined;
+    expect(_check).toBeUndefined();
+  });
 });

@@ -40,8 +40,6 @@ export interface TopoRefParseError {
   readonly raw: string;
 }
 
-const REF_OUTER_REGEX = /^@kc\[([^\]]*)\]$/;
-
 export function parseTopoRef(s: string): TopoRef | TopoRefParseError {
   if (typeof s !== 'string' || s.length === 0) {
     return { error: 'empty input', raw: String(s) };
@@ -52,11 +50,29 @@ export function parseTopoRef(s: string): TopoRef | TopoRefParseError {
   if (!s.endsWith(']')) {
     return { error: `missing closing bracket ]`, raw: s };
   }
-  const m = REF_OUTER_REGEX.exec(s);
-  if (!m) {
-    return { error: `malformed bracket wrapper`, raw: s };
+  // Body lives between the FIRST '[' (after '@kc') and the LAST ']' in s.
+  // We require depth-zero at the final ']' so that `@kc[foo[2]]` parses but
+  // `@kc[foo[2]]extra` is rejected (trailing content) and unbalanced opens
+  // are rejected. This replaces the old `/^@kc\[([^\]]*)\]$/` regex which
+  // truncated the body at the FIRST inner ']' and thus rejected any ref
+  // containing a `name[N]` indexed segment.
+  const bodyStart = '@kc['.length; // index 4
+  const bodyEnd = s.length - 1;    // index of the final ']'
+  let depth = 1;
+  for (let i = bodyStart; i < bodyEnd; i++) {
+    if (s[i] === '[') depth++;
+    else if (s[i] === ']') depth--;
+    if (depth === 0) {
+      return {
+        error: `unbalanced brackets: closing ']' at offset ${i} ends the @kc[ wrapper before the final character (likely trailing content)`,
+        raw: s,
+      };
+    }
   }
-  const body = m[1];
+  if (depth !== 1) {
+    return { error: `unbalanced brackets inside ref body`, raw: s };
+  }
+  const body = s.slice(bodyStart, bodyEnd);
   if (body.length === 0) {
     return { error: `empty ref body`, raw: s };
   }
@@ -84,7 +100,11 @@ export function parseTopoRef(s: string): TopoRef | TopoRefParseError {
   }
 
   const owner = parts[0];
-  if (!TOPO_REF_NAME_REGEX.test(owner)) {
+  // Owners follow the same name | name '[' digit+ ']' grammar as segments
+  // (spec §3.1) so feature-array entries like `mountingHoles[2]` survive as
+  // refs.
+  const ownerIdxStripped = owner.replace(/\[\d+\]$/, '');
+  if (!TOPO_REF_NAME_REGEX.test(ownerIdxStripped)) {
     return { error: `owner name '${owner}' does not match ${TOPO_REF_NAME_REGEX.source}`, raw: s };
   }
 

@@ -1894,6 +1894,7 @@ function normalizeConnectors(
 ): Record<string, AssemblyConnectorFrameStored> {
   const normalized: Record<string, AssemblyConnectorFrameStored> = {};
   for (const [name, frame] of Object.entries(connectors ?? {})) {
+    assertTopoRefSafeName(name, 'connector-name', featureId);
     if (!isValidEditableVec3(frame.origin)) {
       throw new KernelError(
         'feature.invalid-args',
