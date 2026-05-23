@@ -72,11 +72,32 @@ describe('runAndExport', () => {
     expect(result.bytes[1]).toBe(0x4b);
   });
 
-  it('rejects glb format in Slice A skeleton with the not-implemented diagnostic', async () => {
+  it('exports GLB for a single-shape script (binary starts with the glTF magic)', async () => {
     const code = 'return box(10, 10, 10);';
     const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'glb' });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    expect(result.bytes.length).toBeGreaterThan(20);
+    // GLB magic = 'glTF' (0x67 0x6C 0x54 0x46 little-endian).
+    expect(result.bytes[0]).toBe(0x67);
+    expect(result.bytes[1]).toBe(0x6C);
+    expect(result.bytes[2]).toBe(0x54);
+    expect(result.bytes[3]).toBe(0x46);
+  });
+
+  it('rejects GLB export with options.draco === true via export.glb.draco-glass-conflict', async () => {
+    const code = 'return box(10, 10, 10);';
+    const result = await runAndExport({
+      code,
+      fileName: 'demo.kcad.ts',
+      format: 'glb',
+      // Cast through `unknown` because the type narrows draco to false; the
+      // runtime gate covers the case where a future slice widens the type.
+      options: { format: 'glb', draco: true } as unknown as ExportOptions,
+    });
     expect(result.bytes.length).toBe(0);
-    expect(result.diagnostics.find(d => d.code === 'export.glb.not-implemented')).toBeDefined();
+    expect(
+      result.diagnostics.find(d => d.code === 'export.glb.draco-glass-conflict'),
+    ).toBeDefined();
   });
 
   it('rejects urdf / srdf / sdf-gazebo in Slice A with the per-format not-implemented diagnostic', async () => {

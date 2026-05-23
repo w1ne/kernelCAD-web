@@ -1,9 +1,10 @@
 import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, pbrFromMetadata, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -205,6 +206,21 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         throw e;
       }
     }
+    if (format === 'glb') {
+      // GLB ships multi-body scenes natively — one glTF node per part with
+      // per-part name + PBR material. Mesh each part via the shared
+      // world-frame walk, then chain through the GLTFExporter writer.
+      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      try {
+        const worldParts = sceneToWorldFrameParts(lowered);
+        const bytes = await exportGlbAsync(worldParts, optsGlb);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const dracoDiag = dracoConflictDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (dracoDiag) return dracoDiag;
+        throw e;
+      }
+    }
     // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
     // Scene.toCompound() upstream — surface a structured diagnostic
     // pointing at the right call.
@@ -344,7 +360,32 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         throw e;
       }
     }
-    case 'glb':
+    case 'glb': {
+      // Single-shape GLB: wrap in a one-part `WorldFramePart[]` so the
+      // writer can mesh + emit identically to the Scene path. Pull
+      // material / color attribution from the target FeatureRecord's
+      // metadata so a script that ends with `.material({...})` exports the
+      // expected PBR fields without going through an assembly.
+      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      const tailRecord = run.records.find((rec) => rec.id === targetId);
+      const meta = tailRecord?.metadata as Record<string, unknown> | undefined;
+      const partColor = typeof meta?.color === 'string' ? meta.color : undefined;
+      const partMaterial = pbrFromMetadata(meta);
+      const part: WorldFramePart = {
+        name: 'part',
+        shape,
+        ...(partColor !== undefined ? { color: partColor } : {}),
+        ...(partMaterial !== undefined ? { material: partMaterial } : {}),
+      };
+      try {
+        const bytes = await exportGlbAsync([part], optsGlb);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const dracoDiag = dracoConflictDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (dracoDiag) return dracoDiag;
+        throw e;
+      }
+    }
     case 'urdf':
     case 'srdf':
     case 'sdf-gazebo': {
@@ -389,6 +430,34 @@ function notWatertightDiagnostic(
       message: '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.',
       hint: 'The mesh has open or non-manifold edges. Inspect the source geometry (typically a self-intersecting cone or non-closed shell) and re-author the offending surface via nurbsSurfaceLowerer, raise OCCT mesh deflection, or re-mesh via Manifold; see the K1 mesher gap.',
       nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
+    }],
+  };
+}
+
+/**
+ * Translate an `exportGlbAsync` Draco-conflict Error into the structured
+ * `export.glb.draco-glass-conflict` diagnostic. Returns `undefined` when the
+ * error doesn't look like a Draco gate failure so callers can rethrow.
+ */
+function dracoConflictDiagnostic(
+  e: unknown,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): ExportResult | undefined {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (!/draco/i.test(msg)) return undefined;
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'export.glb.draco-glass-conflict',
+      featureId: targetId,
+      severity: 'error',
+      message: 'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit.',
+      hint: 'Set options.draco to false or omit it; Draco encoding ships in a follow-up slice.',
+      nextAction: NEXT_ACTIONS['export.glb.draco-glass-conflict'],
     }],
   };
 }

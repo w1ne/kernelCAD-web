@@ -352,13 +352,13 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
   },
-  'export.glb.not-implemented': {
+  'export.glb.draco-glass-conflict': {
     hintTemplate:
-      'GLB export is not yet implemented in this build. Pick a supported format (stl, step) for now; GLB lands later in this slice.',
-    nextAction: { kind: 'fix-arg', field: 'format' },
+      'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit; the encoder ships in a follow-up slice. (The name nods at the most common collision: Draco encoders typically strip the `KHR_materials_transmission` extension on glass parts, which would silently break the GLB.)',
+    nextAction: { kind: 'fix-arg', field: 'options.draco' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A GLB export was requested before the writer landed in the runtime.',
+    description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
   },
   'export.urdf.not-implemented': {
     hintTemplate:
