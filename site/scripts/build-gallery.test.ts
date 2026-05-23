@@ -34,11 +34,16 @@ describe('buildGallery', () => {
     expect(out.entries[0].posterUrl).toBe('/gallery/fixture-build/poster.jpg');
     expect(out.entries[0].modelUrl).toBe('/gallery/fixture-build/model.glb');
     expect(out.entries[0].promptUrl).toBe('/gallery/fixture-build/prompt.md');
+    expect(out.entries[0].studioUrl).toBe('/studio?gallery=fixture-build');
+    expect(out.entries[0].sourceUrl).toBe('/gallery/fixture-build/source.kcad.ts');
 
     expect(existsSync(path.join(publicDir, 'gallery/fixture-build/video.mp4'))).toBe(true);
     expect(existsSync(path.join(publicDir, 'gallery/fixture-build/poster.jpg'))).toBe(true);
     expect(existsSync(path.join(publicDir, 'gallery/fixture-build/model.glb'))).toBe(true);
     expect(existsSync(path.join(publicDir, 'gallery/fixture-build/prompt.md'))).toBe(true);
+    expect(existsSync(path.join(publicDir, 'gallery/fixture-build/source.kcad.ts'))).toBe(true);
+    expect(readFileSync(path.join(publicDir, 'gallery/fixture-build/source.kcad.ts'), 'utf8'))
+      .toContain('box');
 
     // GLB has glTF magic bytes
     const glb = readFileSync(path.join(publicDir, 'gallery/fixture-build/model.glb'));
