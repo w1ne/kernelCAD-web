@@ -7,7 +7,7 @@
 // Cold start dominates wall-clock time (puppeteer launch + vite bundle +
 // kernel WASM init); the screenshot itself is sub-second per view.
 
-import { chromium, type Browser, type Page } from 'playwright';
+import type { Browser, Page } from 'playwright';
 import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
@@ -163,10 +163,20 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   }
   const serialized = meshing.features.map(serializeForBridge);
 
-  // 2. Launch headless chromium.
+  // 2. Launch headless chromium. Lazy-import playwright so the CLI's
+  //    evaluate/export/mcp/skill paths don't fail at module load when
+  //    playwright isn't installed (it's an optional dependency).
   let browser: Browser | undefined;
   let page: Page | undefined;
   try {
+    let chromium;
+    try {
+      ({ chromium } = await import('playwright'));
+    } catch {
+      throw new Error(
+        "kernelcad render requires 'playwright'. Install with: npm install playwright && npx playwright install chromium",
+      );
+    }
     browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
     const context = await browser.newContext({
       // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
