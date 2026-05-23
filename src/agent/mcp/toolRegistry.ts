@@ -24,6 +24,7 @@ import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
+import { exportModelTool } from './tools/exportModel';
 import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
@@ -785,11 +786,13 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'export_stl',
       description:
-        'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
+        "(DEPRECATED — use export_model with format: 'stl'.) Export the script geometry to a binary STL file. " +
+        'Pass either { file } or { code } plus a required { output_path }. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
         'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
         'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
-        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
+        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers. ' +
+        'Removal is scheduled for the next minor version.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -802,6 +805,43 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]),
+  },
+  {
+    definition: {
+      name: 'export_model',
+      description:
+        'Export the script geometry to a file. Pass either { file } or { code } plus a required { output_path } and { format }. ' +
+        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
+        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials). ' +
+        'Reserved (return export.<format>.not-implemented until a follow-up slice fills them in): urdf, srdf, sdf-gazebo. ' +
+        'Optional { feature_id } selects which feature to export (default: last). ' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco). ' +
+        'Returns { ok, output_path, byte_count, feature_count, format, diagnostics }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          output_path: { type: 'string', description: 'Destination path for the export file. Required.' },
+          format: {
+            type: 'string',
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'urdf', 'srdf', 'sdf-gazebo'],
+            description: 'Output file format. Required.',
+          },
+          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+          options: {
+            type: 'object',
+            description:
+              'Optional per-format options bag. Discriminator options.format must equal top-level format. ' +
+              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
+              'glb: { axis?: "y-up"|"z-up", draco?: false }.',
+          },
+        },
+        required: ['output_path', 'format'],
+      },
+    },
+    handler: input => exportModelTool(input as unknown as Parameters<typeof exportModelTool>[0]),
   },
   {
     definition: {
