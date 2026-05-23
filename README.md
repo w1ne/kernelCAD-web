@@ -99,6 +99,33 @@ That's it. For agents: `kernelcad mcp` runs an MCP server with dynamic model
 introspection tools. See `SKILL.md` (bundled with the install) for the full API
 surface and authoring guide.
 
+## Use with Claude Desktop
+
+kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
+`npm install -g kernelcad`, add an entry to your Claude Desktop config file:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "kernelcad": {
+      "command": "npx",
+      "args": ["-y", "kernelcad", "mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop. The kernelCAD MCP tools (`review_cad`, model
+introspection, export helpers, etc.) appear in the tools list.
+
+> A one-shot `kernelcad install --claude-desktop` command that edits this
+> config for you is on the next slice — until then the snippet above is the
+> interim path.
+
 ## Contributing
 
 Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:
