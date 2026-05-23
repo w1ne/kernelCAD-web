@@ -104,4 +104,11 @@ describe('Toolbar', () => {
         fireEvent.click(screen.getByRole('button', { name: /reference images?/i }));
         expect(props.onToggleReferenceImages).toHaveBeenCalledTimes(1);
     });
+
+    it('renders the Connect link pointing at /connect', () => {
+        renderToolbar();
+        const link = screen.getByTestId('toolbar-connect-link');
+        expect(link.getAttribute('href')).toBe('/connect');
+        expect(link.textContent).toContain('Connect');
+    });
 });

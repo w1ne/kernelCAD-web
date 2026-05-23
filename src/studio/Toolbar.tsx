@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug } from 'lucide-react';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -56,6 +56,15 @@ export function Toolbar({
                     <MessageSquare size={12} />
                     Agent
                 </button>
+                <a
+                    href="/connect"
+                    data-testid="toolbar-connect-link"
+                    aria-label="Connect to Claude Desktop"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
+                >
+                    <Plug size={12} />
+                    Connect
+                </a>
                 {isModified && (
                     <span
                         data-testid="toolbar-modified-dot"
