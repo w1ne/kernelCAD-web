@@ -23,7 +23,7 @@ describe('skill commands', () => {
     expect(existsSync(join(nested, 'kernelcad', 'SKILL.md'))).toBe(true);
   });
 
-  it('installCommand covers all 11 skill subdirectories', async () => {
+  it('installCommand covers all 12 skill subdirectories', async () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-'));
     await installCommand(tmp);
     const expected = [
@@ -31,6 +31,7 @@ describe('skill commands', () => {
       'kernelcad-assemblies',
       'kernelcad-authoring',
       'kernelcad-features',
+      'kernelcad-fields',
       'kernelcad-from-reference',
       'kernelcad-mcp',
       'kernelcad-nurbs',
@@ -59,6 +60,7 @@ describe('skill commands', () => {
       'kernelcad-assemblies',
       'kernelcad-authoring',
       'kernelcad-features',
+      'kernelcad-fields',
       'kernelcad-from-reference',
       'kernelcad-mcp',
       'kernelcad-nurbs',
