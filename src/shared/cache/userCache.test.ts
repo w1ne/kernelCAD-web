@@ -1,8 +1,10 @@
 // src/shared/cache/userCache.test.ts
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createHash } from 'node:crypto';
 import {
   mkdtempSync,
+  mkdirSync,
   rmSync,
   existsSync,
   writeFileSync,
@@ -11,7 +13,7 @@ import {
   utimesSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   userCacheRoot,
   cachePathFor,
@@ -54,10 +56,6 @@ describe('userCache — per-consumer primitives', () => {
   });
 
   it('per-consumer TTL is honoured (parts: no-TTL, textures: 7d)', async () => {
-    const { createHash } = require('node:crypto');
-    const { mkdirSync } = require('node:fs');
-    const { dirname } = require('node:path');
-
     const textureUrl = 'https://example.invalid/feed.png';
     const texturePath = cachePathFor(
       'textures',
@@ -129,8 +127,7 @@ describe('userCache — per-consumer primitives', () => {
     expect(existsSync(sub)).toBe(true);
     const written = cachePathFor(
       'parts',
-      require('node:crypto')
-        .createHash('sha256')
+      createHash('sha256')
         .update('https://example.invalid/create.step')
         .digest('hex'),
       '.step',

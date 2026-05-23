@@ -863,7 +863,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'Enumerate the top-level part-catalog categories available locally (and remotely, when partsBaseUrl is configured). The fastest path for an agent to discover what kinds of off-the-shelf parts the bundled catalog covers.',
       inputSchema: { type: 'object', properties: {} },
     },
-    handler: input => listPartCategoriesTool(input as Parameters<typeof listPartCategoriesTool>[0]),
+    handler: () => listPartCategoriesTool(),
   },
   {
     definition: {

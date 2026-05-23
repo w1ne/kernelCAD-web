@@ -3,7 +3,7 @@ import { listPartCategoriesTool } from '../../../src/agent/mcp/tools/listPartCat
 
 describe('list_part_categories — end-to-end', () => {
   it('returns the bundled categories sorted', async () => {
-    const r = await listPartCategoriesTool({});
+    const r = await listPartCategoriesTool();
     expect(r.ok).toBe(true);
     const sorted = [...r.categories].sort();
     expect(r.categories).toEqual(sorted);

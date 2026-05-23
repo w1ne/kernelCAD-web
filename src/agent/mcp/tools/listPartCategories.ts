@@ -7,9 +7,7 @@ export interface ListPartCategoriesOutput {
   remoteEnabled: boolean;
 }
 
-export async function listPartCategoriesTool(
-  _input: Record<string, never> = {},
-): Promise<ListPartCategoriesOutput> {
+export async function listPartCategoriesTool(): Promise<ListPartCategoriesOutput> {
   const cat = loadCatalog();
   const categories = Array.from(new Set(cat.records.map((r) => r.category))).sort();
   const remoteEnabled = (process.env.KERNELCAD_PARTS_BASE_URL ?? '').length > 0;

@@ -6,11 +6,10 @@
 //   - A mate exists between the bolt and the bracket.
 
 import { evaluateScript } from '../../oracle/kernelcad-client';
-import type { HarnessCtx, HarnessResult } from '../../types';
+import type { HarnessResult } from '../../types';
 
 export default async function harness(
   scriptPath: string,
-  _ctx?: HarnessCtx,
 ): Promise<HarnessResult> {
   const ev = await evaluateScript(scriptPath);
   if (!ev.ok) {
