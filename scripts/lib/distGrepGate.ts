@@ -34,7 +34,7 @@ const BLOCKLIST: ReadonlyArray<BlocklistEntry> = [
   // Flag comparator-prose: `replicad` followed by sentence punctuation,
   // end-of-line, or comparator phrasing.
   {
-    pattern: /\breplicad\b(?!\.[A-Za-z_]|[\-']|\s+(?:wrapper|pen|drawn|library|api|module|package|backend|kernel))/i,
+    pattern: /\breplicad\b(?!\.[A-Za-z_]|[-']|\s+(?:wrapper|pen|drawn|library|api|module|package|backend|kernel))/i,
     label: 'replicad',
   },
   { pattern: /forgecad/i, label: 'forgecad' },

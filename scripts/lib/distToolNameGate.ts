@@ -79,9 +79,9 @@ export interface ToolNameResult {
 
 export function runToolNameGate({
   outDir,
-  repoRoot: _repoRoot,
 }: {
   outDir: string;
+  /** Reserved for future use (e.g., loading TOOL_REGISTRY from a snapshot file rather than in-process). */
   repoRoot: string;
 }): ToolNameResult {
   const mcpNames = new Set(TOOL_REGISTRY.map((e) => e.definition.name));

@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added — Slice D: npx skills add distribution
+
+- Cross-agent skill distribution via `npx skills add kernelcad/skills`. A separate public repo `kernelcad/skills` is regenerated on each kernelCAD release from `src/agent/skills/**/SKILL.md` via `scripts/distGenerate.mjs`. Generated artifacts: `SKILL.md` index, `skills/` subtree, `.claude-plugin/plugin.json`, `harness/{AGENTS.md,CLAUDE.md}`, `scripts/postinstall.mjs`, `README.md`, `VERSION`, `LICENSE`, `CHANGELOG.md`.
+- Local stdio MCP is the default install target (`kernelcad mcp`); the hosted endpoint at `https://api.kernelcad.com/mcp` is documented as an opt-in fallback.
+- Multi-agent parallelization rules in `harness/AGENTS.md` spell out the three buckets (mutating generation, inspection, render / review) that must serialize when multiple agents work the same `.kcad.ts` source.
+- CI gates wired into the dist publish workflow: a comparator-grep gate that fails the publish if any of the configured comparator names leak into a shipped path; a drifted-tool-name gate that cross-checks every backtick-quoted reference against `TOOL_REGISTRY` and the CLI subcommand list; and a filesystem-discovery sentinel that rejects hard-coded skill enumerations in the generator source itself.
+- Weekly cross-agent eval cron runs fresh Claude Code + Codex + Cursor sessions through the bracket prompt.
+
+### Fixed — Slice D: kernelcad skill install recursion
+
+- `kernelcad skill install` now recurses into nested SKILL.md directories. The six sub-skills under `kernelcad-from-reference/` (`blockout-model`, `image-replicator`, `kernelcad-trace-from-image`, `prepare-prompt`, `render-inspect`, `use-the-available-kernel`) were silently dropped by the depth-1 walker; all 17+ SKILL.md files now reach the install target.
+
+### Deprecated — Slice D: kernelcad skill install
+
+- `kernelcad skill install` emits a soft-deprecation notice pointing at `npx skills add kernelcad/skills` as the recommended cross-agent flow. The command remains functional; removal date is not set in this slice. Suppress the notice with `KERNELCAD_SUPPRESS_DEPRECATION=1` for scripted use.
+
 ### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
 
 Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.
