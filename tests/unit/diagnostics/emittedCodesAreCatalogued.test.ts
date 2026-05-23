@@ -85,8 +85,16 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 7 Slice A export trio (options-format-mismatch + six per-format
     //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
     //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
-    // Net catalogue = 133.
-    expect(catalogue.size).toBe(133);
+    //  - 3 Slice B-rest fills urdf/srdf/sdf-gazebo placeholder slots; the
+    //       three `.not-implemented` entries are removed.
+    //  + 11 Slice B-rest new diagnostics:
+    //       URDF (5): cylindrical-lossy, pin-slot-lossy, ball-decomposed,
+    //                 closed-loop, inertia-density-declared
+    //       SRDF (2): acm-sparse-sampling, planning-group-missing
+    //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
+    //                 dangling-link-ref
+    // Net catalogue = 133 - 3 + 11 = 141.
+    expect(catalogue.size).toBe(141);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

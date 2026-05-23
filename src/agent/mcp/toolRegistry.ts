@@ -29,6 +29,8 @@ import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
+import { inspectRobotTool } from './tools/inspectRobot';
+import { validateUrdfTool } from './tools/validateUrdf';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
@@ -142,6 +144,37 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => inspectAssemblyTool(input as Parameters<typeof inspectAssemblyTool>[0]),
+  },
+  {
+    definition: {
+      name: 'inspect_robot',
+      description:
+        'Preview an assembly as it would be exported to URDF or SDFormat: returns links (name + bounding-box extent + declared density), joints (with limits in SI units), planning groups, end-effectors, and open issues the export would surface (closed loops, missing density). Read-only — pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        },
+      },
+    },
+    handler: input => inspectRobotTool(input as Parameters<typeof inspectRobotTool>[0]),
+  },
+  {
+    definition: {
+      name: 'validate_urdf',
+      description:
+        'Parse a .urdf file and check structural validity: well-formed XML, every <joint>\'s parent/child link resolves, link/joint names unique, no closed kinematic loops. Returns { ok, linkCount, jointCount, rootLinks }. Read-only — does not write to disk.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          urdf_path: { type: 'string', description: 'Path to the .urdf file to validate.' },
+        },
+        required: ['urdf_path'],
+      },
+    },
+    handler: input => validateUrdfTool(input as Parameters<typeof validateUrdfTool>[0]),
   },
   {
     definition: {

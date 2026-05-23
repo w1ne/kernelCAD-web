@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added — Slice B-rest: URDF export, validate_urdf, inspect_robot, kernelcad-urdf skill
+
+- Added URDF export via `export_model({ format: 'urdf' })`. Writes the `.urdf` body via the script-runtime; per-link STL meshes via the dedicated IO wrapper. Supports all 7 mate types; `cylindrical`, `pin_slot`, and `ball` mates emit lossy diagnostics with structured next-actions pointing to `format: 'sdf-gazebo'` for native support. Closed kinematic loops are refused with `export.urdf.closed-loop`.
+- Added `validate_urdf` and `inspect_robot` read-only MCP tools. `validate_urdf` parses an external `.urdf` and checks tree-shape + link-name uniqueness + dangling joint refs. `inspect_robot` previews an assembly as it would be exported, surfacing open issues before write.
+- Added the `kernelcad-urdf` skill.
+- Added `Shape.massProperties(density?)` returning `{ mass, com, inertia6 }`; per-part `density` option on `arm.part(...)`.
+- New diagnostic codes: `export.urdf.cylindrical-lossy`, `export.urdf.pin-slot-lossy`, `export.urdf.ball-decomposed`, `export.urdf.closed-loop`, `export.urdf.inertia-density-declared`. Removed Slice A's `export.urdf.not-implemented` placeholder.
+
 ### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
 
 Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.

@@ -310,6 +310,44 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   readonly density?: number;
 }
 
+/** SRDF planning group. Either chain-form (base/tip) or enumeration. */
+export interface PlanningGroupRecord {
+  readonly name: string;
+  readonly chain?: { readonly baseLink: string; readonly tipLink: string };
+  readonly joints?: readonly string[];
+  readonly links?: readonly string[];
+}
+
+/** SRDF end-effector reference. */
+export interface EndEffectorRecord {
+  readonly name: string;
+  readonly parentLink: string;
+  readonly group: string;
+  readonly parentGroup: string;
+}
+
+/** SRDF virtual joint (e.g. world -> base fixed). */
+export interface VirtualJointRecord {
+  readonly name: string;
+  readonly type: 'fixed' | 'floating' | 'planar';
+  readonly parentFrame: string;
+  readonly childLink: string;
+}
+
+/** SRDF named group state — a pose snapshot tied to a planning group. */
+export interface GroupStateRecord {
+  readonly name: string;
+  readonly group: string;
+  readonly values: Readonly<Record<string, number>>;
+}
+
+/** SRDF allowed-collision override declared via arm.disableCollision(...). */
+export interface DisabledCollisionRecord {
+  readonly link1: string;
+  readonly link2: string;
+  readonly reason: 'Adjacent' | 'Never' | 'Default' | 'User';
+}
+
 export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
@@ -328,6 +366,14 @@ export class Assembly {
    * `ConnectorWorkspace[]`. Empty for assemblies that never call workspace().
    */
   private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
+
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. Empty when
+   *  the script did not declare any; SRDF export rejects in that case. */
+  private readonly planningGroups: PlanningGroupRecord[] = [];
+  private readonly endEffectors: EndEffectorRecord[] = [];
+  private readonly virtualJoints: VirtualJointRecord[] = [];
+  private readonly groupStates: GroupStateRecord[] = [];
+  private readonly disabledCollisions: DisabledCollisionRecord[] = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -1018,6 +1064,31 @@ export class Assembly {
    */
   __workspaceTargets(): readonly WorkspaceTargetRecord[] {
     return this.workspaceTargets;
+  }
+
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. */
+  __planningGroups(): readonly PlanningGroupRecord[] {
+    return this.planningGroups;
+  }
+
+  /** SRDF end-effectors declared via `arm.endEffector(...)`. */
+  __endEffectors(): readonly EndEffectorRecord[] {
+    return this.endEffectors;
+  }
+
+  /** SRDF virtual joints declared via `arm.virtualJoint(...)`. */
+  __virtualJoints(): readonly VirtualJointRecord[] {
+    return this.virtualJoints;
+  }
+
+  /** SRDF named group states declared via `arm.groupState(...)`. */
+  __groupStates(): readonly GroupStateRecord[] {
+    return this.groupStates;
+  }
+
+  /** SRDF allowed-collision overrides declared via `arm.disableCollision(...)`. */
+  __disabledCollisions(): readonly DisabledCollisionRecord[] {
+    return this.disabledCollisions;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
