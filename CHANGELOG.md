@@ -1,5 +1,23 @@
 # kernelCAD v0.11.0
 
+## Unreleased
+
+### Breaking change — topology-ref-safe naming (F-foundation)
+
+Capture-time validation now rejects names containing any character reserved by
+the upcoming `@kc[owner/kind/name]` topology-ref grammar. The reserved set is
+`. / [ ] @ # * ? ,` and whitespace; names must match `/^[A-Za-z][A-Za-z0-9_-]*$/`.
+Three call sites are affected:
+- `faceLabels({...})` keys on every feature record
+- `Assembly.part(name, …)` part names
+- `partRef.connector(name, opts)` connector names
+
+Designs that previously named entities like `top.bottom`, `arm/elbow`, or
+`@root` will fail capture-time validation; rename the offending identifier to
+a ref-safe form (e.g. `topBottom`, `armElbow`, `root`). The user-visible
+`@kc[...]` resolution surface (MCP tools, SKILL docs, agent-visible
+diagnostics) ships in the follow-up F-surface slice.
+
 ## v0.11.0 — 2026-05-18 — NURBS Slice D: 2D path NURBS authoring
 
 Closes the 2D path-NURBS gap flagged in memory `kernelcad_path_nurbs_gap` (2026-05-17). `PathBuilder` now offers three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives, so 2D sketch outlines can include explicit B-spline segments instead of polylines or arc chains. After Slice D, all NURBS authoring lanes (3D curves, 3D surfaces, 2D paths) have parity. The `eyewear-wayfarer-front` eval artifact replaces its perfectly circular lens cutouts with `path().spline(...)` rounded-rectangle profiles.
