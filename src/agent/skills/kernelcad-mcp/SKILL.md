@@ -108,7 +108,18 @@ interface RepairContext {
 
 ### Export
 
-- `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `export_model({ file? | code?, output_path, format, feature_id?, options? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+
+  **Per-format options** (passed via `options`):
+  - `stl` — no options.
+  - `step` — `unit?: 'mm' | 'cm' | 'in'`.
+  - `dxf` — `unit?: 'mm' | 'cm' | 'in'` (default `mm`); `tolerance?: number` (chord tolerance for polyline flattening; mm; default 0.05); `layers?: DxfLayerSpec[]` (named layers for cut profiles; bend lines always emit on a dedicated `BEND` layer). Output is `LWPOLYLINE`-only; the input must be planar — non-planar geometry fails with `export.dxf.non-planar` and a `list_faces` next-action.
+  - `3mf` — `printUnit?: 'mm' | 'cm' | 'in'` (default `mm`); `embedSource?: boolean` (when `true`, the source script is attached to the 3MF under `Metadata/source.kcad.ts`). Watertightness is verified before write; non-manifold meshes fail with `export.3mf.not-watertight`.
+  - `glb` — `axis?: 'y-up' | 'z-up'` (default `y-up`; world-units convention is mm). `draco?: false` is reserved for a follow-up slice; passing `draco: true` is a static type error today and a runtime `export.glb.draco-glass-conflict` if the type is widened upstream.
+
+  PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
+
+- `export_stl({ file? | code?, output_path, feature_id? })` — *Deprecated alias for `export_model({ ..., format: 'stl' })`. Removal scheduled for the next minor version. Use `export_model` for all new code.*
 
 ### Notes on script API vs MCP tools
 
