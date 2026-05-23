@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "lastFetched": "2026-05-23T08:42:11Z",
+  "sourceSha256": "c09a30446703f3283f1bc16c457724a6490ef88035561907c681cd96e141c691",
+  "skus": {
+    "aluminum-6061-t6": {
+      "minHoleIn": { "0.125": 0.0625, "0.250": 0.125, "0.500": 0.250 },
+      "minSlotIn": { "0.125": 0.063, "0.250": 0.125 },
+      "minBridgeIn": { "0.125": 0.060, "0.250": 0.120 },
+      "minBendRadiusIn": { "0.040": 0.063, "0.063": 0.094, "0.080": 0.094, "0.125": 0.094, "0.187": 0.156, "0.250": 0.250 },
+      "minFlangeBeforeIn": { "0.125": 0.500, "0.187": 0.625, "0.250": 0.750 },
+      "minFlangeAfterIn": { "0.125": 0.500, "0.187": 0.625, "0.250": 0.750 },
+      "bendable": true
+    },
+    "mild-steel-1018": {
+      "minHoleIn": { "0.060": 0.030, "0.125": 0.063, "0.250": 0.125 },
+      "minSlotIn": { "0.060": 0.030, "0.125": 0.063 },
+      "minBridgeIn": null,
+      "minBendRadiusIn": { "0.060": 0.030, "0.125": 0.063, "0.187": 0.094, "0.250": 0.156 },
+      "minFlangeBeforeIn": { "0.125": 0.500, "0.187": 0.625 },
+      "minFlangeAfterIn": { "0.125": 0.500, "0.187": 0.625 },
+      "bendable": true
+    },
+    "acrylic-cast": {
+      "minHoleIn": null,
+      "minSlotIn": null,
+      "minBridgeIn": null,
+      "minBendRadiusIn": null,
+      "bendable": false
+    },
+    "delrin": {
+      "minHoleIn": null,
+      "minSlotIn": null,
+      "minBridgeIn": null,
+      "minBendRadiusIn": null,
+      "bendable": false
+    }
+  }
+}
