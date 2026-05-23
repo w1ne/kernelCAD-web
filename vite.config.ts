@@ -248,10 +248,20 @@ function kernelCadMeshEndpoint(): Plugin {
             res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
             return;
           }
-          if (formatParam !== 'stl' && formatParam !== 'step') {
+          // Slice A export-trio: widened from {stl, step} to the five-format
+          // set runAndExport now dispatches. The reserved urdf/srdf/sdf-gazebo
+          // slots intentionally stay out of the Studio UI — they ship in a
+          // follow-up slice; until then they fire export.<format>.not-implemented
+          // from the runtime, which would surface as "export produced no bytes"
+          // here.
+          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb'] as const;
+          type StudioFormat = (typeof SUPPORTED_STUDIO_FORMATS)[number];
+          if (!SUPPORTED_STUDIO_FORMATS.includes(formatParam as StudioFormat)) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'format must be stl or step' }));
+            res.end(JSON.stringify({
+              error: `format must be one of ${SUPPORTED_STUDIO_FORMATS.join(', ')}`,
+            }));
             return;
           }
 
@@ -265,7 +275,7 @@ function kernelCadMeshEndpoint(): Plugin {
           const result = await runAndExport({
             code,
             fileName,
-            format: formatParam,
+            format: formatParam as StudioFormat,
             scriptDir: dirname(scriptPath),
           });
 
@@ -279,9 +289,14 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
 
-          const contentType = formatParam === 'stl'
-            ? 'model/stl'
-            : 'application/STEP';
+          const CONTENT_TYPES: Record<StudioFormat, string> = {
+            stl: 'model/stl',
+            step: 'application/STEP',
+            dxf: 'image/vnd.dxf',
+            '3mf': 'model/3mf',
+            glb: 'model/gltf-binary',
+          };
+          const contentType = CONTENT_TYPES[formatParam as StudioFormat];
           const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${formatParam}`;
           res.statusCode = 200;
           res.setHeader('content-type', contentType);
