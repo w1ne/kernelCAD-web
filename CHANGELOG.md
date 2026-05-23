@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public
+  ordering rules. Required inputs: vendor, material, thickness. Findings carry
+  a `repairHint.action` from `{enlarge, remove, relocate, change-material,
+  change-thickness}` and an `@kc[...]` ref that round-trips through
+  `resolve_topo_ref` back to the source feature.
+- `kernelcad-shopcheck` skill (orchestrator for `dfm_preflight`).
+- 24 new `dfm.*` diagnostic codes under the new `dfm` group (catalogue count
+  150). DXF file-input path accepts `dxf:` alongside `file:` / `code:`.
+- `scripts/refreshCatalog.ts` + `shopcheck:refresh` npm script: 24-hour TS
+  catalog refresh, sha256 provenance on every source page.
+- Eval tasks `shopcheck-bracket-preflight` and `shopcheck-repair-loop`.
+
 ### Breaking change — topology-ref-safe naming (F-foundation)
 
 Capture-time validation now rejects names containing any character reserved by
