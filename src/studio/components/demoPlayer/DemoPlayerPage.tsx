@@ -17,12 +17,69 @@ import type { ReferenceImageMetadata } from '../../../shared/intent/referenceIma
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
-import { buildMaterialFromPBR, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
+import { buildMaterialFromPBR, DEFAULT_MESH_COLOR, disposeMaterialDeep } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
+
+interface DemoPlayerObjectFilter {
+  mode: 'focus' | 'hide';
+  patterns: string[];
+}
+
+interface DemoPlayerRenderObject {
+  featureId: string;
+  names: string[];
+}
+
+interface DemoPlayerObjectVisibility {
+  filter: DemoPlayerObjectFilter;
+  visible: DemoPlayerRenderObject[];
+  hidden: DemoPlayerRenderObject[];
+}
+
+interface DemoPlayerMaskObject extends DemoPlayerRenderObject {
+  color: string;
+  rgb: [number, number, number];
+  visibleIndex: number;
+}
+
+interface DemoPlayerMaskCapture {
+  pngDataUrl: string;
+  objects: DemoPlayerMaskObject[];
+}
+
+type DemoPlayerAuxInspectionChannel = 'depth' | 'normals';
+
+interface DemoPlayerInspectionChannelCapture {
+  pngDataUrl: string;
+}
+
+interface DemoPlayerDepthChannelMetadata {
+  encoding: 'linear-camera-depth-rgba8';
+  units: 'mm';
+  near: number;
+  far: number;
+  background: 'rgba(0,0,0,0)';
+  meaning: string;
+}
+
+interface DemoPlayerNormalsChannelMetadata {
+  encoding: 'view-space-normal-rgb8';
+  mapping: string;
+  background: 'rgba(0,0,0,0)';
+  meaning: string;
+}
+
+interface DemoPlayerInspectionCapture {
+  channels: Partial<Record<DemoPlayerAuxInspectionChannel, DemoPlayerInspectionChannelCapture>>;
+  metadata: {
+    depth?: DemoPlayerDepthChannelMetadata;
+    normals?: DemoPlayerNormalsChannelMetadata;
+  };
+}
 
 interface DevMeshPayload {
   features: FeatureMeshSerialized[];
@@ -76,6 +133,19 @@ export interface DemoPlayerWindow {
    *  boxes, pre-fillet bodies) doesn't bleed through the final shape in
    *  headless captures. */
   showOnlyTailFeatures(): void;
+  /** Apply a named object visibility filter for headless render inspection. */
+  applyObjectVisibilityFilter(filter: DemoPlayerObjectFilter): DemoPlayerObjectVisibility;
+  /** Capture a flat object-id mask for the current view without leaving the
+   *  scene in mask-material mode. Colors are deterministic by visible
+   *  feature-group order and exclude hidden objects. */
+  captureMaskPng(): DemoPlayerMaskCapture;
+  /** Capture offscreen depth / normals inspection channels for the current
+   *  camera state without disturbing the visible RGB frame. */
+  captureInspectionChannels(input: {
+    channels: readonly DemoPlayerAuxInspectionChannel[];
+    width: number;
+    height: number;
+  }): DemoPlayerInspectionCapture;
   /** Load pre-computed per-feature meshes into the scene. Each feature becomes a named THREE.Group. */
   loadFeatureMeshes(
     perFeature: FeatureMeshSerialized[],
@@ -154,16 +224,157 @@ function buildMeshFromFace(
   return mesh;
 }
 
+function disposeMeshResources(mesh: THREE.Mesh): void {
+  mesh.geometry.dispose();
+  disposeMaterialDeep(mesh.material);
+}
+
+function wildcardMatches(pattern: string, text: string): boolean {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+  return new RegExp(`^${escaped}$`, 'i').test(text);
+}
+
+function objectMatches(names: readonly string[], patterns: readonly string[]): boolean {
+  return patterns.some((pattern) =>
+    names.some((name) =>
+      pattern.includes('*') || pattern.includes('?')
+        ? wildcardMatches(pattern, name)
+        : name.toLowerCase() === pattern.toLowerCase(),
+    ),
+  );
+}
+
+function collectFilterNames(group: THREE.Group): string[] {
+  const explicitFilterNames = Array.isArray(group.userData.filterNames)
+    ? group.userData.filterNames
+    : [];
+  const names = [
+    group.name,
+    group.userData.featureId,
+    group.userData.displayName,
+    group.userData.assemblyFeatureId,
+    group.userData.assemblyPartName,
+    group.userData.featureKind,
+    group.userData.sourceMetadataName,
+    ...explicitFilterNames,
+  ]
+    .map((value) => typeof value === 'string' ? value.trim() : '')
+    .filter(Boolean);
+  return [...new Set(names)];
+}
+
+function summarizeFilterObject(group: THREE.Group): DemoPlayerRenderObject {
+  return {
+    featureId: group.name,
+    names: collectFilterNames(group),
+  };
+}
+
+function maskColorForIndex(index: number): { color: string; rgb: [number, number, number] } {
+  const value = index + 1;
+  if (value > 0xffffff) {
+    throw new Error('demo-player: mask capture supports at most 16777215 visible objects');
+  }
+  const r = (value >> 16) & 0xff;
+  const g = (value >> 8) & 0xff;
+  const b = value & 0xff;
+  return {
+    color: `#${value.toString(16).padStart(6, '0')}`,
+    rgb: [r, g, b],
+  };
+}
+
+function makeDepthInspectionMaterial(camera: THREE.PerspectiveCamera): THREE.ShaderMaterial {
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      near: { value: camera.near },
+      far: { value: camera.far },
+    },
+    vertexShader: `
+      varying float vViewDepth;
+      void main() {
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vViewDepth = -viewPosition.z;
+        gl_Position = projectionMatrix * viewPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform float near;
+      uniform float far;
+      varying float vViewDepth;
+
+      vec4 packNormalizedDepth(const in float depth) {
+        const vec4 bitShift = vec4(16777216.0, 65536.0, 256.0, 1.0);
+        const vec4 bitMask = vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+        vec4 res = fract(depth * bitShift);
+        res -= res.xxyz * bitMask;
+        return res;
+      }
+
+      void main() {
+        float normalizedDepth = clamp((vViewDepth - near) / max(far - near, 0.0001), 0.0, 1.0);
+        gl_FragColor = packNormalizedDepth(normalizedDepth);
+      }
+    `,
+    side: THREE.DoubleSide,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true,
+  });
+  material.toneMapped = false;
+  return material;
+}
+
+function makeNormalsInspectionMaterial(): THREE.MeshNormalMaterial {
+  const material = new THREE.MeshNormalMaterial({
+    side: THREE.DoubleSide,
+  });
+  material.toneMapped = false;
+  return material;
+}
+
+function rgbaPixelsToPngDataUrl(pixels: Uint8Array, width: number, height: number): string {
+  const flipped = new Uint8ClampedArray(pixels.length);
+  const stride = width * 4;
+  for (let y = 0; y < height; y++) {
+    const sourceStart = (height - 1 - y) * stride;
+    const targetStart = y * stride;
+    flipped.set(pixels.subarray(sourceStart, sourceStart + stride), targetStart);
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
+    return `data:image/png;base64,${btoa('inspection-channel')}`;
+  }
+  let ctx: CanvasRenderingContext2D | null = null;
+  try {
+    ctx = canvas.getContext('2d');
+  } catch {
+    ctx = null;
+  }
+  if (!ctx) {
+    return `data:image/png;base64,${btoa('inspection-channel')}`;
+  }
+  ctx.putImageData(new ImageData(flipped, width, height), 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 function fitCameraToBounds(
   camera: THREE.PerspectiveCamera,
   bounds: { min: [number, number, number]; max: [number, number, number] },
   view: RenderView | 'demo' = 'demo',
 ): void {
-  // Bounds are centered at origin (caller offsets meshes so centroid = (0,0,0)).
-  // Use the largest extent (not diagonal) so the model fills the viewport tightly.
   const dx = bounds.max[0] - bounds.min[0];
   const dy = bounds.max[1] - bounds.min[1];
   const dz = bounds.max[2] - bounds.min[2];
+  const cx = (bounds.min[0] + bounds.max[0]) / 2;
+  const cy = (bounds.min[1] + bounds.max[1]) / 2;
+  const cz = (bounds.min[2] + bounds.max[2]) / 2;
+  // Use the largest extent (not diagonal) so the model fills the viewport tightly.
   const maxExtent = Math.max(dx, dy, dz);
   const fov = camera.fov * (Math.PI / 180);
   // Tighter framing for mobile-readable videos: the viewer is letterboxed next
@@ -188,11 +399,29 @@ function fitCameraToBounds(
       break;
   }
   camera.up.set(up[0], up[1], up[2]);
-  camera.position.set(pos[0], pos[1], pos[2]);
-  camera.lookAt(0, 0, 0);
+  camera.position.set(cx + pos[0], cy + pos[1], cz + pos[2]);
+  camera.lookAt(cx, cy, cz);
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
   camera.updateProjectionMatrix();
+}
+
+function isVisibleInScene(obj: THREE.Object3D): boolean {
+  let cur: THREE.Object3D | null = obj;
+  while (cur) {
+    if (!cur.visible) return false;
+    cur = cur.parent;
+  }
+  return true;
+}
+
+function isInsideFeatureGroup(obj: THREE.Object3D): boolean {
+  let cur: THREE.Object3D | null = obj;
+  while (cur) {
+    if (cur instanceof THREE.Group && cur.userData[KCAD_FEATURE_GROUP_KEY]) return true;
+    cur = cur.parent;
+  }
+  return false;
 }
 
 export function DemoPlayerPage(): React.JSX.Element {
@@ -285,7 +514,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         // tolerate scenes loaded without explicit fit.
         const bbox = new THREE.Box3();
         ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+          if (obj instanceof THREE.Mesh && isVisibleInScene(obj)) bbox.expandByObject(obj);
         });
         if (bbox.isEmpty()) return;
         const minV = bbox.min, maxV = bbox.max;
@@ -301,7 +530,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         const ctx = sceneRef.current;
         const bbox = new THREE.Box3();
         ctx.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) bbox.expandByObject(obj);
+          if (obj instanceof THREE.Mesh && isVisibleInScene(obj)) bbox.expandByObject(obj);
         });
         if (bbox.isEmpty()) return;
         // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
@@ -328,7 +557,7 @@ export function DemoPlayerPage(): React.JSX.Element {
               camTgt.target[1] - off[1],
               camTgt.target[2] - off[2],
             )
-          : new THREE.Vector3(0, 0, 0);
+          : bbox.getCenter(new THREE.Vector3());
         // Build the screen-aligned basis at the target.
         const worldUp = new THREE.Vector3(0, 0, 1);
         const right = new THREE.Vector3().crossVectors(worldUp, camDir).normalize();
@@ -378,7 +607,10 @@ export function DemoPlayerPage(): React.JSX.Element {
         ctx.scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             const mat = obj.material as THREE.Material;
-            mat.opacity = 1;
+            const authoredOpacity = typeof mat.userData.authoredOpacity === 'number'
+              ? mat.userData.authoredOpacity
+              : 1;
+            mat.opacity = authoredOpacity;
             // Materials with PBR transmission > 0 require `transparent: true`
             // so three.js routes them through the transmission render pass —
             // forcing `transparent: false` here would defeat sapphire crystals
@@ -387,7 +619,7 @@ export function DemoPlayerPage(): React.JSX.Element {
             // when opacity = 1, so it's safe to keep transparent enabled
             // unconditionally; only the per-mesh opacity gets clobbered to 1.
             const phys = mat as THREE.MeshPhysicalMaterial;
-            if (phys.transmission !== undefined && phys.transmission > 0) {
+            if ((phys.transmission !== undefined && phys.transmission > 0) || authoredOpacity < 1) {
               mat.transparent = true;
             } else {
               mat.transparent = false;
@@ -418,6 +650,236 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
+      applyObjectVisibilityFilter: (filter) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        const patterns = filter.patterns.map((pattern) => pattern.trim()).filter(Boolean);
+        if (patterns.length === 0) {
+          throw new Error('demo-player: object visibility filter requires at least one pattern');
+        }
+        const groups: THREE.Group[] = [];
+        ctx.scene.traverse((obj) => {
+          if (obj instanceof THREE.Group && obj.userData[KCAD_FEATURE_GROUP_KEY]) {
+            groups.push(obj);
+          }
+        });
+        const visible: DemoPlayerRenderObject[] = [];
+        const hidden: DemoPlayerRenderObject[] = [];
+        for (const group of groups) {
+          const names = collectFilterNames(group);
+          const matched = objectMatches(names, patterns);
+          const shouldShow = filter.mode === 'focus'
+            ? matched
+            : group.visible && !matched;
+          group.visible = shouldShow;
+          (shouldShow ? visible : hidden).push(summarizeFilterObject(group));
+        }
+        if (visible.length === 0) {
+          const available = groups.map((group) => collectFilterNames(group).join('|')).join(', ');
+          throw new Error(`demo-player: ${filter.mode} filter matched no visible objects. Available: ${available}`);
+        }
+        ctx.renderer.render(ctx.scene, ctx.camera);
+        return {
+          filter: { mode: filter.mode, patterns },
+          visible,
+          hidden,
+        };
+      },
+      captureMaskPng: () => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        const visibleGroups: THREE.Group[] = [];
+        ctx.scene.traverse((obj) => {
+          if (
+            obj instanceof THREE.Group
+            && obj.userData[KCAD_FEATURE_GROUP_KEY]
+            && isVisibleInScene(obj)
+          ) {
+            visibleGroups.push(obj);
+          }
+        });
+
+        const originals: Array<{
+          mesh: THREE.Mesh;
+          material: THREE.Material | THREE.Material[];
+        }> = [];
+        const hiddenNonFeatureMeshes: Array<{ mesh: THREE.Mesh; visible: boolean }> = [];
+        const temporaryMaterials: THREE.Material[] = [];
+        const originalBackground = ctx.scene.background;
+        const objects: DemoPlayerMaskObject[] = [];
+
+        try {
+          ctx.scene.background = new THREE.Color(0x000000);
+          ctx.scene.traverse((obj) => {
+            if (
+              obj instanceof THREE.Mesh
+              && !isInsideFeatureGroup(obj)
+              && isVisibleInScene(obj)
+            ) {
+              hiddenNonFeatureMeshes.push({ mesh: obj, visible: obj.visible });
+              obj.visible = false;
+            }
+          });
+          visibleGroups.forEach((group, visibleIndex) => {
+            const { color, rgb } = maskColorForIndex(visibleIndex);
+            objects.push({
+              ...summarizeFilterObject(group),
+              color,
+              rgb,
+              visibleIndex,
+            });
+
+            group.traverse((obj) => {
+              if (!(obj instanceof THREE.Mesh)) return;
+              originals.push({ mesh: obj, material: obj.material });
+              const material = new THREE.MeshBasicMaterial({
+                color,
+                side: THREE.DoubleSide,
+                transparent: false,
+                opacity: 1,
+                depthTest: true,
+                depthWrite: true,
+              });
+              material.toneMapped = false;
+              temporaryMaterials.push(material);
+              obj.material = material;
+            });
+          });
+
+          ctx.renderer.render(ctx.scene, ctx.camera);
+          const pngDataUrl = ctx.renderer.domElement.toDataURL('image/png');
+          return { pngDataUrl, objects };
+        } finally {
+          for (const original of originals) {
+            original.mesh.material = original.material;
+          }
+          for (const hidden of hiddenNonFeatureMeshes) {
+            hidden.mesh.visible = hidden.visible;
+          }
+          for (const material of temporaryMaterials) {
+            disposeMaterialDeep(material);
+          }
+          ctx.scene.background = originalBackground;
+          ctx.renderer.render(ctx.scene, ctx.camera);
+        }
+      },
+      captureInspectionChannels: ({ channels, width, height }) => {
+        if (!sceneRef.current) throw new Error('demo-player: scene not ready');
+        const ctx = sceneRef.current;
+        const uniqueChannels = [...new Set(channels)];
+        const captures: DemoPlayerInspectionCapture['channels'] = {};
+        const metadata: DemoPlayerInspectionCapture['metadata'] = {};
+
+        if (uniqueChannels.length === 0) {
+          return { channels: captures, metadata };
+        }
+        if (width <= 0 || height <= 0) {
+          throw new Error('demo-player: inspection capture width and height must be positive');
+        }
+
+        const originalTarget = ctx.renderer.getRenderTarget();
+        const originalBackground = ctx.scene.background;
+        const originalClearColor = new THREE.Color();
+        ctx.renderer.getClearColor(originalClearColor);
+        const originalClearAlpha = ctx.renderer.getClearAlpha();
+        const hiddenNonFeatureMeshes: Array<{ mesh: THREE.Mesh; visible: boolean }> = [];
+        const originalMaterials: Array<{
+          mesh: THREE.Mesh;
+          material: THREE.Material | THREE.Material[];
+        }> = [];
+        const temporaryMaterials: THREE.Material[] = [];
+        const target = new THREE.WebGLRenderTarget(width, height, {
+          format: THREE.RGBAFormat,
+          type: THREE.UnsignedByteType,
+          depthBuffer: true,
+          stencilBuffer: false,
+        });
+
+        const renderChannel = (
+          channel: DemoPlayerAuxInspectionChannel,
+          material: THREE.Material,
+        ): string => {
+          temporaryMaterials.push(material);
+          originalMaterials.length = 0;
+          ctx.scene.traverse((obj) => {
+            if (!(obj instanceof THREE.Mesh) || !isInsideFeatureGroup(obj) || !isVisibleInScene(obj)) return;
+            originalMaterials.push({ mesh: obj, material: obj.material });
+            obj.material = material;
+          });
+
+          ctx.scene.background = null;
+          ctx.renderer.setClearColor(0x000000, 0);
+          ctx.renderer.setRenderTarget(target);
+          ctx.renderer.render(ctx.scene, ctx.camera);
+          const pixels = new Uint8Array(width * height * 4);
+          ctx.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+
+          for (const original of originalMaterials) {
+            original.mesh.material = original.material;
+          }
+          originalMaterials.length = 0;
+          if (channel === 'depth') {
+            metadata.depth = {
+              encoding: 'linear-camera-depth-rgba8',
+              units: 'mm',
+              near: ctx.camera.near,
+              far: ctx.camera.far,
+              background: 'rgba(0,0,0,0)',
+              meaning: 'nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far',
+            };
+          } else {
+            metadata.normals = {
+              encoding: 'view-space-normal-rgb8',
+              mapping: 'rgb = round((normal_view * 0.5 + 0.5) * 255)',
+              background: 'rgba(0,0,0,0)',
+              meaning: 'visible model-surface normal in the camera coordinate frame after the active object filter',
+            };
+          }
+          return rgbaPixelsToPngDataUrl(pixels, width, height);
+        };
+
+        try {
+          ctx.scene.traverse((obj) => {
+            if (
+              obj instanceof THREE.Mesh
+              && !isInsideFeatureGroup(obj)
+              && isVisibleInScene(obj)
+            ) {
+              hiddenNonFeatureMeshes.push({ mesh: obj, visible: obj.visible });
+              obj.visible = false;
+            }
+          });
+
+          for (const channel of uniqueChannels) {
+            if (channel === 'depth') {
+              captures.depth = {
+                pngDataUrl: renderChannel('depth', makeDepthInspectionMaterial(ctx.camera)),
+              };
+            } else if (channel === 'normals') {
+              captures.normals = {
+                pngDataUrl: renderChannel('normals', makeNormalsInspectionMaterial()),
+              };
+            }
+          }
+
+          return { channels: captures, metadata };
+        } finally {
+          for (const original of originalMaterials) {
+            original.mesh.material = original.material;
+          }
+          for (const hidden of hiddenNonFeatureMeshes) {
+            hidden.mesh.visible = hidden.visible;
+          }
+          for (const material of temporaryMaterials) {
+            disposeMaterialDeep(material);
+          }
+          target.dispose();
+          ctx.scene.background = originalBackground;
+          ctx.renderer.setClearColor(originalClearColor, originalClearAlpha);
+          ctx.renderer.setRenderTarget(originalTarget);
+          ctx.renderer.render(ctx.scene, ctx.camera);
+        }
+      },
       loadFeatureMeshes: (perFeature, bounds) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const scene = sceneRef.current.scene;
@@ -431,8 +893,7 @@ export function DemoPlayerPage(): React.JSX.Element {
             scene.remove(child);
             child.traverse((o) => {
               if (o instanceof THREE.Mesh) {
-                o.geometry.dispose();
-                (o.material as THREE.Material).dispose();
+                disposeMeshResources(o);
               }
             });
           }
@@ -483,9 +944,15 @@ export function DemoPlayerPage(): React.JSX.Element {
           const group = new THREE.Group();
           group.name = fm.featureId;
           group.userData[KCAD_FEATURE_GROUP_KEY] = true;
+          group.userData.featureId = fm.featureId;
           group.userData.featureKind = fm.featureKind;
           group.userData.predecessors = fm.predecessors;
           group.userData.op = fm.op;
+          if (fm.displayName !== undefined) group.userData.displayName = fm.displayName;
+          if (fm.filterNames !== undefined) group.userData.filterNames = fm.filterNames;
+          if (fm.sourceMetadataName !== undefined) group.userData.sourceMetadataName = fm.sourceMetadataName;
+          if (fm.assemblyFeatureId !== undefined) group.userData.assemblyFeatureId = fm.assemblyFeatureId;
+          if (fm.assemblyPartName !== undefined) group.userData.assemblyPartName = fm.assemblyPartName;
           group.visible = true;
           // Prefer the full PBR record emitted by the bridge serializer (Task 7+).
           // Fall back to the legacy color string path: pbrFromColor resolves role
@@ -579,6 +1046,10 @@ export function DemoPlayerPage(): React.JSX.Element {
             const textureUrl = `/__kernelcad/image?path=${encodeURIComponent(ri.path)}`;
             const loader = new THREE.TextureLoader();
             loader.loadAsync(textureUrl).then((tex) => {
+              if (riGroup.parent !== scene) {
+                tex.dispose();
+                return;
+              }
               const mesh = buildReferenceImagePlane(ri, tex, sceneBbox);
               riGroup.add(mesh);
               if (sceneRef.current) {
@@ -594,6 +1065,10 @@ export function DemoPlayerPage(): React.JSX.Element {
               const canvas = document.createElement('canvas');
               canvas.width = 1; canvas.height = 1;
               const fallbackTex = new THREE.CanvasTexture(canvas);
+              if (riGroup.parent !== scene) {
+                fallbackTex.dispose();
+                return;
+              }
               const mesh = buildReferenceImagePlane(ri, fallbackTex, sceneBbox);
               riGroup.add(mesh);
               if (sceneRef.current) {

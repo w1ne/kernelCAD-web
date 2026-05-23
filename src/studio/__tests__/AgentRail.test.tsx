@@ -30,7 +30,7 @@ describe('AgentRail', () => {
         expect(rail.getAttribute('data-open')).toBe('true');
         expect((rail as HTMLElement).style.width).toBe('240px');
         expect(getByText(/Staged edits/i)).toBeDefined();
-        expect(getByText(/Agent offline · MCP not connected/i)).toBeDefined();
+        expect(getByText(/Cloud MCP connector/i)).toBeDefined();
     });
 
     it('reacts to store toggles after mount', () => {

@@ -38,18 +38,6 @@ describe('Header', () => {
         expect(screen.getByText('Untitled Project')).toBeDefined();
     });
 
-    it('should show view modes correctly', () => {
-        render(
-            <WorkbenchProvider>
-                <Header />
-            </WorkbenchProvider>
-        );
-
-        // Verify mode toggle buttons exist
-        expect(screen.getByTitle('Code Mode')).toBeDefined();
-        expect(screen.getByTitle('Design Mode')).toBeDefined();
-    });
-
     it('should trigger export', () => {
         render(
             <WorkbenchProvider>

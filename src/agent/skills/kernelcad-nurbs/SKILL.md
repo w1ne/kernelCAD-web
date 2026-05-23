@@ -98,15 +98,15 @@ Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as t
 - `feature.variable-sweep.spine-too-short` — spine is shorter than the smallest profile bounding diameter (the sweep would self-intersect).
 - `feature.variable-sweep.profile-not-planar` — profile is non-planar.
 - `feature.variable-sweep.profile-empty` — profile sketch is empty (path() not closed).
-- `feature.variable-sweep.frenet-degenerate` — Frenet orientation undefined where spine curvature vanishes; pass `orientation: { up: Vec3 }` or `"corrected-frenet"`.
+- `feature.variable-sweep.frenet-degenerate` — Frenet orientation undefined where spine curvature vanishes. Orientation controls are not exposed in the MCP add tool until runtime orientation support is wired.
 
 ### variableSweep gotcha — section locations must be on the spine
 
 `BRepOffsetAPI_MakePipeShell::Add_2` requires a location `TopoDS_Vertex` that is one of the spine wire's own sub-shapes. Today the lowerer maps `t=0` to the spine's first vertex and `t=1` to its last vertex; intermediate `t` values are not yet supported (spine subdivision lands as a follow-up). Authoring scripts can still target intermediate spine positions by routing through `nurbsCurve` segments stitched into the spine.
 
-## Coons-patch surfaces — surfaceFromBoundary (Slice C)
+## Filling surfaces — surfaceFromBoundary (Slice C)
 
-`surfaceFromBoundary(curves, opts?)` fills the interior of 4 boundary `Curve3D`s with a single NURBS face. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. Use for the front face of an eyewear shell, an ergonomic palm rest, or any 4-bounded freeform panel.
+`surfaceFromBoundary(curves, opts?)` builds the shipped filling surface: one NURBS face through 4 boundary `Curve3D`s. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. Use for the front face of an eyewear shell, an ergonomic palm rest, or any 4-bounded freeform panel.
 
 ```ts
 const bottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
@@ -116,7 +116,7 @@ const left   = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
 const panel  = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
 ```
 
-The 4 curves walk an ordered loop: `curves[0]` = bottom, `[1]` = right, `[2]` = top, `[3]` = left. Adjacent endpoints must coincide within 1e-6 mm — share the corner Vec3 across both meeting curves. `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 array per edge; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
+The 4 curves must be passed in exact loop order: `curves[0]` = bottom, `curves[1]` = right, `curves[2]` = top, `curves[3]` = left. Adjacent endpoints must coincide within 1e-6 mm — share the corner Vec3 across both meeting curves. `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 array per edge; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
 
 The result is a `Surface` peer — chain `.thicken(t)` to get a closed solid or `.toShape()` to wrap as a zero-volume single-face shell for downstream face-aware features.
 
@@ -209,7 +209,7 @@ All three methods accept `Editable<number>` coords so symbolic params survive in
 
 ### Gotchas (real, not hypothetical)
 
-1. **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. For freeform sections that need lofting, use Slice C's `surfaceFromBoundary` (Coons patch) or stick to line/arc primitives in the section profile.
+1. **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. For freeform sections that need lofting, use Slice C's `surfaceFromBoundary` filling surface or stick to line/arc primitives in the section profile.
 2. **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Slice D Task 3). If overshoot pollutes the silhouette, either tighten the tolerance through `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control where precision beats convenience.
 3. **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer — this is acceptable for v1; explicit gap-gating is queued for a follow-up slice.
 

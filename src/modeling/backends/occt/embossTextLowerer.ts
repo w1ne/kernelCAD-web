@@ -13,11 +13,18 @@
 //      requested UV anchor on the face.
 //   6. `drawing.sketchOnFace(face, scaleMode)` to wrap onto the face.
 //   7. `sketch.extrude(|depth|)` extrudes along the face normal.
-//   8. `parent.union(extruded)` (depth > 0) or `parent.subtract(extruded)`
-//      (depth < 0). Sign of depth selects fuse vs cut at face level so that
-//      both fuse and cut share a single `sketch.extrude(|d|)` step.
+//   8. History-aware boolean against the parent body. `fuseWithHistory`
+//      (depth > 0) raises the glyphs out of the face; `cutWithHistory`
+//      (depth < 0) recesses them into the body. The result HistoryMap is
+//      merged via `mergeBooleanHistory` and the newly-created tool-side
+//      faces are stamped with created-ref labels (`embossed-text` /
+//      `embossed-text-wall` for fuse; `engraved-text-floor` /
+//      `engraved-text-wall` for cut) so downstream chained features
+//      (.fillet/.chamfer/.shell, further embossText) can target them by
+//      label.
 
 import * as replicad from 'replicad';
+import type { Face } from 'replicad';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
@@ -25,6 +32,16 @@ import { pickFace } from '../../../kernel/backends/occt/edgeSelection';
 import { resolveAndLoadFont } from '../../../shared/fonts/index';
 import { isEmbossTextMetadata, type EmbossTextMetadata } from '../../../shared/intent/embossTextRecord';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
+import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from '../../../kernel/backends/occt/historyAwareBooleans';
+import {
+  applyCreatedRefs,
+  faceHashOf,
+  refreshSnapshots,
+  surfaceTypeOf,
+  type CreatedRefSpec,
+  type FaceSnapshot,
+} from '../../../kernel/backends/occt/createdRefs';
+import type { Vec3 } from '../../../shared/intent/types';
 
 export interface LowerEmbossTextOk { ok: true; backend: OcctBackend; }
 export interface LowerEmbossTextErr { ok: false; diagnostics: CompilerDiagnostic[]; }
@@ -153,13 +170,21 @@ export async function lowerEmbossText(
     return { ok: false, diagnostics };
   }
 
-  // 8. Boolean against the parent body.
+  // 8. History-aware boolean against the parent body.
+  //
+  // We use `fuseWithHistory` / `cutWithHistory` (instead of the plain
+  // `parent.union/.subtract`) so the BRepAlgoAPI_* builder's Modified /
+  // Generated / IsDeleted callbacks can be read before the builder is
+  // destroyed. The merged HistoryMap is then stamped with `labelName`
+  // entries for the newly-created glyph faces so downstream chained
+  // features (.fillet/.chamfer/.shell, further embossText calls) can
+  // target them by label (e.g. `face: 'embossed-text'`).
   const toolBackend = new OcctBackend(solid);
-  let resultBackend: OcctBackend;
+  const fuse = meta.depth.evaluated > 0;
+
+  let boolResult;
   try {
-    resultBackend = meta.depth.evaluated > 0
-      ? parent.union(toolBackend)
-      : parent.subtract(toolBackend);
+    boolResult = fuse ? fuseWithHistory(parent, toolBackend) : cutWithHistory(parent, toolBackend);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     diagnostics.push({
@@ -167,11 +192,157 @@ export async function lowerEmbossText(
       code: 'feature.kernel-failed',
       featureId: r.id,
       severity: 'error',
-      message: `embossText boolean ${meta.depth.evaluated > 0 ? 'fuse' : 'cut'} failed: ${msg}`,
+      message: `embossText boolean ${fuse ? 'fuse' : 'cut'} failed: ${msg}`,
       hint: 'OCCT boolean failed — check the parent body is valid and the glyph block does not exceed the face.',
     });
     return { ok: false, diagnostics };
   }
 
-  return { ok: true, backend: resultBackend };
+  // Wrap the result TopoDS_Shape into a replicad Shape3D + OcctBackend.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrappedResult = (replicad as any).cast(boolResult.shape) as replicad.Shape3D;
+  const resultIntermediate = new OcctBackend(wrappedResult);
+  if (resultIntermediate.isEmpty()) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      featureId: r.id,
+      severity: 'error',
+      message: 'embossText boolean produced an empty result.',
+      hint: 'OCCT produced an empty solid; the glyph tool likely missed the parent body. Verify the face fits the requested text size.',
+    });
+    return { ok: false, diagnostics };
+  }
+
+  // Merge parent + tool histories with the boolean's evolution callbacks.
+  // The parent's `historyMap` is undefined for primitives constructed via
+  // `OcctBackend.box(...)` directly (e.g. in tests). The lowerer pipeline
+  // seeds box/cylinder primitives with a canonical-face seed map; we feed
+  // either into mergeBooleanHistory which tolerates undefined inputs.
+  const merged = mergeBooleanHistory(parent.historyMap, undefined, boolResult);
+
+  // Walk the result's faces; any face whose hash isn't in `merged` (i.e.
+  // didn't carry a lineage from the parent / tool input) is a NEW face
+  // produced by the boolean. For embossText those are exactly the faces
+  // we want to label: the glyph top/walls (fuse) or the cavity floor/walls
+  // (cut).
+  const newFaceRefs = classifyEmbossFaces(
+    resultIntermediate,
+    merged,
+    faceCentroidOf(face),
+    faceNormalOf(face),
+    fuse,
+  );
+
+  const featureMeta = r.metadata as { name?: string; ordinal?: number } | undefined;
+  applyCreatedRefs(
+    merged,
+    newFaceRefs,
+    r.id,
+    r.kind,
+    featureMeta?.name,
+    featureMeta?.ordinal,
+  );
+  // Populate fresh snapshots for carried-over parent faces too so the
+  // geometry-fallback resolver in resolveFaceRef can disambiguate when
+  // topology lookup falls through (e.g. after a transform / further
+  // boolean).
+  refreshSnapshots(merged, resultIntermediate.getReplicadShape().faces);
+
+  return { ok: true, backend: new OcctBackend(wrappedResult, undefined, merged) };
+}
+
+// ---------------------------------------------------------------------------
+// Created face-ref classification
+// ---------------------------------------------------------------------------
+
+/** Read centroid off a replicad Face as a Vec3. */
+function faceCentroidOf(face: Face): Vec3 {
+  const c = face.center;
+  return [c.x, c.y, c.z];
+}
+
+/** Read outward normal off a replicad Face. Defaults to [0,0,1] when the
+ *  face exposes no `normalAt()` (defensive — planar faces always do). */
+function faceNormalOf(face: Face): Vec3 {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fn = (face as any).normalAt;
+  if (typeof fn !== 'function') return [0, 0, 1];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const n = (face as any).normalAt() as { x?: number; y?: number; z?: number } | undefined;
+  if (!n || typeof n.x !== 'number' || typeof n.y !== 'number') return [0, 0, 1];
+  const nx = n.x, ny = n.y, nz = typeof n.z === 'number' ? n.z : 0;
+  const len = Math.hypot(nx, ny, nz);
+  if (len < 1e-9) return [0, 0, 1];
+  return [nx / len, ny / len, nz / len];
+}
+
+function dot(a: Vec3, b: Vec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function snapshotOf(face: Face): FaceSnapshot {
+  const c = face.center;
+  const centroid: Vec3 = [c.x, c.y, c.z];
+  const normal = faceNormalOf(face);
+  let area = 0;
+  try { area = replicad.measureArea(face); } catch { /* defensive: leave 0 */ }
+  return { centroid, normal, area };
+}
+
+/** Classify every NEW face on the boolean result (i.e. any face whose hash
+ *  did not carry a lineage from the parent's input) and assign it a created
+ *  ref name. Planar faces parallel to the entry face become 'embossed-text'
+ *  (fuse, the glyph top) or 'engraved-text-floor' (cut, the cavity floor);
+ *  all other new faces (typically the glyph side walls — planar but
+ *  perpendicular to the entry, plus any rounded glyph tangents) become
+ *  '-wall' variants. */
+function classifyEmbossFaces(
+  result: OcctBackend,
+  mergedHistory: ReturnType<typeof mergeBooleanHistory>,
+  entryCentroid: Vec3,
+  entryNormalOutward: Vec3,
+  fuse: boolean,
+): CreatedRefSpec[] {
+  const PARALLEL_DOT_MIN = 0.999; // ~2.5° tolerance
+  const allFaces = result.getReplicadShape().faces;
+  const refs: CreatedRefSpec[] = [];
+  // Pre-compute the signed-distance reference: positive depth means glyph
+  // tops sit OUTSIDE the entry plane (along the outward normal); negative
+  // depth means the floor sits INSIDE (against the outward normal).
+  const topLabel = fuse ? 'embossed-text' : 'engraved-text-floor';
+  const wallLabel = fuse ? 'embossed-text-wall' : 'engraved-text-wall';
+
+  for (const f of allFaces) {
+    const h = faceHashOf(f);
+    if (mergedHistory.has(h)) continue; // carried-over face, not new
+    const fNormal = faceNormalOf(f);
+    const parallel = Math.abs(dot(fNormal, entryNormalOutward)) >= PARALLEL_DOT_MIN;
+
+    let refName: string;
+    if (parallel) {
+      // Distance from the face centroid to the entry plane, signed along
+      // entryNormalOutward. For emboss (fuse) the glyph top sits at +depth
+      // (outside the body), for engrave (cut) the floor sits at -depth
+      // (inside). A new planar face on the SAME side as the original (zero
+      // distance) would mean the boolean preserved the entry plane's
+      // surface where the glyph didn't carve into it — that face would
+      // have inherited the parent's lineage via mergeBooleanHistory, so
+      // we wouldn't see it here. Defensive: any new parallel face is
+      // treated as the "top" (fuse) / "floor" (cut).
+      refName = topLabel;
+    } else {
+      // Side walls of the extruded glyph block.
+      refName = wallLabel;
+    }
+    void entryCentroid; // currently unused beyond defensive symmetry
+    refs.push({
+      faceHash: h,
+      refName,
+      snapshot: snapshotOf(f),
+      surfaceType: surfaceTypeOf(f),
+    });
+  }
+
+  return refs;
 }

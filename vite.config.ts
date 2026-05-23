@@ -117,6 +117,12 @@ function kernelCadMeshEndpoint(): Plugin {
         await handleTextureRequest(req, res as unknown as import('node:http').ServerResponse);
       });
 
+      server.middlewares.use('/__kernelcad/source', async (req, res) => {
+        const { createSourceEndpoint } = await import('./src/server/middleware/sourceEndpoint');
+        const handler = createSourceEndpoint({ resolveScript: resolveExampleScript });
+        await handler(req, res);
+      });
+
       server.middlewares.use('/__kernelcad/session', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.sessionHandler(req, res);
@@ -330,6 +336,7 @@ export default defineConfig(({ command }) => ({
     TanStackRouterVite({
       routesDirectory: './src/studio/routes',
       generatedRouteTree: './src/studio/routeTree.gen.ts',
+      routeFileIgnorePattern: '\\.test\\.ts$',
     }),
     kernelCadMeshEndpoint(),
     react(),
@@ -343,5 +350,14 @@ export default defineConfig(({ command }) => ({
   },
   worker: {
     format: 'es',
+  },
+  server: {
+    watch: {
+      ignored: [
+        '**/.git/**',
+        '**/.claude/**',
+        '**/kernelCAD-web-worktrees/**',
+      ],
+    },
   },
 }))

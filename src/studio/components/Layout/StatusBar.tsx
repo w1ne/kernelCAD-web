@@ -11,6 +11,7 @@ interface StatusBarProps {
     layoutMode: StudioLayoutMode;
     activeCommandLabel: string | null;
     interferences?: number;
+    recomputeMs?: number;
 }
 
 function formatViewMode(mode: ViewMode3D): string {
@@ -39,6 +40,7 @@ export function StatusBar({
     layoutMode,
     activeCommandLabel,
     interferences,
+    recomputeMs,
 }: StatusBarProps) {
     const stateLabel = error ? 'Error' : isComputing ? 'Computing...' : 'Ready';
     const bodyLabel = geometryCount === 1 ? '1 body' : `${geometryCount} bodies`;
@@ -76,6 +78,9 @@ export function StatusBar({
                 </span>
                 {typeof interferences === 'number' && (
                     <span data-testid="status-interferences">interferences: {interferences}</span>
+                )}
+                {typeof recomputeMs === 'number' && recomputeMs > 0 && (
+                    <span data-testid="status-recompute-ms">Last compute {recomputeMs} ms</span>
                 )}
                 <span>{formatViewMode(viewMode3D)}</span>
                 <span>{formatLayoutMode(layoutMode)}</span>

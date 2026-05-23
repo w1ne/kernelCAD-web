@@ -14,8 +14,6 @@ import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
 import { StatusBar } from './components/Layout/StatusBar';
 import ProjectManagerDialog from './components/Dialogs/ProjectManagerDialog';
-import { FloatingAgent } from './features-ui/ai/FloatingAgent';
-import { SmartWidget } from './features-ui/ai/SmartWidget';
 import { useWorkbench } from './context/WorkbenchContext';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { StagedEdit } from './store/shellStore';
@@ -160,8 +158,6 @@ export function StudioShell() {
         >
             <Header />
             <Toolbar
-                project={activeProject ? { name: activeProject.name } : null}
-                filename={activeProject?.name ? `${activeProject.name}.kcad.ts` : 'untitled.kcad.ts'}
                 isModified={isModified}
                 onValidate={handleValidate}
                 onRun={handleRun}
@@ -177,9 +173,9 @@ export function StudioShell() {
             />
 
             <div className="flex-1 flex overflow-hidden relative">
+                {agentRailOpen && <AgentRail />}
                 <Viewport />
                 <Inspector tabSlots={tabSlots} />
-                {agentRailOpen && <AgentRail />}
 
                 {!workbench.isReady && (
                     <div
@@ -191,14 +187,12 @@ export function StudioShell() {
                     </div>
                 )}
 
-                <FloatingAgent />
-                <SmartWidget />
             </div>
 
             <BottomDrawer />
 
             <StatusBar
-                isComputing={false}
+                isComputing={workbench.isComputing}
                 error={workbench.error ?? null}
                 geometryCount={workbench.geometries?.length ?? 0}
                 selectedCount={workbench.selectedItemIds?.length ?? 0}
@@ -206,6 +200,7 @@ export function StudioShell() {
                 layoutMode={workbench.layoutMode}
                 activeCommandLabel={null}
                 interferences={interferenceCount}
+                recomputeMs={workbench.recomputeMs}
             />
 
             <ProjectManagerDialog

@@ -115,4 +115,16 @@ describe('list_api drift sentinels', () => {
     );
     expect(advertised).toEqual(actual);
   });
+
+  it('documents surfaceFromBoundary as the shipped filling-surface primitive with exact curve order', async () => {
+    const r = await listApiTool({});
+    const entry = r.globals!.find(g => g.name === 'surfaceFromBoundary');
+    expect(entry).toBeDefined();
+    expect(entry!.description).toMatch(/filling surface/i);
+    expect(entry!.description).toContain('`curves[0]` = bottom');
+    expect(entry!.description).toContain('`curves[1]` = right');
+    expect(entry!.description).toContain('`curves[2]` = top');
+    expect(entry!.description).toContain('`curves[3]` = left');
+    expect(entry!.description).not.toMatch(/Coons/i);
+  });
 });

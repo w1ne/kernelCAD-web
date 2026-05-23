@@ -83,6 +83,37 @@ describe('featureMeshSerialize', () => {
     expect(restored.predecessors).toEqual(['a', 'b']);
   });
 
+  it('round-trips assembly viewport transform metadata', () => {
+    const original: FeatureMesh = {
+      featureId: 'asm_1__post' as FeatureMesh['featureId'],
+      featureKind: 'assemblyModel',
+      predecessors: ['asm_1' as FeatureMesh['featureId']],
+      faces: [],
+      assemblyFeatureId: 'asm_1' as FeatureMesh['featureId'],
+      assemblyPartName: 'post',
+      transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12, 0, 34, 1],
+      displayName: 'post',
+      filterNames: ['asm_1__post', 'assemblyModel', 'asm_1', 'post', 'named-assembly'],
+      sourceMetadataName: 'named-assembly',
+    };
+
+    const serialized = serializeForBridge(original);
+    const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serialized)));
+
+    expect(serialized.assemblyFeatureId).toBe('asm_1');
+    expect(serialized.assemblyPartName).toBe('post');
+    expect(serialized.transform).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12, 0, 34, 1]);
+    expect(serialized.displayName).toBe('post');
+    expect(serialized.filterNames).toEqual(['asm_1__post', 'assemblyModel', 'asm_1', 'post', 'named-assembly']);
+    expect(serialized.sourceMetadataName).toBe('named-assembly');
+    expect(restored.assemblyFeatureId).toBe('asm_1');
+    expect(restored.assemblyPartName).toBe('post');
+    expect(restored.transform).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12, 0, 34, 1]);
+    expect(restored.displayName).toBe('post');
+    expect(restored.filterNames).toEqual(['asm_1__post', 'assemblyModel', 'asm_1', 'post', 'named-assembly']);
+    expect(restored.sourceMetadataName).toBe('named-assembly');
+  });
+
   it('round-trips color attribute (token form)', () => {
     const original: FeatureMesh = {
       featureId: 'srv_1',

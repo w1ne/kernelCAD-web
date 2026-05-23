@@ -153,6 +153,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         previewGeometries: geometryCtx.previewGeometries,
         setPreviewCode: geometryCtx.setPreviewCode,
         updateParam: geometryCtx.updateParam,
+        setGeometryTransformOverride: geometryCtx.setGeometryTransformOverride,
+        clearGeometryTransformOverrides: geometryCtx.clearGeometryTransformOverrides,
         // Sketching context
         entities: sketchingCtx.entities,
         constraints: sketchingCtx.constraints,
@@ -237,6 +239,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         geometryCtx.previewGeometries,
         geometryCtx.setPreviewCode,
         geometryCtx.updateParam,
+        geometryCtx.setGeometryTransformOverride,
+        geometryCtx.clearGeometryTransformOverrides,
         sketchingCtx.entities,
         sketchingCtx.constraints,
         sketchingCtx.selectedEntityIds,

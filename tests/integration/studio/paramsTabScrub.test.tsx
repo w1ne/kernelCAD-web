@@ -67,7 +67,7 @@ describe('ParamsTab interactive numeric scrub', () => {
         expect(screen.getByTestId('params-empty-state')).toBeTruthy();
     });
 
-    it('hides params that are exposed as joint poses', () => {
+    it('keeps params that are also exposed as joint poses visible', () => {
         const table = new ParamTable();
         table.declare('shoulder', 'number', 15, { min: -30, max: 110 });
         table.declare('width', 'number', 50);
@@ -94,7 +94,7 @@ describe('ParamsTab interactive numeric scrub', () => {
             updateParam: vi.fn(),
         } as unknown as ReturnType<typeof useRecomputeResultModule.useRecomputeResult>);
         render(<ParamsTab />);
-        expect(screen.queryByTestId('param-row-shoulder')).toBeNull();
+        expect(screen.queryByTestId('param-row-shoulder')).toBeTruthy();
         expect(screen.queryByTestId('param-row-width')).toBeTruthy();
     });
 

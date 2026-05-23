@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="kernelCAD — a scriptable, headless-first CAD platform for AI agents. OpenCASCADE kernel. MCP server. Open source." />
+  <meta name="description" content="kernelCAD — editable .kcad.ts source, deterministic review, OpenCASCADE kernel, MCP server, and standard CAD exports." />
   <meta property="og:title" content="kernelCAD — CAD for agents" />
-  <meta property="og:description" content="A scriptable, headless-first CAD platform powered by the OpenCASCADE kernel." />
+  <meta property="og:description" content="Author editable .kcad.ts, run deterministic review_cad checks, and export STEP/STL." />
   <meta property="og:image" content="https://kernelcad.com/og-image.png" />
   <meta property="og:url" content="https://kernelcad.com" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css?v=2026-05-23-gallery-lightbox-model" />
   <title>kernelCAD — CAD for agents</title>
   <!--
     Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
@@ -42,37 +42,82 @@
     </nav>
 
     <header class="hero">
-      <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
-      <p class="subhead">A scriptable, headless-first CAD platform powered by the OpenCASCADE kernel.</p>
-      <div class="modes">
-        <span class="mode">browser</span><span class="sep">·</span>
-        <span class="mode">terminal</span><span class="sep">·</span>
-        <span class="mode">MCP</span><span class="sep">·</span>
-        <span class="mode">open source</span>
+      <div class="hero-copy">
+        <div class="proof-line">.kcad.ts · review_cad · STEP/STL</div>
+        <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
+        <p class="subhead">A scriptable CAD runtime for editable .kcad.ts source, deterministic review, and physical part exports.</p>
+        <div class="modes" aria-label="Supported agent surfaces">
+          <span class="mode">Codex</span><span class="sep">·</span>
+          <span class="mode">Claude Code</span><span class="sep">·</span>
+          <span class="mode">Cursor</span><span class="sep">·</span>
+          <span class="mode">CLI</span>
+        </div>
+        <div class="ctas-primary">
+          <a class="btn btn-primary" href="https://app.kernelcad.com">Try in browser →</a>
+          <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
+        </div>
+        <div class="install-stack" aria-label="Install commands">
+          <button class="install" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
+            <span class="install-command"><span class="prompt">$</span> claude mcp add kernelcad -- npx -y kernelcad mcp</span>
+            <span class="copy">copy</span>
+          </button>
+          <button class="install install-secondary" id="codex-mcp-btn" aria-label="Copy Codex MCP install command">
+            <span class="install-command"><span class="prompt">$</span> codex mcp add kernelcad -- npx -y kernelcad mcp</span>
+            <span class="copy">copy</span>
+          </button>
+          <button class="install install-secondary" id="install-btn" aria-label="Copy CLI install command">
+            <span class="install-command"><span class="prompt">$</span> npm install -g kernelcad</span>
+            <span class="copy">copy</span>
+          </button>
+        </div>
       </div>
-      <div class="ctas-primary">
-        <a class="btn btn-primary" href="https://app.kernelcad.com">Try in browser →</a>
-        <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
+      <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
+        <div class="demo-meta">
+          <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
+          <span class="artifact-label" id="demo-artifact">artifact.kcad.ts</span>
+        </div>
+        <div class="demo-frame">
+          <img class="demo-poster-art" src="/demo-poster.png" alt="Generated kernelCAD artifact" />
+          <video id="demo-video" autoplay muted loop playsinline preload="metadata" poster="/demo-poster.png"></video>
+        </div>
       </div>
-      <div class="ctas-tertiary">
-        <a href="https://x.com/kernelcad">Follow on X</a>
-        <span class="sep">·</span>
-        <a href="https://www.linkedin.com/company/kernelcad">Follow on LinkedIn</a>
-      </div>
-      <button class="install" id="install-btn" aria-label="Copy install command">
-        <span><span class="prompt">$</span> npm install -g kernelcad</span>
-        <span class="copy">copy</span>
-      </button>
     </header>
 
-    <section class="demo-block">
-      <div class="demo-meta">
-        <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
-        <span>prompt → code → 3D · auto-rotating</span>
+    <section class="capabilities" aria-label="kernelCAD capabilities">
+      <div class="capability">
+        <span class="capability-name">Editable Source</span>
+        <span class="capability-copy">.kcad.ts files with params, assemblies, NURBS, SDF, and sheet metal APIs</span>
       </div>
-      <div class="demo-frame">
-        <video id="demo-video" autoplay muted loop playsinline preload="metadata"></video>
+      <div class="capability">
+        <span class="capability-name">review_cad</span>
+        <span class="capability-copy">deterministic review for diagnostics, mates, interferences, and visual evidence</span>
       </div>
+      <div class="capability">
+        <span class="capability-name">Export</span>
+        <span class="capability-copy">STEP/STL artifacts with source-controlled provenance</span>
+      </div>
+      <div class="capability">
+        <span class="capability-name">Vendor Parts</span>
+        <span class="capability-copy">import real hardware with `lib.fromSTEP(...)`</span>
+      </div>
+    </section>
+
+    <section class="prompt-handoff" aria-label="Generate a CAD model from a prompt">
+      <div class="prompt-handoff-copy">
+        <span class="section-kicker">Start with words</span>
+        <h2 class="prompt-handoff-headline">Describe the part you want.</h2>
+      </div>
+      <form class="prompt-handoff-form" action="https://app.kernelcad.com/generate" method="GET">
+        <label class="sr-only" for="prompt-input">CAD prompt</label>
+        <textarea
+          id="prompt-input"
+          name="prompt"
+          rows="3"
+          placeholder="60x40x5 mm bracket with 4 M3 mounting holes"
+          required
+        ></textarea>
+        <button class="btn btn-primary" type="submit">Generate in app</button>
+      </form>
     </section>
 
     <section class="gallery" id="gallery" hidden>
@@ -126,10 +171,11 @@
   <dialog id="gallery-lightbox">
     <div class="lightbox-inner">
       <button class="lightbox-close" aria-label="Close" type="button">×</button>
-      <video class="lightbox-video" autoplay muted loop playsinline controls></video>
+      <div class="lightbox-stage"></div>
       <div class="lightbox-body">
         <h3 class="lightbox-title"></h3>
         <p class="lightbox-meta"></p>
+        <div class="lightbox-prompt-label">Build brief</div>
         <pre class="lightbox-prompt"></pre>
         <div class="lightbox-ctas">
           <form class="lightbox-subscribe" action="/api/subscribe" method="POST">
@@ -138,11 +184,13 @@
             <button type="submit" class="btn btn-primary">Subscribe</button>
           </form>
           <div class="lightbox-secondary">
+            <a class="lightbox-studio-link" href="#" target="_blank" rel="noopener">Open in Studio</a>
             <a class="lightbox-star" href="https://github.com/w1ne/kernelCAD-web" target="_blank" rel="noopener">★ Star on GitHub</a>
             <a class="lightbox-source" href="#" target="_blank" rel="noopener">View source ↗</a>
             <a class="lightbox-app" href="#" target="_blank" rel="noopener" hidden>Open in app ↗</a>
           </div>
         </div>
+        <p class="gallery-privacy-note">Free projects are public by link. Upgrade for private projects.</p>
         <p class="lightbox-footer">
           <a class="gallery-submit"
              href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
@@ -155,19 +203,136 @@
 
   <script>
     // load demo video + version from build-time generated demo.json
+    function cacheKeyedUrl(url, cacheKey) {
+      if (!url) return url;
+      if (!cacheKey) return url;
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
+    }
+
     fetch('/demo.json')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (!d) return;
         const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
-        document.getElementById('demo-video').src = `/demo.mp4?v=${demoCacheKey}`;
+        const demoVideo = document.getElementById('demo-video');
+        demoVideo.src = `/demo.mp4?v=${demoCacheKey}`;
+        if (d.poster) demoVideo.poster = `/${d.poster}?v=${demoCacheKey}`;
+        const posterArt = document.querySelector('.demo-poster-art');
+        if (posterArt && d.poster) posterArt.src = `/${d.poster}?v=${demoCacheKey}`;
+        demoVideo.addEventListener('timeupdate', () => {
+          if (demoVideo.currentTime > 2.5) posterArt?.classList.add('is-hidden');
+        });
         document.getElementById('demo-version').textContent = d.version;
+        const artifact = d.heroArtifact || d.task || 'artifact';
+        document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`;
       });
 
-    // Lazy-load <model-viewer> once when the gallery section is in the DOM.
-    if (document.querySelector('section.gallery')) {
-      import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
-        .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+    let modelViewerLoading = null;
+    function loadModelViewer() {
+      if (!modelViewerLoading) {
+        modelViewerLoading = import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
+          .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+      }
+      return modelViewerLoading;
+    }
+
+    function loadModelViewerNearGallery(section) {
+      if (!('IntersectionObserver' in window)) {
+        loadModelViewer();
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          loadModelViewer();
+        }
+      }, { rootMargin: '500px 0px' });
+      observer.observe(section);
+    }
+
+    function galleryTileOrbit(entry) {
+      return entry.slug === 'royal-pop-pocket-watch'
+        ? { initial: '0deg 158deg auto', min: '-16deg 158deg auto', max: '16deg 158deg auto', faceForward: true }
+        : { initial: '45deg 75deg auto', min: 'auto auto auto', max: 'auto auto auto' };
+    }
+
+    function animateRoyalWatchFace(viewer) {
+      let frame = 0;
+      const tick = (now) => {
+        if (!viewer.isConnected) return;
+        const theta = Math.sin(now / 1200) * 14;
+        viewer.setAttribute('camera-orbit', `${theta.toFixed(2)}deg 158deg auto`);
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }
+
+    function createGalleryViewer(entry, galleryCacheKey, className) {
+      const orbit = galleryTileOrbit(entry);
+      const viewer = document.createElement('model-viewer');
+      viewer.className = className;
+      viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey));
+      viewer.setAttribute('poster', cacheKeyedUrl(entry.posterUrl, galleryCacheKey));
+      viewer.setAttribute('alt', entry.title);
+      if (!orbit.faceForward) {
+        viewer.setAttribute('auto-rotate', '');
+        viewer.setAttribute('auto-rotate-delay', '0');
+        viewer.setAttribute('rotation-per-second', '20deg');
+      }
+      viewer.setAttribute('camera-orbit', orbit.initial);
+      viewer.setAttribute('min-camera-orbit', orbit.min);
+      viewer.setAttribute('max-camera-orbit', orbit.max);
+      viewer.setAttribute('interaction-prompt', 'none');
+      viewer.setAttribute('reveal', 'auto');
+      viewer.setAttribute('disable-zoom', '');
+      viewer.setAttribute('loading', 'lazy');
+      if (orbit.faceForward) animateRoyalWatchFace(viewer);
+      return viewer;
+    }
+
+    function upgradeGalleryTile(tile, entry, galleryCacheKey) {
+      if (tile.dataset.modelViewerUpgraded === 'true') return;
+
+      tile.dataset.modelViewerUpgraded = 'true';
+      loadModelViewer();
+
+      const viewer = createGalleryViewer(entry, galleryCacheKey, 'tile-viewer');
+
+      const poster = tile.querySelector('.tile-poster');
+      if (poster) poster.replaceWith(viewer);
+      else tile.prepend(viewer);
+    }
+
+    function mountLightboxModel(entry, galleryCacheKey) {
+      loadModelViewer();
+      const stage = document.querySelector('#gallery-lightbox .lightbox-stage');
+      stage.textContent = '';
+      stage.appendChild(createGalleryViewer(entry, galleryCacheKey, 'lightbox-viewer'));
+    }
+
+    function armGalleryTileUpgrade(tile, entry, galleryCacheKey) {
+      const upgrade = () => upgradeGalleryTile(tile, entry, galleryCacheKey);
+      tile.addEventListener('pointerenter', upgrade, { once: true });
+      tile.addEventListener('focus', upgrade, { once: true });
+    }
+
+    function upgradeGalleryTilesNearViewport(grid, galleryCacheKey) {
+      const tiles = Array.from(grid.querySelectorAll('.gallery-tile'));
+      if (!('IntersectionObserver' in window)) return;
+
+      const observer = new IntersectionObserver((entries) => {
+        for (const observed of entries) {
+          if (!observed.isIntersecting) continue;
+          const tile = observed.target;
+          observer.unobserve(tile);
+          upgradeGalleryTile(tile, tile.__entry, galleryCacheKey);
+        }
+      }, { rootMargin: '500px 0px' });
+
+      for (const tile of tiles) {
+        observer.observe(tile);
+      }
     }
 
     // Render the curated gallery from /gallery.json
@@ -177,55 +342,72 @@
         if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
         const section = document.getElementById('gallery');
         const grid = document.getElementById('gallery-grid');
+        const galleryCacheKey = g.generatedAt;
+        grid.textContent = '';
         for (const entry of g.entries) {
           const tile = document.createElement('div');
           tile.className = 'gallery-tile';
           tile.dataset.slug = entry.slug;
           tile.innerHTML = `
-            <model-viewer
-              class="tile-viewer"
-              src="${entry.modelUrl}"
-              poster="${entry.posterUrl}"
-              auto-rotate
-              auto-rotate-delay="0"
-              rotation-per-second="20deg"
-              camera-controls
-              touch-action="pan-y"
-              interaction-prompt="none"
-              reveal="auto"
-              disable-zoom
-              loading="lazy"
-            ></model-viewer>
+            <img
+              class="tile-poster"
+              src="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
+              alt="${entry.title}"
+              loading="lazy">
+            <span class="tile-chip tile-chip-bl title">${entry.title}</span>
+            <span class="tile-chip tile-chip-br"><span class="version">${entry.version}</span></span>
+            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
+            <a class="tile-studio-link" href="${entry.studioUrl}" target="_blank" rel="noopener">
+              Open in Studio
+            </a>
           `;
           tile.__entry = entry;
-          tile.addEventListener('click', () => openLightbox(entry));
+          armGalleryTileUpgrade(tile, entry, galleryCacheKey);
+          tile.querySelector('.tile-studio-link')?.addEventListener('click', (event) => {
+            event.stopPropagation();
+          });
+          tile.addEventListener('click', () => {
+            upgradeGalleryTile(tile, entry, galleryCacheKey);
+            openLightbox(entry);
+          });
           grid.appendChild(tile);
         }
+        section.hidden = false;
+        loadModelViewerNearGallery(section);
+        upgradeGalleryTilesNearViewport(grid, galleryCacheKey);
+
         const dialog = document.getElementById('gallery-lightbox');
-        const video = dialog.querySelector('.lightbox-video');
         const title = dialog.querySelector('.lightbox-title');
         const meta = dialog.querySelector('.lightbox-meta');
         const promptEl = dialog.querySelector('.lightbox-prompt');
         const sourceInput = dialog.querySelector('input[name="source"]');
         const sourceLink = dialog.querySelector('.lightbox-source');
         const appLink = dialog.querySelector('.lightbox-app');
+        const studioLink = dialog.querySelector('.lightbox-studio-link');
         const closeBtn = dialog.querySelector('.lightbox-close');
 
         function openLightbox(entry) {
-          video.src = entry.videoUrl;
+          mountLightboxModel(entry, galleryCacheKey);
           title.textContent = entry.title;
           meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
           promptEl.textContent = entry.prompt;
+          if (entry.promptUrl) {
+            fetch(entry.promptUrl)
+              .then((r) => (r.ok ? r.text() : null))
+              .then((promptText) => {
+                if (promptText) promptEl.textContent = promptText.trim();
+              })
+              .catch(() => { /* keep embedded prompt fallback */ });
+          }
           sourceInput.value = `gallery-lightbox:${entry.slug}`;
           sourceLink.href = entry.code;
+          studioLink.href = entry.studioUrl;
           if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }
           else { appLink.hidden = true; }
           dialog.showModal();
         }
         function closeLightbox() {
-          video.pause();
-          video.removeAttribute('src');
-          video.load();
+          dialog.querySelector('.lightbox-stage').textContent = '';
           dialog.close();
         }
         closeBtn.addEventListener('click', closeLightbox);
@@ -233,24 +415,29 @@
           if (e.target === dialog) closeLightbox();
         });
         dialog.addEventListener('close', () => {
-          video.pause();
-          video.removeAttribute('src');
-          video.load();
+          dialog.querySelector('.lightbox-stage').textContent = '';
         });
 
         // Expose for tile click handlers (closure captured above).
         window.__kernelcadOpenLightbox = openLightbox;
-        section.hidden = false;
       });
 
-    // copy install command on click
-    document.getElementById('install-btn').addEventListener('click', () => {
-      navigator.clipboard.writeText('npm install -g kernelcad');
-      const copy = document.querySelector('.install .copy');
-      const orig = copy.textContent;
-      copy.textContent = 'copied';
-      setTimeout(() => { copy.textContent = orig; }, 1200);
-    });
+    function wireCopyButton(buttonId, command) {
+      const button = document.getElementById(buttonId);
+      if (!button) return;
+      button.addEventListener('click', () => {
+        navigator.clipboard.writeText(command);
+        const copy = button.querySelector('.copy');
+        const orig = copy.textContent;
+        copy.textContent = 'copied';
+        setTimeout(() => { copy.textContent = orig; }, 1200);
+      });
+    }
+
+    // copy command buttons
+    wireCopyButton('claude-mcp-btn', 'claude mcp add kernelcad -- npx -y kernelcad mcp');
+    wireCopyButton('codex-mcp-btn', 'codex mcp add kernelcad -- npx -y kernelcad mcp');
+    wireCopyButton('install-btn', 'npm install -g kernelcad');
 
     // Source attribution: ?ref=hn → hidden field on signup form
     const params = new URLSearchParams(window.location.search);

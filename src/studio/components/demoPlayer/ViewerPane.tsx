@@ -58,7 +58,7 @@ export function ViewerPane({ version, onSceneReady, width, height, noWatermark =
     // project to many pixels even at the reduced transmission target) and
     // trims per-frame cost dramatically — important for captureDemo, which
     // renders ~1100 frames sequentially for the build + rotate timeline.
-    renderer.transmissionResolutionScale = 0.25;
+    renderer.transmissionResolutionScale = 1.0;
     mount.appendChild(renderer.domElement);
 
     // PMREM environment map: required for MeshPhysicalMaterial.transmission

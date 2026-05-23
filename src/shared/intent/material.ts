@@ -18,6 +18,7 @@ export interface PBRMaterial {
   ior?: number;                   // 1.0..2.5, default 1.5
   transmission?: number;          // 0..1, default 0 (>0 enables glass effects)
   sheen?: number;                 // 0..1, default 0
+  opacity?: number;               // 0..1, default 1 (renderer transparency)
   /** Volume thickness in mm (units convention: world unit = mm). Used by
    *  Three's `MeshPhysicalMaterial.thickness` to attenuate the transmitted
    *  light through the volume. Default 0. Must be non-negative finite. */

@@ -1889,11 +1889,11 @@ export class OcctLowerer implements FeatureLowerer {
         break;
       }
       case 'assemblyModel': {
-        // Kinematic-zero counterpart of `solvedAssembly`: same SceneBackend
-        // shape change, but no FK runs — `model()` is the unposed view of
-        // the assembly, so each part's worldTransform is the identity. The
-        // legacy boolean-union path is gone; consumers that needed a fused
-        // single-Shape now call Scene.toUnion()/Scene.toCompound() explicitly.
+        // SceneBackend counterpart of `solvedAssembly`: mate-free model()
+        // parts stay at identity, while mate-bearing model() records carry
+        // enough metadata for default mate FK. The legacy boolean-union path
+        // is gone; consumers that need a fused single-Shape now call
+        // Scene.toUnion()/Scene.toCompound() explicitly.
         const partEntries = Object.entries(inputs.byKey)
           .filter(([key]) => key.startsWith('part_'))
           .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
@@ -1911,27 +1911,20 @@ export class OcctLowerer implements FeatureLowerer {
         const meta = r.metadata as {
           assemblyName?: string;
           partIds?: FeatureId[];
-          declaredMateCount?: number;
+          mates?: {
+            name: string;
+            a: string;
+            b: string;
+            type: MateType;
+            pose?: { kind: 'scalar'; value: Param } | { kind: 'ball'; value: [Param, Param, Param] };
+          }[];
+          couplings?: readonly MateCouplingRecord[];
+          connectorsByPartId?: Record<FeatureId, readonly Connector[]>;
         } | undefined;
         const partIds = meta?.partIds ?? [];
-        // Exp-D four-bolt-flange-v2 surfaced this: an agent declared mates
-        // on the assembly, then ended the script with arm.model() (not
-        // solvedModel({})). model() skips mate FK entirely — parts stack
-        // at local-frame origin and downstream interference / scoring
-        // gates lie. Emit an info diag at the model() lowering so the
-        // mate-FK skip surfaces explicitly, not via downstream symptoms.
-        const declaredMateCount = meta?.declaredMateCount ?? 0;
-        if (declaredMateCount > 0) {
-          const assemblyName = meta?.assemblyName ?? '<unnamed>';
-          diagnostics.push({
-            target: this.target,
-            code: 'assembly.mates-ignored-by-model-call',
-            featureId: r.id,
-            severity: 'info',
-            message: `assembly '${assemblyName}' declared ${declaredMateCount} mate(s) but the script returned arm.model() (which skips mate FK); parts will pose at their local-frame origin, not their mate-derived world positions.`,
-            hint: 'Replace `arm.model()` with `arm.solvedModel({})` (or `arm.solvedModel(poses)`) so the mate solver runs and parts pose correctly. arm.model() is the unposed view — useful only when the assembly declares no mates.',
-          });
-        }
+        const encodedMates = meta?.mates ?? [];
+        const mateCouplings = meta?.couplings ?? [];
+        const connectorsByPartId = meta?.connectorsByPartId ?? {};
         if (partEntries.length !== partIds.length) {
           diagnostics.push({
             target: this.target,
@@ -1944,6 +1937,115 @@ export class OcctLowerer implements FeatureLowerer {
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
         const records = allRecords ?? [];
+        const worldT = new Map<FeatureId, Transform>();
+        for (const partId of partIds) worldT.set(partId, Transform.identity());
+
+        if (encodedMates.length > 0) {
+          const matePoses: NumericPoses = {};
+          for (const m of encodedMates) {
+            if (m.pose === undefined) continue;
+            if (m.pose.kind === 'ball') {
+              matePoses[m.name] = [
+                m.pose.value[0].evaluated,
+                m.pose.value[1].evaluated,
+                m.pose.value[2].evaluated,
+              ];
+            } else {
+              matePoses[m.name] = m.pose.value.evaluated;
+            }
+          }
+
+          let matePoseFiniteFailed = false;
+          for (const [name, val] of Object.entries(matePoses)) {
+            const finite = Array.isArray(val) ? val.every(Number.isFinite) : Number.isFinite(val);
+            if (!finite) {
+              diagnostics.push({
+                target: this.target,
+                code: 'feature.kernel-failed',
+                featureId: r.id,
+                severity: 'error',
+                message: `assemblyModel: mate pose '${name}' is not finite (${JSON.stringify(val)}).`,
+                hint: `kernel-failed.assemblyModel.bad-pose — mate pose value for ${name} is not finite.`,
+              });
+              matePoseFiniteFailed = true;
+            }
+          }
+          if (matePoseFiniteFailed) {
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+
+          const resolvedParts: ResolvedMatePart[] = [];
+          let topologyResolutionFailed = false;
+          for (let i = 0; i < partIds.length; i++) {
+            const partId = partIds[i];
+            const partRec = records.find((rec) => rec.id === partId);
+            if (!partRec || partRec.kind !== 'assemblyPart') {
+              diagnostics.push({
+                target: this.target,
+                code: 'recompute.input.missing',
+                featureId: r.id,
+                severity: 'error',
+                message: `assemblyModel: missing or wrong-kind part record '${partId}'.`,
+                hint: 'Each partId in metadata.partIds must reference an assemblyPart record.',
+              });
+              return { shape: undefined as unknown as ShapeBackend, diagnostics };
+            }
+            const partName =
+              (partRec.metadata as { partName?: string } | undefined)?.partName ?? partId;
+            const rawConnectors = connectorsByPartId[partId] ?? [];
+            if (rawConnectors.length === 0) {
+              resolvedParts.push({ id: partId, name: partName, connectors: [] });
+              continue;
+            }
+            const partBackend = partEntries[i][1] as OcctBackend;
+            const resolvedConnectors: Connector[] = [];
+            for (const c of rawConnectors) {
+              if (c.origin.kind === 'vec3') {
+                resolvedConnectors.push(c);
+                continue;
+              }
+              try {
+                const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
+                  records,
+                  consumerId: partId,
+                });
+                resolvedConnectors.push({
+                  ...c,
+                  origin: { kind: 'vec3', value },
+                });
+              } catch (err) {
+                const msg = (err as Error).message;
+                diagnostics.push({
+                  target: this.target,
+                  code: 'feature.invalid-args',
+                  featureId: r.id,
+                  severity: 'error',
+                  message: `assemblyModel: failed to resolve connector '${c.name}' on part '${partName}' (${msg}).`,
+                  hint: 'invalid-args.assembly.mate-connector-origin-unresolved — declare the connector with a numeric origin or a topology query that resolves on the lowered shape.',
+                });
+                topologyResolutionFailed = true;
+              }
+            }
+            if (topologyResolutionFailed) break;
+            resolvedParts.push({ id: partId, name: partName, connectors: resolvedConnectors });
+          }
+          if (topologyResolutionFailed) {
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+
+          const mates: MateRecord[] = encodedMates.map((m) => ({
+            name: m.name,
+            a: m.a,
+            b: m.b,
+            type: m.type,
+          }));
+          const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
+          const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses);
+          for (const [partId, mT] of mateWorldT) {
+            if (partId in connectorsByPartId) worldT.set(partId, mT);
+          }
+        }
+
         const sceneParts: SceneBackendPart[] = partEntries.map(([, partShape], i) => {
           const partId = partIds[i];
           const partRec = records.find((rec) => rec.id === partId);
@@ -1954,7 +2056,7 @@ export class OcctLowerer implements FeatureLowerer {
           return {
             name: partName,
             shape: partShape as OcctBackend,
-            worldTransform: Transform.identity(),
+            worldTransform: worldT.get(partId) ?? Transform.identity(),
             ...(color !== undefined ? { color } : {}),
             ...(material !== undefined ? { material } : {}),
           };

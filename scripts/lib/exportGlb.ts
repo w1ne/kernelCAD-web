@@ -4,14 +4,17 @@ import {
   BufferAttribute,
   Color,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   Scene as ThreeScene,
 } from 'three';
 import { GLTFExporter } from 'three-stdlib';
 import { evaluateAndBuildScript } from '../../src/agent/cli/commands/evaluate';
-import type { OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
+import { pbrFromMetadata, type OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature, type FeatureMesh } from '../../src/modeling/capture/featureMeshing';
+import type { PBRMaterial } from '../../src/shared/intent/material';
+import { resolveColor } from '../../src/shared/render/palette';
 
 export interface ExportGlbOptions {
   scriptPath: string;
@@ -20,10 +23,30 @@ export interface ExportGlbOptions {
 
 const DEFAULT_MATERIAL = { color: 0xb0b0b0, metalness: 0.2, roughness: 0.6 };
 
-function makeMaterial(color: string | undefined): MeshStandardMaterial {
+function makeMaterial(color: string | undefined, pbr: PBRMaterial | undefined): MeshStandardMaterial {
+  if (pbr !== undefined) {
+    const resolved = resolveColor(pbr.baseColor);
+    const mat = new MeshPhysicalMaterial({
+      color: resolved !== undefined ? new Color(resolved) : DEFAULT_MATERIAL.color,
+      metalness: pbr.metalness ?? 0,
+      roughness: pbr.roughness ?? 0.5,
+      clearcoat: pbr.clearcoat ?? 0,
+      clearcoatRoughness: pbr.clearcoatRoughness ?? 0.03,
+      ior: pbr.ior ?? 1.5,
+      transmission: pbr.transmission ?? 0,
+      sheen: pbr.sheen ?? 0,
+      opacity: pbr.opacity ?? 1,
+      transparent: (pbr.opacity ?? 1) < 1 || (pbr.transmission ?? 0) > 0,
+      thickness: pbr.thickness ?? 0,
+      attenuationColor: new Color(resolveColor(pbr.attenuationColor) ?? '#ffffff'),
+      attenuationDistance: pbr.attenuationDistance ?? Infinity,
+    });
+    return mat;
+  }
   const mat = new MeshStandardMaterial({ ...DEFAULT_MATERIAL });
-  if (color && /^#[0-9a-fA-F]{6}$/.test(color)) {
-    mat.color = new Color(color);
+  const resolved = resolveColor(color);
+  if (resolved !== undefined) {
+    mat.color = new Color(resolved);
   }
   return mat;
 }
@@ -34,12 +57,13 @@ function addSingleMesh(
   normals: Float32Array,
   indices: Uint32Array,
   color: string | undefined,
+  material: PBRMaterial | undefined,
 ): void {
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new BufferAttribute(positions, 3));
   geometry.setAttribute('normal', new BufferAttribute(normals, 3));
   geometry.setIndex(new BufferAttribute(indices, 1));
-  scene.add(new Mesh(geometry, makeMaterial(color)));
+  scene.add(new Mesh(geometry, makeMaterial(color, material)));
 }
 
 function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh): void {
@@ -62,7 +86,7 @@ function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh): void {
     vOff += face.vertices.length;
     iOff += face.indices.length;
   }
-  addSingleMesh(scene, positions, normals, indices, fm.color);
+  addSingleMesh(scene, positions, normals, indices, fm.color, fm.material);
 }
 
 export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
@@ -85,7 +109,17 @@ export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
   const tail = model.tailShape as OcctBackend | undefined;
   if (tail && typeof tail.getMesh === 'function') {
     const m = tail.getMesh();
-    addSingleMesh(scene, m.positions, m.normals, m.indices, undefined);
+    const tailRecord = model.records.find(record => record.id === model.tailId);
+    const color = (tailRecord?.metadata as { color?: unknown } | undefined)?.color;
+    const material = pbrFromMetadata(tailRecord?.metadata as Record<string, unknown> | undefined);
+    addSingleMesh(
+      scene,
+      m.positions,
+      m.normals,
+      m.indices,
+      typeof color === 'string' ? color : undefined,
+      material,
+    );
   } else {
     const loaded = await loadScriptFeatures(opts.scriptPath);
     const meshing = await meshFeaturesPerFeature(

@@ -8,7 +8,11 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseGalleryEntries, type GalleryEntry } from '../../scripts/lib/galleryEntries';
+import {
+  parseGalleryEntries,
+  validateMechanismReviewEvidenceFiles,
+  type GalleryEntry,
+} from '../../scripts/lib/galleryEntries';
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
@@ -22,14 +26,20 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   videoUrl: string;
   posterUrl: string;
   modelUrl: string;
+  promptUrl: string;
+  sourceUrl: string | null;
+  studioUrl: string;
 }
 
 const GLB_SIZE_HARD_CAP = 500_000;
+const STUDIO_ORIGIN = 'https://app.kernelcad.com';
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const raw = JSON.parse(readFileSync(opts.entriesPath, 'utf8'));
   const parsed = parseGalleryEntries(raw);
   const entriesDir = path.dirname(opts.entriesPath);
+  validateMechanismReviewEvidenceFiles(parsed.entries, entriesDir);
+
   const galleryOutDir = path.join(opts.publicDir, 'gallery');
   // Idempotent: wipe stale per-slug dirs from earlier builds so dropped
   // candidates don't leave orphans the dev symlink loop would re-link.
@@ -47,6 +57,10 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(`entry ${entry.slug}: video not found at ${srcVideo}`);
     }
 
+    if (entry.source === 'studio' && !entry.codeLocal) {
+      throw new Error(`entry ${entry.slug}: studio gallery entries without codeLocal are not buildable yet`);
+    }
+
     const srcScript = path.resolve(entriesDir, entry.codeLocal);
     if (!existsSync(srcScript)) {
       throw new Error(`entry ${entry.slug}: codeLocal not found at ${srcScript}`);
@@ -56,8 +70,17 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     const dstPoster = path.join(slugDir, 'poster.jpg');
     const dstModel = path.join(slugDir, 'model.glb');
     const dstPrompt = path.join(slugDir, 'prompt.md');
+    const dstSource = path.join(slugDir, 'source.kcad.ts');
+    const sourceUrl = entry.source === 'curated' ? `/gallery/${entry.slug}/source.kcad.ts` : null;
+    const studioUrl = entry.source === 'curated'
+      ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
+      : entry.appUrl;
 
     copyFileSync(srcVideo, dstVideo);
+    if (entry.source === 'curated') {
+      copyFileSync(srcScript, dstSource);
+    }
+
     await extractPoster({ videoPath: dstVideo, outPath: dstPoster, timestampSeconds: 2 });
 
     const isBlack = await isVideoMostlyBlack(dstVideo, {
@@ -78,13 +101,16 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
 
-    const { video, codeLocal, ...rest } = entry;
-    void video; void codeLocal;
+    const { video, codeLocal, mechanismReview, ...rest } = entry;
+    void video; void codeLocal; void mechanismReview;
     published.push({
       ...rest,
       videoUrl: `/gallery/${entry.slug}/video.mp4`,
       posterUrl: `/gallery/${entry.slug}/poster.jpg`,
       modelUrl: `/gallery/${entry.slug}/model.glb`,
+      promptUrl: `/gallery/${entry.slug}/prompt.md`,
+      sourceUrl,
+      studioUrl,
     });
   }
 
