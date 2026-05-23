@@ -6,7 +6,7 @@ export const galleryMechanismReviewSchema = z.object({
   evidence: z.string().min(1),
 });
 
-export const galleryEntrySchema = z.object({
+const galleryEntryBaseSchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'slug must be lowercase kebab-case'),
   title: z.string().min(1).max(80),
   author: z.object({
@@ -15,16 +15,30 @@ export const galleryEntrySchema = z.object({
   }),
   version: z.string().regex(/^v\d+\.\d+(\.\d+)?$/),
   prompt: z.string().min(1),
-  source: z.enum(['curated', 'studio']),
   video: z.string().min(1),
-  codeLocal: z.string().min(1),
   code: z.string().url(),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
   createdAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  appUrl: z.string().url().nullable().default(null),
   mechanismReview: galleryMechanismReviewSchema.optional(),
 });
+
+const curatedGalleryEntrySchema = galleryEntryBaseSchema.extend({
+  source: z.literal('curated'),
+  codeLocal: z.string().min(1),
+  appUrl: z.string().url().nullable().default(null),
+});
+
+const studioGalleryEntrySchema = galleryEntryBaseSchema.extend({
+  source: z.literal('studio'),
+  codeLocal: z.string().min(1).nullable().default(null),
+  appUrl: z.string({ error: 'studio entries require appUrl' }).url(),
+});
+
+export const galleryEntrySchema = z.discriminatedUnion('source', [
+  curatedGalleryEntrySchema,
+  studioGalleryEntrySchema,
+]);
 
 export const galleryEntriesFileSchema = z.object({
   entries: z.array(galleryEntrySchema),

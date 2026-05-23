@@ -22,14 +22,17 @@ export interface BuildGalleryOptions {
   publicDir: string;
 }
 
-interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal' | 'mechanismReview'> {
+interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
   videoUrl: string;
   posterUrl: string;
   modelUrl: string;
   promptUrl: string;
+  sourceUrl: string | null;
+  studioUrl: string;
 }
 
 const GLB_SIZE_HARD_CAP = 500_000;
+const STUDIO_ORIGIN = 'https://app.kernelcad.com';
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const raw = JSON.parse(readFileSync(opts.entriesPath, 'utf8'));
@@ -54,6 +57,10 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(`entry ${entry.slug}: video not found at ${srcVideo}`);
     }
 
+    if (entry.source === 'studio' && !entry.codeLocal) {
+      throw new Error(`entry ${entry.slug}: studio gallery entries without codeLocal are not buildable yet`);
+    }
+
     const srcScript = path.resolve(entriesDir, entry.codeLocal);
     if (!existsSync(srcScript)) {
       throw new Error(`entry ${entry.slug}: codeLocal not found at ${srcScript}`);
@@ -63,8 +70,17 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     const dstPoster = path.join(slugDir, 'poster.jpg');
     const dstModel = path.join(slugDir, 'model.glb');
     const dstPrompt = path.join(slugDir, 'prompt.md');
+    const dstSource = path.join(slugDir, 'source.kcad.ts');
+    const sourceUrl = entry.source === 'curated' ? `/gallery/${entry.slug}/source.kcad.ts` : null;
+    const studioUrl = entry.source === 'curated'
+      ? `${STUDIO_ORIGIN}/studio?gallery=${encodeURIComponent(entry.slug)}`
+      : entry.appUrl;
 
     copyFileSync(srcVideo, dstVideo);
+    if (entry.source === 'curated') {
+      copyFileSync(srcScript, dstSource);
+    }
+
     await extractPoster({ videoPath: dstVideo, outPath: dstPoster, timestampSeconds: 2 });
 
     const isBlack = await isVideoMostlyBlack(dstVideo, {
@@ -93,6 +109,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       posterUrl: `/gallery/${entry.slug}/poster.jpg`,
       modelUrl: `/gallery/${entry.slug}/model.glb`,
       promptUrl: `/gallery/${entry.slug}/prompt.md`,
+      sourceUrl,
+      studioUrl,
     });
   }
 

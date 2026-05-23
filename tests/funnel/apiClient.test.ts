@@ -15,6 +15,7 @@ import {
   createMcpToken,
   fetchMyPlan,
   openBillingPortal,
+  saveProject,
 } from '../../src/funnel/lib/apiClient';
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -124,6 +125,25 @@ describe('createMcpToken', () => {
     expect(init.method).toBe('POST');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer jwt-token-123');
     expect(result).toEqual({ token: 'kc_secret', tokenPrefix: 'kc_secret' });
+  });
+});
+
+describe('saveProject', () => {
+  it('sends public_unlisted as the default save privacy', async () => {
+    const fetchMock = mockFetchOnce({ slug: 'saved-object', projectId: 'project-1' });
+
+    await saveProject({
+      generationId: 'gen-1',
+      title: 'Saved object',
+      code: 'return box(1, 1, 1);',
+      parameters: [],
+      privacy: 'public_unlisted',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      privacy: 'public_unlisted',
+    });
   });
 });
 
