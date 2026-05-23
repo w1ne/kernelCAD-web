@@ -110,6 +110,138 @@ interface RepairContext {
 
 - `export_stl({ file? | code?, output_path, feature_id? })` — write a binary STL file server-side; returns `{ ok, output_path, byte_count, feature_count, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 
+## Topology references — the `@kc[...]` grammar
+
+kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.
+
+### Form
+
+```
+ref       ::= '@kc[' path ']'
+path      ::= owner ( '/' kind ( '/' segment )* )?
+owner     ::= name | name '[' digit+ ']'
+kind      ::= 'face' | 'edge' | 'vertex' | 'connector' | 'sketch' | 'part' | 'solid'
+segment   ::= name | name '[' digit+ ']'
+name      ::= [A-Za-z][A-Za-z0-9_-]*
+modifier  ::= '#' ( 'normal' | 'axis' | 'center' )
+```
+
+The seven kinds carry distinct semantics:
+
+| Kind | Refers to |
+|---|---|
+| `face` | A single face of a shape (canonical or user-labeled). |
+| `edge` | A single edge of a shape (canonical box / cylinder / sketch-derived names). |
+| `vertex` | A single vertex. (v1: surface acceptance; resolver lift queued for v2.) |
+| `connector` | A named connector frame on an assembly part. |
+| `sketch` | A captured `sketch()` binding by name. |
+| `part` | A named assembly part (default kind when only `@kc[<owner>]` is given). |
+| `solid` | A top-level captured solid feature. |
+
+Three v1 modifiers attach a sub-aspect of the named entity:
+
+| Modifier | Meaning |
+|---|---|
+| `#normal` | The face-normal vector at the entity. |
+| `#axis` | The principal axis vector (cylinder edge, axis connector). |
+| `#center` | The entity's centroid. Default when no modifier is supplied on a `face` ref. |
+
+`segment` and `owner` accept an optional `[N]` index — used by batched feature emitters (`mountingHoles[2]`) and by indexed array entries inside the path. Spec §3.1 indexed segments survive round-tripping through `formatTopoRef`.
+
+### Reserved characters
+
+These characters are reserved by the grammar wrapper and the path separators; the capture-time uniqueness validator rejects any face label, part name, connector name, or feature name containing one of them:
+
+```
+. / * ? , # [ ] @ <whitespace>
+```
+
+Renaming offenders is the recovery path; the gate does not loosen.
+
+### Examples
+
+```
+@kc[base/face/top]                      # canonical face on a primitive
+@kc[base/face/lid]                      # user-declared faceLabel
+@kc[base/edge/top-front]                # canonical box edge
+@kc[shoulder-servo/connector/flange]    # connector on a named part
+@kc[hole1/face/wall]                    # ordinal feature ref: hole #1's wall
+@kc[mountingHoles[2]/face/wall]         # indexed access into a batched feature
+@kc[base/face/top#normal]               # sub-aspect modifier — face-normal vector
+@kc[servo/edge/top#axis]                # cylinder cap edge as an axis vector
+@kc[base/part]                          # bare part ref (kind defaults to 'part')
+```
+
+### When to use refs vs structured forms
+
+| Situation | Form |
+|---|---|
+| Agent passing a face/edge/connector handle between tools | `@kc[...]` string (canonical handoff) |
+| Output of `list_faces` / `list_edges` / `inspect_assembly` | always emits `ref: '@kc[...]'` strings |
+| Hand-authored `.kcad.ts` against canonical names | bare canonical name (e.g. `'top'`) — still accepted |
+| Programmatic / batch construction of selectors | structured form (e.g. `{ kind: 'face-center', name: 'lid' }`) — still accepted |
+| Cross-tool agent emission and resolution | `@kc[...]` string — most stable, lineage-walked first, snapshot-fallback second |
+
+The structured forms remain valid escape hatches. The `@kc[...]` string form is the preferred handoff because it survives the resolver's two-path lookup (lineage first, then geometry snapshot) and round-trips cleanly through MCP tool envelopes.
+
+### Tools that emit refs
+
+| MCP tool | Field |
+|---|---|
+| `list_faces` | `faces[i].ref` (string) and `faces[i].lineage` (struct). The legacy `faces[i].id: 'f<idx>'` stays one release with `deprecated: true`. |
+| `list_edges` | `edges[i].ref` (string). |
+| `inspect_assembly` | Topology-bound connector summaries carry `origin: '@kc[<part>/<kind>/<name>]'` plus a `resolved: [x, y, z]` numeric vec3 for direct downstream consumption. |
+
+### Tools that accept refs
+
+| MCP tool | Input slot |
+|---|---|
+| `add_mate` | `a` / `b` accept the legacy `'<partName>.<connectorName>'` dot form OR `'@kc[<partName>/connector/<connectorName>]'`. |
+| `add_connector` | `origin` accepts `[x, y, z]`, a structured `ConnectorOrigin`, OR `'@kc[<part>/face/<name>]'` (face-center default; `#normal` for the face-normal direction). |
+| `add_feature` | When the feature line includes a face selector (`hole`, `holes`, `cutout`, `shell`, `fillet`, `chamfer`), the selector accepts `@kc[<owner>/face/<name>]` strings, structured `{ face: <name> }` forms, or bare canonical names. |
+| `resolve_topo_ref` | The discovery primitive — pass `{ ref, file? | code? }` to confirm a ref still resolves on the current geometry. |
+
+Capture-time `Connector.origin` (the script API on `partRef.connector(name, opts)`) also accepts `origin: '@kc[<part>/face/<name>]'` directly; the ref is normalised to a structured `ConnectorOrigin` at capture-time so downstream review tools see the same shape they always did.
+
+### Resolution semantics
+
+When a ref is consumed, the resolver tries two paths in order:
+
+1. **Name-propagation** (primary). The ref's `<owner>/<kind>/<name>` tuple matches against the lineage map carried on every shape — canonical names, user-declared `faceLabels`, feature-kind + ordinal + label combinations.
+2. **Geometry-snapshot fallback**. When lineage returns zero hits but a snapshot captured at the ref's original creation still matches a current face within tolerance, the resolver recovers the entity geometrically and surfaces an info-severity warning.
+
+Three diagnostic codes surface through `KernelError.hint` and the MCP error envelope:
+
+- `feature.face-ref.not-resolvable` — both paths returned zero. Hint lists nearest current-face candidates.
+- `feature.face-ref.ambiguous-after-split` — lineage matched N >= 2 surviving descendants. Hint lists the N candidate refs.
+- `feature.face-ref.snapshot-fallback-used` — info-severity; resolution went through the snapshot path and is provisional. Tighten the ref or accept the warning.
+
+Read the hint — it carries the recovery move (paste a candidate ref, narrow the selector, or accept provisional resolution).
+
+### `resolve_topo_ref` — discovery primitive
+
+`resolve_topo_ref({ file? | code?, ref })` is the tool an agent calls when it already holds a ref (typically from a prior `list_faces` / `list_edges` / `inspect_assembly` call) and wants to confirm the ref still resolves on the current geometry, or wants to inspect what an upstream tool emitted.
+
+```json
+{
+  "name": "resolve_topo_ref",
+  "input": { "code": "<.kcad.ts source>", "ref": "@kc[base/face/top]" },
+  "output_ok": {
+    "ok": true,
+    "ref": "@kc[base/face/top]",
+    "entity": { "kind": "face", "hash": "...", "path": "lineage" }
+  },
+  "output_ambiguous": {
+    "ok": false,
+    "errorCode": "feature.face-ref.ambiguous-after-split",
+    "candidates": ["@kc[base/face/top-1]", "@kc[base/face/top-2]"],
+    "errorHint": "..."
+  }
+}
+```
+
+`entity.path` reports which resolver path succeeded — `'lineage'` (preferred, stable) or `'snapshot'` (geometric fallback, provisional). Use the ambiguity / not-resolvable hint to repair the ref, then re-call.
+
 ### Notes on script API vs MCP tools
 
 `arm.transmission(name, { kind, sourceMate, drivenMates, actuator?, input?, output?, path, ratio?, notes? })` is script API and can be authored durably through `add_transmission_source`. Use it when `coupleMates(...)` declares a driven mate. `review_cad` emits `assembly.transmission.missing-for-coupled-mate` if a coupled mate has no matching transmission path, and `assembly.transmission.path-disconnected` when consecutive transmission `path` parts are separated at the current or any sampled mate-limit pose.

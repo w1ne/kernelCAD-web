@@ -24,6 +24,7 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
 import { validateBendArgs } from '../sheetMetal';
+import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
 import {
   type FilletContinuity, isFilletContinuity,
@@ -1017,10 +1018,14 @@ function validateGridPatternAxis(
   }
 }
 
-/** Wrap a bare canonical-face / label string into the `{ face: <s> }`
- *  FaceSelector shape so hole/holes/cutout can accept either form. */
+/** Wrap a bare canonical-face / label string OR a `@kc[<owner>/face/<name>]`
+ *  ref string into the structured `{ face: <s> }` shape so hole/holes/cutout/
+ *  shell accept every input form uniformly. */
 function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
-  return typeof face === 'string' ? { face } : face;
+  if (typeof face === 'string') {
+    return normalizeTopoRefOrString(face, 'face') as FaceSelector;
+  }
+  return face;
 }
 
 /** Walk records back from `targetId` via `inputs.target` (slice-2 chain
