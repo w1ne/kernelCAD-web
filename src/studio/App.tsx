@@ -44,13 +44,17 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, saveActiveProject } = useProject();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [sourceLoadError, setSourceLoadError] = useState<string | null>(null);
   const scriptParam = readScriptParam();
   const galleryParam = readGalleryParam();
+  const isSourceRoute = !isDevLab && Boolean(scriptParam || galleryParam);
 
   useEffect(() => {
     if (isDevLab || (!scriptParam && !galleryParam)) return;
 
     let cancelled = false;
+    setSourceLoadError(null);
+    setIsInitialized(false);
     const sourcePromise = galleryParam
       ? loadGalleryScriptSource(galleryParam)
       : loadStudioScriptSource(scriptParam as string);
@@ -63,7 +67,9 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
         setIsInitialized(true);
       })
       .catch((error) => {
-        console.error('Failed to load script source:', error);
+        if (cancelled) return;
+        console.error('Failed to load Studio source:', error);
+        setSourceLoadError('Failed to load Studio source.');
       });
 
     return () => {
@@ -110,6 +116,22 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
     return () => clearTimeout(timeoutId);
   }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam]);
+
+  if (isSourceRoute && sourceLoadError) {
+    return (
+      <main role="alert" aria-live="polite">
+        <p>{sourceLoadError}</p>
+      </main>
+    );
+  }
+
+  if (isSourceRoute && !isInitialized) {
+    return (
+      <main aria-live="polite">
+        <p>Loading Studio source...</p>
+      </main>
+    );
+  }
 
   return isDevLab ? (
     <Suspense fallback={null}>
