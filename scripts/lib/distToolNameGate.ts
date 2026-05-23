@@ -30,8 +30,42 @@ const CLI_SUBCOMMANDS = new Set<string>([
 // We deliberately ignore quoted strings that look like values (`M3`,
 // `0.05`, hex colors, file paths, etc.) — they're identified by lack of
 // an underscore AND lack of a `kernelcad ` prefix.
+//
+// Some snake_case identifiers appear legitimately in CAD prose: mate
+// type values (`pin_slot`, `pin_slot`-like constraint names), example
+// variable identifiers (`new_code`, `old_code`), parameter token names
+// (`scale_mode`), etc. Allowlist them so the gate stays focused on
+// drifted/renamed tool references.
 const MCP_REF = /`([a-z][a-z0-9]*(?:_[a-z0-9]+)+)`/g;
 const CLI_REF = /`kernelcad\s+([a-z][a-z0-9-]*)/g;
+
+// Known non-tool snake_case identifiers — values, parameter names,
+// example variable identifiers that legitimately appear in CAD prose
+// and would otherwise be flagged by the MCP-ref regex.
+const NON_TOOL_ALLOWLIST = new Set<string>([
+  // Mate type values (assembly mate type enumeration).
+  'pin_slot',
+  // Example-variable identifiers used in code prose.
+  'new_code',
+  'old_code',
+  // Common parameter names used in MCP tool signatures (documented
+  // alongside tool names, not tool calls themselves).
+  'feature_id',
+  'feature_count',
+  'output_path',
+  'byte_count',
+  'binding_name',
+  'curve_bindings',
+  'chain_anchor',
+  'spine_binding',
+  'profile_binding',
+  'section_sketch_ids',
+  // Sketch / scale modes.
+  'scale_mode',
+  'snake_case', // appears literally in prose about naming convention
+  // Common type-like tokens.
+  'shape_info',
+]);
 
 export interface ToolNameHit {
   file: string;
@@ -77,7 +111,7 @@ function walk(
       let m: RegExpExecArray | null;
       MCP_REF.lastIndex = 0;
       while ((m = MCP_REF.exec(lines[i])) !== null) {
-        if (!mcpNames.has(m[1])) {
+        if (!mcpNames.has(m[1]) && !NON_TOOL_ALLOWLIST.has(m[1])) {
           out.push({
             file: relative(root, abs).split(/[\\/]/).join('/'),
             line: i + 1,
