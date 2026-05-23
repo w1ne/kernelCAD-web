@@ -1,8 +1,9 @@
-// src/cli/commands/skill.ts
+// src/agent/cli/commands/skill.ts
 import { Command } from 'commander';
-import { mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { mkdirSync, copyFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { walkSkillTree } from '../lib/walkSkillTree';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -14,37 +15,36 @@ function skillRoot(): string {
   throw new Error(`kernelcad skill tree not found near ${here}`);
 }
 
-function listSkills(root: string): string[] {
-  return readdirSync(root, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(join(root, e.name, 'SKILL.md')))
-    .map((e) => e.name)
-    .sort();
-}
-
 export async function installCommand(target: string): Promise<void> {
   const root = skillRoot();
   mkdirSync(target, { recursive: true });
-  for (const name of listSkills(root)) {
-    const dst = join(target, name);
-    mkdirSync(dst, { recursive: true });
-    copyFileSync(join(root, name, 'SKILL.md'), join(dst, 'SKILL.md'));
+  for (const entry of walkSkillTree(root)) {
+    const dst = join(target, entry.relPath);
+    mkdirSync(dirname(dst), { recursive: true });
+    copyFileSync(entry.absPath, dst);
+  }
+  // Soft-deprecation notice (Task D6 — pointing users at the new cross-agent flow).
+  if (process.env.KERNELCAD_SUPPRESS_DEPRECATION !== '1') {
+    console.error(
+      '[kernelcad skill install] consider `npx skills add kernelcad/skills` for cross-agent install.',
+    );
   }
 }
 
 export async function renderOnefile(): Promise<string> {
   const root = skillRoot();
-  const parts: string[] = [];
-  for (const name of listSkills(root)) {
-    parts.push(readFileSync(join(root, name, 'SKILL.md'), 'utf8'));
-  }
-  return parts.join('\n\n---\n\n');
+  return walkSkillTree(root)
+    .map((e) => e.source)
+    .join('\n\n---\n\n');
 }
 
 const DEFAULT_INSTALL_DIR = join(process.env.HOME ?? '.', '.claude', 'skills');
 const DEFAULT_ONEFILE_PATH = './kernelcad-skills.md';
 
 export function skillCommand(): Command {
-  const cmd = new Command('skill').description("Install kernelCAD's skill tree into an agent skills directory or emit it as a single context file.");
+  const cmd = new Command('skill').description(
+    "Install kernelCAD's skill tree into an agent skills directory or emit it as a single context file.",
+  );
 
   cmd
     .command('install')
