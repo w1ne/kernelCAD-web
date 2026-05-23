@@ -11,6 +11,7 @@ import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
+import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -1319,17 +1320,16 @@ export class OcctBackend implements ShapeBackend {
 export async function exportSceneToSTEPAsync(
   sceneBackend: SceneBackend,
 ): Promise<Uint8Array> {
-  if (sceneBackend.parts.length === 0) {
-    throw new Error('exportSceneToSTEPAsync: SceneBackend has no parts.');
-  }
-  const shapeConfigs = sceneBackend.parts.map((p) => {
-    const transformed = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+  // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
+  // owns the clone-before-transform contract for every multi-body exporter.
+  const worldParts = sceneToWorldFrameParts(sceneBackend);
+  const shapeConfigs = worldParts.map((p) => {
     const config: {
       shape: ReplicadShape3D;
       name: string;
       color?: string;
     } = {
-      shape: transformed.getReplicadShape(),
+      shape: p.shape.getReplicadShape(),
       name: p.name,
     };
     const hex = resolveColor(p.color);
