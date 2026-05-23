@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Breaking change — topology-ref-safe naming (F-foundation)
+
+Capture-time validation now rejects names containing any character reserved by
+the upcoming `@kc[owner/kind/name]` topology-ref grammar. The reserved set is
+`. / [ ] @ # * ? ,` and whitespace; names must match `/^[A-Za-z][A-Za-z0-9_-]*$/`.
+Three call sites are affected:
+- `faceLabels({...})` keys on every feature record
+- `Assembly.part(name, …)` part names
+- `partRef.connector(name, opts)` connector names
+
+Designs that previously named entities like `top.bottom`, `arm/elbow`, or
+`@root` will fail capture-time validation; rename the offending identifier to
+a ref-safe form (e.g. `topBottom`, `armElbow`, `root`). The user-visible
+`@kc[...]` resolution surface (MCP tools, SKILL docs, agent-visible
+diagnostics) ships in the follow-up F-surface slice.
+
 ### Renamed — kernelcad-sdf skill → kernelcad-fields
 
 The skill teaching signed-distance fields (sphere/box/cylinder/torus +
