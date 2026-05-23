@@ -47,7 +47,6 @@ const INERTIA_SCALE_PER_DENSITY = 1e-15;
  * scaled by the caller-supplied density.
  */
 export function computeMassProperties(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   occtShape: unknown,
   density: number = 1000,
 ): MassProperties {

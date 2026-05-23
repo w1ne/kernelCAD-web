@@ -174,7 +174,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         required: ['urdf_path'],
       },
     },
-    handler: input => validateUrdfTool(input as Parameters<typeof validateUrdfTool>[0]),
+    handler: input => validateUrdfTool(input as unknown as Parameters<typeof validateUrdfTool>[0]),
   },
   {
     definition: {
