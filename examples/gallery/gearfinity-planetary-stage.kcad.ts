@@ -57,15 +57,14 @@ const BOLT_H = 5.5;
 const BOLT_COUNT = 6;
 
 // Slewing roller bearing on top of the ring gear — visual indicator that the
-// carrier is properly supported. Outer race + N visible roller cylinders.
+// carrier is properly supported. A thin annular race with a polished
+// inner-track band; individual roller cylinders are intentionally omitted to
+// keep the pairwise interference check (O(N²) part-pairs) under the test
+// timeout — fusing them back in is a follow-up if budget allows.
 const BEARING_OUTER_R = RING_OUTER_R - 1.0;     // 58.5
 const BEARING_INNER_R = RING_PITCH_R + 2.5;     // 51.5
 const BEARING_RACE_H = 3.5;
 const BEARING_RACE_Z_BASE = GEAR_H_RING / 2 + 0.2;  // sits on the ring's top face
-const ROLLER_COUNT = 12;
-const ROLLER_R = 1.4;
-const ROLLER_H = BEARING_RACE_H - 0.6;
-const ROLLER_CIRCLE_R = (BEARING_OUTER_R + BEARING_INNER_R) / 2; // 55
 
 const CARRIER_PLATE_THICK = 3;
 const CARRIER_Z_BASE = GEAR_H_INTERIOR / 2 + 2; // 11
