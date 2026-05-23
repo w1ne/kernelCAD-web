@@ -25,6 +25,13 @@ import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
 import { fontPath, type FontPath } from '../shared/fonts/index';
 import { fromSTEP as libFromSTEP } from './parts/fromSTEP';
+import { fetchPartHost, type FetchPartOpts } from './parts/fetchPart';
+import {
+  findPartHost,
+  type FindPartOpts,
+  type FindPartResult,
+} from './parts/findPart';
+import { createStandardParts, type StandardParts } from './parts/standardParts';
 import { sphere as sdfSphere, box as sdfBox, cylinder as sdfCylinder, torus as sdfTorus } from './sdf/primitives';
 import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize, type MaterializeOpts } from './sdf/materialize';
@@ -45,6 +52,9 @@ export interface ApiContext {
 
 export interface PartsLib {
   fromSTEP(path: string): Promise<Shape>;
+  findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
+  fetchPart(idOrQuery: string, opts?: FetchPartOpts): Promise<Shape>;
+  standard: StandardParts;
 }
 
 export interface FaceLabelOpts {
@@ -544,6 +554,17 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     },
     lib: {
       fromSTEP: (path) => libFromSTEP({ session, scriptDir: ctx.scriptDir }, path),
+      findPart: (query, opts) => findPartHost(query, opts ?? {}),
+      fetchPart: (idOrQuery, opts) =>
+        fetchPartHost(
+          { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
+          idOrQuery,
+          opts ?? {},
+        ).then((r) => r.shape),
+      standard: createStandardParts({
+        session,
+        ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}),
+      }),
     },
 
     nurbsSurface(opts) {

@@ -319,7 +319,7 @@ function socketHeadCapScrew(): SeedFamily {
           category: 'fastener',
           family: 'socket-head-cap-screw',
           standard: 'ISO 4762',
-          tags: ['screw', 'metric', 'DIN 912', String(thread)],
+          tags: ['screw', 'shcs', 'metric', 'DIN 912', String(thread)],
           attributes: {
             thread: String(thread),
             lengthMm: Number(lengthMm),
