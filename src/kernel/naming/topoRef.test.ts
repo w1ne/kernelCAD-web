@@ -71,6 +71,20 @@ describe('parseTopoRef — accepts the v1 grammar', () => {
   it('parses @kc[base/solid/main] — solid kind', () => {
     expect(ok('@kc[base/solid/main]').kind).toBe('solid');
   });
+
+  it('parses @kc[mountingHoles[2]/face/wall] — indexed feature owner', () => {
+    const r = ok('@kc[mountingHoles[2]/face/wall]');
+    expect(r.owner).toBe('mountingHoles[2]');
+    expect(r.kind).toBe('face');
+    expect(r.segments).toEqual(['wall']);
+  });
+
+  it('parses @kc[base/face/mountingHoles[2]] — indexed segment per spec §3.1', () => {
+    const r = ok('@kc[base/face/mountingHoles[2]]');
+    expect(r.owner).toBe('base');
+    expect(r.kind).toBe('face');
+    expect(r.segments).toEqual(['mountingHoles[2]']);
+  });
 });
 
 describe('parseTopoRef — rejects malformed inputs (no exceptions thrown)', () => {
@@ -116,6 +130,14 @@ describe('parseTopoRef — rejects malformed inputs (no exceptions thrown)', () 
 
   it('rejects whitespace inside the ref', () => {
     expect(err('@kc[base/face/ top]').error).toMatch(/name|whitespace/);
+  });
+
+  it('rejects trailing content after a balanced closing bracket', () => {
+    expect(err('@kc[base/face/top]extra').error).toMatch(/closing bracket|trailing/);
+  });
+
+  it('rejects mismatched brackets (open inside name with no close)', () => {
+    expect(err('@kc[base/face/top[]').error).toMatch(/bracket|segment/);
   });
 });
 

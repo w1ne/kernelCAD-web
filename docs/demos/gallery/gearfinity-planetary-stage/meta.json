@@ -1,0 +1,11 @@
+{
+  "taskId": "gearfinity-planetary-stage",
+  "module": "gallery",
+  "capturedAt": "2026-05-23T17:31:11.582Z",
+  "durationMs": 28200,
+  "truncated": false,
+  "gitSha": "3377670001e0580b132db0fb78c94030704737be",
+  "heroArtifact": "gearfinity-planetary-stage",
+  "catalogSource": "memorable-builds-policy/gallery",
+  "overrideApprovedBy": null
+}

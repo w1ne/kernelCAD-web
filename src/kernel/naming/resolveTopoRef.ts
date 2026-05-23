@@ -25,6 +25,7 @@ import {
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
+import type { FaceLabelsMap, FeatureRecord } from '../../shared/intent/featureRecord';
 
 export interface TopoResolveContext {
   /** The shape on which we're resolving the ref. */
@@ -32,6 +33,13 @@ export interface TopoResolveContext {
   /** The feature ID requesting the resolution — used for diagnostic context
    *  when surfacing through `KernelError.hint` (F-surface Task F2). */
   readonly featureId: string;
+  /** Optional record table — when supplied, the resolver also walks each
+   *  upstream record's `metadata.faceLabels` so a user-applied label (e.g.
+   *  `box(...).faceLabels({ lid: 'top' })`) resolves the same way it appears
+   *  in `list_faces` output. Mirrors the `canonicalToLabel` projection in
+   *  `agent/mcp/tools/listFaces.ts`. Without records the resolver falls back
+   *  to lineage.labelName / lineage.canonicalName only. */
+  readonly records?: readonly FeatureRecord[];
 }
 
 export interface TopoResolveWarning {
@@ -104,18 +112,70 @@ function tryCollective(ref: TopoRef): ParsedSelector | null {
   return { kind: 'collective', refName };
 }
 
+/** Build the inverse of the upstream `metadata.faceLabels` projection: given
+ *  a user-applied label name (e.g. `lid`), return the canonical-face names it
+ *  aliases (e.g. `top`). Mirrors the `canonicalToLabel` map in
+ *  `agent/mcp/tools/listFaces.ts:117-127`, but inverted: the resolver receives
+ *  the label and needs to find the canonical name(s) the lineage actually
+ *  carries. Only canonical-string aliases are inverted (FaceQuery values are
+ *  consumer-side and don't surface as lineage canonical names). */
+function labelToCanonicalNames(
+  records: readonly FeatureRecord[],
+  label: string,
+): string[] {
+  const out: string[] = [];
+  for (const rec of records) {
+    const fl = (rec.metadata as { faceLabels?: FaceLabelsMap } | undefined)?.faceLabels;
+    if (!fl) continue;
+    const value = fl[label];
+    if (typeof value === 'string' && !out.includes(value)) {
+      out.push(value);
+    }
+  }
+  return out;
+}
+
 /** Wrap `findLineageMatches` with an extra canonicalName check on collective
  *  refs, then filter to live entries only. A lineage with `snapshot ===
  *  undefined` is an orphan record of a face that an upstream op removed —
  *  it should not count as a live hit (mirrors the `resolveFaceRef.resolveCreated`
- *  policy). The snapshot fallback re-uses these orphans as fingerprint sources. */
-function lineageMatches(map: HistoryMap, parsed: ParsedSelector): FaceHash[] {
+ *  policy). The snapshot fallback re-uses these orphans as fingerprint sources.
+ *
+ *  When `records` is supplied, also augments the collective match with any
+ *  lineage whose canonicalName matches a `metadata.faceLabels[refName]` alias
+ *  declared on an upstream record. This is the inverse of the projection
+ *  `list_faces` uses to emit `@kc[<owner>/face/<label>]` refs; the two MUST
+ *  stay in sync, otherwise the agent-visible ref round-trip breaks. */
+function lineageMatches(
+  map: HistoryMap,
+  parsed: ParsedSelector,
+  records?: readonly FeatureRecord[],
+): FaceHash[] {
   const candidates = findLineageMatches(map, parsed);
   const augmented: FaceHash[] = candidates.slice();
   if (parsed.kind === 'collective') {
     for (const [hash, lineage] of map.entries()) {
       if (lineage.canonicalName === parsed.refName && !augmented.includes(hash)) {
         augmented.push(hash);
+      }
+    }
+    // metadata.faceLabels round-trip: when `list_faces` emits
+    // `@kc[<owner>/face/lid]` (because an upstream record declared
+    // `faceLabels: { lid: 'top' }`), the lineage entry only carries
+    // `canonicalName: 'top'`. Invert the metadata map so `lid` resolves
+    // through to the `top` lineage.
+    if (records !== undefined && records.length > 0) {
+      const canonicalAliases = labelToCanonicalNames(records, parsed.refName);
+      if (canonicalAliases.length > 0) {
+        for (const [hash, lineage] of map.entries()) {
+          if (
+            lineage.canonicalName !== undefined &&
+            canonicalAliases.includes(lineage.canonicalName) &&
+            !augmented.includes(hash)
+          ) {
+            augmented.push(hash);
+          }
+        }
       }
     }
   }
@@ -198,11 +258,11 @@ export function resolveTopoRef(ref: TopoRef, ctx: TopoResolveContext): TopoResol
     };
   }
 
-  let lineageHits = lineageMatches(map, parsed);
+  let lineageHits = lineageMatches(map, parsed, ctx.records);
   if (lineageHits.length === 0) {
     const collective = tryCollective(ref);
     if (collective !== null) {
-      const altHits = lineageMatches(map, collective);
+      const altHits = lineageMatches(map, collective, ctx.records);
       if (altHits.length > 0) {
         parsed = collective;
         lineageHits = altHits;

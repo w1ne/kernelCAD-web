@@ -10,6 +10,9 @@ import {
   reviewMechanicalTransmission,
   type MechanicalTransmissionDiagnostic,
 } from '../../../modeling/mates/mechanicalTransmission';
+import { formatTopoRef, type TopoKind, type TopoModifier } from '../../../kernel/naming';
+import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import { resolveTopologyOriginOnBackend } from '../../../modeling/backends/occt/connectorTopology';
 
 type Bbox = { min: Vec3; max: Vec3 };
 type AssemblyMateConnector = AssemblyPartStored['mateConnectors'][number];
@@ -36,7 +39,16 @@ export interface InspectAssemblyConnectorSummary {
   name: string;
   type: string;
   originKind: string;
-  origin?: unknown;
+  /** For `topology` origins: the canonical `@kc[<part>/<kind>/<name>]` string.
+   *  For `vec3` origins: the [x, y, z] tuple unchanged. */
+  origin?: string | unknown;
+  /** Raw structured form when `origin` is a string. Kept for one release per
+   *  spec §3.6 so consumers can migrate to the @kc[...] string. */
+  originRaw?: unknown;
+  /** Numeric vec3 resolution of topology-bound origins, when resolution
+   *  succeeds against the lowered shape. Absent when resolution fails (e.g.
+   *  vertex queries — deferred to v0.7). */
+  resolved?: [number, number, number];
   axis?: Vec3;
   normal?: Vec3;
 }
@@ -158,12 +170,14 @@ async function summarizePart(
   part: AssemblyPartStored,
   disconnected?: PartDisconnectedDiagnostic,
 ): Promise<InspectAssemblyPartSummary> {
-  const bbox = (await part.originalShape.lower()).boundingBox();
+  const lowered = await part.originalShape.lower();
+  const bbox = lowered.boundingBox();
+  const connectors = part.mateConnectors.map((c) => summarizeConnector(part.name, c, lowered));
   return {
     name: part.name,
     bbox,
     connectorCount: part.mateConnectors.length,
-    connectors: part.mateConnectors.map(summarizeConnector),
+    connectors,
     ...(disconnected === undefined ? {} : {
       disconnected: {
         componentCount: disconnected.componentCount,
@@ -174,12 +188,60 @@ async function summarizePart(
   };
 }
 
-function summarizeConnector(connector: AssemblyMateConnector): InspectAssemblyConnectorSummary {
+const QUERY_KIND_TO_TOPO_KIND: Record<string, TopoKind> = {
+  'face-center': 'face',
+  'face-normal': 'face',
+  'edge-axis': 'edge',
+  'vertex': 'vertex',
+};
+
+const QUERY_KIND_TO_MODIFIER: Record<string, TopoModifier | undefined> = {
+  'face-normal': 'normal',
+  'edge-axis': 'axis',
+};
+
+function summarizeConnector(
+  partName: string,
+  connector: AssemblyMateConnector,
+  lowered: OcctBackend,
+): InspectAssemblyConnectorSummary {
+  if (connector.origin.kind === 'vec3') {
+    return {
+      name: connector.name,
+      type: connector.type,
+      originKind: connector.origin.kind,
+      origin: connector.origin.value,
+      ...(connector.axis !== undefined ? { axis: connector.axis } : {}),
+      ...(connector.normal !== undefined ? { normal: connector.normal } : {}),
+    };
+  }
+  // topology — emit @kc[...] string + (when resolvable) numeric vec3.
+  const q = connector.origin.query;
+  const topoKind = QUERY_KIND_TO_TOPO_KIND[q.kind] ?? 'face';
+  const modifier = QUERY_KIND_TO_MODIFIER[q.kind];
+  const ref = formatTopoRef({
+    owner: partName,
+    kind: topoKind,
+    segments: [q.name],
+    ...(modifier !== undefined ? { modifier } : {}),
+  });
+  // Resolve to a numeric vec3 when the backend allows it. Resolution failures
+  // (e.g. vertex queries, which are deferred to v0.7) surface through the
+  // existing review-facts channel rather than crashing inspect output.
+  let resolved: [number, number, number] | undefined;
+  try {
+    const v = resolveTopologyOriginOnBackend(lowered, q, {});
+    resolved = v as [number, number, number];
+  } catch {
+    // swallow — disconnected / review facts capture the underlying error.
+  }
   return {
     name: connector.name,
     type: connector.type,
     originKind: connector.origin.kind,
-    ...(connector.origin.kind === 'vec3' ? { origin: connector.origin.value } : { origin: connector.origin }),
+    origin: ref,
+    originRaw: connector.origin,
+    ...(resolved !== undefined ? { resolved } : {}),
     ...(connector.axis !== undefined ? { axis: connector.axis } : {}),
     ...(connector.normal !== undefined ? { normal: connector.normal } : {}),
   };

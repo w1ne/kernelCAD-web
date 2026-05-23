@@ -232,6 +232,24 @@ arm.part('servo', servoShape, { connectors: undefined })
 
 Topology queries: `face-center` / `face-normal` resolve canonical box/cylinder faces and any user-declared `faceLabels`. `edge-axis` resolves canonical box edges (`edge-<face1>-<face2>`, order insignificant) and cylinder cap edges (`edge-top` / `edge-bottom`). `vertex` raises `assembly.connector.topology-not-resolvable` with hint `vertex labeling not yet supported` — deferred to v0.7. Post-boolean shapes where the canonical face/edge no longer exists also surface `assembly.connector.topology-not-resolvable`.
 
+The same topology origin can be expressed as a `@kc[...]` string ref — preferred for agent emission and cross-tool handoff because the resolver walks the lineage map first and falls back to the geometry snapshot when lineage is destroyed:
+
+```typescript
+arm.part('servo', servoShape)
+  .connector('flange', {
+    type: 'frame',
+    origin: '@kc[servo/face/bottom]',
+    normal: [0, 0, 1],
+  })
+  .connector('shaft', {
+    type: 'axis',
+    origin: '@kc[servo/edge/top]',
+    axis: [0, 0, 1],
+  });
+```
+
+`@kc[<part>/face/<name>]` defaults to face-center; `@kc[<part>/face/<name>#normal]` selects the face-normal vector. `@kc[<part>/edge/<name>]` maps to edge-axis. Both the string form and the structured form live in the same connector-origin slot; the structured form remains the escape hatch for batch authoring or programmatic construction. Full grammar — kinds, modifiers, indexed segments, reserved characters, and resolution semantics — lives in `kernelcad-mcp/SKILL.md` under "Topology references". The discovery primitive is `resolve_topo_ref`.
+
 ### Declaring mates — `arm.mate(name, aRef, bRef, type)`
 
 Refs are `"<partName>.<connectorName>"` strings. The seven mate types each require a specific connector-type pair; the wrong pair throws at capture time (early error).
@@ -249,6 +267,16 @@ Refs are `"<partName>.<connectorName>"` strings. The seven mate types each requi
 ```typescript
 arm.mate('shoulder-bolts',  'shoulder-servo.base-mount',  'base.shoulder-mount', 'fastened');
 arm.mate('shoulder-rotate', 'shoulder-servo.output-shaft', 'horn.shaft-hub',     'revolute');
+```
+
+Mate refs accept either the legacy `"<partName>.<connectorName>"` dot form OR the `"@kc[<partName>/connector/<connectorName>]"` topology-ref string form. Both resolve identically; the `@kc[...]` form is preferred when emitting refs through MCP (`add_mate`) or pasting refs that came out of `inspect_assembly`:
+
+```typescript
+arm.mate('shoulder-bolts',
+  '@kc[shoulder-servo/connector/base-mount]',
+  '@kc[base/connector/shoulder-mount]',
+  'fastened',
+);
 ```
 
 Couple scalar articulated mates when one actuator should drive multiple finger/jaw joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
