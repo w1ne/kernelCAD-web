@@ -11,6 +11,7 @@ import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
+import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -32,7 +33,7 @@ let initialized = false;
  * Cost: ~3-4x slower mesh on cone-heavy parts, negligible on box / plate.
  * Used only for STL export; the preview path keeps the coarse defaults.
  */
-function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
+export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
   const oc = getOC();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = (shape as any).wrapped;
@@ -1144,6 +1145,26 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Slice A DXF entry path: extract a single planar outer wire (with optional
+   * hole wires) from this shape, projected to the wire's plane and returned
+   * as 2D vertex polylines. Returns `null` when the shape has no planar face
+   * suitable for DXF export — non-planar 3D solids, multi-face mismatched-
+   * plane shapes, sketches without a captured drawing, etc. The DXF dispatch
+   * in `runAndExport` translates a `null` return into the
+   * `export.dxf.non-planar` diagnostic.
+   *
+   * Slice A scope: returns `null` for every shape kind. The planar-face
+   * boundary extraction (looping over `face.surfaceType() === 'plane'` and
+   * lifting each face's outer / inner wires to `Vec2[]`) is shared with the
+   * Slice E DFM consumer and lands when that consumer arrives. Until then,
+   * the supported Slice A inputs are limited to `Region` direct-returns
+   * from `Shape.flattenPattern()`.
+   */
+  tryExtractPlanarWires(): { outer: import('../../../shared/intent/region').Vec2[]; holes: import('../../../shared/intent/region').Vec2[][] } | null {
+    return null;
+  }
+
+  /**
    * Enumerate all faces of this shape via TopExp_Explorer and return their
    * OCCT hash codes as hex strings. Stable within a single WASM session.
    *
@@ -1319,17 +1340,16 @@ export class OcctBackend implements ShapeBackend {
 export async function exportSceneToSTEPAsync(
   sceneBackend: SceneBackend,
 ): Promise<Uint8Array> {
-  if (sceneBackend.parts.length === 0) {
-    throw new Error('exportSceneToSTEPAsync: SceneBackend has no parts.');
-  }
-  const shapeConfigs = sceneBackend.parts.map((p) => {
-    const transformed = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+  // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
+  // owns the clone-before-transform contract for every multi-body exporter.
+  const worldParts = sceneToWorldFrameParts(sceneBackend);
+  const shapeConfigs = worldParts.map((p) => {
     const config: {
       shape: ReplicadShape3D;
       name: string;
       color?: string;
     } = {
-      shape: transformed.getReplicadShape(),
+      shape: p.shape.getReplicadShape(),
       name: p.name,
     };
     const hex = resolveColor(p.color);

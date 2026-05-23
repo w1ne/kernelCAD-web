@@ -328,6 +328,62 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'The script produced no shape to export (no return value and no captured records).',
   },
+  'export.options-format-mismatch': {
+    hintTemplate:
+      'options.format must equal the top-level format. Set options.format to the same value, or omit options.',
+    nextAction: { kind: 'fix-arg', field: 'options.format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
+  },
+  'export.dxf.non-planar': {
+    hintTemplate:
+      'DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
+  },
+  'export.3mf.not-watertight': {
+    hintTemplate:
+      'The exported mesh has non-manifold edges (likely a self-intersecting cone tessellation or an open shell). Re-mesh via Manifold, raise OCCT mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer; see the K1 mesher gap.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
+  },
+  'export.glb.draco-glass-conflict': {
+    hintTemplate:
+      'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit; the encoder ships in a follow-up slice. (The name nods at the most common collision: Draco encoders typically strip the `KHR_materials_transmission` extension on glass parts, which would silently break the GLB.)',
+    nextAction: { kind: 'fix-arg', field: 'options.draco' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
+  },
+  'export.urdf.not-implemented': {
+    hintTemplate:
+      'URDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'URDF export is reserved on the export_model enum but not yet implemented.',
+  },
+  'export.srdf.not-implemented': {
+    hintTemplate:
+      'SRDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SRDF export is reserved on the export_model enum but not yet implemented.',
+  },
+  'export.sdf-gazebo.not-implemented': {
+    hintTemplate:
+      'Gazebo SDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'Gazebo SDF export is reserved on the export_model enum but not yet implemented.',
+  },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
     hintTemplate:
