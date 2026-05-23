@@ -136,7 +136,7 @@ export const DIAGNOSTIC_REGISTRY = {
   // Face-ref state (5)
   'feature.face-ref.not-resolvable': {
     hintTemplate:
-      'Canonical face refs only work on un-transformed primitives. Apply this feature before any transform, or fillet/shell the primitive first then translate.',
+      'The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call list_faces to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.',
     nextAction: { kind: 'reorder-pipeline', guidance: 'apply this feature before any transform' },
     defaultSeverity: 'error',
     group: 'feature',
@@ -163,7 +163,7 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'feature.face-ref.ambiguous-after-split': {
     hintTemplate:
-      'A named face was split by an upstream boolean. Apply this feature before the splitting boolean.',
+      'The referenced face was split into multiple surviving lineage descendants by an upstream op. Pick one of the candidate refs printed in the message, or label the desired piece explicitly via faceLabels({...}) before the splitting op runs.',
     nextAction: { kind: 'reorder-pipeline', guidance: 'apply this feature before the splitting boolean' },
     defaultSeverity: 'error',
     group: 'feature',
@@ -176,6 +176,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A named face was removed by an upstream boolean and no longer exists in the resolved shape.',
+  },
+  'feature.face-ref.snapshot-fallback-used': {
+    hintTemplate:
+      'Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.',
+    nextAction: { kind: 'rename', guidance: 'update the ref to the lineage-stable form via list_faces / list_edges' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'A topology ref resolved via the geometry-snapshot fallback because the lineage path returned zero hits.',
   },
   // Hole-specific target (1)
   'feature.hole.no-target-face': {
