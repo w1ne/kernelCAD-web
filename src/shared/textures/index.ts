@@ -18,14 +18,13 @@
 // when bundle-shipped fonts become insufficient. Mirroring this loader's
 // directory layout is the intended convergence path.
 
-import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, statSync, writeFileSync, existsSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
-import { extname, isAbsolute, join, resolve } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { extname, isAbsolute, resolve } from 'node:path';
 import sharp from 'sharp';
 import type { TextureRef } from '../intent/textureRef';
 import { KernelError } from '../intent/kernelError';
 import type { DiagnosticCode } from '../diagnostics/registry';
+import { getOrFetchAsync, __resetUserCacheForTests } from '../cache/userCache';
 
 const SUPPORTED_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 const MIME_BY_EXT: Record<string, string> = {
@@ -40,35 +39,6 @@ const OVERSIZE_ERROR_PX = 8192;
 
 // 1-week TTL for URL-cached textures.
 const URL_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-// In-process URL cache so repeated fetches inside a single process don't hit
-// the network at all (mirrors fonts loader's bundledLoaded flag, but per-URL).
-const urlMemo = new Map<string, string>(); // url -> absPath in user cache
-
-function userCacheDir(): string {
-  // Allow override via env for tests and CI.
-  const envOverride = process.env.KERNELCAD_TEXTURE_CACHE_DIR;
-  if (envOverride && envOverride.length > 0) {
-    return envOverride;
-  }
-  let base: string;
-  try {
-    base = homedir();
-  } catch {
-    base = tmpdir();
-  }
-  return join(base, '.cache', 'kernelcad', 'textures');
-}
-
-function ensureCacheDir(): string {
-  const dir = userCacheDir();
-  mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-function sha256Hex(input: string): string {
-  return createHash('sha256').update(input).digest('hex');
-}
 
 function extOf(p: string): string {
   return extname(p).toLowerCase();
@@ -128,58 +98,25 @@ function enforceDimensionCaps(width: number, height: number, absPath: string): v
   }
 }
 
-function fetchUrlToCache(url: string, ext: string): string {
-  const cacheDir = ensureCacheDir();
-  const cachePath = join(cacheDir, `${sha256Hex(url)}${ext}`);
-
-  // Respect TTL: re-fetch if the cache file is older than URL_CACHE_TTL_MS.
-  if (existsSync(cachePath)) {
-    try {
-      const st = statSync(cachePath);
-      const ageMs = Date.now() - st.mtimeMs;
-      if (ageMs < URL_CACHE_TTL_MS) {
-        return cachePath;
-      }
-    } catch {
-      // fall through to re-fetch
-    }
-  }
-
-  // Synchronous fetch via XHR-style — Node 18+ ships global fetch. We block
-  // on a tiny promise.
-  // (Texture loads inside the capture clamper are async already; we only call
-  // this from `resolveAndLoadTextureBytes` which is itself async.)
-  throw new Error('fetchUrlToCache must be invoked from the async helper below');
-}
-
 async function fetchUrlToCacheAsync(url: string, ext: string): Promise<string> {
-  const cacheDir = ensureCacheDir();
-  const cachePath = join(cacheDir, `${sha256Hex(url)}${ext}`);
-
-  if (existsSync(cachePath)) {
-    try {
-      const st = statSync(cachePath);
-      const ageMs = Date.now() - st.mtimeMs;
-      if (ageMs < URL_CACHE_TTL_MS) {
-        return cachePath;
+  return getOrFetchAsync({
+    consumer: 'textures',
+    url,
+    ext,
+    ttlMs: URL_CACHE_TTL_MS,
+    fetcher: async (u) => {
+      const res = await fetch(u);
+      if (!res.ok) {
+        throwKE(
+          'feature.material.texture-not-found' as DiagnosticCode,
+          `Failed to fetch texture URL ${u}: ${res.status} ${res.statusText}.`,
+          'Check the URL is reachable and serves a supported image format.',
+        );
       }
-    } catch {
-      // fall through to re-fetch
-    }
-  }
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    throwKE(
-      'feature.material.texture-not-found' as DiagnosticCode,
-      `Failed to fetch texture URL ${url}: ${res.status} ${res.statusText}.`,
-      'Check the URL is reachable and serves a supported image format.',
-    );
-  }
-  const ab = await res.arrayBuffer();
-  const buf = Buffer.from(ab);
-  writeFileSync(cachePath, buf);
-  return cachePath;
+      const ab = await res.arrayBuffer();
+      return Buffer.from(ab);
+    },
+  });
 }
 
 export interface LoadedTextureBytes {
@@ -231,9 +168,7 @@ export async function resolveAndLoadTextureBytes(
       urlExt = extOf(ref.path);
     }
     validateExtension(`url${urlExt}`);
-    const cached = urlMemo.get(ref.path);
-    const absPath = cached ?? (await fetchUrlToCacheAsync(ref.path, urlExt));
-    if (!cached) urlMemo.set(ref.path, absPath);
+    const absPath = await fetchUrlToCacheAsync(ref.path, urlExt);
     const buffer = readFileSync(absPath);
     const { width, height } = await readDimensions(buffer, absPath);
     enforceDimensionCaps(width, height, absPath);
@@ -272,15 +207,11 @@ export async function resolveAndLoadTextureBytes(
   };
 }
 
-// fetchUrlToCache is unused outside this module but retained as a synchronous
-// stub so future sync code paths (e.g. CLI bundle warmup) can plug in.
-void fetchUrlToCache;
-
 /**
  * Test-only: clear the URL memo cache so each test starts from a clean slate.
  * The on-disk cache directory is NOT removed (tests should use a temporary
- * `KERNELCAD_TEXTURE_CACHE_DIR` if isolation is required).
+ * `KERNELCAD_TEXTURE_CACHE_DIR` or `KERNELCAD_CACHE_DIR` for isolation).
  */
 export function __resetTextureCacheForTests(): void {
-  urlMemo.clear();
+  __resetUserCacheForTests();
 }
