@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public
+  ordering rules. Required inputs: vendor, material, thickness. Findings carry
+  a `repairHint.action` from `{enlarge, remove, relocate, change-material,
+  change-thickness}` and an `@kc[...]` ref that round-trips through
+  `resolve_topo_ref` back to the source feature.
+- `kernelcad-shopcheck` skill (orchestrator for `dfm_preflight`).
+- 24 new `dfm.*` diagnostic codes under the new `dfm` group (catalogue count
+  157). DXF file-input path accepts `dxf:` alongside `file:` / `code:`.
+- `scripts/refreshCatalog.ts` + `shopcheck:refresh` npm script: 24-hour TS
+  catalog refresh, sha256 provenance on every source page.
+- Eval tasks `shopcheck-bracket-preflight` and `shopcheck-repair-loop`.
+
 ### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
 
 Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.
@@ -68,6 +82,7 @@ Closes the write-side export gap: one MCP entry point, three new format writers,
 #### Eval — cqe-task-export-trio
 
 - New integration eval round-trips a 2-part assembly through DXF (planar bracket), 3MF (multi-part), and GLB (PBR) in a single task. Scores 1.0 against the expert solution.
+
 ### Added — `@kc[...]` topology-ref user-visible surface (F-surface)
 
 Lifts the F-foundation `@kc[owner/kind/name]` parser/resolver into the

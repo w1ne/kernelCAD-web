@@ -1,0 +1,36 @@
+// eval/tasks/shopcheck-repair-loop/harness.ts
+//
+// Gates:
+//   - evaluates clean
+//   - preflight ok after repair
+
+import { evaluateScript } from '../../oracle/kernelcad-client';
+import { dfmPreflightTool } from '../../../src/agent/mcp/tools/dfmPreflight';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import type { HarnessResult } from '../../types';
+
+export default async function harness(scriptPath: string): Promise<HarnessResult> {
+  const ev = await evaluateScript(scriptPath);
+  if (!ev.ok) {
+    return { gates: { 'evaluates clean': false }, scored: {} };
+  }
+  await initOcct();
+
+  const pre = await dfmPreflightTool({
+    file: scriptPath,
+    vendor: 'sendcutsend',
+    material: 'aluminum-6061-t6',
+    thicknessIn: 0.125,
+    service: 'bending',
+  });
+
+  return {
+    gates: {
+      'evaluates clean': true,
+      'preflight ok after repair': pre.ok,
+    },
+    scored: {
+      'zero dfm error findings': pre.findings.filter(f => f.severity === 'error').length === 0,
+    },
+  };
+}

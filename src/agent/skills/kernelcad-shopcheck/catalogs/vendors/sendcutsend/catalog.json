@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "lastFetched": "2026-05-23T08:42:11Z",
+  "sourceSha256": "77762c5b9723c2fb524f06dba9ccb7e0b6e44f87f029121f477c11104d01a7b0",
+  "skus": {
+    "aluminum-6061-t6": {
+      "displayName": "6061 T6 Aluminum",
+      "category": "metal",
+      "thicknessesIn": [0.040, 0.063, 0.080, 0.090, 0.100, 0.125, 0.187, 0.250, 0.313, 0.375, 0.500, 0.750],
+      "services": ["laser", "bending"]
+    },
+    "mild-steel-1018": {
+      "displayName": "Mild Steel A36 / 1008 / 1018",
+      "category": "metal",
+      "thicknessesIn": [0.030, 0.060, 0.090, 0.125, 0.187, 0.250, 0.313, 0.375, 0.500],
+      "services": ["laser", "bending"]
+    },
+    "acrylic-cast": {
+      "displayName": "Cast Acrylic",
+      "category": "plastic",
+      "thicknessesIn": [0.063, 0.090, 0.118, 0.187, 0.236, 0.313, 0.375, 0.500],
+      "services": ["laser"]
+    },
+    "delrin": {
+      "displayName": "Delrin (POM)",
+      "category": "plastic",
+      "thicknessesIn": [0.060, 0.090, 0.125, 0.187, 0.250],
+      "services": ["cnc-router"]
+    }
+  }
+}
