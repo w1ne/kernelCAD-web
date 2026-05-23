@@ -2,11 +2,14 @@ import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
+import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
+import { isRegion } from '../../shared/intent/region';
 
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb'
@@ -77,6 +80,19 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {
     return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+  }
+
+  // DXF entry path: a script that returns a `Region` (typically from
+  // `Shape.flattenPattern()`) bypasses target-shape lowering — the Region's
+  // outer / holes / bendLines feed straight into the polyline writer. Any
+  // other format on a Region return is unsupported and falls through to
+  // the normal `targetId` resolution path, which then trips
+  // `export.no-shape` because the Region is not a Shape.
+  if (format === 'dxf' && isRegion(run.returnValue)) {
+    const opts =
+      (input.options as DxfWriterOptions | undefined) ?? { format: 'dxf' };
+    const bytes = exportDxf({ kind: 'region', region: run.returnValue }, opts);
+    return { bytes, featureCount, diagnostics: r.diagnostics };
   }
 
   let targetId: string | undefined;
@@ -153,6 +169,25 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       const bytes = await exportSceneToSTEPAsync(lowered);
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
+    if (format === 'dxf') {
+      // DXF needs a single planar wire source; a multi-body Scene cannot
+      // satisfy that contract without a caller-side choice of which face /
+      // part to export. Surface the non-planar diagnostic so the agent's
+      // next move is to either pick a planar face or return a Region.
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.dxf.non-planar',
+          featureId: targetId,
+          severity: 'error',
+          message: 'DXF export requires a planar input; received a multi-body Scene.',
+          hint: 'Return a Region via Shape.flattenPattern() or a single planar face.',
+          nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+        }],
+      };
+    }
     // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
     // Scene.toCompound() upstream — surface a structured diagnostic
     // pointing at the right call.
@@ -181,7 +216,103 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       const bytes = await shape.exportSTEPAsync();
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
-    case 'dxf':
+    case 'dxf': {
+      const opts =
+        (input.options as DxfWriterOptions | undefined) ?? { format: 'dxf' };
+      // Sheet-metal Shape entry path: if the target Shape's lineage chain
+      // roots at a `sheetMetal` record, recover the flat-pattern Region by
+      // walking `flattenPattern(records, targetId)` and ship it through the
+      // polyline writer. This is the same Region that
+      // `Shape.flattenPattern()` would produce — recomputed inside the
+      // runtime so the user script can return the bent body directly
+      // without needing `require` inside the vm sandbox.
+      const tracesToSheetMetal = (() => {
+        const byId = new Map(run.records.map(rec => [rec.id, rec]));
+        let cur = byId.get(targetId);
+        // Bound the walk by the record count — a healthy graph terminates
+        // quickly; an inputs.base cycle would otherwise spin forever.
+        for (let i = 0; cur && i <= run.records.length; i++) {
+          if (cur.kind === 'sheetMetal') return true;
+          const baseRef = cur.inputs.base;
+          if (!baseRef || baseRef.kind !== 'feature') return false;
+          cur = byId.get(baseRef.id);
+        }
+        return false;
+      })();
+      if (tracesToSheetMetal) {
+        try {
+          const region = flattenPattern(run.records, targetId);
+          const bytes = exportDxf({ kind: 'region', region }, opts);
+          return { bytes, featureCount, diagnostics: r.diagnostics };
+        } catch (e) {
+          const errCode = (e as { code?: string }).code;
+          const msg = e instanceof Error ? e.message : String(e);
+          const hint = (e as { hint?: string }).hint;
+          // Pass through structured diagnostics like
+          // `feature.flattenPattern.multi-bend-unsupported`; downgrade
+          // anything else to `export.dxf.non-planar` so callers see a
+          // catalog-known code.
+          if (errCode === 'feature.flattenPattern.multi-bend-unsupported') {
+            return {
+              bytes: new Uint8Array(),
+              featureCount,
+              diagnostics: [...r.diagnostics, {
+                target: 'export-occt',
+                code: 'feature.flattenPattern.multi-bend-unsupported',
+                featureId: targetId,
+                severity: 'error',
+                message: msg,
+                hint: hint ?? 'Flatten an upstream Shape with at most two bends, or wait for the multi-bend slice.',
+                nextAction: NEXT_ACTIONS['feature.flattenPattern.multi-bend-unsupported'],
+              }],
+            };
+          }
+          return {
+            bytes: new Uint8Array(),
+            featureCount,
+            diagnostics: [...r.diagnostics, {
+              target: 'export-occt',
+              code: 'export.dxf.non-planar',
+              featureId: targetId,
+              severity: 'error',
+              message: `DXF export could not flatten the sheet-metal chain: ${msg}`,
+              hint: hint ?? 'Inspect the sheetMetal root and bends, then retry. Return a Region directly to bypass.',
+              nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+            }],
+          };
+        }
+      }
+      // Planar `Shape` entry path: extract the outer (and any hole) wires
+      // from a single planar face and ship them through the polyline writer.
+      // A `null` return from `tryExtractPlanarWires` means the shape carries
+      // no planar face we can flatten — emit the non-planar diagnostic so
+      // the agent can pick a face explicitly or switch to `flattenPattern()`.
+      const planarWires = shape.tryExtractPlanarWires();
+      if (!planarWires) {
+        return {
+          bytes: new Uint8Array(),
+          featureCount,
+          diagnostics: [...r.diagnostics, {
+            target: 'export-occt',
+            code: 'export.dxf.non-planar',
+            featureId: targetId,
+            severity: 'error',
+            message: 'DXF export requires a planar input (Region, planar face, or planar wire).',
+            hint: 'Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
+            nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+          }],
+        };
+      }
+      const bytes = exportDxf(
+        {
+          kind: 'planarWires',
+          outer: planarWires.outer,
+          holes: planarWires.holes,
+        },
+        opts,
+      );
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
     case '3mf':
     case 'glb':
     case 'urdf':

@@ -27,11 +27,38 @@ describe('runAndExport', () => {
     expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
   });
 
-  it('rejects dxf format in Slice A skeleton with the not-implemented diagnostic', async () => {
-    const code = 'return box(10, 10, 10);';
+  it('rejects DXF export of a non-planar solid with export.dxf.non-planar', async () => {
+    const code = 'return box(10, 10, 10);'; // 3D solid, no planar wire source
     const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'dxf' });
     expect(result.bytes.length).toBe(0);
-    expect(result.diagnostics.find(d => d.code === 'export.dxf.not-implemented')).toBeDefined();
+    expect(result.diagnostics.find(d => d.code === 'export.dxf.non-planar')).toBeDefined();
+  });
+
+  it('exports DXF for a bent sheet-metal Shape (lineage rooted at sheetMetal)', async () => {
+    // The runtime walks the lineage from the returned Shape back to its
+    // sheetMetal root and recomputes the flat-pattern Region in-runtime,
+    // so the script can return the bent body directly.
+    const code = `
+      const s = path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 25).lineTo(0, 25).close();
+      const blank = sheetMetal(s, { thickness: 1.5, kFactor: 0.4 });
+      return blank.bend({ atX: 25 }, 90, 1);
+    `;
+    const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'dxf' });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const text = new TextDecoder().decode(result.bytes);
+    expect(text).toMatch(/LWPOLYLINE/);
+    expect(text).toMatch(/\$INSUNITS\n\s*70\n\s*4/);
+  });
+
+  it('exports DXF for an unbent sheet-metal blank (zero-bend chain)', async () => {
+    const code = `
+      const s = path().moveTo(0, 0).lineTo(40, 0).lineTo(40, 20).lineTo(0, 20).close();
+      return sheetMetal(s, { thickness: 1.0, kFactor: 0.4 });
+    `;
+    const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'dxf' });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    const text = new TextDecoder().decode(result.bytes);
+    expect(text).toMatch(/LWPOLYLINE/);
   });
 
   it('rejects 3mf format in Slice A skeleton with the not-implemented diagnostic', async () => {

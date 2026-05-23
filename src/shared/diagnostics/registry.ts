@@ -336,13 +336,13 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
   },
-  'export.dxf.not-implemented': {
+  'export.dxf.non-planar': {
     hintTemplate:
-      'DXF export is not yet implemented in this build. Pick a supported format (stl, step) for now; DXF lands later in this slice.',
-    nextAction: { kind: 'fix-arg', field: 'format' },
+      'DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A DXF export was requested before the writer landed in the runtime.',
+    description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
   },
   'export.3mf.not-implemented': {
     hintTemplate:

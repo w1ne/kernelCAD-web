@@ -1145,6 +1145,26 @@ export class OcctBackend implements ShapeBackend {
   }
 
   /**
+   * Slice A DXF entry path: extract a single planar outer wire (with optional
+   * hole wires) from this shape, projected to the wire's plane and returned
+   * as 2D vertex polylines. Returns `null` when the shape has no planar face
+   * suitable for DXF export — non-planar 3D solids, multi-face mismatched-
+   * plane shapes, sketches without a captured drawing, etc. The DXF dispatch
+   * in `runAndExport` translates a `null` return into the
+   * `export.dxf.non-planar` diagnostic.
+   *
+   * Slice A scope: returns `null` for every shape kind. The planar-face
+   * boundary extraction (looping over `face.surfaceType() === 'plane'` and
+   * lifting each face's outer / inner wires to `Vec2[]`) is shared with the
+   * Slice E DFM consumer and lands when that consumer arrives. Until then,
+   * the supported Slice A inputs are limited to `Region` direct-returns
+   * from `Shape.flattenPattern()`.
+   */
+  tryExtractPlanarWires(): { outer: import('../../../shared/intent/region').Vec2[]; holes: import('../../../shared/intent/region').Vec2[][] } | null {
+    return null;
+  }
+
+  /**
    * Enumerate all faces of this shape via TopExp_Explorer and return their
    * OCCT hash codes as hex strings. Stable within a single WASM session.
    *
