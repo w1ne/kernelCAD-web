@@ -14,6 +14,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.
 - Editable parameters / params_update / live sliders → also load `kernelcad-params`.
 - Multi-part with joints / mates / connectors → also load `kernelcad-assemblies`.
+- Need an off-the-shelf fastener, bearing, motor, header, or connector → also load `kernelcad-parts`.
 - Freeform NURBS surfaces, NURBS curves, Coons patches, multi-section sweeps, G2 fillet continuity, or freeform 2D path outlines (`nurbsSurface`, `surfaceFromCurves`, `surfaceFromBoundary`, `nurbsCurve`, `spline3d`, `hermiteG2`, `variableSweep`, `fillet({ continuity: 'G2' })`, `path().spline(...)`, `path().nurbsSegment(...)`, `path().hermiteG2(...)`) → also load `kernelcad-nurbs`.
 - Mechanical patterns (linear / circular / grid replication of a sub-feature) → also load `kernelcad-patterns`.
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
