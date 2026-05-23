@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added — Slice B-rest: SRDF export + arm.planningGroup / endEffector / groupState API + kernelcad-srdf skill
+
+- Added SRDF export via `export_model({ format: 'srdf' })`. Planning groups, end-effectors, virtual joints, named group states, and explicit collision overrides declared via the new `arm.planningGroup`, `arm.endEffector`, `arm.virtualJoint`, `arm.groupState`, `arm.disableCollision` capture-time methods — all flat on `arm.*` (no vertical namespace prefix). The allowed-collision matrix auto-derives Adjacent (shared joint/mate) and User (explicit override) entries; sparse sampling emits `export.srdf.acm-sparse-sampling` as a warning.
+- Refuses export without at least one planningGroup declaration via `export.srdf.planning-group-missing`.
+- Added the `kernelcad-srdf` skill.
+
 ### Added — Slice B-rest: URDF export, validate_urdf, inspect_robot, kernelcad-urdf skill
 
 - Added URDF export via `export_model({ format: 'urdf' })`. Writes the `.urdf` body via the script-runtime; per-link STL meshes via the dedicated IO wrapper. Supports all 7 mate types; `cylindrical`, `pin_slot`, and `ball` mates emit lossy diagnostics with structured next-actions pointing to `format: 'sdf-gazebo'` for native support. Closed kinematic loops are refused with `export.urdf.closed-loop`.

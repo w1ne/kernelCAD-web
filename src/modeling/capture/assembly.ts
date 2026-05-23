@@ -826,6 +826,104 @@ export class Assembly {
     return this;
   }
 
+  /**
+   * Declare an SRDF planning group. Either a chain form (base->tip) or an
+   * enumeration of joint / link names. Consumed by `export_model({
+   * format: 'srdf' })`.
+   */
+  planningGroup(
+    name: string,
+    opts: { chain?: { baseLink: string; tipLink: string }; joints?: string[]; links?: string[] },
+  ): this {
+    if (this.planningGroups.some(g => g.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup: duplicate group name '${name}'.`,
+        undefined,
+        'Each planning group must have a unique name. Pick a different name or remove the earlier declaration.',
+      );
+    }
+    if (!opts.chain
+      && (!opts.joints || opts.joints.length === 0)
+      && (!opts.links || opts.links.length === 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup '${name}' must declare chain, joints, or links.`,
+        undefined,
+        'Pass { chain: { baseLink, tipLink } } for a serial chain, or { joints: [...] } / { links: [...] } for an enumeration.',
+      );
+    }
+    this.planningGroups.push({
+      name,
+      ...(opts.chain !== undefined
+        ? { chain: { baseLink: opts.chain.baseLink, tipLink: opts.chain.tipLink } }
+        : {}),
+      ...(opts.joints !== undefined ? { joints: [...opts.joints] } : {}),
+      ...(opts.links !== undefined ? { links: [...opts.links] } : {}),
+    });
+    return this;
+  }
+
+  /** Declare an SRDF end-effector. */
+  endEffector(
+    name: string,
+    opts: { parentLink: string; group: string; parentGroup: string },
+  ): this {
+    if (!this.parts.some(p => p.name === opts.parentLink)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.endEffector '${name}': parentLink '${opts.parentLink}' is not a known part.`,
+        undefined,
+        `Declare the parent link via arm.part('${opts.parentLink}', ...) before calling arm.endEffector(...).`,
+      );
+    }
+    this.endEffectors.push({
+      name,
+      parentLink: opts.parentLink,
+      group: opts.group,
+      parentGroup: opts.parentGroup,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF virtual joint (world -> base linkage). */
+  virtualJoint(
+    name: string,
+    opts: { type: 'fixed' | 'floating' | 'planar'; parentFrame: string; childLink: string },
+  ): this {
+    this.virtualJoints.push({
+      name,
+      type: opts.type,
+      parentFrame: opts.parentFrame,
+      childLink: opts.childLink,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF named group state (a pose snapshot keyed by joint name). */
+  groupState(name: string, group: string, values: Record<string, number>): this {
+    if (!this.planningGroups.some(g => g.name === group)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.groupState '${name}' references unknown group '${group}'.`,
+        undefined,
+        `Declare arm.planningGroup('${group}', ...) before referencing it in arm.groupState(...).`,
+      );
+    }
+    this.groupStates.push({ name, group, values: { ...values } });
+    return this;
+  }
+
+  /** Declare an SRDF allowed-collision override. */
+  disableCollision(
+    link1: string,
+    link2: string,
+    opts: { reason: 'Adjacent' | 'Never' | 'Default' | 'User' },
+  ): this {
+    this.disabledCollisions.push({ link1, link2, reason: opts.reason });
+    return this;
+  }
+
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
     validateMechanicalIntentName('name', name);
     if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
