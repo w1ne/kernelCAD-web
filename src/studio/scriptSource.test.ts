@@ -34,6 +34,10 @@ describe('loadGalleryScriptSource', () => {
           json: async () => ({
             entries: [
               {
+                slug: 'first-build',
+                sourceUrl: '/gallery/first-build/source.kcad.ts',
+              },
+              {
                 slug: 'fixture-build',
                 sourceUrl: '/gallery/fixture-build/source.kcad.ts',
               },
@@ -53,6 +57,7 @@ describe('loadGalleryScriptSource', () => {
     await expect(loadGalleryScriptSource('fixture-build')).resolves.toContain('box');
     expect(fetchMock).toHaveBeenCalledWith('/gallery.json');
     expect(fetchMock).toHaveBeenCalledWith('/gallery/fixture-build/source.kcad.ts');
+    expect(fetchMock).not.toHaveBeenCalledWith('/gallery/first-build/source.kcad.ts');
   });
 
   it('rejects gallery entries without sourceUrl', async () => {
