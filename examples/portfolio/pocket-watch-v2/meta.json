@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "slug": "pocket-watch-v2",
+  "category": "misc",
+  "difficulty": "hard",
+  "sourceUrl": "https://github.com/w1ne/kernelCAD-web/pull/263",
+  "sourceLicense": "MIT",
+  "paraphrasedPrompt": "Build a polished pop-art octagonal pocket watch with a vivid coral frame, yellow inner case, black hex screws, turquoise detailed dial, clear mounted lens, side crown, sculpted top neck, and slim oval lanyard bail, centered for an isometric hero render.",
+  "model": "claude-opus-4-7",
+  "attemptCount": 20,
+  "builtAt": "2026-05-21T19:09:44Z",
+  "artifactHashes": {
+    "step": "sha256:c21b00ac960295ab5c98e0f12e5d4d8eb94c1f0e2ffd57f1f605dd2475526270",
+    "stl": "sha256:8760207804be86959f2c968c794ac57d5f2424ed2fe3b5f2d014595a90e8d1f7"
+  }
+}

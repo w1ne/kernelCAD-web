@@ -26,6 +26,26 @@ function solvedAssembly(mates: EncodedMateRecord[]): FeatureRecord {
   } as unknown as FeatureRecord;
 }
 
+function assemblyModel(mates: EncodedMateRecord[]): FeatureRecord {
+  return {
+    id: 'asm_model_1',
+    kind: 'assemblyModel',
+    params: {},
+    inputs: {},
+    metadata: { mates },
+  } as unknown as FeatureRecord;
+}
+
+function assemblyPart(id: string, partName: string): FeatureRecord {
+  return {
+    id,
+    kind: 'assemblyPart',
+    params: {},
+    inputs: {},
+    metadata: { partName },
+  } as unknown as FeatureRecord;
+}
+
 describe('extractJointSnapshots', () => {
   it('returns empty array when no records', () => {
     expect(extractJointSnapshots([])).toEqual([]);
@@ -58,6 +78,76 @@ describe('extractJointSnapshots', () => {
     expect(out[0].pose).toBe(35);
     expect(out[0].poseParamNames).toEqual(['shoulderPitchDeg']);
     expect(out[0].mate.limitsDeg).toEqual([-45, 135]);
+  });
+
+  it('extracts scalar posed mates from assemblyModel records', () => {
+    const rec = assemblyModel([
+      {
+        name: 'height-adjust',
+        a: 'sleeve.rail',
+        b: 'post.slide',
+        type: 'prismatic',
+        pose: { kind: 'scalar', value: num(12, 'heightAdjustMm') },
+        limitsMm: [0, 34] as const,
+      },
+    ]);
+
+    const out = extractJointSnapshots([rec]);
+
+    expect(out).toHaveLength(1);
+    expect(out[0].mate.name).toBe('height-adjust');
+    expect(out[0].mate.type).toBe('prismatic');
+    expect(out[0].pose).toBe(12);
+    expect(out[0].poseParamNames).toEqual(['heightAdjustMm']);
+    expect(out[0].mate.limitsMm).toEqual([0, 34]);
+  });
+
+  it('attaches viewport preview data from connector metadata', () => {
+    const rec = {
+      ...assemblyModel([
+        {
+          name: 'height-adjust',
+          a: 'sleeve.rail',
+          b: 'post.slide',
+          type: 'prismatic',
+          pose: { kind: 'scalar', value: num(12, 'heightAdjustMm') },
+        },
+      ]),
+      metadata: {
+        mates: [
+          {
+            name: 'height-adjust',
+            a: 'sleeve.rail',
+            b: 'post.slide',
+            type: 'prismatic',
+            pose: { kind: 'scalar', value: num(12, 'heightAdjustMm') },
+          },
+        ],
+        partIds: ['part_sleeve', 'part_post'],
+        connectorsByPartId: {
+          part_sleeve: [
+            { name: 'rail', type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] },
+          ],
+          part_post: [
+            { name: 'slide', type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] },
+          ],
+        },
+      },
+    } as unknown as FeatureRecord;
+
+    const out = extractJointSnapshots([
+      assemblyPart('part_sleeve', 'sleeve'),
+      assemblyPart('part_post', 'post'),
+      rec,
+    ]);
+
+    expect(out[0].preview).toEqual({
+      assemblyFeatureId: 'asm_model_1',
+      parentPartName: 'sleeve',
+      childPartName: 'post',
+      parentConnectorOrigin: [0, 0, 10],
+      parentConnectorAxis: [0, 0, 1],
+    });
   });
 
   it('skips mates without pose (fastened, etc.)', () => {
@@ -142,6 +232,40 @@ describe('extractJointSnapshots', () => {
     table.declare('shoulderPitchDeg', 'number', 35);
     const out = extractJointSnapshots([rec], table);
     expect(out[0].pose).toBe(35); // not 0
+  });
+
+  it('binds a simple scaled ParamRef expression back to its source param', () => {
+    const rec = assemblyModel([
+      {
+        name: 'height-adjust',
+        a: 'sleeve.rail',
+        b: 'post.slide',
+        type: 'prismatic',
+        pose: {
+          kind: 'scalar',
+          value: {
+            expression: '{$paramExpr:(heightAdjustMm * 0.18)}',
+            unit: 'mm',
+            evaluated: 0,
+            paramRef: {
+              kind: 'binop',
+              op: '*',
+              left: { kind: 'param', name: 'heightAdjustMm' },
+              right: { kind: 'lit', value: 0.18 },
+            },
+          } as Param,
+        },
+        limitsMm: [0, 34] as const,
+      },
+    ]);
+    const table = new ParamTable();
+    table.declare('heightAdjustMm', 'number', 17);
+
+    const out = extractJointSnapshots([rec], table);
+
+    expect(out[0].pose).toBe(17);
+    expect(out[0].poseParamNames).toEqual(['heightAdjustMm']);
+    expect(out[0].mate.limitsMm).toEqual([0, 34]);
   });
 
   it('falls back to encoded evaluated when no ParamTable supplied', () => {

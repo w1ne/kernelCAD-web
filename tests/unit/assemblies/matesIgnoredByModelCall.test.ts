@@ -1,23 +1,19 @@
 // tests/unit/assemblies/matesIgnoredByModelCall.test.ts
 //
-// Regression test for the `assembly.mates-ignored-by-model-call`
-// diagnostic. Surfaced by Exp-D four-bolt-flange-v2: when an agent
-// declares mates then ends the script with `arm.model()` (not
-// `solvedModel({})`), mate FK never runs and parts stack at their local
-// origin. The downstream symptom is bolt-bolt interferences; the root
-// cause (model() skips FK) is two reasoning steps removed.
-//
-// The diagnostic fires at the `assemblyModel` lowering when the captured
-// metadata carries `declaredMateCount > 0`.
+// Regression coverage for the retired
+// `assembly.mates-ignored-by-model-call` diagnostic. `assembly.model()` now
+// preserves mate metadata and applies default mate FK, so mate-bearing
+// assemblies should no longer warn that mates were ignored.
 
 import { describe, expect, it, beforeAll } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { isSceneBackend } from '../../../src/kernel/backends/sceneBackend';
 
-describe('assembly.mates-ignored-by-model-call diagnostic', () => {
+describe('assembly.model() mate lowering', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('fires when arm.model() is used on a mate-bearing assembly', async () => {
+  it('does NOT fire when arm.model() is used on a mate-bearing assembly', async () => {
     const model = await buildModel({
       fileName: 'model-with-mates.kcad.ts',
       code: `
@@ -27,17 +23,19 @@ describe('assembly.mates-ignored-by-model-call diagnostic', () => {
         arm.part('child', box(10, 10, 10))
            .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [-5, 0, 0] } });
         arm.mate('m', 'base.p', 'child.q', 'fastened');
-        // Footgun: ends with arm.model(), not arm.solvedModel({})
         return arm.model();
       `,
     });
     const matesIgnored = model.diagnostics.filter(
       (d) => d.code === 'assembly.mates-ignored-by-model-call',
     );
-    expect(matesIgnored.length).toBe(1);
-    expect(matesIgnored[0].severity).toBe('info');
-    expect(matesIgnored[0].message).toContain('1 mate');
-    expect(matesIgnored[0].hint).toMatch(/solvedModel/i);
+    expect(matesIgnored.length).toBe(0);
+    expect(isSceneBackend(model.tailShape)).toBe(true);
+    const scene = model.tailShape;
+    if (!isSceneBackend(scene)) throw new Error('expected SceneBackend');
+    const child = scene.parts.find((p) => p.name === 'child');
+    expect(child).toBeDefined();
+    expect(child!.worldTransform.point([0, 0, 0])[0]).toBeCloseTo(10);
   });
 
   it('does NOT fire when arm.model() is used on a mate-free assembly', async () => {

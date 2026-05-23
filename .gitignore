@@ -37,10 +37,12 @@ playwright/.cache/
 # Demo artifacts
 site/public/demo.mp4
 site/public/demo.json
+site/public/demo-poster.png
 
 # Local dev symlinks (mirror public/ into site/ root for python http.server)
 site/demo.mp4
 site/demo.json
+site/demo-poster.png
 site/favicon.svg
 site/gallery.json
 
@@ -68,3 +70,6 @@ eval/portfolio-attempts.jsonl
 
 # TanStack Router generated route tree (regenerated at dev/build time)
 src/studio/routeTree.gen.ts
+src/routeTree.gen.ts
+.tanstack/
+.tmp-vite-ignore-worktrees.config.ts

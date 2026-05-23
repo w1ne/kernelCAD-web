@@ -12,8 +12,10 @@ vi.mock('../../src/funnel/lib/supabaseClient', () => ({
 import {
   authedFetch,
   createCheckoutSession,
+  createMcpToken,
   fetchMyPlan,
   openBillingPortal,
+  saveProject,
 } from '../../src/funnel/lib/apiClient';
 
 const ORIGINAL_FETCH = globalThis.fetch;
@@ -109,6 +111,39 @@ describe('openBillingPortal', () => {
   it('throws on non-2xx', async () => {
     mockFetchOnce('no portal session', { status: 400 });
     await expect(openBillingPortal()).rejects.toThrow(/no portal session/);
+  });
+});
+
+describe('createMcpToken', () => {
+  it('POSTs to the MCP token endpoint with auth and returns the token once', async () => {
+    const fetchMock = mockFetchOnce({ token: 'kc_secret', tokenPrefix: 'kc_secret' });
+    const result = await createMcpToken();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/api/v1/mcp/tokens');
+    expect(init.method).toBe('POST');
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer jwt-token-123');
+    expect(result).toEqual({ token: 'kc_secret', tokenPrefix: 'kc_secret' });
+  });
+});
+
+describe('saveProject', () => {
+  it('sends public_unlisted as the default save privacy', async () => {
+    const fetchMock = mockFetchOnce({ slug: 'saved-object', projectId: 'project-1' });
+
+    await saveProject({
+      generationId: 'gen-1',
+      title: 'Saved object',
+      code: 'return box(1, 1, 1);',
+      parameters: [],
+      privacy: 'public_unlisted',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      privacy: 'public_unlisted',
+    });
   });
 });
 

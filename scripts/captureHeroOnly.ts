@@ -13,8 +13,14 @@ import { loadScriptFeatures } from './lib/scriptLoader';
 import { meshFeaturesPerFeature } from '../src/modeling/capture/featureMeshing';
 import { serializeForBridge } from '../src/modeling/capture/featureMeshSerialize';
 
-const SCRIPT_PATH = resolve('examples/portfolio/pocket-watch/build.kcad.ts');
-const HERO_PNG = resolve('docs/demos/v0.7/pocket-watch/hero-frame.png');
+// Optional CLI arg: path to a build.kcad.ts script. When provided, the hero
+// PNG is written next to the script (replacing the file's basename suffix
+// with `hero-frame.png`). Default targets the v0.7 pocket-watch demo.
+const CLI_SCRIPT = process.argv[2];
+const SCRIPT_PATH = CLI_SCRIPT ? resolve(CLI_SCRIPT) : resolve('examples/portfolio/pocket-watch/build.kcad.ts');
+const HERO_PNG = CLI_SCRIPT
+  ? resolve(CLI_SCRIPT, '..', 'hero-frame.png')
+  : resolve('docs/demos/v0.7/pocket-watch/hero-frame.png');
 const W = 1920;
 const H = 1080;
 

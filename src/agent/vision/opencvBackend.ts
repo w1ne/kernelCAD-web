@@ -10,6 +10,15 @@ import sharp from 'sharp';
 import type { Vec2Normalized } from './types';
 
 let cvInitPromise: Promise<typeof import('@techstark/opencv-js')> | null = null;
+const DEFAULT_OPENCV_INIT_TIMEOUT_MS = 5000;
+
+type OpenCvModule = typeof import('@techstark/opencv-js');
+type OpenCvRuntime = OpenCvModule & {
+  ready?: Promise<unknown>;
+  Mat?: unknown;
+  onRuntimeInitialized?: () => void;
+  then?: (onReady: (cv: OpenCvRuntime) => void) => unknown;
+};
 
 /**
  * Lazy-load `@techstark/opencv-js` and wait for its asynchronous WASM init.
@@ -19,34 +28,96 @@ async function getCv(): Promise<typeof import('@techstark/opencv-js')> {
   if (!cvInitPromise) {
     cvInitPromise = (async () => {
       const mod = await import('@techstark/opencv-js');
-      const cv = (mod as { default?: typeof import('@techstark/opencv-js') }).default ?? mod;
-      // The WASM module assigns `onRuntimeInitialized` if not ready yet.
-      // The shipped distribution exposes a thenable `ready` promise on cv.
-      // Defensive: if `cv.ready` exists, wait for it; otherwise rely on a
-      // small polling fallback.
-      const cvAny = cv as unknown as {
-        ready?: Promise<unknown>;
-        Mat?: unknown;
-        onRuntimeInitialized?: () => void;
-      };
-      if (cvAny.ready && typeof (cvAny.ready as Promise<unknown>).then === 'function') {
-        await cvAny.ready;
-      } else if (!cvAny.Mat) {
-        await new Promise<void>((resolve) => {
-          cvAny.onRuntimeInitialized = () => resolve();
-          // Belt-and-braces poll in case opencv is already loaded.
-          const t = setInterval(() => {
-            if (cvAny.Mat) {
-              clearInterval(t);
-              resolve();
-            }
-          }, 50);
-        });
-      }
-      return cv;
+      const cv = ((mod as { default?: OpenCvModule }).default ?? mod) as OpenCvRuntime;
+      await waitForOpenCvReady(cv, openCvInitTimeoutMs());
+      // Emscripten exposes `then` for callback-style readiness. If an async
+      // function returns that same thenable object, native Promise resolution
+      // keeps assimilating it and never settles.
+      delete cv.then;
+      return cv as OpenCvModule;
     })();
   }
   return cvInitPromise;
+}
+
+async function waitForOpenCvReady(cv: OpenCvRuntime, timeoutMs: number): Promise<void> {
+  if (cv.Mat) return;
+
+  if (cv.ready && typeof cv.ready.then === 'function') {
+    await withTimeout(
+      cv.ready.then(() => undefined),
+      timeoutMs,
+    );
+  } else if (typeof cv.then === 'function') {
+    await withTimeout(
+      new Promise<void>((resolve) => {
+        cv.then?.(() => resolve());
+      }),
+      timeoutMs,
+    );
+  } else {
+    await waitForRuntimeCallbackOrMat(cv, timeoutMs);
+  }
+
+  if (!cv.Mat) {
+    throw new Error('opencvBackend: OpenCV initialized without Mat constructor');
+  }
+}
+
+async function waitForRuntimeCallbackOrMat(cv: OpenCvRuntime, timeoutMs: number): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const previous = cv.onRuntimeInitialized;
+    let settled = false;
+    const cleanup = () => {
+      clearInterval(interval);
+      clearTimeout(timer);
+    };
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve();
+    };
+    const fail = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(`opencvBackend: OpenCV initialization timed out after ${timeoutMs}ms`));
+    };
+    const interval = setInterval(() => {
+      if (cv.Mat) finish();
+    }, 25);
+    const timer = setTimeout(fail, timeoutMs);
+    cv.onRuntimeInitialized = () => {
+      previous?.();
+      finish();
+    };
+  });
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`opencvBackend: OpenCV initialization timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function openCvInitTimeoutMs(): number {
+  const configured = Number(process.env.KERNELCAD_OPENCV_INIT_TIMEOUT_MS);
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+  return DEFAULT_OPENCV_INIT_TIMEOUT_MS;
 }
 
 /**

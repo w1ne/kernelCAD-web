@@ -3,12 +3,15 @@ import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';
 import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { DevLab } from './devlab/DevLab';
-import { devLabScenarios } from './devlab/scenarios';
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
-import { DemoPlayerPage } from './components/demoPlayer/DemoPlayerPage';
 import { StudioChromeProvider } from './context/StudioChromeContext';
+
+const LazyDevLab = lazy(() =>
+  import('./devlab/DevLab').then(({ DevLab }) => ({
+    default: DevLab,
+  })),
+);
 
 function isCodeParsable(code: string): boolean {
   try {
@@ -20,10 +23,16 @@ function isCodeParsable(code: string): boolean {
 }
 
 import { useProject } from './context/ProjectContext';
+import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 
 function readScriptParam(): string | null {
   if (typeof window === 'undefined') return null;
   return new URLSearchParams(window.location.search).get('script');
+}
+
+function readGalleryParam(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('gallery');
 }
 
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
@@ -35,42 +44,47 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, saveActiveProject } = useProject();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loadedSourceRouteKey, setLoadedSourceRouteKey] = useState<string | null>(null);
+  const [sourceLoadError, setSourceLoadError] = useState<{ routeKey: string; message: string } | null>(null);
   const scriptParam = readScriptParam();
+  const galleryParam = readGalleryParam();
+  const isSourceRoute = !isDevLab && Boolean(scriptParam || galleryParam);
+  const sourceRouteKey = isSourceRoute
+    ? (galleryParam ? `gallery:${galleryParam}` : `script:${scriptParam}`)
+    : null;
 
   useEffect(() => {
-    if (isDevLab || !scriptParam) return;
+    if (!sourceRouteKey) return;
 
     let cancelled = false;
-    fetch(`/__kernelcad/mesh?script=${encodeURIComponent(scriptParam)}`)
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) {
-          const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
-          throw new Error(message);
-        }
-        if (typeof payload?.source !== 'string') {
-          throw new Error('Script endpoint did not return source code.');
-        }
-        return payload.source as string;
-      })
+    const sourcePromise = galleryParam
+      ? loadGalleryScriptSource(galleryParam)
+      : loadStudioScriptSource(scriptParam as string);
+
+    sourcePromise
       .then((source) => {
         if (cancelled) return;
         setCode(source);
         setViewMode('code');
+        setSourceLoadError(null);
+        setLoadedSourceRouteKey(sourceRouteKey);
         setIsInitialized(true);
       })
       .catch((error) => {
-        console.error('Failed to load script source:', error);
+        if (cancelled) return;
+        console.error('Failed to load Studio source:', error);
+        setSourceLoadError({ routeKey: sourceRouteKey, message: 'Failed to load Studio source.' });
+        setLoadedSourceRouteKey(null);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [isDevLab, scriptParam, setCode, setViewMode]);
+  }, [galleryParam, scriptParam, setCode, setViewMode, sourceRouteKey]);
 
   // Sync active project -> workbench state
   useEffect(() => {
-    if (scriptParam) return;
+    if (scriptParam || galleryParam) return;
     if (isDevLab || !activeProject) return;
 
     // Only sync on initial load or project switch
@@ -84,11 +98,11 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialized(true);
     }
-  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam]);
+  }, [activeProject, isDevLab, setCode, setViewMode, setViewMode3D, isInitialized, code, viewMode3D, scriptParam, galleryParam]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
-    if (scriptParam) return;
+    if (scriptParam || galleryParam) return;
     if (isDevLab || !isInitialized || !activeProject) return;
     if (!isCodeParsable(code)) return;
 
@@ -106,14 +120,35 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, isInitialized, activeProject, saveActiveProject, scriptParam, galleryParam]);
 
-  return isDevLab ? <DevLab /> : <StudioShell />;
-}
+  const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
+    ? sourceLoadError.message
+    : null;
 
-function isDemoPlayerRoute(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.location.pathname === '/demo-player';
+  if (activeSourceLoadError) {
+    return (
+      <main role="alert" aria-live="polite">
+        <p>{activeSourceLoadError}</p>
+      </main>
+    );
+  }
+
+  if (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) {
+    return (
+      <main aria-live="polite">
+        <p>Loading Studio source...</p>
+      </main>
+    );
+  }
+
+  return isDevLab ? (
+    <Suspense fallback={null}>
+      <LazyDevLab />
+    </Suspense>
+  ) : (
+    <StudioShell />
+  );
 }
 
 interface AppProps {
@@ -129,15 +164,12 @@ interface AppProps {
   headerRight?: ReactNode;
 }
 
-export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
-  if (isDemoPlayerRoute()) {
-    return <DemoPlayerPage />;
-  }
-
-  const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
-  const initialCode =
-    initialCodeProp ?? (isDevLab ? (devLabScenarios[0]?.code ?? undefined) : undefined);
-
+function AppProviders({
+  initialCode,
+  isDevLab,
+  headerLeft,
+  headerRight,
+}: AppProps & { isDevLab: boolean }) {
   return (
     <WorkbenchProvider initialCode={initialCode}>
       <StudioChromeProvider value={{ headerLeft, headerRight }}>
@@ -146,5 +178,55 @@ export default function App({ initialCode: initialCodeProp, headerLeft, headerRi
         </ErrorBoundary>
       </StudioChromeProvider>
     </WorkbenchProvider>
+  );
+}
+
+function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'headerRight'>) {
+  const [initialCode, setInitialCode] = useState<string | undefined>();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    import('./devlab/scenarios')
+      .then(({ devLabScenarios }) => {
+        if (cancelled) return;
+        setInitialCode(devLabScenarios[0]?.code);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!isLoaded) return null;
+
+  return (
+    <AppProviders
+      initialCode={initialCode}
+      isDevLab={true}
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+    />
+  );
+}
+
+export default function App({ initialCode: initialCodeProp, headerLeft, headerRight }: AppProps = {}) {
+  const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
+
+  if (isDevLab && initialCodeProp === undefined) {
+    return <DevLabApp headerLeft={headerLeft} headerRight={headerRight} />;
+  }
+
+  return (
+    <AppProviders
+      initialCode={initialCodeProp}
+      isDevLab={isDevLab}
+      headerLeft={headerLeft}
+      headerRight={headerRight}
+    />
   );
 }

@@ -29,6 +29,7 @@
 
 :root {
     /* Fallback/Raw usage if needed, but Tailwind handles the above mapping */
+    --app-asset-revision: "2026-05-22-css-redeploy";
     --highlight-orange: #FF9F1C;
     --selection-blue: #2EC4B6;
     --snap-green: #00FF9D;

@@ -8,6 +8,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { addVariableSweepTool } from '../../../src/agent/mcp/tools/addVariableSweep';
+import { TOOL_REGISTRY } from '../../../src/agent/mcp/toolRegistry';
 
 // Use a Sketch spine — the curve3d-spine path is gated on a future
 // recompute-engine change (see occtLowerer.ts comment at the variableSweep
@@ -91,5 +92,43 @@ describe('add_variable_sweep MCP tool', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.error).toMatch(/at least 2/);
+  });
+
+  it('rejects non-increasing section t values before insertion', async () => {
+    const r = await addVariableSweepTool({
+      code: SEED_CODE,
+      spine_binding: 'spineSketch',
+      sections: [
+        { t: 0, profile_binding: 'profileA' },
+        { t: 0.5, profile_binding: 'profileB' },
+        { t: 0.5, profile_binding: 'profileA' },
+        { t: 1, profile_binding: 'profileB' },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/strictly increasing/);
+    expect(r).not.toHaveProperty('new_code');
+  });
+
+  it('rejects section t values that do not span 0 to 1 before insertion', async () => {
+    const r = await addVariableSweepTool({
+      code: SEED_CODE,
+      spine_binding: 'spineSketch',
+      sections: [
+        { t: 0.1, profile_binding: 'profileA' },
+        { t: 1, profile_binding: 'profileB' },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/first t must be 0 and last t must be 1/);
+    expect(r).not.toHaveProperty('new_code');
+  });
+
+  it('documents that orientation is not exposed by the MCP add tool', () => {
+    const entry = TOOL_REGISTRY.find(t => t.definition.name === 'add_variable_sweep');
+    expect(entry).toBeDefined();
+    expect(entry!.definition.description).toMatch(/orientation/i);
+    expect(entry!.definition.description).toMatch(/not exposed/i);
+    expect(entry!.definition.inputSchema.properties).not.toHaveProperty('orientation');
   });
 });

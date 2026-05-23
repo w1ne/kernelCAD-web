@@ -1,30 +1,74 @@
-# kernelCAD - AI-Native CAD Workbench
+# kernelCAD - CAD runtime for agents
 
-**kernelCAD** turns mechanical intent into validated, editable, manufacturable
-design artifacts.
+**kernelCAD** turns mechanical intent into editable `.kcad.ts` source,
+deterministic review evidence, and exportable manufacturing artifacts.
 
-The core loop is: intent -> generated `.kcad.ts` -> rendered model ->
-validation checks -> guided revision -> export package.
+The core loop is source-first: design brief -> editable `.kcad.ts` ->
+evaluated model -> deterministic validation -> guided revision -> export package.
 
-kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks,
-and it is not just a Replicad wrapper. Replicad/OpenCASCADE are the kernel
-layer. kernelCAD is the agent-first workflow layer above the kernel: deterministic
-CAD source, feature history, diagnostics, validation, variants, and human review.
+kernelCAD is not trying to be a browser clone of Fusion, Onshape, or SolidWorks.
+Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
+layer above the kernel: deterministic CAD source, feature history, diagnostics,
+validation, variants, and human review.
 
 ## Philosophy
 
 1.  **Agent-First**: The primary interface is `.kcad.ts`, CLI, and MCP. The UI reviews and steers generated designs.
-2.  **Verifiable**: Geometry is deterministic source code with explicit feature history and diagnostics.
-3.  **Validation-Centered**: Useful CAD output needs checks for constraints, hardware fit, clearances, and exportability.
+2.  **Editable Source**: Geometry is deterministic source code with explicit feature history, params, assemblies, and diagnostics.
+3.  **Validation-Centered**: Useful CAD output needs deterministic review for constraints, hardware fit, clearances, and exportability.
 4.  **Workflow Over Primitives**: Product progress is measured by intent-level workflows, not by copying every traditional CAD button.
+
+## Agent workflow
+
+For agents and contributors, `.kcad.ts` source is the design source of truth.
+Rendered PNG/MP4 files, STEP/STL exports, score JSON, and capture-run metadata
+are generated evidence or deliverables. Prompt briefs, source files, and
+provenance metadata remain source. Change source first, regenerate explicit
+targets, and avoid broad artifact refreshes unless you are intentionally
+rebuilding a demo or release bundle.
+
+Use deterministic checks before visual judgment:
+
+```bash
+kernelcad evaluate model.kcad.ts
+# then run review_cad from an MCP client connected through `kernelcad mcp`
+kernelcad export step model.kcad.ts -o model.step
+kernelcad export stl model.kcad.ts -o model.stl
+```
+
+When a rendered artifact is produced, inspect the image/video itself and report
+what is visible: proportions, interfaces, floating geometry, occlusion, camera
+framing, and whether required features are legible. Passing tests are not a
+substitute for visual evidence.
+
+When visual evidence matters, keep a deterministic inspection bundle:
+
+```bash
+kernelcad render inspect model.kcad.ts model.inspect
+```
+
+The v1 bundle writes a manifest and canonical RGB views. It can also emit
+machine-readable `mask`, `depth`, and `normals` channels:
+
+```bash
+kernelcad render inspect model.kcad.ts model.inspect --channels rgb,mask,depth,normals
+```
+
+Use `--focus <names>` or `--hide <names>` when a specific feature id or
+assembly part needs isolated review. Keep richer channels in the same manifest
+packet; do not replace the canonical RGB views.
+
+For real hardware, prefer catalog/vendor geometry via `lib.fromSTEP(...)`
+instead of fake placeholder boxes or cylinders. This keeps mounts, clearances,
+and mechanism checks tied to physical components.
 
 ## Features
 
 -   **Headless Core**: Run CAD operations in Node.js or Web Workers without a DOM.
--   **Agent API**: JSON-serializable commands, introspection, and feedback loops.
+-   **Agent API**: kernelCAD APIs for params, assemblies, NURBS, SDF bodies, sheet metal workflows, introspection, and feedback loops.
 -   **Review Cockpit**: Browser-based 3D preview for inspecting generated designs and validation results.
 -   **Standard Exports**: STEP/STL generation.
--   **Robust Kernel**: Built on OpenCASCADE (via Replicad).
+-   **Robust Kernel**: Built on OpenCASCADE, with Replicad kept as a kernel implementation detail where it is still used.
   
 ## Get Started
 

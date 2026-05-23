@@ -94,7 +94,7 @@ export function summarizeMechanismFitness(
   }
 
   for (const diagnostic of mechanicalPlausibilityDiagnostics) {
-    if (diagnostic.severity !== 'error') continue;
+    if (diagnostic.severity !== 'error' && diagnostic.code !== 'assembly.mechanical.part-disconnected') continue;
     addBlockingReason(
       diagnostic.code,
       diagnostic.message,

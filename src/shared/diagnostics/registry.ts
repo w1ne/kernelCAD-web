@@ -457,6 +457,21 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'setRenderEnvironment() received an intensity outside the (0, 100] range; the kernel clamped it to 1.',
   },
+  // Camera target (2) — script-callable look-at override
+  'feature.camera-target.non-finite-target': {
+    hintTemplate: 'setCameraTarget: x, y, z must each be finite numbers (no NaN / Infinity).',
+    nextAction: { kind: 'fix-arg', field: 'x' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'setCameraTarget() received a NaN or non-finite coordinate; the kernel substitutes 0 for the bad axis.',
+  },
+  'feature.camera-target.invalid-distance': {
+    hintTemplate: 'setCameraTarget: distance must be a positive finite number; omit to use auto-fit.',
+    nextAction: { kind: 'fix-arg', field: 'distance' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'setCameraTarget() received a non-positive or non-finite distance override; the kernel ignores the override and falls back to the auto-fit distance.',
+  },
   // Material (3) — Slice A + per-face
   'feature.material.invalid-base-color': {
     hintTemplate: 'Pass a CSS color string or a registered role token to baseColor.',
@@ -750,7 +765,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A connector topology query (face/edge/vertex) did not resolve against the connector parent shape.',
   },
-  // Assembly mechanical-plausibility checks (5)
+  // Assembly mechanical-plausibility checks (6)
   'assembly.mechanical.part-disconnected': {
     hintTemplate:
       "Remove decorative/floating solids from this part, or add real bridge/bracket geometry so every solid in the part shares a physical load path.",
@@ -780,6 +795,17 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A fastened mate joins two parts whose modeled bodies do not share a usable contact area.',
+  },
+  'assembly.mechanical.fixed-contact-missing': {
+    hintTemplate:
+      "Move the fixed child into contact with its parent, or add a bracket, flange, stem, bridge, or mounting face so the fixed joint represents real attached geometry instead of an air gap.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'move or bridge fixed-joint parts so parent and child share a real contact patch',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A legacy assembly.fixed() joint joins two parts whose modeled bodies do not share a usable contact area.',
   },
   'assembly.mechanical.revolute-unsupported': {
     hintTemplate:

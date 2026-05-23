@@ -165,7 +165,30 @@ describe('review_cad MCP tool', () => {
     }
   });
 
-  it('reports disconnected solids without automatically blocking the design', async () => {
+  it('blocks legacy fixed joints that connect parts across visible air gaps', async () => {
+    const r = await reviewCadTool({
+      includeInterference: false,
+      code: `
+        const arm = assembly('fixed-gap');
+        const base = arm.part('base', box(20, 20, 4, true));
+        const knob = arm.part('floating-knob', box(6, 6, 6, true).translate(40, 0, 0));
+        arm.fixed('bad-fixed-gap', base, knob);
+        return arm.model();
+      `,
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics.some((diagnostic) =>
+      diagnostic.code === 'assembly.mechanical.fixed-contact-missing' &&
+      diagnostic.severity === 'error'
+    )).toBe(true);
+    if (!r.ok) {
+      expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.fixed-contact-missing')).toBe(true);
+      expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.fixed-contact-missing/);
+    }
+  });
+
+  it('blocks disconnected solids instead of accepting floating decorative geometry', async () => {
     const r = await reviewCadTool({
       includeInterference: false,
       code: `
@@ -182,15 +205,16 @@ describe('review_cad MCP tool', () => {
       `,
     });
 
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(false);
     expect(r.diagnostics.some((diagnostic) =>
       diagnostic.code === 'assembly.mechanical.part-disconnected' &&
       diagnostic.severity === 'warning' &&
       diagnostic.message.includes('65.0 mm')
     )).toBe(true);
-    if (r.ok) {
-      expect(r.fitness.functional).toBe(true);
-      expect(r.fitness.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.part-disconnected')).toBe(false);
+    if (!r.ok) {
+      expect(r.fitness?.functional).toBe(false);
+      expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.part-disconnected')).toBe(true);
+      expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.part-disconnected/);
     }
   });
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 interface GalleryAuthor {
   handle: string;
@@ -30,12 +30,13 @@ interface GalleryJson {
 const MODEL_VIEWER_CDN =
   'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
 
-/** Lazy-load the model-viewer web component once on first mount. Match the
+/** Lazy-load the model-viewer web component only after a tile needs it. Match the
  * static landing page's CDN script-tag approach — keeps it out of the main
  * Vite bundle (the npm package is ~1MB minified) and shares the CDN cache
  * with any other page on kernelcad.com that loads it. */
-function useModelViewer(): void {
+function useModelViewer(enabled: boolean): void {
   useEffect(() => {
+    if (!enabled) return;
     if (typeof window === 'undefined') return;
     if (window.customElements?.get('model-viewer')) return;
     if (document.querySelector(`script[src="${MODEL_VIEWER_CDN}"]`)) return;
@@ -48,14 +49,92 @@ function useModelViewer(): void {
       // the custom element.
     };
     document.head.appendChild(script);
-  }, []);
+  }, [enabled]);
+}
+
+function useNearViewport<T extends Element>(): [RefObject<T | null>, boolean, () => void] {
+  const ref = useRef<T>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  const upgrade = () => setNearViewport(true);
+
+  useEffect(() => {
+    if (nearViewport) return;
+    if (typeof window === 'undefined') return;
+    const node = ref.current;
+    if (!node || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries.some(entry => entry.isIntersecting)) {
+          setNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '500px 0px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [nearViewport]);
+
+  return [ref, nearViewport, upgrade];
+}
+
+function GalleryTile({
+  entry,
+  onOpen,
+}: {
+  entry: GalleryEntry;
+  onOpen: (entry: GalleryEntry) => void;
+}) {
+  const [tileRef, shouldUpgrade, upgrade] = useNearViewport<HTMLButtonElement>();
+  const keepPosterOnly = entry.slug === 'royal-pop-pocket-watch';
+  useModelViewer(shouldUpgrade && !keepPosterOnly);
+
+  return (
+    <button
+      ref={tileRef}
+      key={entry.slug}
+      type="button"
+      onClick={() => {
+        upgrade();
+        onOpen(entry);
+      }}
+      onPointerEnter={upgrade}
+      onFocus={upgrade}
+      className="group relative aspect-square rounded-lg overflow-hidden border border-rule bg-vellum-soft hover:border-blueprint transition-colors text-left"
+      aria-label={`Open ${entry.title}`}
+    >
+      {shouldUpgrade && !keepPosterOnly ? (
+        // @ts-expect-error — model-viewer is a registered web component, not in JSX.IntrinsicElements
+        <model-viewer
+          src={entry.modelUrl}
+          poster={entry.posterUrl}
+          auto-rotate
+          auto-rotate-delay="0"
+          rotation-per-second="20deg"
+          touch-action="pan-y"
+          interaction-prompt="none"
+          reveal="auto"
+          disable-zoom
+          loading="lazy"
+          style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
+        />
+      ) : (
+        <img
+          src={entry.posterUrl}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover bg-vellum-soft"
+        />
+      )}
+    </button>
+  );
 }
 
 export function GallerySection() {
   const [entries, setEntries] = useState<GalleryEntry[] | null>(null);
   const [open, setOpen] = useState<GalleryEntry | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  useModelViewer();
 
   useEffect(() => {
     let cancelled = false;
@@ -103,28 +182,11 @@ export function GallerySection() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {entries.map(entry => (
-          <button
+          <GalleryTile
             key={entry.slug}
-            type="button"
-            onClick={() => setOpen(entry)}
-            className="group relative aspect-square rounded-lg overflow-hidden border border-rule bg-vellum-soft hover:border-blueprint transition-colors text-left"
-            aria-label={`Open ${entry.title}`}
-          >
-            {/* @ts-expect-error — model-viewer is a registered web component, not in JSX.IntrinsicElements */}
-            <model-viewer
-              src={entry.modelUrl}
-              poster={entry.posterUrl}
-              auto-rotate
-              auto-rotate-delay="0"
-              rotation-per-second="20deg"
-              touch-action="pan-y"
-              interaction-prompt="none"
-              reveal="auto"
-              disable-zoom
-              loading="lazy"
-              style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
-            />
-          </button>
+            entry={entry}
+            onOpen={setOpen}
+          />
         ))}
       </div>
 

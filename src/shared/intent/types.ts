@@ -148,6 +148,10 @@ export type FeatureKind =
   | 'referenceImage'
   // W2: HDRI / IBL render-environment node (capture-only, no OCCT output).
   | 'renderEnvironment'
+  // Camera-target override (capture-only, no OCCT output) — peer to
+  // renderEnvironment. Lets the script aim the auto-fit camera at an
+  // explicit (x, y, z) instead of the bbox centroid.
+  | 'cameraTarget'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

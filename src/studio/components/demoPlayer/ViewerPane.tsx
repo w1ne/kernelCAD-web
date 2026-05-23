@@ -8,9 +8,14 @@ export interface ViewerPaneProps {
   onSceneReady: (ctx: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer }) => void;
   width: number;
   height: number;
+  /** Suppress the kernelCAD vN.N.N badge in the bottom-right of the viewport.
+   *  Used by the headless render CLI's `--no-watermark` flag for clean
+   *  hero artifacts intended for public posts; tests / studio default
+   *  retains the watermark for traceability. */
+  noWatermark?: boolean;
 }
 
-export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneProps): React.JSX.Element {
+export function ViewerPane({ version, onSceneReady, width, height, noWatermark = false }: ViewerPaneProps): React.JSX.Element {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,11 +34,19 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1); // capture deterministic
-    // PBR-friendly output: linear-light pipeline with ACES filmic tone mapping
-    // mapping HDR linear → display sRGB. Pairs with MeshStandardMaterial in
-    // DemoPlayerPage to match the look agents see in modern CAD tools.
+    // PBR-friendly output: linear-light pipeline mapping HDR linear → display
+    // sRGB. Pairs with MeshStandardMaterial in DemoPlayerPage to match the
+    // look agents see in modern CAD tools.
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // NeutralToneMapping (added in three r158) maps mid-greys neutrally and
+    // preserves saturation in bright reds/pinks/oranges. ACES Filmic crushes
+    // saturated coral/pink baseColors toward a desaturated dark coral —
+    // visible on the pop-art pocket-watch pink frame (the agent authors
+    // #f8b3c0 but ACES rolls the red channel off so it reads as muted/dark).
+    // CAD palettes and design-review hero frames prize accurate hue, not
+    // film-emulation roll-off; brushed-metal / glass highlights still read
+    // correctly under Neutral.
+    renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1.0;
     // Transmission render target resolution: drop to 0.25× viewport so glass
     // materials (sapphire crystal, clear plastic, etc.) don't tank the frame
@@ -45,7 +58,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
     // project to many pixels even at the reduced transmission target) and
     // trims per-frame cost dramatically — important for captureDemo, which
     // renders ~1100 frames sequentially for the build + rotate timeline.
-    renderer.transmissionResolutionScale = 0.25;
+    renderer.transmissionResolutionScale = 1.0;
     mount.appendChild(renderer.domElement);
 
     // PMREM environment map: required for MeshPhysicalMaterial.transmission
@@ -122,7 +135,7 @@ export function ViewerPane({ version, onSceneReady, width, height }: ViewerPaneP
   return (
     <div style={{ position: 'relative', width, height }}>
       <div ref={mountRef} />
-      <Watermark version={version} />
+      {!noWatermark && <Watermark version={version} />}
     </div>
   );
 }

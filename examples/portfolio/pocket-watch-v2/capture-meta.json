@@ -1,0 +1,11 @@
+{
+  "taskId": "pocket-watch-v2",
+  "module": "portfolio",
+  "capturedAt": "2026-05-20T20:30:19.002Z",
+  "durationMs": 29600,
+  "truncated": true,
+  "gitSha": "6b4247f57f074874ffb1f67228b5451bff342514",
+  "heroArtifact": "pocket-watch-v2",
+  "catalogSource": "memorable-builds-policy/portfolio",
+  "overrideApprovedBy": null
+}
