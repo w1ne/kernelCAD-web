@@ -1,0 +1,50 @@
+name: dist-skills
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  generate:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci
+      - run: npm run dist:skills -- dist/skills-package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skills-package
+          path: dist/skills-package
+
+  publish:
+    needs: generate
+    runs-on: ubuntu-22.04
+    environment: dist-skills-publish      # manual-approval gate
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: skills-package, path: dist/skills-package }
+      - uses: actions/checkout@v4
+        with:
+          repository: kernelcad/skills
+          token: ${{ secrets.KERNELCAD_SKILLS_PUSH_TOKEN }}
+          path: skills-repo
+      - name: Replace contents and commit
+        run: |
+          set -euo pipefail
+          cd skills-repo
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R ../dist/skills-package/. .
+          git config user.name 'kernelcad-bot'
+          git config user.email 'bot@kernelcad.com'
+          git add -A
+          git commit -m "Sync from kernelcad ${GITHUB_REF_NAME}" || echo "no changes"
+          git tag "${GITHUB_REF_NAME}"
+          git push origin HEAD:main --follow-tags
+      - name: Notify eval cron
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: dist-skills-published

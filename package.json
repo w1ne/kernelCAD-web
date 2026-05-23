@@ -20,6 +20,7 @@
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",
+    "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
     "eval:ab": "npx tsx scripts/evalAb.ts",
     "portfolio:attempt": "npx tsx scripts/portfolioAttempt.ts",
