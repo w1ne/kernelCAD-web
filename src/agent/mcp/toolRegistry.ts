@@ -130,7 +130,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'inspect_assembly',
       description:
-        'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors, mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
+        'Evaluate a kernelCAD script and return an agent-facing physical assembly inventory: named parts, bboxes, connectors (topology-bound connector summaries carry `origin` as a `@kc[<part>/<kind>/<name>]` string plus the resolved [x,y,z] vec3; numeric-vec3 origins are echoed back as the tuple), mates, disconnected solids, mechanical review facts, and a next-action prompt. Use before design_loop or after a visual rejection to make random/floating geometry explicit.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -691,7 +691,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'list_edges',
       description:
-        'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, and boundary status. Use this to discover what edges are available before calling fillet/chamfer. Pass either { file } or { code }; query is an optional EdgeQuery object.',
+        'List edges of a kernelCAD shape with optional EdgeQuery filter. Returns each edge\'s id, midpoint, direction, length, curveType, convex, dihedralAngleDeg, boundary status, AND a stable `ref` string of the form `@kc[<owner>/edge/<refName>]` suitable for pasting into fillet/chamfer/add_connector. Pass either { file } or { code }; query is an optional EdgeQuery object.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -708,7 +708,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'list_faces',
       description:
-        'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id, centroid, normal, surfaceType, area, and label. Use for face introspection before shell/face references. Pass either { file } or { code }; query is an optional FaceQuery object.',
+        'List faces of a kernelCAD shape with optional FaceQuery filter. Returns each face\'s id (deprecated), centroid, normal, surfaceType, area, label, AND a stable `ref` string of the form `@kc[<owner>/face/<refName>]` plus a `lineage` struct with canonicalName / labelName / featureKind. Paste the ref into hole/holes/cutout/shell/add_connector/resolve_topo_ref. Pass either { file } or { code }; query is an optional FaceQuery object.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1099,7 +1099,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_connector',
       description:
-        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand or a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }). Returns the registered connector\'s { partName, name, type }.',
+        'Register a v0.6 mate-style connector on a named part of the active assembly. Requires a prior evaluate_script that called kcad.assembly(...). Origin accepts a [x, y, z] tuple shorthand, a structured ConnectorOrigin ({ kind: "vec3" | "topology", ... }), or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] topology ref string (the `#normal` modifier on a face ref yields face-normal). Returns the registered connector\'s { partName, name, type }.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -1107,7 +1107,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           part: { type: 'string', description: 'Part name declared via arm.part(name, ...).' },
           name: { type: 'string', description: 'Connector name (unique within the part).' },
           type: { type: 'string', enum: ['frame', 'axis', 'planar', 'ball'] },
-          origin: { description: 'Origin as [x, y, z] (vec3 shorthand) or a structured ConnectorOrigin.' },
+          origin: { description: 'Origin as [x, y, z] (vec3 shorthand), a structured ConnectorOrigin, or a @kc[<part>/face/<name>] topology ref string (face-center default; #normal modifier yields face-normal). @kc[<part>/edge/<name>] maps to edge-axis; @kc[<part>/vertex/<name>] maps to vertex.' },
           axis: { type: 'array', description: 'Optional [x, y, z] axis (axis connectors).' },
           normal: { type: 'array', description: 'Optional [x, y, z] normal (frame / planar connectors).' },
         },
@@ -1120,14 +1120,14 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_mate',
       description:
-        'Declare a typed mate between two named connectors on the active assembly. Connector refs are "<partName>.<connectorName>". Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
+        'Declare a typed mate between two named connectors on the active assembly. Connector refs accept "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]" (preferred). Mate types: fastened, revolute, prismatic, cylindrical, planar, ball, pin_slot. Optional pose and limitsDeg/limitsMm expose articulated intent for solver/review tools.',
       inputSchema: {
         type: 'object',
         properties: {
           assembly: { type: 'string' },
           name: { type: 'string', description: 'Mate name (unique within the assembly).' },
-          a: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
-          b: { type: 'string', description: 'Connector ref "<partName>.<connectorName>".' },
+          a: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
+          b: { type: 'string', description: 'Connector ref: "<partName>.<connectorName>" (legacy) or "@kc[<partName>/connector/<connectorName>]".' },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'] },
           pose: { description: 'Optional mate pose: number for scalar mates or [x, y, z] degrees for ball mates.' },
           limitsDeg: { type: 'array', description: 'Optional [minDeg, maxDeg] range for revolute/cylindrical/pin_slot mates.' },
