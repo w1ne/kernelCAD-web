@@ -171,7 +171,7 @@
   <dialog id="gallery-lightbox">
     <div class="lightbox-inner">
       <button class="lightbox-close" aria-label="Close" type="button">×</button>
-      <video class="lightbox-video" autoplay muted loop playsinline controls></video>
+      <div class="lightbox-stage"></div>
       <div class="lightbox-body">
         <h3 class="lightbox-title"></h3>
         <p class="lightbox-meta"></p>
@@ -268,15 +268,10 @@
       frame = requestAnimationFrame(tick);
     }
 
-    function upgradeGalleryTile(tile, entry, galleryCacheKey) {
-      if (tile.dataset.modelViewerUpgraded === 'true') return;
-
-      tile.dataset.modelViewerUpgraded = 'true';
-      loadModelViewer();
-
+    function createGalleryViewer(entry, galleryCacheKey, className) {
       const orbit = galleryTileOrbit(entry);
       const viewer = document.createElement('model-viewer');
-      viewer.className = 'tile-viewer';
+      viewer.className = className;
       viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey));
       viewer.setAttribute('poster', cacheKeyedUrl(entry.posterUrl, galleryCacheKey));
       viewer.setAttribute('alt', entry.title);
@@ -292,11 +287,28 @@
       viewer.setAttribute('reveal', 'auto');
       viewer.setAttribute('disable-zoom', '');
       viewer.setAttribute('loading', 'lazy');
+      if (orbit.faceForward) animateRoyalWatchFace(viewer);
+      return viewer;
+    }
+
+    function upgradeGalleryTile(tile, entry, galleryCacheKey) {
+      if (tile.dataset.modelViewerUpgraded === 'true') return;
+
+      tile.dataset.modelViewerUpgraded = 'true';
+      loadModelViewer();
+
+      const viewer = createGalleryViewer(entry, galleryCacheKey, 'tile-viewer');
 
       const poster = tile.querySelector('.tile-poster');
       if (poster) poster.replaceWith(viewer);
       else tile.prepend(viewer);
-      if (orbit.faceForward) animateRoyalWatchFace(viewer);
+    }
+
+    function mountLightboxModel(entry, galleryCacheKey) {
+      loadModelViewer();
+      const stage = document.querySelector('#gallery-lightbox .lightbox-stage');
+      stage.textContent = '';
+      stage.appendChild(createGalleryViewer(entry, galleryCacheKey, 'lightbox-viewer'));
     }
 
     function armGalleryTileUpgrade(tile, entry, galleryCacheKey) {
@@ -365,7 +377,6 @@
         upgradeGalleryTilesNearViewport(grid, galleryCacheKey);
 
         const dialog = document.getElementById('gallery-lightbox');
-        const video = dialog.querySelector('.lightbox-video');
         const title = dialog.querySelector('.lightbox-title');
         const meta = dialog.querySelector('.lightbox-meta');
         const promptEl = dialog.querySelector('.lightbox-prompt');
@@ -376,7 +387,7 @@
         const closeBtn = dialog.querySelector('.lightbox-close');
 
         function openLightbox(entry) {
-          video.src = cacheKeyedUrl(entry.videoUrl, galleryCacheKey);
+          mountLightboxModel(entry, galleryCacheKey);
           title.textContent = entry.title;
           meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
           promptEl.textContent = entry.prompt;
@@ -396,9 +407,7 @@
           dialog.showModal();
         }
         function closeLightbox() {
-          video.pause();
-          video.removeAttribute('src');
-          video.load();
+          dialog.querySelector('.lightbox-stage').textContent = '';
           dialog.close();
         }
         closeBtn.addEventListener('click', closeLightbox);
@@ -406,9 +415,7 @@
           if (e.target === dialog) closeLightbox();
         });
         dialog.addEventListener('close', () => {
-          video.pause();
-          video.removeAttribute('src');
-          video.load();
+          dialog.querySelector('.lightbox-stage').textContent = '';
         });
 
         // Expose for tile click handlers (closure captured above).
