@@ -238,6 +238,22 @@ export class CaptureSession {
    *  Lives on the session (not the record) because OCCT shapes carry
    *  circular references that would trip metadata walkers. */
   readonly importedGeometry: Map<string, ShapeBackend> = new Map();
+
+  /** Slice C: auto-emitted connectors keyed by feature/shape id. The
+   *  bracket-side bolt-holes-N rule (in modeling/parts/holeAutoConnectors)
+   *  registers connectors on the resulting hole feature here; the
+   *  bundled-parts manifest loader registers the pre-shipped frames on the
+   *  importedStep record. Untyped to avoid a cycle with modeling/parts. */
+  readonly autoConnectors: Map<string, ReadonlyArray<unknown>> = new Map();
+
+  /** Attach a set of auto-connectors to a feature/shape id. Subsequent calls
+   *  on the same id replace any previous entry. */
+  attachAutoConnectors(
+    shapeId: string,
+    connectors: ReadonlyArray<unknown>,
+  ): void {
+    this.autoConnectors.set(shapeId, connectors);
+  }
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
    *  OCCT text lowerer to resolve relative `fontPath(...)` arguments at
    *  lower time. Mirrors how `lib.fromSTEP(path)` threads scriptDir through

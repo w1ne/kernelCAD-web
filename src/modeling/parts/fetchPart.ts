@@ -6,7 +6,7 @@
 //   3. Remote     → fetch + verify sha256 + cache
 //   4. Throw `parts.fetch.remote-disabled` when no partsBaseUrl is set.
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import type { CaptureSession } from '../capture/captureSession';
 import { fromStepBytes } from './fromSTEP';
 import type { Shape } from '../capture/proxy';
@@ -19,6 +19,8 @@ import {
 } from './remoteClient';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { PartRecord } from '../../shared/parts/types';
+import { loadConnectorManifest } from '../../shared/parts/connectorManifest';
+import { formatTopoRef } from '../../kernel/naming';
 
 export interface FetchPartCtx {
   session: CaptureSession;
@@ -59,6 +61,7 @@ export async function fetchPartHost(
   if (direct) {
     const bytes = readFileSync(direct.stepPath);
     const shape = await fromStepBytes(ctx, bytes, direct.stepPath);
+    attachManifestConnectorsFromSidecar(ctx, shape, direct.stepPath);
     return { shape, record: direct.record };
   }
 
@@ -73,6 +76,7 @@ export async function fetchPartHost(
     const r = resolveById(catalog, matches[0].id)!;
     const bytes = readFileSync(r.stepPath);
     const shape = await fromStepBytes(ctx, bytes, r.stepPath);
+    attachManifestConnectorsFromSidecar(ctx, shape, r.stepPath);
     return { shape, record: r.record };
   }
   if (matches.length > 1 && opts.strict !== false) {
@@ -118,5 +122,39 @@ export async function fetchPartHost(
   } catch (e) {
     if (e instanceof RemoteDisabledError) throw e;
     throw e;
+  }
+}
+
+/**
+ * Load the per-part `<id>.json` connector manifest sidecar (when present) and
+ * attach the manifest's connectors to the captured shape via the session's
+ * autoConnectors map. The Slice C bracket-side auto-connector consumers use
+ * the same map, so the assembly resolver can mix authored + bundled parts
+ * without distinguishing the source.
+ */
+function attachManifestConnectorsFromSidecar(
+  ctx: FetchPartCtx,
+  shape: Shape,
+  stepPath: string,
+): void {
+  const manifestPath = stepPath.replace(/\.step$/, '.json');
+  if (!existsSync(manifestPath)) return;
+  try {
+    const manifest = loadConnectorManifest(manifestPath);
+    const conns = manifest.connectors.map((c) => ({
+      name: c.name,
+      ref: formatTopoRef({
+        owner: shape.id,
+        kind: 'connector',
+        segments: [c.name],
+      }),
+      origin: c.origin,
+      axis: c.type === 'axis' ? c.axis : c.normal,
+      type: 'frame' as const,
+    }));
+    ctx.session.attachAutoConnectors(shape.id, conns);
+  } catch {
+    // A malformed manifest must not break the import; the lowerer survives
+    // without the manifest's named connectors.
   }
 }
