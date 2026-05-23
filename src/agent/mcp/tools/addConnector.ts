@@ -7,9 +7,10 @@
 // this tool after authoring a script that constructs the parts.
 
 import type { Assembly } from '../../../modeling/capture/assembly';
-import { isKernelError } from '../../../shared/intent/kernelError';
+import { isKernelError, KernelError } from '../../../shared/intent/kernelError';
 import type { ConnectorOrigin, ConnectorType } from '../../../modeling/mates/connector';
 import type { Vec3 } from '../../../shared/intent/types';
+import { parseTopoRef } from '../../../kernel/naming';
 import { getActiveMcpSession } from '../activeSession';
 
 export interface AddConnectorInput {
@@ -17,7 +18,7 @@ export interface AddConnectorInput {
   part: string;
   name: string;
   type: ConnectorType;
-  origin: Vec3 | ConnectorOrigin;
+  origin: Vec3 | ConnectorOrigin | string;
   axis?: Vec3;
   normal?: Vec3;
 }
@@ -67,8 +68,59 @@ export async function addConnectorTool(input: AddConnectorInput): Promise<AddCon
   }
 }
 
-function normalizeOrigin(o: Vec3 | ConnectorOrigin): ConnectorOrigin {
-  return Array.isArray(o) ? { kind: 'vec3', value: o } : o;
+function normalizeOrigin(o: Vec3 | ConnectorOrigin | string): ConnectorOrigin {
+  if (Array.isArray(o)) return { kind: 'vec3', value: o };
+  if (typeof o === 'string') {
+    if (!o.startsWith('@kc[')) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `add_connector: string origin '${o}' must be a @kc[...] topology ref.`,
+        undefined,
+        `Pass either a [x,y,z] tuple, a structured ConnectorOrigin, or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] ref.`,
+      );
+    }
+    const parsed = parseTopoRef(o);
+    if ('error' in parsed) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `add_connector: malformed origin ref '${o}': ${parsed.error}.`,
+        undefined,
+        `Topology refs use the @kc[owner/kind/name] grammar. ${parsed.error}.`,
+      );
+    }
+    const name = parsed.segments[parsed.segments.length - 1];
+    if (name === undefined) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `add_connector: origin ref '${o}' has no entity name segment.`,
+        undefined,
+        `Append a name segment: '@kc[${parsed.owner}/${parsed.kind}/<name>]'.`,
+      );
+    }
+    if (parsed.kind === 'face') {
+      // Default for face refs is face-center per spec §3.4 modifier rules.
+      const isNormal = parsed.modifier === 'normal';
+      return {
+        kind: 'topology',
+        query: isNormal
+          ? { kind: 'face-normal', name }
+          : { kind: 'face-center', name },
+      };
+    }
+    if (parsed.kind === 'edge') {
+      return { kind: 'topology', query: { kind: 'edge-axis', name } };
+    }
+    if (parsed.kind === 'vertex') {
+      return { kind: 'topology', query: { kind: 'vertex', name } };
+    }
+    throw new KernelError(
+      'feature.invalid-args',
+      `add_connector: ref '${o}' has kind '${parsed.kind}'; expected face/edge/vertex.`,
+      undefined,
+      `Use a topology ref of kind face, edge, or vertex.`,
+    );
+  }
+  return o;
 }
 
 function resolveAssembly(

@@ -166,6 +166,9 @@ function kernelCadMeshEndpoint(): Plugin {
           let meshSession: {
             importedGeometry: Map<string, unknown>;
             getSurfaceRecord?: (id: string) => unknown;
+            cachedShapes?: Map<string, unknown>;
+            cachedFeatureMeshes?: Map<string, unknown>;
+            cachedAssemblyPartMeshes?: Map<string, Map<string, unknown>>;
           };
 
           if (sessionToken) {
@@ -181,6 +184,9 @@ function kernelCadMeshEndpoint(): Plugin {
             source = await readFile(entry.scriptPath, 'utf-8');
             records = entry.model.records;
             paramTable = entry.model.session.paramTable;
+            // The full CaptureSession carries `cachedShapes`,
+            // `cachedFeatureMeshes`, and `cachedAssemblyPartMeshes` —
+            // meshFeaturesPerFeature derives its own seedShapes from those.
             meshSession = entry.model.session as unknown as typeof meshSession;
           } else {
             const scriptPath = resolveExampleScript(script);
@@ -201,7 +207,9 @@ function kernelCadMeshEndpoint(): Plugin {
             records,
             paramTable,
             // The mesher accepts the optional session-shaped helper; the
-            // pooled CaptureSession satisfies the structural type.
+            // pooled CaptureSession satisfies the structural type and also
+            // carries the `cachedFeatureMeshes` / `cachedAssemblyPartMeshes`
+            // maps populated by this pass and reused on the next.
             meshSession as Parameters<typeof meshFeaturesPerFeature>[2],
           );
           if (meshing.failedFeatureIds.length > 0) {

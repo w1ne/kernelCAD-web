@@ -68,6 +68,73 @@ Closes the write-side export gap: one MCP entry point, three new format writers,
 #### Eval — cqe-task-export-trio
 
 - New integration eval round-trips a 2-part assembly through DXF (planar bracket), 3MF (multi-part), and GLB (PBR) in a single task. Scores 1.0 against the expert solution.
+### Added — `@kc[...]` topology-ref user-visible surface (F-surface)
+
+Lifts the F-foundation `@kc[owner/kind/name]` parser/resolver into the
+agent-visible surface so MCP tools both emit and accept refs end-to-end. A new
+discovery primitive, ref-aware diagnostics, and topology-bound connector
+origins close the long-standing mate-connector binding gap.
+
+#### Added — `resolve_topo_ref` MCP tool
+
+Discovery primitive that walks a captured snapshot and resolves an
+`@kc[<owner>/<kind>/<name>#<modifier>]` ref to its concrete shape, face, edge,
+vertex, or connector — returning the resolved record plus, for ambiguous
+queries, a list of candidate refs the agent can re-cite verbatim. Pairs with
+`list_faces` / `list_edges` so an agent can walk from "what's on this part?"
+to "give me the exact ref" without leaving the MCP surface.
+
+#### Changed — diagnostics emit `@kc[...]` refs
+
+- `list_faces` and `list_edges` now emit `@kc[...]` refs alongside the legacy
+  `id` field. The `id` field is deprecated and will be removed in the next
+  minor — switch callers to the `ref` field.
+- `inspect_assembly` connector summaries emit a string `origin` for
+  topology-bound origins, plus `resolved: [x,y,z]` for the cached numeric
+  value and `originRaw` for one-release transition. Coordinate-triple origins
+  continue to emit the structured Vec3 form unchanged.
+- `feature.face-ref.*` diagnostic codes (ambiguous-by-ordinal,
+  no-match-for-name, naming-unsafe-character, etc.) surface a structured
+  candidate-ref list through `KernelError.hint` per the "cite candidate refs"
+  prose — agents see the exact strings they need to re-try with.
+
+#### Changed — MCP input acceptance
+
+- `add_mate`, `add_connector`, `add_feature`, and the internal
+  `normalizeFaceSelector` helper accept `@kc[...]` strings alongside the
+  existing structured `{ part, faceLabel }` / `{ part, faceOrdinal }` forms.
+  Backward compatible — every existing input shape still works.
+- Both surface levels of mate/connector authoring are now ref-aware: capture
+  helpers consume refs at design time, MCP tools consume refs at agent time.
+
+#### Added — topology-bound connector origins
+
+`partRef.connector(name, { origin: '@kc[<part>/face|connector|edge|vertex/<name>]', ... })`
+binds the connector origin to a topology entity at capture time instead of
+requiring a manual `[x, y, z]` coordinate triple. The capture step resolves
+the ref against the part's snapshot, caches the resolved Vec3 in the
+serialized record, and a downstream mate via that connector survives an
+upstream fillet on the bound face. Closes the assembly mate-connector
+topology-binding gap.
+
+#### Added — eval task `topology-refs`
+
+Locks the round-trip property end-to-end: face refs emitted by `list_faces`
+survive being fed back through `add_mate` after an upstream fillet renumbers
+ordinals; the splitting-op case (a fillet that produces multiple new faces)
+surfaces an `ambiguous-by-ordinal` diagnostic with a candidate-ref list. The
+expert solution scores 1.0.
+
+#### Skill docs
+
+- `kernelcad/SKILL.md` — adds the `@kc[...]` ref grammar with a
+  derived-vs-source discipline note (refs are agent-routing artifacts, never
+  the design source of truth).
+- `kernelcad-mcp/SKILL.md` — documents `resolve_topo_ref`, the updated
+  list / inspect tool shapes, and the input-acceptance widening.
+- `kernelcad-assemblies/SKILL.md` — documents topology-bound connector
+  origins with worked examples for face / connector / edge / vertex
+  bindings.
 
 ### Breaking change — topology-ref-safe naming (F-foundation)
 

@@ -190,6 +190,26 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** Per-feature triangle-mesh cache populated by `meshFeaturesPerFeature`.
+   *  Reused on subsequent mesh requests when the feature's lowered shape is
+   *  still in `cachedShapes` (i.e. it was skipped by `params.update`'s
+   *  first-affected scan). Keyed by FeatureId; the value is the full
+   *  `FeatureMesh` so non-assembly records can be re-emitted without calling
+   *  `meshShape` again. Invalidated entry-by-entry on `params.update` for the
+   *  records the engine actually re-lowered. Type is `unknown` to avoid
+   *  pulling the `FeatureMesh` import into the captureSession boundary; the
+   *  meshing layer re-casts at use. */
+  readonly cachedFeatureMeshes: Map<string, unknown> = new Map();
+  /** Per-assembly-part triangle-mesh cache. Outer key is the assembly's
+   *  FeatureId (e.g. `solvedAssembly_1`), inner key is the part name (e.g.
+   *  `drive sun gear`). Value carries the cached triangle data (`faces`,
+   *  `volume?`, `edges?`); the fresh world transform is taken from the
+   *  freshly-re-lowered SceneBackend each pass. Invalidated whole-assembly
+   *  only when an upstream feature actually changed the part's local
+   *  geometry (`params.update` re-lowers the assembly but per-part LOCAL
+   *  shapes are unchanged when only mate poses moved). Type is `unknown` for
+   *  the same boundary reason as `cachedFeatureMeshes`. */
+  readonly cachedAssemblyPartMeshes: Map<string, Map<string, unknown>> = new Map();
   /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
    *  first run. Reused by `params.update` so `onRelower` subscribers added
    *  after the initial build still receive re-lower events.
