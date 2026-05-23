@@ -75,57 +75,57 @@ function axisConnector(origin: [number, number, number], axis: [number, number, 
 const stool = assembly('exposed ratchet height-adjust stool');
 
 const seatDisk = stool.part(
-  'round laminated wood seat with softened edge',
+  'round-laminated-wood-seat-with-softened-edge',
   cylZ(seatThickness, seatRadius, seatZ, 128)
     .fillet(mm(3))
     .color('#9a6b3f'),
 );
 const cushion = stool.part(
-  'thin dark cork cushion pad bonded to seat top',
+  'thin-dark-cork-cushion-pad-bonded-to-seat-top',
   cylZ(cushionThickness, seatRadius - mm(9), seatZ + seatThickness, 128)
     .fillet(mm(2))
     .color('#2b2925'),
 );
 seatDisk.connector('top-pad-face', frameConnector([0, 0, seatZ + seatThickness]));
 cushion.connector('seat-contact-face', frameConnector([0, 0, seatZ + seatThickness]));
-stool.mate('seat-pad-bond', 'round laminated wood seat with softened edge.top-pad-face', 'thin dark cork cushion pad bonded to seat top.seat-contact-face', 'fastened');
+stool.mate('seat-pad-bond', 'round-laminated-wood-seat-with-softened-edge.top-pad-face', 'thin-dark-cork-cushion-pad-bonded-to-seat-top.seat-contact-face', 'fastened');
 stool.fixed('cork pad bonded concentrically to wood seat', seatDisk, cushion, { origin: [0, 0, seatZ + seatThickness] });
 
 const undersidePlate = stool.part(
-  'black steel underside load-spreader plate below seat',
+  'black-steel-underside-load-spreader-plate-below-seat',
   cylZ(mm(7), mm(42), undersidePlateBaseZ, 80)
     .color('#202428'),
 );
 seatDisk.connector('underseat-bolt-face', frameConnector([0, 0, seatZ]));
 undersidePlate.connector('seat-bolt-face', frameConnector([0, 0, seatZ]));
-stool.mate('seat-to-load-spreader', 'round laminated wood seat with softened edge.underseat-bolt-face', 'black steel underside load-spreader plate below seat.seat-bolt-face', 'fastened');
+stool.mate('seat-to-load-spreader', 'round-laminated-wood-seat-with-softened-edge.underseat-bolt-face', 'black-steel-underside-load-spreader-plate-below-seat.seat-bolt-face', 'fastened');
 stool.fixed('seat bolted to underside load-spreader plate', seatDisk, undersidePlate, { origin: [0, 0, seatZ - mm(3)] });
 
 const innerPost = stool.part(
-  'bright telescoping inner post ending below seat plate',
+  'bright-telescoping-inner-post-ending-below-seat-plate',
   cylZ(innerPostHeight, innerPostRadius, innerPostBaseZ, 80)
     .color('#d6dadd'),
 );
 innerPost.connector('height-slide', axisConnector([0, 0, innerPostBaseZ], [0, 0, 1]));
 innerPost.connector('top-plate-face', frameConnector([0, 0, undersidePlateBaseZ]));
 undersidePlate.connector('post-face', frameConnector([0, 0, undersidePlateBaseZ]));
-stool.mate('post-to-seat-plate', 'bright telescoping inner post ending below seat plate.top-plate-face', 'black steel underside load-spreader plate below seat.post-face', 'fastened');
+stool.mate('post-to-seat-plate', 'bright-telescoping-inner-post-ending-below-seat-plate.top-plate-face', 'black-steel-underside-load-spreader-plate-below-seat.post-face', 'fastened');
 stool.fixed('inner post bears under the seat plate', undersidePlate, innerPost, { origin: [0, 0, sleeveTopZ] });
 
 const outerSleeve = stool.part(
-  'matte black outer sleeve guiding telescoping post',
+  'matte-black-outer-sleeve-guiding-telescoping-post',
   cylZ(sleeveHeight, sleeveRadius, baseZ, 96)
     .color('#22272b'),
 );
 outerSleeve.connector('height-rail', axisConnector([0, 0, innerPostBaseZ], [0, 0, 1]));
-stool.mate('height-adjust', 'matte black outer sleeve guiding telescoping post.height-rail', 'bright telescoping inner post ending below seat plate.height-slide', 'prismatic', {
+stool.mate('height-adjust', 'matte-black-outer-sleeve-guiding-telescoping-post.height-rail', 'bright-telescoping-inner-post-ending-below-seat-plate.height-slide', 'prismatic', {
   pose: heightAdjustMm.multiply(previewScale),
   limitsMm: [0, 34],
 });
 stool.fixed('outer sleeve captures inner post with visible running clearance', outerSleeve, innerPost, { origin: [0, 0, sleeveTopZ] });
 
 const upperCollar = stool.part(
-  'split clamp collar at top of sleeve',
+  'split-clamp-collar-at-top-of-sleeve',
   cylZ(collarHeight, collarRadius, sleeveTopZ - collarHeight, 96)
     .subtract(cylZ(collarHeight + mm(1), sleeveRadius + mm(1.4), sleeveTopZ - collarHeight - mm(0.5), 96))
     .color('#353b40'),
@@ -133,21 +133,21 @@ const upperCollar = stool.part(
 stool.fixed('split collar clamps sleeve mouth around sliding post', outerSleeve, upperCollar, { origin: [0, 0, sleeveTopZ - collarHeight / 2] });
 
 const rackBacker = stool.part(
-  'vertical ratchet rack backer welded to inner post',
+  'vertical-ratchet-rack-backer-welded-to-inner-post',
   box(mm(8), mm(7), mm(72), true)
     .translate(innerPostRadius + mm(4), 0, sleeveTopZ + mm(22))
     .color('#c5c9cc'),
 );
 innerPost.connector('rack-weld-face', frameConnector([innerPostRadius, 0, sleeveTopZ + mm(22)]));
 rackBacker.connector('post-weld-face', frameConnector([innerPostRadius, 0, sleeveTopZ + mm(22)]));
-stool.mate('rack-to-post-weld', 'bright telescoping inner post ending below seat plate.rack-weld-face', 'vertical ratchet rack backer welded to inner post.post-weld-face', 'fastened');
+stool.mate('rack-to-post-weld', 'bright-telescoping-inner-post-ending-below-seat-plate.rack-weld-face', 'vertical-ratchet-rack-backer-welded-to-inner-post.post-weld-face', 'fastened');
 stool.fixed('rack backer welded to telescoping post', innerPost, rackBacker, { origin: [innerPostRadius, 0, sleeveTopZ + mm(22)] });
 
 const toothOwner = rackBacker;
 for (let i = 0; i < 9; i += 1) {
   const z = sleeveTopZ - mm(9) + i * mm(8);
   const tooth = stool.part(
-    `forward-facing ratchet tooth ${i + 1}`,
+    `forward-facing-ratchet-tooth-${i + 1}`,
     box(mm(13), mm(9), mm(2.6), true)
       .rotate([0, 1, 0], -22)
       .translate(innerPostRadius + mm(10.5), 0, z)
@@ -155,12 +155,12 @@ for (let i = 0; i < 9; i += 1) {
   );
   rackBacker.connector(`tooth-${i + 1}-seat`, frameConnector([innerPostRadius + mm(8), 0, z]));
   tooth.connector('rack-seat', frameConnector([innerPostRadius + mm(8), 0, z]));
-  stool.mate(`ratchet-tooth-${i + 1}-weld`, `vertical ratchet rack backer welded to inner post.tooth-${i + 1}-seat`, `forward-facing ratchet tooth ${i + 1}.rack-seat`, 'fastened');
+  stool.mate(`ratchet-tooth-${i + 1}-weld`, `vertical-ratchet-rack-backer-welded-to-inner-post.tooth-${i + 1}-seat`, `forward-facing-ratchet-tooth-${i + 1}.rack-seat`, 'fastened');
   stool.fixed('ratchet tooth welded to rack backer on post', toothOwner, tooth, { origin: [innerPostRadius + mm(8), 0, z] });
 }
 
 const pawlPivot = stool.part(
-  'round pawl pivot boss on sleeve',
+  'round-pawl-pivot-boss-on-sleeve',
   cylinder(mm(10), mm(8), 48)
     .alongAxis([0, 1, 0])
     .translate(sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8))
@@ -169,7 +169,7 @@ const pawlPivot = stool.part(
 stool.fixed('pawl pivot boss welded to outer sleeve', outerSleeve, pawlPivot, { origin: [sleeveRadius + mm(3), mm(-4), sleeveTopZ + mm(8)] });
 
 const pawlLever = stool.part(
-  'curved-release pawl lever biting into rack teeth',
+  'curved-release-pawl-lever-biting-into-rack-teeth',
   box(mm(54), mm(7), mm(5), true)
     .rotate([0, 1, 0], 12)
     .translate(sleeveRadius + mm(24), mm(-9), sleeveTopZ + mm(21))
@@ -178,7 +178,7 @@ const pawlLever = stool.part(
 stool.fixed('pawl lever rotates on pivot and rests against one rack tooth', pawlPivot, pawlLever, { origin: [sleeveRadius + mm(9), mm(-7), sleeveTopZ + mm(17)] });
 
 const pawlNose = stool.part(
-  'hardened pawl nose seated between ratchet teeth',
+  'hardened-pawl-nose-seated-between-ratchet-teeth',
   box(mm(11), mm(9), mm(6), true)
     .rotate([0, 1, 0], -20)
     .translate(innerPostRadius + mm(15), mm(-6), sleeveTopZ + mm(18))
@@ -187,7 +187,7 @@ const pawlNose = stool.part(
 stool.fixed('pawl nose contacts the rack tooth face without crossing the post', pawlLever, pawlNose, { origin: [innerPostRadius + mm(15), mm(-6), sleeveTopZ + mm(18)] });
 
 const releaseKnob = stool.part(
-  'small red thumb tab on pawl release lever',
+  'small-red-thumb-tab-on-pawl-release-lever',
   cylinder(mm(8), mm(6), 32)
     .alongAxis([0, 1, 0])
     .translate(sleeveRadius + mm(51), mm(-13), sleeveTopZ + mm(27))
@@ -196,7 +196,7 @@ const releaseKnob = stool.part(
 stool.fixed('thumb tab fixed to end of pawl release lever', pawlLever, releaseKnob, { origin: [sleeveRadius + mm(50), mm(-12), sleeveTopZ + mm(27)] });
 
 const spring = stool.part(
-  'visible return spring from collar lug to pawl lever',
+  'visible-return-spring-from-collar-lug-to-pawl-lever',
   cylinder(mm(36), mm(1.5), 16)
     .alongAxis([0.925, -0.185, -0.324])
     .translate(sleeveRadius + mm(6), mm(3), sleeveTopZ + mm(2))
@@ -205,7 +205,7 @@ const spring = stool.part(
 stool.fixed('return spring pulls pawl lever back into rack', upperCollar, spring, { origin: [sleeveRadius + mm(8), mm(2), sleeveTopZ + mm(2)] });
 
 const footRing = stool.part(
-  'circular tubular foot ring welded around lower sleeve',
+  'circular-tubular-foot-ring-welded-around-lower-sleeve',
   torus(mm(54), mm(3.2), 96)
     .translate(0, 0, footRingZ)
     .color('#4b545b'),
@@ -215,12 +215,12 @@ stool.fixed('foot ring welded to lower sleeve struts', outerSleeve, footRing, { 
 for (const deg of [45, 135, 225, 315]) {
   const top = radialPoint(mm(24), deg, legTopZ);
   const foot = radialPoint(mm(82), deg, legFootZ);
-  const legSpec = tubeBetween(`splayed tubular leg ${deg} degrees`, top, foot, mm(5.2), '#30373d');
+  const legSpec = tubeBetween(`splayed-tubular-leg-${deg}-degrees`, top, foot, mm(5.2), '#30373d');
   const leg = stool.part(legSpec.name, legSpec.shape);
   stool.fixed('splayed tube leg welded to central sleeve skirt', outerSleeve, leg, { origin: top });
 
   const footPad = stool.part(
-    `rubber leveling foot pad ${deg} degrees`,
+    `rubber-leveling-foot-pad-${deg}-degrees`,
     cylinder(mm(6), mm(10), 40)
       .translate(foot[0], foot[1], 0)
       .color('#1b1b1b'),
@@ -228,7 +228,7 @@ for (const deg of [45, 135, 225, 315]) {
   stool.fixed('rubber foot pad pressed onto tube leg end', leg, footPad, { origin: foot });
 
   const ringStrutSpec = tubeBetween(
-    `short foot-ring support strut ${deg} degrees`,
+    `short-foot-ring-support-strut-${deg}-degrees`,
     radialPoint(mm(19), deg, footRingZ),
     radialPoint(mm(54), deg, footRingZ),
     mm(2.5),

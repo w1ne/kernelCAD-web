@@ -38,7 +38,7 @@ describe('exportGlb', () => {
     const out = path.join(tmp, 'model.glb');
     writeFileSync(script, `
 const model = assembly('colored model');
-const body = model.part('pink pbr body', box(10, 10, 10, true).material({
+const body = model.part('pink-pbr-body', box(10, 10, 10, true).material({
   baseColor: '#ff2f87',
   metalness: 0,
   roughness: 0.34,
