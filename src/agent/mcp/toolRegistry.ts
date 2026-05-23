@@ -54,6 +54,7 @@ import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
+import { dfmPreflightTool } from './tools/dfmPreflight';
 
 export interface McpToolDefinition {
   name: string;
@@ -1417,6 +1418,35 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'dfm_preflight',
+      description:
+        'Preflight a sheet-metal flat pattern or planar body against a job-shop\'s public ordering rules. ' +
+        'Required: vendor (e.g. "sendcutsend"), material SKU (from catalog.json), and thicknessIn or thicknessMm. ' +
+        'Returns { ok, findings[], diagnostics[] } where findings carry repairHint.action ' +
+        '(enlarge | remove | relocate | change-material | change-thickness) and an @kc[...] ref. ' +
+        'Tool fails closed when vendor / material / thickness are omitted. Source: .kcad.ts script ' +
+        '(via flatten_pattern + get_bend_table) or DXF file path. STEP path ships in a follow-up slice.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          dxf:  { type: 'string', description: 'Path to a DXF file.' },
+          featureId: { type: 'string', description: 'Optional FeatureId to scope to.' },
+          vendor: { type: 'string', description: 'Vendor SKU (required). See catalogs/sources-manifest.json.' },
+          material: { type: 'string', description: 'Material SKU (required). See catalog.json.' },
+          thicknessIn: { type: 'number', description: 'Material thickness in inches.' },
+          thicknessMm: { type: 'number', description: 'Material thickness in millimeters.' },
+          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'] },
+          refreshCatalog: { type: 'boolean', description: 'Force refresh of the vendor catalog (24h cache).' },
+        },
+        required: ['vendor', 'material'],
+      },
+    },
+    handler: input => dfmPreflightTool(input as unknown as Parameters<typeof dfmPreflightTool>[0]) as Promise<unknown>,
   },
   {
     definition: {
