@@ -18,6 +18,17 @@ a ref-safe form (e.g. `topBottom`, `armElbow`, `root`). The user-visible
 `@kc[...]` resolution surface (MCP tools, SKILL docs, agent-visible
 diagnostics) ships in the follow-up F-surface slice.
 
+### Renamed — kernelcad-sdf skill → kernelcad-fields
+
+The skill teaching signed-distance fields (sphere/box/cylinder/torus +
+`smoothBlend` + `materialize`) was renamed from `kernelcad-sdf` to
+`kernelcad-fields` to free the "SDF" abbreviation for upcoming Gazebo SDFormat
+export. Public API is unchanged: `sdf.*` namespace, `SdfField` type, and the
+`evaluate_sdf` MCP tool keep their existing names.
+
+A deprecation alias `kernelcad-sdf` is available for one version; load
+`kernelcad-fields` directly going forward.
+
 ## v0.11.0 — 2026-05-18 — NURBS Slice D: 2D path NURBS authoring
 
 Closes the 2D path-NURBS gap flagged in memory `kernelcad_path_nurbs_gap` (2026-05-17). `PathBuilder` now offers three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives, so 2D sketch outlines can include explicit B-spline segments instead of polylines or arc chains. After Slice D, all NURBS authoring lanes (3D curves, 3D surfaces, 2D paths) have parity. The `eyewear-wayfarer-front` eval artifact replaces its perfectly circular lens cutouts with `path().spline(...)` rounded-rectangle profiles.
