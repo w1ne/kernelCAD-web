@@ -33,6 +33,7 @@ import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { getFaceLineageTool } from './tools/getFaceLineage';
+import { resolveTopoRefTool } from './tools/resolveTopoRef';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -719,6 +720,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listFacesTool(input as Parameters<typeof listFacesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'resolve_topo_ref',
+      description:
+        'Resolve a single @kc[owner/kind/name] topology reference against a kernelCAD script\'s lowered geometry. Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          ref: { type: 'string', description: 'Topology reference of the form @kc[owner/kind/name] or @kc[owner/kind/name#modifier].' },
+          feature_id: { type: 'string', description: 'Optional FeatureId to resolve against; defaults to the last lowered shape.' },
+        },
+        required: ['ref'],
+      },
+    },
+    handler: input => resolveTopoRefTool(input as unknown as Parameters<typeof resolveTopoRefTool>[0]),
   },
   {
     definition: {
