@@ -64,12 +64,15 @@ export async function authedFetch<T>(
 // Projects
 // ---------------------------------------------------------------------------
 
+export type ProjectPrivacy = 'public_unlisted' | 'public_featured' | 'private';
+
 export interface SaveProjectInput {
   generationId: string;
   anonId?: string;
   title: string;
   code: string;
   parameters: Artifact['parameters'];
+  privacy?: Extract<ProjectPrivacy, 'public_unlisted' | 'private'>;
 }
 
 export interface SaveProjectResult {
@@ -85,7 +88,8 @@ export interface ProjectRow {
   id: string;
   slug: string;
   title: string;
-  privacy: 'public' | 'private';
+  privacy: ProjectPrivacy | 'public';
+  featured_at?: string | null;
   current_code: string;
   parameters: Artifact['parameters'];
   version: number;
@@ -97,7 +101,7 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('projects')
-    .select('id, slug, title, privacy, current_code, parameters, version, updated_at, owner_id')
+    .select('id, slug, title, privacy, featured_at, current_code, parameters, version, updated_at, owner_id')
     .eq('slug', slug)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -108,7 +112,7 @@ export async function listMyProjects(): Promise<ProjectRow[]> {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('projects')
-    .select('id, slug, title, privacy, current_code, parameters, version, updated_at, owner_id')
+    .select('id, slug, title, privacy, featured_at, current_code, parameters, version, updated_at, owner_id')
     .order('updated_at', { ascending: false });
   if (error) throw new Error(error.message);
   return (data as ProjectRow[] | null) ?? [];

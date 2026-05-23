@@ -60,6 +60,7 @@ function AnonGenPage() {
         title: gen!.prompt.slice(0, 60),
         code: gen!.code,
         parameters: [],
+        privacy: 'public_unlisted',
       });
       void navigate({ to: '/p/$slug', params: { slug: result.slug } });
     } catch (err) {
@@ -90,22 +91,29 @@ function AnonGenPage() {
     </div>
   );
 
-  const headerRight = session ? (
-    <button
-      type="button"
-      onClick={() => void handleSave()}
-      disabled={savingState === 'saving'}
-      className="px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
-    >
-      {savingState === 'saving' ? 'Saving…' : savingState === 'error' ? 'Retry save' : 'Save'}
-    </button>
-  ) : (
-    <SignInButton
-      redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
-      className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
-    >
-      Sign in to save
-    </SignInButton>
+  const headerRight = (
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap">
+        Free saves are public by link.
+      </span>
+      {session ? (
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={savingState === 'saving'}
+          className="px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+        >
+          {savingState === 'saving' ? 'Saving…' : savingState === 'error' ? 'Retry save' : 'Save'}
+        </button>
+      ) : (
+        <SignInButton
+          redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors"
+        >
+          Sign in to save
+        </SignInButton>
+      )}
+    </div>
   );
 
   return <App initialCode={gen.code} headerLeft={headerLeft} headerRight={headerRight} />;
