@@ -14,6 +14,20 @@
 - Six new `parts.*` diagnostic codes covering missing input, offline cache miss, sha256 mismatch, sha256 drift, remote API errors, and remote-tier-disabled paths.
 - `src/shared/cache/userCache.ts`: per-consumer user cache helper extracted from the texture loader; textures keep their 1-week TTL, parts run with no expiry on bundled bytes plus sha256-verified remote bytes.
 
+### Added — Shopcheck (Slice E)
+
+- `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public
+  ordering rules. Required inputs: vendor, material, thickness. Findings carry
+  a `repairHint.action` from `{enlarge, remove, relocate, change-material,
+  change-thickness}` and an `@kc[...]` ref that round-trips through
+  `resolve_topo_ref` back to the source feature.
+- `kernelcad-shopcheck` skill (orchestrator for `dfm_preflight`).
+- 24 new `dfm.*` diagnostic codes under the new `dfm` group. DXF file-input
+  path accepts `dxf:` alongside `file:` / `code:`.
+- `scripts/refreshCatalog.ts` + `shopcheck:refresh` npm script: 24-hour TS
+  catalog refresh, sha256 provenance on every source page.
+- Eval tasks `shopcheck-bracket-preflight` and `shopcheck-repair-loop`.
+
 ### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
 
 Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.

@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 139 codes', () => {
+  it('catalogue has exactly 163 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -79,15 +79,19 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  2 camera-target override (non-finite-target / invalid-distance)
     //  +  1 assembly mechanical fixed-contact-missing (develop)
     //  +  1 F-foundation @kc topology refs (feature.face-ref.snapshot-fallback-used)
-    // = 127, but the assembly mechanical fixed-contact-missing row above is
-    //   double-counted with the Assembly-fold bucket (bucket was last
-    //   itemised at 31 codes; live count = 32). Net catalogue = 126.
     //  +  7 Slice A export trio (options-format-mismatch + six per-format
     //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
     //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
-    //  +  6 Slice C parts.* codes (parts.input.*, parts.fetch.*).
-    // Net catalogue = 139.
-    expect(catalogue.size).toBe(139);
+    //  +  6 Slice C parts.* codes (parts.input.id-or-query-required,
+    //       parts.fetch.offline-and-uncached, parts.fetch.checksum-mismatch,
+    //       parts.fetch.checksum-drift, parts.fetch.api-error,
+    //       parts.fetch.remote-disabled).
+    //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
+    //       web/bend/bending/size/dxf/rule).
+    // = 164, but the assembly mechanical fixed-contact-missing row above is
+    //   double-counted with the Assembly-fold bucket (bucket was last
+    //   itemised at 31 codes; live count = 32). Net catalogue = 163.
+    expect(catalogue.size).toBe(163);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
