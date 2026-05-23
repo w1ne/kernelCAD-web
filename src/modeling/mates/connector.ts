@@ -8,6 +8,8 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { Shape } from '../capture/proxy';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { resolveTopologyOriginOnBackend } from '../backends/occt/connectorTopology';
+import { parseTopoRef } from '../../kernel/naming';
+import { KernelError } from '../../shared/intent/kernelError';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';
 
@@ -37,6 +39,97 @@ export interface MakeConnectorInput {
   origin: ConnectorOrigin;
   axis?: Vec3;
   normal?: Vec3;
+}
+
+/** Capture-time input form for `Connector.origin`. Accepts the canonical
+ *  structured `ConnectorOrigin` union OR a `@kc[<part>/<kind>/<name>]` string
+ *  ref. The string form is normalised via `normalizeConnectorOriginInput`
+ *  before the connector record is built. */
+export type ConnectorOriginInput = ConnectorOrigin | string;
+
+/**
+ * Normalise a capture-time connector-origin input into the structured
+ * `ConnectorOrigin` union.
+ *
+ * - Structured forms (`{ kind: 'vec3', ... }` / `{ kind: 'topology', ... }`)
+ *   pass through unchanged.
+ * - `@kc[<partName>/<kind>/<name>]` strings parse into a topology query.
+ *   * `face` refs default to `face-center`; `#normal` modifier yields
+ *     `face-normal`.
+ *   * `edge` refs map to `edge-axis`.
+ *   * `vertex` refs map to `vertex`.
+ * - Any other string form (bare canonical names, dot-form refs, etc.) is
+ *   rejected with `feature.invalid-args` — the only string acceptance at
+ *   the capture-time origin slot is the `@kc[...]` ref form, so authors
+ *   never accidentally bind a connector to a stale label string.
+ *
+ * The ref's `owner` must equal the `partName` argument. This pins
+ * connectors to the part they live on (a `arm.part('servo')` connector
+ * cannot reference `@kc[other/face/...]`) and prevents accidental cross-
+ * part topology binding.
+ */
+export function normalizeConnectorOriginInput(
+  input: ConnectorOriginInput,
+  partName: string,
+): ConnectorOrigin {
+  if (typeof input !== 'string') {
+    return input;
+  }
+  if (!input.startsWith('@kc[')) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `connector origin string '${input}' must be a @kc[...] topology ref.`,
+      undefined,
+      `Pass either a structured ConnectorOrigin ({ kind: 'vec3' | 'topology', ... }) or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] ref.`,
+    );
+  }
+  const parsed = parseTopoRef(input);
+  if ('error' in parsed) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `connector origin '${input}' is malformed: ${parsed.error}.`,
+      undefined,
+      `Topology refs use the @kc[owner/kind/name] grammar. ${parsed.error}.`,
+    );
+  }
+  if (parsed.owner !== partName) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `connector origin '${input}' references part '${parsed.owner}', but the connector is being added to part '${partName}'.`,
+      undefined,
+      `Use a ref whose owner segment matches the part name: '@kc[${partName}/${parsed.kind}/<name>]'.`,
+    );
+  }
+  const name = parsed.segments[parsed.segments.length - 1];
+  if (name === undefined) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `connector origin '${input}' has no entity name segment.`,
+      undefined,
+      `Append a name segment: '@kc[${parsed.owner}/${parsed.kind}/<name>]'.`,
+    );
+  }
+  if (parsed.kind === 'face') {
+    const isNormal = parsed.modifier === 'normal';
+    return {
+      kind: 'topology',
+      query: isNormal
+        ? { kind: 'face-normal', name }
+        : { kind: 'face-center', name },
+    };
+  }
+  if (parsed.kind === 'edge') {
+    return { kind: 'topology', query: { kind: 'edge-axis', name } };
+  }
+  if (parsed.kind === 'vertex') {
+    return { kind: 'topology', query: { kind: 'vertex', name } };
+  }
+  throw new KernelError(
+    'feature.invalid-args',
+    `connector origin '${input}' has kind '${parsed.kind}'; expected face/edge/vertex.`,
+    undefined,
+    `Use a topology ref of kind face, edge, or vertex.`,
+  );
 }
 
 export function makeConnector(input: MakeConnectorInput): Connector {

@@ -6,8 +6,9 @@ import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../.
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../../shared/intent/types';
 import {
   makeConnector,
+  normalizeConnectorOriginInput,
   type Connector,
-  type ConnectorOrigin,
+  type ConnectorOriginInput,
   type ConnectorType,
 } from '../mates/connector';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
@@ -67,7 +68,14 @@ export type Poses = Record<string, PoseValue>;
  */
 export interface AssemblyConnectorOpts {
   type: ConnectorType;
-  origin: ConnectorOrigin;
+  /** Origin coordinate frame. Accepts either the structured `ConnectorOrigin`
+   *  union (`{ kind: 'vec3', value }` / `{ kind: 'topology', query }`) OR a
+   *  `@kc[<partName>/face/<name>]` / `@kc[<partName>/edge/<name>]` /
+   *  `@kc[<partName>/vertex/<name>]` topology ref string. The string is
+   *  normalised to the structured form at capture time. The ref's owner
+   *  segment must match the part name on which this connector is being
+   *  registered. */
+  origin: ConnectorOriginInput;
   axis?: Vec3;
   normal?: Vec3;
 }
@@ -2044,11 +2052,16 @@ function makePartRef(
           `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
         );
       }
+      // F-surface F4: opts.origin accepts a `@kc[<part>/<kind>/<name>]` string
+      // alongside the structured ConnectorOrigin union. Normalise here BEFORE
+      // constructing the Connector record so downstream solvers see only the
+      // structured form.
+      const normalizedOrigin = normalizeConnectorOriginInput(opts.origin, name);
       mateConnectors.push(
         makeConnector({
           name: connectorName,
           type: opts.type,
-          origin: opts.origin,
+          origin: normalizedOrigin,
           axis: opts.axis,
           normal: opts.normal,
         }),
