@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": false,
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -128,5 +128,8 @@
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
     "vitest": "^4.0.18"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.58.0"
   }
 }
