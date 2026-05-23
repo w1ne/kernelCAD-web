@@ -1,34 +1,44 @@
-# kernelCAD v0.4.0
+# kernelCAD v0.11.0
 
-v0.4.0 is focused on constrained sketching for agent-authored CAD. The release adds the missing sketch constraint operations needed to build and verify a recognizable object from a 2D reference, then turn that solved sketch into deterministic 3D geometry.
+v0.11.0 is the release-prep line for agent-authored physical CAD. It closes the 2D path-NURBS authoring gap, hardens visual/inspection review, and refreshes the gallery with physically connected watch and ratchet-stool examples.
 
 ## Highlights
 
-- Added sketch constraint commands for agent workflows, including symmetry, concentric, angle, tangent, distance, radius, diameter, horizontal, vertical, coincident, parallel, and perpendicular constraints.
-- Exposed the complete solver toolbar actions in the web UI so the visual debugger can exercise the same constraint system as scripts and MCP tools.
-- Centralized MCP tool registration and added a constrained-sketch round-trip test so new tools are covered through the public agent interface.
-- Added a v0.4 rocket keychain demo: a CC0 Wikimedia rocket reference converted into a solved constrained sketch, then extruded into a printable keychain with raised porthole rings and through holes.
-- Hardened the release demo pipeline so non-catalog, explicitly approved hero demos can pass release preflight without weakening catalog validation.
-- Fixed command palette dialog accessibility by using Radix dialog title and description primitives.
-- Cleaned up test quality by removing dead skips and strengthening codegen assertions.
+- Added 2D NURBS path authoring with `path().spline(...)`, `path().nurbsSegment(...)`, and `path().hermiteG2(...)`.
+- Added MCP edit tools for those path operations: `add_path_spline`, `add_path_nurbs_segment`, and `add_path_hermite_g2`.
+- Added deterministic render-inspection channels for RGB, mask, depth, and normals so visual review can carry machine-readable evidence instead of relying only on screenshots.
+- Hardened the design loop so `assembly.visual.review-incomplete` and `assembly.visual.review-evidence-weak` cannot be bypassed with review-warning allow-lists.
+- Added/updated gallery examples for the Royal Pop pocket watch and the exposed ratchet height-adjust stool.
+- Kept Ray-Ban Meta / Wayfarer as a future benchmark artifact rather than a featured release item until the surface and loop quality are strong enough.
 
-## Demo
+## Agent And CAD Authoring
 
-- Watch the release capture: [v0.4 rocket keychain demo](https://github.com/w1ne/kernelCAD-web/releases/download/v0.4.0/demo.mp4)
-- View the static panel: [v0.4 rocket keychain panel](https://github.com/w1ne/kernelCAD-web/releases/download/v0.4.0/panel.png)
-- Source reference: [Wikimedia Commons rocket with boosters icon](https://commons.wikimedia.org/wiki/File:Rocket_with_boosters_icon.svg), CC0.
+- `review_cad` now exposes the current visual checklist and `gripperAperture` schema through the MCP tool registry.
+- Skill docs now advertise the current MCP/tool surface and render-inspection bundle channels.
+- The gallery feature policy is enforced in code: only one entry per calendar quarter can set `featured: true`.
 
 ## Quality Gates
 
-- Local release QC passed through `npm run release -- 0.4.0`.
-- Vitest during release: 1297 passed, 16 skipped, 1 todo.
-- PR checks passed before merge: lint, build-and-checks, and test.
-- Release deploys passed for Cloudflare Pages. GitHub Pages deploy passed; e2e was still running when the release notes were first published.
+Run these before tagging/publishing:
+
+```bash
+npm run lint
+npx tsc --noEmit -p tsconfig.cli.json
+npx tsc --noEmit -p tsconfig.json
+npm run test:package
+npm run site:test
+npm test
+git diff --check
+```
+
+The package version is intentionally staged at `0.11.0`; the stable `v0.11.0` tag and npm publication should be created only after the release branch is merged and the final full-suite gates pass.
 
 ## Install And Upgrade
 
+After publish:
+
 ```bash
-npm install -g kernelcad@0.4.0
+npm install -g kernelcad@0.11.0
 ```
 
 For repo development:
@@ -36,12 +46,7 @@ For repo development:
 ```bash
 git clone https://github.com/w1ne/kernelCAD-web.git
 cd kernelCAD-web
-git checkout v0.4.0
+git checkout v0.11.0
 npm install
 npm run dev
 ```
-
-## Links
-
-- Release PR: https://github.com/w1ne/kernelCAD-web/pull/89
-- Tag: https://github.com/w1ne/kernelCAD-web/releases/tag/v0.4.0

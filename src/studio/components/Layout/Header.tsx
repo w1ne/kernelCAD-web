@@ -1,5 +1,5 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Code, Monitor, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen } from 'lucide-react';
+import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
@@ -8,7 +8,7 @@ import { useStudioChrome } from '../../context/StudioChromeContext';
 export function Header() {
     const { headerLeft, headerRight } = useStudioChrome();
     const {
-        viewMode, setViewMode, viewMode3D, setViewMode3D,
+        viewMode3D, setViewMode3D,
         isComputing, code, commandManager, setActiveDialog
     } = useWorkbench();
 
@@ -64,28 +64,6 @@ export function Header() {
                         <div className="h-6 w-px bg-[#333] mx-2" />
                     </>
                 )}
-                {/* Mode Toggle */}
-                <div className="flex bg-[#222] rounded p-0.5 mr-2" data-testid="mode-toggle">
-                    <button
-                        onClick={() => setViewMode('code')}
-                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewMode === 'code' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
-                        title="Code Mode"
-                        aria-label="Code Mode"
-                    >
-                        <Code size={14} />
-                        {viewMode === 'code' && <span>Code</span>}
-                    </button>
-                    <button
-                        onClick={() => setViewMode('gui')}
-                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewMode === 'gui' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
-                        title="Design Mode"
-                        aria-label="Design Mode"
-                    >
-                        <Monitor size={14} />
-                        {viewMode === 'gui' && <span>GUI</span>}
-                    </button>
-                </div>
-
                 {/* 3D View Mode Toggle */}
                 <div className="flex bg-[#222] rounded p-0.5" data-testid="view-3d-toggle">
                     <button

@@ -89,11 +89,11 @@ not have this failure mode.
 Do NOT fake a curved brow with a single long arc — the chord bulge is visible
 in the top view. Do NOT use lineTo for organic curves — the SSIM score tanks.
 
-## Rule 5 — 4-bounded patches → surfaceFromBoundary (available in a follow-up slice)
+## Rule 5 — 4-bounded patches → surfaceFromBoundary
 
 If a body section is bounded by exactly 4 curves (top edge + 2 sides + bottom
 edge of a sculpted panel), USE `surfaceFromBoundary([top, right, bottom, left])`
-to get a Coons patch — once available. Do NOT approximate with extrude +
+to get a Coons patch. Do NOT approximate with extrude +
 boolean trim; the resulting surface is faceted, not smooth, and SSIM detects it.
 
 ## Rule 6 — Glossy products → PBR material

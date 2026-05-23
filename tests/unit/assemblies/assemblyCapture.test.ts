@@ -105,6 +105,55 @@ describe('assembly capture contract', () => {
     });
   });
 
+  it('captures posed mate metadata on assembly.model() for Studio joint controls', () => {
+    const session = new CaptureSession();
+    const kcad = createApi({ session });
+
+    const stroke = kcad.param('stroke', 8);
+    const lift = kcad.assembly('lift');
+    const sleeve = lift.part('sleeve', kcad.box(20, 20, 20));
+    sleeve.connector('rail', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    const post = lift.part('post', kcad.box(10, 10, 30));
+    post.connector('slide', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    lift.mate('height-adjust', 'sleeve.rail', 'post.slide', 'prismatic', {
+      pose: stroke,
+      limitsMm: [0, 20],
+    });
+
+    lift.model();
+
+    const lastRecord = session.getRecords().at(-1)!;
+    expect(lastRecord.kind).toBe('assemblyModel');
+    expect(lastRecord.metadata).toMatchObject({
+      assemblyName: 'lift',
+      partIds: [sleeve.id, post.id],
+      mates: [
+        {
+          name: 'height-adjust',
+          a: 'sleeve.rail',
+          b: 'post.slide',
+          type: 'prismatic',
+          pose: {
+            kind: 'scalar',
+            value: expect.objectContaining({
+              paramRef: 'stroke',
+            }),
+          },
+          limitsMm: [0, 20],
+        },
+      ],
+    });
+    expect(lastRecord.metadata).not.toHaveProperty('declaredMateCount');
+  });
+
   it('rejects assembly.model() when no parts have been captured', () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });

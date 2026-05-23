@@ -24,7 +24,7 @@ export function Inspector({ tabSlots }: InspectorProps) {
 
     return (
         <div
-            className="flex flex-col bg-[#111] border-l border-[#333] text-gray-300"
+            className="flex flex-col shrink-0 bg-[#111] border-l border-[#333] text-gray-300"
             style={{ width: 290 }}
             data-testid="inspector"
         >

@@ -4,6 +4,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { callMcpTool, TOOLS } from './toolRegistry';
+import { callCloudTool, listCloudTools, type CloudMcpOptions } from './cloudClient';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/agent/mcp/server.ts → ../../../package.json (3 up)
@@ -22,18 +23,27 @@ const pkg = loadPkg();
 
 export { TOOLS };
 
-export function createMcpServer(): Server {
+export interface McpServerOptions {
+  cloud?: boolean;
+  cloudOptions?: CloudMcpOptions;
+}
+
+export function createMcpServer(options: McpServerOptions = {}): Server {
   const server = new Server(
     { name: 'kernelcad', version: pkg.version },
     { capabilities: { tools: {} } },
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: options.cloud ? await listCloudTools(options.cloudOptions) : TOOLS,
+  }));
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args } = req.params;
     const input = (args ?? {}) as Record<string, unknown>;
-    const result = await callMcpTool(name, input);
+    const result = options.cloud
+      ? await callCloudTool(name, input, options.cloudOptions)
+      : await callMcpTool(name, input);
 
     return {
       content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
@@ -43,8 +53,8 @@ export function createMcpServer(): Server {
   return server;
 }
 
-export async function runStdioServer(): Promise<void> {
-  const server = createMcpServer();
+export async function runStdioServer(options: McpServerOptions = {}): Promise<void> {
+  const server = createMcpServer(options);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

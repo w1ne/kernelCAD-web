@@ -69,7 +69,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   it('catalogue has exactly 125 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
-    //  + 30 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
+    //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
     //  +  1 K1 watertight enrichment (mesher.cone-self-intersection)
     //  +  4 W2 HDRI / IBL render-environment (conflicting-spec / missing-spec / unknown-preset / intensity-out-of-range)
     //  +  5 W3 face authoring (embossText / projectCurve / face UV anchor)
@@ -78,8 +78,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       texture-not-found / texture-unsupported-format / texture-oversize-warning / texture-oversize-error)
     //  +  2 camera-target override (non-finite-target / invalid-distance)
     //  +  1 F-foundation @kc topology refs (feature.face-ref.snapshot-fallback-used)
-    // = 125.
-    expect(catalogue.size).toBe(125);
+    // = 126.
+    expect(catalogue.size).toBe(126);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

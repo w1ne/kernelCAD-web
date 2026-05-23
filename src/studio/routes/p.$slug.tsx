@@ -9,6 +9,12 @@ export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
 });
 
+function formatPrivacyLabel(privacy: ProjectRow['privacy']): string {
+  if (privacy === 'private') return 'private';
+  if (privacy === 'public_featured') return 'featured';
+  return 'public by link';
+}
+
 function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useSession();
@@ -40,7 +46,7 @@ function ProjectPage() {
         {project.title}
       </span>
       <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
-        {project.privacy}
+        {formatPrivacyLabel(project.privacy)}
       </span>
     </div>
   );

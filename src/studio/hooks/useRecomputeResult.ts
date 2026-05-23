@@ -56,6 +56,12 @@ export function useRecomputeResult(): StudioRecomputeResult {
     }, [validity]);
 
     const updateParam = (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam;
+    const setGeometryTransformOverride =
+        (workbench as { setGeometryTransformOverride?: StudioRecomputeResult['setGeometryTransformOverride'] })
+            .setGeometryTransformOverride;
+    const clearGeometryTransformOverrides =
+        (workbench as { clearGeometryTransformOverrides?: StudioRecomputeResult['clearGeometryTransformOverrides'] })
+            .clearGeometryTransformOverrides;
 
     return useMemo<StudioRecomputeResult>(
         () => ({
@@ -67,6 +73,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
             updateParam,
+            setGeometryTransformOverride,
+            clearGeometryTransformOverrides,
         }),
         [
             workbench.featureRecords,
@@ -77,6 +85,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             joints,
+            setGeometryTransformOverride,
+            clearGeometryTransformOverrides,
         ],
     );
 }

@@ -1,16 +1,17 @@
 // tests/integration/lowering/sceneAssemblyModel.test.ts
 //
 // Integration coverage for the SceneBackend emission path of the
-// `assemblyModel` lowerer case (the kinematic-zero `arm.model()` view).
+// `assemblyModel` lowerer case.
 //
 // Mirrors `sceneBackendEmission.test.ts` (the solvedAssembly counterpart)
-// but for the no-FK path: every part's worldTransform is identity because
-// model() is the unposed view of the assembly. This test asserts:
+// but for `model()`: mate-free assemblies keep identity transforms, while
+// mate-bearing assemblies apply the declared default mate pose. This test
+// asserts:
 //   - The lowered output is a SceneBackend (per `isSceneBackend`).
 //   - It has one entry per assembly part, with `name` matching
 //     `assembly.part(name, ...)`.
-//   - Each part carries `worldTransform = Transform.identity()` — no FK
-//     runs in the model() path.
+//   - Mate-free model() parts carry `worldTransform = Transform.identity()`.
+//   - Mate-bearing model() records apply mate FK from captured metadata.
 //   - The assembly's `assemblyName` propagates onto the SceneBackend.
 //   - Per-part color is resolved via `lookupSourceColor`.
 //   - No boolean union is performed — each part stays in its local
@@ -34,9 +35,9 @@ interface LowerResult {
 }
 
 async function lowerScript(code: string): Promise<LowerResult> {
-  const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
+  const { records, paramTable } = await runScript({ code, fileName: 'test.kcad.ts' });
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
+  const r = await engine.run(records, { paramTable });
   const last = records[records.length - 1];
   return {
     shape: r.shapes.get(last.id),
@@ -77,11 +78,46 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
     expect(scene.parts[0].worldTransform).toBeInstanceOf(Transform);
     expect(scene.parts[1].worldTransform).toBeInstanceOf(Transform);
 
-    // model() is the unposed view: every worldTransform is the identity.
-    // (No FK runs — `at:` placements are baked into each part's local
-    // shape upstream, so the assembly-frame transform per part is I.)
+    // Mate-free model() is the unposed view: every worldTransform is identity.
+    // (`at:` placements are baked into each part's local shape upstream, so
+    // the assembly-frame transform per part is I.)
     expectIdentity(scene.parts[0].worldTransform);
     expectIdentity(scene.parts[1].worldTransform);
+  });
+
+  it('applies mate default pose from assembly.model() metadata', async () => {
+    const { shape, diagnostics } = await lowerScript(`
+      const stroke = param('stroke', 12);
+      const lift = assembly('lift');
+      const sleeve = lift.part('sleeve', box(20, 20, 20));
+      sleeve.connector('rail', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      const post = lift.part('post', box(10, 10, 30));
+      post.connector('slide', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      lift.mate('height-adjust', 'sleeve.rail', 'post.slide', 'prismatic', {
+        pose: stroke,
+        limitsMm: [0, 20],
+      });
+      return lift.model();
+    `);
+
+    expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    expect(isSceneBackend(shape)).toBe(true);
+    const scene = shape as SceneBackend;
+    const post = scene.parts.find((p) => p.name === 'post');
+    expect(post).toBeDefined();
+
+    const origin = post!.worldTransform.point([0, 0, 0]);
+    expect(origin[0]).toBeCloseTo(0);
+    expect(origin[1]).toBeCloseTo(0);
+    expect(origin[2]).toBeCloseTo(12);
   });
 
   it('preserves per-part colors via lookupSourceColor', async () => {

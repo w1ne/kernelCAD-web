@@ -207,6 +207,27 @@ test('patch dir takes precedence over minor dir when both exist', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('0.11.0 release can select the approved scissor-lift mechanism hero', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
+  mkdirSync(path.join(root, 'v0.11', 'scissor-lift'), { recursive: true });
+  writeFileSync(
+    path.join(root, 'v0.11', 'scissor-lift', 'meta.json'),
+    JSON.stringify({
+      heroArtifact: 'scissor-lift',
+      overrideApprovedBy: 'release: user selected an animated scissor-lift mechanism for the marketing hero',
+    }),
+  );
+  writeFileSync(path.join(root, 'v0.11', 'scissor-lift', 'demo.mp4'), 'fake');
+
+  const result = selectHeroDemo({ packageVersion: '0.11.0', demosRoot: root });
+  expect(result.iterationKey).toBe('v0.11');
+  expect(result.task).toBe('scissor-lift');
+  expect(result.heroArtifact).toBe('scissor-lift');
+  expect(result.mp4Path).toBe(path.join(root, 'v0.11', 'scissor-lift', 'demo.mp4'));
+
+  rmSync(root, { recursive: true, force: true });
+});
+
 test('falls back to minor dir when patch dir is absent', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'demos-'));
 

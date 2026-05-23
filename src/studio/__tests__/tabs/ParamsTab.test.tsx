@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudioRecomputeResult } from '../../types';
 import { ParamTable } from '../../../shared/runtime/paramTable';
@@ -29,6 +29,7 @@ function withTable(table: ParamTable): StudioRecomputeResult {
 
 afterEach(() => {
     cleanup();
+    vi.useRealTimers();
 });
 
 beforeEach(() => {
@@ -93,5 +94,54 @@ describe('ParamsTab', () => {
         expect(checkbox.disabled).toBe(false);
         expect(checkbox.checked).toBe(true);
         expect(screen.getByTestId('param-row-chamfered').textContent).toContain('chamfered');
+    });
+
+    it('keeps joint-bound params visible in the Params tab', () => {
+        const table = new ParamTable();
+        table.declare('heightAdjustMm', 'number', 0, { min: 0, max: 6.12 });
+        mockUseRecomputeResult.mockReturnValue({
+            ...withTable(table),
+            joints: [
+                {
+                    mate: {
+                        name: 'height-adjust',
+                        a: 'sleeve.rail',
+                        b: 'post.slide',
+                        type: 'prismatic',
+                        limitsMm: [0, 6.12],
+                    },
+                    pose: 0,
+                    poseParamNames: ['heightAdjustMm'],
+                },
+            ],
+        });
+
+        render(<ParamsTab />);
+
+        expect(screen.getByTestId('param-row-heightAdjustMm')).toBeTruthy();
+        expect(screen.getByTestId('scrub-slider-heightAdjustMm')).toBeTruthy();
+    });
+
+    it('does not rebuild on every slider tick and flushes the final value on release', () => {
+        vi.useFakeTimers();
+        const table = new ParamTable();
+        table.declare('heightAdjustMm', 'number', 0, { min: 0, max: 6.12 });
+        const updateParam = vi.fn().mockResolvedValue(undefined);
+        mockUseRecomputeResult.mockReturnValue({ ...withTable(table), updateParam });
+
+        render(<ParamsTab />);
+
+        const slider = screen.getByTestId('scrub-slider-heightAdjustMm') as HTMLInputElement;
+        fireEvent.change(slider, { target: { value: '1' } });
+        fireEvent.change(slider, { target: { value: '2' } });
+        fireEvent.change(slider, { target: { value: '3' } });
+        vi.advanceTimersByTime(699);
+        expect(updateParam).not.toHaveBeenCalled();
+
+        fireEvent.pointerUp(slider);
+
+        expect(updateParam).toHaveBeenCalledExactlyOnceWith([
+            { name: 'heightAdjustMm', value: 3 },
+        ]);
     });
 });

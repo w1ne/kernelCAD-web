@@ -4,7 +4,7 @@ import { StagedEditSlot } from './StagedEditSlot';
 import { AgentActivityLog } from './AgentActivityLog';
 
 /**
- * Right-side rail. Width animates between 0 and 240px based on
+ * Left-side rail. Width animates between 0 and 240px based on
  * `agentRailOpen` in the shell store. Two stacked panes: staged-edit slot
  * on top, agent activity log below.
  */
@@ -17,7 +17,7 @@ export const AgentRail: React.FC = () => {
             aria-hidden={!agentRailOpen}
             data-open={agentRailOpen}
             style={{ width: agentRailOpen ? 240 : 0 }}
-            className="h-full flex-shrink-0 overflow-hidden bg-[#1a1a1a] border-l border-[#2d2d2d] text-gray-200 text-xs flex flex-col"
+            className="h-full flex-shrink-0 overflow-hidden bg-[#1a1a1a] border-r border-[#2d2d2d] text-gray-200 text-xs flex flex-col"
         >
             <div className="flex-shrink-0 border-b border-[#2d2d2d]">
                 <StagedEditSlot />

@@ -1516,10 +1516,10 @@ export class Assembly {
   }
 
   /**
-   * Records an `assemblyModel` FeatureRecord (kinematic-zero, no FK) and
-   * returns a `Scene` whose per-part `worldTransform` is the identity. Use
-   * for assemblies whose layout is set entirely by `assembly.part({ at })`
-   * / connectors and have no joints.
+   * Records an `assemblyModel` FeatureRecord and returns a `Scene`. Mate-free
+   * assemblies lower with identity per-part transforms; mate-bearing
+   * assemblies capture mate metadata so Studio can expose controls and the
+   * lowerer can apply default mate FK.
    */
   model(): Scene {
     if (this.parts.length === 0) {
@@ -1530,13 +1530,8 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.model().',
       );
     }
-    // Stash the mate count so the lowerer can emit the
-    // `assembly.mates-ignored-by-model-call` info diagnostic when
-    // model() is used in lieu of solvedModel() on a mate-bearing
-    // assembly. Without this, mates declared on `arm` never reach the
-    // FK pipeline — parts stack at local-frame origin and downstream
-    // interferences/scoring lies. Surfaced by Exp-D four-bolt-flange-v2.
-    const sceneShape = this.session.assemblyModel(this.name, this.parts, this.mates.length);
+    const mateMetadata = this.mates.length > 0 ? this.buildMateMetadata() : undefined;
+    const sceneShape = this.session.assemblyModel(this.name, this.parts, mateMetadata);
     return this.makeScene(sceneShape);
   }
 

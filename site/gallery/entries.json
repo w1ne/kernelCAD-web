@@ -1,39 +1,66 @@
 {
   "entries": [
     {
-      "slug": "pink-pocket-watch",
-      "title": "Pop-Art Pocket Watch (Pink × Yellow)",
+      "slug": "royal-pop-pocket-watch",
+      "title": "Royal Pop Pocket Watch",
       "author": {
         "handle": "kernelcad",
         "url": "https://x.com/kernelcad"
       },
-      "version": "v0.7.0",
-      "prompt": "A pop-art octagonal pocket watch with two concentric octagons: a pink outer frame ~50 mm corner-to-corner and a yellow inner case ~36 mm flat-to-flat, the case studded with eight dark hex screws at each of its octagon vertices. The teal dial inside carries a fine waffle tapisserie texture, four cardinal numerals at 12, 6 and 9, eight yellow stick hour markers, two yellow hands, and a pink-ringed seconds subdial at 3 o'clock under a small domed NURBS sapphire crystal. A small yellow crown rises from the top of the case into the mouth of a pink lanyard loop, with a short pink ribbon strap above.",
+      "version": "v0.11.0",
+      "prompt": "Build a reference-driven pop-art octagonal pocket watch inspired by Swatch Royal Pop: a saturated pink outer body, yellow inner octagonal bezel, black hex screws, turquoise tapisserie dial, legible yellow markers and hands, a small seconds subdial, a clear mounted lens, a 3 o'clock winding crown, and a top bail that is only a lanyard loop. The assembly must be physically connected with no floating glass, body parts, hands, or crown.",
       "source": "curated",
-      "video": "../../docs/demos/v0.7/pocket-watch/demo.mp4",
-      "codeLocal": "../../examples/portfolio/pocket-watch/build.kcad.ts",
-      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/portfolio/pocket-watch/build.kcad.ts",
+      "video": "../../examples/portfolio/pocket-watch-v2/build.mp4",
+      "codeLocal": "../../examples/portfolio/pocket-watch-v2/build.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/portfolio/pocket-watch-v2/build.kcad.ts",
       "tags": [
+        "watch",
+        "words-to-geometry",
         "pop-art",
-        "pocket-watch",
-        "octagonal",
-        "nurbs-dome",
-        "multi-color",
-        "assembly"
+        "reference-driven",
+        "assembly",
+        "physical-validation",
+        "transparent-materials"
       ],
       "featured": true,
-      "createdAt": "2026-05-15",
+      "createdAt": "2026-05-21",
+      "appUrl": null
+    },
+    {
+      "slug": "ratchet-height-adjust-stool",
+      "title": "Ratchet Height-Adjust Stool",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://x.com/kernelcad"
+      },
+      "version": "v0.11.0",
+      "prompt": "Build a mechanically honest height-adjust stool with a round laminated seat, telescoping center post, exposed ratchet rack, spring-pawl release lever, split clamp collar, welded foot ring, and splayed tube legs. The ratchet and pawl should read as visible load-path geometry, and the height adjustment should be exposed as a real parameter/joint for Studio.",
+      "source": "curated",
+      "video": "../../docs/demos/gallery/ratchet-stool/demo.mp4",
+      "codeLocal": "../../examples/gallery/ratchet-stool.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/main/examples/gallery/ratchet-stool.kcad.ts",
+      "tags": [
+        "furniture",
+        "words-to-geometry",
+        "mechanism",
+        "ratchet",
+        "assembly",
+        "joints",
+        "parametric"
+      ],
+      "featured": false,
+      "createdAt": "2026-05-21",
       "appUrl": null
     },
     {
       "slug": "meta-glasses",
-      "title": "Ray-Ban Meta \u2014 Wayfarer (front face)",
+      "title": "Ray-Ban Meta \u2014 Full Wayfarer-Style Smart Glasses",
       "author": {
         "handle": "kernelcad",
         "url": "https://x.com/kernelcad"
       },
-      "version": "v0.8.0",
-      "prompt": "# Build the front face of Ray-Ban Meta \u2014 Wayfarer\n\nReproduce the front face of a pair of Ray-Ban Meta smart glasses (Wayfarer variant) as a kernelCAD `.kcad.ts` script. Open the reference photo at `eval/tasks/eyewear-wayfarer-front/reference.jpg` before authoring.\n\nTargets:\n\n- Chunky black acetate body with smoothly curved outer silhouette \u2014 Wayfarer \"wing\" curves on the top-outer corners, gentle bottom curve.\n- Two trapezoidal lens openings with rounded inner+bottom corners.\n- Asymmetric camera+LED on the LEFT side only.\n- A small bridge with a narrow nose-notch.\n- Omit temples (front face only).\n\nReturn a single `Shape`. Z-up, mm.",
+      "version": "v0.11.0",
+      "prompt": "# Build full Ray-Ban Meta \u2014 Wayfarer-style smart glasses\n\nReproduce a complete pair of Ray-Ban Meta-style Wayfarer smart glasses as a kernelCAD `.kcad.ts` gallery model. Build the full physical product, not a front-face facade.\n\nTargets:\n\n- Chunky glossy black acetate Wayfarer frame with winged upper corners, tapered lower cheeks, and a narrow bridge/nose notch.\n- Two trapezoidal smoked lens inserts seated into shallow frame rebates.\n- Asymmetric smart-glasses hardware: recessed camera on the left upper outer corner and privacy LED on the opposite upper outer corner.\n- Full temples/arms with hinge blocks, hinge barrels, thick electronics housings, tapered rear sections, and downward ear bends.\n- Production details that belong on the object: right-side touch-control strip, dark lens/camera glass materials, and visible hinge hardware.\n\nReturn named physical parts so the gallery GLB exposes frame, lenses, camera, LED, hinges, and temples. Z-up, millimetres.",
       "source": "curated",
       "video": "../../docs/demos/gallery/meta-glasses/demo.mp4",
       "codeLocal": "../../examples/gallery/meta-glasses.kcad.ts",
@@ -43,6 +70,9 @@
         "wearable",
         "wayfarer",
         "smart-glasses",
+        "full-assembly",
+        "reference-driven",
+        "words-to-geometry",
         "reproduction"
       ],
       "featured": false,

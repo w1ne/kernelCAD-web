@@ -33,13 +33,14 @@ describe('Shape.material()', () => {
     const kcad = createApi({ session });
     const s = kcad.box(10, 10, 10);
     const warnsBefore = session.warnings.length;
-    s.material({ baseColor: '#fff', metalness: 1.5, roughness: -0.2, ior: 3 });
+    s.material({ baseColor: '#fff', metalness: 1.5, roughness: -0.2, ior: 3, opacity: 1.5 });
     const record = session.getRecords().find(r => r.id === s.id)!;
     expect(record.metadata?.material).toEqual({
       baseColor: '#fff',
       metalness: 1,    // clamped
       roughness: 0,    // clamped
       ior: 2.5,        // clamped
+      opacity: 1,      // clamped
     });
     expect(session.warnings.length).toBe(warnsBefore + 1);
     expect(session.warnings[session.warnings.length - 1].code).toBe('feature.material.value-clamped');

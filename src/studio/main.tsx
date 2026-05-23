@@ -3,15 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import '../index.css';
 import { initFeatures } from '../modeling/features/init';
-import { GeometryEngine } from '../shared/worker/geometryEngine';
 import { routeTree } from './routeTree.gen';
 
 initFeatures();
-
-// Eagerly spawn the OCCT worker so its 11 MB WASM fetch + compile overlap with React's
-// first render. The singleton dedupes; later mounts are no-ops. Failures surface through
-// GeometryProvider's existing retry path.
-GeometryEngine.getInstance().initialize().catch(() => { /* see provider */ });
 
 const router = createRouter({ routeTree });
 

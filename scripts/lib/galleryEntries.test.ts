@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { parseGalleryEntries } from './galleryEntries';
 
 describe('parseGalleryEntries', () => {
@@ -24,6 +26,47 @@ describe('parseGalleryEntries', () => {
     expect(result.entries[0].slug).toBe('desktop-3axis-mates');
   });
 
+  it('accepts curated entries because studioUrl can be derived from codeLocal', () => {
+    const result = parseGalleryEntries({ entries: [validEntry] });
+    expect(result.entries[0].codeLocal).toBe(validEntry.codeLocal);
+    expect(result.entries[0].appUrl).toBeNull();
+  });
+
+  it('accepts studio entries with appUrl and without codeLocal', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'saved-public-project',
+      source: 'studio' as const,
+      codeLocal: null,
+      appUrl: 'https://app.kernelcad.com/p/public-project',
+    };
+    const result = parseGalleryEntries({ entries: [entry] });
+    expect(result.entries[0].source).toBe('studio');
+    expect(result.entries[0].appUrl).toBe(entry.appUrl);
+  });
+
+  it('rejects studio entries without appUrl', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'broken-studio-entry',
+      source: 'studio' as const,
+      codeLocal: null,
+      appUrl: null,
+    };
+    expect(() => parseGalleryEntries({ entries: [entry] })).toThrow(/studio.*appUrl/i);
+  });
+
+  it('rejects studio entries when appUrl is omitted', () => {
+    const entry = {
+      ...validEntry,
+      slug: 'omitted-studio-app-url',
+      source: 'studio' as const,
+      codeLocal: null,
+    };
+    delete (entry as Partial<typeof entry>).appUrl;
+    expect(() => parseGalleryEntries({ entries: [entry] })).toThrow(/studio.*appUrl/i);
+  });
+
   it('rejects entries missing required slug', () => {
     const bad = { ...validEntry } as Partial<typeof validEntry>;
     delete bad.slug;
@@ -36,10 +79,21 @@ describe('parseGalleryEntries', () => {
     ).toThrow(/duplicate slug/i);
   });
 
-  it('accepts source = studio for forward-compat', () => {
-    const studioEntry = { ...validEntry, slug: 'other', source: 'studio' as const };
-    const result = parseGalleryEntries({ entries: [studioEntry] });
-    expect(result.entries[0].source).toBe('studio');
+  it('rejects multiple featured entries in the same quarter', () => {
+    const first = { ...validEntry, slug: 'first-feature', featured: true, createdAt: '2026-05-01' };
+    const second = { ...validEntry, slug: 'second-feature', featured: true, createdAt: '2026-06-30' };
+
+    expect(() =>
+      parseGalleryEntries({ entries: [first, second] }),
+    ).toThrow(/featured.*quarter/i);
+  });
+
+  it('accepts featured entries in different quarters', () => {
+    const first = { ...validEntry, slug: 'spring-feature', featured: true, createdAt: '2026-05-01' };
+    const second = { ...validEntry, slug: 'summer-feature', featured: true, createdAt: '2026-07-01' };
+
+    const result = parseGalleryEntries({ entries: [first, second] });
+    expect(result.entries).toHaveLength(2);
   });
 
   it('rejects unknown source values', () => {
@@ -67,5 +121,16 @@ describe('parseGalleryEntries', () => {
     };
     const result = parseGalleryEntries({ entries: [entry] });
     expect(result.entries[0].codeLocal).toBe(entry.codeLocal);
+  });
+
+  it('keeps the release gallery focused on the new watch and stool', () => {
+    const entriesPath = path.resolve(__dirname, '../../site/gallery/entries.json');
+    const parsed = parseGalleryEntries(JSON.parse(readFileSync(entriesPath, 'utf8')));
+    const slugs = parsed.entries.map(entry => entry.slug);
+
+    expect(slugs).toContain('royal-pop-pocket-watch');
+    expect(slugs).toContain('ratchet-height-adjust-stool');
+    expect(slugs).not.toContain('pink-pocket-watch');
+    expect(slugs.filter(slug => slug.includes('watch'))).toEqual(['royal-pop-pocket-watch']);
   });
 });
