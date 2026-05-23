@@ -3,6 +3,8 @@ import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
+import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -188,6 +190,21 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
         }],
       };
     }
+    if (format === '3mf') {
+      // 3MF natively ships multi-body scenes — one `<object>` per part with
+      // distinct names + base colors. Mesh each part via the shared
+      // world-frame walk, then chain through the OPC zip writer.
+      const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
+      try {
+        const worldParts = sceneToWorldFrameParts(lowered);
+        const bytes = await export3mfAsync(worldParts, opts3mf);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const notWatertight = notWatertightDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (notWatertight) return notWatertight;
+        throw e;
+      }
+    }
     // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
     // Scene.toCompound() upstream — surface a structured diagnostic
     // pointing at the right call.
@@ -313,7 +330,20 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       );
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
-    case '3mf':
+    case '3mf': {
+      // Single-shape 3MF: wrap in a one-part `WorldFramePart[]` so the
+      // writer can mesh + emit identically to the Scene path.
+      const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
+      const part: WorldFramePart = { name: 'part', shape };
+      try {
+        const bytes = await export3mfAsync([part], opts3mf);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const notWatertight = notWatertightDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (notWatertight) return notWatertight;
+        throw e;
+      }
+    }
     case 'glb':
     case 'urdf':
     case 'srdf':
@@ -333,4 +363,32 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       };
     }
   }
+}
+
+/**
+ * Translate an `assertWatertight` Error into the structured
+ * `export.3mf.not-watertight` diagnostic. Returns `undefined` when the
+ * error doesn't look like a watertight failure so callers can rethrow.
+ */
+function notWatertightDiagnostic(
+  e: unknown,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): ExportResult | undefined {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (!/watertight/i.test(msg)) return undefined;
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'export.3mf.not-watertight',
+      featureId: targetId,
+      severity: 'error',
+      message: '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.',
+      hint: 'The mesh has open or non-manifold edges. Inspect the source geometry (typically a self-intersecting cone or non-closed shell) and re-author the offending surface via nurbsSurfaceLowerer, raise OCCT mesh deflection, or re-mesh via Manifold; see the K1 mesher gap.',
+      nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
+    }],
+  };
 }

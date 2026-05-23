@@ -61,11 +61,15 @@ describe('runAndExport', () => {
     expect(text).toMatch(/LWPOLYLINE/);
   });
 
-  it('rejects 3mf format in Slice A skeleton with the not-implemented diagnostic', async () => {
+  it('exports 3MF for a single-shape script (zip carries the model XML)', async () => {
     const code = 'return box(10, 10, 10);';
     const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: '3mf' });
-    expect(result.bytes.length).toBe(0);
-    expect(result.diagnostics.find(d => d.code === 'export.3mf.not-implemented')).toBeDefined();
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+    expect(result.bytes.length).toBeGreaterThan(0);
+    // GLB-vs-zip sanity: 3MF zips start with the PK\x03\x04 local-file-header
+    // magic; quick byte check guarantees we're emitting a real zip.
+    expect(result.bytes[0]).toBe(0x50);
+    expect(result.bytes[1]).toBe(0x4b);
   });
 
   it('rejects glb format in Slice A skeleton with the not-implemented diagnostic', async () => {

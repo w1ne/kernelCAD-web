@@ -344,13 +344,13 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
   },
-  'export.3mf.not-implemented': {
+  'export.3mf.not-watertight': {
     hintTemplate:
-      '3MF export is not yet implemented in this build. Pick a supported format (stl, step) for now; 3MF lands later in this slice.',
-    nextAction: { kind: 'fix-arg', field: 'format' },
+      'The exported mesh has non-manifold edges (likely a self-intersecting cone tessellation or an open shell). Re-mesh via Manifold, raise OCCT mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer; see the K1 mesher gap.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A 3MF export was requested before the writer landed in the runtime.',
+    description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
   },
   'export.glb.not-implemented': {
     hintTemplate:

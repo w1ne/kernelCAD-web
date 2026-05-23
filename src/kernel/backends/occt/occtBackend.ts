@@ -33,7 +33,7 @@ let initialized = false;
  * Cost: ~3-4x slower mesh on cone-heavy parts, negligible on box / plate.
  * Used only for STL export; the preview path keeps the coarse defaults.
  */
-function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
+export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
   const oc = getOC();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = (shape as any).wrapped;
