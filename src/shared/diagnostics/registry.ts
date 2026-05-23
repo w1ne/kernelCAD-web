@@ -1319,6 +1319,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'dfm',
     description: 'A polyline segment in the DXF is at or below the DXF tessellation tolerance, risking measurement disagreement at the vendor importer.',
   },
+  'dfm.rule.threshold-unknown': {
+    hintTemplate:
+      'Vendor does not publish a threshold for this rule and material. Verify the feature manually with the vendor before ordering, or pick a material the vendor publishes a value for.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A rule\'s per-material threshold is null in specs.json because the vendor does not publish the value.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

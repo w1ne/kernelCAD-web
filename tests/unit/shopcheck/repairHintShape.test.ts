@@ -6,8 +6,8 @@ describe('dfm.* repair-hint discipline (Slice E)', () => {
     .filter(([code]) => code.startsWith('dfm.'))
     .map(([code, spec]) => ({ code, spec }));
 
-  it('registers exactly 23 dfm.* codes', () => {
-    expect(dfmCodes).toHaveLength(23);
+  it('registers exactly 24 dfm.* codes', () => {
+    expect(dfmCodes).toHaveLength(24);
   });
 
   it('every dfm.* code has a non-empty hintTemplate', () => {
