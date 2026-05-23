@@ -88,7 +88,10 @@ describe('export_model MCP tool', () => {
     expect(statSync(out).size).toBeGreaterThan(0);
   }, 60000);
 
-  it('rejects URDF / SRDF / SDF-Gazebo with the per-format not-implemented diagnostic', async () => {
+  it('rejects URDF / SRDF / SDF-Gazebo with export.no-shape when the script returns a single Shape', async () => {
+    // Slice B-rest fills the URDF / SRDF / SDF format slots; a script that
+    // returns a raw `box(...)` (no assembly captured) now trips export.no-shape
+    // because all three formats consume an Assembly, not a Shape.
     for (const format of ['urdf', 'srdf', 'sdf-gazebo'] as const) {
       const out = join(tmpDir, `x.${format}`);
       const r = await exportModelTool({
@@ -98,7 +101,7 @@ describe('export_model MCP tool', () => {
       });
       expect(r.ok).toBe(false);
       expect(
-        r.diagnostics?.find(d => d.code === `export.${format}.not-implemented`),
+        r.diagnostics?.find(d => d.code === 'export.no-shape'),
       ).toBeDefined();
       // No file should be written when the runtime rejects the format.
       expect(existsSync(out)).toBe(false);

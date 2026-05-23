@@ -68,12 +68,25 @@ arm.revolute('shoulder', base, link, {
 return arm.model();
 ```
 
+### Per-part density
+
+`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export_model({ format: 'urdf' })` or `export_model({ format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
+
+Typical values: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
+
+```typescript
+arm.part('shoulder-bracket', bracketShape, { density: 2700 });   // aluminum
+arm.part('hub', hubShape, { density: 7850 });                    // steel
+```
+
 ```typescript
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
     at?: [number, number, number];
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
+    /** Material density in kg/m^3. Default 1000 (water). */
+    density?: number;
   }): AssemblyPartRef;
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {

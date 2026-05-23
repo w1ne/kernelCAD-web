@@ -362,29 +362,93 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
   },
-  'export.urdf.not-implemented': {
+  'export.urdf.cylindrical-lossy': {
     hintTemplate:
-      'URDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+      'URDF lacks a 2-DOF cylindrical joint; the mate was emitted as a single revolute and the prismatic DOF was dropped. Switch to format: \'sdf-gazebo\' if both DOFs are needed.',
     nextAction: { kind: 'fix-arg', field: 'format' },
-    defaultSeverity: 'error',
+    defaultSeverity: 'warn',
     group: 'export',
-    description: 'URDF export is reserved on the export_model enum but not yet implemented.',
+    description: 'A cylindrical mate was lowered to a URDF revolute joint; the prismatic DOF was lost.',
   },
-  'export.srdf.not-implemented': {
+  'export.urdf.pin-slot-lossy': {
     hintTemplate:
-      'SRDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+      'URDF lacks a pin-slot joint; the mate was emitted as a single revolute and the slot translation DOF was dropped. Switch to format: \'sdf-gazebo\' or restructure the mate graph if both DOFs are needed.',
     nextAction: { kind: 'fix-arg', field: 'format' },
-    defaultSeverity: 'error',
+    defaultSeverity: 'warn',
     group: 'export',
-    description: 'SRDF export is reserved on the export_model enum but not yet implemented.',
+    description: 'A pin_slot mate was lowered to a URDF revolute joint; the slot translation DOF was lost.',
   },
-  'export.sdf-gazebo.not-implemented': {
+  'export.urdf.ball-decomposed': {
     hintTemplate:
-      'Gazebo SDF export ships in a follow-up slice. Use export_model with format: \'step\' for now to share the assembly.',
+      'URDF lacks a spherical joint; the mate was decomposed into three chained revolute joints with two synthesised dummy intermediate links. Switch to format: \'sdf-gazebo\' for a native ball joint.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A ball mate was decomposed into a 3-revolute chain for URDF compatibility.',
+  },
+  'export.urdf.closed-loop': {
+    hintTemplate:
+      'URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export_model with format: \'sdf-gazebo\' which supports closed loops natively, or restructure the mate graph to a spanning tree.',
     nextAction: { kind: 'fix-arg', field: 'format' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'Gazebo SDF export is reserved on the export_model enum but not yet implemented.',
+    description: 'A URDF export was attempted on an assembly whose mate graph contains a closed kinematic loop.',
+  },
+  'export.urdf.inertia-density-declared': {
+    hintTemplate:
+      'Link inertia uses the default density 1000 kg/m^3 (water). Downstream dynamics simulations will be off by ~8x for steel or ~2.7x for aluminum unless you pass density on arm.part(name, shape, { density }).',
+    nextAction: { kind: 'fix-arg', field: 'density' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
+  },
+  'export.srdf.acm-sparse-sampling': {
+    hintTemplate:
+      'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: \'srdf\', ... }) or set combinatorial: true.',
+    nextAction: { kind: 'fix-arg', field: 'samplesPerMate' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'SRDF ACM auto-derivation ran with sparser sampling than the recommended threshold.',
+  },
+  'export.srdf.planning-group-missing': {
+    hintTemplate:
+      'SRDF export requires at least one arm.planningGroup(...) declaration before export. Declare arm.planningGroup(name, { chain: { baseLink, tipLink } }) or arm.planningGroup(name, { joints: [...] }) in your .kcad.ts.',
+    nextAction: { kind: 'add-return' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SRDF export attempted on an assembly with no planning-group declarations.',
+  },
+  'export.sdf-gazebo.cylindrical-lossy': {
+    hintTemplate:
+      'SDFormat lacks a 2-DOF cylindrical joint; the mate was emitted as a revolute and the prismatic DOF was dropped. Restructure the mate graph if both DOFs are required.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split cylindrical into a revolute + prismatic chain' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A cylindrical mate was lowered to an SDFormat revolute joint; the prismatic DOF was lost.',
+  },
+  'export.sdf-gazebo.pin-slot-lossy': {
+    hintTemplate:
+      'SDFormat lacks a pin-slot joint; the mate was emitted as a revolute and the slot translation DOF was dropped. Restructure the mate graph if both DOFs are required.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split pin_slot into a revolute + prismatic chain' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A pin_slot mate was lowered to an SDFormat revolute joint; the slot translation DOF was lost.',
+  },
+  'export.sdf-gazebo.invalid-version': {
+    hintTemplate:
+      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.12"> by default; do not override.',
+    nextAction: { kind: 'fix-arg', field: 'version' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The SDFormat emitter detected an unsupported version attribute.',
+  },
+  'export.sdf-gazebo.dangling-link-ref': {
+    hintTemplate:
+      'A <joint> in the emitted SDF references a <link> that is not declared in the model. Verify every part on the mate-graph is also declared via arm.part(...).',
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect_robot' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SDFormat structural validation detected a joint referencing an undeclared link.',
   },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {

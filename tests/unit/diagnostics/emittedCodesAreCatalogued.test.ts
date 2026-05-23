@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 163 codes', () => {
+  it('catalogue has exactly 171 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -88,10 +88,18 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       parts.fetch.remote-disabled).
     //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
     //       web/bend/bending/size/dxf/rule).
-    // = 164, but the assembly mechanical fixed-contact-missing row above is
+    //  - 3 Slice B-rest fills urdf/srdf/sdf-gazebo placeholder slots; the
+    //       three `.not-implemented` entries are removed.
+    //  + 11 Slice B-rest new diagnostics:
+    //       URDF (5): cylindrical-lossy, pin-slot-lossy, ball-decomposed,
+    //                 closed-loop, inertia-density-declared
+    //       SRDF (2): acm-sparse-sampling, planning-group-missing
+    //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
+    //                 dangling-link-ref
+    // = 172, but the assembly mechanical fixed-contact-missing row above is
     //   double-counted with the Assembly-fold bucket (bucket was last
-    //   itemised at 31 codes; live count = 32). Net catalogue = 163.
-    expect(catalogue.size).toBe(163);
+    //   itemised at 31 codes; live count = 32). Net catalogue = 171.
+    expect(catalogue.size).toBe(171);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
