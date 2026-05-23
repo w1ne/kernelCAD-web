@@ -92,9 +92,11 @@ describe('static gallery landing page', () => {
     expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
     expect(html).toContain('class="tile-poster"');
     expect(html).toContain("initial: '0deg 158deg auto'");
-    expect(html).toContain("min: '-14deg 145deg auto'");
-    expect(html).toContain("max: '14deg 168deg auto'");
+    expect(html).toContain("min: '-16deg 158deg auto'");
+    expect(html).toContain("max: '16deg 158deg auto'");
     expect(html).toContain('function animateRoyalWatchFace(viewer)');
+    expect(html).toContain('Math.sin(now / 1200) * 14');
+    expect(html).toContain('`${theta.toFixed(2)}deg 158deg auto`');
     expect(html).toContain("if (!orbit.faceForward)");
     expect(html).toContain('if (orbit.faceForward) animateRoyalWatchFace(viewer)');
     expect(html).toContain("viewer.setAttribute('min-camera-orbit', orbit.min)");
