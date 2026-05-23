@@ -79,6 +79,7 @@
     "astring": "^1.9.0",
     "cmdk": "^1.1.1",
     "commander": "^14.0.3",
+    "dxf-parser": "^1.1.2",
     "framer-motion": "^12.33.0",
     "isosurface": "1.0.0",
     "lucide-react": "^0.563.0",
