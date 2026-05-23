@@ -133,7 +133,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A face-authoring feature received a UV anchor coordinate outside the [0, 1] parametric range.',
   },
-  // Face-ref state (5)
+  // Face-ref state (6)
   'feature.face-ref.not-resolvable': {
     hintTemplate:
       'The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call list_faces to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.',
