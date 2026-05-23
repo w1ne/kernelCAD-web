@@ -2,10 +2,26 @@
   "vendors": {
     "sendcutsend": {
       "sources": [
-        { "url": "https://sendcutsend.com/materials/",         "lastFetched": "2026-05-23T08:42:11Z", "sha256": "77762c5b9723c2fb524f06dba9ccb7e0b6e44f87f029121f477c11104d01a7b0" },
-        { "url": "https://sendcutsend.com/laser-cutting/",     "lastFetched": "2026-05-23T08:42:12Z", "sha256": "c09a30446703f3283f1bc16c457724a6490ef88035561907c681cd96e141c691" },
-        { "url": "https://sendcutsend.com/bending/",           "lastFetched": "2026-05-23T08:42:13Z", "sha256": "229d1c58d93e01994ce01038f14a509919bd9058c90e3c7218ed2f82ce6a9ff3" },
-        { "url": "https://sendcutsend.com/materials/min-max/", "lastFetched": "2026-05-23T08:42:14Z", "sha256": "55a587eccc10ade79d51ff1af9300e19cb4e22be825ef6491c592d30d9ec9c60" }
+        {
+          "url": "https://sendcutsend.com/materials/",
+          "lastFetched": "2026-05-23T08:42:11Z",
+          "sha256": "77762c5b9723c2fb524f06dba9ccb7e0b6e44f87f029121f477c11104d01a7b0"
+        },
+        {
+          "url": "https://sendcutsend.com/laser-cutting/",
+          "lastFetched": "2026-05-23T08:42:12Z",
+          "sha256": "c09a30446703f3283f1bc16c457724a6490ef88035561907c681cd96e141c691"
+        },
+        {
+          "url": "https://sendcutsend.com/bending/",
+          "lastFetched": "2026-05-23T08:42:13Z",
+          "sha256": "229d1c58d93e01994ce01038f14a509919bd9058c90e3c7218ed2f82ce6a9ff3"
+        },
+        {
+          "url": "https://sendcutsend.com/materials/min-max/",
+          "lastFetched": "2026-05-23T08:42:14Z",
+          "sha256": "55a587eccc10ade79d51ff1af9300e19cb4e22be825ef6491c592d30d9ec9c60"
+        }
       ],
       "cacheTtlHours": 24
     }
