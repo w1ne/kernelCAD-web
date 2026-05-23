@@ -93,7 +93,7 @@ function AnonGenPage() {
 
   const headerRight = (
     <div className="flex items-center gap-2 min-w-0">
-      <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap">
+      <span className="hidden md:inline text-[10px] text-gray-500 font-mono truncate max-w-[190px]">
         Free saves are public by link.
       </span>
       {session ? (
