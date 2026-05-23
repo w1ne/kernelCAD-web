@@ -141,6 +141,19 @@ export async function updateModelParams(
   });
 
   populateCache(session, result.shapes);
+  // Invalidate mesh caches for records that actually re-lowered. Records in
+  // `skipped` reused their cached shape and so their cached triangle mesh is
+  // still valid; records in `relowered` produced a fresh shape so their
+  // cached triangle data is stale. For solvedAssembly records re-lowered by
+  // a pose-only edit, the assembly entry stays valid for per-part LOCAL
+  // triangle data (only worldTransforms change) — but we keep the simple
+  // policy here and let the meshing layer re-decide; the assembly path's
+  // cache is keyed by (assemblyId, partName) and the geometry hash is
+  // implicitly the upstream part record's lowered shape, which remains
+  // cached. So skipping the assembly cache invalidation is correct.
+  for (const id of relowered) {
+    session.cachedFeatureMeshes.delete(id);
+  }
   const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
   const tailShape = tailId ? result.shapes.get(tailId) : undefined;
   if (!tailShape) {
