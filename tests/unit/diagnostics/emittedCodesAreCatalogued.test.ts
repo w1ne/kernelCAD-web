@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 150 codes', () => {
+  it('catalogue has exactly 157 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -79,11 +79,15 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  2 camera-target override (non-finite-target / invalid-distance)
     //  +  1 assembly mechanical fixed-contact-missing (develop)
     //  +  1 F-foundation @kc topology refs (feature.face-ref.snapshot-fallback-used)
-    //  + 24 Slice E DFM preflight (dfm.* — input/units/material/thickness/hole/slot/web/bend/bending/size/dxf/rule)
-    // = 151, but the assembly mechanical fixed-contact-missing row above is
+    //  +  7 Slice A export trio (options-format-mismatch + six per-format
+    //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
+    //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
+    //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
+    //       web/bend/bending/size/dxf/rule)
+    // = 158, but the assembly mechanical fixed-contact-missing row above is
     //   double-counted with the Assembly-fold bucket (bucket was last
-    //   itemised at 31 codes; live count = 32). Net catalogue = 150.
-    expect(catalogue.size).toBe(150);
+    //   itemised at 31 codes; live count = 32). Net catalogue = 157.
+    expect(catalogue.size).toBe(157);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
