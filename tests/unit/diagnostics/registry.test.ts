@@ -21,6 +21,7 @@ const ALLOWED_GROUPS = new Set([
   'assembly',
   'mesher',
   'tool',
+  'parts',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the
@@ -31,6 +32,8 @@ function isWellFormedNextAction(a: NextAction): boolean {
       return typeof a.param === 'string' && typeof a.factor === 'number' && a.factor > 0 && a.factor < 1;
     case 'call-introspection-tool':
       return typeof a.tool === 'string' && a.tool.length > 0;
+    case 'call-tool':
+      return typeof a.tool === 'string' && a.tool.length > 0 && typeof a.args === 'object' && a.args !== null;
     case 'rewrite-feature':
       return typeof a.guidance === 'string' && a.guidance.length > 0;
     case 'reorder-pipeline':
@@ -47,6 +50,8 @@ function isWellFormedNextAction(a: NextAction): boolean {
       return true;
     case 'check-file-path':
       return true;
+    case 'rerun-with-flag':
+      return typeof a.flag === 'string' && a.flag.length > 0;
   }
 }
 

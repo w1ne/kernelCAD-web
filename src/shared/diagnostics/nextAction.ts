@@ -14,6 +14,7 @@
 export type NextAction =
   | { kind: 'retry-with-smaller-param'; param: string; factor: number }
   | { kind: 'call-introspection-tool'; tool: string }
+  | { kind: 'call-tool'; tool: string; args: Record<string, unknown> }
   | { kind: 'rewrite-feature'; guidance: string }
   | { kind: 'reorder-pipeline'; guidance: string }
   | { kind: 'fix-arg'; field: string }
@@ -21,6 +22,7 @@ export type NextAction =
   | { kind: 'rename'; guidance: string }
   | { kind: 'add-return' }
   | { kind: 'check-cli-args' }
-  | { kind: 'check-file-path' };
+  | { kind: 'check-file-path' }
+  | { kind: 'rerun-with-flag'; flag: string };
 
 export { NEXT_ACTIONS } from './registry';

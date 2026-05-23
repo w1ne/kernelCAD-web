@@ -82,7 +82,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // = 127, but the assembly mechanical fixed-contact-missing row above is
     //   double-counted with the Assembly-fold bucket (bucket was last
     //   itemised at 31 codes; live count = 32). Net catalogue = 126.
-    expect(catalogue.size).toBe(126);
+    //  +  6 Slice C parts.* codes (parts.input.*, parts.fetch.*). Live count = 132.
+    expect(catalogue.size).toBe(132);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
