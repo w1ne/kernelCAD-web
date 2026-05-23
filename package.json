@@ -34,6 +34,7 @@
     "prepack": "npm run build:cli",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
+    "pretest": "npm run generate:parts",
     "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
     "test:audit": "npx tsx scripts/testQualityAudit.ts",
     "test:hygiene": "npm test -- scripts/repoHygieneAudit.test.ts",
