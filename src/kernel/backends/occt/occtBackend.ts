@@ -12,6 +12,7 @@ import { encodeBinaryStl } from './exportStlBinary';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { computeMassProperties, type MassProperties } from '../../../modeling/properties/massProperties';
 
 type ReplicadEdge = replicad.Edge;
 type ReplicadFace = replicad.Face;
@@ -1085,6 +1086,23 @@ export class OcctBackend implements ShapeBackend {
       min: [minP[0] + gap, minP[1] + gap, minP[2] + gap] as Vec3,
       max: [maxP[0] - gap, maxP[1] - gap, maxP[2] - gap] as Vec3,
     };
+  }
+
+  /**
+   * Compute mass, centre of mass, and inertia tensor about the CoM.
+   *
+   * Default density is 1000 kg/m^3 (water). Steel is ~7850, aluminum
+   * ~2700, ABS ~1050. URDF + SDF `<inertial>` blocks consume these
+   * values; pass a part-specific density to get a physically-meaningful
+   * dynamics simulation.
+   *
+   * Backed by OCCT's `BRepGProp::VolumeProperties`. Mirrors the access
+   * pattern in `curve3dEval.ts` for `LinearProperties`.
+   */
+  massProperties(density: number = 1000): MassProperties {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = (this.shape as any).wrapped;
+    return computeMassProperties(wrapped, density);
   }
 
   volume(): number {

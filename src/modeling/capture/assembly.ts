@@ -170,6 +170,12 @@ export interface AssemblyPartOpts {
     to: AssemblyConnectorRef;
     name?: string;
   };
+  /** Per-part material density in `kg/m^3`. Consumed by URDF / SDF export
+   *  inertial blocks. When omitted, the export defaults to 1000 (water)
+   *  and emits `export.urdf.inertia-density-declared` so the agent knows
+   *  the dynamics will be off for any non-water material. Typical values:
+   *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
+  density?: number;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -298,6 +304,10 @@ export interface AssemblyJointStored {
 export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
+  /** Per-part material density in kg/m^3, copied from `AssemblyPartOpts.density`.
+   *  Read by the URDF / SDF export inertial-block emitters. Undefined when
+   *  the script did not declare a density on `arm.part(...)`. */
+  readonly density?: number;
 }
 
 export class Assembly {
@@ -334,6 +344,16 @@ export class Assembly {
         'Pass at: [x, y, z], or omit it; coords may be number or ParamRef.',
       );
     }
+    if (opts.density !== undefined) {
+      if (!Number.isFinite(opts.density) || opts.density <= 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly part '${name}': density must be a positive finite number; got ${formatScalarForError(opts.density)}.`,
+          shape.id,
+          'Pass density: <kg/m^3>, or omit it to use the 1000 kg/m^3 default. Typical: steel 7850, aluminum 2700, ABS 1050.',
+        );
+      }
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
@@ -347,6 +367,7 @@ export class Assembly {
       ...part,
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
+      ...(opts.density !== undefined ? { density: opts.density } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
