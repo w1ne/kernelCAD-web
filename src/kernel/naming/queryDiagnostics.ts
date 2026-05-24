@@ -16,6 +16,12 @@
 //   query.id-hierarchy-clash
 //   query.unsupported-entity-type           (Q3 punt code — Finding #33)
 //
+// Q4 added:
+//   query.composition-strict-failure        (D0.16 (c) wrapper)
+//
+// Q5 added:
+//   query.type-mismatch                     (D0.7 (c) runtime fallback)
+//
 // The snapshot-fallback surface re-uses F-foundation's
 // `feature.face-ref.snapshot-fallback-used` rather than minting a new code.
 
@@ -127,6 +133,30 @@ export function throwQueryUnsupportedEntityType(
     `the query '${dsl(query)}' targets entity kind '${kind}'; the Query evaluator does not yet resolve this kind.`,
     scene.featureId,
     `Face-kind queries are supported. The edge / vertex / connector / part / solid branches ship in a follow-up slice once the per-lowerer feature-stamp wiring lands (each primitive / boolean / fillet / extrude needs to stamp its edges with the originating featureId — a separate slice from the evaluator). Recast the query to use kc.q.face(...) until the follow-up ships.`,
+  );
+}
+
+/** Runtime type-narrowing fallback per D0.7 (c). The Q2 phantom-marker
+ *  generics on `Query<FaceMarker>` / `Query<EdgeMarker>` cover the .kcad.ts
+ *  authoring surface where `tsc --strict` rejects `fillet({ edges: faceQ })`
+ *  at compile time. The static type vanishes at every JSON-AST / string-DSL
+ *  boundary (MCP `evaluate_query` input, `fromString`, untyped
+ *  `Query<unknown>` from `q.createdBy(...)`). When a consumer demanding a
+ *  specific kind receives such an erased Query, this helper re-narrows at
+ *  runtime and surfaces `query.type-mismatch` with a constructor-level
+ *  repair hint. Target 'any' is always accepted — it means the Query was
+ *  constructed without a kind narrower and will narrow downstream. */
+export function throwQueryTypeMismatch(
+  query: Query<unknown>,
+  expected: QueryKind,
+  actual: QueryKind | 'any',
+  consumer: string,
+): never {
+  throw new KernelError(
+    'query.type-mismatch',
+    `the query '${dsl(query)}' has target kind '${actual}'; the consumer '${consumer}' expects '${expected}'.`,
+    undefined,
+    `Construct the query with the matching kind: use kc.q.${expected}(...) instead of kc.q.${actual}(...). If the query was authored as kc.q.${actual}(...), the right repair is usually to swap the constructor; if it came from a JSON-AST boundary, fix the producer so it emits target='${expected}'.`,
   );
 }
 

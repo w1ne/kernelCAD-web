@@ -38,6 +38,7 @@ import {
   throwQueryUnknownLabel,
   throwQueryUnsupportedEntityType,
   throwQueryCompositionStrictFailure,
+  throwQueryTypeMismatch,
 } from './queryDiagnostics';
 
 /** Public entry-point. Returns canonical-ordered entities (sort-by-ref) per
@@ -58,6 +59,30 @@ export function evaluate<T>(
     throw e;
   }
   return entities as unknown as ReadonlyArray<ResolvedEntity<T extends EntityMarker ? T : EntityMarker>>;
+}
+
+/** Runtime kind-narrowing fallback per D0.7 (c).
+ *
+ *  Consumers expecting a specific entity kind (e.g. `fillet({ edges })`
+ *  requires `Query<EdgeMarker>`) call this on input Queries whose static
+ *  marker survived TypeScript erasure unreliably — most notably JSON-AST
+ *  inputs to the `evaluate_query` MCP tool and the `fromString` AST op.
+ *
+ *  Static type narrowing via the `Query<FaceMarker>` / `Query<EdgeMarker>`
+ *  phantom generics catches authoring bugs in `.kcad.ts` source under
+ *  `tsc --strict`. Q5's runtime guard catches the same misuse on inputs
+ *  that crossed a serialization boundary and lost their phantom marker.
+ *
+ *  Target `'any'` is always accepted — it means the Query was constructed
+ *  without a kind narrower (e.g. `q.createdBy('arm')`) and will narrow
+ *  downstream by the consumer's evaluator branch. */
+export function assertQueryKind<T>(
+  query: Query<T>,
+  expected: QueryKind,
+  consumer: string,
+): void {
+  if (query.target === expected || query.target === 'any') return;
+  throwQueryTypeMismatch(query as Query<unknown>, expected, query.target, consumer);
 }
 
 /** Exactly-one resolution. Throws query.empty on N=0; query.over-determined on N>1. */

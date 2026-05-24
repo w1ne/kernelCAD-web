@@ -1518,6 +1518,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'query',
     description: 'A composed Query aborted in strict mode because a sub-query raised a diagnostic; the outer wrapper code quotes the inner cause.',
   },
+  'query.type-mismatch': {
+    hintTemplate:
+      'A consumer expecting a specific entity kind received a Query whose target field disagrees. Static narrowing via kc.q.face(...) / kc.q.edge(...) generics catches this at compile time on .kcad.ts source; this runtime fallback fires when the static marker was erased (JSON-AST boundary, fromString, or untyped Query<unknown>). Construct the query with the matching kind: use kc.q.<expected>(...) instead of kc.q.<actual>(...).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reconstruct the query with the kind the consumer expects (kc.q.face / kc.q.edge / ...)' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query crossed a runtime kind-narrowing fallback: a consumer demanded one entity kind and the Query.target field announced a different one.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

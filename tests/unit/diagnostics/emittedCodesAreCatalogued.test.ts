@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 173 codes', () => {
+  it('catalogue has exactly 174 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -100,8 +100,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 Slice Q4 — composition-strict-failure (single named wrapper per
     //       D0.16 (c); strict-mode set-algebra emits this wrapper code in
     //       place of re-throwing the inner sub-query diagnostic).
-    // Net catalogue = 157 - 3 + 11 + 7 + 1 = 173.
-    expect(catalogue.size).toBe(173);
+    //  +  1 Slice Q5 — type-mismatch (D0.7 (c) runtime narrowing fallback
+    //       for Queries whose phantom marker was erased crossing a JSON-AST
+    //       boundary; consumers re-narrow via assertQueryKind).
+    // Net catalogue = 157 - 3 + 11 + 7 + 1 + 1 = 174.
+    expect(catalogue.size).toBe(174);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
