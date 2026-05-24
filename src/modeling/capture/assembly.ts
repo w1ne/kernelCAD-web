@@ -162,6 +162,32 @@ export interface SubAssemblyHandle {
   part(origPartName: string): AssemblyPartRef;
 }
 
+/** Beam cross-section declaration consumed by the closed-form Euler-Bernoulli
+ *  path in `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Optional —
+ *  parts without a declared cross-section fire `kinematic.load.beam-not-applicable`
+ *  when a load is applied to them. Lengths are in millimetres (the assembly's
+ *  canonical length unit). */
+export type AssemblyCrossSection =
+  | {
+      readonly kind: 'rectangle';
+      readonly widthMm: number;
+      readonly heightMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'circle';
+      readonly radiusMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'i-beam';
+      readonly flangeWidthMm: number;
+      readonly flangeThicknessMm: number;
+      readonly webHeightMm: number;
+      readonly webThicknessMm: number;
+      readonly lengthMm: number;
+    };
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -176,6 +202,11 @@ export interface AssemblyPartOpts {
    *  the dynamics will be off for any non-water material. Typical values:
    *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
   density?: number;
+  /** Beam cross-section for closed-form Euler-Bernoulli load checking via
+   *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
+   *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
+   *  on any load applied to the part. */
+  crossSection?: AssemblyCrossSection;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -308,6 +339,10 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  Read by the URDF / SDF export inertial-block emitters. Undefined when
    *  the script did not declare a density on `arm.part(...)`. */
   readonly density?: number;
+  /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
+   *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
+   *  the script did not declare a cross-section on `arm.part(...)`. */
+  readonly crossSection?: AssemblyCrossSection;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */
@@ -400,6 +435,9 @@ export class Assembly {
         );
       }
     }
+    if (opts.crossSection !== undefined) {
+      validateCrossSection(name, shape.id, opts.crossSection);
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
@@ -414,6 +452,7 @@ export class Assembly {
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
       ...(opts.density !== undefined ? { density: opts.density } : {}),
+      ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -2114,6 +2153,38 @@ function normalizeConnectors(
       : { origin: toVec3Param(frame.origin, 'mm'), axis: toVec3Param(frame.axis, 'unitless') };
   }
   return normalized;
+}
+
+/** Sanity-check every numeric field on an authored cross-section. Lengths
+ *  must be finite + positive; an invalid field raises a `feature.invalid-args`
+ *  at capture time so beam-mode load checks never see NaN-laced sections. */
+function validateCrossSection(
+  partName: string,
+  featureId: FeatureId,
+  cs: AssemblyCrossSection,
+): void {
+  const ensurePositive = (label: string, value: number): void => {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly part '${partName}': crossSection ${label} must be a positive finite number; got ${formatScalarForError(value)}.`,
+        featureId,
+        'Pass every cross-section length in millimetres as a finite number > 0.',
+      );
+    }
+  };
+  ensurePositive('lengthMm', cs.lengthMm);
+  if (cs.kind === 'rectangle') {
+    ensurePositive('widthMm', cs.widthMm);
+    ensurePositive('heightMm', cs.heightMm);
+  } else if (cs.kind === 'circle') {
+    ensurePositive('radiusMm', cs.radiusMm);
+  } else {
+    ensurePositive('flangeWidthMm', cs.flangeWidthMm);
+    ensurePositive('flangeThicknessMm', cs.flangeThicknessMm);
+    ensurePositive('webHeightMm', cs.webHeightMm);
+    ensurePositive('webThicknessMm', cs.webThicknessMm);
+  }
 }
 
 function paramToExpr(p: Param): ParamRefExpr {

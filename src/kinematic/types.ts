@@ -139,25 +139,56 @@ export interface ReachableResult extends KinematicResultBase {
 
 // ===== checkLoadCapacity =====
 
-export interface MaterialDeclaration {
-  readonly youngsModulusPa: number;
-  readonly yieldStrengthPa: number;
+/** Catalogued bulk material. Closed-form section properties are paired with
+ *  the catalog at runtime; 'custom' lets the agent supply yield + modulus
+ *  inline for materials not in the catalog. */
+export type MaterialKind =
+  | 'steel'
+  | 'aluminum'
+  | 'pla'
+  | 'abs'
+  | 'pet'
+  | 'custom';
+
+/** Per-loaded-part material declaration. `material: 'custom'` requires
+ *  `yieldStressMPa` + `youngsModulusGPa` set; the catalog kinds default
+ *  every field from MATERIAL_CATALOG. */
+export interface MaterialDeclarationEntry {
+  readonly material: MaterialKind;
+  readonly yieldStressMPa?: number;
+  readonly youngsModulusGPa?: number;
+  readonly density?: number;
 }
 
-export interface LoadDeclaration {
-  /** Force vector applied to the part end (N). */
+/** Map of partName → material declaration. */
+export type MaterialDeclaration = Readonly<
+  Record<string, MaterialDeclarationEntry>
+>;
+
+/** Per-loaded-part applied-load declaration. Force is in N (world frame
+ *  applied at the part's free end), torque is in N·m. */
+export interface LoadEntry {
   readonly force?: Vec3;
-  /** Torque vector applied to the part end (N·m). */
   readonly torque?: Vec3;
 }
 
+/** Map of partName → applied-load entry. */
+export type LoadDeclaration = Readonly<Record<string, LoadEntry>>;
+
 export interface LoadCapacityOpts {
-  /** 'beam' = closed-form Euler-Bernoulli (v1). FEA deferred. */
-  readonly mode?: 'beam';
-  readonly loads?: Readonly<Record<string, LoadDeclaration>>;
-  readonly materials?: Readonly<Record<string, MaterialDeclaration>>;
+  /** 'beam' (default) runs the closed-form Euler-Bernoulli path; 'stub'
+   *  re-exports the v0.7.4 mate-side `maxLoad`-vs-`externalLoads` magnitude
+   *  check. */
+  readonly mode?: 'stub' | 'beam';
+  readonly materials?: MaterialDeclaration;
+  /** Safety-factor floor — beam check fails the part when computed
+   *  yield/stress falls below this value. Defaults to 1.5. */
+  readonly safetyFactorThreshold?: number;
 }
 
+/** Per-part beam-mode compute record. One row per part for which the
+ *  closed-form path actually evaluated (parts that fell back via K7 are
+ *  represented in `failures` / `diagnostics`, not here). */
 export interface LoadCapacityElementResult {
   readonly partName: string;
   readonly stressPa: number;
@@ -165,8 +196,34 @@ export interface LoadCapacityElementResult {
   readonly safetyFactor: number;
 }
 
+/** Failed-element record returned in `result.failures[]`. */
+export interface LoadCapacityFailure {
+  /** partName (beam mode) or mateName (stub mode). */
+  readonly element: string;
+  readonly elementKind: 'part' | 'mate';
+  /** Pa (beam-mode stress-exceeds-yield); omitted for joint-load. */
+  readonly stress?: number;
+  /** Pa material yield; omitted for joint-load. */
+  readonly yieldStress?: number;
+  /** N or N·m applied; omitted when not meaningful. */
+  readonly load?: number;
+  /** N or N·m capacity (beam: yieldStress·I/c; joint: maxLoad). */
+  readonly capacity?: number;
+  readonly reason:
+    | 'stress-exceeds-yield'
+    | 'joint-load-exceeded'
+    | 'beam-deflection-excessive';
+}
+
 export interface LoadCapacityResult extends KinematicResultBase {
+  /** Worst-of safety factor across every successfully-computed part.
+   *  Infinity when no part was loaded. */
+  readonly safetyFactor: number;
+  /** Every part the beam path actually evaluated. Failed parts are also
+   *  surfaced in `failures[]` with structured fault codes. */
   readonly elements: ReadonlyArray<LoadCapacityElementResult>;
+  /** Structured fault records — one per failed part / mate. */
+  readonly failures: ReadonlyArray<LoadCapacityFailure>;
 }
 
 // ===== facade type — the kc.kinematic object surface =====
@@ -182,6 +239,7 @@ export interface KinematicFacade {
   checkReachable(arm: Assembly, opts: ReachableOpts): Promise<ReachableResult>;
   checkLoadCapacity(
     arm: Assembly,
+    loads?: LoadDeclaration,
     opts?: LoadCapacityOpts,
   ): Promise<LoadCapacityResult>;
 }
