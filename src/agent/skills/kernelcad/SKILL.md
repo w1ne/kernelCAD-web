@@ -22,6 +22,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.
 - Exporting an assembly with closed kinematic loops or a native ball joint → also load `kernelcad-sdformat`.
 - Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
+- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`) → also load `kernelcad-kinematic`.
 
 ## Key globals available today
 
