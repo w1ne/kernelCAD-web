@@ -20,6 +20,10 @@ import type {
 import type {
   CameraTargetHandle,
 } from '../shared/intent/cameraTargetRecord';
+import type {
+  AnimationViewHandle,
+  AnimationViewSpec,
+} from '../shared/intent/animationViewRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
@@ -315,6 +319,19 @@ export interface KernelCadApi {
    * pose / aspect.
    */
   setCameraDistance(distance: number): CameraTargetHandle;
+
+  /**
+   * Declare a parameter sweep for offline MP4 capture. The script names a
+   * previously-declared `param()`, its start/end values, and the animation
+   * duration in milliseconds. `scripts/captureAnimationView.mjs` reads the
+   * resulting `animationView` virtual record and renders an MP4 by sampling
+   * `ceil(durationMs / 1000 * fps)` frames across the sweep — leveraging
+   * the per-session mesh cache so each frame's recompute is ~5 ms warm.
+   *
+   * Multiple calls register multiple records; the capture script uses the
+   * last one.
+   */
+  animationView(spec: AnimationViewSpec): AnimationViewHandle;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -865,6 +882,13 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const id = session.addCameraTarget({ x: target[0], y: target[1], z: target[2], distance });
       const record = session.getRecords().find(r => r.id === id)!;
       const metadata = record.metadata as unknown as import('../shared/intent/cameraTargetRecord').CameraTargetMetadata;
+      return { id, metadata };
+    },
+
+    animationView(spec) {
+      const id = session.addAnimationView(spec);
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as import('../shared/intent/animationViewRecord').AnimationViewMetadata;
       return { id, metadata };
     },
   };

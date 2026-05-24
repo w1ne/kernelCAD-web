@@ -18,6 +18,10 @@ import type {
   CameraTargetMetadata,
   CameraTargetSpec,
 } from '../../shared/intent/cameraTargetRecord';
+import type {
+  AnimationViewMetadata,
+  AnimationViewSpec,
+} from '../../shared/intent/animationViewRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -611,6 +615,87 @@ export class CaptureSession {
 
     const r = this.register({
       kind: 'cameraTarget',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * Capture an animation-view virtual feature. Validates that `param` names
+   * a previously-declared `param()` (or defers the check to capture-script
+   * time if not yet registered), that `from`/`to`/`durationMs` are finite,
+   * and that `durationMs` + `fps` are positive. On invalid input a
+   * diagnostic is stashed on `metadata.diagnostics` and a default-safe
+   * record is still produced (matching the `addCameraTarget` pattern).
+   * Multiple calls register multiple records — the capture script picks
+   * the last one when more than one is declared.
+   */
+  addAnimationView(args: AnimationViewSpec): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    const paramOk = typeof args.param === 'string' && args.param.length > 0;
+    if (!paramOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'param' must be a non-empty string; got ${JSON.stringify(args.param)}.`,
+        hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
+      });
+    }
+
+    const fromOk = Number.isFinite(args.from);
+    const toOk = Number.isFinite(args.to);
+    if (!fromOk || !toOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'from' and 'to' must be finite numbers; got (${args.from}, ${args.to}).`,
+        hint: `invalid-args.animation-view.non-finite-range — pass finite numeric bounds for the sweep.`,
+      });
+    }
+
+    const durOk = Number.isFinite(args.durationMs) && args.durationMs > 0;
+    if (!durOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'durationMs' must be a positive finite number; got ${args.durationMs}.`,
+        hint: `invalid-args.animation-view.bad-duration — pass durationMs > 0 (e.g. 4000 for a 4-second sweep).`,
+      });
+    }
+
+    let fps = 30;
+    if (args.fps !== undefined) {
+      if (!Number.isFinite(args.fps) || args.fps <= 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          severity: 'warn',
+          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
+          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
+        });
+      } else {
+        fps = args.fps;
+      }
+    }
+
+    const metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      param: paramOk ? args.param : '',
+      from: fromOk ? args.from : 0,
+      to: toOk ? args.to : 0,
+      durationMs: durOk ? args.durationMs : 1000,
+      fps,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'animationView',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,

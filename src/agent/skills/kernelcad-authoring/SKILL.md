@@ -167,6 +167,24 @@ setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
 // direction. Use when the auto-fit extents-projection reads too tight or
 // too loose at the chosen pose / aspect.
 setCameraDistance(distance: number): CameraTargetHandle;
+
+// Declare a parameter sweep for offline kinematic-motion MP4 capture. The
+// script names a previously-declared `param()`, its start/end values, and
+// the animation duration in milliseconds. `scripts/captureAnimationView.mjs`
+// reads the resulting `animationView` virtual record and renders an MP4 by
+// sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
+// leveraging the per-session mesh cache so each frame's recompute is
+// ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
+// multiple records; the capture script uses the last one. Validation
+// errors (non-empty param, finite range, positive durationMs/fps) are
+// pushed as structured diagnostics on `handle.metadata.diagnostics`.
+animationView(spec: {
+  param: string;
+  from: number;
+  to: number;
+  durationMs: number;
+  fps?: number;          // default 30
+}): AnimationViewHandle;
 ```
 
 ### Shape methods (chainable)
