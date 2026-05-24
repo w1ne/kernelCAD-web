@@ -87,7 +87,7 @@ async function walk(
               continue;
             }
             // Reject body characters outside the documented grammar.
-            if (!/^[A-Za-z][A-Za-z0-9_/.#\[\]-]*$/.test(body)) {
+            if (!/^[A-Za-z][A-Za-z0-9_/.#[\]-]*$/.test(body)) {
               pos = cursor;
               continue;
             }
