@@ -129,3 +129,24 @@ export function throwQueryUnsupportedEntityType(
     `Face-kind queries are supported. The edge / vertex / connector / part / solid branches ship in a follow-up slice once the per-lowerer feature-stamp wiring lands (each primitive / boolean / fillet / extrude needs to stamp its edges with the originating featureId — a separate slice from the evaluator). Recast the query to use kc.q.face(...) until the follow-up ships.`,
   );
 }
+
+/** Wrap a sub-query diagnostic raised inside a composed (union / intersection
+ *  / subtraction) query under one named code. Strict-mode policy per
+ *  D0.16 (c): the outer composition aborts on first sub-query error and the
+ *  agent sees `query.composition-strict-failure` regardless of which inner
+ *  diagnostic fired. The wrapper quotes the inner code so the agent can
+ *  trace the cause without parsing the prose. Use `.asLenient()` on the
+ *  outer query to flip to best-effort mode. */
+export function throwQueryCompositionStrictFailure(
+  outerQuery: Query<unknown>,
+  scene: QueryScene,
+  innerCode: string,
+  innerMessage: string,
+): never {
+  throw new KernelError(
+    'query.composition-strict-failure',
+    `the composed query '${dsl(outerQuery)}' failed because a sub-query raised ${innerCode}: ${innerMessage}.`,
+    scene.featureId,
+    `Composed queries (union / intersection / subtraction) short-circuit on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success — failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.`,
+  );
+}

@@ -37,6 +37,7 @@ import {
   throwQueryUnknownId,
   throwQueryUnknownLabel,
   throwQueryUnsupportedEntityType,
+  throwQueryCompositionStrictFailure,
 } from './queryDiagnostics';
 
 /** Public entry-point. Returns canonical-ordered entities (sort-by-ref) per
@@ -369,7 +370,7 @@ function setAlgebraUnion(
       if (lenient && isQueryDiagnostic(e)) {
         entities = [];
       } else {
-        throw e;
+        throwCompositionStrictFailure(originatingQuery, scene, e);
       }
     }
     for (const ent of entities) {
@@ -409,7 +410,7 @@ function setAlgebraIntersection(
       if (lenient && isQueryDiagnostic(e)) {
         entities = [];
       } else {
-        throw e;
+        throwCompositionStrictFailure(originatingQuery, scene, e);
       }
     }
     if (acc === null) {
@@ -475,13 +476,13 @@ function setAlgebraSubtraction(
     aEnts = evalAst(aAst, scene, lenient, originatingQuery);
   } catch (e) {
     if (lenient && isQueryDiagnostic(e)) aEnts = [];
-    else throw e;
+    else throwCompositionStrictFailure(originatingQuery, scene, e);
   }
   try {
     bEnts = evalAst(bAst, scene, lenient, originatingQuery);
   } catch (e) {
     if (lenient && isQueryDiagnostic(e)) bEnts = [];
-    else throw e;
+    else throwCompositionStrictFailure(originatingQuery, scene, e);
   }
   const bHandles = new Set(bEnts.map((e) => e.handle));
   return aEnts.filter((e) => !bHandles.has(e.handle));
@@ -611,6 +612,22 @@ function isQueryDiagnostic(e: unknown): boolean {
   if (e === null || typeof e !== 'object') return false;
   const code = (e as { code?: unknown }).code;
   return typeof code === 'string' && code.startsWith('query.');
+}
+
+/** Strict-mode set-algebra failure wrap (D0.16 (c) / Q4). Extracts the
+ *  inner diagnostic's code + message and rethrows under
+ *  `query.composition-strict-failure` so agents see one named class for
+ *  every composition failure mode regardless of which sub-query broke. */
+function throwCompositionStrictFailure(
+  outerQuery: Query<unknown>,
+  scene: QueryScene,
+  innerError: unknown,
+): never {
+  const code = (innerError as { code?: string })?.code ?? 'unknown';
+  const message = innerError instanceof Error
+    ? innerError.message
+    : String(innerError);
+  throwQueryCompositionStrictFailure(outerQuery, scene, code, message);
 }
 
 // ---------------------------------------------------------------------------

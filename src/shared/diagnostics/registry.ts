@@ -1510,6 +1510,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'query',
     description: 'A Query targeted an entity kind whose evaluator branch has not yet been wired.',
   },
+  'query.composition-strict-failure': {
+    hintTemplate:
+      'A composed query (union / intersection / subtraction) short-circuited on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success — failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'fix the failing sub-query or annotate the composition with .asLenient()' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A composed Query aborted in strict mode because a sub-query raised a diagnostic; the outer wrapper code quotes the inner cause.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
