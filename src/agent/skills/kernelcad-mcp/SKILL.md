@@ -259,6 +259,37 @@ Read the hint — it carries the recovery move (paste a candidate ref, narrow th
 
 For the full mechanism build loop (robot arms, grippers, linkages), see `kernelcad-assemblies`.
 
+## Cookbook — Query DSL inspect-first pattern
+
+### Q-S6 — Inspect first, build after
+
+The canonical agent flow whenever the expected entity count is uncertain: express the Query, inspect the AST or the canonical `@kcq[...]` descriptor via `.toString()`, then narrow or consume. `Query<T>` values are lazy — construction is cheap and side-effect-free, so an agent can build many candidate Queries and reason over their descriptors before committing.
+
+```typescript
+// 1. Express the candidate Query.
+const candidates = q.face().and(q.withFeatureName('box1'));
+
+// 2. Inspect the descriptor without resolving. The `@kcq[face(<json>)]`
+//    debug form quotes the AST for trace; the canonical grammar
+//    serializer replaces it in a follow-on slice.
+const descriptor = candidates.toString();
+
+// 3. The AST is plain data; the agent can walk it to read the filters at
+//    each level.
+candidates.ast;     // { op: 'intersection', queries: [...] }
+
+// 4. Narrow further or consume — both stay on the same Query value.
+const narrowed = candidates.and(q.withLabel('lid'));
+
+// 5. JSON.stringify round-trips cleanly; chainable methods are
+//    non-enumerable so the wire form carries only data fields. The
+//    `evaluate_query` MCP tool (ships in a follow-on slice) consumes
+//    exactly this JSON shape from outside the script.
+JSON.stringify(narrowed);   // { "_kind": "kc.query", "target": "face", ... }
+```
+
+See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
+
 ## Verification gates
 
 | Gate | Pass criterion |

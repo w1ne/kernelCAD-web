@@ -254,6 +254,67 @@ kc.box(10).fillet({ edges: kc.q.face(kc.q.createdBy('arm')) });  // tsc error
 
 Queries built without a kind narrower (`kc.q.createdBy('arm')`, target `'any'`) are always accepted; they narrow downstream by the consumer's evaluator branch.
 
+### Authoring sugar — `q` and `kc.q` inside a `.kcad.ts` script
+
+The constructor namespace is reachable from any `.kcad.ts` source without an explicit `import`. Both forms work:
+
+```typescript
+// Top-level form — matches the api spread convention used by box(),
+// cylinder(), assembly(), etc.
+const lid = q.face(q.withFeatureName('case')).and(q.withLabel('lid'));
+
+// Namespaced form — matches the SKILL.md prose voice and pairs with
+// `kc.box(...)`.
+const lid2 = kc.q.face(kc.q.withFeatureName('case')).and(kc.q.withLabel('lid'));
+```
+
+Both lines reach the identical constructor table and produce structurally equal `Query<FaceMarker>` values.
+
+## Cookbook — Query DSL
+
+Each snippet below ships as a runnable `.kcad.ts` file under `src/agent/skills/kernelcad-features/cookbook/snippets/`. The test `tests/integration/mcp/queryCookbookSmoke.test.ts` evaluates every snippet on every CI run; agents can paste these patterns into a model script and expect them to work end-to-end.
+
+### Q-S1 — Construct and inspect a face Query
+
+Build a `Query<FaceMarker>` lazily; the value carries the AST and the entity-kind narrower without resolving any topology. Use this whenever the same selector is reused across multiple consumers — author once, pass around as a value.
+
+```typescript
+const part = box(20, 20, 5, false, { faceLabels: { lid: 'top' } });
+const lidQuery = q.face(q.withFeatureName('box1')).and(q.withLabel('lid'));
+
+// Query<T> data fields are all serializable; chainable methods are
+// non-enumerable so JSON.stringify round-trips cleanly.
+JSON.stringify(lidQuery);   // { "_kind": "kc.query", "target": "face", "ast": {...} }
+```
+
+See `cookbook/snippets/Q-S1-construct-and-inspect-faces.kcad.ts`.
+
+### Q-S2 — Set algebra on face Queries
+
+`.and(...)`, `.or(...)`, and `.minus(...)` are the three composers. Each returns a fresh `Query<FaceMarker>` whose AST records the operation, so the originals stay reusable.
+
+```typescript
+const allFaces      = q.face().and(q.withFeatureName('box1'));
+const floor         = q.face().and(q.withLabel('floor'));
+const everythingBut = allFaces.minus(floor);                       // subtraction
+const lidOrFloor    = q.face().and(q.withLabel('lid')).or(floor);  // union
+```
+
+See `cookbook/snippets/Q-S2-set-algebra.kcad.ts`.
+
+### Q-S3 — Lenient composition for optional features
+
+`.asLenient()` flips the Query into partial-success mode: sub-query failures (e.g. an undeclared label) contribute zero entities rather than tripping `query.composition-strict-failure`. Use this when the design family has optional features.
+
+```typescript
+const filletEdges = q.union(
+  q.face(q.withLabel('lid')),
+  q.face(q.withLabel('side-bevel')),    // may not exist on this design
+).asLenient();
+```
+
+See `cookbook/snippets/Q-S3-lenient-composition.kcad.ts`.
+
 ## Verification gates
 
 After applying edge/face features, run before reporting done:
