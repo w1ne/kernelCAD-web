@@ -24,10 +24,13 @@ import { setSceneReturnSourceTool } from './tools/setSceneReturnSource';
 import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
+import { exportModelTool } from './tools/exportModel';
 import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
+import { inspectRobotTool } from './tools/inspectRobot';
+import { validateUrdfTool } from './tools/validateUrdf';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
 import { listEdgesTool } from './tools/listEdges';
@@ -51,6 +54,7 @@ import { validateAssemblyTool } from './tools/validateAssembly';
 import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
+import { dfmPreflightTool } from './tools/dfmPreflight';
 
 export interface McpToolDefinition {
   name: string;
@@ -141,6 +145,37 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => inspectAssemblyTool(input as Parameters<typeof inspectAssemblyTool>[0]),
+  },
+  {
+    definition: {
+      name: 'inspect_robot',
+      description:
+        'Preview an assembly as it would be exported to URDF or SDFormat: returns links (name + bounding-box extent + declared density), joints (with limits in SI units), planning groups, end-effectors, and open issues the export would surface (closed loops, missing density). Read-only — pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        },
+      },
+    },
+    handler: input => inspectRobotTool(input as Parameters<typeof inspectRobotTool>[0]),
+  },
+  {
+    definition: {
+      name: 'validate_urdf',
+      description:
+        'Parse a .urdf file and check structural validity: well-formed XML, every <joint>\'s parent/child link resolves, link/joint names unique, no closed kinematic loops. Returns { ok, linkCount, jointCount, rootLinks }. Read-only — does not write to disk.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          urdf_path: { type: 'string', description: 'Path to the .urdf file to validate.' },
+        },
+        required: ['urdf_path'],
+      },
+    },
+    handler: input => validateUrdfTool(input as unknown as Parameters<typeof validateUrdfTool>[0]),
   },
   {
     definition: {
@@ -804,11 +839,13 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'export_stl',
       description:
-        'Export the script geometry to a binary STL file. Pass either { file } or { code } plus a required { output_path }. ' +
+        "(DEPRECATED — use export_model with format: 'stl'.) Export the script geometry to a binary STL file. " +
+        'Pass either { file } or { code } plus a required { output_path }. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
         'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
         'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
-        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers.',
+        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers. ' +
+        'Removal is scheduled for the next minor version.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -821,6 +858,43 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]),
+  },
+  {
+    definition: {
+      name: 'export_model',
+      description:
+        'Export the script geometry to a file. Pass either { file } or { code } plus a required { output_path } and { format }. ' +
+        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
+        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials). ' +
+        'Reserved (return export.<format>.not-implemented until a follow-up slice fills them in): urdf, srdf, sdf-gazebo. ' +
+        'Optional { feature_id } selects which feature to export (default: last). ' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco). ' +
+        'Returns { ok, output_path, byte_count, feature_count, format, diagnostics }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          output_path: { type: 'string', description: 'Destination path for the export file. Required.' },
+          format: {
+            type: 'string',
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'urdf', 'srdf', 'sdf-gazebo'],
+            description: 'Output file format. Required.',
+          },
+          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
+          options: {
+            type: 'object',
+            description:
+              'Optional per-format options bag. Discriminator options.format must equal top-level format. ' +
+              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
+              'glb: { axis?: "y-up"|"z-up", draco?: false }.',
+          },
+        },
+        required: ['output_path', 'format'],
+      },
+    },
+    handler: input => exportModelTool(input as unknown as Parameters<typeof exportModelTool>[0]),
   },
   {
     definition: {
@@ -1344,6 +1418,35 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => getBendTableTool(input as unknown as Parameters<typeof getBendTableTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'dfm_preflight',
+      description:
+        'Preflight a sheet-metal flat pattern or planar body against a job-shop\'s public ordering rules. ' +
+        'Required: vendor (e.g. "sendcutsend"), material SKU (from catalog.json), and thicknessIn or thicknessMm. ' +
+        'Returns { ok, findings[], diagnostics[] } where findings carry repairHint.action ' +
+        '(enlarge | remove | relocate | change-material | change-thickness) and an @kc[...] ref. ' +
+        'Tool fails closed when vendor / material / thickness are omitted. Source: .kcad.ts script ' +
+        '(via flatten_pattern + get_bend_table) or DXF file path. STEP path ships in a follow-up slice.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          dxf:  { type: 'string', description: 'Path to a DXF file.' },
+          featureId: { type: 'string', description: 'Optional FeatureId to scope to.' },
+          vendor: { type: 'string', description: 'Vendor SKU (required). See catalogs/sources-manifest.json.' },
+          material: { type: 'string', description: 'Material SKU (required). See catalog.json.' },
+          thicknessIn: { type: 'number', description: 'Material thickness in inches.' },
+          thicknessMm: { type: 'number', description: 'Material thickness in millimeters.' },
+          service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'] },
+          refreshCatalog: { type: 'boolean', description: 'Force refresh of the vendor catalog (24h cache).' },
+        },
+        required: ['vendor', 'material'],
+      },
+    },
+    handler: input => dfmPreflightTool(input as unknown as Parameters<typeof dfmPreflightTool>[0]) as Promise<unknown>,
   },
   {
     definition: {

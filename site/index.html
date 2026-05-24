@@ -47,6 +47,7 @@
         <h1 class="headline">CAD for <span class="accent">agents</span>.</h1>
         <p class="subhead">A scriptable CAD runtime for editable .kcad.ts source, deterministic review, and physical part exports.</p>
         <div class="modes" aria-label="Supported agent surfaces">
+          <span class="mode">Claude Desktop</span><span class="sep">·</span>
           <span class="mode">Codex</span><span class="sep">·</span>
           <span class="mode">Claude Code</span><span class="sep">·</span>
           <span class="mode">Cursor</span><span class="sep">·</span>
@@ -57,7 +58,11 @@
           <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
         </div>
         <div class="install-stack" aria-label="Install commands">
-          <button class="install" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
+          <a class="install install-link" id="claude-desktop-link" href="/app/connect" aria-label="Connect kernelCAD to Claude Desktop">
+            <span class="install-command">Use with Claude Desktop</span>
+            <span class="copy">→</span>
+          </a>
+          <button class="install install-secondary" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
             <span class="install-command"><span class="prompt">$</span> claude mcp add kernelcad -- npx -y kernelcad mcp</span>
             <span class="copy">copy</span>
           </button>

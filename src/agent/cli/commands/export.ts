@@ -55,16 +55,20 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   return { exitCode: 0, bytesWritten: result.bytes.length, diagnostics: withNextActions(result.diagnostics) };
 }
 
+const SUPPORTED_FORMATS = new Set<ExportFormat>([
+  'stl', 'step', 'dxf', '3mf', 'glb', 'urdf', 'srdf', 'sdf-gazebo',
+]);
+
 export function exportCommand(): Command {
   const cmd = new Command('export')
-    .description('Export a .kcad.ts script to STL or STEP')
-    .argument('<format>', 'stl | step')
+    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, or GLB')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path')
     .option('--json', 'emit diagnostics as JSON')
     .action(async (format: string, file: string, opts: { out: string; json?: boolean }) => {
-      if (format !== 'stl' && format !== 'step') {
-        console.error(`Unsupported format: ${format}. Use 'stl' or 'step'.`);
+      if (!SUPPORTED_FORMATS.has(format as ExportFormat)) {
+        console.error(`Unsupported format: ${format}. Use one of ${[...SUPPORTED_FORMATS].join(', ')}.`);
         process.exitCode = 2; return;
       }
       const r = await exportScript({ file, format: format as ExportFormat, out: opts.out });

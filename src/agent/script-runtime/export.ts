@@ -1,14 +1,41 @@
 import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, pbrFromMetadata, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
+import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
+import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
+import { isRegion } from '../../shared/intent/region';
 
-export type ExportFormat = 'stl' | 'step';
+export type ExportFormat =
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb'
+  | 'urdf' | 'srdf' | 'sdf-gazebo';
+
+/** Per-format option payloads. The union member is selected by `format`. */
+export type ExportOptions =
+  | { format: 'stl' }
+  | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
+  | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
+  | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
+  | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'urdf' }
+  | { format: 'srdf' }
+  | { format: 'sdf-gazebo' };
+
+export interface DxfLayerSpec {
+  name: string;
+  color?: string;
+  lineWeight?: number;
+  lineType?: 'continuous' | 'dashed' | 'phantom';
+  filter?: 'all' | { partName: string };
+}
 
 export interface ExportInput {
   code: string;
@@ -19,6 +46,8 @@ export interface ExportInput {
   /** Optional: absolute directory of the source script. Threaded into the
    *  API context so `lib.fromSTEP('parts/foo.step')` resolves. */
   scriptDir?: string;
+  /** Per-format options. Discriminator `options.format` must equal top-level `format`. */
+  options?: ExportOptions;
 }
 
 export interface ExportResult {
@@ -29,6 +58,22 @@ export interface ExportResult {
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const { code, fileName, format, feature_id, scriptDir } = input;
+
+  if (input.options && input.options.format !== input.format) {
+    return {
+      bytes: new Uint8Array(),
+      featureCount: 0,
+      diagnostics: [{
+        target: 'export-occt',
+        code: 'export.options-format-mismatch',
+        severity: 'error',
+        message: `options.format ('${input.options.format}') must equal format ('${input.format}').`,
+        hint: 'Set options.format to the same value as the top-level format, or omit options.',
+        nextAction: NEXT_ACTIONS['export.options-format-mismatch'],
+      }],
+    };
+  }
+
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
@@ -38,6 +83,83 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {
     return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+  }
+
+  // DXF entry path: a script that returns a `Region` (typically from
+  // `Shape.flattenPattern()`) bypasses target-shape lowering — the Region's
+  // outer / holes / bendLines feed straight into the polyline writer. Any
+  // other format on a Region return is unsupported and falls through to
+  // the normal `targetId` resolution path, which then trips
+  // `export.no-shape` because the Region is not a Shape.
+  if (format === 'dxf' && isRegion(run.returnValue)) {
+    const opts =
+      (input.options as DxfWriterOptions | undefined) ?? { format: 'dxf' };
+    const bytes = exportDxf({ kind: 'region', region: run.returnValue }, opts);
+    return { bytes, featureCount, diagnostics: r.diagnostics };
+  }
+
+  // URDF / SRDF / SDF entry path: these are pure-XML formats that derive
+  // their entire payload from the captured Assembly (parts + joints + mates
+  // + planning metadata). No targetId / lowered-Shape lookup is required;
+  // the emitter lowers each part on its own. Resolve the Assembly from
+  // the session and dispatch to the per-format serializer.
+  if (format === 'urdf' || format === 'srdf' || format === 'sdf-gazebo') {
+    const ret = run.returnValue;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const assemblies = run.session.assemblies as Map<string, any>;
+    let arm: import('../../modeling/capture/assembly').Assembly | undefined;
+    if (ret instanceof Scene) {
+      arm = assemblies.get(ret.assemblyName);
+    }
+    if (!arm) {
+      const first = assemblies.values().next();
+      if (!first.done) arm = first.value as import('../../modeling/capture/assembly').Assembly;
+    }
+    if (!arm) {
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.no-shape',
+          severity: 'error',
+          message: `Export format '${format}' requires the script to return assembly.model() (or assembly.solvedModel(...)).`,
+          hint: 'End the script with `return arm.model();` after declaring at least one arm.part(...).',
+          nextAction: NEXT_ACTIONS['export.no-shape'],
+        }],
+      };
+    }
+    if (format === 'urdf') {
+      const { urdfSerialize } = await import('../../modeling/export/urdf/urdfSerializer');
+      const urdfOpts = (input.options as { density?: number; meshPrefix?: string; meshFormat?: 'stl' | 'dae' } | undefined) ?? {};
+      const out = await urdfSerialize(arm, urdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.urdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
+    if (format === 'srdf') {
+      const { srdfSerialize } = await import('../../modeling/export/srdf/srdfSerializer');
+      const srdfOpts = (input.options as { urdfPath?: string; samplesPerMate?: number; combinatorial?: boolean } | undefined) ?? {};
+      const out = await srdfSerialize(arm, srdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.srdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
+    // sdf-gazebo
+    {
+      const { sdfSerialize } = await import('../../modeling/export/sdformat/sdfSerializer');
+      const sdfOpts = (input.options as { density?: number; meshPrefix?: string; meshFormat?: 'stl' | 'dae' } | undefined) ?? {};
+      const out = await sdfSerialize(arm, sdfOpts);
+      return {
+        bytes: new TextEncoder().encode(out.sdf),
+        featureCount,
+        diagnostics: [...r.diagnostics, ...out.diagnostics],
+      };
+    }
   }
 
   let targetId: string | undefined;
@@ -114,6 +236,55 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       const bytes = await exportSceneToSTEPAsync(lowered);
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
+    if (format === 'dxf') {
+      // DXF needs a single planar wire source; a multi-body Scene cannot
+      // satisfy that contract without a caller-side choice of which face /
+      // part to export. Surface the non-planar diagnostic so the agent's
+      // next move is to either pick a planar face or return a Region.
+      return {
+        bytes: new Uint8Array(),
+        featureCount,
+        diagnostics: [...r.diagnostics, {
+          target: 'export-occt',
+          code: 'export.dxf.non-planar',
+          featureId: targetId,
+          severity: 'error',
+          message: 'DXF export requires a planar input; received a multi-body Scene.',
+          hint: 'Return a Region via Shape.flattenPattern() or a single planar face.',
+          nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+        }],
+      };
+    }
+    if (format === '3mf') {
+      // 3MF natively ships multi-body scenes — one `<object>` per part with
+      // distinct names + base colors. Mesh each part via the shared
+      // world-frame walk, then chain through the OPC zip writer.
+      const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
+      try {
+        const worldParts = sceneToWorldFrameParts(lowered);
+        const bytes = await export3mfAsync(worldParts, opts3mf);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const notWatertight = notWatertightDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (notWatertight) return notWatertight;
+        throw e;
+      }
+    }
+    if (format === 'glb') {
+      // GLB ships multi-body scenes natively — one glTF node per part with
+      // per-part name + PBR material. Mesh each part via the shared
+      // world-frame walk, then chain through the GLTFExporter writer.
+      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      try {
+        const worldParts = sceneToWorldFrameParts(lowered);
+        const bytes = await exportGlbAsync(worldParts, optsGlb);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const dracoDiag = dracoConflictDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (dracoDiag) return dracoDiag;
+        throw e;
+      }
+    }
     // STL of a Scene: caller must explicitly fuse via Scene.toUnion() /
     // Scene.toCompound() upstream — surface a structured diagnostic
     // pointing at the right call.
@@ -133,9 +304,210 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const shape = lowered as OcctBackend;
-  const bytes = format === 'stl'
-    ? await shape.exportSTLAsync()
-    : await shape.exportSTEPAsync();
+  switch (format) {
+    case 'stl': {
+      const bytes = await shape.exportSTLAsync();
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case 'step': {
+      const bytes = await shape.exportSTEPAsync();
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case 'dxf': {
+      const opts =
+        (input.options as DxfWriterOptions | undefined) ?? { format: 'dxf' };
+      // Sheet-metal Shape entry path: if the target Shape's lineage chain
+      // roots at a `sheetMetal` record, recover the flat-pattern Region by
+      // walking `flattenPattern(records, targetId)` and ship it through the
+      // polyline writer. This is the same Region that
+      // `Shape.flattenPattern()` would produce — recomputed inside the
+      // runtime so the user script can return the bent body directly
+      // without needing `require` inside the vm sandbox.
+      const tracesToSheetMetal = (() => {
+        const byId = new Map(run.records.map(rec => [rec.id, rec]));
+        let cur = byId.get(targetId);
+        // Bound the walk by the record count — a healthy graph terminates
+        // quickly; an inputs.base cycle would otherwise spin forever.
+        for (let i = 0; cur && i <= run.records.length; i++) {
+          if (cur.kind === 'sheetMetal') return true;
+          const baseRef = cur.inputs.base;
+          if (!baseRef || baseRef.kind !== 'feature') return false;
+          cur = byId.get(baseRef.id);
+        }
+        return false;
+      })();
+      if (tracesToSheetMetal) {
+        try {
+          const region = flattenPattern(run.records, targetId);
+          const bytes = exportDxf({ kind: 'region', region }, opts);
+          return { bytes, featureCount, diagnostics: r.diagnostics };
+        } catch (e) {
+          const errCode = (e as { code?: string }).code;
+          const msg = e instanceof Error ? e.message : String(e);
+          const hint = (e as { hint?: string }).hint;
+          // Pass through structured diagnostics like
+          // `feature.flattenPattern.multi-bend-unsupported`; downgrade
+          // anything else to `export.dxf.non-planar` so callers see a
+          // catalog-known code.
+          if (errCode === 'feature.flattenPattern.multi-bend-unsupported') {
+            return {
+              bytes: new Uint8Array(),
+              featureCount,
+              diagnostics: [...r.diagnostics, {
+                target: 'export-occt',
+                code: 'feature.flattenPattern.multi-bend-unsupported',
+                featureId: targetId,
+                severity: 'error',
+                message: msg,
+                hint: hint ?? 'Flatten an upstream Shape with at most two bends, or wait for the multi-bend slice.',
+                nextAction: NEXT_ACTIONS['feature.flattenPattern.multi-bend-unsupported'],
+              }],
+            };
+          }
+          return {
+            bytes: new Uint8Array(),
+            featureCount,
+            diagnostics: [...r.diagnostics, {
+              target: 'export-occt',
+              code: 'export.dxf.non-planar',
+              featureId: targetId,
+              severity: 'error',
+              message: `DXF export could not flatten the sheet-metal chain: ${msg}`,
+              hint: hint ?? 'Inspect the sheetMetal root and bends, then retry. Return a Region directly to bypass.',
+              nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+            }],
+          };
+        }
+      }
+      // Planar `Shape` entry path: extract the outer (and any hole) wires
+      // from a single planar face and ship them through the polyline writer.
+      // A `null` return from `tryExtractPlanarWires` means the shape carries
+      // no planar face we can flatten — emit the non-planar diagnostic so
+      // the agent can pick a face explicitly or switch to `flattenPattern()`.
+      const planarWires = shape.tryExtractPlanarWires();
+      if (!planarWires) {
+        return {
+          bytes: new Uint8Array(),
+          featureCount,
+          diagnostics: [...r.diagnostics, {
+            target: 'export-occt',
+            code: 'export.dxf.non-planar',
+            featureId: targetId,
+            severity: 'error',
+            message: 'DXF export requires a planar input (Region, planar face, or planar wire).',
+            hint: 'Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
+            nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
+          }],
+        };
+      }
+      const bytes = exportDxf(
+        {
+          kind: 'planarWires',
+          outer: planarWires.outer,
+          holes: planarWires.holes,
+        },
+        opts,
+      );
+      return { bytes, featureCount, diagnostics: r.diagnostics };
+    }
+    case '3mf': {
+      // Single-shape 3MF: wrap in a one-part `WorldFramePart[]` so the
+      // writer can mesh + emit identically to the Scene path.
+      const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
+      const part: WorldFramePart = { name: 'part', shape };
+      try {
+        const bytes = await export3mfAsync([part], opts3mf);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const notWatertight = notWatertightDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (notWatertight) return notWatertight;
+        throw e;
+      }
+    }
+    case 'glb': {
+      // Single-shape GLB: wrap in a one-part `WorldFramePart[]` so the
+      // writer can mesh + emit identically to the Scene path. Pull
+      // material / color attribution from the target FeatureRecord's
+      // metadata so a script that ends with `.material({...})` exports the
+      // expected PBR fields without going through an assembly.
+      const optsGlb = (input.options as ExportGlbOptions | undefined) ?? { format: 'glb' };
+      const tailRecord = run.records.find((rec) => rec.id === targetId);
+      const meta = tailRecord?.metadata as Record<string, unknown> | undefined;
+      const partColor = typeof meta?.color === 'string' ? meta.color : undefined;
+      const partMaterial = pbrFromMetadata(meta);
+      const part: WorldFramePart = {
+        name: 'part',
+        shape,
+        ...(partColor !== undefined ? { color: partColor } : {}),
+        ...(partMaterial !== undefined ? { material: partMaterial } : {}),
+      };
+      try {
+        const bytes = await exportGlbAsync([part], optsGlb);
+        return { bytes, featureCount, diagnostics: r.diagnostics };
+      } catch (e) {
+        const dracoDiag = dracoConflictDiagnostic(e, r.diagnostics, featureCount, targetId);
+        if (dracoDiag) return dracoDiag;
+        throw e;
+      }
+    }
+  }
+  // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
+  // branch above, before targetId resolution. Unreachable here.
+  return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+}
 
-  return { bytes, featureCount, diagnostics: r.diagnostics };
+/**
+ * Translate an `assertWatertight` Error into the structured
+ * `export.3mf.not-watertight` diagnostic. Returns `undefined` when the
+ * error doesn't look like a watertight failure so callers can rethrow.
+ */
+function notWatertightDiagnostic(
+  e: unknown,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): ExportResult | undefined {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (!/watertight/i.test(msg)) return undefined;
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'export.3mf.not-watertight',
+      featureId: targetId,
+      severity: 'error',
+      message: '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.',
+      hint: 'The mesh has open or non-manifold edges. Inspect the source geometry (typically a self-intersecting cone or non-closed shell) and re-author the offending surface via nurbsSurfaceLowerer, raise OCCT mesh deflection, or re-mesh via Manifold; see the K1 mesher gap.',
+      nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
+    }],
+  };
+}
+
+/**
+ * Translate an `exportGlbAsync` Draco-conflict Error into the structured
+ * `export.glb.draco-glass-conflict` diagnostic. Returns `undefined` when the
+ * error doesn't look like a Draco gate failure so callers can rethrow.
+ */
+function dracoConflictDiagnostic(
+  e: unknown,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  targetId: string | undefined,
+): ExportResult | undefined {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (!/draco/i.test(msg)) return undefined;
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'export.glb.draco-glass-conflict',
+      featureId: targetId,
+      severity: 'error',
+      message: 'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit.',
+      hint: 'Set options.draco to false or omit it; Draco encoding ships in a follow-up slice.',
+      nextAction: NEXT_ACTIONS['export.glb.draco-glass-conflict'],
+    }],
+  };
 }

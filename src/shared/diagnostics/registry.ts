@@ -19,7 +19,8 @@ export type DiagnosticGroup =
   | 'export'
   | 'assembly'
   | 'mesher'
-  | 'tool';
+  | 'tool'
+  | 'dfm';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -327,6 +328,126 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'The script produced no shape to export (no return value and no captured records).',
+  },
+  'export.options-format-mismatch': {
+    hintTemplate:
+      'options.format must equal the top-level format. Set options.format to the same value, or omit options.',
+    nextAction: { kind: 'fix-arg', field: 'options.format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The per-format options payload carried a discriminator that did not match the top-level format.',
+  },
+  'export.dxf.non-planar': {
+    hintTemplate:
+      'DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
+  },
+  'export.3mf.not-watertight': {
+    hintTemplate:
+      'The exported mesh has non-manifold edges (likely a self-intersecting cone tessellation or an open shell). Re-mesh via Manifold, raise OCCT mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer; see the K1 mesher gap.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
+  },
+  'export.glb.draco-glass-conflict': {
+    hintTemplate:
+      'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit; the encoder ships in a follow-up slice. (The name nods at the most common collision: Draco encoders typically strip the `KHR_materials_transmission` extension on glass parts, which would silently break the GLB.)',
+    nextAction: { kind: 'fix-arg', field: 'options.draco' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A GLB export requested Draco compression; the encoder is not yet implemented (reserved for a follow-up slice to avoid silently stripping KHR_materials_transmission on glass parts).',
+  },
+  'export.urdf.cylindrical-lossy': {
+    hintTemplate:
+      'URDF lacks a 2-DOF cylindrical joint; the mate was emitted as a single revolute and the prismatic DOF was dropped. Switch to format: \'sdf-gazebo\' if both DOFs are needed.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A cylindrical mate was lowered to a URDF revolute joint; the prismatic DOF was lost.',
+  },
+  'export.urdf.pin-slot-lossy': {
+    hintTemplate:
+      'URDF lacks a pin-slot joint; the mate was emitted as a single revolute and the slot translation DOF was dropped. Switch to format: \'sdf-gazebo\' or restructure the mate graph if both DOFs are needed.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A pin_slot mate was lowered to a URDF revolute joint; the slot translation DOF was lost.',
+  },
+  'export.urdf.ball-decomposed': {
+    hintTemplate:
+      'URDF lacks a spherical joint; the mate was decomposed into three chained revolute joints with two synthesised dummy intermediate links. Switch to format: \'sdf-gazebo\' for a native ball joint.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A ball mate was decomposed into a 3-revolute chain for URDF compatibility.',
+  },
+  'export.urdf.closed-loop': {
+    hintTemplate:
+      'URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export_model with format: \'sdf-gazebo\' which supports closed loops natively, or restructure the mate graph to a spanning tree.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A URDF export was attempted on an assembly whose mate graph contains a closed kinematic loop.',
+  },
+  'export.urdf.inertia-density-declared': {
+    hintTemplate:
+      'Link inertia uses the default density 1000 kg/m^3 (water). Downstream dynamics simulations will be off by ~8x for steel or ~2.7x for aluminum unless you pass density on arm.part(name, shape, { density }).',
+    nextAction: { kind: 'fix-arg', field: 'density' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A link in the exported URDF inherited the default 1000 kg/m^3 density; the user did not declare a per-part value.',
+  },
+  'export.srdf.acm-sparse-sampling': {
+    hintTemplate:
+      'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: \'srdf\', ... }) or set combinatorial: true.',
+    nextAction: { kind: 'fix-arg', field: 'samplesPerMate' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'SRDF ACM auto-derivation ran with sparser sampling than the recommended threshold.',
+  },
+  'export.srdf.planning-group-missing': {
+    hintTemplate:
+      'SRDF export requires at least one arm.planningGroup(...) declaration before export. Declare arm.planningGroup(name, { chain: { baseLink, tipLink } }) or arm.planningGroup(name, { joints: [...] }) in your .kcad.ts.',
+    nextAction: { kind: 'add-return' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SRDF export attempted on an assembly with no planning-group declarations.',
+  },
+  'export.sdf-gazebo.cylindrical-lossy': {
+    hintTemplate:
+      'SDFormat lacks a 2-DOF cylindrical joint; the mate was emitted as a revolute and the prismatic DOF was dropped. Restructure the mate graph if both DOFs are required.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split cylindrical into a revolute + prismatic chain' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A cylindrical mate was lowered to an SDFormat revolute joint; the prismatic DOF was lost.',
+  },
+  'export.sdf-gazebo.pin-slot-lossy': {
+    hintTemplate:
+      'SDFormat lacks a pin-slot joint; the mate was emitted as a revolute and the slot translation DOF was dropped. Restructure the mate graph if both DOFs are required.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split pin_slot into a revolute + prismatic chain' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A pin_slot mate was lowered to an SDFormat revolute joint; the slot translation DOF was lost.',
+  },
+  'export.sdf-gazebo.invalid-version': {
+    hintTemplate:
+      'SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version="1.12"> by default; do not override.',
+    nextAction: { kind: 'fix-arg', field: 'version' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'The SDFormat emitter detected an unsupported version attribute.',
+  },
+  'export.sdf-gazebo.dangling-link-ref': {
+    hintTemplate:
+      'A <joint> in the emitted SDF references a <link> that is not declared in the model. Verify every part on the mate-graph is also declared via arm.part(...).',
+    nextAction: { kind: 'call-introspection-tool', tool: 'inspect_robot' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'SDFormat structural validation detected a joint referencing an undeclared link.',
   },
   // NURBS surfaces (2) — W1.3
   'feature.nurbs.degenerate-controls': {
@@ -1132,6 +1253,199 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'mesher',
     description: 'BRepMesh emitted self-intersecting triangles on a revolved cone face, breaking watertight checks on the exported STL.',
+  },
+  // DFM preflight (23) — Slice E
+  'dfm.input.vendor-required': {
+    hintTemplate:
+      'dfm_preflight requires a vendor identifier. Pass `vendor: "sendcutsend"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).',
+    nextAction: { kind: 'fix-arg', field: 'vendor' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'dfm_preflight was called without a vendor identifier; the tool fails closed rather than guess.',
+  },
+  'dfm.input.material-required': {
+    hintTemplate:
+      'dfm_preflight requires a material SKU. Pass `material: "<sku>"` (use list_part_categories or the vendor catalog.json to enumerate the supported SKUs).',
+    nextAction: { kind: 'fix-arg', field: 'material' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'dfm_preflight was called without a material SKU; the tool fails closed rather than guess.',
+  },
+  'dfm.input.thickness-required': {
+    hintTemplate:
+      'dfm_preflight requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.',
+    nextAction: { kind: 'fix-arg', field: 'thicknessMm' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'dfm_preflight was called without a thickness; the tool fails closed rather than guess.',
+  },
+  'dfm.units.dxf-not-mm': {
+    hintTemplate:
+      'DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: "mm"` to export_model.',
+    nextAction: { kind: 'fix-arg', field: 'unit' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A DXF input declared $INSUNITS != 4 (mm); preflight refuses to rescale silently.',
+  },
+  'dfm.material.unknown-sku': {
+    hintTemplate:
+      'Material SKU is not present in the vendor catalog. Pick one from catalogs/vendors/<vendor>/catalog.json, or run `npm run shopcheck:refresh` if the vendor recently added it.',
+    nextAction: { kind: 'fix-arg', field: 'material' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Material SKU passed to dfm_preflight does not match any entry in the vendor catalog.',
+  },
+  'dfm.thickness.not-stocked': {
+    hintTemplate:
+      'Thickness is not one of the vendor-stocked gauges for this material. Pick a value from catalog[sku].thicknessesIn.',
+    nextAction: { kind: 'fix-arg', field: 'thicknessMm' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: "Thickness passed to dfm_preflight is not in the vendor catalog's stocked-gauges list for the selected material.",
+  },
+  'dfm.thickness.out-of-range': {
+    hintTemplate:
+      'Thickness is outside the vendor service envelope (e.g. laser cutting). Pick a thickness inside the published min/max for this service.',
+    nextAction: { kind: 'fix-arg', field: 'thicknessMm' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: "Thickness exceeds the vendor service's overall thickness envelope (e.g. laser cutting 0.015–0.750 in).",
+  },
+  'dfm.thickness.out-of-range-for-service': {
+    hintTemplate:
+      'Thickness is inside the laser envelope but outside the bending envelope. Either drop the bend (laser-only is fine), pick a thinner material for bending, or split into parts joined post-bend.',
+    nextAction: { kind: 'fix-arg', field: 'service' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: "Thickness exceeds the vendor service-specific envelope (e.g. bending's 0.030–0.250 in band).",
+  },
+  'dfm.hole.below-minimum': {
+    hintTemplate:
+      'Hole diameter is below the vendor minimum for this material + thickness. Enlarge the hole to >= the published minimum, remove the hole, or switch to a thinner material.',
+    nextAction: { kind: 'retry-with-smaller-param', param: 'thicknessMm', factor: 0.5 },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A hole diameter is below the vendor minimum hole rule for the selected material and thickness.',
+  },
+  'dfm.slot.below-minimum': {
+    hintTemplate:
+      'Slot width is below the vendor minimum for this material + thickness. Widen the slot or split into multiple slots.',
+    nextAction: { kind: 'fix-arg', field: 'slot.width' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A slot width is below the vendor minimum slot rule for the selected material and thickness.',
+  },
+  'dfm.web.below-minimum': {
+    hintTemplate:
+      'Bridge / web width between two cutouts is below the vendor minimum. Increase the bridge width, merge the cutouts, or relocate one.',
+    nextAction: { kind: 'fix-arg', field: 'web' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'The minimum bridge (web) width between cutouts is below the vendor minimum web rule for the selected material and thickness.',
+  },
+  'dfm.bend.radius-below-minimum': {
+    hintTemplate:
+      'Inner bend radius is below the vendor minimum for this material + thickness. Increase the radius arg in .bend(edge, angle, radius), or pick a thicker material.',
+    nextAction: { kind: 'fix-arg', field: 'radius' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A sheetMetal inner bend radius is below the vendor minimum bend-radius rule for the selected material and thickness.',
+  },
+  'dfm.bend.angle-too-acute': {
+    hintTemplate:
+      'Bend angle exceeds the vendor maximum (typically |angle| <= 130 deg for sheet metal). Reduce the angle in .bend(edge, angle, radius).',
+    nextAction: { kind: 'fix-arg', field: 'angle' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A bend angle is steeper than the vendor maximum acute-angle rule.',
+  },
+  'dfm.bend.length-exceeds-max': {
+    hintTemplate:
+      'Bend line is longer than the vendor maximum (typically 44 in / 1117 mm). Split the part along the bend axis, or accept the warning and request a custom quote.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split the part along the bend axis to keep each segment under the vendor max bend length' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'Bend line length exceeds the vendor maximum bend length.',
+  },
+  'dfm.bend.flange-too-short': {
+    hintTemplate:
+      'Flange length on one side of the bend is below the vendor minimum. Lengthen the over-short side, or pick a thinner material so the minimum is reduced.',
+    nextAction: { kind: 'fix-arg', field: 'flangeLength' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'A flange (before- or after-bend) is shorter than the vendor minimum flange rule for the selected material and thickness.',
+  },
+  'dfm.bend.channel-ratio-too-low': {
+    hintTemplate:
+      'Channel base length is shorter than 2x the flange (3x for polycarbonate). Lengthen the channel base, or shorten the flanges.',
+    nextAction: { kind: 'fix-arg', field: 'channelBase' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'Channel base-to-flange ratio is below the vendor minimum for the selected material.',
+  },
+  'dfm.bend.layer-missing': {
+    hintTemplate:
+      'DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export_model({ format: "dxf" }); the writer auto-emits the BEND layer.',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'DXF input is missing the BEND layer; preflight cannot validate bend rules.',
+  },
+  'dfm.bending.material-unsupported': {
+    hintTemplate:
+      "Material is not on the vendor's bend-supported list. Switch material, or split into laser-only flat parts joined post-bend by the customer.",
+    nextAction: { kind: 'fix-arg', field: 'material' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: "Material is not on the vendor's bend-supported list but the input has bend metadata.",
+  },
+  'dfm.size.below-minimum': {
+    hintTemplate:
+      'Part bounding box is below the vendor minimum part size. Enlarge the part, or switch to a vendor with smaller min-size limits.',
+    nextAction: { kind: 'fix-arg', field: 'partAabb' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Part bounding box is below the vendor minimum part size for the selected material category.',
+  },
+  'dfm.size.exceeds-instant-quote': {
+    hintTemplate:
+      'Part bounding box exceeds the vendor instant-quote envelope (typically 44 x 30 in). Part may need a custom quote — split it, or accept the warning.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split the part to fit within the vendor instant-quote envelope' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'Part bounding box exceeds the vendor instant-quote envelope.',
+  },
+  'dfm.size.exceeds-max': {
+    hintTemplate:
+      'Part bounding box exceeds the vendor maximum part size. Split the part, or pick a vendor with larger stock.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'split the part to fit within the vendor maximum stock size' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Part bounding box exceeds the vendor maximum part size.',
+  },
+  'dfm.dxf.spline-present': {
+    hintTemplate:
+      'DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export_model emits LWPOLYLINE only).',
+    nextAction: { kind: 'fix-arg', field: 'format' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'DXF contains SPLINE entities; the vendor only accepts LWPOLYLINE.',
+  },
+  'dfm.dxf.tessellation-near-tolerance': {
+    hintTemplate:
+      'A tessellated polyline segment is at or below the DXF tessellation tolerance (0.1 mm). Widen the feature, or re-export the DXF with a finer tessellation tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'tolerance' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A polyline segment in the DXF is at or below the DXF tessellation tolerance, risking measurement disagreement at the vendor importer.',
+  },
+  'dfm.rule.threshold-unknown': {
+    hintTemplate:
+      'Vendor does not publish a threshold for this rule and material. Verify the feature manually with the vendor before ordering, or pick a material the vendor publishes a value for.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'dfm',
+    description: 'A rule\'s per-material threshold is null in specs.json because the vendor does not publish the value.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

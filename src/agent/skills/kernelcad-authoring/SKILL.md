@@ -5,7 +5,7 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
+Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
 
 ## Agent authoring loop
 
@@ -409,9 +409,12 @@ kernelcad evaluate path/to/script.kcad.ts
 # Same, but JSON output (machine-readable)
 kernelcad evaluate path/to/script.kcad.ts --json
 
-# Export to STL or STEP
-kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
+# Export to a file in the chosen format
+kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
+kernelcad export dxf  path/to/script.kcad.ts -o /tmp/out.dxf   # planar profile; laser / waterjet
+kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh with per-part colors
+kernelcad export glb  path/to/script.kcad.ts -o /tmp/out.glb   # web / AR viewer; PBR materials
 
 # Render a 4-view PNG (front/right/top/iso) for visual review.
 # Always pass --width 1920 --height 1080: the demo-player page layout is
