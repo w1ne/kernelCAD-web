@@ -52,3 +52,27 @@ export {
 // can construct + type-narrow contexts without reaching past the naming/
 // directory boundary.
 export type { OcctBackend } from '../backends/occt/occtBackend';
+
+// ---------------------------------------------------------------------------
+// Query DSL — type surface re-exports. The evaluator and string-DSL parser
+// land in later slices and will be re-exported here as they ship.
+// ---------------------------------------------------------------------------
+
+export {
+  makeQuery,
+  type Query,
+  type QueryAst,
+  type QueryKind,
+  type GeometryType,
+  type EntityMarker,
+  type FaceMarker,
+  type EdgeMarker,
+  type VertexMarker,
+  type ConnectorMarker,
+  type PartMarker,
+  type SolidMarker,
+  type ResolvedEntity,
+  type QueryScene,
+} from './query';
+
+export { q } from './queryConstructors';
