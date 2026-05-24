@@ -28,8 +28,15 @@ declare module 'verb-nurbs' {
   }
 
   export interface CurveLengthSample {
+    /** Parameter on the curve's intrinsic `[u0, u1]` knot range. */
     u: number;
-    pt: Point;
+    /**
+     * Accumulated arc length from the curve start. The JS module does NOT
+     * include a point field — call `point(u)` (or `pointAt(t)` after
+     * normalisation) to materialise the world-space coordinate. The Curve3D
+     * analytics proxy does this expansion when it returns its public
+     * `CurveLengthSample` (which adds the `pt` field).
+     */
     len: number;
   }
 
