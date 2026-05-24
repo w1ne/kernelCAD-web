@@ -103,8 +103,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  1 Slice Q5 — type-mismatch (D0.7 (c) runtime narrowing fallback
     //       for Queries whose phantom marker was erased crossing a JSON-AST
     //       boundary; consumers re-narrow via assertQueryKind).
-    // Net catalogue = 157 - 3 + 11 + 7 + 1 + 1 = 174.
-    expect(catalogue.size).toBe(174);
+    //  +  1 Slice Q7 — invalid-syntax (the strings-as-sugar dispatcher
+    //       diagnostic; fired when topology input matches neither
+    //       @kc[<owner>/<kind>/<name>] nor @kcq[<expr>] nor JSON-AST).
+    // Net catalogue = 157 - 3 + 11 + 7 + 1 + 1 + 1 = 175.
+    expect(catalogue.size).toBe(175);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

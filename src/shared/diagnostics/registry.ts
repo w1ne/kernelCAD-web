@@ -1526,6 +1526,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'query',
     description: 'A Query crossed a runtime kind-narrowing fallback: a consumer demanded one entity kind and the Query.target field announced a different one.',
   },
+  'query.invalid-syntax': {
+    hintTemplate:
+      'The topology input is neither a valid @kc[...] ref nor a valid @kcq[...] Query DSL string nor a JSON-AST object. Check the grammar: use @kc[<owner>/<kind>/<name>] for a single addressed entity, @kcq[<expr>] for a composed query (face(createdBy("id")), union(a, b), intersection(a, b), subtraction(a, b), nothing(), everything(<kind>)). See the kernelcad-mcp SKILL for the full grammar.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use @kc[owner/kind/name] for simple refs or @kcq[<expr>] for composed queries' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A topology input string failed to parse as either an @kc[...] ref, an @kcq[...] Query DSL expression, or a JSON-AST object.',
+  },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;

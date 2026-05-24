@@ -582,21 +582,12 @@ function topoKindToQueryKind(kind: string): QueryKind | null {
 }
 
 // ---------------------------------------------------------------------------
-// Strings-as-sugar (public): accept either an `@kc[...]` ref string or an
-// already-built Query value, and return the same internal Query value.
-// Mirrors the spec's D0.1 (c) decision.
+// Strings-as-sugar dispatcher moved to parseAnyTopologyInput.ts (Q7). The
+// Q3 stub here routed everything through q.fromString unconditionally; the
+// Q7 dispatcher does proper prefix-aware routing through parseTopoRef /
+// parseQuery / JSON-AST so the resolved Query has the right AST shape
+// (createdBy / withLabel / etc) instead of an opaque fromString node.
 // ---------------------------------------------------------------------------
-
-import { q as qNs } from './queryConstructors';
-
-export function parseAnyTopologyInput<T = unknown>(
-  input: string | Query<T>,
-): Query<T> {
-  if (typeof input === 'string') {
-    return qNs.fromString(input) as unknown as Query<T>;
-  }
-  return input;
-}
 
 // ---------------------------------------------------------------------------
 // Entity-construction helpers.

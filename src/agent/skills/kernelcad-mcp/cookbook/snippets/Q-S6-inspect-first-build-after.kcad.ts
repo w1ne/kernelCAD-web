@@ -1,8 +1,8 @@
 // Q-S6 — Inspect first, build after (the agent-loop pattern)
 //
 // Demonstrates: building a Query, serializing it via `.toString()` to the
-// canonical `@kcq[...]` debug form, and inspecting the AST shape before
-// the agent commits to consuming the Query in a feature op.
+// canonical `@kcq[...]` form, and inspecting the AST shape before the
+// agent commits to consuming the Query in a feature op.
 //
 // The "inspect-first" loop is the canonical agent flow whenever the
 // expected entity count is uncertain — express the query, log the
@@ -15,11 +15,15 @@ const part = box(20, 20, 10, false, {
 // 1. Express the candidate Query.
 const candidates = q.face().and(q.withFeatureName('box1'));
 
-// 2. Inspect the descriptor without resolving. The debug form
-//    `@kcq[face(<json>)]` quotes the AST for trace; future slices replace
-//    this with the canonical grammar serializer.
+// 2. Inspect the descriptor without resolving. `.toString()` emits the
+//    canonical `@kcq[<expr>]` form per the grammar in `kernelcad-mcp`'s
+//    Query DSL section. Round-trips via `parseQuery(q.toString())` are
+//    structurally equal to the source query.
+//    `.and(...)` wraps the receiver in an `intersection` AST node, so the
+//    canonical descriptor for `q.face().and(...)` is
+//    `@kcq[intersection(everything(face), <filter>)]`.
 const descriptor = candidates.toString();
-if (!descriptor.startsWith('@kcq[face(')) throw new Error('Q-S6: descriptor form');
+if (!descriptor.startsWith('@kcq[intersection(')) throw new Error('Q-S6: descriptor form');
 
 // 3. Inspect structure — the agent reads the AST shape to decide whether
 //    to narrow further. `.and(...)` wraps the receiver in an

@@ -31,6 +31,19 @@ export function __installEvaluatorDelegates(d: EvaluatorDelegates): void {
   __evaluatorDelegates = d;
 }
 
+/** Internal: stringifier delegate injected by `parseQuery.ts` after its
+ *  module init finishes. The Query.toString() chainable reads from this
+ *  table at call time so the cycle (query → parseQuery → query) is broken
+ *  cleanly. Falls back to the JSON-debug form if the delegate isn't yet
+ *  installed (no callers should rely on the fallback shape). */
+let __formatQueryAsString: ((q: Query<unknown>) => string) | undefined;
+
+/** Called once by `parseQuery.ts` on first import. The `__` prefix marks
+ *  this as internal — never called from user code. */
+export function __installQueryStringifier(fn: (q: Query<unknown>) => string): void {
+  __formatQueryAsString = fn;
+}
+
 /** Discriminator for the entity kind a Query addresses. */
 export type QueryKind = 'face' | 'edge' | 'vertex' | 'connector' | 'part' | 'solid';
 
@@ -253,8 +266,17 @@ export function makeQuery<T extends EntityMarker | unknown>(
   });
   Object.defineProperty(v, 'toString', {
     value: function toStringImpl(this: Query<T>): string {
-      // Debug-readable placeholder; the @kcq[...] grammar lands in a later
-      // slice alongside the string-DSL parser.
+      // Q7 — delegate to the @kcq[...] string-DSL serializer installed by
+      // parseQuery.ts. Same cycle-breaker as __installEvaluatorDelegates:
+      // by the time toString is called, parseQuery.ts has finished loading
+      // (the imperative parseQuery / formatQueryAsString are imported from
+      // user code, which always runs after module init).
+      if (__formatQueryAsString) {
+        return __formatQueryAsString(this as Query<unknown>);
+      }
+      // Pre-install fallback — debug-readable, only seen if parseQuery
+      // module has not yet been imported (e.g. an isolated unit test that
+      // never touches the serializer / parser path).
       return `@kcq[${this.target}(${JSON.stringify(this.ast)})]`;
     },
     enumerable: false,

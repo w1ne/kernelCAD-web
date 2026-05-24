@@ -32,5 +32,15 @@ export type {
 export {
   evaluate,
   evaluateUnique,
-  parseAnyTopologyInput,
 } from './naming/queryEvaluator';
+
+// Q7 — @kcq[...] string DSL parser, canonical serializer, the
+// topoRefAsQuery strings-as-sugar bridge, and the MCP-boundary dispatcher
+// that routes every topology input (string ref, string DSL, JSON-AST,
+// Query value) through one entry point.
+export {
+  parseQuery,
+  formatQueryAsString,
+  topoRefAsQuery,
+  parseAnyTopologyInput,
+} from './naming';

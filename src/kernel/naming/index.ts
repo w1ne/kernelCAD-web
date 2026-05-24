@@ -84,5 +84,23 @@ export { q } from './queryConstructors';
 export {
   evaluate,
   evaluateUnique,
-  parseAnyTopologyInput,
 } from './queryEvaluator';
+
+// Q7 — @kcq[...] string DSL parser + canonical serializer. Importing
+// parseQuery runs the __installQueryStringifier side-effect that lets
+// Query.toString() emit the canonical @kcq[...] form instead of the
+// pre-install debug fallback.
+export { parseQuery, formatQueryAsString } from './parseQuery';
+
+// Q7 — strings-as-sugar bridge per D0.9 (b): compile an F-surface-parsed
+// TopoRef into the equivalent Query AST. Every @kc[<owner>/<kind>/<name>]
+// ref maps to a kind-filter Query so the same evaluator handles both
+// string surfaces.
+export { topoRefAsQuery } from './topoRefAsQuery';
+
+// Q7 — MCP-boundary dispatcher per spec §3.7. The single entry-point
+// every MCP tool input goes through. Dispatches on prefix: @kc[...] to
+// parseTopoRef + topoRefAsQuery, @kcq[...] to parseQuery, JSON-AST to
+// makeQuery, Query value passthrough. Replaces the Q3 stub of the same
+// name that only routed strings through q.fromString.
+export { parseAnyTopologyInput } from './parseAnyTopologyInput';
