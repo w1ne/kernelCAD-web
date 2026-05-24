@@ -46,8 +46,13 @@ describe('Query value type — Q2', () => {
     expect(round.ast.op).toBe('entityFilter');
   });
 
-  it('kc.q.face().lenient() flips the lenient flag', () => {
-    const v = q.face(q.createdBy('arm')).lenient();
+  it('kc.q.face().asLenient() flips the lenient data flag', () => {
+    // The chainable method is named `asLenient` rather than `lenient` because
+    // a JS object cannot expose a boolean property AND a same-named method on
+    // the same key — the spec/plan named both `lenient`, so the runtime form
+    // disambiguates with `asLenient()` for the mutation and `lenient` for the
+    // resulting boolean field on the new Query value.
+    const v = q.face(q.createdBy('arm')).asLenient();
     expect(v.lenient).toBe(true);
   });
 
