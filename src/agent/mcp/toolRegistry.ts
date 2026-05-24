@@ -761,7 +761,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'resolve_topo_ref',
       description:
-        'Resolve a single @kc[owner/kind/name] topology reference against a kernelCAD script\'s lowered geometry. Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string.',
+        "Resolve a single topology reference against a kernelCAD script's lowered geometry. Accepts either @kc[<owner>/<kind>/<name>] (single addressed entity, F-surface path) or @kcq[<expr>] (Query DSL form, dispatches through the Q3 evaluator with expect: 'unique'; surfaces query.over-determined when the Query matches multiple). Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string. For multi-hit inspection, prefer evaluate_query.",
       inputSchema: {
         type: 'object',
         properties: {
