@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 173 codes', () => {
+  it('catalogue has exactly 184 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -100,8 +100,14 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       intersect-no-intersection)
     //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
     //       tangent-on-2d-only)
-    // Net catalogue = 157 - 3 + 11 + 1 + 5 + 2 + 2 = 175.
-    expect(catalogue.size).toBe(175);
+    //  + 9 K1-K9 kinematic-grounding (this slice):
+    //       collision.swept, collision.swept.sample-density-warning,
+    //       unreachable (axis-discriminated), reachability.iteration-cap-hit,
+    //       solver.unsupported-config, load-exceeds-yield,
+    //       load.beam-not-applicable, no-material-declared,
+    //       mounting-hole.diameter-mismatch.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 9 = 184.
+    expect(catalogue.size).toBe(184);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
