@@ -1,183 +1,157 @@
-// Eyewear front face — V slice rewrite (Task V5).
-//
-// Same Coons-patch + thicken front-face stack as the existing expert solution,
-// with the load-bearing change in lens-cutout PLACEMENT: the two lens
-// openings are anchored at arc-length-uniform samples along the brow spline
-// via `brow.analytics.divideByEqualArcLength(N)`. The previous approach used
-// a hard-coded `LENS_CX = 28 mm` literal, which is parametric-only (it does
-// not track the brow's actual curve length) and would drift if the brow's
-// control net is retuned.
-//
-// `divideByEqualArcLength(N)` returns N+1 samples spaced uniformly in arc
-// length along the curve — robust against non-uniform knot density. The
-// inner two samples (indices 1 and 2 of a divideByEqualArcLength(3) call)
-// land near the natural Wayfarer eye-socket centres along the brow.
-//
-// Hold-condition cross-reference: this rewrite uses `spline3d(...)` for the
-// brow, which IS the real NURBS path from v0.11.0 — the documented hold for
-// resuming the eval cycle (the spline brow is a true NURBS curve, not an
-// arc-only approximation) is satisfied.
-//
-// Capability stack: surfaceFromBoundary, nurbsCurve, hermiteG2, spline3d,
-// Curve3D.analytics.divideByEqualArcLength, .thicken, PBR material,
-// referenceImage overlay.
+// Wayfarer front face — V slice rewrite (recognizable Ray-Ban Meta).
+// Uses path().spline() (V4 tangent extension) for wing + bridge curves.
+// Uses Curve3D.analytics.divideByEqualArcLength (V2) for lens centers.
+// Uses Curve3D.analytics.closestPoint (V2) to snap camera position to brow.
 
-referenceImage('./reference.jpg', {
-  plane: 'xz',
-  anchor: 'origin',
-  scale: 'fit-bbox',
-  opacity: 0.35,
-});
+referenceImage('./reference.jpg', { plane: 'xz', anchor: 'origin', scale: 'fit-bbox', opacity: 0.3 });
 
-// ---------------- Parameters (mm) ----------------
-const HALF_W = 70;            // half-width of the front face (X span -70..+70)
-const BROW_Z = 18;            // height of the brow (top edge of front face)
-const BOTTOM_Z = -18;         // depth of the lower rim
-const BRIDGE_RISE = 4;        // bridge bump above brow line
-const BOTTOM_DIP = 2.5;       // sag of bottom rim
-const BODY_DEPTH = 7;         // thickness of the front-face body (Y extent)
-const LENS_R = 22;
-const LENS_INSERT_T = 1.2;
+// ---- Parameters (mm) ----
+const W = 150;
+const H = 50;
+const DEPTH = 10;
+const BROW_Z = H / 2;        // +25
+const BOTTOM_Z = -H / 2;     // -25
+const OUTER_RIM = 5;         // rim thickness outside the lens
+const LENS_W_TOP = 50;       // lens width at top edge
+const LENS_W_BOT = 44;       // lens width at bottom edge (narrower → trapezoid)
+const LENS_H = 38;
+const LENS_CR = 7;           // lens corner rounding
+const NOSE_NOTCH_W = 12;
+const NOSE_NOTCH_D = 4;
+const CAMERA_R = 4;          // camera lens radius (~8 mm dia)
+const LED_R = 0.75;          // LED dot radius (~1.5 mm dia)
 
-// ---------------- Shared corner Vec3s (must coincide 1e-6 mm) ----------------
-const BL: [number, number, number] = [-HALF_W, 0, BOTTOM_Z];   // bottom-left
-const BR: [number, number, number] = [ HALF_W, 0, BOTTOM_Z];   // bottom-right
-const TR: [number, number, number] = [ HALF_W, 0, BROW_Z];     // top-right
-const TL: [number, number, number] = [-HALF_W, 0, BROW_Z];     // top-left
+// ---- Outer silhouette: Wayfarer wing on top, gentle bottom curve ----
+const silhouette = path()
+  // bottom edge: start at bottom-left, gentle bow downward, back up
+  .moveTo(-W/2, BOTTOM_Z + 4)
+  .spline(
+    [[-W/2, BOTTOM_Z + 4], [-W/2 + 6, BOTTOM_Z], [-W/2 + 22, BOTTOM_Z - 1]],
+    { startTangent: [4, -3] },
+  )
+  .lineTo(W/2 - 22, BOTTOM_Z - 1)
+  .spline(
+    [[W/2 - 22, BOTTOM_Z - 1], [W/2 - 6, BOTTOM_Z], [W/2, BOTTOM_Z + 4]],
+    { endTangent: [4, 3] },
+  )
+  // right vertical (slightly tapered inward at top)
+  .lineTo(W/2 + 2, BROW_Z - 7)
+  // upper-right wing: pronounced outward flare then sharp inward sweep
+  .spline(
+    [[W/2 + 2, BROW_Z - 7], [W/2 + 5, BROW_Z - 1], [W/2 - 10, BROW_Z + 1]],
+    { startTangent: [1, 5], endTangent: [-10, 0] },
+  )
+  // top edge: pronounced brow dome with central peak
+  .spline(
+    [[W/2 - 10, BROW_Z + 1], [W/4, BROW_Z + 4], [0, BROW_Z + 5], [-(W/4), BROW_Z + 4], [-(W/2 - 10), BROW_Z + 1]],
+    { startTangent: [-10, 1], endTangent: [-10, -1] },
+  )
+  // upper-left wing (mirror)
+  .spline(
+    [[-(W/2 - 10), BROW_Z + 1], [-(W/2) - 5, BROW_Z - 1], [-(W/2) - 2, BROW_Z - 7]],
+    { startTangent: [-10, 0], endTangent: [-1, -5] },
+  )
+  .close();
 
-// ---------------- Boundary curve 1: bottom rim --------------------------
-const bottom = spline3d([
-  BL,
-  [-30, 0, BOTTOM_Z - BOTTOM_DIP * 0.5],
-  [  0, 0, BOTTOM_Z - BOTTOM_DIP],
-  [ 30, 0, BOTTOM_Z - BOTTOM_DIP * 0.5],
-  BR,
+// ---- Front-face body ----
+const body = silhouette.extrude(DEPTH).alongAxis([0, 1, 0]);
+
+// ---- Brow curve: 3D NURBS for arc-length lens placement ----
+// Spans ±58 so that divideByEqualArcLength(4) puts samples [1] and [3]
+// at ±29, exactly the lens centers needed for 50mm lenses with a
+// 16mm bridge gap (lens spans -54..-4 and +4..+54, bridge from -4..+4).
+const BROW_SPAN = 58;
+const brow = spline3d([
+  [-BROW_SPAN,     0, BROW_Z - 4],
+  [-BROW_SPAN/2,   0, BROW_Z - 2],
+  [0,              0, BROW_Z - 1],
+  [BROW_SPAN/2,    0, BROW_Z - 2],
+  [BROW_SPAN,      0, BROW_Z - 4],
 ]);
+// divideByEqualArcLength(4) → 5 samples at s=0,1/4,1/2,3/4,1.
+// Samples [1] and [3] are the lens centers (left + right).
+const samples = brow.analytics.divideByEqualArcLength(4);
+const leftLensCx = samples[1].pt[0];
+const rightLensCx = samples[3].pt[0];
 
-// ---------------- Boundary curve 2: right side --------------------------
-const right = nurbsCurve([BR, TR], { degree: 1 });
-
-// ---------------- Boundary curve 3: top brow ----------------------------
-// The brow is the load-bearing curve: it drives the front-face Coons patch
-// AND it's the source curve for arc-length-uniform lens placement. The
-// control net walks TR -> bridge crown waypoints -> TL.
-const CROWN_L: [number, number, number] = [-12, 0, BROW_Z + BRIDGE_RISE * 0.7];
-const CROWN_R: [number, number, number] = [ 12, 0, BROW_Z + BRIDGE_RISE * 0.7];
-
-const browLeftFlank = nurbsCurve([
-  TR,
-  [50, 0, BROW_Z],
-  [20, 0, BROW_Z + BRIDGE_RISE * 0.5],
-  CROWN_R,
-]);
-
-const browRightFlank = nurbsCurve([
-  CROWN_L,
-  [-20, 0, BROW_Z + BRIDGE_RISE * 0.5],
-  [-50, 0, BROW_Z],
-  TL,
-]);
-
-const browBridgeRef = hermiteG2(
-  { point: CROWN_R, tangent: [-15, 0, 0], curvature: [0, 0, -BRIDGE_RISE * 0.4] },
-  { point: CROWN_L, tangent: [-15, 0, 0], curvature: [0, 0, -BRIDGE_RISE * 0.4] },
-);
-
-const top = spline3d([
-  TR,
-  [30, 0, BROW_Z + BRIDGE_RISE * 0.5],
-  [0, 0, BROW_Z + BRIDGE_RISE],
-  [-30, 0, BROW_Z + BRIDGE_RISE * 0.5],
-  TL,
-]);
-
-// ---------------- Boundary curve 4: left side ---------------------------
-const left = nurbsCurve([TL, BL], { degree: 1 });
-
-// ---------------- Front-face Coons patch + thicken ---------------------
-const frontPatch = surfaceFromBoundary([bottom, right, top, left]);
-const body = frontPatch.thicken(BODY_DEPTH);
-
-// ---------------- Lens openings — arc-length-uniform placement ---------
-// `divideByEqualArcLength(3)` returns 4 samples at arc-length 0, L/3, 2L/3, L
-// along the brow. Indices [1] and [2] are the two inner samples; their `pt`
-// fields are the world-space centre points where the lens cutouts anchor.
-// Compared to a hard-coded `LENS_CX` constant, this scales with the brow's
-// actual arc length and stays correct when the control net is retuned.
-const browSamples = top.analytics.divideByEqualArcLength(3);
-const leftLensAnchor = browSamples[1].pt;   // closer to TL (negative X)
-const rightLensAnchor = browSamples[2].pt;  // closer to TR (positive X)
-
-// The brow runs TR -> TL (positive X to negative X), so divideByEqualArcLength
-// emits samples in TR-to-TL order. Sample index 1 is therefore the
-// right-of-centre anchor (positive X), index 2 the left-of-centre anchor.
-const rightLensX = browSamples[1].pt[0];
-const leftLensX = browSamples[2].pt[0];
-
-// Sanity hooks — keep the references reachable so the bridge / flanks don't
-// get tree-shaken at lower time.
-void browLeftFlank;
-void browRightFlank;
-void browBridgeRef;
-void leftLensAnchor;
-void rightLensAnchor;
-
-const LENS_W = LENS_R * 2;
-const LENS_H = LENS_R * 1.7;
-const LENS_CORNER = LENS_R * 0.45;
-const LENS_CUT_DEPTH = BODY_DEPTH * 4;
-
+// ---- Trapezoidal lens cutout (Wayfarer signature) ----
 function lensCutoutSketch() {
-  const hx = LENS_W / 2;
-  const hy = LENS_H / 2;
-  const k = LENS_CORNER;
+  const wt = LENS_W_TOP / 2;     // top half-width
+  const wb = LENS_W_BOT / 2;     // bottom half-width (narrower)
+  const hh = LENS_H / 2;
+  const r = LENS_CR;
+  // Walk: BL → BR → TR → TL → BL with rounded corners via splines.
+  // Coords are in lens-local (X horizontal, Y vertical when sketch later
+  // rotated through alongAxis([0,1,0]) so sketch-Y → world-Z).
   return path()
-    .moveTo(-hx + k, -hy)
-    .lineTo(hx - k, -hy)
-    .spline([[hx - k, -hy], [hx, -hy + k * 0.4], [hx, -hy + k]])
-    .lineTo(hx, hy - k)
-    .spline([[hx, hy - k], [hx - k * 0.4, hy], [hx - k, hy]])
-    .lineTo(-hx + k, hy)
-    .spline([[-hx + k, hy], [-hx, hy - k * 0.4], [-hx, hy - k]])
-    .lineTo(-hx, -hy + k)
-    .spline([[-hx, -hy + k], [-hx + k * 0.4, -hy], [-hx + k, -hy]])
+    .moveTo(-wb + r, -hh)                // start bottom-left rounded corner end
+    .lineTo(wb - r, -hh)                 // along bottom edge
+    .spline(                              // bottom-right rounded corner
+      [[wb - r, -hh], [wb, -hh + r * 0.4], [wb, -hh + r]],
+      { startTangent: [r * 0.6, 0] },
+    )
+    .lineTo(wt, hh - r)                  // tapered right side (wider at top)
+    .spline(                              // top-right rounded corner
+      [[wt, hh - r], [wt - r * 0.4, hh], [wt - r, hh]],
+      { startTangent: [0, r * 0.6] },
+    )
+    .lineTo(-wt + r, hh)                 // top edge
+    .spline(                              // top-left rounded corner
+      [[-wt + r, hh], [-wt, hh - r * 0.4], [-wt, hh - r]],
+      { startTangent: [-r * 0.6, 0] },
+    )
+    .lineTo(-wb, -hh + r)                // tapered left side
+    .spline(                              // bottom-left rounded corner
+      [[-wb, -hh + r], [-wb + r * 0.4, -hh], [-wb + r, -hh]],
+      { startTangent: [0, -r * 0.6] },
+    )
     .close();
 }
 
-const leftLens = lensCutoutSketch().extrude(LENS_CUT_DEPTH)
+const cutDepth = DEPTH * 3;
+const leftLensCut = lensCutoutSketch()
+  .extrude(cutDepth).alongAxis([0, 1, 0])
+  .translate(leftLensCx, -cutDepth/2, 0);
+const rightLensCut = lensCutoutSketch()
+  .extrude(cutDepth).alongAxis([0, 1, 0])
+  .translate(rightLensCx, -cutDepth/2, 0);
+
+// ---- Bridge nose-notch: half-circle cut into the bottom of the bridge ----
+// Bridge sits between the two lens-opening tops (Z ≈ +19) and the frame top
+// (BROW_Z = +25). A cylinder centred at (0, 0, +19) with radius NOSE_NOTCH_D
+// punches a half-circular arch into the bridge bottom.
+const noseNotch = cylinder(cutDepth, NOSE_NOTCH_D)
   .alongAxis([0, 1, 0])
-  .translate(leftLensX, -LENS_CUT_DEPTH / 2, 0);
-const rightLens = lensCutoutSketch().extrude(LENS_CUT_DEPTH)
+  .translate(0, -cutDepth/2, LENS_H/2);
+
+// ---- Camera lens on LEFT side (asymmetric Meta detail) ----
+// Find the brow point near the OUTER-TOP corner of the left lens.
+// Outer-top corner of left lens ≈ (leftLensCx - LENS_W_TOP/2, BROW_Z - 3).
+const cameraTargetX = leftLensCx - LENS_W_TOP / 2 + 2;
+// closestPoint() returns Vec3 directly (not { pt, t, distance }).
+const cameraPt = brow.analytics.closestPoint([cameraTargetX, 0, BROW_Z - 4]);
+
+const cameraCut = cylinder(3, CAMERA_R)
   .alongAxis([0, 1, 0])
-  .translate(rightLensX, -LENS_CUT_DEPTH / 2, 0);
-const bodyWithEyes = body.subtract(leftLens).subtract(rightLens);
+  .translate(cameraPt[0], -1.5, cameraPt[2] - 2);
 
-// ---------------- Tinted lens inserts --------------------------------
-function lensInsert(cx: number) {
-  return cylinder(LENS_INSERT_T, LENS_R - 0.8)
-    .alongAxis([0, 1, 0])
-    .translate(cx, 1, 0)
-    .material({
-      baseColor: '#101418',
-      metalness: 0.0,
-      roughness: 0.10,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.05,
-      ior: 1.5,
-    });
-}
+const ledCut = cylinder(2, LED_R)
+  .alongAxis([0, 1, 0])
+  .translate(cameraPt[0] + CAMERA_R + 4, -1, cameraPt[2] - 1);
 
-// ---------------- Compose + apply glossy acetate PBR ------------------
-const glasses = bodyWithEyes
-  .union(lensInsert(leftLensX))
-  .union(lensInsert(rightLensX))
-  .material({
-    baseColor: '#6c6c6c',
-    metalness: 0.0,
-    roughness: 0.15,
-    clearcoat: 0.8,
-    clearcoatRoughness: 0.05,
-    ior: 1.55,
-  });
+// ---- Compose: subtract lenses, then bridge notch, then camera + LED ----
+let frame = body;
+frame = frame.subtract(leftLensCut);
+frame = frame.subtract(rightLensCut);
+frame = frame.subtract(noseNotch);
+frame = frame.subtract(cameraCut);
+frame = frame.subtract(ledCut);
 
-return glasses;
+return frame.material({
+  baseColor: '#1a1a1a',
+  metalness: 0.0,
+  roughness: 0.22,
+  clearcoat: 0.7,
+  clearcoatRoughness: 0.08,
+  ior: 1.55,
+});
