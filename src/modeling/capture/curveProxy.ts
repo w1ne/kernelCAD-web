@@ -24,9 +24,14 @@ import type { SurfaceProxy } from './surfaceProxy';
  * curve (degenerate control net, OCCT internal failure, etc.).
  *
  * Drift-sentinel contract: adding a public method here REQUIRES updating
- * `CURVE3D_METHODS` (TBD) in `src/agent/mcp/tools/listApi.ts` and the
- * drift-sentinel test. Today the proxy is consumed by `variableSweep` —
- * agents can also call the evaluation methods directly for sampling.
+ * `CURVE3D_METHODS` (flat methods) or `CURVE3D_ANALYTICS_METHODS`
+ * (analytics namespace) in `src/agent/mcp/tools/listApi.ts` and re-running
+ * the drift-sentinel test in
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts`. Adding to the
+ * `.analytics` surface ALSO requires extending `Curve3DAnalytics` in this
+ * file and implementing on `Curve3DAnalyticsImpl` in
+ * `curveAnalyticsProxy.ts`. Today the proxy is consumed by `variableSweep`
+ * — agents can also call the evaluation methods directly for sampling.
  */
 export interface Curve3D {
   readonly id: FeatureId;
@@ -146,7 +151,7 @@ export class Curve3DProxy implements Curve3D {
     this.analytics = new Curve3DAnalyticsImpl(this);
   }
 
-  private evaluator() {
+  private _evaluator() {
     try {
       return lazyEvalCurve(this.session, this.id, this.metadata);
     } catch (e) {
@@ -161,16 +166,16 @@ export class Curve3DProxy implements Curve3D {
   }
 
   sample(n: number): [number, number, number][] {
-    return this.evaluator().sample(n);
+    return this._evaluator().sample(n);
   }
   pointAt(t: number): [number, number, number] {
-    return this.evaluator().pointAt(t);
+    return this._evaluator().pointAt(t);
   }
   tangentAt(t: number): [number, number, number] {
-    return this.evaluator().tangentAt(t);
+    return this._evaluator().tangentAt(t);
   }
   length(): number {
-    return this.evaluator().length();
+    return this._evaluator().length();
   }
   domain(): [number, number] {
     return [0, 1];
