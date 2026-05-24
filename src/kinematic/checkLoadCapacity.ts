@@ -92,19 +92,23 @@ function runStubMode(
     // Map the substrate's ValidatorDiagnostic into the kinematic envelope's
     // diagnostic shape. Substrate codes are catalogued already; pick up the
     // shared `nextAction` from the registry so every emitted code carries
-    // the canonical recovery action.
+    // the canonical recovery action. Substrate uses 'warning' for the
+    // mid-tier severity; kinematic envelope uses 'warn'.
     const code = d.code as DiagnosticCode;
     const entry = DIAGNOSTIC_REGISTRY[code];
+    const severity: 'info' | 'warn' | 'error' =
+      d.severity === 'warning' ? 'warn' : d.severity;
+    const elementName = d.mateName ?? d.partA ?? d.partB;
     diagnostics.push({
       code,
-      severity: d.severity,
+      severity,
       message: d.message,
       hint: entry.hintTemplate,
       nextAction: entry.nextAction,
       source: 'local',
-      ...(d.mateName !== undefined ? { element: d.mateName } : {}),
+      ...(elementName !== undefined ? { element: elementName } : {}),
     });
-    if (d.severity === 'error') {
+    if (d.severity === 'error' && d.mateName !== undefined) {
       failures.push({
         element: d.mateName,
         elementKind: 'mate',
