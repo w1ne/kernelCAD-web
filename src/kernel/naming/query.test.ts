@@ -63,8 +63,16 @@ describe('Query value type — Q2', () => {
     expect(v.ast.index).toBe(0);
   });
 
-  it('.evaluate(scene) on a Q2-stage Query throws "Not implemented" until Q3', () => {
-    const v = q.face(q.createdBy('arm'));
-    expect(() => v.evaluate({} as never)).toThrow(/Not implemented/);
+  it('.evaluate(scene) on a Q3-stage Query delegates to the evaluator entry point', async () => {
+    // Importing the evaluator triggers the side-effect that installs the
+    // delegates on the Query module (breaks the query → evaluator →
+    // constructors → query cycle). The contract under test is "the chainable
+    // dispatches to the evaluator" — full evaluator semantics live in
+    // queryEvaluator.test.ts.
+    await import('./queryEvaluator');
+    const v = q.face();
+    const stubScene = { backend: { historyMap: undefined }, featureId: 'noop' } as never;
+    const result = v.evaluate(stubScene);
+    expect(Array.isArray(result)).toBe(true);
   });
 });

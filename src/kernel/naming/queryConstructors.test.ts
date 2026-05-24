@@ -175,8 +175,19 @@ describe('q.* constructors — value-level behaviour', () => {
     expect(j.lenient).toBe(true);
   });
 
-  it('.evaluateUnique throws "Not implemented" until the evaluator slice', () => {
+  it('.evaluateUnique delegates to the evaluator and throws a query.* diagnostic on a zero-hit', async () => {
+    // Importing the evaluator triggers the side-effect that installs the
+    // delegates on the Query module. Against a stub scene with an undefined
+    // historyMap, q.face(q.createdBy('arm')) walks to a query.* error
+    // (either query.unknown-id if records is non-empty, or query.empty when
+    // the createdBy lineage walk returns zero hits).
+    await import('./queryEvaluator');
     const v = q.face(q.createdBy('arm'));
-    expect(() => v.evaluateUnique({} as never)).toThrow(/Not implemented/);
+    const stubScene = { backend: { historyMap: undefined }, featureId: 'noop' } as never;
+    let caught: unknown;
+    try { v.evaluateUnique(stubScene); }
+    catch (e) { caught = e; }
+    expect(caught).toBeDefined();
+    expect(String((caught as { code?: string }).code ?? '')).toMatch(/^query\./);
   });
 });

@@ -27,15 +27,15 @@ function makeStubBackend(historyMap: HistoryMap | undefined): OcctBackend {
   return { historyMap, kind: undefined } as unknown as OcctBackend;
 }
 
-function makeSceneWithSixFaces(featureId = 'box-1'): QueryScene {
+function makeSceneWithSixFaces(featureId = 'box-1', featureName = 'box1'): QueryScene {
   const map: HistoryMap = new Map();
   const faces: Array<[string, FaceLineage]> = [
-    ['h-top', { rootHash: 'h-top', canonicalName: 'top', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
-    ['h-bottom', { rootHash: 'h-bottom', canonicalName: 'bottom', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
-    ['h-left', { rootHash: 'h-left', canonicalName: 'left', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
-    ['h-right', { rootHash: 'h-right', canonicalName: 'right', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
-    ['h-front', { rootHash: 'h-front', canonicalName: 'front', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
-    ['h-back', { rootHash: 'h-back', canonicalName: 'back', rootFeatureId: featureId, featureId, featureName: 'box1', featureKind: 'box' }],
+    ['h-top', { rootHash: 'h-top', canonicalName: 'top', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
+    ['h-bottom', { rootHash: 'h-bottom', canonicalName: 'bottom', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
+    ['h-left', { rootHash: 'h-left', canonicalName: 'left', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
+    ['h-right', { rootHash: 'h-right', canonicalName: 'right', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
+    ['h-front', { rootHash: 'h-front', canonicalName: 'front', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
+    ['h-back', { rootHash: 'h-back', canonicalName: 'back', rootFeatureId: featureId, featureId, featureName, featureKind: 'box' }],
   ];
   for (const [h, l] of faces) map.set(h, l);
   return {
@@ -267,14 +267,14 @@ describe('queryEvaluator lazy timing — D0.3 (b)', () => {
   });
 
   it('Two evaluations against two different scenes resolve independently', () => {
-    const a = makeSceneWithSixFaces('box-a');
-    const b = makeSceneWithSixFaces('box-b');
+    const a = makeSceneWithSixFaces('box-a', 'boxA');
+    const b = makeSceneWithSixFaces('box-b', 'boxB');
     const query = q.face();
     const ra = evaluate(query, a);
     const rb = evaluate(query, b);
     expect(ra.length).toBe(6);
     expect(rb.length).toBe(6);
-    // Different scenes carry independent featureId; refs reflect that.
+    // Different scenes carry independent featureName; refs reflect that.
     expect(ra[0].ref).not.toBe(rb[0].ref);
   });
 

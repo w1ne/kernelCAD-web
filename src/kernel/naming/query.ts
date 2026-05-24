@@ -1,14 +1,35 @@
 // src/kernel/naming/query.ts
 //
 // Slice Q — Query value type + AST + EntityMarker phantom types + chainable
-// methods. No evaluator implementation in this task; `.evaluate(scene)`
-// throws "Not implemented" until the next slice wires it through
+// methods. Q3 wires `.evaluate(scene)` / `.evaluateUnique(scene)` through
 // queryEvaluator.ts. Strict serializability: every field is a primitive or
 // another QueryAst node, never a function — so JSON.stringify round-trips
 // cleanly and the @kcq[...] string DSL ships against the same AST shape.
+//
+// The cycle (query → evaluator → constructors → query) is broken by an
+// indirection table populated lazily by `queryEvaluator.ts` after its own
+// module initialisation. The `.evaluate()` / `.evaluateUnique()` chainables
+// read from this table at call time, so by the time they fire every module
+// has finished loading.
 
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
+
+/** Internal: evaluator delegates injected by `queryEvaluator.ts` after its
+ *  module init finishes. The chainables read this table at call time so the
+ *  cycle (query → evaluator → constructors → query) is broken cleanly. */
+interface EvaluatorDelegates {
+  evaluate: <T>(query: Query<T>, scene: QueryScene) => ReadonlyArray<unknown>;
+  evaluateUnique: <T>(query: Query<T>, scene: QueryScene) => unknown;
+}
+
+let __evaluatorDelegates: EvaluatorDelegates | undefined;
+
+/** Called once by `queryEvaluator.ts` on first import. The `__` prefix marks
+ *  this as internal — never called from user code. */
+export function __installEvaluatorDelegates(d: EvaluatorDelegates): void {
+  __evaluatorDelegates = d;
+}
 
 /** Discriminator for the entity kind a Query addresses. */
 export type QueryKind = 'face' | 'edge' | 'vertex' | 'connector' | 'part' | 'solid';
@@ -205,18 +226,28 @@ export function makeQuery<T extends EntityMarker | unknown>(
     enumerable: false,
   });
   Object.defineProperty(v, 'evaluate', {
-    value: function evaluateImpl(this: Query<T>, _scene: QueryScene): never {
-      throw new Error(
-        'Not implemented in this task — wait for the queryEvaluator slice. Use the JSON-AST form for inspection.',
-      );
+    value: function evaluateImpl(this: Query<T>, scene: QueryScene): unknown {
+      // Read the delegate at call time so the cycle (query → evaluator →
+      // constructors → query) resolves after every module init finishes.
+      // Both call sites — `kc.q.face(...).evaluate(scene)` and the
+      // imperative `evaluate(query, scene)` — bottom out on one code path.
+      if (!__evaluatorDelegates) {
+        throw new Error(
+          'Query evaluator not installed — the queryEvaluator module must be loaded before calling .evaluate(). Import { evaluate } from "./queryEvaluator" once at startup.',
+        );
+      }
+      return __evaluatorDelegates.evaluate(this, scene);
     },
     enumerable: false,
   });
   Object.defineProperty(v, 'evaluateUnique', {
-    value: function evaluateUniqueImpl(this: Query<T>, _scene: QueryScene): never {
-      throw new Error(
-        'Not implemented in this task — wait for the queryEvaluator slice.',
-      );
+    value: function evaluateUniqueImpl(this: Query<T>, scene: QueryScene): unknown {
+      if (!__evaluatorDelegates) {
+        throw new Error(
+          'Query evaluator not installed — the queryEvaluator module must be loaded before calling .evaluateUnique().',
+        );
+      }
+      return __evaluatorDelegates.evaluateUnique(this, scene);
     },
     enumerable: false,
   });
