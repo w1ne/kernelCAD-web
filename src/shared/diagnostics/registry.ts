@@ -466,6 +466,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A NURBS surface degree is incompatible with its control-net dimensions.',
   },
+  'feature.nurbs.bridge-conversion-failed': {
+    hintTemplate:
+      'nurbs.bridge: JS→kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Bridge could not reconstruct a Geom_BSplineCurve from the analytics-side NURBS data; the kernel rejected the knot vector as ill-formed.',
+  },
   // Pattern (2) — W2.1
   'feature.pattern.source-not-found': {
     hintTemplate:
