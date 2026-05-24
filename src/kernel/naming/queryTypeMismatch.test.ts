@@ -17,6 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { q } from './queryConstructors';
 import { assertQueryKind } from './queryEvaluator';
 import { isKernelError } from '../../shared/intent/kernelError';
+import type { Query } from './query';
 
 describe('Query runtime kind narrowing — Q5 (D0.7 (c))', () => {
   it('assertQueryKind passes when the query target matches the expected kind', () => {
@@ -76,6 +77,37 @@ describe('Query runtime kind narrowing — Q5 (D0.7 (c))', () => {
       // is mechanical: swap kc.q.edge(...) for kc.q.face(...).
       expect(caught.hint).toContain('kc.q.face');
       expect(caught.hint).toContain('kc.q.edge');
+    }
+  });
+
+  // End-to-end scenario per D0.7 (c) and the "actually use what you ship"
+  // discipline: a Query<FaceMarker> survives a JSON.stringify → JSON.parse
+  // round-trip (the MCP `evaluate_query` boundary), loses its phantom marker
+  // in the process, and the consumer's runtime narrowing must catch the
+  // wrong-kind misuse before the request reaches the evaluator.
+  it('catches wrong-kind queries that crossed a JSON-AST boundary (e.g. MCP evaluate_query)', () => {
+    // Producer authored a face query but emitted it as JSON for an MCP call.
+    const faceQ = q.face(q.createdBy('arm'));
+    const json = JSON.stringify(faceQ);
+
+    // Consumer parsed the JSON. The phantom marker is gone; only the data
+    // fields (_kind / target / ast / lenient) remain.
+    const erased = JSON.parse(json) as Query<unknown>;
+    expect(erased.target).toBe('face');
+
+    // Consumer expects an edge query (e.g. fillet's edges slot). Without
+    // the runtime guard, the wrong-kind Query would slip through and the
+    // evaluator would silently return face entities to an edge consumer.
+    let caught: unknown;
+    try {
+      assertQueryKind(erased, 'edge', 'fillet.edges');
+    } catch (e) {
+      caught = e;
+    }
+    expect(isKernelError(caught)).toBe(true);
+    if (isKernelError(caught)) {
+      expect(caught.code).toBe('query.type-mismatch');
+      expect(caught.message).toContain('fillet.edges');
     }
   });
 });

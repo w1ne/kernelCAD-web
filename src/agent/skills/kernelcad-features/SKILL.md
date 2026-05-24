@@ -239,6 +239,21 @@ const filletEdgesLenient = kc.q.union(
 
 The same strict/lenient rule applies to `kc.q.intersection(...)` and `kc.q.subtraction(a, b)`.
 
+### Runtime kind checks
+
+`tsc --strict` rejects `kc.fillet({ edges: kc.q.face(...) })` at compile time because `kc.q.face(...)` returns `Query<FaceMarker>` and the `edges` slot expects `Query<EdgeMarker>`. The static check vanishes at JSON-AST / string-DSL boundaries — most notably the `evaluate_query` MCP tool's `query` input, where the phantom marker cannot survive `JSON.parse`. Consumers expecting a specific kind fall back to a runtime check that surfaces `query.type-mismatch` when the `Query.target` data field disagrees with the expected kind.
+
+```typescript
+// Compile-time: tsc rejects, kc.q.face(...) is Query<FaceMarker>, fillet wants edges.
+kc.box(10).fillet({ edges: kc.q.face(kc.q.createdBy('arm')) });  // tsc error
+
+// Runtime (JSON-AST input): the consumer's assertQueryKind(query, 'edge', 'fillet.edges')
+// throws query.type-mismatch with a constructor-level repair:
+// "use kc.q.edge(...) instead of kc.q.face(...)".
+```
+
+Queries built without a kind narrower (`kc.q.createdBy('arm')`, target `'any'`) are always accepted; they narrow downstream by the consumer's evaluator branch.
+
 ## Verification gates
 
 After applying edge/face features, run before reporting done:
