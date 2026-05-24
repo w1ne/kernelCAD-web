@@ -152,6 +152,12 @@ export type FeatureKind =
   // renderEnvironment. Lets the script aim the auto-fit camera at an
   // explicit (x, y, z) instead of the bbox centroid.
   | 'cameraTarget'
+  // Animation-view declaration (capture-only, no OCCT output) — declares a
+  // parameter sweep for offline MP4 capture (kinematic scrub demos).
+  // scripts/captureAnimationView.mjs reads this record and produces an MP4
+  // by sampling N frames across the sweep, leveraging the mesh-cache fast
+  // path so each frame's recompute is ~5 ms warm.
+  | 'animationView'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
