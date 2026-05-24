@@ -76,3 +76,13 @@ export {
 } from './query';
 
 export { q } from './queryConstructors';
+
+// Q3 — evaluator entry points + strings-as-sugar bridge. The chainable
+// `.evaluate(scene)` / `.evaluateUnique(scene)` methods on Query values
+// delegate to these same module-level functions via the install pattern
+// in query.ts, so both call sites bottom out on one code path.
+export {
+  evaluate,
+  evaluateUnique,
+  parseAnyTopologyInput,
+} from './queryEvaluator';

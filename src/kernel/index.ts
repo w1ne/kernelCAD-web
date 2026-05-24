@@ -25,3 +25,12 @@ export type {
   PartMarker,
   SolidMarker,
 } from './naming/query';
+
+// Q3 — evaluator entry points. The Query value's chainable methods
+// (`.evaluate(scene)` / `.evaluateUnique(scene)`) delegate to these same
+// functions, so both call sites bottom out on one implementation.
+export {
+  evaluate,
+  evaluateUnique,
+  parseAnyTopologyInput,
+} from './naming/queryEvaluator';
