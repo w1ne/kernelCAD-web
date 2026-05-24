@@ -217,6 +217,28 @@ Selector parse rules:
 
 Names must match `/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/` and must be unique within a chain. Both rules emit `feature.invalid-args` at script time with hints calling out the violation.
 
+## Query selectors
+
+### Composed-query failure isolation
+
+`kc.q.union(a, b, c)` is **strict by default**: if any sub-query raises (e.g. `query.unknown-label` because `c` references a label that does not exist on this scene), the composed query fails with `query.composition-strict-failure`, a single named wrapper that quotes the inner code for trace. Annotate with `.asLenient()` to allow partial success — failed sub-queries contribute zero entities, the surviving sub-queries are unioned, and execution continues.
+
+```typescript
+// Strict — throws query.composition-strict-failure if 'side-bevel' is not on this design.
+const filletEdges = kc.q.union(
+  kc.q.face(kc.q.withLabel('top')),
+  kc.q.face(kc.q.withLabel('side-bevel')),   // may not exist
+);
+
+// Lenient — fillets what is present, skips what is not.
+const filletEdgesLenient = kc.q.union(
+  kc.q.face(kc.q.withLabel('top')),
+  kc.q.face(kc.q.withLabel('side-bevel')),
+).asLenient();
+```
+
+The same strict/lenient rule applies to `kc.q.intersection(...)` and `kc.q.subtraction(a, b)`.
+
 ## Verification gates
 
 After applying edge/face features, run before reporting done:

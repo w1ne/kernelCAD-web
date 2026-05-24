@@ -87,4 +87,30 @@ describe('Query evaluator end-to-end — Q3 smoke (per actually-use-what-you-shi
     expect(r1.map((e) => e.handle)).toEqual(r2.map((e) => e.handle));
     expect(r1.map((e) => e.ref)).toEqual(r2.map((e) => e.ref));
   });
+
+  // Q4 — composed-query failure isolation on a real lowered scene. The
+  // synthetic-scene tests in queryComposition.test.ts already cover the
+  // wrap-and-rethrow logic; this smoke confirms the same code path lights
+  // up under the full lowering pipeline. Per [[feedback_actually_use_what_you_ship]].
+  it('q.union with one failing sub-query surfaces query.composition-strict-failure on a real lowered box', async () => {
+    const scene = await buildScene(`return box(10, 10, 10);`);
+    const okQ = q.face(q.withLabel('top'));
+    const badQ = q.face(q.withLabel('nonexistent'));
+    let caught: unknown;
+    try { evaluate(q.union(okQ, badQ), scene); }
+    catch (e) { caught = e; }
+    expect(caught).toBeDefined();
+    expect((caught as { code?: string }).code).toBe('query.composition-strict-failure');
+    expect((caught as { message?: string }).message).toMatch(/query\.unknown-label/);
+  });
+
+  it('q.union(...).asLenient() on a real box returns the surviving sub-queries entities', async () => {
+    const scene = await buildScene(`return box(10, 10, 10);`);
+    const okQ = q.face(q.withLabel('top'));
+    const badQ = q.face(q.withLabel('nonexistent'));
+    const composed = q.union(okQ, badQ).asLenient();
+    const r = evaluate(composed, scene);
+    expect(r.length).toBe(1);
+    expect(r[0].ref).toContain('/face/top');
+  });
 });
