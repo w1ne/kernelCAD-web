@@ -15,10 +15,6 @@ declare module 'verb-nurbs' {
   export type Point = [number, number, number];
   export type Vector = [number, number, number];
   export type KnotArray = number[];
-  export interface UV {
-    u: number;
-    v: number;
-  }
 
   export interface NurbsCurveData {
     degree: number;
@@ -40,6 +36,11 @@ declare module 'verb-nurbs' {
     len: number;
   }
 
+  /**
+   * Runtime shape of `verb.core.CurveCurveIntersection` (verb.es.js line
+   * 2615): `{ point0, point1, u0, u1 }`. `u0` is the parameter on the FIRST
+   * operand of `Intersect.curves(first, second, tol)`; `u1` on the second.
+   */
   export interface CurveCurveIntersection {
     u0: number;
     u1: number;
@@ -47,10 +48,18 @@ declare module 'verb-nurbs' {
     point1: Point;
   }
 
+  /**
+   * Runtime shape of `verb.core.CurveSurfaceIntersection` (verb.es.js line
+   * 2626): `{ u, uv, curvePoint, surfacePoint }`. `uv` is a flat 2-element
+   * array `[u, v]`, NOT a `{ u, v }` object — see verb.es.js line 5869
+   * where it is constructed as `[sol_sol[1], sol_sol[2]]`. The proxy
+   * normalises this into the public `{ uv: { u, v } }` record shape.
+   */
   export interface CurveSurfaceIntersection {
     u: number;
-    uv: UV;
-    point: Point;
+    uv: [number, number];
+    curvePoint: Point;
+    surfacePoint: Point;
   }
 
   export interface NurbsCurve {
@@ -86,6 +95,24 @@ declare module 'verb-nurbs' {
   export interface NurbsSurface {
     point(u: number, v: number): Point;
     normal(u: number, v: number): Vector;
+    asNurbs(): unknown;
+  }
+
+  export interface NurbsSurfaceCtor {
+    byKnotsControlPointsWeights(
+      degreeU: number,
+      degreeV: number,
+      knotsU: KnotArray,
+      knotsV: KnotArray,
+      controlPoints: Point[][],
+      weights?: number[][],
+    ): NurbsSurface;
+    byCorners(
+      p0: Point,
+      p1: Point,
+      p2: Point,
+      p3: Point,
+    ): NurbsSurface;
   }
 
   export interface IntersectNamespace {
@@ -117,6 +144,7 @@ declare module 'verb-nurbs' {
 
   export interface GeomNamespace {
     NurbsCurve: NurbsCurveCtor;
+    NurbsSurface: NurbsSurfaceCtor;
     Intersect: IntersectNamespace;
   }
 

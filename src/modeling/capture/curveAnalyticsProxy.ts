@@ -6,14 +6,38 @@
 // OCCT — these methods return data (Vec3[], numbers) without round-
 // tripping through the kernel.
 
-import type { Curve3D, Curve3DAnalytics, CurveLengthSample } from './curveProxy';
+import type {
+  Curve3D,
+  Curve3DAnalytics,
+  CurveLengthSample,
+  CurveCurveIntersection,
+  CurveSurfaceIntersection,
+} from './curveProxy';
+import type { SurfaceProxy } from './surfaceProxy';
 import type { Vec3 } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
-import { toVerb } from '../../kernel/backends/verb/curveBridge';
+import { toVerb, surfaceProxyToVerb } from '../../kernel/backends/verb/curveBridge';
+import nurbsJs from 'verb-nurbs';
 import type { NurbsCurve } from 'verb-nurbs';
 
 const DEFAULT_TESSELLATE_TOL = 0.05; // mm, matches the K1 mesh-discretisation gate
 const DEFAULT_CLOSEST_TOL = 1e-3; // mm
+const DEFAULT_INTERSECT_TOL = 1e-3; // mm; matches the verb solver default
+
+/**
+ * Structural sniff for the curve-curve intersect overload. A `Curve3D`
+ * carries an `analytics` namespace and a `pointAt` evaluator; `SurfaceProxy`
+ * carries neither (it has `id` + `__getRecord`). Sufficient to disambiguate
+ * the overload at runtime without leaning on a class-identity check.
+ */
+function isCurve3D(x: unknown): x is Curve3D {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    'analytics' in x &&
+    'pointAt' in (x as object)
+  );
+}
 
 /**
  * Extract the verb curve's intrinsic parameter range `[u0, u1]` from its
@@ -263,6 +287,108 @@ export class Curve3DAnalyticsImpl implements Curve3DAnalytics {
       }
       return points.map((p) => [p[0], p[1], p[2]] as Vec3);
     });
+  }
+
+  /**
+   * Curve-curve and curve-surface geometric intersection (overload pair).
+   *
+   * The vendored solver's curve bounding-box tree calls `Math.random()`
+   * inside `LazyCurveBoundingBoxTree.split()` to perturb the split point
+   * — both `Intersect.curves` and `Intersect.curveAndSurface` traverse
+   * this code path, so deterministic output requires seeding the global
+   * PRNG for the duration of the call (mirrors the `tessellate` pattern).
+   * `LazySurfaceBoundingBoxTree.split()` does NOT use random, but the
+   * curve tree is the load-bearing source of non-determinism in the
+   * curve-surface case as well.
+   */
+  intersect(other: Curve3D, opts?: { tolerance?: number }): CurveCurveIntersection[];
+  intersect(other: SurfaceProxy, opts?: { tolerance?: number }): CurveSurfaceIntersection[];
+  intersect(
+    other: Curve3D | SurfaceProxy,
+    opts?: { tolerance?: number },
+  ): CurveCurveIntersection[] | CurveSurfaceIntersection[] {
+    const tol = opts?.tolerance ?? DEFAULT_INTERSECT_TOL;
+    if (isCurve3D(other)) {
+      return this._intersectCurve(other, tol);
+    }
+    return this._intersectSurface(other, tol);
+  }
+
+  private _intersectCurve(other: Curve3D, tol: number): CurveCurveIntersection[] {
+    const selfCurve = toVerb(this.curve);
+    const otherCurve = toVerb(other);
+    const otherKnots = otherCurve.knots();
+    const [otherU0, otherU1] = [otherKnots[0], otherKnots[otherKnots.length - 1]];
+    const selfKnots = selfCurve.knots();
+    const [selfU0, selfU1] = [selfKnots[0], selfKnots[selfKnots.length - 1]];
+    const selfDomain = selfU1 - selfU0;
+    const otherDomain = otherU1 - otherU0;
+    let hits;
+    const originalRandom = Math.random;
+    Math.random = mulberry32(0xc0ffee);
+    try {
+      hits = nurbsJs.geom.Intersect.curves(selfCurve, otherCurve, tol);
+    } catch (e) {
+      if (e instanceof KernelError) throw e;
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new KernelError(
+        'feature.curve3d.analytics.intersect-kernel-failed',
+        `Curve3D.analytics.intersect (curve-curve): kernel-failed — ${msg}`,
+        this.curve.id,
+        'Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed.',
+      );
+    } finally {
+      Math.random = originalRandom;
+    }
+    return hits.map((h) => ({
+      tA: clamp01((h.u0 - selfU0) / selfDomain),
+      tB: clamp01((h.u1 - otherU0) / otherDomain),
+      ptA: [h.point0[0], h.point0[1], h.point0[2]] as Vec3,
+      ptB: [h.point1[0], h.point1[1], h.point1[2]] as Vec3,
+      distance: Math.hypot(
+        h.point0[0] - h.point1[0],
+        h.point0[1] - h.point1[1],
+        h.point0[2] - h.point1[2],
+      ),
+    }));
+  }
+
+  private _intersectSurface(
+    other: SurfaceProxy,
+    tol: number,
+  ): CurveSurfaceIntersection[] {
+    const selfCurve = toVerb(this.curve);
+    // surfaceProxyToVerb throws intersect-kernel-failed directly for
+    // unsupported surface kinds; let it propagate.
+    const surfaceVerb = surfaceProxyToVerb(other);
+    const selfKnots = selfCurve.knots();
+    const [selfU0, selfU1] = [selfKnots[0], selfKnots[selfKnots.length - 1]];
+    const selfDomain = selfU1 - selfU0;
+    let hits;
+    const originalRandom = Math.random;
+    Math.random = mulberry32(0xc0ffee);
+    try {
+      hits = nurbsJs.geom.Intersect.curveAndSurface(selfCurve, surfaceVerb, tol);
+    } catch (e) {
+      if (e instanceof KernelError) throw e;
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new KernelError(
+        'feature.curve3d.analytics.intersect-kernel-failed',
+        `Curve3D.analytics.intersect (curve-surface): kernel-failed — ${msg}`,
+        this.curve.id,
+        'Loosen tolerance; or inspect both operands via .sample(20) (curve) and a sample grid on the surface.',
+      );
+    } finally {
+      Math.random = originalRandom;
+    }
+    // verb.core.CurveSurfaceIntersection ships `{ u, uv: [u, v],
+    // curvePoint, surfacePoint }` at runtime — see verb.es.js line 2626 /
+    // 5869. Normalise to the public `{ tCurve, uv: { u, v }, pt }` shape.
+    return hits.map((h) => ({
+      tCurve: clamp01((h.u - selfU0) / selfDomain),
+      uv: { u: h.uv[0], v: h.uv[1] },
+      pt: [h.curvePoint[0], h.curvePoint[1], h.curvePoint[2]] as Vec3,
+    }));
   }
 }
 

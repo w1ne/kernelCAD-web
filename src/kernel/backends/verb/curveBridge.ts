@@ -17,10 +17,11 @@
 // call rebuilds.
 
 import nurbsJs from 'verb-nurbs';
-import type { NurbsCurve, NurbsCurveData, Point } from 'verb-nurbs';
+import type { NurbsCurve, NurbsCurveData, NurbsSurface, Point } from 'verb-nurbs';
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import type { Curve3D } from '../../../modeling/capture/curveProxy';
+import type { SurfaceProxy } from '../../../modeling/capture/surfaceProxy';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { clampedUniformKnots, decomposeKnots } from '../occt/nurbsSurfaceLowerer';
 
@@ -147,4 +148,78 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
   const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new (replicad as any).Edge(edgeBuilder.Edge());
+}
+
+/**
+ * Convert a kernelCAD `SurfaceProxy` into a JS-side analytics surface.
+ *
+ * V3 scope is the bare minimum needed for the `Curve3D.analytics.intersect`
+ * curve-surface overload: only `kind: 'nurbsSurface'` SurfaceRecords are
+ * supported because their NURBS data is captured directly in the session.
+ * Coons-patch (`surfaceFromBoundary`) and lofted (`surfaceFromCurves`)
+ * surfaces are built kernel-side via OCCT; extracting their NURBS
+ * representation back into JS would require a Geom_Surface → Geom_BSplineSurface
+ * conversion + pole/knot extraction pass that does not exist today. Those
+ * kinds throw `feature.curve3d.analytics.intersect-kernel-failed` upstream.
+ *
+ * Plan-vs-reality: the original plan stub assumed a `metadata` field on
+ * `SurfaceProxy` that does not exist. The proxy holds only the surface id
+ * + a session reference; this implementation routes through the session
+ * via `__getRecord()` and reads the NurbsSurfaceData payload directly.
+ * Coons-patch support is deferred until either the kernel exposes a
+ * Geom_BSplineSurface extraction helper or `kind: 'coonsPatch'` records
+ * grow a JS-accessible NURBS representation.
+ */
+export function surfaceProxyToVerb(surface: SurfaceProxy): NurbsSurface {
+  const record = surface.__getRecord();
+  if (record === undefined) {
+    throw new KernelError(
+      'feature.curve3d.analytics.intersect-kernel-failed',
+      `surfaceProxyToVerb: SurfaceRecord ${surface.id} not found on the capture session; cannot route to the JS analytics module.`,
+      undefined,
+      'Re-author the surface inside the same capture session as the curve operand, or call the analytics method from the script that built the surface.',
+    );
+  }
+  if (record.data.kind !== 'nurbsSurface') {
+    throw new KernelError(
+      'feature.curve3d.analytics.intersect-kernel-failed',
+      `surfaceProxyToVerb: SurfaceRecord ${surface.id} has kind '${record.data.kind}' which does not expose JS-side NURBS data. Only nurbsSurface()-authored surfaces are supported by the V3 intersect path.`,
+      undefined,
+      'Author the operand via kc.nurbsSurface({ controls, degree, knots? }); Coons-patch (surfaceFromBoundary) and lofted (surfaceFromCurves) surfaces will be supported in v2 of the spec once the kernel exposes a Geom_BSplineSurface extraction helper.',
+    );
+  }
+  const data = record.data;
+  const nU = data.controls.length;
+  const nV = data.controls[0]?.length ?? 0;
+  if (nU === 0 || nV === 0) {
+    throw new KernelError(
+      'feature.curve3d.analytics.intersect-kernel-failed',
+      `surfaceProxyToVerb: SurfaceRecord ${surface.id} has an empty control grid (${nU} x ${nV}).`,
+      undefined,
+      'Author the surface with a non-empty rectangular Vec3 grid.',
+    );
+  }
+  const knotsU = data.knots?.u !== undefined
+    ? data.knots.u.slice()
+    : (() => {
+        const { knots, mults } = clampedUniformKnots(nU, data.degree.u);
+        return expandKnots(knots, mults);
+      })();
+  const knotsV = data.knots?.v !== undefined
+    ? data.knots.v.slice()
+    : (() => {
+        const { knots, mults } = clampedUniformKnots(nV, data.degree.v);
+        return expandKnots(knots, mults);
+      })();
+  const controls: Point[][] = data.controls.map((row) =>
+    row.map((p) => [p[0], p[1], p[2]] as Point),
+  );
+  return nurbsJs.geom.NurbsSurface.byKnotsControlPointsWeights(
+    data.degree.u,
+    data.degree.v,
+    knotsU,
+    knotsV,
+    controls,
+    data.weights,
+  );
 }

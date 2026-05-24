@@ -4,6 +4,7 @@ import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import { KernelError } from '../../shared/intent/kernelError';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Curve3DAnalyticsImpl } from './curveAnalyticsProxy';
+import type { SurfaceProxy } from './surfaceProxy';
 
 /**
  * Capture-time proxy for a 3D parametric curve produced by `nurbsCurve()`.
@@ -61,6 +62,37 @@ export interface CurveLengthSample {
 }
 
 /**
+ * Per-hit record returned by `Curve3D.analytics.intersect(otherCurve)`.
+ *
+ * `tA` is the parametric coordinate on the receiver curve (in the public
+ * `[0, 1]` domain); `tB` is the coordinate on the operand. `ptA` and `ptB`
+ * are the world-space coordinates of the closest approach on each curve;
+ * for an exact intersection these are identical and `distance` is 0. For a
+ * near-miss within tolerance they differ by `distance` mm.
+ */
+export interface CurveCurveIntersection {
+  tA: number;
+  tB: number;
+  ptA: Vec3;
+  ptB: Vec3;
+  distance: number;
+}
+
+/**
+ * Per-hit record returned by `Curve3D.analytics.intersect(surface)`.
+ *
+ * `tCurve` is the parametric coordinate on the receiver curve (in the
+ * public `[0, 1]` domain). `uv` is the surface parametric coordinate of
+ * the intersection (in the surface's intrinsic knot range). `pt` is the
+ * world-space coordinate.
+ */
+export interface CurveSurfaceIntersection {
+  tCurve: number;
+  uv: { u: number; v: number };
+  pt: Vec3;
+}
+
+/**
  * Read-only computed-query namespace on every `Curve3D`. All methods
  * delegate to the JS analytics module via the curveBridge cache; raw
  * data is returned without a kernel round-trip (geometry stays in OCCT).
@@ -81,8 +113,24 @@ export interface Curve3DAnalytics {
   derivatives(t: number, numDerivs?: number): Vec3[];
   /** Adaptive polyline approximation of the curve at the given tolerance (mm). */
   tessellate(opts?: { tolerance?: number }): Vec3[];
-  // intersect(other) lands in Task V3 — declared there to keep the V2/V3
-  // split clean.
+  /**
+   * Geometric intersection of this curve with another curve or with a
+   * surface. Returns one record per intersection point; the empty array
+   * means no intersection within tolerance (callers may inspect the
+   * `feature.curve3d.analytics.intersect-no-intersection` registry entry
+   * for the recommended next action).
+   *
+   * The receiver-bound shape (NOT `kc.q.intersection(a, b)`) disambiguates
+   * this geometric intersect from the Q DSL's set-theoretic intersection
+   * verb — same English word, different semantics.
+   *
+   * Throws `KernelError('feature.curve3d.analytics.intersect-kernel-failed')`
+   * when the solver raises or when the surface operand kind does not
+   * expose JS-side NURBS data (today: only `nurbsSurface()`-authored
+   * surfaces are supported by the curve-surface overload).
+   */
+  intersect(other: Curve3D, opts?: { tolerance?: number }): CurveCurveIntersection[];
+  intersect(other: SurfaceProxy, opts?: { tolerance?: number }): CurveSurfaceIntersection[];
 }
 
 export class Curve3DProxy implements Curve3D {
