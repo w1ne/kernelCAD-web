@@ -37,6 +37,7 @@ import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { getFaceLineageTool } from './tools/getFaceLineage';
 import { resolveTopoRefTool } from './tools/resolveTopoRef';
+import { evaluateQueryTool } from './tools/evaluateQuery';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
@@ -773,6 +774,25 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => resolveTopoRefTool(input as unknown as Parameters<typeof resolveTopoRefTool>[0]),
+  },
+  {
+    definition: {
+      name: 'evaluate_query',
+      description:
+        "Inspect a Query against a kernelCAD script's lowered geometry before consuming it in a feature op. Accepts three input forms: (1) an @kc[<owner>/<kind>/<name>] string ref, (2) an @kcq[<expr>] Query DSL string (face(createdBy(\"id\")), union(...), intersection(...), subtraction(...), withLabel, closestTo, etc.), or (3) a JSON-AST wrapper { ast: { op: '...', ... } } that round-trips Query.toJSON(). Returns { ok: true, entities: [{ kind, ref, handle, snapshot? }], query: { ast } } on success; on diagnostic returns { ok: false, errorCode, errorHint } with the structured query.* code. Pass expect: 'unique' to assert exactly-one and surface query.over-determined on multi-hit / query.empty on no-hit.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          query: { description: 'Query input — string (@kc[...] or @kcq[...]) or JSON-AST object { ast: { op, ... } }.' },
+          expect: { type: 'string', enum: ['any', 'unique'], description: "When 'unique', emit query.over-determined on multi-hit and query.empty on no-hit." },
+          feature_id: { type: 'string', description: 'Optional FeatureId to resolve against; defaults to the last lowered shape.' },
+        },
+        required: ['query'],
+      },
+    },
+    handler: input => evaluateQueryTool(input as unknown as Parameters<typeof evaluateQueryTool>[0]),
   },
   {
     definition: {
