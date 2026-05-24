@@ -8672,7 +8672,7 @@ var verbHaxe = {};
 	verb_exe_Dispatcher._init = false;
 	verb_exe_WorkerPool.basePath = "";
 	verb_exe__$WorkerPool_Work.uuid = 0;
-	verb_Verb.main();
+	/* verb_Verb.main(); — local patch: suppress stdout version print so the CLI evaluate-harness's stdout stays as a single JSON line. See vendor/verb-nurbs/README.md "Local patches" for re-snapshot procedure. */
 	})(exports , typeof window != "undefined" ? window : typeof commonjsGlobal != "undefined" ? commonjsGlobal : typeof self != "undefined" ? self : commonjsGlobal); 
 } (verbHaxe));
 
