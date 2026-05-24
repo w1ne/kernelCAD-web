@@ -25,6 +25,16 @@ import type {
  * result. Synchronous compute; the `async` signature matches the rest of
  * the kc.kinematic.* surface and leaves room for future awaitable substrate
  * (FEA, hosted solver) without a breaking change.
+ *
+ * Returns `ok: true` when every fastened mate's bound hole diameters
+ * agree; otherwise carries one
+ * `kinematic.mounting-hole.diameter-mismatch` (K9) diagnostic per
+ * offending mate plus the structured mismatch records on the envelope.
+ *
+ * Every result envelope carries `source: 'local'`. Local in-process
+ * compute; no network round-trip.
+ *
+ * @see DIAGNOSTIC_REGISTRY['kinematic.mounting-hole.diameter-mismatch']
  */
 export async function checkMountingHoleConsistency(
   arm: Assembly,

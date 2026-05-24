@@ -45,7 +45,10 @@ import type {
  *   - `kinematic.collision.swept.sample-density-warning` (warn) per joint
  *     whose (range, step) is below the D3 safe floor.
  *
- * Every diagnostic in the result carries `source: 'local'`.
+ * Every diagnostic in the result carries `source: 'local'`. Local in-process
+ * compute; no network round-trip. Cookbook recipes:
+ * `src/agent/skills/kernelcad-kinematic/cookbook/01-swept-collision-shoulder.kcad.ts`,
+ * `04-scissor-jack-swept.kcad.ts`, `05-clamshell-hinge-swept.kcad.ts`.
  *
  * @see DIAGNOSTIC_REGISTRY['kinematic.collision.swept']
  * @see DIAGNOSTIC_REGISTRY['kinematic.collision.swept.sample-density-warning']

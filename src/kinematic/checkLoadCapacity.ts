@@ -56,7 +56,13 @@ const DEFAULT_SF_THRESHOLD = 1.5;
  *
  * Every result envelope carries `source: 'local'`; diagnostics are
  * structured records with `severity` / `nextAction` / `hint` lifted from
- * the central `DIAGNOSTIC_REGISTRY`.
+ * the central `DIAGNOSTIC_REGISTRY`. Local in-process compute; no network
+ * round-trip. Cookbook recipe:
+ * `src/agent/skills/kernelcad-kinematic/cookbook/03-cantilever-beam-stress.kcad.ts`.
+ *
+ * @see DIAGNOSTIC_REGISTRY['kinematic.load-exceeds-yield']
+ * @see DIAGNOSTIC_REGISTRY['kinematic.load.beam-not-applicable']
+ * @see DIAGNOSTIC_REGISTRY['kinematic.no-material-declared']
  */
 export async function checkLoadCapacity(
   arm: Assembly,

@@ -28,6 +28,40 @@ The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fi
 
 The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
 
+### Added — kernelCAD kinematic grounding
+
+Design-time mechanism feasibility gates. Agents can now ask whether a moving
+assembly will work — across collision sweeps, reachability targets, mounting-hole
+patterns, and static load capacity — and get back actionable diagnostics with
+machine-readable `nextAction` repair hints. Every check runs locally in the
+same Node process; no network, no auth, no quotas.
+
+- `kinematic.checkSweptCollision(arm, opts)` — sweep declared joint ranges
+  and report colliding poses with structured per-pose contact pairs.
+- `kinematic.checkReachable(arm, opts)` — IK feasibility for an end-effector
+  target. Dispatches the closed-form analytical solver on spherical-wrist
+  6-DOF chains and the damped-least-squares numeric solver otherwise.
+- `kinematic.checkMountingHoleConsistency(arm)` — fastener compatibility
+  across every fastened mate's bound faces.
+- `kinematic.checkLoadCapacity(arm, loads, opts)` — closed-form
+  Euler-Bernoulli beam-stress check on cantilever-shaped parts with declared
+  materials.
+
+Nine new `kinematic.*` diagnostic codes registered with mandatory `hint` and
+`nextAction` repair fields (K1 collision swept, K2 sample-density warn, K3
+unreachable, K4 iteration cap, K5 unsupported config, K6 load exceeds yield,
+K7 beam not applicable, K8 no material declared, K9 mounting-hole mismatch).
+
+Four MCP tools paired with the facade entries — `check_swept_collision`,
+`check_reachable`, `check_mounting_hole_consistency`, `check_load_capacity`.
+
+New `kernelcad-kinematic` agent skill with six cookbook recipes covering
+robotic arms, scissor-jack legs, clamshell hinges, and over-center latches.
+
+Four new eval tasks under `eval/tasks/kinematic-*` exercising each facade
+entry plus a cross-borrow integration task chaining a NURBS rail curve, a
+topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
+
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
 - Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).

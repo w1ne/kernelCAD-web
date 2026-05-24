@@ -35,6 +35,10 @@ const DEFAULT_MAX_ITERATIONS = 200;
  * envelope so the caller can choose between widening tolerances, lengthening
  * a link, or restructuring the chain.
  *
+ * Local in-process compute; no network round-trip. Cookbook recipes:
+ * `src/agent/skills/kernelcad-kinematic/cookbook/02-reachable-with-seed.kcad.ts`,
+ * `06-over-center-latch-reachable.kcad.ts`.
+ *
  * @see DIAGNOSTIC_REGISTRY['kinematic.unreachable']
  * @see DIAGNOSTIC_REGISTRY['kinematic.reachability.iteration-cap-hit']
  * @see DIAGNOSTIC_REGISTRY['kinematic.solver.unsupported-config']
