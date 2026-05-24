@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 165 codes', () => {
+  it('catalogue has exactly 172 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -92,8 +92,13 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       SRDF (2): acm-sparse-sampling, planning-group-missing
     //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
     //                 dangling-link-ref
-    // Net catalogue = 157 - 3 + 11 = 165.
-    expect(catalogue.size).toBe(165);
+    //  +  7 Slice Q (Query DSL) — Q3 evaluator codes (empty / over-determined /
+    //       evaluated-too-early / unknown-id / unknown-label / id-hierarchy-
+    //       clash / unsupported-entity-type). The remaining 4 v1 codes ship
+    //       in Q4 / Q5 / Q7 alongside their evaluator entry points; the
+    //       reactive-update code was demoted to v2 per consolidated review F8.
+    // Net catalogue = 157 - 3 + 11 + 7 = 172.
+    expect(catalogue.size).toBe(172);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
