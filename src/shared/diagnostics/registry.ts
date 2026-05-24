@@ -1249,6 +1249,23 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'path().spline received fewer than 2 distinct finite waypoints.',
   },
+  // V slice Task V4 (2) — path().spline tangent extension.
+  'feature.path.spline.tangent-zero-magnitude': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent has magnitude < 1e-9 (zero-magnitude tangents are undefined). Pass a non-zero 2D direction vector; magnitude is normalised internally, [1, 0] and [100, 0] produce the same curve.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().spline received a startTangent or endTangent with magnitude below 1e-9; the curve fit cannot use a zero-direction constraint.',
+  },
+  'feature.path.spline.tangent-on-2d-only': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent must be a 2D [x, y] tuple; got a 3-element vector. The z component is ignored. For 3D NURBS curves with tangent control, use nurbsCurve(controlPoints, opts) and compose hermiteG2 for endpoint G2 instead.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A 3-element tangent was passed to the 2D path().spline extension; only the x/y components are used.',
+  },
   'feature.path.nurbs-segment.degenerate-controls': {
     hintTemplate:
       'path().nurbsSegment expects at least degree+1 finite Vec2 control points, with the first control point matching the current pen position within 1e-6 mm. Add more control points or reduce the degree, and align controlPoints[0] with the current position (or call moveTo first).',

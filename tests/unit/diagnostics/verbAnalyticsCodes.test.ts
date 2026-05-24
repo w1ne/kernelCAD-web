@@ -74,3 +74,50 @@ describe('V3 diagnostic codes — curve-curve / curve-surface intersect', () => 
     expect(V_CODES_V3.length).toBe(2);
   });
 });
+
+// V slice — Task V4 owns 2 new codes scoped to path().spline() tangent
+// extension. zero-magnitude rides at error severity (zero-direction is
+// undefined); on-2d-only rides at warning severity (extra z component is
+// silently dropped, not catastrophic).
+const V_CODES_V4 = [
+  'feature.path.spline.tangent-zero-magnitude',
+  'feature.path.spline.tangent-on-2d-only',
+] as const;
+
+describe('V4 diagnostic codes — path().spline tangent extension', () => {
+  it('registers tangent-zero-magnitude at error severity', () => {
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.path.spline.tangent-zero-magnitude'],
+    ).toBeDefined();
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.path.spline.tangent-zero-magnitude']
+        .defaultSeverity,
+    ).toBe('error');
+    expect(
+      HINT_TEMPLATES['feature.path.spline.tangent-zero-magnitude']
+        .template.length,
+    ).toBeGreaterThan(20);
+    expect(
+      NEXT_ACTIONS['feature.path.spline.tangent-zero-magnitude'],
+    ).toBeDefined();
+  });
+  it('registers tangent-on-2d-only at warn severity', () => {
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.path.spline.tangent-on-2d-only'],
+    ).toBeDefined();
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.path.spline.tangent-on-2d-only']
+        .defaultSeverity,
+    ).toBe('warn');
+    expect(
+      HINT_TEMPLATES['feature.path.spline.tangent-on-2d-only']
+        .template.length,
+    ).toBeGreaterThan(20);
+    expect(
+      NEXT_ACTIONS['feature.path.spline.tangent-on-2d-only'],
+    ).toBeDefined();
+  });
+  it('ships exactly 2 V4 codes (count discipline)', () => {
+    expect(V_CODES_V4.length).toBe(2);
+  });
+});

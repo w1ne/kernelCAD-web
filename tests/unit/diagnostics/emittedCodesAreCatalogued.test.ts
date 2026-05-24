@@ -98,8 +98,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       tessellation-tolerance-invalid / kernel-failed)
     //  +  2 V Task V3 Curve3D.analytics.intersect (intersect-kernel-failed /
     //       intersect-no-intersection)
-    // Net catalogue = 157 - 3 + 11 + 1 + 5 + 2 = 173.
-    expect(catalogue.size).toBe(173);
+    //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
+    //       tangent-on-2d-only)
+    // Net catalogue = 157 - 3 + 11 + 1 + 5 + 2 + 2 = 175.
+    expect(catalogue.size).toBe(175);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
