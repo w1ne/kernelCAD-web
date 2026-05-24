@@ -1064,6 +1064,47 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'nurbsCurve was authored with closed=true but the first and last control points are not coincident.',
   },
+  // V slice — Curve3D analytics (JS-side computed-query layer).
+  'feature.curve3d.analytics.degenerate-arclength': {
+    hintTemplate:
+      'Curve3D.analytics.divideBy*: requested n or arcLength is out of range. Pass a positive integer for n (or a positive arcLength less than the curve total length()).',
+    nextAction: { kind: 'fix-arg', field: 'n' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'divideByEqualArcLength or divideByArcLength received an invalid n / arcLength input, or the curve is degenerate (length < 1e-9 mm).',
+  },
+  'feature.curve3d.analytics.closest-point-no-converge': {
+    hintTemplate:
+      'Curve3D.analytics.closestPoint: solver did not converge to tolerance after the maximum iterations. The curve may be degenerate or the query point may be far outside the curve domain. Sample via .tessellate() and pick the nearest polyline vertex as a coarse fallback; or loosen tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'closestPoint / closestParam Newton-Raphson did not converge within tolerance.',
+  },
+  'feature.curve3d.analytics.derivatives-out-of-range': {
+    hintTemplate:
+      'Curve3D.analytics.derivatives: requested derivative order exceeds the curve degree; derivatives above order=degree are zero by construction. Lower numDerivs to <= degree (typically 1 for tangent, 2 for curvature).',
+    nextAction: { kind: 'fix-arg', field: 'numDerivs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'derivatives() called with numDerivs > curve.degree.',
+  },
+  'feature.curve3d.analytics.tessellation-tolerance-invalid': {
+    hintTemplate:
+      'Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01–0.5 mm. Export tessellation uses the kernel mesher independently.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'tessellate() called with tolerance <= 0 or non-finite.',
+  },
+  'feature.curve3d.analytics.kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics: solver threw on this curve (NaN propagation or degenerate input). Inspect the curve via .sample(10) and .length(); if the curve is degenerate (length ~ 0, control points coincident), re-author it. If the curve is valid, file an issue with the .kcad.ts repro.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A non-intersect analytics method (closestPoint, divide*, derivatives, tessellate) raised an internal solver error.',
+  },
   // NURBS Slice B — variableSweep PipeShell validation.
   'feature.variable-sweep.sections-out-of-order': {
     hintTemplate:
