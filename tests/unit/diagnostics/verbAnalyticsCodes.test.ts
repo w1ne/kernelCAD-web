@@ -28,3 +28,49 @@ describe('V2 diagnostic codes — curve analytics namespace', () => {
     });
   }
 });
+
+// V slice — Task V3 owns 2 new codes scoped to Curve3D.analytics.intersect
+// (curve-curve and curve-surface). intersect-no-intersection rides at info
+// severity because the no-hit case is data, not failure.
+const V_CODES_V3 = [
+  'feature.curve3d.analytics.intersect-kernel-failed',
+  'feature.curve3d.analytics.intersect-no-intersection',
+] as const;
+
+describe('V3 diagnostic codes — curve-curve / curve-surface intersect', () => {
+  it('registers intersect-kernel-failed at error severity', () => {
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.curve3d.analytics.intersect-kernel-failed'],
+    ).toBeDefined();
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.curve3d.analytics.intersect-kernel-failed']
+        .defaultSeverity,
+    ).toBe('error');
+    expect(
+      HINT_TEMPLATES['feature.curve3d.analytics.intersect-kernel-failed']
+        .template.length,
+    ).toBeGreaterThan(20);
+    expect(
+      NEXT_ACTIONS['feature.curve3d.analytics.intersect-kernel-failed'],
+    ).toBeDefined();
+  });
+  it('registers intersect-no-intersection at info severity (does NOT throw)', () => {
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.curve3d.analytics.intersect-no-intersection'],
+    ).toBeDefined();
+    expect(
+      DIAGNOSTIC_REGISTRY['feature.curve3d.analytics.intersect-no-intersection']
+        .defaultSeverity,
+    ).toBe('info');
+    expect(
+      HINT_TEMPLATES['feature.curve3d.analytics.intersect-no-intersection']
+        .template.length,
+    ).toBeGreaterThan(20);
+    expect(
+      NEXT_ACTIONS['feature.curve3d.analytics.intersect-no-intersection'],
+    ).toBeDefined();
+  });
+  it('ships exactly 2 V3 codes (count discipline)', () => {
+    expect(V_CODES_V3.length).toBe(2);
+  });
+});

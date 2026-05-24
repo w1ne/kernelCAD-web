@@ -1105,6 +1105,26 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A non-intersect analytics method (closestPoint, divide*, derivatives, tessellate) raised an internal solver error.',
   },
+  // V slice — Task V3: curve-curve and curve-surface geometric intersection
+  // on the analytics namespace (instance method, NOT a kc.q.* set-theoretic
+  // verb; see spec §3.2). intersect-no-intersection rides at info severity
+  // because the no-hit case is data — the call returns [] rather than throws.
+  'feature.curve3d.analytics.intersect-kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() — Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Curve-curve or curve-surface geometric intersection solver raised an error, or the surface operand kind is not supported by the JS-side intersect path.',
+  },
+  'feature.curve3d.analytics.intersect-no-intersection': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: no intersection found within tolerance (operands are skew or non-intersecting at this tolerance). If you expect an intersection, loosen tolerance and re-run; check operand bounding boxes via .sample(10) to verify spatial proximity.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'intersect(other) returned zero hits within the requested tolerance; surfaced as a catalog entry rather than thrown so callers can treat empty results as data.',
+  },
   // NURBS Slice B — variableSweep PipeShell validation.
   'feature.variable-sweep.sections-out-of-order': {
     hintTemplate:
