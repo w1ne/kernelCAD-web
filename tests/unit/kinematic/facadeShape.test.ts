@@ -42,7 +42,7 @@ describe('kc.kinematic facade shape', () => {
     expect(r.posesSampled).toBe(0);
   });
 
-  it('checkReachable stubs out with the unsupported-config diagnostic', async () => {
+  it('checkReachable reports kinematic.unreachable when the named tip part is absent', async () => {
     const session = new CaptureSession();
     const kc = createApi({ session });
     const arm = kc.assembly('empty');
@@ -52,12 +52,8 @@ describe('kc.kinematic facade shape', () => {
     });
     expect(r.source).toBe('local');
     expect(r.ok).toBe(false);
-    // T2 stub: every reachability call returns the unsupported-config code
-    // until T4/T5 wire the real solvers.
     expect(
-      r.diagnostics.some(
-        (d) => d.code === 'kinematic.solver.unsupported-config',
-      ),
+      r.diagnostics.some((d) => d.code === 'kinematic.unreachable'),
     ).toBe(true);
     expect(r.diagnostics.every((d) => d.source === 'local')).toBe(true);
   });
