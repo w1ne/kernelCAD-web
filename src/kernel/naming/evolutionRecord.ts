@@ -73,6 +73,39 @@ export interface EdgeLineage {
 export type HistoryMap = Map<FaceHash, FaceLineage>;
 export type EdgeHistoryMap = Map<EdgeHash, EdgeLineage>;
 
+/**
+ * Part-level lineage carried by an assembly's part registry.
+ *
+ * Mirrors `FaceLineage` / `EdgeLineage` for the part scope so part-level
+ * Queries (`kc.q.part(kc.q.withFeatureName('arm'))`) resolve through the
+ * same lineage pathway as face- and edge-level Queries. Distinct from
+ * `FeatureRecord` because lineage carries the agent-facing slots (the
+ * user-supplied `name`, the originating feature-kind) without dragging
+ * in the FeatureRecord's `inputs`/`params`/`transforms` machinery.
+ *
+ * Every `.part(name, shape, opts?)` capture-site writes one entry to
+ * `Assembly.__partLineage()`'s map. The lineage's `featureId` is the
+ * same id the capture-session minted for the `assemblyPart`
+ * FeatureRecord — anchors the lineage to the existing FeatureRecord
+ * graph rather than introducing a parallel id stream.
+ */
+export interface PartLineage {
+  /** ID of the capture-session record for this part — stable across the
+   *  in-memory session. Distinct from `featureName` (which is the user-
+   *  supplied label). Used by `kc.q.part(kc.q.createdBy('<featureId>'))`. */
+  featureId: string;
+  /** User-supplied name on `.part(name, shape, opts?)`. Used by
+   *  `kc.q.part(kc.q.withFeatureName('<name>'))`. */
+  featureName: string;
+  /** Feature kind that emitted this part — always `'assemblyPart'` in v1;
+   *  reserved for future part-creation primitives. Matches the
+   *  `FeatureKind` union value used by `session.assemblyPart(...)`. */
+  featureKind: import('../../shared/intent/types').FeatureKind;
+}
+
+/** Per-assembly part-lineage registry, keyed by user-supplied part name. */
+export type PartLineageMap = Map<string /* part-name */, PartLineage>;
+
 /** Optional snapshot-aware transform callbacks for `propagateTransformHistory`.
  *  When supplied, the lineage is deep-copied and the snapshot's centroid +
  *  normal are run through the supplied functions. When omitted, lineage is

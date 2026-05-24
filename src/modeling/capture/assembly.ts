@@ -33,6 +33,7 @@ import {
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
+import type { PartLineage, PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
@@ -352,6 +353,12 @@ export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
+  /** Q1.5: per-part lineage map (PartLineageMap) populated on every
+   *  `.part(name, shape, opts?)` capture-site. Mirrors `FaceLineage` /
+   *  `EdgeLineage` for the part scope so part-level Queries resolve
+   *  through the same lineage pathway. Read-only outside this class;
+   *  surfaced via `__partLineage()`. */
+  private readonly partLineage: PartLineageMap = new Map();
   private readonly joints: AssemblyJointStored[] = [];
   /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
@@ -403,6 +410,18 @@ export class Assembly {
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
+    // Q1.5: write the part-lineage entry now that the capture-session has
+    // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
+    // is the same id the FeatureRecord carries — anchors part-level Query
+    // resolution (`kc.q.part(kc.q.createdBy('<featureId>'))`) to the
+    // existing FeatureRecord graph rather than introducing a parallel
+    // id stream.
+    const lineage: PartLineage = {
+      featureId: record.id,
+      featureName: name,
+      featureKind: 'assemblyPart',
+    };
+    this.partLineage.set(name, lineage);
     // Shared mutable array: the part-ref's `.connector(name, opts)` chain
     // method pushes into this array, and the `AssemblyPartStored` record
     // below references the same array via spread (arrays are by-reference),
@@ -1138,6 +1157,22 @@ export class Assembly {
    */
   __parts(): readonly AssemblyPartStored[] {
     return this.parts;
+  }
+
+  /**
+   * Q1.5 — Internal accessor: read-only view of the per-part lineage map.
+   *
+   * Mirrors `FaceLineage` / `EdgeLineage` for the part scope. Consumed by
+   * the (future) Q3 query evaluator's `Query<Part>` branch and the future
+   * Drake `tipLink: Query<unknown>` consumer; both resolve part-level
+   * Queries by walking this map.
+   *
+   * The returned map is the live internal map by reference — callers must
+   * treat it as read-only. Mirrors the `__parts()` / `__mates()`
+   * underscore-prefixed convention; not part of the agent-facing surface.
+   */
+  __partLineage(): PartLineageMap {
+    return this.partLineage;
   }
 
   /**
