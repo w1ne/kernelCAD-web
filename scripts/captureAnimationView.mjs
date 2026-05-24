@@ -58,13 +58,32 @@ const initial = await meshFeaturesPerFeature(model.records, session.paramTable, 
 console.log(`  cold mesh: ${(performance.now() - t).toFixed(0)} ms  features=${initial.features.length}`);
 
 console.log('Launching Playwright...');
-const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+const cdpUrl = process.env.PW_CDP_URL ?? 'http://127.0.0.1:9222';
+let browser;
+let ctx;
+let connectedExisting = false;
 try {
-  const ctx = await browser.newContext({ viewport: { width: W, height: H } });
+  browser = await chromium.connectOverCDP(cdpUrl);
+  // Reuse the first existing context (a fresh Playwright-launched chromium
+  // would always create a new one; CDP-attached chromes already have one).
+  const contexts = browser.contexts();
+  ctx = contexts[0] ?? await browser.newContext({ viewport: { width: W, height: H } });
+  connectedExisting = true;
+  console.log(`  attached to existing Chrome via CDP at ${cdpUrl}`);
+} catch (e) {
+  console.log(`  CDP attach failed (${e.message}); falling back to fresh chromium.launch`);
+  browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+  ctx = await browser.newContext({ viewport: { width: W, height: H } });
+}
+
+try {
   const page = await ctx.newPage();
+  // Resize the viewport so screenshots are 1920×1080 regardless of the
+  // attached Chrome window size.
+  await page.setViewportSize({ width: W, height: H });
   page.setDefaultTimeout(180000);
   const port = process.env.VITE_PORT ?? '5173';
-  await page.goto(`http://127.0.0.1:${port}/demo-player?headless=1&nowatermark=1`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.goto(`http://127.0.0.1:${port}/demo-player?headless=1&nowatermark=1`, { waitUntil: 'domcontentloaded', timeout: 90000 });
   await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 30000 });
   await page.evaluate(() => window.__demoPlayer.setVersion('animation'));
 
@@ -129,5 +148,9 @@ try {
   await new Promise((res, rej) => ffmpeg.on('close', (c) => (c === 0 ? res() : rej(new Error(`ffmpeg exit ${c}`)))));
   console.log(`Wrote ${OUT_MP4}`);
 } finally {
-  await browser.close().catch(() => undefined);
+  if (connectedExisting) {
+    await browser.close().catch(() => undefined); // disconnect, don't kill the attached Chrome
+  } else {
+    await browser.close().catch(() => undefined);
+  }
 }
