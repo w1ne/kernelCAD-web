@@ -499,9 +499,8 @@ function resolveFromString(
 ): ResolvedEntity[] {
   const parsed = parseTopoRef(ref);
   if ('error' in parsed) {
-    // query.invalid-syntax is Q7's code; Q3 surfaces a query.empty in lenient
-    // mode and re-throws as query.empty (the closest available v1 code) in
-    // strict mode. The dedicated code lands in Q7.
+    // query.invalid-syntax is Q7's code; Q3 surfaces a query.empty as the
+    // closest available v1 code. The dedicated code lands in Q7.
     throwQueryEmpty(originatingQuery, scene, false);
   }
   // Map TopoKind to QueryKind. Most are 1:1; 'sketch' isn't a QueryKind so
@@ -517,12 +516,28 @@ function resolveFromString(
   // Equivalent: kc.q.face().and(kc.q.withFeatureName(owner)).and(kc.q.withLabel(last))
   let candidates = collectAllOfKind('face', scene, originatingQuery);
   if (parsed.owner) {
-    candidates = candidates.filter((e) => entityHasFeatureName(e, parsed.owner, scene));
+    // Match owner against the lineage's `featureName` first (the agent-chosen
+    // name when `kc.id(...)` pinned the op), falling back to `rootFeatureId`
+    // for unpinned ops where the lineage carries no featureName. The owner
+    // segment of a formatted ref defaults to rootFeatureId in that case (see
+    // buildFaceEntity), so the round-trip stays consistent.
+    candidates = candidates.filter((e) => entityHasFeatureNameOrRootId(e, parsed.owner, scene));
   }
   if (labelOrName) {
     candidates = candidates.filter((e) => entityHasLabel(e, labelOrName, scene));
   }
   return candidates;
+}
+
+function entityHasFeatureNameOrRootId(
+  e: ResolvedEntity,
+  owner: string,
+  scene: QueryScene,
+): boolean {
+  if (e.kind !== 'face') return false;
+  const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
+  if (!lineage) return false;
+  return lineage.featureName === owner || lineage.rootFeatureId === owner;
 }
 
 function topoKindToQueryKind(kind: string): QueryKind | null {
