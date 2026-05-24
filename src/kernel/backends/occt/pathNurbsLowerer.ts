@@ -42,10 +42,12 @@
 
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
+import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { solveHermiteG2 } from '../../../modeling/capture/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsSurfaceLowerer';
+import { fromVerb } from '../verb/curveBridge';
 
 /**
  * Plane identifier — matches the planes accepted by `Drawing.sketchOnPlane`.
@@ -178,20 +180,119 @@ function buildHermiteG2Edge(
 }
 
 /**
- * Build a `replicad.Edge` from a Slice D `spline` command. Calls
- * `replicad.makeBSplineApproximation` with the points lifted onto the target
- * plane; tolerance is set to 1e-4 and degree is clamped to cubic (3) to keep
- * the result SVG-exportable and OCCT-friendly.
+ * Build a `replicad.Edge` from a Slice D `spline` command.
+ *
+ * Two paths:
+ *
+ * 1. No tangent constraints (default, backward-compatible): calls
+ *    `replicad.makeBSplineApproximation` with the points lifted onto the
+ *    target plane; tolerance is 1e-4 and degree is clamped to cubic (3) to
+ *    keep the result SVG-exportable and OCCT-friendly.
+ *
+ * 2. V slice — at least one of startTangent / endTangent is set: routes
+ *    through the JS-side `Make.rationalInterpCurve` tangent-constrained
+ *    interpolator (degree 3, chord-length parameterised), then rebuilds the
+ *    resulting curve as an OCCT-backed `Geom_BSplineCurve` via the
+ *    `fromVerb` bridge so the authoritative geometry stays kernel-native.
+ *
+ *    The interpolator expects both tangents (the underlying linear system
+ *    is well-posed only when both endpoint tangent rows are present); when
+ *    the caller supplies only one, the missing tangent is derived from the
+ *    chord between the relevant endpoint and its neighbour. This keeps the
+ *    one-sided-constraint case usable without leaking the upstream
+ *    requirement.
  */
 function buildSplineEdge(
   cmd: Extract<SketchCommand, { kind: 'spline' }>,
   plane: PlaneName,
 ): replicad.Edge {
   const lifted: Vec3[] = cmd.points.map(p => liftCoord(plane, p.x.evaluated, p.y.evaluated));
-  return replicad.makeBSplineApproximation(
-    lifted as unknown as Parameters<typeof replicad.makeBSplineApproximation>[0],
-    { tolerance: 1e-4, degMax: 3, degMin: 3 },
+  if (cmd.startTangent === undefined && cmd.endTangent === undefined) {
+    return replicad.makeBSplineApproximation(
+      lifted as unknown as Parameters<typeof replicad.makeBSplineApproximation>[0],
+      { tolerance: 1e-4, degMax: 3, degMin: 3 },
+    );
+  }
+  // Tangent-constrained path. The 2D tangent direction is lifted onto the
+  // plane via `liftDirection` (no origin translation — directions are
+  // basis-relative).
+  const startTangent2D = cmd.startTangent ?? deriveChordTangent2D(cmd.points, 'start');
+  const endTangent2D = cmd.endTangent ?? deriveChordTangent2D(cmd.points, 'end');
+  const startTangent3D = liftDirection(plane, startTangent2D.x.evaluated, startTangent2D.y.evaluated);
+  const endTangent3D = liftDirection(plane, endTangent2D.x.evaluated, endTangent2D.y.evaluated);
+  // `rationalInterpCurve` does NOT internally normalise tangent magnitude:
+  // larger magnitudes produce more aggressive endpoint excursions. Scale
+  // each tangent to the chord length between the corresponding endpoint and
+  // its neighbour so the constraint magnitude is geometry-sensible
+  // regardless of what units the caller provided.
+  const startChord = vec3Distance(lifted[0], lifted[1]);
+  const endChord = vec3Distance(lifted[lifted.length - 2], lifted[lifted.length - 1]);
+  const startScaled = vec3Scale(vec3Normalise(startTangent3D), Math.max(1e-9, startChord));
+  const endScaled = vec3Scale(vec3Normalise(endTangent3D), Math.max(1e-9, endChord));
+  // `rationalInterpCurve` requires `points.length >= degree + 1`. Clamp the
+  // requested cubic degree down when the waypoint count is too low. Degree
+  // 2 needs ≥ 3 points; degree 1 needs ≥ 2. PathBuilder already rejected
+  // the < 2 case, so this clamp is always safe.
+  const interpDegree = Math.min(3, Math.max(1, lifted.length - 1));
+  const data = nurbsJs.eval.Make.rationalInterpCurve(
+    lifted as unknown as number[][],
+    interpDegree,
+    false,
+    startScaled,
+    endScaled,
   );
+  const built = nurbsJs.geom.NurbsCurve.byKnotsControlPointsWeights(
+    data.degree,
+    data.knots,
+    data.controlPoints.map((row) => [row[0], row[1], row[2]]),
+  );
+  return fromVerb(built);
+}
+
+/**
+ * Lift a 2D direction vector onto the named axis-aligned plane. Mirrors
+ * `liftCoord` but treats the input as a direction (no origin translation —
+ * the plane normal passes through the world origin for XY / XZ / YZ).
+ */
+function liftDirection(plane: PlaneName, x: number, y: number): Vec3 {
+  if (plane === 'XY') return [x, y, 0];
+  if (plane === 'XZ') return [x, 0, y];
+  return [0, x, y];
+}
+
+function vec3Distance(a: Vec3, b: Vec3): number {
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
+function vec3Normalise(v: Vec3): Vec3 {
+  const m = Math.hypot(v[0], v[1], v[2]);
+  if (m < 1e-12) return [0, 0, 0];
+  return [v[0] / m, v[1] / m, v[2] / m];
+}
+
+function vec3Scale(v: Vec3, s: number): Vec3 {
+  return [v[0] * s, v[1] * s, v[2] * s];
+}
+
+/**
+ * Fallback tangent for the one-sided-constraint case: use the chord between
+ * the endpoint and its nearest neighbour. The result is a Param-shaped
+ * 2D direction so it slots into the same lift pipeline as the user-supplied
+ * tangent.
+ */
+function deriveChordTangent2D(
+  points: Array<{ x: { evaluated: number }; y: { evaluated: number } }>,
+  end: 'start' | 'end',
+): { x: { evaluated: number }; y: { evaluated: number } } {
+  if (end === 'start') {
+    const dx = points[1].x.evaluated - points[0].x.evaluated;
+    const dy = points[1].y.evaluated - points[0].y.evaluated;
+    return { x: { evaluated: dx }, y: { evaluated: dy } };
+  }
+  const n = points.length;
+  const dx = points[n - 1].x.evaluated - points[n - 2].x.evaluated;
+  const dy = points[n - 1].y.evaluated - points[n - 2].y.evaluated;
+  return { x: { evaluated: dx }, y: { evaluated: dy } };
 }
 
 /**
