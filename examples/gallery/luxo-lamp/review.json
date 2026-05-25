@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "featureCount": 29,
+  "diagnostics": [],
+  "assembly": "luxo-lamp",
+  "validator": {
+    "status": "solved",
+    "diagnostics": [],
+    "partCount": 4,
+    "jointCount": 3
+  },
+  "poseEnvelope": {
+    "samples": [
+      {
+        "name": "current",
+        "poses": {},
+        "reason": "capture-time/default mate poses"
+      }
+    ],
+    "diagnostics": [],
+    "interferencePairs": [],
+    "connectorPoses": [],
+    "connectorWorkspace": []
+  },
+  "connectorWorkspace": [],
+  "fitness": {
+    "functional": true,
+    "repairMode": "none",
+    "repairDirective": "No repair needed. Preserve the current topology and keep validating with review_cad after changes.",
+    "passedChecks": [
+      "validator-no-errors",
+      "pose-envelope-solved",
+      "pose-envelope-no-interference"
+    ],
+    "blockingReasons": [],
+    "mechanismSummary": {
+      "sampleCount": 1,
+      "interferenceCount": 0,
+      "trackedConnectorCount": 0
+    }
+  },
+  "repairContext": {
+    "blockingReasons": [],
+    "topDiagnostics": [],
+    "preserveInterfaces": [],
+    "designGoal": ""
+  },
+  "rawInterferencePairs": [],
+  "tool": "review_cad",
+  "file": "examples/kinematic/luxo-lamp.kcad.ts"
+}
