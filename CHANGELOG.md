@@ -1,5 +1,86 @@
 # kernelCAD v0.11.0
 
+## Unreleased — borrow-integration follow-ups (conventions clarified)
+
+Documentation cleanup for the two non-bug "discoveries" that surfaced while
+debugging the Luxo lamp:
+
+- **Joint-angle unit convention is now explicit.** `kernelcad-kinematic/SKILL.md`
+  opens with a "Units (read this first)" section stating that ALL joint
+  angles in the kinematic API — `solvedModel({poses})`, `revolute({limitsDeg})`,
+  `checkReachable({seed})`, `checkReachable` result `.pose` — use **degrees
+  for revolute and millimetres for prismatic**, with no degree-vs-radian
+  split anywhere on the user-facing surface. The cookbook
+  `02-reachable-with-seed.kcad.ts` seed values are updated from a
+  copy-paste-friendly-but-misleading `0.3`/`0.2` (which looked like radians
+  but the system interpreted as 0.3°/0.2° ≈ effectively zero) to honest
+  `17`/`11`/`-11` degree values. JSDoc on `ReachableOpts.seed` and the
+  MCP `check_reachable` tool's seed field now both name the unit. No API
+  change — the convention was always degrees; the docs caught up.
+
+- **Part-local frame convention is now explicit.** `kernelcad-assemblies/SKILL.md`
+  already said joint origins live in the parent's local frame; the companion
+  rule — "author each part's geometry in its own part-local frame, where the
+  origin sits at the joint this part attaches to its parent" — is now
+  spelled out alongside, with a worked correct / wrong example. Authoring a
+  part with `.translate(110, 0, 30)` when the shoulder joint already supplies
+  the `(0, 0, 30)` rest offset doubles the offset under any non-zero pose.
+  No code change — the cookbook examples already followed the convention; the
+  docs caught up.
+
+## Unreleased — borrow-integration bug fixes
+
+Caught while building the Luxo lamp demo (2026-05-25) — actual use of the new
+V/Q/kinematic borrows together surfaced two real bugs and one no-repro.
+
+### Fixed — primitives now validate `Editable<number>` inputs
+
+`box`, `cylinder`, and `sphere` previously accepted any value for their
+dimension arguments and silently produced degenerate shapes. The most common
+authoring slip — calling `cylinder({ radius, height })` with an object literal
+instead of the positional `cylinder(h, r)` signature — let the object flow
+through `toParam` and stored `{evaluated: <the object>}` in the feature
+params. The cylinder lowered to a degenerate shape that, when wrapped in an
+`assembly().part()`, recursed into "Maximum call stack size exceeded" during
+the assembly-clone path.
+
+All three primitives now reject non-finite / non-numeric inputs at capture
+time with a clear `feature.invalid-args` diagnostic that names the bad
+argument and points at the correct positional signature. The same guard
+catches `NaN`, `Infinity`, and any value that is neither a finite number nor
+a `ParamRef<number>`. The `kernelcad-nurbs` SKILL.md cookbook snippet was
+also updated — its `cylinder({ radius: 1, height: 5 })` example is now the
+correct `cylinder(5, 1)` positional form.
+
+### Fixed — `solvedModel({poses})` now propagates joint angles to the render
+
+`arm.solvedModel({ shoulder: 90 })` correctly attached the FK-derived
+`worldTransform` to each part record, and STEP/STL exports honoured it, but
+the headless render path (`kernelcad render <file>`) dropped it entirely:
+`DemoPlayerPage`'s per-feature loop rehydrated `fm.transform` via
+`rehydrateFromBridge` and then never applied it to the `THREE.Group` it
+built. The result was that every assembly rendered at its rest pose
+regardless of the pose dict passed to `solvedModel()`.
+
+The fix: apply `fm.transform` to the group's matrix at construction (with
+`matrixAutoUpdate = false`) and compose the bbox centroid offset on top via
+`Matrix4.premultiply` instead of `position.set` (which is decoupled from
+`matrix` when `matrixAutoUpdate` is false and would otherwise silently
+no-op). Verified: a single-joint test arm at `shoulder: 90` now renders
+straight up (was: horizontal rest pose).
+
+A Playwright regression test in `tests/demo_player_smoke.spec.ts` loads a
+feature mesh with a translate-by-7 transform and asserts the KCAD group's
+matrix records the non-zero translation through the centroid recenter.
+
+### No-repro — `variableSweep` + `assembly().part()` render hang
+
+Investigated; could not reproduce on `develop` tip. Three consecutive
+`kernelcad render /tmp/repro-b2-clean.kcad.ts` runs each completed cleanly
+in 9.5–11.5 s. The hang originally observed during the Luxo lamp session
+was almost certainly a zombie-process / stale-build artefact from accumulated
+chromium instances across an extended render iteration loop.
+
 ## Unreleased — V slice: NURBS curve analytics layer
 
 ### Added — `Curve3D.analytics.*` namespace

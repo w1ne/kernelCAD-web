@@ -127,6 +127,12 @@ export interface ReachableOpts {
   readonly target: ReachableTarget;
   readonly preferSolver?: 'analytical' | 'numeric' | 'auto';
   readonly maxIterations?: number;
+  /** Optional warm-start pose for the numeric path. Units match
+   *  `NumericPoses`: **degrees for revolute joints, millimetres for prismatic
+   *  joints** — the same convention as `arm.solvedModel({poses})` and
+   *  `arm.revolute({ limitsDeg })`. Authors porting code from URDF/MoveIt/ROS
+   *  must convert radians → degrees before passing values here. The
+   *  analytical solver ignores the seed and returns its own branch choice. */
   readonly seed?: NumericPoses;
 }
 
