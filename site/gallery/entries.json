@@ -20,9 +20,10 @@
         "revolve",
         "ignore-pairs",
         "interactive-params",
-        "assembly"
+        "assembly",
+        "words-to-geometry"
       ],
-      "featured": true,
+      "featured": false,
       "createdAt": "2026-05-25",
       "appUrl": null
     },
