@@ -356,7 +356,11 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
   });
 
-  it('refreshes mesh but skips review when params relower over SSE', async () => {
+  it('refreshes mesh AND review when params relower over SSE', async () => {
+    // PR #315 / I1: relower MUST re-run review so the StudioShell HUD
+    // (interferences: N) reflects the post-param model. Old behavior
+    // (skipReview: true) made the HUD stale and was the root cause of
+    // "param sliders create colliding models" silently passing.
     window.history.pushState(
       {},
       '',
@@ -409,6 +413,14 @@ describe('GeometryContext latest-intent-wins', () => {
             },
           },
         }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'post-relower review',
+        }),
       } as Response);
 
     render(
@@ -432,16 +444,22 @@ describe('GeometryContext latest-intent-wins', () => {
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
+      await Promise.resolve();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');
     expectFetchSignal(fetchMock, 4);
     expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
-    expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
+    // 5th fetch is the review re-run that updates the HUD interference count.
+    expect(screen.getByTestId('script-review-repair').textContent).toBe('post-relower review');
   });
 
-  it('coalesces relower bursts into one active mesh fetch plus one trailing fetch', async () => {
+  it('coalesces relower bursts into one active mesh+review fetch pair plus one trailing pair', async () => {
+    // PR #315 / I1: relower now fires mesh AND review (to keep the HUD
+    // interference count live). Coalescing semantics unchanged: 3 burst
+    // triggers still collapse to 1 active + 1 trailing — but each step is
+    // now a (mesh, review) pair instead of mesh-only.
     window.history.pushState(
       {},
       '',
@@ -482,7 +500,25 @@ describe('GeometryContext latest-intent-wins', () => {
         }),
       } as Response)
       .mockImplementationOnce(() => firstRelower.promise)
-      .mockImplementationOnce(() => secondRelower.promise);
+      // Review after first relower mesh.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'first relower review',
+        }),
+      } as Response)
+      .mockImplementationOnce(() => secondRelower.promise)
+      // Review after trailing relower mesh.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'trailing relower review',
+        }),
+      } as Response);
 
     render(
       <GeometryProvider code={'const ignored = 1;'}>
@@ -507,6 +543,8 @@ describe('GeometryContext latest-intent-wins', () => {
       await Promise.resolve();
     });
 
+    // Burst of 3 still collapses to 1 in-flight mesh fetch — review hasn't
+    // fired yet because the mesh promise is still pending.
     expect(fetchMock).toHaveBeenCalledTimes(4);
 
     await act(async () => {
@@ -528,9 +566,12 @@ describe('GeometryContext latest-intent-wins', () => {
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
+      await Promise.resolve();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    // After the first mesh resolves: review fires (5) and the queued
+    // trailing mesh starts (6).
+    expect(fetchMock).toHaveBeenCalledTimes(6);
 
     await act(async () => {
       secondRelower.resolve({
@@ -550,9 +591,11 @@ describe('GeometryContext latest-intent-wins', () => {
       } as Response);
       await Promise.resolve();
       await Promise.resolve();
+      await Promise.resolve();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    // After the trailing mesh resolves: trailing review fires (7).
+    expect(fetchMock).toHaveBeenCalledTimes(7);
     expect(screen.getByTestId('script-param-name').textContent).toBe('width');
     expect(screen.getByTestId('execution-count').textContent).toBe('3');
   });

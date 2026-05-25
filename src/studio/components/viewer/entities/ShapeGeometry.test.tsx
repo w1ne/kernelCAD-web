@@ -6,7 +6,7 @@ import type { FaceGeometry, GeometryResult } from '../../../../shared/worker/geo
 
 let FaceSelectionOverlay: typeof import('./ShapeGeometry').FaceSelectionOverlay;
 let GhostShape: typeof import('./ShapeGeometry').GhostShape;
-let buildShapeMaterial: typeof import('./ShapeGeometry').buildShapeMaterial;
+let buildShapeMaterial: typeof import('./buildShapeMaterial').buildShapeMaterial;
 
 const faceA: FaceGeometry = {
     vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
@@ -25,7 +25,8 @@ const faceB: FaceGeometry = {
 describe('ShapeGeometry disposable overlays', () => {
     beforeAll(async () => {
         vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-        ({ FaceSelectionOverlay, GhostShape, buildShapeMaterial } = await import('./ShapeGeometry'));
+        ({ FaceSelectionOverlay, GhostShape } = await import('./ShapeGeometry'));
+        ({ buildShapeMaterial } = await import('./buildShapeMaterial'));
     });
 
     beforeEach(() => {
@@ -66,7 +67,7 @@ describe('ShapeGeometry disposable overlays', () => {
 
 describe('buildShapeMaterial — viewMode3D produces visually-distinct materials', () => {
     beforeAll(async () => {
-        ({ buildShapeMaterial } = await import('./ShapeGeometry'));
+        ({ buildShapeMaterial } = await import('./buildShapeMaterial'));
     });
 
     // Regression test for the toolbar render-mode bug: clicking Wireframe / Shaded /

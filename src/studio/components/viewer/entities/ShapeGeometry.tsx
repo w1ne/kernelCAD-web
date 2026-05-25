@@ -8,7 +8,7 @@ import { useUI } from "../../../context/UIContext";
 import { CAD_COLORS, CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
-import { buildMaterialFromPBR } from "../../demoPlayer/buildMaterialFromPBR";
+import { buildShapeMaterial } from "./buildShapeMaterial";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 
 interface ShapeProps {
@@ -25,39 +25,6 @@ function bufferGeometryFromFace(face: FaceGeometry): THREE.BufferGeometry {
     geometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
     geometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
     return geometry;
-}
-
-/**
- * Build the THREE material for a shape given the geometry record, selection state,
- * resolved fallback color, and the active 3D view mode.
- *
- * Exported so unit tests can verify the (viewMode3D → material flags) mapping without
- * mounting an R3F Canvas. The three modes are:
- *  - `'shaded'`             — smooth shading, no wireframe, no edge overlay
- *  - `'wireframe'`          — `material.wireframe = true`, surfaces drawn as lines
- *  - `'shadedWithEdges'`    — flat shading + black edge overlay rendered separately
- */
-export function buildShapeMaterial(
-    pbr: GeometryResult['material'],
-    isSelected: boolean,
-    color: number | string,
-    viewMode3D: ViewMode3D,
-): THREE.Material {
-    const isWireframe = viewMode3D === 'wireframe';
-    const flatShading = viewMode3D === 'shadedWithEdges';
-    if (pbr && !isSelected) {
-        const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
-        pbrMaterial.flatShading = flatShading;
-        pbrMaterial.wireframe = isWireframe;
-        pbrMaterial.side = THREE.DoubleSide;
-        pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
-        return pbrMaterial;
-    }
-    return new THREE.MeshLambertMaterial({
-        color,
-        flatShading,
-        wireframe: isWireframe,
-    });
 }
 
 function GhostFaceMesh({ face }: { face: FaceGeometry }) {
