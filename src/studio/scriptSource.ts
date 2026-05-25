@@ -1,5 +1,6 @@
 import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
+import type { ScriptReviewSummary } from './context/GeometryContext';
 
 export async function loadStudioScriptSource(script: string): Promise<string> {
   const response = await fetch(`/__kernelcad/source?script=${encodeURIComponent(script)}`);
@@ -31,6 +32,10 @@ export interface BackendMeshPayload {
   featureRecords?: unknown[];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
+  /** Deterministic review baked at build time (precompute) or returned by the
+   *  server mesh endpoint. Drives the adaptive scene tree + Validity tab on the
+   *  hosted deploy, which has no separate `/__kernelcad/review` fetch. */
+  review?: ScriptReviewSummary;
 }
 
 /**

@@ -18,7 +18,16 @@ export interface ExecutionRecord {
 
 export interface ScriptReviewSummary {
     ok: boolean;
-    diagnostics?: Array<{ code?: string; severity?: string; message?: string; hint?: string }>;
+    diagnostics?: Array<{
+        code?: string;
+        severity?: string;
+        message?: string;
+        hint?: string;
+        partName?: string;
+        mateName?: string;
+        partA?: string;
+        partB?: string;
+    }>;
     fitness?: {
         functional?: boolean;
         repairMode?: string;
@@ -497,6 +506,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     setGeometryTransformOverrides({});
                     setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
                     setScriptParams(Object.values(payload.params ?? {}));
+                    setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
                     setSketchesGeometries([]);
                     setPreviewGeometries([]);
                     setError(null);
@@ -663,6 +673,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setGeometryTransformOverrides({});
                 setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
                 setScriptParams(Object.values(payload.params ?? {}));
+                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
                 setSketchesGeometries([]);
                 setPreviewGeometries([]);
                 setError(null);
