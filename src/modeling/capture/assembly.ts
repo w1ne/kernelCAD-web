@@ -416,6 +416,14 @@ export class Assembly {
   private readonly virtualJoints: VirtualJointRecord[] = [];
   private readonly groupStates: GroupStateRecord[] = [];
   private readonly disabledCollisions: DisabledCollisionRecord[] = [];
+  /**
+   * Latest known-acceptable interference pair list, as captured by the most
+   * recent `solvedModel({ ignore: [...] })` call. Read by external review
+   * surfaces (`reviewCadTool`) so the validator they run respects the same
+   * silencing the script's `solvedModel` did. The raw detection output stays
+   * unfiltered — only the validator's diagnostic emission honors this list.
+   */
+  private ignoreInterferenceList: ReadonlyArray<readonly [string, string]> = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -1263,6 +1271,18 @@ export class Assembly {
     return this.disabledCollisions;
   }
 
+  /**
+   * Last `ignore` list passed to `solvedModel`. External review surfaces
+   * (`reviewCadTool`) read this so the validator they re-run honors the same
+   * known-acceptable contacts the script silenced. Empty when no
+   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `__parts()` underscore-prefixed convention; not part of the agent-facing
+   * surface.
+   */
+  __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
+    return this.ignoreInterferenceList;
+  }
+
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
     return this.mechanicalJointIntents;
   }
@@ -1583,6 +1603,21 @@ export class Assembly {
        * composes Gate 3 with the v0.7.5 grounding gates.
        */
       externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
+      /**
+       * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
+       * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
+       * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
+       * detection output still surfaces them on the status bar), but FILTERED
+       * out of the validator's `assembly.interference.overlap` diagnostic
+       * stream — they don't throw under `validate: 'error'` and don't appear
+       * in `scene.warnings` under `validate: 'warn'`.
+       *
+       * This is the granular alternative to `validate: 'off'`. Use it when a
+       * specific known-acceptable contact (e.g. a knuckle joint where two arm
+       * parts must touch by design) should not block the validator while
+       * still letting the rest of the validation gate run.
+       */
+      ignore?: ReadonlyArray<readonly [string, string]>;
     },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
@@ -1592,6 +1627,19 @@ export class Assembly {
         undefined,
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
+    }
+    // Record the ignore list on the Assembly so external review surfaces
+    // (reviewCadTool) re-run validation with the same known-acceptable
+    // contacts the script silenced. The raw detection output stays
+    // unfiltered so HUD-style consumers can show the user every contact.
+    //
+    // Only OVERWRITE when an explicit `ignore` was passed. Internal callers
+    // like `detectInterferencesForPoses` re-invoke `solvedModel` without
+    // opts.ignore to read a freshly-posed scene; nuking the list there would
+    // wipe the agent-authored silencing every time the HUD re-detects on a
+    // slider drag.
+    if (opts?.ignore !== undefined) {
+      this.ignoreInterferenceList = opts.ignore;
     }
     // v0.7.4 — validate externalLoads keys at capture entry so agent typos
     // surface immediately, not silently. Per spec open-question 5 resolution
@@ -1724,6 +1772,7 @@ export class Assembly {
         undefined,
         opts?.externalLoads,
         envelopeResult?.connectorWorkspace,
+        opts?.ignore,
       );
       const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
         envelopeResult ? envelopeResult.diagnostics : [];

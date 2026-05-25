@@ -81,6 +81,42 @@ describe('useRecomputeResult — Slice 1.2 data wiring', () => {
         expect(result.current.recomputeMs).toBe(0);
     });
 
+    it('forwards rawInterferencePairs from scriptReview unchanged', async () => {
+        // The HUD reads `.length` of this directly. It's the RAW detection
+        // output — populated regardless of whether the script's
+        // `solvedModel` set an `ignore` list. Validator filtering happens
+        // upstream and lands on `validity.diagnostics`, NOT here.
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = {
+            ok: false,
+            diagnostics: [],
+            rawInterferencePairs: [
+                { a: 'base', b: 'lower-arm', volumeMm3: 12 },
+                { a: 'lower-arm', b: 'upper-arm', volumeMm3: 14 },
+            ],
+        };
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.rawInterferencePairs).toHaveLength(2);
+        expect(result.current.rawInterferencePairs[0]).toEqual({
+            a: 'base',
+            b: 'lower-arm',
+            volumeMm3: 12,
+        });
+    });
+
+    it('rawInterferencePairs defaults to empty when scriptReview is null', async () => {
+        workbenchValue.featureRecords = [];
+        workbenchValue.scriptReview = null;
+
+        const { useRecomputeResult } = await import('../hooks/useRecomputeResult');
+        const { result } = renderHook(() => useRecomputeResult());
+
+        expect(result.current.rawInterferencePairs).toEqual([]);
+    });
+
     it('exposes updateParam from the workbench so ParamsTab can drive live edits', async () => {
         // Slice 2E.bridge: WorkbenchContext owns the sessionToken + SSE stream
         // and exposes `updateParam(edits)` that POSTs to /__kernelcad/params.

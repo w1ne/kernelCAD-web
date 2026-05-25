@@ -8,7 +8,7 @@ import { useUI } from "../../../context/UIContext";
 import { CAD_COLORS, CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
-import { buildMaterialFromPBR } from "../../demoPlayer/buildMaterialFromPBR";
+import { buildShapeMaterial } from "./buildShapeMaterial";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 
 interface ShapeProps {
@@ -151,19 +151,10 @@ export function ConsolidatedShape({
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
-    const material = useMemo(() => {
-        if (geometry.material && !isSelected) {
-            const pbrMaterial = buildMaterialFromPBR(geometry.material) as THREE.MeshPhysicalMaterial;
-            pbrMaterial.flatShading = viewMode3D === 'shadedWithEdges';
-            pbrMaterial.side = THREE.DoubleSide;
-            pbrMaterial.depthWrite = (geometry.material.opacity ?? 1) >= 1;
-            return pbrMaterial;
-        }
-        return new THREE.MeshLambertMaterial({
-            color,
-            flatShading: viewMode3D === 'shadedWithEdges'
-        });
-    }, [geometry.material, isSelected, color, viewMode3D]);
+    const material = useMemo(
+        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D),
+        [geometry.material, isSelected, color, viewMode3D],
+    );
 
     if (!mergedGeometry) return null;
 
