@@ -45,6 +45,10 @@ export interface ListApiOutput {
   scenePartProperties?: ApiEntry[];
   /** Methods on the `Surface` peer returned by `nurbsSurface()` / `surfaceFromCurves()`. */
   surfaceMethods?: ApiEntry[];
+  /** Flat synchronous methods on the `Curve3D` peer returned by `nurbsCurve()` / `spline3d()` / `hermiteG2()`. */
+  curve3dMethods?: ApiEntry[];
+  /** Methods on the `.analytics` namespace of every `Curve3D` (closest-point, arc-length division, derivatives, tessellation, intersection). */
+  curve3dAnalyticsMethods?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
@@ -182,6 +186,95 @@ export const SURFACE_METHODS: ApiEntry[] = [
   },
 ];
 
+/**
+ * Methods on the `Curve3D` peer returned by `nurbsCurve(...)`,
+ * `spline3d(...)`, and `hermiteG2(...)`. These are the flat synchronous
+ * evaluators on the proxy itself; the `.analytics` namespace is advertised
+ * separately via `CURVE3D_ANALYTICS_METHODS`.
+ *
+ * Drift-sentinel contract: adding a method to `Curve3DProxy` REQUIRES
+ * updating this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const CURVE3D_METHODS: ApiEntry[] = [
+  {
+    name: 'sample',
+    signature: '(n: number) => [number, number, number][]',
+    description: 'Sample `n + 1` evenly-spaced points along the curve in the public `[0, 1]` parameter domain. Materializes the OCCT edge on first call via the lazy evaluator and reuses the cached evaluator on subsequent calls.',
+  },
+  {
+    name: 'pointAt',
+    signature: '(t: number) => [number, number, number]',
+    description: 'World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). Synchronous; backed by the cached OCCT evaluator.',
+  },
+  {
+    name: 'tangentAt',
+    signature: '(t: number) => [number, number, number]',
+    description: 'Unit tangent vector at parameter `t ∈ [0, 1]` (clamped). Synchronous; backed by the cached OCCT evaluator.',
+  },
+  {
+    name: 'length',
+    signature: '() => number',
+    description: 'Total arc length in mm. Synchronous; computed once and cached on the evaluator.',
+  },
+  {
+    name: 'domain',
+    signature: '() => [number, number]',
+    description: 'Parametric domain. Always `[0, 1]` — the evaluator normalizes the OCCT first/last knot range internally.',
+  },
+];
+
+/**
+ * Methods on the `.analytics` namespace exposed on every `Curve3D` proxy.
+ * Returns computed-query data (Vec3, numbers, sample records) without a
+ * kernel round-trip — authoritative geometry stays in OCCT; analytics
+ * delegates to the vendored NURBS JS module via the curveBridge cache.
+ *
+ * Drift-sentinel contract: adding a method to `Curve3DAnalyticsImpl`
+ * (and the `Curve3DAnalytics` interface in `curveProxy.ts`) REQUIRES
+ * updating this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const CURVE3D_ANALYTICS_METHODS: ApiEntry[] = [
+  {
+    name: 'closestPoint',
+    signature: '(pt: Vec3, opts?: { tolerance?: number }) => Vec3',
+    description: 'World-space closest point on the curve to the query `pt` (Newton-Raphson). Default tolerance 1e-3 mm. Throws `feature.curve3d.analytics.closest-point-no-converge` if the solver returns non-finite coordinates.',
+  },
+  {
+    name: 'closestParam',
+    signature: '(pt: Vec3, opts?: { tolerance?: number }) => number',
+    description: 'Parametric coordinate `t ∈ [0, 1]` of the closest point on the curve to `pt`. Maps the verb intrinsic knot range into the public `[0, 1]` domain. Default tolerance 1e-3 mm.',
+  },
+  {
+    name: 'divideByEqualArcLength',
+    signature: '(n: number) => CurveLengthSample[]',
+    description: 'Divide the curve into `n` equal-arc-length segments; returns `n + 1` `{ t, pt, arcLength }` samples covering both endpoints. `n` must be a positive integer; degenerate curves (length < 1e-9 mm) raise `feature.curve3d.analytics.degenerate-arclength`.',
+  },
+  {
+    name: 'divideByArcLength',
+    signature: '(arcLength: number) => CurveLengthSample[]',
+    description: 'Sample the curve every `arcLength` mm starting from `t = 0`. Returns `{ t, pt, arcLength }` records. `arcLength` must be a positive finite number strictly less than `length()`; out-of-range inputs raise `feature.curve3d.analytics.degenerate-arclength`.',
+  },
+  {
+    name: 'derivatives',
+    signature: '(t: number, numDerivs?: number) => Vec3[]',
+    description: 'Evaluate the curve and its first `numDerivs` derivatives at `t ∈ [0, 1]`. `numDerivs` defaults to 2 (point + tangent + curvature direction) and must be a positive integer `<= degree`; higher orders raise `feature.curve3d.analytics.derivatives-out-of-range`.',
+  },
+  {
+    name: 'tessellate',
+    signature: '(opts?: { tolerance?: number }) => Vec3[]',
+    description: 'Adaptive polyline approximation of the curve at the given tolerance (mm). Default tolerance 0.05 mm (matches the K1 mesh-discretisation gate). Output is deterministic — the vendored algorithm calls `Math.random` for midpoint perturbation; this method seeds a mulberry32 stream so consecutive calls produce bit-identical polylines.',
+  },
+  {
+    name: 'intersect',
+    signature: '(other: Curve3D | Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] | CurveSurfaceIntersection[]',
+    description: 'Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). Default tolerance 1e-3 mm. Deterministic — the curve bounding-box tree calls `Math.random`; this method seeds a mulberry32 stream for the duration of the call. Curve-surface overload is supported only for `nurbsSurface()`-authored surfaces today; unsupported surface kinds raise `feature.curve3d.analytics.intersect-kernel-failed`.',
+  },
+];
+
 export const SCENE_PART_PROPERTIES: ApiEntry[] = [
   { name: 'name', signature: 'string', description: 'Assembly-unique part name from `assembly.part(name, ...)`.' },
   { name: 'shape', signature: 'Shape', description: 'LOCAL-frame shape — untransformed. Apply `worldTransform` to render in world frame.' },
@@ -227,6 +320,8 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     sceneMethods: SCENE_METHODS,
     scenePartProperties: SCENE_PART_PROPERTIES,
     surfaceMethods: SURFACE_METHODS,
+    curve3dMethods: CURVE3D_METHODS,
+    curve3dAnalyticsMethods: CURVE3D_ANALYTICS_METHODS,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,

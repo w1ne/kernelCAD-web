@@ -438,7 +438,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_path_spline',
       description:
-        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Optional `startTangent` / `endTangent` are 2D direction vectors `[x, y]` that constrain the curve's first-derivative direction at the first and last waypoint (magnitude is normalised internally — `[1, 0]` and `[100, 0]` produce the same curve). When either tangent is set the underlying lowerer dispatches through a tangent-constrained interpolator; when both are omitted the existing fast approximation path is used. Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -451,6 +451,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             minItems: 2,
           },
           tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          startTangent: {
+            type: 'array',
+            description: 'Optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.',
+            items: { type: 'number' },
+            minItems: 2,
+            maxItems: 2,
+          },
+          endTangent: {
+            type: 'array',
+            description: 'Optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.',
+            items: { type: 'number' },
+            minItems: 2,
+            maxItems: 2,
+          },
           binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
         },
         required: ['code', 'chain_anchor', 'points'],

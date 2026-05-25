@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 174 codes', () => {
+  it('catalogue has exactly 185 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -92,22 +92,22 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       SRDF (2): acm-sparse-sampling, planning-group-missing
     //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
     //                 dangling-link-ref
+    //  +  1 V Task V1 verb-nurbs bridge (feature.nurbs.bridge-conversion-failed)
+    //  +  5 V Task V2 Curve3D.analytics namespace (degenerate-arclength /
+    //       closest-point-no-converge / derivatives-out-of-range /
+    //       tessellation-tolerance-invalid / kernel-failed)
+    //  +  2 V Task V3 Curve3D.analytics.intersect (intersect-kernel-failed /
+    //       intersect-no-intersection)
+    //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
+    //       tangent-on-2d-only)
     //  +  7 Slice Q (Query DSL) — Q3 evaluator codes (empty / over-determined /
     //       evaluated-too-early / unknown-id / unknown-label / id-hierarchy-
-    //       clash / unsupported-entity-type). The remaining 4 v1 codes ship
-    //       in Q4 / Q5 / Q7 alongside their evaluator entry points; the
-    //       reactive-update code was demoted to v2 per consolidated review F8.
-    //  +  1 Slice Q4 — composition-strict-failure (single named wrapper per
-    //       D0.16 (c); strict-mode set-algebra emits this wrapper code in
-    //       place of re-throwing the inner sub-query diagnostic).
-    //  +  1 Slice Q5 — type-mismatch (D0.7 (c) runtime narrowing fallback
-    //       for Queries whose phantom marker was erased crossing a JSON-AST
-    //       boundary; consumers re-narrow via assertQueryKind).
-    //  +  1 Slice Q7 — invalid-syntax (the strings-as-sugar dispatcher
-    //       diagnostic; fired when topology input matches neither
-    //       @kc[<owner>/<kind>/<name>] nor @kcq[<expr>] nor JSON-AST).
-    // Net catalogue = 157 - 3 + 11 + 7 + 1 + 1 + 1 = 175.
-    expect(catalogue.size).toBe(175);
+    //       clash / unsupported-entity-type)
+    //  +  1 Slice Q4 — composition-strict-failure
+    //  +  1 Slice Q5 — type-mismatch (D0.7 (c) runtime narrowing)
+    //  +  1 Slice Q7 — invalid-syntax (strings-as-sugar dispatcher)
+    // Net catalogue = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 = 185.
+    expect(catalogue.size).toBe(185);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

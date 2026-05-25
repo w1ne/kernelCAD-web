@@ -1,8 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
     plugins: [react()],
+    resolve: {
+        alias: {
+            'verb-nurbs': fileURLToPath(
+                new URL('./vendor/verb-nurbs/build/verb.es.js', import.meta.url),
+            ),
+        },
+    },
     test: {
         environment: 'node', // Default to node, use inline comments for jsdom
         globals: false,

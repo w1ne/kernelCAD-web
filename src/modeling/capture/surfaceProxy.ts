@@ -29,6 +29,16 @@ export class SurfaceProxy {
   }
 
   /**
+   * V slice — internal accessor used by the JS-side surface bridge to read
+   * the session's captured SurfaceRecord (degree / knots / controls / weights
+   * for `nurbsSurface`-kind surfaces). NOT part of the public agent surface;
+   * intentionally underscored to keep `list_api` clean.
+   */
+  __getRecord(): import('../../shared/intent/surfaceRecord').SurfaceRecord | undefined {
+    return this.session.getSurfaceRecord(this.id);
+  }
+
+  /**
    * Thicken this surface by `t` mm (offset along the surface normal) and
    * return the resulting closed `Shape`. Lowers via
    * `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`.

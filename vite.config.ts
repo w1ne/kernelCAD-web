@@ -374,6 +374,13 @@ export default defineConfig(({ command }) => ({
   worker: {
     format: 'es',
   },
+  resolve: {
+    alias: {
+      'verb-nurbs': fileURLToPath(
+        new URL('./vendor/verb-nurbs/build/verb.es.js', import.meta.url),
+      ),
+    },
+  },
   server: {
     watch: {
       ignored: [

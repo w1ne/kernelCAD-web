@@ -467,6 +467,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'A NURBS surface degree is incompatible with its control-net dimensions.',
   },
+  'feature.nurbs.bridge-conversion-failed': {
+    hintTemplate:
+      'nurbs.bridge: JS→kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Bridge could not reconstruct a Geom_BSplineCurve from the analytics-side NURBS data; the kernel rejected the knot vector as ill-formed.',
+  },
   // Pattern (2) — W2.1
   'feature.pattern.source-not-found': {
     hintTemplate:
@@ -1057,6 +1065,67 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'nurbsCurve was authored with closed=true but the first and last control points are not coincident.',
   },
+  // V slice — Curve3D analytics (JS-side computed-query layer).
+  'feature.curve3d.analytics.degenerate-arclength': {
+    hintTemplate:
+      'Curve3D.analytics.divideBy*: requested n or arcLength is out of range. Pass a positive integer for n (or a positive arcLength less than the curve total length()).',
+    nextAction: { kind: 'fix-arg', field: 'n' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'divideByEqualArcLength or divideByArcLength received an invalid n / arcLength input, or the curve is degenerate (length < 1e-9 mm).',
+  },
+  'feature.curve3d.analytics.closest-point-no-converge': {
+    hintTemplate:
+      'Curve3D.analytics.closestPoint: solver did not converge to tolerance after the maximum iterations. The curve may be degenerate or the query point may be far outside the curve domain. Sample via .tessellate() and pick the nearest polyline vertex as a coarse fallback; or loosen tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'closestPoint / closestParam Newton-Raphson did not converge within tolerance.',
+  },
+  'feature.curve3d.analytics.derivatives-out-of-range': {
+    hintTemplate:
+      'Curve3D.analytics.derivatives: requested derivative order exceeds the curve degree; derivatives above order=degree are zero by construction. Lower numDerivs to <= degree (typically 1 for tangent, 2 for curvature).',
+    nextAction: { kind: 'fix-arg', field: 'numDerivs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'derivatives() called with numDerivs > curve.degree.',
+  },
+  'feature.curve3d.analytics.tessellation-tolerance-invalid': {
+    hintTemplate:
+      'Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01–0.5 mm. Export tessellation uses the kernel mesher independently.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'tessellate() called with tolerance <= 0 or non-finite.',
+  },
+  'feature.curve3d.analytics.kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics: solver threw on this curve (NaN propagation or degenerate input). Inspect the curve via .sample(10) and .length(); if the curve is degenerate (length ~ 0, control points coincident), re-author it. If the curve is valid, file an issue with the .kcad.ts repro.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A non-intersect analytics method (closestPoint, divide*, derivatives, tessellate) raised an internal solver error.',
+  },
+  // V slice — Task V3: curve-curve and curve-surface geometric intersection
+  // on the analytics namespace (instance method, NOT a kc.q.* set-theoretic
+  // verb; see spec §3.2). intersect-no-intersection rides at info severity
+  // because the no-hit case is data — the call returns [] rather than throws.
+  'feature.curve3d.analytics.intersect-kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() — Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Curve-curve or curve-surface geometric intersection solver raised an error, or the surface operand kind is not supported by the JS-side intersect path.',
+  },
+  'feature.curve3d.analytics.intersect-no-intersection': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: no intersection found within tolerance (operands are skew or non-intersecting at this tolerance). If you expect an intersection, loosen tolerance and re-run; check operand bounding boxes via .sample(10) to verify spatial proximity.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'intersect(other) returned zero hits within the requested tolerance; surfaced as a catalog entry rather than thrown so callers can treat empty results as data.',
+  },
   // NURBS Slice B — variableSweep PipeShell validation.
   'feature.variable-sweep.sections-out-of-order': {
     hintTemplate:
@@ -1180,6 +1249,23 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'path().spline received fewer than 2 distinct finite waypoints.',
+  },
+  // V slice Task V4 (2) — path().spline tangent extension.
+  'feature.path.spline.tangent-zero-magnitude': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent has magnitude < 1e-9 (zero-magnitude tangents are undefined). Pass a non-zero 2D direction vector; magnitude is normalised internally, [1, 0] and [100, 0] produce the same curve.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().spline received a startTangent or endTangent with magnitude below 1e-9; the curve fit cannot use a zero-direction constraint.',
+  },
+  'feature.path.spline.tangent-on-2d-only': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent must be a 2D [x, y] tuple; got a 3-element vector. The z component is ignored. For 3D NURBS curves with tangent control, use nurbsCurve(controlPoints, opts) and compose hermiteG2 for endpoint G2 instead.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A 3-element tangent was passed to the 2D path().spline extension; only the x/y components are used.',
   },
   'feature.path.nurbs-segment.degenerate-controls': {
     hintTemplate:
