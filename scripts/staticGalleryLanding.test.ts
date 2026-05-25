@@ -43,12 +43,13 @@ describe('static gallery landing page', () => {
     expect(stackBlock).toContain('href="/app/connect"');
     expect(stackBlock).toContain('Use with Claude Desktop');
 
-    // Free-tier caption sits near the install stack so the Claude Desktop CTA
-    // links to a page whose marketing matches what the hosted gateway delivers:
-    // 3 LLM-generated parts/month, unlimited introspection + review.
+    // Caption sits near the install stack so the Claude Desktop CTA links to a
+    // page whose marketing matches what the hosted gateway delivers: bringing
+    // your own Claude (Path A) is uncapped — generation, introspection, and
+    // review all run free. Only public hosting and hosted agents are paid.
     expect(html).toContain('id="claude-desktop-note"');
-    expect(html).toContain('3 LLM-generated parts per month');
-    expect(html).toContain('Introspection and review tools are unlimited');
+    expect(html).toContain('generation is unlimited');
+    expect(html).toContain('modeling, introspection, and review tools all run free');
   });
 
   it('documents the same full marketing build command used by deploy', () => {

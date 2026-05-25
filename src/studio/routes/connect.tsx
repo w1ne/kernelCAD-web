@@ -52,8 +52,10 @@ function ConnectPage() {
               Connect kernelCAD to Claude Desktop
             </h1>
             <p className="text-ink-soft text-sm mt-2">
-              Sign in to generate a hosted MCP token. Free tier: 3 LLM-generated
-              parts per month. Introspection and review tools are unlimited.
+              Sign in to generate a hosted MCP token. Connect your own Claude
+              and generation is unlimited — modeling, introspection, and review
+              tools all run free. Paid plans cover only public project hosting
+              and kernelCAD's own hosted agents.
             </p>
             <div className="mt-6 flex justify-center">
               <SignInButton redirectTo={`${window.location.origin}/connect`} />

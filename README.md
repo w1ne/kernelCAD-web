@@ -128,8 +128,10 @@ generated `kernelcad mcp --cloud --token <…>` snippet. The hosted surface adds
 `generate_kcad_from_prompt` (turn a natural-language brief into a `.kcad.ts`
 source) on top of the introspection and review tools, and serves the
 `kernelcad-authoring` skill as an MCP resource so Claude Desktop loads it
-automatically on connect. Free tier: 3 LLM-generated parts per month;
-introspection and review tools are unlimited.
+automatically on connect. Connecting your own Claude is unlimited — modeling,
+introspection, and review tools all run free, since your Claude bears the LLM
+cost. Paid plans cover only public project hosting and kernelCAD's own hosted
+agents.
 
 > A one-shot `kernelcad install --claude-desktop` command that edits this
 > config for you is on the next slice — until then the snippet above is the
