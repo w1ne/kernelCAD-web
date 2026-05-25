@@ -114,27 +114,39 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     // sha256 of the exact source bytes served at source.kcad.ts — the same
     // digest the browser computes via Web Crypto in scriptSource.meshSourceHosted.
     if (entry.source === 'curated') {
-      const sourceText = readFileSync(srcScript, 'utf8');
-      const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
-      const loaded = await loadScriptFeatures(srcScript);
-      const meshing = await meshFeaturesPerFeature(
-        loaded.features.map((f) => f.record),
-        loaded.paramTable,
-        loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
-      );
-      if (meshing.failedFeatureIds.length > 0) {
-        throw new Error(
-          `entry ${entry.slug}: ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
+      // Non-fatal: a model that fails to precompute simply won't have a static
+      // mesh file. The hosted Studio then falls back to its backend (or shows
+      // a clear error for that one model) — far better than failing the entire
+      // marketing deploy over one bad source. exportGlb above already gates on
+      // the source meshing, so this rarely triggers.
+      try {
+        const sourceText = readFileSync(srcScript, 'utf8');
+        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+        const loaded = await loadScriptFeatures(srcScript);
+        const meshing = await meshFeaturesPerFeature(
+          loaded.features.map((f) => f.record),
+          loaded.paramTable,
+          loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
+        );
+        if (meshing.failedFeatureIds.length > 0) {
+          console.warn(
+            `build-gallery: ${entry.slug} precompute skipped — ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
+          );
+        } else {
+          const bridgePayload = {
+            source: sourceText,
+            features: meshing.features.map(serializeForBridge),
+            featureRecords: loaded.features.map((f) => f.record),
+            bounds: meshing.bounds,
+            params: loaded.paramTable.serialize(),
+          };
+          writeFileSync(path.join(meshOutDir, `${sha}.json`), JSON.stringify(bridgePayload));
+        }
+      } catch (err) {
+        console.warn(
+          `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
         );
       }
-      const bridgePayload = {
-        source: sourceText,
-        features: meshing.features.map(serializeForBridge),
-        featureRecords: loaded.features.map((f) => f.record),
-        bounds: meshing.bounds,
-        params: loaded.paramTable.serialize(),
-      };
-      writeFileSync(path.join(meshOutDir, `${sha}.json`), JSON.stringify(bridgePayload));
     }
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
