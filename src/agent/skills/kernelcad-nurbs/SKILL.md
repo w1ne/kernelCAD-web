@@ -236,7 +236,7 @@ const rail = spline3d([
 ]);
 const slots = rail.analytics.divideByEqualArcLength(8);
 for (const { pt } of slots) {
-  body = body.cut(cylinder({ radius: 1, height: 5 }).translate(pt));
+  body = body.cut(cylinder(5, 1).translate(pt));
 }
 ```
 
