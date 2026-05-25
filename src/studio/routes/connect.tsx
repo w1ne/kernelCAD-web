@@ -60,6 +60,11 @@ function ConnectPage() {
             <div className="mt-6 flex justify-center">
               <SignInButton redirectTo={`${window.location.origin}/connect`} />
             </div>
+            <p className="text-ink-faint text-xs mt-4">
+              Power user? Skip the hosted kernel and run it locally — no account,
+              no token:{' '}
+              <code className="font-mono text-ink-soft">npx kernelcad mcp</code>
+            </p>
           </div>
         </div>
       </main>
