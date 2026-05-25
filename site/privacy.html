@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="kernelCAD privacy policy — what we collect, how we use it, and the third parties involved." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>kernelCAD — Privacy Policy</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal li { margin: 0.35rem 0; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective: 2026-05-25</p>
+
+      <p>This policy explains what data kernelCAD ("we", "us") collects when you use the kernelCAD website (<code>kernelcad.com</code>), the hosted Studio (<code>app.kernelcad.com</code>), the hosted MCP server (<code>mcp.kernelcad.com</code>), and the <code>kernelcad</code> tooling — and how we use it.</p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li><strong>Account &amp; identity.</strong> When you sign in, we authenticate you through Google via Supabase Auth and store your email address and account identifier.</li>
+        <li><strong>Usage &amp; generated content.</strong> CAD models you generate with the built-in hosted agent — your prompt and the resulting <code>.kcad.ts</code> source — are stored so we can show your history and enforce free-tier limits.</li>
+        <li><strong>Billing.</strong> If you subscribe, payment is processed by Stripe. We never receive or store your card details; we store only your subscription status.</li>
+        <li><strong>Analytics.</strong> We use Cloudflare Web Analytics for aggregate visitor counts — no cookies, no IP storage.</li>
+      </ul>
+
+      <h2>Bring-your-own-Claude (MCP)</h2>
+      <p>When you connect your own Claude (or another agent) to <code>mcp.kernelcad.com/mcp</code>, your prompts are processed by <strong>your</strong> AI provider (e.g. Anthropic) — not by us. We receive only the resulting tool calls needed to run modeling, introspection, and review, and we do not store your conversation. Connecting your own agent requires only a sign-in to authorize access to your account.</p>
+
+      <h2>Built-in hosted agent</h2>
+      <p>If you use the built-in hosted "generate" capability, the prompt you submit is sent to our LLM provider (DeepInfra, running open models) to produce CAD source. We do not sell your prompts and do not use them to train our own models.</p>
+
+      <h2>How we use your data</h2>
+      <ul>
+        <li>To provide and operate the service (authentication, generation, exports, project storage).</li>
+        <li>To enforce free-tier quotas and process subscriptions.</li>
+        <li>To respond to support requests and improve the product.</li>
+      </ul>
+
+      <h2>Third parties / processors</h2>
+      <p>We rely on: <strong>Supabase</strong> (authentication + database), <strong>Stripe</strong> (payments), <strong>DeepInfra</strong> (LLM inference for hosted generation), <strong>Cloudflare</strong> (hosting, CDN, anonymous analytics), and <strong>Hetzner</strong> (server hosting). Each processes data only to provide its service to kernelCAD.</p>
+
+      <h2>Public projects</h2>
+      <p>Projects you choose to make public are accessible to anyone with the link. Private projects are restricted to your account (a paid feature).</p>
+
+      <h2>Data retention</h2>
+      <p>Account data is retained while your account is active. Anonymous (signed-out) generations are temporary and purged automatically (within ~24 hours). You can request deletion of your account and associated data at any time.</p>
+
+      <h2>Your rights</h2>
+      <p>You may request access to, correction of, or deletion of your personal data, and you may object to or restrict certain processing. Depending on your location, you may have additional rights under the GDPR or CCPA. To exercise any of these, email us at the address below.</p>
+
+      <h2>Security</h2>
+      <p>Authentication uses OAuth 2.1; data is encrypted in transit (HTTPS/TLS). Access tokens are scoped and revocable.</p>
+
+      <h2>Children</h2>
+      <p>kernelCAD is not directed to children under 16 and we do not knowingly collect their data.</p>
+
+      <h2>Changes</h2>
+      <p>We may update this policy; material changes will be reflected by the effective date above.</p>
+
+      <h2>Contact</h2>
+      <p>Questions or data requests: <a href="mailto:andrii@shylenko.com">andrii@shylenko.com</a>.</p>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
