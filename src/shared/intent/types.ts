@@ -75,7 +75,11 @@ export type FaceRef =
   | { kind: 'created'; rewriteId: RewriteId; slot: string }
   | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef }
   | { kind: 'label'; name: string }
-  | { kind: 'query'; query: import('./queryTypes').FaceQuery };
+  | { kind: 'query'; query: import('./queryTypes').FaceQuery }
+  // Q8 — Query DSL value (kc.q.face(...) etc). Serialized as the AST so
+  // the FeatureRecord stays JSON-round-trippable; the lowerer dispatches
+  // through the Q3 evaluator at consume time.
+  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
 
 export type EdgeRef =
   | { kind: 'tracked'; edgeName: string; selector: 'edge'|'start'|'end'|'midpoint' }
@@ -85,7 +89,9 @@ export type EdgeRef =
       selector: 'edge'|'start'|'end'|'midpoint' }
   | { kind: 'query'; query: import('./queryTypes').EdgeQuery }
   | { kind: 'segment'; segmentId: string }
-  | { kind: 'segments'; segmentIds: string[] };
+  | { kind: 'segments'; segmentIds: string[] }
+  // Q8 — Query DSL value (kc.q.edge(...) etc).
+  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
 
 export type VertexRef =
   | { kind: 'tracked'; vertexName: string }

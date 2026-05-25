@@ -262,6 +262,89 @@ Read the hint — it carries the recovery move (paste a candidate ref, narrow th
 
 For the full mechanism build loop (robot arms, grippers, linkages), see `kernelcad-assemblies`.
 
+## Query DSL — the `@kcq[...]` grammar
+
+`@kcq[...]` is the string surface for composed Queries. Use `@kc[...]` when one entity is addressable by `<owner>/<kind>/<name>`; use `@kcq[...]` when set algebra or filter composition matters. Both surfaces dispatch through the same evaluator (strings-as-sugar), so the resolved entity set is identical regardless of which form the agent reaches for.
+
+### Grammar
+
+```
+queryRef    ::= '@kcq[' expr ']'
+expr        ::= union | intersection | subtraction | filter | empty
+empty       ::= 'nothing()' | 'everything(' entityKind ')'
+union       ::= 'union(' exprList ')'
+intersection::= 'intersection(' exprList ')'
+subtraction ::= 'subtraction(' expr ',' expr ')'
+filter      ::= entityKind '(' filterList? ')'
+entityKind  ::= 'face' | 'edge' | 'vertex' | 'connector' | 'part' | 'solid'
+filterList  ::= filterExpr (',' filterExpr)*
+filterExpr  ::= 'createdBy(' string (',' entityKind)? ')'
+              | 'ownedByPart(' expr ')'
+              | 'ownerPart(' expr ')'
+              | 'containsPoint([' x ',' y ',' z '])'
+              | 'closestTo([' x ',' y ',' z '] (',' k)?')'
+              | 'geometryType(' geomType ')'
+              | 'withLabel(' string ')'
+              | 'withFeatureName(' string ')'
+              | 'nthElement(' expr ',' integer ')'
+              | expr
+```
+
+### Examples
+
+```
+@kcq[face(createdBy("arm"))]                           # equivalent to kc.q.face(kc.q.createdBy('arm'))
+@kcq[face(createdBy("arm"), closestTo([0,0,10]))]      # narrowed face
+@kcq[union(face(createdBy("a")), face(createdBy("b")))]
+@kcq[subtraction(face(createdBy("a")), face(withLabel("lid")))]
+@kcq[nothing()]                                        # empty
+@kcq[everything(face)]                                 # all faces
+```
+
+### Coexistence with `@kc[...]`
+
+The MCP-boundary dispatcher (`parseAnyTopologyInput`) distinguishes by prefix:
+
+- `@kc[...]` → `parseTopoRef` → `topoRefAsQuery` → `Query<unknown>` (simple-ref path)
+- `@kcq[...]` → `parseQuery` → `Query<unknown>` (composed-query path)
+- JSON-AST object → reconstructed from `ast` → `Query<unknown>`
+- Query value → passthrough unchanged
+
+Both surface syntaxes resolve through the same evaluator; the kernel sees one type either way. Diagnostic prose pins on the `@kc[...]` form by default (more compact and prose-pasteable); reach for `@kcq[...]` when the build needs set algebra or multi-filter narrowing. `Query.toString()` always serialises to the canonical `@kcq[...]` form, so `parseQuery(q.toString())` round-trips structurally.
+
+## Cookbook — Query DSL inspect-first pattern
+
+### Q-S6 — Inspect first, build after
+
+The canonical agent flow whenever the expected entity count is uncertain: express the Query, inspect the AST or the canonical `@kcq[...]` descriptor via `.toString()`, then narrow or consume. `Query<T>` values are lazy — construction is cheap and side-effect-free, so an agent can build many candidate Queries and reason over their descriptors before committing.
+
+```typescript
+// 1. Express the candidate Query.
+const candidates = q.face().and(q.withFeatureName('box1'));
+
+// 2. Inspect the descriptor without resolving. `.toString()` emits the
+//    canonical `@kcq[<expr>]` form per the grammar above. For
+//    `q.face().and(q.withFeatureName('box1'))` the descriptor is
+//    `@kcq[intersection(everything(face), withFeatureName("box1"))]`,
+//    which round-trips via `parseQuery(...)` to a structurally-equal AST.
+const descriptor = candidates.toString();
+
+// 3. The AST is plain data; the agent can walk it to read the filters at
+//    each level.
+candidates.ast;     // { op: 'intersection', queries: [...] }
+
+// 4. Narrow further or consume — both stay on the same Query value.
+const narrowed = candidates.and(q.withLabel('lid'));
+
+// 5. JSON.stringify round-trips cleanly; chainable methods are
+//    non-enumerable so the wire form carries only data fields. The
+//    `evaluate_query` MCP tool (ships in a follow-on slice) consumes
+//    exactly this JSON shape from outside the script.
+JSON.stringify(narrowed);   // { "_kind": "kc.query", "target": "face", ... }
+```
+
+See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
+
 ## Verification gates
 
 | Gate | Pass criterion |

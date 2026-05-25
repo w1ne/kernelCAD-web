@@ -28,6 +28,16 @@ The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fi
 
 The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
 
+### Added — Query DSL: lazy retargetable topology references
+
+- Added the kernelCAD Query DSL — lazy retargetable topology references with set-algebra composition, type-narrowed authoring, and string-sugar parsing. Queries survive upstream edits via lineage-stable Ids; `kc.q.face(...)`, `kc.q.edge(...)`, `kc.q.union(...)`, `.and(...)`, `.minus(...)`, `.nth(...)`, `.asLenient()`. String form `@kcq[...]` round-trips with the existing `@kc[...]` ref form — one canonical internal Query value, two surface syntaxes.
+- Added `evaluate_query` MCP tool — agent inspects a Query against the current scene before consuming it in a feature op.
+- Extended every face/edge feature consumer (fillet, chamfer, hole, cutout, shell, bend, connector, mate) to accept `Query<FaceMarker>` / `Query<EdgeMarker>` inputs alongside the existing `@kc[...]` strings; strings are parsed to Queries at the API boundary.
+- Extended `resolve_topo_ref` MCP tool to accept `@kcq[...]` Query DSL refs alongside the existing `@kc[...]` grammar.
+- Added 10 new diagnostic codes under the `query.*` family: `query.empty`, `query.over-determined`, `query.evaluated-too-early`, `query.unknown-id`, `query.unknown-label`, `query.id-hierarchy-clash`, `query.unsupported-entity-type`, `query.composition-strict-failure`, `query.type-mismatch`, `query.invalid-syntax`. The reactive-update info code is deferred to v2 (the capture-session model has no edit-and-re-resolve loop today).
+- Internal: `EdgeLineage` and `PartLineage` gain a `featureId` slot for lineage-stable Query resolution; `FaceLineage`'s existing `featureId` slot is reused.
+- Added 6 cookbook snippets (`Q-S1` through `Q-S6`) under `kernelcad-features`, `kernelcad-assemblies`, and `kernelcad-mcp` skills covering construction, set-algebra, lenient composition, ownership-by-part queries, connector queries, and the inspect-first-build-after pattern.
+
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
 - Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).

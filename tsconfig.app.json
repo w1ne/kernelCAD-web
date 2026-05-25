@@ -34,6 +34,7 @@
     "src/**/*.spec.*",
     "src/**/__tests__/**",
     "src/agent/cli/**",
-    "src/agent/workflows/**"
+    "src/agent/workflows/**",
+    "src/agent/skills/**/cookbook/snippets/**/*.kcad.ts"
   ]
 }

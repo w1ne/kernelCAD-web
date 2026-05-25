@@ -45,10 +45,21 @@ export async function runScript(input: RunScriptInput): Promise<RunScriptResult>
 
   const transpiled = transpileTs(code, fileName);
 
+  // Two surface forms are supported inside `.kcad.ts` scripts:
+  //   - Top-level globals (`box(...)`, `q.face(...)`) via the api spread.
+  //   - The `kc` namespace alias (`kc.box(...)`, `kc.q.face(...)`) used by
+  //     SKILL.md prose. Both reach the same underlying api object.
+  // Q6 wires the Query DSL constructors (`q`) onto the api so agents can
+  // call `q.face(...)` from a model script without an explicit import.
+  const apiGlobals = {
+    ...(api as unknown as Record<string, unknown>),
+    kc: api,
+  };
+
   const result = runIsolated(
     transpiled.code,
     fileName,
-    api as unknown as Record<string, unknown>,
+    apiGlobals,
     { wrapReturn: true },
   );
 
