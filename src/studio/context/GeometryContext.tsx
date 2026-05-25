@@ -453,7 +453,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // Execution Loop
     useEffect(() => {
         if (studioScript) return;
-        if (!isReady) return;
+        // Hosted deploy (app.kernelcad.com): the in-process worker is the
+        // legacy v0.1 runtime that throws on modern API globals, so this
+        // auto-run path must resolve via build-time precompute / server mesh
+        // instead of `engine.executeCode`. Not gated on worker `isReady`.
+        const hosted = shouldUseHostedMesh();
+        if (!hosted && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
 
@@ -477,6 +482,44 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     error: message,
                     executionCountAtRecord: executionCount + 1,
                 });
+                return;
+            }
+            if (hosted) {
+                setIsComputing(true);
+                try {
+                    const payload = await meshSourceHosted(code);
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                    setGeometryTransformOverrides({});
+                    setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                    setScriptParams(Object.values(payload.params ?? {}));
+                    setSketchesGeometries([]);
+                    setPreviewGeometries([]);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                } catch (err: unknown) {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    pushExecutionRecord({ revision, status: 'error', error: message, executionCountAtRecord: executionCount + 1 });
+                } finally {
+                    if (revision === mainRevisionRef.current) {
+                        setIsComputing(false);
+                        setExecutionCount(prev => prev + 1);
+                    } else if (!staleRecorded) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+                    }
+                }
                 return;
             }
             setIsComputing(true);
