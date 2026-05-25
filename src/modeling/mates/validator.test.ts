@@ -141,6 +141,58 @@ describe('validateAssembly', () => {
     });
     expect(r.status).toBe('error');
   });
+
+  it('filters interference pairs listed in `ignore` from the diagnostic stream', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const j = mkJoint('a-b', a, b);
+    const r = validateAssembly({
+      records: [a, b, j],
+      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 42 }],
+      ignore: [['a', 'b']],
+    });
+    // The ignored pair must NOT emit a diagnostic. Without other errors, the
+    // assembly is solved (no floating, no orphan).
+    expect(r.diagnostics.find((d) => d.code === 'assembly.interference.overlap')).toBeUndefined();
+    expect(r.status).toBe('solved');
+  });
+
+  it('symmetric ignore: `[a, b]` also filters `(b, a)`', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const j = mkJoint('a-b', a, b);
+    // detection happens to emit (b, a) — validator must still suppress it.
+    const r = validateAssembly({
+      records: [a, b, j],
+      interferencePairs: [{ a: 'b', b: 'a', volumeMm3: 5 }],
+      ignore: [['a', 'b']],
+    });
+    expect(r.diagnostics.find((d) => d.code === 'assembly.interference.overlap')).toBeUndefined();
+  });
+
+  it('only ignored pairs are filtered; other pairs still emit diagnostics', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const c = mkPart('c');
+    const j1 = mkJoint('a-b', a, b);
+    const j2 = mkJoint('b-c', b, c);
+    const r = validateAssembly({
+      records: [a, b, c, j1, j2],
+      interferencePairs: [
+        { a: 'a', b: 'b', volumeMm3: 10 }, // ignored
+        { a: 'b', b: 'c', volumeMm3: 20 }, // NOT ignored — must error
+      ],
+      ignore: [['a', 'b']],
+    });
+    const overlaps = r.diagnostics.filter((d) => d.code === 'assembly.interference.overlap');
+    expect(overlaps).toHaveLength(1);
+    expect(overlaps[0].partA).toBe('b');
+    expect(overlaps[0].partB).toBe('c');
+    expect(r.status).toBe('error');
+  });
 });
 
 // v0.6 mate-aware entry point. Builds an Assembly via the public capture

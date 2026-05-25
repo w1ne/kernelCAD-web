@@ -34,6 +34,20 @@ export interface ScriptReviewSummary {
         blockingReasons?: Array<{ code?: string; message?: string; repairHint?: string }>;
     };
     suggestedRepairPrompt?: string;
+    /**
+     * Raw pairwise interference results at the script's current/default pose,
+     * BEFORE any `ignore` filtering applied by `assembly.solvedModel`. The
+     * Studio status-bar HUD reads `.length` of this for the interferences
+     * counter so users see what's overlapping right now even when the script
+     * silences a known-acceptable pair (e.g. an elbow knuckle). The validator's
+     * filtered diagnostics still flow through `diagnostics` above for the
+     * Validity tab and the `validate: 'error'` throw path.
+     */
+    rawInterferencePairs?: Array<{
+        a: string;
+        b: string;
+        volumeMm3: number;
+    }>;
 }
 
 export interface GeometryContextType {
@@ -386,7 +400,14 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
         const es = new EventSource(url);
         const onRelower = () => {
-            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, skipReview: true });
+            // Re-fetch BOTH mesh AND review on relower. The review side carries
+            // the live `rawInterferencePairs` channel the Studio status-bar
+            // HUD reads — without re-fetching review on each param change the
+            // HUD never updates and the user can drag a slider into a clipping
+            // pose with the indicator stuck at the original count. (The prior
+            // `skipReview: true` flag was a perf optimisation that predated
+            // the live-interference channel.)
+            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
         };
         es.addEventListener('relower', onRelower);
         // The browser auto-reconnects on transient drops; we only log here.

@@ -331,11 +331,53 @@ function kernelCadMeshEndpoint(): Plugin {
           }
 
           const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
+          const { detectInterferences } = await import('./src/modeling/runtime/detectInterferences');
+          const { isSceneBackend } = await import('./src/kernel/backends/sceneBackend');
+
+          // When a session token is present, recompute raw interferences
+          // against the LIVE pooled session's tail scene — that captures the
+          // user's current Params-tab edits via the SSE relower path. The
+          // base reviewCadTool still re-evaluates from the script source so
+          // its validator + envelope output stays comparable across reloads;
+          // we overlay the live raw count on top for the Studio HUD's
+          // slider-drag responsiveness.
+          const sessionToken = url.searchParams.get('session');
           const review = await reviewCadTool({
             file: scriptPath,
             includePoseEnvelope: true,
             includeInterference: true,
           });
+
+          if (sessionToken) {
+            try {
+              const bundle = await getPoolBundle();
+              const entry = bundle.pool.get(sessionToken);
+              // After `session.params.update`, the pool entry's `model.tailShape`
+              // can be stale — `updateModelParams` returns a fresh BuiltModel
+              // but doesn't write back to the pool. The session's
+              // `cachedShapes` map IS updated though, so we read the latest
+              // tail from there directly to capture the user's live Params
+              // edits.
+              const session = entry?.model.session as unknown as {
+                cachedShapes?: Map<string, unknown>;
+              } | undefined;
+              const tailId = entry?.model.tailId;
+              const liveTail = tailId && session?.cachedShapes?.get(tailId);
+              const tail = liveTail ?? entry?.model.tailShape;
+              if (tail && isSceneBackend(tail as { parts?: unknown })) {
+                const livePairs = detectInterferences(
+                  tail as Parameters<typeof detectInterferences>[0],
+                  0.01,
+                  new Set<string>(),
+                ).pairs;
+                (review as { rawInterferencePairs?: unknown }).rawInterferencePairs = livePairs;
+              }
+            } catch {
+              // Session-side overlay failed; fall back to the script-eval pairs
+              // already on `review`. The HUD will show the default-pose count
+              // instead of the live count, but the request still succeeds.
+            }
+          }
 
           res.statusCode = 200;
           res.setHeader('content-type', 'application/json');
