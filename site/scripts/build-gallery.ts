@@ -6,6 +6,7 @@
 import {
   copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync,
 } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -16,6 +17,9 @@ import {
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
+import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
+import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
+import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
 
 export interface BuildGalleryOptions {
   entriesPath: string;
@@ -45,6 +49,12 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   // candidates don't leave orphans the dev symlink loop would re-link.
   if (existsSync(galleryOutDir)) rmSync(galleryOutDir, { recursive: true, force: true });
   mkdirSync(galleryOutDir, { recursive: true });
+
+  // Precomputed mesh bridge payloads, keyed by sha256(source). The hosted
+  // Studio fetches `/gallery/_mesh/<sha>.json` to render a curated model's
+  // initial view with zero server compute (see scriptSource.meshSourceHosted).
+  const meshOutDir = path.join(galleryOutDir, '_mesh');
+  mkdirSync(meshOutDir, { recursive: true });
 
   const published: PublishedEntry[] = [];
 
@@ -97,6 +107,46 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(
         `entry ${entry.slug}: model.glb is ${glbSize} bytes; exceeds ${GLB_SIZE_HARD_CAP} byte hard cap. Decimate the mesh.`,
       );
+    }
+
+    // Precompute the mesh bridge payload for curated entries so the hosted
+    // Studio renders the initial view from a static file. Keyed by the
+    // sha256 of the exact source bytes served at source.kcad.ts — the same
+    // digest the browser computes via Web Crypto in scriptSource.meshSourceHosted.
+    if (entry.source === 'curated') {
+      // Non-fatal: a model that fails to precompute simply won't have a static
+      // mesh file. The hosted Studio then falls back to its backend (or shows
+      // a clear error for that one model) — far better than failing the entire
+      // marketing deploy over one bad source. exportGlb above already gates on
+      // the source meshing, so this rarely triggers.
+      try {
+        const sourceText = readFileSync(srcScript, 'utf8');
+        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+        const loaded = await loadScriptFeatures(srcScript);
+        const meshing = await meshFeaturesPerFeature(
+          loaded.features.map((f) => f.record),
+          loaded.paramTable,
+          loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
+        );
+        if (meshing.failedFeatureIds.length > 0) {
+          console.warn(
+            `build-gallery: ${entry.slug} precompute skipped — ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
+          );
+        } else {
+          const bridgePayload = {
+            source: sourceText,
+            features: meshing.features.map(serializeForBridge),
+            featureRecords: loaded.features.map((f) => f.record),
+            bounds: meshing.bounds,
+            params: loaded.paramTable.serialize(),
+          };
+          writeFileSync(path.join(meshOutDir, `${sha}.json`), JSON.stringify(bridgePayload));
+        }
+      } catch (err) {
+        console.warn(
+          `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
