@@ -5,6 +5,23 @@ description: Use when verifying whether a moving assembly is buildable — sampl
 
 # kernelcad-kinematic — feasibility gates for moving assemblies
 
+## Units (read this first)
+
+Joint angles throughout the kinematic API are **degrees for revolute joints**
+and **millimetres for prismatic joints**. This matches the unit convention
+used by `arm.revolute({ limitsDeg })`, `arm.prismatic({ limitsMm })`, and
+`arm.solvedModel({poses})` — there is no degree-vs-radian split anywhere on
+the user-facing surface.
+
+That includes the IK seed: `kinematic.checkReachable({ seed: { shoulder: 60 } })`
+means 60 degrees, not 60 radians and not 60 of anything else. Authors porting
+code from URDF / MoveIt / ROS — where radians are conventional — must convert
+(`deg = rad * 180 / Math.PI`) before passing values to this API.
+
+A small seed value like `0.3` is interpreted as 0.3°, which is effectively
+zero — fine as a "near rest pose" hint, but not the ~17° you'd get if you
+were thinking in radians.
+
 ## When to load
 
 Load this skill whenever the user asks any of:

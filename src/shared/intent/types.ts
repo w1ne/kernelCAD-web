@@ -193,6 +193,18 @@ export function isValidVec3(v: unknown): v is Vec3 {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
 }
 
+/** Scalar input validator that accepts a finite number or ParamRef<number>.
+ *  Use at every capture-time entry point that takes an `Editable<number>`
+ *  (primitive dimensions, feature scalar params) so degenerate inputs (objects,
+ *  strings, NaN) are rejected with a clear `feature.invalid-args` rather than
+ *  reaching OCCT — which can recurse / overflow on garbage `evaluated` payloads. */
+export function isValidEditableNumber(v: unknown): boolean {
+  if (typeof v === 'number') return Number.isFinite(v);
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as { _brand?: unknown; _type?: unknown };
+  return o._brand === 'ParamRef' && o._type === 'number';
+}
+
 /** Vec3 input validator that accepts numbers or ParamRef<number> per coord.
  *  Use at every capture-time entry point that takes an EditableVec3 (assembly
  *  surfaces, transforms). Composes with `formatScalarForError` for diagnostics. */

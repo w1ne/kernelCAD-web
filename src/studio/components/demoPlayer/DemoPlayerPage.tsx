@@ -168,6 +168,10 @@ export interface DemoPlayerWindow {
     /** polygonOffset triple per sampled mesh material — used by tests to
      *  verify the renderer applies depth bias on assembly meshes. */
     samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }>;
+    /** Per-KCAD-feature group matrix (16 numbers column-major). Used by the
+     *  B3 regression test to verify worldTransform-bearing features land on
+     *  the group's matrix. */
+    kcadGroupMatrices: number[][];
   };
 }
 
@@ -985,6 +989,16 @@ export function DemoPlayerPage(): React.JSX.Element {
             );
             group.add(mesh);
           }
+          // Apply the per-feature world transform (e.g. solvedModel({poses}) FK
+          // for an assembly part). The centroid-recenter loop below composes the
+          // bbox offset on top, so worldTransform-bearing groups respect both
+          // the joint pose AND the scene-centering. Without this, agents
+          // returning arm.solvedModel({...}) rendered at rest pose. (B3 fix.)
+          if (fm.transform !== undefined) {
+            group.matrixAutoUpdate = false;
+            group.matrix.fromArray(fm.transform);
+            group.matrixWorldNeedsUpdate = true;
+          }
           scene.add(group);
           groupCount++;
         }
@@ -996,9 +1010,19 @@ export function DemoPlayerPage(): React.JSX.Element {
           const [minX, minY, minZ] = bounds.min;
           const [maxX, maxY, maxZ] = bounds.max;
           const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
+          // For groups carrying a baked worldTransform (assembly FK), compose
+          // the centroid offset onto the matrix instead of setting `position`
+          // — `position` is decoupled from `matrix` when matrixAutoUpdate=false,
+          // so position.set() would silently no-op on those groups.
+          const centroidOffset = new THREE.Matrix4().makeTranslation(-cx, -cy, -cz);
           for (const child of scene.children) {
             if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
-              child.position.set(-cx, -cy, -cz);
+              if (child.matrixAutoUpdate === false) {
+                child.matrix.premultiply(centroidOffset);
+                child.matrixWorldNeedsUpdate = true;
+              } else {
+                child.position.set(-cx, -cy, -cz);
+              }
             }
           }
           // Stash the centroid offset so setRenderPose can translate a
@@ -1147,11 +1171,13 @@ export function DemoPlayerPage(): React.JSX.Element {
             cameraLookingAt: [0, 0, 0] as [number, number, number],
             sampleOpacities: [],
             samplePolygonOffsets: [],
+            kcadGroupMatrices: [],
           };
         }
         let meshCount = 0;
         const sampleOpacities: number[] = [];
         const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
+        const kcadGroupMatrices: number[][] = [];
         scene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             meshCount++;
@@ -1166,6 +1192,11 @@ export function DemoPlayerPage(): React.JSX.Element {
             }
           }
         });
+        for (const child of scene.children) {
+          if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
+            kcadGroupMatrices.push(child.matrix.toArray());
+          }
+        }
         const lookDir = new THREE.Vector3();
         camera.getWorldDirection(lookDir);
         const lookAt: [number, number, number] = [
@@ -1180,6 +1211,7 @@ export function DemoPlayerPage(): React.JSX.Element {
           cameraLookingAt: lookAt,
           sampleOpacities,
           samplePolygonOffsets,
+          kcadGroupMatrices,
         };
       },
     };

@@ -31,7 +31,10 @@ export interface CheckReachableInput extends EvaluateInput {
   prefer_solver?: 'analytical' | 'numeric' | 'auto';
   /** Numeric-path iteration cap. */
   max_iterations?: number;
-  /** Seed pose for numeric path. */
+  /** Optional warm-start pose for the numeric IK path. Units: degrees for
+   *  revolute joints, millimetres for prismatic joints — same convention as
+   *  `arm.solvedModel({poses})`. Pass `{}` or omit for no preference. The
+   *  analytical solver ignores this. */
   seed?: NumericPoses;
 }
 

@@ -6,6 +6,7 @@ import { Sketch, makePath, type PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
 import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
+import { isValidEditableNumber, formatScalarForError } from '../shared/intent/types';
 import {
   selectEdges as selectEdgesBackend,
   selectEdge as selectEdgeBackend,
@@ -360,6 +361,16 @@ export interface KernelCadApi {
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
 
+function assertEditableNumber(featureKind: string, paramName: string, value: unknown): void {
+  if (isValidEditableNumber(value)) return;
+  throw new KernelError(
+    'feature.invalid-args',
+    `${featureKind}: ${paramName} must be a finite number or a numeric ParamRef; got ${formatScalarForError(value)}.`,
+    featureKind,
+    `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
+  );
+}
+
 // === W1.3 NURBS surfaces validation helpers ===
 
 function isRectangularGrid(grid: unknown[][]): boolean {
@@ -423,6 +434,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
   const api: KernelCadApi = {
     box(x, y, z, centered = false, opts) {
+      assertEditableNumber('box', 'x', x);
+      assertEditableNumber('box', 'y', y);
+      assertEditableNumber('box', 'z', z);
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
         kind: 'box',
@@ -432,6 +446,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       });
     },
     cylinder(h, r, _segments, opts) {
+      assertEditableNumber('cylinder', 'h', h);
+      assertEditableNumber('cylinder', 'r', r);
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'cylinder');
       return session.createShape({
         kind: 'cylinder',
@@ -441,6 +457,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       });
     },
     sphere(r, opts) {
+      assertEditableNumber('sphere', 'r', r);
       if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
         throw new KernelError(
           'feature.face-ref.not-applicable',

@@ -162,6 +162,24 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 Joint origins are in the **parent part's local frame** (URDF/MuJoCo convention). Multi-joint chains compose correctly; the FK tree-walk handles N joints.
 
+**Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
+
+Concretely: if the shoulder joint is at world `(0, 0, 30)` and the lower arm has length 220 mm extending along +X from the shoulder, author the lower arm at part-local frame *centered on the joint*:
+
+```ts
+// ✅ Correct — lower arm in its own local frame; rest position comes from the joint origin.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 0));
+arm.revolute('shoulder', base, lower, { axis: [0, -1, 0], origin: [0, 0, 30], limitsDeg: [0, 110] });
+
+// ❌ Wrong — translating to the world rest position `(110, 0, 30)` puts a SHOULDER_Z offset
+//    into the part-local frame, which the FK doubles up when the joint poses.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 30));
+```
+
+At rest (joint angle 0), worldT for `lower` equals `T(0, 0, 30)` (the joint origin in parent's frame), so part-local vertex `(110, 0, 0)` maps to world `(110, 0, 30)` — exactly what you wanted. Authoring the part with `.translate(110, 0, 30)` would put it at world `(110, 0, 60)` instead, and any non-zero joint angle would smear that compounding error visibly across the render.
+
+The same convention applies to child-of-child joints: the elbow's `origin` is expressed in the lower arm's part-local frame (`[220, 0, 0]` — at the lower arm's tip, NOT `[220, 0, 30]`).
+
 ```ts
 arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [45, 35, 8],  limitsDeg: [-120, 120] });
 arm.revolute('shoulder-pitch', shoulder, elbow,    { axis: [0, 1, 0], origin: [0, 0, 90],   limitsDeg: [-45, 135] });
