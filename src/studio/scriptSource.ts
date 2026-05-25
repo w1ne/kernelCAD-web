@@ -1,4 +1,5 @@
 import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
+import type { SerializedParamTable } from '../shared/runtime/paramTable';
 
 export async function loadStudioScriptSource(script: string): Promise<string> {
   const response = await fetch(`/__kernelcad/source?script=${encodeURIComponent(script)}`);
@@ -29,7 +30,7 @@ export interface BackendMeshPayload {
   features: unknown[];
   featureRecords?: unknown[];
   bounds: { min: [number, number, number]; max: [number, number, number] };
-  params?: Record<string, unknown>;
+  params?: SerializedParamTable;
 }
 
 /**
