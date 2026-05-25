@@ -46,8 +46,10 @@ const reachableTarget = [250, 100, 200] as const;
 
 // Seed pose hints the numeric path toward a nearby branch; the analytical
 // path ignores it (the closed-form solver returns its own branch choice).
+// Values are DEGREES (kernelCAD's joint-angle convention everywhere) — a
+// 17° / 11° / -11° hint, not radians. Use 0 for "no preference."
 const seed = {
-  shoulderYaw: 0.3, shoulderPitch: 0.2, elbowPitch: -0.2,
+  shoulderYaw: 17, shoulderPitch: 11, elbowPitch: -11,
   wristYaw: 0, wristPitch: 0, wristRoll: 0,
 };
 
