@@ -6,7 +6,7 @@ describe('static gallery landing page', () => {
   it('copies MCP client install one-liners instead of the raw server command', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    expect(html).toContain('claude mcp add kernelcad -- npx -y kernelcad mcp');
+    expect(html).toContain('claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp');
     expect(html).toContain('codex mcp add kernelcad -- npx -y kernelcad mcp');
     expect(html).not.toContain("wireCopyButton('mcp-btn', 'kernelcad mcp')");
   });
@@ -41,14 +41,14 @@ describe('static gallery landing page', () => {
     const stackBlock = html.slice(stackStart, stackEnd);
     expect(stackBlock).toContain('id="claude-desktop-link"');
     expect(stackBlock).toContain('href="/app/connect"');
-    expect(stackBlock).toContain('Use with Claude Desktop');
+    expect(stackBlock).toContain('Connect your agent');
 
-    // Free-tier caption sits near the install stack so the Claude Desktop CTA
-    // links to a page whose marketing matches what the hosted gateway delivers:
-    // 3 LLM-generated parts/month, unlimited introspection + review.
+    // Caption sits near the install stack and states the real monetization
+    // model: bring-your-own-Claude is free + unlimited; the built-in hosted
+    // agent (generation) is the paid path.
     expect(html).toContain('id="claude-desktop-note"');
-    expect(html).toContain('3 LLM-generated parts per month');
-    expect(html).toContain('Introspection and review tools are unlimited');
+    expect(html).toContain('free and unlimited');
+    expect(html).toContain('built-in hosted agent (paid)');
   });
 
   it('documents the same full marketing build command used by deploy', () => {
