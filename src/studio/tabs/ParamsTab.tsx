@@ -162,7 +162,7 @@ function buildInterferenceIndex(
     byParam: Map<string, ScrubInterference>;
     allPairs: readonly RawPair[];
 } {
-    const pairs: RawPair[] = rawPairs.slice();
+    const pairs: RawPair[] = (rawPairs ?? []).slice();
     const byParam = new Map<string, RawPair[]>();
     if (pairs.length === 0 || !joints || joints.length === 0) {
         return { byParam: new Map(), allPairs: pairs };
