@@ -1,13 +1,13 @@
 {
   "ok": true,
-  "featureCount": 29,
+  "featureCount": 94,
   "diagnostics": [],
   "assembly": "luxo-lamp",
   "validator": {
     "status": "solved",
     "diagnostics": [],
-    "partCount": 4,
-    "jointCount": 3
+    "partCount": 7,
+    "jointCount": 6
   },
   "poseEnvelope": {
     "samples": [

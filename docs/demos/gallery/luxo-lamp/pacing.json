@@ -1,8 +1,8 @@
 {
   "preRollMs": 0,
-  "rotateStartMs": 6000,
+  "rotateStartMs": 10500,
   "rotateDurationMs": 8000,
-  "totalDurationMs": 16000,
+  "totalDurationMs": 20500,
   "features": {
     "assemblyPart_1": {
       "startAtMs": 0,
@@ -24,6 +24,24 @@
     },
     "assemblyPart_4": {
       "startAtMs": 4500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_5": {
+      "startAtMs": 6000,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_6": {
+      "startAtMs": 7500,
+      "durationMs": 400,
+      "pauseMsAfter": 800,
+      "cameraNudgeMs": 300
+    },
+    "assemblyPart_7": {
+      "startAtMs": 9000,
       "durationMs": 400,
       "pauseMsAfter": 800,
       "cameraNudgeMs": 300
