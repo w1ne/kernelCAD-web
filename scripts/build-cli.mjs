@@ -1,6 +1,7 @@
 import esbuild from 'esbuild';
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function copyDir(src, dst) {
   mkdirSync(dst, { recursive: true });
@@ -12,6 +13,11 @@ function copyDir(src, dst) {
   }
 }
 
+// `verb-nurbs` is a TS-path-mapped vendored ESM module (see tsconfig.node.json,
+// vite.config.ts, vitest.config.ts). The CLI bundler needs the same alias so
+// the V slice analytics + tangent-constrained lowerer code paths resolve.
+const verbNurbsPath = fileURLToPath(new URL('../vendor/verb-nurbs/build/verb.es.js', import.meta.url));
+
 await esbuild.build({
   entryPoints: ['src/agent/cli/index.ts'],
   bundle: true,
@@ -20,6 +26,9 @@ await esbuild.build({
   target: 'node20',
   outfile: 'dist/cli/index.js',
   external: ['commander', 'typescript', 'replicad', 'playwright', 'playwright-core', 'chromium-bidi', 'sharp'],
+  alias: {
+    'verb-nurbs': verbNurbsPath,
+  },
   banner: {
     js: [
       '#!/usr/bin/env node',

@@ -894,3 +894,14 @@ export function createApi(ctx: ApiContext): KernelCadApi {
   };
   return api;
 }
+
+// V slice — re-export the Curve3D analytics types so downstream consumers
+// (skill snippets, eval harnesses, MCP tool wrappers) can pull them from
+// the single public-API module rather than reaching into capture/.
+export type {
+  Curve3D,
+  Curve3DAnalytics,
+  CurveLengthSample,
+  CurveCurveIntersection,
+  CurveSurfaceIntersection,
+} from './capture/curveProxy';

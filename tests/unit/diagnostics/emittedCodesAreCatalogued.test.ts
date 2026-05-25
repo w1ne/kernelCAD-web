@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 165 codes', () => {
+  it('catalogue has exactly 173 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -92,8 +92,16 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       SRDF (2): acm-sparse-sampling, planning-group-missing
     //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
     //                 dangling-link-ref
-    // Net catalogue = 157 - 3 + 11 = 165.
-    expect(catalogue.size).toBe(165);
+    //  +  1 V Task V1 verb-nurbs bridge (feature.nurbs.bridge-conversion-failed)
+    //  +  5 V Task V2 Curve3D.analytics namespace (degenerate-arclength /
+    //       closest-point-no-converge / derivatives-out-of-range /
+    //       tessellation-tolerance-invalid / kernel-failed)
+    //  +  2 V Task V3 Curve3D.analytics.intersect (intersect-kernel-failed /
+    //       intersect-no-intersection)
+    //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
+    //       tangent-on-2d-only)
+    // Net catalogue = 157 - 3 + 11 + 1 + 5 + 2 + 2 = 175.
+    expect(catalogue.size).toBe(175);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

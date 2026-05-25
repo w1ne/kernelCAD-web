@@ -1,6 +1,32 @@
 # kernelCAD v0.11.0
 
-## Unreleased
+## Unreleased — V slice: NURBS curve analytics layer
+
+### Added — `Curve3D.analytics.*` namespace
+
+Every `Curve3D` (constructed via `nurbsCurve`, `spline3d`, or `hermiteG2`) now exposes a `.analytics.*` namespace with read-only methods for querying the curve geometrically:
+
+- `curve.analytics.closestPoint(pt)` / `closestParam(pt)` — nearest point or parameter on the curve to a 3D query point, exact within solver tolerance.
+- `curve.analytics.divideByEqualArcLength(n)` / `divideByArcLength(mm)` — samples spaced uniformly in arc length (not parametrically); the natural answer for placing N features evenly along a non-uniform curve. The `n`-form returns `n + 1` samples; the `mm`-form returns however many samples fit, with the last sample landing at the curve end.
+- `curve.analytics.derivatives(t, numDerivs)` — derivatives 0..N at parameter `t`; index 0 is the point, index 1 is the (unnormalised) tangent, index 2 is the curvature vector. `numDerivs` must not exceed the curve degree.
+- `curve.analytics.tessellate({ tolerance })` — viewport-grade adaptive polyline; default tolerance 0.05 mm. For hover-preview and wireframe rendering only. Export tessellation continues to go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- `curve.analytics.intersect(other)` — geometric intersection of this curve with another `Curve3D` or with a `Surface`. Overloads return `CurveCurveIntersection[]` (each record carrying `tA`, `tB`, `ptA`, `ptB`, `distance`) or `CurveSurfaceIntersection[]` (each record carrying `tCurve`, `uv`, `pt`).
+
+The analytics methods are read-only — they return data, not new geometry. The instance `intersect(other)` overload is the only geometric intersection method in the namespace; the set-theoretic intersection of `Query<Face>` selections continues to live separately on `kc.q.intersection`.
+
+### Added — fit-with-tangents on `path().spline()`
+
+`path().spline(points, opts)` accepts `opts.startTangent` and `opts.endTangent` (2D direction vectors) to constrain the curve's tangent at the first and last waypoint. Tangent magnitudes are normalised internally; only the directions matter. Existing `.spline(points)` and `.spline(points, { tension })` calls are unchanged — when both tangent fields are omitted, the call lowers through the existing fast path unchanged.
+
+The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fields in its input schema.
+
+### Added — diagnostic codes
+
+10 new codes under `feature.curve3d.analytics.*`, `feature.path.spline.tangent-*`, and `feature.nurbs.bridge-conversion-failed` cover invalid-tolerance, non-convergence, degenerate-arc-length, derivatives-out-of-range, tangent-zero-magnitude, 2D-only tangent inputs, internal solver failures, and bridge-conversion failures. All carry `hint` + `nextAction` per the diagnostic-vocab discipline.
+
+### Added — eval task: `eyewear-wayfarer-front` arc-length lens placement
+
+The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
 
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
