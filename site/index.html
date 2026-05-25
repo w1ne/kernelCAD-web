@@ -58,12 +58,12 @@
           <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
         </div>
         <div class="install-stack" aria-label="Install commands">
-          <a class="install install-link" id="claude-desktop-link" href="/app/connect" aria-label="Connect kernelCAD to Claude Desktop">
-            <span class="install-command">Use with Claude Desktop</span>
+          <a class="install install-link" id="claude-desktop-link" href="/app/connect" aria-label="Connect kernelCAD to your agent">
+            <span class="install-command">Connect your agent</span>
             <span class="copy">→</span>
           </a>
           <button class="install install-secondary" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
-            <span class="install-command"><span class="prompt">$</span> claude mcp add kernelcad -- npx -y kernelcad mcp</span>
+            <span class="install-command"><span class="prompt">$</span> claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp</span>
             <span class="copy">copy</span>
           </button>
           <button class="install install-secondary" id="codex-mcp-btn" aria-label="Copy Codex MCP install command">
@@ -75,7 +75,7 @@
             <span class="copy">copy</span>
           </button>
         </div>
-        <p class="install-note" id="claude-desktop-note">Free tier: 3 LLM-generated parts per month. Introspection and review tools are unlimited.</p>
+        <p class="install-note" id="claude-desktop-note">Bring your own Claude — modeling, introspection &amp; review run free and unlimited. The built-in hosted agent (paid) handles generation.</p>
       </div>
       <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
         <div class="demo-meta">
@@ -441,7 +441,7 @@
     }
 
     // copy command buttons
-    wireCopyButton('claude-mcp-btn', 'claude mcp add kernelcad -- npx -y kernelcad mcp');
+    wireCopyButton('claude-mcp-btn', 'claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp');
     wireCopyButton('codex-mcp-btn', 'codex mcp add kernelcad -- npx -y kernelcad mcp');
     wireCopyButton('install-btn', 'npm install -g kernelcad');
 
