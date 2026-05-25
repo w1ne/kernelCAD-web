@@ -27,6 +27,39 @@ function bufferGeometryFromFace(face: FaceGeometry): THREE.BufferGeometry {
     return geometry;
 }
 
+/**
+ * Build the THREE material for a shape given the geometry record, selection state,
+ * resolved fallback color, and the active 3D view mode.
+ *
+ * Exported so unit tests can verify the (viewMode3D → material flags) mapping without
+ * mounting an R3F Canvas. The three modes are:
+ *  - `'shaded'`             — smooth shading, no wireframe, no edge overlay
+ *  - `'wireframe'`          — `material.wireframe = true`, surfaces drawn as lines
+ *  - `'shadedWithEdges'`    — flat shading + black edge overlay rendered separately
+ */
+export function buildShapeMaterial(
+    pbr: GeometryResult['material'],
+    isSelected: boolean,
+    color: number | string,
+    viewMode3D: ViewMode3D,
+): THREE.Material {
+    const isWireframe = viewMode3D === 'wireframe';
+    const flatShading = viewMode3D === 'shadedWithEdges';
+    if (pbr && !isSelected) {
+        const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
+        pbrMaterial.flatShading = flatShading;
+        pbrMaterial.wireframe = isWireframe;
+        pbrMaterial.side = THREE.DoubleSide;
+        pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
+        return pbrMaterial;
+    }
+    return new THREE.MeshLambertMaterial({
+        color,
+        flatShading,
+        wireframe: isWireframe,
+    });
+}
+
 function GhostFaceMesh({ face }: { face: FaceGeometry }) {
     const geometry = useMemo(() => bufferGeometryFromFace(face), [face]);
 
@@ -151,19 +184,10 @@ export function ConsolidatedShape({
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
-    const material = useMemo(() => {
-        if (geometry.material && !isSelected) {
-            const pbrMaterial = buildMaterialFromPBR(geometry.material) as THREE.MeshPhysicalMaterial;
-            pbrMaterial.flatShading = viewMode3D === 'shadedWithEdges';
-            pbrMaterial.side = THREE.DoubleSide;
-            pbrMaterial.depthWrite = (geometry.material.opacity ?? 1) >= 1;
-            return pbrMaterial;
-        }
-        return new THREE.MeshLambertMaterial({
-            color,
-            flatShading: viewMode3D === 'shadedWithEdges'
-        });
-    }, [geometry.material, isSelected, color, viewMode3D]);
+    const material = useMemo(
+        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D),
+        [geometry.material, isSelected, color, viewMode3D],
+    );
 
     if (!mergedGeometry) return null;
 
