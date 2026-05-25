@@ -5,7 +5,7 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseBackendMesh, meshSourceViaBackend } from '../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted } from '../scriptSource';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -604,12 +604,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         // Hosted deploy (app.kernelcad.com): no local kernel backend, and the
         // in-process worker is the legacy v0.1 runtime that throws on modern
         // kernelCAD API globals (assembly, setRenderEnvironment, .material, …).
-        // Route compute through the server mesh endpoint instead. Not gated on
-        // worker `isReady` — the backend path doesn't need the local worker.
-        if (shouldUseBackendMesh()) {
+        // Resolve via build-time precompute (static CDN) first, then the
+        // server mesh endpoint for edits. Not gated on worker `isReady` — this
+        // path doesn't need the local worker.
+        if (shouldUseHostedMesh()) {
             setIsComputing(true);
             try {
-                const payload = await meshSourceViaBackend(codeToExecute);
+                const payload = await meshSourceHosted(codeToExecute);
                 if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
                     pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
