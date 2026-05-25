@@ -20,7 +20,9 @@ export type DiagnosticGroup =
   | 'assembly'
   | 'mesher'
   | 'tool'
-  | 'dfm';
+  | 'dfm'
+  | 'query'
+  | 'kinematic';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -465,6 +467,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A NURBS surface degree is incompatible with its control-net dimensions.',
+  },
+  'feature.nurbs.bridge-conversion-failed': {
+    hintTemplate:
+      'nurbs.bridge: JS→kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Bridge could not reconstruct a Geom_BSplineCurve from the analytics-side NURBS data; the kernel rejected the knot vector as ill-formed.',
   },
   // Pattern (2) — W2.1
   'feature.pattern.source-not-found': {
@@ -1056,6 +1066,67 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'nurbsCurve was authored with closed=true but the first and last control points are not coincident.',
   },
+  // V slice — Curve3D analytics (JS-side computed-query layer).
+  'feature.curve3d.analytics.degenerate-arclength': {
+    hintTemplate:
+      'Curve3D.analytics.divideBy*: requested n or arcLength is out of range. Pass a positive integer for n (or a positive arcLength less than the curve total length()).',
+    nextAction: { kind: 'fix-arg', field: 'n' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'divideByEqualArcLength or divideByArcLength received an invalid n / arcLength input, or the curve is degenerate (length < 1e-9 mm).',
+  },
+  'feature.curve3d.analytics.closest-point-no-converge': {
+    hintTemplate:
+      'Curve3D.analytics.closestPoint: solver did not converge to tolerance after the maximum iterations. The curve may be degenerate or the query point may be far outside the curve domain. Sample via .tessellate() and pick the nearest polyline vertex as a coarse fallback; or loosen tolerance.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'closestPoint / closestParam Newton-Raphson did not converge within tolerance.',
+  },
+  'feature.curve3d.analytics.derivatives-out-of-range': {
+    hintTemplate:
+      'Curve3D.analytics.derivatives: requested derivative order exceeds the curve degree; derivatives above order=degree are zero by construction. Lower numDerivs to <= degree (typically 1 for tangent, 2 for curvature).',
+    nextAction: { kind: 'fix-arg', field: 'numDerivs' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'derivatives() called with numDerivs > curve.degree.',
+  },
+  'feature.curve3d.analytics.tessellation-tolerance-invalid': {
+    hintTemplate:
+      'Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01–0.5 mm. Export tessellation uses the kernel mesher independently.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'tessellate() called with tolerance <= 0 or non-finite.',
+  },
+  'feature.curve3d.analytics.kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics: solver threw on this curve (NaN propagation or degenerate input). Inspect the curve via .sample(10) and .length(); if the curve is degenerate (length ~ 0, control points coincident), re-author it. If the curve is valid, file an issue with the .kcad.ts repro.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A non-intersect analytics method (closestPoint, divide*, derivatives, tessellate) raised an internal solver error.',
+  },
+  // V slice — Task V3: curve-curve and curve-surface geometric intersection
+  // on the analytics namespace (instance method, NOT a kc.q.* set-theoretic
+  // verb; see spec §3.2). intersect-no-intersection rides at info severity
+  // because the no-hit case is data — the call returns [] rather than throws.
+  'feature.curve3d.analytics.intersect-kernel-failed': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() — Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Curve-curve or curve-surface geometric intersection solver raised an error, or the surface operand kind is not supported by the JS-side intersect path.',
+  },
+  'feature.curve3d.analytics.intersect-no-intersection': {
+    hintTemplate:
+      'Curve3D.analytics.intersect: no intersection found within tolerance (operands are skew or non-intersecting at this tolerance). If you expect an intersection, loosen tolerance and re-run; check operand bounding boxes via .sample(10) to verify spatial proximity.',
+    nextAction: { kind: 'fix-arg', field: 'opts.tolerance' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'intersect(other) returned zero hits within the requested tolerance; surfaced as a catalog entry rather than thrown so callers can treat empty results as data.',
+  },
   // NURBS Slice B — variableSweep PipeShell validation.
   'feature.variable-sweep.sections-out-of-order': {
     hintTemplate:
@@ -1179,6 +1250,23 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'path().spline received fewer than 2 distinct finite waypoints.',
+  },
+  // V slice Task V4 (2) — path().spline tangent extension.
+  'feature.path.spline.tangent-zero-magnitude': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent has magnitude < 1e-9 (zero-magnitude tangents are undefined). Pass a non-zero 2D direction vector; magnitude is normalised internally, [1, 0] and [100, 0] produce the same curve.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'path().spline received a startTangent or endTangent with magnitude below 1e-9; the curve fit cannot use a zero-direction constraint.',
+  },
+  'feature.path.spline.tangent-on-2d-only': {
+    hintTemplate:
+      'path().spline: startTangent / endTangent must be a 2D [x, y] tuple; got a 3-element vector. The z component is ignored. For 3D NURBS curves with tangent control, use nurbsCurve(controlPoints, opts) and compose hermiteG2 for endpoint G2 instead.',
+    nextAction: { kind: 'fix-arg', field: 'opts.startTangent' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A 3-element tangent was passed to the 2D path().spline extension; only the x/y components are used.',
   },
   'feature.path.nurbs-segment.degenerate-controls': {
     hintTemplate:
@@ -1446,6 +1534,196 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'warn',
     group: 'dfm',
     description: 'A rule\'s per-material threshold is null in specs.json because the vendor does not publish the value.',
+  },
+  // Kinematic grounding (9) — K1-K9. Local sampled-pose collision sweep,
+  // analytical / numeric IK reachability, closed-form beam load capacity,
+  // and fastener-side hole-diameter agreement. Every check runs in-process
+  // (no external solver, no network round-trip).
+  'kinematic.collision.swept': {
+    hintTemplate:
+      'Swept-collision found one or more poses at which two parts interpenetrate. Inspect result.collidingPoses[] for (pose, contacts[]) pairs; narrow joint limits, reshape the colliding parts, or insert clearance and re-run checkSweptCollision.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'narrow joint limits or reshape parts to eliminate the listed colliding poses',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'Sweep across declared joint range(s) produced one or more poses at which any two parts share a non-empty BREP boolean intersection.',
+  },
+  'kinematic.collision.swept.sample-density-warning': {
+    hintTemplate:
+      'Sample density below the safe floor (revolute < 36 samples or prismatic < 25 samples across the requested range). The result may miss mid-range collisions. Tighten opts.range step, or extend the range to span more of the joint limits.',
+    nextAction: { kind: 'fix-arg', field: 'opts.range' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'Caller-supplied range produced fewer than the safe-floor sample count for the joint type; checkSweptCollision proceeded but the result is sparser than recommended.',
+  },
+  'kinematic.unreachable': {
+    hintTemplate:
+      'IK could not satisfy the requested target. If axis=position, lengthen a link, change DOF count, or move the target. If axis=orientation, widen target.orientation tolerance or drop the orientation constraint. If axis=both, the target is far outside reachable workspace; restructure the chain.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'see emitted error.axis to choose: lengthen/restructure the chain for position/both, or widen the orientation tolerance',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'Inverse-kinematics solver (analytical or numeric) failed to find a pose satisfying target.position and/or target.orientation within tolerance.',
+  },
+  'kinematic.reachability.iteration-cap-hit': {
+    hintTemplate:
+      'Numeric IK hit opts.maxIterations (default 200) before convergence; the result is inconclusive and closestApproach is the best-error pose seen. Increase opts.maxIterations or widen target tolerances.',
+    nextAction: { kind: 'fix-arg', field: 'opts.maxIterations' },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'Numeric inverse-kinematics solver hit its iteration cap before satisfying the target tolerances.',
+  },
+  'kinematic.solver.unsupported-config': {
+    hintTemplate:
+      'v1 does not support closed-loop or parallel-kinematics chains (cycle detected in the mate graph), and analytical IK is rejected when the chain does not satisfy the closed-form solvability condition. Cut the closed-loop cycle in the mate graph, or switch preferSolver to numeric.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'cut the closed-loop cycle in the mate graph, or switch preferSolver to numeric',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'The IK dispatcher cannot service the requested chain — either a closed kinematic loop is present or analytical IK was requested for a chain that does not match the closed-form solvability condition.',
+  },
+  'kinematic.load-exceeds-yield': {
+    hintTemplate:
+      'Closed-form beam check shows stress at the named element exceeds material yield (see error.message for stress, yield, safety factor). Thicken the cross-section, switch to a stronger material, or shorten the moment arm.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'thicken the cross-section, change material, or shorten the moment arm',
+    },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'Closed-form Euler-Bernoulli beam analysis predicts an element stress that exceeds the declared material yield strength.',
+  },
+  'kinematic.load.beam-not-applicable': {
+    hintTemplate:
+      'Closed-form beam approximation does not apply: the load is not at the free end, the part has more than one mate, the deflection/length ratio is too large, or the cross-section is unsupported. The result for this element is unreliable. Decompose the part into beam-fitting cantilever segments, or defer to FEA when it ships.',
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        'decompose the part into beam-fitting cantilever segments, or defer the check until FEA support lands',
+    },
+    defaultSeverity: 'warn',
+    group: 'kinematic',
+    description:
+      'checkLoadCapacity({ mode: "beam" }) detected a configuration outside the closed-form Euler-Bernoulli assumptions; the result for the affected element is unreliable.',
+  },
+  'kinematic.no-material-declared': {
+    hintTemplate:
+      'checkLoadCapacity({ mode: "beam" }) requires opts.materials[partName] for every loaded part. Declare the per-part material (see error.message for the missing parts). No silent default material is applied.',
+    nextAction: { kind: 'fix-arg', field: 'opts.materials' },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'A load-capacity check ran in beam mode but the caller did not declare a material for one or more loaded parts; the check refused to silently substitute a default.',
+  },
+  'kinematic.mounting-hole.diameter-mismatch': {
+    hintTemplate:
+      'Fastener-side connectors on this mate have non-matching hole diameters (see error.message for the two values). Adjust the hole diameter on one side so both sides agree.',
+    nextAction: { kind: 'fix-arg', field: 'connector.hole.diameter' },
+    defaultSeverity: 'error',
+    group: 'kinematic',
+    description:
+      'A fastened mate binds two connectors whose hole diameters disagree beyond the diameter-match tolerance; the underlying assembly.mounting-hole.mismatch code also fires from the v0.7.4 substrate.',
+  },
+
+  // Slice Q (Query DSL) — Q3 evaluator codes (7 of the v1 11-code core;
+  // remaining 4 ship in Q4/Q5/Q7 alongside their evaluator entry points).
+  // The reactive-update code was demoted to v2 per consolidated review F8.
+  // The snapshot-fallback path re-uses F-foundation's
+  // 'feature.face-ref.snapshot-fallback-used' rather than minting a new code.
+  'query.empty': {
+    hintTemplate:
+      'The query resolved to zero entities on the current scene. Narrow the query if over-specified — remove a filter, or rebuild against the current scene. If empty is expected, annotate with .asLenient() to suppress this error and continue with no entities.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'narrow the query or mark it .asLenient()' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query resolved to zero entities at evaluation time.',
+  },
+  'query.over-determined': {
+    hintTemplate:
+      'The query resolved to multiple entities but the consumer expects exactly one. Narrow with .and(closestTo(point)) or .and(geometryType(...)), or pick a specific index with .nth(i).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'narrow the query to exactly-one entity' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query resolved to N>1 entities under an exactly-one consumer.',
+  },
+  'query.evaluated-too-early': {
+    hintTemplate:
+      'The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with list_features, or move the query construction to after the op is stamped.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'verify the Id or reorder operations' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query was evaluated against a scene that does not yet contain the referenced Id.',
+  },
+  'query.unknown-id': {
+    hintTemplate:
+      'The createdBy filter references an Id that does not exist. Verify the Id with list_features, or pin the upstream op via kc.id(\'<name>\') so the Id survives across reorderings.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'pin the upstream Id or rename the reference' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A createdBy filter referenced an Id absent from the scene.',
+  },
+  'query.unknown-label': {
+    hintTemplate:
+      'The withLabel filter matched zero lineage entries. Declare the label via .faceLabels({ \'<label>\': \'<canonical>\' }) on the relevant op, or use a canonical face name (top/bottom/left/right/front/back).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'declare the label or use a canonical face name' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A withLabel filter referenced a label absent from every lineage entry.',
+  },
+  'query.id-hierarchy-clash': {
+    hintTemplate:
+      'Two ops cannot share the same explicit Id at the same hierarchy level. Rename one of the colliding Ids.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'rename one of the colliding Ids' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'An explicit kc.id() collided with an already-pinned Id at the same hierarchy level.',
+  },
+  'query.unsupported-entity-type': {
+    hintTemplate:
+      'The Query evaluator does not yet resolve this entity kind. Face-kind queries are supported; edge/vertex/connector/part/solid kinds ship in a follow-up slice once the per-lowerer feature-stamp wiring lands. Recast the query to use kc.q.face(...) or wait for the follow-up.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use kc.q.face(...) until the kind-specific wiring lands' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query targeted an entity kind whose evaluator branch has not yet been wired.',
+  },
+  'query.composition-strict-failure': {
+    hintTemplate:
+      'A composed query (union / intersection / subtraction) short-circuited on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success — failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'fix the failing sub-query or annotate the composition with .asLenient()' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A composed Query aborted in strict mode because a sub-query raised a diagnostic; the outer wrapper code quotes the inner cause.',
+  },
+  'query.type-mismatch': {
+    hintTemplate:
+      'A consumer expecting a specific entity kind received a Query whose target field disagrees. Static narrowing via kc.q.face(...) / kc.q.edge(...) generics catches this at compile time on .kcad.ts source; this runtime fallback fires when the static marker was erased (JSON-AST boundary, fromString, or untyped Query<unknown>). Construct the query with the matching kind: use kc.q.<expected>(...) instead of kc.q.<actual>(...).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reconstruct the query with the kind the consumer expects (kc.q.face / kc.q.edge / ...)' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A Query crossed a runtime kind-narrowing fallback: a consumer demanded one entity kind and the Query.target field announced a different one.',
+  },
+  'query.invalid-syntax': {
+    hintTemplate:
+      'The topology input is neither a valid @kc[...] ref nor a valid @kcq[...] Query DSL string nor a JSON-AST object. Check the grammar: use @kc[<owner>/<kind>/<name>] for a single addressed entity, @kcq[<expr>] for a composed query (face(createdBy("id")), union(a, b), intersection(a, b), subtraction(a, b), nothing(), everything(<kind>)). See the kernelcad-mcp SKILL for the full grammar.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use @kc[owner/kind/name] for simple refs or @kcq[<expr>] for composed queries' },
+    defaultSeverity: 'error',
+    group: 'query',
+    description: 'A topology input string failed to parse as either an @kc[...] ref, an @kcq[...] Query DSL expression, or a JSON-AST object.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

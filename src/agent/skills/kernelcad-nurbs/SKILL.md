@@ -213,6 +213,107 @@ All three methods accept `Editable<number>` coords so symbolic params survive in
 2. **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Slice D Task 3). If overshoot pollutes the silhouette, either tighten the tolerance through `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control where precision beats convenience.
 3. **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer — this is acceptable for v1; explicit gap-gating is queued for a follow-up slice.
 
+## JS-side analytics — when to use which
+
+Every `Curve3D` (from `nurbsCurve`, `spline3d`, `hermiteG2`) exposes a `.analytics` namespace of read-only computed queries. These methods do NOT mutate the curve or produce new geometry — they return data (points, parameters, polylines, intersection records) for downstream consumption.
+
+| You want to | Method | Returns |
+|---|---|---|
+| Find the point on a curve nearest a query point | `curve.analytics.closestPoint(pt)` | `Vec3` (world-space point on curve) |
+| Get the parameter of the nearest point | `curve.analytics.closestParam(pt)` | `number` in `[0, 1]` |
+| Place N items spaced uniformly in arc length along a curve | `curve.analytics.divideByEqualArcLength(n)` | `CurveLengthSample[]` (`n+1` records with `t`, `pt`, `arcLength`) |
+| Place items every `Δ` mm along a curve | `curve.analytics.divideByArcLength(Δ)` | `CurveLengthSample[]` |
+| Get derivatives at a parameter (tangent, curvature, ...) | `curve.analytics.derivatives(t, numDerivs)` | `Vec3[]` of length `numDerivs + 1` (index 0 = point, 1 = tangent, 2 = curvature) |
+| Generate a polyline preview of the curve | `curve.analytics.tessellate({ tolerance })` | `Vec3[]` (default tolerance 0.05 mm; viewport-grade — NOT for export) |
+| Find where two curves cross | `a.analytics.intersect(b)` | `CurveCurveIntersection[]` (each record carries `tA`, `tB`, `ptA`, `ptB`, `distance`) |
+| Find where a curve pierces a surface | `curve.analytics.intersect(surface)` | `CurveSurfaceIntersection[]` (each record carries `tCurve`, `uv`, `pt`) |
+
+### Common pattern — place N holes evenly along a curve
+
+```ts
+const rail = spline3d([
+  [0, 0, 0], [25, 5, 0], [50, 0, 0], [75, 5, 0], [100, 0, 0],
+]);
+const slots = rail.analytics.divideByEqualArcLength(8);
+for (const { pt } of slots) {
+  body = body.cut(cylinder({ radius: 1, height: 5 }).translate(pt));
+}
+```
+
+`.sample(n)` returns parametric samples (clustered where knot density is high); `.divideByEqualArcLength(n)` returns spatial samples (evenly spaced in millimetres). For non-uniform-knot curves (every fit-through-points spline, every Catmull-Rom), the two are different. Pick `divideByEqualArcLength` when the agent intent is "evenly spaced along the curve."
+
+### Common pattern — snap a connector to a curve
+
+```ts
+const rail = spline3d([
+  [0, 0, 0], [50, 10, 0], [100, 5, 0], [150, -5, 0], [200, 0, 0],
+]);
+const fixturePt: [number, number, number] = [120, 30, 0];
+const snapPt = rail.analytics.closestPoint(fixturePt);
+const snapT = rail.analytics.closestParam(fixturePt);
+const snapTangent = rail.tangentAt(snapT);
+// Build the mount frame: origin on the rail, axis along the rail tangent.
+const bracketFrame = { origin: snapPt, axis: snapTangent };
+```
+
+### Common pattern — measure curvature for a G2 bridge
+
+```ts
+const left = spline3d([[-30, 0, 0], [-15, 3, 0], [0, 0, 0]]);
+const right = spline3d([[20, 0, 0], [35, -3, 0], [50, 0, 0]]);
+const [, leftTangent, leftCurv] = left.analytics.derivatives(1, 2);    // end of left
+const [, rightTangent, rightCurv] = right.analytics.derivatives(0, 2); // start of right
+const bridge = hermiteG2(
+  { point: left.pointAt(1), tangent: leftTangent, curvature: leftCurv },
+  { point: right.pointAt(0), tangent: rightTangent, curvature: rightCurv },
+);
+```
+
+### `path().spline(points, { startTangent, endTangent })`
+
+Optional 2D tangent constraints at the first and last waypoint of a 2D path spline. When omitted, the fit chooses tangents from chord-length parametrisation (existing default). Pass both to pin both endpoints; pass either alone to pin just one.
+
+```ts
+const profile = path()
+  .moveTo(0, 0)
+  .lineTo(10, 0)
+  .spline(
+    [[10, 0], [15, 5], [20, 15], [20, 30]],
+    { startTangent: [1, 0], endTangent: [0, 1] },
+  )
+  .lineTo(0, 30)
+  .close();
+```
+
+The tangent magnitudes do not matter (normalised internally); only the directions. `[1, 0]` and `[100, 0]` produce the same curve.
+
+### Performance characteristics
+
+- All `Curve3D.analytics.*` calls are synchronous JS computation. Single calls finish in well under 5 ms on typical hardware for curves up to ~100 control points.
+- `tessellate(0.05)` is the recommended preview default — typically 5× faster than the kernel mesher at the same tolerance.
+- `intersect(other)` on two degree-3 curves with ~10 control points each finishes in well under 50 ms.
+
+These are not real-time-graphics methods; for per-frame queries on large counts of curves, batch via Web Workers (deferred; not in v1).
+
+### When NOT to use `.analytics.*`
+
+- **Export**: `tessellate()` is viewport-grade only. STEP / STL / glTF exports go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- **Geometry construction**: analytics methods return data, not curves. To build a curve from analytics output (e.g. a refit through closest-point samples), call `nurbsCurve` or `spline3d` with the points.
+- **Set-theoretic intersection of queries**: `curve.analytics.intersect(other)` is geometric (curve-curve, curve-surface). Topological / set-theoretic intersection of `Query<Face>` selections uses `kc.q.intersection(a, b)` (different method on a different receiver).
+
+### Curve3D.analytics diagnostic codes
+
+- `feature.curve3d.analytics.degenerate-arclength` (error) — `divideByArcLength(Δ)` invoked with `Δ ≤ 0` or larger than the curve's total length. Hint: pass a positive spacing strictly less than `curve.length()`.
+- `feature.curve3d.analytics.closest-point-no-converge` (error) — the closest-point solver did not converge inside the iteration budget. Hint: tessellate first and seed `closestPoint` with the nearest polyline vertex; degenerate inputs (zero-length curve, query point on the curve) usually surface this code.
+- `feature.curve3d.analytics.derivatives-out-of-range` (error) — `numDerivs` exceeds the curve degree. Hint: derivatives beyond `degree` are zero by construction; reduce `numDerivs` to ≤ `degree`.
+- `feature.curve3d.analytics.tessellation-tolerance-invalid` (error) — `tolerance` is non-positive or non-finite. Hint: pass a positive number; the default 0.05 mm is the recommended viewport-grade tolerance.
+- `feature.curve3d.analytics.kernel-failed` (error) — the analytics solver threw an internal error. Hint: the curve probably has degenerate control net or knot vector; inspect via `sample(n)` first.
+- `feature.curve3d.analytics.intersect-kernel-failed` (error) — the intersection solver threw internally. Hint: one of the two operands is degenerate; tessellate both and check the polylines.
+- `feature.curve3d.analytics.intersect-no-intersection` (warn) — `intersect(other)` returned an empty array within tolerance. Not a fatal error; surfaced as a warning when downstream code asserts at least one crossing.
+- `feature.path.spline.tangent-zero-magnitude` (error) — `startTangent` or `endTangent` has magnitude < 1e-12. Hint: pass a non-zero vector; only the direction matters, but the vector must be non-degenerate.
+- `feature.path.spline.tangent-on-2d-only` (error) — tangent vectors must be 2D `[number, number]` arrays (path is planar). Hint: drop the third coordinate.
+- `feature.nurbs.bridge-conversion-failed` (error) — internal bridge could not lift the JS-fit curve back into a `Geom_BSplineCurve`. Hint: reduce waypoint count or relax tolerance; surfaces with > 200 waypoints occasionally hit this on tight fits.
+
 ## Related skills
 
 - `kernelcad-authoring` — primitives + sketches still cover most shapes; reach for NURBS only when the freeform contour can't be expressed.

@@ -39,6 +39,9 @@ import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { toParam } from '../shared/runtime/editableHelpers';
+import * as kinematic from '../kinematic';
+import type { KinematicFacade } from '../kinematic/types';
+import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -247,6 +250,17 @@ export interface KernelCadApi {
   /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
   fontPath(p: string): FontPath;
 
+  /**
+   * Query DSL constructor namespace (Slice Q). `q.face(...)`, `q.edge(...)`,
+   * `q.union(...)`, etc. build a lazy `Query<T>` value that resolves at
+   * consume-time against a `QueryScene`. Inside `.kcad.ts` scripts the
+   * namespace is also reachable as `kc.q.*` for prose-doc continuity.
+   *
+   * See `src/agent/skills/kernelcad-features/SKILL.md` (Query selectors)
+   * and the Query DSL cookbook snippets Q-S1..Q-S6 for usage patterns.
+   */
+  q: typeof queryNamespace;
+
   /** SDF authoring namespace (W2.3). Primitives + smoothBlend + materialize.
    *  `sdf.materialize(field)` returns a standard `Shape` of kind 'sdfMaterialize'
    *  that flows through booleans/fillets/exports. The bare `'sdf'` FeatureKind
@@ -332,6 +346,15 @@ export interface KernelCadApi {
    * last one.
    */
   animationView(spec: AnimationViewSpec): AnimationViewHandle;
+
+  /**
+   * Kinematic-grounding checks namespace. Four in-process feasibility
+   * gates an agent can call before declaring a mechanism design done:
+   * mounting-hole consistency, swept-pose collision, IK reachability, and
+   * beam-mode load capacity. Every entry is sync compute wrapped in async
+   * and returns a typed envelope with `source: 'local'`.
+   */
+  kinematic: KinematicFacade;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -795,6 +818,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     sketch: createSketchModule(session),
     fontPath,
 
+    // Query DSL constructor namespace (Slice Q). Exposed both as a top-level
+    // global `q` (via the sandbox spread in `runScript`/`isolation`) AND
+    // namespaced under `kc.q` for SKILL.md prose continuity. The wiring
+    // below routes calls to the existing constructors in
+    // `src/kernel/naming/queryConstructors.ts`; consumer-side resolution
+    // of a Query value (`hole(q.face(...), ...)`) is gated on Q7 — until
+    // then, agents inspect with `q.face(...).evaluate(scene)` (see Q-S6).
+    q: queryNamespace,
+
     sheetMetal(profile, opts) {
       // Capture-time validation. Evaluate Editable inputs once.
       const thicknessParam = mm(opts.thickness);
@@ -891,6 +923,19 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const metadata = record.metadata as unknown as import('../shared/intent/animationViewRecord').AnimationViewMetadata;
       return { id, metadata };
     },
+
+    kinematic: kinematic satisfies KinematicFacade,
   };
   return api;
 }
+
+// V slice — re-export the Curve3D analytics types so downstream consumers
+// (skill snippets, eval harnesses, MCP tool wrappers) can pull them from
+// the single public-API module rather than reaching into capture/.
+export type {
+  Curve3D,
+  Curve3DAnalytics,
+  CurveLengthSample,
+  CurveCurveIntersection,
+  CurveSurfaceIntersection,
+} from './capture/curveProxy';

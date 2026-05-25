@@ -606,6 +606,52 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
 
+## Cookbook — Query DSL for assemblies
+
+Each snippet below ships as a runnable `.kcad.ts` file under `src/agent/skills/kernelcad-assemblies/cookbook/snippets/`. The smoke test at `tests/integration/mcp/queryCookbookSmoke.test.ts` evaluates every snippet on every CI run.
+
+### Q-S4 — Ownership filters and Part Queries
+
+In an assembly, every face / edge / vertex belongs to exactly one part. `q.ownedByPart(...)` narrows a face Query to a specific part without naming a topology by hand — the per-variant topology can shift while the part label stays stable.
+
+```typescript
+const arm = assembly('bracket-mount');
+arm.part('bracket', box(20, 20, 10, false, { faceLabels: { mount: 'top' } }));
+
+// "The bracket part."
+const bracket = q.part().and(q.withFeatureName('bracket'));
+
+// "Faces on the bracket part."
+const bracketFaces = q.face().and(q.ownedByPart(bracket));
+
+// "The bracket's mount face."
+const mountFace = q.face()
+  .and(q.ownedByPart(bracket))
+  .and(q.withLabel('mount'));
+```
+
+See `cookbook/snippets/Q-S4-ownership-and-part-queries.kcad.ts`.
+
+### Q-S5 — Connector Queries for mate-side targeting
+
+`q.connector(...)` composed with `q.ownedByPart(...)` and `q.withLabel(...)` is the canonical pattern for identifying a connector on a specific part by label. The Query value is a descriptor today; consumer integration on `arm.mate(...)` ships in a later slice, so the string form (`'partName.connectorName'`) remains the consumed surface in parallel.
+
+```typescript
+const baseSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('base'))))
+  .and(q.withLabel('mount'));
+
+const bracketSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('bracket'))))
+  .and(q.withLabel('flange'));
+
+// Consume by string ref today; the Query value above describes the same
+// connector and round-trips through JSON for diagnostic use.
+arm.mate('attach', 'base.mount', 'bracket.flange', 'fastened');
+```
+
+See `cookbook/snippets/Q-S5-connector-queries.kcad.ts`.
+
 ## Verification gates
 
 After authoring a multi-part assembly, run before reporting done:

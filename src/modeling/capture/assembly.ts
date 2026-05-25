@@ -33,6 +33,7 @@ import {
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
+import type { PartLineage, PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
@@ -162,6 +163,32 @@ export interface SubAssemblyHandle {
   part(origPartName: string): AssemblyPartRef;
 }
 
+/** Beam cross-section declaration consumed by the closed-form Euler-Bernoulli
+ *  path in `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Optional —
+ *  parts without a declared cross-section fire `kinematic.load.beam-not-applicable`
+ *  when a load is applied to them. Lengths are in millimetres (the assembly's
+ *  canonical length unit). */
+export type AssemblyCrossSection =
+  | {
+      readonly kind: 'rectangle';
+      readonly widthMm: number;
+      readonly heightMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'circle';
+      readonly radiusMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'i-beam';
+      readonly flangeWidthMm: number;
+      readonly flangeThicknessMm: number;
+      readonly webHeightMm: number;
+      readonly webThicknessMm: number;
+      readonly lengthMm: number;
+    };
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -176,6 +203,11 @@ export interface AssemblyPartOpts {
    *  the dynamics will be off for any non-water material. Typical values:
    *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
   density?: number;
+  /** Beam cross-section for closed-form Euler-Bernoulli load checking via
+   *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
+   *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
+   *  on any load applied to the part. */
+  crossSection?: AssemblyCrossSection;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -308,6 +340,10 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  Read by the URDF / SDF export inertial-block emitters. Undefined when
    *  the script did not declare a density on `arm.part(...)`. */
   readonly density?: number;
+  /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
+   *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
+   *  the script did not declare a cross-section on `arm.part(...)`. */
+  readonly crossSection?: AssemblyCrossSection;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */
@@ -352,6 +388,12 @@ export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
+  /** Q1.5: per-part lineage map (PartLineageMap) populated on every
+   *  `.part(name, shape, opts?)` capture-site. Mirrors `FaceLineage` /
+   *  `EdgeLineage` for the part scope so part-level Queries resolve
+   *  through the same lineage pathway. Read-only outside this class;
+   *  surfaced via `__partLineage()`. */
+  private readonly partLineage: PartLineageMap = new Map();
   private readonly joints: AssemblyJointStored[] = [];
   /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
@@ -400,9 +442,24 @@ export class Assembly {
         );
       }
     }
+    if (opts.crossSection !== undefined) {
+      validateCrossSection(name, shape.id, opts.crossSection);
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
+    // Q1.5: write the part-lineage entry now that the capture-session has
+    // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
+    // is the same id the FeatureRecord carries — anchors part-level Query
+    // resolution (`kc.q.part(kc.q.createdBy('<featureId>'))`) to the
+    // existing FeatureRecord graph rather than introducing a parallel
+    // id stream.
+    const lineage: PartLineage = {
+      featureId: record.id,
+      featureName: name,
+      featureKind: 'assemblyPart',
+    };
+    this.partLineage.set(name, lineage);
     // Shared mutable array: the part-ref's `.connector(name, opts)` chain
     // method pushes into this array, and the `AssemblyPartStored` record
     // below references the same array via spread (arrays are by-reference),
@@ -414,6 +471,7 @@ export class Assembly {
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
       ...(opts.density !== undefined ? { density: opts.density } : {}),
+      ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -1138,6 +1196,22 @@ export class Assembly {
    */
   __parts(): readonly AssemblyPartStored[] {
     return this.parts;
+  }
+
+  /**
+   * Q1.5 — Internal accessor: read-only view of the per-part lineage map.
+   *
+   * Mirrors `FaceLineage` / `EdgeLineage` for the part scope. Consumed by
+   * the (future) Q3 query evaluator's `Query<Part>` branch and the future
+   * Drake `tipLink: Query<unknown>` consumer; both resolve part-level
+   * Queries by walking this map.
+   *
+   * The returned map is the live internal map by reference — callers must
+   * treat it as read-only. Mirrors the `__parts()` / `__mates()`
+   * underscore-prefixed convention; not part of the agent-facing surface.
+   */
+  __partLineage(): PartLineageMap {
+    return this.partLineage;
   }
 
   /**
@@ -2114,6 +2188,38 @@ function normalizeConnectors(
       : { origin: toVec3Param(frame.origin, 'mm'), axis: toVec3Param(frame.axis, 'unitless') };
   }
   return normalized;
+}
+
+/** Sanity-check every numeric field on an authored cross-section. Lengths
+ *  must be finite + positive; an invalid field raises a `feature.invalid-args`
+ *  at capture time so beam-mode load checks never see NaN-laced sections. */
+function validateCrossSection(
+  partName: string,
+  featureId: FeatureId,
+  cs: AssemblyCrossSection,
+): void {
+  const ensurePositive = (label: string, value: number): void => {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly part '${partName}': crossSection ${label} must be a positive finite number; got ${formatScalarForError(value)}.`,
+        featureId,
+        'Pass every cross-section length in millimetres as a finite number > 0.',
+      );
+    }
+  };
+  ensurePositive('lengthMm', cs.lengthMm);
+  if (cs.kind === 'rectangle') {
+    ensurePositive('widthMm', cs.widthMm);
+    ensurePositive('heightMm', cs.heightMm);
+  } else if (cs.kind === 'circle') {
+    ensurePositive('radiusMm', cs.radiusMm);
+  } else {
+    ensurePositive('flangeWidthMm', cs.flangeWidthMm);
+    ensurePositive('flangeThicknessMm', cs.flangeThicknessMm);
+    ensurePositive('webHeightMm', cs.webHeightMm);
+    ensurePositive('webThicknessMm', cs.webThicknessMm);
+  }
 }
 
 function paramToExpr(p: Param): ParamRefExpr {

@@ -96,7 +96,8 @@
     "ts-morph": "^27.0.2",
     "typescript": "~5.9.3",
     "yaml": "^2.8.4",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "verb-nurbs": "file:./vendor/verb-nurbs"
   },
   "overrides": {
     "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1"

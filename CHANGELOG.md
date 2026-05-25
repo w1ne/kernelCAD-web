@@ -1,6 +1,76 @@
 # kernelCAD v0.11.0
 
-## Unreleased
+## Unreleased — V slice: NURBS curve analytics layer
+
+### Added — `Curve3D.analytics.*` namespace
+
+Every `Curve3D` (constructed via `nurbsCurve`, `spline3d`, or `hermiteG2`) now exposes a `.analytics.*` namespace with read-only methods for querying the curve geometrically:
+
+- `curve.analytics.closestPoint(pt)` / `closestParam(pt)` — nearest point or parameter on the curve to a 3D query point, exact within solver tolerance.
+- `curve.analytics.divideByEqualArcLength(n)` / `divideByArcLength(mm)` — samples spaced uniformly in arc length (not parametrically); the natural answer for placing N features evenly along a non-uniform curve. The `n`-form returns `n + 1` samples; the `mm`-form returns however many samples fit, with the last sample landing at the curve end.
+- `curve.analytics.derivatives(t, numDerivs)` — derivatives 0..N at parameter `t`; index 0 is the point, index 1 is the (unnormalised) tangent, index 2 is the curvature vector. `numDerivs` must not exceed the curve degree.
+- `curve.analytics.tessellate({ tolerance })` — viewport-grade adaptive polyline; default tolerance 0.05 mm. For hover-preview and wireframe rendering only. Export tessellation continues to go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- `curve.analytics.intersect(other)` — geometric intersection of this curve with another `Curve3D` or with a `Surface`. Overloads return `CurveCurveIntersection[]` (each record carrying `tA`, `tB`, `ptA`, `ptB`, `distance`) or `CurveSurfaceIntersection[]` (each record carrying `tCurve`, `uv`, `pt`).
+
+The analytics methods are read-only — they return data, not new geometry. The instance `intersect(other)` overload is the only geometric intersection method in the namespace; the set-theoretic intersection of `Query<Face>` selections continues to live separately on `kc.q.intersection`.
+
+### Added — fit-with-tangents on `path().spline()`
+
+`path().spline(points, opts)` accepts `opts.startTangent` and `opts.endTangent` (2D direction vectors) to constrain the curve's tangent at the first and last waypoint. Tangent magnitudes are normalised internally; only the directions matter. Existing `.spline(points)` and `.spline(points, { tension })` calls are unchanged — when both tangent fields are omitted, the call lowers through the existing fast path unchanged.
+
+The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fields in its input schema.
+
+### Added — diagnostic codes
+
+10 new codes under `feature.curve3d.analytics.*`, `feature.path.spline.tangent-*`, and `feature.nurbs.bridge-conversion-failed` cover invalid-tolerance, non-convergence, degenerate-arc-length, derivatives-out-of-range, tangent-zero-magnitude, 2D-only tangent inputs, internal solver failures, and bridge-conversion failures. All carry `hint` + `nextAction` per the diagnostic-vocab discipline.
+
+### Added — eval task: `eyewear-wayfarer-front` arc-length lens placement
+
+The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
+
+### Added — kernelCAD kinematic grounding
+
+Design-time mechanism feasibility gates. Agents can now ask whether a moving
+assembly will work — across collision sweeps, reachability targets, mounting-hole
+patterns, and static load capacity — and get back actionable diagnostics with
+machine-readable `nextAction` repair hints. Every check runs locally in the
+same Node process; no network, no auth, no quotas.
+
+- `kinematic.checkSweptCollision(arm, opts)` — sweep declared joint ranges
+  and report colliding poses with structured per-pose contact pairs.
+- `kinematic.checkReachable(arm, opts)` — IK feasibility for an end-effector
+  target. Dispatches the closed-form analytical solver on spherical-wrist
+  6-DOF chains and the damped-least-squares numeric solver otherwise.
+- `kinematic.checkMountingHoleConsistency(arm)` — fastener compatibility
+  across every fastened mate's bound faces.
+- `kinematic.checkLoadCapacity(arm, loads, opts)` — closed-form
+  Euler-Bernoulli beam-stress check on cantilever-shaped parts with declared
+  materials.
+
+Nine new `kinematic.*` diagnostic codes registered with mandatory `hint` and
+`nextAction` repair fields (K1 collision swept, K2 sample-density warn, K3
+unreachable, K4 iteration cap, K5 unsupported config, K6 load exceeds yield,
+K7 beam not applicable, K8 no material declared, K9 mounting-hole mismatch).
+
+Four MCP tools paired with the facade entries — `check_swept_collision`,
+`check_reachable`, `check_mounting_hole_consistency`, `check_load_capacity`.
+
+New `kernelcad-kinematic` agent skill with six cookbook recipes covering
+robotic arms, scissor-jack legs, clamshell hinges, and over-center latches.
+
+Four new eval tasks under `eval/tasks/kinematic-*` exercising each facade
+entry plus a cross-borrow integration task chaining a NURBS rail curve, a
+topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
+
+### Added — Query DSL: lazy retargetable topology references
+
+- Added the kernelCAD Query DSL — lazy retargetable topology references with set-algebra composition, type-narrowed authoring, and string-sugar parsing. Queries survive upstream edits via lineage-stable Ids; `kc.q.face(...)`, `kc.q.edge(...)`, `kc.q.union(...)`, `.and(...)`, `.minus(...)`, `.nth(...)`, `.asLenient()`. String form `@kcq[...]` round-trips with the existing `@kc[...]` ref form — one canonical internal Query value, two surface syntaxes.
+- Added `evaluate_query` MCP tool — agent inspects a Query against the current scene before consuming it in a feature op.
+- Extended every face/edge feature consumer (fillet, chamfer, hole, cutout, shell, bend, connector, mate) to accept `Query<FaceMarker>` / `Query<EdgeMarker>` inputs alongside the existing `@kc[...]` strings; strings are parsed to Queries at the API boundary.
+- Extended `resolve_topo_ref` MCP tool to accept `@kcq[...]` Query DSL refs alongside the existing `@kc[...]` grammar.
+- Added 10 new diagnostic codes under the `query.*` family: `query.empty`, `query.over-determined`, `query.evaluated-too-early`, `query.unknown-id`, `query.unknown-label`, `query.id-hierarchy-clash`, `query.unsupported-entity-type`, `query.composition-strict-failure`, `query.type-mismatch`, `query.invalid-syntax`. The reactive-update info code is deferred to v2 (the capture-session model has no edit-and-re-resolve loop today).
+- Internal: `EdgeLineage` and `PartLineage` gain a `featureId` slot for lineage-stable Query resolution; `FaceLineage`'s existing `featureId` slot is reused.
+- Added 6 cookbook snippets (`Q-S1` through `Q-S6`) under `kernelcad-features`, `kernelcad-assemblies`, and `kernelcad-mcp` skills covering construction, set-algebra, lenient composition, ownership-by-part queries, connector queries, and the inspect-first-build-after pattern.
 
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
