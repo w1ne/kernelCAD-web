@@ -5,6 +5,7 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
+import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
@@ -37,11 +38,21 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
+  // lowerer through the same {edges} slot. Captured at append-time and
+  // dispatched through the Q3 evaluator at lower-time.
+  | Query<EdgeMarker>
+  | Query<unknown>
   | undefined;
 
 export type FaceSelector =
   | FaceQuery
-  | { face: CanonicalFace | string };
+  | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
+  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
+  // at append-time and dispatched through the Q3 evaluator at lower-time.
+  | Query<FaceMarker>
+  | Query<unknown>;
 
 /**
  * IMPORTANT — drift sentinel contract:

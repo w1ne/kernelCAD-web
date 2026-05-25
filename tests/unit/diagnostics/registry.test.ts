@@ -22,6 +22,7 @@ const ALLOWED_GROUPS = new Set([
   'mesher',
   'tool',
   'dfm',
+  'query',
   'kinematic',
 ]);
 

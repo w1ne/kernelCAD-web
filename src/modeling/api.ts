@@ -41,6 +41,7 @@ import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { toParam } from '../shared/runtime/editableHelpers';
 import * as kinematic from '../kinematic';
 import type { KinematicFacade } from '../kinematic/types';
+import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -248,6 +249,17 @@ export interface KernelCadApi {
 
   /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
   fontPath(p: string): FontPath;
+
+  /**
+   * Query DSL constructor namespace (Slice Q). `q.face(...)`, `q.edge(...)`,
+   * `q.union(...)`, etc. build a lazy `Query<T>` value that resolves at
+   * consume-time against a `QueryScene`. Inside `.kcad.ts` scripts the
+   * namespace is also reachable as `kc.q.*` for prose-doc continuity.
+   *
+   * See `src/agent/skills/kernelcad-features/SKILL.md` (Query selectors)
+   * and the Query DSL cookbook snippets Q-S1..Q-S6 for usage patterns.
+   */
+  q: typeof queryNamespace;
 
   /** SDF authoring namespace (W2.3). Primitives + smoothBlend + materialize.
    *  `sdf.materialize(field)` returns a standard `Shape` of kind 'sdfMaterialize'
@@ -805,6 +817,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
 
     sketch: createSketchModule(session),
     fontPath,
+
+    // Query DSL constructor namespace (Slice Q). Exposed both as a top-level
+    // global `q` (via the sandbox spread in `runScript`/`isolation`) AND
+    // namespaced under `kc.q` for SKILL.md prose continuity. The wiring
+    // below routes calls to the existing constructors in
+    // `src/kernel/naming/queryConstructors.ts`; consumer-side resolution
+    // of a Query value (`hole(q.face(...), ...)`) is gated on Q7 — until
+    // then, agents inspect with `q.face(...).evaluate(scene)` (see Q-S6).
+    q: queryNamespace,
 
     sheetMetal(profile, opts) {
       // Capture-time validation. Evaluate Editable inputs once.

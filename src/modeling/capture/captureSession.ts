@@ -109,6 +109,21 @@ export function buildFaceInputRef(
   baseId: import('../../shared/intent/types').FeatureId,
   face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
+  // Q8 — Query DSL value (kc.q.face(...)). Detect duck-type-shape and
+  // serialize as a queryDsl FaceRef so the lowerer dispatches through
+  // the Q3 evaluator at consume time.
+  if (isQueryValue(face)) {
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: {
+        kind: 'queryDsl',
+        queryAst: face.ast,
+        queryTarget: face.target,
+        ...(face.lenient ? { lenient: true } : {}),
+      },
+    };
+  }
   // `{ face: <something> }` wrapper form
   if (typeof face === 'object' && face !== null && 'face' in face) {
     const faceVal = (face as { face: unknown }).face;
@@ -126,6 +141,19 @@ export function buildFaceInputRef(
         ref: { kind: 'label', name: faceVal },
       };
     }
+    // Wrapped Query value: { face: kc.q.face(...) }.
+    if (isQueryValue(faceVal)) {
+      return {
+        kind: 'face',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: faceVal.ast,
+          queryTarget: faceVal.target,
+          ...(faceVal.lenient ? { lenient: true } : {}),
+        },
+      };
+    }
     return {
       kind: 'face',
       featureId: baseId,
@@ -138,6 +166,21 @@ export function buildFaceInputRef(
     featureId: baseId,
     ref: { kind: 'query', query: face as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
   };
+}
+
+/** Q8 duck-type check: detect the Query DSL value (kc.q.face(...) etc).
+ *  Reuses the same `_kind: 'kc.query'` runtime tag set by makeQuery, so a
+ *  selector argument that already crossed a JSON boundary still matches. */
+function isQueryValue(v: unknown): v is import('../../kernel/naming/query').Query<unknown> {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    (v as { _kind?: unknown })._kind === 'kc.query' &&
+    typeof (v as { target?: unknown }).target === 'string' &&
+    typeof (v as { ast?: unknown }).ast === 'object' &&
+    (v as { ast: { op?: unknown } }).ast !== null &&
+    typeof (v as { ast: { op?: unknown } }).ast.op === 'string'
+  );
 }
 
 export interface FeatureSpec {
@@ -1754,11 +1797,46 @@ function buildEdgeFeatureRef(
   baseId: string,
   selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
 ): { key: 'face' | 'edges'; value: FeatureRef } {
+  // Q8 — Query DSL value (kc.q.edge(...) / kc.q.face(...)). Dispatch by
+  // target kind so the lowerer sees the right slot key (edges for edge
+  // queries, face for face queries).
+  if (isQueryValue(selector)) {
+    const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
+    return {
+      key,
+      value: {
+        kind: key === 'face' ? 'face' : 'edge',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: selector.ast,
+          queryTarget: selector.target,
+          ...(selector.lenient ? { lenient: true } : {}),
+        },
+      },
+    };
+  }
   // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
   // property and NOT having the EdgeSegment full-schema markers.
   if (typeof selector === 'object' && selector !== null && 'face' in selector &&
       !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
     const faceVal = (selector as { face: unknown }).face;
+    // Q8 — { face: kc.q.face(...) } wrapper form on an edge feature.
+    if (isQueryValue(faceVal)) {
+      return {
+        key: 'face',
+        value: {
+          kind: 'face',
+          featureId: baseId,
+          ref: {
+            kind: 'queryDsl',
+            queryAst: faceVal.ast,
+            queryTarget: faceVal.target,
+            ...(faceVal.lenient ? { lenient: true } : {}),
+          },
+        },
+      };
+    }
     if (typeof faceVal === 'string') {
       if (CANONICAL_FACES.has(faceVal)) {
         return {
