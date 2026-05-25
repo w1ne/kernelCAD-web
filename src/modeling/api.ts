@@ -39,6 +39,8 @@ import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { toParam } from '../shared/runtime/editableHelpers';
+import * as kinematic from '../kinematic';
+import type { KinematicFacade } from '../kinematic/types';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 
 export interface ApiContext {
@@ -344,6 +346,15 @@ export interface KernelCadApi {
    * last one.
    */
   animationView(spec: AnimationViewSpec): AnimationViewHandle;
+
+  /**
+   * Kinematic-grounding checks namespace. Four in-process feasibility
+   * gates an agent can call before declaring a mechanism design done:
+   * mounting-hole consistency, swept-pose collision, IK reachability, and
+   * beam-mode load capacity. Every entry is sync compute wrapped in async
+   * and returns a typed envelope with `source: 'local'`.
+   */
+  kinematic: KinematicFacade;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -912,6 +923,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const metadata = record.metadata as unknown as import('../shared/intent/animationViewRecord').AnimationViewMetadata;
       return { id, metadata };
     },
+
+    kinematic: kinematic satisfies KinematicFacade,
   };
   return api;
 }
