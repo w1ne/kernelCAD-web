@@ -1565,7 +1565,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         required: ['tip_link'],
       },
     },
-    handler: input => checkReachableTool(input as Parameters<typeof checkReachableTool>[0]),
+    handler: input => checkReachableTool(input as unknown as Parameters<typeof checkReachableTool>[0]),
   },
   {
     definition: {

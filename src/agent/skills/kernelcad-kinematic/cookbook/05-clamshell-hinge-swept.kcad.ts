@@ -13,6 +13,7 @@ const arm = assembly('cookbook-clamshell-hinge');
 // Table surface, modeled as a slab below the base — sits in -Z so the lid
 // only intersects it if it swings past closed (negative hinge angle).
 const table = arm.part('table', box(400, 300, 5, true).translate(0, 0, -10));
+void table; // included in the assembly so swept collision detects lid-vs-table at extreme negative hinge angles
 
 // Laptop base — sits on top of the table.
 const base = arm.part('base', box(300, 200, 12, true).translate(0, 0, 6));
