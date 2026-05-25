@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.kernelcad/kernelcad",
-  "description": "Agent-first CAD: editable .kcad.ts source, deterministic review, OpenCASCADE kernel — authoring, NURBS, assemblies, kinematics, from-reference.",
+  "description": "Agent-first CAD: editable .kcad.ts source, deterministic review, OpenCASCADE kernel.",
   "repository": {
     "url": "https://github.com/w1ne/kernelCAD-web",
     "source": "github"
@@ -11,16 +11,6 @@
     {
       "type": "streamable-http",
       "url": "https://mcp.kernelcad.com/mcp"
-    }
-  ],
-  "packages": [
-    {
-      "registryType": "npm",
-      "identifier": "kernelcad",
-      "version": "0.11.1",
-      "transport": {
-        "type": "stdio"
-      }
     }
   ]
 }
