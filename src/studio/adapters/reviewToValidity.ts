@@ -47,6 +47,12 @@ function diagnosticFromReview(d: NonNullable<ScriptReviewSummary['diagnostics']>
         severity,
         message: d.message ?? '',
         hint: d.hint ?? '',
+        // Carry part/mate attribution so SceneTab can route each diagnostic
+        // to the right row's severity dot. Older payloads omit these.
+        ...(d.partName ? { partName: d.partName } : {}),
+        ...(d.mateName ? { mateName: d.mateName } : {}),
+        ...(d.partA ? { partA: d.partA } : {}),
+        ...(d.partB ? { partB: d.partB } : {}),
     };
 }
 
