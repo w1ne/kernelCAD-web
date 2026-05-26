@@ -86,7 +86,7 @@ const L_UPPER = 170;
 const SPRING_WIRE_R   = 1.6;
 const SPRING_COIL_R   = 9;
 const SPRING_PITCH    = 5;
-const SPRING_TURNS    = 6;
+const SPRING_TURNS    = 5;
 const SPRING_LEN      = SPRING_PITCH * SPRING_TURNS;   // 30 mm
 
 // Head: shade, bulb, socket.
@@ -182,7 +182,7 @@ function makeSpring(turns: number = SPRING_TURNS, length: number = SPRING_LEN) {
     pitch,
     turns,
     axis: 'X',
-    pointsPerTurn: 24,
+    pointsPerTurn: 14,
   });
   return profile.sweep(rail, { frenet: true }).material(mSpring);
 }
