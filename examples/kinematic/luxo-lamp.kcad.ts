@@ -97,7 +97,6 @@ const SHADE_WALL    = 2.5;
 const SOCKET_R      = 16;
 const SOCKET_LEN    = 26;
 const BULB_R        = 30;
-const BULB_X        = SOCKET_LEN + BULB_R * 0.55;   // bulb base inside socket
 
 // ---- assembly handle -----------------------------------------------------
 const arm = assembly('luxo-lamp');
