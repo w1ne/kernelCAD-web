@@ -9,6 +9,7 @@ beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'kc-tel-idx-'));
   process.env.KERNELCAD_CONFIG_HOME = dir;
   delete process.env.KERNELCAD_TELEMETRY;
+  delete process.env.KERNELCAD_TELEMETRY_DISABLED;
   delete process.env.DO_NOT_TRACK;
   delete process.env.CI;
 });
