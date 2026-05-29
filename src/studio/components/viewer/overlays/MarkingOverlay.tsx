@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Brush } from 'lucide-react';
+import { Brush, X as XIcon } from 'lucide-react';
 import { shellStore } from '../../../store/shellStore';
 import { useShellStore } from '../../../store/useShellStore';
 
@@ -108,15 +108,26 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     }
   }, [panelPos.x]);
 
+  // Escape closes marking mode — Photoshop / Figma muscle memory.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        shellStore.setMarkingMode(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   // Size the canvas BITMAP (the `width`/`height` attributes — what the 2D
-  // context actually paints into) to track the viewport. We hold the size
-  // in React state so the canvas JSX gets `width={w} height={h}` props
-  // every render; that's more robust than an imperative `canvas.width = w`
-  // side-effect inside useEffect, which previously didn't survive (the
-  // brush was painting into the default 300×150 buffer, then CSS stretched
-  // that buffer over the full overlay — clicks anywhere outside the
-  // first 300×150 of the bitmap painted nothing visible).
-  const [canvasSize, setCanvasSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  // context actually paints into) to track the parent (the 3D viewport
+  // wrapper). React state so the canvas JSX gets `width={w} height={h}`
+  // props every render; that's more robust than an imperative
+  // `canvas.width = w` side-effect, which previously left the bitmap at
+  // its default 300×150 even while CSS scaled the canvas up.
+  // Initial value is a safe fallback; the post-mount measure() immediately
+  // overwrites it with the actual parent rect.
+  const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -139,10 +150,24 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     };
   }, []);
 
+  /** CSS-pixel position relative to the canvas — used for the brush-size
+   *  preview circle which is itself positioned in CSS space. */
   function pointerPos(e: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  /** Map a CSS-pixel point to the canvas bitmap's coordinate system. The
+   *  bitmap may be briefly smaller than the CSS box (before the
+   *  ResizeObserver tick after mount); without this scaling, strokes would
+   *  appear shifted from the cursor by the stretch ratio. */
+  function toBitmap(p: { x: number; y: number }) {
+    const canvas = canvasRef.current!;
+    const rect = canvas.getBoundingClientRect();
+    const sx = rect.width > 0 ? canvas.width / rect.width : 1;
+    const sy = rect.height > 0 ? canvas.height / rect.height : 1;
+    return { x: p.x * sx, y: p.y * sy };
   }
 
   function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -158,7 +183,8 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     canvas.setPointerCapture(e.pointerId);
     const p = pointerPos(e);
     lastPointRef.current = p;
-    paintDot(ctx, p.x, p.y, brushSize);
+    const bp = toBitmap(p);
+    paintDot(ctx, bp.x, bp.y, brushSize);
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -172,11 +198,17 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     if (!ctx) return;
     const last = lastPointRef.current;
     if (last) {
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.55)';
+      // Solid red on the bitmap; constant translucency comes from CSS
+      // opacity on the <canvas> itself (see style.opacity below). Highlighter
+      // semantics: overlapping strokes do not stack alpha, so re-marking the
+      // same region stays the same shade.
+      const bpLast = toBitmap(last);
+      const bp = toBitmap(p);
+      ctx.strokeStyle = 'rgb(239, 68, 68)';
       ctx.lineWidth = brushSize;
       ctx.beginPath();
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(p.x, p.y);
+      ctx.moveTo(bpLast.x, bpLast.y);
+      ctx.lineTo(bp.x, bp.y);
       ctx.stroke();
     }
     lastPointRef.current = p;
@@ -225,7 +257,9 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     y: number,
     radius: number,
   ) {
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.55)';
+    // Solid on the bitmap (see note in onPointerMove) — translucency comes
+    // from canvas-level CSS opacity so overlapping marks stay one shade.
+    ctx.fillStyle = 'rgb(239, 68, 68)';
     ctx.beginPath();
     ctx.arc(x, y, radius / 2, 0, Math.PI * 2);
     ctx.fill();
@@ -322,7 +356,9 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     <div
       data-testid="marking-overlay-root"
       style={{
-        position: 'fixed',
+        // `absolute` so we size to the 3D viewport's flex-1 wrapper in
+        // StudioShell — Inspector + Toolbar stay outside the brush region.
+        position: 'absolute',
         top: 0, left: 0, right: 0, bottom: 0,
         zIndex: 1000,
         pointerEvents: 'auto',
@@ -349,6 +385,13 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           left: 0,
           width: '100%',
           height: '100%',
+          // Highlighter semantics: constant translucency. Strokes write
+          // solid red into the bitmap; this CSS opacity on the element is
+          // applied AFTER bitmap compositing, so overlapping strokes never
+          // accumulate darker. The mask PNG sent to the agent stays fully
+          // opaque red where painted, which is what we want for clear
+          // region detection.
+          opacity: 0.45,
           // Hide the system cursor — we render our own brush-size preview circle
           cursor: 'none',
           touchAction: 'none',
@@ -415,7 +458,34 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           }}
         >
           <span style={{ flex: 1 }}>Mark what's wrong</span>
-          <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400 }}>drag to move</span>
+          <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400, marginRight: 8 }}>drag to move · esc to close</span>
+          {/* Windows-style close icon (square button, hover tint, X glyph). */}
+          <button
+            type="button"
+            data-testid="marking-overlay-close-x"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => shellStore.setMarkingMode(false)}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#fca5a5'; }}
+            aria-label="Close marking overlay"
+            title="Close (Esc)"
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: '#fca5a5',
+              cursor: 'pointer',
+              width: 28,
+              height: 28,
+              padding: 0,
+              borderRadius: 3,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.12s ease-out, color 0.12s ease-out',
+            }}
+          >
+            <XIcon size={16} strokeWidth={2.2} />
+          </button>
         </div>
         <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
