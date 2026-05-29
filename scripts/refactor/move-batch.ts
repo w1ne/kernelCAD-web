@@ -4,7 +4,8 @@
  * then run the codemod. Either everything succeeds or the script aborts
  * before mutating imports.
  *
- * Usage: npx tsx scripts/refactor/move-batch.ts scripts/refactor/mappings/pr1-shared.json
+ * Usage: npx tsx scripts/refactor/move-batch.ts docs/migrations/refactor-mappings/pr1-shared.json
+ * (Past PR mapping JSONs are archived under docs/migrations/refactor-mappings/.)
  */
 import { readFile, rename, mkdir, stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';

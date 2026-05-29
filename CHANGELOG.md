@@ -1,5 +1,15 @@
 # kernelCAD v0.11.0
 
+## Unreleased — kernelcad-sdf alias removed
+
+### Removed — `kernelcad-sdf` deprecation alias
+
+The deprecation alias scheduled for removal "in the next minor version" when
+the skill was renamed to `kernelcad-fields` in v0.11.0 is now gone. Load
+`kernelcad-fields` directly. Public API is unchanged: the `sdf.*` namespace,
+`SdfField` type, and `evaluate_sdf` MCP tool keep their existing names —
+only the skill folder under `src/agent/skills/` was removed.
+
 ## Unreleased — borrow-integration follow-ups (conventions clarified)
 
 Documentation cleanup for the two non-bug "discoveries" that surfaced while
