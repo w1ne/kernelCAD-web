@@ -56,9 +56,8 @@ export async function runStdioServer(): Promise<void> {
   maybeShowFirstRunNotice();
   const server = createMcpServer();
   const transport = new StdioServerTransport();
-  const flush = () => { void flushTelemetry(); };
-  process.once('beforeExit', flush);
-  process.once('SIGINT', () => { flush(); process.exit(0); });
-  process.once('SIGTERM', () => { flush(); process.exit(0); });
+  process.once('beforeExit', () => { void flushTelemetry(); });
+  process.once('SIGINT', () => { void flushTelemetry().finally(() => process.exit(0)); });
+  process.once('SIGTERM', () => { void flushTelemetry().finally(() => process.exit(0)); });
   await server.connect(transport);
 }
