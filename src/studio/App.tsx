@@ -134,13 +134,12 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     );
   }
 
-  if (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) {
-    return (
-      <main aria-live="polite">
-        <p>Loading Studio source...</p>
-      </main>
-    );
-  }
+  // Note: we deliberately do NOT block the whole shell on
+  // (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) anymore.
+  // The script-source fetch is a few-ms dev endpoint, but mounting StudioShell
+  // immediately lets the user see/use the toolbar and the floating MarkingFab
+  // (paint-a-review) even while the kernel is still warming up. The source
+  // load races into `code` state and the viewport recomputes when ready.
 
   return isDevLab ? (
     <Suspense fallback={null}>

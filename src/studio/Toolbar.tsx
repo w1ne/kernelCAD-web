@@ -105,16 +105,17 @@ export function Toolbar({
                     type="button"
                     data-testid="toolbar-mark"
                     onClick={onToggleMarkingMode}
+                    title={markingMode ? 'Exit brush / marking mode' : 'Paint a review over what is wrong'}
                     aria-label={markingMode ? 'Exit marking mode' : 'Enter marking mode'}
                     aria-pressed={markingMode}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
                         markingMode
-                            ? 'bg-red-600 text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                            ? 'bg-red-600 text-white ring-2 ring-red-300'
+                            : 'bg-[#2a1313] text-red-300 hover:bg-red-700 hover:text-white border border-red-700'
                     }`}
                 >
-                    <Brush size={12} />
-                    Mark
+                    <Brush size={14} />
+                    Brush
                 </button>
                 {referenceImagesPresent && (
                     <button

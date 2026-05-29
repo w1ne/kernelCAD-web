@@ -1,5 +1,72 @@
 import { useEffect, useRef, useState } from 'react';
+import { Brush } from 'lucide-react';
 import { shellStore } from '../../../store/shellStore';
+import { useShellStore } from '../../../store/useShellStore';
+
+/**
+ * (Removed from default mount per user feedback — too visually noisy.) Keeping
+ * the export so it can be re-mounted via a settings toggle in a future slice.
+ * The toolbar `Brush` button (Toolbar.tsx) is the canonical activator.
+ */
+export function MarkingFab() {
+  const { markingMode } = useShellStore();
+  return (
+    <button
+      type="button"
+      data-testid="marking-fab"
+      onClick={() => shellStore.toggleMarkingMode()}
+      aria-pressed={markingMode}
+      aria-label={markingMode ? 'Exit review brush' : 'Paint a review over what is wrong'}
+      title={markingMode ? 'Exit review brush' : 'Paint a review over what is wrong'}
+      style={{
+        position: 'absolute',
+        right: 24,
+        bottom: 24,
+        zIndex: 900,
+        width: 64,
+        height: 64,
+        borderRadius: '50%',
+        border: markingMode ? '3px solid #fca5a5' : '3px solid #fef2f2',
+        background: markingMode ? '#dc2626' : '#ef4444',
+        color: 'white',
+        cursor: 'pointer',
+        boxShadow: markingMode
+          ? '0 0 0 6px rgba(239, 68, 68, 0.25), 0 8px 24px rgba(0,0,0,0.5)'
+          : '0 8px 24px rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.15s ease-out',
+        animation: markingMode ? 'none' : 'marking-fab-pulse 2s ease-in-out infinite',
+      }}
+    >
+      <Brush size={28} strokeWidth={2.4} />
+      <span
+        style={{
+          position: 'absolute',
+          right: 72,
+          background: 'rgba(17,17,17,0.92)',
+          color: 'white',
+          padding: '6px 10px',
+          borderRadius: 4,
+          fontSize: 12,
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          border: '1px solid #2b313c',
+        }}
+      >
+        {markingMode ? 'Painting — click to exit' : 'Paint a review'}
+      </span>
+      {/* Keyframes only need to be injected once — multiple <style> tags are
+          fine, browsers de-dupe by content. */}
+      <style>{`@keyframes marking-fab-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5), 0 8px 24px rgba(0,0,0,0.5); }
+        50%      { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0), 0 8px 24px rgba(0,0,0,0.5); }
+      }`}</style>
+    </button>
+  );
+}
 
 /**
  * Inpainting-style review overlay. When `markingMode` is on, a transparent
@@ -20,40 +87,56 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  // Panel position (Photoshop-style draggable tool palette).
+  const [panelPos, setPanelPos] = useState<{ x: number; y: number }>({ x: -1, y: 16 });
+  // Live cursor coords for brush-size preview (Krita/Procreate style).
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   /** One-step undo: snapshot of the canvas before the current stroke. */
   const preStrokeSnapshotRef = useRef<ImageData | null>(null);
   /** Two-step undo: snapshot one stroke back. */
   const previousSnapshotRef = useRef<ImageData | null>(null);
+  // Drag-state for the floating panel.
+  const draggingPanelRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
 
-  // Size the canvas to its container and to the device pixel ratio.
+  // First mount: pin the panel to the top-right (16 px from each edge).
+  useEffect(() => {
+    if (panelPos.x === -1) {
+      const panelW = 260;
+      setPanelPos({ x: Math.max(16, window.innerWidth - panelW - 16), y: 16 });
+    }
+  }, [panelPos.x]);
+
+  // Size the canvas BITMAP (the `width`/`height` attributes — what the 2D
+  // context actually paints into) to track the viewport. We hold the size
+  // in React state so the canvas JSX gets `width={w} height={h}` props
+  // every render; that's more robust than an imperative `canvas.width = w`
+  // side-effect inside useEffect, which previously didn't survive (the
+  // brush was painting into the default 300×150 buffer, then CSS stretched
+  // that buffer over the full overlay — clicks anywhere outside the
+  // first 300×150 of the bitmap painted nothing visible).
+  const [canvasSize, setCanvasSize] = useState({ w: window.innerWidth, h: window.innerHeight });
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const resize = () => {
+    const measure = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
-      const dpr = window.devicePixelRatio || 1;
       const rect = parent.getBoundingClientRect();
-      // Preserve existing pixels across resize by reading + redrawing.
-      const ctx = canvas.getContext('2d');
-      const prev = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      if (ctx) {
-        ctx.scale(dpr, dpr);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        if (prev) ctx.putImageData(prev, 0, 0);
-      }
+      const w = Math.max(1, Math.floor(rect.width));
+      const h = Math.max(1, Math.floor(rect.height));
+      setCanvasSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }));
     };
-    resize();
-    const ro = new ResizeObserver(resize);
+    measure();
+    const ro = new ResizeObserver(measure);
     if (canvas.parentElement) ro.observe(canvas.parentElement);
-    return () => ro.disconnect();
+    const onWinResize = () => measure();
+    window.addEventListener('resize', onWinResize);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', onWinResize);
+    };
   }, []);
 
   function pointerPos(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -79,12 +162,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!drawingRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const p = pointerPos(e);
+    // Always track cursor so the brush preview circle follows the mouse.
+    setCursorPos(p);
+    if (!drawingRef.current) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const p = pointerPos(e);
     const last = lastPointRef.current;
     if (last) {
       ctx.strokeStyle = 'rgba(239, 68, 68, 0.55)';
@@ -95,6 +180,36 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       ctx.stroke();
     }
     lastPointRef.current = p;
+  }
+
+  function onPointerLeave() {
+    setCursorPos(null);
+  }
+
+  function onPanelHeaderPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    draggingPanelRef.current = {
+      offsetX: e.clientX - panelPos.x,
+      offsetY: e.clientY - panelPos.y,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function onPanelHeaderPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    const drag = draggingPanelRef.current;
+    if (!drag) return;
+    const panelW = 260;
+    const panelH = 200;
+    const maxX = Math.max(0, window.innerWidth - panelW);
+    const maxY = Math.max(0, window.innerHeight - panelH);
+    setPanelPos({
+      x: Math.max(0, Math.min(maxX, e.clientX - drag.offsetX)),
+      y: Math.max(0, Math.min(maxY, e.clientY - drag.offsetY)),
+    });
+  }
+
+  function onPanelHeaderPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    draggingPanelRef.current = null;
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
   }
 
   function onPointerUp(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -207,8 +322,8 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     <div
       data-testid="marking-overlay-root"
       style={{
-        position: 'absolute',
-        inset: 0,
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
         zIndex: 1000,
         pointerEvents: 'auto',
       }}
@@ -216,36 +331,93 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       <canvas
         ref={canvasRef}
         data-testid="marking-overlay-canvas"
+        width={canvasSize.w}
+        height={canvasSize.h}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onPointerLeave={onPointerLeave}
+        // width:100%/height:100% are required: the HTML <canvas> default
+        // width/height attributes are 300x150 and reflect to CSS as
+        // `width: 300px`, which beats `right: 0` in the over-constrained box
+        // model and leaves the canvas locked at 300x150 in the top-left.
+        // (Symptom: brush previously only painted in a small top-left region.)
         style={{
           position: 'absolute',
-          inset: 0,
-          cursor: 'crosshair',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          // Hide the system cursor — we render our own brush-size preview circle
+          cursor: 'none',
           touchAction: 'none',
         }}
       />
+      {/* Brush-size preview circle (Krita/Procreate style — outlines the actual
+          radius the next stroke will deposit, so you can size a stroke before
+          drawing it). Hidden when the cursor leaves the canvas. */}
+      {cursorPos && (
+        <div
+          data-testid="marking-brush-preview"
+          style={{
+            position: 'absolute',
+            left: cursorPos.x - brushSize / 2,
+            top: cursorPos.y - brushSize / 2,
+            width: brushSize,
+            height: brushSize,
+            border: '1.5px solid rgba(239, 68, 68, 0.9)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            boxShadow: '0 0 0 1px rgba(0,0,0,0.4)',
+            mixBlendMode: 'difference',
+          }}
+        />
+      )}
       <div
         data-testid="marking-overlay-controls"
         style={{
           position: 'absolute',
-          right: 12,
-          top: 12,
+          left: panelPos.x,
+          top: panelPos.y,
           background: 'rgba(17,17,17,0.92)',
           color: '#e5e7eb',
-          padding: '10px 12px',
           borderRadius: 6,
           font: '12px system-ui, sans-serif',
           display: 'flex',
           flexDirection: 'column',
-          gap: 8,
-          minWidth: 220,
+          minWidth: 260,
           border: '1px solid #2b313c',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ fontWeight: 600, color: '#fca5a5' }}>Mark what's wrong</div>
+        {/* Drag handle — Photoshop-style header bar. Click and drag anywhere on
+            this row to reposition the panel. */}
+        <div
+          data-testid="marking-overlay-drag-handle"
+          onPointerDown={onPanelHeaderPointerDown}
+          onPointerMove={onPanelHeaderPointerMove}
+          onPointerUp={onPanelHeaderPointerUp}
+          onPointerCancel={onPanelHeaderPointerUp}
+          style={{
+            background: '#1a1a1a',
+            padding: '8px 12px',
+            borderBottom: '1px solid #2b313c',
+            cursor: 'grab',
+            touchAction: 'none',
+            fontWeight: 600,
+            color: '#fca5a5',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            userSelect: 'none',
+          }}
+        >
+          <span style={{ flex: 1 }}>Mark what's wrong</span>
+          <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 400 }}>drag to move</span>
+        </div>
+        <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ minWidth: 40 }}>Brush</span>
           <input
@@ -315,6 +487,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
             {status}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
