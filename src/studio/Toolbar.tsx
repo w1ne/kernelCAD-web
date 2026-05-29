@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush } from 'lucide-react';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -20,6 +20,12 @@ interface ToolbarProps {
     /** Display label for the active preset ('studio', 'custom', etc.). */
     renderEnvironmentPresetLabel?: string;
     onToggleRenderEnvironment?: () => void;
+    /** Inpainting-style review tool. When on, an HTML canvas overlay absorbs
+     *  pointer events so the user can paint over what's wrong in the
+     *  viewport; Send POSTs a packet that the agent's UserPromptSubmit hook
+     *  picks up on the next turn. */
+    markingMode: boolean;
+    onToggleMarkingMode: () => void;
 }
 
 export function Toolbar({
@@ -35,6 +41,8 @@ export function Toolbar({
     renderEnvironmentVisible = true,
     renderEnvironmentPresetLabel = '',
     onToggleRenderEnvironment,
+    markingMode,
+    onToggleMarkingMode,
 }: ToolbarProps) {
     return (
         <div
@@ -92,6 +100,21 @@ export function Toolbar({
                 >
                     <Play size={12} />
                     Run
+                </button>
+                <button
+                    type="button"
+                    data-testid="toolbar-mark"
+                    onClick={onToggleMarkingMode}
+                    aria-label={markingMode ? 'Exit marking mode' : 'Enter marking mode'}
+                    aria-pressed={markingMode}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                        markingMode
+                            ? 'bg-red-600 text-white'
+                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                    }`}
+                >
+                    <Brush size={12} />
+                    Mark
                 </button>
                 {referenceImagesPresent && (
                     <button

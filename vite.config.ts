@@ -319,6 +319,93 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       });
 
+      server.middlewares.use('/__kernelcad/review-paint', async (req, res) => {
+        try {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'POST only' }));
+            return;
+          }
+          const chunks: Buffer[] = [];
+          for await (const chunk of req as unknown as AsyncIterable<Buffer>) {
+            chunks.push(chunk);
+            if (chunks.reduce((acc, b) => acc + b.length, 0) > 16 * 1024 * 1024) {
+              res.statusCode = 413;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'packet too large (max 16MB)' }));
+              return;
+            }
+          }
+          const body = Buffer.concat(chunks).toString('utf-8');
+          const parsed = JSON.parse(body) as {
+            screenshot: string;
+            mask: string;
+            meta: { note?: string; scriptPath?: string | null; ts?: string; ua?: string };
+          };
+          const scriptPath = resolveExampleScript(parsed.meta?.scriptPath ?? null);
+          if (!scriptPath) {
+            res.statusCode = 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({
+              error: 'meta.scriptPath must reference a repo examples/*.kcad.ts file',
+            }));
+            return;
+          }
+          const { mkdirSync, writeFileSync, existsSync, unlinkSync, symlinkSync } =
+            await import('node:fs');
+          const { dirname, basename, join } = await import('node:path');
+          const ts = (parsed.meta?.ts ?? new Date().toISOString()).replace(/[:]/g, '-');
+          const reviewRoot = `${scriptPath}.review-paint`;
+          const packetDir = join(reviewRoot, ts);
+          mkdirSync(packetDir, { recursive: true });
+          const stripDataUrl = (s: string): Buffer => {
+            const comma = s.indexOf(',');
+            const b64 = comma === -1 ? s : s.slice(comma + 1);
+            return Buffer.from(b64, 'base64');
+          };
+          writeFileSync(join(packetDir, 'screenshot.png'), stripDataUrl(parsed.screenshot));
+          writeFileSync(join(packetDir, 'mask.png'), stripDataUrl(parsed.mask));
+          writeFileSync(
+            join(packetDir, 'meta.json'),
+            JSON.stringify(
+              {
+                note: parsed.meta?.note ?? '',
+                scriptPath: relative(repoRoot, scriptPath),
+                ts: parsed.meta?.ts ?? new Date().toISOString(),
+                ua: parsed.meta?.ua ?? '',
+              },
+              null,
+              2,
+            ),
+          );
+          const latest = join(reviewRoot, 'latest');
+          try {
+            if (existsSync(latest)) unlinkSync(latest);
+          } catch {
+            // Best-effort symlink swap; ignore if it doesn't exist.
+          }
+          try {
+            symlinkSync(basename(packetDir), latest, 'dir');
+          } catch (err) {
+            // Symlink may fail on platforms without permission; non-fatal.
+            void err;
+          }
+          // Quiet the unused-import lint when `dirname` is conditional on
+          // future tweaks.
+          void dirname;
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ ok: true, path: relative(repoRoot, packetDir) }));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
+
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
