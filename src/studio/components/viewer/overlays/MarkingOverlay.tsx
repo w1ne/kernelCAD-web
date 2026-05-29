@@ -99,6 +99,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   const previousSnapshotRef = useRef<ImageData | null>(null);
   // Drag-state for the floating panel.
   const draggingPanelRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
+  /** Ref to the overlay's outer wrapper. Used so panel-drag bounds clamp to
+   *  the actual viewport area, not the whole window — keeps the panel
+   *  inside the model view when dragged toward the edges. */
+  const overlayRootRef = useRef<HTMLDivElement | null>(null);
+  /** Fixed panel pixel width — content reflow used to make the panel look
+   *  like it was resizing while being dragged. Pin it. */
+  const PANEL_W = 280;
+  const PANEL_H_ESTIMATE = 210;
 
   // First mount: pin the panel to the top-right (16 px from each edge).
   useEffect(() => {
@@ -229,10 +237,13 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   function onPanelHeaderPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     const drag = draggingPanelRef.current;
     if (!drag) return;
-    const panelW = 260;
-    const panelH = 200;
-    const maxX = Math.max(0, window.innerWidth - panelW);
-    const maxY = Math.max(0, window.innerHeight - panelH);
+    // Clamp to the OVERLAY-ROOT's bounds, not the window — keeps the panel
+    // inside the model view even when the Inspector or Toolbar would
+    // otherwise clip it.
+    const root = overlayRootRef.current;
+    const rect = root ? root.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
+    const maxX = Math.max(0, rect.width - PANEL_W);
+    const maxY = Math.max(0, rect.height - PANEL_H_ESTIMATE);
     setPanelPos({
       x: Math.max(0, Math.min(maxX, e.clientX - drag.offsetX)),
       y: Math.max(0, Math.min(maxY, e.clientY - drag.offsetY)),
@@ -354,6 +365,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
 
   return (
     <div
+      ref={overlayRootRef}
       data-testid="marking-overlay-root"
       style={{
         // `absolute` so we size to the 3D viewport's flex-1 wrapper in
@@ -429,7 +441,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           font: '12px system-ui, sans-serif',
           display: 'flex',
           flexDirection: 'column',
-          minWidth: 260,
+          width: PANEL_W,
           border: '1px solid #2b313c',
           boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
           overflow: 'hidden',
