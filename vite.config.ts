@@ -344,19 +344,18 @@ function kernelCadMeshEndpoint(): Plugin {
             meta: { note?: string; scriptPath?: string | null; ts?: string; ua?: string };
           };
           const scriptPath = resolveExampleScript(parsed.meta?.scriptPath ?? null);
-          if (!scriptPath) {
-            res.statusCode = 400;
-            res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({
-              error: 'meta.scriptPath must reference a repo examples/*.kcad.ts file',
-            }));
-            return;
-          }
           const { mkdirSync, writeFileSync, existsSync, unlinkSync, symlinkSync } =
             await import('node:fs');
           const { dirname, basename, join } = await import('node:path');
           const ts = (parsed.meta?.ts ?? new Date().toISOString()).replace(/[:]/g, '-');
-          const reviewRoot = `${scriptPath}.review-paint`;
+          // If the request has a valid examples/*.kcad.ts scriptPath the
+          // packet lands beside it (best for the agent's hook + IDE). If
+          // not (user testing at /, or a non-examples gallery URL), fall
+          // back to a repo-root .review-paint/ so the agent's hook scan
+          // still finds it.
+          const reviewRoot = scriptPath
+            ? `${scriptPath}.review-paint`
+            : resolve(repoRoot, '.review-paint');
           const packetDir = join(reviewRoot, ts);
           mkdirSync(packetDir, { recursive: true });
           const stripDataUrl = (s: string): Buffer => {
@@ -371,7 +370,7 @@ function kernelCadMeshEndpoint(): Plugin {
             JSON.stringify(
               {
                 note: parsed.meta?.note ?? '',
-                scriptPath: relative(repoRoot, scriptPath),
+                scriptPath: scriptPath ? relative(repoRoot, scriptPath) : null,
                 ts: parsed.meta?.ts ?? new Date().toISOString(),
                 ua: parsed.meta?.ua ?? '',
               },

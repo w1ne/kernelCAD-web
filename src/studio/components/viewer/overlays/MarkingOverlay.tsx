@@ -363,8 +363,10 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       }
       const ok = (await res.json()) as { ok: boolean; path: string };
       setStatus(`Sent → ${ok.path}`);
-      // Close marking mode on successful send so the user can continue.
-      shellStore.setMarkingMode(false);
+      // Keep marking mode open so the user actually SEES the success
+      // status before dismissing (previously the panel auto-closed and
+      // the click felt like a no-op). Clear strokes + note so the canvas
+      // is fresh if they want to send another review; close via X or Esc.
       clearAll();
       setNote('');
     } catch (err) {
