@@ -85,8 +85,15 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [brushSize, setBrushSize] = useState(20);
   const [note, setNote] = useState('');
-  const [sending, setSending] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  /** True once the user has painted anything; gates the auto-save on
+   *  close so blank-canvas opens don't write an empty packet. Reset in
+   *  clearAll() since an explicit clear wipes the mark. */
+  const dirtyRef = useRef(false);
+  /** Refs so the unmount cleanup can read the latest values without
+   *  putting them in deps (the cleanup must fire when visible→false
+   *  goes false, not whenever the user types in the note field). */
+  const noteRef = useRef(note);
+  useEffect(() => { noteRef.current = note; }, [note]);
   // Panel position (Photoshop-style draggable tool palette).
   const [panelPos, setPanelPos] = useState<{ x: number; y: number }>({ x: -1, y: 16 });
   // Live cursor coords for brush-size preview (Krita/Procreate style).
@@ -195,6 +202,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     previousSnapshotRef.current = preStrokeSnapshotRef.current;
     preStrokeSnapshotRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
     drawingRef.current = true;
+    dirtyRef.current = true;
     canvas.setPointerCapture(e.pointerId);
     const p = pointerPos(e);
     lastPointRef.current = p;
@@ -313,7 +321,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     preStrokeSnapshotRef.current = null;
     previousSnapshotRef.current = null;
-    setStatus(null);
+    dirtyRef.current = false;
   }
 
   function findRendererCanvas(): HTMLCanvasElement | null {
@@ -334,67 +342,42 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     return renderer.toDataURL('image/png');
   }
 
-  async function send() {
-    setSending(true);
-    setStatus(null);
-    try {
-      const screenshot = screenshotAsPng();
-      if (!screenshot) {
-        setStatus('Could not find viewport canvas to screenshot.');
-        return;
-      }
-      const mask = maskAsPng();
-      const scriptParam = new URLSearchParams(window.location.search).get('script');
-      const meta = {
-        note,
-        scriptPath: scriptParam,
-        ts: new Date().toISOString(),
-        ua: navigator.userAgent,
-      };
-      const res = await fetch('/__kernelcad/review-paint', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ screenshot, mask, meta }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        setStatus(`Send failed (${res.status}): ${body}`);
-        return;
-      }
-      const ok = (await res.json()) as { ok: boolean; path: string };
-      // Copy a follow-up prompt to the clipboard so the user just needs
-      // to paste into Claude Code (or any agent) — half a keystroke saved
-      // per review cycle. Best-effort: clipboard may not be available on
-      // non-HTTPS / non-localhost, or the user may have denied permission.
-      const promptText = note
-        ? `Apply the review I just painted in Studio. My note: ${note}`
-        : `Apply the review I just painted in Studio.`;
-      let copied = false;
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(promptText);
-          copied = true;
-        }
-      } catch {
-        // ignore; we'll surface the prompt text in status instead
-      }
-      setStatus(
-        copied
-          ? `Sent → ${ok.path}\nPrompt copied — paste into your agent.`
-          : `Sent → ${ok.path}\nPaste this into your agent: ${promptText}`,
-      );
-      // Keep marking mode open so the user actually SEES the success
-      // status before dismissing (previously the panel auto-closed and
-      // the click felt like a no-op). Clear strokes + note so the canvas
-      // is fresh if they want to send another review; close via X or Esc.
-      clearAll();
-      setNote('');
-    } catch (err) {
-      setStatus(`Send error: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setSending(false);
-    }
+  /** Fire-and-forget save: writes the current canvas + note as a
+   *  review-paint packet. Called from the unmount cleanup (close X /
+   *  Esc / toolbar toggle), not by an explicit Send button — agents
+   *  pick the packet up via the `review_paint_peek_latest` MCP tool
+   *  (or the UserPromptSubmit hook for Claude Code) whenever the user
+   *  asks them to. `keepalive: true` lets the fetch survive the
+   *  component unmount that triggered it. */
+  function persistMark() {
+    if (!dirtyRef.current) return;
+    const screenshot = screenshotAsPng();
+    if (!screenshot) return;
+    const mask = maskAsPng();
+    const scriptParam = new URLSearchParams(window.location.search).get('script');
+    const meta = {
+      note: noteRef.current,
+      scriptPath: scriptParam,
+      ts: new Date().toISOString(),
+      ua: navigator.userAgent,
+    };
+    fetch('/__kernelcad/review-paint', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ screenshot, mask, meta }),
+      keepalive: true,
+    }).catch((err) => {
+      // The unmount path means nothing to surface to the user; log so
+      // the error is discoverable in devtools.
+      console.warn('[marking-overlay] save failed:', err);
+    });
   }
+
+  // Auto-save on unmount (close X, Esc, or Brush toggle off).
+  useEffect(() => {
+    return () => { persistMark(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!visible) return null;
 
@@ -578,39 +561,13 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
           >
             Clear
           </button>
-          <button
-            type="button"
-            onClick={() => shellStore.setMarkingMode(false)}
-            style={btnStyle()}
-            data-testid="marking-close"
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            onClick={send}
-            disabled={sending}
-            style={btnStyle(true)}
-            data-testid="marking-send"
-          >
-            {sending ? 'Sending…' : 'Send'}
-          </button>
         </div>
-        {status && (
-          <div
-            data-testid="marking-status"
-            style={{
-              fontSize: 11,
-              color: status.startsWith('Sent') ? '#86efac' : '#fca5a5',
-              // Render \n in the status as line breaks so the two-line
-              // confirmation ("Sent → ...\nPrompt copied…") shows cleanly.
-              whiteSpace: 'pre-line',
-              lineHeight: 1.4,
-            }}
-          >
-            {status}
-          </div>
-        )}
+        <div style={{ fontSize: 10, color: '#6b7280', lineHeight: 1.4 }}>
+          Mark saves automatically when you close. Then ask your agent
+          to <em>look at my mark</em> — the kernelCAD MCP tool
+          <code style={{ background: '#0b0b0b', padding: '0 4px', borderRadius: 2 }}>review_paint_peek_latest</code>
+          picks it up.
+        </div>
         </div>
       </div>
     </div>

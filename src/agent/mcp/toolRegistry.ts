@@ -49,6 +49,7 @@ import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
 import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
+import { reviewPaintPeekLatestTool } from './tools/reviewPaint';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
 import { validateAssemblyTool } from './tools/validateAssembly';
@@ -1335,6 +1336,40 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => reviewCadTool(input as unknown as Parameters<typeof reviewCadTool>[0]),
+  },
+  {
+    definition: {
+      name: 'review_paint_peek_latest',
+      description:
+        'Return the newest inpainting-style review packet the user painted in Studio. ' +
+        'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
+        'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
+        'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
+        'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
+        'without local-disk Read access. Call this whenever the user says "look at my mark", ' +
+        '"check what I painted", or any equivalent.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          freshness_sec: {
+            type: 'integer',
+            description: 'Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for "what did I just paint" or a larger one for "earlier today".',
+            minimum: 1,
+          },
+          extra_roots: {
+            type: 'array',
+            description: 'Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.',
+            items: { type: 'string' },
+          },
+          paths_only: {
+            type: 'boolean',
+            description: 'When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know "is there a packet".',
+          },
+        },
+        additionalProperties: false,
+      },
+    },
+    handler: input => reviewPaintPeekLatestTool(input as Parameters<typeof reviewPaintPeekLatestTool>[0]),
   },
   {
     definition: {
