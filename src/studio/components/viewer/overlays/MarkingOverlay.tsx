@@ -219,8 +219,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       // same region stays the same shade.
       const bpLast = toBitmap(last);
       const bp = toBitmap(p);
+      // Round caps + joins so a swipe reads as a continuous highlight
+      // instead of a chain of butt-capped rectangles (looked "chipped").
+      // Canvas state was reset when the bitmap was resized, so re-apply
+      // these every segment — they're idempotent and cheap.
       ctx.strokeStyle = 'rgb(239, 68, 68)';
       ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(bpLast.x, bpLast.y);
       ctx.lineTo(bp.x, bp.y);
