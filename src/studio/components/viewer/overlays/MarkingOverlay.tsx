@@ -362,7 +362,27 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
         return;
       }
       const ok = (await res.json()) as { ok: boolean; path: string };
-      setStatus(`Sent → ${ok.path}`);
+      // Copy a follow-up prompt to the clipboard so the user just needs
+      // to paste into Claude Code (or any agent) — half a keystroke saved
+      // per review cycle. Best-effort: clipboard may not be available on
+      // non-HTTPS / non-localhost, or the user may have denied permission.
+      const promptText = note
+        ? `Apply the review I just painted in Studio. My note: ${note}`
+        : `Apply the review I just painted in Studio.`;
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(promptText);
+          copied = true;
+        }
+      } catch {
+        // ignore; we'll surface the prompt text in status instead
+      }
+      setStatus(
+        copied
+          ? `Sent → ${ok.path}\nPrompt copied — paste into your agent.`
+          : `Sent → ${ok.path}\nPaste this into your agent: ${promptText}`,
+      );
       // Keep marking mode open so the user actually SEES the success
       // status before dismissing (previously the panel auto-closed and
       // the click felt like a no-op). Clear strokes + note so the canvas
@@ -579,7 +599,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
         {status && (
           <div
             data-testid="marking-status"
-            style={{ fontSize: 11, color: status.startsWith('Sent') ? '#86efac' : '#fca5a5' }}
+            style={{
+              fontSize: 11,
+              color: status.startsWith('Sent') ? '#86efac' : '#fca5a5',
+              // Render \n in the status as line breaks so the two-line
+              // confirmation ("Sent → ...\nPrompt copied…") shows cleanly.
+              whiteSpace: 'pre-line',
+              lineHeight: 1.4,
+            }}
           >
             {status}
           </div>
