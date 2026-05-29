@@ -41,6 +41,7 @@ export class TelemetryEmitter {
     try {
       this.queue.push(event);
       if (this.queue.length >= this.batchSize) {
+        if (this.timer) { clearTimeout(this.timer); this.timer = null; }
         void this.flush();
       } else if (!this.timer) {
         this.timer = setTimeout(() => void this.flush(), this.flushIntervalMs);
@@ -59,19 +60,20 @@ export class TelemetryEmitter {
       process.stderr.write(`[kernelcad telemetry] ${JSON.stringify(batch)}\n`);
       return;
     }
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), this.timeoutMs);
+    if (typeof (t as NodeJS.Timeout).unref === 'function') (t as NodeJS.Timeout).unref();
     try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), this.timeoutMs);
-      if (typeof (t as NodeJS.Timeout).unref === 'function') (t as NodeJS.Timeout).unref();
       await this.fetchImpl(this.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(batch),
         signal: ctrl.signal,
       }).catch(() => undefined);
-      clearTimeout(t);
     } catch {
       // swallow — telemetry must never disrupt the tool
+    } finally {
+      clearTimeout(t);
     }
   }
 }
