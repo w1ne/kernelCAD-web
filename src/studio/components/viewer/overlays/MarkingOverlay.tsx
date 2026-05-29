@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Brush, X as XIcon } from 'lucide-react';
 import { shellStore } from '../../../store/shellStore';
 import { useShellStore } from '../../../store/useShellStore';
@@ -136,7 +136,14 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
   // Initial value is a safe fallback; the post-mount measure() immediately
   // overwrites it with the actual parent rect.
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): runs SYNCHRONOUSLY after DOM mutations
+  // but BEFORE the browser paints. This lets the canvas be resized from the
+  // fallback to the real parent dims in a single visible frame — without
+  // it, the first paint uses 800×600, then a state update bumps the bitmap
+  // and CLEARS the canvas (HTML canvas resize semantics), throwing away
+  // any strokes the user managed to deposit on the fallback bitmap and
+  // shifting the coordinate system mid-interaction.
+  useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const measure = () => {
