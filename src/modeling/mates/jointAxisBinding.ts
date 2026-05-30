@@ -97,6 +97,31 @@ const GATED_MATE_TYPES: ReadonlySet<MateType> = new Set<MateType>([
 ]);
 
 /**
+ * Result of `validateJointAxisBindingWithCache`. Exposes the per-part world-
+ * transformed lowered OCCT shapes alongside the diagnostics so that Gate 4
+ * (`validateJointVisualExposure`) can reuse the same lowered geometry
+ * without paying the recompute + per-part `applyTransform` cost twice. The
+ * cache is keyed by `part.name`, same convention `worldShapes` already used
+ * internally.
+ *
+ * `worldTransforms` is exposed for the same reason — Gate 4 lifts connector
+ * origins / axes from part-local to world frame on its own, and the SE(3)
+ * transforms are an O(1) lookup that costs nothing to share.
+ */
+export interface JointAxisBindingResult {
+  readonly diagnostics: readonly ValidatorDiagnostic[];
+  /**
+   * Per-part lowered + world-transformed OCCT shape. Empty map when the
+   * assembly has no gated mates (the recompute is skipped entirely in that
+   * fast path), or when the recompute did not produce a SceneBackend (the
+   * defensive fall-through inside the implementation).
+   */
+  readonly worldShapes: ReadonlyMap<string, OcctBackend>;
+  /** Per-part SE(3) world transform, same key set as `worldShapes`. */
+  readonly worldTransforms: ReadonlyMap<string, Transform>;
+}
+
+/**
  * v0.7.4 Gate 2 entry point. Async — lowers the assembly via the same
  * recompute path used by `Assembly.computeInterferencesForGate` /
  * `detectInterferencesForPoses`.
@@ -105,12 +130,33 @@ const GATED_MATE_TYPES: ReadonlySet<MateType> = new Set<MateType>([
  * emits up to two `assembly.joint-axis.unbound` diagnostics (severity
  * `error`), one per side whose body the joint line does not intersect.
  *
- * Dead code in this slice — Phase 6 of the v0.7.4 plan wires it into
- * `validateAssemblyWithMates`.
+ * Thin wrapper over `validateJointAxisBindingWithCache` for callers that
+ * don't need the lowered-shape cache (which Gate 4 / `validateJointVisualExposure`
+ * does need — the validator uses the `WithCache` variant so Gate 4 can
+ * piggy-back on Gate 2's recompute).
  */
 export async function validateJointAxisBinding(arm: Assembly): Promise<ValidatorDiagnostic[]> {
+  const { diagnostics } = await validateJointAxisBindingWithCache(arm);
+  return [...diagnostics];
+}
+
+/**
+ * Same as `validateJointAxisBinding` but also surfaces the per-part world-
+ * transformed lowered shape cache it builds internally. The validator calls
+ * this variant so the next gate in the chain (`validateJointVisualExposure`)
+ * can reuse the same lowered geometry without re-running the recompute.
+ *
+ * For assemblies with no gated mates, returns empty diagnostics + empty
+ * caches — callers (Gate 4) should treat an empty `worldShapes` map as
+ * "nothing to gate against" and short-circuit.
+ */
+export async function validateJointAxisBindingWithCache(
+  arm: Assembly,
+): Promise<JointAxisBindingResult> {
   const gatedMates = arm.__mates().filter((m) => GATED_MATE_TYPES.has(m.type));
-  if (gatedMates.length === 0) return [];
+  if (gatedMates.length === 0) {
+    return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
+  }
 
   // Lower the assembly via a single `RecomputeEngine.run` — mirrors the
   // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300),
@@ -135,7 +181,9 @@ export async function validateJointAxisBinding(arm: Assembly): Promise<Validator
     gatedFeatureNames: session.gatedFeatureNames,
   });
   const lowered = recompute.shapes.get(sceneShape.id);
-  if (!lowered || !isSceneBackend(lowered)) return [];
+  if (!lowered || !isSceneBackend(lowered)) {
+    return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
+  }
 
   // Apply each part's world transform once up-front (clone first — replicad
   // translate/rotate mutate-and-destroy the source OCCT handle, same lifecycle
@@ -166,7 +214,7 @@ export async function validateJointAxisBinding(arm: Assembly): Promise<Validator
       }
     }
   }
-  return out;
+  return { diagnostics: out, worldShapes, worldTransforms };
 }
 
 interface ResolvedSide {
