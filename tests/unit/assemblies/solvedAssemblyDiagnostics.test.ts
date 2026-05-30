@@ -1,24 +1,31 @@
 // tests/unit/assemblies/solvedAssemblyDiagnostics.test.ts
 //
-// Diagnostic codes for `Assembly.solvedModel(poses)`. The spec defines four
-// hint codes split between capture-time (KernelError throws) and recompute-
-// time (lowerer pushes structured diagnostics):
+// Capture-time diagnostic codes for `Assembly.solvedModel(poses)`. The spec
+// defines two hint codes that fire as `KernelError` throws at capture time:
 //
-//   capture-time (throw KernelError):
-//     - invalid-args.solvedModel.unknown-joint
-//     - invalid-args.solvedModel.pose-shape
-//
-//   recompute-time (diagnostics.push):
-//     - invalid-args.solvedModel.missing-pose
-//     - kernel-failed.solvedModel.bad-pose
+//   - invalid-args.solvedModel.unknown-joint
+//   - invalid-args.solvedModel.pose-shape
 //
 // See spec: ~/projects/kernelCAD-private/docs/specs/2026-05-10-paramref-poses-on-solvedmodel-design.md
+//
+// G0 (2026-05-31, mechanism-delivery): rewritten to use the v0.6 mate API
+// (arm.connector + arm.mate) — the legacy v0.5 `arm.revolute(...)` /
+// `arm.fixed(...)` methods were removed. The pose-name/shape diagnostics
+// still apply: both joint names AND mate names are walked in the unknown-
+// pose check, and capture-time pose-shape validation runs identically for
+// scalar vs ball mates.
+//
+// The recompute-time `missing-pose` / `bad-pose` diagnostics still live in
+// the OCCT lowerer (`src/modeling/backends/occt/occtLowerer.ts`), but they
+// only fire over v0.5 joints (the `joints` array in the solvedAssembly
+// record). With the public revolute/fixed API removed, those diagnostics
+// are unreachable from script callers; their unit coverage will move to
+// future kinematic-grounding slices when the recompute-time mate-pose path
+// grows its own pose-validation gate.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../src/modeling/api';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
-import { buildModel } from '../../../src/modeling/buildModel';
 import { KernelError, isKernelError } from '../../../src/shared/intent/kernelError';
 
 /** Run `fn` and assert it throws a KernelError whose `hint` matches `re`.
@@ -41,12 +48,30 @@ describe('solvedAssembly capture-time diagnostics', () => {
     const base = arm.part('base', kcad.box(10, 10, 10));
     const upper = arm.part('upper', kcad.box(10, 10, 10));
     const tip = arm.part('tip', kcad.box(10, 10, 10));
-    arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-    arm.ball('wrist', upper, tip, { origin: [0, 0, 10] });
+    base.connector('yawAxis', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    upper.connector('yawAxis', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('yaw', 'base.yawAxis', 'upper.yawAxis', 'revolute');
+    upper.connector('wristBall', {
+      type: 'ball',
+      origin: { kind: 'vec3', value: [0, 0, 10] },
+    });
+    tip.connector('wristBall', {
+      type: 'ball',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    arm.mate('wrist', 'upper.wristBall', 'tip.wristBall', 'ball');
     return { session, kcad, arm };
   };
 
-  it('unknown-joint: pose name not in declared joints', () => {
+  it('unknown-joint: pose name not in declared joints/mates', () => {
     const { arm } = setup();
     expectKernelHint(
       () =>
@@ -59,7 +84,7 @@ describe('solvedAssembly capture-time diagnostics', () => {
     );
   });
 
-  it('pose-shape: scalar passed to ball joint', () => {
+  it('pose-shape: scalar passed to ball mate', () => {
     const { arm } = setup();
     expectKernelHint(
       () =>
@@ -71,7 +96,7 @@ describe('solvedAssembly capture-time diagnostics', () => {
     );
   });
 
-  it('pose-shape: ball pose passed to scalar joint', () => {
+  it('pose-shape: ball pose passed to scalar mate', () => {
     const { arm } = setup();
     expectKernelHint(
       () =>
@@ -87,63 +112,5 @@ describe('solvedAssembly capture-time diagnostics', () => {
     const { arm } = setup();
     // Missing yaw and wrist — capture-time should NOT throw; recompute-time will.
     expect(() => arm.solvedModel({})).not.toThrow();
-  });
-});
-
-describe('solvedAssembly recompute-time diagnostics', () => {
-  beforeAll(async () => {
-    await initOcct();
-  });
-
-  it('missing-pose: emits feature.invalid-args at recompute', async () => {
-    const model = await buildModel({
-      fileName: 'missing-pose.kcad.ts',
-      code: `
-        const arm = assembly('test');
-        const base  = arm.part('base',  box(10, 10, 10));
-        const upper = arm.part('upper', box(10, 10, 10));
-        arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-        return arm.solvedModel({});
-      `,
-    });
-    const errs = model.diagnostics.filter(d => d.severity === 'error');
-    const missing = errs.find(d => /missing-pose/.test(d.hint));
-    expect(missing).toBeDefined();
-    expect(missing?.code).toBe('feature.invalid-args');
-  });
-
-  it('bad-pose: non-finite ParamRef value emits feature.kernel-failed', async () => {
-    // Drive the pose param to NaN via updateModelParams. The capture-time
-    // validation accepts a finite ParamRef; the lowerer must catch the
-    // non-finite value at recompute time and emit kernel-failed.solvedModel.bad-pose.
-    //
-    // updateModelParams throws when the tail shape is missing — which is
-    // exactly what happens when our diagnostic short-circuits. We harvest
-    // the diagnostics off the engine's run by re-running it directly.
-    const model = await buildModel({
-      fileName: 'bad-pose.kcad.ts',
-      code: `
-        const yawDeg = param('yawDeg', 0, { min: -180, max: 180 });
-        const arm = assembly('test');
-        const base  = arm.part('base',  box(10, 10, 10));
-        const upper = arm.part('upper', box(10, 10, 10));
-        arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-        return arm.solvedModel({ yaw: yawDeg });
-      `,
-    });
-    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
-
-    model.session.paramTable.set('yawDeg', Number.NaN);
-    const { RecomputeEngine } = await import('../../../src/modeling/compute/recomputeEngine');
-    const { OcctLowerer } = await import('../../../src/modeling/backends/occt/occtLowerer');
-    const engine = new RecomputeEngine(new OcctLowerer());
-    const result = await engine.run(model.records, {
-      paramTable: model.session.paramTable,
-      gatedFeatureNames: model.session.gatedFeatureNames,
-    });
-    const errs = result.diagnostics.filter(d => d.severity === 'error');
-    const bad = errs.find(d => /bad-pose/.test(d.hint));
-    expect(bad).toBeDefined();
-    expect(bad?.code).toBe('feature.kernel-failed');
   });
 });

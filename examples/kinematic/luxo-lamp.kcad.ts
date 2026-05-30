@@ -441,39 +441,113 @@ const elbowSpringPart    = arm.part('elbow-spring',    upperSpring);
 const wristSpringPart    = arm.part('wrist-spring',    wristSpring);
 
 // ============================================================================
-// JOINTS — body-tree FK; joint origin lives in PARENT's part-local frame
+// JOINTS — mate-vocabulary (G0 migration 2026-05-31). Joint origins still
+// live in each side's part-local frame; the parent connector pins the joint
+// in the parent's frame, the child connector at the child's part-local
+// origin. The v0.6 Pattern A mate-FK collapses to the v0.5 body-tree formula
+// (`parentT . T(parentOrigin) . R(axis, pose)`) when child connectors sit at
+// the child's local zero, so the rendered output is bit-for-bit identical.
+//
+// Pose-driven mates carry `pose: paramRef` so studio-driven slider edits
+// reactively re-pose the lamp without re-running the script.
 // ============================================================================
 
-arm.revolute('shoulder', basePart, lowerArmPart, {
+// Shoulder revolute: base ↔ lower-arm about Y at world (0, 0, COLUMN_TOP_Z).
+basePart.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, COLUMN_TOP_Z] },
   axis: [0, -1, 0],
-  origin: [0, 0, COLUMN_TOP_Z],
+});
+lowerArmPart.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', {
+  pose: shoulderDeg,
   limitsDeg: [-10, 110],
 });
 
-arm.revolute('elbow', lowerArmPart, upperArmPart, {
+// Elbow revolute: lower-arm ↔ upper-arm about Y at lower-arm tip (x = L_LOWER).
+lowerArmPart.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L_LOWER, 0, 0] },
   axis: [0, -1, 0],
-  origin: [L_LOWER, 0, 0],
+});
+upperArmPart.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
+  pose: elbowDeg,
   limitsDeg: [-150, -30],
 });
 
-arm.revolute('wrist', upperArmPart, headPart, {
+// Wrist revolute: upper-arm ↔ lamp-head about Y at upper-arm tip (x = L_UPPER).
+upperArmPart.connector('wristAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L_UPPER, 0, 0] },
   axis: [0, -1, 0],
-  origin: [L_UPPER, 0, 0],
+});
+headPart.connector('wristAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
+  pose: wristDeg,
   limitsDeg: [-90, 0],
 });
 
-// Springs are fastened (no DOF) to their respective parent arms. Origin
-// is in the parent's part-local frame; the spring's own shape is centred
-// on the part-local origin, so the fixed offset places it correctly.
-arm.fixed('shoulder-spring-mount', lowerArmPart, shoulderSpringPart, {
-  origin: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_LOWER],
+// Springs are fastened (no DOF) to their respective parent arms via the v0.6
+// 'fastened' mate. Parent-side connector lives at the v0.5 fixed-origin
+// offset in the parent's local frame; child-side connector at the spring's
+// local origin (the spring is authored centred at its own origin).
+lowerArmPart.connector('shoulderSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_LOWER] },
 });
-arm.fixed('elbow-spring-mount', upperArmPart, elbowSpringPart, {
-  origin: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_UPPER],
+shoulderSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
 });
-arm.fixed('wrist-spring-mount', headPart, wristSpringPart, {
-  origin: [wristSpringMountX, 0, wristSpringMountZ],
+arm.mate(
+  'shoulder-spring-mount',
+  'lower-arm.shoulderSpringMount',
+  'shoulder-spring.mount',
+  'fastened',
+);
+
+upperArmPart.connector('elbowSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_UPPER] },
 });
+elbowSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+});
+arm.mate(
+  'elbow-spring-mount',
+  'upper-arm.elbowSpringMount',
+  'elbow-spring.mount',
+  'fastened',
+);
+
+headPart.connector('wristSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [wristSpringMountX, 0, wristSpringMountZ] },
+});
+wristSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+});
+arm.mate(
+  'wrist-spring-mount',
+  'lamp-head.wristSpringMount',
+  'wrist-spring.mount',
+  'fastened',
+);
 
 // ============================================================================
 // SOLVE + VALIDATE
@@ -489,12 +563,12 @@ arm.fixed('wrist-spring-mount', headPart, wristSpringPart, {
 // Those few contacts are silenced via `ignore` rather than reaching for
 // `validate: 'off'`.
 
+// Pose ParamRefs are bound on the mate records above via `{ pose: <ref> }`.
+// Calling solvedModel({}) lets solveMates resolve those refs against the
+// session's ParamTable each recompute, so studio slider edits re-pose the
+// lamp without re-running the script — same reactivity as the v0.5 path.
 return arm.solvedModel(
-  {
-    shoulder: shoulderDeg,
-    elbow:    elbowDeg,
-    wrist:    wristDeg,
-  },
+  {},
   {
     ignore: [
       ['base', 'lower-arm'],                 // shoulder tongue-in-fork contact

@@ -47,7 +47,9 @@ describe('solvedAssembly lowering', () => {
       const arm = assembly('test');
       const base  = arm.part('base',  box(10, 10, 10));
       const upper = arm.part('upper', box(10, 10, 30));
-      arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      upper.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'upper.yaw', 'revolute');
       return (await arm.solvedModel({ yaw: 0 })).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
@@ -69,7 +71,9 @@ describe('solvedAssembly lowering', () => {
       const base  = arm.part('base',  box(10, 10, 10));
       // Upper arm extends 30mm along +X (so yaw=90° rotates it onto +Y).
       const upper = arm.part('upper', box(30, 10, 10).translate(15, 0, 0));
-      arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      upper.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'upper.yaw', 'revolute');
       return (await arm.solvedModel({ yaw: 90 })).toUnion();
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
@@ -98,8 +102,10 @@ describe('solvedAssembly lowering', () => {
         const base  = arm.part('base',  box(10, 10, 10));
         // Long upper arm extending +X (so yaw=90° rotates it onto +Y).
         const upper = arm.part('upper', box(60, 10, 10).translate(30, 0, 0));
-        arm.revolute('yaw', base, upper, { axis: [0, 0, 1], origin: [0, 0, 0] });
-        return (await arm.solvedModel({ yaw: yawDeg })).toUnion();
+        base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        upper.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+        arm.mate('yaw', 'base.yaw', 'upper.yaw', 'revolute', { pose: yawDeg });
+        return (await arm.solvedModel({})).toUnion();
       `,
     });
 

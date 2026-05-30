@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { inspectRobotTool } from '../../../src/agent/mcp/tools/inspectRobot';
 
-describe('inspect_robot MCP tool (Task B3.E)', () => {
+describe('inspect_robot MCP tool (Task B3.E, G0 migrated to mate API)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('returns links + joints from a 2-DOF arm assembly', async () => {
@@ -10,7 +10,9 @@ describe('inspect_robot MCP tool (Task B3.E)', () => {
       const arm = assembly('two-link');
       const base = arm.part('base', box(30, 30, 8), { density: 2700 });
       const upper = arm.part('upper', box(80, 12, 8), { density: 2700 });
-      arm.revolute('shoulder', base, upper, { axis: [0, 0, 1], origin: [0, 0, 8], limitsDeg: [-90, 90] });
+      base.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 8] }, axis: [0, 0, 1] });
+      upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('shoulder', 'base.shoulder', 'upper.shoulder', 'revolute', { limitsDeg: [-90, 90] });
       return arm.model();
     `;
     const r = await inspectRobotTool({ code });
@@ -30,10 +32,18 @@ describe('inspect_robot MCP tool (Task B3.E)', () => {
       const b = arm.part('b', box(10, 10, 10), { density: 2700 });
       const c = arm.part('c', box(10, 10, 10), { density: 2700 });
       const d = arm.part('d', box(10, 10, 10), { density: 2700 });
-      arm.revolute('ab', a, b, { axis: [0,0,1], origin: [10,0,0] });
-      arm.revolute('bc', b, c, { axis: [0,0,1], origin: [10,0,0] });
-      arm.revolute('cd', c, d, { axis: [0,0,1], origin: [10,0,0] });
-      arm.revolute('da', d, a, { axis: [0,0,1], origin: [10,0,0] });
+      a.connector('ab_a', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      b.connector('ab_b', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      b.connector('bc_b', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      c.connector('bc_c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      c.connector('cd_c', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      d.connector('cd_d', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      d.connector('da_d', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      a.connector('da_a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('ab', 'a.ab_a', 'b.ab_b', 'revolute');
+      arm.mate('bc', 'b.bc_b', 'c.bc_c', 'revolute');
+      arm.mate('cd', 'c.cd_c', 'd.cd_d', 'revolute');
+      arm.mate('da', 'd.da_d', 'a.da_a', 'revolute');
       return arm.model();
     `;
     const r = await inspectRobotTool({ code });

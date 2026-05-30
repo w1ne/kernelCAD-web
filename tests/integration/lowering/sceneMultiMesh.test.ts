@@ -26,7 +26,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10));
       const armPart = arm.part('arm',  box(10, 10, 30));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -54,7 +56,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10).color('plate'));
       const armPart = arm.part('arm',  box(10, 10, 30).color('beam'));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -75,7 +79,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10));
       const armPart = arm.part('arm',  box(60, 10, 10).translate(30, 0, 0));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 0] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 90 });
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -116,7 +122,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10));
       const armPart = arm.part('arm',  box(60, 10, 10).translate(30, 0, 0));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 0] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -159,7 +167,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10).fillet(0.5));
       const armPart = arm.part('arm',  box(10, 10, 30).fillet(0.5));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });
@@ -183,7 +193,9 @@ describe('meshing — SceneBackend fan-out', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10).fillet(0.5));
       const armPart = arm.part('arm',  box(10, 10, 30).fillet(0.5));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.model();
     `;
     const { records } = await runScript({ code, fileName: 'test.kcad.ts' });

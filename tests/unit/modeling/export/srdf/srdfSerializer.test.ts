@@ -13,7 +13,9 @@ describe('srdfSerialize — Task B4.C', () => {
     const arm = kcad.assembly('two-link');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const upper = arm.part('upper', kcad.box(80, 10, 10), { density: 2700 });
-    arm.revolute('shoulder', base, upper, { axis: [0, 0, 1], origin: [0, 0, 10], limitsDeg: [-90, 90] });
+    base.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+    upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('shoulder', 'base.shoulder', 'upper.shoulder', 'revolute', { limitsDeg: [-90, 90] });
     arm.planningGroup('main', { chain: { baseLink: 'base', tipLink: 'upper' } });
     return arm;
   }
