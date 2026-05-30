@@ -76,12 +76,20 @@ const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 154 mm — shoulder pivot lives her
 // like two plates around a pivot, not a block.
 const FORK_PLATE_X  = 22;   // along the arm (X extent at the joint end)
 const FORK_PLATE_Z  = 30;   // vertical extent (Z) of the plate
-const FORK_PLATE_T  = 3;    // each plate's Y-thickness (was 4 → thinner)
-const FORK_GAP_Y    = 18;   // inner gap that swallows the tongue (was 12)
-const TONGUE_Y      = 6;    // tongue thickness — leaves 6mm daylight per side (was 10)
-const PIN_R         = 3.5;  // pivot pin radius (Ø7 — typical M6 bolt + sleeve)
-const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 14;  // sticks out 7mm each side so caps read as bolt heads
-const PIN_CAP_R     = 7;    // bigger cap → reads as a real bolt head, not a decorative dot
+const FORK_PLATE_T  = 3;    // each plate's Y-thickness
+const FORK_GAP_Y    = 18;   // inner gap that swallows the tongue
+const TONGUE_Y      = 6;    // tongue thickness — leaves 6mm daylight per side
+const PIN_R         = 4;    // pivot pin radius (Ø8 — bolder, reads at the lamp's scale)
+const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 18;  // sticks out 9 mm beyond each fork outer face
+const PIN_CAP_R     = 10;   // bolt-head sized — visible at the lamp's framing distance, not a decorative dot
+
+// Cylindrical "knuckle" wrapping each pivot — the iconic Anglepoise feature
+// that turns a flat-plate join into a visible hinge. Sits at the pivot point
+// (joint origin), oriented along the joint axis (Y); both the fork half and
+// the tongue half get one, so the joint reads as one round hub around the
+// pin from any angle. Pin hole drills straight through.
+const KNUCKLE_R     = FORK_PLATE_Z / 2 + 2;   // 17 mm — slightly larger than fork plate Z half-extent so the knuckle dominates the silhouette
+const KNUCKLE_T     = 4;                       // each knuckle half (fork-side / tongue-side) thickness along Y
 
 // Beam arm cross-section.
 const ARM_W = 14;   // Y dimension
@@ -150,7 +158,19 @@ function makeClevisFork() {
   const plateXZ = plate.rotate([1, 0, 0], -90);
   const left  = plateXZ.translate(0,  plateOffsetY, 0);
   const right = plateXZ.translate(0, -plateOffsetY, 0);
-  return left.union(right).material(mFork);
+  // Cylindrical knuckle on each fork plate — the cylinder is co-planar with
+  // the plate (same Y position, same thickness), wrapping the pivot. From
+  // outside, the hinge silhouette is dominated by the round hub, not the
+  // square plate corners — this is what makes the joint read as a real
+  // Anglepoise-style hinge instead of two boxes touching.
+  const knuckleOffset = FORK_GAP_Y / 2 + KNUCKLE_T / 2;
+  const knuckleL = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
+    .rotate([1, 0, 0], 90)
+    .translate(0, knuckleOffset - KNUCKLE_T / 2, 0);
+  const knuckleR = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
+    .rotate([1, 0, 0], 90)
+    .translate(0, -knuckleOffset - KNUCKLE_T / 2, 0);
+  return left.union(right).union(knuckleL).union(knuckleR).material(mFork);
 }
 
 // Through-hole cutter along the Y axis at the supplied local origin —
@@ -171,7 +191,14 @@ function makeTongue() {
   const plate = extrudeRoundedRect(FORK_PLATE_X, FORK_PLATE_Z, 8, TONGUE_Y)
     .translate(0, 0, -TONGUE_Y / 2);
   const plateXZ = plate.rotate([1, 0, 0], -90);
-  return plateXZ.material(mArm);
+  // Tongue knuckle: a cylindrical hub centred on the pivot, spanning the
+  // tongue's full Y thickness. Pairs with the fork knuckles so the joint's
+  // outer silhouette is one continuous round bulge around the pin.
+  const tongueKnuckle = cylinder(TONGUE_Y, KNUCKLE_R, 32)
+    .rotate([1, 0, 0], 90)
+    .translate(0, -TONGUE_Y / 2, 0)
+    .material(mArm);
+  return plateXZ.union(tongueKnuckle).material(mArm);
 }
 
 // Tension spring — placeholder geometry.
