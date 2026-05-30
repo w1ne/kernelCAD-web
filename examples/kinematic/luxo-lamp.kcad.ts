@@ -237,13 +237,9 @@ const shoulderFork = makeClevisFork().translate(0, 0, COLUMN_TOP_Z);
 // on this same Y axis so the joint is mechanically sensible).
 const shoulderPin = makePivotPin().translate(0, 0, COLUMN_TOP_Z);
 
-// One spring anchor on the back of the column — the spring's free end will
-// come from the lower arm and meet here visually. We model the spring as a
-// child of the LOWER ARM (so it rotates with it) but it visually anchors
-// here.
-const baseSpringAnchor = sphere(2.5)
-  .translate(-COLUMN_R - 1, 0, COLUMN_TOP_Z - 18)
-  .material(mPin);
+// (baseSpringAnchor sphere was here — anchored the shoulder spring's free
+// end. Orphaned once the spring parts were dropped; rendered as a stray
+// black bump on the column's back side. Removed.)
 
 const baseShape = baseDisc
   .union(feltPad)
@@ -254,8 +250,7 @@ const baseShape = baseDisc
   // unioned, so the hole passes through every co-located piece (fork
   // plates + column top) in one shot.
   .subtract(makePinHoleCutter(0, COLUMN_TOP_Z))
-  .union(shoulderPin)
-  .union(baseSpringAnchor);
+  .union(shoulderPin);
 
 const basePart = arm.part('base', baseShape);
 
