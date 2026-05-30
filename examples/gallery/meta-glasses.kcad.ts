@@ -1,254 +1,338 @@
-// Ray-Ban Meta — Wayfarer (gallery hero).
+// Ray-Ban Meta / Wayfarer-style full smart glasses gallery model.
 //
-// Gallery-only build targeting visual recognizability as a Wayfarer.
-// Visual targets from reference photo:
-//   1. Wide trapezoidal acetate frame, wider top than bottom
-//   2. Two trapezoidal lens openings (wider at top, narrower at bottom),
-//      with an iconic upper-outer "wing" — the corner curls up and out
-//   3. Distinctive bridge with a small inverted-V nose notch
-//   4. Camera bump + LED on the LEFT lens upper-outer corner (Meta cue)
+// This is a full-product model, not the older "front face only" demo. It keeps
+// the Wayfarer front silhouette from the visual experiments and adds the parts
+// that make the object read as Meta smart glasses: seated lenses, asymmetric
+// camera/privacy LED, hinge hardware, thick electronics temples, touch strip,
+// and ear bends.
 //
-// Coordinate convention: Z-up, right-handed; smallest Y = camera-facing.
-// Sketch plane is XZ (sketches authored in (x, z)); body is extruded along
-// +Y to give it depth, with the front face at Y=0.
+// Coordinate convention: X = left/right, Z = up, smallest Y is the
+// camera-facing front surface. Temples extend backward in +Y.
 
-// ----------------------------------------------------------------------------
-// Parameters
-// ----------------------------------------------------------------------------
-const FRAME_DEPTH = 8;          // front-to-back acetate thickness
+const FRAME_DEPTH = 9.2;
+const CENTER_Y = -FRAME_DEPTH / 2;
 
-// Bridge dimensions
-const BRIDGE_W = 16;            // bridge width (at narrowest top point)
+const FRAME_HALF_W = 75;
+const FRAME_TOP_Z = 25;
+const FRAME_BOT_Z = -26;
+const WING_TIP_X = 80;
+const WING_TIP_Z = 28;
+const SIDE_CHEEK_X = 74;
+const SIDE_CHEEK_Z = 11;
+const LOWER_CHEEK_X = 64;
+const LOWER_CHEEK_Z = -23;
+const BRIDGE_BOTTOM_Z = -25.5;
 
-// Lens trapezoid — wider at top, narrower at bottom (Wayfarer signature)
-// 20% bottom-narrowing is the iconic Wayfarer proportion.
-const LENS_TOP_W = 46;          // top edge length of a single lens
-const LENS_BOT_W = 36;          // bottom edge length (≈22% narrower than top)
-const LENS_H = 42;              // vertical lens height
-
-// Frame rim widths (thickness of acetate surrounding each lens)
-const RIM_TOP = 7;              // top rim above the lens
-const RIM_BOT = 8;              // bottom rim below the lens
-const RIM_OUTER = 6;            // outer rim beside the lens (where wing is)
-const WING_RISE = 2;            // extra height of the outer-top "wing" corner — subtle
-
-// Derived
-const HALF_BRIDGE = BRIDGE_W / 2;
-const LENS_INNER_TOP_X = HALF_BRIDGE;
-const LENS_OUTER_TOP_X = HALF_BRIDGE + LENS_TOP_W;
-const LENS_INNER_BOT_X = HALF_BRIDGE + (LENS_TOP_W - LENS_BOT_W) / 2;
+const BRIDGE_GAP = 16;
+const LENS_TOP_W = 52;
+const LENS_BOT_W = 41;
+const LENS_H = 37;
+const LENS_TOP_Z = 17;
+const LENS_BOT_Z = LENS_TOP_Z - LENS_H;
+const LENS_INNER_TOP_X = BRIDGE_GAP / 2;
+const LENS_OUTER_TOP_X = LENS_INNER_TOP_X + LENS_TOP_W;
+const LENS_INNER_BOT_X = LENS_INNER_TOP_X + (LENS_TOP_W - LENS_BOT_W) / 2;
 const LENS_OUTER_BOT_X = LENS_INNER_BOT_X + LENS_BOT_W;
-const FRAME_HALF_W = LENS_OUTER_TOP_X + RIM_OUTER;
 
-const LENS_Z_TOP = LENS_H / 2;
-const LENS_Z_BOT = -LENS_H / 2;
-const FRAME_Z_TOP = LENS_Z_TOP + RIM_TOP;
-const FRAME_Z_BOT = LENS_Z_BOT - RIM_BOT;
-const WING_Z_TOP = FRAME_Z_TOP + WING_RISE;
+const NOSE_NOTCH_W = 8.0;
+const NOSE_NOTCH_DEPTH = 5.0;
 
-// The bridge top sits FLUSH with the rest of the upper frame edge (FRAME_Z_TOP).
-// On a Wayfarer the brow is essentially one continuous line — there is no
-// stepped dip between bridge and wing. The nose notch is a SMALL inverted
-// V cut into this line from below.
-const BRIDGE_TOP_Z = FRAME_Z_TOP;
+const CAMERA_BEZEL_R = 4.65;
+const CAMERA_INNER_R = 2.45;
+const CAMERA_X = -LENS_OUTER_TOP_X + 7.4;
+const CAMERA_Z = LENS_TOP_Z + 4.4;
 
-// Lens corner radii
-const LENS_OUTER_TOP_R = 6;     // upper-outer (wing) corner — generous
-const LENS_INNER_TOP_R = 4;     // upper-inner (bridge side)
-const LENS_INNER_BOT_R = 5;
-const LENS_OUTER_BOT_R = 5;
+// On the real product the privacy LED is on the opposite upper corner from
+// the camera. Keeping this separated makes the front read correctly.
+const PRIVACY_LED_R = 1.05;
+const PRIVACY_LED_X = LENS_OUTER_TOP_X - 7.4;
+const PRIVACY_LED_Z = CAMERA_Z - 0.1;
 
-// Bridge nose notch (small inverted-V on the bridge top)
-const NOSE_NOTCH_W = 7;
-const NOSE_NOTCH_DEPTH = 3.5;
+const ACETATE = {
+  baseColor: '#202224',
+  metalness: 0,
+  roughness: 0.25,
+  clearcoat: 0.82,
+  clearcoatRoughness: 0.07,
+  ior: 1.55,
+};
 
-// Camera + LED
-const CAMERA_R = 4.2;
-const CAMERA_DEPTH = 2.5;
-const LED_R = 0.9;
-const LED_DEPTH = 0.8;
+const SMOKED_LENS = {
+  baseColor: '#253631',
+  metalness: 0,
+  roughness: 0.12,
+  clearcoat: 0.72,
+  clearcoatRoughness: 0.04,
+  ior: 1.5,
+  opacity: 0.72,
+};
 
-// ----------------------------------------------------------------------------
-// Full-width frame silhouette — drawn as ONE closed path spanning the
-// full width so the body is intrinsically symmetric.
-//
-// `.mirror('yz')` was documented as "union of source + reflection" but
-// empirically returned only the reflected half in this build, so we
-// author the full perimeter directly to avoid relying on it.
-// ----------------------------------------------------------------------------
+const RUBBER_DARK = {
+  baseColor: '#151718',
+  metalness: 0,
+  roughness: 0.46,
+  clearcoat: 0.25,
+  clearcoatRoughness: 0.16,
+  ior: 1.48,
+};
 
-// Wayfarer silhouette. The iconic shape:
-//   - Slightly trapezoidal frame (narrower at bottom)
-//   - Upper-outer corners that curl up & out into pointed wings
-//   - Rounded bottom outer corners
-//   - A flat brow line across the top from wing to wing
-//
-// The bottom-edge taper inward by BOT_INSET on each side gives the
-// classic Wayfarer narrow-bottom-wide-top trapezoid look.
-const BOT_INSET = 9;   // bottom edge tapers in by this much on each side
-const BOT_CORNER_R = 8; // bottom-outer corner radius — generous Wayfarer roundness
-const TOP_CORNER_X = 4; // distance the wing peak extends OUTWARD beyond
-                        // FRAME_HALF_W at its tip — gives the wing "curl"
+const METAL_PIN = {
+  baseColor: '#c8c3b8',
+  metalness: 0.75,
+  roughness: 0.28,
+};
 
-// Outer wing tip lives at X = FRAME_HALF_W + TOP_CORNER_X (slightly beyond
-// the frame half width), creating the iconic outward wing curl.
-const WING_TIP_X = FRAME_HALF_W + TOP_CORNER_X;
-
-const frameSilhouette = path()
-  // Start at upper-LEFT wing tip
-  .moveTo(-WING_TIP_X, WING_Z_TOP)
-  // Down-left-ish to where the side becomes vertical (small inward sweep)
-  .sagittaArc(-FRAME_HALF_W, WING_Z_TOP - 4, 1.2)
-  // Continue down the left side (vertical)
-  .lineTo(-FRAME_HALF_W + BOT_INSET / 2, FRAME_Z_BOT + BOT_CORNER_R)
-  // Bottom-left rounded corner
-  .sagittaArc(-FRAME_HALF_W + BOT_INSET, FRAME_Z_BOT, 1.5)
-  // Flat bottom edge (tapered narrower than the top — trapezoidal)
-  .lineTo(FRAME_HALF_W - BOT_INSET, FRAME_Z_BOT)
-  // Bottom-right rounded corner
-  .sagittaArc(FRAME_HALF_W - BOT_INSET / 2, FRAME_Z_BOT + BOT_CORNER_R, 1.5)
-  // Up the right side
-  .lineTo(FRAME_HALF_W, WING_Z_TOP - 4)
-  // Up-right curl into right wing tip
-  .sagittaArc(WING_TIP_X, WING_Z_TOP, 1.2)
-  // Flat brow line across the top, from right wing back to left wing.
-  .lineTo(-WING_TIP_X, WING_Z_TOP)
-  .close();
-
-// Reorient sketch-plane (X,Y) → world (X,Z) so my (x, z) authoring maps to
-// the world XZ plane with +Y = up.
-// Rotation around +X by +90°:
-//   sketch (x, y, z) → world (x, -z, y)
-//   sketch +Y (up in my coords) → world +Z (up). ✓
-//   sketch extrude axis +Z → world -Y (depth into negative Y).
-// After rotation the body spans world Y = -FRAME_DEPTH to 0. Translate
-// by (0, +FRAME_DEPTH, 0) so the front face sits at Y=0 (camera-facing).
-const body = frameSilhouette
-  .extrude(FRAME_DEPTH)
-  .rotate([1, 0, 0], 90)
-  .translate(0, FRAME_DEPTH, 0);
-
-// ----------------------------------------------------------------------------
-// Lens openings — two trapezoidal cutouts, one per eye.
-// Authored as full sketches (not via reflect) for reliability.
-// ----------------------------------------------------------------------------
-function lensCutoutSketch(sign: 1 | -1) {
-  // sign = +1 for RIGHT lens (positive X), -1 for LEFT lens.
-  const innerTopX = sign * LENS_INNER_TOP_X;
-  const outerTopX = sign * LENS_OUTER_TOP_X;
-  const innerBotX = sign * LENS_INNER_BOT_X;
-  const outerBotX = sign * LENS_OUTER_BOT_X;
-
-  // Travel CCW (viewed from +Y, looking back at the camera) around the
-  // trapezoid: inner-top → outer-top → outer-bot → inner-bot → back.
-  // For a CCW winding the path order depends on sign; both signs traverse
-  // the same way in (x, z) space if we keep the same relative direction.
-  // We just need it closed; the boolean subtract doesn't care about
-  // handedness for a single hole.
-  if (sign === 1) {
-    // RIGHT lens: traverse inner-top → outer-top → outer-bot → inner-bot
-    return path()
-      .moveTo(innerTopX + LENS_INNER_TOP_R, LENS_Z_TOP)
-      .lineTo(outerTopX - LENS_OUTER_TOP_R, LENS_Z_TOP)
-      .tangentArc(outerTopX, LENS_Z_TOP - LENS_OUTER_TOP_R)
-      .lineTo(outerBotX, LENS_Z_BOT + LENS_OUTER_BOT_R)
-      .tangentArc(outerBotX - LENS_OUTER_BOT_R, LENS_Z_BOT)
-      .lineTo(innerBotX + LENS_INNER_BOT_R, LENS_Z_BOT)
-      .tangentArc(innerBotX, LENS_Z_BOT + LENS_INNER_BOT_R)
-      .lineTo(innerTopX, LENS_Z_TOP - LENS_INNER_TOP_R)
-      .tangentArc(innerTopX + LENS_INNER_TOP_R, LENS_Z_TOP)
-      .close();
-  } else {
-    // LEFT lens: traverse the reverse direction in X.
-    return path()
-      .moveTo(innerTopX - LENS_INNER_TOP_R, LENS_Z_TOP)
-      .lineTo(outerTopX + LENS_OUTER_TOP_R, LENS_Z_TOP)
-      .tangentArc(outerTopX, LENS_Z_TOP - LENS_OUTER_TOP_R)
-      .lineTo(outerBotX, LENS_Z_BOT + LENS_OUTER_BOT_R)
-      .tangentArc(outerBotX + LENS_OUTER_BOT_R, LENS_Z_BOT)
-      .lineTo(innerBotX - LENS_INNER_BOT_R, LENS_Z_BOT)
-      .tangentArc(innerBotX, LENS_Z_BOT + LENS_INNER_BOT_R)
-      .lineTo(innerTopX, LENS_Z_TOP - LENS_INNER_TOP_R)
-      .tangentArc(innerTopX - LENS_INNER_TOP_R, LENS_Z_TOP)
-      .close();
-  }
+function frontBody(sketch, depth = FRAME_DEPTH, yOffset = 0) {
+  return sketch
+    .extrude(depth)
+    .rotate([1, 0, 0], 90)
+    .translate(0, depth + yOffset, 0);
 }
 
-// Same orientation transform as the body. Use a slightly oversized depth
-// so the cut punches cleanly through the front and back faces.
-const rightLensCutout = lensCutoutSketch(1)
-  .extrude(FRAME_DEPTH + 6)
-  .rotate([1, 0, 0], 90)
-  .translate(0, FRAME_DEPTH + 3, 0);
+function yCylinder(depth, radius, segments = 48) {
+  return cylinder(depth, radius, segments).alongAxis([0, 1, 0]);
+}
 
-const leftLensCutout = lensCutoutSketch(-1)
-  .extrude(FRAME_DEPTH + 6)
-  .rotate([1, 0, 0], 90)
-  .translate(0, FRAME_DEPTH + 3, 0);
+function lensOpening(sign: 1 | -1, inset = 0) {
+  const innerTopX = sign * (LENS_INNER_TOP_X + inset);
+  const outerTopX = sign * (LENS_OUTER_TOP_X - inset);
+  const innerBotX = sign * (LENS_INNER_BOT_X + inset);
+  const outerBotX = sign * (LENS_OUTER_BOT_X - inset);
+  const topZ = LENS_TOP_Z - inset * 0.35;
+  const botZ = LENS_BOT_Z + inset * 0.65;
+  const outerTopR = 7.0;
+  const innerTopR = 4.3;
+  const innerBotR = 5.5;
+  const outerBotR = 6.3;
 
-// ----------------------------------------------------------------------------
-// Bridge nose notch — small inverted-V cut into the bridge top edge.
-// ----------------------------------------------------------------------------
+  if (sign === 1) {
+    return path()
+      .moveTo(innerTopX + innerTopR, topZ)
+      .lineTo(outerTopX - outerTopR, topZ)
+      .tangentArc(outerTopX, topZ - outerTopR)
+      .lineTo(outerBotX, botZ + outerBotR)
+      .tangentArc(outerBotX - outerBotR, botZ)
+      .lineTo(innerBotX + innerBotR, botZ)
+      .tangentArc(innerBotX, botZ + innerBotR)
+      .lineTo(innerTopX, topZ - innerTopR)
+      .tangentArc(innerTopX + innerTopR, topZ)
+      .close();
+  }
+
+  return path()
+    .moveTo(innerTopX - innerTopR, topZ)
+    .lineTo(outerTopX + outerTopR, topZ)
+    .tangentArc(outerTopX, topZ - outerTopR)
+    .lineTo(outerBotX, botZ + outerBotR)
+    .tangentArc(outerBotX + outerBotR, botZ)
+    .lineTo(innerBotX - innerBotR, botZ)
+    .tangentArc(innerBotX, botZ + innerBotR)
+    .lineTo(innerTopX, topZ - innerTopR)
+    .tangentArc(innerTopX - innerTopR, topZ)
+    .close();
+}
+
+// Chunky black acetate body with Wayfarer wing corners.
+const acetateOutline = path()
+  .moveTo(-WING_TIP_X, WING_TIP_Z)
+  .spline([
+    [-WING_TIP_X, WING_TIP_Z],
+    [-FRAME_HALF_W, FRAME_TOP_Z - 1.0],
+    [-SIDE_CHEEK_X, SIDE_CHEEK_Z],
+    [-LOWER_CHEEK_X, LOWER_CHEEK_Z],
+    [-18, BRIDGE_BOTTOM_Z],
+    [0, FRAME_BOT_Z],
+  ])
+  .spline([
+    [0, FRAME_BOT_Z],
+    [18, BRIDGE_BOTTOM_Z],
+    [LOWER_CHEEK_X, LOWER_CHEEK_Z],
+    [SIDE_CHEEK_X, SIDE_CHEEK_Z],
+    [FRAME_HALF_W, FRAME_TOP_Z - 1.0],
+    [WING_TIP_X, WING_TIP_Z],
+  ])
+  .spline([
+    [WING_TIP_X, WING_TIP_Z],
+    [59, FRAME_TOP_Z + 0.2],
+    [31, FRAME_TOP_Z + 1.2],
+    [0, FRAME_TOP_Z + 0.6],
+    [-31, FRAME_TOP_Z + 1.2],
+    [-59, FRAME_TOP_Z + 0.2],
+    [-WING_TIP_X, WING_TIP_Z],
+  ])
+  .close();
+
+const acetateBlank = frontBody(acetateOutline);
+
+const leftLensCut = frontBody(lensOpening(-1), FRAME_DEPTH + 6, -3);
+const rightLensCut = frontBody(lensOpening(1), FRAME_DEPTH + 6, -3);
+const leftLensSeat = frontBody(lensOpening(-1, 1.55), 1.0, 0.05);
+const rightLensSeat = frontBody(lensOpening(1, 1.55), 1.0, 0.05);
+
 const noseNotch = path()
-  .moveTo(-NOSE_NOTCH_W / 2, BRIDGE_TOP_Z + 1)
-  .lineTo(NOSE_NOTCH_W / 2, BRIDGE_TOP_Z + 1)
-  .lineTo(0, BRIDGE_TOP_Z - NOSE_NOTCH_DEPTH)
-  .close()
-  .extrude(FRAME_DEPTH + 6)
-  .rotate([1, 0, 0], 90)
-  .translate(0, FRAME_DEPTH + 3, 0);
+  .moveTo(-NOSE_NOTCH_W / 2, FRAME_BOT_Z - 0.8)
+  .lineTo(NOSE_NOTCH_W / 2, FRAME_BOT_Z - 0.8)
+  .lineTo(0, FRAME_BOT_Z + NOSE_NOTCH_DEPTH)
+  .close();
+const noseCut = frontBody(noseNotch, FRAME_DEPTH + 6, -3);
 
-// ----------------------------------------------------------------------------
-// Camera + LED — on the LEFT lens upper-outer corner (Meta cue).
-// Negative X = left side.
-// ----------------------------------------------------------------------------
-const CAM_X = -(LENS_OUTER_TOP_X) + CAMERA_R + 2;  // slightly inboard from outer edge
-const CAM_Z = LENS_Z_TOP + (FRAME_Z_TOP - LENS_Z_TOP) / 2; // mid of top rim
+const cameraCounterbore = yCylinder(3.0, CAMERA_BEZEL_R, 72).translate(CAMERA_X, -0.35, CAMERA_Z);
+const cameraInnerPocket = yCylinder(3.35, CAMERA_INNER_R, 56).translate(CAMERA_X, -0.55, CAMERA_Z);
+const privacyLedPocket = yCylinder(1.12, PRIVACY_LED_R + 0.18, 32).translate(
+  PRIVACY_LED_X,
+  -0.25,
+  PRIVACY_LED_Z,
+);
 
-// Camera counterbore — cylinder along Y axis, cut INTO the front face.
-const cameraCounterbore = cylinder(CAMERA_DEPTH + 0.5, CAMERA_R, 64)
-  .alongAxis([0, 1, 0])
-  .translate(CAM_X, -0.25, CAM_Z);
+const browRelief = frontBody(
+  path()
+    .moveTo(-WING_TIP_X + 8, FRAME_TOP_Z - 1.0)
+    .sagittaArc(0, FRAME_TOP_Z - 2.0, -0.75)
+    .sagittaArc(WING_TIP_X - 8, FRAME_TOP_Z - 1.0, -0.75)
+    .lineTo(WING_TIP_X - 8, FRAME_TOP_Z - 2.7)
+    .sagittaArc(0, FRAME_TOP_Z - 3.8, 0.55)
+    .sagittaArc(-WING_TIP_X + 8, FRAME_TOP_Z - 2.7, 0.55)
+    .close(),
+  0.9,
+  -0.12,
+);
 
-// Camera lens — small dark disc inside the counterbore.
-const CAMERA_INNER_R = 2.6;
-const cameraLens = cylinder(0.6, CAMERA_INNER_R, 48)
-  .alongAxis([0, 1, 0])
-  .translate(CAM_X, CAMERA_DEPTH - 0.6, CAM_Z);
-
-// LED — small dot to the right of camera (toward the bridge).
-const LED_X = CAM_X + CAMERA_R + 6;
-const LED_Z = CAM_Z;
-const ledPocket = cylinder(LED_DEPTH + 0.2, LED_R, 32)
-  .alongAxis([0, 1, 0])
-  .translate(LED_X, -0.1, LED_Z);
-
-// ----------------------------------------------------------------------------
-// Compose
-// ----------------------------------------------------------------------------
-const glasses = body
-  .subtract(rightLensCutout)
-  .subtract(leftLensCutout)
-  .subtract(noseNotch)
+const frame = acetateBlank
+  .subtract(leftLensCut)
+  .subtract(rightLensCut)
+  .subtract(leftLensSeat)
+  .subtract(rightLensSeat)
+  .subtract(noseCut)
   .subtract(cameraCounterbore)
-  .subtract(ledPocket)
-  .union(cameraLens)
-  // Center the assembly so pose-rotation framing sits at origin (the camera
-  // fitter looks at (0,0,0) and projects bbox corners; if the model is
-  // off-centered the fit is loose and the framing crops).
-  .translate(0, -FRAME_DEPTH / 2, 0)
-  // Material on the post-union root — empirically in this renderer the
-  // static-render path picks up `.material()` from the FINAL chain link,
-  // not from the leaf. Use mid-charcoal (NOT pure black) per the docs
-  // warning: pure black saturates recess shadows and the lens openings
-  // become invisible.
+  .subtract(cameraInnerPocket)
+  .subtract(privacyLedPocket)
+  .subtract(browRelief)
+  .translate(0, CENTER_Y, 0)
+  .material(ACETATE)
+  .color('#202224');
+
+function lensInsert(sign: 1 | -1) {
+  return frontBody(lensOpening(sign, 2.05), 0.82, 1.22)
+    .translate(0, CENTER_Y, 0)
+    .material(SMOKED_LENS)
+    .color('#253631');
+}
+
+const cameraBezel = yCylinder(0.92, CAMERA_BEZEL_R - 0.35, 72)
+  .translate(CAMERA_X, CENTER_Y - 0.04, CAMERA_Z)
   .material({
-    baseColor: '#2a2a2a',
-    metalness: 0.0,
-    roughness: 0.45,
-    clearcoat: 0.1,
-    clearcoatRoughness: 0.1,
-    ior: 1.5,
+    baseColor: '#08090a',
+    metalness: 0,
+    roughness: 0.18,
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.05,
+  })
+  .color('#08090a');
+
+const cameraGlass = yCylinder(0.72, CAMERA_INNER_R, 56)
+  .translate(CAMERA_X, CENTER_Y - 0.1, CAMERA_Z)
+  .material({
+    baseColor: '#05070a',
+    metalness: 0,
+    roughness: 0.07,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.02,
+    ior: 1.7,
+  })
+  .color('#05070a');
+
+const privacyLedDiffuser = yCylinder(0.64, PRIVACY_LED_R, 32)
+  .translate(PRIVACY_LED_X, CENTER_Y - 0.08, PRIVACY_LED_Z)
+  .material({
+    baseColor: '#d15a34',
+    metalness: 0,
+    roughness: 0.18,
+    clearcoat: 0.45,
+    clearcoatRoughness: 0.06,
+  })
+  .color('#d15a34');
+
+function darkBox(w, d, h, x, y, z) {
+  return box(w, d, h, true)
+    .translate(x, y, z)
+    .material(RUBBER_DARK)
+    .color('#151718');
+}
+
+function darkBoxRotX(w, d, h, x, y, z, deg) {
+  return box(w, d, h, true)
+    .rotate([1, 0, 0], deg)
+    .translate(x, y, z)
+    .material(RUBBER_DARK)
+    .color('#151718');
+}
+
+function sideTemple(sign: 1 | -1) {
+  const x = sign * 81.0;
+  const parts = [];
+
+  // Build each temple as one connected solid so the gallery video reads as a
+  // physical pair of glasses instead of many small pieces appearing in space.
+  const body = darkBox(8.8, 13.2, 17.4, sign * 77.0, 7.2, 7.0)
+    .union(darkBox(9.2, 48, 9.4, x, 31, 7.2))
+    .union(darkBoxRotX(7.4, 54, 7.7, sign * 80.0, 76, 5.3, -4))
+    .union(darkBoxRotX(5.8, 40, 6.2, sign * 78.5, 118, -1.8, -14))
+    .union(
+      cylinder(5.9, 2.85, 32)
+        .alongAxis([1, 0, 0])
+        .translate(sign * 78.5, 136, -6.4),
+    )
+    .material(RUBBER_DARK)
+    .color('#151718');
+
+  parts.push({
+    name: sign < 0 ? 'left-connected-electronics-temple-with-ear-bend' : 'right-connected-electronics-temple-with-ear-bend',
+    shape: body,
   });
 
-return glasses;
+  parts.push({
+    name: sign < 0 ? 'left-hinge-barrel-pair' : 'right-hinge-barrel-pair',
+    shape: cylinder(8.2, 2.0, 32)
+      .alongAxis([0, 0, 1])
+      .translate(sign * 76.8, 3.35, 7.5)
+      .material(METAL_PIN)
+      .color('#c8c3b8'),
+  });
+
+  // Touchpad strip on the right temple, flush and glossy.
+  if (sign > 0) {
+    parts.push({
+      name: 'right-temple-glossy-touch-control-strip',
+      shape: box(0.8, 32, 4.0, true)
+        .translate(sign * 85.85, 41, 8.2)
+        .material({
+          baseColor: '#303336',
+          metalness: 0,
+          roughness: 0.16,
+          clearcoat: 0.7,
+          clearcoatRoughness: 0.04,
+        })
+        .color('#303336'),
+    });
+  }
+
+  return parts;
+}
+
+const fullMetaGlassesParts = [
+  { name: 'full-Wayfarer-front-frame-with-black-acetate-brow', shape: frame },
+  { name: 'left-smoked-seated-lens-insert', shape: lensInsert(-1) },
+  { name: 'right-smoked-seated-lens-insert', shape: lensInsert(1) },
+  { name: 'left-recessed-Meta-camera-bezel', shape: cameraBezel },
+  { name: 'left-recessed-Meta-camera-glass', shape: cameraGlass },
+  { name: 'right-privacy-LED-diffuser', shape: privacyLedDiffuser },
+  ...sideTemple(-1),
+  ...sideTemple(1),
+];
+
+const fullMetaGlasses = assembly('full Ray-Ban Meta Wayfarer-style smart glasses');
+for (const part of fullMetaGlassesParts) {
+  fullMetaGlasses.part(part.name, part.shape);
+}
+
+return fullMetaGlasses.model();

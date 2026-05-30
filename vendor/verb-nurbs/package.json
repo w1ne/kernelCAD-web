@@ -1,0 +1,8 @@
+{
+  "name": "verb-nurbs",
+  "version": "3.0.3-vendored",
+  "type": "module",
+  "main": "build/verb.es.js",
+  "exports": "./build/verb.es.js",
+  "private": true
+}

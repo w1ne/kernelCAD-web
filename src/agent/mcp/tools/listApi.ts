@@ -45,6 +45,10 @@ export interface ListApiOutput {
   scenePartProperties?: ApiEntry[];
   /** Methods on the `Surface` peer returned by `nurbsSurface()` / `surfaceFromCurves()`. */
   surfaceMethods?: ApiEntry[];
+  /** Flat synchronous methods on the `Curve3D` peer returned by `nurbsCurve()` / `spline3d()` / `hermiteG2()`. */
+  curve3dMethods?: ApiEntry[];
+  /** Methods on the `.analytics` namespace of every `Curve3D` (closest-point, arc-length division, derivatives, tessellation, intersection). */
+  curve3dAnalyticsMethods?: ApiEntry[];
   edgeQueryKeys?: readonly string[];
   faceQueryKeys?: readonly string[];
   /** Per-kind faceLabels support: which global functions accept opts.faceLabels and what values are valid. */
@@ -82,11 +86,14 @@ export const GLOBALS: ApiEntry[] = [
   { name: 'setRenderEnvironment', signature: "(spec: { preset?: 'studio' | 'softbox' | 'neutral' | 'outdoor' | 'warehouse'; url?: string; intensity?: number; rotation?: number }) => RenderEnvironmentHandle", description: "Set the HDRI / image-based-lighting environment for the rendered scene. Pass either a built-in preset key OR a custom .hdr URL (mutually exclusive). `intensity` (default 1.0; clamped to (0, 100]) scales `envMapIntensity` on every PBR material in the scene. `rotation` (degrees, default 0) rotates the env map around the world Y axis. The record is virtual — no OCCT geometry is produced; the renderer reads it directly from the feature graph. Default behavior (script never calls this) is the existing three-light rig. Multiple calls register multiple records; the last one wins at render time. Validation errors (conflicting spec, unknown preset, intensity out of range) are pushed as structured diagnostics on `handle.metadata.diagnostics` rather than thrown." },
   { name: 'setCameraTarget', signature: '(x: number, y: number, z: number) => CameraTargetHandle', description: "Override the camera look-at target for `setRenderPose` and headless engineering renders. Default is the bbox centroid; that auto-fit skews when a build has tall asymmetric features (pocket-watch with pendant + bail above origin, scope with offset eyepiece, lamp with tall shaft) — the camera ends up jamming the hero subject against the viewport edge. Pass an explicit (x, y, z) in the script's world frame to re-aim the camera; the renderer translates it into its recentered scene frame automatically. The record is virtual — no OCCT geometry is produced. Multiple calls register multiple records; the renderer applies the last one. Validation errors (non-finite coords) are pushed as structured diagnostics on `handle.metadata.diagnostics`." },
   { name: 'setCameraDistance', signature: '(distance: number) => CameraTargetHandle', description: "Override the camera framing distance (mm from target). Convenience wrap over `setCameraTarget`'s optional `distance` field — inherits the most recently captured target (or world origin if no `setCameraTarget` call has happened) and pins the camera at the supplied distance along the pose direction. Use when the auto-fit extents-projection reads too tight or too loose at the chosen pose / aspect. Same virtual-record + last-wins semantics as `setCameraTarget`." },
+  { name: 'animationView', signature: '(spec: { param: string; from: number; to: number; durationMs: number; fps?: number }) => AnimationViewHandle', description: "Declare a parameter sweep for offline kinematic-motion MP4 capture. `param` names a `param()` declared earlier in the script; `from`/`to` are the sweep endpoints (inclusive); `durationMs` is the animation length; `fps` defaults to 30. `scripts/captureAnimationView.mjs` reads the recorded virtual record, samples `ceil(durationMs / 1000 * fps)` frames, and stitches an MP4 via ffmpeg — leveraging the per-session mesh cache so each frame's recompute is ~5 ms warm. The record is virtual; no OCCT geometry is produced. Multiple calls register multiple records; the capture script uses the last one. Validation errors (non-empty param, finite range, positive durationMs/fps) are pushed as structured diagnostics on `handle.metadata.diagnostics` rather than thrown." },
   { name: 'nurbsCurve', signature: '(controlPoints: Vec3[], opts?: { degree?: number; weights?: number[]; knots?: number[]; closed?: boolean }) => Curve3D', description: '3D parametric NURBS curve specified by an explicit `Geom_BSplineCurve` control net. `degree` defaults to 3 (cubic). Pass `weights` (one per control point, strictly positive) for a rational curve; pass `knots` for a custom knot vector (length must equal `controlPoints.length + degree + 1`) otherwise clamped-uniform is generated. The curve lowers to a `TopoDS_Edge` parked on session.importedGeometry; consumed by `variableSweep` as a spine and (later slices) by `surfaceFromBoundary`. The returned Curve3D proxy exposes synchronous `.sample(n)`, `.pointAt(t)`, `.tangentAt(t)`, `.length()`, `.domain()` (always `[0, 1]`).' },
   { name: 'spline3d', signature: '(points: Vec3[], opts?: { tension?: number; closed?: boolean }) => Curve3D', description: 'Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points through a cubic NURBS curve. `tension` defaults to 0.5 (centripetal); 0 yields standard Catmull-Rom, 1 yields piecewise-linear. The output is a clamped uniform cubic B-spline with (N - 1) * 3 + 1 control points where N is the input count; endpoints reflected via phantom points so the curve interpolates first and last input points exactly. Use for organic spines (eyewear brow, ergonomic grips) authored as a sequence of waypoint coords.' },
   { name: 'variableSweep', signature: '(spine: Curve3D | Sketch | Vec3[], sections: Array<{ t: number; profile: Sketch }>, opts?: { closed?: boolean; continuity?: "C0" | "C1" | "C2" }) => Shape', description: 'Multi-section sweep that blends `sections[i].profile` along the spine at the section\'s `t ∈ [0, 1]` spine parameter. Lowers to `BRepOffsetAPI_MakePipeShell` (direct OCCT — no replicad wrapper). `spine` accepts a Curve3D (from nurbsCurve / spline3d), a planar Sketch (its lifted wire is used as the rail), or a Vec3[] (auto-converted to a nurbsCurve of degree `min(3, points.length - 1)`). Sections must be strictly increasing in t; the first MUST sit at t=0 and the last at t=1. Continuity defaults to "C1". Use for tapered limbs (wing sections, fairings) and varying-cross-section sweeps that lofts cannot express because they need an explicit spine path.' },
-  { name: 'surfaceFromBoundary', signature: '(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" | "C1" | "C2" | ("C0" | "C1" | "C2")[]; sampling?: number }) => Surface', description: 'Fill the interior of 4 boundary curves with a single NURBS face (Coons-style patch). Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. The 4 curves walk an ordered loop: `curves[0]` = bottom, `curves[1]` = right, `curves[2]` = top, `curves[3]` = left. Adjacent endpoints must coincide within 1e-6 mm (kernel emits `feature.surface-from-boundary.corner-mismatch` otherwise). `opts.continuity` accepts a single grade applied to all 4 edges or a length-4 array per edge; defaults to `"C0"`. `opts.sampling` controls `NbPtsOnCur` (default 15). Returns a Surface peer — chain `.thicken(t)` or `.toShape()` to enter the Shape pipeline.' },
+  { name: 'surfaceFromBoundary', signature: '(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" | "C1" | "C2" | ("C0" | "C1" | "C2")[]; sampling?: number }) => Surface', description: 'Build the shipped filling surface: one NURBS face through 4 boundary curves. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. The 4 curves must be passed in exact loop order: `curves[0]` = bottom, `curves[1]` = right, `curves[2]` = top, `curves[3]` = left. Adjacent endpoints must coincide within 1e-6 mm (kernel emits `feature.surface-from-boundary.corner-mismatch` otherwise). `opts.continuity` accepts a single grade applied to all 4 edges or a length-4 array per edge; defaults to `"C0"`. `opts.sampling` controls `NbPtsOnCur` (default 15). Returns a Surface peer — chain `.thicken(t)` or `.toShape()` to enter the Shape pipeline.' },
   { name: 'hermiteG2', signature: '(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D', description: 'Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). Default curvature is `[0, 0, 0]`, which degrades the curve to G1 (lifted cubic Hermite). Tangent magnitude controls how aggressively the curve heads out of each endpoint (typical magnitude ~ chord length between endpoints, not unit length). Returns a 6-control-point clamped-uniform NURBS curve via `Geom_BSplineCurve` with knots `[0,0,0,0,0,0,1,1,1,1,1,1]`. Use to bridge two existing curves with G2 continuity for a kink-free compound spine consumed by `variableSweep` or `surfaceFromBoundary`. Capture-time emits `feature.hermite-g2.degenerate-tangent` (magnitude < 1e-12) and `feature.hermite-g2.non-finite-input` (NaN/Infinity).' },
+  { name: 'q', signature: '{ face, edge, vertex, connector, part, solid, createdBy, ownedByPart, ownerPart, union, intersection, subtraction, containsPoint, closestTo, geometryType, withLabel, withFeatureName, nthElement, fromString, nothing, everything }', description: 'Query DSL constructor namespace. Every constructor builds a lazy `Query<T>` value (phantom-typed `Query<FaceMarker>`, `Query<EdgeMarker>`, etc.) carrying a serializable AST. Chain with `.and(filter)` / `.or(other)` / `.minus(other)` / `.nth(i)` / `.asLenient()`; consume with `.evaluate(scene)` / `.evaluateUnique(scene)` or pass through to a feature op once consumer integration ships. Strings (`@kc[owner/kind/name]`) are sugar over the same internal Query value — both forms produce identical OCCT handles. The namespace is also reachable as `kc.q.*`. See `kernelcad-features/SKILL.md` (Query selectors, Cookbook — Query DSL) and `kernelcad-assemblies/SKILL.md` (Cookbook — Query DSL for assemblies).' },
+  { name: 'kinematic', signature: 'KinematicFacade', description: 'Namespace with four in-process feasibility checks an agent can run before declaring a mechanism design done: `kinematic.checkMountingHoleConsistency(arm)` (fastener-side hole agreement; dispatches to the v0.7.4 substrate), `kinematic.checkSweptCollision(arm, opts?)` (sampled-pose collision sweep across declared joint ranges), `kinematic.checkReachable(arm, opts)` (IK reachability — analytical Pieper first, DLS numeric fallback), `kinematic.checkLoadCapacity(arm, opts?)` (closed-form Euler-Bernoulli beam load check). Every entry is sync compute wrapped in async and returns a typed envelope with `source: "local"` and a `diagnostics` array.' },
 ];
 
 export const SHAPE_METHODS: ApiEntry[] = [
@@ -94,7 +101,7 @@ export const SHAPE_METHODS: ApiEntry[] = [
   { name: 'rotate', signature: '(axis: [Editable<number>, Editable<number>, Editable<number>], degrees: Editable<number>, pivot?: [Editable<number>, Editable<number>, Editable<number>]) => Shape', description: 'Rotate `degrees` around `axis` (vector); pivot defaults to origin. Axis components, degrees, and pivot all accept `ParamRef<number>`.' },
   { name: 'transform', signature: '(t: Transform) => Shape', description: 'Apply an SE(3) Transform. Decomposes into one rotate + one translate (T = Translate · Rotate) and appends both via the existing translate / rotateAxis pipes. Pure translations append only translate; pure rotations append only rotateAxis; identity transforms append nothing.' },
   { name: 'color', signature: '(name: ColorToken | `#${string}`) => Shape', description: 'Tag this shape with a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. Stored on FeatureRecord metadata; renderer resolves via ROLE_PALETTE. Booleans drop the color (identity lives at leaf parts).' },
-  { name: 'material', signature: '(opts: PBRMaterial & { face?: string }) => Shape', description: 'Apply a PBR material (baseColor required; optional metalness/roughness/clearcoat/clearcoatRoughness/ior/transmission/sheen). Numeric fields clamped to [0, 1] (ior: [1.0, 2.5]); out-of-range values emit a `feature.material.value-clamped` soft warning. Identity dies at booleans (leaf-part level, same as `.color()`). Pass `face: "<label>"` to apply only to faces matching a label declared upstream via `faceLabels`; calls accumulate, last write wins on the same label, and a call without `face` sets the shape-level default. Labels that do not resolve emit a soft `feature.material.face-label-no-match` warning and fall back to the default.' },
+  { name: 'material', signature: '(opts: PBRMaterial & { face?: string }) => Shape', description: 'Apply a PBR material (baseColor required; optional metalness/roughness/clearcoat/clearcoatRoughness/ior/transmission/sheen/opacity). Numeric fields clamped to [0, 1] (ior: [1.0, 2.5]); out-of-range values emit a `feature.material.value-clamped` soft warning. Use opacity < 1 for clear overlays such as glass when transmission blur is not desired. Identity dies at booleans (leaf-part level, same as `.color()`). Pass `face: "<label>"` to apply only to faces matching a label declared upstream via `faceLabels`; calls accumulate, last write wins on the same label, and a call without `face` sets the shape-level default. Labels that do not resolve emit a soft `feature.material.face-label-no-match` warning and fall back to the default.' },
   { name: 'alongAxis', signature: '(axis: [number, number, number]) => Shape', description: 'Orient this shape so its current +Z axis aligns with the given direction. Sugar over .rotate() — preferred for cross-axis cylinders/axles. Antipodal [0, 0, -1] handled deterministically (180° around X). Identity [0, 0, 1] is a no-op.' },
   { name: 'scale', signature: '(factor: number | [number, number, number]) => Shape', description: 'Scale this shape uniformly (single positive finite number) or per-axis (Vec3 — sx/sy/sz). Non-uniform lowers via gp_GTrsf + BRepBuilderAPI_GTransform so face refs survive (topology is preserved under any affine transform). All factors must be positive and finite.' },
   { name: 'union', signature: '(...others) => Shape', description: 'Boolean union with one or more shapes.' },
@@ -180,6 +187,95 @@ export const SURFACE_METHODS: ApiEntry[] = [
   },
 ];
 
+/**
+ * Methods on the `Curve3D` peer returned by `nurbsCurve(...)`,
+ * `spline3d(...)`, and `hermiteG2(...)`. These are the flat synchronous
+ * evaluators on the proxy itself; the `.analytics` namespace is advertised
+ * separately via `CURVE3D_ANALYTICS_METHODS`.
+ *
+ * Drift-sentinel contract: adding a method to `Curve3DProxy` REQUIRES
+ * updating this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const CURVE3D_METHODS: ApiEntry[] = [
+  {
+    name: 'sample',
+    signature: '(n: number) => [number, number, number][]',
+    description: 'Sample `n + 1` evenly-spaced points along the curve in the public `[0, 1]` parameter domain. Materializes the OCCT edge on first call via the lazy evaluator and reuses the cached evaluator on subsequent calls.',
+  },
+  {
+    name: 'pointAt',
+    signature: '(t: number) => [number, number, number]',
+    description: 'World-space point on the curve at parameter `t ∈ [0, 1]` (clamped). Synchronous; backed by the cached OCCT evaluator.',
+  },
+  {
+    name: 'tangentAt',
+    signature: '(t: number) => [number, number, number]',
+    description: 'Unit tangent vector at parameter `t ∈ [0, 1]` (clamped). Synchronous; backed by the cached OCCT evaluator.',
+  },
+  {
+    name: 'length',
+    signature: '() => number',
+    description: 'Total arc length in mm. Synchronous; computed once and cached on the evaluator.',
+  },
+  {
+    name: 'domain',
+    signature: '() => [number, number]',
+    description: 'Parametric domain. Always `[0, 1]` — the evaluator normalizes the OCCT first/last knot range internally.',
+  },
+];
+
+/**
+ * Methods on the `.analytics` namespace exposed on every `Curve3D` proxy.
+ * Returns computed-query data (Vec3, numbers, sample records) without a
+ * kernel round-trip — authoritative geometry stays in OCCT; analytics
+ * delegates to the vendored NURBS JS module via the curveBridge cache.
+ *
+ * Drift-sentinel contract: adding a method to `Curve3DAnalyticsImpl`
+ * (and the `Curve3DAnalytics` interface in `curveProxy.ts`) REQUIRES
+ * updating this array — the test at
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts` fails CI if they
+ * disagree.
+ */
+export const CURVE3D_ANALYTICS_METHODS: ApiEntry[] = [
+  {
+    name: 'closestPoint',
+    signature: '(pt: Vec3, opts?: { tolerance?: number }) => Vec3',
+    description: 'World-space closest point on the curve to the query `pt` (Newton-Raphson). Default tolerance 1e-3 mm. Throws `feature.curve3d.analytics.closest-point-no-converge` if the solver returns non-finite coordinates.',
+  },
+  {
+    name: 'closestParam',
+    signature: '(pt: Vec3, opts?: { tolerance?: number }) => number',
+    description: 'Parametric coordinate `t ∈ [0, 1]` of the closest point on the curve to `pt`. Maps the verb intrinsic knot range into the public `[0, 1]` domain. Default tolerance 1e-3 mm.',
+  },
+  {
+    name: 'divideByEqualArcLength',
+    signature: '(n: number) => CurveLengthSample[]',
+    description: 'Divide the curve into `n` equal-arc-length segments; returns `n + 1` `{ t, pt, arcLength }` samples covering both endpoints. `n` must be a positive integer; degenerate curves (length < 1e-9 mm) raise `feature.curve3d.analytics.degenerate-arclength`.',
+  },
+  {
+    name: 'divideByArcLength',
+    signature: '(arcLength: number) => CurveLengthSample[]',
+    description: 'Sample the curve every `arcLength` mm starting from `t = 0`. Returns `{ t, pt, arcLength }` records. `arcLength` must be a positive finite number strictly less than `length()`; out-of-range inputs raise `feature.curve3d.analytics.degenerate-arclength`.',
+  },
+  {
+    name: 'derivatives',
+    signature: '(t: number, numDerivs?: number) => Vec3[]',
+    description: 'Evaluate the curve and its first `numDerivs` derivatives at `t ∈ [0, 1]`. `numDerivs` defaults to 2 (point + tangent + curvature direction) and must be a positive integer `<= degree`; higher orders raise `feature.curve3d.analytics.derivatives-out-of-range`.',
+  },
+  {
+    name: 'tessellate',
+    signature: '(opts?: { tolerance?: number }) => Vec3[]',
+    description: 'Adaptive polyline approximation of the curve at the given tolerance (mm). Default tolerance 0.05 mm (matches the K1 mesh-discretisation gate). Output is deterministic — the vendored algorithm calls `Math.random` for midpoint perturbation; this method seeds a mulberry32 stream so consecutive calls produce bit-identical polylines.',
+  },
+  {
+    name: 'intersect',
+    signature: '(other: Curve3D | Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] | CurveSurfaceIntersection[]',
+    description: 'Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). Default tolerance 1e-3 mm. Deterministic — the curve bounding-box tree calls `Math.random`; this method seeds a mulberry32 stream for the duration of the call. Curve-surface overload is supported only for `nurbsSurface()`-authored surfaces today; unsupported surface kinds raise `feature.curve3d.analytics.intersect-kernel-failed`.',
+  },
+];
+
 export const SCENE_PART_PROPERTIES: ApiEntry[] = [
   { name: 'name', signature: 'string', description: 'Assembly-unique part name from `assembly.part(name, ...)`.' },
   { name: 'shape', signature: 'Shape', description: 'LOCAL-frame shape — untransformed. Apply `worldTransform` to render in world frame.' },
@@ -225,6 +321,8 @@ export async function listApiTool(input: ListApiInput = {}): Promise<ListApiOutp
     sceneMethods: SCENE_METHODS,
     scenePartProperties: SCENE_PART_PROPERTIES,
     surfaceMethods: SURFACE_METHODS,
+    curve3dMethods: CURVE3D_METHODS,
+    curve3dAnalyticsMethods: CURVE3D_ANALYTICS_METHODS,
     edgeQueryKeys: EDGE_QUERY_KEYS,
     faceQueryKeys: FACE_QUERY_KEYS,
     featureKindFaceLabels: FEATURE_KIND_FACE_LABELS,

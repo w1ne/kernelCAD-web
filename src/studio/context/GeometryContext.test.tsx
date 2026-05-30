@@ -19,6 +19,16 @@ function deferred<T>(): Deferred<T> {
   return { promise, resolve, reject };
 }
 
+function fetchUrl(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: number): string {
+  return String(fetchMock.mock.calls[callIndex - 1]?.[0] ?? '');
+}
+
+function expectFetchSignal(fetchMock: ReturnType<typeof vi.spyOn>, callIndex: number) {
+  expect(fetchMock.mock.calls[callIndex - 1]?.[1]).toEqual(
+    expect.objectContaining({ signal: expect.any(Object) }),
+  );
+}
+
 const mockEngine = {
   initialize: vi.fn().mockResolvedValue(undefined),
   executeCode: vi.fn(),
@@ -44,6 +54,7 @@ function Probe() {
     executionHistory,
     scriptParams,
     scriptReview,
+    error,
     setPreviewCode,
   } = useGeometry();
   const faceCount = geometries[0]?.faces.length ?? 0;
@@ -66,6 +77,7 @@ function Probe() {
       <span data-testid="script-param-name">{scriptParams[0]?.name ?? ''}</span>
       <span data-testid="script-review-ok">{String(scriptReview?.ok ?? '')}</span>
       <span data-testid="script-review-repair">{scriptReview?.suggestedRepairPrompt ?? ''}</span>
+      <span data-testid="error">{error ?? ''}</span>
       <button data-testid="trigger-preview" onClick={() => setPreviewCode('return makeBox(1,1,1);')}>Trigger</button>
       <button data-testid="trigger-preview-2" onClick={() => setPreviewCode('return makeBox(2,2,2);')}>Trigger2</button>
       <button data-testid="clear-preview" onClick={() => setPreviewCode(null)}>Clear</button>
@@ -329,12 +341,10 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(fetchMock).toHaveBeenNthCalledWith(1,
       '/__kernelcad/session?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(2,
-      '/__kernelcad/mesh?session=tok-abc',
-    );
-    expect(fetchMock).toHaveBeenNthCalledWith(3,
-      '/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
-    );
+    expect(fetchUrl(fetchMock, 2)).toBe('/__kernelcad/mesh?session=tok-abc');
+    expectFetchSignal(fetchMock, 2);
+    expect(fetchUrl(fetchMock, 3)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts');
+    expectFetchSignal(fetchMock, 3);
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
     expect(screen.getByTestId('face-count').textContent).toBe('1');
     expect(screen.getByTestId('first-color').textContent).toBe('beam');
@@ -344,5 +354,336 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(screen.getByTestId('script-param-name').textContent).toBe('shoulderDeg');
     expect(screen.getByTestId('script-review-ok').textContent).toBe('false');
     expect(screen.getByTestId('script-review-repair').textContent).toContain('supported clevis');
+  });
+
+  it('refreshes mesh AND review when params relower over SSE', async () => {
+    // PR #315 / I1: relower MUST re-run review so the StudioShell HUD
+    // (interferences: N) reflects the post-param model. Old behavior
+    // (skipReview: true) made the HUD stale and was the root cause of
+    // "param sliders create colliding models" silently passing.
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    );
+
+    let relowerHandler: (() => void) | null = null;
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener(type: string, cb: () => void) {
+        if (type === 'relower') relowerHandler = cb;
+      }
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-abc' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {},
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'initial review',
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            heightAdjustMm: {
+              name: 'heightAdjustMm',
+              type: 'number',
+              value: 3,
+              defaultValue: 0,
+              meta: { min: 0, max: 6.12 },
+            },
+          },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'post-relower review',
+        }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(relowerHandler).not.toBeNull();
+
+    await act(async () => {
+      relowerHandler?.();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');
+    expectFetchSignal(fetchMock, 4);
+    expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
+    // 5th fetch is the review re-run that updates the HUD interference count.
+    expect(screen.getByTestId('script-review-repair').textContent).toBe('post-relower review');
+  });
+
+  it('coalesces relower bursts into one active mesh+review fetch pair plus one trailing pair', async () => {
+    // PR #315 / I1: relower now fires mesh AND review (to keep the HUD
+    // interference count live). Coalescing semantics unchanged: 3 burst
+    // triggers still collapse to 1 active + 1 trailing — but each step is
+    // now a (mesh, review) pair instead of mesh-only.
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    );
+
+    let relowerHandler: (() => void) | null = null;
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener(type: string, cb: () => void) {
+        if (type === 'relower') relowerHandler = cb;
+      }
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const firstRelower = deferred<Response>();
+    const secondRelower = deferred<Response>();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-abc' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {},
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'initial review',
+        }),
+      } as Response)
+      .mockImplementationOnce(() => firstRelower.promise)
+      // Review after first relower mesh.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'first relower review',
+        }),
+      } as Response)
+      .mockImplementationOnce(() => secondRelower.promise)
+      // Review after trailing relower mesh.
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'trailing relower review',
+        }),
+      } as Response);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(relowerHandler).not.toBeNull();
+
+    await act(async () => {
+      relowerHandler?.();
+      relowerHandler?.();
+      relowerHandler?.();
+      await Promise.resolve();
+    });
+
+    // Burst of 3 still collapses to 1 in-flight mesh fetch — review hasn't
+    // fired yet because the mesh promise is still pending.
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+
+    await act(async () => {
+      firstRelower.resolve({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            width: {
+              name: 'width',
+              type: 'number',
+              value: 12,
+              defaultValue: 10,
+            },
+          },
+        }),
+      } as Response);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // After the first mesh resolves: review fires (5) and the queued
+    // trailing mesh starts (6).
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+
+    await act(async () => {
+      secondRelower.resolve({
+        ok: true,
+        json: async () => ({
+          features: [],
+          bounds: { min: [0, 0, 0], max: [0, 0, 0] },
+          params: {
+            width: {
+              name: 'width',
+              type: 'number',
+              value: 13,
+              defaultValue: 10,
+            },
+          },
+        }),
+      } as Response);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // After the trailing mesh resolves: trailing review fires (7).
+    expect(fetchMock).toHaveBeenCalledTimes(7);
+    expect(screen.getByTestId('script-param-name').textContent).toBe('width');
+    expect(screen.getByTestId('execution-count').textContent).toBe('3');
+  });
+
+  it('treats aborted relower mesh fetches as stale and keeps existing geometry visible', async () => {
+    window.history.pushState(
+      {},
+      '',
+      '/?script=examples/robot-arm/desktop-3axis-mates.kcad.ts',
+    );
+
+    let relowerHandler: (() => void) | null = null;
+    (globalThis as { EventSource?: unknown }).EventSource = class FakeES {
+      addEventListener(type: string, cb: () => void) {
+        if (type === 'relower') relowerHandler = cb;
+      }
+      removeEventListener() {}
+      close() {}
+      onerror: (() => void) | null = null;
+    };
+
+    const abortError = Object.assign(new Error('stale relower'), { name: 'AbortError' });
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ sessionToken: 'tok-abc' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          features: [
+            {
+              featureId: 'stable',
+              featureKind: 'box',
+              predecessors: [],
+              color: 'stable-color',
+              faces: [
+                {
+                  vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+                  indices: [0, 1, 2],
+                  normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                  faceId: 0,
+                },
+              ],
+            },
+          ],
+          bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+          params: {},
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          diagnostics: [],
+          suggestedRepairPrompt: 'initial review',
+        }),
+      } as Response)
+      .mockRejectedValueOnce(abortError);
+
+    render(
+      <GeometryProvider code={'const ignored = 1;'}>
+        <Probe />
+      </GeometryProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(screen.getByTestId('first-color').textContent).toBe('stable-color');
+    expect(screen.getByTestId('error').textContent).toBe('');
+
+    await act(async () => {
+      relowerHandler?.();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(screen.getByTestId('face-count').textContent).toBe('1');
+    expect(screen.getByTestId('first-color').textContent).toBe('stable-color');
+    expect(screen.getByTestId('error').textContent).toBe('');
+    expect(screen.getByTestId('is-computing').textContent).toBe('false');
   });
 });

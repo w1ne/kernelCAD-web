@@ -34,6 +34,17 @@ describe('buildMaterialFromPBR', () => {
     expect(m.sheen).toBe(0.6);
   });
 
+  it('preserves authored opacity for transparent materials', () => {
+    const mat = buildMaterialFromPBR({
+      baseColor: '#ffffff',
+      opacity: 0.18,
+    });
+    const m = mat as THREE.MeshPhysicalMaterial;
+    expect(m.opacity).toBe(0.18);
+    expect(m.transparent).toBe(true);
+    expect(m.userData.authoredOpacity).toBe(0.18);
+  });
+
   it('falls back to baseColor only when no PBR fields are provided', () => {
     const mat = buildMaterialFromPBR({ baseColor: '#ff0000' });
     expect(mat).toBeInstanceOf(THREE.MeshPhysicalMaterial);

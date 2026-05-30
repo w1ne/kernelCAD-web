@@ -24,6 +24,10 @@ import {
 } from '../../../modeling/mates/mechanicalTransmission';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../../modeling/mates/validator';
+import type { InterferencePair } from '../../../modeling/runtime/detectInterferences';
+import { detectInterferences } from '../../../modeling/runtime/detectInterferences';
+import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
+import type { BuiltModel } from '../../../modeling/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface ReviewCadInput {
@@ -70,6 +74,16 @@ export type ReviewCadOutput =
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness: MechanismFitnessResult;
       repairContext: RepairContext;
+      /**
+       * Raw interference pairs detected at the script's default pose, BEFORE
+       * any `ignore` filtering applied by the validator. Used by interactive
+       * surfaces (e.g. the Studio status-bar HUD) that need to show the user
+       * what's overlapping right now, even when the script silences specific
+       * pairs via `assembly.solvedModel({ ignore: [...] })`. The validator's
+       * filtered diagnostic stream remains on `validator.diagnostics` for the
+       * Validity tab + throw path.
+       */
+      rawInterferencePairs: ReadonlyArray<InterferencePair>;
     }
   | {
       ok: false;
@@ -88,6 +102,12 @@ export type ReviewCadOutput =
       fitness?: MechanismFitnessResult;
       repairContext: RepairContext;
       suggestedRepairPrompt: string;
+      /**
+       * Raw interference pairs at the default pose (see the `ok: true`
+       * variant). Always present when an assembly was selected, even when
+       * `ok: false`, so the Studio HUD can still report the count.
+       */
+      rawInterferencePairs?: ReadonlyArray<InterferencePair>;
     };
 
 type ReviewDiagnostic =
@@ -132,7 +152,42 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     };
   }
 
-  const validator = await validateAssemblyWithMates(arm);
+  // Raw default-pose interferences are surfaced separately so interactive
+  // surfaces (the Studio status-bar HUD) can show the user what's actually
+  // overlapping right now, even when the script silences specific pairs via
+  // `assembly.solvedModel({ ignore: [...] })`. The validator's diagnostics
+  // already respect that ignore list; this channel deliberately does NOT.
+  //
+  // We reuse `detectInterferencesForPoses` with an empty pose map (default
+  // pose). When the script has no live param overrides this matches the
+  // capture-time scene exactly; when params are live-edited via the SSE
+  // bridge, the session's paramTable carries the live value and detection
+  // runs against the current pose. That's what makes the HUD count update on
+  // slider drag.
+  //
+  // Respect `includeInterference: false` (and `includePoseEnvelope: false`
+  // when `includeInterference` is unset) to preserve back-compat with
+  // existing callers — notably the integration test fixtures that
+  // deliberately build clashing assemblies to exercise other validators.
+  // The default flow (both unset) runs detection so the Studio HUD sees real
+  // overlaps; opt-out paths skip it. The legacy "blind to overlaps"
+  // behaviour is preserved when either flag explicitly disables interference
+  // work.
+  const wantInterference =
+    input.includeInterference !== undefined
+      ? input.includeInterference
+      : input.includePoseEnvelope !== false;
+  const rawInterferencePairs: InterferencePair[] = wantInterference
+    ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
+    : [];
+  const validator = await validateAssemblyWithMates(
+    arm,
+    wantInterference ? rawInterferencePairs : undefined,
+    undefined,
+    undefined,
+    undefined,
+    arm.__ignoreInterference(),
+  );
   const mechanicalPlausibility = await reviewMechanicalPlausibility(arm);
   const mechanicalIntent = await reviewMechanicalIntent(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
@@ -185,6 +240,7 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
       fitness,
       repairContext,
+      rawInterferencePairs,
     };
   }
 
@@ -205,7 +261,39 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     fitness,
     repairContext,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
+    rawInterferencePairs,
   };
+}
+
+/**
+ * Run pairwise BREP interference detection on the BuiltModel's tail scene
+ * for the Studio HUD's raw-count channel. We deliberately read from
+ * `model.tailShape` (the already-lowered scene returned by the script's
+ * own `arm.solvedModel(poses, ...)`) instead of calling
+ * `detectInterferencesForPoses(arm, {})` — the latter re-records a new
+ * `solvedAssembly` with EMPTY poses, which trips the lowerer's
+ * "joint requires a pose value" check for revolute/prismatic joints and
+ * silently returns []. The script's already-built scene carries the
+ * script's authored param defaults (the same ones the Studio render is
+ * showing), so reading them gives the user-visible state.
+ *
+ * Wrapped in try/catch so a kernel failure on a single detection can't
+ * bring down the entire review tool — the HUD just shows
+ * `interferences: 0` in that case and the validator's other diagnostics
+ * continue to surface the real problem.
+ */
+function safeDetectDefaultPoseInterferences(
+  model: BuiltModel,
+  epsilonMm3?: number,
+): InterferencePair[] {
+  try {
+    const tail = model.tailShape;
+    if (!tail || !isSceneBackend(tail)) return [];
+    const epsilon = epsilonMm3 ?? 0.01;
+    return detectInterferences(tail, epsilon, new Set<string>()).pairs;
+  } catch {
+    return [];
+  }
 }
 
 async function evaluateForReview(input: EvaluateInput) {

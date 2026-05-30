@@ -31,6 +31,53 @@ const TEXTURE_SLOTS: ReadonlyArray<{
   { key: 'emissive', prop: 'emissiveMap', colorSpace: THREE.SRGBColorSpace },
 ];
 
+const MATERIAL_TEXTURE_PROPS = [
+  'alphaMap',
+  'aoMap',
+  'anisotropyMap',
+  'bumpMap',
+  'clearcoatMap',
+  'clearcoatNormalMap',
+  'clearcoatRoughnessMap',
+  'displacementMap',
+  'emissiveMap',
+  'envMap',
+  'gradientMap',
+  'lightMap',
+  'map',
+  'metalnessMap',
+  'normalMap',
+  'roughnessMap',
+  'sheenColorMap',
+  'sheenRoughnessMap',
+  'specularColorMap',
+  'specularIntensityMap',
+  'thicknessMap',
+  'transmissionMap',
+] as const;
+
+export function disposeMaterialDeep(
+  materialOrMaterials: THREE.Material | THREE.Material[] | null | undefined,
+): void {
+  if (materialOrMaterials === null || materialOrMaterials === undefined) return;
+  const materials = Array.isArray(materialOrMaterials)
+    ? materialOrMaterials
+    : [materialOrMaterials];
+  const disposedTextures = new Set<THREE.Texture>();
+
+  for (const material of materials) {
+    const materialRecord = material as unknown as Record<string, unknown>;
+    for (const prop of MATERIAL_TEXTURE_PROPS) {
+      const value = materialRecord[prop];
+      if (value instanceof THREE.Texture && !disposedTextures.has(value)) {
+        disposedTextures.add(value);
+        value.dispose();
+      }
+    }
+    material.dispose();
+  }
+}
+
 /** Browser-side URL prefix for the dev-server texture route. */
 function browserTextureUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
@@ -142,12 +189,15 @@ export function buildMaterialFromPBR(pbr: PBRMaterial | undefined): THREE.Materi
     ior: pbr?.ior ?? 1.5,
     transmission: pbr?.transmission ?? 0,
     sheen: pbr?.sheen ?? 0,
+    opacity: pbr?.opacity ?? 1,
+    transparent: (pbr?.opacity ?? 1) < 1 || (pbr?.transmission ?? 0) > 0,
     thickness: pbr?.thickness ?? 0,
     attenuationColor: new THREE.Color(attenuationColorResolved),
     attenuationDistance: pbr?.attenuationDistance ?? Infinity,
     anisotropy: pbr?.anisotropy ?? 0,
     anisotropyRotation: ((pbr?.anisotropyRotation ?? 0) * Math.PI) / 180,
   });
+  material.userData.authoredOpacity = pbr?.opacity ?? 1;
 
   // Fire-and-forget texture attachment. Synchronous return value above is the
   // material that the renderer uses immediately; textures pop in on load.

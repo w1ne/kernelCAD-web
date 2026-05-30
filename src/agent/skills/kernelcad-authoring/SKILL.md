@@ -5,7 +5,81 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
+Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
+
+## Agent authoring loop
+
+Use this loop for every non-trivial model edit:
+
+1. **Classify the job**: blockout, production-ish part, reference replication, assembly/mechanism, sheet metal, or standard-part integration. Load the matching specialty skill before editing.
+2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven.
+3. **Map words to geometry**: turn important prompt phrases into named source sections, parameters, parts, connectors, materials, or tests so the generated model stays traceable to the user's words.
+4. **Plan parameters and artifacts**: identify the `.kcad.ts` source file, named parameters, imported STEP files, expected exports, and the smallest verification command set before writing geometry.
+5. **Edit source only**: treat `.kcad.ts`, prompt/brief markdown, and provenance metadata as source. Do not hand-edit generated PNG, MP4, STEP, STL, score JSON, or capture metadata.
+6. **Generate explicit targets**: run the exact render/export/capture command for the requested artifact. Avoid broad directory refreshes unless the task is a release/demo rebuild.
+7. **Validate deterministically**: run `kernelcad evaluate`, relevant exports, assembly/review tools, interference checks, and scorer gates before accepting visual evidence.
+8. **Inspect visual artifacts honestly**: when a PNG/MP4/render is produced, open/read it and report what is visible. If the image shows wrong proportions, floating parts, occlusion, unreadable details, or a bad camera crop, repair source and regenerate.
+9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
+10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
+
+## Inner loop: render after every visible change
+
+The authoring loop above is the *outer* loop. The *inner* loop runs after every feature you add that you expect to see in the rendered output. Skipping the inner loop is the single biggest cause of "tests green, output wrong" shipments.
+
+After every one of these operations, render and look at the result:
+
+- a new `subtract(...)` that should produce a visible hole, notch, or relief
+- a new `union(...)` of shapes that should carry distinct materials
+- a `material({...})` change on a body that should be visually distinct from its neighbors
+- a new sketch + `extrude` whose orientation matters (i.e. anything front-facing)
+- a parameter retune that should visibly move a feature
+
+The minimum check:
+
+```bash
+node dist/cli/index.js render <file> -o /tmp/check.png --pose <scorer-pose> --hide-reference-images
+```
+
+Pick the pose the scorer uses (look in the task's `harness.ts` for `REFERENCE_POSE` — typically `30,15` for canonical 3/4 product shots). Render at default views (no `--pose` flag) only when you specifically want the front/right/top/iso composite — that view often hides defects visible at the scorer pose.
+
+When you open the rendered PNG, ask three questions:
+
+1. **Is the feature I just added visibly present?** If the subtract didn't punch through, the union didn't show a color delta, or the material change didn't render, the eval-harness JSON of `ok: true, featureCount: N` is lying about success. Fix the geometry, don't ship.
+2. **Are features I didn't intend to change still where they were?** Material chaining, sketch reuse, and chained booleans regularly corrupt earlier features silently. Compare against the previous render.
+3. **Does the silhouette match the reference at the same pose?** Not pixel-perfect — but the right number of openings, right proportions, right shape category.
+
+If a render shows wrong proportions, hidden openings, floating parts, or unreadable details, repair `.kcad.ts` source and re-render. Do not pile features on top of broken geometry. Do not declare done until the most recent render shows the intent.
+
+Common inner-loop traps are catalogued in the cookbook at
+`kernelcad-nurbs/cookbook/snippets/your-first-real-build-anti-patterns.md`
+(orientation defaults, sketch-axis sign flips, material-shadowing on union,
+two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-proof).
+
+## Assembly and mechanism loop
+
+- If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
+- If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.
+- Prefer `assembly().model()` for multi-part scenes so Studio receives per-part identity, material, mate, and transform metadata. Collapse with `.toCompound()` or `.toUnion()` only when a downstream export truly requires one body.
+- For interactive joints, keep heavy CAD recompute as the committed source-of-truth path, but use viewport-side joint posing for drag feedback whenever transform metadata is available. Drag should move the existing part mesh immediately; release commits the parameter for exact recompute, review, and export.
+- Final reports for mechanism/gallery work should include an artifact packet: source path, generated artifact paths, deterministic checks run, visual proof path, and unresolved caveats.
+
+## Source and artifact policy
+
+- Source of truth: `.kcad.ts`, task brief/prompt markdown, tests, and explicit provenance metadata that records where dimensions, vendor parts, prompts, and review decisions came from.
+- Derived artifacts: rendered PNGs, MP4 demos, STEP, STL, 3MF, DXF, score JSON, generated topology dumps, generated capture-run metadata, and generated route/build outputs.
+- Commit derived artifacts only when the repository already treats that directory as an artifact bundle (`docs/demos/**`, `examples/portfolio/**`) or the user explicitly requested a deliverable bundle.
+- When committing derived artifacts, keep the source file and provenance beside them and prefer existing capture scripts so hashes/metadata stay reproducible.
+- If an artifact changes but source/provenance did not, stop and explain why. Hidden artifact churn is not a valid CAD change.
+- Required visual packet: for review-worthy visual work, keep an inspection bundle beside the generated artifact by running `kernelcad render inspect <file> <outDir>`. The v1 bundle writes `manifest.json` and canonical RGB views, with optional `--channels rgb,mask,depth,normals` and `--focus <names>` / `--hide <names>` object filters recorded in the manifest. Depth, normals, and mask channels extend the same packet as richer evidence; they do not replace the canonical RGB views.
+
+## Standard parts and vendor geometry
+
+Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matters:
+
+- Good candidates: motors, servos, bearings, shafts, fasteners, hinges, sensors, PCBs, connectors, rails, and purchased enclosures.
+- Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
+- Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
+- Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
 
 ## Installation
 
@@ -126,6 +200,24 @@ setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
 // direction. Use when the auto-fit extents-projection reads too tight or
 // too loose at the chosen pose / aspect.
 setCameraDistance(distance: number): CameraTargetHandle;
+
+// Declare a parameter sweep for offline kinematic-motion MP4 capture. The
+// script names a previously-declared `param()`, its start/end values, and
+// the animation duration in milliseconds. `scripts/captureAnimationView.mjs`
+// reads the resulting `animationView` virtual record and renders an MP4 by
+// sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
+// leveraging the per-session mesh cache so each frame's recompute is
+// ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
+// multiple records; the capture script uses the last one. Validation
+// errors (non-empty param, finite range, positive durationMs/fps) are
+// pushed as structured diagnostics on `handle.metadata.diagnostics`.
+animationView(spec: {
+  param: string;
+  from: number;
+  to: number;
+  durationMs: number;
+  fps?: number;          // default 30
+}): AnimationViewHandle;
 ```
 
 ### Shape methods (chainable)
@@ -350,9 +442,12 @@ kernelcad evaluate path/to/script.kcad.ts
 # Same, but JSON output (machine-readable)
 kernelcad evaluate path/to/script.kcad.ts --json
 
-# Export to STL or STEP
-kernelcad export stl path/to/script.kcad.ts -o /tmp/out.stl
+# Export to a file in the chosen format
+kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl
 kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
+kernelcad export dxf  path/to/script.kcad.ts -o /tmp/out.dxf   # planar profile; laser / waterjet
+kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh with per-part colors
+kernelcad export glb  path/to/script.kcad.ts -o /tmp/out.glb   # web / AR viewer; PBR materials
 
 # Render a 4-view PNG (front/right/top/iso) for visual review.
 # Always pass --width 1920 --height 1080: the demo-player page layout is

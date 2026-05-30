@@ -18,6 +18,10 @@ import type {
   CameraTargetMetadata,
   CameraTargetSpec,
 } from '../../shared/intent/cameraTargetRecord';
+import type {
+  AnimationViewMetadata,
+  AnimationViewSpec,
+} from '../../shared/intent/animationViewRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -105,6 +109,21 @@ export function buildFaceInputRef(
   baseId: import('../../shared/intent/types').FeatureId,
   face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
+  // Q8 — Query DSL value (kc.q.face(...)). Detect duck-type-shape and
+  // serialize as a queryDsl FaceRef so the lowerer dispatches through
+  // the Q3 evaluator at consume time.
+  if (isQueryValue(face)) {
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: {
+        kind: 'queryDsl',
+        queryAst: face.ast,
+        queryTarget: face.target,
+        ...(face.lenient ? { lenient: true } : {}),
+      },
+    };
+  }
   // `{ face: <something> }` wrapper form
   if (typeof face === 'object' && face !== null && 'face' in face) {
     const faceVal = (face as { face: unknown }).face;
@@ -122,6 +141,19 @@ export function buildFaceInputRef(
         ref: { kind: 'label', name: faceVal },
       };
     }
+    // Wrapped Query value: { face: kc.q.face(...) }.
+    if (isQueryValue(faceVal)) {
+      return {
+        kind: 'face',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: faceVal.ast,
+          queryTarget: faceVal.target,
+          ...(faceVal.lenient ? { lenient: true } : {}),
+        },
+      };
+    }
     return {
       kind: 'face',
       featureId: baseId,
@@ -134,6 +166,21 @@ export function buildFaceInputRef(
     featureId: baseId,
     ref: { kind: 'query', query: face as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
   };
+}
+
+/** Q8 duck-type check: detect the Query DSL value (kc.q.face(...) etc).
+ *  Reuses the same `_kind: 'kc.query'` runtime tag set by makeQuery, so a
+ *  selector argument that already crossed a JSON boundary still matches. */
+function isQueryValue(v: unknown): v is import('../../kernel/naming/query').Query<unknown> {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    (v as { _kind?: unknown })._kind === 'kc.query' &&
+    typeof (v as { target?: unknown }).target === 'string' &&
+    typeof (v as { ast?: unknown }).ast === 'object' &&
+    (v as { ast: { op?: unknown } }).ast !== null &&
+    typeof (v as { ast: { op?: unknown } }).ast.op === 'string'
+  );
 }
 
 export interface FeatureSpec {
@@ -190,6 +237,26 @@ export class CaptureSession {
    *  populated by `proxy.ts` after `engine.run()` and reused by `params.update`
    *  to skip re-lowering records before the first affected one. */
   readonly cachedShapes: Map<string, ShapeBackend> = new Map();
+  /** Per-feature triangle-mesh cache populated by `meshFeaturesPerFeature`.
+   *  Reused on subsequent mesh requests when the feature's lowered shape is
+   *  still in `cachedShapes` (i.e. it was skipped by `params.update`'s
+   *  first-affected scan). Keyed by FeatureId; the value is the full
+   *  `FeatureMesh` so non-assembly records can be re-emitted without calling
+   *  `meshShape` again. Invalidated entry-by-entry on `params.update` for the
+   *  records the engine actually re-lowered. Type is `unknown` to avoid
+   *  pulling the `FeatureMesh` import into the captureSession boundary; the
+   *  meshing layer re-casts at use. */
+  readonly cachedFeatureMeshes: Map<string, unknown> = new Map();
+  /** Per-assembly-part triangle-mesh cache. Outer key is the assembly's
+   *  FeatureId (e.g. `solvedAssembly_1`), inner key is the part name (e.g.
+   *  `drive sun gear`). Value carries the cached triangle data (`faces`,
+   *  `volume?`, `edges?`); the fresh world transform is taken from the
+   *  freshly-re-lowered SceneBackend each pass. Invalidated whole-assembly
+   *  only when an upstream feature actually changed the part's local
+   *  geometry (`params.update` re-lowers the assembly but per-part LOCAL
+   *  shapes are unchanged when only mate poses moved). Type is `unknown` for
+   *  the same boundary reason as `cachedFeatureMeshes`. */
+  readonly cachedAssemblyPartMeshes: Map<string, Map<string, unknown>> = new Map();
   /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
    *  first run. Reused by `params.update` so `onRelower` subscribers added
    *  after the initial build still receive re-lower events.
@@ -591,6 +658,87 @@ export class CaptureSession {
 
     const r = this.register({
       kind: 'cameraTarget',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * Capture an animation-view virtual feature. Validates that `param` names
+   * a previously-declared `param()` (or defers the check to capture-script
+   * time if not yet registered), that `from`/`to`/`durationMs` are finite,
+   * and that `durationMs` + `fps` are positive. On invalid input a
+   * diagnostic is stashed on `metadata.diagnostics` and a default-safe
+   * record is still produced (matching the `addCameraTarget` pattern).
+   * Multiple calls register multiple records — the capture script picks
+   * the last one when more than one is declared.
+   */
+  addAnimationView(args: AnimationViewSpec): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    const paramOk = typeof args.param === 'string' && args.param.length > 0;
+    if (!paramOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'param' must be a non-empty string; got ${JSON.stringify(args.param)}.`,
+        hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
+      });
+    }
+
+    const fromOk = Number.isFinite(args.from);
+    const toOk = Number.isFinite(args.to);
+    if (!fromOk || !toOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'from' and 'to' must be finite numbers; got (${args.from}, ${args.to}).`,
+        hint: `invalid-args.animation-view.non-finite-range — pass finite numeric bounds for the sweep.`,
+      });
+    }
+
+    const durOk = Number.isFinite(args.durationMs) && args.durationMs > 0;
+    if (!durOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'durationMs' must be a positive finite number; got ${args.durationMs}.`,
+        hint: `invalid-args.animation-view.bad-duration — pass durationMs > 0 (e.g. 4000 for a 4-second sweep).`,
+      });
+    }
+
+    let fps = 30;
+    if (args.fps !== undefined) {
+      if (!Number.isFinite(args.fps) || args.fps <= 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          severity: 'warn',
+          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
+          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
+        });
+      } else {
+        fps = args.fps;
+      }
+    }
+
+    const metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      param: paramOk ? args.param : '',
+      from: fromOk ? args.from : 0,
+      to: toOk ? args.to : 0,
+      durationMs: durOk ? args.durationMs : 1000,
+      fps,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'animationView',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,
@@ -1186,7 +1334,11 @@ export class CaptureSession {
     });
   }
 
-  assemblyModel(assemblyName: string, parts: readonly AssemblyPartRef[], declaredMateCount: number = 0): Shape {
+  assemblyModel(
+    assemblyName: string,
+    parts: readonly AssemblyPartRef[],
+    mateMetadata?: SolvedAssemblyMateMetadata,
+  ): Shape {
     if (parts.length === 0) {
       throw new Error('assembly.model requires at least one part');
     }
@@ -1206,11 +1358,13 @@ export class CaptureSession {
       metadata: {
         assemblyName,
         partIds: parts.map(part => part.id),
-        // Non-zero when the Assembly had `arm.mate(...)` calls but the
-        // script ended with `arm.model()` (not `solvedModel()`). The
-        // lowerer reads this and emits the info diag so the agent
-        // notices the mate FK is being skipped.
-        ...(declaredMateCount > 0 ? { declaredMateCount } : {}),
+        ...(mateMetadata !== undefined && mateMetadata.mates.length > 0
+          ? {
+              mates: mateMetadata.mates,
+              couplings: mateMetadata.couplings ?? [],
+              connectorsByPartId: mateMetadata.connectorsByPartId,
+            }
+          : {}),
       },
     });
   }
@@ -1643,11 +1797,46 @@ function buildEdgeFeatureRef(
   baseId: string,
   selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
 ): { key: 'face' | 'edges'; value: FeatureRef } {
+  // Q8 — Query DSL value (kc.q.edge(...) / kc.q.face(...)). Dispatch by
+  // target kind so the lowerer sees the right slot key (edges for edge
+  // queries, face for face queries).
+  if (isQueryValue(selector)) {
+    const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
+    return {
+      key,
+      value: {
+        kind: key === 'face' ? 'face' : 'edge',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: selector.ast,
+          queryTarget: selector.target,
+          ...(selector.lenient ? { lenient: true } : {}),
+        },
+      },
+    };
+  }
   // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
   // property and NOT having the EdgeSegment full-schema markers.
   if (typeof selector === 'object' && selector !== null && 'face' in selector &&
       !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
     const faceVal = (selector as { face: unknown }).face;
+    // Q8 — { face: kc.q.face(...) } wrapper form on an edge feature.
+    if (isQueryValue(faceVal)) {
+      return {
+        key: 'face',
+        value: {
+          kind: 'face',
+          featureId: baseId,
+          ref: {
+            kind: 'queryDsl',
+            queryAst: faceVal.ast,
+            queryTarget: faceVal.target,
+            ...(faceVal.lenient ? { lenient: true } : {}),
+          },
+        },
+      };
+    }
     if (typeof faceVal === 'string') {
       if (CANONICAL_FACES.has(faceVal)) {
         return {

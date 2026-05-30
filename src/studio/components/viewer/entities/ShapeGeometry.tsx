@@ -8,6 +8,8 @@ import { useUI } from "../../../context/UIContext";
 import { CAD_COLORS, CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
+import { buildShapeMaterial } from "./buildShapeMaterial";
+import { matrixFromGeometryTransform } from "./geometryTransform";
 
 interface ShapeProps {
     geometry: GeometryResult;
@@ -17,25 +19,41 @@ interface ShapeProps {
     name: string | undefined;
 }
 
+function bufferGeometryFromFace(face: FaceGeometry): THREE.BufferGeometry {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
+    geometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
+    return geometry;
+}
+
+function GhostFaceMesh({ face }: { face: FaceGeometry }) {
+    const geometry = useMemo(() => bufferGeometryFromFace(face), [face]);
+
+    useEffect(() => {
+        return () => {
+            geometry.dispose();
+        };
+    }, [geometry]);
+
+    return (
+        <mesh geometry={geometry}>
+            <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.4} />
+        </mesh>
+    );
+}
+
 export function GhostShape({
     geometry,
 }: {
     geometry: GeometryResult;
 }) {
+    const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
     return (
-        <group>
-            {geometry.faces.map((face) => {
-                const threeGeometry = new THREE.BufferGeometry();
-                threeGeometry.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-                threeGeometry.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-                threeGeometry.setIndex(new THREE.BufferAttribute(face.indices, 1));
-
-                return (
-                    <mesh key={face.faceId} geometry={threeGeometry}>
-                        <meshBasicMaterial color={CAD_COLORS_HEX.selection} transparent opacity={0.4} />
-                    </mesh>
-                );
-            })}
+        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+            {geometry.faces.map((face) => (
+                <GhostFaceMesh key={face.faceId} face={face} />
+            ))}
         </group>
     );
 }
@@ -43,12 +61,14 @@ export function GhostShape({
 export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry, isSelected: boolean }) {
     const geometry = useMemo(() => {
         if (!face) return null;
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(face.vertices, 3));
-        geo.setAttribute('normal', new THREE.BufferAttribute(face.normals, 3));
-        geo.setIndex(new THREE.BufferAttribute(face.indices, 1));
-        return geo;
+        return bufferGeometryFromFace(face);
     }, [face]);
+
+    useEffect(() => {
+        return () => {
+            geometry?.dispose();
+        };
+    }, [geometry]);
 
     if (!face || !geometry) return null;
 
@@ -84,6 +104,7 @@ export function ConsolidatedShape({
     const { setContextMenu } = useUI();
 
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
+    const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
 
     const edgesGeo = useMemo(() => {
         if (geometry.edges) {
@@ -130,15 +151,15 @@ export function ConsolidatedShape({
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
-    const material = useMemo(() => new THREE.MeshLambertMaterial({
-        color,
-        flatShading: viewMode3D === 'shadedWithEdges'
-    }), [color, viewMode3D]);
+    const material = useMemo(
+        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D),
+        [geometry.material, isSelected, color, viewMode3D],
+    );
 
     if (!mergedGeometry) return null;
 
     return (
-        <group>
+        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
             <mesh
                 geometry={mergedGeometry}
                 material={material}

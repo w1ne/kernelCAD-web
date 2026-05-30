@@ -21,6 +21,9 @@ const ALLOWED_GROUPS = new Set([
   'assembly',
   'mesher',
   'tool',
+  'dfm',
+  'query',
+  'kinematic',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the

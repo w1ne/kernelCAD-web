@@ -7,8 +7,6 @@ afterEach(() => cleanup());
 
 function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
     const props = {
-        project: { name: 'so100-arm' },
-        filename: 'so100.kcad.ts',
         isModified: false,
         onValidate: vi.fn(),
         onRun: vi.fn(),
@@ -24,11 +22,11 @@ function renderToolbar(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
 }
 
 describe('Toolbar', () => {
-    it('renders project name, filename, validate and run buttons', () => {
+    it('renders validate and run buttons without duplicating project identity', () => {
         renderToolbar();
 
-        expect(screen.getByText('so100-arm')).toBeDefined();
-        expect(screen.getByText('so100.kcad.ts')).toBeDefined();
+        expect(screen.queryByText('so100-arm')).toBeNull();
+        expect(screen.queryByText('so100.kcad.ts')).toBeNull();
         expect(screen.getByRole('button', { name: 'Validate' })).toBeDefined();
         expect(screen.getByRole('button', { name: 'Run' })).toBeDefined();
     });
@@ -57,6 +55,17 @@ describe('Toolbar', () => {
         expect(btn.getAttribute('aria-pressed')).toBe('true');
     });
 
+    it('places the agent toggle before validate and run controls', () => {
+        renderToolbar();
+
+        const agent = screen.getByRole('button', { name: 'Open agent rail' });
+        const validate = screen.getByRole('button', { name: 'Validate' });
+        const run = screen.getByRole('button', { name: 'Run' });
+
+        expect(agent.compareDocumentPosition(validate) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(agent.compareDocumentPosition(run) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
     it('shows modified dot when isModified=true', () => {
         renderToolbar({ isModified: true });
         expect(screen.getByTestId('toolbar-modified-dot')).toBeDefined();
@@ -67,9 +76,10 @@ describe('Toolbar', () => {
         expect(screen.queryByTestId('toolbar-modified-dot')).toBeNull();
     });
 
-    it('falls back to placeholder name when project is null', () => {
-        renderToolbar({ project: null });
-        expect(screen.getByText('Untitled Project')).toBeDefined();
+    it('does not render placeholder project text when no project is loaded', () => {
+        renderToolbar();
+        expect(screen.queryByText('Untitled Project')).toBeNull();
+        expect(screen.queryByText('untitled.kcad.ts')).toBeNull();
     });
 
     it('omits the reference-images toggle when no reference image is present', () => {
@@ -93,5 +103,12 @@ describe('Toolbar', () => {
         const props = renderToolbar({ referenceImagesPresent: true });
         fireEvent.click(screen.getByRole('button', { name: /reference images?/i }));
         expect(props.onToggleReferenceImages).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders the Connect link pointing at /connect', () => {
+        renderToolbar();
+        const link = screen.getByTestId('toolbar-connect-link');
+        expect(link.getAttribute('href')).toBe('/connect');
+        expect(link.textContent).toContain('Connect');
     });
 });

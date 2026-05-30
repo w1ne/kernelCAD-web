@@ -1,12 +1,14 @@
 import { lookupSourceColor } from '../../kernel/backends/occt/lookupSourceColor';
+import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
 import { Scene, type SceneDiagnostic, type ScenePart } from '../validation/scene';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3, isValidVec3 } from '../../shared/intent/types';
 import {
   makeConnector,
+  normalizeConnectorOriginInput,
   type Connector,
-  type ConnectorOrigin,
+  type ConnectorOriginInput,
   type ConnectorType,
 } from '../mates/connector';
 import type { MateCouplingRecord } from '../mates/coupledPoses';
@@ -31,6 +33,7 @@ import {
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
+import type { PartLineage, PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
@@ -66,7 +69,14 @@ export type Poses = Record<string, PoseValue>;
  */
 export interface AssemblyConnectorOpts {
   type: ConnectorType;
-  origin: ConnectorOrigin;
+  /** Origin coordinate frame. Accepts either the structured `ConnectorOrigin`
+   *  union (`{ kind: 'vec3', value }` / `{ kind: 'topology', query }`) OR a
+   *  `@kc[<partName>/face/<name>]` / `@kc[<partName>/edge/<name>]` /
+   *  `@kc[<partName>/vertex/<name>]` topology ref string. The string is
+   *  normalised to the structured form at capture time. The ref's owner
+   *  segment must match the part name on which this connector is being
+   *  registered. */
+  origin: ConnectorOriginInput;
   axis?: Vec3;
   normal?: Vec3;
 }
@@ -153,6 +163,32 @@ export interface SubAssemblyHandle {
   part(origPartName: string): AssemblyPartRef;
 }
 
+/** Beam cross-section declaration consumed by the closed-form Euler-Bernoulli
+ *  path in `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Optional —
+ *  parts without a declared cross-section fire `kinematic.load.beam-not-applicable`
+ *  when a load is applied to them. Lengths are in millimetres (the assembly's
+ *  canonical length unit). */
+export type AssemblyCrossSection =
+  | {
+      readonly kind: 'rectangle';
+      readonly widthMm: number;
+      readonly heightMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'circle';
+      readonly radiusMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'i-beam';
+      readonly flangeWidthMm: number;
+      readonly flangeThicknessMm: number;
+      readonly webHeightMm: number;
+      readonly webThicknessMm: number;
+      readonly lengthMm: number;
+    };
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -161,6 +197,17 @@ export interface AssemblyPartOpts {
     to: AssemblyConnectorRef;
     name?: string;
   };
+  /** Per-part material density in `kg/m^3`. Consumed by URDF / SDF export
+   *  inertial blocks. When omitted, the export defaults to 1000 (water)
+   *  and emits `export.urdf.inertia-density-declared` so the agent knows
+   *  the dynamics will be off for any non-water material. Typical values:
+   *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
+  density?: number;
+  /** Beam cross-section for closed-form Euler-Bernoulli load checking via
+   *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
+   *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
+   *  on any load applied to the part. */
+  crossSection?: AssemblyCrossSection;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -289,12 +336,64 @@ export interface AssemblyJointStored {
 export interface AssemblyPartStored extends AssemblyPartRef {
   readonly originalShape: Shape;
   readonly connectParentId?: FeatureId;
+  /** Per-part material density in kg/m^3, copied from `AssemblyPartOpts.density`.
+   *  Read by the URDF / SDF export inertial-block emitters. Undefined when
+   *  the script did not declare a density on `arm.part(...)`. */
+  readonly density?: number;
+  /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
+   *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
+   *  the script did not declare a cross-section on `arm.part(...)`. */
+  readonly crossSection?: AssemblyCrossSection;
+}
+
+/** SRDF planning group. Either chain-form (base/tip) or enumeration. */
+export interface PlanningGroupRecord {
+  readonly name: string;
+  readonly chain?: { readonly baseLink: string; readonly tipLink: string };
+  readonly joints?: readonly string[];
+  readonly links?: readonly string[];
+}
+
+/** SRDF end-effector reference. */
+export interface EndEffectorRecord {
+  readonly name: string;
+  readonly parentLink: string;
+  readonly group: string;
+  readonly parentGroup: string;
+}
+
+/** SRDF virtual joint (e.g. world -> base fixed). */
+export interface VirtualJointRecord {
+  readonly name: string;
+  readonly type: 'fixed' | 'floating' | 'planar';
+  readonly parentFrame: string;
+  readonly childLink: string;
+}
+
+/** SRDF named group state — a pose snapshot tied to a planning group. */
+export interface GroupStateRecord {
+  readonly name: string;
+  readonly group: string;
+  readonly values: Readonly<Record<string, number>>;
+}
+
+/** SRDF allowed-collision override declared via arm.disableCollision(...). */
+export interface DisabledCollisionRecord {
+  readonly link1: string;
+  readonly link2: string;
+  readonly reason: 'Adjacent' | 'Never' | 'Default' | 'User';
 }
 
 export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
+  /** Q1.5: per-part lineage map (PartLineageMap) populated on every
+   *  `.part(name, shape, opts?)` capture-site. Mirrors `FaceLineage` /
+   *  `EdgeLineage` for the part scope so part-level Queries resolve
+   *  through the same lineage pathway. Read-only outside this class;
+   *  surfaced via `__partLineage()`. */
+  private readonly partLineage: PartLineageMap = new Map();
   private readonly joints: AssemblyJointStored[] = [];
   /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
@@ -310,12 +409,29 @@ export class Assembly {
    */
   private readonly workspaceTargets: WorkspaceTargetRecord[] = [];
 
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. Empty when
+   *  the script did not declare any; SRDF export rejects in that case. */
+  private readonly planningGroups: PlanningGroupRecord[] = [];
+  private readonly endEffectors: EndEffectorRecord[] = [];
+  private readonly virtualJoints: VirtualJointRecord[] = [];
+  private readonly groupStates: GroupStateRecord[] = [];
+  private readonly disabledCollisions: DisabledCollisionRecord[] = [];
+  /**
+   * Latest known-acceptable interference pair list, as captured by the most
+   * recent `solvedModel({ ignore: [...] })` call. Read by external review
+   * surfaces (`reviewCadTool`) so the validator they run respects the same
+   * silencing the script's `solvedModel` did. The raw detection output stays
+   * unfiltered — only the validator's diagnostic emission honors this list.
+   */
+  private ignoreInterferenceList: ReadonlyArray<readonly [string, string]> = [];
+
   constructor(name: string, session: CaptureSession) {
     this.name = name;
     this.session = session;
   }
 
   part(name: string, shape: Shape, opts: AssemblyPartOpts = {}): AssemblyPartRef {
+    assertTopoRefSafeName(name, 'part-name', shape.id);
     if (opts.at !== undefined && !isValidEditableVec3(opts.at)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -324,9 +440,34 @@ export class Assembly {
         'Pass at: [x, y, z], or omit it; coords may be number or ParamRef.',
       );
     }
+    if (opts.density !== undefined) {
+      if (!Number.isFinite(opts.density) || opts.density <= 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `assembly part '${name}': density must be a positive finite number; got ${formatScalarForError(opts.density)}.`,
+          shape.id,
+          'Pass density: <kg/m^3>, or omit it to use the 1000 kg/m^3 default. Typical: steel 7850, aluminum 2700, ABS 1050.',
+        );
+      }
+    }
+    if (opts.crossSection !== undefined) {
+      validateCrossSection(name, shape.id, opts.crossSection);
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
+    // Q1.5: write the part-lineage entry now that the capture-session has
+    // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
+    // is the same id the FeatureRecord carries — anchors part-level Query
+    // resolution (`kc.q.part(kc.q.createdBy('<featureId>'))`) to the
+    // existing FeatureRecord graph rather than introducing a parallel
+    // id stream.
+    const lineage: PartLineage = {
+      featureId: record.id,
+      featureName: name,
+      featureKind: 'assemblyPart',
+    };
+    this.partLineage.set(name, lineage);
     // Shared mutable array: the part-ref's `.connector(name, opts)` chain
     // method pushes into this array, and the `AssemblyPartStored` record
     // below references the same array via spread (arrays are by-reference),
@@ -337,6 +478,8 @@ export class Assembly {
       ...part,
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
+      ...(opts.density !== undefined ? { density: opts.density } : {}),
+      ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -749,6 +892,104 @@ export class Assembly {
     return this;
   }
 
+  /**
+   * Declare an SRDF planning group. Either a chain form (base->tip) or an
+   * enumeration of joint / link names. Consumed by `export_model({
+   * format: 'srdf' })`.
+   */
+  planningGroup(
+    name: string,
+    opts: { chain?: { baseLink: string; tipLink: string }; joints?: string[]; links?: string[] },
+  ): this {
+    if (this.planningGroups.some(g => g.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup: duplicate group name '${name}'.`,
+        undefined,
+        'Each planning group must have a unique name. Pick a different name or remove the earlier declaration.',
+      );
+    }
+    if (!opts.chain
+      && (!opts.joints || opts.joints.length === 0)
+      && (!opts.links || opts.links.length === 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.planningGroup '${name}' must declare chain, joints, or links.`,
+        undefined,
+        'Pass { chain: { baseLink, tipLink } } for a serial chain, or { joints: [...] } / { links: [...] } for an enumeration.',
+      );
+    }
+    this.planningGroups.push({
+      name,
+      ...(opts.chain !== undefined
+        ? { chain: { baseLink: opts.chain.baseLink, tipLink: opts.chain.tipLink } }
+        : {}),
+      ...(opts.joints !== undefined ? { joints: [...opts.joints] } : {}),
+      ...(opts.links !== undefined ? { links: [...opts.links] } : {}),
+    });
+    return this;
+  }
+
+  /** Declare an SRDF end-effector. */
+  endEffector(
+    name: string,
+    opts: { parentLink: string; group: string; parentGroup: string },
+  ): this {
+    if (!this.parts.some(p => p.name === opts.parentLink)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.endEffector '${name}': parentLink '${opts.parentLink}' is not a known part.`,
+        undefined,
+        `Declare the parent link via arm.part('${opts.parentLink}', ...) before calling arm.endEffector(...).`,
+      );
+    }
+    this.endEffectors.push({
+      name,
+      parentLink: opts.parentLink,
+      group: opts.group,
+      parentGroup: opts.parentGroup,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF virtual joint (world -> base linkage). */
+  virtualJoint(
+    name: string,
+    opts: { type: 'fixed' | 'floating' | 'planar'; parentFrame: string; childLink: string },
+  ): this {
+    this.virtualJoints.push({
+      name,
+      type: opts.type,
+      parentFrame: opts.parentFrame,
+      childLink: opts.childLink,
+    });
+    return this;
+  }
+
+  /** Declare an SRDF named group state (a pose snapshot keyed by joint name). */
+  groupState(name: string, group: string, values: Record<string, number>): this {
+    if (!this.planningGroups.some(g => g.name === group)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `arm.groupState '${name}' references unknown group '${group}'.`,
+        undefined,
+        `Declare arm.planningGroup('${group}', ...) before referencing it in arm.groupState(...).`,
+      );
+    }
+    this.groupStates.push({ name, group, values: { ...values } });
+    return this;
+  }
+
+  /** Declare an SRDF allowed-collision override. */
+  disableCollision(
+    link1: string,
+    link2: string,
+    opts: { reason: 'Adjacent' | 'Never' | 'Default' | 'User' },
+  ): this {
+    this.disabledCollisions.push({ link1, link2, reason: opts.reason });
+    return this;
+  }
+
   mechanicalJoint(name: string, opts: MechanicalJointIntentOpts): this {
     validateMechanicalIntentName('name', name);
     if (this.mechanicalJointIntents.some((intent) => intent.name === name)) {
@@ -966,6 +1207,22 @@ export class Assembly {
   }
 
   /**
+   * Q1.5 — Internal accessor: read-only view of the per-part lineage map.
+   *
+   * Mirrors `FaceLineage` / `EdgeLineage` for the part scope. Consumed by
+   * the (future) Q3 query evaluator's `Query<Part>` branch and the future
+   * Drake `tipLink: Query<unknown>` consumer; both resolve part-level
+   * Queries by walking this map.
+   *
+   * The returned map is the live internal map by reference — callers must
+   * treat it as read-only. Mirrors the `__parts()` / `__mates()`
+   * underscore-prefixed convention; not part of the agent-facing surface.
+   */
+  __partLineage(): PartLineageMap {
+    return this.partLineage;
+  }
+
+  /**
    * Internal accessor — read-only view of declared mate records for the v0.6
    * mate solver. Surfaces the same `MateRecord[]` already exposed via
    * `Scene.mates`, but without forcing a `makeScene` round-trip. Not public.
@@ -987,6 +1244,43 @@ export class Assembly {
    */
   __workspaceTargets(): readonly WorkspaceTargetRecord[] {
     return this.workspaceTargets;
+  }
+
+  /** SRDF planning groups declared via `arm.planningGroup(...)`. */
+  __planningGroups(): readonly PlanningGroupRecord[] {
+    return this.planningGroups;
+  }
+
+  /** SRDF end-effectors declared via `arm.endEffector(...)`. */
+  __endEffectors(): readonly EndEffectorRecord[] {
+    return this.endEffectors;
+  }
+
+  /** SRDF virtual joints declared via `arm.virtualJoint(...)`. */
+  __virtualJoints(): readonly VirtualJointRecord[] {
+    return this.virtualJoints;
+  }
+
+  /** SRDF named group states declared via `arm.groupState(...)`. */
+  __groupStates(): readonly GroupStateRecord[] {
+    return this.groupStates;
+  }
+
+  /** SRDF allowed-collision overrides declared via `arm.disableCollision(...)`. */
+  __disabledCollisions(): readonly DisabledCollisionRecord[] {
+    return this.disabledCollisions;
+  }
+
+  /**
+   * Last `ignore` list passed to `solvedModel`. External review surfaces
+   * (`reviewCadTool`) read this so the validator they re-run honors the same
+   * known-acceptable contacts the script silenced. Empty when no
+   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `__parts()` underscore-prefixed convention; not part of the agent-facing
+   * surface.
+   */
+  __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
+    return this.ignoreInterferenceList;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
@@ -1309,6 +1603,21 @@ export class Assembly {
        * composes Gate 3 with the v0.7.5 grounding gates.
        */
       externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
+      /**
+       * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
+       * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
+       * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
+       * detection output still surfaces them on the status bar), but FILTERED
+       * out of the validator's `assembly.interference.overlap` diagnostic
+       * stream — they don't throw under `validate: 'error'` and don't appear
+       * in `scene.warnings` under `validate: 'warn'`.
+       *
+       * This is the granular alternative to `validate: 'off'`. Use it when a
+       * specific known-acceptable contact (e.g. a knuckle joint where two arm
+       * parts must touch by design) should not block the validator while
+       * still letting the rest of the validation gate run.
+       */
+      ignore?: ReadonlyArray<readonly [string, string]>;
     },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
@@ -1318,6 +1627,19 @@ export class Assembly {
         undefined,
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
+    }
+    // Record the ignore list on the Assembly so external review surfaces
+    // (reviewCadTool) re-run validation with the same known-acceptable
+    // contacts the script silenced. The raw detection output stays
+    // unfiltered so HUD-style consumers can show the user every contact.
+    //
+    // Only OVERWRITE when an explicit `ignore` was passed. Internal callers
+    // like `detectInterferencesForPoses` re-invoke `solvedModel` without
+    // opts.ignore to read a freshly-posed scene; nuking the list there would
+    // wipe the agent-authored silencing every time the HUD re-detects on a
+    // slider drag.
+    if (opts?.ignore !== undefined) {
+      this.ignoreInterferenceList = opts.ignore;
     }
     // v0.7.4 — validate externalLoads keys at capture entry so agent typos
     // surface immediately, not silently. Per spec open-question 5 resolution
@@ -1450,6 +1772,7 @@ export class Assembly {
         undefined,
         opts?.externalLoads,
         envelopeResult?.connectorWorkspace,
+        opts?.ignore,
       );
       const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
         envelopeResult ? envelopeResult.diagnostics : [];
@@ -1514,10 +1837,10 @@ export class Assembly {
   }
 
   /**
-   * Records an `assemblyModel` FeatureRecord (kinematic-zero, no FK) and
-   * returns a `Scene` whose per-part `worldTransform` is the identity. Use
-   * for assemblies whose layout is set entirely by `assembly.part({ at })`
-   * / connectors and have no joints.
+   * Records an `assemblyModel` FeatureRecord and returns a `Scene`. Mate-free
+   * assemblies lower with identity per-part transforms; mate-bearing
+   * assemblies capture mate metadata so Studio can expose controls and the
+   * lowerer can apply default mate FK.
    */
   model(): Scene {
     if (this.parts.length === 0) {
@@ -1528,13 +1851,8 @@ export class Assembly {
         'Call assembly.part(name, shape, opts?) before assembly.model().',
       );
     }
-    // Stash the mate count so the lowerer can emit the
-    // `assembly.mates-ignored-by-model-call` info diagnostic when
-    // model() is used in lieu of solvedModel() on a mate-bearing
-    // assembly. Without this, mates declared on `arm` never reach the
-    // FK pipeline — parts stack at local-frame origin and downstream
-    // interferences/scoring lies. Surfaced by Exp-D four-bolt-flange-v2.
-    const sceneShape = this.session.assemblyModel(this.name, this.parts, this.mates.length);
+    const mateMetadata = this.mates.length > 0 ? this.buildMateMetadata() : undefined;
+    const sceneShape = this.session.assemblyModel(this.name, this.parts, mateMetadata);
     return this.makeScene(sceneShape);
   }
 
@@ -1897,6 +2215,7 @@ function normalizeConnectors(
 ): Record<string, AssemblyConnectorFrameStored> {
   const normalized: Record<string, AssemblyConnectorFrameStored> = {};
   for (const [name, frame] of Object.entries(connectors ?? {})) {
+    assertTopoRefSafeName(name, 'connector-name', featureId);
     if (!isValidEditableVec3(frame.origin)) {
       throw new KernelError(
         'feature.invalid-args',
@@ -1918,6 +2237,38 @@ function normalizeConnectors(
       : { origin: toVec3Param(frame.origin, 'mm'), axis: toVec3Param(frame.axis, 'unitless') };
   }
   return normalized;
+}
+
+/** Sanity-check every numeric field on an authored cross-section. Lengths
+ *  must be finite + positive; an invalid field raises a `feature.invalid-args`
+ *  at capture time so beam-mode load checks never see NaN-laced sections. */
+function validateCrossSection(
+  partName: string,
+  featureId: FeatureId,
+  cs: AssemblyCrossSection,
+): void {
+  const ensurePositive = (label: string, value: number): void => {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly part '${partName}': crossSection ${label} must be a positive finite number; got ${formatScalarForError(value)}.`,
+        featureId,
+        'Pass every cross-section length in millimetres as a finite number > 0.',
+      );
+    }
+  };
+  ensurePositive('lengthMm', cs.lengthMm);
+  if (cs.kind === 'rectangle') {
+    ensurePositive('widthMm', cs.widthMm);
+    ensurePositive('heightMm', cs.heightMm);
+  } else if (cs.kind === 'circle') {
+    ensurePositive('radiusMm', cs.radiusMm);
+  } else {
+    ensurePositive('flangeWidthMm', cs.flangeWidthMm);
+    ensurePositive('flangeThicknessMm', cs.flangeThicknessMm);
+    ensurePositive('webHeightMm', cs.webHeightMm);
+    ensurePositive('webThicknessMm', cs.webThicknessMm);
+  }
 }
 
 function paramToExpr(p: Param): ParamRefExpr {
@@ -2037,6 +2388,7 @@ function makePartRef(
     opts?: AssemblyConnectorOpts,
   ): AssemblyConnectorRef | AssemblyPartRef => {
     if (opts !== undefined) {
+      assertTopoRefSafeName(connectorName, 'connector-name', id);
       if (mateConnectors.some((c) => c.name === connectorName)) {
         throw new KernelError(
           'feature.invalid-args',
@@ -2045,11 +2397,16 @@ function makePartRef(
           `invalid-args.assembly.connector-duplicate-name — rename one of the connectors on '${name}'.`,
         );
       }
+      // F-surface F4: opts.origin accepts a `@kc[<part>/<kind>/<name>]` string
+      // alongside the structured ConnectorOrigin union. Normalise here BEFORE
+      // constructing the Connector record so downstream solvers see only the
+      // structured form.
+      const normalizedOrigin = normalizeConnectorOriginInput(opts.origin, name);
       mateConnectors.push(
         makeConnector({
           name: connectorName,
           type: opts.type,
-          origin: opts.origin,
+          origin: normalizedOrigin,
           axis: opts.axis,
           normal: opts.normal,
         }),

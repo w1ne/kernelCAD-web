@@ -646,13 +646,27 @@ export class PathBuilder {
    * `opts.tension` is reserved for future Catmull-Rom-style stiffness
    * control; ignored in v1.
    *
+   * `opts.startTangent` / `opts.endTangent` (V slice) constrain the
+   * first-derivative direction at the first and last waypoint. Magnitude
+   * is normalised internally — [1, 0] and [100, 0] produce identical
+   * curves. When either tangent is present, the lowerer routes through a
+   * tangent-constrained interpolator; without them, the existing fast
+   * approximation path is used.
+   *
    * @param points waypoints to interpolate, in order from current pen to
    *   the new endpoint
    * @param opts.tension reserved (Catmull-Rom stiffness; v2)
+   * @param opts.startTangent 2D direction vector at points[0] (magnitude
+   *   is normalised; only direction matters)
+   * @param opts.endTangent 2D direction vector at points[N-1]
    */
   spline(
     points: Array<[Editable<number>, Editable<number>]>,
-    opts?: { tension?: Editable<number> },
+    opts?: {
+      tension?: Editable<number>;
+      startTangent?: [Editable<number>, Editable<number>];
+      endTangent?: [Editable<number>, Editable<number>];
+    },
   ): PathBuilder {
     if (!Array.isArray(points) || points.length < 2) {
       throw new KernelError(
@@ -698,10 +712,50 @@ export class PathBuilder {
         );
       }
     }
+    // V slice — validate optional tangent constraints.
+    const validateTangent = (
+      label: 'startTangent' | 'endTangent',
+      t: [Editable<number>, Editable<number>] | undefined,
+    ): { x: Param; y: Param } | undefined => {
+      if (t === undefined) return undefined;
+      if (!Array.isArray(t) || t.length !== 2) {
+        throw new KernelError(
+          'feature.path.spline.tangent-zero-magnitude',
+          `path().spline: ${label} must be a [x, y] tuple; got ${JSON.stringify(t)}.`,
+          undefined,
+          'Pass a non-zero 2D direction vector [x, y]. Magnitude is normalised; direction matters.',
+        );
+      }
+      const x = toParam(t[0], 'mm');
+      const y = toParam(t[1], 'mm');
+      if (!Number.isFinite(x.evaluated) || !Number.isFinite(y.evaluated)) {
+        throw new KernelError(
+          'feature.path.spline.tangent-zero-magnitude',
+          `path().spline: ${label} has non-finite coord (x=${x.evaluated}, y=${y.evaluated}).`,
+          undefined,
+          'Pass a finite non-zero 2D direction vector. Magnitude is normalised; direction matters.',
+        );
+      }
+      const mag = Math.hypot(x.evaluated, y.evaluated);
+      if (mag < 1e-9) {
+        throw new KernelError(
+          'feature.path.spline.tangent-zero-magnitude',
+          `path().spline: ${label} has magnitude ${mag} (< 1e-9); got [${x.evaluated}, ${y.evaluated}].`,
+          undefined,
+          'Pass a non-zero 2D direction vector. Magnitude is normalised; direction matters.',
+        );
+      }
+      return { x, y };
+    };
+    const startTangent = validateTangent('startTangent', opts?.startTangent);
+    const endTangent = validateTangent('endTangent', opts?.endTangent);
+
     this.commands.push({
       kind: 'spline',
       points: paramPoints,
       tension: opts?.tension !== undefined ? toParam(opts.tension, 'unitless') : undefined,
+      ...(startTangent !== undefined ? { startTangent } : {}),
+      ...(endTangent !== undefined ? { endTangent } : {}),
     });
     return this;
   }

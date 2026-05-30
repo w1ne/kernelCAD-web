@@ -1,8 +1,6 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug } from 'lucide-react';
 
 interface ToolbarProps {
-    project: { name: string } | null;
-    filename: string;
     isModified: boolean;
     onValidate: () => void;
     onRun: () => void;
@@ -25,8 +23,6 @@ interface ToolbarProps {
 }
 
 export function Toolbar({
-    project,
-    filename,
     isModified,
     onValidate,
     onRun,
@@ -45,20 +41,30 @@ export function Toolbar({
             data-testid="studio-toolbar"
             className="h-8 shrink-0 border-b border-[#2b313c] bg-[#111] flex items-center justify-between px-3 text-xs text-gray-300 select-none"
         >
-            <div className="flex items-center gap-3 min-w-0">
-                <span
-                    data-testid="toolbar-project-chip"
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#222] text-gray-200 truncate max-w-[180px]"
+            <div className="flex items-center gap-2 min-w-0">
+                <button
+                    type="button"
+                    onClick={onToggleAgentRail}
+                    aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
+                    aria-pressed={agentRailOpen}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                        agentRailOpen
+                            ? 'bg-[#333] text-white'
+                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                    }`}
                 >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span className="truncate">{project?.name ?? 'Untitled Project'}</span>
-                </span>
-                <span
-                    data-testid="toolbar-filename"
-                    className="truncate max-w-[240px] text-gray-400"
+                    <MessageSquare size={12} />
+                    Agent
+                </button>
+                <a
+                    href="/connect"
+                    data-testid="toolbar-connect-link"
+                    aria-label="Connect to Claude Desktop"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
                 >
-                    {filename}
-                </span>
+                    <Plug size={12} />
+                    Connect
+                </a>
                 {isModified && (
                     <span
                         data-testid="toolbar-modified-dot"
@@ -119,20 +125,6 @@ export function Toolbar({
                         Env: {renderEnvironmentPresetLabel}
                     </button>
                 )}
-                <button
-                    type="button"
-                    onClick={onToggleAgentRail}
-                    aria-label={agentRailOpen ? 'Close agent rail' : 'Open agent rail'}
-                    aria-pressed={agentRailOpen}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                        agentRailOpen
-                            ? 'bg-[#333] text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
-                    }`}
-                >
-                    <MessageSquare size={12} />
-                    Agent
-                </button>
             </div>
         </div>
     );

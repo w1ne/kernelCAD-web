@@ -46,6 +46,23 @@ describe('StatusBar', () => {
         expect(screen.getByText('Wireframe')).toBeDefined();
     });
 
+    it('renders last recompute duration when available', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={2}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+                recomputeMs={874}
+            />
+        );
+
+        expect(screen.getByText('Last compute 874 ms')).toBeDefined();
+    });
+
     it('renders error state with compact message', () => {
         render(
             <StatusBar

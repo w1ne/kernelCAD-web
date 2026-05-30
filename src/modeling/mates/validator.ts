@@ -129,6 +129,38 @@ export interface ValidateAssemblyInput {
   /** Optional: results from `checkInterference()`. Folded into the
    *  diagnostic stream as `assembly.interference.overlap` items. */
   readonly interferencePairs?: readonly InterferencePair[];
+  /**
+   * Optional list of part-name pairs whose interferences are known-acceptable
+   * (e.g. a knuckle joint where the two arm parts must touch by design).
+   * Matching is SYMMETRIC: `[a, b]` silences both `(a, b)` and `(b, a)`.
+   *
+   * Pairs in `ignore` are filtered OUT of the validator's
+   * `assembly.interference.overlap` diagnostic stream — they don't throw under
+   * `validate: 'error'` and don't appear in `scene.warnings` under
+   * `validate: 'warn'`. The raw `interferencePairs` are NOT mutated; only the
+   * downstream diagnostic emission is filtered. Callers that want the raw
+   * pairs (e.g. the Studio HUD) should consume the unfiltered detection output
+   * directly, not the validator's diagnostics.
+   */
+  readonly ignore?: ReadonlyArray<readonly [string, string]>;
+}
+
+/**
+ * Returns true when `(a, b)` is symmetrically present in `ignoreList`.
+ * `[a, b]` and `[b, a]` both match. Exported so other modules
+ * (e.g. `Assembly.solvedModel`'s validator hand-off) can reuse the same
+ * symmetric semantics without re-implementing them.
+ */
+export function isPairIgnored(
+  a: string,
+  b: string,
+  ignoreList: ReadonlyArray<readonly [string, string]> | undefined,
+): boolean {
+  if (!ignoreList || ignoreList.length === 0) return false;
+  for (const pair of ignoreList) {
+    if ((pair[0] === a && pair[1] === b) || (pair[0] === b && pair[1] === a)) return true;
+  }
+  return false;
 }
 
 /** Run all MVP checks. Returns a status + diagnostic chain. Pure: no I/O. */
@@ -204,12 +236,20 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
   // invalid (vs floating, which is a missing-information warning).
+  //
+  // The optional `ignore` list silences known-acceptable contacts (e.g. a
+  // knuckle joint where two arm parts touch by design). Matching is
+  // SYMMETRIC — `[a, b]` filters both `(a, b)` and `(b, a)` — and applies
+  // only to the diagnostic emission below; the raw `interferencePairs` the
+  // caller passed in remain untouched so HUD-style consumers can still read
+  // them via the unfiltered detection output.
   for (const pair of input.interferencePairs ?? []) {
+    if (isPairIgnored(pair.a, pair.b, input.ignore)) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
       message: `Parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
-      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Use --ignore '${pair.a},${pair.b}' on kernelcad interference if the contact is intentional.`,
+      hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Pass { ignore: [['${pair.a}', '${pair.b}']] } to assembly.solvedModel(...) if the contact is intentional.`,
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
@@ -337,6 +377,14 @@ export async function validateAssemblyWithMates(
   // assembly has workspace targets, the gate emits info-severity diagnostics
   // pointing the agent at `posesGate: 'envelope'`.
   connectorWorkspace?: readonly ConnectorWorkspace[],
+  // Known-acceptable interference pairs to filter out of the
+  // `assembly.interference.overlap` diagnostic stream. Symmetric matching:
+  // `[a, b]` silences both `(a, b)` and `(b, a)`. The raw
+  // `interferencePairs` argument is NOT mutated — only the validator's
+  // diagnostic emission is filtered, so HUD-style consumers can still read
+  // the unfiltered detection output. See `Assembly.solvedModel`'s `ignore`
+  // option for the user-facing entry point.
+  ignoreInterference?: ReadonlyArray<readonly [string, string]>,
 ): Promise<ValidatorResult> {
   // 1. Run the v0.5 base checks (floating / orphan / interference). Reuse
   //    the same code path — do not duplicate. Filter the session's records
@@ -349,6 +397,7 @@ export async function validateAssemblyWithMates(
   const base = validateAssembly({
     records,
     ...(interferencePairs !== undefined ? { interferencePairs } : {}),
+    ...(ignoreInterference !== undefined ? { ignore: ignoreInterference } : {}),
   });
 
   // 2. Build the diagnostics chain starting from v0.5 results. We may

@@ -3,13 +3,19 @@
 // Drift sentinel: the `list_api` curated surface must match the real
 // runtime API. Future API additions that miss `listApi.ts` fail this test.
 import { describe, it, expect } from 'vitest';
-import { listApiTool } from '../../../src/agent/mcp/tools/listApi';
+import {
+  listApiTool,
+  CURVE3D_METHODS,
+  CURVE3D_ANALYTICS_METHODS,
+} from '../../../src/agent/mcp/tools/listApi';
 import { createApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { Shape } from '../../../src/modeling/capture/proxy';
 import { Sketch, PathBuilder } from '../../../src/modeling/capture/sketch';
 import { Scene } from '../../../src/modeling/validation/scene';
 import { SurfaceProxy } from '../../../src/modeling/capture/surfaceProxy';
+import { Curve3DProxy } from '../../../src/modeling/capture/curveProxy';
+import { Curve3DAnalyticsImpl } from '../../../src/modeling/capture/curveAnalyticsProxy';
 
 describe('list_api drift sentinels', () => {
   it('GLOBALS matches the keys returned by createApi(ctx)', async () => {
@@ -114,5 +120,54 @@ describe('list_api drift sentinels', () => {
         ),
     );
     expect(advertised).toEqual(actual);
+  });
+
+  it('CURVE3D_METHODS lists every public Curve3DProxy.prototype method', () => {
+    const advertised = new Set(CURVE3D_METHODS.map((m) => m.name));
+    const proto = Curve3DProxy.prototype as Record<string, unknown>;
+    const actual = Object.getOwnPropertyNames(proto).filter(
+      (n) =>
+        n !== 'constructor' &&
+        !n.startsWith('_') &&
+        typeof proto[n] === 'function',
+    );
+    for (const name of actual) {
+      expect(
+        advertised.has(name),
+        `CURVE3D_METHODS missing entry for Curve3DProxy.prototype.${name}`,
+      ).toBe(true);
+    }
+  });
+
+  it('CURVE3D_ANALYTICS_METHODS matches the Curve3DAnalyticsImpl public surface', () => {
+    expect(CURVE3D_ANALYTICS_METHODS.map((m) => m.name)).toEqual([
+      'closestPoint',
+      'closestParam',
+      'divideByEqualArcLength',
+      'divideByArcLength',
+      'derivatives',
+      'tessellate',
+      'intersect',
+    ]);
+    // Cross-check: every advertised method actually exists on the impl.
+    const proto = Curve3DAnalyticsImpl.prototype as Record<string, unknown>;
+    for (const m of CURVE3D_ANALYTICS_METHODS) {
+      expect(
+        typeof proto[m.name],
+        `Curve3DAnalyticsImpl.prototype.${m.name} missing or not a function`,
+      ).toBe('function');
+    }
+  });
+
+  it('documents surfaceFromBoundary as the shipped filling-surface primitive with exact curve order', async () => {
+    const r = await listApiTool({});
+    const entry = r.globals!.find(g => g.name === 'surfaceFromBoundary');
+    expect(entry).toBeDefined();
+    expect(entry!.description).toMatch(/filling surface/i);
+    expect(entry!.description).toContain('`curves[0]` = bottom');
+    expect(entry!.description).toContain('`curves[1]` = right');
+    expect(entry!.description).toContain('`curves[2]` = top');
+    expect(entry!.description).toContain('`curves[3]` = left');
+    expect(entry!.description).not.toMatch(/Coons/i);
   });
 });

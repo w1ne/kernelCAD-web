@@ -10,9 +10,15 @@
 // a bundled-static-dist mode is on the v2 list.
 
 import { Command } from 'commander';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
-import { headlessRender, composite2x2, ALL_VIEWS } from '../../render/headlessRender';
+import {
+  headlessRender,
+  composite2x2,
+  ALL_VIEWS,
+  type HeadlessObjectFilter,
+  type HeadlessInspectionChannel,
+} from '../../render/headlessRender';
 
 export interface RenderInput {
   file: string;
@@ -29,6 +35,10 @@ export interface RenderInput {
   /** Suppress the kernelCAD version watermark on the captured frames.
    *  Used for clean hero artifacts intended for public posts. */
   noWatermark?: boolean;
+  /** Show only matching objects by feature/part name. */
+  focus?: string[];
+  /** Hide matching objects by feature/part name. */
+  hide?: string[];
 }
 
 export interface RenderCliResult {
@@ -36,8 +46,59 @@ export interface RenderCliResult {
   outputPaths: string[];
 }
 
+export interface RenderInspectInput {
+  file: string;
+  outDir: string;
+  width: number;
+  height: number;
+  baseUrl: string;
+  hideReferenceImages: boolean;
+  environment?: string;
+  noWatermark?: boolean;
+  focus?: string[];
+  hide?: string[];
+  channels?: string[];
+}
+
+const SUPPORTED_INSPECT_CHANNELS = new Set<HeadlessInspectionChannel>(['rgb', 'mask', 'depth', 'normals']);
+
+function buildObjectFilter(input: { focus?: string[]; hide?: string[] }): HeadlessObjectFilter | undefined {
+  const focus = normalizePatternList(input.focus);
+  const hide = normalizePatternList(input.hide);
+  if (focus.length > 0 && hide.length > 0) {
+    throw new Error('render: --focus and --hide are mutually exclusive. Use one or the other.');
+  }
+  if (focus.length > 0) return { mode: 'focus', patterns: focus };
+  if (hide.length > 0) return { mode: 'hide', patterns: hide };
+  return undefined;
+}
+
+function normalizePatternList(values: readonly string[] | undefined): string[] {
+  return (values ?? [])
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function normalizeInspectChannels(values: readonly string[] | undefined): HeadlessInspectionChannel[] {
+  const channels = normalizePatternList(values);
+  const requested = channels.length > 0 ? channels : ['rgb'];
+  const unsupported = requested.filter((channel) => !SUPPORTED_INSPECT_CHANNELS.has(channel as HeadlessInspectionChannel));
+  if (unsupported.length > 0) {
+    throw new Error(`render inspect: unsupported channel(s): ${unsupported.join(', ')}. Supported channels: rgb, mask, depth, normals.`);
+  }
+  return [...new Set(requested)] as HeadlessInspectionChannel[];
+}
+
 export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
   const filePath = resolve(input.file);
+  let objectFilter: HeadlessObjectFilter | undefined;
+  try {
+    objectFilter = buildObjectFilter(input);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e));
+    return { exitCode: 1, outputPaths: [] };
+  }
 
   let result;
   try {
@@ -51,6 +112,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       hideReferenceImages: input.hideReferenceImages,
       environment: input.environment,
       noWatermark: input.noWatermark,
+      objectFilter,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -101,9 +163,219 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   return { exitCode: 0, outputPaths: written };
 }
 
+export async function renderInspectBundle(input: RenderInspectInput): Promise<RenderCliResult> {
+  const filePath = resolve(input.file);
+  const outDir = resolve(input.outDir);
+  const rgbDir = join(outDir, 'channels', 'rgb');
+  const maskDir = join(outDir, 'channels', 'mask');
+  const depthDir = join(outDir, 'channels', 'depth');
+  const normalsDir = join(outDir, 'channels', 'normals');
+  let requestedChannels: HeadlessInspectionChannel[];
+  try {
+    requestedChannels = normalizeInspectChannels(input.channels);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e));
+    return { exitCode: 1, outputPaths: [] };
+  }
+  let objectFilter: HeadlessObjectFilter | undefined;
+  try {
+    objectFilter = buildObjectFilter(input);
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e));
+    return { exitCode: 1, outputPaths: [] };
+  }
+
+  let result;
+  try {
+    result = await headlessRender({
+      scriptPath: filePath,
+      viewportWidth: input.width,
+      viewportHeight: input.height,
+      views: ALL_VIEWS,
+      baseUrl: input.baseUrl,
+      hideReferenceImages: input.hideReferenceImages,
+      environment: input.environment,
+      noWatermark: input.noWatermark,
+      objectFilter,
+      inspectionChannels: requestedChannels,
+    });
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e));
+    return { exitCode: 1, outputPaths: [] };
+  }
+
+  if (requestedChannels.includes('rgb')) {
+    await mkdir(rgbDir, { recursive: true });
+  }
+  if (requestedChannels.includes('mask')) {
+    await mkdir(maskDir, { recursive: true });
+  }
+  if (requestedChannels.includes('depth')) {
+    await mkdir(depthDir, { recursive: true });
+  }
+  if (requestedChannels.includes('normals')) {
+    await mkdir(normalsDir, { recursive: true });
+  }
+
+  const channelPaths: Record<string, Record<string, string>> = {};
+  const pngPaths: string[] = [];
+  if (requestedChannels.includes('rgb')) {
+    channelPaths.rgb = {};
+    for (const view of ALL_VIEWS) {
+      const buf = result.pngsByView[view];
+      if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
+      const relativePath = `channels/rgb/${view}.png`;
+      const outPath = join(outDir, relativePath);
+      await writeFile(outPath, buf);
+      channelPaths.rgb[view] = relativePath;
+      pngPaths.push(outPath);
+    }
+  }
+  if (requestedChannels.includes('mask')) {
+    channelPaths.mask = {};
+    for (const view of ALL_VIEWS) {
+      const buf = result.maskPngsByView?.[view];
+      if (!buf) throw new Error(`renderInspectBundle: missing mask view '${view}'`);
+      const relativePath = `channels/mask/${view}.png`;
+      const outPath = join(outDir, relativePath);
+      await writeFile(outPath, buf);
+      channelPaths.mask[view] = relativePath;
+      pngPaths.push(outPath);
+    }
+  }
+  for (const channel of ['depth', 'normals'] as const) {
+    if (!requestedChannels.includes(channel)) continue;
+    channelPaths[channel] = {};
+    for (const view of ALL_VIEWS) {
+      const buf = result.inspectionPngsByChannel?.[channel]?.[view];
+      if (!buf) throw new Error(`renderInspectBundle: missing ${channel} view '${view}'`);
+      const relativePath = `channels/${channel}/${view}.png`;
+      const outPath = join(outDir, relativePath);
+      await writeFile(outPath, buf);
+      channelPaths[channel][view] = relativePath;
+      pngPaths.push(outPath);
+    }
+  }
+
+  const channelMetadata = {
+    ...(result.maskObjects !== undefined
+      ? {
+          mask: {
+            encoding: 'object-id-rgb8',
+            background: '#000000',
+            objects: result.maskObjects,
+          },
+        }
+      : {}),
+    ...(result.inspectionChannelMetadata?.depth !== undefined
+      ? { depth: result.inspectionChannelMetadata.depth }
+      : {}),
+    ...(result.inspectionChannelMetadata?.normals !== undefined
+      ? { normals: result.inspectionChannelMetadata.normals }
+      : {}),
+  };
+
+  const manifestPath = join(outDir, 'manifest.json');
+  const manifest = {
+    bundleVersion: 1,
+    scriptPath: filePath,
+    generatedAt: new Date().toISOString(),
+    requestedChannels,
+    emittedChannels: Object.keys(channelPaths),
+    viewport: { width: input.width, height: input.height },
+    views: [...ALL_VIEWS],
+    bounds: result.bounds,
+    command: {
+      name: 'kernelcad render inspect',
+      channels: requestedChannels,
+    },
+    ...(objectFilter !== undefined ? { filters: { object: objectFilter } } : {}),
+    ...(result.objectVisibility !== undefined
+      ? {
+          objects: {
+            visible: result.objectVisibility.visible,
+            hidden: result.objectVisibility.hidden,
+          },
+        }
+      : {}),
+    ...(Object.keys(channelMetadata).length > 0 ? { channelMetadata } : {}),
+    caveats: [
+      'Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB.',
+      ...(requestedChannels.includes('mask')
+        ? ['Mask channel colors are stable within this bundle only and resolved through channelMetadata.mask.objects.']
+        : []),
+      ...(requestedChannels.includes('depth')
+        ? ['Depth is normalized linear camera depth packed into RGBA8; use channelMetadata.depth.near/far and ignore background sentinel pixels.']
+        : []),
+      ...(requestedChannels.includes('normals')
+        ? ['Normals are rasterized view-space normals, not stable topology or analytic OCCT face identifiers.']
+        : []),
+    ],
+    channels: channelPaths,
+  };
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  return { exitCode: 0, outputPaths: [manifestPath, ...pngPaths] };
+}
+
 export function renderCommand(): Command {
   const cmd = new Command('render')
-    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)')
+    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)');
+
+  cmd
+    .command('inspect')
+    .description('Render a .kcad.ts script to an inspection bundle directory')
+    .argument('<file>', 'path to .kcad.ts script')
+    .argument('<outDir>', 'output inspection bundle directory')
+    .option('--width <n>', 'per-tile width in pixels', (v) => parseInt(v, 10), 1024)
+    .option('--height <n>', 'per-tile height in pixels', (v) => parseInt(v, 10), 1024)
+    .option(
+      '--base-url <url>',
+      'studio dev server URL (run `npm run dev` first)',
+      'http://localhost:5173',
+    )
+    .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
+    .option(
+      '--environment <preset|url|none>',
+      "HDRI environment preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a custom URL/path, or 'none' to force the default three-light rig",
+    )
+    .option(
+      '--no-watermark',
+      'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
+      false,
+    )
+    .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)')
+    .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
+    .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
+    .action(async (file: string, outDir: string, opts: {
+      width: number;
+      height: number;
+      baseUrl: string;
+      hideReferenceImages: boolean;
+      environment?: string;
+      watermark: boolean;
+      channels?: string;
+      focus?: string;
+      hide?: string;
+    }) => {
+      const r = await renderInspectBundle({
+        file,
+        outDir,
+        width: opts.width,
+        height: opts.height,
+        baseUrl: opts.baseUrl,
+        hideReferenceImages: opts.hideReferenceImages,
+        environment: opts.environment,
+        noWatermark: opts.watermark === false,
+        channels: opts.channels ? [opts.channels] : undefined,
+        focus: opts.focus ? [opts.focus] : undefined,
+        hide: opts.hide ? [opts.hide] : undefined,
+      });
+      for (const p of r.outputPaths) console.log(`Wrote ${p}`);
+      process.exitCode = r.exitCode;
+    });
+
+  cmd
     .argument('<file>', 'path to .kcad.ts script')
     .option('-o, --out <path>', 'output PNG path (composite mode) or stem with .png suffix (separate mode)')
     .option('--separate', 'emit four individual PNG files instead of a 2×2 composite', false)
@@ -130,6 +402,8 @@ export function renderCommand(): Command {
       'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
       false,
     )
+    .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
+    .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
@@ -140,6 +414,8 @@ export function renderCommand(): Command {
       pose: string[];
       environment?: string;
       watermark: boolean;  // commander inverts --no-watermark to opts.watermark = false
+      focus?: string;
+      hide?: string;
     }) => {
       const r = await renderScript({
         file,
@@ -152,6 +428,8 @@ export function renderCommand(): Command {
         poses: opts.pose,
         environment: opts.environment,
         noWatermark: opts.watermark === false,
+        focus: opts.focus ? [opts.focus] : undefined,
+        hide: opts.hide ? [opts.hide] : undefined,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;

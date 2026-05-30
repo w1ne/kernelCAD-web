@@ -3,6 +3,7 @@ import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useParamUpdate } from '../hooks/useParamUpdate';
 import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
 import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
+import { computeAssemblyPreviewTransform } from '../assemblyPreviewTransform';
 
 /**
  * Inspector tab listing assembly mates with declared pose (joints). Each
@@ -18,11 +19,17 @@ import type { JointPoseSnapshot } from '../adapters/featureRecordsToMates';
 const ROTATIONAL_TYPES = new Set(['revolute', 'cylindrical', 'pin_slot', 'ball']);
 
 export function JointsTab(): JSX.Element {
-    const { joints, updateParam } = useRecomputeResult();
+    const {
+        geometries,
+        joints,
+        updateParam,
+        setGeometryTransformOverride,
+        clearGeometryTransformOverrides,
+    } = useRecomputeResult();
     // Joint sliders are the heaviest scrub UI (one drag → full record-chain
     // relower per pointer-move on a 50+ part assembly). Route through the
     // debounced commit so 60 FPS drag becomes 10 commits/sec.
-    const updater = useParamUpdate(updateParam, { source: 'JointsTab' });
+    const updater = useParamUpdate(updateParam, { source: 'JointsTab', debounceMs: 700 });
     const posed = joints ?? [];
 
     if (posed.length === 0) {
@@ -44,6 +51,7 @@ export function JointsTab(): JSX.Element {
             }
         }
         if (edits.length === 0) return;
+        clearGeometryTransformOverrides?.();
         updater.commit(edits);
     };
 
@@ -58,8 +66,13 @@ export function JointsTab(): JSX.Element {
                         key={snap.mate.name}
                         snap={snap}
                         onChange={(name, value) => {
+                            const preview = computeAssemblyPreviewTransform(snap, geometries, value);
+                            if (preview) {
+                                setGeometryTransformOverride?.(preview.partName, preview.transform);
+                            }
                             updater.commitDebounced([{ name, value }]);
                         }}
+                        onCommit={updater.flush}
                     />
                 ))}
             </ul>
@@ -87,9 +100,10 @@ export function JointsTab(): JSX.Element {
 interface JointRowProps {
     readonly snap: JointPoseSnapshot;
     readonly onChange: (paramName: string, value: number) => void;
+    readonly onCommit: () => void;
 }
 
-function JointRow({ snap, onChange }: JointRowProps): JSX.Element {
+function JointRow({ snap, onChange, onCommit }: JointRowProps): JSX.Element {
     const { mate, pose, poseParamNames } = snap;
     const isRotational = ROTATIONAL_TYPES.has(mate.type);
     const unit = isRotational ? '°' : 'mm';
@@ -122,6 +136,7 @@ function JointRow({ snap, onChange }: JointRowProps): JSX.Element {
                     unit="°"
                     limits={limits}
                     onChange={onChange}
+                    onCommit={onCommit}
                 />
                 <BallAxis
                     label="Y"
@@ -130,6 +145,7 @@ function JointRow({ snap, onChange }: JointRowProps): JSX.Element {
                     unit="°"
                     limits={limits}
                     onChange={onChange}
+                    onCommit={onCommit}
                 />
                 <BallAxis
                     label="Z"
@@ -138,6 +154,7 @@ function JointRow({ snap, onChange }: JointRowProps): JSX.Element {
                     unit="°"
                     limits={limits}
                     onChange={onChange}
+                    onCommit={onCommit}
                 />
             </li>
         );
@@ -164,6 +181,7 @@ function JointRow({ snap, onChange }: JointRowProps): JSX.Element {
                 onChange={(v) => {
                     if (paramName !== null) onChange(paramName, v);
                 }}
+                onCommit={onCommit}
             />
         </li>
     );
@@ -176,6 +194,7 @@ function BallAxis({
     unit,
     limits,
     onChange,
+    onCommit,
 }: {
     label: string;
     name: string | null;
@@ -183,6 +202,7 @@ function BallAxis({
     unit: string;
     limits: readonly [number, number] | undefined;
     onChange: (paramName: string, value: number) => void;
+    onCommit: () => void;
 }): JSX.Element {
     const inputName = name ?? label;
     return (
@@ -198,6 +218,7 @@ function BallAxis({
                     onChange={(v) => {
                         if (name !== null) onChange(name, v);
                     }}
+                    onCommit={onCommit}
                 />
             </div>
         </div>

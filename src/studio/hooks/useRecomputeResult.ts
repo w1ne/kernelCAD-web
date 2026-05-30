@@ -34,6 +34,17 @@ export function useRecomputeResult(): StudioRecomputeResult {
         [workbench.scriptReview],
     );
 
+    // Raw interference pairs are read directly from the script review payload
+    // (filtering is applied at the validator layer, not here). Empty array
+    // when scriptReview is null OR when the server omitted the field — the
+    // Studio HUD treats that as "interferences: 0" rather than a missing
+    // signal. See StudioRecomputeResult.rawInterferencePairs JSDoc for why
+    // the HUD reads this and not validity.diagnostics.
+    const rawInterferencePairs = useMemo(
+        () => workbench.scriptReview?.rawInterferencePairs ?? [],
+        [workbench.scriptReview],
+    );
+
     const paramTable = useMemo(
         () => serializedParamsToTable(workbench.scriptParams ?? []),
         [workbench.scriptParams],
@@ -56,6 +67,12 @@ export function useRecomputeResult(): StudioRecomputeResult {
     }, [validity]);
 
     const updateParam = (workbench as { updateParam?: StudioRecomputeResult['updateParam'] }).updateParam;
+    const setGeometryTransformOverride =
+        (workbench as { setGeometryTransformOverride?: StudioRecomputeResult['setGeometryTransformOverride'] })
+            .setGeometryTransformOverride;
+    const clearGeometryTransformOverrides =
+        (workbench as { clearGeometryTransformOverrides?: StudioRecomputeResult['clearGeometryTransformOverrides'] })
+            .clearGeometryTransformOverrides;
 
     return useMemo<StudioRecomputeResult>(
         () => ({
@@ -66,7 +83,10 @@ export function useRecomputeResult(): StudioRecomputeResult {
             diagnostics,
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
+            rawInterferencePairs,
             updateParam,
+            setGeometryTransformOverride,
+            clearGeometryTransformOverrides,
         }),
         [
             workbench.featureRecords,
@@ -77,6 +97,9 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             joints,
+            rawInterferencePairs,
+            setGeometryTransformOverride,
+            clearGeometryTransformOverrides,
         ],
     );
 }

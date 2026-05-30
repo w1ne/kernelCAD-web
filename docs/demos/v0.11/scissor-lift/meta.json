@@ -1,0 +1,11 @@
+{
+  "taskId": "scissor-lift",
+  "module": "v0.11",
+  "capturedAt": "2026-05-22T14:50:00Z",
+  "durationMs": 6000,
+  "truncated": false,
+  "gitSha": null,
+  "heroArtifact": "scissor-lift",
+  "catalogSource": "reference: industrial scissor lift pantograph with fixed pivots and sliding roller tracks",
+  "overrideApprovedBy": "release: user selected an animated scissor-lift mechanism for the marketing hero"
+}

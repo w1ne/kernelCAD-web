@@ -5,6 +5,7 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
+import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
@@ -24,6 +25,7 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { TextureRef, TextureSet } from '../../shared/intent/textureRef';
 import { isTextureRef, normalizeTextureRef } from '../../shared/intent/textureRef';
 import { validateBendArgs } from '../sheetMetal';
+import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { Region } from '../../shared/intent/region';
 import {
   type FilletContinuity, isFilletContinuity,
@@ -36,11 +38,21 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
+  // lowerer through the same {edges} slot. Captured at append-time and
+  // dispatched through the Q3 evaluator at lower-time.
+  | Query<EdgeMarker>
+  | Query<unknown>
   | undefined;
 
 export type FaceSelector =
   | FaceQuery
-  | { face: CanonicalFace | string };
+  | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
+  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
+  // at append-time and dispatched through the Q3 evaluator at lower-time.
+  | Query<FaceMarker>
+  | Query<unknown>;
 
 /**
  * IMPORTANT — drift sentinel contract:
@@ -279,6 +291,7 @@ export class Shape {
     maybeAssign('ior', opts.ior, 1.0, 2.5);
     maybeAssign('transmission', opts.transmission, 0, 1);
     maybeAssign('sheen', opts.sheen, 0, 1);
+    maybeAssign('opacity', opts.opacity, 0, 1);
     maybeAssign('anisotropy', opts.anisotropy, 0, 1);
 
     // thickness — non-negative finite mm. Negative is a hard error.
@@ -1016,10 +1029,14 @@ function validateGridPatternAxis(
   }
 }
 
-/** Wrap a bare canonical-face / label string into the `{ face: <s> }`
- *  FaceSelector shape so hole/holes/cutout can accept either form. */
+/** Wrap a bare canonical-face / label string OR a `@kc[<owner>/face/<name>]`
+ *  ref string into the structured `{ face: <s> }` shape so hole/holes/cutout/
+ *  shell accept every input form uniformly. */
 function normalizeFaceSelector(face: FaceSelector | CanonicalFace | string): FaceSelector {
-  return typeof face === 'string' ? { face } : face;
+  if (typeof face === 'string') {
+    return normalizeTopoRefOrString(face, 'face') as FaceSelector;
+  }
+  return face;
 }
 
 /** Walk records back from `targetId` via `inputs.target` (slice-2 chain

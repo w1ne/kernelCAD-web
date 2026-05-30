@@ -1,6 +1,7 @@
 // Geometry Engine: Class-based implementation
 import type {
     WorkerRequest,
+    WorkerResponse,
     ExecutionResult,
     GeometryResult,
     SketchGeometry,
@@ -190,11 +191,11 @@ export class GeometryEngine {
      */
     private handleMessage(event: MessageEvent<unknown>): void {
         try {
-            const response = WorkerResponseSchema.parse(event.data);
+            const response = WorkerResponseSchema.parse(event.data) as WorkerResponse;
 
             // Handle initialization responses separately
             if (response.id === 'init') {
-                if (response.type === 'SUCCESS') {
+                if (isSuccessResponse(response)) {
                     this.completeInitialization();
                 } else {
                     this.failInitialization(new Error(response.error));

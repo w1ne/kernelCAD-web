@@ -75,7 +75,11 @@ export type FaceRef =
   | { kind: 'created'; rewriteId: RewriteId; slot: string }
   | { kind: 'propagated'; rewriteId: RewriteId; source: FaceRef }
   | { kind: 'label'; name: string }
-  | { kind: 'query'; query: import('./queryTypes').FaceQuery };
+  | { kind: 'query'; query: import('./queryTypes').FaceQuery }
+  // Q8 — Query DSL value (kc.q.face(...) etc). Serialized as the AST so
+  // the FeatureRecord stays JSON-round-trippable; the lowerer dispatches
+  // through the Q3 evaluator at consume time.
+  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
 
 export type EdgeRef =
   | { kind: 'tracked'; edgeName: string; selector: 'edge'|'start'|'end'|'midpoint' }
@@ -85,7 +89,9 @@ export type EdgeRef =
       selector: 'edge'|'start'|'end'|'midpoint' }
   | { kind: 'query'; query: import('./queryTypes').EdgeQuery }
   | { kind: 'segment'; segmentId: string }
-  | { kind: 'segments'; segmentIds: string[] };
+  | { kind: 'segments'; segmentIds: string[] }
+  // Q8 — Query DSL value (kc.q.edge(...) etc).
+  | { kind: 'queryDsl'; queryAst: import('../../kernel/naming/query').QueryAst; queryTarget: import('../../kernel/naming/query').QueryKind | 'any'; lenient?: boolean };
 
 export type VertexRef =
   | { kind: 'tracked'; vertexName: string }
@@ -152,6 +158,12 @@ export type FeatureKind =
   // renderEnvironment. Lets the script aim the auto-fit camera at an
   // explicit (x, y, z) instead of the bbox centroid.
   | 'cameraTarget'
+  // Animation-view declaration (capture-only, no OCCT output) — declares a
+  // parameter sweep for offline MP4 capture (kinematic scrub demos).
+  // scripts/captureAnimationView.mjs reads this record and produces an MP4
+  // by sampling N frames across the sweep, leveraging the mesh-cache fast
+  // path so each frame's recompute is ~5 ms warm.
+  | 'animationView'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'
@@ -179,6 +191,18 @@ export type ScaleSpec = number | [number, number, number];
 
 export function isValidVec3(v: unknown): v is Vec3 {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+/** Scalar input validator that accepts a finite number or ParamRef<number>.
+ *  Use at every capture-time entry point that takes an `Editable<number>`
+ *  (primitive dimensions, feature scalar params) so degenerate inputs (objects,
+ *  strings, NaN) are rejected with a clear `feature.invalid-args` rather than
+ *  reaching OCCT — which can recurse / overflow on garbage `evaluated` payloads. */
+export function isValidEditableNumber(v: unknown): boolean {
+  if (typeof v === 'number') return Number.isFinite(v);
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as { _brand?: unknown; _type?: unknown };
+  return o._brand === 'ParamRef' && o._type === 'number';
 }
 
 /** Vec3 input validator that accepts numbers or ParamRef<number> per coord.

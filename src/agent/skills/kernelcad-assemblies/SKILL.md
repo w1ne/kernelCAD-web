@@ -66,12 +66,25 @@ arm.revolute('shoulder', base, link, {
 return arm.model();
 ```
 
+### Per-part density
+
+`arm.part(name, shape, { density })` accepts a per-part material density in `kg/m^3`. The default is `1000` (water-equivalent), which produces correct silhouettes but unrealistic dynamics for any metallic or plastic part. Declare density when the assembly will be exported to a downstream dynamics-aware format — `export_model({ format: 'urdf' })` or `export_model({ format: 'sdf-gazebo' })` emit a warning for any link that inherits the default.
+
+Typical values: steel `7850`, aluminum `2700`, ABS plastic `1050`, brass `8500`, titanium `4500`.
+
+```typescript
+arm.part('shoulder-bracket', bracketShape, { density: 2700 });   // aluminum
+arm.part('hub', hubShape, { density: 7850 });                    // steel
+```
+
 ```typescript
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
     at?: [number, number, number];
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
+    /** Material density in kg/m^3. Default 1000 (water). */
+    density?: number;
   }): AssemblyPartRef;
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;
   revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {
@@ -148,6 +161,24 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 | `arm.ball(name, parent, child, { origin, limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
 
 Joint origins are in the **parent part's local frame** (URDF/MuJoCo convention). Multi-joint chains compose correctly; the FK tree-walk handles N joints.
+
+**Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
+
+Concretely: if the shoulder joint is at world `(0, 0, 30)` and the lower arm has length 220 mm extending along +X from the shoulder, author the lower arm at part-local frame *centered on the joint*:
+
+```ts
+// ✅ Correct — lower arm in its own local frame; rest position comes from the joint origin.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 0));
+arm.revolute('shoulder', base, lower, { axis: [0, -1, 0], origin: [0, 0, 30], limitsDeg: [0, 110] });
+
+// ❌ Wrong — translating to the world rest position `(110, 0, 30)` puts a SHOULDER_Z offset
+//    into the part-local frame, which the FK doubles up when the joint poses.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 30));
+```
+
+At rest (joint angle 0), worldT for `lower` equals `T(0, 0, 30)` (the joint origin in parent's frame), so part-local vertex `(110, 0, 0)` maps to world `(110, 0, 30)` — exactly what you wanted. Authoring the part with `.translate(110, 0, 30)` would put it at world `(110, 0, 60)` instead, and any non-zero joint angle would smear that compounding error visibly across the render.
+
+The same convention applies to child-of-child joints: the elbow's `origin` is expressed in the lower arm's part-local frame (`[220, 0, 0]` — at the lower arm's tip, NOT `[220, 0, 30]`).
 
 ```ts
 arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [45, 35, 8],  limitsDeg: [-120, 120] });
@@ -232,6 +263,24 @@ arm.part('servo', servoShape, { connectors: undefined })
 
 Topology queries: `face-center` / `face-normal` resolve canonical box/cylinder faces and any user-declared `faceLabels`. `edge-axis` resolves canonical box edges (`edge-<face1>-<face2>`, order insignificant) and cylinder cap edges (`edge-top` / `edge-bottom`). `vertex` raises `assembly.connector.topology-not-resolvable` with hint `vertex labeling not yet supported` — deferred to v0.7. Post-boolean shapes where the canonical face/edge no longer exists also surface `assembly.connector.topology-not-resolvable`.
 
+The same topology origin can be expressed as a `@kc[...]` string ref — preferred for agent emission and cross-tool handoff because the resolver walks the lineage map first and falls back to the geometry snapshot when lineage is destroyed:
+
+```typescript
+arm.part('servo', servoShape)
+  .connector('flange', {
+    type: 'frame',
+    origin: '@kc[servo/face/bottom]',
+    normal: [0, 0, 1],
+  })
+  .connector('shaft', {
+    type: 'axis',
+    origin: '@kc[servo/edge/top]',
+    axis: [0, 0, 1],
+  });
+```
+
+`@kc[<part>/face/<name>]` defaults to face-center; `@kc[<part>/face/<name>#normal]` selects the face-normal vector. `@kc[<part>/edge/<name>]` maps to edge-axis. Both the string form and the structured form live in the same connector-origin slot; the structured form remains the escape hatch for batch authoring or programmatic construction. Full grammar — kinds, modifiers, indexed segments, reserved characters, and resolution semantics — lives in `kernelcad-mcp/SKILL.md` under "Topology references". The discovery primitive is `resolve_topo_ref`.
+
 ### Declaring mates — `arm.mate(name, aRef, bRef, type)`
 
 Refs are `"<partName>.<connectorName>"` strings. The seven mate types each require a specific connector-type pair; the wrong pair throws at capture time (early error).
@@ -249,6 +298,16 @@ Refs are `"<partName>.<connectorName>"` strings. The seven mate types each requi
 ```typescript
 arm.mate('shoulder-bolts',  'shoulder-servo.base-mount',  'base.shoulder-mount', 'fastened');
 arm.mate('shoulder-rotate', 'shoulder-servo.output-shaft', 'horn.shaft-hub',     'revolute');
+```
+
+Mate refs accept either the legacy `"<partName>.<connectorName>"` dot form OR the `"@kc[<partName>/connector/<connectorName>]"` topology-ref string form. Both resolve identically; the `@kc[...]` form is preferred when emitting refs through MCP (`add_mate`) or pasting refs that came out of `inspect_assembly`:
+
+```typescript
+arm.mate('shoulder-bolts',
+  '@kc[shoulder-servo/connector/base-mount]',
+  '@kc[base/connector/shoulder-mount]',
+  'fastened',
+);
 ```
 
 Couple scalar articulated mates when one actuator should drive multiple finger/jaw joints. The driven pose is `sourcePose * ratio + offset`; explicit numeric `solve_mates({ poses })` overrides for a driven mate still win for debugging.
@@ -340,13 +399,16 @@ The hint names the mate, both connectors, both observed hole specs, and the two 
 The MCP server exposes assembly-specific tools for runtime introspection:
 
 - `inspect_assembly({ file? | code?, assembly? })` — evaluate a script and return a physical inventory: named parts, bounding boxes, connectors, mates, mechanical review facts, disconnected solids, and `unexplainedGeometry`. Use this before accepting a mechanism that looks suspicious in Studio; random boxes/floating fragments must either disappear or be explicitly justified by the original design goal.
+- Durable source-edit path: use `add_assembly_part_source`, `add_part_connector_source`, `add_mate_source`, `add_mate_coupling_source`, `add_transmission_source`, `add_workspace_target_source`, and `set_scene_return_source` when the mechanism must persist in the user's `.kcad.ts` source. These tools insert/replace source text, return `new_code`, and include diagnostics from re-evaluating that returned source.
 - `add_connector({ part, name, type, origin, axis?, normal?, assembly? })` — register a mate-style connector on a named part. `type` is one of `frame`/`axis`/`planar`/`ball`; `origin` accepts either a `[x, y, z]` shorthand (becomes `{ kind: 'vec3' }`) or a structured `ConnectorOrigin`.
 - `add_mate({ name, a, b, type, pose?, limitsDeg?, limitsMm?, assembly? })` — declare a typed mate between two `"<partName>.<connectorName>"` refs. Same capture-time validation as the script API: type-mismatch and connector-not-found errors surface immediately with structured hints.
 - `list_mates({ assembly? })` — return the declared mate records as `{ mates: [{ name, a, b, type, pose?, limitsDeg?, limitsMm? }, ...] }`. Read-only.
 - `validate_assembly({ assembly? })` — run `validateAssemblyWithMates(arm)` and return `{ status, diagnostics, partCount, jointCount }`. Each diagnostic carries `code` and `hint` for recovery.
 - `solve_mates({ assembly?, poses? })` — run the mate-graph solver and return `{ status, poses, iterations? }`. `poses` overrides mate pose values by mate name; coupled driven mates are expanded from their source mate before solve.
 - `review_cad({ file? | code?, assembly?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture? })` — run the deterministic agent review loop: evaluate, validate mates, sample declared pose limits, check that mate connectors touch modeled material, report connector workspace bounds, and return raw diagnostics plus a fitness summary (`fitness.functional`, `fitness.blockingReasons`, `fitness.mechanismSummary`) after an assembly is selected. Pass `trackConnectors: ['gripper-plate.tool-tip']` to focus workspace output on an end-effector; connector workspace is only computed when pose-envelope sampling is enabled. For grippers, pass `gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' }` to get `minMm`, `maxMm`, `travelMm`, and per-sample fingertip distances.
-- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — run ordered design attempts through `review_cad`, continue past functional attempts that still have unresolved warnings, return repair prompts, and optionally write a Studio replay record. Visual review is required by default: each accepted attempt must include `visualReview: { accepted, screenshotPath, findings, checks }` after the vision-capable agent renders/opens screenshots and records concrete observations. Accepted reviews must pass these checklist codes: `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, and `canonical-views-physically-coherent`. Missing `screenshotPath`, empty `findings`, missing checklist entries, or blank check findings fails with `assembly.visual.review-incomplete`; failed checks fail with `assembly.visual.review-check-failed`. Use `requireVisualReview: false` only for explicit non-visual batch checks. Only use `allowReviewWarnings` when the original prompt explicitly permits that warning code.
+- `design_loop({ goal, attempts, assembly?, preserveInterfaces?, includePoseEnvelope?, includeInterference?, epsilonMm3?, trackConnectors?, gripperAperture?, stopOnPass?, allowReviewWarnings?, requireVisualReview?, outputRecordPath?, recordTitle? })` — run ordered design attempts through `review_cad`, continue past functional attempts that still have unresolved non-visual warnings, return repair prompts, and optionally write a Studio replay record. Visual review is required by default: each accepted attempt must include `visualReview: { accepted, screenshotPath, findings, checks }` after the vision-capable agent renders/opens screenshots and records concrete observations. Accepted reviews must pass these checklist codes: `main-object-count`, `proportions-match-reference`, `required-visible-features`, `no-stray-or-floating-geometry`, `attachment-plausibility`, `semantic-orientation-alignment`, `device-depth-and-construction`, and `canonical-views-physically-coherent`. Missing `screenshotPath`, empty `findings`, missing checklist entries, or blank check findings fails with `assembly.visual.review-incomplete`; weak check evidence fails with `assembly.visual.review-evidence-weak`; failed checks fail with `assembly.visual.review-check-failed`. Visual review warnings cannot be allow-listed. Use `requireVisualReview: false` only for explicit non-visual batch checks. Only use `allowReviewWarnings` when the original prompt explicitly permits that non-visual warning code.
+
+Use active-session `add_connector` / `add_mate` only for temporary in-memory iteration after `evaluate_script`; they do not rewrite the source. When the user expects saved mechanism code, use the durable `*_source` tools and persist their returned `new_code`.
 
 ## Pose-envelope review
 
@@ -555,11 +617,58 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.pose-envelope.connector-unresolved` | pose-envelope — tracked connector has topology-based origin |
 | `assembly.gripper-aperture.connector-missing` | pose-envelope — fingertip connector ref not observed |
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
+| `assembly.visual.review-evidence-weak` | design_loop — accepted visual checklist text lacks concrete evidence |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
 | `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
 | `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
+
+## Cookbook — Query DSL for assemblies
+
+Each snippet below ships as a runnable `.kcad.ts` file under `src/agent/skills/kernelcad-assemblies/cookbook/snippets/`. The smoke test at `tests/integration/mcp/queryCookbookSmoke.test.ts` evaluates every snippet on every CI run.
+
+### Q-S4 — Ownership filters and Part Queries
+
+In an assembly, every face / edge / vertex belongs to exactly one part. `q.ownedByPart(...)` narrows a face Query to a specific part without naming a topology by hand — the per-variant topology can shift while the part label stays stable.
+
+```typescript
+const arm = assembly('bracket-mount');
+arm.part('bracket', box(20, 20, 10, false, { faceLabels: { mount: 'top' } }));
+
+// "The bracket part."
+const bracket = q.part().and(q.withFeatureName('bracket'));
+
+// "Faces on the bracket part."
+const bracketFaces = q.face().and(q.ownedByPart(bracket));
+
+// "The bracket's mount face."
+const mountFace = q.face()
+  .and(q.ownedByPart(bracket))
+  .and(q.withLabel('mount'));
+```
+
+See `cookbook/snippets/Q-S4-ownership-and-part-queries.kcad.ts`.
+
+### Q-S5 — Connector Queries for mate-side targeting
+
+`q.connector(...)` composed with `q.ownedByPart(...)` and `q.withLabel(...)` is the canonical pattern for identifying a connector on a specific part by label. The Query value is a descriptor today; consumer integration on `arm.mate(...)` ships in a later slice, so the string form (`'partName.connectorName'`) remains the consumed surface in parallel.
+
+```typescript
+const baseSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('base'))))
+  .and(q.withLabel('mount'));
+
+const bracketSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('bracket'))))
+  .and(q.withLabel('flange'));
+
+// Consume by string ref today; the Query value above describes the same
+// connector and round-trips through JSON for diagnostic use.
+arm.mate('attach', 'base.mount', 'bracket.flange', 'fastened');
+```
+
+See `cookbook/snippets/Q-S5-connector-queries.kcad.ts`.
 
 ## Verification gates
 

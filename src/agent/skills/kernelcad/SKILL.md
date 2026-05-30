@@ -17,8 +17,12 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - Freeform NURBS surfaces, NURBS curves, Coons patches, multi-section sweeps, G2 fillet continuity, or freeform 2D path outlines (`nurbsSurface`, `surfaceFromCurves`, `surfaceFromBoundary`, `nurbsCurve`, `spline3d`, `hermiteG2`, `variableSweep`, `fillet({ continuity: 'G2' })`, `path().spline(...)`, `path().nurbsSegment(...)`, `path().hermiteG2(...)`) → also load `kernelcad-nurbs`.
 - Mechanical patterns (linear / circular / grid replication of a sub-feature) → also load `kernelcad-patterns`.
 - Folded sheet-metal parts (brackets, channels, panels, bend tables, flat patterns) → also load `kernelcad-sheet-metal`.
-- Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-sdf`.
+- Signed-distance fields (smooth-blended primitives, organic shapes via `sdf.*` + `materialize`) → also load `kernelcad-fields`.
+- Exporting an assembly to URDF for a motion planner or simulator → also load `kernelcad-urdf`.
+- Adding planning groups / end-effectors / allowed-collision data on top of a URDF → also load `kernelcad-srdf`.
+- Exporting an assembly with closed kinematic loops or a native ball joint → also load `kernelcad-sdformat`.
 - Introspecting a running model via MCP (`list_features`, edit ops, diagnostics) → load `kernelcad-mcp` instead of authoring.
+- Feasibility gates on moving assemblies — collision sweeps across joint ranges, IK reachability, mounting-hole consistency, static-load capacity (`checkSweptCollision`, `checkReachable`, `checkMountingHoleConsistency`, `checkLoadCapacity`) → also load `kernelcad-kinematic`.
 
 ## Key globals available today
 
@@ -30,6 +34,15 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 - **Units**: millimetres, degrees, Z-up right-handed.
 - **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`).
 - **Diagnostic-anchored hints**: when a kernelCAD tool throws, the error carries a `hint` field tied to a diagnostic code (`feature.*`, `assembly.*`, etc.). Read the hint — it carries the fix.
+- **Words to CAD / Words to geometry**: preserve the prompt-to-geometry mapping. Important nouns and constraints from the user's words should become named source sections, parameters, parts, connectors, materials, tests, or visible artifacts; do not reduce the job to untraceable hand-tuned shapes.
+- **Source-first CAD**: the `.kcad.ts` file is the design source of truth. Generated screenshots, videos, STEP, STL, and score JSON are evidence/artifacts, not editable source. Change source, then regenerate explicit targets.
+- **Derived artifacts are not source-of-truth**: exported files (`.step`, `.stl`, `.dxf`, `.3mf`, `.glb`, `.urdf`, `.srdf`, `.sdf`) are evidence and deliverables, not editable targets. To change geometry, edit the `.kcad.ts` script and re-export. Do not hand-edit derived files.
+- **`@kc[...]` topology refs are the canonical handoff format**: faces, edges, vertices, and connectors are addressable as stable string refs of the form `@kc[<owner>/<kind>/<refName>]` (with optional `#modifier` for a sub-aspect of an entity, e.g. `#normal`, `#axis`, `#center`). Emit them from `list_faces` / `list_edges` / `inspect_assembly` outputs; paste them into `hole`, `fillet`, `add_mate`, `add_connector`, or `resolve_topo_ref`. The structured forms still work as escape hatches. Full grammar and resolution semantics live in `kernelcad-mcp/SKILL.md`.
+- **Queries are first-class**: `q.face(...)`, `q.edge(...)`, `q.connector(...)`, etc. are lazy topology-selection values that compose via set algebra (`q.union` / `q.intersection` / `q.subtraction`) and chain via `.and(...)`, `.or(...)`, `.minus(...)`, `.nth(i)`, `.asLenient()`. Strings (`@kc[...]`) are sugar over the same internal Query value — emit either form and the kernel sees one type. Use strings for simple refs (`'@kc[base/face/top]'`); use Queries when geometric narrowing (`q.closestTo`) or composition (`q.union(a, b)`) matters. Full grammar + semantics in `kernelcad-mcp/SKILL.md`.
+- **No broad regeneration**: generate only the named output needed for the task (`kernelcad render`, `kernelcad export`, demo capture, portfolio capture). Do not run directory-wide artifact refreshes unless the user asked for a release/demo rebuild.
+- **Catalog parts over fake geometry**: for real hardware such as servos, motors, bearings, fasteners, connectors, sensors, and boards, prefer `lib.fromSTEP(...)` with a recorded source/provenance over hand-modeled placeholder boxes/cylinders. Use placeholders only for blockouts or when the real part is unavailable.
+- **Validation before screenshots**: use deterministic checks first (`kernelcad evaluate`, exports, `inspect_assembly`, `review_cad`, interference checks, scorer gates). Visual review is required evidence for rendered artifacts, but it does not replace geometry checks.
+- **Deterministic visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce an inspection bundle with a manifest and canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 
 ## Mandatory visual-critique step (applies to ALL agents, every skill)
 

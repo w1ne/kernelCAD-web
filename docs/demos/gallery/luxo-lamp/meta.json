@@ -1,0 +1,11 @@
+{
+  "taskId": "luxo-lamp",
+  "module": "gallery",
+  "capturedAt": "2026-05-25T23:36:23.948Z",
+  "durationMs": 20500,
+  "truncated": false,
+  "gitSha": "ae0f1e78dcaa6d6540b2b3d1ff371e9794ff10af",
+  "heroArtifact": "luxo-lamp",
+  "catalogSource": "memorable-builds-policy/gallery",
+  "overrideApprovedBy": null
+}

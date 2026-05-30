@@ -117,6 +117,12 @@ function kernelCadMeshEndpoint(): Plugin {
         await handleTextureRequest(req, res as unknown as import('node:http').ServerResponse);
       });
 
+      server.middlewares.use('/__kernelcad/source', async (req, res) => {
+        const { createSourceEndpoint } = await import('./src/server/middleware/sourceEndpoint');
+        const handler = createSourceEndpoint({ resolveScript: resolveExampleScript });
+        await handler(req, res);
+      });
+
       server.middlewares.use('/__kernelcad/session', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.sessionHandler(req, res);
@@ -160,6 +166,9 @@ function kernelCadMeshEndpoint(): Plugin {
           let meshSession: {
             importedGeometry: Map<string, unknown>;
             getSurfaceRecord?: (id: string) => unknown;
+            cachedShapes?: Map<string, unknown>;
+            cachedFeatureMeshes?: Map<string, unknown>;
+            cachedAssemblyPartMeshes?: Map<string, Map<string, unknown>>;
           };
 
           if (sessionToken) {
@@ -175,6 +184,9 @@ function kernelCadMeshEndpoint(): Plugin {
             source = await readFile(entry.scriptPath, 'utf-8');
             records = entry.model.records;
             paramTable = entry.model.session.paramTable;
+            // The full CaptureSession carries `cachedShapes`,
+            // `cachedFeatureMeshes`, and `cachedAssemblyPartMeshes` —
+            // meshFeaturesPerFeature derives its own seedShapes from those.
             meshSession = entry.model.session as unknown as typeof meshSession;
           } else {
             const scriptPath = resolveExampleScript(script);
@@ -195,7 +207,9 @@ function kernelCadMeshEndpoint(): Plugin {
             records,
             paramTable,
             // The mesher accepts the optional session-shaped helper; the
-            // pooled CaptureSession satisfies the structural type.
+            // pooled CaptureSession satisfies the structural type and also
+            // carries the `cachedFeatureMeshes` / `cachedAssemblyPartMeshes`
+            // maps populated by this pass and reused on the next.
             meshSession as Parameters<typeof meshFeaturesPerFeature>[2],
           );
           if (meshing.failedFeatureIds.length > 0) {
@@ -242,10 +256,20 @@ function kernelCadMeshEndpoint(): Plugin {
             res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
             return;
           }
-          if (formatParam !== 'stl' && formatParam !== 'step') {
+          // Slice A export-trio: widened from {stl, step} to the five-format
+          // set runAndExport now dispatches. The reserved urdf/srdf/sdf-gazebo
+          // slots intentionally stay out of the Studio UI — they ship in a
+          // follow-up slice; until then they fire export.<format>.not-implemented
+          // from the runtime, which would surface as "export produced no bytes"
+          // here.
+          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb'] as const;
+          type StudioFormat = (typeof SUPPORTED_STUDIO_FORMATS)[number];
+          if (!SUPPORTED_STUDIO_FORMATS.includes(formatParam as StudioFormat)) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'format must be stl or step' }));
+            res.end(JSON.stringify({
+              error: `format must be one of ${SUPPORTED_STUDIO_FORMATS.join(', ')}`,
+            }));
             return;
           }
 
@@ -259,7 +283,7 @@ function kernelCadMeshEndpoint(): Plugin {
           const result = await runAndExport({
             code,
             fileName,
-            format: formatParam,
+            format: formatParam as StudioFormat,
             scriptDir: dirname(scriptPath),
           });
 
@@ -273,9 +297,14 @@ function kernelCadMeshEndpoint(): Plugin {
             return;
           }
 
-          const contentType = formatParam === 'stl'
-            ? 'model/stl'
-            : 'application/STEP';
+          const CONTENT_TYPES: Record<StudioFormat, string> = {
+            stl: 'model/stl',
+            step: 'application/STEP',
+            dxf: 'image/vnd.dxf',
+            '3mf': 'model/3mf',
+            glb: 'model/gltf-binary',
+          };
+          const contentType = CONTENT_TYPES[formatParam as StudioFormat];
           const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${formatParam}`;
           res.statusCode = 200;
           res.setHeader('content-type', contentType);
@@ -302,11 +331,53 @@ function kernelCadMeshEndpoint(): Plugin {
           }
 
           const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
+          const { detectInterferences } = await import('./src/modeling/runtime/detectInterferences');
+          const { isSceneBackend } = await import('./src/kernel/backends/sceneBackend');
+
+          // When a session token is present, recompute raw interferences
+          // against the LIVE pooled session's tail scene — that captures the
+          // user's current Params-tab edits via the SSE relower path. The
+          // base reviewCadTool still re-evaluates from the script source so
+          // its validator + envelope output stays comparable across reloads;
+          // we overlay the live raw count on top for the Studio HUD's
+          // slider-drag responsiveness.
+          const sessionToken = url.searchParams.get('session');
           const review = await reviewCadTool({
             file: scriptPath,
             includePoseEnvelope: true,
             includeInterference: true,
           });
+
+          if (sessionToken) {
+            try {
+              const bundle = await getPoolBundle();
+              const entry = bundle.pool.get(sessionToken);
+              // After `session.params.update`, the pool entry's `model.tailShape`
+              // can be stale — `updateModelParams` returns a fresh BuiltModel
+              // but doesn't write back to the pool. The session's
+              // `cachedShapes` map IS updated though, so we read the latest
+              // tail from there directly to capture the user's live Params
+              // edits.
+              const session = entry?.model.session as unknown as {
+                cachedShapes?: Map<string, unknown>;
+              } | undefined;
+              const tailId = entry?.model.tailId;
+              const liveTail = tailId && session?.cachedShapes?.get(tailId);
+              const tail = liveTail ?? entry?.model.tailShape;
+              if (tail && isSceneBackend(tail as { parts?: unknown })) {
+                const livePairs = detectInterferences(
+                  tail as Parameters<typeof detectInterferences>[0],
+                  0.01,
+                  new Set<string>(),
+                ).pairs;
+                (review as { rawInterferencePairs?: unknown }).rawInterferencePairs = livePairs;
+              }
+            } catch {
+              // Session-side overlay failed; fall back to the script-eval pairs
+              // already on `review`. The HUD will show the default-pose count
+              // instead of the live count, but the request still succeeds.
+            }
+          }
 
           res.statusCode = 200;
           res.setHeader('content-type', 'application/json');
@@ -330,6 +401,7 @@ export default defineConfig(({ command }) => ({
     TanStackRouterVite({
       routesDirectory: './src/studio/routes',
       generatedRouteTree: './src/studio/routeTree.gen.ts',
+      routeFileIgnorePattern: '\\.test\\.ts$',
     }),
     kernelCadMeshEndpoint(),
     react(),
@@ -343,5 +415,21 @@ export default defineConfig(({ command }) => ({
   },
   worker: {
     format: 'es',
+  },
+  resolve: {
+    alias: {
+      'verb-nurbs': fileURLToPath(
+        new URL('./vendor/verb-nurbs/build/verb.es.js', import.meta.url),
+      ),
+    },
+  },
+  server: {
+    watch: {
+      ignored: [
+        '**/.git/**',
+        '**/.claude/**',
+        '**/kernelCAD-web-worktrees/**',
+      ],
+    },
   },
 }))

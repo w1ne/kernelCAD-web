@@ -1,0 +1,158 @@
+{
+  "tool": "review_cad",
+  "file": "examples/gallery/ratchet-stool.kcad.ts",
+  "ok": true,
+  "assembly": "exposed ratchet height-adjust stool",
+  "featureCount": 108,
+  "options": {
+    "includeInterference": false
+  },
+  "diagnosticSummary": [
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'seat-pad-bond' (fastened) side 'round laminated wood seat with softened edge.top-pad-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'seat-pad-bond' (fastened) side 'thin dark cork cushion pad bonded to seat top.seat-contact-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'seat-to-load-spreader' (fastened) side 'round laminated wood seat with softened edge.underseat-bolt-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'seat-to-load-spreader' (fastened) side 'black steel underside load-spreader plate below seat.seat-bolt-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'post-to-seat-plate' (fastened) side 'bright telescoping inner post ending below seat plate.top-plate-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'post-to-seat-plate' (fastened) side 'black steel underside load-spreader plate below seat.post-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'rack-to-post-weld' (fastened) side 'bright telescoping inner post ending below seat plate.rack-weld-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'rack-to-post-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.post-weld-face': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-1-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-1-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-1-weld' (fastened) side 'forward-facing ratchet tooth 1.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-2-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-2-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-2-weld' (fastened) side 'forward-facing ratchet tooth 2.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-3-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-3-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-3-weld' (fastened) side 'forward-facing ratchet tooth 3.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-4-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-4-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-4-weld' (fastened) side 'forward-facing ratchet tooth 4.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-5-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-5-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-5-weld' (fastened) side 'forward-facing ratchet tooth 5.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-6-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-6-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-6-weld' (fastened) side 'forward-facing ratchet tooth 6.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-7-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-7-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-7-weld' (fastened) side 'forward-facing ratchet tooth 7.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-8-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-8-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-8-weld' (fastened) side 'forward-facing ratchet tooth 8.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-9-weld' (fastened) side 'vertical ratchet rack backer welded to inner post.tooth-9-seat': vec3-origin face inference deferred to v0.7.x."
+    },
+    {
+      "code": "assembly.mounting-hole.mismatch",
+      "severity": "info",
+      "message": "Mate 'ratchet-tooth-9-weld' (fastened) side 'forward-facing ratchet tooth 9.rack-seat': vec3-origin face inference deferred to v0.7.x."
+    }
+  ],
+  "fitness": {
+    "functional": true,
+    "repairMode": "none",
+    "repairDirective": "No repair needed. Preserve the current topology and keep validating with review_cad after changes.",
+    "passedChecks": [
+      "validator-no-errors",
+      "pose-envelope-solved",
+      "pose-envelope-no-interference"
+    ],
+    "blockingReasons": [],
+    "mechanismSummary": {
+      "sampleCount": 3,
+      "interferenceCount": 0,
+      "trackedConnectorCount": 0
+    }
+  }
+}

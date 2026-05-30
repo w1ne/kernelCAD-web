@@ -45,6 +45,21 @@ export interface StudioRecomputeResult {
     readonly diagnostics: readonly CompilerDiagnostic[];
     readonly recomputeMs: number;
     /**
+     * Raw pairwise interference pairs at the current pose, BEFORE any `ignore`
+     * filtering done by `assembly.solvedModel({ ignore: [...] })`. The status
+     * bar HUD reads `.length` of this so users see the real overlap count
+     * even when the script silences specific known-acceptable contacts. The
+     * `validity` field (above) carries the validator's FILTERED diagnostic
+     * stream — i.e. ignored pairs do not appear there. The two channels are
+     * deliberately decoupled: validator runs filtered (Validity tab + throw
+     * path), HUD shows raw (so authors can never accidentally blind the user).
+     */
+    readonly rawInterferencePairs: ReadonlyArray<{
+        readonly a: string;
+        readonly b: string;
+        readonly volumeMm3: number;
+    }>;
+    /**
      * Slice 2C — assembly joints with declared pose, extracted from
      * `solvedAssembly` FeatureRecords. Empty array when the script doesn't
      * build an assembly, or builds one with no posed mates. JointsTab uses
@@ -60,6 +75,8 @@ export interface StudioRecomputeResult {
      * fall back to disabling the live-edit controls.
      */
     readonly updateParam?: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    readonly setGeometryTransformOverride?: (partName: string, transform: number[]) => void;
+    readonly clearGeometryTransformOverrides?: () => void;
 }
 
 /**

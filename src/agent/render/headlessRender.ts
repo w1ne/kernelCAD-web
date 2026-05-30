@@ -7,7 +7,7 @@
 // Cold start dominates wall-clock time (puppeteer launch + vite bundle +
 // kernel WASM init); the screenshot itself is sub-second per view.
 
-import { chromium, type Browser, type Page } from 'playwright';
+import type { Browser, Page } from 'playwright';
 import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
@@ -26,6 +26,13 @@ declare const window: {
     loadFeatureMeshes: (perFeature: unknown, bounds: unknown) => unknown;
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
+    applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => HeadlessObjectVisibility;
+    captureMaskPng: () => HeadlessMaskCapture;
+    captureInspectionChannels: (input: {
+      channels: readonly HeadlessAuxInspectionChannel[];
+      width: number;
+      height: number;
+    }) => HeadlessInspectionCapture;
     setRenderView: (view: RenderView) => void;
     setRenderPose: (azDeg: number, elDeg: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
@@ -34,6 +41,60 @@ declare const window: {
 };
 
 export const ALL_VIEWS: readonly RenderView[] = ['front', 'right', 'top', 'iso'];
+
+export interface HeadlessObjectFilter {
+  mode: 'focus' | 'hide';
+  patterns: string[];
+}
+
+export interface HeadlessRenderObject {
+  featureId: string;
+  names: string[];
+}
+
+export interface HeadlessObjectVisibility {
+  filter: HeadlessObjectFilter;
+  visible: HeadlessRenderObject[];
+  hidden: HeadlessRenderObject[];
+}
+
+export interface HeadlessMaskObject extends HeadlessRenderObject {
+  color: string;
+  rgb: [number, number, number];
+  visibleIndex: number;
+}
+
+export interface HeadlessMaskCapture {
+  pngDataUrl: string;
+  objects: HeadlessMaskObject[];
+}
+
+export type HeadlessAuxInspectionChannel = 'depth' | 'normals';
+export type HeadlessInspectionChannel = 'rgb' | 'mask' | HeadlessAuxInspectionChannel;
+
+export interface HeadlessDepthChannelMetadata {
+  encoding: 'linear-camera-depth-rgba8';
+  units: 'mm';
+  near: number;
+  far: number;
+  background: 'rgba(0,0,0,0)';
+  meaning: string;
+}
+
+export interface HeadlessNormalsChannelMetadata {
+  encoding: 'view-space-normal-rgb8';
+  mapping: string;
+  background: 'rgba(0,0,0,0)';
+  meaning: string;
+}
+
+export interface HeadlessInspectionCapture {
+  channels: Partial<Record<HeadlessAuxInspectionChannel, { pngDataUrl: string }>>;
+  metadata: {
+    depth?: HeadlessDepthChannelMetadata;
+    normals?: HeadlessNormalsChannelMetadata;
+  };
+}
 
 export interface HeadlessRenderOpts {
   scriptPath: string;
@@ -57,18 +118,36 @@ export interface HeadlessRenderOpts {
    *  captured frame. Used for clean hero artifacts intended for public posts;
    *  default false retains the watermark for traceability. */
   noWatermark?: boolean;
+  /** Optional named object filter for RGB render and inspection captures. */
+  objectFilter?: HeadlessObjectFilter;
+  /** Inspection channels requested by the bundle writer. Defaults to RGB only. */
+  inspectionChannels?: readonly HeadlessInspectionChannel[];
 }
 
 export interface HeadlessRenderResult {
   pngsByView: Partial<Record<RenderView, Buffer>>;
   /** Captured pose screenshots keyed by `"<az>,<el>"`. */
   pngsByPose: Record<string, Buffer>;
+  maskPngsByView?: Partial<Record<RenderView, Buffer>>;
+  maskObjects?: HeadlessMaskObject[];
+  inspectionPngsByChannel?: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>>;
+  inspectionChannelMetadata?: HeadlessInspectionCapture['metadata'];
   bounds: { min: [number, number, number]; max: [number, number, number] };
+  objectVisibility?: HeadlessObjectVisibility;
 }
+
+const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
+const SCENE_BACKGROUND = { r: 144, g: 144, b: 144, alpha: 1 } as const;
 
 export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
   const baseUrl = opts.baseUrl ?? 'http://localhost:5173';
   const views = opts.views ?? ALL_VIEWS;
+  const inspectionChannels = opts.inspectionChannels ?? ['rgb'];
+  const captureRgb = inspectionChannels.includes('rgb');
+  const captureMask = inspectionChannels.includes('mask');
+  const auxInspectionChannels = inspectionChannels.filter(
+    (channel): channel is HeadlessAuxInspectionChannel => channel === 'depth' || channel === 'normals',
+  );
 
   // 1. Mesh on Node side — same path captureDemo uses.
   const loaded = await loadScriptFeatures(opts.scriptPath);
@@ -84,13 +163,27 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   }
   const serialized = meshing.features.map(serializeForBridge);
 
-  // 2. Launch headless chromium.
+  // 2. Launch headless chromium. Lazy-import playwright so the CLI's
+  //    evaluate/export/mcp/skill paths don't fail at module load when
+  //    playwright isn't installed (it's an optional dependency).
   let browser: Browser | undefined;
   let page: Page | undefined;
   try {
+    let chromium;
+    try {
+      ({ chromium } = await import('playwright'));
+    } catch {
+      throw new Error(
+        "kernelcad render requires 'playwright'. Install with: npm install playwright && npx playwright install chromium",
+      );
+    }
     browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
     const context = await browser.newContext({
-      viewport: { width: opts.viewportWidth, height: opts.viewportHeight },
+      // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
+      // Capturing a smaller viewport clips the top-left of that canvas and
+      // produces false visual-review evidence. Capture the full pane, then
+      // resize/pad to the requested tile dimensions below.
+      viewport: HEADLESS_VIEWPORT,
     });
     page = await context.newPage();
     // ?headless=1 suppresses TanStackRouterDevtools (and any future dev-mode
@@ -99,7 +192,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     // Build query string: headless=1 always, nowatermark=1 when requested.
     const queryParts = ['headless=1'];
     if (opts.noWatermark) queryParts.push('nowatermark=1');
-    await page.goto(`${baseUrl}/demo-player?${queryParts.join('&')}`);
+    await page.goto(`${baseUrl}/demo-player?${queryParts.join('&')}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30_000,
+    });
     await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 15000 });
 
     // 3. Load meshes + skip the fade-in animation.
@@ -113,6 +209,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     // profiles, or pre-fillet bodies. This is the headless-render analog of
     // running the AnimationEngine's build transitions to completion.
     await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
+
+    const objectVisibility = opts.objectFilter
+      ? await page.evaluate((filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter), opts.objectFilter)
+      : undefined;
 
     // 3b. Optionally hide reference-image overlays for clean engineering views.
     if (opts.hideReferenceImages) {
@@ -161,10 +261,41 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
 
     // 4. Per-view: snap camera, screenshot, collect.
     const pngsByView: Partial<Record<RenderView, Buffer>> = {};
+    const maskPngsByView: Partial<Record<RenderView, Buffer>> = {};
+    const inspectionPngsByChannel: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>> = {};
+    const inspectionChannelMetadata: HeadlessInspectionCapture['metadata'] = {};
+    let maskObjects: HeadlessMaskObject[] | undefined;
     for (const view of views) {
       await page.evaluate((v) => window.__demoPlayer!.setRenderView(v), view);
-      const buf = await page.screenshot({ type: 'png' });
-      pngsByView[view] = buf;
+      if (captureRgb) {
+        const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
+        pngsByView[view] = buf;
+      }
+      if (captureMask) {
+        const mask = await page.evaluate(() => window.__demoPlayer!.captureMaskPng());
+        const maskBuffer = Buffer.from(mask.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+        maskPngsByView[view] = await normalizeInspectionTile(maskBuffer, opts, 'mask');
+        if (maskObjects === undefined) maskObjects = mask.objects;
+      }
+      if (auxInspectionChannels.length > 0) {
+        const capture = await page.evaluate(
+          ({ channels, width, height }) => window.__demoPlayer!.captureInspectionChannels({ channels, width, height }),
+          {
+            channels: auxInspectionChannels,
+            width: HEADLESS_VIEWPORT.width,
+            height: HEADLESS_VIEWPORT.height,
+          },
+        );
+        if (capture.metadata.depth !== undefined) inspectionChannelMetadata.depth = capture.metadata.depth;
+        if (capture.metadata.normals !== undefined) inspectionChannelMetadata.normals = capture.metadata.normals;
+        for (const channel of auxInspectionChannels) {
+          const channelCapture = capture.channels[channel];
+          if (!channelCapture) continue;
+          const rawBuffer = Buffer.from(channelCapture.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
+          inspectionPngsByChannel[channel] ??= {};
+          inspectionPngsByChannel[channel]![view] = await normalizeInspectionTile(rawBuffer, opts, channel);
+        }
+      }
     }
 
     // 5. Per-pose: parse "<az>,<el>", set camera, screenshot, collect.
@@ -181,12 +312,21 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
           ({ a, e }) => window.__demoPlayer!.setRenderPose(a, e),
           { a: az, e: el },
         );
-        const buf = await page.screenshot({ type: 'png' });
+        const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
         pngsByPose[poseKey] = buf;
       }
     }
 
-    return { pngsByView, pngsByPose, bounds: meshing.bounds };
+    return {
+      pngsByView,
+      pngsByPose,
+      ...(captureMask ? { maskPngsByView, maskObjects: maskObjects ?? [] } : {}),
+      ...(auxInspectionChannels.length > 0
+        ? { inspectionPngsByChannel, inspectionChannelMetadata }
+        : {}),
+      bounds: meshing.bounds,
+      ...(objectVisibility !== undefined ? { objectVisibility } : {}),
+    };
   } finally {
     // captureDemo has a known timeout-on-close issue; mirror its tolerance.
     if (browser) {
@@ -196,6 +336,47 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
       ]).catch(() => undefined);
     }
   }
+}
+
+async function normalizeTile(buf: Buffer, opts: HeadlessRenderOpts): Promise<Buffer> {
+  if (opts.viewportWidth === HEADLESS_VIEWPORT.width && opts.viewportHeight === HEADLESS_VIEWPORT.height) {
+    return buf;
+  }
+  return sharp(buf)
+    .resize(opts.viewportWidth, opts.viewportHeight, {
+      fit: 'contain',
+      background: SCENE_BACKGROUND,
+    })
+    .png()
+    .toBuffer();
+}
+
+async function normalizeInspectionTile(
+  buf: Buffer,
+  opts: Pick<HeadlessRenderOpts, 'viewportWidth' | 'viewportHeight'>,
+  channel: 'mask' | HeadlessAuxInspectionChannel,
+): Promise<Buffer> {
+  if (opts.viewportWidth === HEADLESS_VIEWPORT.width && opts.viewportHeight === HEADLESS_VIEWPORT.height) {
+    return buf;
+  }
+  const background = channel === 'mask'
+    ? { r: 0, g: 0, b: 0, alpha: 1 }
+    : { r: 0, g: 0, b: 0, alpha: 0 };
+  return sharp(buf)
+    .resize(opts.viewportWidth, opts.viewportHeight, {
+      fit: 'contain',
+      kernel: 'nearest',
+      background,
+    })
+    .png()
+    .toBuffer();
+}
+
+export async function normalizeInspectionTileForTest(
+  buf: Buffer,
+  opts: Pick<HeadlessRenderOpts, 'viewportWidth' | 'viewportHeight'> & { channel: 'mask' | HeadlessAuxInspectionChannel },
+): Promise<Buffer> {
+  return normalizeInspectionTile(buf, opts, opts.channel);
 }
 
 /** Compose four view PNGs into a single 2×2 grid PNG.

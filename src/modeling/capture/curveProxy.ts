@@ -1,8 +1,10 @@
 import type { CaptureSession } from './captureSession';
-import type { FeatureId } from '../../shared/intent/types';
+import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import { KernelError } from '../../shared/intent/kernelError';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
+import { Curve3DAnalyticsImpl } from './curveAnalyticsProxy';
+import type { SurfaceProxy } from './surfaceProxy';
 
 /**
  * Capture-time proxy for a 3D parametric curve produced by `nurbsCurve()`.
@@ -22,9 +24,14 @@ import { lazyEvalCurve } from '../backends/occt/curve3dEval';
  * curve (degenerate control net, OCCT internal failure, etc.).
  *
  * Drift-sentinel contract: adding a public method here REQUIRES updating
- * `CURVE3D_METHODS` (TBD) in `src/agent/mcp/tools/listApi.ts` and the
- * drift-sentinel test. Today the proxy is consumed by `variableSweep` —
- * agents can also call the evaluation methods directly for sampling.
+ * `CURVE3D_METHODS` (flat methods) or `CURVE3D_ANALYTICS_METHODS`
+ * (analytics namespace) in `src/agent/mcp/tools/listApi.ts` and re-running
+ * the drift-sentinel test in
+ * `tests/integration/mcp/listApi.driftSentinel.test.ts`. Adding to the
+ * `.analytics` surface ALSO requires extending `Curve3DAnalytics` in this
+ * file and implementing on `Curve3DAnalyticsImpl` in
+ * `curveAnalyticsProxy.ts`. Today the proxy is consumed by `variableSweep`
+ * — agents can also call the evaluation methods directly for sampling.
  */
 export interface Curve3D {
   readonly id: FeatureId;
@@ -40,20 +47,111 @@ export interface Curve3D {
   /** Parametric domain. Always `[0, 1]` today — the evaluator
    *  normalizes the OCCT first/last knot range internally. */
   domain(): [number, number];
+
+  // V slice — JS-side analytics namespace. Read-only computed queries.
+  // Authoritative geometry stays in the kernel; analytics methods return
+  // data directly (no round-trip). See ./curveAnalyticsProxy.ts.
+  readonly analytics: Curve3DAnalytics;
+}
+
+/**
+ * Per-sample record returned by `Curve3D.analytics.divideBy*`.
+ * - `t` is the normalised domain coordinate in `[0, 1]`.
+ * - `pt` is the world-space point at that `t`.
+ * - `arcLength` is the accumulated arc length in mm from the curve start.
+ */
+export interface CurveLengthSample {
+  t: number;
+  pt: Vec3;
+  arcLength: number;
+}
+
+/**
+ * Per-hit record returned by `Curve3D.analytics.intersect(otherCurve)`.
+ *
+ * `tA` is the parametric coordinate on the receiver curve (in the public
+ * `[0, 1]` domain); `tB` is the coordinate on the operand. `ptA` and `ptB`
+ * are the world-space coordinates of the closest approach on each curve;
+ * for an exact intersection these are identical and `distance` is 0. For a
+ * near-miss within tolerance they differ by `distance` mm.
+ */
+export interface CurveCurveIntersection {
+  tA: number;
+  tB: number;
+  ptA: Vec3;
+  ptB: Vec3;
+  distance: number;
+}
+
+/**
+ * Per-hit record returned by `Curve3D.analytics.intersect(surface)`.
+ *
+ * `tCurve` is the parametric coordinate on the receiver curve (in the
+ * public `[0, 1]` domain). `uv` is the surface parametric coordinate of
+ * the intersection (in the surface's intrinsic knot range). `pt` is the
+ * world-space coordinate.
+ */
+export interface CurveSurfaceIntersection {
+  tCurve: number;
+  uv: { u: number; v: number };
+  pt: Vec3;
+}
+
+/**
+ * Read-only computed-query namespace on every `Curve3D`. All methods
+ * delegate to the JS analytics module via the curveBridge cache; raw
+ * data is returned without a kernel round-trip (geometry stays in OCCT).
+ *
+ * Errors surface as `KernelError` with `feature.curve3d.analytics.*` codes
+ * (see `src/shared/diagnostics/registry.ts`).
+ */
+export interface Curve3DAnalytics {
+  /** Closest point on the curve to `pt` (Newton-Raphson). */
+  closestPoint(pt: Vec3, opts?: { tolerance?: number }): Vec3;
+  /** Parametric coordinate `t ∈ [0, 1]` of the closest point on the curve. */
+  closestParam(pt: Vec3, opts?: { tolerance?: number }): number;
+  /** Divide the curve into `n` equal-arc-length segments (returns `n+1` samples). */
+  divideByEqualArcLength(n: number): CurveLengthSample[];
+  /** Sample the curve every `arcLength` mm starting from `t=0`. */
+  divideByArcLength(arcLength: number): CurveLengthSample[];
+  /** Evaluate the curve and its first `numDerivs` derivatives at `t ∈ [0, 1]`. */
+  derivatives(t: number, numDerivs?: number): Vec3[];
+  /** Adaptive polyline approximation of the curve at the given tolerance (mm). */
+  tessellate(opts?: { tolerance?: number }): Vec3[];
+  /**
+   * Geometric intersection of this curve with another curve or with a
+   * surface. Returns one record per intersection point; the empty array
+   * means no intersection within tolerance (callers may inspect the
+   * `feature.curve3d.analytics.intersect-no-intersection` registry entry
+   * for the recommended next action).
+   *
+   * The receiver-bound shape (NOT `kc.q.intersection(a, b)`) disambiguates
+   * this geometric intersect from the Q DSL's set-theoretic intersection
+   * verb — same English word, different semantics.
+   *
+   * Throws `KernelError('feature.curve3d.analytics.intersect-kernel-failed')`
+   * when the solver raises or when the surface operand kind does not
+   * expose JS-side NURBS data (today: only `nurbsSurface()`-authored
+   * surfaces are supported by the curve-surface overload).
+   */
+  intersect(other: Curve3D, opts?: { tolerance?: number }): CurveCurveIntersection[];
+  intersect(other: SurfaceProxy, opts?: { tolerance?: number }): CurveSurfaceIntersection[];
 }
 
 export class Curve3DProxy implements Curve3D {
   readonly id: FeatureId;
   readonly metadata: Curve3DMetadata;
+  readonly analytics: Curve3DAnalytics;
   private readonly session: CaptureSession;
 
   constructor(id: FeatureId, metadata: Curve3DMetadata, session: CaptureSession) {
     this.id = id;
     this.metadata = metadata;
     this.session = session;
+    this.analytics = new Curve3DAnalyticsImpl(this);
   }
 
-  private evaluator() {
+  private _evaluator() {
     try {
       return lazyEvalCurve(this.session, this.id, this.metadata);
     } catch (e) {
@@ -68,16 +166,16 @@ export class Curve3DProxy implements Curve3D {
   }
 
   sample(n: number): [number, number, number][] {
-    return this.evaluator().sample(n);
+    return this._evaluator().sample(n);
   }
   pointAt(t: number): [number, number, number] {
-    return this.evaluator().pointAt(t);
+    return this._evaluator().pointAt(t);
   }
   tangentAt(t: number): [number, number, number] {
-    return this.evaluator().tangentAt(t);
+    return this._evaluator().tangentAt(t);
   }
   length(): number {
-    return this.evaluator().length();
+    return this._evaluator().length();
   }
   domain(): [number, number] {
     return [0, 1];

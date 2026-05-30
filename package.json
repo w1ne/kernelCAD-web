@@ -1,7 +1,7 @@
 {
   "name": "kernelcad",
   "private": false,
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "engines": {
     "node": ">=22.12.0",
@@ -26,6 +26,7 @@
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts",
+    "shopcheck:refresh": "npx tsx scripts/refreshCatalog.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
@@ -79,6 +80,8 @@
     "astring": "^1.9.0",
     "cmdk": "^1.1.1",
     "commander": "^14.0.3",
+    "dxf-parser": "^1.1.2",
+    "fflate": "^0.8.3",
     "framer-motion": "^12.33.0",
     "isosurface": "1.0.0",
     "lucide-react": "^0.563.0",
@@ -93,7 +96,8 @@
     "ts-morph": "^27.0.2",
     "typescript": "~5.9.3",
     "yaml": "^2.8.4",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "verb-nurbs": "file:./vendor/verb-nurbs"
   },
   "overrides": {
     "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1"
@@ -101,6 +105,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260504.1",
     "@eslint/js": "^9.39.1",
+    "@gltf-transform/core": "^4.3.0",
     "@playwright/test": "^1.58.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/router-cli": "^1.167.3",
@@ -113,6 +118,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "cheerio": "^1.2.0",
     "dependency-cruiser": "^17.3.7",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -128,5 +134,8 @@
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
     "vitest": "^4.0.18"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.58.0"
   }
 }

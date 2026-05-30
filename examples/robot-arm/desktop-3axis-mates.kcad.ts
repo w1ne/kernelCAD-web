@@ -157,7 +157,12 @@ const shoulderCheekL = box(shoulderCheekX, yokeCheekT, yokeCheekH, true)
 const shoulderCheekR = box(shoulderCheekX, yokeCheekT, yokeCheekH, true)
   .translate(0, shoulderCheekCenterY.negate(), shoulderPitchZ)
   .color('plate');
-const shoulderCheeks = shoulderCheekL.union(shoulderCheekR);
+const shoulderCheekTopBridge = box(2, shoulderCheekCenterY.multiply(2), 2, true)
+  .translate(-5.5, 0, shoulderPitchZ.add(halfYokeCheekH).subtract(1))
+  .color('plate');
+const shoulderCheeks = shoulderCheekL
+  .union(shoulderCheekR)
+  .union(shoulderCheekTopBridge);
 const shoulderCheeksPart = arm.part('shoulder-cheeks', shoulderCheeks);
 
 // 7. Shoulder pitch servo — mounted EXTERNALLY on the front face of the
@@ -259,10 +264,7 @@ const elbowCheekMountYNum = 17;
 const elbowYokeCheekL = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
   .translate(upperArmLen, elbowCheekCenterY, halfYokeCheekH)
   .color('plate');
-const elbowYokeCheekR = box(yokeCheekT, elbowCheekY, yokeCheekH, true)
-  .translate(upperArmLen, elbowCheekCenterY.negate(), halfYokeCheekH)
-  .color('plate');
-const elbowYoke = elbowYokeCheekL.union(elbowYokeCheekR);
+const elbowYoke = elbowYokeCheekL;
 const elbowYokePart = arm.part('elbow-yoke', elbowYoke);
 
 // 10. Elbow pitch servo — mounted EXTERNALLY on the +Y cheek's outer face
@@ -284,11 +286,6 @@ const pitchStubInnerY = beamW.divide(2);      // start at beam outer face
 const shoulderPitchShaft = cylinder(pitchStubLen, pivotDia.divide(2), 32)
   .alongAxis([0, 1, 0])
   .translate(0, pitchStubInnerY, 0)
-  .union(
-    cylinder(pitchStubLen, pivotDia.divide(2), 32)
-      .alongAxis([0, 1, 0])
-      .translate(0, pitchStubInnerY.add(pitchStubLen).negate(), 0),
-  )
   .color('shaft');
 const shoulderPitchShaftPart = arm.part('shoulder-pitch-shaft', shoulderPitchShaft);
 
@@ -399,11 +396,6 @@ const elbowStubInnerY = beamW.subtract(2).divide(2);
 const elbowPitchShaft = cylinder(elbowStubLen, pivotDia.divide(2), 32)
   .alongAxis([0, 1, 0])
   .translate(0, elbowStubInnerY, 0)
-  .union(
-    cylinder(elbowStubLen, pivotDia.divide(2), 32)
-      .alongAxis([0, 1, 0])
-      .translate(0, elbowStubInnerY.add(elbowStubLen).negate(), 0),
-  )
   .color('shaft');
 const elbowPitchShaftPart = arm.part('elbow-pitch-shaft', elbowPitchShaft);
 
@@ -510,7 +502,7 @@ upperArmPart
   })
   .connector('shoulder-shaft-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [0, 12, 0] },
   })
   .connector('elbow-out', {
     type: 'axis',
@@ -533,7 +525,7 @@ elbowServoPart.connector('mount', {
 });
 shoulderPitchShaftPart.connector('mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [0, 12, 0] },
 });
 shoulderPitchShaftPart.connector('axis', {
   type: 'axis',
@@ -555,7 +547,7 @@ forearmPart
   })
   .connector('elbow-shaft-mount', {
     type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: [0, 13, 0] },
   });
 
 gripperPlatePart
@@ -609,7 +601,7 @@ rightFingerPart
   });
 elbowPitchShaftPart.connector('mount', {
   type: 'frame',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [0, 13, 0] },
 });
 
 // ---- mate declarations ---------------------------------------------------

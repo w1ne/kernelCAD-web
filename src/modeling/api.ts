@@ -6,6 +6,7 @@ import { Sketch, makePath, type PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
 import type { Param, Vec3, PlaneSpec } from '../shared/intent/types';
+import { isValidEditableNumber, formatScalarForError } from '../shared/intent/types';
 import {
   selectEdges as selectEdgesBackend,
   selectEdge as selectEdgeBackend,
@@ -20,6 +21,10 @@ import type {
 import type {
   CameraTargetHandle,
 } from '../shared/intent/cameraTargetRecord';
+import type {
+  AnimationViewHandle,
+  AnimationViewSpec,
+} from '../shared/intent/animationViewRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
@@ -35,6 +40,9 @@ import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { makeParamRef, isParamRef, type ParamRef, type Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { toParam } from '../shared/runtime/editableHelpers';
+import * as kinematic from '../kinematic';
+import type { KinematicFacade } from '../kinematic/types';
+import { q as queryNamespace } from '../kernel/naming/queryConstructors';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -201,8 +209,8 @@ export interface KernelCadApi {
   ): Shape;
 
   /**
-   * NURBS Slice C: build a Coons-patch surface filling the interior of 4
-   * boundary curves. The 4 curves form an ordered loop:
+   * NURBS Slice C: build the shipped filling surface: one NURBS face through
+   * 4 boundary curves. The 4 curves must be passed in exact loop order:
    *   curves[0] = bottom, curves[1] = right, curves[2] = top, curves[3] = left.
    * Adjacent endpoints must coincide within 1e-6 mm (the kernel emits
    * `feature.surface-from-boundary.corner-mismatch` otherwise).
@@ -242,6 +250,17 @@ export interface KernelCadApi {
 
   /** Brand a string as a font filesystem path (TTF). Use with sketch.text({ font: fontPath('/path/to/font.ttf') }). */
   fontPath(p: string): FontPath;
+
+  /**
+   * Query DSL constructor namespace (Slice Q). `q.face(...)`, `q.edge(...)`,
+   * `q.union(...)`, etc. build a lazy `Query<T>` value that resolves at
+   * consume-time against a `QueryScene`. Inside `.kcad.ts` scripts the
+   * namespace is also reachable as `kc.q.*` for prose-doc continuity.
+   *
+   * See `src/agent/skills/kernelcad-features/SKILL.md` (Query selectors)
+   * and the Query DSL cookbook snippets Q-S1..Q-S6 for usage patterns.
+   */
+  q: typeof queryNamespace;
 
   /** SDF authoring namespace (W2.3). Primitives + smoothBlend + materialize.
    *  `sdf.materialize(field)` returns a standard `Shape` of kind 'sdfMaterialize'
@@ -315,10 +334,42 @@ export interface KernelCadApi {
    * pose / aspect.
    */
   setCameraDistance(distance: number): CameraTargetHandle;
+
+  /**
+   * Declare a parameter sweep for offline MP4 capture. The script names a
+   * previously-declared `param()`, its start/end values, and the animation
+   * duration in milliseconds. `scripts/captureAnimationView.mjs` reads the
+   * resulting `animationView` virtual record and renders an MP4 by sampling
+   * `ceil(durationMs / 1000 * fps)` frames across the sweep — leveraging
+   * the per-session mesh cache so each frame's recompute is ~5 ms warm.
+   *
+   * Multiple calls register multiple records; the capture script uses the
+   * last one.
+   */
+  animationView(spec: AnimationViewSpec): AnimationViewHandle;
+
+  /**
+   * Kinematic-grounding checks namespace. Four in-process feasibility
+   * gates an agent can call before declaring a mechanism design done:
+   * mounting-hole consistency, swept-pose collision, IK reachability, and
+   * beam-mode load capacity. Every entry is sync compute wrapped in async
+   * and returns a typed envelope with `source: 'local'`.
+   */
+  kinematic: KinematicFacade;
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
+
+function assertEditableNumber(featureKind: string, paramName: string, value: unknown): void {
+  if (isValidEditableNumber(value)) return;
+  throw new KernelError(
+    'feature.invalid-args',
+    `${featureKind}: ${paramName} must be a finite number or a numeric ParamRef; got ${formatScalarForError(value)}.`,
+    featureKind,
+    `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
+  );
+}
 
 // === W1.3 NURBS surfaces validation helpers ===
 
@@ -383,6 +434,9 @@ export function createApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
   const api: KernelCadApi = {
     box(x, y, z, centered = false, opts) {
+      assertEditableNumber('box', 'x', x);
+      assertEditableNumber('box', 'y', y);
+      assertEditableNumber('box', 'z', z);
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'box');
       return session.createShape({
         kind: 'box',
@@ -392,6 +446,8 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       });
     },
     cylinder(h, r, _segments, opts) {
+      assertEditableNumber('cylinder', 'h', h);
+      assertEditableNumber('cylinder', 'r', r);
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'cylinder');
       return session.createShape({
         kind: 'cylinder',
@@ -401,6 +457,7 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       });
     },
     sphere(r, opts) {
+      assertEditableNumber('sphere', 'r', r);
       if (opts && 'faceLabels' in opts && opts.faceLabels !== undefined) {
         throw new KernelError(
           'feature.face-ref.not-applicable',
@@ -778,6 +835,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     sketch: createSketchModule(session),
     fontPath,
 
+    // Query DSL constructor namespace (Slice Q). Exposed both as a top-level
+    // global `q` (via the sandbox spread in `runScript`/`isolation`) AND
+    // namespaced under `kc.q` for SKILL.md prose continuity. The wiring
+    // below routes calls to the existing constructors in
+    // `src/kernel/naming/queryConstructors.ts`; consumer-side resolution
+    // of a Query value (`hole(q.face(...), ...)`) is gated on Q7 — until
+    // then, agents inspect with `q.face(...).evaluate(scene)` (see Q-S6).
+    q: queryNamespace,
+
     sheetMetal(profile, opts) {
       // Capture-time validation. Evaluate Editable inputs once.
       const thicknessParam = mm(opts.thickness);
@@ -867,6 +933,26 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const metadata = record.metadata as unknown as import('../shared/intent/cameraTargetRecord').CameraTargetMetadata;
       return { id, metadata };
     },
+
+    animationView(spec) {
+      const id = session.addAnimationView(spec);
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as import('../shared/intent/animationViewRecord').AnimationViewMetadata;
+      return { id, metadata };
+    },
+
+    kinematic: kinematic satisfies KinematicFacade,
   };
   return api;
 }
+
+// V slice — re-export the Curve3D analytics types so downstream consumers
+// (skill snippets, eval harnesses, MCP tool wrappers) can pull them from
+// the single public-API module rather than reaching into capture/.
+export type {
+  Curve3D,
+  Curve3DAnalytics,
+  CurveLengthSample,
+  CurveCurveIntersection,
+  CurveSurfaceIntersection,
+} from './capture/curveProxy';

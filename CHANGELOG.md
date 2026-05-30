@@ -1,5 +1,355 @@
 # kernelCAD v0.11.0
 
+## Unreleased — borrow-integration follow-ups (conventions clarified)
+
+Documentation cleanup for the two non-bug "discoveries" that surfaced while
+debugging the Luxo lamp:
+
+- **Joint-angle unit convention is now explicit.** `kernelcad-kinematic/SKILL.md`
+  opens with a "Units (read this first)" section stating that ALL joint
+  angles in the kinematic API — `solvedModel({poses})`, `revolute({limitsDeg})`,
+  `checkReachable({seed})`, `checkReachable` result `.pose` — use **degrees
+  for revolute and millimetres for prismatic**, with no degree-vs-radian
+  split anywhere on the user-facing surface. The cookbook
+  `02-reachable-with-seed.kcad.ts` seed values are updated from a
+  copy-paste-friendly-but-misleading `0.3`/`0.2` (which looked like radians
+  but the system interpreted as 0.3°/0.2° ≈ effectively zero) to honest
+  `17`/`11`/`-11` degree values. JSDoc on `ReachableOpts.seed` and the
+  MCP `check_reachable` tool's seed field now both name the unit. No API
+  change — the convention was always degrees; the docs caught up.
+
+- **Part-local frame convention is now explicit.** `kernelcad-assemblies/SKILL.md`
+  already said joint origins live in the parent's local frame; the companion
+  rule — "author each part's geometry in its own part-local frame, where the
+  origin sits at the joint this part attaches to its parent" — is now
+  spelled out alongside, with a worked correct / wrong example. Authoring a
+  part with `.translate(110, 0, 30)` when the shoulder joint already supplies
+  the `(0, 0, 30)` rest offset doubles the offset under any non-zero pose.
+  No code change — the cookbook examples already followed the convention; the
+  docs caught up.
+
+## Unreleased — borrow-integration bug fixes
+
+Caught while building the Luxo lamp demo (2026-05-25) — actual use of the new
+V/Q/kinematic borrows together surfaced two real bugs and one no-repro.
+
+### Fixed — primitives now validate `Editable<number>` inputs
+
+`box`, `cylinder`, and `sphere` previously accepted any value for their
+dimension arguments and silently produced degenerate shapes. The most common
+authoring slip — calling `cylinder({ radius, height })` with an object literal
+instead of the positional `cylinder(h, r)` signature — let the object flow
+through `toParam` and stored `{evaluated: <the object>}` in the feature
+params. The cylinder lowered to a degenerate shape that, when wrapped in an
+`assembly().part()`, recursed into "Maximum call stack size exceeded" during
+the assembly-clone path.
+
+All three primitives now reject non-finite / non-numeric inputs at capture
+time with a clear `feature.invalid-args` diagnostic that names the bad
+argument and points at the correct positional signature. The same guard
+catches `NaN`, `Infinity`, and any value that is neither a finite number nor
+a `ParamRef<number>`. The `kernelcad-nurbs` SKILL.md cookbook snippet was
+also updated — its `cylinder({ radius: 1, height: 5 })` example is now the
+correct `cylinder(5, 1)` positional form.
+
+### Fixed — `solvedModel({poses})` now propagates joint angles to the render
+
+`arm.solvedModel({ shoulder: 90 })` correctly attached the FK-derived
+`worldTransform` to each part record, and STEP/STL exports honoured it, but
+the headless render path (`kernelcad render <file>`) dropped it entirely:
+`DemoPlayerPage`'s per-feature loop rehydrated `fm.transform` via
+`rehydrateFromBridge` and then never applied it to the `THREE.Group` it
+built. The result was that every assembly rendered at its rest pose
+regardless of the pose dict passed to `solvedModel()`.
+
+The fix: apply `fm.transform` to the group's matrix at construction (with
+`matrixAutoUpdate = false`) and compose the bbox centroid offset on top via
+`Matrix4.premultiply` instead of `position.set` (which is decoupled from
+`matrix` when `matrixAutoUpdate` is false and would otherwise silently
+no-op). Verified: a single-joint test arm at `shoulder: 90` now renders
+straight up (was: horizontal rest pose).
+
+A Playwright regression test in `tests/demo_player_smoke.spec.ts` loads a
+feature mesh with a translate-by-7 transform and asserts the KCAD group's
+matrix records the non-zero translation through the centroid recenter.
+
+### No-repro — `variableSweep` + `assembly().part()` render hang
+
+Investigated; could not reproduce on `develop` tip. Three consecutive
+`kernelcad render /tmp/repro-b2-clean.kcad.ts` runs each completed cleanly
+in 9.5–11.5 s. The hang originally observed during the Luxo lamp session
+was almost certainly a zombie-process / stale-build artefact from accumulated
+chromium instances across an extended render iteration loop.
+
+## Unreleased — V slice: NURBS curve analytics layer
+
+### Added — `Curve3D.analytics.*` namespace
+
+Every `Curve3D` (constructed via `nurbsCurve`, `spline3d`, or `hermiteG2`) now exposes a `.analytics.*` namespace with read-only methods for querying the curve geometrically:
+
+- `curve.analytics.closestPoint(pt)` / `closestParam(pt)` — nearest point or parameter on the curve to a 3D query point, exact within solver tolerance.
+- `curve.analytics.divideByEqualArcLength(n)` / `divideByArcLength(mm)` — samples spaced uniformly in arc length (not parametrically); the natural answer for placing N features evenly along a non-uniform curve. The `n`-form returns `n + 1` samples; the `mm`-form returns however many samples fit, with the last sample landing at the curve end.
+- `curve.analytics.derivatives(t, numDerivs)` — derivatives 0..N at parameter `t`; index 0 is the point, index 1 is the (unnormalised) tangent, index 2 is the curvature vector. `numDerivs` must not exceed the curve degree.
+- `curve.analytics.tessellate({ tolerance })` — viewport-grade adaptive polyline; default tolerance 0.05 mm. For hover-preview and wireframe rendering only. Export tessellation continues to go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- `curve.analytics.intersect(other)` — geometric intersection of this curve with another `Curve3D` or with a `Surface`. Overloads return `CurveCurveIntersection[]` (each record carrying `tA`, `tB`, `ptA`, `ptB`, `distance`) or `CurveSurfaceIntersection[]` (each record carrying `tCurve`, `uv`, `pt`).
+
+The analytics methods are read-only — they return data, not new geometry. The instance `intersect(other)` overload is the only geometric intersection method in the namespace; the set-theoretic intersection of `Query<Face>` selections continues to live separately on `kc.q.intersection`.
+
+### Added — fit-with-tangents on `path().spline()`
+
+`path().spline(points, opts)` accepts `opts.startTangent` and `opts.endTangent` (2D direction vectors) to constrain the curve's tangent at the first and last waypoint. Tangent magnitudes are normalised internally; only the directions matter. Existing `.spline(points)` and `.spline(points, { tension })` calls are unchanged — when both tangent fields are omitted, the call lowers through the existing fast path unchanged.
+
+The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fields in its input schema.
+
+### Added — diagnostic codes
+
+10 new codes under `feature.curve3d.analytics.*`, `feature.path.spline.tangent-*`, and `feature.nurbs.bridge-conversion-failed` cover invalid-tolerance, non-convergence, degenerate-arc-length, derivatives-out-of-range, tangent-zero-magnitude, 2D-only tangent inputs, internal solver failures, and bridge-conversion failures. All carry `hint` + `nextAction` per the diagnostic-vocab discipline.
+
+### Added — eval task: `eyewear-wayfarer-front` arc-length lens placement
+
+The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
+
+### Added — kernelCAD kinematic grounding
+
+Design-time mechanism feasibility gates. Agents can now ask whether a moving
+assembly will work — across collision sweeps, reachability targets, mounting-hole
+patterns, and static load capacity — and get back actionable diagnostics with
+machine-readable `nextAction` repair hints. Every check runs locally in the
+same Node process; no network, no auth, no quotas.
+
+- `kinematic.checkSweptCollision(arm, opts)` — sweep declared joint ranges
+  and report colliding poses with structured per-pose contact pairs.
+- `kinematic.checkReachable(arm, opts)` — IK feasibility for an end-effector
+  target. Dispatches the closed-form analytical solver on spherical-wrist
+  6-DOF chains and the damped-least-squares numeric solver otherwise.
+- `kinematic.checkMountingHoleConsistency(arm)` — fastener compatibility
+  across every fastened mate's bound faces.
+- `kinematic.checkLoadCapacity(arm, loads, opts)` — closed-form
+  Euler-Bernoulli beam-stress check on cantilever-shaped parts with declared
+  materials.
+
+Nine new `kinematic.*` diagnostic codes registered with mandatory `hint` and
+`nextAction` repair fields (K1 collision swept, K2 sample-density warn, K3
+unreachable, K4 iteration cap, K5 unsupported config, K6 load exceeds yield,
+K7 beam not applicable, K8 no material declared, K9 mounting-hole mismatch).
+
+Four MCP tools paired with the facade entries — `check_swept_collision`,
+`check_reachable`, `check_mounting_hole_consistency`, `check_load_capacity`.
+
+New `kernelcad-kinematic` agent skill with six cookbook recipes covering
+robotic arms, scissor-jack legs, clamshell hinges, and over-center latches.
+
+Four new eval tasks under `eval/tasks/kinematic-*` exercising each facade
+entry plus a cross-borrow integration task chaining a NURBS rail curve, a
+topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
+
+### Added — Query DSL: lazy retargetable topology references
+
+- Added the kernelCAD Query DSL — lazy retargetable topology references with set-algebra composition, type-narrowed authoring, and string-sugar parsing. Queries survive upstream edits via lineage-stable Ids; `kc.q.face(...)`, `kc.q.edge(...)`, `kc.q.union(...)`, `.and(...)`, `.minus(...)`, `.nth(...)`, `.asLenient()`. String form `@kcq[...]` round-trips with the existing `@kc[...]` ref form — one canonical internal Query value, two surface syntaxes.
+- Added `evaluate_query` MCP tool — agent inspects a Query against the current scene before consuming it in a feature op.
+- Extended every face/edge feature consumer (fillet, chamfer, hole, cutout, shell, bend, connector, mate) to accept `Query<FaceMarker>` / `Query<EdgeMarker>` inputs alongside the existing `@kc[...]` strings; strings are parsed to Queries at the API boundary.
+- Extended `resolve_topo_ref` MCP tool to accept `@kcq[...]` Query DSL refs alongside the existing `@kc[...]` grammar.
+- Added 10 new diagnostic codes under the `query.*` family: `query.empty`, `query.over-determined`, `query.evaluated-too-early`, `query.unknown-id`, `query.unknown-label`, `query.id-hierarchy-clash`, `query.unsupported-entity-type`, `query.composition-strict-failure`, `query.type-mismatch`, `query.invalid-syntax`. The reactive-update info code is deferred to v2 (the capture-session model has no edit-and-re-resolve loop today).
+- Internal: `EdgeLineage` and `PartLineage` gain a `featureId` slot for lineage-stable Query resolution; `FaceLineage`'s existing `featureId` slot is reused.
+- Added 6 cookbook snippets (`Q-S1` through `Q-S6`) under `kernelcad-features`, `kernelcad-assemblies`, and `kernelcad-mcp` skills covering construction, set-algebra, lenient composition, ownership-by-part queries, connector queries, and the inspect-first-build-after pattern.
+
+### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
+
+- Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).
+- Cylindrical and pin_slot stay lossy in SDF (the format lacks them too) and emit `export.sdf-gazebo.<kind>-lossy` warnings.
+- Structural validation (version, dangling link references) runs inside the emitter; no separate `validate_sdf` MCP tool.
+- Added the `kernelcad-sdformat` skill.
+
+### Added — Slice B-rest: SRDF export + arm.planningGroup / endEffector / groupState API + kernelcad-srdf skill
+
+- Added SRDF export via `export_model({ format: 'srdf' })`. Planning groups, end-effectors, virtual joints, named group states, and explicit collision overrides declared via the new `arm.planningGroup`, `arm.endEffector`, `arm.virtualJoint`, `arm.groupState`, `arm.disableCollision` capture-time methods — all flat on `arm.*` (no vertical namespace prefix). The allowed-collision matrix auto-derives Adjacent (shared joint/mate) and User (explicit override) entries; sparse sampling emits `export.srdf.acm-sparse-sampling` as a warning.
+- Refuses export without at least one planningGroup declaration via `export.srdf.planning-group-missing`.
+- Added the `kernelcad-srdf` skill.
+
+### Added — Slice B-rest: URDF export, validate_urdf, inspect_robot, kernelcad-urdf skill
+
+- Added URDF export via `export_model({ format: 'urdf' })`. Writes the `.urdf` body via the script-runtime; per-link STL meshes via the dedicated IO wrapper. Supports all 7 mate types; `cylindrical`, `pin_slot`, and `ball` mates emit lossy diagnostics with structured next-actions pointing to `format: 'sdf-gazebo'` for native support. Closed kinematic loops are refused with `export.urdf.closed-loop`.
+- Added `validate_urdf` and `inspect_robot` read-only MCP tools. `validate_urdf` parses an external `.urdf` and checks tree-shape + link-name uniqueness + dangling joint refs. `inspect_robot` previews an assembly as it would be exported, surfacing open issues before write.
+- Added the `kernelcad-urdf` skill.
+- Added `Shape.massProperties(density?)` returning `{ mass, com, inertia6 }`; per-part `density` option on `arm.part(...)`.
+- New diagnostic codes: `export.urdf.cylindrical-lossy`, `export.urdf.pin-slot-lossy`, `export.urdf.ball-decomposed`, `export.urdf.closed-loop`, `export.urdf.inertia-density-declared`. Removed Slice A's `export.urdf.not-implemented` placeholder.
+
+### Added — Slice E: dfm_preflight + kernelcad-shopcheck skill
+
+- `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public
+  ordering rules. Required inputs: vendor, material, thickness. Findings carry
+  a `repairHint.action` from `{enlarge, remove, relocate, change-material,
+  change-thickness}` and an `@kc[...]` ref that round-trips through
+  `resolve_topo_ref` back to the source feature.
+- `kernelcad-shopcheck` skill (orchestrator for `dfm_preflight`).
+- 24 new `dfm.*` diagnostic codes under the new `dfm` group. DXF file-input
+  path accepts `dxf:` alongside `file:` / `code:`.
+- `scripts/refreshCatalog.ts` + `shopcheck:refresh` npm script: 24-hour TS
+  catalog refresh, sha256 provenance on every source page.
+- Eval tasks `shopcheck-bracket-preflight` and `shopcheck-repair-loop`.
+
+### Added — Slice A: DXF + 3MF + GLB writers + unified export_model
+
+Closes the write-side export gap: one MCP entry point, three new format writers, and reserved slots for the upcoming robotics formats. The unified surface replaces the per-format-tool sprawl pattern; `export_stl` collapses to a one-release deprecated alias.
+
+#### New MCP tool — export_model
+
+- `export_model({ file? | code?, output_path, format, feature_id?, options? })` — single write-side export tool, format-enum dispatched. Discoverable via `list_api` as the one "export the model to a file" entry.
+- `format` enum: `'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'urdf' | 'srdf' | 'sdf-gazebo'`.
+- `options` is a discriminated union keyed by `options.format`; the discriminator must match the top-level `format` or capture throws `export.options-format-mismatch`. Per-format payload keys:
+  - `stl` — none.
+  - `step` — `unit?: 'mm' | 'cm' | 'in'`.
+  - `dxf` — `layers?: DxfLayerSpec[]`, `unit?`, `tolerance?: number`.
+  - `3mf` — `printUnit?`, `embedSource?: boolean`.
+  - `glb` — `axis?: 'y-up' | 'z-up'`, `draco?: false` (Draco reserved; throws `export.glb.draco-glass-conflict` if `true`).
+- `urdf` / `srdf` / `sdf-gazebo` are wired on the enum but throw `export.urdf.not-implemented` / `export.srdf.not-implemented` / `export.sdf-gazebo.not-implemented` until Slice B-rest fills them in.
+
+#### Deprecated — export_stl MCP tool
+
+- `export_stl` survives one more release as a thin shim that forwards verbatim to `export_model({ ..., format: 'stl' })`. Existing CLI / MCP / integration-test callers pass through unchanged.
+- Removal scheduled for the next minor. Migrate to `export_model` directly.
+
+#### Added — DXF writer (planar / sheet-metal)
+
+- Polyline-only output targeting the Slice E DFM consumer contract (pinned now so Slice E's flat-pattern pipeline lands without writer churn): `Region.outer` and each `Region.holes` lower to one `LWPOLYLINE` entity per loop on the XY plane.
+- Layer schema: `CUT` for the outer + hole loops by default; `BEND` reserved on the writer for fold lines once `Shape.flattenPattern()` ships. Custom layer mapping via `options.layers: DxfLayerSpec[]`.
+- mm units by default with an `$INSUNITS = 4` header; `options.unit` accepts `'mm' | 'cm' | 'in'`. Curved entities flattened to polylines at `options.tolerance` (default 0.01 mm chord deviation).
+- Refuses non-planar input: 3D solids without a single planar source face and multi-body Scenes both throw `export.dxf.non-planar` with a `list_faces` next-action hint.
+
+#### Added — 3MF writer (additive / print-ready)
+
+- Hand-rolled XML emitter — no `lib3mf-WASM` dependency. The 3MF archive is a zip of `[Content_Types].xml`, `_rels/.rels`, and `3D/3dmodel.model` produced via `fflate`.
+- Half-edge watertight gate (`assertWatertight`) runs before writing: every mesh edge must be referenced by exactly two triangles. Open shells and self-intersecting tessellations throw `export.3mf.not-watertight` (with a hint pointing at the K1 mesher gap — re-mesh via Manifold, raise OCCT mesh deflection, or re-author the surface via `nurbsSurfaceLowerer`).
+- Multi-part Scene support via the new `sceneToWorldFrameParts` helper: each `assembly.part(name, ...)` lands as one `<object>` with its own `<components>` and color resource, world-frame baked.
+- `options.printUnit` selects the embedded `<model unit="...">` attribute (default `mm`); `options.embedSource: true` stores the .kcad.ts source as a 3MF custom thumbnail-adjacent attachment for round-trip provenance.
+
+#### Added — GLB writer (visualization / AR / Three.js)
+
+- Y-up axis convention by default (`THREE.GLTFExporter` standard); `options.axis: 'z-up'` flips the root node for Blender / engineering pipelines.
+- PBR materials transcribed via `KHR_materials_*` extensions: clearcoat, transmission, ior, specular, sheen, and emissive_strength all round-trip from the `Shape.material({...})` author surface to GLB material indices.
+- Provenance block embedded in `asset.extras.kernelcad`: kernelCAD version, feature id, source-file basename, capture timestamp, and the discriminated `options.format = 'glb'` payload (modulo unsafe paths).
+- Draco mesh compression is reserved (`options.draco`); passing `true` throws `export.glb.draco-glass-conflict` — the diagnostic name nods at the most common collision (Draco encoders typically strip `KHR_materials_transmission` on glass parts, which would silently break the GLB). Slice B will ship a Draco-with-transmission-aware encoder.
+
+#### Added — Studio Export tab extension
+
+- Format selector widened from STL-only to all 5 working formats. Each picks up a format-aware options inputs (unit dropdown for STEP/DXF, layer field for DXF, printUnit for 3MF, axis radio for GLB).
+- A capture-time DXF planar gate runs in the UI: if the current feature is non-planar, the Export button disables and surfaces the `export.dxf.non-planar` hint inline.
+- URDF / SRDF / SDF-Gazebo are intentionally absent from the Studio UI selector until the writers ship — the format enum exposes them on the agent-facing API but the user-facing surface stays honest about what's implemented.
+
+#### Added — 4 new permanent diagnostic codes
+
+- `export.options-format-mismatch` — `options.format` discriminator does not match the top-level `format`.
+- `export.dxf.non-planar` — DXF export attempted on a non-planar 3D solid or a multi-body Scene; hint routes the agent to `list_faces` to pick a planar face.
+- `export.3mf.not-watertight` — exported mesh failed the half-edge watertight check (non-manifold edges from open shells or self-intersecting tessellations).
+- `export.glb.draco-glass-conflict` — Draco compression requested before the transmission-aware encoder ships.
+
+(Three additional sentinel codes — `export.urdf.not-implemented`, `export.srdf.not-implemented`, `export.sdf-gazebo.not-implemented` — guard the reserved enum slots until Slice B-rest fills them in.)
+
+#### Added — sceneToWorldFrameParts shared helper
+
+- New `src/kernel/backends/occt/sceneToWorldFrame.ts` — one canonical world-frame view of a `SceneBackend`, consumed by STEP, 3MF, and GLB writers.
+- Each part's shape is cloned BEFORE `applyTransform` is applied (replicad's translate/rotate mutate-and-destroy the source OCCT handle; cf. commit 1d597dd). Without the helper, a second exporter call on the same SceneBackend would see already-mutated shapes.
+- Color tokens are surfaced unresolved so per-format writers decide whether to resolve to hex (STEP, 3MF) or feed straight into a `THREE.MeshPhysicalMaterial` (GLB).
+
+#### Eval — cqe-task-export-trio
+
+- New integration eval round-trips a 2-part assembly through DXF (planar bracket), 3MF (multi-part), and GLB (PBR) in a single task. Scores 1.0 against the expert solution.
+
+### Added — `@kc[...]` topology-ref user-visible surface (F-surface)
+
+Lifts the F-foundation `@kc[owner/kind/name]` parser/resolver into the
+agent-visible surface so MCP tools both emit and accept refs end-to-end. A new
+discovery primitive, ref-aware diagnostics, and topology-bound connector
+origins close the long-standing mate-connector binding gap.
+
+#### Added — `resolve_topo_ref` MCP tool
+
+Discovery primitive that walks a captured snapshot and resolves an
+`@kc[<owner>/<kind>/<name>#<modifier>]` ref to its concrete shape, face, edge,
+vertex, or connector — returning the resolved record plus, for ambiguous
+queries, a list of candidate refs the agent can re-cite verbatim. Pairs with
+`list_faces` / `list_edges` so an agent can walk from "what's on this part?"
+to "give me the exact ref" without leaving the MCP surface.
+
+#### Changed — diagnostics emit `@kc[...]` refs
+
+- `list_faces` and `list_edges` now emit `@kc[...]` refs alongside the legacy
+  `id` field. The `id` field is deprecated and will be removed in the next
+  minor — switch callers to the `ref` field.
+- `inspect_assembly` connector summaries emit a string `origin` for
+  topology-bound origins, plus `resolved: [x,y,z]` for the cached numeric
+  value and `originRaw` for one-release transition. Coordinate-triple origins
+  continue to emit the structured Vec3 form unchanged.
+- `feature.face-ref.*` diagnostic codes (ambiguous-by-ordinal,
+  no-match-for-name, naming-unsafe-character, etc.) surface a structured
+  candidate-ref list through `KernelError.hint` per the "cite candidate refs"
+  prose — agents see the exact strings they need to re-try with.
+
+#### Changed — MCP input acceptance
+
+- `add_mate`, `add_connector`, `add_feature`, and the internal
+  `normalizeFaceSelector` helper accept `@kc[...]` strings alongside the
+  existing structured `{ part, faceLabel }` / `{ part, faceOrdinal }` forms.
+  Backward compatible — every existing input shape still works.
+- Both surface levels of mate/connector authoring are now ref-aware: capture
+  helpers consume refs at design time, MCP tools consume refs at agent time.
+
+#### Added — topology-bound connector origins
+
+`partRef.connector(name, { origin: '@kc[<part>/face|connector|edge|vertex/<name>]', ... })`
+binds the connector origin to a topology entity at capture time instead of
+requiring a manual `[x, y, z]` coordinate triple. The capture step resolves
+the ref against the part's snapshot, caches the resolved Vec3 in the
+serialized record, and a downstream mate via that connector survives an
+upstream fillet on the bound face. Closes the assembly mate-connector
+topology-binding gap.
+
+#### Added — eval task `topology-refs`
+
+Locks the round-trip property end-to-end: face refs emitted by `list_faces`
+survive being fed back through `add_mate` after an upstream fillet renumbers
+ordinals; the splitting-op case (a fillet that produces multiple new faces)
+surfaces an `ambiguous-by-ordinal` diagnostic with a candidate-ref list. The
+expert solution scores 1.0.
+
+#### Skill docs
+
+- `kernelcad/SKILL.md` — adds the `@kc[...]` ref grammar with a
+  derived-vs-source discipline note (refs are agent-routing artifacts, never
+  the design source of truth).
+- `kernelcad-mcp/SKILL.md` — documents `resolve_topo_ref`, the updated
+  list / inspect tool shapes, and the input-acceptance widening.
+- `kernelcad-assemblies/SKILL.md` — documents topology-bound connector
+  origins with worked examples for face / connector / edge / vertex
+  bindings.
+
+### Breaking change — topology-ref-safe naming (F-foundation)
+
+Capture-time validation now rejects names containing any character reserved by
+the upcoming `@kc[owner/kind/name]` topology-ref grammar. The reserved set is
+`. / [ ] @ # * ? ,` and whitespace; names must match `/^[A-Za-z][A-Za-z0-9_-]*$/`.
+Three call sites are affected:
+- `faceLabels({...})` keys on every feature record
+- `Assembly.part(name, …)` part names
+- `partRef.connector(name, opts)` connector names
+
+Designs that previously named entities like `top.bottom`, `arm/elbow`, or
+`@root` will fail capture-time validation; rename the offending identifier to
+a ref-safe form (e.g. `topBottom`, `armElbow`, `root`). The user-visible
+`@kc[...]` resolution surface (MCP tools, SKILL docs, agent-visible
+diagnostics) ships in the follow-up F-surface slice.
+
+### Renamed — kernelcad-sdf skill → kernelcad-fields
+
+The skill teaching signed-distance fields (sphere/box/cylinder/torus +
+`smoothBlend` + `materialize`) was renamed from `kernelcad-sdf` to
+`kernelcad-fields` to free the "SDF" abbreviation for upcoming Gazebo SDFormat
+export. Public API is unchanged: `sdf.*` namespace, `SdfField` type, and the
+`evaluate_sdf` MCP tool keep their existing names.
+
+A deprecation alias `kernelcad-sdf` is available for one version; load
+`kernelcad-fields` directly going forward.
+
 ## v0.11.0 — 2026-05-18 — NURBS Slice D: 2D path NURBS authoring
 
 Closes the 2D path-NURBS gap flagged in memory `kernelcad_path_nurbs_gap` (2026-05-17). `PathBuilder` now offers three NURBS-backed segment operations alongside the existing line / arc / smoothSpline primitives, so 2D sketch outlines can include explicit B-spline segments instead of polylines or arc chains. After Slice D, all NURBS authoring lanes (3D curves, 3D surfaces, 2D paths) have parity. The `eyewear-wayfarer-front` eval artifact replaces its perfectly circular lens cutouts with `path().spline(...)` rounded-rectangle profiles.

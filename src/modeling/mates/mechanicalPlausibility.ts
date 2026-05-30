@@ -26,7 +26,8 @@ export type MechanicalPlausibilityDiagnostic =
   | ConnectorNotInSolidDiagnostic
   | RevoluteUnsupportedDiagnostic
   | RevoluteContactMissingDiagnostic
-  | MateContactMissingDiagnostic;
+  | MateContactMissingDiagnostic
+  | FixedJointContactMissingDiagnostic;
 
 export interface PartDisconnectedDiagnostic {
   readonly code: Extract<DiagnosticCode, 'assembly.mechanical.part-disconnected'>;
@@ -63,6 +64,20 @@ export interface MateContactMissingDiagnostic {
   readonly partBName: string;
   readonly connectorARef: string;
   readonly connectorBRef: string;
+  readonly contactAreaMm2: number;
+  readonly gapMm: number;
+  readonly worldBboxA: Bbox;
+  readonly worldBboxB: Bbox;
+}
+
+export interface FixedJointContactMissingDiagnostic {
+  readonly code: Extract<DiagnosticCode, 'assembly.mechanical.fixed-contact-missing'>;
+  readonly severity: 'error';
+  readonly message: string;
+  readonly hint: string;
+  readonly jointName: string;
+  readonly partAName: string;
+  readonly partBName: string;
   readonly contactAreaMm2: number;
   readonly gapMm: number;
   readonly worldBboxA: Bbox;
@@ -106,14 +121,16 @@ const REVOLUTE_SUPPORT_TOL_MM = 1;
 const REVOLUTE_BEARING_AXIAL_GAP_TOL_MM = 3;
 const REVOLUTE_BEARING_RADIAL_SAMPLE_RADIUS_MM = 24;
 const FASTENED_CONTACT_GAP_TOL_MM = 0.5;
-const MIN_FASTENED_CONTACT_AREA_MM2 = 25;
+const MIN_FASTENED_CONTACT_AREA_MM2 = 0.25;
 const DISCONNECTED_COMPONENT_GAP_TOL_MM = 10;
+const MAX_COMPONENTS_FOR_EXACT_CLUSTERING = 1000;
 
 export async function reviewMechanicalPlausibility(
   arm: Assembly,
 ): Promise<MechanicalPlausibilityResult> {
   const diagnostics: MechanicalPlausibilityDiagnostic[] = [];
   const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
+  const partNameById = new Map(arm.__parts().map((part) => [part.id, part.name]));
   const boundsByPartName = new Map<string, Bbox>();
   const backendByPartName = new Map<string, ShapeBackend>();
   const solved = await solveMates(arm);
@@ -171,6 +188,33 @@ export async function reviewMechanicalPlausibility(
       bbox,
       message: `Part '${part.name}' contains ${disconnected.componentCount} disconnected solids; the farthest component is ${disconnected.maxComponentGapMm.toFixed(1)} mm from the main body.`,
       hint: `mechanical-plausibility.part-disconnected — remove decorative/floating solids from '${part.name}', or add real bridge/bracket geometry so every solid in the part shares a physical load path.`,
+    });
+  }
+
+  for (const joint of arm.__joints()) {
+    if (joint.kind !== 'fixed') continue;
+    const partAName = partNameById.get(joint.parentPartId);
+    const partBName = partNameById.get(joint.childPartId);
+    if (partAName === undefined || partBName === undefined) continue;
+    const worldBboxA = await worldBoundsFor(partAName);
+    const worldBboxB = await worldBoundsFor(partBName);
+    if (worldBboxA === undefined || worldBboxB === undefined) continue;
+
+    const contact = analyzeFastenedContact(worldBboxA, worldBboxB);
+    if (contact.supported) continue;
+
+    diagnostics.push({
+      code: 'assembly.mechanical.fixed-contact-missing',
+      severity: 'error',
+      jointName: joint.name,
+      partAName,
+      partBName,
+      contactAreaMm2: contact.maxContactAreaMm2,
+      gapMm: contact.gapMm,
+      worldBboxA,
+      worldBboxB,
+      message: `Fixed joint '${joint.name}' between '${partAName}' and '${partBName}' has only ${contact.maxContactAreaMm2.toFixed(1)} mm^2 of support contact and ${contact.gapMm.toFixed(1)} mm gap.`,
+      hint: `mechanical-plausibility.fixed-contact-missing — move '${partBName}' into contact with '${partAName}', or add a bracket, flange, stem, bridge, or mounting face so fixed joint '${joint.name}' has a real load path instead of an air gap.`,
     });
   }
 
@@ -370,6 +414,13 @@ function analyzeDisconnectedMesh(mesh: ReturnType<ShapeBackend['getMesh']>): {
 
     components.push({ triangleCount: componentTriangleCount, bbox });
   }
+
+  // Some OCCT triangulations do not share exact vertex coordinates across
+  // adjacent faces, which can make a single complex solid look like thousands
+  // of triangle components. Exact bbox clustering is quadratic in component
+  // count, so keep the review bounded and let simpler/floating parts still
+  // receive the strict disconnected-solid check.
+  if (components.length > MAX_COMPONENTS_FOR_EXACT_CLUSTERING) return undefined;
 
   const clusters = clusterTouchingComponents(components);
   if (clusters.length <= 1) return undefined;

@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { createRequire } from 'node:module';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
+import { installCommand } from './commands/install';
 import { interferenceCommand } from './commands/interference';
 import { mcpCommand } from './commands/mcp';
 import { renderCommand } from './commands/render';
@@ -34,6 +35,7 @@ program
 
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
+program.addCommand(installCommand());
 program.addCommand(interferenceCommand());
 program.addCommand(mcpCommand());
 program.addCommand(renderCommand());

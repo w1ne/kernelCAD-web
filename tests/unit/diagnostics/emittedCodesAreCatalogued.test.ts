@@ -66,10 +66,10 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 124 codes', () => {
+  it('catalogue has exactly 194 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
-    //  + 30 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
+    //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
     //  +  1 K1 watertight enrichment (mesher.cone-self-intersection)
     //  +  4 W2 HDRI / IBL render-environment (conflicting-spec / missing-spec / unknown-preset / intensity-out-of-range)
     //  +  5 W3 face authoring (embossText / projectCurve / face UV anchor)
@@ -77,8 +77,43 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  7 W1 material expansion (thickness-negative / attenuation-distance-invalid / anisotropy-rotation-normalized /
     //       texture-not-found / texture-unsupported-format / texture-oversize-warning / texture-oversize-error)
     //  +  2 camera-target override (non-finite-target / invalid-distance)
-    // = 124.
-    expect(catalogue.size).toBe(124);
+    //  +  1 assembly mechanical fixed-contact-missing (develop)
+    //  +  1 F-foundation @kc topology refs (feature.face-ref.snapshot-fallback-used)
+    //  +  7 Slice A export trio (options-format-mismatch + six per-format
+    //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
+    //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
+    //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
+    //       web/bend/bending/size/dxf/rule)
+    //  - 3 Slice B-rest fills urdf/srdf/sdf-gazebo placeholder slots; the
+    //       three `.not-implemented` entries are removed.
+    //  + 11 Slice B-rest new diagnostics:
+    //       URDF (5): cylindrical-lossy, pin-slot-lossy, ball-decomposed,
+    //                 closed-loop, inertia-density-declared
+    //       SRDF (2): acm-sparse-sampling, planning-group-missing
+    //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
+    //                 dangling-link-ref
+    //  +  1 V Task V1 verb-nurbs bridge (feature.nurbs.bridge-conversion-failed)
+    //  +  5 V Task V2 Curve3D.analytics namespace (degenerate-arclength /
+    //       closest-point-no-converge / derivatives-out-of-range /
+    //       tessellation-tolerance-invalid / kernel-failed)
+    //  +  2 V Task V3 Curve3D.analytics.intersect (intersect-kernel-failed /
+    //       intersect-no-intersection)
+    //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
+    //       tangent-on-2d-only)
+    //  +  7 Slice Q (Query DSL) — Q3 evaluator codes (empty / over-determined /
+    //       evaluated-too-early / unknown-id / unknown-label / id-hierarchy-
+    //       clash / unsupported-entity-type)
+    //  +  1 Slice Q4 — composition-strict-failure
+    //  +  1 Slice Q5 — type-mismatch
+    //  +  1 Slice Q7 — invalid-syntax
+    //  + 9 K1-K9 kinematic-grounding (this slice):
+    //       collision.swept, collision.swept.sample-density-warning,
+    //       unreachable, reachability.iteration-cap-hit,
+    //       solver.unsupported-config, load-exceeds-yield,
+    //       load.beam-not-applicable, no-material-declared,
+    //       mounting-hole.diameter-mismatch.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 = 194.
+    expect(catalogue.size).toBe(194);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

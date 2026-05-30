@@ -7,6 +7,10 @@
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "verb-nurbs": ["./vendor/verb-nurbs/build/verb.es.js"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -30,6 +34,7 @@
     "src/**/*.spec.*",
     "src/**/__tests__/**",
     "src/agent/cli/**",
-    "src/agent/workflows/**"
+    "src/agent/workflows/**",
+    "src/agent/skills/**/cookbook/**/*.kcad.ts"
   ]
 }

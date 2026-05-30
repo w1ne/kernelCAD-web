@@ -5,23 +5,27 @@ Single-page marketing site for kernelCAD. Plain HTML + CSS, zero framework.
 ## Develop
 
 ```bash
-npx tsx site/scripts/build-demo.ts   # generate demo.mp4 + demo.json into public/
-cd site && for f in public/*; do ln -sf "$f" "$(basename "$f")"; done
+npm run site:build                  # generate demo, gallery, and brand assets into public/
+bash site/scripts/link-public.sh    # link generated assets for python's static server
 python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-The symlinks alias `public/demo.mp4`, `public/demo.json`, `public/favicon.svg` into `site/` root so `python3 -m http.server` resolves the absolute paths the HTML expects (`/demo.mp4`, etc.). On Cloudflare Pages this isn't needed — Pages serves `public/` at the site root automatically. The symlinks are git-ignored.
+The symlinks alias generated `site/public/*` assets into `site/` root so
+`python3 -m http.server` resolves the absolute paths the HTML expects
+(`/demo.mp4`, `/gallery.json`, `/gallery/<slug>/model.glb`, etc.). On
+Cloudflare Pages the deploy workflow copies `site/` into a dereferenced upload
+directory. The symlinks are git-ignored.
 
 ## Build (run before deploy)
 
 ```bash
-npx tsx site/scripts/build-demo.ts   # pulls hero demo MP4 for current package.json.version from ../docs/demos/
-node site/scripts/render-brand.mjs     # renders PNG brand assets
+npm run site:build
 ```
 
 ## Deploy
 
-Cloudflare Pages, build dir = `site/`, build command = `npx tsx site/scripts/build-demo.ts && node site/scripts/render-brand.mjs`.
+Cloudflare Pages, build dir = `site/`, build command = `npm run site:build`.
+The private GitHub workflow then uploads a dereferenced copy of `site/`.
 
 Spec: kernelcad-website-design (in kernelCAD-private)
