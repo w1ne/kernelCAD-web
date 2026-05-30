@@ -234,7 +234,7 @@ function makeTongue() {
 // "a mechanical element between the two anchors" without polluting the
 // lamp silhouette with a knot of crossed coils. The cylinder length
 // matches `SPRING_LEN`, so the assembly placement code keeps working.
-function makeSpring(_turns: number = SPRING_TURNS, length: number = SPRING_LEN) {
+function makeSpring(length: number = SPRING_LEN) {
   // Slim shaft running along part-local +X. Cap end-radius is the same as
   // the original helix coil radius so the visual envelope still hints at
   // the spring's diameter.
@@ -340,7 +340,7 @@ const lowerElbowFork = makeClevisFork().translate(ELBOW_PIVOT_X, 0, 0);
 // flag the spring as a floating sub-component of the lower-arm solid.
 const SPRING_MOUNT_X = FORK_PLATE_X / 2 + 6;
 const SPRING_MOUNT_Z_LOWER = -ARM_T / 2 - SPRING_COIL_R + SPRING_WIRE_R + 1.5;
-const lowerSpring = makeSpring(SPRING_TURNS, SPRING_LEN);
+const lowerSpring = makeSpring(SPRING_LEN);
 
 const lowerArmShape = lowerTongue
   .union(lowerBeam)
@@ -380,7 +380,7 @@ const elbowPin = makePivotPin();   // at part-local origin (= elbow pivot)
 // to the beam's long axis. Authored as its OWN PART, same reasoning as
 // the shoulder spring above.
 const SPRING_MOUNT_Z_UPPER = ARM_T / 2 + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
-const upperSpring = makeSpring(SPRING_TURNS, SPRING_LEN);
+const upperSpring = makeSpring(SPRING_LEN);
 
 const upperArmShape = upperTongue
   .union(upperBeam)
@@ -462,11 +462,10 @@ const bulb = sphere(BULB_R)
 // BEHIND the head's tongue (along -X, away from the shade body),
 // parallel to the shade's mouth axis. Own part, fastened via arm.fixed
 // below — same disconnection-gate reasoning as the arm springs.
-const wristSpringTurns = SPRING_TURNS * 0.7;
 const wristSpringLen = SPRING_LEN * 0.7;
 const wristSpringMountZ = ARM_T * 0.5 + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
 const wristSpringMountX = -wristSpringLen - 2;
-const wristSpring = makeSpring(wristSpringTurns, wristSpringLen);
+const wristSpring = makeSpring(wristSpringLen);
 
 const headShape = headTongue
   .union(headNeck)

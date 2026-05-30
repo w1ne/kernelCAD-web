@@ -44,7 +44,10 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, saveActiveProject } = useProject();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [loadedSourceRouteKey, setLoadedSourceRouteKey] = useState<string | null>(null);
+  // setLoadedSourceRouteKey is still called for its side effects (gating the
+  // source-load effect in deps), but the value isn't read since we removed
+  // the loading-gate in commit 95dc75a3. Keeping the setter, ignoring the value.
+  const [, setLoadedSourceRouteKey] = useState<string | null>(null);
   const [sourceLoadError, setSourceLoadError] = useState<{ routeKey: string; message: string } | null>(null);
   const scriptParam = readScriptParam();
   const galleryParam = readGalleryParam();
