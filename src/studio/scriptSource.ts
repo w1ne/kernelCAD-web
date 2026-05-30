@@ -1,9 +1,14 @@
 import { findGallerySourceUrl, galleryPrecomputedMeshUrl } from './gallerySource';
+import { apiCall, rewritePath } from './api/apiBase';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
 
 export async function loadStudioScriptSource(script: string): Promise<string> {
-  const response = await fetch(`/__kernelcad/source?script=${encodeURIComponent(script)}`);
+  const { base, headers } = await apiCall();
+  const response = await fetch(
+    rewritePath(`/__kernelcad/source?script=${encodeURIComponent(script)}`, base),
+    { headers },
+  );
   const payload = await response.json();
   if (!response.ok) {
     const message = typeof payload?.error === 'string' ? payload.error : response.statusText;

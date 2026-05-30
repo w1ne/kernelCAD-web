@@ -16,6 +16,15 @@ vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => recompute,
 }));
 
+// S1: ExportTab now routes through the apiBase helper, which calls
+// supabase.auth.getSession(). Stub the Supabase client so the test stays
+// behavior-equivalent to today (unsigned-in → relative URL).
+vi.mock('../../../funnel/lib/supabaseClient', () => ({
+    getSupabase: () => ({
+        auth: { getSession: async () => ({ data: { session: null } }) },
+    }),
+}));
+
 beforeEach(() => {
     recompute = {
         features: [],
@@ -194,6 +203,7 @@ describe('ExportTab', () => {
         });
         expect(fetchMock).toHaveBeenCalledWith(
             '/__kernelcad/export?script=examples%2Ffoo.kcad.ts&format=stl',
+            expect.objectContaining({ headers: {} }),
         );
         expect(clickSpy).toHaveBeenCalled();
 
