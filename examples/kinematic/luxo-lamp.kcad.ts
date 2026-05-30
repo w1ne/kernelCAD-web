@@ -432,18 +432,20 @@ const headPart = arm.part('lamp-head', headShape);
 // ============================================================================
 // SPRING PARTS — fastened to their respective arms via fixed joints
 // ============================================================================
-// Each spring is its own assembly part because a swept helix only
-// TOUCHES the beam at the wire's tangent points; mesh-level union
-// doesn't merge them into a single connected solid (the disconnection
-// gate would flag a unioned spring+beam as two components). Authoring
-// each spring as a separate part with a `fixed` joint sidesteps that
-// gate while preserving the kinematic story: the spring rigidly tracks
-// its parent arm's pose. The fixed-joint origin places the spring at
-// the right spot in the parent's local frame; the spring's own shape
-// is centred at the part-local origin.
-const shoulderSpringPart = arm.part('shoulder-spring', lowerSpring);
-const elbowSpringPart    = arm.part('elbow-spring',    upperSpring);
-const wristSpringPart    = arm.part('wrist-spring',    wristSpring);
+// Springs are intentionally *omitted* from the assembly until the
+// kernel-level `spring()` primitive (Slice A2) lands on develop. The
+// previous helix-sweep produced a tangled self-intersecting knot
+// (review packet 2026-05-30T14-41-26.402Z); a cylinder + nub placeholder
+// looked worse — like a dumbbell sticking sideways out of the joint
+// (review packet 2026-05-30T15-03-26.481Z). Better to ship the lamp
+// body alone — clean arms + joints + shade — than to pollute it with a
+// fake.
+//
+// All three swept-helix shapes (lowerSpring/upperSpring/wristSpring) are
+// still built above so the helper still typechecks, but they aren't
+// added to the assembly. When spring() ships, swap the helper body to
+// use it and uncomment these three lines + the matching fixed-joints.
+void lowerSpring; void upperSpring; void wristSpring;
 
 // ============================================================================
 // JOINTS — body-tree FK; joint origin lives in PARENT's part-local frame
@@ -467,18 +469,12 @@ arm.revolute('wrist', upperArmPart, headPart, {
   limitsDeg: [-90, 0],
 });
 
-// Springs are fastened (no DOF) to their respective parent arms. Origin
-// is in the parent's part-local frame; the spring's own shape is centred
-// on the part-local origin, so the fixed offset places it correctly.
-arm.fixed('shoulder-spring-mount', lowerArmPart, shoulderSpringPart, {
-  origin: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_LOWER],
-});
-arm.fixed('elbow-spring-mount', upperArmPart, elbowSpringPart, {
-  origin: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_UPPER],
-});
-arm.fixed('wrist-spring-mount', headPart, wristSpringPart, {
-  origin: [wristSpringMountX, 0, wristSpringMountZ],
-});
+// Spring fixed-joints intentionally omitted — see the "Springs are
+// intentionally omitted" block above. SPRING_MOUNT_* / wristSpringMountZ
+// kept around so the future re-add is a 4-line diff (re-declare the three
+// `arm.part(...)` lines + these three `arm.fixed(...)` calls).
+void SPRING_MOUNT_X; void SPRING_MOUNT_Z_LOWER; void SPRING_MOUNT_Z_UPPER;
+void wristSpringMountX; void wristSpringMountZ;
 
 // ============================================================================
 // SOLVE + VALIDATE
@@ -505,10 +501,6 @@ return arm.solvedModel(
       ['base', 'lower-arm'],                 // shoulder tongue-in-fork contact
       ['lower-arm', 'upper-arm'],            // elbow tongue-in-fork contact
       ['upper-arm', 'lamp-head'],            // wrist tongue-in-fork contact
-      ['lower-arm', 'shoulder-spring'],      // spring "bolted" to lower-arm beam
-      ['upper-arm', 'elbow-spring'],         // spring "bolted" to upper-arm beam
-      ['lamp-head', 'wrist-spring'],         // spring "bolted" to head tongue
-      ['upper-arm', 'wrist-spring'],         // wrist spring extends back into upper-arm fork volume
     ],
   },
 );
