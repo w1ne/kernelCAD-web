@@ -165,26 +165,31 @@ function makeTongue() {
   return plateXZ.material(mArm);
 }
 
-// Helical tension spring. The helix rail is generated with axis = 'X' so the
-// coil's centerline already runs along the arm's long axis; the swept solid
-// sits at part-local origin and extends along +X for `length` mm. Wire
-// profile = a small square cross-section swept along the rail.
-function makeSpring(turns: number = SPRING_TURNS, length: number = SPRING_LEN) {
-  const profile = path()
-    .moveTo(-SPRING_WIRE_R, -SPRING_WIRE_R)
-    .lineTo( SPRING_WIRE_R, -SPRING_WIRE_R)
-    .lineTo( SPRING_WIRE_R,  SPRING_WIRE_R)
-    .lineTo(-SPRING_WIRE_R,  SPRING_WIRE_R)
-    .close();
-  const pitch = length / turns;
-  const rail = helix({
-    radius: SPRING_COIL_R,
-    pitch,
-    turns,
-    axis: 'X',
-    pointsPerTurn: 14,
-  });
-  return profile.sweep(rail, { frenet: true }).material(mSpring);
+// Tension spring — placeholder geometry.
+//
+// History: previously a helical sweep (`path → helix(axis:'X') → sweep(rail,
+// {frenet:true})`) that produced a tangled, self-intersecting cluster
+// instead of a clean coil, because the discrete Frenet frame flips
+// chaotically at the helix's coarse sample points. (See review packet
+// 2026-05-30T14-41-26.402Z — user painted exactly this defect.)
+//
+// Until the kernel-level `spring()` primitive (Slice A2) lands on develop,
+// we model each spring as a slim cylinder + two end-cap nubs. It reads as
+// "a mechanical element between the two anchors" without polluting the
+// lamp silhouette with a knot of crossed coils. The cylinder length
+// matches `SPRING_LEN`, so the assembly placement code keeps working.
+function makeSpring(_turns: number = SPRING_TURNS, length: number = SPRING_LEN) {
+  // Slim shaft running along part-local +X. Cap end-radius is the same as
+  // the original helix coil radius so the visual envelope still hints at
+  // the spring's diameter.
+  const shaft = cylinder(length, SPRING_WIRE_R * 1.5, 24)
+    .rotate([0, 1, 0], 90)              // axis Z → X
+    .translate(length / 2, 0, 0);
+  const endCapL = sphere(SPRING_COIL_R * 0.45)
+    .translate(0, 0, 0);
+  const endCapR = sphere(SPRING_COIL_R * 0.45)
+    .translate(length, 0, 0);
+  return shaft.union(endCapL).union(endCapR).material(mSpring);
 }
 
 // ============================================================================
