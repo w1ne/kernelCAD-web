@@ -1,5 +1,8 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid } from "@react-three/drei";
+// Subpath imports — pulling from the barrel index made vite prebundle 3.6MB
+// of drei. We only use 3 components total across the whole app.
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { Grid } from "@react-three/drei/core/Grid";
 import * as THREE from "three";
 import { useEffect, useMemo, useState } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
