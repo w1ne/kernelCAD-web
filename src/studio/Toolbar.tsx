@@ -105,8 +105,8 @@ export function Toolbar({
                     type="button"
                     data-testid="toolbar-mark"
                     onClick={onToggleMarkingMode}
-                    title={markingMode ? 'Exit brush / marking mode' : 'Paint a review over what is wrong'}
-                    aria-label={markingMode ? 'Exit marking mode' : 'Enter marking mode'}
+                    title={markingMode ? 'Save mark & exit (your agent can then pick it up)' : 'Paint over what is wrong, then click again to save'}
+                    aria-label={markingMode ? 'Save mark and exit marking mode' : 'Enter marking mode'}
                     aria-pressed={markingMode}
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
                         markingMode
