@@ -47,6 +47,31 @@ function resolveExampleScript(script: string | null): string | null {
   return scriptPath;
 }
 
+/**
+ * Auto-spawn the standalone review-paint save server in a Node worker thread
+ * when vite starts. Worker threads have their own event loop, so even when
+ * vite's main thread saturates on OCCT/replicad transforms the brush can
+ * still land a packet on disk. Killed automatically when vite exits.
+ */
+function reviewPaintSaveServer(): Plugin {
+  return {
+    name: 'kernelcad-review-paint-save-server',
+    apply: 'serve',
+    async configureServer() {
+      const { Worker } = await import('node:worker_threads');
+      const workerPath = fileURLToPath(new URL('./scripts/review-paint-server.mjs', import.meta.url));
+      const worker = new Worker(workerPath, { stderr: false, stdout: false });
+      worker.on('error', (err) => {
+        console.error('[review-paint-server] worker error:', err);
+      });
+      worker.on('exit', (code) => {
+        if (code !== 0) console.error(`[review-paint-server] worker exited with code ${code}`);
+      });
+      process.on('exit', () => { worker.terminate(); });
+    },
+  };
+}
+
 function kernelCadMeshEndpoint(): Plugin {
   return {
     name: 'kernelcad-mesh-endpoint',
@@ -319,6 +344,92 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       });
 
+      server.middlewares.use('/__kernelcad/review-paint', async (req, res) => {
+        try {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'POST only' }));
+            return;
+          }
+          const chunks: Buffer[] = [];
+          for await (const chunk of req as unknown as AsyncIterable<Buffer>) {
+            chunks.push(chunk);
+            if (chunks.reduce((acc, b) => acc + b.length, 0) > 16 * 1024 * 1024) {
+              res.statusCode = 413;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'packet too large (max 16MB)' }));
+              return;
+            }
+          }
+          const body = Buffer.concat(chunks).toString('utf-8');
+          const parsed = JSON.parse(body) as {
+            screenshot: string;
+            mask: string;
+            meta: { note?: string; scriptPath?: string | null; ts?: string; ua?: string };
+          };
+          const scriptPath = resolveExampleScript(parsed.meta?.scriptPath ?? null);
+          const { mkdirSync, writeFileSync, existsSync, unlinkSync, symlinkSync } =
+            await import('node:fs');
+          const { dirname, basename, join } = await import('node:path');
+          const ts = (parsed.meta?.ts ?? new Date().toISOString()).replace(/[:]/g, '-');
+          // If the request has a valid examples/*.kcad.ts scriptPath the
+          // packet lands beside it (best for the agent's hook + IDE). If
+          // not (user testing at /, or a non-examples gallery URL), fall
+          // back to a repo-root .review-paint/ so the agent's hook scan
+          // still finds it.
+          const reviewRoot = scriptPath
+            ? `${scriptPath}.review-paint`
+            : resolve(repoRoot, '.review-paint');
+          const packetDir = join(reviewRoot, ts);
+          mkdirSync(packetDir, { recursive: true });
+          const stripDataUrl = (s: string): Buffer => {
+            const comma = s.indexOf(',');
+            const b64 = comma === -1 ? s : s.slice(comma + 1);
+            return Buffer.from(b64, 'base64');
+          };
+          writeFileSync(join(packetDir, 'screenshot.png'), stripDataUrl(parsed.screenshot));
+          writeFileSync(join(packetDir, 'mask.png'), stripDataUrl(parsed.mask));
+          writeFileSync(
+            join(packetDir, 'meta.json'),
+            JSON.stringify(
+              {
+                note: parsed.meta?.note ?? '',
+                scriptPath: scriptPath ? relative(repoRoot, scriptPath) : null,
+                ts: parsed.meta?.ts ?? new Date().toISOString(),
+                ua: parsed.meta?.ua ?? '',
+              },
+              null,
+              2,
+            ),
+          );
+          const latest = join(reviewRoot, 'latest');
+          try {
+            if (existsSync(latest)) unlinkSync(latest);
+          } catch {
+            // Best-effort symlink swap; ignore if it doesn't exist.
+          }
+          try {
+            symlinkSync(basename(packetDir), latest, 'dir');
+          } catch (err) {
+            // Symlink may fail on platforms without permission; non-fatal.
+            void err;
+          }
+          // Quiet the unused-import lint when `dirname` is conditional on
+          // future tweaks.
+          void dirname;
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ ok: true, path: relative(repoRoot, packetDir) }));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
+
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
@@ -404,6 +515,7 @@ export default defineConfig(({ command }) => ({
       routeFileIgnorePattern: '\\.test\\.ts$',
     }),
     kernelCadMeshEndpoint(),
+    reviewPaintSaveServer(),
     react(),
     tailwindcss(),
   ],
@@ -431,5 +543,15 @@ export default defineConfig(({ command }) => ({
         '**/kernelCAD-web-worktrees/**',
       ],
     },
+  },
+  optimizeDeps: {
+    // ts-morph (13MB) and typescript (9.5MB) reach the Studio module graph
+    // only through `import('.../RefactoringManager')` in CodeContext (a
+    // rename-variable codepath users rarely hit). Vite's dep scanner pulls
+    // dynamic imports into the cold-start prebundle, which is what makes
+    // `npm run dev` saturate one core for ~60s and keep "Geometry kernel
+    // warming up..." visible. Excluding them defers the bundle work until
+    // (if ever) a user triggers the rename — and keeps cold-start light.
+    exclude: ['ts-morph', 'typescript'],
   },
 }))
