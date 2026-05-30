@@ -179,67 +179,95 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     return canvas.toDataURL('image/png');
   }
 
-  /** Raycast each painted pixel of the mask into the live three.js scene
-   *  and return the unique assembly part names (and other userData
-   *  identifiers) the brush hit. Lets the agent see *which structures* the
-   *  user marked, not just where on screen.
-   *
-   *  Sampling: every N px on both axes — 1280×800 viewport at 16-px stride
-   *  is ~4000 rays, cheap and exhaustive enough that small painted regions
-   *  don't get missed. */
-  function struckPartsFromMask(): string[] {
+  /** Raycast painted pixels into the live three.js scene and return the
+   *  unique structural identifiers the brush hit. Walks the parent chain
+   *  because the named ownerId may live on a parent group rather than the
+   *  leaf mesh (consolidated meshes have it, but spring/coil segments
+   *  rendered as separate primitives often don't). */
+  function struckPartsFromMask(): { parts: string[]; debug: Record<string, number | boolean> } {
     const canvas = canvasRef.current;
-    const { scene, camera, gl } = rendererSnapshot;
-    if (!canvas || !scene || !camera || !gl) return [];
+    const { scene, camera } = rendererSnapshot;
+    const debug = {
+      snapshotReady: !!(scene && camera),
+      paintedSamples: 0,
+      raysCast: 0,
+      anyIntersection: 0,
+      namedHits: 0,
+    };
+    if (!canvas || !scene || !camera) return { parts: [], debug };
     const ctx = canvas.getContext('2d');
-    if (!ctx) return [];
+    if (!ctx) return { parts: [], debug };
     let img: ImageData;
     try {
       img = ctx.getImageData(0, 0, canvas.width, canvas.height);
     } catch {
-      return [];
+      return { parts: [], debug };
     }
     const STEP = 16;
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
     const hits = new Set<string>();
-    const rendererCanvas = gl.domElement;
-    const rRect = rendererCanvas.getBoundingClientRect();
+    // Both canvases share the same parent box and fill it 100%/100%, so
+    // their CSS rects coincide. Use the mask's own rect for NDC — no need
+    // to cross-reference the renderer canvas.
     const mRect = canvas.getBoundingClientRect();
     for (let y = 0; y < canvas.height; y += STEP) {
       for (let x = 0; x < canvas.width; x += STEP) {
         const i = (y * canvas.width + x) * 4;
-        // Red strokes with high red, low green/blue channel, opaque alpha.
         if (img.data[i + 3] < 100) continue;
         if (img.data[i] < 200 || img.data[i + 1] > 120) continue;
-        // Mask-canvas px → CSS px (in viewport) → renderer-canvas NDC.
-        const cssX = mRect.left + (x / canvas.width) * mRect.width;
-        const cssY = mRect.top + (y / canvas.height) * mRect.height;
-        ndc.x = ((cssX - rRect.left) / rRect.width) * 2 - 1;
-        ndc.y = -(((cssY - rRect.top) / rRect.height) * 2 - 1);
-        if (ndc.x < -1 || ndc.x > 1 || ndc.y < -1 || ndc.y > 1) continue;
+        debug.paintedSamples++;
+        // Pixel (x,y) in the mask bitmap → NDC. Bitmap may differ from CSS
+        // box size; the ratio collapses out because we go bitmap→fraction→NDC.
+        ndc.x = (x / canvas.width) * 2 - 1;
+        ndc.y = -((y / canvas.height) * 2 - 1);
         raycaster.setFromCamera(ndc, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
-        // First-hit-with-name wins. We only walk a couple intersections
-        // because the meshes are usually opaque — the front face is what
-        // the user "sees" and intended to mark.
-        for (let k = 0; k < Math.min(2, intersects.length); k++) {
-          const obj = intersects[k].object;
-          const u = obj.userData as { ownerId?: unknown; assemblyPartName?: unknown; name?: unknown };
-          const id =
-            (typeof u?.ownerId === 'string' && u.ownerId) ||
-            (typeof u?.assemblyPartName === 'string' && u.assemblyPartName) ||
-            (typeof u?.name === 'string' && u.name) ||
-            (typeof obj.name === 'string' && obj.name) ||
-            null;
-          if (id) {
-            hits.add(id);
-            break;
+        debug.raysCast++;
+        if (intersects.length > 0) debug.anyIntersection++;
+        // Walk first few intersections + their parent chains looking for ANY
+        // identifier. Hierarchy: ownerId (named consolidated shape) → name
+        // userData → object3D.name → shapeIndex (unnamed shape, still
+        // disambiguating). The shapeIndex fallback matters because Luxo-style
+        // scripts often leave springs/anchors unnamed but they still have a
+        // distinct shapeIndex set on the consolidated mesh's userData.
+        let found = false;
+        for (let k = 0; k < Math.min(3, intersects.length) && !found; k++) {
+          let obj: THREE.Object3D | null = intersects[k].object;
+          while (obj && !found) {
+            const u = obj.userData as {
+              ownerId?: unknown;
+              assemblyPartName?: unknown;
+              partName?: unknown;
+              name?: unknown;
+              shapeIndex?: unknown;
+            };
+            const named =
+              (typeof u?.ownerId === 'string' && u.ownerId) ||
+              (typeof u?.assemblyPartName === 'string' && u.assemblyPartName) ||
+              (typeof u?.partName === 'string' && u.partName) ||
+              (typeof u?.name === 'string' && u.name) ||
+              (typeof obj.name === 'string' && obj.name.length > 0 && obj.name) ||
+              null;
+            if (named) {
+              hits.add(named);
+              debug.namedHits++;
+              found = true;
+              break;
+            }
+            if (typeof u?.shapeIndex === 'number') {
+              hits.add(`shape#${u.shapeIndex}`);
+              debug.namedHits++;
+              found = true;
+              break;
+            }
+            obj = obj.parent;
           }
         }
+        void mRect; // mRect unused after the rect-collapse simplification — keep for future viewport partial-overlap fixes
       }
     }
-    return Array.from(hits);
+    return { parts: Array.from(hits), debug };
   }
 
   function screenshotAsPng(): string | null {
@@ -273,8 +301,8 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       console.warn('[marking-overlay] no renderer canvas found — saving mask only');
     }
     const mask = maskAsPng();
-    const struckParts = struckPartsFromMask();
-    console.log(`[marking-overlay] struck parts:`, struckParts);
+    const { parts: struckParts, debug: raycastDebug } = struckPartsFromMask();
+    console.log(`[marking-overlay] struck parts:`, struckParts, 'debug:', raycastDebug);
     const scriptParam = new URLSearchParams(window.location.search).get('script');
     const meta = {
       note: '',
@@ -283,6 +311,7 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       ua: navigator.userAgent,
       screenshotMissing: screenshot === null,
       struckParts,
+      raycastDebug,
     };
     // POST to the standalone save server (port 5174, auto-spawned by vite as
     // a worker thread) so saves keep working when vite's main thread

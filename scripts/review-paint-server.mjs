@@ -108,6 +108,10 @@ const server = createServer(async (req, res) => {
           // save time). Lets the agent see *which structures* were marked,
           // not just where the strokes landed on screen.
           struckParts: Array.isArray(parsed.meta?.struckParts) ? parsed.meta.struckParts : [],
+          // Per-save diagnostics — counts of painted samples, rays, hits,
+          // named hits. When struckParts is empty these tell us *why* (no
+          // snapshot, rays missed all meshes, hits had no usable identifier).
+          raycastDebug: parsed.meta?.raycastDebug ?? null,
         },
         null,
         2,
