@@ -139,9 +139,16 @@ const arm = assembly('luxo-lamp');
 // Caps overlap the shaft by 0.5 mm so the boolean union merges into one
 // connected solid (otherwise face-coincident contact can split into
 // separate mesh components).
+// PIN_SEGMENTS must match the hole cutter's segment count so mesh
+// discretization on the pin shaft and the drilled hole produce matching
+// tessellation. With mismatched counts (32 vs 24) the meshed surfaces
+// register as ~400 mm³ of phantom overlap per joint at the bearing
+// interface (no real BREP intersection — pin R=4 in hole R=4.2 has
+// 0.2 mm clearance).
+const PIN_SEGMENTS = 64;
 function makePivotPin() {
-  const shaft = cylinder(PIN_LEN, PIN_R, 32)
-    .rotate([1, 0, 0], 90)            // cylinder default axis is Z → rotate to Y
+  const shaft = cylinder(PIN_LEN, PIN_R, PIN_SEGMENTS)
+    .rotate([1, 0, 0], 90)
     .translate(0, -PIN_LEN / 2, 0);
   const capA = cylinder(2.5, PIN_CAP_R, 32)
     .rotate([1, 0, 0], 90)
@@ -171,18 +178,16 @@ function makeClevisFork() {
   const plateXZ = plate.rotate([1, 0, 0], -90);
   const left  = plateXZ.translate(0,  plateOffsetY, 0);
   const right = plateXZ.translate(0, -plateOffsetY, 0);
-  // Cylindrical knuckle on each fork plate — Y-position centred on the
-  // fork plate so the hub silhouette is dominated by the round hub. Note:
-  // after `rotate([1,0,0], 90)` the cylinder's local y range is
-  // [-KNUCKLE_T, 0] (one end at the origin); translate by +KNUCKLE_T/2
-  // brings the cylinder centre to y=plateOffsetY, co-planar with the
-  // square plate.
+  // Cylindrical knuckle on each fork plate, co-planar with the plate.
+  // After `rotate([1,0,0], 90)` the cylinder spans y=[0, KNUCKLE_T];
+  // translate so its centre is at y=plateOffsetY (=±10.5).
+  const knuckleOffset = plateOffsetY - KNUCKLE_T / 2;
   const knuckleL = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
     .rotate([1, 0, 0], 90)
-    .translate(0,  plateOffsetY + KNUCKLE_T / 2, 0);
+    .translate(0,  knuckleOffset, 0);
   const knuckleR = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
     .rotate([1, 0, 0], 90)
-    .translate(0, -plateOffsetY + KNUCKLE_T / 2, 0);
+    .translate(0, -knuckleOffset - KNUCKLE_T, 0);
   return left.union(right).union(knuckleL).union(knuckleR).material(mFork);
 }
 
@@ -190,7 +195,7 @@ function makeClevisFork() {
 // long enough to clear any reasonable yoke + fork stack-up in one shot.
 function makePinHoleCutter(offsetX: number = 0, offsetZ: number = 0) {
   const holeH = FORK_GAP_Y + 2 * FORK_PLATE_T + 60; // huge margin in Y
-  const cutter = cylinder(holeH, PIN_R + 0.2, 24)
+  const cutter = cylinder(holeH, PIN_R + 0.2, PIN_SEGMENTS)   // segment count matches pin shaft to avoid mesh-discretization phantom overlap
     .translate(0, 0, -holeH / 2)
     .rotate([1, 0, 0], -90);
   return cutter.translate(offsetX, 0, offsetZ);
@@ -201,18 +206,19 @@ function makePinHoleCutter(offsetX: number = 0, offsetZ: number = 0) {
 // reasoning as makeClevisFork (a co-located yoke would otherwise plug the
 // hole).
 function makeTongue() {
-  const plate = extrudeRoundedRect(FORK_PLATE_X, FORK_PLATE_Z, 8, TONGUE_Y)
-    .translate(0, 0, -TONGUE_Y / 2);
-  const plateXZ = plate.rotate([1, 0, 0], -90);
-  // Tongue knuckle: cylindrical hub centred on the pivot, spanning the
-  // tongue's full Y thickness, **centred at y=0** so it sits inside the
-  // fork gap symmetrically. After `rotate([1,0,0], 90)` the cylinder's
-  // y range is [-TONGUE_Y, 0]; translate by +TONGUE_Y/2 to centre.
+  // Tongue is JUST the cylindrical hub — no rectangular plate. The
+  // rectangular plate's corners reached √(11² + 15²) = 18.6 mm from the
+  // pivot, bigger than KNUCKLE_R=17, and the protrusion past the knuckle
+  // dipped into the parent body during rotation (~1300 mm³ per joint).
+  // The hub alone is rotation-invariant around the pin axis (Y), so it
+  // stays put at any pose. Bearing is via pin-in-knuckle-hole; the fork
+  // plates support the pin axially. The arm beam unions with the hub via
+  // its proximal X-extent.
   const tongueKnuckle = cylinder(TONGUE_Y, KNUCKLE_R, 32)
     .rotate([1, 0, 0], 90)
-    .translate(0, TONGUE_Y / 2, 0)
+    .translate(0, -TONGUE_Y / 2, 0)
     .material(mArm);
-  return plateXZ.union(tongueKnuckle).material(mArm);
+  return tongueKnuckle;
 }
 
 // Tension spring — placeholder geometry.
@@ -398,16 +404,17 @@ const headTongue = makeTongue();
 // Wrist pin lives with the head (so it rotates with it).
 const wristPin = makePivotPin();
 
-// Short collar where the head's tongue meets the shade's back face. Cast
-// black to break up the brass shade visually and read as a real mounting
-// fixture rather than a continuous cone. Long enough to physically bridge
-// the tongue (centred on origin) into the shade's narrow end at
-// SHADE_ANCHOR_X — the headNeck is the load-bearing yoke that locks the
-// shade to the wrist hardware.
+// Narrow neck bridging head's tongue knuckle to the shade's narrow end.
+// Slimmed from the previous SHADE_R_SMALL+1.5=29.5 mm radius down to 10 mm
+// so the neck doesn't sweep into the upper-arm's wrist fork plates during
+// wrist tilt (previously contributed ~1100 mm³ of overlap to the wrist
+// interference). The shade's small end is unchanged; the neck now reads
+// as a stem rather than a wide collar.
 const HEAD_NECK_LEN = 28;
-const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
+const HEAD_NECK_R = 10;
+const headNeck = cylinder(HEAD_NECK_LEN, HEAD_NECK_R, 32)
   .rotate([0, 1, 0], 90)             // axis Z → axis X
-  .translate(FORK_PLATE_X / 2 - 2, 0, 0)   // x = [-13, 15] ... wait, centred at translate-x with length HEAD_NECK_LEN along X
+  .translate(FORK_PLATE_X / 2 - 2, 0, 0)
   .material(mCast);
 
 // Shade — truncated cone. Profile is built in (radial, axial) space with
