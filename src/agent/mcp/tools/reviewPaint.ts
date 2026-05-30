@@ -59,6 +59,10 @@ export interface ReviewPaintPacket {
   /** Repo-relative .kcad.ts file under review (null when the packet was
    *  saved without a script context — e.g. user testing at `/`). */
   script_path: string | null;
+  /** Assembly part names the brush hit (camera-raycast through painted
+   *  pixels at save time). When non-empty this is the authoritative
+   *  answer for *which structures* the user marked. */
+  struck_parts: string[];
   /** Base64-encoded screenshot PNG (omitted when input.paths_only). */
   screenshot_b64?: string;
   /** Base64-encoded mask PNG (omitted when input.paths_only). */
@@ -100,9 +104,11 @@ export async function reviewPaintPeekLatestTool(
       const metaPath = join(real, 'meta.json');
       const shotPath = join(real, 'screenshot.png');
       const maskPath = join(real, 'mask.png');
+      // mask + meta are required; screenshot is optional — saves taken
+      // before the renderer canvas mounted have mask-only packets.
       if (!existsSync(metaPath)) return;
-      if (!existsSync(shotPath)) return;
       if (!existsSync(maskPath)) return;
+      void shotPath;
       let mtime;
       try { mtime = statSync(entryPath).mtimeMs; } catch { return; }
       if (now - mtime > windowMs) return;
@@ -119,7 +125,7 @@ export async function reviewPaintPeekLatestTool(
   // Pull out into local for narrowing inside TypeScript (the loop assigns
   // `best` inside a callback and the inferrer needs the rebind).
   const found: { dir: string; mtime: number } = best;
-  let meta: { note?: string; scriptPath?: string | null; ts?: string } = {};
+  let meta: { note?: string; scriptPath?: string | null; ts?: string; struckParts?: string[] } = {};
   try { meta = JSON.parse(readFileSync(join(found.dir, 'meta.json'), 'utf8')); } catch {
     // keep defaults
   }
@@ -132,10 +138,13 @@ export async function reviewPaintPeekLatestTool(
     ts: meta.ts ?? new Date(found.mtime).toISOString(),
     note: meta.note ?? '',
     script_path: meta.scriptPath ?? null,
+    struck_parts: Array.isArray(meta.struckParts) ? meta.struckParts : [],
   };
   if (!input.paths_only) {
     try {
-      packet.screenshot_b64 = readFileSync(packet.screenshot_path).toString('base64');
+      if (existsSync(packet.screenshot_path)) {
+        packet.screenshot_b64 = readFileSync(packet.screenshot_path).toString('base64');
+      }
       packet.mask_b64 = readFileSync(packet.mask_path).toString('base64');
     } catch {
       // The file existed in the existsSync check above but vanished in the

@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 import { shellStore } from '../../../store/shellStore';
+import { rendererSnapshot } from '../rendererSnapshot';
 
 /**
  * Inpainting-style review overlay. When `markingMode` is on, a transparent
@@ -136,6 +138,23 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     lastPointRef.current = null;
     const canvas = canvasRef.current;
     canvas?.releasePointerCapture(e.pointerId);
+    // Save after every stroke so the agent can see the in-progress mark
+    // without the user having to toggle the brush off. Debounced so a
+    // multi-stroke flurry only POSTs once after the user pauses.
+    schedulePersist();
+  }
+
+  // 500 ms after the last pointer-up, persist the current mark. Resets on
+  // every new stroke — only the final state hits disk per gesture.
+  const persistTimerRef = useRef<number | null>(null);
+  function schedulePersist() {
+    if (persistTimerRef.current !== null) {
+      window.clearTimeout(persistTimerRef.current);
+    }
+    persistTimerRef.current = window.setTimeout(() => {
+      persistTimerRef.current = null;
+      persistMark();
+    }, 500);
   }
 
   function paintDot(
@@ -160,6 +179,69 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     return canvas.toDataURL('image/png');
   }
 
+  /** Raycast each painted pixel of the mask into the live three.js scene
+   *  and return the unique assembly part names (and other userData
+   *  identifiers) the brush hit. Lets the agent see *which structures* the
+   *  user marked, not just where on screen.
+   *
+   *  Sampling: every N px on both axes — 1280×800 viewport at 16-px stride
+   *  is ~4000 rays, cheap and exhaustive enough that small painted regions
+   *  don't get missed. */
+  function struckPartsFromMask(): string[] {
+    const canvas = canvasRef.current;
+    const { scene, camera, gl } = rendererSnapshot;
+    if (!canvas || !scene || !camera || !gl) return [];
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return [];
+    let img: ImageData;
+    try {
+      img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    } catch {
+      return [];
+    }
+    const STEP = 16;
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    const hits = new Set<string>();
+    const rendererCanvas = gl.domElement;
+    const rRect = rendererCanvas.getBoundingClientRect();
+    const mRect = canvas.getBoundingClientRect();
+    for (let y = 0; y < canvas.height; y += STEP) {
+      for (let x = 0; x < canvas.width; x += STEP) {
+        const i = (y * canvas.width + x) * 4;
+        // Red strokes with high red, low green/blue channel, opaque alpha.
+        if (img.data[i + 3] < 100) continue;
+        if (img.data[i] < 200 || img.data[i + 1] > 120) continue;
+        // Mask-canvas px → CSS px (in viewport) → renderer-canvas NDC.
+        const cssX = mRect.left + (x / canvas.width) * mRect.width;
+        const cssY = mRect.top + (y / canvas.height) * mRect.height;
+        ndc.x = ((cssX - rRect.left) / rRect.width) * 2 - 1;
+        ndc.y = -(((cssY - rRect.top) / rRect.height) * 2 - 1);
+        if (ndc.x < -1 || ndc.x > 1 || ndc.y < -1 || ndc.y > 1) continue;
+        raycaster.setFromCamera(ndc, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        // First-hit-with-name wins. We only walk a couple intersections
+        // because the meshes are usually opaque — the front face is what
+        // the user "sees" and intended to mark.
+        for (let k = 0; k < Math.min(2, intersects.length); k++) {
+          const obj = intersects[k].object;
+          const u = obj.userData as { ownerId?: unknown; assemblyPartName?: unknown; name?: unknown };
+          const id =
+            (typeof u?.ownerId === 'string' && u.ownerId) ||
+            (typeof u?.assemblyPartName === 'string' && u.assemblyPartName) ||
+            (typeof u?.name === 'string' && u.name) ||
+            (typeof obj.name === 'string' && obj.name) ||
+            null;
+          if (id) {
+            hits.add(id);
+            break;
+          }
+        }
+      }
+    }
+    return Array.from(hits);
+  }
+
   function screenshotAsPng(): string | null {
     const renderer = findRendererCanvas();
     if (!renderer) return null;
@@ -168,19 +250,39 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
 
   // Fire-and-forget save on unmount. Agents pick the packet up via the
   // `review_paint_peek_latest` MCP tool (any client) or the UserPromptSubmit
-  // hook (Claude Code). `keepalive: true` lets the fetch survive the
-  // unmount that triggered it.
+  // hook (Claude Code).
+  //
+  // Robust against partial state: if the three.js canvas isn't found (e.g.
+  // user toggled the brush before the kernel was ready and the renderer
+  // canvas hadn't mounted), we still save the mask — the agent can read
+  // the red strokes from the mask alone and ask "what's marked here?".
   function persistMark() {
-    if (!dirtyRef.current) return;
-    const screenshot = screenshotAsPng();
-    if (!screenshot) return;
+    console.log('[marking-overlay] persistMark fired, dirty=' + dirtyRef.current);
+    if (!dirtyRef.current) {
+      console.log('[marking-overlay] nothing painted — skipping save');
+      return;
+    }
+    let screenshot: string | null;
+    try {
+      screenshot = screenshotAsPng();
+    } catch (err) {
+      console.warn('[marking-overlay] screenshot capture threw:', err);
+      screenshot = null;
+    }
+    if (!screenshot) {
+      console.warn('[marking-overlay] no renderer canvas found — saving mask only');
+    }
     const mask = maskAsPng();
+    const struckParts = struckPartsFromMask();
+    console.log(`[marking-overlay] struck parts:`, struckParts);
     const scriptParam = new URLSearchParams(window.location.search).get('script');
     const meta = {
       note: '',
       scriptPath: scriptParam,
       ts: new Date().toISOString(),
       ua: navigator.userAgent,
+      screenshotMissing: screenshot === null,
+      struckParts,
     };
     // POST to the standalone save server (port 5174, auto-spawned by vite as
     // a worker thread) so saves keep working when vite's main thread
@@ -193,7 +295,9 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
     // the request is in flight on the global queue and completes regardless.
     const saveUrl =
       `${window.location.protocol}//${window.location.hostname}:5174/__kernelcad/review-paint`;
-    const body = JSON.stringify({ screenshot, mask, meta });
+    // mask is always present; screenshot may be empty string if renderer canvas
+    // was missing — server stores both keys regardless.
+    const body = JSON.stringify({ screenshot: screenshot ?? '', mask, meta });
     console.log(`[marking-overlay] saving mark (${(body.length / 1024).toFixed(0)} KB) to ${saveUrl}`);
     fetch(saveUrl, {
       method: 'POST',

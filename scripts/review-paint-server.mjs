@@ -88,7 +88,12 @@ const server = createServer(async (req, res) => {
       : resolve(repoRoot, '.review-paint');
     const packetDir = join(reviewRoot, ts);
     mkdirSync(packetDir, { recursive: true });
-    writeFileSync(join(packetDir, 'screenshot.png'), stripDataUrl(parsed.screenshot));
+    // Screenshot may be empty when the renderer canvas wasn't found at save
+    // time (e.g. brush toggled before the kernel was ready). The mask is
+    // always present; the agent can read the painted strokes from it alone.
+    if (parsed.screenshot && parsed.screenshot.length > 100) {
+      writeFileSync(join(packetDir, 'screenshot.png'), stripDataUrl(parsed.screenshot));
+    }
     writeFileSync(join(packetDir, 'mask.png'), stripDataUrl(parsed.mask));
     writeFileSync(
       join(packetDir, 'meta.json'),
@@ -98,6 +103,11 @@ const server = createServer(async (req, res) => {
           scriptPath: scriptPath ? relative(repoRoot, scriptPath) : null,
           ts: parsed.meta?.ts ?? new Date().toISOString(),
           ua: parsed.meta?.ua ?? '',
+          screenshotMissing: !!parsed.meta?.screenshotMissing,
+          // Assembly part names the brush hit (from a viewport raycast at
+          // save time). Lets the agent see *which structures* were marked,
+          // not just where the strokes landed on screen.
+          struckParts: Array.isArray(parsed.meta?.struckParts) ? parsed.meta.struckParts : [],
         },
         null,
         2,

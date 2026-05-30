@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 // of drei. We only use 3 components total across the whole app.
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { Grid } from "@react-three/drei/core/Grid";
+import { RendererSnapshotPublisher } from "./viewer/RendererSnapshotPublisher";
 import * as THREE from "three";
 import { useEffect, useMemo, useState } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
@@ -83,6 +84,11 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 gl={{
                     toneMapping: THREE.ACESFilmicToneMapping,
                     outputColorSpace: THREE.SRGBColorSpace,
+                    // Marking-tool requires reading the WebGL canvas via
+                    // toDataURL after the user paints. Without this, the
+                    // browser is free to discard the drawing buffer after
+                    // compositing and toDataURL returns a blank PNG.
+                    preserveDrawingBuffer: true,
                 }}
                 raycaster={{
                     params: {
@@ -100,6 +106,8 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setContextMenu({ visible: false, position: null, type: 'FACE' });
                 }}
             >
+                <RendererSnapshotPublisher />
+
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />
                 <directionalLight position={[-5, -10, -5]} intensity={0.3} />
