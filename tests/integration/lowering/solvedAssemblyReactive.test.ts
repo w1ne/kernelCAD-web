@@ -168,7 +168,9 @@ describe('solvedAssembly lowering', () => {
         const arm = assembly('test');
         const base = arm.part('base', box(10, 10, 10));
         const tip  = arm.part('tip',  box(10, 10, 50));
-        arm.ball('wrist', base, tip, { origin: [0, 0, 10] });
+        base.connector('wristBall', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 10] } });
+        tip.connector('wristBall', { type: 'ball', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.mate('wrist', 'base.wristBall', 'tip.wristBall', 'ball', {});
         return (await arm.solvedModel({ wrist: [xDeg, 0, 0] })).toUnion();
       `,
     });

@@ -22,24 +22,29 @@ const link4 = arm.part('link4', box(20, 20, 20, true).translate(15, 0, 0));
 const link5 = arm.part('link5', box(20, 20, 20, true).translate(0, 25, 0));
 const tip = arm.part('tip', box(15, 15, 15, true).translate(0, 0, 25));
 
-arm.revolute('shoulderYaw', base, link1, {
-  axis: [0, 0, 1], origin: [0, 0, baseH], limitsDeg: [-180, 180],
-});
-arm.revolute('shoulderPitch', link1, link2, {
-  axis: [0, 1, 0], origin: [0, 0, 0], limitsDeg: [-120, 120],
-});
-arm.revolute('elbowPitch', link2, link3, {
-  axis: [0, 1, 0], origin: [L1, 0, 0], limitsDeg: [-150, 150],
-});
-arm.revolute('wristYaw', link3, link4, {
-  axis: [1, 0, 0], origin: [L2, 0, 0], limitsDeg: [-180, 180],
-});
-arm.revolute('wristPitch', link4, link5, {
-  axis: [0, 1, 0], origin: [0, 0, 0], limitsDeg: [-120, 120],
-});
-arm.revolute('wristRoll', link5, tip, {
-  axis: [1, 0, 0], origin: [0, 0, 0], limitsDeg: [-180, 180],
-});
+base.connector('shoulderYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, baseH] }, axis: [0, 0, 1] });
+link1.connector('shoulderYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('shoulderYaw', 'base.shoulderYawAxis', 'link1.shoulderYawAxis', 'revolute', { limitsDeg: [-180, 180] });
+
+link1.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+link2.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('shoulderPitch', 'link1.shoulderPitchAxis', 'link2.shoulderPitchAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+link2.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [L1, 0, 0] }, axis: [0, 1, 0] });
+link3.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('elbowPitch', 'link2.elbowPitchAxis', 'link3.elbowPitchAxis', 'revolute', { limitsDeg: [-150, 150] });
+
+link3.connector('wristYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [L2, 0, 0] }, axis: [1, 0, 0] });
+link4.connector('wristYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+arm.mate('wristYaw', 'link3.wristYawAxis', 'link4.wristYawAxis', 'revolute', { limitsDeg: [-180, 180] });
+
+link4.connector('wristPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+link5.connector('wristPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('wristPitch', 'link4.wristPitchAxis', 'link5.wristPitchAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+link5.connector('wristRollAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+tip.connector('wristRollAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+arm.mate('wristRoll', 'link5.wristRollAxis', 'tip.wristRollAxis', 'revolute', { limitsDeg: [-180, 180] });
 
 // Target lives inside the workspace; expect a clean analytical solution.
 const reachableTarget = [250, 100, 200] as const;

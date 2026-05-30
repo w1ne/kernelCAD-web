@@ -22,11 +22,9 @@ const base = arm.part('base', box(300, 200, 12, true).translate(0, 0, 6));
 // the base; the hinge pivot lives along the -Y rear edge of the base.
 const lid = arm.part('lid', box(300, 200, 6, true).translate(0, 100, 3));
 
-arm.revolute('hinge', base, lid, {
-  axis: [1, 0, 0],
-  origin: [0, -100, 12],
-  limitsDeg: [-15, 135],
-});
+base.connector('hingeAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, -100, 12] }, axis: [1, 0, 0] });
+lid.connector('hingeAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+arm.mate('hinge', 'base.hingeAxis', 'lid.hingeAxis', 'revolute', { limitsDeg: [-15, 135] });
 
 const r = await kinematic.checkSweptCollision(arm, {
   joint: 'hinge',

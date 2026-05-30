@@ -93,10 +93,7 @@ const shoulder = arm.part('shoulder', shoulderLink, {
   connectors: { root: { origin: [0, 9, 2], axis: [0, 1, 0] } },
   connect: { connector: 'root', to: base.connector('pivot'), name: 'base-to-shoulder' },
 });
-arm.revolute('yaw', base, shoulder, {
-  origin: base.connector('pivot').worldOrigin,
-  axis: [0, 0, 1],
-});
+arm.mate('yaw', 'base.pivot', 'shoulder.root', 'revolute', {});
 ```
 
 `setParamValue('baseX', 100)` reactively rebuilds the plate AND the connector frame AND the joint origin AND the dependent shoulder placement — all in one re-lower. Axis vectors normalize at lower time; an axis whose components resolve to `[0, 0, 0]` raises `feature.invalid-args` with hint `invalid-args.axis.zero`.

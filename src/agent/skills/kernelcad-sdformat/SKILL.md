@@ -25,10 +25,18 @@ const a = arm.part('a', box(10, 10, 10), { density: 2700 });
 const b = arm.part('b', box(10, 10, 10), { density: 2700 });
 const c = arm.part('c', box(10, 10, 10), { density: 2700 });
 const d = arm.part('d', box(10, 10, 10), { density: 2700 });
-arm.revolute('ab', a, b, { axis: [0,0,1], origin: [10,0,0] });
-arm.revolute('bc', b, c, { axis: [0,0,1], origin: [10,0,0] });
-arm.revolute('cd', c, d, { axis: [0,0,1], origin: [10,0,0] });
-arm.revolute('da', d, a, { axis: [0,0,1], origin: [10,0,0] });
+a.connector('abAxis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+b.connector('abAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('ab', 'a.abAxis', 'b.abAxis', 'revolute', {});
+b.connector('bcAxis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+c.connector('bcAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('bc', 'b.bcAxis', 'c.bcAxis', 'revolute', {});
+c.connector('cdAxis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+d.connector('cdAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('cd', 'c.cdAxis', 'd.cdAxis', 'revolute', {});
+d.connector('daAxis', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+a.connector('daAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('da', 'd.daAxis', 'a.daAxis', 'revolute', {});
 return arm.model();
 ```
 
