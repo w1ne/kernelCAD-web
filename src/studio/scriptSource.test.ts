@@ -1,4 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// S1: scriptSource now routes through the apiBase helper, which calls
+// supabase.auth.getSession(). Stub the Supabase client so the test stays
+// behavior-equivalent to today (unsigned-in → relative URL path).
+vi.mock('../funnel/lib/supabaseClient', () => ({
+  getSupabase: () => ({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+  }),
+}));
+
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 
 afterEach(() => {
@@ -18,9 +28,11 @@ describe('loadStudioScriptSource', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/__kernelcad/source?script=examples%2Fgallery%2Fratchet-stool.kcad.ts',
+      expect.objectContaining({ headers: {} }),
     );
     expect(fetchMock).not.toHaveBeenCalledWith(
       expect.stringContaining('/__kernelcad/mesh'),
+      expect.anything(),
     );
   });
 });

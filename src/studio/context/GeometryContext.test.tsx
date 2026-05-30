@@ -40,6 +40,15 @@ vi.mock('../../shared/worker/geometryEngine', () => ({
   },
 }));
 
+// S1: GeometryContext now routes its fetches through the apiBase helper,
+// which calls supabase.auth.getSession(). Stub the Supabase client so the
+// test stays behavior-equivalent to today (unsigned-in → relative URLs).
+vi.mock('../../funnel/lib/supabaseClient', () => ({
+  getSupabase: () => ({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+  }),
+}));
+
 function Probe() {
   const {
     geometries,
@@ -340,6 +349,7 @@ describe('GeometryContext latest-intent-wins', () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(1,
       '/__kernelcad/session?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
+      expect.objectContaining({ headers: {} }),
     );
     expect(fetchUrl(fetchMock, 2)).toBe('/__kernelcad/mesh?session=tok-abc');
     expectFetchSignal(fetchMock, 2);

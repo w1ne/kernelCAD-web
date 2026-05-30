@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
+import { apiCall, rewritePath } from '../api/apiBase';
 import type { JSX } from 'react';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
@@ -64,8 +65,12 @@ export function ExportTab(): JSX.Element {
         }
         setPending(format);
         try {
-            const url = `/__kernelcad/export?script=${encodeURIComponent(script)}&format=${format}`;
-            const response = await fetch(url);
+            const { base, headers } = await apiCall();
+            const url = rewritePath(
+                `/__kernelcad/export?script=${encodeURIComponent(script)}&format=${format}`,
+                base,
+            );
+            const response = await fetch(url, { headers });
             if (!response.ok) {
                 const payload = await response.json().catch(() => ({}));
                 throw new Error(typeof payload?.error === 'string' ? payload.error : response.statusText);

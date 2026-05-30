@@ -19,6 +19,7 @@ import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRe
 import { applyEnvironment } from '../../../shared/render/environment';
 import { buildMaterialFromPBR, DEFAULT_MESH_COLOR, disposeMaterialDeep } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
+import { apiCall, rewritePath } from '../../api/apiBase';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -1232,7 +1233,13 @@ export function DemoPlayerPage(): React.JSX.Element {
     let cancelled = false;
     setScriptLoadStatus({ kind: 'loading', message: `Loading ${script}` });
 
-    fetch(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`)
+    apiCall()
+      .then(({ base, headers }) =>
+        fetch(
+          rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(script)}`, base),
+          { headers },
+        ),
+      )
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok) {
@@ -1294,7 +1301,11 @@ export function DemoPlayerPage(): React.JSX.Element {
       if (!step) return;
       setBuildRecordStep(step);
       setScriptLoadStatus({ kind: 'loading', message: `Loading ${step.script}` });
-      const response = await fetch(`/__kernelcad/mesh?script=${encodeURIComponent(step.script)}`);
+      const { base, headers } = await apiCall();
+      const response = await fetch(
+        rewritePath(`/__kernelcad/mesh?script=${encodeURIComponent(step.script)}`, base),
+        { headers },
+      );
       const payload = await response.json();
       if (!response.ok) {
         const message = typeof payload?.error === 'string' ? payload.error : response.statusText;
