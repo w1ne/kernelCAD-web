@@ -47,6 +47,31 @@ function resolveExampleScript(script: string | null): string | null {
   return scriptPath;
 }
 
+/**
+ * Auto-spawn the standalone review-paint save server in a Node worker thread
+ * when vite starts. Worker threads have their own event loop, so even when
+ * vite's main thread saturates on OCCT/replicad transforms the brush can
+ * still land a packet on disk. Killed automatically when vite exits.
+ */
+function reviewPaintSaveServer(): Plugin {
+  return {
+    name: 'kernelcad-review-paint-save-server',
+    apply: 'serve',
+    async configureServer() {
+      const { Worker } = await import('node:worker_threads');
+      const workerPath = fileURLToPath(new URL('./scripts/review-paint-server.mjs', import.meta.url));
+      const worker = new Worker(workerPath, { stderr: false, stdout: false });
+      worker.on('error', (err) => {
+        console.error('[review-paint-server] worker error:', err);
+      });
+      worker.on('exit', (code) => {
+        if (code !== 0) console.error(`[review-paint-server] worker exited with code ${code}`);
+      });
+      process.on('exit', () => { worker.terminate(); });
+    },
+  };
+}
+
 function kernelCadMeshEndpoint(): Plugin {
   return {
     name: 'kernelcad-mesh-endpoint',
@@ -490,6 +515,7 @@ export default defineConfig(({ command }) => ({
       routeFileIgnorePattern: '\\.test\\.ts$',
     }),
     kernelCadMeshEndpoint(),
+    reviewPaintSaveServer(),
     react(),
     tailwindcss(),
   ],

@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "review-paint:server": "node scripts/review-paint-server.mjs",
     "prebuild": "tsr generate",
     "build": "tsc -b && vite build",
     "build:cli": "tsc --noEmit -p tsconfig.cli.json && node scripts/build-cli.mjs",

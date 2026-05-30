@@ -182,13 +182,29 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       ts: new Date().toISOString(),
       ua: navigator.userAgent,
     };
-    fetch('/__kernelcad/review-paint', {
+    // POST to the standalone save server (port 5174, auto-spawned by vite as
+    // a worker thread). Posting to the same vite origin was unreliable
+    // because vite's main thread routinely saturates on OCCT/replicad
+    // transforms and drops connections; the worker thread keeps responding
+    // through that. Vite's middleware also still handles the route as a
+    // fallback when the worker isn't running.
+    const saveUrl =
+      `${window.location.protocol}//${window.location.hostname}:5174/__kernelcad/review-paint`;
+    fetch(saveUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ screenshot, mask, meta }),
       keepalive: true,
     }).catch((err) => {
-      console.warn('[marking-overlay] save failed:', err);
+      console.warn('[marking-overlay] save to :5174 failed, trying same-origin fallback:', err);
+      fetch('/__kernelcad/review-paint', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ screenshot, mask, meta }),
+        keepalive: true,
+      }).catch((err2) => {
+        console.warn('[marking-overlay] same-origin fallback also failed:', err2);
+      });
     });
   }
 
