@@ -183,29 +183,37 @@ export function MarkingOverlay({ visible }: { visible: boolean }) {
       ua: navigator.userAgent,
     };
     // POST to the standalone save server (port 5174, auto-spawned by vite as
-    // a worker thread). Posting to the same vite origin was unreliable
-    // because vite's main thread routinely saturates on OCCT/replicad
-    // transforms and drops connections; the worker thread keeps responding
-    // through that. Vite's middleware also still handles the route as a
-    // fallback when the worker isn't running.
+    // a worker thread) so saves keep working when vite's main thread
+    // saturates on OCCT/replicad transforms.
+    //
+    // We deliberately do NOT set `keepalive: true`: Chrome silently rejects
+    // keepalive fetches with bodies over 64 KB, and a viewport screenshot +
+    // mask base64-encoded blows through that cap easily. Without keepalive,
+    // the fetch fires as a normal request — the component is unmounting but
+    // the request is in flight on the global queue and completes regardless.
     const saveUrl =
       `${window.location.protocol}//${window.location.hostname}:5174/__kernelcad/review-paint`;
+    const body = JSON.stringify({ screenshot, mask, meta });
+    console.log(`[marking-overlay] saving mark (${(body.length / 1024).toFixed(0)} KB) to ${saveUrl}`);
     fetch(saveUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ screenshot, mask, meta }),
-      keepalive: true,
-    }).catch((err) => {
-      console.warn('[marking-overlay] save to :5174 failed, trying same-origin fallback:', err);
-      fetch('/__kernelcad/review-paint', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ screenshot, mask, meta }),
-        keepalive: true,
-      }).catch((err2) => {
-        console.warn('[marking-overlay] same-origin fallback also failed:', err2);
+      body,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        console.log(`[marking-overlay] mark saved (${saveUrl})`);
+      })
+      .catch((err) => {
+        console.warn('[marking-overlay] save to :5174 failed, trying same-origin fallback:', err);
+        fetch('/__kernelcad/review-paint', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body,
+        }).catch((err2) => {
+          console.warn('[marking-overlay] same-origin fallback also failed:', err2);
+        });
       });
-    });
   }
 
   useEffect(() => {
