@@ -544,4 +544,14 @@ export default defineConfig(({ command }) => ({
       ],
     },
   },
+  optimizeDeps: {
+    // ts-morph (13MB) and typescript (9.5MB) reach the Studio module graph
+    // only through `import('.../RefactoringManager')` in CodeContext (a
+    // rename-variable codepath users rarely hit). Vite's dep scanner pulls
+    // dynamic imports into the cold-start prebundle, which is what makes
+    // `npm run dev` saturate one core for ~60s and keep "Geometry kernel
+    // warming up..." visible. Excluding them defers the bundle work until
+    // (if ever) a user triggers the rename — and keeps cold-start light.
+    exclude: ['ts-morph', 'typescript'],
+  },
 }))
