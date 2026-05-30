@@ -1,5 +1,6 @@
 // src/agent/mcp/server.ts
 import { createRequire } from 'node:module';
+import { randomUUID } from 'node:crypto';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -16,6 +17,7 @@ import {
   readCloudResource,
   type CloudMcpOptions,
 } from './cloudClient';
+import { recordToolCall, maybeShowFirstRunNotice, flushTelemetry } from '../../shared/telemetry';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/agent/mcp/server.ts → ../../../package.json (3 up)
@@ -31,6 +33,7 @@ function loadPkg(): { version: string } {
   return { version: 'unknown' };
 }
 const pkg = loadPkg();
+const SESSION_ID = randomUUID();
 
 export { TOOLS };
 
@@ -60,13 +63,20 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args } = req.params;
     const input = (args ?? {}) as Record<string, unknown>;
-    const result = options.cloud
-      ? await callCloudTool(name, input, options.cloudOptions)
-      : await callMcpTool(name, input);
-
-    return {
-      content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
-    };
+    const mode = options.cloud ? 'cloud' : 'local';
+    const startedAt = Date.now();
+    try {
+      const result = options.cloud
+        ? await callCloudTool(name, input, options.cloudOptions)
+        : await callMcpTool(name, input);
+      recordToolCall({ toolName: name, mode, outcome: 'ok', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
+      return {
+        content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+      };
+    } catch (err) {
+      recordToolCall({ toolName: name, mode, outcome: 'error', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
+      throw err;
+    }
   });
 
   if (options.cloud) {
@@ -90,7 +100,11 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
 }
 
 export async function runStdioServer(options: McpServerOptions = {}): Promise<void> {
+  maybeShowFirstRunNotice();
   const server = createMcpServer(options);
   const transport = new StdioServerTransport();
+  process.once('beforeExit', () => { void flushTelemetry(); });
+  process.once('SIGINT', () => { void flushTelemetry().finally(() => process.exit(0)); });
+  process.once('SIGTERM', () => { void flushTelemetry().finally(() => process.exit(0)); });
   await server.connect(transport);
 }
