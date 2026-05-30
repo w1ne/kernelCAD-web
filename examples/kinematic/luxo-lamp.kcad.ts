@@ -65,14 +65,19 @@ const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 64 mm — shoulder pivot lives here
 //   Each plate has a through-hole of FORK_PIN_R along the Y axis at the
 //   pivot point. The tongue on the child is a single plate that fits between
 //   them (thickness < GAP_Y) and carries the same hole.
+// Joint hardware sized for the hinge to *read as a hinge* — review packet
+// 2026-05-30T15-10-41.858Z showed the previous values made fork + tongue +
+// yoke blend into a chunky cube. Bigger gap-to-tongue ratio = visible
+// daylight on each side of the tongue; thinner plates = the fork looks
+// like two plates around a pivot, not a block.
 const FORK_PLATE_X  = 22;   // along the arm (X extent at the joint end)
 const FORK_PLATE_Z  = 30;   // vertical extent (Z) of the plate
-const FORK_PLATE_T  = 4;    // each plate's Y-thickness
-const FORK_GAP_Y    = 12;   // inner gap that swallows the tongue
-const TONGUE_Y      = 10;   // tongue thickness (< FORK_GAP_Y → slips in)
+const FORK_PLATE_T  = 3;    // each plate's Y-thickness (was 4 → thinner)
+const FORK_GAP_Y    = 18;   // inner gap that swallows the tongue (was 12)
+const TONGUE_Y      = 6;    // tongue thickness — leaves 6mm daylight per side (was 10)
 const PIN_R         = 3.5;  // pivot pin radius (Ø7 — typical M6 bolt + sleeve)
-const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 8;   // sticks out 4mm each side
-const PIN_CAP_R     = 5.5;  // bolt-head + nut style caps at pin ends
+const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 14;  // sticks out 7mm each side so caps read as bolt heads
+const PIN_CAP_R     = 7;    // bigger cap → reads as a real bolt head, not a decorative dot
 
 // Beam arm cross-section.
 const ARM_W = 14;   // Y dimension
@@ -222,11 +227,11 @@ const baseColumn = cylinder(COLUMN_H, COLUMN_R, 48)
 // its plates straddle the lower-arm tongue along the world Y axis.
 const shoulderFork = makeClevisFork().translate(0, 0, COLUMN_TOP_Z);
 
-// Small cap on top of the column to merge the fork plates into the column
-// (otherwise the fork plates float above the column visually).
-const shoulderForkBase = cylinder(6, COLUMN_R + 2, 32)
-  .translate(0, 0, COLUMN_TOP_Z - 3)
-  .material(mFork);
+// (Previous shoulderForkBase collar at radius COLUMN_R+2=16 was wider than
+// the fork's outer Y extent (±12mm with the new gap/plate sizing), so it
+// enveloped the fork base and made the joint read as one solid block.
+// Dropped — the column's R=14 already overlaps the fork plates' outer
+// edges, so they no longer "float".)
 
 // Shoulder pin (extends through the fork; the lower-arm tongue's hole sits
 // on this same Y axis so the joint is mechanically sensible).
@@ -244,11 +249,10 @@ const baseShape = baseDisc
   .union(feltPad)
   .union(bolts)
   .union(baseColumn)
-  .union(shoulderForkBase)
   .union(shoulderFork)
   // Drill the shoulder pivot through-hole AFTER all base solids are
   // unioned, so the hole passes through every co-located piece (fork
-  // plates + collar) in one shot.
+  // plates + column top) in one shot.
   .subtract(makePinHoleCutter(0, COLUMN_TOP_Z))
   .union(shoulderPin)
   .union(baseSpringAnchor);
@@ -272,11 +276,11 @@ const lowerBeam = box(L_LOWER - FORK_PLATE_X / 2, ARM_W, ARM_T, true)
 // Elbow clevis fork at the distal end (x = L_LOWER). The lamp's elbow bends
 // "downward" so the fork's plates are vertical and the inner tongue slips in.
 const lowerElbowFork = makeClevisFork().translate(L_LOWER, 0, 0);
-// Yoke bridging the beam's flat end-face into the clevis fork's plates.
-// Without this, the fork plates sit at y=±[8, 12] but the beam's Y extent
-// is only ±7, leaving the plates mechanically floating relative to the
-// beam. The yoke widens to envelop both plates and the beam tip.
-const lowerElbowYoke = box(FORK_PLATE_X + 4, FORK_GAP_Y + 2 * FORK_PLATE_T + 6, ARM_T, true)
+// Yoke bridging the beam's flat end-face into the clevis fork plates.
+// Slimmed (Y-width = ARM_W + 2) so the fork plates protrude visibly on
+// each side instead of being enveloped — without this the whole joint
+// reads as a chunky cube (review packet 2026-05-30T15-10-41.858Z).
+const lowerElbowYoke = box(FORK_PLATE_X + 4, ARM_W + 2, ARM_T, true)
   .translate(L_LOWER, 0, 0)
   .material(mArm);
 
@@ -318,7 +322,7 @@ const upperBeam = box(L_UPPER - FORK_PLATE_X / 2, ARM_W, ARM_T, true)
 const upperWristFork = makeClevisFork().translate(L_UPPER, 0, 0);
 // Yoke joining the upper beam to the wrist fork — same purpose as the
 // lower arm's elbow yoke.
-const upperWristYoke = box(FORK_PLATE_X + 4, FORK_GAP_Y + 2 * FORK_PLATE_T + 6, ARM_T, true)
+const upperWristYoke = box(FORK_PLATE_X + 4, ARM_W + 2, ARM_T, true)
   .translate(L_UPPER, 0, 0)
   .material(mArm);
 
