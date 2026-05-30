@@ -57,8 +57,12 @@ const BOLT_R       = 58;     // bolt-circle radius (visible mount bolts)
 const BOLT_HEAD_R  = 6;
 const BOLT_HEAD_H  = 5;
 const COLUMN_R     = 14;
-const COLUMN_H     = 50;
-const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 64 mm — shoulder pivot lives here
+// Column height tuned to the real Anglepoise/Luxo proportion ~70% of the
+// lower-arm length. The previous COLUMN_H=50 was 25% of L_LOWER=200 →
+// the lamp read as stubby legs holding up a giant overhanging arm
+// (self-inspection 2026-05-30, three views all confirmed the mismatch).
+const COLUMN_H     = 140;
+const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 154 mm — shoulder pivot lives here
 
 // Clevis fork geometry (re-used at shoulder/elbow/wrist).
 //   Two parallel plates lying in the XZ plane, separated along Y by GAP_Y.
