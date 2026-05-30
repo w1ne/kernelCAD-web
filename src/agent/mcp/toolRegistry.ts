@@ -1366,7 +1366,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             description: 'When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know "is there a packet".',
           },
         },
-        additionalProperties: false,
       },
     },
     handler: input => reviewPaintPeekLatestTool(input as Parameters<typeof reviewPaintPeekLatestTool>[0]),
