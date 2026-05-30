@@ -80,7 +80,12 @@ const FORK_PLATE_T  = 3;    // each plate's Y-thickness
 const FORK_GAP_Y    = 18;   // inner gap that swallows the tongue
 const TONGUE_Y      = 6;    // tongue thickness — leaves 6mm daylight per side
 const PIN_R         = 4;    // pivot pin radius (Ø8 — bolder, reads at the lamp's scale)
-const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 18;  // sticks out 9 mm beyond each fork outer face
+// Pin length minimized: previously had 9 mm of shaft sticking past each fork
+// outer face, which made the R=10 bolt heads visually disconnect from the
+// R=4 shaft (review packet 2026-05-30T21-00-46.090Z showed the cap floating
+// 8.5 mm away from the fork plate). Now caps sit flush against the fork
+// outer faces — like a real bolt seating against its bearing surface.
+const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T;       // total stack of fork+tongue+fork, no extra protrusion
 const PIN_CAP_R     = 10;   // bolt-head sized — visible at the lamp's framing distance, not a decorative dot
 
 // Cylindrical "knuckle" wrapping each pivot — the iconic Anglepoise feature
