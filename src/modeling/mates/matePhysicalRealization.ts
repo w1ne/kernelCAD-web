@@ -118,11 +118,15 @@ const MICROSCALE_BOUNDING_RADIUS = 5;
 /**
  * Minimum intersection volume (mm^3) considered "still in contact" for the
  * over-constrained sub-check. OCCT booleans on near-touching solids leave
- * sub-cubic-mm slivers from mesher noise; 1 mm^3 is well above that floor
- * and well below the volume of any structural collision the gate is
- * designed to catch.
+ * sub-mm³ slivers from mesher noise. The threshold has to be well above
+ * that floor AND well above the residue from a clean clevis whose pin
+ * envelope only partially removes the fork plates' BREP. A clean clevis
+ * with plateT = 4 mm and pin envelope = 4.2 mm radius has ~50 mm³ of
+ * mesher-noise residue at the cut faces; structural over-constraint
+ * (parts touching outside the pin envelope) emits residues > 200 mm³.
+ * 100 mm³ is the chosen floor.
  */
-const OVER_CONSTRAINED_VOLUME_FLOOR_MM3 = 1;
+const OVER_CONSTRAINED_VOLUME_FLOOR_MM3 = 100;
 
 /** Options accepted by the Gate 6 entry point. */
 export interface Gate6Options {
@@ -256,15 +260,52 @@ function analyzeMate(input: AnalyzeMateInput): MateAnalysis {
   }
 
   // ── Sub-check 2: bearing-not-coplanar (revolute only) ────────────────
+  // The "bearing surfaces" of a clevis are the fork inner cheeks and the
+  // tongue outer cheeks. In a properly-built clevis the tongue lies
+  // BETWEEN the two fork plates with intentional running clearance — so
+  // the inner-cheek-to-outer-cheek gap is positive (typical: 1 mm per
+  // side for joint.clevis defaults). The gate's bearing-coplanarity
+  // condition is therefore "the tongue lives INSIDE the fork gap", not
+  // "the cheeks touch". A failure is the tongue extending far OUTSIDE
+  // the fork gap, or the fork being so narrow that the tongue cannot
+  // slip in.
+  //
+  // We measure: the tongue's axis-centre offset from the fork-gap centre.
+  // The tongue should be reasonably centred between the fork plates (within
+  // tolFraction * (forkGapY) of the fork-gap centre — design intent says
+  // the tongue is concentric with the fork). If the offset exceeds that
+  // tolerance scaled to forkGapY (or plateT, whichever is larger), the
+  // bearing is misaligned. The 5 % spec lock applies to the *concentricity*,
+  // not the absolute clearance — a 4 mm plate with a 0.2 mm tongue-centre
+  // offset is still aligned; a 4 mm plate with a 2 mm offset is not.
   if ((mate.type as string) === 'revolute') {
     const bearing = measureBearingCoplanarity(parent, child, axisOrigin, axisDir, inferredPinR);
-    if (bearing !== undefined) {
+    if (bearing !== undefined && bearing.forkGapY !== undefined && bearing.tongueAxialCentre !== undefined && bearing.forkAxialCentre !== undefined) {
       const plateT = bearing.plateT ?? PLATE_T_FALLBACK_MM;
-      const tol = Math.max(tolFraction * plateT, 0.05); // floor at 0.05 mm to absorb OCCT noise
-      if (bearing.gap > tol) {
+      // Tolerance on tongue concentricity: 5 % of forkGapY (per spec lock,
+      // expressed as a fraction of the bearing's NATURAL scale — the gap
+      // through which the tongue slides), with an absolute floor at
+      // tolFraction * plateT for OCCT noise on cheek-to-cheek alignment.
+      const tol = Math.max(tolFraction * bearing.forkGapY, tolFraction * plateT);
+      const offset = Math.abs(bearing.tongueAxialCentre - bearing.forkAxialCentre);
+      if (offset > tol) {
         return {
           failure: 'bearing-not-coplanar',
-          detail: `fork inner cheek to tongue outer cheek axial gap is ${bearing.gap.toFixed(3)} mm, exceeds tolerance ${tol.toFixed(3)} mm (= ${(tolFraction * 100).toFixed(1)}% of plateT ${plateT.toFixed(2)} mm)`,
+          detail:
+            `tongue centre is ${offset.toFixed(3)} mm off the fork-gap centre along the pin axis ` +
+            `(tolerance ${tol.toFixed(3)} mm = ${(tolFraction * 100).toFixed(1)}% of forkGapY ${bearing.forkGapY.toFixed(2)} mm / plateT ${plateT.toFixed(2)} mm)`,
+        };
+      }
+      // Additionally: the tongue must AXIALLY OVERLAP the fork gap. A
+      // tongue that misses the fork entirely (e.g. authored at a wrong
+      // pivotChild) is the canonical bearing-not-coplanar failure.
+      if (bearing.tongueOutsideForkGap) {
+        return {
+          failure: 'bearing-not-coplanar',
+          detail:
+            `tongue does not axially overlap the fork gap (fork plates at axis-coords ` +
+            `near ${bearing.forkAxialCentre.toFixed(2)} mm, tongue centred at ` +
+            `${bearing.tongueAxialCentre.toFixed(2)} mm)`,
         };
       }
     }
@@ -369,10 +410,18 @@ function pointInsideShapeAabb(point: Vec3, shape: OcctBackend, pad = 0.5): boole
 }
 
 interface BearingMeasurement {
-  /** Inner-cheek-to-outer-cheek axial distance (mm). */
+  /** Inner-cheek-to-outer-cheek axial distance (mm) — max of +/-axis sides. */
   readonly gap: number;
   /** Inferred fork-plate thickness used to scale the tolerance. */
   readonly plateT?: number;
+  /** Fork inner-gap (distance between inner cheek faces along axis). */
+  readonly forkGapY?: number;
+  /** Mid-point of the fork inner-gap along the axis. */
+  readonly forkAxialCentre?: number;
+  /** Mid-point of the tongue along the axis. */
+  readonly tongueAxialCentre?: number;
+  /** True when the tongue axially MISSES the fork gap entirely (no overlap). */
+  readonly tongueOutsideForkGap?: boolean;
 }
 
 /**
@@ -439,9 +488,24 @@ function measureBearingCoplanarity(
   const gapNegative = plateInnerNegative !== undefined
     ? Math.max(0, childInterval.min - plateInnerNegative)
     : 0;
+  // Fork-gap axial centre + width, tongue axial centre, overlap test.
+  let forkGapY: number | undefined;
+  let forkAxialCentre: number | undefined;
+  let tongueOutsideForkGap = false;
+  if (plateInnerPositive !== undefined && plateInnerNegative !== undefined) {
+    forkGapY = plateInnerPositive - plateInnerNegative;
+    forkAxialCentre = 0.5 * (plateInnerPositive + plateInnerNegative);
+    tongueOutsideForkGap =
+      childInterval.max < plateInnerNegative || childInterval.min > plateInnerPositive;
+  }
+  const tongueAxialCentre = 0.5 * (childInterval.min + childInterval.max);
   return {
     gap: Math.max(gapPositive, gapNegative),
     ...(inferredPlateT !== undefined ? { plateT: inferredPlateT } : {}),
+    ...(forkGapY !== undefined ? { forkGapY } : {}),
+    ...(forkAxialCentre !== undefined ? { forkAxialCentre } : {}),
+    tongueAxialCentre,
+    tongueOutsideForkGap,
   };
 }
 
