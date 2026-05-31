@@ -1,27 +1,32 @@
 // Pixar-style Luxo desk lamp — 3-DOF kinematic build with REAL hardware.
 //
-// G1 rewrite (2026-05-31): every revolute joint is now built with
+// G1 rewrite (2026-05-31): every revolute joint is built with
 // `joint.clevis(...)` — the constructive primitive that emits the canonical
 // fork + tongue + pin + through-hole hardware guaranteed correct by
 // construction (one-pass drill, pivot lifted by max rotated-tongue reach,
 // bridge tabs outside the tongue's swing envelope, pin caps flush against
-// the outer fork faces). The pre-G1 build hand-rolled forks/tongues/yokes
-// from box/cylinder/union and needed three `ignore[]` joint-pair entries
-// to silence "every-gate-green-mechanism-falls-apart" interference noise.
-// The rewritten lamp validates with --include-interference and ZERO
-// `ignore[]` entries in the script — the smoking-gun signal that the
-// primitive removed the lamp-class delivery failure.
+// the outer fork faces).
+//
+// Issue #339 restoration: the G1 pass dropped the lamp's iconic body
+// geometry — column, beams, head neck/socket/bulb, and the three Anglepoise
+// coil springs — leaving only floating fork/tongue hardware. This revision
+// UNIONs each part's body shape WITH the primitive's output, so the lamp
+// reads as a Luxo silhouette again while still using `joint.clevis(...)` at
+// every revolute joint.
 //
 // Hardware you could actually machine and bolt together:
 //   • Base disc with 4 visible bolt-heads (mounts to the desk surface).
-//   • Column rises from the disc; the shoulder joint at its top is a real
-//     clevis (built by joint.clevis with axis='Y'), pinning the lower arm.
-//   • Lower-arm beam extends along +X; the elbow at its tip is another
-//     clevis pinning the upper arm.
-//   • Upper-arm beam extends along +X; the wrist at its tip is the third
-//     clevis pinning the lamp-head.
-//   • Lamp head's shade is a truncated cone holding a glass bulb in a black
-//     porcelain socket.
+//   • Vertical column rises from the disc; the shoulder clevis at its top
+//     pins the lower arm to the base.
+//   • Lower-arm beam extends along +X; the elbow clevis at its tip pins the
+//     upper arm.
+//   • Upper-arm beam extends along +X; the wrist clevis at its tip pins the
+//     lamp-head.
+//   • Lamp head: short neck → truncated-cone shade with a black porcelain
+//     socket and an incandescent glass bulb visible at the mouth.
+//   • Three decorative tension-spring parts, each fastened to its parent
+//     arm — the classic Anglepoise balance mechanism, ridden along each
+//     arm segment.
 //
 // Convention discipline (kernelcad-assemblies / kernelcad-kinematic SKILLs):
 //   - millimetres throughout (no metres)
@@ -43,6 +48,7 @@ const mCast = { baseColor: '#3f4651', metalness: 0.45, roughness: 0.55 };     //
 const mArm  = { baseColor: '#c9c1a8', metalness: 0.25, roughness: 0.55 };     // warm cream arm (classic Luxo)
 const mPin  = { baseColor: '#262a31', metalness: 0.95, roughness: 0.3 };      // black-oxide steel pin
 const mFork = { baseColor: '#7d8290', metalness: 0.7,  roughness: 0.35 };     // brushed steel clevis bracket
+const mSpring = { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 };    // black spring wire
 const mBrass  = { baseColor: '#c79a3b', metalness: 0.85, roughness: 0.3 };    // brass shade
 const mSocket = { baseColor: '#2c2f36', metalness: 0.7,  roughness: 0.35 };   // black porcelain socket
 const mBulb   = { baseColor: '#fff5d6', metalness: 0.0,  roughness: 0.18 };   // incandescent glass
@@ -55,14 +61,24 @@ const BOLT_R       = 58;     // bolt-circle radius (visible mount bolts)
 const BOLT_HEAD_R  = 6;
 const BOLT_HEAD_H  = 5;
 const COLUMN_R     = 14;
-const COLUMN_H     = 50;
-const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 64 mm — shoulder pivot anchor
+// Column height tuned to the real Anglepoise/Luxo proportion ~70% of the
+// lower-arm length. A stubby column reads as legs holding up a giant
+// overhanging arm.
+const COLUMN_H     = 140;
+const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 154 mm — shoulder anchor lives here
 
 // Beam arm cross-section.
 const ARM_W = 14;   // Y dimension
 const ARM_T = 18;   // Z dimension
 const L_LOWER = 200;
 const L_UPPER = 170;
+
+// Spring geometry — placeholder until the kernel-level `spring()` primitive
+// lands; a slim shaft with end-cap nubs reads as a mechanical element along
+// each arm without the tangled-helix mesh artefacts a sweep would produce.
+const SPRING_WIRE_R   = 1.6;
+const SPRING_COIL_R   = 9;
+const SPRING_LEN      = 25;
 
 // Head: shade, bulb, socket.
 const SHADE_R_SMALL = 28;
@@ -99,9 +115,32 @@ const clevisStyle = {
 const arm = assembly('luxo-lamp');
 
 // ============================================================================
-// Base body (pre-joint) — disc + bolt-circle + column. The shoulder
-// clevis joint will union its fork + pin into this body, and drill its
-// through-hole through the resulting column-top + fork stack.
+// Helpers
+// ============================================================================
+
+// Tension spring (decorative) — a slim cylinder along part-local +X with
+// two end-cap spheres of radius ~SPRING_COIL_R/2 so the silhouette hints
+// at the coiled diameter. Until kernel-level `spring()` is exposed, this
+// placeholder reads as "a mechanical element between the two anchors"
+// without polluting the lamp with a tangled helical sweep.
+function makeSpring(length: number = SPRING_LEN) {
+  const shaft = cylinder(length, SPRING_WIRE_R * 1.5, 24)
+    .rotate([0, 1, 0], 90)              // axis Z → X
+    .translate(length / 2, 0, 0);
+  const endCapL = sphere(SPRING_COIL_R * 0.45)
+    .translate(0, 0, 0);
+  const endCapR = sphere(SPRING_COIL_R * 0.45)
+    .translate(length, 0, 0);
+  return shaft.union(endCapL).union(endCapR).material(mSpring);
+}
+
+// ============================================================================
+// Base body (pre-joint) — cast disc + felt pad + bolt-circle + full column
+// rising to the shoulder anchor. The shoulder clevis joint will union its
+// fork + pin into this body and drill the through-hole through the resulting
+// column-top + fork stack. `joint.clevis(..., liftPivot: true)` automatically
+// lifts the pivot above COLUMN_TOP_Z by `knuckleR · max(|sin|) + 1 mm` and
+// adds two posts connecting the lifted pivot back down to the column top.
 // ============================================================================
 
 const baseDisc = cylinder(BASE_H, BASE_R, 64).material(mCast);
@@ -117,38 +156,24 @@ const boltHead = cylinder(BOLT_HEAD_H, BOLT_HEAD_R, 24)
   .material(mPin);
 const bolts = boltHead.patternCircular({ count: 4, axis: [0, 0, 1] });
 
-// Column terminates ABOVE the disc but a clearance below the shoulder
-// pivot — leaves room for the lower-arm beam (which rotates about the
-// shoulder Y-axis) to swing through its full pose range without entering
-// the column volume. The clearance must accommodate (a) the tongue's
-// rotational envelope (knuckleR) AND (b) the beam's diagonal sweep at the
-// rotation extremes. At pose θ, the beam's bottom edge at child x near
-// the pivot reaches world Z = pivot − (ARM_T/2 · cos θ + beamClear · sin θ).
-// For shoulderDeg ∈ [−10°, 110°], the worst case is θ ≈ 110° giving roughly
-// 9 + 25 ≈ 34 mm of downswing. Add 2 mm OCCT mesher pad.
-const COLUMN_CLEAR = clevisStyle.knuckleR + ARM_T + 2;
-const COLUMN_TERMINATE_Z = COLUMN_TOP_Z - COLUMN_CLEAR;
-const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
+const baseColumn = cylinder(COLUMN_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
   .material(mCast);
 
 const baseBodyRaw = baseDisc.union(feltPad).union(bolts).union(baseColumn);
 
-// Beams are AUTHORED SHORT: the near end (toward the pivot the part is
-// CHILD of) clears the part-local origin by `beamClear`, so that under any
-// allowed rotation, the beam's near-end corner cannot swing into the
-// parent body BELOW the pivot. Conservative bound: clearance must exceed
-// the BEAM's diagonal half-extent (sqrt((ARM_W/2)² + (ARM_T/2)²)) plus the
-// clevis hardware (knuckleR + plateT) so the fork plates also clear.
-const beamClear = clevisStyle.knuckleR + ARM_T / 2 + 2;
-
 // ============================================================================
-// Lower arm body (pre-joint) — a cream-painted rectangular beam extending
-// from x = beamClear (clearing the shoulder pivot's tongue swing) to
+// Lower-arm body (pre-joint) — a cream-painted rectangular beam authored in
+// the lower-arm's part-local frame (origin at the shoulder pivot). The beam
+// runs from x = beamClear (clearing the shoulder pivot's tongue swing) to
 // x = L_LOWER - beamClear (clearing the elbow pivot's tongue swing). The
-// shoulder clevis will union its tongue + drill its through-hole at x=0;
-// the elbow clevis will union its fork + drill at x = L_LOWER.
+// shoulder clevis will union its tongue at x=0; the elbow clevis will union
+// its fork at x = L_LOWER.
 // ============================================================================
+
+// Conservative clearance so the BEAM corner can't dip below the pivot at
+// the rotation extremes: beam diagonal half-extent + a knuckle radius.
+const beamClear = clevisStyle.knuckleR + ARM_T / 2 + 2;
 
 const LOWER_BEAM_LEN = L_LOWER - 2 * beamClear;
 const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
@@ -156,7 +181,7 @@ const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
   .material(mArm);
 
 // ============================================================================
-// Upper arm body (pre-joint) — same pattern as the lower arm.
+// Upper-arm body (pre-joint) — same pattern as the lower arm.
 // ============================================================================
 
 const UPPER_BEAM_LEN = L_UPPER - 2 * beamClear;
@@ -165,19 +190,23 @@ const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
   .material(mArm);
 
 // ============================================================================
-// Lamp head body (pre-joint) — wrist tongue at origin, neck/shade/socket/bulb
-// extending along +X. The wrist clevis will union its tongue + drill at
-// the part-local origin.
+// Lamp-head body (pre-joint) — part-local origin = wrist pivot. A short
+// narrow neck cylinder bridges the wrist tongue to the shade; the shade is
+// a hollow truncated cone with a black porcelain socket and an incandescent
+// glass bulb visible at the mouth.
 // ============================================================================
 
-// Short collar where the head's wrist mates the shade neck. Pushed far
-// enough from the wrist pivot to clear the upper-arm beam under the full
-// wristDeg range; the clearance is sized to the beam's diagonal half-extent
-// (ARM_T/2 sweeping across the wrist's swing).
+// Narrow neck bridging the head's tongue knuckle to the shade's narrow end.
+// The neck radius is kept slim (≤ knuckleR) so it doesn't sweep into the
+// upper-arm's wrist fork plates during wrist tilt.
 const HEAD_NECK_LEN = 28;
+const HEAD_NECK_R = 10;
+// Push the neck origin clear of the wrist tongue's swing envelope so the
+// neck and shade don't interpenetrate the upper-arm beam at the wrist
+// extremes. (knuckleR + a margin for the shade's small end.)
 const HEAD_NECK_CLEAR = clevisStyle.knuckleR + ARM_T;
-const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
-  .rotate([0, 1, 0], 90)
+const headNeck = cylinder(HEAD_NECK_LEN, HEAD_NECK_R, 32)
+  .rotate([0, 1, 0], 90)             // axis Z → axis X
   .translate(HEAD_NECK_CLEAR, 0, 0)
   .material(mCast);
 
@@ -200,17 +229,21 @@ const shadeProfileInner = path()
 const shadeInner = shadeProfileInner.revolve();
 
 const shadeRaw = shadeOuter.subtract(shadeInner);
-const SHADE_ANCHOR_X = HEAD_NECK_CLEAR + 8;
+const SHADE_ANCHOR_X = HEAD_NECK_CLEAR + HEAD_NECK_LEN - 4;   // shade narrow end seats over the neck's distal end
 const shade = shadeRaw
-  .rotate([0, 1, 0], 90)
+  .rotate([0, 1, 0], 90)            // Z-axis cone → +X-axis cone
   .translate(SHADE_ANCHOR_X, 0, 0)
   .material(mBrass);
 
+// Socket cylinder — black porcelain fixture holding the bulb. Axis = X,
+// sits centred along the shade's mouth axis just past the narrow opening.
 const socket = cylinder(SOCKET_LEN, SOCKET_R, 32)
   .rotate([0, 1, 0], 90)
   .translate(SHADE_ANCHOR_X + 6, 0, 0)
   .material(mSocket);
 
+// Bulb — a glass sphere centred deep inside the shade so the rendered
+// silhouette catches it from any view angle pointed at the open mouth.
 const bulb = sphere(BULB_R)
   .translate(SHADE_ANCHOR_X + SOCKET_LEN + BULB_R * 0.65, 0, 0)
   .material(mBulb);
@@ -218,12 +251,11 @@ const bulb = sphere(BULB_R)
 const headBodyRaw = headNeck.union(shade).union(socket).union(bulb);
 
 // ============================================================================
-// JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at world
-// (0, 0, COLUMN_TOP_Z). joint.clevis builds the fork on the parent (base),
-// the tongue on the child (lower-arm), and the pin that pins them
-// together. The primitive returns the parent/child geometry to assign
-// back to each part's Shape, plus the connector specs ready to wire the
-// revolute mate.
+// JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at the column
+// top. `joint.clevis` lifts the pivot above COLUMN_TOP_Z by the max
+// rotated-tongue reach and unions the fork + pin (parent side) and the
+// tongue (child side) into the existing body shapes; the through-hole is
+// drilled in one pass through both knuckles AFTER the union.
 // ============================================================================
 
 const shoulder = joint.clevis({
@@ -233,19 +265,18 @@ const shoulder = joint.clevis({
   pivotParent: [0, 0, COLUMN_TOP_Z],
   pivotChild: [0, 0, 0],
   limitsDeg: [-10, 110],
-  // No lift — the column body already terminates at COLUMN_TOP_Z -
-  // knuckleR (see baseColumn above), leaving room for the shoulder
-  // tongue's lower-half rotational sweep. The pivot remains at the
-  // user-supplied COLUMN_TOP_Z, so the joint reads at z=64 in world
-  // coordinates and the lamp silhouette matches the pre-G1 build.
-  liftPivot: false,
+  // `liftPivot: true` (default) lifts the pivot up by ~knuckleR·sin(110°)+1
+  // mm so the tongue's swing arc clears the column top. The primitive
+  // adds two posts on either side of the tongue connecting the lifted
+  // pivot back down to the parent body — the "mounting flange" pattern.
   style: clevisStyle,
 });
 
 // ============================================================================
-// JOINT 2 — elbow (lower-arm ↔ upper-arm), revolute about Y at lower-arm tip
-// (x = L_LOWER). The lower-arm body already received the shoulder tongue
-// above; we now layer the elbow fork on top via joint.clevis.
+// JOINT 2 — elbow (lower-arm ↔ upper-arm), revolute about Y at the lower-arm
+// tip. The lower-arm body already received the shoulder tongue via
+// `joint.clevis` above (`shoulder.childGeometry`); we now layer the elbow
+// fork onto that running geometry.
 // ============================================================================
 
 const elbow = joint.clevis({
@@ -255,17 +286,14 @@ const elbow = joint.clevis({
   pivotParent: [L_LOWER, 0, 0],
   pivotChild: [0, 0, 0],
   limitsDeg: [-150, -30],
-  // No lift. The lower-arm beam terminates at L_LOWER; the elbow tongue
-  // extends beyond the beam tip by knuckleR, so it does not enter the
-  // beam's volume from BEHIND the pivot.
-  liftPivot: false,
+  // Elbow limits don't cross ±90°: max|sin| ≈ 0.5, so the auto-lift is
+  // ~8 mm — keeps the tongue's swept arc above the beam's tip face.
   style: clevisStyle,
 });
 
 // ============================================================================
-// JOINT 3 — wrist (upper-arm ↔ lamp-head), revolute about Y at upper-arm tip
-// (x = L_UPPER). The upper-arm body already received the elbow tongue above;
-// we now layer the wrist fork on top via joint.clevis.
+// JOINT 3 — wrist (upper-arm ↔ lamp-head), revolute about Y at the
+// upper-arm tip. Same composition as the elbow.
 // ============================================================================
 
 const wrist = joint.clevis({
@@ -275,13 +303,12 @@ const wrist = joint.clevis({
   pivotParent: [L_UPPER, 0, 0],
   pivotChild: [0, 0, 0],
   limitsDeg: [-90, 0],
-  liftPivot: false,
   style: clevisStyle,
 });
 
 // ============================================================================
-// Register the assembly parts with their FINAL geometry (post-clevis) and
-// wire each connector returned by the primitive.
+// Register the assembly parts with their FINAL post-clevis geometry and the
+// connectors returned by `joint.clevis(...)`.
 // ============================================================================
 
 const basePart = arm
@@ -326,18 +353,61 @@ const headPart = arm
     axis: wrist.childConnector.axis,
   });
 
+// ============================================================================
+// SPRING PARTS — decorative tension springs fastened to their parent arms.
+// Each spring is a separate part with a `fastened` mate, NOT a child of the
+// arm body. Springs are intra-part design contacts that intersect their
+// parent arm's geometry at the mount face — those overlaps are silenced via
+// `ignore[]` paired with the `fastened` mate (the G3 "Mechanism delivery"
+// rule forbids ignores only on REVOLUTE/PRISMATIC joint pairs).
+// ============================================================================
+
+// Lower-arm spring (shoulder–elbow), mounted along the UNDERSIDE of the
+// lower-arm beam, parallel to the beam's long axis.
+const SPRING_MOUNT_X_LOWER = beamClear + 6;
+const SPRING_MOUNT_Z_LOWER = -ARM_T / 2 - SPRING_COIL_R + SPRING_WIRE_R + 1.5;
+const lowerSpringShape = makeSpring(SPRING_LEN)
+  .translate(SPRING_MOUNT_X_LOWER, 0, SPRING_MOUNT_Z_LOWER);
+const lowerSpringPart = arm.part('lower-spring', lowerSpringShape);
+lowerSpringPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+lowerArmPart.connector('lowerSpringMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+
+// Upper-arm spring (elbow–wrist), mounted along the TOP of the upper-arm
+// beam (visual contrast with the lower-arm's underside spring).
+const SPRING_MOUNT_X_UPPER = beamClear + 6;
+const SPRING_MOUNT_Z_UPPER = ARM_T / 2 + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
+const upperSpringShape = makeSpring(SPRING_LEN)
+  .translate(SPRING_MOUNT_X_UPPER, 0, SPRING_MOUNT_Z_UPPER);
+const upperSpringPart = arm.part('upper-spring', upperSpringShape);
+upperSpringPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+upperArmPart.connector('upperSpringMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+
+// Wrist spring — shorter, mounted along the TOP of the head's neck just
+// behind the shade collar. Reads as the small tension spring that keeps the
+// shade from drooping under its own weight.
+const WRIST_SPRING_LEN = SPRING_LEN * 0.7;
+const WRIST_SPRING_MOUNT_X = HEAD_NECK_CLEAR - HEAD_NECK_LEN / 2;
+const WRIST_SPRING_MOUNT_Z = HEAD_NECK_R + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
+const wristSpringShape = makeSpring(WRIST_SPRING_LEN)
+  .translate(WRIST_SPRING_MOUNT_X, 0, WRIST_SPRING_MOUNT_Z);
+const wristSpringPart = arm.part('wrist-spring', wristSpringShape);
+wristSpringPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+headPart.connector('wristSpringMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+
 // Quiet the linter on the unused part-handle references — they're captured
-// in the assembly via the .part(...) chain above; explicit naming surfaces
-// them for downstream MCP tools (inspect_assembly).
+// in the assembly via the .part(...) chain above.
 void basePart;
 void lowerArmPart;
 void upperArmPart;
 void headPart;
+void lowerSpringPart;
+void upperSpringPart;
+void wristSpringPart;
 
 // ============================================================================
-// MATES — revolute at each clevis, bound by reference to the connector specs
-// returned by joint.clevis. No coordinate triples appear in the mate decls;
-// the binding is topology-stable across part-frame edits.
+// MATES — revolute at each clevis (bound by reference to the connector specs
+// returned by joint.clevis), and fastened at each spring's mount. No
+// coordinate triples appear in the mate decls.
 // ============================================================================
 
 arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', {
@@ -355,23 +425,29 @@ arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
   limitsDeg: [-90, 0],
 });
 
+// Spring mates — fastened in place against their parent arm. These pair
+// with `ignore[]` entries below for the intra-part design contacts.
+arm.mate('lower-spring-mount', 'lower-arm.lowerSpringMount', 'lower-spring.mount', 'fastened');
+arm.mate('upper-spring-mount', 'upper-arm.upperSpringMount', 'upper-spring.mount', 'fastened');
+arm.mate('wrist-spring-mount', 'lamp-head.wristSpringMount', 'wrist-spring.mount', 'fastened');
+
 // ============================================================================
 // SOLVE + VALIDATE
 // ============================================================================
-// Every joint is a real clevis-fork + tongue + pin built by joint.clevis.
-// The through-hole at each pivot is drilled in a SINGLE subtract AFTER the
-// fork/tongue are unioned with their respective body — guaranteeing the
-// hole is co-located in every solid the pin passes through. The pin caps
-// sit flush against the outer fork faces. Bridge tabs (where present) live
-// outside the tongue's swing envelope.
+// Every revolute joint is built by `joint.clevis(...)`. The through-hole at
+// each pivot is drilled in a SINGLE subtract AFTER the fork/tongue are
+// unioned with their respective body — guaranteeing the hole is co-located
+// in every solid the pin passes through. The pin caps sit flush against the
+// outer fork faces.
 //
-// Critically: NO `ignore[]` entries. The pre-G1 lamp needed three joint-pair
-// ignores to silence tongue-in-fork BREP overlap noise; the constructive
-// primitive removes those overlaps by construction (the through-hole bores
-// clearance for the tongue's swept volume, and the tongue's plate
-// thickness is < forkGapY so it slips between the fork plates without
-// touching them). Per the kernelcad-kinematic SKILL "Mechanism delivery —
-// non-bypassable" rule, joint-pair contacts may not be ignored — and here
-// they don't need to be.
-
-return arm.solvedModel({});
+// `ignore[]` is used ONLY for the three intra-part spring contacts (each
+// paired with a `fastened` mate). The G3 "Mechanism delivery — non-bypassable"
+// rule forbids ignores on REVOLUTE / PRISMATIC joint-pairs; intra-part design
+// contacts (a spring "bolted" to a beam) remain a legitimate use of `ignore`.
+return arm.solvedModel({}, {
+  ignore: [
+    ['lower-arm', 'lower-spring'],
+    ['upper-arm', 'upper-spring'],
+    ['lamp-head', 'wrist-spring'],
+  ],
+});

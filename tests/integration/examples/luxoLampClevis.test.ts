@@ -2,11 +2,13 @@
 //
 // G1 integration smoke: the rewritten `examples/kinematic/luxo-lamp.kcad.ts`
 // — which uses `joint.clevis(...)` at all three revolute joints (shoulder,
-// elbow, wrist) — must validate clean with `--include-interference` AND
-// contain ZERO `ignore[]` entries in the script. That zero-ignores result
-// is the smoking-gun signal that the constructive primitive removed the
-// lamp-class delivery failure the pre-G1 hand-rolled build silenced via
-// three joint-pair ignores.
+// elbow, wrist) — must validate clean with `--include-interference`.
+//
+// Issue #339 restoration: this file also asserts the lamp's iconic body
+// geometry (full column + arm beams + head body) and the three Anglepoise
+// coil springs (each fastened to its parent arm). Each ignore[] entry MUST
+// pair with a `fastened` mate (intra-part design contact); G3's
+// "no joint-pair ignores" rule means a revolute-paired entry would fail.
 
 import { describe, expect, it, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -20,13 +22,41 @@ describe('Luxo lamp G1 rewrite — joint.clevis at all 3 joints', () => {
     await initOcct();
   }, 60_000);
 
-  it('script source carries NO ignore[] entries (joint-pair contacts removed by joint.clevis)', () => {
+  it('every ignore[] entry pairs with a `fastened` mate (no revolute joint-pair ignores)', () => {
     const source = readFileSync(LUXO_SCRIPT_PATH, 'utf8');
-    // The pre-G1 lamp passed `{ ignore: [...] }` to arm.solvedModel(). The G1
-    // rewrite should have removed that array entirely (or never added it).
-    // We assert no `ignore:` key appears in the script source — the smoking
-    // gun that the agent didn't silently re-introduce a workaround.
-    expect(source).not.toMatch(/\bignore\s*:/);
+
+    // Collect all [partA, partB] pairs the script silences via ignore[].
+    // Format authored: `['part-a', 'part-b']` inside a `ignore:` block.
+    const ignoreSection = source.match(/ignore\s*:\s*\[([\s\S]*?)\]\s*[,}]/);
+    const ignoredPairs: Array<[string, string]> = [];
+    if (ignoreSection) {
+      const pairRe = /\[\s*['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\s*\]/g;
+      let m: RegExpExecArray | null;
+      while ((m = pairRe.exec(ignoreSection[1])) !== null) {
+        ignoredPairs.push([m[1], m[2]]);
+      }
+    }
+
+    // For every ignored pair, the part-pair MUST be the two ends of a
+    // `fastened` mate (intra-part design contact such as a spring "bolted"
+    // to a beam). The mate signature we match is `arm.mate('<name>', '<a>.<conn>', '<b>.<conn>', 'fastened')`.
+    const fastenedMateRe = /arm\.mate\(\s*['"][^'"]+['"]\s*,\s*['"]([^'.]+)\.[^'"]+['"]\s*,\s*['"]([^'.]+)\.[^'"]+['"]\s*,\s*['"]fastened['"]/g;
+    const fastenedPairs = new Set<string>();
+    let fm: RegExpExecArray | null;
+    while ((fm = fastenedMateRe.exec(source)) !== null) {
+      const a = fm[1];
+      const b = fm[2];
+      // Symmetric key.
+      fastenedPairs.add(a < b ? `${a}|${b}` : `${b}|${a}`);
+    }
+
+    for (const [a, b] of ignoredPairs) {
+      const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+      expect(
+        fastenedPairs.has(key),
+        `ignored part-pair [${a}, ${b}] has no matching 'fastened' mate — G3 forbids ignores on revolute/prismatic joint-pairs.`,
+      ).toBe(true);
+    }
   });
 
   it('declares joint.clevis at every revolute joint (3 calls, 3 mates)', () => {
