@@ -121,6 +121,53 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 
 If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
 
+### Use `joint.clevis(...)` for revolute joints — do not hand-roll forks
+
+A clevis joint is the canonical revolute-joint hardware: two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles. Hand-rolling these from `box`/`cylinder`/`union` is the leading cause of "every gate green, mechanism falls apart" failures (knuckle alignment drifts, through-hole misaligned across plates, bridge tabs land in the tongue's swing volume).
+
+Use the primitive instead:
+
+```ts
+import { joint } from 'kernelcad';
+
+const shoulder = joint.clevis({
+  parentBody: basePart.shape,
+  childBody: lowerArmPart.shape,
+  axis: [0, -1, 0],
+  pivotParent: [0, 0, COLUMN_TOP_Z],
+  pivotChild: [0, 0, 0],
+  limitsDeg: [-10, 110],
+  style: { knuckleR: 14, forkGapY: 18, tongueY: 14, plateT: 4, pinR: 3.5 },
+});
+
+basePart.connector('shoulder', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: shoulder.parentConnector.origin },
+  axis: shoulder.parentConnector.axis,
+});
+lowerArmPart.connector('shoulder', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: shoulder.childConnector.origin },
+  axis: shoulder.childConnector.axis,
+});
+
+arm.mate('shoulder', 'base.shoulder', 'lower-arm.shoulder', 'revolute', {
+  pose: shoulderDeg,
+  limitsDeg: [-10, 110],
+});
+```
+
+The primitive returns the parent/child geometry to assign back to each part's `Shape` AND the connectors to bind the mate to. Do not pick `origin: [x, y, z]` by hand — bind to the returned connectors, which are kinematically consistent with the pin axis and the tongue/fork through-hole.
+
+Authoring discipline that PAIRS with the primitive:
+
+- Author each part body so the user-supplied `pivotParent` (or the child's part-local origin) sits on (or just below) the body's surface, with clearance for the tongue's rotational sweep. For a vertical revolute axis, the parent body should terminate at least `knuckleR` below the pivot; for a horizontal beam-end joint, the beam should end `knuckleR + body_half_thickness` short of the pivot.
+- Set `style.forkGapY > ARM_W` (the child's beam width) so the beam slips through the fork plates' gap without rubbing the inner faces.
+- Set `style.tongueY ≈ ARM_W` so the tongue's plate thickness matches the beam — the tongue + beam form a continuous solid.
+- For wider swing ranges, the primitive automatically lifts the pivot by `knuckleR · max(|sin|) + 1 mm`; you can opt out with `liftPivot: false` and lift manually.
+
+Worked example: `examples/kinematic/luxo-lamp.kcad.ts` ships with `joint.clevis(...)` at all three revolute joints (shoulder, elbow, wrist) and validates clean with `--include-interference` and zero `ignore[]` entries.
+
 ## Cookbook
 
 Six runnable snippets live in `cookbook/`. Each begins with a `// expected:`
