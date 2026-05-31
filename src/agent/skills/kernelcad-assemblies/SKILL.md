@@ -615,6 +615,27 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 
 If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
 
+### Use `joint.clevis(...)` for revolute joints — do not hand-roll forks
+
+The `kc.joint.clevis({...})` primitive builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
+
+```ts
+const shoulder = joint.clevis({
+  parentBody: baseBody,
+  childBody: lowerBeam,
+  axis: [0, -1, 0],
+  pivotParent: [0, 0, COLUMN_TOP_Z],
+  pivotChild: [0, 0, 0],
+  limitsDeg: [-10, 110],
+  style: { knuckleR: 14, forkGapY: 18, tongueY: 14, plateT: 4, pinR: 3.5 },
+});
+
+// shoulder.parentGeometry / .childGeometry are the bodies (assign to each part)
+// shoulder.parentConnector / .childConnector carry { origin, axis } for the mate
+```
+
+See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worked example (`examples/kinematic/luxo-lamp.kcad.ts`).
+
 ## Diagnostic codes
 
 | Code | Source |
