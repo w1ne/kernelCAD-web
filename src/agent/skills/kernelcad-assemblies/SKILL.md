@@ -11,7 +11,7 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 
 `kernelcad validate <file.kcad.ts>` runs the assembly validator over the script's Scene. Three checks today:
 
-- **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.fixed(...)` or `arm.revolute(...)`.
+- **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.mate(..., 'fastened')` or `arm.mate(..., 'revolute', ...)`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
 
@@ -21,7 +21,7 @@ Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
 kernelcad validate so100.kcad.ts && echo "fits"
 ```
 
-Authoring rule: every `arm.part(name, shape)` should also appear as either the parent or child of at least one `arm.fixed(...)` / `arm.revolute(...)` / `arm.prismatic(...)` / `arm.ball(...)` call. Raw `at: [x, y, z]` placement without a joint produces a working geometric output but fails validation — the agent has authored a position but not a connection.
+Authoring rule: every `arm.part(name, shape)` should also appear in at least one `arm.mate(name, 'a.connector', 'b.connector', kind, opts)` call (kind ∈ `fastened` | `revolute` | `prismatic` | `ball`). Raw `at: [x, y, z]` placement without a mate produces a working geometric output but fails validation — the agent has authored a position but not a connection.
 
 ## Components from STEP files
 
@@ -51,13 +51,7 @@ const link = arm.part('link', box(80, 12, 8), {
   connect: { connector: 'root', to: base.connector('shoulder') },
 });
 
-arm.connect('shoulder-fixed', base.connector('shoulder'), link.connector('root'));
-
-arm.revolute('shoulder', base, link, {
-  axis: [0, 0, 1],
-  origin: [0, 0, 8],
-  limitsDeg: [-90, 90],
-});
+arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90, 90] });
 
 // Agent-natural: return the Scene directly. The CLI / studio walks .parts,
 // the renderer paints per-part role colors, and STEP export uses
@@ -87,11 +81,13 @@ interface Assembly {
     density?: number;
   }): AssemblyPartRef;
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;
-  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {
-    axis: [number, number, number];
-    origin: [number, number, number];
-    limitsDeg?: [number, number];
-  }): AssemblyJointRef;
+  mate(
+    name: string,
+    a: ConnectorRef,
+    b: ConnectorRef,
+    kind: 'fastened' | 'revolute' | 'prismatic' | 'ball' | 'cylindrical' | 'planar' | 'pin_slot',
+    opts?: { limitsDeg?: [number, number]; limitsMm?: [number, number]; pose?: Editable<number> | [number, number, number] },
+  ): AssemblyMateRef;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }
@@ -151,40 +147,53 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 ## Posing a kinematic chain
 
-`assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you both render the posed assembly and query per-part world transforms. `assembly.solvedModel(poses)` returns a posed `Scene` directly — iterate `.parts`, call `.toCompound()` for STEP, or `.toUnion()` only if a single fused Shape is required (lossy antipattern). Pose values accept `Editable<number>` per joint kind:
+`assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you both render the posed assembly and query per-part world transforms. `assembly.solvedModel(poses)` returns a posed `Scene` directly — iterate `.parts`, call `.toCompound()` for STEP, or `.toUnion()` only if a single fused Shape is required (lossy antipattern). Pose values accept `Editable<number>` per mate kind:
 
-| Joint primitive | Pose value type |
+| Mate kind | Pose value type |
 |---|---|
-| `arm.fixed(name, parent, child, { origin? })` | (none — accepts no pose) |
-| `arm.revolute(name, parent, child, { axis, origin, limitsDeg? })` | `number` — degrees |
-| `arm.prismatic(name, parent, child, { axis, origin, limitsMm? })` | `number` — mm |
-| `arm.ball(name, parent, child, { origin, limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
+| `arm.mate(name, a, b, 'fastened')` | (none — accepts no pose) |
+| `arm.mate(name, a, b, 'revolute', { limitsDeg? })` | `number` — degrees |
+| `arm.mate(name, a, b, 'prismatic', { limitsMm? })` | `number` — mm |
+| `arm.mate(name, a, b, 'ball', { limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
 
-Joint origins are in the **parent part's local frame** (URDF/MuJoCo convention). Multi-joint chains compose correctly; the FK tree-walk handles N joints.
+Connector origins are in their owning **part's local frame** (URDF/MuJoCo convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
 
 **Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
 
 Concretely: if the shoulder joint is at world `(0, 0, 30)` and the lower arm has length 220 mm extending along +X from the shoulder, author the lower arm at part-local frame *centered on the joint*:
 
 ```ts
-// ✅ Correct — lower arm in its own local frame; rest position comes from the joint origin.
+// ✅ Correct — lower arm in its own local frame; rest position comes from the connector origin.
 const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 0));
-arm.revolute('shoulder', base, lower, { axis: [0, -1, 0], origin: [0, 0, 30], limitsDeg: [0, 110] });
+base.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 30] }, axis: [0, -1, 0] });
+lower.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, -1, 0] });
+arm.mate('shoulder', 'base.shoulderAxis', 'lower.shoulderAxis', 'revolute', { limitsDeg: [0, 110] });
 
 // ❌ Wrong — translating to the world rest position `(110, 0, 30)` puts a SHOULDER_Z offset
-//    into the part-local frame, which the FK doubles up when the joint poses.
+//    into the part-local frame, which the FK doubles up when the mate poses.
 const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 30));
 ```
 
 At rest (joint angle 0), worldT for `lower` equals `T(0, 0, 30)` (the joint origin in parent's frame), so part-local vertex `(110, 0, 0)` maps to world `(110, 0, 30)` — exactly what you wanted. Authoring the part with `.translate(110, 0, 30)` would put it at world `(110, 0, 60)` instead, and any non-zero joint angle would smear that compounding error visibly across the render.
 
-The same convention applies to child-of-child joints: the elbow's `origin` is expressed in the lower arm's part-local frame (`[220, 0, 0]` — at the lower arm's tip, NOT `[220, 0, 30]`).
+The same convention applies to child-of-child joints: the elbow's parent-side connector origin is expressed in the lower arm's part-local frame (`[220, 0, 0]` — at the lower arm's tip, NOT `[220, 0, 30]`).
 
 ```ts
-arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [45, 35, 8],  limitsDeg: [-120, 120] });
-arm.revolute('shoulder-pitch', shoulder, elbow,    { axis: [0, 1, 0], origin: [0, 0, 90],   limitsDeg: [-45, 135] });
-arm.revolute('elbow-pitch',    elbow,    wrist,    { axis: [0, 1, 0], origin: [110, 0, 0],  limitsDeg: [-120, 120] });
-arm.fixed   ('wrist-tool',     wrist,    tool,     { origin: [75, 0, 0] });
+base.connector('baseYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [45, 35, 8] }, axis: [0, 0, 1] });
+shoulder.connector('baseYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('base-yaw', 'base.baseYawAxis', 'shoulder.baseYawAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+shoulder.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 90] }, axis: [0, 1, 0] });
+elbow.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('shoulder-pitch', 'shoulder.shoulderPitchAxis', 'elbow.shoulderPitchAxis', 'revolute', { limitsDeg: [-45, 135] });
+
+elbow.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [110, 0, 0] }, axis: [0, 1, 0] });
+wrist.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('elbow-pitch', 'elbow.elbowPitchAxis', 'wrist.elbowPitchAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+wrist.connector('wristToolFrame', { type: 'frame', origin: { kind: 'vec3', value: [75, 0, 0] } });
+tool.connector('wristToolFrame', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+arm.mate('wrist-tool', 'wrist.wristToolFrame', 'tool.wristToolFrame', 'fastened');
 ```
 
 **Snapshot vs reactive:** `arm.solve(poses)` resolves pose ParamRefs at call time and returns a frozen `SolvedKinematics` handle (call `.toScene()` for the snapshot Scene). `arm.solvedModel(poses)` is captured as a feature and returns a `Scene`; param updates trigger reactive re-pose → a fresh frozen Scene is emitted to the renderer. Both Scenes are frozen; reactivity always lives on the capture-time Assembly. Use `solve` to read transforms once; use `solvedModel` for editable studio renders.
@@ -221,7 +230,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 
 ## Connectors and mates
 
-v0.6 adds a mate vocabulary on top of the v0.5 kinematic-joint API. Connectors are named coordinate frames embedded in a part; mates are typed relationships between two connectors. The validator and solver treat the mate graph as the source of truth for assembly topology; the legacy `arm.fixed/.revolute/.prismatic/.ball(...)` helpers keep working untouched.
+Mates are the canonical assembly-topology vocabulary. Connectors are named coordinate frames embedded in a part; mates are typed relationships between two connectors. The validator and solver treat the mate graph as the source of truth for assembly topology. (The v0.5 `arm.fixed/.revolute/.prismatic/.ball(...)` helpers were removed in G0 — use the mate API exclusively.)
 
 ### Declaring connectors — `partRef.connector(name, opts)`
 

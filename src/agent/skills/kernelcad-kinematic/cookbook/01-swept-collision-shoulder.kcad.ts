@@ -22,15 +22,31 @@ const upper = arm.part('upper', box(200, 20, 20, true).translate(100, 0, 0));
 // snippet — we only sweep the shoulder.
 const fore = arm.part('fore', box(100, 20, 20, true).translate(50, 0, 0));
 
-arm.revolute('shoulder', base, upper, {
+base.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
   axis: [0, 0, 1],
-  origin: [0, 0, 0],
+});
+upper.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 0, 1],
+});
+arm.mate('shoulder', 'base.shoulderAxis', 'upper.shoulderAxis', 'revolute', {
   limitsDeg: [-180, 180],
 });
 
-arm.revolute('elbow', upper, fore, {
+upper.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [200, 0, 0] },
   axis: [0, 1, 0],
-  origin: [200, 0, 0],
+});
+fore.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 1, 0],
+});
+arm.mate('elbow', 'upper.elbowAxis', 'fore.elbowAxis', 'revolute', {
   limitsDeg: [-90, 90],
 });
 

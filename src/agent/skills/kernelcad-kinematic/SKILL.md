@@ -9,9 +9,9 @@ description: Use when verifying whether a moving assembly is buildable — sampl
 
 Joint angles throughout the kinematic API are **degrees for revolute joints**
 and **millimetres for prismatic joints**. This matches the unit convention
-used by `arm.revolute({ limitsDeg })`, `arm.prismatic({ limitsMm })`, and
-`arm.solvedModel({poses})` — there is no degree-vs-radian split anywhere on
-the user-facing surface.
+used by `arm.mate(..., 'revolute', { limitsDeg })`, `arm.mate(..., 'prismatic', { limitsMm })`,
+and `arm.solvedModel({poses})` — there is no degree-vs-radian split anywhere
+on the user-facing surface.
 
 That includes the IK seed: `kinematic.checkReachable({ seed: { shoulder: 60 } })`
 means 60 degrees, not 60 radians and not 60 of anything else. Authors porting

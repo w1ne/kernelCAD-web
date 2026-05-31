@@ -77,7 +77,9 @@ describe('solvedAssembly lowerer — SceneBackend emission', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10));
       const armPart = arm.part('arm',  box(10, 10, 30));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 90 });
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
@@ -103,7 +105,9 @@ describe('solvedAssembly lowerer — SceneBackend emission', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10).color('plate'));
       const armPart = arm.part('arm',  box(10, 10, 30).color('beam'));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);
@@ -126,7 +130,9 @@ describe('solvedAssembly lowerer — SceneBackend emission', () => {
       const base = arm.part('base', box(10, 10, 10));
       // Long arm extending +X (so a 90° yaw would visibly remap the bbox).
       const armPart = arm.part('arm',  box(60, 10, 10).translate(30, 0, 0));
-      arm.revolute('yaw', base, armPart, { axis: [0, 0, 1], origin: [0, 0, 0] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      armPart.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'arm.yaw', 'revolute');
       return arm.solvedModel({ yaw: 90 });
     `);
     expect(diagnostics.filter(d => d.severity === 'error')).toEqual([]);

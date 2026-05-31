@@ -165,28 +165,12 @@ describe('review_cad MCP tool', () => {
     }
   });
 
-  it('blocks legacy fixed joints that connect parts across visible air gaps', async () => {
-    const r = await reviewCadTool({
-      includeInterference: false,
-      code: `
-        const arm = assembly('fixed-gap');
-        const base = arm.part('base', box(20, 20, 4, true));
-        const knob = arm.part('floating-knob', box(6, 6, 6, true).translate(40, 0, 0));
-        arm.fixed('bad-fixed-gap', base, knob);
-        return arm.model();
-      `,
-    });
-
-    expect(r.ok).toBe(false);
-    expect(r.diagnostics.some((diagnostic) =>
-      diagnostic.code === 'assembly.mechanical.fixed-contact-missing' &&
-      diagnostic.severity === 'error'
-    )).toBe(true);
-    if (!r.ok) {
-      expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.fixed-contact-missing')).toBe(true);
-      expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.fixed-contact-missing/);
-    }
-  });
+  // G0 (2026-05-31): the `assembly.mechanical.fixed-contact-missing`
+  // diagnostic fires only on v0.5 `arm.fixed(...)` records (mate-aware
+  // 'fastened' mates use the separate `assembly.mechanical.mate-contact-
+  // missing` path, exercised by the test above). With `arm.fixed(...)`
+  // removed in G0, this codepath is unreachable from the public API; its
+  // coverage moves with the mate-aware variant.
 
   it('blocks disconnected solids instead of accepting floating decorative geometry', async () => {
     const r = await reviewCadTool({

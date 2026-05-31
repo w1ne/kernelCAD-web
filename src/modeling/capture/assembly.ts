@@ -283,20 +283,15 @@ export interface AssemblyConnectRef {
   kind: 'fixed';
 }
 
-export interface RevoluteJointOpts {
-  axis: Vec3;
-  origin: Vec3;
-  limitsDeg?: [number, number];
-}
+// RevoluteJointOpts / FixedJointOpts removed in G0 (2026-05-31): the v0.5
+// `arm.revolute(...)` / `arm.fixed(...)` methods no longer exist. Use
+// `arm.mate(name, a, b, 'revolute'|'fastened', opts?)` instead — limits and
+// pose are carried on the MateRecord directly.
 
 export interface PrismaticJointOpts {
   axis: Vec3;
   origin: Vec3;
   limitsMm?: [number, number];
-}
-
-export interface FixedJointOpts {
-  origin?: Vec3;
 }
 
 export interface BallJointOpts {
@@ -602,48 +597,12 @@ export class Assembly {
     };
   }
 
-  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
-    if (!isValidVec3(opts.axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-        undefined,
-        'Pass axis: [x, y, z].',
-      );
-    }
-    if (!isValidVec3(opts.origin)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
-        undefined,
-        'Pass origin: [x, y, z] in the parent part local frame.',
-      );
-    }
-    if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint limitsDeg must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(opts.limitsDeg)}.`,
-        undefined,
-        'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
-      );
-    }
-    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, {
-      axis: opts.axis,
-      origin: opts.origin,
-      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    });
-    this.joints.push({
-      id: record.id,
-      name,
-      kind: 'revolute',
-      parentPartId: a.id,
-      childPartId: b.id,
-      axis: opts.axis,
-      origin: opts.origin,
-      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    });
-    return { id: record.id, name, kind: 'revolute' };
-  }
+  // arm.revolute(...) was the v0.5 body-tree-FK API. Removed in G0
+  // (2026-05-31, mechanism-delivery workstream) because it bypassed
+  // `arm.__mates()` — every v0.7 kinematic-grounding gate (Gates 1-4) reads
+  // the mate graph and silently early-exited on legacy-only assemblies.
+  // Use `arm.connector(...)` + `arm.mate(name, a, b, 'revolute', { ... })`
+  // instead. See examples/robot-arm/desktop-3axis-mates.kcad.ts.
 
   prismatic(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
     if (!isValidVec3(opts.axis)) {
@@ -688,27 +647,11 @@ export class Assembly {
     return { id: record.id, name, kind: 'prismatic' };
   }
 
-  fixed(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: FixedJointOpts = {}): AssemblyJointRef {
-    const origin: Vec3 = opts.origin ?? [0, 0, 0];
-    if (!isValidVec3(origin)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `fixed joint origin must be a finite Vec3 or omitted; got ${formatScalarForError(origin)}.`,
-        undefined,
-        'Pass origin: [x, y, z] or omit it.',
-      );
-    }
-    const record = this.session.assemblyJoint(this.name, name, 'fixed', a, b, { origin });
-    this.joints.push({
-      id: record.id,
-      name,
-      kind: 'fixed',
-      parentPartId: a.id,
-      childPartId: b.id,
-      origin,
-    });
-    return { id: record.id, name, kind: 'fixed' };
-  }
+  // arm.fixed(...) was the v0.5 body-tree-FK API for rigid (no-DOF) joints.
+  // Removed in G0 (2026-05-31, mechanism-delivery workstream) for the same
+  // reason as arm.revolute(...). Use `arm.connector(...)` +
+  // `arm.mate(name, a, b, 'fastened')` instead. See
+  // examples/robot-arm/desktop-3axis-mates.kcad.ts for the canonical pattern.
 
   ball(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: BallJointOpts): AssemblyJointRef {
     if (!isValidVec3(opts.origin)) {

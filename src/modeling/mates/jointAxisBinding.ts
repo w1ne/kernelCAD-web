@@ -57,6 +57,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { FeatureId } from '../../shared/intent/types';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
 import { Transform } from '../../shared/runtime/se3';
@@ -159,28 +160,39 @@ export async function validateJointAxisBindingWithCache(
   }
 
   // Lower the assembly via a single `RecomputeEngine.run` — mirrors the
-  // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300),
-  // not `detectInterferencesForPoses`'s legacy `solvedModel + run` double-pass.
-  // We register the `solvedAssembly` FeatureRecord directly on the session
-  // (mate metadata sourced from `arm.__buildMateMetadata()`), then read the
-  // SceneBackend off `result.shapes.get(sceneShape.id)`. Skipping
-  // `arm.solvedModel(...)` avoids the redundant capture-time `solveMates`
-  // pass (which lowers per-part shapes for topology connectors and runs
-  // JS-layer FK) and the in-validator interference recompute that
-  // `validate: 'off'` would otherwise still hand-roll. Source id comes off
-  // the input `sceneShape.id`, not `scene.__sourceFeatureId()` (which would
-  // require a `solvedModel` round-trip just to recover the same value).
+  // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300).
+  // Reuse an existing `solvedAssembly` record on the session if one already
+  // exists for this assembly (the dominant in-`solvedModel` path); only
+  // register a fresh one as a fallback for standalone Gate 2 invocations.
+  // Recording a duplicate `solvedAssembly` here pollutes the session with
+  // an empty-pose phantom that doubles the SceneBackend fan-out on every
+  // assembly with declared mates — the regression that surfaced post-G0
+  // because the gate was inert on legacy `arm.revolute(...)` assemblies.
   await initOcct();
   const session = arm.__session();
-  const mateMetadata = arm.__buildMateMetadata();
-  const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
-  const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
+  let sceneFeatureId: FeatureId | undefined;
+  const records = session.getRecords();
+  for (let i = records.length - 1; i >= 0; i--) {
+    const r = records[i];
+    if (r.kind !== 'solvedAssembly') continue;
+    const meta = r.metadata as { assemblyName?: string } | undefined;
+    if (meta?.assemblyName === arm.name) {
+      sceneFeatureId = r.id;
+      break;
+    }
+  }
+  if (sceneFeatureId === undefined) {
+    const mateMetadata = arm.__buildMateMetadata();
+    const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
+    const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
+    sceneFeatureId = sceneShape.id;
+  }
   const engine = new RecomputeEngine(createOcctLowerer(session));
   const recompute = await engine.run(session.getRecords(), {
     paramTable: session.paramTable,
     gatedFeatureNames: session.gatedFeatureNames,
   });
-  const lowered = recompute.shapes.get(sceneShape.id);
+  const lowered = recompute.shapes.get(sceneFeatureId);
   if (!lowered || !isSceneBackend(lowered)) {
     return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
   }

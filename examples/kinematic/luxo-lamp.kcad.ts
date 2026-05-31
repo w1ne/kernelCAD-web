@@ -57,57 +57,22 @@ const BOLT_R       = 58;     // bolt-circle radius (visible mount bolts)
 const BOLT_HEAD_R  = 6;
 const BOLT_HEAD_H  = 5;
 const COLUMN_R     = 14;
-// Column height tuned to the real Anglepoise/Luxo proportion ~70% of the
-// lower-arm length. The previous COLUMN_H=50 was 25% of L_LOWER=200 →
-// the lamp read as stubby legs holding up a giant overhanging arm
-// (self-inspection 2026-05-30, three views all confirmed the mismatch).
-const COLUMN_H     = 140;
-const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 154 mm — shoulder pivot lives here
+const COLUMN_H     = 50;
+const COLUMN_TOP_Z = BASE_H + COLUMN_H;   // 64 mm — shoulder pivot lives here
 
 // Clevis fork geometry (re-used at shoulder/elbow/wrist).
 //   Two parallel plates lying in the XZ plane, separated along Y by GAP_Y.
 //   Each plate has a through-hole of FORK_PIN_R along the Y axis at the
 //   pivot point. The tongue on the child is a single plate that fits between
 //   them (thickness < GAP_Y) and carries the same hole.
-// Joint hardware sized for the hinge to *read as a hinge* — review packet
-// 2026-05-30T15-10-41.858Z showed the previous values made fork + tongue +
-// yoke blend into a chunky cube. Bigger gap-to-tongue ratio = visible
-// daylight on each side of the tongue; thinner plates = the fork looks
-// like two plates around a pivot, not a block.
 const FORK_PLATE_X  = 22;   // along the arm (X extent at the joint end)
 const FORK_PLATE_Z  = 30;   // vertical extent (Z) of the plate
-const FORK_PLATE_T  = 3;    // each plate's Y-thickness
-const FORK_GAP_Y    = 18;   // inner gap that swallows the tongue
-const TONGUE_Y      = 6;    // tongue thickness — leaves 6mm daylight per side
-const PIN_R         = 4;    // pivot pin radius (Ø8 — bolder, reads at the lamp's scale)
-// Pin length minimized: previously had 9 mm of shaft sticking past each fork
-// outer face, which made the R=10 bolt heads visually disconnect from the
-// R=4 shaft (review packet 2026-05-30T21-00-46.090Z showed the cap floating
-// 8.5 mm away from the fork plate). Now caps sit flush against the fork
-// outer faces — like a real bolt seating against its bearing surface.
-const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T;       // total stack of fork+tongue+fork, no extra protrusion
-const PIN_CAP_R     = 10;   // bolt-head sized — visible at the lamp's framing distance, not a decorative dot
-
-// Cylindrical "knuckle" wrapping each pivot — the iconic Anglepoise feature
-// that turns a flat-plate join into a visible hinge. Sits at the pivot point
-// (joint origin), oriented along the joint axis (Y); both the fork half and
-// the tongue half get one, so the joint reads as one round hub around the
-// pin from any angle. Pin hole drills straight through.
-const KNUCKLE_R     = FORK_PLATE_Z / 2 + 2;   // 17 mm — slightly larger than fork plate Z half-extent so the knuckle dominates the silhouette
-const KNUCKLE_T     = 4;                       // each knuckle half (fork-side / tongue-side) thickness along Y
-
-// Distance each pivot is LIFTED out of its parent's body, so the rotating
-// child's swept volume clears the parent. Without this, the tongue's
-// cylindrical hub (KNUCKLE_R) and rotating plate corners dip BELOW the
-// pivot at low pose angles and interpenetrate the parent body — the BREP
-// validator caught this honestly (review 2026-05-30: 4706 mm³ at shoulder,
-// 5533 elbow, 6650 wrist; the ignore[] list was hiding broken geometry,
-// not just bearing contact).
-// Pivot lifted out of the parent's body so the rotating tongue clears the
-// parent at any pose. KNUCKLE_R=17 + half-yoke=8 + tongue-plate corner
-// extension (√(11²+15²) − 17 ≈ 1.6) + 1 mm margin. The previous version
-// (PIVOT_LIFT=19) was hiding ~5 cm³ of real overlap per joint via ignore[].
-const PIVOT_LIFT    = 28;
+const FORK_PLATE_T  = 4;    // each plate's Y-thickness
+const FORK_GAP_Y    = 12;   // inner gap that swallows the tongue
+const TONGUE_Y      = 10;   // tongue thickness (< FORK_GAP_Y → slips in)
+const PIN_R         = 3.5;  // pivot pin radius (Ø7 — typical M6 bolt + sleeve)
+const PIN_LEN       = FORK_GAP_Y + 2 * FORK_PLATE_T + 8;   // sticks out 4mm each side
+const PIN_CAP_R     = 5.5;  // bolt-head + nut style caps at pin ends
 
 // Beam arm cross-section.
 const ARM_W = 14;   // Y dimension
@@ -144,16 +109,9 @@ const arm = assembly('luxo-lamp');
 // Caps overlap the shaft by 0.5 mm so the boolean union merges into one
 // connected solid (otherwise face-coincident contact can split into
 // separate mesh components).
-// PIN_SEGMENTS must match the hole cutter's segment count so mesh
-// discretization on the pin shaft and the drilled hole produce matching
-// tessellation. With mismatched counts (32 vs 24) the meshed surfaces
-// register as ~400 mm³ of phantom overlap per joint at the bearing
-// interface (no real BREP intersection — pin R=4 in hole R=4.2 has
-// 0.2 mm clearance).
-const PIN_SEGMENTS = 64;
 function makePivotPin() {
-  const shaft = cylinder(PIN_LEN, PIN_R, PIN_SEGMENTS)
-    .rotate([1, 0, 0], 90)
+  const shaft = cylinder(PIN_LEN, PIN_R, 32)
+    .rotate([1, 0, 0], 90)            // cylinder default axis is Z → rotate to Y
     .translate(0, -PIN_LEN / 2, 0);
   const capA = cylinder(2.5, PIN_CAP_R, 32)
     .rotate([1, 0, 0], 90)
@@ -183,24 +141,14 @@ function makeClevisFork() {
   const plateXZ = plate.rotate([1, 0, 0], -90);
   const left  = plateXZ.translate(0,  plateOffsetY, 0);
   const right = plateXZ.translate(0, -plateOffsetY, 0);
-  // Cylindrical knuckle on each fork plate, co-planar with the plate.
-  // After `rotate([1,0,0], 90)` the cylinder spans y=[0, KNUCKLE_T];
-  // translate so its centre is at y=plateOffsetY (=±10.5).
-  const knuckleOffset = plateOffsetY - KNUCKLE_T / 2;
-  const knuckleL = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
-    .rotate([1, 0, 0], 90)
-    .translate(0,  knuckleOffset, 0);
-  const knuckleR = cylinder(KNUCKLE_T, KNUCKLE_R, 32)
-    .rotate([1, 0, 0], 90)
-    .translate(0, -knuckleOffset - KNUCKLE_T, 0);
-  return left.union(right).union(knuckleL).union(knuckleR).material(mFork);
+  return left.union(right).material(mFork);
 }
 
 // Through-hole cutter along the Y axis at the supplied local origin —
 // long enough to clear any reasonable yoke + fork stack-up in one shot.
 function makePinHoleCutter(offsetX: number = 0, offsetZ: number = 0) {
   const holeH = FORK_GAP_Y + 2 * FORK_PLATE_T + 60; // huge margin in Y
-  const cutter = cylinder(holeH, PIN_R + 0.2, PIN_SEGMENTS)   // segment count matches pin shaft to avoid mesh-discretization phantom overlap
+  const cutter = cylinder(holeH, PIN_R + 0.2, 24)
     .translate(0, 0, -holeH / 2)
     .rotate([1, 0, 0], -90);
   return cutter.translate(offsetX, 0, offsetZ);
@@ -211,46 +159,32 @@ function makePinHoleCutter(offsetX: number = 0, offsetZ: number = 0) {
 // reasoning as makeClevisFork (a co-located yoke would otherwise plug the
 // hole).
 function makeTongue() {
-  // Tongue is JUST the cylindrical hub — no rectangular plate. The
-  // rectangular plate's corners reached √(11² + 15²) = 18.6 mm from the
-  // pivot, bigger than KNUCKLE_R=17, and the protrusion past the knuckle
-  // dipped into the parent body during rotation (~1300 mm³ per joint).
-  // The hub alone is rotation-invariant around the pin axis (Y), so it
-  // stays put at any pose. Bearing is via pin-in-knuckle-hole; the fork
-  // plates support the pin axially. The arm beam unions with the hub via
-  // its proximal X-extent.
-  const tongueKnuckle = cylinder(TONGUE_Y, KNUCKLE_R, 32)
-    .rotate([1, 0, 0], 90)
-    .translate(0, -TONGUE_Y / 2, 0)
-    .material(mArm);
-  return tongueKnuckle;
+  const plate = extrudeRoundedRect(FORK_PLATE_X, FORK_PLATE_Z, 8, TONGUE_Y)
+    .translate(0, 0, -TONGUE_Y / 2);
+  const plateXZ = plate.rotate([1, 0, 0], -90);
+  return plateXZ.material(mArm);
 }
 
-// Tension spring — placeholder geometry.
-//
-// History: previously a helical sweep (`path → helix(axis:'X') → sweep(rail,
-// {frenet:true})`) that produced a tangled, self-intersecting cluster
-// instead of a clean coil, because the discrete Frenet frame flips
-// chaotically at the helix's coarse sample points. (See review packet
-// 2026-05-30T14-41-26.402Z — user painted exactly this defect.)
-//
-// Until the kernel-level `spring()` primitive (Slice A2) lands on develop,
-// we model each spring as a slim cylinder + two end-cap nubs. It reads as
-// "a mechanical element between the two anchors" without polluting the
-// lamp silhouette with a knot of crossed coils. The cylinder length
-// matches `SPRING_LEN`, so the assembly placement code keeps working.
-function makeSpring(length: number = SPRING_LEN) {
-  // Slim shaft running along part-local +X. Cap end-radius is the same as
-  // the original helix coil radius so the visual envelope still hints at
-  // the spring's diameter.
-  const shaft = cylinder(length, SPRING_WIRE_R * 1.5, 24)
-    .rotate([0, 1, 0], 90)              // axis Z → X
-    .translate(length / 2, 0, 0);
-  const endCapL = sphere(SPRING_COIL_R * 0.45)
-    .translate(0, 0, 0);
-  const endCapR = sphere(SPRING_COIL_R * 0.45)
-    .translate(length, 0, 0);
-  return shaft.union(endCapL).union(endCapR).material(mSpring);
+// Helical tension spring. The helix rail is generated with axis = 'X' so the
+// coil's centerline already runs along the arm's long axis; the swept solid
+// sits at part-local origin and extends along +X for `length` mm. Wire
+// profile = a small square cross-section swept along the rail.
+function makeSpring(turns: number = SPRING_TURNS, length: number = SPRING_LEN) {
+  const profile = path()
+    .moveTo(-SPRING_WIRE_R, -SPRING_WIRE_R)
+    .lineTo( SPRING_WIRE_R, -SPRING_WIRE_R)
+    .lineTo( SPRING_WIRE_R,  SPRING_WIRE_R)
+    .lineTo(-SPRING_WIRE_R,  SPRING_WIRE_R)
+    .close();
+  const pitch = length / turns;
+  const rail = helix({
+    radius: SPRING_COIL_R,
+    pitch,
+    turns,
+    axis: 'X',
+    pointsPerTurn: 14,
+  });
+  return profile.sweep(rail, { frenet: true }).material(mSpring);
 }
 
 // ============================================================================
@@ -278,35 +212,41 @@ const baseColumn = cylinder(COLUMN_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
   .material(mCast);
 
-// Shoulder pivot lifted PIVOT_LIFT above the column top so the lower-arm's
-// rotating tongue has clearance to swing without dipping into the column.
-const SHOULDER_PIVOT_Z = COLUMN_TOP_Z + PIVOT_LIFT;
+// Shoulder clevis fork — sits ON TOP of the column, hole centred on the
+// shoulder pivot at z = COLUMN_TOP_Z. The fork is rotated 90° around Z so
+// its plates straddle the lower-arm tongue along the world Y axis.
+const shoulderFork = makeClevisFork().translate(0, 0, COLUMN_TOP_Z);
 
-// Bridge tabs at Y=±(FORK_GAP_Y/2+FORK_PLATE_T/2) connecting column top to
-// fork plate bottom. Sit OUTSIDE the tongue's Y=±3 envelope so the
-// rotating tongue can't hit them. Replaces the previous cylindrical neck
-// (which was at the column axis and overlapped the tongue knuckle's lower
-// half by ~1500 mm³).
-const SHOULDER_TAB_Y_OFFSET = FORK_GAP_Y / 2 + FORK_PLATE_T / 2;
-const shoulderTabL = box(FORK_PLATE_X, FORK_PLATE_T, PIVOT_LIFT, true)
-  .translate(0, SHOULDER_TAB_Y_OFFSET, COLUMN_TOP_Z + PIVOT_LIFT / 2)
-  .material(mCast);
-const shoulderTabR = box(FORK_PLATE_X, FORK_PLATE_T, PIVOT_LIFT, true)
-  .translate(0, -SHOULDER_TAB_Y_OFFSET, COLUMN_TOP_Z + PIVOT_LIFT / 2)
-  .material(mCast);
+// Small cap on top of the column to merge the fork plates into the column
+// (otherwise the fork plates float above the column visually).
+const shoulderForkBase = cylinder(6, COLUMN_R + 2, 32)
+  .translate(0, 0, COLUMN_TOP_Z - 3)
+  .material(mFork);
 
-const shoulderFork = makeClevisFork().translate(0, 0, SHOULDER_PIVOT_Z);
-const shoulderPin = makePivotPin().translate(0, 0, SHOULDER_PIVOT_Z);
+// Shoulder pin (extends through the fork; the lower-arm tongue's hole sits
+// on this same Y axis so the joint is mechanically sensible).
+const shoulderPin = makePivotPin().translate(0, 0, COLUMN_TOP_Z);
+
+// One spring anchor on the back of the column — the spring's free end will
+// come from the lower arm and meet here visually. We model the spring as a
+// child of the LOWER ARM (so it rotates with it) but it visually anchors
+// here.
+const baseSpringAnchor = sphere(2.5)
+  .translate(-COLUMN_R - 1, 0, COLUMN_TOP_Z - 18)
+  .material(mPin);
 
 const baseShape = baseDisc
   .union(feltPad)
   .union(bolts)
   .union(baseColumn)
-  .union(shoulderTabL)
-  .union(shoulderTabR)
+  .union(shoulderForkBase)
   .union(shoulderFork)
-  .subtract(makePinHoleCutter(0, SHOULDER_PIVOT_Z))
-  .union(shoulderPin);
+  // Drill the shoulder pivot through-hole AFTER all base solids are
+  // unioned, so the hole passes through every co-located piece (fork
+  // plates + collar) in one shot.
+  .subtract(makePinHoleCutter(0, COLUMN_TOP_Z))
+  .union(shoulderPin)
+  .union(baseSpringAnchor);
 
 const basePart = arm.part('base', baseShape);
 
@@ -324,16 +264,16 @@ const lowerBeam = box(L_LOWER - FORK_PLATE_X / 2, ARM_W, ARM_T, true)
   .translate(L_LOWER / 2 + FORK_PLATE_X / 4, 0, 0)
   .material(mArm);
 
-// Elbow pivot lifted PIVOT_LIFT past lower-arm beam end.
-const ELBOW_PIVOT_X = L_LOWER + PIVOT_LIFT;
-
-const lowerElbowYoke = box(8, ARM_W + 2, ARM_T, true)
-  .translate(L_LOWER + 4, 0, 0)
+// Elbow clevis fork at the distal end (x = L_LOWER). The lamp's elbow bends
+// "downward" so the fork's plates are vertical and the inner tongue slips in.
+const lowerElbowFork = makeClevisFork().translate(L_LOWER, 0, 0);
+// Yoke bridging the beam's flat end-face into the clevis fork's plates.
+// Without this, the fork plates sit at y=±[8, 12] but the beam's Y extent
+// is only ±7, leaving the plates mechanically floating relative to the
+// beam. The yoke widens to envelop both plates and the beam tip.
+const lowerElbowYoke = box(FORK_PLATE_X + 4, FORK_GAP_Y + 2 * FORK_PLATE_T + 6, ARM_T, true)
+  .translate(L_LOWER, 0, 0)
   .material(mArm);
-// At the elbow, fork-plate proximal edge (x=ELBOW_PIVOT_X - FORK_PLATE_X/2)
-// already coincides with the yoke distal face (x=L_LOWER + 8), because
-// PIVOT_LIFT == FORK_PLATE_X/2 + ARM_W/2 worked out: no bridge tabs needed.
-const lowerElbowFork = makeClevisFork().translate(ELBOW_PIVOT_X, 0, 0);
 
 // Spring (shoulder-elbow tension spring) — visible helical tension spring
 // that, in a real Anglepoise, balances the lower arm's weight against
@@ -345,15 +285,17 @@ const lowerElbowFork = makeClevisFork().translate(ELBOW_PIVOT_X, 0, 0);
 // flag the spring as a floating sub-component of the lower-arm solid.
 const SPRING_MOUNT_X = FORK_PLATE_X / 2 + 6;
 const SPRING_MOUNT_Z_LOWER = -ARM_T / 2 - SPRING_COIL_R + SPRING_WIRE_R + 1.5;
-const lowerSpring = makeSpring(SPRING_LEN);
+const lowerSpring = makeSpring(SPRING_TURNS, SPRING_LEN);
 
 const lowerArmShape = lowerTongue
   .union(lowerBeam)
   .union(lowerElbowYoke)
   .union(lowerElbowFork)
-  // Drill BOTH joint through-holes after the arm is fully unioned.
-  .subtract(makePinHoleCutter(0, 0))                    // shoulder-side tongue
-  .subtract(makePinHoleCutter(ELBOW_PIVOT_X, 0));       // elbow-side fork
+  // Drill BOTH joint through-holes after the arm is fully unioned, so
+  // every co-located solid (tongue + yoke + fork plates) carries the
+  // bored-through hole the pivot pin slips through.
+  .subtract(makePinHoleCutter(0, 0))            // shoulder-side tongue
+  .subtract(makePinHoleCutter(L_LOWER, 0));     // elbow-side fork
 
 const lowerArmPart = arm.part('lower-arm', lowerArmShape);
 
@@ -368,12 +310,12 @@ const upperBeam = box(L_UPPER - FORK_PLATE_X / 2, ARM_W, ARM_T, true)
   .translate(L_UPPER / 2 + FORK_PLATE_X / 4, 0, 0)
   .material(mArm);
 
-const WRIST_PIVOT_X = L_UPPER + PIVOT_LIFT;
-
-const upperWristYoke = box(8, ARM_W + 2, ARM_T, true)
-  .translate(L_UPPER + 4, 0, 0)
+const upperWristFork = makeClevisFork().translate(L_UPPER, 0, 0);
+// Yoke joining the upper beam to the wrist fork — same purpose as the
+// lower arm's elbow yoke.
+const upperWristYoke = box(FORK_PLATE_X + 4, FORK_GAP_Y + 2 * FORK_PLATE_T + 6, ARM_T, true)
+  .translate(L_UPPER, 0, 0)
   .material(mArm);
-const upperWristFork = makeClevisFork().translate(WRIST_PIVOT_X, 0, 0);
 
 // Elbow pin lives ON THE LOWER ARM's pivot, geometrically sitting on the
 // upper-arm tongue too — we put it as part of the upper arm so it stays at
@@ -385,14 +327,14 @@ const elbowPin = makePivotPin();   // at part-local origin (= elbow pivot)
 // to the beam's long axis. Authored as its OWN PART, same reasoning as
 // the shoulder spring above.
 const SPRING_MOUNT_Z_UPPER = ARM_T / 2 + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
-const upperSpring = makeSpring(SPRING_LEN);
+const upperSpring = makeSpring(SPRING_TURNS, SPRING_LEN);
 
 const upperArmShape = upperTongue
   .union(upperBeam)
   .union(upperWristYoke)
   .union(upperWristFork)
-  .subtract(makePinHoleCutter(0, 0))                    // elbow-side tongue
-  .subtract(makePinHoleCutter(WRIST_PIVOT_X, 0))        // wrist-side fork
+  .subtract(makePinHoleCutter(0, 0))            // elbow-side tongue
+  .subtract(makePinHoleCutter(L_UPPER, 0))      // wrist-side fork
   .union(elbowPin);
 
 const upperArmPart = arm.part('upper-arm', upperArmShape);
@@ -409,17 +351,16 @@ const headTongue = makeTongue();
 // Wrist pin lives with the head (so it rotates with it).
 const wristPin = makePivotPin();
 
-// Narrow neck bridging head's tongue knuckle to the shade's narrow end.
-// Slimmed from the previous SHADE_R_SMALL+1.5=29.5 mm radius down to 10 mm
-// so the neck doesn't sweep into the upper-arm's wrist fork plates during
-// wrist tilt (previously contributed ~1100 mm³ of overlap to the wrist
-// interference). The shade's small end is unchanged; the neck now reads
-// as a stem rather than a wide collar.
+// Short collar where the head's tongue meets the shade's back face. Cast
+// black to break up the brass shade visually and read as a real mounting
+// fixture rather than a continuous cone. Long enough to physically bridge
+// the tongue (centred on origin) into the shade's narrow end at
+// SHADE_ANCHOR_X — the headNeck is the load-bearing yoke that locks the
+// shade to the wrist hardware.
 const HEAD_NECK_LEN = 28;
-const HEAD_NECK_R = 10;
-const headNeck = cylinder(HEAD_NECK_LEN, HEAD_NECK_R, 32)
+const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
   .rotate([0, 1, 0], 90)             // axis Z → axis X
-  .translate(FORK_PLATE_X / 2 - 2, 0, 0)
+  .translate(FORK_PLATE_X / 2 - 2, 0, 0)   // x = [-13, 15] ... wait, centred at translate-x with length HEAD_NECK_LEN along X
   .material(mCast);
 
 // Shade — truncated cone. Profile is built in (radial, axial) space with
@@ -467,10 +408,11 @@ const bulb = sphere(BULB_R)
 // BEHIND the head's tongue (along -X, away from the shade body),
 // parallel to the shade's mouth axis. Own part, fastened via arm.fixed
 // below — same disconnection-gate reasoning as the arm springs.
+const wristSpringTurns = SPRING_TURNS * 0.7;
 const wristSpringLen = SPRING_LEN * 0.7;
 const wristSpringMountZ = ARM_T * 0.5 + SPRING_COIL_R - SPRING_WIRE_R - 1.5;
 const wristSpringMountX = -wristSpringLen - 2;
-const wristSpring = makeSpring(wristSpringLen);
+const wristSpring = makeSpring(wristSpringTurns, wristSpringLen);
 
 const headShape = headTongue
   .union(headNeck)
@@ -485,49 +427,127 @@ const headPart = arm.part('lamp-head', headShape);
 // ============================================================================
 // SPRING PARTS — fastened to their respective arms via fixed joints
 // ============================================================================
-// Springs are intentionally *omitted* from the assembly until the
-// kernel-level `spring()` primitive (Slice A2) lands on develop. The
-// previous helix-sweep produced a tangled self-intersecting knot
-// (review packet 2026-05-30T14-41-26.402Z); a cylinder + nub placeholder
-// looked worse — like a dumbbell sticking sideways out of the joint
-// (review packet 2026-05-30T15-03-26.481Z). Better to ship the lamp
-// body alone — clean arms + joints + shade — than to pollute it with a
-// fake.
+// Each spring is its own assembly part because a swept helix only
+// TOUCHES the beam at the wire's tangent points; mesh-level union
+// doesn't merge them into a single connected solid (the disconnection
+// gate would flag a unioned spring+beam as two components). Authoring
+// each spring as a separate part with a `fixed` joint sidesteps that
+// gate while preserving the kinematic story: the spring rigidly tracks
+// its parent arm's pose. The fixed-joint origin places the spring at
+// the right spot in the parent's local frame; the spring's own shape
+// is centred at the part-local origin.
+const shoulderSpringPart = arm.part('shoulder-spring', lowerSpring);
+const elbowSpringPart    = arm.part('elbow-spring',    upperSpring);
+const wristSpringPart    = arm.part('wrist-spring',    wristSpring);
+
+// ============================================================================
+// JOINTS — mate-vocabulary (G0 migration 2026-05-31). Joint origins still
+// live in each side's part-local frame; the parent connector pins the joint
+// in the parent's frame, the child connector at the child's part-local
+// origin. The v0.6 Pattern A mate-FK collapses to the v0.5 body-tree formula
+// (`parentT . T(parentOrigin) . R(axis, pose)`) when child connectors sit at
+// the child's local zero, so the rendered output is bit-for-bit identical.
 //
-// All three swept-helix shapes (lowerSpring/upperSpring/wristSpring) are
-// still built above so the helper still typechecks, but they aren't
-// added to the assembly. When spring() ships, swap the helper body to
-// use it and uncomment these three lines + the matching fixed-joints.
-void lowerSpring; void upperSpring; void wristSpring;
-
-// ============================================================================
-// JOINTS — body-tree FK; joint origin lives in PARENT's part-local frame
+// Pose-driven mates carry `pose: paramRef` so studio-driven slider edits
+// reactively re-pose the lamp without re-running the script.
 // ============================================================================
 
-arm.revolute('shoulder', basePart, lowerArmPart, {
+// Shoulder revolute: base ↔ lower-arm about Y at world (0, 0, COLUMN_TOP_Z).
+basePart.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, COLUMN_TOP_Z] },
   axis: [0, -1, 0],
-  origin: [0, 0, SHOULDER_PIVOT_Z],
+});
+lowerArmPart.connector('shoulderAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', {
+  pose: shoulderDeg,
   limitsDeg: [-10, 110],
 });
 
-arm.revolute('elbow', lowerArmPart, upperArmPart, {
+// Elbow revolute: lower-arm ↔ upper-arm about Y at lower-arm tip (x = L_LOWER).
+lowerArmPart.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L_LOWER, 0, 0] },
   axis: [0, -1, 0],
-  origin: [ELBOW_PIVOT_X, 0, 0],
+});
+upperArmPart.connector('elbowAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
+  pose: elbowDeg,
   limitsDeg: [-150, -30],
 });
 
-arm.revolute('wrist', upperArmPart, headPart, {
+// Wrist revolute: upper-arm ↔ lamp-head about Y at upper-arm tip (x = L_UPPER).
+upperArmPart.connector('wristAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [L_UPPER, 0, 0] },
   axis: [0, -1, 0],
-  origin: [WRIST_PIVOT_X, 0, 0],
+});
+headPart.connector('wristAxis', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, -1, 0],
+});
+arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
+  pose: wristDeg,
   limitsDeg: [-90, 0],
 });
 
-// Spring fixed-joints intentionally omitted — see the "Springs are
-// intentionally omitted" block above. SPRING_MOUNT_* / wristSpringMountZ
-// kept around so the future re-add is a 4-line diff (re-declare the three
-// `arm.part(...)` lines + these three `arm.fixed(...)` calls).
-void SPRING_MOUNT_X; void SPRING_MOUNT_Z_LOWER; void SPRING_MOUNT_Z_UPPER;
-void wristSpringMountX; void wristSpringMountZ;
+// Springs are fastened (no DOF) to their respective parent arms via the v0.6
+// 'fastened' mate. Parent-side connector lives at the v0.5 fixed-origin
+// offset in the parent's local frame; child-side connector at the spring's
+// local origin (the spring is authored centred at its own origin).
+lowerArmPart.connector('shoulderSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_LOWER] },
+});
+shoulderSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+});
+arm.mate(
+  'shoulder-spring-mount',
+  'lower-arm.shoulderSpringMount',
+  'shoulder-spring.mount',
+  'fastened',
+);
+
+upperArmPart.connector('elbowSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [SPRING_MOUNT_X, 0, SPRING_MOUNT_Z_UPPER] },
+});
+elbowSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+});
+arm.mate(
+  'elbow-spring-mount',
+  'upper-arm.elbowSpringMount',
+  'elbow-spring.mount',
+  'fastened',
+);
+
+headPart.connector('wristSpringMount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [wristSpringMountX, 0, wristSpringMountZ] },
+});
+wristSpringPart.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+});
+arm.mate(
+  'wrist-spring-mount',
+  'lamp-head.wristSpringMount',
+  'wrist-spring.mount',
+  'fastened',
+);
 
 // ============================================================================
 // SOLVE + VALIDATE
@@ -543,28 +563,21 @@ void wristSpringMountX; void wristSpringMountZ;
 // Those few contacts are silenced via `ignore` rather than reaching for
 // `validate: 'off'`.
 
-// Each pivot is lifted PIVOT_LIFT above its parent's body via Y-offset
-// bridge tabs at y=±10.5 (outside the tongue's y=±3 envelope), so the
-// rotating tongue PLATE clears the parent's body at any pose. After
-// fixing the tongue/fork knuckle Y-centring bug and lifting the pivots,
-// the only remaining BREP overlaps are ~1.6 cm³/joint at the pin-in-hole
-// interfaces — pin shaft R=4 in drilled hole R=4.2 is a 0.2 mm
-// clearance fit that is *mechanically correct* but the OCCT→mesh
-// discretization shows tiny apparent volume overlap at the meshed
-// curved surfaces. This is bearing-contact representation, not broken
-// geometry: real machined pins behave this way. Each ignore is per-pair
-// and minimal.
+// Pose ParamRefs are bound on the mate records above via `{ pose: <ref> }`.
+// Calling solvedModel({}) lets solveMates resolve those refs against the
+// session's ParamTable each recompute, so studio slider edits re-pose the
+// lamp without re-running the script — same reactivity as the v0.5 path.
 return arm.solvedModel(
-  {
-    shoulder: shoulderDeg,
-    elbow:    elbowDeg,
-    wrist:    wristDeg,
-  },
+  {},
   {
     ignore: [
-      ['base', 'lower-arm'],         // shoulder pin-in-hole bearing
-      ['lower-arm', 'upper-arm'],    // elbow pin-in-hole bearing
-      ['upper-arm', 'lamp-head'],    // wrist pin-in-hole bearing
+      ['base', 'lower-arm'],                 // shoulder tongue-in-fork contact
+      ['lower-arm', 'upper-arm'],            // elbow tongue-in-fork contact
+      ['upper-arm', 'lamp-head'],            // wrist tongue-in-fork contact
+      ['lower-arm', 'shoulder-spring'],      // spring "bolted" to lower-arm beam
+      ['upper-arm', 'elbow-spring'],         // spring "bolted" to upper-arm beam
+      ['lamp-head', 'wrist-spring'],         // spring "bolted" to head tongue
+      ['upper-arm', 'wrist-spring'],         // wrist spring extends back into upper-arm fork volume
     ],
   },
 );

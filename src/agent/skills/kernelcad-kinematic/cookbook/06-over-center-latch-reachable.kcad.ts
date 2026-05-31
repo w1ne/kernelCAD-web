@@ -30,15 +30,17 @@ const drive = arm.part('drive', box(L2 - 10, 8, 8, true).translate(L2 / 2, 0, 12
 // so it clears both the lever and drive at zero pose.
 const pin = arm.part('pin', box(L3 - 10, 6, 6, true).translate(L3 / 2, 0, 12));
 
-arm.revolute('leverPivot', housing, lever, {
-  axis: [0, 1, 0], origin: [0, 0, baseH + 10], limitsDeg: [-90, 90],
-});
-arm.revolute('drivePivot', lever, drive, {
-  axis: [0, 1, 0], origin: [L1, 0, 0], limitsDeg: [-160, 160],
-});
-arm.revolute('pinPivot', drive, pin, {
-  axis: [0, 1, 0], origin: [L2, 0, 0], limitsDeg: [-160, 160],
-});
+housing.connector('leverPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, baseH + 10] }, axis: [0, 1, 0] });
+lever.connector('leverPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('leverPivot', 'housing.leverPivotAxis', 'lever.leverPivotAxis', 'revolute', { limitsDeg: [-90, 90] });
+
+lever.connector('drivePivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [L1, 0, 0] }, axis: [0, 1, 0] });
+drive.connector('drivePivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('drivePivot', 'lever.drivePivotAxis', 'drive.drivePivotAxis', 'revolute', { limitsDeg: [-160, 160] });
+
+drive.connector('pinPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [L2, 0, 0] }, axis: [0, 1, 0] });
+pin.connector('pinPivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('pinPivot', 'drive.pinPivotAxis', 'pin.pinPivotAxis', 'revolute', { limitsDeg: [-160, 160] });
 
 // Reachable target — at zero pose the pin tip sits at housing-local
 // (L1+L2+L3, 0, baseH). Aim for an in-workspace point that needs the chain

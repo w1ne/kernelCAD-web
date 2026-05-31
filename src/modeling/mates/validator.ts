@@ -200,7 +200,7 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
         code: 'assembly.part.floating',
         severity: 'warning',
         message: `Part '${p.partName}' has no joint connecting it to any other part.`,
-        hint: `invalid-args.assembly.floating-part — declare a connection via arm.fixed('${p.partName}-mount', '${p.partName}', '<other>') or arm.revolute(...) so the assembly graph reflects how parts actually mate.`,
+        hint: `invalid-args.assembly.floating-part — declare a connection via arm.mate('${p.partName}-mount', '${p.partName}.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.`,
         partName: p.partName,
       });
     }

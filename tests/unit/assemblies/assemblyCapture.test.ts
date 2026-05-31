@@ -11,68 +11,10 @@ function evaluatedXYZ(v: unknown): [number, number, number] {
 }
 
 describe('assembly capture contract', () => {
-  it('captures named parts and a revolute joint as inspectable intent records', () => {
-    const session = new CaptureSession();
-    const kcad = createApi({ session });
-
-    const arm = kcad.assembly('two-link arm');
-    const baseShape = kcad.box(30, 30, 8);
-    const linkShape = kcad.box(80, 12, 8).translate(40, 0, 8);
-
-    const base = arm.part('base', baseShape, { at: [0, 0, 0] });
-    const link = arm.part('link', linkShape, { at: [0, 0, 8] });
-    const shoulder = arm.revolute('shoulder', base, link, {
-      axis: [0, 0, 1],
-      origin: [0, 0, 8],
-      limitsDeg: [-90, 90],
-    });
-
-    expect(base.id).toMatch(/^assemblyPart_/);
-    expect(link.id).toMatch(/^assemblyPart_/);
-    expect(shoulder.id).toMatch(/^assemblyJoint_/);
-
-    const records = session.getRecords();
-    const baseRecord = records.find(r => r.id === base.id);
-    expect(baseRecord).toMatchObject({
-      kind: 'assemblyPart',
-      inputs: { shape: { kind: 'feature', id: baseShape.id } },
-      metadata: {
-        assemblyName: 'two-link arm',
-        partName: 'base',
-      },
-    });
-    expect(evaluatedXYZ((baseRecord!.metadata as { at: unknown }).at)).toEqual([0, 0, 0]);
-
-    const linkRecord = records.find(r => r.id === link.id);
-    expect(linkRecord).toMatchObject({
-      kind: 'assemblyPart',
-      inputs: { shape: { kind: 'feature', id: linkShape.id } },
-      metadata: {
-        assemblyName: 'two-link arm',
-        partName: 'link',
-      },
-    });
-    expect(evaluatedXYZ((linkRecord!.metadata as { at: unknown }).at)).toEqual([0, 0, 8]);
-
-    const shoulderRecord = records.find(r => r.id === shoulder.id);
-    expect(shoulderRecord).toMatchObject({
-      kind: 'assemblyJoint',
-      inputs: {
-        a: { kind: 'feature', id: base.id },
-        b: { kind: 'feature', id: link.id },
-      },
-      metadata: {
-        assemblyName: 'two-link arm',
-        jointName: 'shoulder',
-        jointKind: 'revolute',
-        limitsDeg: [-90, 90],
-      },
-    });
-    // v1 body-tree: joint axis/origin stored as plain numeric Vec3 (not Vec3Param).
-    const shoulderMeta = shoulderRecord!.metadata as { axis: [number, number, number]; origin: [number, number, number] };
-    expect(shoulderMeta.axis).toEqual([0, 0, 1]);
-    expect(shoulderMeta.origin).toEqual([0, 0, 8]);
-  });
+  // G0 (2026-05-31): the v0.5 `arm.revolute(...)` / `arm.fixed(...)` capture
+  // shape was removed. Equivalent capture coverage for mate-style joints
+  // lives in the assemblyModel `mates: [...]` round-trip test below, which
+  // already exercises the canonical v0.6 surface.
 
   it('captures assembly.model() as one aggregate feature over all placed parts', () => {
     const session = new CaptureSession();
@@ -161,18 +103,10 @@ describe('assembly capture contract', () => {
     expect(() => kcad.assembly('empty').model()).toThrow(/assembly.model requires at least one part/);
   });
 
-  it('rejects invalid revolute joint axes before capture', () => {
-    const session = new CaptureSession();
-    const kcad = createApi({ session });
-    const arm = kcad.assembly('invalid joint');
-    const a = arm.part('a', kcad.box(10, 10, 10));
-    const b = arm.part('b', kcad.box(10, 10, 10));
-
-    expect(() => arm.revolute('bad', a, b, {
-      axis: [0, Number.NaN, 1],
-      origin: [0, 0, 0],
-    })).toThrow(/revolute joint axis must be a finite Vec3/);
-  });
+  // G0 (2026-05-31): the v0.5 revolute-axis capture-time validation moved
+  // with arm.revolute(...) when that surface was deleted. Mate-side
+  // connector-axis validation (the v0.6 equivalent) is covered by the
+  // assembly mate suite (see src/modeling/mates/connector.test.ts).
 
   it('captures named connector frames and fixed placement between parts', () => {
     const session = new CaptureSession();

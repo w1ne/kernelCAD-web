@@ -22,11 +22,9 @@ const liftArm = arm.part(
 // Pivot the lift arm above the base. Origin Z lifted by 50 mm. Axis +Y so
 // positive rotation maps +X to -Z (right-handed); we sweep across negative
 // angles, which lift the arm tip into +Z (up and away from the base).
-arm.revolute('pivot', base, liftArm, {
-  axis: [0, 1, 0],
-  origin: [-30, 0, 50],
-  limitsDeg: [-60, 0],
-});
+base.connector('pivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [-30, 0, 50] }, axis: [0, 1, 0] });
+liftArm.connector('pivotAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('pivot', 'base.pivotAxis', 'liftArm.pivotAxis', 'revolute', { limitsDeg: [-60, 0] });
 
 // Sweep at 1° step gives 61 samples (well above the 36-sample safe floor).
 const r = await kinematic.checkSweptCollision(arm, {
