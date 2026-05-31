@@ -110,6 +110,17 @@ These four calls work on any moving assembly, not just robot arms:
 - **Scissor jacks** — `checkSweptCollision` over the lift parameter; the
   closed-loop variant is rejected by K5 — author the open-chain leg instead
 
+## Mechanism delivery — non-bypassable
+
+A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
+
+1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, and removing it leaves them 3D-disconnected.
+3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
+4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
+
+If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
+
 ## Cookbook
 
 Six runnable snippets live in `cookbook/`. Each begins with a `// expected:`
