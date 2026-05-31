@@ -32,6 +32,7 @@ import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
+import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
@@ -543,6 +544,18 @@ export async function validateAssemblyWithMates(
     loweredShapes: axisBindingResult.worldShapes,
     worldTransforms: axisBindingResult.worldTransforms,
   }));
+
+  // G2 — Gate 6 mate physical realization. Reuses Gate 2's lowered-shape
+  // cache (no re-lower). Runs the heaviest BREP-boolean sub-check
+  // (over-constrained) only when the lighter sub-checks all pass — the
+  // gate's first-failure-wins ordering keeps the cost bounded on assemblies
+  // with structurally obvious mate failures, and reserves the full BREP
+  // pass for mates that have made it past sub-checks 1-3.
+  diagnostics.push(...await validateMatePhysicalRealization(
+    arm,
+    axisBindingResult.worldShapes,
+    axisBindingResult.worldTransforms,
+  ));
 
   // 8. v0.7 Slice 1 — workspace-reachability gate. Pure: takes the sampled
   //    `ConnectorWorkspace[]` produced by `reviewPoseEnvelope` and checks
