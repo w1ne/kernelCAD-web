@@ -84,6 +84,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.load-exceeded'
   | 'assembly.joint.not-visible'
+  | 'assembly.mate.not-physically-realized'
   | 'assembly.workspace.unreachable'
 >;
 

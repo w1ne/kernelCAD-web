@@ -894,6 +894,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: "A revolute joint's fork+tongue+pin geometry collapses into the visual envelope of one of the joined parts — the hinge mechanism reads as a solid block instead of a hinge (Gate 4 — joint visual exposure).",
   },
+  'assembly.mate.not-physically-realized': {
+    hintTemplate:
+      "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft is unioned into both parts and a through-hole is drilled in one pass. See kernelcad-kinematic SKILL.md \"Mechanism delivery\".",
+    nextAction: { kind: 'fix-arg', field: 'mateGeometry' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: "An articulated mate (revolute/prismatic) is declared but not realised by part geometry — no shared pin/shaft feature constrains both parts, or the pin escapes the hole at a sampled pose, or the bearing surfaces are not coplanar (Gate 6 — mate physical realization).",
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:
