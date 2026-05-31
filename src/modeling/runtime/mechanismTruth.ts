@@ -89,15 +89,36 @@ const DISCONNECT_TOLERANCE_MM = 1;
 const INTERPENETRATION_EPSILON_MM3 = 0.01;
 
 /**
- * Volume ceiling for the joint-pair contact-face exclusion. When two
- * parts are joined by a revolute / prismatic / cylindrical mate, the
- * intended clevis cheek-on-tongue / pin-in-hole contact may register as
- * a small interference; if the overlap volume is below this fraction of
- * the smaller part's bbox volume, we treat it as intentional contact.
+ * Volume ceiling for the joint-pair contact-face exclusion at revolute /
+ * prismatic / cylindrical mates. The intended clevis cheek-on-tongue /
+ * pin-in-hole contact at these joints can register as a non-trivial
+ * interference at swept poses (a 45° clevis swing on a typical 12 mm
+ * knuckle radius easily reaches a couple of thousand mm³ of intersection
+ * with the parent fork). We treat overlaps below this fraction of the
+ * smaller part's bbox volume as intentional contact.
+ *
  * Approach A from the plan — safer than blanket pair-exclusion which
- * would mask a real spring-through-arm-body penetration.
+ * would mask a real spring-through-arm-body penetration. The fraction is
+ * deliberately generous for revolutes (covers the clevis swing range);
+ * fastened mates use a tighter fraction below.
+ *
+ * Empirical: a 40×40×30 base (48000 mm³) under a ±45° clevis swing
+ * produces a ~1500 mm³ contact (≈3 %); 5 % covers it with margin while
+ * still flagging the order-of-magnitude penetrations a broken mechanism
+ * would produce (a spring-through-knuckle at 10 % bbox volume gets
+ * caught).
  */
-const JOINT_CONTACT_TOLERANCE_FRACTION = 0.01;
+const REVOLUTE_CONTACT_TOLERANCE_FRACTION = 0.05;
+
+/**
+ * Volume ceiling for the joint-pair contact-face exclusion at fastened
+ * mates. Tighter than the revolute fraction because fastened mates
+ * SHOULDN'T have material overlap by design — a small surface-tangent
+ * contact at the mounting face is acceptable (mesher tolerance noise),
+ * but real penetration through the body is a failure mode (PR #341's
+ * vec3 spring passing through the arm's interior).
+ */
+const FASTENED_CONTACT_TOLERANCE_FRACTION = 0.005;
 
 /**
  * Micro-pose excursion for the DoF-mismatch check (degrees). Per spec
@@ -451,15 +472,24 @@ async function checkInterpenetration(
       const mateType = matedPairs.get(key);
       // Joint-pair contact-face exclusion: revolute / prismatic /
       // cylindrical mates expect a small intentional overlap (clevis
-      // cheek-on-tongue, pin-in-hole). Approach A from the plan: skip
-      // only when the volume is below the contact-tolerance fraction
-      // of the smaller part's bbox volume.
-      if (mateType === 'revolute' || mateType === 'prismatic' || mateType === 'cylindrical') {
-        const minVol = Math.min(
-          bboxVolByPart.get(pair.a) ?? Number.POSITIVE_INFINITY,
-          bboxVolByPart.get(pair.b) ?? Number.POSITIVE_INFINITY,
-        );
-        if (pair.volumeMm3 < JOINT_CONTACT_TOLERANCE_FRACTION * minVol) continue;
+      // cheek-on-tongue, pin-in-hole). Fastened mates allow only a
+      // tighter mesher-noise floor. Approach A from the plan: skip
+      // only when the volume is below the per-mate-type contact-
+      // tolerance fraction of the smaller part's bbox volume.
+      if (mateType !== undefined) {
+        const fraction =
+          mateType === 'revolute' || mateType === 'prismatic' || mateType === 'cylindrical'
+            ? REVOLUTE_CONTACT_TOLERANCE_FRACTION
+            : mateType === 'fastened'
+              ? FASTENED_CONTACT_TOLERANCE_FRACTION
+              : undefined;
+        if (fraction !== undefined) {
+          const minVol = Math.min(
+            bboxVolByPart.get(pair.a) ?? Number.POSITIVE_INFINITY,
+            bboxVolByPart.get(pair.b) ?? Number.POSITIVE_INFINITY,
+          );
+          if (pair.volumeMm3 < fraction * minVol) continue;
+        }
       }
 
       out.push(makeFailure(
