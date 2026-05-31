@@ -32,6 +32,7 @@ import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
+import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
 import { solveMates } from './solver';
@@ -84,6 +85,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.load-exceeded'
   | 'assembly.joint.not-visible'
+  | 'assembly.mate.not-physically-realized'
   | 'assembly.workspace.unreachable'
 >;
 
@@ -542,6 +544,21 @@ export async function validateAssemblyWithMates(
     loweredShapes: axisBindingResult.worldShapes,
     worldTransforms: axisBindingResult.worldTransforms,
   }));
+
+  // G2 — Gate 6 mate physical realization. Runs ONLY under `validate: 'error'`
+  // mode per spec §G2 design lock — the gate's sub-check 4 (BREP residue
+  // intersection) is the heaviest single operation in the validator. We
+  // gate on `interferencePairs !== undefined` because that is already the
+  // signal `Assembly.solvedModel` uses to distinguish `'error'` mode (where
+  // it computes BREP interferences) from `'warn'`. Reuses Gate 2's
+  // lowered-shape cache (no re-lower).
+  if (interferencePairs !== undefined) {
+    diagnostics.push(...await validateMatePhysicalRealization(
+      arm,
+      axisBindingResult.worldShapes,
+      axisBindingResult.worldTransforms,
+    ));
+  }
 
   // 8. v0.7 Slice 1 — workspace-reachability gate. Pure: takes the sampled
   //    `ConnectorWorkspace[]` produced by `reviewPoseEnvelope` and checks
