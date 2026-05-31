@@ -86,6 +86,32 @@ export interface RecomputeResult {
   shapes: Map<FeatureId, ShapeBackend>;
   diagnostics: CompilerDiagnostic[];
   health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+  /**
+   * Physics-grounded loop verdict (P0 of the physics-loop slice).
+   *
+   * - `'real'`   — every declared assembly satisfies the 4 truth criteria
+   *                (orphan-part / disconnect / interpenetration / dof-mismatch)
+   *                at every sampled pose.
+   * - `'broken'` — at least one assembly fails at least one criterion at
+   *                at least one sampled pose. `mechanismFailures` carries
+   *                the structured failure list.
+   * - `'unverified'` — the run did not exercise the mechanism check
+   *                (e.g. cheap modes that skip BREP-heavy gates, or the
+   *                session declared no assemblies / no mates so the
+   *                check was vacuous).
+   *
+   * See `docs/specs/2026-06-01-physics-grounded-loop-design.md` for the
+   * truth criteria and `src/modeling/runtime/mechanismTruth.ts` for the
+   * implementation. Downstream consumers (CLI `kernelcad validate`,
+   * Studio runtime, render-inspect) opt in to reading this field in P1.
+   */
+  mechanism?: 'real' | 'broken' | 'unverified';
+  /**
+   * Structured per-failure list. Always populated to the empty array when
+   * `mechanism === 'real'`. Each diagnostic uses one of the
+   * `mechanism.*` codes from `src/shared/diagnostics/registry.ts`.
+   */
+  mechanismFailures?: readonly CompilerDiagnostic[];
 }
 
 export interface RecomputeOptions {
@@ -105,6 +131,27 @@ export interface RecomputeOptions {
   warningPhase?: SoftWarningPhase;
   /** Current run's gated named-feature index, keyed by feature metadata.name. */
   gatedFeatureNames?: Map<string, string | undefined>;
+  /**
+   * Physics-grounded loop (P0): when set, the engine runs the supplied
+   * mechanism-truth probe AFTER the rest-pose recompute completes and
+   * folds the verdict into `RecomputeResult.mechanism` /
+   * `RecomputeResult.mechanismFailures`.
+   *
+   * The probe is a callback (not an Assembly direct reference) so the
+   * engine layer doesn't import Assembly — the caller wires
+   * `checkMechanismTruth(arm)` from
+   * `src/modeling/runtime/mechanismTruth.ts`. See spec
+   * `docs/specs/2026-06-01-physics-grounded-loop-design.md`.
+   *
+   * Omit (or set to `undefined`) to leave the field at `'unverified'`.
+   * This is the default — cheap recomputes (Studio param drags, eval
+   * harness rest-pose lowers) skip the heavy pose sweep so the live
+   * loop stays fast.
+   */
+  mechanismCheck?: () => Promise<{
+    readonly mechanism: 'real' | 'broken';
+    readonly failures: readonly CompilerDiagnostic[];
+  }>;
 }
 
 export class RecomputeEngine {
@@ -334,6 +381,53 @@ export class RecomputeEngine {
       onEvent({ kind: 'recompute.complete', featureCount: emittedCount });
     }
 
-    return { shapes, diagnostics, health };
+    // Physics-grounded loop (P0): if the caller supplied a
+    // `mechanismCheck` probe, run it now. The probe owns the heavy
+    // pose-sweep + per-pose BREP work (see
+    // `src/modeling/runtime/mechanismTruth.ts`); the engine only folds
+    // the result onto `RecomputeResult` so downstream consumers (CLI
+    // validate, Studio runtime, render-inspect) read a single source of
+    // truth in P1. When no probe is set the field stays `'unverified'`
+    // — recomputes that DON'T pay for the sweep still get a stable
+    // value to downstream consumers can branch on.
+    if (opts?.mechanismCheck) {
+      try {
+        const verdict = await opts.mechanismCheck();
+        return {
+          shapes,
+          diagnostics,
+          health,
+          mechanism: verdict.mechanism,
+          mechanismFailures: verdict.failures,
+        };
+      } catch (e) {
+        // A probe throw is itself a mechanism failure (something went
+        // wrong measuring the mechanism), but we don't want it to nuke
+        // the rest of the recompute result. Surface as `'unverified'`
+        // + a structured diagnostic so the caller can see the failure.
+        diagnostics.push({
+          target: this.lowerer.target,
+          code: 'recompute.lowering.exception',
+          severity: 'error',
+          message: `Mechanism-truth probe threw: ${e instanceof Error ? e.message : String(e)}`,
+          hint: 'The pose-sweep mechanism check raised an exception; inspect the assembly for solver / lowerer errors and retry.',
+        });
+        return {
+          shapes,
+          diagnostics,
+          health,
+          mechanism: 'unverified',
+          mechanismFailures: [],
+        };
+      }
+    }
+
+    return {
+      shapes,
+      diagnostics,
+      health,
+      mechanism: 'unverified',
+      mechanismFailures: [],
+    };
   }
 }
