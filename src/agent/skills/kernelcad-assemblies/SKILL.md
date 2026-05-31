@@ -609,7 +609,7 @@ For robot arms specifically, preserve at least these interfaces between repair a
 A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
 
 1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
-2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, and removing it leaves them 3D-disconnected.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Fails with `assembly.mate.not-physically-realized` (revolute / prismatic only; `fastened` mates are exempt). `joint.clevis(...)` passes by construction.
 3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
 
