@@ -545,17 +545,20 @@ export async function validateAssemblyWithMates(
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
-  // G2 — Gate 6 mate physical realization. Reuses Gate 2's lowered-shape
-  // cache (no re-lower). Runs the heaviest BREP-boolean sub-check
-  // (over-constrained) only when the lighter sub-checks all pass — the
-  // gate's first-failure-wins ordering keeps the cost bounded on assemblies
-  // with structurally obvious mate failures, and reserves the full BREP
-  // pass for mates that have made it past sub-checks 1-3.
-  diagnostics.push(...await validateMatePhysicalRealization(
-    arm,
-    axisBindingResult.worldShapes,
-    axisBindingResult.worldTransforms,
-  ));
+  // G2 — Gate 6 mate physical realization. Runs ONLY under `validate: 'error'`
+  // mode per spec §G2 design lock — the gate's sub-check 4 (BREP residue
+  // intersection) is the heaviest single operation in the validator. We
+  // gate on `interferencePairs !== undefined` because that is already the
+  // signal `Assembly.solvedModel` uses to distinguish `'error'` mode (where
+  // it computes BREP interferences) from `'warn'`. Reuses Gate 2's
+  // lowered-shape cache (no re-lower).
+  if (interferencePairs !== undefined) {
+    diagnostics.push(...await validateMatePhysicalRealization(
+      arm,
+      axisBindingResult.worldShapes,
+      axisBindingResult.worldTransforms,
+    ));
+  }
 
   // 8. v0.7 Slice 1 — workspace-reachability gate. Pure: takes the sampled
   //    `ConnectorWorkspace[]` produced by `reviewPoseEnvelope` and checks

@@ -431,10 +431,8 @@ describe('validateMatePhysicalRealization (Gate 6)', () => {
     if (myDiags.length > 0) {
       // Document the failure mode in the test output so the regression
       // signal is visible without re-running the test.
-      // eslint-disable-next-line no-console
       console.log(`Gate 6 — Luxo lamp shoulder: ${myDiags.length} diagnostic(s) emitted.`);
       for (const d of myDiags) {
-        // eslint-disable-next-line no-console
         console.log(`  - ${d.code}: ${d.message}`);
       }
     }
