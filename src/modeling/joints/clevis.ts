@@ -191,8 +191,12 @@ export function withDefaults(style: ClevisStyle | undefined): ResolvedClevisStyl
   // caps reaches a small overhang past the outer fork faces (the cap heads
   // sit flush against the outer fork face but overlap the shaft by a small
   // amount so the boolean union merges into one connected solid).
-  // Default: 0.4 * plateT, clamped to [1.5, plateT]. Caller can override.
-  const derivedCapThickness = clamp(0.4 * plateT, 1.5, plateT);
+  // Default: 0.7 * plateT, with a hard floor of 1mm so the OCCT mesher has
+  // enough material to build a clean fillet at the cap-shaft transition.
+  // Caller can override; values above plateT are accepted (caps overhang the
+  // outer fork face by capThickness − plateT, which is fine for hardware
+  // that should READ as a bolt-head proud of the bracket).
+  const derivedCapThickness = Math.max(0.7 * plateT, 1.0);
   const pinCapThickness = style?.pinCapThickness ?? derivedCapThickness;
   assertPositive('style.pinCapThickness', pinCapThickness);
 
