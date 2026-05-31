@@ -3,14 +3,14 @@
 // Acceptance gate for SOTA Phase 1 lever A1: every diagnostic returned by
 // every kernel-running tool must carry a structured `nextAction` field.
 //
-// Wire boundaries covered: `evaluate_script` (FIXTURES), `export_stl`
+// Wire boundaries covered: `evaluate_script` (FIXTURES), `export_model`
 // (EXPORT_FIXTURES below), and `why_did_this_fail` (left as describe.todo
 // because exercising it requires a multi-feature graph — covered indirectly
 // via the central `withNextActions` helper unit tests in
 // tests/unit/diagnostics/nextAction.test.ts).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
-import { exportStlTool } from '../../../src/agent/mcp/tools/exportStl';
+import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { NEXT_ACTIONS } from '../../../src/shared/diagnostics/registry';
 
@@ -52,7 +52,7 @@ interface ExportFixture { name: string; code: string; feature_id?: string; expec
 // carry `nextAction` on the wire.
 const EXPORT_FIXTURES: ExportFixture[] = [
   {
-    name: 'export_stl empty script → export.no-shape',
+    name: 'export_model empty script → export.no-shape',
     // `runAndExport` only emits export.no-shape when the script produced
     // neither a return value nor any captured features. A script with a
     // bare `box(10,10,10)` still captures the box record and the export
@@ -61,24 +61,25 @@ const EXPORT_FIXTURES: ExportFixture[] = [
     expectCode: 'export.no-shape',
   },
   {
-    name: 'export_stl unknown feature_id → export.feature-not-found',
+    name: 'export_model unknown feature_id → export.feature-not-found',
     code: `return box(10,10,10);`,
     feature_id: 'does-not-exist',
     expectCode: 'export.feature-not-found',
   },
   {
-    name: 'export_stl upstream kernel failure → short-edges-skipped',
+    name: 'export_model upstream kernel failure → short-edges-skipped',
     code: `return box(10,10,10).fillet(20);`,
     expectCode: 'feature.edge-feature.short-edges-skipped',
   },
 ];
 
-describe('next-action mandatory on wire (export_stl)', () => {
+describe('next-action mandatory on wire (export_model)', () => {
   for (const fx of EXPORT_FIXTURES) {
     it(fx.name, async () => {
-      const result = await exportStlTool({
+      const result = await exportModelTool({
         code: fx.code,
         output_path: '/tmp/_kcad-next-action-test.stl',
+        format: 'stl',
         feature_id: fx.feature_id,
       });
       expect(result.ok).toBe(false);

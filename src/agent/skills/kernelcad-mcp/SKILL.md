@@ -123,8 +123,6 @@ interface RepairContext {
 
   PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
 
-- `export_stl({ file? | code?, output_path, feature_id? })` — *Deprecated alias for `export_model({ ..., format: 'stl' })`. Removal scheduled for the next minor version. Use `export_model` for all new code.*
-
 ## Topology references — the `@kc[...]` grammar
 
 kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.

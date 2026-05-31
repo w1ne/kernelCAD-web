@@ -1,14 +1,14 @@
 // tests/integration/mcp/exportModel.test.ts
 //
 // Integration tests for the unified `export_model` MCP tool. One tool,
-// format-dispatched — confirms the receipt carries `format` and that the
-// deprecated `export_stl` alias still routes through the shim.
+// format-dispatched — confirms the receipt carries `format`. The legacy
+// `export_stl` shim was removed in C2; the STL path is exercised here via
+// `format: 'stl'`.
 import { describe, it, expect, afterEach, beforeAll, beforeEach } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, statSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
-import { exportStlTool } from '../../../src/agent/mcp/tools/exportStl';
 
 beforeAll(async () => {
   const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
@@ -122,13 +122,26 @@ describe('export_model MCP tool', () => {
     expect(r.error).toMatch(/format/);
   });
 
-  it('export_stl shim still works (deprecated alias passes through to export_model)', async () => {
-    const out = join(tmpDir, 'box.stl');
-    const r = await exportStlTool({
+  it('STL write produces a 684-byte binary file with 12 triangles for a unit cube', async () => {
+    // Canonical STL receipt structure — kept after the `export_stl` shim was
+    // deleted in C2 to preserve byte-level coverage on the format-dispatched
+    // path.
+    const out = join(tmpDir, 'cube.stl');
+    const r = await exportModelTool({
       code: 'return box(10, 10, 10);',
       output_path: out,
+      format: 'stl',
     });
     expect(r.ok).toBe(true);
-    expect(statSync(out).size).toBeGreaterThan(84);
+    expect(r.format).toBe('stl');
+    const buf = readFileSync(out);
+    // 80-byte header + 4-byte uint32 triangle count + 50 bytes per triangle.
+    // A box has 12 triangles → 80 + 4 + 12 × 50 = 684 bytes.
+    expect(buf.length).toBe(684);
+    expect(buf.readUInt32LE(80)).toBe(12);
+    // Header must NOT start with "solid" (binary STL convention).
+    expect(buf.subarray(0, 5).toString('ascii')).not.toBe('solid');
+    // kernelCAD forensic stamp in the 80-byte header.
+    expect(buf.subarray(0, 10).toString('ascii')).toBe('kernelcad ');
   }, 60000);
 });

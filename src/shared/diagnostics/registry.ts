@@ -318,7 +318,7 @@ export const DIAGNOSTIC_REGISTRY = {
   // Export (2)
   'export.feature-not-found': {
     hintTemplate:
-      'The feature_id passed to export_stl was not found. Use list_features to see available IDs.',
+      'The feature_id passed to export_model was not found. Use list_features to see available IDs.',
     nextAction: { kind: 'call-introspection-tool', tool: 'list_features' },
     defaultSeverity: 'error',
     group: 'export',
