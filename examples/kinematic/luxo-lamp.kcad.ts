@@ -74,11 +74,13 @@ const L_LOWER = 200;
 const L_UPPER = 170;
 
 // Spring geometry — placeholder until the kernel-level `spring()` primitive
-// lands; a slim shaft with end-cap nubs reads as a mechanical element along
-// each arm without the tangled-helix mesh artefacts a sweep would produce.
-const SPRING_WIRE_R   = 1.6;
-const SPRING_COIL_R   = 9;
-const SPRING_LEN      = 25;
+// lands; a slim shaft with bolder end-cap nubs reads as a mechanical element
+// along each arm without the tangled-helix mesh artefacts a sweep would
+// produce. The wire and cap radii are sized to be visible at the renderer's
+// typical hero-pose framing — a thinner shaft dissolves into background.
+const SPRING_WIRE_R   = 2.5;
+const SPRING_COIL_R   = 11;
+const SPRING_LEN      = 32;
 
 // Head: shade, bulb, socket.
 const SHADE_R_SMALL = 28;
@@ -124,13 +126,11 @@ const arm = assembly('luxo-lamp');
 // placeholder reads as "a mechanical element between the two anchors"
 // without polluting the lamp with a tangled helical sweep.
 function makeSpring(length: number = SPRING_LEN) {
-  const shaft = cylinder(length, SPRING_WIRE_R * 1.5, 24)
+  const shaft = cylinder(length, SPRING_WIRE_R, 24)
     .rotate([0, 1, 0], 90)              // axis Z → X
     .translate(length / 2, 0, 0);
-  const endCapL = sphere(SPRING_COIL_R * 0.45)
-    .translate(0, 0, 0);
-  const endCapR = sphere(SPRING_COIL_R * 0.45)
-    .translate(length, 0, 0);
+  const endCapL = sphere(SPRING_COIL_R * 0.55).translate(0, 0, 0);
+  const endCapR = sphere(SPRING_COIL_R * 0.55).translate(length, 0, 0);
   return shaft.union(endCapL).union(endCapR).material(mSpring);
 }
 
