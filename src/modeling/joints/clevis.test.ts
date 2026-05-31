@@ -111,11 +111,11 @@ describe('joint.clevis — G1 design locks', () => {
     const liftWide = computePivotLift(style, [-90, 90]);
     expect(liftMedium).toBeGreaterThan(liftNarrow);
     expect(liftWide).toBeGreaterThanOrEqual(liftMedium);
-    // For full ±90° swing the tongue's |sin| reaches 1 so lift = 2*knuckleR + 1.
-    const expected = 2 * style.knuckleR + 1;
+    // For full ±90° swing the tongue's |sin| reaches 1 so lift = knuckleR + 1.
+    const expected = style.knuckleR + 1;
     expect(liftWide).toBeCloseTo(expected, 6);
-    // Narrow swing (±10°) ⇒ lift = 2*knuckleR*sin(10°) + 1.
-    const expectedNarrow = 2 * style.knuckleR * Math.sin((10 * Math.PI) / 180) + 1;
+    // Narrow swing (±10°) ⇒ lift = knuckleR * sin(10°) + 1.
+    const expectedNarrow = style.knuckleR * Math.sin((10 * Math.PI) / 180) + 1;
     expect(liftNarrow).toBeCloseTo(expectedNarrow, 6);
   });
 
@@ -301,8 +301,8 @@ describe('joint.clevis — G1 design locks', () => {
       axis: 'Y',
       pivotParent: [0, 0, 15],
     });
-    // Default limits ±90° → lift = 2*knuckleR*1 + 1 = 25 mm (at default knuckleR=12).
+    // Default limits ±90° → lift = knuckleR + 1 = 13 mm (at default knuckleR=12).
     const style = j.style;
-    expect(j.parentConnector.origin[2]).toBeCloseTo(15 + 2 * style.knuckleR + 1, 6);
+    expect(j.parentConnector.origin[2]).toBeCloseTo(15 + style.knuckleR + 1, 6);
   });
 });

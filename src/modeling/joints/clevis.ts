@@ -224,23 +224,28 @@ function clamp(value: number, lo: number, hi: number): number {
 // =============================================================================
 
 /**
- * Maximum reach (in mm) of the rotated tongue's furthest point from the
- * pivot AWAY FROM the pin axis. The tongue extends radially from the pivot
- * by `knuckleR` (plate corner) and `tongueHalfHeight` along its long axis;
- * over the allowed rotation range, the largest projection perpendicular to
- * the pin axis is bounded by the radial extent times the largest |sin|
- * of the rotation extremes (plus a small safety margin).
+ * Maximum reach (in mm) the lifted pivot needs above `pivotParent` so the
+ * tongue's swing arc clears the parent body BELOW the pivot.
  *
- * We use a conservative `radial = knuckleR + tongueHalfHeight` where
- * `tongueHalfHeight` here is the knuckle radius itself (the tongue plate's
- * end is rounded with the same radius). The result is a conservative upper
- * bound — the tongue will never reach further than this off-axis.
+ * The tongue is a rounded plate of radius `knuckleR` around the pivot. Its
+ * furthest point from the pin axis is at radius `knuckleR`. As the child
+ * rotates about the pin axis, this point traces a circle of radius
+ * `knuckleR` in the plane perpendicular to the pin axis. Its projection
+ * onto the lift direction varies as `knuckleR * sin(angle)`, which over the
+ * allowed `limitsDeg` swings as far as `knuckleR * max(|sin|)`.
+ *
+ * The lift must satisfy: `lift >= knuckleR * max(|sin|) + safety` so that
+ * even at the swing extremes, the tongue's lowest point is still AT OR
+ * ABOVE the parent's surface where the pivot was originally placed.
+ *
+ * The safety pad (1 mm default) leaves room for OCCT mesher rounding at
+ * the tongue's BREP boundary.
  */
 export function computePivotLift(
   style: ResolvedClevisStyle,
   limitsDeg: [number, number],
 ): number {
-  const radial = style.knuckleR + style.knuckleR; // pivot-to-tongue-tip ≤ 2 * knuckleR
+  const radial = style.knuckleR; // tongue's furthest off-axis reach
   const a = (limitsDeg[0] * Math.PI) / 180;
   const b = (limitsDeg[1] * Math.PI) / 180;
   // Largest |sin| over the closed interval [a, b]. If the interval crosses
@@ -373,8 +378,14 @@ function buildFork(
   liftDir: Vec3,
   liftZ: number,
 ): Shape {
-  const plateX = 4 * style.knuckleR;  // along the perpendicular-to-axis-and-lift direction
-  const plateZ = 2.5 * style.knuckleR; // along the lift direction
+  // Fork plates: rounded rect of width plateX × height plateZ, plate
+  // thickness plateT along the pin axis. plateX = 2*knuckleR puts the
+  // through-hole at the center along the perpendicular-to-axis-and-lift
+  // direction; plateZ = 2*knuckleR makes the plate as tall as it is wide
+  // (rounded knuckle = circular plate). After alongAxis(axis) the plateZ
+  // dimension maps to the lift direction.
+  const plateX = 2 * style.knuckleR;
+  const plateZ = 2 * style.knuckleR;
   const plateT = style.plateT;
   const knuckleR = style.knuckleR;
   const forkGapY = style.forkGapY;
@@ -409,61 +420,33 @@ function buildFork(
   const plateA = buildPlateAt(+plateOffset);
   const plateB = buildPlateAt(-plateOffset);
 
-  // Bridge tabs: two small slabs spanning the pin-axis direction across the
-  // fork-gap, at y = ±(forkGapY/2 + plateT/2) — outside the tongue's swing
-  // envelope. The tabs are positioned along the negative lift direction
-  // (opposite the swing volume, so they sit between the plates DOWN at the
-  // base) so they anchor the fork into the parent body without ever entering
-  // the tongue's volume.
-  //
-  // Tab canonical frame (slab):
-  //   - x ∈ [-plateT/2, plateT/2]     (along Y direction in absolute terms, but mapped via lift)
-  //   - y ∈ [-knuckleR, knuckleR]     (along the negative-lift direction — extends down into the parent)
-  //   - z ∈ [-tabSpan/2, tabSpan/2]   (along the pin axis — spans gap + plates)
-  //
-  // Spanning the FULL outer-fork width along the pin axis means the bridge tab
-  // gets drilled out by the through-hole later (at the pivot Y=0 region), so
-  // the tabs themselves don't plug the bore — they only attach off-axis.
-  const tabSpan = forkGapY + 2 * plateT;
-  const tabHeight = knuckleR * 1.5; // sits below the pivot, extending into the parent
-  const tabWidth = plateT;
+  // Bridge tab: a single slab BELOW the tongue's swing envelope, connecting
+  // the two fork plates at their lower edges. The tab sits at Z = pivot -
+  // (knuckleR + tabHeight/2 + 1) — outside the tongue's swing envelope
+  // (tongue extends ±knuckleR off the pin axis at any rotation) — and spans
+  // the full Y between the outer fork plate faces (forkGapY + 2*plateT), so
+  // both plates' lower edges are anchored into it.
+  const tabFullSpan = forkGapY + 2 * plateT; // Y span between outer plate faces
+  const tabHeight = plateT;                    // thin slab in the lift direction
+  const tabXSpan = knuckleR;                   // small footprint along the perpendicular
+  const tabBelowOffset = knuckleR + tabHeight / 2 + 1; // sit a safety pad below the swing envelope
 
-  const buildTab = (sideY: number): Shape => {
-    // Slab centred on origin: x=tabWidth, y=tabHeight, z=tabSpan
-    let tab = kc.box(tabWidth, tabHeight, tabSpan, true);
-    // Map to oriented frame:
-    //  - the tab's local Z should align with the pin axis (already canonical when alongAxis(Z) is identity)
-    //  - the tab's local Y should align with -liftDir (downward from pivot into the parent body)
-    //  - the tab's local X should align with the perpendicular-to-axis-and-lift direction (free)
-    // We use alongAxis only on the Z-component, then a rotation around the pin
-    // axis to map +Y → -liftDir. To keep this robust we build the rotation
-    // explicitly: place the tab centred at the pivot, then translate it
-    // perpendicular to liftDir and away from the swing volume.
-    tab = tab.alongAxis(axis);
-    // After alongAxis, the local +Z of the canonical box is now along the pin axis.
-    // The canonical X/Y of the box (in world) are not perfectly aligned to our
-    // wanted (perpendicularToLift, -liftDir) basis — so we resort to placing
-    // the tab as a simple "outside the swing envelope" rectangular block. We
-    // shift in the direction perpendicular to the pin axis but ALONG the
-    // negative lift direction by `(tabHeight / 2)` to seat the tab DOWN.
-    tab = tab.translate(
-      -liftDir[0] * (tabHeight / 2 + 1) + perpToAxisAndLift(axis, liftDir)[0] * 0,
-      -liftDir[1] * (tabHeight / 2 + 1) + perpToAxisAndLift(axis, liftDir)[1] * 0,
-      -liftDir[2] * (tabHeight / 2 + 1) + perpToAxisAndLift(axis, liftDir)[2] * 0,
-    );
-    // Also push the tab "outside the tongue's swing envelope" — but we built
-    // the tabs at y = ±(forkGapY/2 + plateT/2) by NOT moving them, because
-    // they span the full pin-axis width. The `sideY` parameter is unused
-    // here; we keep one tab per side along the pin axis... actually since
-    // the tab spans tabSpan along the pin axis, ONE tab suffices to bridge
-    // the two plates. We return one tab from this helper but call it twice
-    // and let the union dedupe.
-    void sideY;
-    tab = tab.translate(pivotLifted[0], pivotLifted[1], pivotLifted[2]);
-    return tab;
-  };
-
-  const tab = buildTab(0);
+  // The tab is built in the canonical (X=tabXSpan, Y=tabHeight, Z=tabFullSpan)
+  // frame, then alongAxis(pin axis) maps canonical Z → pin axis, canonical X
+  // stays X, canonical Y → -liftDir (per the rotation about (Z × axis)). After
+  // mapping:
+  //   - world along pin axis: tabFullSpan (spans both plates' outer faces)
+  //   - world along -liftDir: tabHeight (THIN — only plate thickness)
+  //   - world along X (perpendicular to axis and lift): tabXSpan
+  let tab = kc.box(tabXSpan, tabHeight, tabFullSpan, true).alongAxis(axis);
+  // Shift the tab DOWN along -liftDir by tabBelowOffset, so its top face sits
+  // at pivot - knuckleR - 1 — that's safely below the tongue's swept envelope.
+  tab = tab.translate(
+    -liftDir[0] * tabBelowOffset,
+    -liftDir[1] * tabBelowOffset,
+    -liftDir[2] * tabBelowOffset,
+  );
+  tab = tab.translate(pivotLifted[0], pivotLifted[1], pivotLifted[2]);
 
   let fork = plateA.union(plateB).union(tab);
   // Hold the parent-side bridge geometry that LIFTS the parent body up to
@@ -471,28 +454,25 @@ function buildFork(
   // above the parent body when the lift is significant. We extend a
   // post-shaped column from the original pivot to the lifted pivot.
   if (liftZ > 0.5) {
-    const postR = Math.min(knuckleR * 1.2, plateOffset);
-    // Cylinder by default has axis +Z, height = liftZ; place it from
-    // pivotOriginal toward pivotLifted along liftDir.
-    const post = kc.cylinder(liftZ, postR)
-      .translate(0, 0, liftZ / 2)
-      // .alongAxis is applied to +Z, but our cylinder default is +Z so first
-      // we translate the centre to be at the origin (the cylinder is built
-      // with bottom at z=0 + extending up; translating -liftZ/2 puts the
-      // centre at origin). Wait — cylinder(h, r) builds bottom-anchored at
-      // z=0 extending up; translating +liftZ/2 puts the centre at +liftZ/2,
-      // not origin. Re-center:
-      .translate(0, 0, -liftZ / 2)
-      // Now cylinder spans z ∈ [-liftZ/2, +liftZ/2] (centre at origin),
-      // axis +Z. Align +Z with liftDir.
-      .alongAxis(liftDir)
-      // Translate to mid-point between original pivot and lifted pivot.
-      .translate(
-        opts_midpoint(_pivotOriginal, pivotLifted)[0],
-        opts_midpoint(_pivotOriginal, pivotLifted)[1],
-        opts_midpoint(_pivotOriginal, pivotLifted)[2],
-      );
-    fork = fork.union(post);
+    // The post connects the user's parent body (which terminates at
+    // `pivotOriginal`) up to the lifted pivot where the fork plates sit.
+    // It must NOT enter the tongue's swing volume, which is centered at
+    // the lifted pivot and extends radially by `knuckleR`. We use TWO
+    // narrow columns on either side of the tongue (along the pin axis,
+    // between the fork plates and the outer fork-plate edge) so the post
+    // material is OUTSIDE the gap-between-plates region the tongue swings
+    // through. Each column sits at the OUTER face of a fork plate, with
+    // radius matching plate thickness — this is the "mounting flange"
+    // pattern of real-world clevis brackets.
+    const postR = plateT / 2;
+    const postYOffset = forkGapY / 2 + plateT + postR + 0.5; // sit OUTSIDE the outer fork plate face
+    for (const yDir of [+1, -1]) {
+      const post = kc.cylinder(liftZ, postR)
+        .alongAxis(liftDir)
+        .translate(_pivotOriginal[0], _pivotOriginal[1], _pivotOriginal[2])
+        .translate(axis[0] * yDir * postYOffset, axis[1] * yDir * postYOffset, axis[2] * yDir * postYOffset);
+      fork = fork.union(post);
+    }
   }
   if (style.forkMaterial !== undefined) {
     fork = fork.material(style.forkMaterial);
@@ -500,20 +480,7 @@ function buildFork(
   return fork;
 }
 
-function perpToAxisAndLift(axis: Vec3, lift: Vec3): Vec3 {
-  // perpToAxisAndLift = axis × lift, normalized. If degenerate (axis ∥ lift),
-  // fall back to any perpendicular.
-  const cx = axis[1] * lift[2] - axis[2] * lift[1];
-  const cy = axis[2] * lift[0] - axis[0] * lift[2];
-  const cz = axis[0] * lift[1] - axis[1] * lift[0];
-  const len = Math.hypot(cx, cy, cz);
-  if (len < 1e-9) return [1, 0, 0]; // fallback — caller's lift collinear with axis
-  return [cx / len, cy / len, cz / len];
-}
 
-function opts_midpoint(a: Vec3, b: Vec3): Vec3 {
-  return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-}
 
 /**
  * Build the tongue: a single plate centred at the child-local pivot, with
@@ -525,8 +492,14 @@ function buildTongue(
   axis: Vec3,
   pivotChild: Vec3,
 ): Shape {
-  const plateX = 4 * style.knuckleR;
-  const plateZ = 2.5 * style.knuckleR;
+  // The tongue is a SHORT plate spanning only enough X to carry the
+  // through-hole plus a knuckle around it; the child's body (beam, etc.)
+  // takes over for the rest of the X extent. plateZ matches the knuckle
+  // diameter so the tongue stays a "round-headed plate" — extending no
+  // further off-axis than the knuckle radius, so the tongue cannot enter
+  // the parent body's pivot post.
+  const plateX = 2 * style.knuckleR;
+  const plateZ = 2 * style.knuckleR;
   const tongueY = style.tongueY;
   const knuckleR = style.knuckleR;
 
