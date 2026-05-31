@@ -114,8 +114,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       mounting-hole.diameter-mismatch.
     //  +  1 v0.7 Gate 4 (joint visual exposure): assembly.joint.not-visible.
     //  +  1 G2 Gate 6 (mate physical realization): assembly.mate.not-physically-realized.
-    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 = 196.
-    expect(catalogue.size).toBe(196);
+    //  +  4 P0 physics-grounded loop (mechanism truth): mechanism.disconnect,
+    //       mechanism.interpenetration, mechanism.dof-mismatch,
+    //       mechanism.orphan-part.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 = 200.
+    expect(catalogue.size).toBe(200);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
