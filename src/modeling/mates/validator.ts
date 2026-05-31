@@ -28,8 +28,9 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
-import { validateJointAxisBinding } from './jointAxisBinding';
+import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
+import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
@@ -82,6 +83,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.mounting-hole.mismatch'
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.load-exceeded'
+  | 'assembly.joint.not-visible'
   | 'assembly.workspace.unreachable'
 >;
 
@@ -524,9 +526,22 @@ export async function validateAssemblyWithMates(
   //    error can short-circuit when desired. For now we run all three so the
   //    agent sees the full picture per single solvedModel call (per plan
   //    Step 2 — no short-circuit, agent gets full diagnostic chain).
+  //
+  //    v0.7 Gate 4 (joint visual exposure) runs after Gate 2 and reuses
+  //    Gate 2's lowered-shape cache (per spec
+  //    `2026-05-30-joint-visual-exposure-gate-design.md` §"Locked
+  //    decisions" item 6 — same-pass, no re-lower). The cache is empty
+  //    when there are no gated mates, in which case Gate 4 is inert by
+  //    construction.
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
-  diagnostics.push(...await validateJointAxisBinding(arm));
+  const axisBindingResult = await validateJointAxisBindingWithCache(arm);
+  diagnostics.push(...axisBindingResult.diagnostics);
+  diagnostics.push(...await validateJointVisualExposure({
+    arm,
+    loweredShapes: axisBindingResult.worldShapes,
+    worldTransforms: axisBindingResult.worldTransforms,
+  }));
 
   // 8. v0.7 Slice 1 — workspace-reachability gate. Pure: takes the sampled
   //    `ConnectorWorkspace[]` produced by `reviewPoseEnvelope` and checks

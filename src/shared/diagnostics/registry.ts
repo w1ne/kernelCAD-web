@@ -886,6 +886,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'assembly',
     description: 'A joint declared a maxLoad that is exceeded by the applied externalLoads.',
   },
+  'assembly.joint.not-visible': {
+    hintTemplate:
+      "Widen the fork-plate gap (FORK_GAP_Y) versus the tongue thickness (TONGUE_Y), and/or extend the pivot pin (PIN_LEN) so the joint hardware is visible at typical viewing distance.",
+    nextAction: { kind: 'fix-arg', field: 'jointGeometry' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: "A revolute joint's fork+tongue+pin geometry collapses into the visual envelope of one of the joined parts — the hinge mechanism reads as a solid block instead of a hinge (Gate 4 — joint visual exposure).",
+  },
   // Assembly validator — v0.7 Slice 1 workspace reachability (1)
   'assembly.workspace.unreachable': {
     hintTemplate:

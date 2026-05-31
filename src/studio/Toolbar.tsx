@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush } from 'lucide-react';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -20,6 +20,12 @@ interface ToolbarProps {
     /** Display label for the active preset ('studio', 'custom', etc.). */
     renderEnvironmentPresetLabel?: string;
     onToggleRenderEnvironment?: () => void;
+    /** Inpainting-style review tool. When on, an HTML canvas overlay absorbs
+     *  pointer events so the user can paint over what's wrong in the
+     *  viewport; Send POSTs a packet that the agent's UserPromptSubmit hook
+     *  picks up on the next turn. */
+    markingMode: boolean;
+    onToggleMarkingMode: () => void;
 }
 
 export function Toolbar({
@@ -35,6 +41,8 @@ export function Toolbar({
     renderEnvironmentVisible = true,
     renderEnvironmentPresetLabel = '',
     onToggleRenderEnvironment,
+    markingMode,
+    onToggleMarkingMode,
 }: ToolbarProps) {
     return (
         <div
@@ -92,6 +100,22 @@ export function Toolbar({
                 >
                     <Play size={12} />
                     Run
+                </button>
+                <button
+                    type="button"
+                    data-testid="toolbar-mark"
+                    onClick={onToggleMarkingMode}
+                    title={markingMode ? 'Save mark & exit (your agent can then pick it up)' : 'Paint over what is wrong, then click again to save'}
+                    aria-label={markingMode ? 'Save mark and exit marking mode' : 'Enter marking mode'}
+                    aria-pressed={markingMode}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
+                        markingMode
+                            ? 'bg-red-600 text-white ring-2 ring-red-300'
+                            : 'bg-[#2a1313] text-red-300 hover:bg-red-700 hover:text-white border border-red-700'
+                    }`}
+                >
+                    <Brush size={14} />
+                    Brush
                 </button>
                 {referenceImagesPresent && (
                     <button

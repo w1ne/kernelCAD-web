@@ -6,6 +6,7 @@ import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { shouldUseHostedMesh, meshSourceHosted } from '../scriptSource';
+import { apiCall, rewritePath } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -214,18 +215,22 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             : null;
         activeMeshFetchAbortRef.current?.abort();
         activeMeshFetchAbortRef.current = abortController;
-        const fetchInit: RequestInit | undefined = abortController
-            ? { signal: abortController.signal }
-            : undefined;
-        const meshUrl = token
+        const meshPath = token
             ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
             : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
-        const reviewUrl = token
+        const reviewPath = token
             ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}`
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         let aborted = false;
-        const promise = fetch(meshUrl, fetchInit)
+        const promise = apiCall().then(({ base, headers }) => {
+            const meshUrl = rewritePath(meshPath, base);
+            const reviewUrl = rewritePath(reviewPath, base);
+            const fetchInit: RequestInit = {
+                ...(abortController ? { signal: abortController.signal } : {}),
+                headers,
+            };
+            return fetch(meshUrl, fetchInit)
             .then(async (response) => {
                 const payload = await response.json();
                 if (!response.ok) {
@@ -315,6 +320,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     setIsComputing(false);
                 }
             });
+        });
         return { revision, promise };
     }, [pushExecutionRecord]);
 
@@ -361,7 +367,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         let cancelled = false;
         setSessionStatus('pending');
         setSessionToken(null);
-        fetch(`/__kernelcad/session?script=${encodeURIComponent(studioScript)}`)
+        apiCall()
+            .then(({ base, headers }) =>
+                fetch(
+                    rewritePath(
+                        `/__kernelcad/session?script=${encodeURIComponent(studioScript)}`,
+                        base,
+                    ),
+                    { headers },
+                ),
+            )
             .then(async (r) => {
                 const body = await r.json();
                 if (!r.ok) throw new Error(body?.error ?? r.statusText);
@@ -397,8 +412,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // reflect the kernel's latest state without a full script re-run.
     useEffect(() => {
         if (!studioScript || !sessionToken) return;
-        const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
-        const es = new EventSource(url);
+        let es: EventSource | null = null;
+        let cancelled = false;
         const onRelower = () => {
             // Re-fetch BOTH mesh AND review on relower. The review side carries
             // the live `rawInterferencePairs` channel the Studio status-bar
@@ -409,16 +424,31 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // the live-interference channel.)
             requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
         };
-        es.addEventListener('relower', onRelower);
-        // The browser auto-reconnects on transient drops; we only log here.
-        es.onerror = () => {
-            // EventSource will retry on its own; a sustained outage surfaces
-            // as a stale ParamsTab — which is acceptable degradation.
-            // Intentionally silent: no console noise during dev reloads.
-        };
+        // S1: route the SSE URL through apiCall so signed-in users hit the
+        // hosted /events endpoint. (EventSource can't carry custom headers,
+        // so signed-in auth for SSE is an S3 concern — for unsigned-in the
+        // base is '' and behavior is bit-for-bit identical to today.)
+        void apiCall().then(({ base }) => {
+            if (cancelled) return;
+            const url = rewritePath(
+                `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`,
+                base,
+            );
+            es = new EventSource(url);
+            es.addEventListener('relower', onRelower);
+            // The browser auto-reconnects on transient drops; we only log here.
+            es.onerror = () => {
+                // EventSource will retry on its own; a sustained outage surfaces
+                // as a stale ParamsTab — which is acceptable degradation.
+                // Intentionally silent: no console noise during dev reloads.
+            };
+        });
         return () => {
-            es.removeEventListener('relower', onRelower);
-            es.close();
+            cancelled = true;
+            if (es) {
+                es.removeEventListener('relower', onRelower);
+                es.close();
+            }
         };
     }, [studioScript, sessionToken, requestMeshAndReview]);
 
@@ -431,11 +461,15 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         if (!sessionToken) {
             throw new Error('updateParam called before a session token was issued');
         }
+        const { base, headers } = await apiCall();
         const res = await fetch(
-            `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+            rewritePath(
+                `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+                base,
+            ),
             {
                 method: 'POST',
-                headers: { 'content-type': 'application/json' },
+                headers: { 'content-type': 'application/json', ...headers },
                 body: JSON.stringify({ edits }),
             },
         );

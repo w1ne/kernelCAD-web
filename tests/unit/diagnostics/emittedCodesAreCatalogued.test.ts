@@ -112,8 +112,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       solver.unsupported-config, load-exceeds-yield,
     //       load.beam-not-applicable, no-material-declared,
     //       mounting-hole.diameter-mismatch.
-    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 = 194.
-    expect(catalogue.size).toBe(194);
+    //  +  1 v0.7 Gate 4 (joint visual exposure): assembly.joint.not-visible.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 = 195.
+    expect(catalogue.size).toBe(195);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
