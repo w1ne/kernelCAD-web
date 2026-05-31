@@ -43,6 +43,8 @@ import { toParam } from '../shared/runtime/editableHelpers';
 import * as kinematic from '../kinematic';
 import type { KinematicFacade } from '../kinematic/types';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
+import { makeJointNamespace } from './joints';
+import type { ClevisJoint, ClevisJointOptions } from './joints/types';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -356,6 +358,30 @@ export interface KernelCadApi {
    * and returns a typed envelope with `source: 'local'`.
    */
   kinematic: KinematicFacade;
+
+  /**
+   * G1 (mechanism delivery): constructive joint-hardware primitives.
+   *
+   * `joint.clevis({ parentBody, childBody, axis, pivotParent, ... })` builds
+   * the canonical revolute-joint hardware (two fork plates on the parent,
+   * one tongue on the child, a pin drilled through both knuckles) guaranteed
+   * correct by construction: bridge tabs outside the tongue's swing
+   * envelope, pivot lifted by max rotated-tongue reach, the through-hole
+   * drilled in ONE pass after fork/tongue are unioned into their parts, and
+   * the pin cap heads flush against the outer fork faces. Returns the
+   * parent/child geometry to assign back to each part's `Shape` plus the
+   * parent/child connector specs (origin + axis) ready to feed into
+   * `partRef.connector(name, { type: 'axis', origin, axis })` + the
+   * `arm.mate(..., 'revolute', ...)` call.
+   *
+   * Use this primitive INSTEAD of hand-rolling forks/tongues/pins from
+   * `box`/`cylinder`/`union` — hand-rolled clevises are the leading cause
+   * of mechanism-delivery failures (see `kernelcad-kinematic` SKILL.md
+   * "Mechanism delivery — non-bypassable").
+   */
+  joint: {
+    clevis(opts: ClevisJointOptions): ClevisJoint;
+  };
 }
 
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
@@ -942,7 +968,15 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     },
 
     kinematic: kinematic satisfies KinematicFacade,
+
+    // joint.* is bound below after the api object is fully constructed, so
+    // the namespace closes over the FINAL `api` (including box/cylinder/etc.).
+    joint: undefined as unknown as KernelCadApi['joint'],
   };
+  // G1 — bind joint.* after the api object exists, so the namespace can
+  // compose shapes through the same captured-session pipeline as user
+  // scripts (box / cylinder / extrudeRoundedRect / union / subtract).
+  api.joint = makeJointNamespace(api);
   return api;
 }
 
