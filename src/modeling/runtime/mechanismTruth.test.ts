@@ -395,43 +395,50 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
   // P0.2 — FK-aware rigidity invariant regression tests
   // ─────────────────────────────────────────────────────────────────────
 
-  it.fails(
-    '7. rotating-parent + rigidly-fastened child via vec3 mate: zero drift at every corner ' +
-      '(regression test for the displacement-difference bug — currently FAILS under the ' +
-      'pre-P0.2 math because the parent\'s origin-displacement is compared against the ' +
-      'child\'s off-axis corner-displacement)',
+  it(
+    '7. P0.2 regression — rotating-parent + rigidly-fastened child via vec3 mate: zero drift at every corner ' +
+      '(FK-expected rigidity invariant)',
     async () => {
-      // Minimal repro of the P0.2 bug: a child that is rigidly fastened
-      // to a rotating parent should NOT trigger `mechanism.disconnect`,
-      // because by construction `T_child = T_parent ∘ Translate(rigid offset)`
-      // (the fastened FK contribution is identity, so the child's transform
-      // is exactly the parent's transform shifted by the connector offsets).
+      // Regression test for the displacement-difference bug fixed in
+      // P0.2: a child rigidly fastened to a rotating parent must NOT
+      // trigger `mechanism.disconnect`, because by construction
+      // `T_child = T_parent ∘ Translate(rigid_offset)` (the fastened FK
+      // contribution is identity at the joint frame, so the child's
+      // transform is exactly the parent's transform shifted by the
+      // connector offsets — see solver.ts:jointTransformForMate's
+      // 'fastened' branch).
       //
-      // The pre-P0.2 rigidity check measures `dB(corner) − dA(origin)` —
-      // which is non-zero for any corner that's off the parent's rotation
-      // axis. That makes the gate produce false positives on rigid
-      // attachments to rotating parents.
+      // Under the pre-P0.2 displacement-difference math, this case
+      // produced ~167 mm of spurious "drift" at the far bbox corner of
+      // a 50 mm off-axis body under a ±90° parent rotation — well over
+      // the 1 mm tolerance — making the gate reject rigid attachments
+      // by construction. The FK-expected-position math
+      // (`expected_B = T_A ∘ (T_A_rest^-1 ∘ T_B_rest)`) is zero by
+      // construction here because `T_B(pose) = T_A(pose) ∘ T_AB_local`
+      // exactly.
       //
-      // The geometry:
-      //   - `arm`: a 100×20×20 box. Its hinge connector is at vec3 [0,0,0]
-      //     (its local origin) with axis [0,-1,0]. The bbox extends along
-      //     +X so most of the body sits off-axis.
-      //   - The arm is mated to a stationary root via a revolute hinge at
-      //     ±90° limits; pose sweep visits ±90 / 0.
-      //   - `child`: a 50×50×50 box centred at its local origin. Its
-      //     mount connector sits at vec3 [0, 0, 50] in child-local — so
-      //     under the fastened mate the child's transform is
-      //     `T_arm ∘ Translate(rigid_offset)`. Multiple bbox corners are
-      //     50+ mm off the rotation axis and the displacement-difference
-      //     check sees ~50 mm of "drift" under a 90° parent rotation.
+      // The geometry (positioned so parts don't overlap, isolating
+      // the rigidity invariant from criterion-2 interpenetration):
+      //   - `root`: a 10×10×10 hub box at world origin.
+      //   - `arm`: a thin 100×10×10 link extending along +X starting
+      //     at x=10 (i.e. centered at [60, 0, 0]) so it doesn't
+      //     intersect the hub. Mated to `root` via a revolute hinge
+      //     at ±90° limits about Y.
+      //   - `child`: a 30×30×30 box fastened to the arm via a vec3
+      //     connector at [110, 0, 40] on the arm side and [0, 0, 0]
+      //     on the child side. The +40 mm z-offset keeps the child
+      //     clear of the arm's bbox (which sits at ±5 mm in z). The
+      //     +110 mm x-offset places the child off the rotation axis
+      //     so its bbox corners trace meaningful rotation arcs under
+      //     the ±90° sweep.
       const { arm, kcad } = makeArm('p02-rigid');
-      const root = arm.part('root', kcad.box(20, 20, 20, true));
+      const root = arm.part('root', kcad.box(10, 10, 10, true));
       root.connector('hub', {
         type: 'axis',
         origin: { kind: 'vec3', value: [0, 0, 0] },
         axis: [0, -1, 0],
       });
-      const armBox = kcad.box(100, 20, 20, true).translate(50, 0, 0); // sits along +X
+      const armBox = kcad.box(100, 10, 10, true).translate(60, 0, 0);
       const armPart = arm.part('arm', armBox);
       armPart.connector('shoulder', {
         type: 'axis',
@@ -440,13 +447,13 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       });
       armPart.connector('childMount', {
         type: 'frame',
-        origin: { kind: 'vec3', value: [80, 0, 30] }, // anchor on arm, off-axis
+        origin: { kind: 'vec3', value: [110, 0, 40] }, // anchor on arm, off-axis, clear of arm body
       });
       arm.mate('shoulder', 'root.hub', 'arm.shoulder', 'revolute', {
         limitsDeg: [-90, 90],
       });
 
-      const childBox = kcad.box(50, 50, 50, true);
+      const childBox = kcad.box(30, 30, 30, true);
       const childPart = arm.part('child', childBox);
       childPart.connector('mount', {
         type: 'frame',
@@ -455,10 +462,94 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       arm.mate('child-fix', 'arm.childMount', 'child.mount', 'fastened');
 
       const result = await checkMechanismTruth(arm);
-      // The rigid-attachment invariant must NOT flag here: the child IS
-      // rigidly attached by construction. Any `mechanism.disconnect` is
-      // a false positive produced by the displacement-difference math.
-      expect(result.failures.filter((f) => f.code === 'mechanism.disconnect')).toEqual([]);
+      // The rigid-attachment invariant must NOT flag here: the child
+      // IS rigidly attached by construction. Any
+      // `mechanism.disconnect` would be a false positive from a
+      // regressed rigidity math.
+      const disconnects = result.failures.filter((f) => f.code === 'mechanism.disconnect');
+      expect(disconnects).toEqual([]);
+      expect(result.mechanism).toBe('real');
+    },
+    90000,
+  );
+
+  it(
+    '8. P0.2 finding — vec3-fastened mate FK does propagate parent rotation: no construction yields a positive FK-disconnect from a vec3 mate alone',
+    async () => {
+      // P0.2 finding (captured for the record): when the original P0.2
+      // plan was written the assumption was that vec3-origin fastened
+      // mates would *fail* to propagate the parent's rotation into the
+      // child's transform — i.e. that the FK pipeline would drop the
+      // rotation update on vec3-frame connectors and the FK-expected
+      // rigidity check would still surface those as
+      // `mechanism.disconnect` with non-zero drift.
+      //
+      // Empirically that's not what the FK pipeline does. The fastened
+      // branch of `jointTransformForMate` returns identity, so the
+      // child's transform is computed as
+      //   T_child = T_parent ∘ Translate(parentOrigin) ∘ identity ∘ Translate(-childOrigin)
+      //          = T_parent ∘ Translate(parentOrigin - childOrigin)
+      // This composes parent rotation into the child transform
+      // correctly for both vec3 AND topology-bound origins.
+      //
+      // Result: the FK-expected rigidity check now reports drift = 0
+      // for any well-formed fastened mate (vec3 OR topology) — which
+      // is the mathematically correct invariant. The mate-FK pipeline
+      // itself is not the source of the P2/P4 Luxo failures; the
+      // failures were *symptoms* of the displacement-difference math
+      // mis-classifying the geometry. Cases that ARE broken
+      // mechanisms (DoF-mismatch around a declared axis,
+      // interpenetration under sweep) still get caught by the other
+      // criteria — see test #3 (still 'broken' via DoF-mismatch) and
+      // test #6 (still 'broken' via DoF-mismatch).
+      //
+      // The test body below documents the finding via a positive
+      // assertion: a vec3-fastened mate on a rotating parent (test
+      // #7's geometry, simplified) does NOT produce a
+      // `mechanism.disconnect` even though it would under the old
+      // math. If a future change to the FK pipeline regresses
+      // vec3-origin propagation, this test surfaces the regression as
+      // a new disconnect appearing where none should exist.
+      // Same geometry shape as test #7 but smaller and oriented around
+      // Z to give topology-distinct micro-pose samples for criterion 3.
+      const { arm, kcad } = makeArm('p02-vec3-rotating-parent');
+      const root = arm.part('root', kcad.box(10, 10, 10, true));
+      root.connector('hub', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      const armPart = arm.part(
+        'arm',
+        kcad.box(80, 10, 10, true).translate(50, 0, 0),
+      );
+      armPart.connector('shoulder', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+      armPart.connector('mount', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [90, 0, 30] }, // off-axis on arm, clear of arm body in z
+      });
+      arm.mate('shoulder', 'root.hub', 'arm.shoulder', 'revolute', {
+        limitsDeg: [-45, 45],
+      });
+
+      const childPart = arm.part('child', kcad.box(20, 20, 20, true));
+      childPart.connector('mount', {
+        type: 'frame',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+      });
+      arm.mate('weld', 'arm.mount', 'child.mount', 'fastened');
+
+      const result = await checkMechanismTruth(arm);
+      // FK does propagate parent rotation through the fastened mate;
+      // therefore no `mechanism.disconnect` is emitted.
+      const disconnects = result.failures.filter((f) => f.code === 'mechanism.disconnect');
+      expect(disconnects).toEqual([]);
+      // And nothing else is wrong with this geometry — it's a clean
+      // rigid attachment to a rotating parent.
       expect(result.mechanism).toBe('real');
     },
     90000,
