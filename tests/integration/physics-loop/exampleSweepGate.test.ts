@@ -134,6 +134,17 @@ const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = 
     'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
     { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
   ],
+  [
+    // P0.1 strengthened criterion 1 in checkMechanismTruth from a single
+    // hardcoded vec3 test point to sampling all 8 bbox corners. The P2
+    // Luxo lamp's spring connectors land on the rotation axis where the
+    // single-point check saw zero drift, but the spring body geometry
+    // is authored at `.translate(...)` offsets that diverge under elbow
+    // rotation. The strengthened gate correctly flags this; the lamp
+    // rebuild is the next slice.
+    'examples/kinematic/luxo-lamp.kcad.ts',
+    { issue: 356, testFile: 'tests/integration/examples/luxoLampClevis.test.ts' },
+  ],
 ]);
 
 function walkExamples(dir: string, prefix = ''): string[] {

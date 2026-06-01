@@ -301,6 +301,96 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     expect(interps[0].message).toMatch(/overlap/);
   }, 90000);
 
+  it('6. spring with connector ON rotation axis but body offset elsewhere (P2 Luxo pattern) → broken with mechanism.disconnect at a bbox corner', async () => {
+    // P0.1 regression test: a part can be fastened with a vec3 connector
+    // that coincidentally sits ON the rotation axis where the single-
+    // point rigidity check sees zero drift, yet the part's BODY geometry
+    // is authored at an offset that does NOT rotate with the parent. The
+    // pre-P0.1 implementation tested a single hardcoded point ([10,0,0])
+    // and accepted this geometry as rigid. The strengthened check
+    // samples all 8 bbox corners and catches the body offset.
+    //
+    // The exact P2 Luxo pattern: spring connector at [0,0,0] in local
+    // frame, parent connector at a topology-anchored point on the arm,
+    // spring geometry authored via `.translate(world_x, 0, world_z)` so
+    // the spring's bbox sits 40+ mm away from its local origin. Under
+    // elbow rotation, the spring's local-origin tracks the connector
+    // anchor (rotating with the arm), but the spring's BODY — sitting
+    // 40 mm out along an axis perpendicular to the rotation — fails to
+    // arrive at the correctly-rotated position because the fastened
+    // mate doesn't compose orientation through a vec3 frame the way
+    // the agent expected.
+    const { arm, kcad } = makeArm('axis-connector-offset-body');
+
+    // Stationary upper arm — parent of the elbow.
+    const upperArmBody = kcad.box(80, 20, 10, true).translate(40, 0, 0);
+    const upperArmPart = arm.part('upper-arm', upperArmBody);
+    upperArmPart.connector('elbow', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [80, 0, 0] },
+      axis: [0, 1, 0],
+    });
+
+    // Rotating lower arm — rotates about the elbow at world [80, 0, 0].
+    const lowerArmBody = kcad.box(80, 20, 10, true).translate(40, 0, 0);
+    const lowerArmPart = arm.part('lower-arm', lowerArmBody);
+    lowerArmPart.connector('elbow', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 1, 0],
+    });
+    arm.mate('elbow', 'upper-arm.elbow', 'lower-arm.elbow', 'revolute', {
+      limitsDeg: [-45, 45],
+    });
+
+    // Spring authored at a translated world offset — geometry sits at
+    // local [40, 0, 20] (NOT near the connector origin). The single-
+    // point test at [10, 0, 0] would land on a point near the rotation
+    // axis (within a few mm) and see ~zero drift; but the bbox extent
+    // reaches ±30 mm along X and ±5 mm along Z FROM that offset, so
+    // the far corner at e.g. [40+r, 0, 20+r] sits ~50 mm from the axis
+    // and drifts visibly under elbow rotation.
+    const springShape = kcad.cylinder(30, 5, 12)
+      .rotate([0, 1, 0], 90)
+      .translate(40, 0, 20);
+    const springPart = arm.part('lower-spring', springShape);
+    // Connector at the spring's LOCAL ORIGIN — on the rotation axis at
+    // rest; this is the exact mis-placement pattern from the P2 Luxo
+    // lamp where the agent put the spring connector at [0,0,0] in
+    // local frame and the bbox extends elsewhere.
+    springPart.connector('mount', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    lowerArmPart.connector('springMount', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    arm.mate('spring-fix', 'lower-arm.springMount', 'lower-spring.mount', 'fastened');
+
+    const result = await checkMechanismTruth(arm);
+    const disconnects = result.failures.filter((f) => f.code === 'mechanism.disconnect');
+
+    // Strengthened gate must reject this — the spring's body diverges
+    // from the lower-arm under elbow rotation.
+    expect(result.mechanism).toBe('broken');
+    expect(disconnects.length).toBeGreaterThan(0);
+
+    // Diagnostic must reference the bbox corner sampling — the new
+    // hint format that distinguishes P0.1's multi-point check from
+    // the pre-P0.1 single-point check.
+    const mentionsBboxCorners = disconnects.some(
+      (d) => d.message.includes('bbox-corner') && d.message.includes('rigidity tested at all 8 part bbox corners'),
+    );
+    expect(mentionsBboxCorners).toBe(true);
+
+    // And the failing part is the spring.
+    const namesTheSpring = disconnects.some((d) =>
+      d.message.includes('lower-spring') || d.message.includes('spring-fix'),
+    );
+    expect(namesTheSpring).toBe(true);
+  }, 90000);
+
   it('integration: RecomputeEngine.run plumbs the mechanism field via the mechanismCheck callback', async () => {
     // Sanity-check the engine wiring: pass a stub probe and confirm the
     // verdict + failures show up on RecomputeResult.
