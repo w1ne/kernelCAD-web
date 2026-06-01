@@ -214,7 +214,7 @@ export async function checkMechanismTruth(
   }
 
   // Criterion 1 (mechanism.disconnect) — fastened-mate invariant.
-  failures.push(...checkFastenedInvariant(arm, solved));
+  failures.push(...(await checkFastenedInvariant(arm, solved)));
 
   // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
   failures.push(...(await checkInterpenetration(arm, solved)));
@@ -283,31 +283,42 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * For each fastened mate (A, B), pick a test point on B's local frame
- * (B's geometric centroid in B's local coordinates, approximated from
- * the part's bbox center). Compute that test point's position in A's
- * local frame at the rest pose: `A_local_rest = T_A_rest^-1 × T_B_rest ×
- * testPoint`. At every sampled pose Q, the point's position in A's local
- * frame should remain `A_local_rest` if the mate truly rigidifies the
- * geometry. Equivalently (and without needing a Transform.inverse, which
- * the existing API doesn't expose): the world-frame positions
- * `T_A(Q) × A_local_rest` and `T_B(Q) × testPoint` should coincide at
- * every Q.
+ * Multi-point rigidity test: for each fastened mate (A, B), sample the
+ * 8 bbox corners of B's local geometry and assert that EVERY corner
+ * moves rigidly with A's frame under every sampled pose. A part is
+ * physically rigidified by the mate iff its entire body — not just one
+ * test point — tracks the parent's FK transform.
  *
- * The PR #341 vec3-mount spring fails this: T_arm rotates with the
+ * Why bbox corners specifically: they span the part's extent, so a
+ * rotation drift at the connector origin (typically near a corner or
+ * the centroid) compounds out to the opposite-corner positions. A
+ * 1° rotation error on a part with a ±50 mm half-extent produces
+ * ~0.87 mm at the far corner — comfortably above the 1 mm floor.
+ *
+ * The pre-P0.1 implementation tested ONE hardcoded point at vec3
+ * [10, 0, 0] in B's local frame. P2's Luxo lamp exploited this by
+ * placing the spring connectors such that [10, 0, 0] coincidentally
+ * landed on the rotation axis where drift is zero by construction —
+ * even though the spring's body was authored at world-translated
+ * geometry that sat anywhere relative to the arm. The strengthened
+ * check now samples all 8 corners; a body offset from the connector
+ * frame fails at the corner farthest from the axis.
+ *
+ * The PR #341 vec3-mount spring still fails: T_arm rotates with the
  * elbow, T_spring (which the solver couldn't pin to T_arm because the
  * vec3 connectors don't compose the way the agent expected) ends up
- * statically placed → the two world points diverge → disconnect.
+ * statically placed → the corner positions diverge → disconnect.
  *
- * The PR #338 gutted-assembly fails this differently: missing body
- * geometry means the test-point centroids degenerate (zero-volume
- * shape's bbox is undefined / sits at origin), and the per-pose
- * transforms force the same divergence pattern.
+ * The PR #338 gutted-assembly fails differently: missing body geometry
+ * gives a degenerate bbox (a zero-extent box at the origin). All 8
+ * "corners" collapse to a single point — still degrades to the
+ * single-point case, but criterion 4 (orphan-part) catches the
+ * floating clevis bits first.
  */
-function checkFastenedInvariant(
+async function checkFastenedInvariant(
   arm: Assembly,
   solved: readonly SolvedSample[],
-): CompilerDiagnostic[] {
+): Promise<CompilerDiagnostic[]> {
   const fastenedMates = arm.__mates().filter((m) => m.type === 'fastened');
   if (fastenedMates.length === 0) return [];
 
@@ -315,89 +326,66 @@ function checkFastenedInvariant(
   if (rest === undefined) return [];
 
   const out: CompilerDiagnostic[] = [];
+  // Cache local-frame bbox corners per part — `originalShape.lower()`
+  // is heavy and we may visit the same part across multiple mates.
+  const cornersByPart = new Map<string, readonly Se3Vec3[]>();
+
   for (const mate of fastenedMates) {
     const aPart = parseConnectorRef(mate.a).partName;
     const bPart = parseConnectorRef(mate.b).partName;
-
-    // Test point: a deterministic non-origin point in B's local frame.
-    // ANY point off the origin suffices — the rigidity test compares
-    // the displacement of this point through B's transform against the
-    // displacement of A's local origin through A's transform; if A and
-    // B are rigidly connected those displacements should AGREE under a
-    // common rigid motion of A. We pick [10, 0, 0] mm because it's far
-    // enough from the origin to expose rotation drift cleanly.
-    //
-    // The choice is independent of B's geometry, so the gutted-assembly
-    // pattern (PR #338) doesn't degenerate here — that case is caught
-    // by criterion 4 (orphan-part) for the floating clevis bits.
-    const testPoint: Se3Vec3 = [10, 0, 0];
 
     const T_A_rest = rest.transforms.get(aPart);
     const T_B_rest = rest.transforms.get(bPart);
     if (T_A_rest === undefined || T_B_rest === undefined) continue;
 
-    // A_local_rest: position of B's test point in A's local frame at
-    // rest. Without a Transform.inverse we cannot compute A_local
-    // directly, BUT we don't need to — at every sampled pose we can
-    // compare the world positions of B's test point as seen "through A"
-    // vs "through B" by tracking the world position at rest and asking
-    // that the displacement be consistent. Concretely:
+    const corners = await getOrComputeBboxCorners(arm, bPart, cornersByPart);
+    if (corners === undefined || corners.length === 0) continue;
+
+    // Rigidity test (no Transform.inverse available): compare per-corner
+    // world displacement of B between rest and sample against the
+    // displacement of A's local origin between rest and sample. If A
+    // and B truly move as one rigid body under the FK chain, the
+    // displacements of every corner-on-B and the origin-on-A must
+    // AGREE (after subtracting their rest-pose world offsets). The
+    // drift magnitude per corner is:
     //
-    //   At rest:    world_B = T_B_rest × testPoint
-    //               world_A = T_A_rest × X   (where X is A's representation of testPoint)
-    //               world_A == world_B   ⇒   X is the same physical point
-    //   At sample:  world_B(Q) = T_B(Q) × testPoint
-    //               world_A(Q) = T_A(Q) × X
-    //               world_A(Q) == world_B(Q)  iff the mate truly rigidifies.
+    //   d = || (T_B(Q) × corner - T_B_rest × corner) -
+    //          (T_A(Q) × O      - T_A_rest × O) ||
     //
-    // Since X = T_A_rest^-1 × world_B_rest is unknown without inverse,
-    // we equivalently check that the relative DISPLACEMENT of B's test
-    // point in A's frame is invariant. The clean form available without
-    // inverse: ask whether the DISPLACEMENT of B's test point in WORLD
-    // between rest and sample matches the displacement of an arbitrary
-    // POINT-ON-A in world over the same pose change. If A and B truly
-    // move as one rigid body, those displacements must agree.
-    //
-    // Pick a point on A: A's local origin. Its world position at any
-    // pose Q is `T_A(Q) × [0,0,0]`. Compare against B's test point
-    // world displacement.
-    //
-    // Failure metric (per-sample): the displacement-difference distance
-    //   d = || (T_B(Q) × testPoint - T_B_rest × testPoint) -
-    //          (T_A(Q) × O - T_A_rest × O) ||
-    // measures how much B drifted in A's frame between rest and Q. If d
-    // > DISCONNECT_TOLERANCE_MM the mate isn't physically rigid.
-    //
-    // (At rest the displacements are both zero, so d = 0 — passes.)
+    // > DISCONNECT_TOLERANCE_MM at ANY corner ⇒ the mate doesn't
+    // realize rigid attachment.
     const ZERO: Se3Vec3 = [0, 0, 0];
-    const world_B_rest = T_B_rest.point(testPoint);
     const world_A_rest = T_A_rest.point(ZERO);
+    const world_B_rest_per_corner = corners.map((c) => T_B_rest.point(c));
 
     let worstDriftMm = 0;
     let worstSampleName = '';
+    let worstCornerIndex = -1;
     for (const s of solved) {
       if (s.sample.name === 'rest') continue;
       const T_A = s.transforms.get(aPart);
       const T_B = s.transforms.get(bPart);
       if (T_A === undefined || T_B === undefined) continue;
-      const world_B = T_B.point(testPoint);
       const world_A = T_A.point(ZERO);
-
-      // Displacement-of-B minus displacement-of-A between rest and sample.
-      const dB: Se3Vec3 = [
-        world_B[0] - world_B_rest[0],
-        world_B[1] - world_B_rest[1],
-        world_B[2] - world_B_rest[2],
-      ];
       const dA: Se3Vec3 = [
         world_A[0] - world_A_rest[0],
         world_A[1] - world_A_rest[1],
         world_A[2] - world_A_rest[2],
       ];
-      const drift = Math.hypot(dB[0] - dA[0], dB[1] - dA[1], dB[2] - dA[2]);
-      if (drift > worstDriftMm) {
-        worstDriftMm = drift;
-        worstSampleName = s.sample.name;
+      for (let i = 0; i < corners.length; i++) {
+        const world_B = T_B.point(corners[i]);
+        const world_B_rest_i = world_B_rest_per_corner[i];
+        const dB: Se3Vec3 = [
+          world_B[0] - world_B_rest_i[0],
+          world_B[1] - world_B_rest_i[1],
+          world_B[2] - world_B_rest_i[2],
+        ];
+        const drift = Math.hypot(dB[0] - dA[0], dB[1] - dA[1], dB[2] - dA[2]);
+        if (drift > worstDriftMm) {
+          worstDriftMm = drift;
+          worstSampleName = s.sample.name;
+          worstCornerIndex = i;
+        }
       }
     }
 
@@ -405,14 +393,52 @@ function checkFastenedInvariant(
       out.push(makeFailure(
         'mechanism.disconnect',
         `Fastened mate '${mate.name}' between '${aPart}' and '${bPart}' fails its rigidity invariant: ` +
-        `at pose sample '${worstSampleName}' part '${bPart}' drifts ${worstDriftMm.toFixed(2)} mm relative to '${aPart}' ` +
-        `(tolerance ${DISCONNECT_TOLERANCE_MM} mm). The fastened mate isn't physically realizing rigid attachment under motion — ` +
-        `the connector origins may be numeric vec3s that don't actually weld the geometry to the anchor part.`,
+        `at pose sample '${worstSampleName}' part '${bPart}' bbox-corner #${worstCornerIndex} ` +
+        `drifts ${worstDriftMm.toFixed(2)} mm relative to '${aPart}' ` +
+        `(tolerance ${DISCONNECT_TOLERANCE_MM} mm; rigidity tested at all 8 part bbox corners). ` +
+        `The fastened mate isn't physically realizing rigid attachment under motion — ` +
+        `the connector origins may be numeric vec3s that don't actually weld the geometry to the anchor part, ` +
+        `or the body geometry is offset from the connector frame in a way that diverges under the parent's pose.`,
       ));
     }
   }
 
   return out;
+}
+
+/**
+ * Compute the 8 bbox corners of `partName`'s local-frame geometry,
+ * caching the result. Returns `undefined` if the part isn't found or
+ * the lower / bbox call throws (the part may be on a session that
+ * hasn't been initialized in this engine — caller should skip).
+ */
+async function getOrComputeBboxCorners(
+  arm: Assembly,
+  partName: string,
+  cache: Map<string, readonly Se3Vec3[]>,
+): Promise<readonly Se3Vec3[] | undefined> {
+  const cached = cache.get(partName);
+  if (cached !== undefined) return cached;
+
+  const part = arm.__parts().find((p) => p.name === partName);
+  if (part === undefined) return undefined;
+
+  try {
+    const backend = await part.originalShape.lower();
+    const bb = backend.boundingBox();
+    const corners: Se3Vec3[] = [];
+    for (const x of [bb.min[0], bb.max[0]]) {
+      for (const y of [bb.min[1], bb.max[1]]) {
+        for (const z of [bb.min[2], bb.max[2]]) {
+          corners.push([x, y, z]);
+        }
+      }
+    }
+    cache.set(partName, corners);
+    return corners;
+  } catch {
+    return undefined;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
