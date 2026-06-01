@@ -102,7 +102,6 @@ const BULB_R        = 14;
 // contact below FASTENED_CONTACT_TOLERANCE_FRACTION × min(bbox-vol).
 const SPRING_LEN      = 40;
 const SPRING_R        = 4;
-const SPRING_FLANGE_R = 6;     // used for the on-beam boss radius
 const WRIST_SPRING_LEN = 22;   // smaller spring on the head — head is smaller
 
 // Shared clevis style — re-used at all three joints.
