@@ -283,37 +283,51 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Multi-point rigidity test: for each fastened mate (A, B), sample the
+ * FK-aware rigidity test: for each fastened mate (A, B), sample the
  * 8 bbox corners of B's local geometry and assert that EVERY corner
- * moves rigidly with A's frame under every sampled pose. A part is
- * physically rigidified by the mate iff its entire body — not just one
- * test point — tracks the parent's FK transform.
+ * lands at its FK-expected position under every sampled pose. The
+ * "FK-expected position" is computed by composing A's per-pose
+ * transform with the constant rigid offset between A's and B's rest
+ * frames:
  *
- * Why bbox corners specifically: they span the part's extent, so a
- * rotation drift at the connector origin (typically near a corner or
- * the centroid) compounds out to the opposite-corner positions. A
- * 1° rotation error on a part with a ±50 mm half-extent produces
- * ~0.87 mm at the far corner — comfortably above the 1 mm floor.
+ *   T_AB_local = T_A_rest^-1 ∘ T_B_rest           (constant)
+ *   expected_B(pose) = T_A(pose) ∘ T_AB_local     (per pose)
+ *   drift = || T_B(pose) · corner − expected_B(pose) · corner ||
  *
- * The pre-P0.1 implementation tested ONE hardcoded point at vec3
- * [10, 0, 0] in B's local frame. P2's Luxo lamp exploited this by
- * placing the spring connectors such that [10, 0, 0] coincidentally
- * landed on the rotation axis where drift is zero by construction —
- * even though the spring's body was authored at world-translated
- * geometry that sat anywhere relative to the arm. The strengthened
- * check now samples all 8 corners; a body offset from the connector
- * frame fails at the corner farthest from the axis.
+ * For a TRULY rigid attachment, the assembly FK pipeline computes
+ * `T_B(pose) = T_A(pose) ∘ T_AB_local` by construction (the fastened
+ * mate contributes identity at the joint frame), so every corner
+ * lands at exactly its expected position and drift = 0 for all corners
+ * at all poses — regardless of how the parent moves. For a mate that
+ * doesn't actually rigidify the geometry (e.g. an FK quirk that fails
+ * to propagate parent rotation into the child's transform), T_B(pose)
+ * diverges from T_A(pose) ∘ T_AB_local and the drift grows with the
+ * rotation arc — exactly the failure mode the gate exists to catch.
  *
- * The PR #341 vec3-mount spring still fails: T_arm rotates with the
- * elbow, T_spring (which the solver couldn't pin to T_arm because the
- * vec3 connectors don't compose the way the agent expected) ends up
- * statically placed → the corner positions diverge → disconnect.
+ * Why this replaces the pre-P0.2 displacement-difference test: the
+ * pre-P0.2 implementation compared the child's per-corner world
+ * displacement (between rest and sample) against the PARENT's origin
+ * displacement. For a child rigidly attached to a rotating parent
+ * those displacements agree only at the parent's origin — every
+ * off-axis corner of the child sweeps a rotation arc that the parent's
+ * origin doesn't follow, producing 2·r·sin(θ/2) of spurious "drift"
+ * (e.g. 167 mm at corner #5 of a 50 mm off-axis body under a 90°
+ * parent rotation). That made the gate reject rigid attachments by
+ * construction, causing the P2/P4 Luxo lamp failures and forcing an
+ * ablation pattern (mount springs to the stationary base, not the
+ * rotating arm).
  *
- * The PR #338 gutted-assembly fails differently: missing body geometry
- * gives a degenerate bbox (a zero-extent box at the origin). All 8
- * "corners" collapse to a single point — still degrades to the
- * single-point case, but criterion 4 (orphan-part) catches the
- * floating clevis bits first.
+ * Why bbox corners specifically (P0.1 carry-over): they span the
+ * part's extent. The same FK-expected check applied at a single test
+ * point can miss a mate that's "rigid at the origin but loose at the
+ * extents" — e.g. a connector pinned to the rotation axis where every
+ * sane test would see zero drift. Sampling all 8 corners catches a
+ * body whose far edges diverge from the FK-expected attachment under
+ * motion.
+ *
+ * The PR #338 gutted-assembly fails on criterion 4 (orphan-part); its
+ * missing body geometry produces a degenerate bbox that wouldn't fire
+ * here anyway.
  */
 async function checkFastenedInvariant(
   arm: Assembly,
@@ -341,22 +355,18 @@ async function checkFastenedInvariant(
     const corners = await getOrComputeBboxCorners(arm, bPart, cornersByPart);
     if (corners === undefined || corners.length === 0) continue;
 
-    // Rigidity test (no Transform.inverse available): compare per-corner
-    // world displacement of B between rest and sample against the
-    // displacement of A's local origin between rest and sample. If A
-    // and B truly move as one rigid body under the FK chain, the
-    // displacements of every corner-on-B and the origin-on-A must
-    // AGREE (after subtracting their rest-pose world offsets). The
-    // drift magnitude per corner is:
+    // FK-expected-position rigidity test:
     //
-    //   d = || (T_B(Q) × corner - T_B_rest × corner) -
-    //          (T_A(Q) × O      - T_A_rest × O) ||
+    //   T_AB_local = T_A_rest^-1 ∘ T_B_rest        (constant rigid offset)
+    //   expected_B(pose) = T_A(pose) ∘ T_AB_local  (per-pose)
+    //   drift_i = || T_B(pose) · corner_i − expected_B(pose) · corner_i ||
     //
-    // > DISCONNECT_TOLERANCE_MM at ANY corner ⇒ the mate doesn't
-    // realize rigid attachment.
-    const ZERO: Se3Vec3 = [0, 0, 0];
-    const world_A_rest = T_A_rest.point(ZERO);
-    const world_B_rest_per_corner = corners.map((c) => T_B_rest.point(c));
+    // For a true rigid attachment, T_B(pose) = T_A(pose) ∘ T_AB_local
+    // by construction (the fastened mate is identity at the joint
+    // frame), so drift_i = 0 for every corner at every pose. > tolerance
+    // at ANY corner ⇒ the mate's FK output doesn't realize rigid
+    // attachment under motion.
+    const T_AB_local = T_A_rest.inverse().compose(T_B_rest);
 
     let worstDriftMm = 0;
     let worstSampleName = '';
@@ -366,21 +376,15 @@ async function checkFastenedInvariant(
       const T_A = s.transforms.get(aPart);
       const T_B = s.transforms.get(bPart);
       if (T_A === undefined || T_B === undefined) continue;
-      const world_A = T_A.point(ZERO);
-      const dA: Se3Vec3 = [
-        world_A[0] - world_A_rest[0],
-        world_A[1] - world_A_rest[1],
-        world_A[2] - world_A_rest[2],
-      ];
+      const expected_B = T_A.compose(T_AB_local);
       for (let i = 0; i < corners.length; i++) {
-        const world_B = T_B.point(corners[i]);
-        const world_B_rest_i = world_B_rest_per_corner[i];
-        const dB: Se3Vec3 = [
-          world_B[0] - world_B_rest_i[0],
-          world_B[1] - world_B_rest_i[1],
-          world_B[2] - world_B_rest_i[2],
-        ];
-        const drift = Math.hypot(dB[0] - dA[0], dB[1] - dA[1], dB[2] - dA[2]);
+        const observed = T_B.point(corners[i]);
+        const expected = expected_B.point(corners[i]);
+        const drift = Math.hypot(
+          observed[0] - expected[0],
+          observed[1] - expected[1],
+          observed[2] - expected[2],
+        );
         if (drift > worstDriftMm) {
           worstDriftMm = drift;
           worstSampleName = s.sample.name;
@@ -394,11 +398,11 @@ async function checkFastenedInvariant(
         'mechanism.disconnect',
         `Fastened mate '${mate.name}' between '${aPart}' and '${bPart}' fails its rigidity invariant: ` +
         `at pose sample '${worstSampleName}' part '${bPart}' bbox-corner #${worstCornerIndex} ` +
-        `drifts ${worstDriftMm.toFixed(2)} mm relative to '${aPart}' ` +
+        `drifts ${worstDriftMm.toFixed(2)} mm from its FK-expected rigid position relative to '${aPart}' ` +
         `(tolerance ${DISCONNECT_TOLERANCE_MM} mm; rigidity tested at all 8 part bbox corners). ` +
         `The fastened mate isn't physically realizing rigid attachment under motion — ` +
-        `the connector origins may be numeric vec3s that don't actually weld the geometry to the anchor part, ` +
-        `or the body geometry is offset from the connector frame in a way that diverges under the parent's pose.`,
+        `the FK output for '${bPart}' diverges from T_${aPart}(pose) ∘ T_AB_local, ` +
+        `which means the mate's connector composition is failing to propagate the parent's motion into the child's transform.`,
       ));
     }
   }

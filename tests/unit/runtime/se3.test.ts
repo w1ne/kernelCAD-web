@@ -132,4 +132,61 @@ describe('Transform', () => {
     const t = Transform.translation(100, 200, 300).compose(Transform.rotationAxisAngleDeg([0, 0, 1], 90));
     near(t.axisDir([1, 0, 0]), [0, 1, 0], 1e-6);
   });
+
+  // ────────────────────────────────────────────────────────────────────
+  // Inverse — used by the physics-loop rigidity check (P0.2).
+  // ────────────────────────────────────────────────────────────────────
+
+  it('inverse of identity is identity', () => {
+    const inv = Transform.identity().inverse();
+    near(inv.point([1, 2, 3]), [1, 2, 3]);
+  });
+
+  it('inverse of pure translation negates translation', () => {
+    const t = Transform.translation(5, -2, 7);
+    const inv = t.inverse();
+    near(inv.point([5, -2, 7]), [0, 0, 0]);
+    near(inv.point([0, 0, 0]), [-5, 2, -7]);
+  });
+
+  it('inverse of pure rotation transposes rotation', () => {
+    // Rot(Z, 90) sends [1,0,0] -> [0,1,0]. Its inverse must send [0,1,0] -> [1,0,0].
+    const t = Transform.rotationAxisAngleDeg([0, 0, 1], 90);
+    const inv = t.inverse();
+    near(inv.point([0, 1, 0]), [1, 0, 0], 1e-6);
+    near(inv.point([0, 0, 1]), [0, 0, 1], 1e-6); // axis fixed
+  });
+
+  it('T.compose(T.inverse()) is identity', () => {
+    const t = Transform.translation(3, 4, 5).compose(Transform.rotationAxisAngleDeg([1, 0, 0], 30));
+    const id = t.compose(t.inverse());
+    // Sample a few points; all should land at themselves.
+    near(id.point([0, 0, 0]), [0, 0, 0], 1e-9);
+    near(id.point([1, 0, 0]), [1, 0, 0], 1e-9);
+    near(id.point([0, 1, 0]), [0, 1, 0], 1e-9);
+    near(id.point([0, 0, 1]), [0, 0, 1], 1e-9);
+  });
+
+  it('T.inverse().compose(T) is identity', () => {
+    const t = Transform.rotationAxisAngleDeg([1, 1, 0], 47)
+      .compose(Transform.translation(8, -3, 2))
+      .compose(Transform.rotationAxisAngleDeg([0, 0, 1], 120));
+    const id = t.inverse().compose(t);
+    near(id.point([0, 0, 0]), [0, 0, 0], 1e-9);
+    near(id.point([10, 20, 30]), [10, 20, 30], 1e-9);
+  });
+
+  it('inverse of T*R: T = Translate ∘ Rotate, T^-1 = Rotate^T ∘ Translate(-t)', () => {
+    // Round-trip a non-trivial transform through inverse and confirm
+    // it sends T·p back to p for a representative set of points.
+    const t = Transform.translation(10, 20, 30).compose(Transform.rotationAxisAngleDeg([0, 1, 0], 45));
+    const inv = t.inverse();
+    const samples: Vec3[] = [
+      [0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
+      [5, -7, 13], [-100, 0.5, 0.001],
+    ];
+    for (const p of samples) {
+      near(inv.point(t.point(p)), p, 1e-9);
+    }
+  });
 });
