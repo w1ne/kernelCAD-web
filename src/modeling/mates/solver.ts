@@ -49,7 +49,6 @@ import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import {
   resolveConnectorOrigin,
   type Connector,
-  type ConnectorOrigin,
 } from './connector';
 import { expandCoupledPoses } from './coupledPoses';
 import type { MatePose, MateRecord } from './mate';
@@ -181,6 +180,12 @@ export async function solveMates(
     return { status: 'solved', poses: new Map() };
   }
 
+  // Cache for topology-bound connector origin resolution: keyed by
+  // (partId, connectorName), shared across this `solveMates` call so the
+  // heavy `shape.lower()` + face-query path runs once per connector per
+  // solve, not once per BFS visit.
+  const originCache = new Map<string, Se3Vec3>();
+
   // 1. Adjacency: part-name -> array of mate edges.
   const adjacency = new Map<string, MateEdge[]>();
   for (const p of parts) adjacency.set(p.name, []);
@@ -194,7 +199,7 @@ export async function solveMates(
   // 2. Build a spanning tree via BFS from the first declared part. Mates not
   //    in the tree become loop-closure constraints — passed to `loopSolve`.
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, expandedPoses);
+  const { worldT, loopMates } = await walkSpanningTree(parts, adjacency, partByName, arm, expandedPoses, originCache);
 
   if (loopMates.length === 0) {
     return { status: 'solved', poses: worldT };
@@ -204,7 +209,7 @@ export async function solveMates(
   //    only support fastened-only loops (every mate is fastened); articulated-
   //    loop Newton-Raphson lands in T7.x once T9 wires pose-driven articulation
   //    through the solver.
-  return loopSolve(mates, partByName, loopMates, worldT);
+  return loopSolve(mates, partByName, loopMates, worldT, arm, originCache);
 }
 
 /**
@@ -419,6 +424,7 @@ async function walkSpanningTree(
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   arm: Assembly,
   poses: NumericPoses | undefined,
+  originCache: Map<string, Se3Vec3>,
 ): Promise<SpanningTreeResult> {
   const worldT = new Map<string, Transform>();
   const loopMates: MateRecord[] = [];
@@ -442,7 +448,7 @@ async function walkSpanningTree(
         continue;
       }
       visited.add(edge.neighbor);
-      const childT = await composeChildTransform(parentT, edge, partByName, arm, poses);
+      const childT = await composeChildTransform(parentT, edge, partByName, arm, poses, originCache);
       worldT.set(edge.neighbor, childT);
       queue.push(edge.neighbor);
     }
@@ -490,6 +496,8 @@ async function loopSolve(
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   loopMates: readonly MateRecord[],
   initialPoses: Map<string, Transform>,
+  arm: Assembly,
+  originCache: Map<string, Se3Vec3>,
 ): Promise<SolveResult> {
   // For v0.6.0 we only support fastened-only loops. If any mate (tree or
   // loop) on a closed-loop assembly is non-fastened, that's the articulated
@@ -508,7 +516,7 @@ async function loopSolve(
   // any pose vector `x` and Newton-Raphson collapses to a single evaluation.
   // The N-R helpers from `../numeric/jacobian.ts` are imported and unit-
   // tested there; they get wired in here in T7.x for the articulated path.
-  const residual = await computeLoopResidual(loopMates, partByName, initialPoses);
+  const residual = await computeLoopResidual(loopMates, partByName, initialPoses, arm, originCache);
   const rNorm = norm2(residual);
 
   if (rNorm < SOLVER.RESIDUAL_TOL) {
@@ -551,6 +559,8 @@ async function computeLoopResidual(
   loopMates: readonly MateRecord[],
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   worldT: ReadonlyMap<string, Transform>,
+  arm: Assembly,
+  originCache: Map<string, Se3Vec3>,
 ): Promise<number[]> {
   const r: number[] = [];
   for (const m of loopMates) {
@@ -560,8 +570,8 @@ async function computeLoopResidual(
     const bPart = partByName.get(bSide.partName)!;
     const aConn = findConnector(aPart, aSide.connectorName);
     const bConn = findConnector(bPart, bSide.connectorName);
-    const aLocal = await originVec3(aPart, aConn.origin);
-    const bLocal = await originVec3(bPart, bConn.origin);
+    const aLocal = await originVec3(aPart, aConn, arm, originCache);
+    const bLocal = await originVec3(bPart, bConn, arm, originCache);
     const aWorld = worldT.get(aPart.name)!.point(aLocal);
     const bWorld = worldT.get(bPart.name)!.point(bLocal);
     r.push(aWorld[0] - bWorld[0], aWorld[1] - bWorld[1], aWorld[2] - bWorld[2]);
@@ -581,6 +591,7 @@ async function composeChildTransform(
   partByName: ReadonlyMap<string, AssemblyPartStored>,
   arm: Assembly,
   poses: NumericPoses | undefined,
+  originCache: Map<string, Se3Vec3>,
 ): Promise<Transform> {
   const aSide = parseConnectorRef(edge.mate.a);
   const bSide = parseConnectorRef(edge.mate.b);
@@ -594,8 +605,8 @@ async function composeChildTransform(
   const parentConnector = findConnector(parentPart, parentSide.connectorName);
   const childConnector = findConnector(childPart, childSide.connectorName);
 
-  const parentOrigin = await originVec3(parentPart, parentConnector.origin);
-  const childOrigin = await originVec3(childPart, childConnector.origin);
+  const parentOrigin = await originVec3(parentPart, parentConnector, arm, originCache);
+  const childOrigin = await originVec3(childPart, childConnector, arm, originCache);
 
   // Build SE(3): parentWorldT
   //   ∘ T(parentOrigin)
@@ -625,10 +636,37 @@ function findConnector(part: AssemblyPartStored, connectorName: string): Connect
 }
 
 /** Resolve a connector's origin to a numeric Vec3. For vec3 origins this is
- *  a no-op; for topology origins it lowers the part shape. */
-async function originVec3(part: AssemblyPartStored, origin: ConnectorOrigin): Promise<Se3Vec3> {
-  const resolved = await resolveConnectorOrigin(part.originalShape, origin);
-  return resolved.value as Se3Vec3;
+ *  a no-op; for topology origins it lowers the part shape. Passes the
+ *  session records so non-canonical face labels (FaceQuery-based, declared
+ *  via `faceLabels: { foo: { atY: ..., containsPoint: ... } }` on an
+ *  upstream creating op) resolve via the user-declared label table — the
+ *  same path used by `Connector` resolution tests at unit-test depth.
+ *  Without records, only the six canonical face names ('top'/'bottom'/
+ *  'left'/'right'/'front'/'back') resolve, so user labels would otherwise
+ *  fail with `assembly.connector.topology-not-resolvable` even though the
+ *  label IS declared in the script.
+ *
+ *  Topology resolution is heavy (it lowers the part's `originalShape` to
+ *  enumerate faces), so we cache by `(partId, connectorName)` for the
+ *  duration of a single `solveMates` call. Connector origins are static
+ *  in part-local frame and do not vary with pose. */
+async function originVec3(
+  part: AssemblyPartStored,
+  connector: Connector,
+  arm: Assembly,
+  cache: Map<string, Se3Vec3>,
+): Promise<Se3Vec3> {
+  if (connector.origin.kind === 'vec3') {
+    return connector.origin.value as Se3Vec3;
+  }
+  const cacheKey = `${part.id}::${connector.name}`;
+  const cached = cache.get(cacheKey);
+  if (cached !== undefined) return cached;
+  const records = arm.__session().getRecords();
+  const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin, records);
+  const value = resolved.value as Se3Vec3;
+  cache.set(cacheKey, value);
+  return value;
 }
 
 /** Per-mate-type local SE(3) contribution at the connector frame, honoring
