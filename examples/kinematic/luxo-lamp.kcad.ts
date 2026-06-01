@@ -187,15 +187,13 @@ const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
   .translate(L_UPPER / 2, 0, 0)
   .material(mArm);
 
-// Upper-arm spring boss — sideways stub for now; Task 3 replaces this
-// with a real floating-shaft Anglepoise spring mirroring the lower-arm.
-const UPPER_BOSS: [number, number, number] = [beamClear + 14, ARM_W / 2 + 4, 0];
-const upperSpringBoss = cylinder(4, SPRING_FLANGE_R, 24)
-  .rotate([1, 0, 0], -90)
-  .translate(UPPER_BOSS[0], UPPER_BOSS[1] - 4, UPPER_BOSS[2])
-  .material(mArm);
+// Upper-arm spring mount: same floating-shaft pattern as the lower-arm.
+// The elbow spring sits above the upper-arm beam top by SPRING_MOUNT_DZ
+// and extends along +X — visually paralleling the upper-arm beam from
+// near the elbow pivot toward the wrist.
+const UPPER_BOSS: [number, number, number] = [beamClear + 14, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
 
-const upperBeamWithBoss = upperBeam.union(upperSpringBoss);
+const upperBeamWithBoss = upperBeam;
 
 // ============================================================================
 // LAMP HEAD body — neck + slimmer shade + smaller socket + bulb +
@@ -439,8 +437,10 @@ const lowerSpringPart = arm
     origin: { kind: 'vec3', value: [0, 0, 0] },
   });
 
-// Elbow spring — Task 3 will reshape; for now keep it sideways +Y.
-const upperSpringShape = makeSpring(SPRING_LEN, [0, 1, 0]);
+// Elbow spring — same floating-shaft Anglepoise geometry as the
+// shoulder spring, fastened to the upper-arm so it tracks the
+// upper-arm under joint motion.
+const upperSpringShape = makeSpring(SPRING_LEN, [1, 0, 0]);
 const upperSpringPart = arm
   .part('upper-spring', upperSpringShape)
   .connector('mount', {
