@@ -28,12 +28,17 @@ describe('design_loop MCP tool', () => {
   // clock budget accommodates parallel contention.
   //
   // P1 physics-loop discovery (2026-06-01): the "accepted" fixture
-  // (`skill-built-supported-arm.kcad.ts`) now reports
-  // `mechanism: broken` under the new physics-grounded loop, which
-  // folds into review_cad's `ok` field — so the design loop can't
-  // reach `ok: true` on this fixture without P3 follow-up. Spec:
-  // docs/specs/2026-06-01-physics-grounded-loop-design.md §P3.
-  it.skip('reviews attempts, stops on the first passing design, and writes a Studio build record — P3 follow-up: accepted fixture reports mechanism: broken under the new loop', { timeout: 180_000 }, async () => {
+  // (`skill-built-supported-arm.kcad.ts`) reports `mechanism: broken`
+  // under the new physics-grounded loop on a single fastened mate
+  // (`palm-fix` rigidity drift at elbow-pitch:80) — see issues/352.
+  // The "colliding" fixture is intentionally broken — see issues/353.
+  // Until either ships, the assertion stays suspended.
+  //
+  // Spec:    docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 1
+  // Plan:    docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issues:  https://github.com/w1ne/kernelCAD-web/issues/352,
+  //          https://github.com/w1ne/kernelCAD-web/issues/353
+  it.skip('reviews attempts, stops on the first passing design, and writes a Studio build record — see issues/352, issues/353', { timeout: 180_000 }, async () => {
     const dir = await mkdtemp(join(tmpdir(), 'kernelcad-design-loop-'));
     tempDirs.push(dir);
     const outputRecordPath = join(dir, 'robot-arm-loop.json');
