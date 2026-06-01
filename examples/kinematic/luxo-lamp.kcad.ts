@@ -203,11 +203,22 @@ const upperBeamWithBoss = upperBeam.union(upperSpringBoss);
 // wrist-spring boss. Wrist pivot = head-local [0,0,0].
 // ============================================================================
 
-const HEAD_NECK_LEN = 22;
-const HEAD_NECK_CLEAR = clevisStyle.knuckleR + ARM_T / 2 + 2;
+// Neck starts INSIDE the tongue knuckle so the boolean union merges
+// cleanly with the tongue plate at the wrist pivot. The tongue plate
+// extends head-local x ∈ [-knuckleR, +knuckleR] (centred on the
+// wrist-pivot), so anchoring the neck at x = knuckleR - 2 buries the
+// neck's inner face 2 mm inside the tongue — the boolean fuses them
+// into a single solid that visually bridges the wrist pivot to the
+// shade body. Without this, head-local x ∈ (+knuckleR, +SHADE_ANCHOR_X)
+// is hollow and the head visibly detaches from the upper-arm at the
+// wrist.
+const HEAD_NECK_BACK = clevisStyle.knuckleR - 2;            // 10 mm — inside the tongue
+const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm — slightly past SHADE_ANCHOR_X
+const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
+const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
 const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
   .rotate([0, 1, 0], 90)
-  .translate(HEAD_NECK_CLEAR, 0, 0)
+  .translate(HEAD_NECK_BACK, 0, 0)
   .material(mCast);
 
 // Shade — hollow truncated cone (outer cone minus inner cone), axis +X.
