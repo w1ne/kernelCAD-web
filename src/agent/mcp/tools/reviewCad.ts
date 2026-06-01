@@ -235,13 +235,19 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...mechanicalTransmission.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
-  // Physics-loop probe (P1 surface convergence). Gated on
-  // includeInterference (same gating the CLI uses) so cheap review
-  // calls — Studio param drags, eval harness rest-pose checks — don't
-  // pay for the pose sweep. The probe's broken-mechanism verdict gates
-  // the fitness summary below: a broken mechanism cannot be functional
-  // no matter what the legacy fitness checks say.
-  const wantMechanism = input.includeInterference ?? true;
+  // Physics-loop probe (P1 surface convergence). Same gating shape as
+  // wantInterference above — opt-out only when the caller explicitly
+  // disables heavy work (includePoseEnvelope: false defaults the
+  // mechanism probe off too, mirroring the existing convention where
+  // envelope sampling and interference detection move together). Cheap
+  // review calls (Studio param drags, eval harness rest-pose checks)
+  // skip the pose sweep this way. The probe's broken-mechanism verdict
+  // gates the fitness summary below: a broken mechanism cannot be
+  // functional no matter what the legacy fitness checks say.
+  const wantMechanism =
+    input.includeInterference !== undefined
+      ? input.includeInterference
+      : input.includePoseEnvelope !== false;
   let mechanism: MechanismVerdict = 'unverified';
   let mechanismFailures: readonly CompilerDiagnostic[] = [];
   if (wantMechanism) {
