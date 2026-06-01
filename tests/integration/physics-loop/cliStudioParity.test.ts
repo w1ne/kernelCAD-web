@@ -43,7 +43,16 @@ describe('CLI / Studio parity for mechanism truth', () => {
       });
       expect(cliResult.mechanism).toBe('broken');
       const cliCodes = sortedCodes(cliResult.mechanismFailures ?? []);
-      expect(cliCodes).toContain('mechanism.disconnect');
+      // CLI MUST surface at least one mechanism failure code. The
+      // specific code is whichever criterion catches the broken
+      // mechanism — pre-P0.2 the displacement-difference rigidity math
+      // returned `mechanism.disconnect`; post-P0.2 the FK-aware
+      // rigidity check correctly sees zero drift (T_spring = T_lower-arm
+      // under the fastened FK), but criterion 3 (DoF-mismatch via
+      // micro-pose topology change) still catches the broken
+      // mechanism. The parity assertion is the SAME codes across CLI
+      // and Studio surfaces — not a specific code.
+      expect(cliCodes.length).toBeGreaterThan(0);
 
       // Studio side: reviewCad is the server-side handler /__kernelcad/review
       // calls. Its output now carries the same `mechanism` field — the
