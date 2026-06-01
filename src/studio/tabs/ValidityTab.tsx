@@ -29,7 +29,7 @@ export function ValidityTab(): JSX.Element {
 
     return (
         <div className="flex flex-col" data-testid="validity-tab">
-            {mechanismBanner !== null && (
+            {mechanismBanner != null && (
                 <MechanismBanner entries={mechanismBanner.entries} />
             )}
             <div className="flex items-center gap-3 px-3 py-2">
