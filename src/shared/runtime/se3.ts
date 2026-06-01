@@ -110,6 +110,45 @@ export class Transform {
   }
 
   /**
+   * Inverse of a rigid transform (rotation + translation only — no scale
+   * or shear, which is everything the SE(3) builders in this file
+   * produce). For `T = Translate(t) ∘ Rotate(R)` the inverse is
+   * `T^-1 = Rotate(R^T) ∘ Translate(-t)`, i.e. the 3x3 rotation block
+   * transposes and the translation block is `-R^T · t`.
+   *
+   * Used by the physics-loop rigidity check (`checkFastenedInvariant`):
+   * `T_AB_local = T_A_rest^-1 ∘ T_B_rest` gives the constant rigid
+   * offset from A's frame to B's frame, so the per-pose drift can be
+   * computed as `||T_B(pose) · corner − (T_A(pose) ∘ T_AB_local) · corner||`.
+   *
+   * Caller contract: callers must hold an `SE(3)` (rigid) transform.
+   * Non-rigid 4x4 input (scale, shear, perspective) is not supported —
+   * the math primitives in this file never produce such matrices, and
+   * the assembly FK pipeline composes only rotations and translations.
+   */
+  inverse(): Transform {
+    const m = this.m;
+    // 3x3 rotation block (column-major); inverse is transpose.
+    const r00 = m[0],  r10 = m[1],  r20 = m[2];
+    const r01 = m[4],  r11 = m[5],  r21 = m[6];
+    const r02 = m[8],  r12 = m[9],  r22 = m[10];
+    // Translation column.
+    const tx = m[12], ty = m[13], tz = m[14];
+    // Inverse translation = -R^T · t.
+    // R^T's row i is R's column i. R^T · t has component i = R[col=i] · t.
+    const itx = -(r00 * tx + r10 * ty + r20 * tz);
+    const ity = -(r01 * tx + r11 * ty + r21 * tz);
+    const itz = -(r02 * tx + r12 * ty + r22 * tz);
+    const inv = new Float64Array(16);
+    // Store R^T in column-major. Column 0 of R^T = row 0 of R = (r00, r01, r02).
+    inv[0]  = r00; inv[1]  = r01; inv[2]  = r02; inv[3]  = 0;
+    inv[4]  = r10; inv[5]  = r11; inv[6]  = r12; inv[7]  = 0;
+    inv[8]  = r20; inv[9]  = r21; inv[10] = r22; inv[11] = 0;
+    inv[12] = itx; inv[13] = ity; inv[14] = itz; inv[15] = 1;
+    return new Transform(inv);
+  }
+
+  /**
    * Decompose to translate + rotate components. Result satisfies:
    *   T = Translate(translate) * Rotate(rotateAxis, rotateDeg)
    *
