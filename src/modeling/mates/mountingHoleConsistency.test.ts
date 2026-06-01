@@ -42,7 +42,9 @@ describe('validateMountingHoleConsistency', () => {
     const diags = validateMountingHoleConsistency(arm);
     expect(diags).toHaveLength(1);
     expect(diags[0].code).toBe('assembly.mounting-hole.mismatch');
-    expect(diags[0].severity).toBe('error');
+    // Demoted to 'info' under the physics-grounded loop (P3, 2026-06-01):
+    // the merge gate is mechanism.disconnect.
+    expect(diags[0].severity).toBe('info');
     expect(diags[0].hint).toMatch(/5.*mm/);
     expect(diags[0].hint).toMatch(/6.*mm/);
     expect(diags[0].mateName).toBe('screw');

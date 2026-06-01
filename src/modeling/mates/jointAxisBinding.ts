@@ -419,7 +419,11 @@ function makeUnboundDiagnostic(mate: MateRecord, side: ResolvedSide): ValidatorD
   const fmt = (v: Vec3) => `[${v[0].toFixed(3)}, ${v[1].toFixed(3)}, ${v[2].toFixed(3)}]`;
   return {
     code: 'assembly.joint-axis.unbound',
-    severity: 'error',
+    // Demoted to 'info' under the physics-grounded loop (P3, 2026-06-01):
+    // this is an authoring-time signal that the connector axis misses
+    // the part body; the merge gate is mechanism.dof-mismatch which
+    // fires under motion at validate-time.
+    severity: 'info',
     mateName: mate.name,
     partName: side.partName,
     message:

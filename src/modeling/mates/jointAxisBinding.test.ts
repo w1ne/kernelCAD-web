@@ -54,7 +54,9 @@ describe('validateJointAxisBinding', () => {
     expect(diags).toHaveLength(2);
     for (const d of diags) {
       expect(d.code).toBe('assembly.joint-axis.unbound');
-      expect(d.severity).toBe('error');
+      // Demoted to 'info' under the physics-grounded loop (P3,
+      // 2026-06-01): the merge gate is mechanism.dof-mismatch.
+      expect(d.severity).toBe('info');
       expect(d.mateName).toBe('hinge');
       expect(d.hint).toMatch(/joint-axis-unbound/);
       expect(d.hint).toMatch(/hinge/);
@@ -84,7 +86,8 @@ describe('validateJointAxisBinding', () => {
     const diags = await validateJointAxisBinding(arm);
     expect(diags).toHaveLength(1);
     expect(diags[0].code).toBe('assembly.joint-axis.unbound');
-    expect(diags[0].severity).toBe('error');
+    // Demoted to 'info' under the physics-grounded loop (P3, 2026-06-01).
+    expect(diags[0].severity).toBe('info');
     expect(diags[0].mateName).toBe('prism');
     expect(diags[0].partName).toBe('b');
     expect(diags[0].hint).toMatch(/prismatic/);

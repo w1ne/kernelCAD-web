@@ -56,16 +56,16 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
   }, 300_000);
 
   // P1 physics-loop discovery (2026-06-01): the gearfinity planetary
-  // stage example reports `mechanism: broken` under the new
-  // physics-grounded loop, which folds into inspect_assembly's `ok`
-  // field. The legacy validator missed this; the new loop's pose-sweep
-  // catches it. Per spec §P3 (sweep all examples) the example gets a
-  // follow-up issue to either rebuild it for the new loop or document
-  // why it's exempt.
+  // stage example times out under the new physics-grounded loop —
+  // 24 parts × multiple revolute samples × pairwise BREP overlap
+  // detection exceeds the 5-minute CLI budget. P3 sweep filed the
+  // follow-up; either the geometry simplifies or the kernel grows an
+  // early-out before this re-enables.
   //
-  // Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md
-  // Plan:  docs/plans/2026-06-01-physics-loop-P3-cleanup.md
-  it.skip('has connected mechanism geometry under inspect_assembly — P3 follow-up: example reports mechanism: broken under the new loop', async () => {
+  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §risks-and-open-questions #1
+  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/348
+  it.skip('has connected mechanism geometry under inspect_assembly — see issues/348', async () => {
     const result = await inspectAssemblyTool({ file: EXAMPLE_PATH });
 
     expect(result.ok).toBe(true);

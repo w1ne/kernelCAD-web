@@ -47,4 +47,17 @@ describe('two-finger coupled gripper example', () => {
       expect(result.fitness.mechanismSummary.gripperApertureTravelMm).toBeGreaterThan(10);
     }
   }, 180_000);
+
+  // P3 physics-loop sweep (2026-06-01): two-finger-coupled-gripper
+  // uses vec3 pin-axis connectors instead of joint.clevis(...), so the
+  // physics loop flags 13 mechanism.interpenetration failures where the
+  // finger hinges nest into the palm cheeks. Tracked rebuild with
+  // joint.clevis(...) in the issue below.
+  //
+  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 2
+  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/354
+  it.skip('passes the physics-grounded loop — see issues/354', () => {
+    // no body — the citation in the title is what the sweep test reads
+  });
 });

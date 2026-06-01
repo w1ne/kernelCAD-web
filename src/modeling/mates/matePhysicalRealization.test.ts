@@ -364,7 +364,9 @@ describe('validateMatePhysicalRealization (Gate 6)', () => {
     const myDiags = diags.filter((d) => d.code === 'assembly.mate.not-physically-realized');
     expect(myDiags.length).toBeGreaterThanOrEqual(1);
     const top = myDiags[0];
-    expect(top.severity).toBe('error');
+    // Demoted to 'info' under the physics-grounded loop (P3, 2026-06-01):
+    // the merge gates are mechanism.disconnect / mechanism.interpenetration.
+    expect(top.severity).toBe('info');
     expect(top.mateName).toBe('hinge');
     // The over-constrained case should ALSO emit a recognizable hint,
     // though the gate may pick up bearing-not-coplanar first if the slot
