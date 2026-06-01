@@ -22,7 +22,8 @@ export type DiagnosticGroup =
   | 'tool'
   | 'dfm'
   | 'query'
-  | 'kinematic';
+  | 'kinematic'
+  | 'mechanism';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
@@ -1006,6 +1007,47 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A transmission path has a gap between consecutive parts that exceeds the contact tolerance at some sampled pose.',
+  },
+  // Mechanism truth — pose-sweep grounded loop (4)
+  //
+  // The recompute pipeline runs sampled poses and refuses to certify a
+  // mechanism unless physics agrees. See
+  // `docs/specs/2026-06-01-physics-grounded-loop-design.md` and the P0
+  // implementation in `src/modeling/runtime/mechanismTruth.ts`. These codes
+  // are emitted only by that pipeline and never by the authoring-time
+  // gates — they describe what a real physical assembly fails to satisfy
+  // under motion (not what the agent wrote at capture time).
+  'mechanism.disconnect': {
+    hintTemplate:
+      "A fastened mate isn't physically realized: the part declared as fastened drifts when another joint moves. Bind the fastened-mate connector to a topology feature (face center, edge, mounting hole) on the anchor part, or use joint.clevis(...) / a physical pin so the geometry actually rigidifies. See docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 1.",
+    nextAction: { kind: 'fix-arg', field: 'mateConnectorOrigin' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'At a sampled pose the assembly has more disconnected solid components than the mate graph predicts — typically a fastened mate whose connector is a numeric vec3 origin fails to actually rigidify the parts under motion.',
+  },
+  'mechanism.interpenetration': {
+    hintTemplate:
+      "Two non-mated parts overlap at a sampled pose. Add clearance, reduce mate travel, or move the mounting geometry so the swept pose stays collision-free. If the contact is intentional, declare a mate between the parts so the loop knows about it.",
+    nextAction: { kind: 'fix-arg', field: 'partGeometry' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'At a sampled pose, two parts that are NOT joined by a mate overlap by more than the epsilon volume floor (intentional contact at clevis joints is excluded).',
+  },
+  'mechanism.dof-mismatch': {
+    hintTemplate:
+      "A mate's declared kind doesn't match its geometric degrees of freedom under motion. Re-check the mate axis, the connector frames on both parts, and the mate type — micro-poses around the declared axis are changing the component count, which means the geometric constraint is not what was declared.",
+    nextAction: { kind: 'fix-arg', field: 'mateType' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'A mate declares one geometric DoF (revolute axis / prismatic axis) but the geometry under micro-pose change behaves as if a different DoF were free.',
+  },
+  'mechanism.orphan-part': {
+    hintTemplate:
+      "A part declared via arm.part(...) is unreachable from the mate graph. Add a mate that connects it to another part, or remove the part if it isn't structurally needed.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add a mate that connects the orphan part to the rest of the mate graph' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
   },
   // Assembly visual-review gating (3)
   'assembly.visual.review-check-failed': {

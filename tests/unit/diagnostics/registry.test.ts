@@ -24,6 +24,7 @@ const ALLOWED_GROUPS = new Set([
   'dfm',
   'query',
   'kinematic',
+  'mechanism',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the
