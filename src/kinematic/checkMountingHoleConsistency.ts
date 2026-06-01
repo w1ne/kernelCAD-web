@@ -41,8 +41,14 @@ export async function checkMountingHoleConsistency(
 ): Promise<MountingHoleResult> {
   const raw: ValidatorDiagnostic[] = validateMountingHoleConsistency(arm);
   const diagnostics: KinematicDiagnostic[] = raw.map(translateDiagnostic);
+  // P3 (2026-06-01): assembly.mounting-hole.mismatch was demoted from
+  // 'error' to 'info' severity (it's now advisory; the merge gate is
+  // mechanism.disconnect). The mismatches view still wants to surface
+  // every observed mismatch — filter by code, not by severity, so the
+  // kinematic facade's `ok` flag continues to report the geometric fact
+  // even though the validator no longer flags it as a blocking error.
   const mismatches: MountingHoleMismatch[] = raw
-    .filter((d) => d.severity === 'error')
+    .filter((d) => d.code === 'assembly.mounting-hole.mismatch')
     .map((d) => ({
       mateName: d.mateName ?? '<unknown>',
       sideA: {
