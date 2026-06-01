@@ -253,16 +253,20 @@ const bulb = sphere(BULB_R)
   .translate(SHADE_ANCHOR_X + SOCKET_LEN + BULB_R * 0.5, 0, 0)
   .material(mBulb);
 
-// Wrist spring boss — sideways stub for now; Task 4 replaces this with
-// a real on-top-of-neck Anglepoise mount that extends back over the
-// upper-arm.
-const HEAD_BOSS: [number, number, number] = [HEAD_NECK_FRONT - 6, SHADE_R_SMALL + 4, 0];
-const headSpringBoss = cylinder(4, SPRING_FLANGE_R, 24)
-  .rotate([1, 0, 0], -90)
-  .translate(HEAD_BOSS[0], HEAD_BOSS[1] - 4, HEAD_BOSS[2])
-  .material(mCast);
+// Wrist spring mount: same floating-shaft pattern as the arm springs.
+// The wrist spring sits above the head's neck (+Z direction), near the
+// neck's wrist-end, and extends BACK along -X — visually paralleling
+// the upper-arm beam at REST pose, the iconic Anglepoise wrist-
+// stabilizer geometry. Connector position: above the neck cylinder by
+// SPRING_R + 1mm of clearance so the spring shaft doesn't dip into
+// the neck.
+const HEAD_BOSS: [number, number, number] = [
+  HEAD_NECK_BACK,
+  0,
+  (SHADE_R_SMALL + 1.5) + SPRING_R + 1,
+];
 
-const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(headSpringBoss);
+const headBodyRaw = headNeck.union(shade).union(socket).union(bulb);
 
 // ============================================================================
 // JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at world
@@ -448,8 +452,10 @@ const upperSpringPart = arm
     origin: { kind: 'vec3', value: [0, 0, 0] },
   });
 
-// Wrist spring — Task 4 will reshape; for now keep it sideways +Y.
-const wristSpringShape = makeSpring(WRIST_SPRING_LEN, [0, 1, 0]);
+// Wrist spring — extends BACK along -X in spring-local (= -X in head-
+// local under the fastened mate). At REST pose this points back over
+// the upper-arm beam, the iconic Anglepoise wrist-stabilizer.
+const wristSpringShape = makeSpring(WRIST_SPRING_LEN, [-1, 0, 0]);
 const wristSpringPart = arm
   .part('wrist-spring', wristSpringShape)
   .connector('mount', {
