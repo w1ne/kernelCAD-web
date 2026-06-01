@@ -392,13 +392,15 @@ arm.part('base', base).connector('mount', { type: 'frame', origin: { kind: 'topo
 arm.part('bracket', bracket).connector('mount', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
 arm.mate('screw', 'base.mount', 'bracket.mount', 'fastened');
 
-// Throws assembly.mounting-hole.mismatch with hint:
+// Emits assembly.mounting-hole.mismatch (info — advisory; the merge gate is
+// mechanism.disconnect under the physics-grounded loop) with hint:
 //   "invalid-args.assembly.mounting-hole-mismatch — mate 'screw' (fastened) expects
 //    compatible hole features on both bound faces. Side 'base.mount': Ø5 mm through.
 //    Side 'bracket.mount': Ø6 mm through. Adjust the diameter or depth on the side
 //    that does not match, or change the connector origin to a face that already
 //    exposes a matching hole."
-await arm.solvedModel({}, { validate: 'error' });
+const scene = await arm.solvedModel({}, { validate: 'error' });
+// scene.warnings contains the assembly.mounting-hole.mismatch (severity 'info')
 ```
 
 The hint names the mate, both connectors, both observed hole specs, and the two recovery moves. The fix is to make `bracket`'s hole `diameter: 5` (matching the base) — one edit, no further introspection needed.
@@ -609,7 +611,7 @@ For robot arms specifically, preserve at least these interfaces between repair a
 A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
 
 1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
-2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Fails with `assembly.mate.not-physically-realized` (revolute / prismatic only; `fastened` mates are exempt). `joint.clevis(...)` passes by construction.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction.
 3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
 
@@ -660,9 +662,9 @@ See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worke
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
 | `assembly.visual.review-evidence-weak` | design_loop — accepted visual checklist text lacks concrete evidence |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
-| `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |
+| `assembly.joint-axis.unbound` | solvedModel — advisory (`info`): revolute/prismatic/cylindrical axis floats outside both bound parts' BREP. Merge gate: `mechanism.dof-mismatch`. |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
-| `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
+| `assembly.mounting-hole.mismatch` | solvedModel — advisory (`info`): `fastened` mate's two bound faces lack compatible hole features. Merge gate: `mechanism.disconnect`. |
 | `assembly.joint.not-visible` | solvedModel({validate:'error'}) — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen FORK_GAP_Y / shrink TONGUE_Y / extend PIN_LEN directly. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
 

@@ -865,17 +865,17 @@ export const DIAGNOSTIC_REGISTRY = {
   // Assembly validator — v0.7 kinematic-grounding gates (3)
   'assembly.mounting-hole.mismatch': {
     hintTemplate:
-      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes.",
+      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'holeFeatures' },
-    defaultSeverity: 'error',
+    defaultSeverity: 'info',
     group: 'assembly',
     description: 'A fastened mate binds two faces whose hole features are incompatible (kind/diameter/depth mismatch).',
   },
   'assembly.joint-axis.unbound': {
     hintTemplate:
-      "Move the connector origin onto a face/edge of its part, or change the connector axis so the line passes through the part's body.",
+      "Move the connector origin onto a face/edge of its part, or change the connector axis so the line passes through the part's body. This is an authoring-time signal; the merge gate is mechanism.dof-mismatch which fires under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
-    defaultSeverity: 'error',
+    defaultSeverity: 'info',
     group: 'assembly',
     description: 'A joint axis (mate connector origin + direction) does not intersect the part body it claims to act on.',
   },
@@ -897,9 +897,9 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'assembly.mate.not-physically-realized': {
     hintTemplate:
-      "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft is unioned into both parts and a through-hole is drilled in one pass. See kernelcad-kinematic SKILL.md \"Mechanism delivery\".",
+      "Use joint.clevis(...) (or the pattern equivalent for prismatic/cylindrical) to ensure a real pin or shaft is unioned into both parts and a through-hole is drilled in one pass. See kernelcad-kinematic SKILL.md \"Mechanism delivery\". This is an authoring-time signal; the merge gates are mechanism.disconnect and mechanism.interpenetration which fire under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'mateGeometry' },
-    defaultSeverity: 'error',
+    defaultSeverity: 'info',
     group: 'assembly',
     description: "An articulated mate (revolute/prismatic) is declared but not realised by part geometry — no shared pin/shaft feature constrains both parts, or the pin escapes the hole at a sampled pose, or the bearing surfaces are not coplanar (Gate 6 — mate physical realization).",
   },

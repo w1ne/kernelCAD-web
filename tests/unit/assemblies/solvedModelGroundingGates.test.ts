@@ -32,11 +32,13 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
   // pattern used by `tests/unit/backends/occt/*.test.ts`.
   beforeAll(async () => { await initOcct(); });
 
-  it('throws on mounting-hole diameter mismatch (Gate 1)', async () => {
+  it('surfaces mounting-hole diameter mismatch (Gate 1) as an info diagnostic — no throw', async () => {
     // Two parts joined by a fastened mate with topology-bound face-center
     // origins; the holes are Ø5 vs Ø6 — Gate 1 emits
-    // `assembly.mounting-hole.mismatch` (error) and the hard-gate flips
-    // that into a `KernelError`.
+    // `assembly.mounting-hole.mismatch`. Demoted to 'info' under the
+    // physics-grounded loop (P3, 2026-06-01): the hard-gate no longer
+    // flips on this code; the merge gate is mechanism.disconnect which
+    // fires under motion. The diagnostic still appears on scene.warnings.
     const { arm, kcad } = makeArm();
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
     const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
@@ -48,14 +50,19 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
       .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
     arm.mate('screw', 'a.h', 'b.h', 'fastened');
 
-    await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toMatchObject({ hint: expect.stringMatching(/mounting-hole-mismatch/i) });
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    const codes = scene.warnings.map((d) => d.code);
+    expect(codes).toContain('assembly.mounting-hole.mismatch');
+    const mismatch = scene.warnings.find((d) => d.code === 'assembly.mounting-hole.mismatch');
+    expect(mismatch?.severity).toBe('info');
   });
 
-  it('throws on floating joint axis (Gate 2)', async () => {
+  it('surfaces floating joint axis (Gate 2) as an info diagnostic — no throw', async () => {
     // Revolute mate whose axis line floats 50 mm above both bodies — Gate 2
-    // emits `assembly.joint-axis.unbound` (error) on both sides. The hard-
-    // gate flips on the first such diagnostic.
+    // emits `assembly.joint-axis.unbound` on both sides. Demoted to
+    // 'info' under the physics-grounded loop (P3, 2026-06-01): the hard-
+    // gate no longer flips; the merge gate is mechanism.dof-mismatch
+    // which fires under motion.
     const { arm, kcad } = makeArm();
     arm
       .part('a', kcad.box(10, 10, 10), { at: [0, 0, 0] })
@@ -65,8 +72,11 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
       .connector('c', { type: 'axis', origin: { kind: 'vec3', value: [-5, 5, 50] }, axis: [1, 0, 0] });
     arm.mate('hinge', 'a.c', 'b.c', 'revolute', { limitsDeg: [-10, 10] });
 
-    await expect(arm.solvedModel({}, { validate: 'error' }))
-      .rejects.toMatchObject({ hint: expect.stringMatching(/joint-axis-unbound/i) });
+    const scene = await arm.solvedModel({}, { validate: 'error' });
+    const codes = scene.warnings.map((d) => d.code);
+    expect(codes).toContain('assembly.joint-axis.unbound');
+    const unbound = scene.warnings.find((d) => d.code === 'assembly.joint-axis.unbound');
+    expect(unbound?.severity).toBe('info');
   });
 
   it('throws on load-exceeded (Gate 3) when externalLoads + maxLoad combine to exceed', async () => {

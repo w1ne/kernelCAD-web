@@ -206,7 +206,12 @@ export async function validateMatePhysicalRealization(
     if (result.failure) {
       out.push({
         code: 'assembly.mate.not-physically-realized',
-        severity: 'error',
+        // Demoted to 'info' under the physics-grounded loop (P3,
+        // 2026-06-01): this is an authoring-time signal that no pin
+        // geometry realises the mate; the merge gates are
+        // mechanism.disconnect and mechanism.interpenetration which
+        // fire under motion at validate-time.
+        severity: 'info',
         mateName: mate.name,
         message: `Mate '${mate.name}' (${mate.type}) is declared but not realised by part geometry: ${result.failure}.`,
         hint: buildHint(mate, result),
