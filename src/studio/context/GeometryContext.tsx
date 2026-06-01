@@ -49,6 +49,30 @@ export interface ScriptReviewSummary {
         b: string;
         volumeMm3: number;
     }>;
+    /**
+     * Physics-grounded loop verdict (P1 surface convergence).
+     *
+     * - `'real'` — every mechanism-truth criterion holds at every sampled pose
+     * - `'broken'` — at least one criterion fails; `mechanismFailures`
+     *               carries the actionable failure list
+     * - `'unverified'` — the mechanism probe wasn't run (no assembly in the
+     *                   script, or evaluation failed before lowering)
+     *
+     * The Validity panel reads this to surface a red banner above the legacy
+     * diagnostics when broken. Spec:
+     * `docs/specs/2026-06-01-physics-grounded-loop-design.md`.
+     */
+    mechanism?: 'real' | 'broken' | 'unverified';
+    /** Structured mechanism failures (one entry per failing criterion at
+     *  each sampled pose). Empty when `mechanism !== 'broken'`. Each entry
+     *  carries `code`, `message`, and `hint` — the Validity banner renders
+     *  the hint as the actionable repair direction. */
+    mechanismFailures?: Array<{
+        code?: string;
+        severity?: string;
+        message?: string;
+        hint?: string;
+    }>;
 }
 
 export interface GeometryContextType {

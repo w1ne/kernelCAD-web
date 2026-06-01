@@ -67,6 +67,22 @@ export interface StudioRecomputeResult {
      */
     readonly joints: readonly JointPoseSnapshot[];
     /**
+     * Physics-loop banner data (P1 surface convergence). Non-null when
+     * the script's mechanism is `'broken'` — carries the structured
+     * failure list the Validity tab renders as a red "MECHANISM BROKEN"
+     * banner above the legacy diagnostic rows. `null` when the
+     * mechanism is real, unverified, or the review payload is absent.
+     *
+     * Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
+     */
+    readonly mechanismBanner: {
+        readonly entries: ReadonlyArray<{
+            readonly code: string;
+            readonly message: string;
+            readonly hint: string;
+        }>;
+    } | null;
+    /**
      * Slice 2E.bridge — POST `edits` to the server's `/__kernelcad/params`
      * endpoint via the pooled `CaptureSession`. Returns once the server has
      * acked; the actual refresh of `paramTable` / `validity` happens on the

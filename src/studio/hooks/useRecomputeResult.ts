@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { reviewToValidity } from '../adapters/reviewToValidity';
+import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToValidity';
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
 import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
@@ -31,6 +31,14 @@ export function useRecomputeResult(): StudioRecomputeResult {
 
     const validity = useMemo(
         () => reviewToValidity(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
+    // Physics-loop banner (P1). `null` unless the recompute's mechanism
+    // verdict is 'broken' — the Validity tab renders the banner above
+    // the existing diagnostic rows.
+    const mechanismBanner = useMemo(
+        () => reviewToMechanismBanner(workbench.scriptReview ?? null),
         [workbench.scriptReview],
     );
 
@@ -84,6 +92,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
             rawInterferencePairs,
+            mechanismBanner,
             updateParam,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
@@ -98,6 +107,7 @@ export function useRecomputeResult(): StudioRecomputeResult {
             diagnostics,
             joints,
             rawInterferencePairs,
+            mechanismBanner,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
         ],

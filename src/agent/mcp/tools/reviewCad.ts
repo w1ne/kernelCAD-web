@@ -14,6 +14,7 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../../modeling/mates/mechanicalPlausibility';
+import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -57,6 +58,19 @@ export interface RepairContext {
   readonly designGoal: string;
 }
 
+/**
+ * Physics-loop verdict (P1) folded onto every reviewCad result.
+ *
+ * - `'real'` — the mechanism-truth probe passed at every sampled pose
+ * - `'broken'` — at least one criterion failed; `mechanismFailures`
+ *               carries the structured list with actionable hints
+ * - `'unverified'` — the probe wasn't run (cheap path; no assembly in
+ *                    the script, or evaluation failed before lowering)
+ *
+ * Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
+ */
+export type MechanismVerdict = 'real' | 'broken' | 'unverified';
+
 export type ReviewCadOutput =
   | {
       ok: true;
@@ -84,6 +98,12 @@ export type ReviewCadOutput =
        * Validity tab + throw path.
        */
       rawInterferencePairs: ReadonlyArray<InterferencePair>;
+      /** Physics-loop verdict (P1). Always present when an assembly was
+       *  selected. `'unverified'` when the mechanism probe didn't run. */
+      mechanism: MechanismVerdict;
+      /** Structured failure list when `mechanism === 'broken'`. Empty
+       *  otherwise. */
+      mechanismFailures: readonly CompilerDiagnostic[];
     }
   | {
       ok: false;
@@ -108,6 +128,10 @@ export type ReviewCadOutput =
        * `ok: false`, so the Studio HUD can still report the count.
        */
       rawInterferencePairs?: ReadonlyArray<InterferencePair>;
+      /** Physics-loop verdict (P1). `'unverified'` for pre-build failures
+       *  where no assembly reached the probe. */
+      mechanism?: MechanismVerdict;
+      mechanismFailures?: readonly CompilerDiagnostic[];
     };
 
 type ReviewDiagnostic =
@@ -211,6 +235,29 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...mechanicalTransmission.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
+  // Physics-loop probe (P1 surface convergence). Gated on
+  // includeInterference (same gating the CLI uses) so cheap review
+  // calls — Studio param drags, eval harness rest-pose checks — don't
+  // pay for the pose sweep. The probe's broken-mechanism verdict gates
+  // the fitness summary below: a broken mechanism cannot be functional
+  // no matter what the legacy fitness checks say.
+  const wantMechanism = input.includeInterference ?? true;
+  let mechanism: MechanismVerdict = 'unverified';
+  let mechanismFailures: readonly CompilerDiagnostic[] = [];
+  if (wantMechanism) {
+    try {
+      const verdict = await checkMechanismTruth(arm);
+      mechanism = verdict.mechanism === 'broken' ? 'broken' : 'real';
+      mechanismFailures = verdict.failures;
+    } catch {
+      // Probe-side throw — surface as unverified so the legacy review
+      // path still produces actionable output; the CLI handles the same
+      // case symmetrically.
+      mechanism = 'unverified';
+      mechanismFailures = [];
+    }
+  }
+
   const fitness = summarizeMechanismFitness({
     validatorDiagnostics: validator.diagnostics,
     mechanicalPlausibilityDiagnostics: mechanicalPlausibility.diagnostics,
@@ -219,7 +266,11 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     poseEnvelope,
     trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
   });
-  const ok = fitness.functional;
+  // A broken mechanism overrides a "functional" fitness summary —
+  // the loop's truth criterion is the merge gate, not the legacy
+  // advisory aggregate. Spec §"the recompute is what defines the
+  // passing state".
+  const ok = fitness.functional && mechanism !== 'broken';
 
   const repairContext = await buildRepairContext(arm, diagnostics, fitness, input);
 
@@ -241,6 +292,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       fitness,
       repairContext,
       rawInterferencePairs,
+      mechanism,
+      mechanismFailures,
     };
   }
 
@@ -262,6 +315,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     repairContext,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
     rawInterferencePairs,
+    mechanism,
+    mechanismFailures,
   };
 }
 
