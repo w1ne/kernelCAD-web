@@ -140,7 +140,13 @@ const boltHead = cylinder(BOLT_HEAD_H, BOLT_HEAD_R, 24)
   .material(mPin);
 const bolts = boltHead.patternCircular({ count: 4, axis: [0, 0, 1] });
 
-const COLUMN_CLEAR = clevisStyle.knuckleR + ARM_T + 2;
+// Column rises from base-disc top to JUST below the shoulder-clevis
+// knuckle. The clevis fork at the shoulder pivot extends `knuckleR`
+// below the pivot, so the column needs only `knuckleR + 2` mm of
+// clearance below COLUMN_TOP_Z. The previous COLUMN_CLEAR reserved
+// `knuckleR + ARM_T + 2 = 32mm`, leaving the column terminate at
+// z=30 — only 18mm tall and invisible behind the base disc.
+const COLUMN_CLEAR = clevisStyle.knuckleR + 2;
 const COLUMN_TERMINATE_Z = COLUMN_TOP_Z - COLUMN_CLEAR;
 const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
