@@ -183,6 +183,8 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         uiCtx.setLayoutMode,
         uiCtx.viewMode3D,
         uiCtx.setViewMode3D,
+        uiCtx.viewportBackground,
+        uiCtx.setViewportBackground,
         uiCtx.activeDialog,
         uiCtx.setActiveDialog,
         uiCtx.sidePanelVisible,
