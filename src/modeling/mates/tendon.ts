@@ -46,15 +46,33 @@ export interface TendonRecord {
     /** Optional viscous damping (N·s/mm). MJCF emits this as N·s/m
      *  (×1000). >=0; defaults to 0. */
     readonly dampingNsmm: number;
-    /** Visual cylinder diameter (mm) for Studio rendering. The cylinder
-     *  scales endpoint-to-endpoint; this is only the diameter. Defaults
-     *  to 3 mm if not set by the agent. >0. */
+    /** Visual cylinder / coil diameter (mm) for Studio rendering. For
+     *  `visualStyle: 'line'` this is the cylinder diameter; for
+     *  `visualStyle: 'coil'` this is the helix WIRE diameter (the tube
+     *  sweep radius is half of this). Defaults to 3 mm if not set by the
+     *  agent. >0. */
     readonly visualDiameterMm: number;
+    /** P10: visual style. `'line'` (default) renders a straight cylinder
+     *  spanning the two endpoints — the v1 PR #368 behavior. `'coil'`
+     *  renders an Anglepoise-style helical spring whose centerline is the
+     *  AB line and whose wire sweeps around at radius `coilDiameterMm/2`. */
+    readonly visualStyle: 'line' | 'coil';
+    /** P10: number of full turns along the AB span when `visualStyle ===
+     *  'coil'`. Ignored for `'line'`. Must be >= 1. Defaults to 10. */
+    readonly coilTurns: number;
+    /** P10: outer DIAMETER of the helix (mm) when `visualStyle ===
+     *  'coil'`. The wire centerline sits on a cylinder of radius
+     *  `coilDiameterMm/2` around the AB line. Ignored for `'line'`. Must
+     *  satisfy `coilDiameterMm > 2 * visualDiameterMm` (i.e. the wire
+     *  fits inside the coil). Defaults to 7. */
+    readonly coilDiameterMm: number;
 }
 
 /**
  * Agent-facing options for `arm.tendon(name, opts)`. `dampingNsmm` and
  * `visualDiameterMm` are optional and default to 0 / 3 respectively.
+ * `visualStyle`, `coilTurns`, `coilDiameterMm` are optional and default
+ * to `'line'`, 10, 7 — see field docs on `TendonRecord` for semantics.
  */
 export interface TendonOptions {
     readonly from: string;
@@ -63,7 +81,21 @@ export interface TendonOptions {
     readonly stiffnessNmm: number;
     readonly dampingNsmm?: number;
     readonly visualDiameterMm?: number;
+    readonly visualStyle?: 'line' | 'coil';
+    readonly coilTurns?: number;
+    readonly coilDiameterMm?: number;
 }
 
 /** Default visual diameter (mm) used when the agent doesn't pass one. */
 export const TENDON_DEFAULT_VISUAL_DIAMETER_MM = 3;
+/** Default visual style — the v1 thin-cylinder render. */
+export const TENDON_DEFAULT_VISUAL_STYLE: 'line' | 'coil' = 'line';
+/** Default coil turn count when `visualStyle: 'coil'` is opted into without
+ *  an explicit `coilTurns`. 10 turns reads as iconic Anglepoise without
+ *  being so dense that the per-turn segments blur into a solid cylinder. */
+export const TENDON_DEFAULT_COIL_TURNS = 10;
+/** Default coil outer diameter (mm) when `visualStyle: 'coil'` is opted
+ *  into without an explicit `coilDiameterMm`. Sized so a default 3 mm
+ *  wire fits inside (the validation rule `coilDiameter > 2 * wireDiameter`
+ *  holds for the defaults: 7 > 6). */
+export const TENDON_DEFAULT_COIL_DIAMETER_MM = 7;

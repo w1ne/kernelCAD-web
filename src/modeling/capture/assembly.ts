@@ -20,7 +20,10 @@ import {
 } from '../mates/mate';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
+  TENDON_DEFAULT_COIL_DIAMETER_MM,
+  TENDON_DEFAULT_COIL_TURNS,
   TENDON_DEFAULT_VISUAL_DIAMETER_MM,
+  TENDON_DEFAULT_VISUAL_STYLE,
   type TendonOptions,
   type TendonRecord,
 } from '../mates/tendon';
@@ -905,6 +908,43 @@ export class Assembly {
         `invalid-args.assembly.tendon-invalid-visual-diameter — pass visualDiameterMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_VISUAL_DIAMETER_MM} mm.`,
       );
     }
+    // P10: coil-visual-style fields. `visualStyle: 'line'` (default)
+    // ignores `coilTurns` / `coilDiameterMm`; `'coil'` validates both.
+    const visualStyle = opts.visualStyle ?? TENDON_DEFAULT_VISUAL_STYLE;
+    if (visualStyle !== 'line' && visualStyle !== 'coil') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line' or 'coil'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring.`,
+      );
+    }
+    const coilTurns = opts.coilTurns ?? TENDON_DEFAULT_COIL_TURNS;
+    if (!Number.isFinite(coilTurns) || coilTurns < 1) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-turns: tendon '${name}' coilTurns must be a finite number >= 1; got ${formatScalarForError(coilTurns)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-turns — pass coilTurns: <integer >= 1>, or omit it to default to ${TENDON_DEFAULT_COIL_TURNS}. Typical Anglepoise coil is 8-14 turns.`,
+      );
+    }
+    const coilDiameter = opts.coilDiameterMm ?? TENDON_DEFAULT_COIL_DIAMETER_MM;
+    if (!Number.isFinite(coilDiameter) || coilDiameter <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-diameter: tendon '${name}' coilDiameterMm must be a positive finite number; got ${formatScalarForError(coilDiameter)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-diameter — pass coilDiameterMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_COIL_DIAMETER_MM} mm.`,
+      );
+    }
+    if (visualStyle === 'coil' && coilDiameter <= 2 * visualDiameter) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-diameter: tendon '${name}' coilDiameterMm (${formatScalarForError(coilDiameter)}) must be > 2 * visualDiameterMm (${formatScalarForError(2 * visualDiameter)}) so the helix WIRE (radius visualDiameterMm/2) fits inside the COIL (radius coilDiameterMm/2).`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-diameter — either increase coilDiameterMm (typical Anglepoise: 5-10 mm) or decrease visualDiameterMm (typical wire: 1.0-1.4 mm).`,
+      );
+    }
     this.tendons.push({
       name,
       from: opts.from,
@@ -913,6 +953,9 @@ export class Assembly {
       stiffnessNmm: opts.stiffnessNmm,
       dampingNsmm: damping,
       visualDiameterMm: visualDiameter,
+      visualStyle,
+      coilTurns,
+      coilDiameterMm: coilDiameter,
     });
     return this;
   }
