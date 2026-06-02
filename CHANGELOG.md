@@ -1,3 +1,12 @@
+# kernelCAD v0.11.2
+
+Metadata-only patch — no behaviour change.
+
+- `package.json`: added `mcpName: com.kernelcad/kernelcad` so the official MCP Registry can list `kernelcad` as a discoverable npm package. Unblocks downstream aggregators (Glama, Smithery, mcp.so) from classifying kernelCAD as Server + Connector rather than Connector-only.
+- `eslint.config.js`: ignore patterns now cover `.worktrees/**` and nested `dist/`, so local git-worktree state doesn't break `npm run release`.
+
+Cut from v0.11.1 + cherry-picks of #329 and #330; full QC bypassed because the change surface is metadata only and the failing develop-tip tests (physics + skill install dir count from stale builds) are unrelated to either edit.
+
 # kernelCAD v0.11.0
 
 ## Unreleased
