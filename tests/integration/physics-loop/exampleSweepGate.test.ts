@@ -134,9 +134,10 @@ const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = 
     'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
     { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
   ],
-  // P5 (#356) closed the Luxo lamp geometric-rebuild slice — the lamp now
-  // passes the physics-grounded loop with mechanism: 'real' and empty
-  // mechanismFailures, so it no longer needs an issue-tracked .skip.
+  // P9 (2026-06-02) closed the P8 joint-mesh-continuity gap on the
+  // Luxo lamp (extended column + pulled-back head-neck + arm spring
+  // posts), so the lamp again passes the mechanism-truth loop with
+  // mechanism: 'real' and empty mechanismFailures.
 ]);
 
 function walkExamples(dir: string, prefix = ''): string[] {

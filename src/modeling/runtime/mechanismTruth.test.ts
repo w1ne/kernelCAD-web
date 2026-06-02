@@ -89,23 +89,32 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     // passes by construction. (For an arm WITH a parent joint that
     // moves, the solver still propagates the chain.)
     const { arm, kcad } = makeArm('topology-spring');
-    const armBody = kcad.box(80, 20, 10, true).translate(40, 0, 0);
+    // Arm body has a small boss on the top face supporting the spring
+    // mount connector. P8 (2026-06-02) requires every joint pivot to lie
+    // inside its body's mesh within 1 mm; without the boss the connector
+    // would float 7 mm above the arm's top face and fire the
+    // `mechanism.joint-mesh-gap` gate. The boss is a thin cylinder
+    // rising from z=5 to z=12 at x=10, y=0 — physically mounting the
+    // spring on the arm rather than hovering above it.
+    const armBox = kcad.box(80, 20, 10, true).translate(40, 0, 0);
+    const springBoss = kcad.cylinder(8, 3, 16).translate(10, 0, 4); // z ∈ [4, 12], 1 mm overlap with arm top
+    const armBody = armBox.union(springBoss);
     const armPart = arm.part('arm-body', armBody);
-    // Anchor sits ABOVE the arm body's top surface (z=5) so a spring
-    // mounted there doesn't physically penetrate the arm — the spring
-    // is fastened to the arm via a topology-anchored frame, NOT
-    // embedded inside the body.
     armPart.connector('springMount', {
       type: 'frame',
       origin: { kind: 'vec3', value: [10, 0, 12] },
     });
 
-    const springShape = kcad.cylinder(20, 2, 16)
-      .rotate([0, 1, 0], 90); // axis along +X, body sits around its own origin
+    // Spring authored so its mount connector ([0,0,0] in local) sits at
+    // the bottom of the shaft; the spring body extends UPWARDS (along
+    // +Z in local). Under the fastened mate the spring's bottom face
+    // sits on the boss top, with the shaft rising above — no
+    // interpenetration with the boss material.
+    const springShape = kcad.cylinder(20, 2, 16);
     const springPart = arm.part('spring', springShape);
     springPart.connector('mount', {
       type: 'frame',
-      origin: { kind: 'vec3', value: [0, 0, 0] }, // spring's centroid in its own frame
+      origin: { kind: 'vec3', value: [0, 0, 0] },
     });
     arm.mate('spring-fix', 'arm-body.springMount', 'spring.mount', 'fastened');
 
@@ -438,8 +447,15 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
         origin: { kind: 'vec3', value: [0, 0, 0] },
         axis: [0, -1, 0],
       });
-      const armBox = kcad.box(100, 10, 10, true).translate(60, 0, 0);
-      const armPart = arm.part('arm', armBox);
+      // P8 (2026-06-02): this test is designed around an abstract
+      // joint (no clevis hardware), so the arm body at x∈[10,110]
+      // doesn't cover the shoulder pivot at arm-local [0,0,0] — a
+      // `mechanism.joint-mesh-gap` diagnostic fires by design. The
+      // child mount is similarly off-body. The test below filters
+      // `joint-mesh-gap` out and only asserts the original P0.2
+      // invariant: no `mechanism.disconnect` under the rigidity check.
+      const armBodyShape = kcad.box(100, 10, 10, true).translate(60, 0, 0);
+      const armPart = arm.part('arm', armBodyShape);
       armPart.connector('shoulder', {
         type: 'axis',
         origin: { kind: 'vec3', value: [0, 0, 0] },
@@ -447,7 +463,7 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       });
       armPart.connector('childMount', {
         type: 'frame',
-        origin: { kind: 'vec3', value: [110, 0, 40] }, // anchor on arm, off-axis, clear of arm body
+        origin: { kind: 'vec3', value: [110, 0, 40] },
       });
       arm.mate('shoulder', 'root.hub', 'arm.shoulder', 'revolute', {
         limitsDeg: [-90, 90],
@@ -468,7 +484,13 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       // regressed rigidity math.
       const disconnects = result.failures.filter((f) => f.code === 'mechanism.disconnect');
       expect(disconnects).toEqual([]);
-      expect(result.mechanism).toBe('real');
+      // P8 (2026-06-02): the abstract joint geometry (no clevis) makes
+      // the new `mechanism.joint-mesh-gap` gate fire — both connectors
+      // sit in mid-air. That is orthogonal to the P0.2 rigidity
+      // regression target, so the assertion below ignores joint-mesh
+      // gaps and only requires every OTHER criterion to pass.
+      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap');
+      expect(nonGapFailures).toEqual([]);
     },
     90000,
   );
@@ -548,9 +570,13 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       // therefore no `mechanism.disconnect` is emitted.
       const disconnects = result.failures.filter((f) => f.code === 'mechanism.disconnect');
       expect(disconnects).toEqual([]);
-      // And nothing else is wrong with this geometry — it's a clean
-      // rigid attachment to a rotating parent.
-      expect(result.mechanism).toBe('real');
+      // P8 (2026-06-02): the abstract test joint (no clevis) sits in
+      // mid-air relative to both bodies, so the new
+      // `mechanism.joint-mesh-gap` gate fires. That is orthogonal to
+      // the rigidity invariant under test here; filter it out and
+      // require every OTHER criterion to pass.
+      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap');
+      expect(nonGapFailures).toEqual([]);
     },
     90000,
   );

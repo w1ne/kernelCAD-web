@@ -44,22 +44,42 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(revoluteMates.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('passes the kinematic-only mechanism-truth loop: mechanism: real with empty failures (#356 closed by P5)', async () => {
+  it('passes the kinematic-only mechanism-truth loop: mechanism: real with empty failures (re-enabled by P9 Luxo geometry fix)', async () => {
+    // P9 (2026-06-02): with the column extended to COLUMN_TOP_Z, the
+    // head-neck pulled back to cover the wrist pivot, and small
+    // spring-mounting posts added to each arm, the lamp now passes
+    // the full kinematic-only mechanism-truth loop (criteria 1-4 +
+    // P8 joint-mesh-continuity criterion 7).
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
       includeInterference: true,
       physical: false,
       json: true,
-      // P6: kinematic-only here. The Luxo's single-body springs produce
-      // zero restoring moment around the joints they brace, so the lamp
-      // fails the new drop-test (correctly — see the .skip below citing
-      // #361). The pre-P6 P5 commitment was "lamp passes the KINEMATIC
-      // gate without ignore[]", which it still does.
       includePhysics: false,
     });
     expect(r.mechanism).toBe('real');
     expect(r.mechanismFailures ?? []).toEqual([]);
+  }, 240_000);
+
+  it('P8 joint-mesh-continuity gate sees NO joint-mesh-gap diagnostics on the post-P9 Luxo (GREEN after P9)', async () => {
+    // P9 (2026-06-02): with the spring-boss posts on each arm and the
+    // extended column / pulled-back head-neck, every mate connector
+    // lies inside its body's mesh within 1 mm — no
+    // `mechanism.joint-mesh-gap` diagnostics fire.
+    const r = await runValidateCli({
+      file: LUXO_SCRIPT_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+    const gaps = (r.mechanismFailures ?? []).filter(
+      (f) => f.code === 'mechanism.joint-mesh-gap',
+    );
+    expect(gaps).toEqual([]);
+    expect(r.mechanism).toBe('real');
   }, 240_000);
 
   it.skip('passes the physics gate (criteria 5+6) — blocked on issues/361 (closed-loop spring API)', async () => {

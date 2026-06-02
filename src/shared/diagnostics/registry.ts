@@ -1049,6 +1049,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'mechanism',
     description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
   },
+  'mechanism.joint-mesh-gap': {
+    hintTemplate:
+      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body.',
+    nextAction: { kind: 'fix-arg', field: 'partGeometry' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'A joint pivot lies outside its mated body BREP surface at rest pose — the link mesh does not reach the joint it pivots on.',
+  },
   // Physics-grounded loop — P6 slice. The two physics criteria
   // (static-equilibrium + drop-on-release) emit these codes from
   // `src/modeling/runtime/mechanismTruth.ts` when `physicsCheck` is
