@@ -1049,6 +1049,30 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'mechanism',
     description: 'A part declared on the assembly is not reachable from any other part via mate edges — the mate graph is disconnected.',
   },
+  // Physics-grounded loop — P6 slice. The two physics criteria
+  // (static-equilibrium + drop-on-release) emit these codes from
+  // `src/modeling/runtime/mechanismTruth.ts` when `physicsCheck` is
+  // enabled (CLI: `validate --include-physics`). The hints point at the
+  // structural fix; in the v0.7 corpus single-body springs cannot pass
+  // the drop-test (they produce zero restoring moment around the joints
+  // they should brace) — the long-term fix is the closed-loop tendon /
+  // spring API tracked in issue #361.
+  'mechanism.unstable-under-gravity': {
+    hintTemplate:
+      "At a sampled pose, MuJoCo's inverse dynamics couldn't compute a finite holding torque — the mechanism has a singular configuration there. Verify that every part has a declared (or default) density, that joint axes pass through the parts' material, and that the chain doesn't have a redundant constraint. If a real joint actuator is intended (servo, motor), declare it via the planned `arm.mate(..., 'revolute', { capacityNm: <torque> })` API (TODO: capacity API).",
+    nextAction: { kind: 'rewrite-feature', guidance: 'verify part density / joint axes / chain topology so the mechanism has a finite holding torque at every sampled pose' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'At a sampled pose the mechanism requires a non-finite (NaN / Infinity) joint torque to hold itself against gravity. Indicates a singular kinematic configuration, a degenerate inertia tensor, or a redundant constraint.',
+  },
+  'mechanism.drops-on-release': {
+    hintTemplate:
+      "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',
+  },
   // Assembly visual-review gating (3)
   'assembly.visual.review-check-failed': {
     hintTemplate:
