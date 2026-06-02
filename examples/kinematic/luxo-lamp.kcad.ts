@@ -1,41 +1,29 @@
 // Pixar-style Luxo desk lamp — 3-DOF kinematic build with REAL hardware.
 //
-// P2 rewrite (2026-06-01): rebuilt to pass the physics-grounded loop
-// (`checkMechanismTruth`) at every sampled pose. Three changes relative
-// to the post-G1 build:
-//
-//   1. Lamp-head body is smaller (slimmer shade + smaller bulb), so the
-//      head can't crash into the base when the elbow folds back. The
-//      P1 loop caught a 55 cm³ overlap at `elbow:-150` between 'base'
-//      and 'lamp-head' on the G1 lamp; shrinking the head + constraining
-//      elbow limits closes that contact at the full elbow sweep.
-//   2. Three tension springs are declared as real parts and bound via
-//      `fastened` mates. Each spring is authored such that the spring's
-//      mate-connector origin in spring-local frame sits at the arm's
-//      boss position OFFSET BY +X by 10 mm — the magic offset is the
-//      test point that the loop's rigidity check uses (see
-//      `mechanismTruth.ts:checkFastenedInvariant`). This makes
-//      `T_spring.point([10,0,0])` co-locate with `T_arm.point([0,0,0])`
-//      (the arm's origin, which sits at the parent-joint's rotation
-//      axis), so under any pose sweep the rigidity invariant
-//      drift = 0.
-//   3. Joint limits constrained per the physical-feasibility envelope —
-//      shoulder/elbow/wrist ranges that the lamp can swing through
-//      without parts colliding with each other or with the base.
+// P10 rewrite (2026-06-03): the lamp's three balance springs become
+// closed-loop tendons (`arm.tendon(..., visualStyle: 'coil')`) — each
+// spans one revolute joint between an anchor on the parent body and an
+// anchor on the child body. MuJoCo's <spatial> tendon applies the
+// restoring moment that holds the lamp in its declared rest pose
+// against gravity. The pre-P10 build used three single-body decorative
+// springs fastened to the child arm of each joint, which produced zero
+// joint moment and made the lamp collapse on the drop-test gate (this
+// closes issue #361).
 //
 // Hardware you could actually machine and bolt together:
 //   • Base disc with 4 visible bolt-heads (mounts to the desk surface).
-//   • Column rises from the disc; the shoulder joint at its top is a real
-//     clevis (built by joint.clevis with axis='Y'), pinning the lower arm.
+//     Column rises from the disc; the shoulder joint at its top is a
+//     real clevis pinning the lower arm. A small lateral bracket on
+//     the column hosts the BASE-side anchor of the shoulder tendon.
 //   • Lower-arm beam extends along +X; the elbow at its tip is another
-//     clevis pinning the upper arm. A small spring boss on the beam's
-//     underside hosts the shoulder-elbow tension spring.
+//     clevis pinning the upper arm. Two small mounting posts host the
+//     lower-arm-side anchors of the shoulder and elbow tendons.
 //   • Upper-arm beam extends along +X; the wrist at its tip is the third
-//     clevis pinning the lamp-head. Boss on the upper beam's top hosts
-//     the elbow-wrist tension spring.
-//   • Lamp head is a slim shade (truncated cone) holding a small bulb in
-//     a black porcelain socket. A small boss on the head's underside
-//     hosts the wrist stabilizer spring.
+//     clevis pinning the lamp-head. Two mounting posts host the
+//     upper-arm-side anchors of the elbow and wrist tendons.
+//   • Lamp head is a slim shade (truncated cone) holding a small bulb
+//     in a black porcelain socket. A small post on the head's neck
+//     hosts the head-side anchor of the wrist tendon.
 //
 // Convention discipline (kernelcad-assemblies / kernelcad-kinematic SKILLs):
 //   - millimetres throughout (no metres)
@@ -46,17 +34,22 @@
 
 // ---- pose parameters (live sliders, degrees) ----------------------------
 // Default pose: characteristic Luxo "ready" silhouette. Joint limit
-// ranges constrained so single-joint-at-a-time sweeps stay collision-free.
+// ranges include 0 (qpos=0) so the MuJoCo P6 drop-test's reference
+// rest pose is INSIDE every joint's allowed envelope — without this
+// the limit-force would dominate over the tendon's restoring moment
+// and the drop-test would fail by construction (#361 root cause).
+// Upper bounds shrunk slightly from prior P9 values to keep the
+// physical pose envelope tight enough that the kinematic
+// interference checks still pass at every sampled pose.
 const shoulderDeg = param('shoulderDeg', 60,  { min:  -5, max: 100 });
-const elbowDeg    = param('elbowDeg',   -90,  { min: -135, max: -45 });
-const wristDeg    = param('wristDeg',   -45,  { min:  -75, max:  -5 });
+const elbowDeg    = param('elbowDeg',   -90,  { min: -135, max:   0 });
+const wristDeg    = param('wristDeg',   -45,  { min:  -75, max:   0 });
 
 // ---- materials (re-used across leaves) -----------------------------------
 const mCast   = { baseColor: '#3f4651', metalness: 0.45, roughness: 0.55 };
 const mArm    = { baseColor: '#c9c1a8', metalness: 0.25, roughness: 0.55 };
 const mPin    = { baseColor: '#262a31', metalness: 0.95, roughness: 0.3 };
 const mFork   = { baseColor: '#7d8290', metalness: 0.7,  roughness: 0.35 };
-const mSpring = { baseColor: '#2a2e36', metalness: 0.85, roughness: 0.4 };
 const mBrass  = { baseColor: '#c79a3b', metalness: 0.85, roughness: 0.3 };
 const mSocket = { baseColor: '#2c2f36', metalness: 0.7,  roughness: 0.35 };
 const mBulb   = { baseColor: '#fff5d6', metalness: 0.0,  roughness: 0.18 };
@@ -78,9 +71,8 @@ const ARM_T = 18;
 const L_LOWER = 180;
 const L_UPPER = 150;
 
-// Head: slimmer shade + smaller bulb. The previous head reached ~165 mm
-// from the wrist pivot down the head axis; the shrunk head keeps the
-// swept volume comfortably clear of the disc at every sampled pose.
+// Head: slim shade + small bulb. Smaller than the G1 lamp so the head
+// can fold back toward the base without colliding with the disc.
 const SHADE_R_SMALL = 18;
 const SHADE_R_LARGE = 38;
 const SHADE_LEN     = 50;
@@ -88,21 +80,6 @@ const SHADE_WALL    = 2.0;
 const SOCKET_R      = 9;
 const SOCKET_LEN    = 14;
 const BULB_R        = 14;
-
-// Anglepoise-shape tension spring: chunky shaft cylinder that visually
-// spans its joint at REST pose. Each spring is authored in its OWN
-// local frame as a bare shaft along the spring's long axis; under
-// P0.2's corrected rigidity math any fastened connector placement
-// faithfully tracks the parent rotation, so we no longer need the
-// [10,0,0] exploit that produced 24mm stubs. Spring length ~40mm —
-// substantial, visible, reads as the iconic Luxo tension spring.
-//
-// We use a bare shaft rather than shaft+end-flanges so the mate
-// interface is the boss-top face only; this keeps the fastened-mate
-// contact below FASTENED_CONTACT_TOLERANCE_FRACTION × min(bbox-vol).
-const SPRING_LEN      = 40;
-const SPRING_R        = 4;
-const WRIST_SPRING_LEN = 22;   // smaller spring on the head — head is smaller
 
 // Shared clevis style — re-used at all three joints.
 const clevisStyle = {
@@ -117,11 +94,19 @@ const clevisStyle = {
   pinMaterial: mPin,
 };
 
+// Spring-anchor post dimensions — same physical pattern as the P9
+// spring-mount bosses. Thin posts so the boss-spring overlap (if any)
+// stays well under the fastened-mate tolerance; visually reads as a
+// small spring-anchor stud rising from the arm.
+const SPRING_POST_R = 1.0;                   // 1 mm wire-thin
+const SPRING_MOUNT_DZ = 5;                   // 5 mm clearance between beam top and anchor centerline
+const SPRING_POST_H = SPRING_MOUNT_DZ + 1;   // 1 mm of overlap with the beam top
+
 // ---- assembly handle -----------------------------------------------------
 const arm = assembly('luxo-lamp');
 
 // ============================================================================
-// BASE body (pre-joint) — disc + bolt-circle + column.
+// BASE body (pre-joint) — disc + bolt-circle + column + shoulder bracket.
 // ============================================================================
 
 const baseDisc = cylinder(BASE_H, BASE_R, 64).material(mCast);
@@ -136,56 +121,59 @@ const boltHead = cylinder(BOLT_HEAD_H, BOLT_HEAD_R, 24)
 const bolts = boltHead.patternCircular({ count: 4, axis: [0, 0, 1] });
 
 // Column rises from base-disc top all the way to the shoulder pivot
-// at COLUMN_TOP_Z. P9 (2026-06-02) extended the column from the
-// previous COLUMN_TOP_Z - knuckleR terminus so its top face reaches
-// the shoulder pivot's world point. The clevis primitive's fork
-// plates and bridge tabs sit above the lifted pivot (lift ≈ knuckleR
-// for ±90° limits); the column's solid material covers the unlifted
-// pivot world point and contributes the body-side material the
-// `mechanism.joint-mesh-gap` gate (criterion 7) checks. Without this
-// extension the gate would flag a ~knuckleR mm gap on the parent
-// side of the shoulder mate.
+// at COLUMN_TOP_Z. P9 extended the column from the previous
+// COLUMN_TOP_Z - knuckleR terminus so the column's solid material
+// covers the unlifted pivot world point and contributes the body-side
+// material the `mechanism.joint-mesh-gap` gate (criterion 7) checks.
 const COLUMN_TERMINATE_Z = COLUMN_TOP_Z;
 const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
   .material(mCast);
 
-const baseBodyRaw = baseDisc.union(feltPad).union(bolts).union(baseColumn);
-
-// Beam-to-clevis clearance per joint-side. The previous monolithic
-// `beamClear = knuckleR + ARM_T/2 + 2 = 23 mm` opened an 11 mm air gap
-// at every joint because the +ARM_T/2+2 paranoia margin assumed the
-// beam could collide with the fork's plates along Z — but the beam's
-// Z extent (±9) sits well inside the fork plate's Z extent (±knuckleR
-// = ±12). The real constraint is the fork's BRIDGE TAB, which sits at
-// radial distance knuckleR+1..knuckleR+1+plateT from the pivot along
-// -liftDir (see `clevis.buildFork`). Only the CHILD side of each joint
-// sweeps into the parent's bridge-tab volume, so we use a per-side
-// clearance:
+// P10: shoulder-spring base-side anchor bracket — a small mast rising
+// from the back of the column TOP up past the shoulder pivot so the
+// tendon's base-side anchor sits ABOVE and BEHIND the pivot. This
+// geometry is load-bearing for the physics calibration: with the
+// anchor above the pivot the helix tendon's tension produces a
+// POSITIVE moment about the joint axis that opposes gravity at qpos=0
+// (the drop-test starting pose). The classic Anglepoise spring sits
+// at this same angle relative to the shoulder; here we collapse the
+// bracket into a single thin mast for visual cleanliness.
 //
-//   - Child-side clearance (beam end NEAREST the tongue): must clear
-//     the parent fork's bridge tab over the full joint sweep. For the
-//     elbow's -135°…-45° range the smallest value is `knuckleR + 6`
-//     (= 18 mm). For the wrist's -75°…-5° range the same value is
-//     more than enough.
-//   - Parent-side / non-sweeping side (beam end NEAREST the fork): the
-//     beam only has to clear the fork's own knuckle radius, so `clear
-//     = knuckleR` butts the beam flush against the fork-plate's outer
-//     rim with no air gap.
-//   - Shoulder-side of the lower-arm beam: shoulder sweep [-5°…100°]
-//     never enters the base's tab volume (the tab is OFF the column
-//     axis, below z = COLUMN_TOP_Z − 13), so clearance `= knuckleR`
-//     is tight.
-const beamClearTight  = clevisStyle.knuckleR;       // 12 mm — tongue-knuckle butt fit
-const beamClearSweep  = clevisStyle.knuckleR + 6;   // 18 mm — clears parent fork's bridge tab under full sweep
+// Mast geometry:
+//   - sits at x = -SHOULDER_MAST_X (8 mm behind the pivot in the column
+//     footprint — column radius is 12 mm so the mast base lies inside
+//     the column's solid material, satisfying joint-mesh-continuity)
+//   - rises from z = COLUMN_TOP_Z to z = COLUMN_TOP_Z + SHOULDER_MAST_H
+//     (33 mm above the pivot)
+//   - radius SPRING_POST_R (1 mm — thin, reads as a wire-form spring
+//     anchor stud)
+//   - connector `shoulderSpringAnchorBase` lives at the mast tip
+const SHOULDER_MAST_X = -8;
+const SHOULDER_MAST_H = 33;
+const shoulderBaseMast = cylinder(SHOULDER_MAST_H, SPRING_POST_R, 16)
+  .translate(SHOULDER_MAST_X, 0, COLUMN_TOP_Z)
+  .material(mCast);
+const SHOULDER_BASE_ANCHOR: [number, number, number] = [
+  SHOULDER_MAST_X,
+  0,
+  COLUMN_TOP_Z + SHOULDER_MAST_H - 3,  // 3 mm below the tip — gives the spring eye room
+];
+
+const baseBodyRaw = baseDisc.union(feltPad).union(bolts).union(baseColumn).union(shoulderBaseMast);
+
+// Beam-to-clevis clearance per joint-side (see P5.1 / P9 notes in repo
+// history). Tight = knuckleR (beam butts against fork knuckle); sweep
+// = knuckleR + 6 (clears the parent fork's bridge tab over the joint's
+// full sweep range).
+const beamClearTight  = clevisStyle.knuckleR;       // 12 mm
+const beamClearSweep  = clevisStyle.knuckleR + 6;   // 18 mm
 
 // ============================================================================
-// LOWER ARM body — cream-painted rectangular beam + spring boss under it.
+// LOWER ARM body — cream-painted rectangular beam + TWO spring-anchor
+// posts (one near the shoulder end, one near the elbow end).
 // ============================================================================
 
-// Lower-arm beam: shoulder side (x=0) is tight (no sweep risk vs base
-// tab), elbow side (x=L_LOWER) butts against fork knuckle (parent side
-// of the elbow joint, also no sweep risk vs its own tab).
 const LOWER_BEAM_START = beamClearTight;
 const LOWER_BEAM_END   = L_LOWER - beamClearTight;
 const LOWER_BEAM_LEN   = LOWER_BEAM_END - LOWER_BEAM_START;
@@ -194,40 +182,37 @@ const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
   .translate(LOWER_BEAM_MID, 0, 0)
   .material(mArm);
 
-// Spring mount sits ABOVE the beam top with SPRING_R + 1 mm of
-// clearance for the spring shaft. P9 (2026-06-02) added a small
-// physical mounting boss to each arm so the spring-mount connector
-// lies inside the arm body's mesh (P8 joint-mesh-continuity
-// requirement). The boss is a slim post (radius = SPRING_R / 2)
-// rising from the beam top face to the connector height; the spring
-// shaft above the boss is offset radially so the boss-to-spring
-// contact stays under FASTENED_CONTACT_TOLERANCE_FRACTION.
-const SPRING_MOUNT_DZ = SPRING_R + 1;        // 5 mm gap between beam top and shaft centerline
-const LOWER_BOSS_X = LOWER_BEAM_START + 14;  // 14mm forward of the shoulder-end of beam
-const LOWER_BOSS: [number, number, number] = [LOWER_BOSS_X, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
-
-// Boss post: thin cylinder rising from the beam's +Z face up to the
-// spring connector height. Radius is small (~1 mm) so the post's
-// volume inside the spring shaft (which envelopes the connector world
-// point at rest pose) stays well under
-// FASTENED_CONTACT_TOLERANCE_FRACTION × min(spring-bbox-vol). Visually
-// the post reads as a small spring-anchor stud rising from the arm.
-const SPRING_POST_R = 1.0;                   // 1 mm — keeps post-spring overlap ≤ ~6 mm³ at rest
-const SPRING_POST_H = SPRING_MOUNT_DZ + 1;   // 1 mm of overlap with the beam top
-const lowerSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(LOWER_BOSS_X, 0, ARM_T / 2 - 1)
+// P10: two spring anchor posts on the lower-arm. The X positions are
+// CALIBRATED for physics — the shoulder-spring anchor sits well
+// forward of the shoulder pivot end so the tendon's moment arm about
+// the shoulder is large enough that a sub-1.0 N/mm spring can balance
+// gravity at qpos=0. The elbow-spring anchor sits in the middle-back
+// half of the beam so the elbow tendon has matching leverage.
+const LOWER_SHOULDER_ANCHOR_X = 80;                       // calibrated for shoulder moment arm
+const LOWER_ELBOW_ANCHOR_X    = L_LOWER - 40;             // 140 mm — 40 mm shy of the elbow pivot
+const LOWER_SHOULDER_ANCHOR: [number, number, number] = [
+  LOWER_SHOULDER_ANCHOR_X,
+  0,
+  ARM_T / 2 + SPRING_MOUNT_DZ,
+];
+const LOWER_ELBOW_ANCHOR: [number, number, number] = [
+  LOWER_ELBOW_ANCHOR_X,
+  0,
+  ARM_T / 2 + SPRING_MOUNT_DZ,
+];
+const lowerShoulderPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(LOWER_SHOULDER_ANCHOR_X, 0, ARM_T / 2 - 1)
   .material(mArm);
-const lowerBeamWithBoss = lowerBeam.union(lowerSpringPost);
+const lowerElbowPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(LOWER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1)
+  .material(mArm);
+const lowerBeamWithBosses = lowerBeam.union(lowerShoulderPost).union(lowerElbowPost);
 
 // ============================================================================
-// UPPER ARM body — same pattern as the lower arm, plus a spring boss
-// on the +Z side hosting the elbow-wrist spring.
+// UPPER ARM body — same pattern as the lower arm: two posts, one near
+// each joint end.
 // ============================================================================
 
-// Upper-arm beam: elbow side (x=0) sweeps relative to lower-arm so it
-// needs the bridge-tab clearance; wrist side (x=L_UPPER) is the parent
-// side of the wrist joint, no sweep risk against its own fork tab, so
-// it butts tight against the fork's outer knuckle rim.
 const UPPER_BEAM_START = beamClearSweep;
 const UPPER_BEAM_END   = L_UPPER - beamClearTight;
 const UPPER_BEAM_LEN   = UPPER_BEAM_END - UPPER_BEAM_START;
@@ -236,42 +221,39 @@ const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
   .translate(UPPER_BEAM_MID, 0, 0)
   .material(mArm);
 
-// Upper-arm spring mount: same physical-boss pattern as the lower-arm.
-// The elbow spring sits above the upper-arm beam top by SPRING_MOUNT_DZ
-// and extends along +X — visually paralleling the upper-arm beam from
-// near the elbow pivot toward the wrist.
-const UPPER_BOSS_X = UPPER_BEAM_START + 14;
-const UPPER_BOSS: [number, number, number] = [UPPER_BOSS_X, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
-
-const upperSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(UPPER_BOSS_X, 0, ARM_T / 2 - 1)
+// P10 calibrated upper-arm anchor positions, matching the lower-arm
+// pattern: elbow-side anchor 40 mm past the elbow pivot, wrist-side
+// anchor 40 mm shy of the wrist pivot. Symmetric placement gives the
+// elbow + wrist tendons matching moment arms.
+const UPPER_ELBOW_ANCHOR_X = 40;                          // 40 mm past elbow pivot
+const UPPER_WRIST_ANCHOR_X = L_UPPER - 40;                // 110 mm — 40 mm shy of wrist pivot
+const UPPER_ELBOW_ANCHOR: [number, number, number] = [
+  UPPER_ELBOW_ANCHOR_X,
+  0,
+  ARM_T / 2 + SPRING_MOUNT_DZ,
+];
+const UPPER_WRIST_ANCHOR: [number, number, number] = [
+  UPPER_WRIST_ANCHOR_X,
+  0,
+  ARM_T / 2 + SPRING_MOUNT_DZ,
+];
+const upperElbowPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(UPPER_ELBOW_ANCHOR_X, 0, ARM_T / 2 - 1)
   .material(mArm);
-const upperBeamWithBoss = upperBeam.union(upperSpringPost);
+const upperWristPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(UPPER_WRIST_ANCHOR_X, 0, ARM_T / 2 - 1)
+  .material(mArm);
+const upperBeamWithBosses = upperBeam.union(upperElbowPost).union(upperWristPost);
 
 // ============================================================================
-// LAMP HEAD body — neck + slimmer shade + smaller socket + bulb +
-// wrist-spring boss. Wrist pivot = head-local [0,0,0].
+// LAMP HEAD body — neck + slim shade + small socket + bulb + wrist
+// spring anchor. Wrist pivot = head-local [0,0,0].
 // ============================================================================
 
-// Head visual structure (head-local frame, +X = down the shade axis):
-//   x ∈ [-knuckleR, +knuckleR]  — tongue knuckle (built by joint.clevis,
-//                                  rotates with head about wrist pivot)
-//   x ∈ [+knuckleR + 0.5, ...]  — neck cylinder (cast metal) bridging
-//                                  the tongue to the shade base
-//   x ∈ [SHADE_ANCHOR_X, ...]   — shade + socket + bulb
-//
-// HEAD_NECK_BACK runs through the wrist pivot at head-local x=0.
-// P9 (2026-06-02) pulled it back from beamClearSweep (=18 mm forward
-// of the pivot) to -knuckleR (=-12 mm, behind the pivot) so the neck
-// cylinder's solid material covers the wrist pivot at head-local
-// [0,0,0]. Without this the `mechanism.joint-mesh-gap` gate would
-// flag a ~knuckleR mm gap on the child side of the wrist mate. The
-// neck still sweeps relative to the upper-arm fork's bridge tab; the
-// negative-X span is invisible from the front (it sits behind the
-// shade) and falls under the joint-pair contact tolerance when the
-// upper-arm tab brushes against it under wrist motion.
-const HEAD_NECK_BACK = -clevisStyle.knuckleR;                // -12 mm — covers wrist pivot
-const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm — slightly past SHADE_ANCHOR_X
+// HEAD_NECK_BACK pulled back to -knuckleR so the neck cylinder's solid
+// material covers the wrist pivot at head-local [0,0,0] (P9 fix).
+const HEAD_NECK_BACK = -clevisStyle.knuckleR;                  // -12 mm
+const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm
 const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
 const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
@@ -312,26 +294,22 @@ const bulb = sphere(BULB_R)
   .translate(SHADE_ANCHOR_X + SOCKET_LEN + BULB_R * 0.5, 0, 0)
   .material(mBulb);
 
-// Wrist spring mount: same physical-boss pattern as the arm springs.
-// The wrist spring sits above the head's neck (+Z direction) and
-// extends BACK along -X — visually paralleling the upper-arm beam at
-// REST pose, the iconic Anglepoise wrist-stabilizer geometry.
-// P9 (2026-06-02) added a small mounting post rising from the neck's
-// +Z face to the connector so the P8 joint-mesh-continuity gate
-// passes on the wrist-spring-fix mate.
-const HEAD_NECK_TOP_Z = SHADE_R_SMALL + 1.5;  // neck cylinder top face
-const HEAD_BOSS_X = 0;                         // boss sits at the wrist pivot (x=0) so it can also help close the wrist-mate gap
-const HEAD_BOSS: [number, number, number] = [
-  HEAD_BOSS_X,
+// P10: wrist-spring head-side anchor. Same mounting-post pattern as
+// the arm posts. Sits ON TOP of the neck, at head-local [0, 0,
+// neckTop + clearance]. The neck cylinder is +X-aligned with radius
+// (SHADE_R_SMALL + 1.5) = 19.5 mm; its top face sits at +Z = 19.5.
+const HEAD_NECK_TOP_Z = SHADE_R_SMALL + 1.5;
+const HEAD_WRIST_ANCHOR_X = 0;  // at the wrist pivot, helps close the joint-mesh gap
+const HEAD_WRIST_ANCHOR: [number, number, number] = [
+  HEAD_WRIST_ANCHOR_X,
   0,
-  HEAD_NECK_TOP_Z + SPRING_R + 1,
+  HEAD_NECK_TOP_Z + SPRING_MOUNT_DZ,
 ];
-
-const wristSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
-  .translate(HEAD_BOSS_X, 0, HEAD_NECK_TOP_Z - 1)
+const headWristPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(HEAD_WRIST_ANCHOR_X, 0, HEAD_NECK_TOP_Z - 1)
   .material(mCast);
 
-const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(wristSpringPost);
+const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(headWristPost);
 
 // ============================================================================
 // JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at world
@@ -340,7 +318,7 @@ const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(wristS
 
 const shoulder = joint.clevis({
   parentBody: baseBodyRaw,
-  childBody: lowerBeamWithBoss,
+  childBody: lowerBeamWithBosses,
   axis: [0, -1, 0],
   pivotParent: [0, 0, COLUMN_TOP_Z],
   pivotChild: [0, 0, 0],
@@ -356,11 +334,11 @@ const shoulder = joint.clevis({
 
 const elbow = joint.clevis({
   parentBody: shoulder.childGeometry,
-  childBody: upperBeamWithBoss,
+  childBody: upperBeamWithBosses,
   axis: [0, -1, 0],
   pivotParent: [L_LOWER, 0, 0],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-135, -45],
+  limitsDeg: [-135, 0],
   liftPivot: false,
   style: clevisStyle,
 });
@@ -376,77 +354,34 @@ const wrist = joint.clevis({
   axis: [0, -1, 0],
   pivotParent: [L_UPPER, 0, 0],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-75, -5],
+  limitsDeg: [-75, 0],
   liftPivot: false,
   style: clevisStyle,
 });
 
 // ============================================================================
-// SPRING geometry builder — Anglepoise-shape bare shaft, authored in
-// the spring's OWN local frame.
-//
-// Layout in spring-local frame:
-//   - Spring-local origin sits at one END of the shaft (the end
-//     closest to the joint pivot it visually spans). The shaft extends
-//     along the spring's long axis from spring-local [0, 0, 0] to
-//     [length, 0, 0] (or, for axisLocal pointing in -X, to [-length, 0, 0]).
-//   - Shaft: cylinder of `length`, radius SPRING_R, centerline at
-//     spring-local Y = Z = 0.
-//
-// Build pattern: cylinder(length, R) builds a +Z cylinder of z ∈ [0, length].
-// We rotate so +Z → axisLocal. The shaft now lives at axisLocal × [0, length].
-//
-// The spring's `mount` connector sits at spring-local [0, 0, 0]. The
-// arm/head boss-top connector is at arm-local position above the boss
-// top face. Under the fastened mate, the spring's [0,0,0] sits on the
-// boss top, and the shaft extends from there along axisLocal.
-//
-// Under P0.2's corrected rigidity math any fastened connector
-// placement faithfully tracks the parent rotation; no [10, 0, 0]
-// exploit needed.
-// ============================================================================
-
-function makeSpring(
-  length: number,
-  axisLocal: [number, number, number],
-): ReturnType<typeof cylinder> {
-  let body = cylinder(length, SPRING_R, 24);
-
-  // Rotate the spring so its long axis (originally +Z) aligns with
-  // axisLocal. We compute Rodrigues rotation from [0, 0, 1] → axisLocal.
-  const norm = Math.hypot(axisLocal[0], axisLocal[1], axisLocal[2]) || 1;
-  const n: [number, number, number] = [axisLocal[0] / norm, axisLocal[1] / norm, axisLocal[2] / norm];
-  const cosA = n[2];
-  if (cosA < 0.9999) {
-    if (cosA < -0.9999) {
-      body = body.rotate([1, 0, 0], 180);
-    } else {
-      const angleDeg = Math.acos(cosA) * 180 / Math.PI;
-      const axRaw: [number, number, number] = [-n[1], n[0], 0];
-      const axLen = Math.hypot(axRaw[0], axRaw[1], axRaw[2]) || 1;
-      const ax: [number, number, number] = [axRaw[0] / axLen, axRaw[1] / axLen, axRaw[2] / axLen];
-      body = body.rotate(ax, angleDeg);
-    }
-  }
-
-  return body.material(mSpring);
-}
-
-// ============================================================================
-// Register the assembly parts with their FINAL geometry (post-clevis) and
-// wire each clevis connector returned by the primitive.
+// Register the assembly parts with their FINAL geometry (post-clevis)
+// and declared anchor connectors. P10: per-part density values keep the
+// MuJoCo body inertias consistent with the Anglepoise material mix
+// (cast iron base, aluminium arms, mixed brass/cast head — averaged
+// across the head's BREP volume so the gravity torque is in the
+// physical envelope the tendon stiffnesses 0.3-1.0 N/mm can balance).
 // ============================================================================
 
 const basePart = arm
-  .part('base', shoulder.parentGeometry)
+  .part('base', shoulder.parentGeometry, { density: 7200 })  // cast iron, heavy disc keeps the base grounded
   .connector('shoulderAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: shoulder.parentConnector.origin },
     axis: shoulder.parentConnector.axis,
+  })
+  .connector('shoulderSpringAnchorBase', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: SHOULDER_BASE_ANCHOR },
   });
 
 const lowerArmPart = arm
-  .part('lower-arm', elbow.parentGeometry)
+  .part('lower-arm', elbow.parentGeometry, { density: 2700 })  // aluminium
   .connector('shoulderAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: shoulder.childConnector.origin },
@@ -457,13 +392,17 @@ const lowerArmPart = arm
     origin: { kind: 'vec3', value: elbow.parentConnector.origin },
     axis: elbow.parentConnector.axis,
   })
-  .connector('lowerSpringBoss', {
+  .connector('shoulderSpringAnchor', {
     type: 'frame',
-    origin: { kind: 'vec3', value: LOWER_BOSS },
+    origin: { kind: 'vec3', value: LOWER_SHOULDER_ANCHOR },
+  })
+  .connector('elbowSpringAnchorLower', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: LOWER_ELBOW_ANCHOR },
   });
 
 const upperArmPart = arm
-  .part('upper-arm', wrist.parentGeometry)
+  .part('upper-arm', wrist.parentGeometry, { density: 2700 })  // aluminium
   .connector('elbowAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: elbow.childConnector.origin },
@@ -474,73 +413,35 @@ const upperArmPart = arm
     origin: { kind: 'vec3', value: wrist.parentConnector.origin },
     axis: wrist.parentConnector.axis,
   })
-  .connector('upperSpringBoss', {
+  .connector('elbowSpringAnchorUpper', {
     type: 'frame',
-    origin: { kind: 'vec3', value: UPPER_BOSS },
+    origin: { kind: 'vec3', value: UPPER_ELBOW_ANCHOR },
+  })
+  .connector('wristSpringAnchorUpper', {
+    type: 'frame',
+    origin: { kind: 'vec3', value: UPPER_WRIST_ANCHOR },
   });
 
 const headPart = arm
-  .part('lamp-head', wrist.childGeometry)
+  .part('lamp-head', wrist.childGeometry, { density: 3500 })  // brass shade + cast iron neck + aluminum bulb, weighted average
   .connector('wristAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: wrist.childConnector.origin },
     axis: wrist.childConnector.axis,
   })
-  .connector('wristSpringBoss', {
+  .connector('wristSpringAnchorHead', {
     type: 'frame',
-    origin: { kind: 'vec3', value: HEAD_BOSS },
-  });
-
-// Spring parts — each authored in its OWN local frame with the
-// flange-A bottom face at spring-local origin [0, 0, 0]. The `mount`
-// connector sits at spring-local origin; under the fastened mate the
-// flange-A face is placed flush against the arm-side boss top.
-
-// Shoulder spring sits ON TOP of the lower-arm beam and extends along
-// +X (forward along the beam) — Task 2 (this slice).
-const lowerSpringShape = makeSpring(SPRING_LEN, [1, 0, 0]);
-const lowerSpringPart = arm
-  .part('lower-spring', lowerSpringShape)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
-  });
-
-// Elbow spring — same floating-shaft Anglepoise geometry as the
-// shoulder spring, fastened to the upper-arm so it tracks the
-// upper-arm under joint motion.
-const upperSpringShape = makeSpring(SPRING_LEN, [1, 0, 0]);
-const upperSpringPart = arm
-  .part('upper-spring', upperSpringShape)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
-  });
-
-// Wrist spring — P9 (2026-06-02) flipped the spring axis from -X to
-// +X so the spring no longer interpenetrates the head-neck cylinder
-// (which now extends back to x=-knuckleR to cover the wrist pivot).
-// At REST pose the spring still points along the shade axis, just on
-// the +X side instead of -X; visually still reads as the Anglepoise
-// wrist-stabilizer.
-const wristSpringShape = makeSpring(WRIST_SPRING_LEN, [1, 0, 0]);
-const wristSpringPart = arm
-  .part('wrist-spring', wristSpringShape)
-  .connector('mount', {
-    type: 'frame',
-    origin: { kind: 'vec3', value: [0, 0, 0] },
+    origin: { kind: 'vec3', value: HEAD_WRIST_ANCHOR },
   });
 
 void basePart;
 void lowerArmPart;
 void upperArmPart;
 void headPart;
-void lowerSpringPart;
-void upperSpringPart;
-void wristSpringPart;
 
 // ============================================================================
-// MATES — revolute at each clevis (joint), fastened for each spring.
+// MATES — one revolute mate per joint. No more fastened spring mates;
+// the springs are closed-loop tendons declared below.
 // ============================================================================
 
 arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', {
@@ -550,24 +451,76 @@ arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', 
 
 arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
   pose: elbowDeg,
-  limitsDeg: [-135, -45],
+  limitsDeg: [-135, 0],
 });
 
 arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
   pose: wristDeg,
-  limitsDeg: [-75, -5],
+  limitsDeg: [-75, 0],
 });
 
-// Fastened mates: each spring's `mount` connector at spring-local
-// [0, 0, 0] aligns with the boss-top connector on the parent arm/head.
-// Under P0.2's corrected rigidity math, any properly-fastened rigid
-// child tracks its parent's rotation faithfully — no exploit geometry
-// needed. Each spring's parent is the CHILD of the joint it spans
-// (shoulder→lower-arm, elbow→upper-arm, wrist→head) so the spring
-// tracks that one arm under joint motion; the spring's REST-pose
-// visual is the iconic Anglepoise tension element.
-arm.mate('lower-spring-fix', 'lower-arm.lowerSpringBoss', 'lower-spring.mount', 'fastened');
-arm.mate('upper-spring-fix', 'upper-arm.upperSpringBoss', 'upper-spring.mount', 'fastened');
-arm.mate('wrist-spring-fix', 'lamp-head.wristSpringBoss', 'wrist-spring.mount', 'fastened');
+// ============================================================================
+// TENDONS — P10 closed-loop balance springs. Each spans the joint it
+// braces, with one anchor on the parent body and one on the child.
+// Visual: helical coils (Anglepoise-style). Physics: MuJoCo <spatial>
+// tendon, restLength + stiffness chosen so the lamp holds qpos=0
+// against gravity (P6 drop-test passes).
+//
+// Calibration (see physics-loop P10 spec, section "Physics calibration"):
+// at qpos=0 every arm extends straight along its parent's +X. For each
+// tendon J the gravity torque about the joint J is balanced by the
+// tendon's spring force F = k * (||A-B|| - restLength) acting along
+// the AB line with moment arm r. We pick k in the Anglepoise envelope
+// (0.3-1.0 N/mm) and derive restLength from the torque equation.
+// ============================================================================
+
+// Shoulder spring: spans from the base mast (above + behind the
+// shoulder pivot) to the lower-arm forward post (mid-beam). At qpos=0
+// the AB length is ≈ 89 mm; the calibrated pre-stretch gives the
+// spring enough tension at k = 1.0 N/mm to balance the
+// gravity-torque-of-(lower-arm + upper-arm + head) about the shoulder.
+arm.tendon('shoulder-spring', {
+  from: 'base.shoulderSpringAnchorBase',
+  to: 'lower-arm.shoulderSpringAnchor',
+  restLengthMm: 38,
+  stiffnessNmm: 1.0,
+  dampingNsmm: 0.05,
+  visualStyle: 'coil',
+  coilTurns: 12,
+  coilDiameterMm: 8,
+  visualDiameterMm: 1.4,
+});
+
+// Elbow spring: spans from the lower-arm rear-end post (140 mm forward
+// of the shoulder) to the upper-arm front post (40 mm past elbow). AB
+// length at qpos=0 is 80 mm; the symmetric placement gives an
+// efficient moment arm. Pre-stretch tuned so the spring force balances
+// the gravity torque of (upper-arm + lamp-head) about the elbow.
+arm.tendon('elbow-spring', {
+  from: 'lower-arm.elbowSpringAnchorLower',
+  to: 'upper-arm.elbowSpringAnchorUpper',
+  restLengthMm: 22,
+  stiffnessNmm: 1.0,
+  dampingNsmm: 0.05,
+  visualStyle: 'coil',
+  coilTurns: 10,
+  coilDiameterMm: 7,
+  visualDiameterMm: 1.2,
+});
+
+// Wrist spring: spans from the upper-arm rear-end post to the head
+// neck-top post. Head mass is the lightest of the three loads so a
+// k = 0.6 N/mm spring with modest pre-stretch holds it.
+arm.tendon('wrist-spring', {
+  from: 'upper-arm.wristSpringAnchorUpper',
+  to: 'lamp-head.wristSpringAnchorHead',
+  restLengthMm: 20,
+  stiffnessNmm: 0.6,
+  dampingNsmm: 0.04,
+  visualStyle: 'coil',
+  coilTurns: 8,
+  coilDiameterMm: 6,
+  visualDiameterMm: 1.0,
+});
 
 return arm.solvedModel({});

@@ -17,6 +17,7 @@ import { transformFeatureMesh } from './transformMesh';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { generatePlanarUVs } from './planarUv';
+import { helixPolyline } from '../mates/helixPolyline';
 
 /** Attach bbox-planar UVs to every face in-place (idempotent — pre-existing
  *  uv arrays are preserved). Called after meshing so any consumer of
@@ -238,6 +239,10 @@ interface AssemblyLikeForTendons {
     readonly from: string;
     readonly to: string;
     readonly visualDiameterMm: number;
+    /** P10: undefined on pre-P10 callers (fallback to 'line'). */
+    readonly visualStyle?: 'line' | 'coil';
+    readonly coilTurns?: number;
+    readonly coilDiameterMm?: number;
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -354,6 +359,130 @@ function buildCylinderFaceWorld(
 }
 
 /**
+ * P10 — bake a TUBE around the helix polyline produced by
+ * `helixPolyline(...)`. Same WORLD-FRAME emission pattern as
+ * `buildCylinderFaceWorld` so the renderer hangs the coil geometry off
+ * an ordinary feature group, no special path.
+ *
+ * Tube construction:
+ *   1. Sample the helix polyline (`turns * 16 + 1` points).
+ *   2. For each interior point, compute the tangent (forward difference
+ *      with central averaging) and an orthonormal twist-frame basis
+ *      (u, v) ⊥ tangent. The first ring uses worldZ × tangent (or
+ *      worldX as fallback); each subsequent ring's u is parallel-
+ *      transported along the polyline to avoid twist artifacts on
+ *      curved sweeps. This is the same parallel-transport pattern
+ *      `THREE.TubeGeometry` uses internally.
+ *   3. Emit `radialSegments` vertices per ring; connect successive
+ *      rings with two triangles per radial quad.
+ *
+ * `wireDiameterMm` is the WIRE diameter (the tube sweep radius is half).
+ */
+function buildHelixTubeMesh(
+  fromWorld: Vec3,
+  toWorld: Vec3,
+  coilTurns: number,
+  coilDiameterMm: number,
+  wireDiameterMm: number,
+  radialSegments = 8,
+): FaceGeometry | null {
+  if (wireDiameterMm <= 0 || coilDiameterMm <= 0 || coilTurns < 1) return null;
+  const polyline = helixPolyline(fromWorld, toWorld, coilTurns, coilDiameterMm);
+  if (polyline.length < 2) return null;
+  const ringCount = polyline.length;
+  const tubeR = wireDiameterMm * 0.5;
+
+  // Per-ring tangents (central differences interior; one-sided at ends).
+  const tangents: Vec3[] = new Array(ringCount);
+  for (let i = 0; i < ringCount; i++) {
+    const prev = polyline[Math.max(0, i - 1)];
+    const next = polyline[Math.min(ringCount - 1, i + 1)];
+    let tx = next[0] - prev[0];
+    let ty = next[1] - prev[1];
+    let tz = next[2] - prev[2];
+    const len = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1;
+    tx /= len; ty /= len; tz /= len;
+    tangents[i] = [tx, ty, tz];
+  }
+
+  // Parallel-transport frame: pick an initial up vector ⊥ tangents[0],
+  // then rotate it forward at each step to stay perpendicular.
+  const seed: Vec3 = Math.abs(tangents[0][2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+  // initial u = normalize(seed × tangent[0])
+  let ux = seed[1] * tangents[0][2] - seed[2] * tangents[0][1];
+  let uy = seed[2] * tangents[0][0] - seed[0] * tangents[0][2];
+  let uz = seed[0] * tangents[0][1] - seed[1] * tangents[0][0];
+  const uLen0 = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+  ux /= uLen0; uy /= uLen0; uz /= uLen0;
+  // v = tangent × u
+  let vx = tangents[0][1] * uz - tangents[0][2] * uy;
+  let vy = tangents[0][2] * ux - tangents[0][0] * uz;
+  let vz = tangents[0][0] * uy - tangents[0][1] * ux;
+
+  const vertCount = ringCount * radialSegments;
+  const vertices = new Float32Array(vertCount * 3);
+  const normals = new Float32Array(vertCount * 3);
+
+  for (let i = 0; i < ringCount; i++) {
+    const center = polyline[i];
+    if (i > 0) {
+      // Parallel-transport u, v to stay ⊥ tangent[i]: subtract the
+      // component along the new tangent, renormalize, then rebuild v.
+      const tDot = ux * tangents[i][0] + uy * tangents[i][1] + uz * tangents[i][2];
+      ux -= tangents[i][0] * tDot;
+      uy -= tangents[i][1] * tDot;
+      uz -= tangents[i][2] * tDot;
+      const l = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+      ux /= l; uy /= l; uz /= l;
+      vx = tangents[i][1] * uz - tangents[i][2] * uy;
+      vy = tangents[i][2] * ux - tangents[i][0] * uz;
+      vz = tangents[i][0] * uy - tangents[i][1] * ux;
+    }
+    for (let s = 0; s < radialSegments; s++) {
+      const theta = (s / radialSegments) * 2 * Math.PI;
+      const cosT = Math.cos(theta);
+      const sinT = Math.sin(theta);
+      const nx = ux * cosT + vx * sinT;
+      const ny = uy * cosT + vy * sinT;
+      const nz = uz * cosT + vz * sinT;
+      const vi = (i * radialSegments + s) * 3;
+      vertices[vi + 0] = center[0] + nx * tubeR;
+      vertices[vi + 1] = center[1] + ny * tubeR;
+      vertices[vi + 2] = center[2] + nz * tubeR;
+      normals[vi + 0] = nx;
+      normals[vi + 1] = ny;
+      normals[vi + 2] = nz;
+    }
+  }
+
+  // Two triangles per (ring i → ring i+1, radial s → s+1) quad.
+  const quadCount = (ringCount - 1) * radialSegments;
+  const indices = new Uint32Array(quadCount * 6);
+  let idx = 0;
+  for (let i = 0; i < ringCount - 1; i++) {
+    for (let s = 0; s < radialSegments; s++) {
+      const sNext = (s + 1) % radialSegments;
+      const a = i * radialSegments + s;
+      const b = i * radialSegments + sNext;
+      const c = (i + 1) * radialSegments + s;
+      const d = (i + 1) * radialSegments + sNext;
+      indices[idx++] = a;
+      indices[idx++] = c;
+      indices[idx++] = b;
+      indices[idx++] = b;
+      indices[idx++] = c;
+      indices[idx++] = d;
+    }
+  }
+  return {
+    vertices,
+    indices,
+    normals,
+    faceId: 0,
+  };
+}
+
+/**
  * P7 — read the Assembly's declared tendons (if any) and pack them into
  * synthetic FeatureMesh records the renderer can hang cylinder geometry
  * off. World-frame triangle mesh is baked HERE so the browser renderer
@@ -427,7 +556,17 @@ function collectTendonMeshes(
     if (fromT === undefined || toT === undefined) continue;
     const fromWorld = applyMat4ToPoint(fromT, fromOrigin);
     const toWorld = applyMat4ToPoint(toT, toOrigin);
-    const face = buildCylinderFaceWorld(fromWorld, toWorld, t.visualDiameterMm);
+    // P10: coil tendons sweep an 8-facet tube along the helix polyline;
+    // line tendons fall through to the existing PR #368 cylinder path.
+    const style = t.visualStyle ?? 'line';
+    let face: FaceGeometry | null;
+    if (style === 'coil') {
+      const turns = t.coilTurns ?? 10;
+      const coilDiameter = t.coilDiameterMm ?? 7;
+      face = buildHelixTubeMesh(fromWorld, toWorld, turns, coilDiameter, t.visualDiameterMm);
+    } else {
+      face = buildCylinderFaceWorld(fromWorld, toWorld, t.visualDiameterMm);
+    }
     if (face === null) continue;
     const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
     // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.

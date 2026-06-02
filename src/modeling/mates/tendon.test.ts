@@ -45,6 +45,72 @@ describe('arm.tendon(name, opts) — capture validation', () => {
     expect(tendons[0].stiffnessNmm).toBe(0.5);
     expect(tendons[0].dampingNsmm).toBe(0); // default
     expect(tendons[0].visualDiameterMm).toBe(3); // default
+    // P10 defaults: visual style 'line' (back-compat) + coil dims that
+    // satisfy the coil > 2 * wire validator if the user later switches.
+    expect(tendons[0].visualStyle).toBe('line');
+    expect(tendons[0].coilTurns).toBe(10);
+    expect(tendons[0].coilDiameterMm).toBe(7);
+  });
+
+  it('records visualStyle: coil + custom coil dimensions (P10)', () => {
+    const arm = makeArm();
+    arm.tendon('coil-spring', {
+      from: 'a.topA',
+      to: 'b.topB',
+      restLengthMm: 30,
+      stiffnessNmm: 0.6,
+      visualStyle: 'coil',
+      coilTurns: 12,
+      coilDiameterMm: 8,
+      visualDiameterMm: 1.2,
+    });
+    const t = arm.__tendons()[0];
+    expect(t.visualStyle).toBe('coil');
+    expect(t.coilTurns).toBe(12);
+    expect(t.coilDiameterMm).toBe(8);
+    expect(t.visualDiameterMm).toBe(1.2);
+  });
+
+  it('rejects coilTurns < 1 (P10)', () => {
+    const arm = makeArm();
+    expect(() =>
+      arm.tendon('s', {
+        from: 'a.topA',
+        to: 'b.topB',
+        restLengthMm: 30,
+        stiffnessNmm: 0.5,
+        visualStyle: 'coil',
+        coilTurns: 0,
+      }),
+    ).toThrow(/assembly\.tendon\.invalid-coil-turns/);
+  });
+
+  it('rejects coilDiameterMm <= 2 * visualDiameterMm when visualStyle is coil (P10)', () => {
+    const arm = makeArm();
+    expect(() =>
+      arm.tendon('s', {
+        from: 'a.topA',
+        to: 'b.topB',
+        restLengthMm: 30,
+        stiffnessNmm: 0.5,
+        visualStyle: 'coil',
+        coilDiameterMm: 4,
+        visualDiameterMm: 2.5, // 4 <= 2*2.5 = 5 → reject
+      }),
+    ).toThrow(/assembly\.tendon\.invalid-coil-diameter/);
+  });
+
+  it('rejects unknown visualStyle (P10)', () => {
+    const arm = makeArm();
+    expect(() =>
+      arm.tendon('s', {
+        from: 'a.topA',
+        to: 'b.topB',
+        restLengthMm: 30,
+        stiffnessNmm: 0.5,
+        visualStyle: 'helix' as unknown as 'line',
+      }),
+    ).toThrow(/assembly\.tendon\.invalid-visual-style/);
   });
 
   it('honors explicit damping + visualDiameter', () => {
