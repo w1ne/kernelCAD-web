@@ -152,4 +152,125 @@ describe('assemblyToMjcf', () => {
 
         await expect(assemblyToMjcf(arm)).rejects.toThrow(/multiple parents|cycle/);
     }, 60000);
+
+    it('P7: emits <site> + <tendon><spatial> and tendon length matches site-to-site distance', async () => {
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createApi({ session });
+        const arm = kcad.assembly('tendon-roundtrip');
+
+        // Two boxes joined by a revolute joint; one tendon between
+        // anchor connectors on each body.
+        const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
+        const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
+        const j = kcad.joint.clevis({
+            parentBody: baseBody,
+            childBody: armBody,
+            axis: 'Y',
+            pivotParent: [0, 0, 15],
+            pivotChild: [0, 0, 0],
+            limitsDeg: [-45, 45],
+        });
+        arm
+            .part('base', j.parentGeometry)
+            .connector('hinge', {
+                type: 'axis',
+                origin: { kind: 'vec3', value: j.parentConnector.origin },
+                axis: j.parentConnector.axis,
+            })
+            // Anchor for the tendon — 20 mm above the pivot, parent-local.
+            .connector('anchor', {
+                type: 'frame',
+                origin: { kind: 'vec3', value: [0, 0, 35] },
+            });
+        arm
+            .part('lower-arm', j.childGeometry)
+            .connector('hinge', {
+                type: 'axis',
+                origin: { kind: 'vec3', value: j.childConnector.origin },
+                axis: j.childConnector.axis,
+            })
+            // Anchor for the tendon — 30 mm forward of the pivot, child-local.
+            .connector('anchor', {
+                type: 'frame',
+                origin: { kind: 'vec3', value: [30, 0, 0] },
+            });
+        arm.mate('elbow', 'base.hinge', 'lower-arm.hinge', 'revolute', {
+            limitsDeg: [-45, 45],
+        });
+        arm.tendon('spring', {
+            from: 'base.anchor',
+            to: 'lower-arm.anchor',
+            restLengthMm: 50,
+            stiffnessNmm: 0.5,
+            dampingNsmm: 0.01,
+        });
+
+        const { mjcf } = await assemblyToMjcf(arm);
+
+        // Sites emitted in the right places.
+        expect(mjcf).toMatch(/<site name="spring__from"/);
+        expect(mjcf).toMatch(/<site name="spring__to"/);
+        // Spatial tendon block emitted.
+        expect(mjcf).toMatch(/<tendon>/);
+        expect(mjcf).toMatch(/<spatial name="spring"/);
+        // Unit conversions: restLengthMm 50 → springlength 0.05;
+        // stiffnessNmm 0.5 → 500 N/m; dampingNsmm 0.01 → 10 N·s/m.
+        expect(mjcf).toMatch(/springlength="0\.050000"/);
+        expect(mjcf).toMatch(/stiffness="500\.000000"/);
+        expect(mjcf).toMatch(/damping="10\.000000"/);
+
+        // Round-trip through MuJoCo: at rest pose (qpos=0), the model
+        // should have exactly one tendon and ten_length matching the
+        // site-to-site Euclidean distance in world frame.
+        //
+        // Site 'spring__from' world pos: parent-local [0, 0, 35] with the
+        //   base body at pos [0, 0, -15] m? No — for this assembly, root
+        //   bodies use part.at, which is undefined here (j.parentGeometry
+        //   sits at its CAD-local origin). Let's check ten_length is
+        //   POSITIVE and FINITE — the exact value depends on FK details
+        //   we don't reproduce inline. We DO assert sites are 2 in number
+        //   and ten_length is finite at the world-frame distance the
+        //   model computes itself.
+        const mujoco = (await loadMujocoInNode()) as {
+            MjModel: { from_xml_string: (s: string) => unknown };
+            MjData: new (m: unknown) => unknown;
+            mj_forward: (m: unknown, d: unknown) => void;
+        };
+        const model = mujoco.MjModel.from_xml_string(mjcf);
+        const data = new mujoco.MjData(model);
+        try {
+            mujoco.mj_forward(model, data);
+            const m = model as { ntendon: number; nsite: number };
+            expect(m.ntendon).toBe(1);
+            expect(m.nsite).toBe(2);
+            // Compare to MuJoCo's own site_xpos[] to validate the
+            // tendon segment length is consistent.
+            const siteXpos = (data as { site_xpos: ArrayLike<number> }).site_xpos;
+            const dx = siteXpos[0] - siteXpos[3];
+            const dy = siteXpos[1] - siteXpos[4];
+            const dz = siteXpos[2] - siteXpos[5];
+            const expectedLen = Math.hypot(dx, dy, dz);
+            const tenLen = (data as { ten_length: ArrayLike<number> }).ten_length;
+            expect(tenLen.length).toBe(1);
+            expect(Math.abs(tenLen[0] - expectedLen)).toBeLessThan(1e-6);
+        } finally {
+            (data as { delete: () => void }).delete();
+            (model as { delete: () => void }).delete();
+        }
+    }, 60000);
+
+    it('P7: omits the <tendon> block entirely when no tendons declared', async () => {
+        await initOcct();
+        const session = new CaptureSession();
+        const kcad = createApi({ session });
+        const arm = kcad.assembly('no-tendons');
+
+        const a = kcad.box(20, 20, 20, true);
+        arm.part('a', a).connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+
+        const { mjcf } = await assemblyToMjcf(arm);
+        expect(mjcf).not.toMatch(/<tendon>/);
+        expect(mjcf).not.toMatch(/<site /);
+    }, 60000);
 });
