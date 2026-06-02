@@ -2063,6 +2063,7 @@ export class Assembly {
       sceneFeatureId,
       this.mates.length > 0 ? [...this.mates] : undefined,
       warnings,
+      this.tendons.length > 0 ? [...this.tendons] : undefined,
     );
   }
 }
