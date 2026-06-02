@@ -23,6 +23,7 @@ import { InteractionHandler } from "./viewer/controllers/InteractionHandler";
 import { SnapIndicator } from "./viewer/overlays/SnapIndicator";
 import { HighlightOverlay } from "./viewer/overlays/HighlightOverlay";
 import { SelectionOutline } from "./viewer/overlays/SelectionOutline";
+import { SceneBackground } from "./viewer/SceneBackground";
 
 // Constants
 export const SKETCH_FOV = 40;
@@ -51,7 +52,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setHoveredItemId
     } = useWorkbench();
 
-    const { setContextMenu } = useUI();
+    const { setContextMenu, viewportBackground } = useUI();
 
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
@@ -107,6 +108,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 }}
             >
                 <RendererSnapshotPublisher />
+                <SceneBackground mode={viewportBackground} />
 
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 20, 10]} intensity={0.7} />

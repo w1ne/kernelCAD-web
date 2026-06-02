@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { StudioLayoutMode } from '../../shared/types/layout';
-import type { ViewMode3D } from '../../shared/types/viewMode';
+import type { ViewMode3D, ViewportBackground } from '../../shared/types/viewMode';
 
 export interface UIContextType {
     viewMode: 'code' | 'gui';
@@ -9,6 +9,8 @@ export interface UIContextType {
     setLayoutMode: (mode: StudioLayoutMode) => void;
     viewMode3D: ViewMode3D;
     setViewMode3D: (mode: ViewMode3D) => void;
+    viewportBackground: ViewportBackground;
+    setViewportBackground: (mode: ViewportBackground) => void;
     activeDialog: string | null;
     setActiveDialog: (dialogId: string | null) => void;
     sidePanelVisible: boolean;
@@ -29,6 +31,7 @@ const STORAGE_KEYS = {
     viewMode: 'kernelcad:viewMode',
     layoutMode: 'kernelcad:layoutMode',
     viewMode3D: 'kernelcad:viewMode3D',
+    viewportBackground: 'kernelcad:viewportBackground',
     sidePanelVisible: 'kernelcad:sidePanelVisible',
 } as const;
 
@@ -56,10 +59,17 @@ function readStoredViewMode3D(): ViewMode3D {
     return raw === 'shadedWithEdges' || raw === 'wireframe' || raw === 'shaded' ? raw : 'shadedWithEdges';
 }
 
+function readStoredViewportBackground(): ViewportBackground {
+    if (typeof window === 'undefined') return 'dark';
+    const raw = window.localStorage.getItem(STORAGE_KEYS.viewportBackground);
+    return raw === 'light' || raw === 'checkered' || raw === 'dark' ? raw : 'dark';
+}
+
 export function UIProvider({ children }: { children: ReactNode }) {
     const [viewMode, setViewMode] = useState<'code' | 'gui'>(() => readStoredViewMode());
     const [layoutMode, setLayoutMode] = useState<StudioLayoutMode>(() => readStoredLayoutMode());
     const [viewMode3D, setViewMode3D] = useState<ViewMode3D>(() => readStoredViewMode3D());
+    const [viewportBackground, setViewportBackground] = useState<ViewportBackground>(() => readStoredViewportBackground());
     const [sidePanelVisible, setSidePanelVisible] = useState(() => readStoredSidePanelVisible());
     const [contextMenu, setContextMenu] = useState<{ visible: boolean; position: { x: number, y: number } | null; type: 'FACE' | 'EDGE' | 'VERTEX' | 'SKETCH' }>({
         visible: false,
@@ -121,6 +131,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
+        window.localStorage.setItem(STORAGE_KEYS.viewportBackground, viewportBackground);
+    }, [viewportBackground]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
         window.localStorage.setItem(STORAGE_KEYS.sidePanelVisible, String(sidePanelVisible));
     }, [sidePanelVisible]);
 
@@ -131,6 +146,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
         setLayoutMode,
         viewMode3D,
         setViewMode3D,
+        viewportBackground,
+        setViewportBackground,
         activeDialog,
         setActiveDialog,
         sidePanelVisible,
@@ -141,7 +158,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
         closePanel,
         contextMenu,
         setContextMenu,
-    }), [viewMode, layoutMode, viewMode3D, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
+    }), [viewMode, layoutMode, viewMode3D, viewportBackground, activeDialog, setActiveDialog, sidePanelVisible, toggleSidePanel, state.activePanels, openPanel, closePanel, contextMenu]);
 
     return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

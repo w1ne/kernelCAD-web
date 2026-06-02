@@ -12,3 +12,12 @@ export interface ViewModeConfig {
     icon: LucideIcon;
     description: string;
 }
+
+/**
+ * Viewport background modes for the Studio 3D view.
+ *   - `dark`       — opaque dark grey (default; preserves current behaviour).
+ *   - `light`      — opaque near-white surface.
+ *   - `checkered`  — alternating two-grey checker pattern (transparency-style),
+ *                    useful when judging silhouettes against a neutral pattern.
+ */
+export type ViewportBackground = 'dark' | 'light' | 'checkered';

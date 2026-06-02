@@ -1,9 +1,10 @@
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen } from 'lucide-react';
+import { Loader2, Download, FileDown, Undo2, Redo2, Box, Grid as GridIcon, Circle, FolderOpen, Moon, Sun, LayoutGrid } from 'lucide-react';
 import { exportSTEP, exportSTL } from '../../../shared/worker/geometryEngine';
 import { formatTooltip, SHORTCUT_HINTS } from '../../../shared/constants/shortcuts';
 import { useProject } from '../../context/ProjectContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
+import { useUI } from '../../context/UIContext';
 
 export function Header() {
     const { headerLeft, headerRight } = useStudioChrome();
@@ -11,6 +12,7 @@ export function Header() {
         viewMode3D, setViewMode3D,
         isComputing, code, commandManager, setActiveDialog
     } = useWorkbench();
+    const { viewportBackground, setViewportBackground } = useUI();
 
     const { activeProject } = useProject();
 
@@ -89,6 +91,37 @@ export function Header() {
                         aria-label="Shaded"
                     >
                         <Circle size={14} />
+                    </button>
+                </div>
+
+                {/* Viewport background switcher (dark / light / checkered) */}
+                <div className="flex bg-[#222] rounded p-0.5" data-testid="viewport-background-toggle">
+                    <button
+                        onClick={() => setViewportBackground('dark')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewportBackground === 'dark' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Dark background"
+                        aria-label="Dark background"
+                        data-testid="viewport-background-dark"
+                    >
+                        <Moon size={14} />
+                    </button>
+                    <button
+                        onClick={() => setViewportBackground('light')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewportBackground === 'light' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Light background"
+                        aria-label="Light background"
+                        data-testid="viewport-background-light"
+                    >
+                        <Sun size={14} />
+                    </button>
+                    <button
+                        onClick={() => setViewportBackground('checkered')}
+                        className={`p-1 rounded text-xs flex items-center gap-1 ${viewportBackground === 'checkered' ? 'bg-[#444] text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                        title="Checkered background"
+                        aria-label="Checkered background"
+                        data-testid="viewport-background-checkered"
+                    >
+                        <LayoutGrid size={14} />
                     </button>
                 </div>
 
