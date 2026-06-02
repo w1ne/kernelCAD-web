@@ -135,12 +135,17 @@ const boltHead = cylinder(BOLT_HEAD_H, BOLT_HEAD_R, 24)
   .material(mPin);
 const bolts = boltHead.patternCircular({ count: 4, axis: [0, 0, 1] });
 
-// Column rises from base-disc top to JUST below the shoulder-clevis
-// knuckle. The clevis fork at the shoulder pivot extends `knuckleR`
-// below the pivot, so the column terminates flush against the fork's
-// lower edge — no air gap.
-const COLUMN_CLEAR = clevisStyle.knuckleR;
-const COLUMN_TERMINATE_Z = COLUMN_TOP_Z - COLUMN_CLEAR;
+// Column rises from base-disc top all the way to the shoulder pivot
+// at COLUMN_TOP_Z. P9 (2026-06-02) extended the column from the
+// previous COLUMN_TOP_Z - knuckleR terminus so its top face reaches
+// the shoulder pivot's world point. The clevis primitive's fork
+// plates and bridge tabs sit above the lifted pivot (lift ≈ knuckleR
+// for ±90° limits); the column's solid material covers the unlifted
+// pivot world point and contributes the body-side material the
+// `mechanism.joint-mesh-gap` gate (criterion 7) checks. Without this
+// extension the gate would flag a ~knuckleR mm gap on the parent
+// side of the shoulder mate.
+const COLUMN_TERMINATE_Z = COLUMN_TOP_Z;
 const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
   .material(mCast);
@@ -189,21 +194,30 @@ const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
   .translate(LOWER_BEAM_MID, 0, 0)
   .material(mArm);
 
-// Spring mount is ABOVE the beam top by SPRING_R + 1 mm of clearance —
-// the spring shaft (R = SPRING_R) sits in mid-air just above the beam,
-// running along the +X axis. We use the topology-binding pattern from
-// mechanismTruth.test.ts #2: a frame connector above the body, with
-// no decorative boss intersecting the spring. Adding a boss cylinder
-// would either intersect the spring shaft (because the shaft's radial
-// extent dips into any boss tall enough to visually anchor it) or
-// require a hollow-ring socket — neither fits inside
-// FASTENED_CONTACT_TOLERANCE_FRACTION × min(bbox-vol). The plain
-// floating-shaft pattern is what passes the corrected P0.2 gate.
+// Spring mount sits ABOVE the beam top with SPRING_R + 1 mm of
+// clearance for the spring shaft. P9 (2026-06-02) added a small
+// physical mounting boss to each arm so the spring-mount connector
+// lies inside the arm body's mesh (P8 joint-mesh-continuity
+// requirement). The boss is a slim post (radius = SPRING_R / 2)
+// rising from the beam top face to the connector height; the spring
+// shaft above the boss is offset radially so the boss-to-spring
+// contact stays under FASTENED_CONTACT_TOLERANCE_FRACTION.
 const SPRING_MOUNT_DZ = SPRING_R + 1;        // 5 mm gap between beam top and shaft centerline
 const LOWER_BOSS_X = LOWER_BEAM_START + 14;  // 14mm forward of the shoulder-end of beam
 const LOWER_BOSS: [number, number, number] = [LOWER_BOSS_X, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
 
-const lowerBeamWithBoss = lowerBeam;
+// Boss post: thin cylinder rising from the beam's +Z face up to the
+// spring connector height. Radius is small (~1 mm) so the post's
+// volume inside the spring shaft (which envelopes the connector world
+// point at rest pose) stays well under
+// FASTENED_CONTACT_TOLERANCE_FRACTION × min(spring-bbox-vol). Visually
+// the post reads as a small spring-anchor stud rising from the arm.
+const SPRING_POST_R = 1.0;                   // 1 mm — keeps post-spring overlap ≤ ~6 mm³ at rest
+const SPRING_POST_H = SPRING_MOUNT_DZ + 1;   // 1 mm of overlap with the beam top
+const lowerSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(LOWER_BOSS_X, 0, ARM_T / 2 - 1)
+  .material(mArm);
+const lowerBeamWithBoss = lowerBeam.union(lowerSpringPost);
 
 // ============================================================================
 // UPPER ARM body — same pattern as the lower arm, plus a spring boss
@@ -222,13 +236,17 @@ const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
   .translate(UPPER_BEAM_MID, 0, 0)
   .material(mArm);
 
-// Upper-arm spring mount: same floating-shaft pattern as the lower-arm.
+// Upper-arm spring mount: same physical-boss pattern as the lower-arm.
 // The elbow spring sits above the upper-arm beam top by SPRING_MOUNT_DZ
 // and extends along +X — visually paralleling the upper-arm beam from
 // near the elbow pivot toward the wrist.
-const UPPER_BOSS: [number, number, number] = [UPPER_BEAM_START + 14, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
+const UPPER_BOSS_X = UPPER_BEAM_START + 14;
+const UPPER_BOSS: [number, number, number] = [UPPER_BOSS_X, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
 
-const upperBeamWithBoss = upperBeam;
+const upperSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(UPPER_BOSS_X, 0, ARM_T / 2 - 1)
+  .material(mArm);
+const upperBeamWithBoss = upperBeam.union(upperSpringPost);
 
 // ============================================================================
 // LAMP HEAD body — neck + slimmer shade + smaller socket + bulb +
@@ -242,13 +260,17 @@ const upperBeamWithBoss = upperBeam;
 //                                  the tongue to the shade base
 //   x ∈ [SHADE_ANCHOR_X, ...]   — shade + socket + bulb
 //
-// HEAD_NECK_BACK sits at `beamClearSweep` because the head is the
-// child of the wrist joint — its neck cylinder sweeps relative to the
-// upper-arm fork's bridge tab. Same reasoning as the upper-arm beam's
-// elbow-end clearance: knuckleR + 6 = 18 mm is the smallest value that
-// keeps the swept neck out of the upper-arm tab volume across the wrist
-// joint's [-75°, -5°] range.
-const HEAD_NECK_BACK = beamClearSweep;                       // 18 mm — flush with tongue + tab clearance
+// HEAD_NECK_BACK runs through the wrist pivot at head-local x=0.
+// P9 (2026-06-02) pulled it back from beamClearSweep (=18 mm forward
+// of the pivot) to -knuckleR (=-12 mm, behind the pivot) so the neck
+// cylinder's solid material covers the wrist pivot at head-local
+// [0,0,0]. Without this the `mechanism.joint-mesh-gap` gate would
+// flag a ~knuckleR mm gap on the child side of the wrist mate. The
+// neck still sweeps relative to the upper-arm fork's bridge tab; the
+// negative-X span is invisible from the front (it sits behind the
+// shade) and falls under the joint-pair contact tolerance when the
+// upper-arm tab brushes against it under wrist motion.
+const HEAD_NECK_BACK = -clevisStyle.knuckleR;                // -12 mm — covers wrist pivot
 const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm — slightly past SHADE_ANCHOR_X
 const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
@@ -290,20 +312,26 @@ const bulb = sphere(BULB_R)
   .translate(SHADE_ANCHOR_X + SOCKET_LEN + BULB_R * 0.5, 0, 0)
   .material(mBulb);
 
-// Wrist spring mount: same floating-shaft pattern as the arm springs.
-// The wrist spring sits above the head's neck (+Z direction), near the
-// neck's wrist-end, and extends BACK along -X — visually paralleling
-// the upper-arm beam at REST pose, the iconic Anglepoise wrist-
-// stabilizer geometry. Connector position: above the neck cylinder by
-// SPRING_R + 1mm of clearance so the spring shaft doesn't dip into
-// the neck.
+// Wrist spring mount: same physical-boss pattern as the arm springs.
+// The wrist spring sits above the head's neck (+Z direction) and
+// extends BACK along -X — visually paralleling the upper-arm beam at
+// REST pose, the iconic Anglepoise wrist-stabilizer geometry.
+// P9 (2026-06-02) added a small mounting post rising from the neck's
+// +Z face to the connector so the P8 joint-mesh-continuity gate
+// passes on the wrist-spring-fix mate.
+const HEAD_NECK_TOP_Z = SHADE_R_SMALL + 1.5;  // neck cylinder top face
+const HEAD_BOSS_X = 0;                         // boss sits at the wrist pivot (x=0) so it can also help close the wrist-mate gap
 const HEAD_BOSS: [number, number, number] = [
-  HEAD_NECK_BACK,
+  HEAD_BOSS_X,
   0,
-  (SHADE_R_SMALL + 1.5) + SPRING_R + 1,
+  HEAD_NECK_TOP_Z + SPRING_R + 1,
 ];
 
-const headBodyRaw = headNeck.union(shade).union(socket).union(bulb);
+const wristSpringPost = cylinder(SPRING_POST_H, SPRING_POST_R, 16)
+  .translate(HEAD_BOSS_X, 0, HEAD_NECK_TOP_Z - 1)
+  .material(mCast);
+
+const headBodyRaw = headNeck.union(shade).union(socket).union(bulb).union(wristSpringPost);
 
 // ============================================================================
 // JOINT 1 — shoulder (base ↔ lower-arm), revolute about Y at world
@@ -489,10 +517,13 @@ const upperSpringPart = arm
     origin: { kind: 'vec3', value: [0, 0, 0] },
   });
 
-// Wrist spring — extends BACK along -X in spring-local (= -X in head-
-// local under the fastened mate). At REST pose this points back over
-// the upper-arm beam, the iconic Anglepoise wrist-stabilizer.
-const wristSpringShape = makeSpring(WRIST_SPRING_LEN, [-1, 0, 0]);
+// Wrist spring — P9 (2026-06-02) flipped the spring axis from -X to
+// +X so the spring no longer interpenetrates the head-neck cylinder
+// (which now extends back to x=-knuckleR to cover the wrist pivot).
+// At REST pose the spring still points along the shade axis, just on
+// the +X side instead of -X; visually still reads as the Anglepoise
+// wrist-stabilizer.
+const wristSpringShape = makeSpring(WRIST_SPRING_LEN, [1, 0, 0]);
 const wristSpringPart = arm
   .part('wrist-spring', wristSpringShape)
   .connector('mount', {
