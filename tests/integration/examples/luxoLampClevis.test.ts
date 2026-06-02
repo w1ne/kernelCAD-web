@@ -62,21 +62,15 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(r.mechanismFailures ?? []).toEqual([]);
   }, 240_000);
 
-  it.skip('passes the physics gate (criteria 5+6) — blocked on issues/361 (closed-loop spring API)', async () => {
-    // P6 (2026-06-02): with `--include-physics` the Luxo's drop-test
-    // reports `mechanism.drops-on-release` — the single-body springs
-    // declared via three `fastened` mates produce zero restoring
-    // moment around the shoulder/elbow/wrist joints (each spring is
-    // fastened to ONE arm of the joint it should brace, so under
-    // gravity the spring rotates with that arm and contributes no
-    // joint moment).
-    //
-    // The kit-level fix is the closed-loop tendon API tracked in
-    // issues/361: declare a 2-anchor spring (one endpoint on each arm
-    // of the joint, sharing a stiffness coefficient) and MuJoCo's
-    // <tendon> + <spatial> primitives apply the restoring force at
-    // the joint. With that API the lamp's drop-test would report
-    // `mechanism: 'real'`. Re-enable this test when #361 ships.
+  it('passes the physics gate (criteria 5+6) — closed-loop tendons (#361 closed by P7)', async () => {
+    // P7 (2026-06-02) closed #361 by adding the `arm.tendon(...)`
+    // closed-loop balance-spring API. The Luxo now declares three
+    // tendons spanning each joint (shoulder/elbow/wrist) instead of
+    // three single-body decorative springs; each tendon's endpoints
+    // sit on different arms of the joint, so MuJoCo's
+    // `<tendon><spatial>` applies a real restoring moment at the
+    // joint axis. Drop-test from qpos0 settles within the 5° joint
+    // drift / 50 mm body drift thresholds.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
