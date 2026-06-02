@@ -20,6 +20,11 @@ import {
 } from '../mates/mate';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
+  TENDON_DEFAULT_VISUAL_DIAMETER_MM,
+  type TendonOptions,
+  type TendonRecord,
+} from '../mates/tendon';
+import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../mates/poseEnvelope';
@@ -394,6 +399,14 @@ export class Assembly {
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
   private readonly mates: MateRecord[] = [];
   private readonly mateCouplings: MateCouplingRecord[] = [];
+  /**
+   * P7: closed-loop balance-spring records declared via
+   * `arm.tendon(name, opts)`. Each tendon spans two connectors on
+   * different parts; mapped to MJCF `<tendon><spatial>` at physics-gate
+   * export time. The capture-side store is a flat array; uniqueness
+   * (name) + endpoint-connector existence are validated at insert.
+   */
+  private readonly tendons: TendonRecord[] = [];
   private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
   private readonly transmissionIntents: TransmissionIntentRecord[] = [];
   /**
@@ -807,6 +820,104 @@ export class Assembly {
   }
 
   /**
+   * P7 — declare a passive balance spring (tendon) spanning two connectors
+   * on different parts. The tendon applies a restoring force
+   * `F = stiffness·(L − restLength) + damping·dL/dt` whenever the
+   * endpoint-to-endpoint distance L differs from the rest length, where
+   * L is recomputed each MuJoCo step from the live world positions of
+   * the two referenced connectors.
+   *
+   * Unlike `mate(...)`, a tendon is NOT a kinematic constraint — it
+   * doesn't add or remove DOFs. kernelCAD's spanning-tree FK ignores
+   * tendons entirely; they only fire under `validate --include-physics`,
+   * which feeds the assembly to MuJoCo via `mjcfExport`.
+   *
+   * Both endpoints must reference connectors already declared on parts
+   * already added to this assembly. The two connectors must be on
+   * DIFFERENT parts — mounting both ends to the same body produces zero
+   * net moment, which is the bug pattern that motivated P7 in the first
+   * place.
+   *
+   * Errors:
+   *   - duplicate tendon name                → feature.invalid-args
+   *   - malformed ref / unknown part / unknown connector
+   *                                          → assembly.tendon.connector-not-found
+   *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
+   *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
+   *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
+   *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
+   *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
+   *
+   * Surfaced via `__tendons()` for the MJCF exporter and Studio renderer.
+   */
+  tendon(name: string, opts: TendonOptions): this {
+    if (this.tendons.some((t) => t.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.duplicate-name: tendon '${name}' is already declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.tendon-duplicate-name — pick a unique tendon name, or remove the earlier arm.tendon('${name}', ...) call.`,
+      );
+    }
+    // Resolve both endpoints. Reuse the same "<part>.<connector>" grammar
+    // as mates so the agent surface is consistent.
+    const fromRes = this.resolveTendonEndpoint(name, 'from', opts.from);
+    const toRes = this.resolveTendonEndpoint(name, 'to', opts.to);
+    if (fromRes.partName === toRes.partName) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.same-body-endpoints: tendon '${name}' has both endpoints on part '${fromRes.partName}'. A tendon must span TWO different parts to produce a restoring moment around the joint between them.`,
+        undefined,
+        `invalid-args.assembly.tendon-same-body-endpoints — pick connectors on DIFFERENT parts. The canonical pattern is one connector on the parent arm and one on the child arm of the joint the spring spans.`,
+      );
+    }
+    if (!Number.isFinite(opts.restLengthMm) || opts.restLengthMm <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-rest-length: tendon '${name}' restLengthMm must be a positive finite number; got ${formatScalarForError(opts.restLengthMm)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-rest-length — pass restLengthMm: <positive mm>. Typical Anglepoise rest length is 25-50 mm depending on the joint.`,
+      );
+    }
+    if (!Number.isFinite(opts.stiffnessNmm) || opts.stiffnessNmm <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-stiffness: tendon '${name}' stiffnessNmm must be a positive finite number; got ${formatScalarForError(opts.stiffnessNmm)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-stiffness — pass stiffnessNmm: <positive N/mm>. Typical Anglepoise spring stiffness is 0.3-1.0 N/mm.`,
+      );
+    }
+    const damping = opts.dampingNsmm ?? 0;
+    if (!Number.isFinite(damping) || damping < 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-damping: tendon '${name}' dampingNsmm must be a non-negative finite number; got ${formatScalarForError(damping)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-damping — pass dampingNsmm: <non-negative N·s/mm>, or omit it to default to 0.`,
+      );
+    }
+    const visualDiameter = opts.visualDiameterMm ?? TENDON_DEFAULT_VISUAL_DIAMETER_MM;
+    if (!Number.isFinite(visualDiameter) || visualDiameter <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-visual-diameter: tendon '${name}' visualDiameterMm must be a positive finite number; got ${formatScalarForError(visualDiameter)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-visual-diameter — pass visualDiameterMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_VISUAL_DIAMETER_MM} mm.`,
+      );
+    }
+    this.tendons.push({
+      name,
+      from: opts.from,
+      to: opts.to,
+      restLengthMm: opts.restLengthMm,
+      stiffnessNmm: opts.stiffnessNmm,
+      dampingNsmm: damping,
+      visualDiameterMm: visualDiameter,
+    });
+    return this;
+  }
+
+  /**
    * v0.7 Slice 1 — declarative workspace-reachability targets.
    *
    * Persists "this connector MUST be able to reach these world-frame points
@@ -1141,6 +1252,50 @@ export class Assembly {
   }
 
   /**
+   * Resolve a tendon endpoint ref. Mirrors `resolveMateConnector` but
+   * emits tendon-flavored diagnostics so authoring scripts get advice
+   * about `arm.tendon(...)` specifically rather than mate connectors.
+   * The connector type is intentionally NOT constrained — any connector
+   * (frame/axis/planar/ball) is a valid tendon anchor.
+   */
+  private resolveTendonEndpoint(
+    tendonName: string,
+    side: 'from' | 'to',
+    ref: string,
+  ): { partName: string; connectorName: string } {
+    let parsed: { partName: string; connectorName: string };
+    try {
+      parsed = parseConnectorRef(ref);
+    } catch {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: '${ref}' is not a 'partName.connectorName' reference.`,
+        undefined,
+        `invalid-args.assembly.tendon-connector-not-found — pass ${side}: '<partName>.<connectorName>' where both names are declared on this assembly.`,
+      );
+    }
+    const part = this.parts.find((p) => p.name === parsed.partName);
+    if (!part) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: part '${parsed.partName}' is not declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.tendon-connector-not-found — declare the part via arm.part('${parsed.partName}', ...) before referencing it in a tendon.`,
+      );
+    }
+    const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (!connector) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: connector '${parsed.connectorName}' is not declared on part '${parsed.partName}'.`,
+        part.id,
+        `invalid-args.assembly.tendon-connector-not-found — register the connector via partRef.connector('${parsed.connectorName}', { type, origin, ... }) before referencing it in a tendon.`,
+      );
+    }
+    return parsed;
+  }
+
+  /**
    * Internal accessor — read-only view of the registered parts for the v0.6
    * mate solver (`src/lib/mates/solver.ts`). Underscore-prefixed: not part of
    * the agent-facing surface. Mirrors `Scene.__sourceFeatureId` convention.
@@ -1176,6 +1331,16 @@ export class Assembly {
 
   __mateCouplings(): readonly MateCouplingRecord[] {
     return this.mateCouplings;
+  }
+
+  /**
+   * P7: read-only view of declared tendon records. Consumed by
+   * `assemblyToMjcf` (physics-gate export) and the Studio
+   * TendonRenderer. Mirrors the `__mates()` underscore convention; the
+   * agent-facing surface is `arm.tendon(...)` declaration only.
+   */
+  __tendons(): readonly TendonRecord[] {
+    return this.tendons;
   }
 
   /**
