@@ -62,6 +62,10 @@ import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { assemblyToMjcf } from './mjcfExport';
 import { loadMujocoSession } from './mujocoSession';
+import {
+  checkJointMeshContinuity,
+  JOINT_MESH_GAP_TOLERANCE_MM,
+} from './jointMeshContinuity';
 
 /**
  * Number of pose samples per articulated mate. Currently 3 (min, mid, max
@@ -246,6 +250,13 @@ export async function checkMechanismTruth(
   // count stability under ±ε around the declared axis. Skipped when the
   // assembly has no revolute mates.
   failures.push(...(await checkDofMismatch(arm)));
+
+  // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
+  // pivot must lie inside both its parent and child body meshes. P8
+  // slice; closes the visual-mesh-gap hole MJCF cannot see (joints in
+  // physics are constraints on abstract rigid bodies, not assertions
+  // about material continuity in the rendered geometry).
+  failures.push(...(await checkJointMeshContinuityCriterion(arm, solved)));
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
@@ -643,6 +654,50 @@ async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
     }
   }
 
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Criterion 7 — mechanism.joint-mesh-gap (joint-mesh-continuity at rest)
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * For every mate, at REST pose, the joint pivot must lie inside both
+ * mated bodies' BREP solids within
+ * `JOINT_MESH_GAP_TOLERANCE_MM`. The mate-FK pose envelope rides on
+ * the constraint surface for the rest of the joint sweep, so a clean
+ * rest-pose pin guarantees the pin stays inside for the full travel
+ * (the spec's non-goal: pose-swept sampling).
+ *
+ * Reuses the rest-pose `SolvedSample.scene` lazily lowered by criteria
+ * 2 + 3 — no new pose solve, no new BREP lower.
+ */
+async function checkJointMeshContinuityCriterion(
+  arm: Assembly,
+  solved: SolvedSample[],
+): Promise<CompilerDiagnostic[]> {
+  const rest = solved.find((s) => s.sample.name === 'rest');
+  if (rest === undefined) return [];
+  const scene = await lowerSceneForSample(arm, rest);
+  if (scene === undefined) return [];
+
+  const results = checkJointMeshContinuity(arm, {
+    transforms: rest.transforms,
+    scene,
+  });
+
+  const out: CompilerDiagnostic[] = [];
+  for (const r of results) {
+    if (r.signedDistanceMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
+    out.push(makeFailure(
+      'mechanism.joint-mesh-gap',
+      `Joint '${r.mateName}' ${r.side} body '${r.partName}': pivot origin is ` +
+      `${r.signedDistanceMm.toFixed(1)}mm outside its mesh (tolerance ` +
+      `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm). The link mesh does not ` +
+      `reach the joint it pivots on — extend the body geometry so its OCCT ` +
+      `solid covers the joint origin at rest pose.`,
+    ));
+  }
   return out;
 }
 
@@ -1045,7 +1100,8 @@ function makeFailure(
     | 'mechanism.dof-mismatch'
     | 'mechanism.orphan-part'
     | 'mechanism.unstable-under-gravity'
-    | 'mechanism.drops-on-release',
+    | 'mechanism.drops-on-release'
+    | 'mechanism.joint-mesh-gap',
   message: string,
 ): CompilerDiagnostic {
   return {

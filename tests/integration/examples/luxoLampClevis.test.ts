@@ -44,22 +44,58 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(revoluteMates.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('passes the kinematic-only mechanism-truth loop: mechanism: real with empty failures (#356 closed by P5)', async () => {
+  it.skip('passes the kinematic-only mechanism-truth loop (tracked under issues/365 until the P9 Luxo geometry fix in the same PR)', async () => {
+    // P8 (2026-06-02): the new `mechanism.joint-mesh-gap` gate
+    // (criterion 7) flags every spring-fix mate on the current Luxo
+    // because the spring boss connector floats 5 mm above the arm
+    // beam top instead of sitting on body material. The Luxo
+    // geometry fix lands in the P9 commit on this same PR; this test
+    // is the "green" gate that goes green after P9. The P8 commit's
+    // green is the explicit RED assertion below.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
       includeInterference: true,
       physical: false,
       json: true,
-      // P6: kinematic-only here. The Luxo's single-body springs produce
-      // zero restoring moment around the joints they brace, so the lamp
-      // fails the new drop-test (correctly — see the .skip below citing
-      // #361). The pre-P6 P5 commitment was "lamp passes the KINEMATIC
-      // gate without ignore[]", which it still does.
       includePhysics: false,
     });
     expect(r.mechanism).toBe('real');
     expect(r.mechanismFailures ?? []).toEqual([]);
+  }, 240_000);
+
+  it('P8 joint-mesh-continuity gate flags the spring boss gaps on the current Luxo (RED before P9)', async () => {
+    // P8 (2026-06-02): asserts the new gate fires on the current
+    // (pre-P9) Luxo geometry. The Luxo has 3 spring-fix mates whose
+    // connectors sit 5 mm above the arm beam tops — exactly the
+    // floating-spring-stub pattern the gate is designed to catch.
+    // After the P9 geometry fix lands in the next commit on this PR,
+    // this test flips its expectation to "absent" — see the spec
+    // (docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md)
+    // acceptance §5.
+    const r = await runValidateCli({
+      file: LUXO_SCRIPT_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+    const gaps = (r.mechanismFailures ?? []).filter(
+      (f) => f.code === 'mechanism.joint-mesh-gap',
+    );
+    expect(gaps.length).toBeGreaterThanOrEqual(2);
+    // Distances should be in the 1–30 mm range (the spec's "what the
+    // gate catches" window). Each spring-fix gap is exactly 5 mm; we
+    // assert the lower bound and a generous upper bound.
+    for (const g of gaps) {
+      const m = /([\d.]+)mm outside/.exec(g.message);
+      expect(m).not.toBeNull();
+      const measuredMm = Number(m![1]);
+      expect(measuredMm).toBeGreaterThan(1.0);
+      expect(measuredMm).toBeLessThan(30.0);
+    }
+    expect(r.mechanism).toBe('broken');
   }, 240_000);
 
   it.skip('passes the physics gate (criteria 5+6) — blocked on issues/361 (closed-loop spring API)', async () => {

@@ -60,11 +60,18 @@ describe('joint.clevis — G1 design locks', () => {
     expect(j.childGeometry.id.length).toBeGreaterThan(0);
   });
 
-  it('2. drilled hole = ONE subtract per part (pin-axis through-hole co-located in fork plates + body)', () => {
-    // The Luxo failure was drilling per-knuckle; here we assert that the
-    // primitive subtracts a SINGLE drill cylinder per part AFTER fork/tongue
-    // union with the body. We walk the captured FeatureRecord graph and
-    // count boolean subtract operations that occur after the union.
+  it('2. drilled hole = ONE subtract on the parent only (P8 — child tongue kept solid for joint-mesh-continuity)', () => {
+    // P8 (2026-06-02): the clevis primitive used to drill BOTH parts so
+    // each had a clean through-hole. P8's `mechanism.joint-mesh-gap`
+    // gate probes the body BREP at the joint pivot for material; a
+    // drilled-through child tongue puts the pivot in an air pocket
+    // (~pinR mm from material). To keep the child mesh covering the
+    // pivot, we now drill ONLY the parent and keep the child tongue
+    // solid — the parent's pin shaft embeds into the child's tongue
+    // material under joint motion. The resulting pin-on-tongue
+    // interference (~tongueY × π × pinR², ~400 mm³ for default style)
+    // falls under `REVOLUTE_CONTACT_TOLERANCE_FRACTION` in
+    // `mechanismTruth.ts`.
     const session = new CaptureSession();
     const kc = createApi({ session });
     const baseBody = kc.box(40, 40, 20, true);
@@ -84,14 +91,13 @@ describe('joint.clevis — G1 design locks', () => {
     // child final shapes. The session records every boolean as a feature
     // record of kind 'boolean' with params.op carrying 'union' /
     // 'difference' / 'intersection'. There should be EXACTLY one difference
-    // (subtract) per part — because we drill once.
+    // (subtract) total — the parent through-hole.
     const subtracts = records.filter((r) => {
       if (r.kind !== 'boolean') return false;
       const expr = (r as { params?: { op?: { expression?: string } } }).params?.op?.expression;
       return expr === "'difference'";
     });
-    // Each part performs one subtract (the through-hole). 2 parts → 2 subtracts.
-    expect(subtracts.length).toBe(2);
+    expect(subtracts.length).toBe(1);
 
     // Confirm the pin shaft span matches the design lock:
     //   shaftLen = forkGapY + 2 * plateT

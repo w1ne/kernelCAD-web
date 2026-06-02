@@ -134,9 +134,15 @@ const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: string }> = 
     'examples/robot-hand/two-finger-coupled-gripper.kcad.ts',
     { issue: 354, testFile: 'tests/integration/examples/twoFingerCoupledGripper.test.ts' },
   ],
-  // P5 (#356) closed the Luxo lamp geometric-rebuild slice — the lamp now
-  // passes the physics-grounded loop with mechanism: 'real' and empty
-  // mechanismFailures, so it no longer needs an issue-tracked .skip.
+  // P8 (2026-06-02): the new joint-mesh-continuity gate (criterion 7)
+  // flags the Luxo's 3 spring-fix mates because the spring boss
+  // connector floats 5 mm above the arm beam top. The fix lands as
+  // the P9 commit on the same PR — when that commit removes the
+  // float, this entry can be removed.
+  [
+    'examples/kinematic/luxo-lamp.kcad.ts',
+    { issue: 365, testFile: 'tests/integration/examples/luxoLampClevis.test.ts' },
+  ],
 ]);
 
 function walkExamples(dir: string, prefix = ''): string[] {

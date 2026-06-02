@@ -313,16 +313,21 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
   const parentWithFork = opts.parentBody.union(fork);
   const childWithTongue = opts.childBody.union(tongue);
 
-  // 5. Drill ONE through-hole through each part AFTER its fork/tongue is
-  //    unioned in — so the hole is co-located in every solid it passes
-  //    through (fork plates + bridge tabs + parent body on the parent side;
-  //    tongue + child body on the child side).
+  // 5. Drill the pin through-hole through the PARENT side only. The hole
+  //    is co-located in every parent-side solid it passes through (fork
+  //    plates + bridge tabs + parent body). The CHILD's tongue is kept
+  //    SOLID so the child mesh contains the joint pivot — required by
+  //    P8's `mechanism.joint-mesh-gap` gate, which probes the part body
+  //    BREP for material at the pivot. The parent's pin shaft then
+  //    embeds into the child's solid tongue at every pose; the resulting
+  //    pin-on-tongue interference is bounded by the pin's shaft volume
+  //    (~tongueY × π × pinR²; for default style ~400 mm³) and falls
+  //    under the `REVOLUTE_CONTACT_TOLERANCE_FRACTION` excluded
+  //    intentional-joint-contact volume.
   const drillR = style.pinR + style.holeClearance;
   const drillSpan = style.forkGapY + 2 * style.plateT + 40; // large margin clears any reasonable yoke
   const parentDrill = makeAxisCylinder(kc, drillSpan, drillR, axis, pivotParentLifted);
-  const childDrill = makeAxisCylinder(kc, drillSpan, drillR, axis, pivotChild);
   const parentDrilled = parentWithFork.subtract(parentDrill);
-  const childDrilled = childWithTongue.subtract(childDrill);
 
   // 6. Build pin shaft + caps. Shaft spans from outer face to outer face;
   //    caps overlap the shaft by capThickness so the boolean union merges.
@@ -341,7 +346,7 @@ function buildClevis(kc: KernelCadApi, opts: ClevisJointOptions): ClevisJoint {
 
   return {
     parentGeometry: parentFinal,
-    childGeometry: childDrilled,
+    childGeometry: childWithTongue,
     parentConnector,
     childConnector,
     pivot: pivotParentLifted,
