@@ -7,6 +7,7 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
+import type { Vec3 } from '../../shared/intent/types';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import { OcctBackend, initOcct, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
@@ -225,6 +226,245 @@ function metadataNameOf(record: FeatureRecord | undefined): string | undefined {
   return typeof name === 'string' && name.length > 0 ? name : undefined;
 }
 
+/**
+ * Structural shape used to access the Assembly's tendon + part surface
+ * without importing the concrete `Assembly` class (avoids the
+ * capture/featureMeshing → capture/assembly cycle CaptureSession
+ * already avoids via `Map<string, unknown>` for `assemblies`).
+ */
+interface AssemblyLikeForTendons {
+  __tendons(): readonly {
+    readonly name: string;
+    readonly from: string;
+    readonly to: string;
+    readonly visualDiameterMm: number;
+  }[];
+  __parts(): readonly {
+    readonly name: string;
+    readonly mateConnectors: readonly {
+      readonly name: string;
+      readonly origin:
+        | { kind: 'vec3'; value: Vec3 }
+        | { kind: 'topology'; query: unknown };
+    }[];
+  }[];
+}
+
+function isAssemblyLikeForTendons(value: unknown): value is AssemblyLikeForTendons {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as { __tendons?: unknown; __parts?: unknown };
+  return typeof v.__tendons === 'function' && typeof v.__parts === 'function';
+}
+
+/** Apply a column-major 4x4 transform to a Vec3 point. */
+function applyMat4ToPoint(m: readonly number[], local: Vec3): Vec3 {
+  const lx = local[0], ly = local[1], lz = local[2];
+  return [
+    m[0] * lx + m[4] * ly + m[8] * lz + m[12],
+    m[1] * lx + m[5] * ly + m[9] * lz + m[13],
+    m[2] * lx + m[6] * ly + m[10] * lz + m[14],
+  ];
+}
+
+/**
+ * Build a triangle mesh for a cylinder spanning two world-frame
+ * endpoints. The cylinder is built directly with WORLD-FRAME vertices
+ * (no transform), so the consumer can treat it as a regular feature
+ * mesh and the SceneBackend fan-out's bounds aggregation picks it up
+ * for free. 16-segment cap-less cylinder — matches Studio's
+ * `CylinderGeometry(1,1,1,16)` topology.
+ */
+function buildCylinderFaceWorld(
+  fromWorld: Vec3,
+  toWorld: Vec3,
+  diameterMm: number,
+  segments = 16,
+): FaceGeometry | null {
+  const dx = toWorld[0] - fromWorld[0];
+  const dy = toWorld[1] - fromWorld[1];
+  const dz = toWorld[2] - fromWorld[2];
+  const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (length < 1e-6 || diameterMm <= 0) return null;
+  const axis: Vec3 = [dx / length, dy / length, dz / length];
+  // Build an orthonormal basis (u, v) perpendicular to axis.
+  const seed: Vec3 = Math.abs(axis[2]) > 0.9 ? [1, 0, 0] : [0, 0, 1];
+  // u = axis × seed (normalised), v = axis × u
+  const ux = axis[1] * seed[2] - axis[2] * seed[1];
+  const uy = axis[2] * seed[0] - axis[0] * seed[2];
+  const uz = axis[0] * seed[1] - axis[1] * seed[0];
+  const uLen = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+  const u: Vec3 = [ux / uLen, uy / uLen, uz / uLen];
+  const v: Vec3 = [
+    axis[1] * u[2] - axis[2] * u[1],
+    axis[2] * u[0] - axis[0] * u[2],
+    axis[0] * u[1] - axis[1] * u[0],
+  ];
+  const radius = diameterMm / 2;
+
+  // 2 * segments vertices (one ring per end). Vertex layout:
+  //   ring 0 (i ∈ [0, segments)):    ring around `fromWorld`
+  //   ring 1 (i ∈ [segments, 2N)):   ring around `toWorld`
+  const vertCount = segments * 2;
+  const vertices = new Float32Array(vertCount * 3);
+  const normals = new Float32Array(vertCount * 3);
+  for (let i = 0; i < segments; i++) {
+    const theta = (i * 2 * Math.PI) / segments;
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+    const nx = u[0] * cosT + v[0] * sinT;
+    const ny = u[1] * cosT + v[1] * sinT;
+    const nz = u[2] * cosT + v[2] * sinT;
+    // bottom ring (around `fromWorld`)
+    vertices[i * 3 + 0] = fromWorld[0] + nx * radius;
+    vertices[i * 3 + 1] = fromWorld[1] + ny * radius;
+    vertices[i * 3 + 2] = fromWorld[2] + nz * radius;
+    normals[i * 3 + 0] = nx;
+    normals[i * 3 + 1] = ny;
+    normals[i * 3 + 2] = nz;
+    // top ring (around `toWorld`)
+    const ti = (segments + i) * 3;
+    vertices[ti + 0] = toWorld[0] + nx * radius;
+    vertices[ti + 1] = toWorld[1] + ny * radius;
+    vertices[ti + 2] = toWorld[2] + nz * radius;
+    normals[ti + 0] = nx;
+    normals[ti + 1] = ny;
+    normals[ti + 2] = nz;
+  }
+  // Two triangles per side quad.
+  const indices = new Uint32Array(segments * 6);
+  for (let i = 0; i < segments; i++) {
+    const next = (i + 1) % segments;
+    const a = i;
+    const b = next;
+    const c = segments + i;
+    const d = segments + next;
+    indices[i * 6 + 0] = a;
+    indices[i * 6 + 1] = c;
+    indices[i * 6 + 2] = b;
+    indices[i * 6 + 3] = b;
+    indices[i * 6 + 4] = c;
+    indices[i * 6 + 5] = d;
+  }
+  return {
+    vertices,
+    indices,
+    normals,
+    faceId: 0,
+  };
+}
+
+/**
+ * P7 — read the Assembly's declared tendons (if any) and pack them into
+ * synthetic FeatureMesh records the renderer can hang cylinder geometry
+ * off. World-frame triangle mesh is baked HERE so the browser renderer
+ * draws each cylinder as a normal feature group (no special path) and
+ * the centroid-shift recentering composes onto it identically to the
+ * SceneBackend part fan-outs.
+ *
+ * Skips silently when:
+ *   - The SceneBackend's `assemblyName` doesn't resolve to an Assembly
+ *     in `session.assemblies` (e.g. the lowerer ran without a
+ *     captureSession hook, or the assembly was renamed mid-flight).
+ *   - A tendon endpoint references a connector whose origin is a
+ *     `topology` query rather than a vec3. Topology origins resolve on
+ *     the LOWERED backend (a future slice can plumb them; for v1 of the
+ *     visual emit we accept the vec3-fast-path and emit a console
+ *     warning so authors notice). Per-endpoint validity is enforced by
+ *     `Assembly.resolveTendonEndpoint` at capture time.
+ *   - Both endpoints resolve to the same world point (degenerate
+ *     cylinder; capture validation already enforces same-body-endpoints
+ *     rejection but FK could still collapse the endpoints under poses).
+ */
+function collectTendonMeshes(
+  sceneShape: unknown,
+  sceneFeatureId: FeatureId,
+  assemblies: ReadonlyMap<string, unknown> | undefined,
+): FeatureMesh[] {
+  if (assemblies === undefined) return [];
+  const scene = sceneShape as {
+    assemblyName?: string;
+    parts?: readonly { readonly name: string; readonly worldTransform: { toMat4(): readonly number[] } }[];
+  };
+  const assemblyName = scene.assemblyName;
+  if (typeof assemblyName !== 'string' || assemblyName.length === 0) return [];
+  const arm = assemblies.get(assemblyName);
+  if (!isAssemblyLikeForTendons(arm)) return [];
+  const tendons = arm.__tendons();
+  if (tendons.length === 0) return [];
+
+  // (partName.connectorName) → vec3 origin lookup.
+  const originByRef = new Map<string, Vec3>();
+  for (const part of arm.__parts()) {
+    for (const conn of part.mateConnectors) {
+      if (conn.origin.kind === 'vec3') {
+        originByRef.set(`${part.name}.${conn.name}`, conn.origin.value);
+      }
+    }
+  }
+
+  // partName → world transform (column-major Mat4) lookup, derived from
+  // the SceneBackend's already-resolved per-part transforms.
+  const transformByPart = new Map<string, readonly number[]>();
+  for (const part of scene.parts ?? []) {
+    transformByPart.set(part.name, part.worldTransform.toMat4());
+  }
+
+  const meshes: FeatureMesh[] = [];
+  for (const t of tendons) {
+    const fromOrigin = originByRef.get(t.from);
+    const toOrigin = originByRef.get(t.to);
+    if (fromOrigin === undefined || toOrigin === undefined) {
+      console.warn(
+        `meshFeaturesPerFeature: tendon '${t.name}' has a topology-origin connector; visual cylinder skipped (vec3 origins only in v1).`,
+      );
+      continue;
+    }
+    const [fromPartName] = splitConnectorRef(t.from);
+    const [toPartName] = splitConnectorRef(t.to);
+    if (fromPartName === undefined || toPartName === undefined) continue;
+    const fromT = transformByPart.get(fromPartName);
+    const toT = transformByPart.get(toPartName);
+    if (fromT === undefined || toT === undefined) continue;
+    const fromWorld = applyMat4ToPoint(fromT, fromOrigin);
+    const toWorld = applyMat4ToPoint(toT, toOrigin);
+    const face = buildCylinderFaceWorld(fromWorld, toWorld, t.visualDiameterMm);
+    if (face === null) continue;
+    const tendonId = `${sceneFeatureId}__tendon__${t.name}`;
+    // Dark metallic PBR — matches Studio's `TendonRenderer.tsx`.
+    const tendonMaterial: PBRMaterial = {
+      baseColor: '#2a2e36',
+      metalness: 0.85,
+      roughness: 0.4,
+    };
+    meshes.push({
+      featureId: tendonId,
+      // Reuse the SceneBackend's feature-kind so the renderer's existing
+      // construction-closure / tail-feature filters treat this group the
+      // same way they treat normal assembly-fanout part groups.
+      featureKind: 'solvedAssembly',
+      predecessors: [sceneFeatureId],
+      faces: [face],
+      assemblyFeatureId: sceneFeatureId,
+      assemblyPartName: `__tendon__${t.name}`,
+      displayName: `tendon:${t.name}`,
+      filterNames: uniqueStrings([
+        tendonId,
+        t.name,
+        `tendon:${t.name}`,
+        'tendon',
+      ]),
+      material: tendonMaterial,
+    });
+  }
+  return meshes;
+}
+
+function splitConnectorRef(ref: string): [string | undefined, string | undefined] {
+  const dot = ref.indexOf('.');
+  if (dot <= 0 || dot === ref.length - 1) return [undefined, undefined];
+  return [ref.slice(0, dot), ref.slice(dot + 1)];
+}
+
 function meshIdentityFields(args: {
   featureId: FeatureId;
   featureKind: FeatureKind;
@@ -279,6 +519,15 @@ export async function meshFeaturesPerFeature(
      *  via the assembly fan-out and (b) non-assembly records whose cached
      *  `FeatureMesh` can be re-emitted directly. */
     cachedShapes?: Map<FeatureId, ShapeBackend>;
+    /** P7: live `Assembly` instances keyed by assembly name. Stored as
+     *  `unknown` on CaptureSession to avoid a TS cycle with the assembly
+     *  module; this hook lets the SceneBackend fan-out look up the
+     *  matching Assembly handle and emit one synthetic tendon
+     *  FeatureMesh per declared `arm.tendon(...)` record so the
+     *  rendered scene visibly shows the closed-loop balance springs.
+     *  Optional — scripts without `arm.tendon(...)` (or that don't
+     *  expose an assemblies map) render unchanged. */
+    assemblies?: ReadonlyMap<string, unknown>;
   },
 ): Promise<MeshFeaturesResult> {
   await initOcct();
@@ -368,6 +617,7 @@ export async function meshFeaturesPerFeature(
     | Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
     | undefined;
   const cachedShapesIn = session?.cachedShapes;
+  const assembliesIn = session?.assemblies;
 
   // Derive the seedShapes set for `engine.run`. A record can be safely
   // skipped from re-lowering when its cached lowered shape is still in
@@ -485,6 +735,25 @@ export async function meshFeaturesPerFeature(
           // emitted mesh local for viewport-side transforms.
           const transformed = transformFeatureMesh(local, part.worldTransform);
           for (const f of transformed.faces) {
+            for (let i = 0; i < f.vertices.length; i += 3) {
+              const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
+              if (x < minX) minX = x; if (x > maxX) maxX = x;
+              if (y < minY) minY = y; if (y > maxY) maxY = y;
+              if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+            }
+          }
+        }
+        // P7 — emit one synthetic tendon FeatureMesh per declared
+        // `arm.tendon(...)` record on the owning Assembly. The cylinder
+        // geometry is baked in WORLD frame here so it lands as a normal
+        // feature group in the renderer (no special path needed) and the
+        // centroid-recentre loop composes onto it identically to part
+        // groups. Cylinder span uses each owner part's `worldTransform`
+        // sourced directly off the SceneBackend.
+        const tendonMeshes = collectTendonMeshes(event.shape, event.featureId, assembliesIn);
+        for (const tm of tendonMeshes) {
+          features.push(tm);
+          for (const f of tm.faces) {
             for (let i = 0; i < f.vertices.length; i += 3) {
               const x = f.vertices[i], y = f.vertices[i + 1], z = f.vertices[i + 2];
               if (x < minX) minX = x; if (x > maxX) maxX = x;
