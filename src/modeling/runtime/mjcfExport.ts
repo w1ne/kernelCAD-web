@@ -59,6 +59,7 @@ import type { MateRecord } from '../mates/mate';
 import { parseConnectorRef } from '../mates/mate';
 import type { Connector } from '../mates/connector';
 import { resolveConnectorOrigin } from '../mates/connector';
+import type { TendonRecord } from '../mates/tendon';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 
@@ -101,6 +102,7 @@ export interface MjcfExportResult {
 export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
     const parts = arm.__parts();
     const mates = arm.__mates();
+    const tendons = arm.__tendons();
     if (parts.length === 0) {
         throw new Error('assemblyToMjcf: assembly has no parts; nothing to physics-check.');
     }
@@ -196,6 +198,58 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         resolvedMateAxes.set(m.name, { origin: resolved.value, axis });
     }
 
+    // P7: pre-resolve every tendon endpoint to (partName, site name,
+    // local-frame mm position). The site goes inside the owner body's
+    // `<body>` element; the `<spatial>` tendon references the sites by
+    // name. Mirror the mate-resolver pattern above — both use the same
+    // `resolveConnectorOrigin` to honor topology-bound connectors.
+    interface ResolvedTendonEndpoint {
+        readonly partName: string;
+        readonly siteName: string;
+        readonly localPosMm: Vec3;
+    }
+    interface ResolvedTendon {
+        readonly record: TendonRecord;
+        readonly endpoints: readonly [ResolvedTendonEndpoint, ResolvedTendonEndpoint];
+    }
+    async function resolveTendonEndpoint(
+        tendon: TendonRecord,
+        side: 'from' | 'to',
+    ): Promise<ResolvedTendonEndpoint> {
+        const ref = side === 'from' ? tendon.from : tendon.to;
+        const parsed = parseConnectorRef(ref);
+        const part = partByName.get(parsed.partName);
+        if (part === undefined) {
+            throw new Error(
+                `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown part '${parsed.partName}'.`,
+            );
+        }
+        const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+        if (connector === undefined) {
+            throw new Error(
+                `assemblyToMjcf: tendon '${tendon.name}' ${side} references unknown connector '${parsed.connectorName}' on part '${parsed.partName}'.`,
+            );
+        }
+        const resolved = await resolveConnectorOrigin(part.originalShape, connector.origin);
+        return {
+            partName: part.name,
+            siteName: `${tendon.name}__${side}`,
+            localPosMm: resolved.value,
+        };
+    }
+    const resolvedTendons: ResolvedTendon[] = [];
+    const sitesByPart = new Map<string, ResolvedTendonEndpoint[]>();
+    for (const t of tendons) {
+        const fromE = await resolveTendonEndpoint(t, 'from');
+        const toE = await resolveTendonEndpoint(t, 'to');
+        resolvedTendons.push({ record: t, endpoints: [fromE, toE] });
+        for (const ep of [fromE, toE]) {
+            const list = sitesByPart.get(ep.partName) ?? [];
+            list.push(ep);
+            sitesByPart.set(ep.partName, list);
+        }
+    }
+
     // Emit MJCF by recursive body-tree walk.
     const jointOrder: { mjcfName: string; mateName: string }[] = [];
     const bodyOrder: string[] = [];
@@ -259,6 +313,18 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             for (const j of jointXml) lines.push(`${indent}  ${j}`);
         }
 
+        // P7: tendon endpoints owned by this body. Each <site> sits in
+        // the body's local frame; the spatial tendon (outside the
+        // worldbody) references these sites by name and computes
+        // segment length from their world-frame positions each step.
+        const sitesHere = sitesByPart.get(partName) ?? [];
+        for (const ep of sitesHere) {
+            const sitePosM = ep.localPosMm.map((v) => v * MM_TO_M);
+            lines.push(
+                `${indent}  <site name="${escapeXml(ep.siteName)}" pos="${sitePosM.map(fmtNum).join(' ')}"/>`,
+            );
+        }
+
         // Geometry — we don't emit visual meshes; the physics gate only
         // needs inertia + joint topology. Adding meshes would require
         // exporting STL per-part on every validate call (heavy). MuJoCo
@@ -279,6 +345,32 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         worldbodyBlocks.push(emitBody(root.name, undefined, '    '));
     }
 
+    // P7: emit the <tendon> block AFTER <worldbody>. Each spatial
+    // tendon references two sites by name; the sites were emitted
+    // inside their owner bodies above. Unit conversion:
+    //   restLengthMm    → springlength (m)   = mm × 1e-3
+    //   stiffnessNmm    → stiffness   (N/m)  = N/mm × 1e3
+    //   dampingNsmm     → damping     (N·s/m) = N·s/mm × 1e3
+    const tendonBlockLines: string[] = [];
+    if (resolvedTendons.length > 0) {
+        tendonBlockLines.push('  <tendon>');
+        for (const rt of resolvedTendons) {
+            const t = rt.record;
+            const springLenM = t.restLengthMm * MM_TO_M;
+            const stiffnessNm = t.stiffnessNmm * 1000;
+            const dampingNsm = t.dampingNsmm * 1000;
+            const dampingAttr = dampingNsm > 0 ? ` damping="${fmtNum(dampingNsm)}"` : '';
+            tendonBlockLines.push(
+                `    <spatial name="${escapeXml(t.name)}" springlength="${fmtNum(springLenM)}" stiffness="${fmtNum(stiffnessNm)}"${dampingAttr}>`,
+            );
+            for (const ep of rt.endpoints) {
+                tendonBlockLines.push(`      <site site="${escapeXml(ep.siteName)}"/>`);
+            }
+            tendonBlockLines.push('    </spatial>');
+        }
+        tendonBlockLines.push('  </tendon>');
+    }
+
     const mjcf = [
         '<?xml version="1.0" ?>',
         `<mujoco model="${escapeXml(arm.name)}">`,
@@ -287,6 +379,7 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         '  <worldbody>',
         ...worldbodyBlocks,
         '  </worldbody>',
+        ...tendonBlockLines,
         '</mujoco>',
         '',
     ].join('\n');

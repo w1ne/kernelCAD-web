@@ -98,8 +98,7 @@ describe('MuJoCo spatial tendon (P7 Task 0)', () => {
             // The session API doesn't expose ten_length directly; instead, we
             // round-trip-read from the data buffer (loadMujocoSession returns
             // a typed wrapper; the underlying MjData has a `ten_length` view).
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const data = (session as unknown as { data: any }).data;
+            const data = (session as unknown as { data: { ten_length: ArrayLike<number> } }).data;
             const tenLen = data.ten_length;
             expect(tenLen.length).toBe(1);
             expect(Math.abs(tenLen[0] - expectedLen)).toBeLessThan(1e-6);
