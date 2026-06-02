@@ -209,12 +209,22 @@ describe('Every example under examples/**/*.kcad.ts is loop-clean or has a track
       continue;
     }
     it(`${examplePath} passes the physics-grounded loop`, async () => {
+      // Sweep runs the KINEMATIC-only gate (criteria 1-4). The P6 physics
+      // gate (criteria 5+6) ships as opt-in with --include-physics and is
+      // exercised on the dedicated `examples/kinematic/luxo-lamp.kcad.ts`
+      // path in luxoLampPhysicsGate.test.ts (the bare-spring lamp
+      // correctly fails the drop-test pending #361 — closed-loop spring
+      // API). Including physics here would break every example that has
+      // a single revolute joint without an actuator, which is most of
+      // the v0.7 corpus — and that's a real authoring gap to be closed
+      // by #361, not a regression to gate at PR time.
       const result = await runValidateCli({
         file: examplePath,
         json: true,
         includeInterference: true,
         epsilon: 0.01,
         physical: false,
+        includePhysics: false,
       });
       expect(
         result.mechanism === 'real' || result.mechanism === 'unverified',

@@ -44,13 +44,46 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(revoluteMates.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('passes the physics-grounded loop: mechanism: real with empty failures (#356 closed by P5)', async () => {
+  it('passes the kinematic-only mechanism-truth loop: mechanism: real with empty failures (#356 closed by P5)', async () => {
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
       includeInterference: true,
       physical: false,
       json: true,
+      // P6: kinematic-only here. The Luxo's single-body springs produce
+      // zero restoring moment around the joints they brace, so the lamp
+      // fails the new drop-test (correctly — see the .skip below citing
+      // #361). The pre-P6 P5 commitment was "lamp passes the KINEMATIC
+      // gate without ignore[]", which it still does.
+      includePhysics: false,
+    });
+    expect(r.mechanism).toBe('real');
+    expect(r.mechanismFailures ?? []).toEqual([]);
+  }, 240_000);
+
+  it.skip('passes the physics gate (criteria 5+6) — blocked on issues/361 (closed-loop spring API)', async () => {
+    // P6 (2026-06-02): with `--include-physics` the Luxo's drop-test
+    // reports `mechanism.drops-on-release` — the single-body springs
+    // declared via three `fastened` mates produce zero restoring
+    // moment around the shoulder/elbow/wrist joints (each spring is
+    // fastened to ONE arm of the joint it should brace, so under
+    // gravity the spring rotates with that arm and contributes no
+    // joint moment).
+    //
+    // The kit-level fix is the closed-loop tendon API tracked in
+    // issues/361: declare a 2-anchor spring (one endpoint on each arm
+    // of the joint, sharing a stiffness coefficient) and MuJoCo's
+    // <tendon> + <spatial> primitives apply the restoring force at
+    // the joint. With that API the lamp's drop-test would report
+    // `mechanism: 'real'`. Re-enable this test when #361 ships.
+    const r = await runValidateCli({
+      file: LUXO_SCRIPT_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: true,
     });
     expect(r.mechanism).toBe('real');
     expect(r.mechanismFailures ?? []).toEqual([]);

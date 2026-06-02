@@ -51,6 +51,12 @@ export interface ValidateCliInput {
    *  `fixed()` joints and disconnected solids that the record graph alone
    *  cannot see. */
   physical: boolean;
+  /** P6: run the MuJoCo-based physics gate (static-equilibrium + drop-
+   *  on-release). Off unless requested. Defaults to ON whenever
+   *  --include-interference is set, mirroring the kinematic gate's
+   *  opt-in posture — the cheap default `kernelcad validate` stays free
+   *  of the ~9 MB WASM load. */
+  includePhysics: boolean;
 }
 
 export interface ValidateCliResult {
@@ -112,8 +118,13 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // and shouldn't add cost to the cheap default path. Studio mirrors
   // this gating on its reviewCad path so the parity test sees identical
   // verdicts from both surfaces.
+  //
+  // P6: when --include-physics is set, also run criteria 5+6 (MuJoCo).
+  // Default is ON whenever --include-interference is on (the physics
+  // gate is in the same "heavy validate" tier as interference); the
+  // explicit --no-include-physics opts back out.
   const mechanismProbe = input.includeInterference
-    ? await runMechanismProbe(absPath)
+    ? await runMechanismProbe(absPath, { physicsCheck: input.includePhysics })
     : { mechanism: 'unverified' as const, failures: [] };
 
   if (input.json) {
@@ -160,7 +171,10 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
  * mask the legacy validator's diagnostics. Surfaces such throws as a
  * synthetic warning diagnostic instead of a crash.
  */
-async function runMechanismProbe(absPath: string): Promise<{
+async function runMechanismProbe(
+  absPath: string,
+  opts: { physicsCheck: boolean },
+): Promise<{
   mechanism: 'real' | 'broken' | 'unverified';
   failures: CompilerDiagnostic[];
 }> {
@@ -173,7 +187,7 @@ async function runMechanismProbe(absPath: string): Promise<{
     const aggregated: CompilerDiagnostic[] = [];
     let anyBroken = false;
     for (const arm of assemblies) {
-      const verdict = await checkMechanismTruth(arm);
+      const verdict = await checkMechanismTruth(arm, { physicsCheck: opts.physicsCheck });
       if (verdict.mechanism === 'broken') anyBroken = true;
       aggregated.push(...verdict.failures);
     }
@@ -270,13 +284,23 @@ export function validateCommand(): Command {
     .option('--include-interference', 'also report BREP clashes (off by default; use kernelcad interference for the dedicated surface)', false)
     .option('--physical', 'also run lowered-geometry physical plausibility checks for disconnected solids and unsupported fixed joints', false)
     .option('--epsilon <mm3>', 'interference volume threshold (only consulted with --include-interference)', (v) => parseFloat(v), 0.01)
+    .option('--include-physics', 'run the MuJoCo-based physics gate (static equilibrium + drop-on-release). Defaults to on whenever --include-interference is set.')
+    .option('--no-include-physics', 'explicitly disable the physics gate even when --include-interference is set')
     .option('--json', 'emit results as JSON')
-    .action(async (file: string, opts: { epsilon: number; includeInterference?: boolean; physical?: boolean; json?: boolean }) => {
+    .action(async (file: string, opts: { epsilon: number; includeInterference?: boolean; physical?: boolean; includePhysics?: boolean; json?: boolean }) => {
+      // --include-physics defaults to ON whenever --include-interference
+      // is on (the physics gate lives in the same heavy-validate tier).
+      // The user can opt back out explicitly with --no-include-physics.
+      const includeInterference = opts.includeInterference ?? false;
+      const includePhysics = opts.includePhysics === undefined
+        ? includeInterference
+        : opts.includePhysics;
       const r = await runValidateCli({
         file,
         epsilon: opts.epsilon,
-        includeInterference: opts.includeInterference ?? false,
+        includeInterference,
         physical: opts.physical ?? false,
+        includePhysics,
         json: opts.json ?? false,
       });
       process.exitCode = r.exitCode;
