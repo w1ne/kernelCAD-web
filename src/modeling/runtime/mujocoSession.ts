@@ -45,7 +45,18 @@ async function loadModule(): Promise<MujocoModule> {
     const pkgEntry = require_.resolve('@mujoco/mujoco');
     const pkgDir = dirname(pkgEntry);
     const wasmBinary = await readFile(join(pkgDir, 'mujoco.wasm'));
-    const factory = (await import('@mujoco/mujoco')).default;
+    // The CLI tsconfig uses moduleResolution: Node, which doesn't
+    // honor package.json `exports` maps — so a static `import` of
+    // '@mujoco/mujoco' fails to resolve at build time. Importing via
+    // a string variable hides the specifier from the TS resolver
+    // (resolved at runtime by Node's ESM loader, which DOES honor
+    // exports maps). vitest's bundler-style resolution would
+    // tolerate the static form too, but going through the variable
+    // makes both paths work without diverging.
+    const specifier = '@mujoco/mujoco';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mod = (await import(specifier)) as any;
+    const factory = mod.default;
     cachedModule = await factory({
         wasmBinary,
         locateFile: (path: string) => join(pkgDir, path),

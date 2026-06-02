@@ -204,14 +204,15 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         // Root bodies use the part's `at` placement (mm → m). Non-root
         // bodies live inside their parent's frame; we use the mate's
         // connector origin for the pos.
-        const at = part.at as readonly [number, number, number] | undefined;
+        // Cast through `unknown` because Vec3Param admits Editable<number>
+        // entries (the runtime check below guards). At validate-time the
+        // recompute engine has already lowered everything, but TS doesn't
+        // know that.
+        const at = part.at as unknown as readonly [unknown, unknown, unknown] | undefined;
         if (at === undefined) return [0, 0, 0];
-        // `at` may contain Editable values; for the runtime gate we
-        // assume they've been numericized by the recompute engine at
-        // capture time. If not, default to zero.
-        const ax = typeof at[0] === 'number' ? (at[0] as number) : 0;
-        const ay = typeof at[1] === 'number' ? (at[1] as number) : 0;
-        const az = typeof at[2] === 'number' ? (at[2] as number) : 0;
+        const ax = typeof at[0] === 'number' ? at[0] : 0;
+        const ay = typeof at[1] === 'number' ? at[1] : 0;
+        const az = typeof at[2] === 'number' ? at[2] : 0;
         return [ax, ay, az];
     }
 
