@@ -70,6 +70,7 @@
     "@google/model-viewer": "^4.2.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@monaco-editor/react": "^4.7.0",
+    "@mujoco/mujoco": "^3.9.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.105.4",
@@ -97,9 +98,9 @@
     "three": "^0.184.0",
     "ts-morph": "^27.0.2",
     "typescript": "~5.9.3",
+    "verb-nurbs": "file:./vendor/verb-nurbs",
     "yaml": "^2.8.4",
-    "zod": "^4.3.6",
-    "verb-nurbs": "file:./vendor/verb-nurbs"
+    "zod": "^4.3.6"
   },
   "overrides": {
     "replicad-opencascadejs": "github:w1ne/replicad-opencascadejs#kcad-v0.23.1"

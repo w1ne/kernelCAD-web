@@ -39,6 +39,14 @@ export interface ReviewCadInput {
   preserveInterfaces?: string[];
   includePoseEnvelope?: boolean;
   includeInterference?: boolean;
+  /**
+   * P6: run the MuJoCo-based physics gate (criteria 5+6) in addition to
+   * the kinematic-only criteria 1-4. Defaults to the same value as
+   * `includeInterference` (i.e. heavy-validate flag, opt-in by default
+   * for the cheap path). The Studio "validate on save" flow can pass
+   * this explicitly; the keystroke-rate recompute does NOT.
+   */
+  includePhysics?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
   gripperAperture?: GripperApertureRequest;
@@ -251,8 +259,15 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
   let mechanism: MechanismVerdict = 'unverified';
   let mechanismFailures: readonly CompilerDiagnostic[] = [];
   if (wantMechanism) {
+    // Physics opt-in mirrors interference opt-in by default. The Studio
+    // recompute layer can override by passing `includePhysics: false`
+    // explicitly to keep the keystroke-rate path off MuJoCo even when
+    // it asks for the kinematic check.
+    const physicsCheck = input.includePhysics === undefined
+      ? wantMechanism
+      : input.includePhysics;
     try {
-      const verdict = await checkMechanismTruth(arm);
+      const verdict = await checkMechanismTruth(arm, { physicsCheck });
       mechanism = verdict.mechanism === 'broken' ? 'broken' : 'real';
       mechanismFailures = verdict.failures;
     } catch {

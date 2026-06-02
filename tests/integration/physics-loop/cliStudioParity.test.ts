@@ -37,9 +37,14 @@ describe('CLI / Studio parity for mechanism truth', () => {
     async () => {
       // CLI side: invoke the validate handler in JSON mode so we can
       // parse the structured mechanism field straight off stdout.
+      // Physics OFF here — the parity check pins the kinematic-only
+      // verdict (criteria 1-4) which both surfaces have shipped since
+      // P1; the dedicated physics-parity case below covers criteria
+      // 5+6 separately.
       const cliResult = await captureValidateJson({
         file: VEC3_SPRING_BROKEN_FIXTURE,
         includeInterference: true,
+        includePhysics: false,
       });
       expect(cliResult.mechanism).toBe('broken');
       const cliCodes = sortedCodes(cliResult.mechanismFailures ?? []);
@@ -60,6 +65,7 @@ describe('CLI / Studio parity for mechanism truth', () => {
       const review = await reviewCadTool({
         file: VEC3_SPRING_BROKEN_FIXTURE,
         includeInterference: true,
+        includePhysics: false,
       });
       const studioMechanism = (review as { mechanism?: string }).mechanism;
       const studioFailures = (review as { mechanismFailures?: Array<{ code: string }> })
@@ -78,6 +84,7 @@ describe('CLI / Studio parity for mechanism truth', () => {
       const cliResult = await captureValidateJson({
         file: CLEVIS_HINGE_REAL_FIXTURE,
         includeInterference: true,
+        includePhysics: false,
       });
       expect(cliResult.mechanism).toBe('real');
       expect(cliResult.mechanismFailures ?? []).toEqual([]);
@@ -85,6 +92,7 @@ describe('CLI / Studio parity for mechanism truth', () => {
       const review = await reviewCadTool({
         file: CLEVIS_HINGE_REAL_FIXTURE,
         includeInterference: true,
+        includePhysics: false,
       });
       const studioMechanism = (review as { mechanism?: string }).mechanism;
       const studioFailures = (review as { mechanismFailures?: Array<{ code: string }> })
@@ -92,6 +100,38 @@ describe('CLI / Studio parity for mechanism truth', () => {
 
       expect(studioMechanism).toBe('real');
       expect(studioFailures).toEqual([]);
+    },
+    180000,
+  );
+
+  it(
+    'P6: clevis-hinge with --include-physics — CLI and Studio agree the bare hinge drops under gravity',
+    async () => {
+      // The clevis-hinge fixture passes the kinematic-only gate but, as
+      // a single revolute joint with no spring or actuator, it cannot
+      // pass the drop-test. Asserting both surfaces emit the same
+      // `mechanism.drops-on-release` failure pins the new criterion's
+      // wiring at parity.
+      const cliResult = await captureValidateJson({
+        file: CLEVIS_HINGE_REAL_FIXTURE,
+        includeInterference: true,
+        includePhysics: true,
+      });
+      const cliCodes = sortedCodes(cliResult.mechanismFailures ?? []);
+      expect(cliResult.mechanism).toBe('broken');
+      expect(cliCodes).toContain('mechanism.drops-on-release');
+
+      const review = await reviewCadTool({
+        file: CLEVIS_HINGE_REAL_FIXTURE,
+        includeInterference: true,
+        includePhysics: true,
+      });
+      const studioMechanism = (review as { mechanism?: string }).mechanism;
+      const studioFailures = (review as { mechanismFailures?: Array<{ code: string }> })
+        .mechanismFailures ?? [];
+      const studioCodes = sortedCodes(studioFailures);
+      expect(studioMechanism).toBe('broken');
+      expect(studioCodes).toEqual(cliCodes);
     },
     180000,
   );
@@ -105,6 +145,7 @@ interface CapturedCliResult {
 async function captureValidateJson(input: {
   file: string;
   includeInterference: boolean;
+  includePhysics: boolean;
 }): Promise<CapturedCliResult> {
   // runValidateCli writes its JSON output to console.log. We intercept
   // it so the test can read the structured mechanism field without
@@ -121,6 +162,7 @@ async function captureValidateJson(input: {
       includeInterference: input.includeInterference,
       epsilon: 0.01,
       physical: false,
+      includePhysics: input.includePhysics,
     });
   } finally {
     console.log = originalLog;

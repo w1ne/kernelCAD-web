@@ -117,8 +117,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  4 P0 physics-grounded loop (mechanism truth): mechanism.disconnect,
     //       mechanism.interpenetration, mechanism.dof-mismatch,
     //       mechanism.orphan-part.
-    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 = 200.
-    expect(catalogue.size).toBe(200);
+    //  + 2 P6 physics-grounded loop: mechanism.unstable-under-gravity,
+    //       mechanism.drops-on-release.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 = 202.
+    expect(catalogue.size).toBe(202);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

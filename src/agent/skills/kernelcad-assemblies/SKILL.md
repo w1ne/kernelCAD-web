@@ -614,6 +614,7 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction.
 3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
+5. (Opt-in) `kernelcad validate --include-interference --include-physics` adds the MuJoCo-based physics gate. Two extra failure codes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose) and `mechanism.drops-on-release` (joints drift > 5° or bodies translate > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / declared actuator fail this gate; single-body springs fastened to one arm don't help — see issue #361 (closed-loop tendon API).
 
 If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
 
