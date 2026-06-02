@@ -39,3 +39,36 @@ describe('UIContext layout mode', () => {
         expect(next.current.layoutMode).toBe('viewport');
     });
 });
+
+describe('UIContext viewport background', () => {
+    beforeEach(() => {
+        window.localStorage.clear();
+    });
+
+    it('defaults to dark', () => {
+        const { result } = renderHook(() => useUI(), { wrapper });
+        expect(result.current.viewportBackground).toBe('dark');
+    });
+
+    it('persists across remount via localStorage', () => {
+        const { result, unmount } = renderHook(() => useUI(), { wrapper });
+
+        act(() => {
+            result.current.setViewportBackground('checkered');
+        });
+
+        expect(result.current.viewportBackground).toBe('checkered');
+        expect(window.localStorage.getItem('kernelcad:viewportBackground')).toBe('checkered');
+
+        unmount();
+
+        const { result: next } = renderHook(() => useUI(), { wrapper });
+        expect(next.current.viewportBackground).toBe('checkered');
+    });
+
+    it('falls back to dark on a garbage localStorage value', () => {
+        window.localStorage.setItem('kernelcad:viewportBackground', 'rainbow');
+        const { result } = renderHook(() => useUI(), { wrapper });
+        expect(result.current.viewportBackground).toBe('dark');
+    });
+});

@@ -137,11 +137,9 @@ const bolts = boltHead.patternCircular({ count: 4, axis: [0, 0, 1] });
 
 // Column rises from base-disc top to JUST below the shoulder-clevis
 // knuckle. The clevis fork at the shoulder pivot extends `knuckleR`
-// below the pivot, so the column needs only `knuckleR + 2` mm of
-// clearance below COLUMN_TOP_Z. The previous COLUMN_CLEAR reserved
-// `knuckleR + ARM_T + 2 = 32mm`, leaving the column terminate at
-// z=30 — only 18mm tall and invisible behind the base disc.
-const COLUMN_CLEAR = clevisStyle.knuckleR + 2;
+// below the pivot, so the column terminates flush against the fork's
+// lower edge — no air gap.
+const COLUMN_CLEAR = clevisStyle.knuckleR;
 const COLUMN_TERMINATE_Z = COLUMN_TOP_Z - COLUMN_CLEAR;
 const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
   .translate(0, 0, BASE_H)
@@ -149,15 +147,46 @@ const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
 
 const baseBodyRaw = baseDisc.union(feltPad).union(bolts).union(baseColumn);
 
-const beamClear = clevisStyle.knuckleR + ARM_T / 2 + 2;
+// Beam-to-clevis clearance per joint-side. The previous monolithic
+// `beamClear = knuckleR + ARM_T/2 + 2 = 23 mm` opened an 11 mm air gap
+// at every joint because the +ARM_T/2+2 paranoia margin assumed the
+// beam could collide with the fork's plates along Z — but the beam's
+// Z extent (±9) sits well inside the fork plate's Z extent (±knuckleR
+// = ±12). The real constraint is the fork's BRIDGE TAB, which sits at
+// radial distance knuckleR+1..knuckleR+1+plateT from the pivot along
+// -liftDir (see `clevis.buildFork`). Only the CHILD side of each joint
+// sweeps into the parent's bridge-tab volume, so we use a per-side
+// clearance:
+//
+//   - Child-side clearance (beam end NEAREST the tongue): must clear
+//     the parent fork's bridge tab over the full joint sweep. For the
+//     elbow's -135°…-45° range the smallest value is `knuckleR + 6`
+//     (= 18 mm). For the wrist's -75°…-5° range the same value is
+//     more than enough.
+//   - Parent-side / non-sweeping side (beam end NEAREST the fork): the
+//     beam only has to clear the fork's own knuckle radius, so `clear
+//     = knuckleR` butts the beam flush against the fork-plate's outer
+//     rim with no air gap.
+//   - Shoulder-side of the lower-arm beam: shoulder sweep [-5°…100°]
+//     never enters the base's tab volume (the tab is OFF the column
+//     axis, below z = COLUMN_TOP_Z − 13), so clearance `= knuckleR`
+//     is tight.
+const beamClearTight  = clevisStyle.knuckleR;       // 12 mm — tongue-knuckle butt fit
+const beamClearSweep  = clevisStyle.knuckleR + 6;   // 18 mm — clears parent fork's bridge tab under full sweep
 
 // ============================================================================
 // LOWER ARM body — cream-painted rectangular beam + spring boss under it.
 // ============================================================================
 
-const LOWER_BEAM_LEN = L_LOWER - 2 * beamClear;
+// Lower-arm beam: shoulder side (x=0) is tight (no sweep risk vs base
+// tab), elbow side (x=L_LOWER) butts against fork knuckle (parent side
+// of the elbow joint, also no sweep risk vs its own tab).
+const LOWER_BEAM_START = beamClearTight;
+const LOWER_BEAM_END   = L_LOWER - beamClearTight;
+const LOWER_BEAM_LEN   = LOWER_BEAM_END - LOWER_BEAM_START;
+const LOWER_BEAM_MID   = (LOWER_BEAM_START + LOWER_BEAM_END) / 2;
 const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
-  .translate(L_LOWER / 2, 0, 0)
+  .translate(LOWER_BEAM_MID, 0, 0)
   .material(mArm);
 
 // Spring mount is ABOVE the beam top by SPRING_R + 1 mm of clearance —
@@ -171,7 +200,7 @@ const lowerBeam = box(LOWER_BEAM_LEN, ARM_W, ARM_T, true)
 // FASTENED_CONTACT_TOLERANCE_FRACTION × min(bbox-vol). The plain
 // floating-shaft pattern is what passes the corrected P0.2 gate.
 const SPRING_MOUNT_DZ = SPRING_R + 1;        // 5 mm gap between beam top and shaft centerline
-const LOWER_BOSS_X = beamClear + 14;         // 14mm forward of the shoulder-end of beam
+const LOWER_BOSS_X = LOWER_BEAM_START + 14;  // 14mm forward of the shoulder-end of beam
 const LOWER_BOSS: [number, number, number] = [LOWER_BOSS_X, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
 
 const lowerBeamWithBoss = lowerBeam;
@@ -181,16 +210,23 @@ const lowerBeamWithBoss = lowerBeam;
 // on the +Z side hosting the elbow-wrist spring.
 // ============================================================================
 
-const UPPER_BEAM_LEN = L_UPPER - 2 * beamClear;
+// Upper-arm beam: elbow side (x=0) sweeps relative to lower-arm so it
+// needs the bridge-tab clearance; wrist side (x=L_UPPER) is the parent
+// side of the wrist joint, no sweep risk against its own fork tab, so
+// it butts tight against the fork's outer knuckle rim.
+const UPPER_BEAM_START = beamClearSweep;
+const UPPER_BEAM_END   = L_UPPER - beamClearTight;
+const UPPER_BEAM_LEN   = UPPER_BEAM_END - UPPER_BEAM_START;
+const UPPER_BEAM_MID   = (UPPER_BEAM_START + UPPER_BEAM_END) / 2;
 const upperBeam = box(UPPER_BEAM_LEN, ARM_W, ARM_T, true)
-  .translate(L_UPPER / 2, 0, 0)
+  .translate(UPPER_BEAM_MID, 0, 0)
   .material(mArm);
 
 // Upper-arm spring mount: same floating-shaft pattern as the lower-arm.
 // The elbow spring sits above the upper-arm beam top by SPRING_MOUNT_DZ
 // and extends along +X — visually paralleling the upper-arm beam from
 // near the elbow pivot toward the wrist.
-const UPPER_BOSS: [number, number, number] = [beamClear + 14, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
+const UPPER_BOSS: [number, number, number] = [UPPER_BEAM_START + 14, 0, ARM_T / 2 + SPRING_MOUNT_DZ];
 
 const upperBeamWithBoss = upperBeam;
 
@@ -206,11 +242,13 @@ const upperBeamWithBoss = upperBeam;
 //                                  the tongue to the shade base
 //   x ∈ [SHADE_ANCHOR_X, ...]   — shade + socket + bulb
 //
-// HEAD_NECK_BACK sits 0.5 mm forward of the fork's outer X edge so the
-// neck cylinder doesn't pierce the upper-arm fork plates. The 0.5 mm
-// gap is filled by the tongue knuckle, which is unioned into the head
-// at the same X span — visually continuous.
-const HEAD_NECK_BACK = clevisStyle.knuckleR + 5;             // 17 mm — clear of fork at all wrist poses
+// HEAD_NECK_BACK sits at `beamClearSweep` because the head is the
+// child of the wrist joint — its neck cylinder sweeps relative to the
+// upper-arm fork's bridge tab. Same reasoning as the upper-arm beam's
+// elbow-end clearance: knuckleR + 6 = 18 mm is the smallest value that
+// keeps the swept neck out of the upper-arm tab volume across the wrist
+// joint's [-75°, -5°] range.
+const HEAD_NECK_BACK = beamClearSweep;                       // 18 mm — flush with tongue + tab clearance
 const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm — slightly past SHADE_ANCHOR_X
 const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
