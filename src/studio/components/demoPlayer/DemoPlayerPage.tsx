@@ -906,7 +906,10 @@ export function DemoPlayerPage(): React.JSX.Element {
 
         let groupCount = 0;
         // Separate virtual referenceImage / renderEnvironment / cameraTarget
-        // records from geometry records.
+        // records from geometry records. Tendon FeatureMeshes carry a
+        // baked world-frame cylinder mesh emitted by `meshFeaturesPerFeature`
+        // (P7); they fall through to the geometry path and render as
+        // ordinary kCAD feature groups, so no separate routing here.
         const geometryFeatures: typeof perFeature = [];
         const referenceImageFeatures: typeof perFeature = [];
         let renderEnvSpec: RenderEnvironmentSpec | null = null;

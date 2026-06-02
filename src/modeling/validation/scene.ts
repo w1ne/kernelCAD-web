@@ -14,6 +14,7 @@ import type { Shape } from '../capture/proxy';
 import type { Connector } from '../mates/connector';
 import type { MateRecord } from '../mates/mate';
 import type { PoseEnvelopeDiagnostic } from '../mates/poseEnvelope';
+import type { TendonRecord } from '../mates/tendon';
 import type { ValidatorDiagnostic } from '../mates/validator';
 import type { Transform } from '../../shared/runtime/se3';
 import type { Vec3 } from '../../shared/intent/types';
@@ -76,6 +77,12 @@ export class Scene implements Iterable<ScenePart> {
    *  mates, omitted from the field set for parity with the optional
    *  `ScenePart.connectors` surface. */
   readonly mates?: readonly MateRecord[];
+  /** P7: closed-loop balance-spring records declared via
+   *  `arm.tendon(...)`. Undefined when none were declared. Surfaced for
+   *  the Studio's `TendonRenderer` and the MJCF physics-gate exporter.
+   *  Each tendon's endpoint connectors must exist on the part-side
+   *  `connectors` arrays surfaced above. */
+  readonly tendons?: readonly TendonRecord[];
   /** Validator diagnostics attached by `Assembly.solvedModel({validate: 'warn'})`
    *  (v0.6 Task 9). Populated from `validateAssemblyWithMates(arm)` when the
    *  gate is in `warn` mode; empty when validation is skipped (`mode: 'off'`)
@@ -104,6 +111,7 @@ export class Scene implements Iterable<ScenePart> {
     sourceFeatureId?: string,
     mates?: readonly MateRecord[],
     warnings?: readonly SceneDiagnostic[],
+    tendons?: readonly TendonRecord[],
   ) {
     this.assemblyName = assemblyName;
     this.parts = Object.freeze([...parts]);
@@ -112,6 +120,9 @@ export class Scene implements Iterable<ScenePart> {
     this._sourceFeatureId = sourceFeatureId;
     if (mates !== undefined && mates.length > 0) {
       this.mates = Object.freeze([...mates]);
+    }
+    if (tendons !== undefined && tendons.length > 0) {
+      this.tendons = Object.freeze([...tendons]);
     }
     // `warnings` is always present (possibly empty) — keep it a frozen array
     // so callers can `.some(...)` / iterate without a null-check. Inserted as
