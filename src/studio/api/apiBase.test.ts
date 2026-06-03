@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getSessionMock = vi.fn();
 
+const getSupabaseMock = vi.fn(() => ({
+  auth: {
+    getSession: getSessionMock,
+  },
+}));
+
 vi.mock('../../funnel/lib/supabaseClient', () => ({
-  getSupabase: () => ({
-    auth: {
-      getSession: getSessionMock,
-    },
-  }),
+  getSupabase: () => getSupabaseMock(),
 }));
 
 import { apiCall, rewritePath } from './apiBase';
@@ -15,6 +17,8 @@ import { apiCall, rewritePath } from './apiBase';
 describe('apiCall', () => {
   beforeEach(() => {
     getSessionMock.mockReset();
+    getSupabaseMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
     // Default: any prior stub on VITE_KERNELCAD_API_BASE should be cleared so
     // the prod-URL fallback path is exercised by default.
     vi.unstubAllEnvs();
@@ -28,6 +32,18 @@ describe('apiCall', () => {
     getSessionMock.mockResolvedValueOnce({ data: { session: null } });
 
     await expect(apiCall()).resolves.toEqual({ base: '', headers: {} });
+  });
+
+  it('falls back to unsigned-in when Supabase is unconfigured (plain local dev)', async () => {
+    // getSupabase() throws when VITE_SUPABASE_URL / ANON_KEY are absent. That is
+    // the localhost case and must resolve to the local-vite-middleware path, not
+    // crash every Studio backend fetch.
+    getSupabaseMock.mockImplementation(() => {
+      throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.');
+    });
+
+    await expect(apiCall()).resolves.toEqual({ base: '', headers: {} });
+    expect(getSessionMock).not.toHaveBeenCalled();
   });
 
   it('returns the prod hosted base + bearer token when signed in', async () => {
