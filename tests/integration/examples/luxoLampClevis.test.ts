@@ -49,17 +49,13 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(revoluteMates.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('P11 Slice 2: criterion 8 flags the straight springs piercing the arms (RED by design until Slice 3 wrap re-author)', async () => {
-    // P9 made the lamp pass the kinematic loop (criteria 1-4 + 7) with
-    // `mechanism: real`. P11 Slice 2 adds criterion 8
-    // (mechanism.tendon-body-intersect): the three balance springs are
-    // still authored as straight `<spatial>` lines, so each cable cuts
-    // through the arm body it spans — exactly the "spring goes through
-    // the structure" bug. The gate is therefore RED here BY DESIGN; Slice
-    // 3 re-authors the springs with wrap geoms and restores `real`. The
-    // assertion below pins the intermediate state AND proves the only new
-    // breakage is criterion 8 — the kinematic criteria (1-4, 7) remain
-    // clean, so the soundness P9 established is intact.
+  it('passes the kinematic-only mechanism-truth loop incl. criterion 8: mechanism: real (P11 Slice 3 wrap re-author)', async () => {
+    // P9 made the lamp pass criteria 1-4 + 7. P11 Slice 2 added criterion
+    // 8 (tendon-body-intersect), which flagged the straight springs
+    // cutting through the arms. P11 Slice 3 routes each spring over a wrap
+    // rail on the beam it spans, so no cable pierces a body — the lamp is
+    // back to `mechanism: real` with the spring-through-structure bug
+    // closed.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
@@ -68,13 +64,8 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
       json: true,
       includePhysics: false,
     });
-    expect(r.mechanism).toBe('broken');
-    const failures = r.mechanismFailures ?? [];
-    const tendonHits = failures.filter((f) => f.code === 'mechanism.tendon-body-intersect');
-    // At least one spring pierces an arm.
-    expect(tendonHits.length).toBeGreaterThan(0);
-    // EVERY failure is criterion 8 — no kinematic criterion regressed.
-    expect(failures.every((f) => f.code === 'mechanism.tendon-body-intersect')).toBe(true);
+    expect(r.mechanism).toBe('real');
+    expect(r.mechanismFailures ?? []).toEqual([]);
   }, 240_000);
 
   it('P8 joint-mesh-continuity gate sees NO joint-mesh-gap diagnostics on the post-P9 Luxo (GREEN after P9)', async () => {
@@ -94,11 +85,7 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
       (f) => f.code === 'mechanism.joint-mesh-gap',
     );
     expect(gaps).toEqual([]);
-    // NOTE: the overall verdict is `broken` in Slice 2 because criterion 8
-    // (tendon-body-intersect) flags the straight springs — see the
-    // dedicated test above. This test's contract is ONLY that criterion 7
-    // (joint-mesh-gap) stays clean, which it does. Slice 3's wrap
-    // re-author restores `mechanism: real`.
+    expect(r.mechanism).toBe('real');
   }, 240_000);
 
   it('P11 Slice 1: emitted MJCF contains one <mesh> + one <geom type="mesh"> per part', async () => {
@@ -137,18 +124,14 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(excludeCount).toBe(3);
   }, 240_000);
 
-  it('still passes the physics gate (criteria 5+6) — only criterion 8 breaks the overall verdict in Slice 2', async () => {
+  it('passes the full physics gate (criteria 1-8 incl. 5+6) — wrap-routed springs hold the lamp (closes #361)', async () => {
     // P10 (2026-06-03): the lamp's three balance springs are closed-loop
     // `arm.tendon(...)` calls; MuJoCo's <spatial> tendon holds the lamp at
     // qpos=0 against gravity, so the drop-test (criterion 6) and static
-    // equilibrium (criterion 5) stay clean.
-    //
-    // P11 Slice 2: criterion 8 now also runs and is RED (straight springs
-    // pierce the arms), so the OVERALL verdict is `broken`. But the
-    // PHYSICS criteria themselves are unaffected — this test pins that no
-    // `drops-on-release` / `unstable-under-gravity` diagnostic fires, i.e.
-    // P10's #361 closure still holds. Slice 3's wrap re-author clears
-    // criterion 8 and the overall verdict returns to `real`.
+    // equilibrium (criterion 5) stay clean. P11 Slice 3 routes those
+    // springs over wrap rails, clearing criterion 8 without disturbing the
+    // physics calibration — the lamp passes every criterion with
+    // `mechanism: real`.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
@@ -157,12 +140,7 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
       json: true,
       includePhysics: true,
     });
-    const failures = r.mechanismFailures ?? [];
-    const physicsHits = failures.filter(
-      (f) => f.code === 'mechanism.drops-on-release' || f.code === 'mechanism.unstable-under-gravity',
-    );
-    expect(physicsHits).toEqual([]);
-    // The only thing keeping the lamp from `real` is criterion 8.
-    expect(failures.every((f) => f.code === 'mechanism.tendon-body-intersect')).toBe(true);
+    expect(r.mechanism).toBe('real');
+    expect(r.mechanismFailures ?? []).toEqual([]);
   }, 240_000);
 });
