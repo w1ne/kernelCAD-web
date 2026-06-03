@@ -27,7 +27,7 @@
 
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { applyTransform, helixPolyline, tendonTransform } from './tendonTransform';
+import { applyTransform, helixPolylineRouted, tendonTransform } from './tendonTransform';
 import type { Vec3 } from '../../../../shared/intent/types';
 
 /**
@@ -56,6 +56,18 @@ export interface RenderableTendon {
     readonly coilTurns?: number;
     /** P10: helix outer diameter (mm) when `visualStyle === 'coil'`. */
     readonly coilDiameterMm?: number;
+    /**
+     * P11 Slice 3: ordered wrap-rail waypoints the coil routes over, in
+     * the same `{ localMm, transform4x4 }` form as the endpoints so they
+     * track live FK. Empty/undefined → straight coil (identical to the
+     * pre-Slice-3 path). Keeps this component consistent with the baked
+     * `featureMeshing` coil render, which routes via the same
+     * `helixPolylineRouted` helper.
+     */
+    readonly wraps?: readonly {
+        readonly localMm: Vec3;
+        readonly transform4x4: readonly number[];
+    }[];
 }
 
 interface TendonRendererProps {
@@ -85,12 +97,18 @@ export function TendonRenderer({ tendons }: TendonRendererProps) {
                 const fromWorld = applyTransform(t.fromTransform4x4, t.fromLocalMm);
                 const toWorld = applyTransform(t.toTransform4x4, t.toLocalMm);
                 if ((t.visualStyle ?? 'line') === 'coil') {
+                    // P11 Slice 3: routed centerline [from, …wrap waypoints, to].
+                    // No wraps → [from, to] → straight coil, unchanged.
+                    const centerline: Vec3[] = [
+                        fromWorld,
+                        ...(t.wraps ?? []).map((w) => applyTransform(w.transform4x4, w.localMm)),
+                        toWorld,
+                    ];
                     return (
                         <CoilTendonMesh
                             key={t.name}
                             name={t.name}
-                            fromWorld={fromWorld}
-                            toWorld={toWorld}
+                            centerline={centerline}
                             coilTurns={t.coilTurns ?? 10}
                             coilDiameterMm={t.coilDiameterMm ?? 7}
                             visualDiameterMm={t.visualDiameterMm}
@@ -126,16 +144,18 @@ export function TendonRenderer({ tendons }: TendonRendererProps) {
  */
 function CoilTendonMesh(props: {
     name: string;
-    fromWorld: Vec3;
-    toWorld: Vec3;
+    centerline: readonly Vec3[];
     coilTurns: number;
     coilDiameterMm: number;
     visualDiameterMm: number;
     material: THREE.Material;
 }) {
-    const { name, fromWorld, toWorld, coilTurns, coilDiameterMm, visualDiameterMm, material } = props;
+    const { name, centerline, coilTurns, coilDiameterMm, visualDiameterMm, material } = props;
+    // Serialise the centerline for the memo dependency (array identity
+    // changes every render, but the flattened coords are the real input).
+    const centerlineKey = centerline.map((p) => `${p[0]},${p[1]},${p[2]}`).join('|');
     const geometry = useMemo(() => {
-        const polyline = helixPolyline(fromWorld, toWorld, coilTurns, coilDiameterMm);
+        const polyline = helixPolylineRouted(centerline, coilTurns, coilDiameterMm);
         const points = polyline.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
         // CatmullRom over the helix samples produces a smooth tube
         // sweep without bumpy seams between segments. Tubular segments
@@ -150,7 +170,8 @@ function CoilTendonMesh(props: {
             8,
             false,
         );
-    }, [fromWorld, toWorld, coilTurns, coilDiameterMm, visualDiameterMm]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [centerlineKey, coilTurns, coilDiameterMm, visualDiameterMm]);
     useEffect(() => () => geometry.dispose(), [geometry]);
     return (
         <mesh

@@ -72,7 +72,7 @@ export function tendonTransform(
 // P10 — the helix polyline helper is shared with the CLI featureMeshing
 // path so Studio + CLI render the same coil. Re-exported here to keep the
 // Studio import surface stable.
-export { helixPolyline, HELIX_SAMPLES_PER_TURN } from '../../../../modeling/mates/helixPolyline';
+export { helixPolyline, helixPolylineRouted, HELIX_SAMPLES_PER_TURN } from '../../../../modeling/mates/helixPolyline';
 
 /**
  * Apply a per-part world transform (column-major 4×4) to a point in
