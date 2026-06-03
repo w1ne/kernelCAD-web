@@ -1081,6 +1081,20 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'mechanism',
     description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',
   },
+  // Physics-loop P11 Slice 2 — static tendon-routing backstop. Emitted by
+  // `mechanismTruth.ts` criterion 8 when a balance tendon's routed path
+  // cuts through a body it is neither anchored to nor routing around. The
+  // runtime counterpart is MuJoCo wrap-geom routing; this code is the
+  // design-time gate that red-flags "the spring goes through the arm"
+  // before MuJoCo is asked to spin up.
+  'mechanism.tendon-body-intersect': {
+    hintTemplate:
+      "A tendon's routed path passes through (or within 0.5 mm of) a part it is not anchored to and does not route around. Declare a wrap geom on the offending part via part.wrapGeom(name, { axis, radius }) and add it to the tendon's wrapGeoms so the cable rides over the body, or relocate the tendon anchors so the straight line stays clear at every sampled pose.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'route the tendon around the body with a wrap geom, or relocate its anchors so the cable stays clear of non-anchor parts at every pose' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'A balance tendon\'s routed polyline passes through the solid interior of a part that is neither one of its anchor parts nor a wrap-geom rail it routes around, at some sampled pose. Means the spring would visibly cut through structure.',
+  },
   // Assembly visual-review gating (3)
   'assembly.visual.review-check-failed': {
     hintTemplate:

@@ -18,7 +18,12 @@
 
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { runValidateCli } from '../../../src/agent/cli/commands/validate';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../src/modeling/runtime/runScript';
+import { assemblyToMjcf } from '../../../src/modeling/runtime/mjcfExport';
+import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const LUXO_SCRIPT_PATH = 'examples/kinematic/luxo-lamp.kcad.ts';
 
@@ -44,12 +49,13 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(revoluteMates.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('passes the kinematic-only mechanism-truth loop: mechanism: real with empty failures (re-enabled by P9 Luxo geometry fix)', async () => {
-    // P9 (2026-06-02): with the column extended to COLUMN_TOP_Z, the
-    // head-neck pulled back to cover the wrist pivot, and small
-    // spring-mounting posts added to each arm, the lamp now passes
-    // the full kinematic-only mechanism-truth loop (criteria 1-4 +
-    // P8 joint-mesh-continuity criterion 7).
+  it('passes the kinematic-only mechanism-truth loop incl. criterion 8: mechanism: real (P11 Slice 3 wrap re-author)', async () => {
+    // P9 made the lamp pass criteria 1-4 + 7. P11 Slice 2 added criterion
+    // 8 (tendon-body-intersect), which flagged the straight springs
+    // cutting through the arms. P11 Slice 3 routes each spring over a wrap
+    // rail on the beam it spans, so no cable pierces a body — the lamp is
+    // back to `mechanism: real` with the spring-through-structure bug
+    // closed.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
@@ -82,13 +88,50 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(r.mechanism).toBe('real');
   }, 240_000);
 
-  it('passes the physics gate (criteria 5+6) — closed by P10 closed-loop tendon API (closes #361)', async () => {
-    // P10 (2026-06-03): the lamp's three balance springs are now
-    // closed-loop `arm.tendon(...)` calls. MuJoCo's <spatial> tendon
-    // applies the restoring moment that holds the lamp at qpos=0
-    // against gravity; the drop-test reports `mechanism: 'real'` with
-    // no `mechanism.drops-on-release` diagnostic. Issue #361 closes
-    // with this commit.
+  it('P11 Slice 1: emitted MJCF contains one <mesh> + one <geom type="mesh"> per part', async () => {
+    // The lamp builds 4 parts via `arm.part('base' | 'lower-arm' |
+    // 'upper-arm' | 'lamp-head', ...)`. Post-Slice 1, every part
+    // contributes one inline `<asset><mesh>` and one
+    // `<geom type="mesh">` inside its `<body>` — MuJoCo's drop-test
+    // becomes collision-aware. Asserting the counts guards against a
+    // regression that silently drops the geom emit for one body.
+    await initOcct();
+    const absPath = resolve(LUXO_SCRIPT_PATH);
+    const code = readFileSync(absPath, 'utf8');
+    const run = await runScript({
+      code,
+      fileName: LUXO_SCRIPT_PATH,
+      scriptDir: dirname(absPath),
+    });
+    const arms = Array.from(run.session.assemblies.values()) as readonly Assembly[];
+    expect(arms.length).toBeGreaterThan(0);
+    const lamp = arms[0];
+    const { mjcf } = await assemblyToMjcf(lamp);
+    const meshAssetCount = (mjcf.match(/<mesh name="part-/g) ?? []).length;
+    const geomMeshCount = (mjcf.match(/<geom type="mesh"/g) ?? []).length;
+    expect(meshAssetCount).toBe(4);
+    expect(geomMeshCount).toBe(4);
+    expect(mjcf).toMatch(/<size nconmax="500"\/>/);
+    // P11 Slice 1: every mate emits one `<contact><exclude>`. The
+    // lamp has 3 revolute mates (shoulder, elbow, wrist) — without the
+    // excludes, the clevis fork-tongue mesh overlap at every joint
+    // would generate spurious contact forces strong enough to fling
+    // the chain apart in the drop-test integrator. (Tendon emission is
+    // separate from the mate count; tendons emit `<spatial>`, not
+    // `<exclude>`.)
+    expect(mjcf).toMatch(/<contact>/);
+    const excludeCount = (mjcf.match(/<exclude /g) ?? []).length;
+    expect(excludeCount).toBe(3);
+  }, 240_000);
+
+  it('passes the full physics gate (criteria 1-8 incl. 5+6) — wrap-routed springs hold the lamp (closes #361)', async () => {
+    // P10 (2026-06-03): the lamp's three balance springs are closed-loop
+    // `arm.tendon(...)` calls; MuJoCo's <spatial> tendon holds the lamp at
+    // qpos=0 against gravity, so the drop-test (criterion 6) and static
+    // equilibrium (criterion 5) stay clean. P11 Slice 3 routes those
+    // springs over wrap rails, clearing criterion 8 without disturbing the
+    // physics calibration — the lamp passes every criterion with
+    // `mechanism: real`.
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,

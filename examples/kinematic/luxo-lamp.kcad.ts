@@ -102,6 +102,18 @@ const SPRING_POST_R = 1.0;                   // 1 mm wire-thin
 const SPRING_MOUNT_DZ = 5;                   // 5 mm clearance between beam top and anchor centerline
 const SPRING_POST_H = SPRING_MOUNT_DZ + 1;   // 1 mm of overlap with the beam top
 
+// P11 Slice 2/3 — tendon wrap-routing rails. Each balance spring rode as
+// a straight <spatial> line between its two anchors, which (with the
+// arms folded at every joint) cut straight through the arm bodies it
+// spans — criterion 8 (mechanism.tendon-body-intersect) flags this. A
+// thin collision-OFF cylinder running along each beam at the spring-
+// anchor height gives the cable a rail to wrap over, so it rides above
+// the beam instead of through it. Centerline at the anchor height
+// (ARM_T/2 + SPRING_MOUNT_DZ) so the routed path stays clear of the beam
+// solid (top at ARM_T/2).
+const RAIL_R = 4;                            // rail radius (cable standoff over the beam)
+const RAIL_Z = ARM_T / 2 + SPRING_MOUNT_DZ;  // 14 mm — same height as the spring anchors
+
 // ---- assembly handle -----------------------------------------------------
 const arm = assembly('luxo-lamp');
 
@@ -399,6 +411,15 @@ const lowerArmPart = arm
   .connector('elbowSpringAnchorLower', {
     type: 'frame',
     origin: { kind: 'vec3', value: LOWER_ELBOW_ANCHOR },
+  })
+  // P11 Slice 3 — wrap rail along the lower-arm beam at the spring-anchor
+  // height. The shoulder + elbow springs route over it so neither cable
+  // cuts through the lower-arm body.
+  .wrapGeom('lowerRail', {
+    axis: [1, 0, 0],
+    origin: [LOWER_BEAM_MID, 0, RAIL_Z],
+    radius: RAIL_R,
+    halfLengthMm: LOWER_BEAM_LEN / 2,
   });
 
 const upperArmPart = arm
@@ -420,6 +441,14 @@ const upperArmPart = arm
   .connector('wristSpringAnchorUpper', {
     type: 'frame',
     origin: { kind: 'vec3', value: UPPER_WRIST_ANCHOR },
+  })
+  // P11 Slice 3 — wrap rail along the upper-arm beam; the elbow spring
+  // routes over it so the cable rides above the upper-arm body.
+  .wrapGeom('upperRail', {
+    axis: [1, 0, 0],
+    origin: [UPPER_BEAM_MID, 0, RAIL_Z],
+    radius: RAIL_R,
+    halfLengthMm: UPPER_BEAM_LEN / 2,
   });
 
 const headPart = arm
@@ -432,6 +461,15 @@ const headPart = arm
   .connector('wristSpringAnchorHead', {
     type: 'frame',
     origin: { kind: 'vec3', value: HEAD_WRIST_ANCHOR },
+  })
+  // P11 Slice 3 — short wrap rail over the head neck at the wrist-spring
+  // anchor height; the wrist spring routes over it so the cable clears
+  // the lamp-head body.
+  .wrapGeom('headRail', {
+    axis: [1, 0, 0],
+    origin: [HEAD_WRIST_ANCHOR_X, 0, HEAD_NECK_TOP_Z + SPRING_MOUNT_DZ],
+    radius: RAIL_R,
+    halfLengthMm: 15,
   });
 
 void basePart;
@@ -489,6 +527,8 @@ arm.tendon('shoulder-spring', {
   coilTurns: 12,
   coilDiameterMm: 8,
   visualDiameterMm: 1.4,
+  // P11 Slice 3 — route over the lower-arm rail so the cable clears the beam.
+  wrapGeoms: [{ partName: 'lower-arm', wrapName: 'lowerRail' }],
 });
 
 // Elbow spring: spans from the lower-arm rear-end post (140 mm forward
@@ -506,6 +546,12 @@ arm.tendon('elbow-spring', {
   coilTurns: 10,
   coilDiameterMm: 7,
   visualDiameterMm: 1.2,
+  // P11 Slice 3 — route over both arm rails so the cable spans the elbow
+  // above the two beams instead of through them.
+  wrapGeoms: [
+    { partName: 'lower-arm', wrapName: 'lowerRail' },
+    { partName: 'upper-arm', wrapName: 'upperRail' },
+  ],
 });
 
 // Wrist spring: spans from the upper-arm rear-end post to the head
@@ -521,6 +567,12 @@ arm.tendon('wrist-spring', {
   coilTurns: 8,
   coilDiameterMm: 6,
   visualDiameterMm: 1.0,
+  // P11 Slice 3 — route over the upper-arm rail then the head-neck rail
+  // so the cable clears both bodies on its way to the head anchor.
+  wrapGeoms: [
+    { partName: 'upper-arm', wrapName: 'upperRail' },
+    { partName: 'lamp-head', wrapName: 'headRail' },
+  ],
 });
 
 return arm.solvedModel({});

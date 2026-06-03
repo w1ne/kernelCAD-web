@@ -115,6 +115,38 @@ describe('assemblyToMjcf', () => {
         const bodyOpenCount = (mjcf.match(/<body /g) ?? []).length;
         expect(bodyOpenCount).toBe(2);
 
+        // P11 Slice 1: every part contributes one `<asset><mesh>` and one
+        // `<geom type="mesh">`. Two parts → two of each.
+        const meshAssetCount = (mjcf.match(/<mesh name="part-/g) ?? []).length;
+        expect(meshAssetCount).toBe(2);
+        const geomMeshCount = (mjcf.match(/<geom type="mesh"/g) ?? []).length;
+        expect(geomMeshCount).toBe(2);
+        // P11 Slice 1: the inline mesh vertex stream is in millimetres,
+        // but the rest of the MJCF (body `pos`, `<inertial>`, gravity) is
+        // in metres. Every `<mesh>` MUST carry `scale="0.001 0.001 0.001"`
+        // so MuJoCo rescales the hull into its metre world — without it
+        // the collision geometry is 1000× oversized and explodes the
+        // drop-test. Guards the unit regression directly.
+        const scaledMeshCount = (
+            mjcf.match(/<mesh name="part-[^"]*" scale="0\.001 0\.001 0\.001"/g) ?? []
+        ).length;
+        expect(scaledMeshCount).toBe(2);
+        // Asset references match their declared assets — `<geom mesh="part-arm">`
+        // and `<geom mesh="part-spring">` are both present.
+        expect(mjcf).toMatch(/<geom type="mesh" mesh="part-arm"/);
+        expect(mjcf).toMatch(/<geom type="mesh" mesh="part-spring"/);
+        // `<size nconmax>` is set so MuJoCo doesn't overflow contact storage
+        // on tighter assemblies than this 2-body fixture.
+        expect(mjcf).toMatch(/<size nconmax="500"\/>/);
+        // P11 Slice 1: every mate emits one `<contact><exclude>` line so
+        // the joint-anchor mesh overlap doesn't generate spurious
+        // contact forces. This fixture has one mate; expect one
+        // exclude. Body-name order matches `parseConnectorRef(mate.a)`
+        // (parent) then `(mate.b)` (child).
+        expect(mjcf).toMatch(/<contact>/);
+        const excludeCount = (mjcf.match(/<exclude /g) ?? []).length;
+        expect(excludeCount).toBe(1);
+
         // Parse — qpos should be empty (no joints).
         const mujoco = (await loadMujocoInNode()) as {
             MjModel: { from_xml_string: (s: string) => unknown };
