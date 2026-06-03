@@ -275,6 +275,47 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         }
     }
 
+    // P11 Slice 2 — build the routed `<spatial>` child sequence for every
+    // tendon that declares wrapGeoms: `<site from>` → (wrap geom, with any
+    // sidesite / separator sites) → `<site to>`. MuJoCo requires a `<site>`
+    // between two consecutive wrap `<geom>`s, so a separator site is
+    // injected at each subsequent wrap's origin. Sidesite + separator sites
+    // are registered into `sitesByPart` here so `emitBody` (which runs
+    // after this pass) materialises them inside the owning body.
+    const addExtraSite = (partName: string, siteName: string, localPosMm: Vec3): void => {
+        const list = sitesByPart.get(partName) ?? [];
+        list.push({ partName, siteName, localPosMm });
+        sitesByPart.set(partName, list);
+    };
+    const spatialChildrenByTendon = new Map<string, string[]>();
+    for (const rt of resolvedTendons) {
+        const t = rt.record;
+        if (t.wrapGeoms.length === 0) continue;
+        const [fromE, toE] = rt.endpoints;
+        const children: string[] = [`      <site site="${escapeXml(fromE.siteName)}"/>`];
+        t.wrapGeoms.forEach((w, i) => {
+            const ownerPart = partByName.get(w.partName);
+            const wg = ownerPart?.wrapGeoms.find((g) => g.name === w.wrapName);
+            if (ownerPart === undefined || wg === undefined) return; // capture-validated
+            if (i > 0) {
+                const sepName = `${t.name}__wrap${i}_sep`;
+                addExtraSite(w.partName, sepName, wg.origin);
+                children.push(`      <site site="${escapeXml(sepName)}"/>`);
+            }
+            let sidesiteAttr = '';
+            if (w.sidesite !== undefined) {
+                const sideName = `${t.name}__wrap${i}_side`;
+                addExtraSite(w.partName, sideName, [w.sidesite[0], w.sidesite[1], w.sidesite[2]]);
+                sidesiteAttr = ` sidesite="${escapeXml(sideName)}"`;
+            }
+            children.push(
+                `      <geom geom="${escapeXml(mjcfWrapGeomName(w.partName, w.wrapName))}"${sidesiteAttr}/>`,
+            );
+        });
+        children.push(`      <site site="${escapeXml(toE.siteName)}"/>`);
+        spatialChildrenByTendon.set(t.name, children);
+    }
+
     // Emit MJCF by recursive body-tree walk.
     const jointOrder: { mjcfName: string; mateName: string }[] = [];
     const bodyOrder: string[] = [];
@@ -366,6 +407,32 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             );
         }
 
+        // P11 Slice 2 — collision-OFF wrap cylinders for tendon routing.
+        // `contype="0" conaffinity="0"` so they never generate body-body
+        // contacts; a `<spatial>` tendon references them by name and the
+        // solver routes the cable tangent to the cylinder surface, so a
+        // balance spring rides over the arm instead of cutting through it.
+        // `fromto` endpoints are origin ± (unit axis)·halfLength, mm→m.
+        for (const wg of part.wrapGeoms) {
+            const ax = wg.axis;
+            const len = Math.hypot(ax[0], ax[1], ax[2]) || 1;
+            const u: Vec3 = [ax[0] / len, ax[1] / len, ax[2] / len];
+            const halfMm = wg.halfLengthMm ?? WRAP_GEOM_INFINITE_HALF_LEN_MM;
+            const p1 = [
+                (wg.origin[0] - u[0] * halfMm) * MM_TO_M,
+                (wg.origin[1] - u[1] * halfMm) * MM_TO_M,
+                (wg.origin[2] - u[2] * halfMm) * MM_TO_M,
+            ];
+            const p2 = [
+                (wg.origin[0] + u[0] * halfMm) * MM_TO_M,
+                (wg.origin[1] + u[1] * halfMm) * MM_TO_M,
+                (wg.origin[2] + u[2] * halfMm) * MM_TO_M,
+            ];
+            lines.push(
+                `${indent}  <geom name="${escapeXml(mjcfWrapGeomName(partName, wg.name))}" type="cylinder" contype="0" conaffinity="0" group="3" fromto="${[...p1, ...p2].map(fmtNum).join(' ')}" size="${fmtNum(wg.radiusMm * MM_TO_M)}"/>`,
+            );
+        }
+
         // Children — recurse.
         for (const childEntry of childrenByParent.get(partName) ?? []) {
             lines.push(emitBody(childEntry.childName, childEntry.mate, indent + '  '));
@@ -398,8 +465,16 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             tendonBlockLines.push(
                 `    <spatial name="${escapeXml(t.name)}" springlength="${fmtNum(springLenM)}" stiffness="${fmtNum(stiffnessNm)}"${dampingAttr}>`,
             );
-            for (const ep of rt.endpoints) {
-                tendonBlockLines.push(`      <site site="${escapeXml(ep.siteName)}"/>`);
+            // P11 Slice 2: emit the routed child sequence (sites + wrap
+            // geoms) when this tendon declares wrapGeoms; otherwise the
+            // straight two-site spatial (pre-Slice-2 behavior).
+            const routed = spatialChildrenByTendon.get(t.name);
+            if (routed !== undefined) {
+                for (const c of routed) tendonBlockLines.push(c);
+            } else {
+                for (const ep of rt.endpoints) {
+                    tendonBlockLines.push(`      <site site="${escapeXml(ep.siteName)}"/>`);
+                }
             }
             tendonBlockLines.push('    </spatial>');
         }
@@ -591,6 +666,31 @@ function mjcfMeshAssetName(partName: string): string {
         .replace(/^-|-$/g, '');
     return `part-${slug.length > 0 ? slug : 'unnamed'}`;
 }
+
+function mjcfSlug(s: string): string {
+    const slug = s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return slug.length > 0 ? slug : 'unnamed';
+}
+
+/**
+ * Globally-unique MJCF geom name for a part's wrap cylinder. MuJoCo geom
+ * names must be unique model-wide and a `<spatial><geom geom="...">`
+ * routing child references this exact string, so it folds in both the
+ * owning part and the wrap-geom name.
+ */
+function mjcfWrapGeomName(partName: string, wrapName: string): string {
+    return `wrap-${mjcfSlug(partName)}-${mjcfSlug(wrapName)}`;
+}
+
+/**
+ * Substitute half-length (mm) for a wrap geom declared with no explicit
+ * `halfLengthMm` (MuJoCo's true-infinite cylinder). `<geom fromto>`
+ * requires finite endpoints; 1 m half-length covers any realistic
+ * kinematic arm while the cylinder stays contact-disabled, so the
+ * over-length is invisible to the solver and only ever serves as a
+ * tendon-wrap rail.
+ */
+const WRAP_GEOM_INFINITE_HALF_LEN_MM = 1000;
 
 function fmtNum(n: number): string {
     // 6-decimal fixed for readability; scientific notation for
