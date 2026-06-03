@@ -412,14 +412,23 @@ const lowerArmPart = arm
     type: 'frame',
     origin: { kind: 'vec3', value: LOWER_ELBOW_ANCHOR },
   })
-  // P11 Slice 3 — wrap rail along the lower-arm beam at the spring-anchor
-  // height. The shoulder + elbow springs route over it so neither cable
-  // cuts through the lower-arm body.
-  .wrapGeom('lowerRail', {
+  // P11 — dedicated coil-routing rails, one per spring, each placed at the
+  // MIDPOINT of that spring's span and LIFTED above the beam so the coil
+  // reads as a clean Anglepoise arc (a single shared mid-beam rail made
+  // the cables zig-zag and droop). `shoulderRail` sits between the shoulder
+  // pivot and the forward post; `elbowRailLower` sits near the elbow tip so
+  // the elbow spring arcs over the joint rather than doubling back.
+  .wrapGeom('shoulderRail', {
     axis: [1, 0, 0],
-    origin: [LOWER_BEAM_MID, 0, RAIL_Z],
+    origin: [45, 0, RAIL_Z + 8],
     radius: RAIL_R,
-    halfLengthMm: LOWER_BEAM_LEN / 2,
+    halfLengthMm: 30,
+  })
+  .wrapGeom('elbowRailLower', {
+    axis: [1, 0, 0],
+    origin: [L_LOWER - 18, 0, RAIL_Z + 12],
+    radius: RAIL_R,
+    halfLengthMm: 16,
   });
 
 const upperArmPart = arm
@@ -442,13 +451,20 @@ const upperArmPart = arm
     type: 'frame',
     origin: { kind: 'vec3', value: UPPER_WRIST_ANCHOR },
   })
-  // P11 Slice 3 — wrap rail along the upper-arm beam; the elbow spring
-  // routes over it so the cable rides above the upper-arm body.
-  .wrapGeom('upperRail', {
+  // P11 — `elbowRailUpper` sits near the elbow (upper-arm base) so the
+  // elbow spring arcs cleanly over the joint; `wristRail` sits near the
+  // wrist end for the wrist spring.
+  .wrapGeom('elbowRailUpper', {
     axis: [1, 0, 0],
-    origin: [UPPER_BEAM_MID, 0, RAIL_Z],
+    origin: [18, 0, RAIL_Z + 12],
     radius: RAIL_R,
-    halfLengthMm: UPPER_BEAM_LEN / 2,
+    halfLengthMm: 16,
+  })
+  .wrapGeom('wristRail', {
+    axis: [1, 0, 0],
+    origin: [L_UPPER - 25, 0, RAIL_Z + 8],
+    radius: RAIL_R,
+    halfLengthMm: 22,
   });
 
 const headPart = arm
@@ -462,14 +478,13 @@ const headPart = arm
     type: 'frame',
     origin: { kind: 'vec3', value: HEAD_WRIST_ANCHOR },
   })
-  // P11 Slice 3 — short wrap rail over the head neck at the wrist-spring
-  // anchor height; the wrist spring routes over it so the cable clears
-  // the lamp-head body.
+  // P11 — short wrap rail lifted just above the head-neck anchor so the
+  // wrist spring arcs onto the head instead of cutting into it.
   .wrapGeom('headRail', {
     axis: [1, 0, 0],
-    origin: [HEAD_WRIST_ANCHOR_X, 0, HEAD_NECK_TOP_Z + SPRING_MOUNT_DZ],
+    origin: [-4, 0, HEAD_NECK_TOP_Z + SPRING_MOUNT_DZ + 6],
     radius: RAIL_R,
-    halfLengthMm: 15,
+    halfLengthMm: 12,
   });
 
 void basePart;
@@ -524,11 +539,11 @@ arm.tendon('shoulder-spring', {
   stiffnessNmm: 1.0,
   dampingNsmm: 0.05,
   visualStyle: 'coil',
-  coilTurns: 12,
-  coilDiameterMm: 8,
-  visualDiameterMm: 1.4,
-  // P11 Slice 3 — route over the lower-arm rail so the cable clears the beam.
-  wrapGeoms: [{ partName: 'lower-arm', wrapName: 'lowerRail' }],
+  coilTurns: 22,
+  coilDiameterMm: 6.5,
+  visualDiameterMm: 2.0,
+  // P11 — arc over the dedicated shoulder rail (clears the beam, no droop).
+  wrapGeoms: [{ partName: 'lower-arm', wrapName: 'shoulderRail' }],
 });
 
 // Elbow spring: spans from the lower-arm rear-end post (140 mm forward
@@ -543,14 +558,14 @@ arm.tendon('elbow-spring', {
   stiffnessNmm: 1.0,
   dampingNsmm: 0.05,
   visualStyle: 'coil',
-  coilTurns: 10,
-  coilDiameterMm: 7,
-  visualDiameterMm: 1.2,
-  // P11 Slice 3 — route over both arm rails so the cable spans the elbow
-  // above the two beams instead of through them.
+  coilTurns: 18,
+  coilDiameterMm: 6,
+  visualDiameterMm: 1.8,
+  // P11 — arc over the elbow via the two near-elbow rails (clean bridge
+  // over the joint, no zig-zag).
   wrapGeoms: [
-    { partName: 'lower-arm', wrapName: 'lowerRail' },
-    { partName: 'upper-arm', wrapName: 'upperRail' },
+    { partName: 'lower-arm', wrapName: 'elbowRailLower' },
+    { partName: 'upper-arm', wrapName: 'elbowRailUpper' },
   ],
 });
 
@@ -564,13 +579,13 @@ arm.tendon('wrist-spring', {
   stiffnessNmm: 0.6,
   dampingNsmm: 0.04,
   visualStyle: 'coil',
-  coilTurns: 8,
-  coilDiameterMm: 6,
-  visualDiameterMm: 1.0,
-  // P11 Slice 3 — route over the upper-arm rail then the head-neck rail
-  // so the cable clears both bodies on its way to the head anchor.
+  coilTurns: 16,
+  coilDiameterMm: 5.5,
+  visualDiameterMm: 1.6,
+  // P11 — arc over the wrist via the upper-arm wrist rail then onto the
+  // head-neck rail.
   wrapGeoms: [
-    { partName: 'upper-arm', wrapName: 'upperRail' },
+    { partName: 'upper-arm', wrapName: 'wristRail' },
     { partName: 'lamp-head', wrapName: 'headRail' },
   ],
 });
