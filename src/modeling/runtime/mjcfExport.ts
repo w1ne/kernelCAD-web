@@ -62,6 +62,7 @@ import { resolveConnectorOrigin } from '../mates/connector';
 import type { TendonRecord } from '../mates/tendon';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
+import { stlToMjcfMesh } from './stlToMjcfMesh';
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
@@ -150,14 +151,24 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
     // becomes a top-level child of <worldbody>.
     const roots = parts.filter((p) => !parentByChild.has(p.name));
 
-    // Compute per-part inertia + bbox center once. The bbox center is
+    // Compute per-part inertia + collision mesh once. The bbox center is
     // used to position the inertial origin when massProperties is
     // unavailable (e.g. transformed-by-FK shapes). Mass / inertia from
     // OcctBackend.massProperties; the URDF emitter shows the pattern.
+    //
+    // P11 Slice 1: also lower the part to its OCCT backend and pull a
+    // binary-STL tessellation, formatted as an inline `<mesh vertex="...">`
+    // string. Reuses `OcctBackend.exportSTLAsync()` (the same emitter the
+    // URDF writer feeds into per-link STL files) so collision geom and
+    // visual mesh stay byte-identical. Mesh-emission failures fall back
+    // to "inertia only" with no geom — the part stays in the kinematic
+    // tree but can't contact other bodies; criterion 6 will reflect that.
     const inertials = new Map<string, InertiaSpec>();
+    const collisionMeshes = new Map<string, { vertex: string; assetName: string }>();
     for (const p of parts) {
+        let lowered: OcctBackend | undefined;
         try {
-            const lowered = (await p.originalShape.lower()) as OcctBackend;
+            lowered = (await p.originalShape.lower()) as OcctBackend;
             const density = p.density ?? DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
             // Diagonal inertia in MuJoCo's body frame; for our default
@@ -178,6 +189,20 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
                 comLocalMm: [0, 0, 0],
                 inertia6: [1e-3, 0, 0, 1e-3, 0, 1e-3],
             });
+        }
+        if (lowered !== undefined) {
+            try {
+                const stl = await lowered.exportSTLAsync();
+                const mesh = stlToMjcfMesh(stl);
+                collisionMeshes.set(p.name, {
+                    vertex: mesh.vertex,
+                    assetName: mjcfMeshAssetName(p.name),
+                });
+            } catch {
+                // STL export or parse failed (degenerate shape, empty
+                // tessellation, etc.). Skip the `<asset><mesh>` for this
+                // part — the body still emits inertia but won't contact.
+            }
         }
     }
 
@@ -325,11 +350,21 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
             );
         }
 
-        // Geometry — we don't emit visual meshes; the physics gate only
-        // needs inertia + joint topology. Adding meshes would require
-        // exporting STL per-part on every validate call (heavy). MuJoCo
-        // is fine with bodies that have only <inertial> (no <geom>):
-        // they participate in joint dynamics, just don't collide.
+        // P11 Slice 1: collision geom from the part's tessellated BREP.
+        // Without `<geom>`, MuJoCo treats every body as a point-mass with
+        // joint constraints — drop-tests "pass" on geometry that
+        // physically interpenetrates. We register one mesh under
+        // `<asset>` per part (above) and reference it here with
+        // `contype="1" conaffinity="1"` so part-pair contacts are active.
+        // Friction triple matches MuJoCo's default for general body
+        // contacts (sliding, torsional, rolling) — sufficient for
+        // static-equilibrium and drop-test scoring.
+        const collision = collisionMeshes.get(partName);
+        if (collision !== undefined) {
+            lines.push(
+                `${indent}  <geom type="mesh" mesh="${escapeXml(collision.assetName)}" contype="1" conaffinity="1" group="1" friction="1.0 0.005 0.0001"/>`,
+            );
+        }
 
         // Children — recurse.
         for (const childEntry of childrenByParent.get(partName) ?? []) {
@@ -371,15 +406,75 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         tendonBlockLines.push('  </tendon>');
     }
 
+    // P11 Slice 1: emit the `<asset>` block before `<worldbody>`. MJCF
+    // requires asset definitions ahead of every body that references
+    // them. One `<mesh>` per part that successfully exported STL;
+    // bodies whose mesh emission failed simply skip both the asset and
+    // the `<geom>` (they remain valid MuJoCo bodies, just inertia-only
+    // — the criterion 6 drop-test still observes their joint dynamics).
+    const assetBlockLines: string[] = [];
+    if (collisionMeshes.size > 0) {
+        assetBlockLines.push('  <asset>');
+        // Preserve part-declaration order so the snapshot is deterministic.
+        for (const p of parts) {
+            const m = collisionMeshes.get(p.name);
+            if (m === undefined) continue;
+            // `scale` converts the mm vertex stream to MuJoCo's metre
+            // world. The rest of the MJCF (body `pos`, `<inertial>`,
+            // gravity, the drop-test drift thresholds) is in metres via
+            // MM_TO_M; the inline mesh vertices are the one payload still
+            // in millimetres, so MuJoCo must rescale them at compile time.
+            // Without this the collision hull is 1000× oversized and every
+            // part interpenetrates the origin, exploding the drop-test.
+            assetBlockLines.push(
+                `    <mesh name="${escapeXml(m.assetName)}" scale="${MM_TO_M} ${MM_TO_M} ${MM_TO_M}" vertex="${m.vertex}"/>`,
+            );
+        }
+        assetBlockLines.push('  </asset>');
+    }
+
+    // P11 Slice 1: emit a `<contact><exclude>` block for every mate's
+    // parent-child pair. A clevis fork-and-tongue pair (and every other
+    // joint primitive that nests one body inside another) is
+    // intentionally interpenetrating at the joint anchor — the
+    // constraint comes from the joint, not from contact. Without the
+    // exclude, MuJoCo treats the BREP overlap at every clevis as a deep
+    // penetration and applies enormous repulsive forces that kick the
+    // chain apart on the first integration step. The standard MJCF
+    // robotics idiom (see mujoco_menagerie + every Anglepoise/cable
+    // demo) is one `<exclude>` per kinematic-tree edge. Non-adjacent
+    // body pairs keep their default contact, so the genuine "free
+    // body falls onto another" failure modes Slice 1 was built to
+    // catch are still detectable.
+    const contactBlockLines: string[] = [];
+    if (mates.length > 0) {
+        contactBlockLines.push('  <contact>');
+        for (const m of mates) {
+            const aName = parseConnectorRef(m.a).partName;
+            const bName = parseConnectorRef(m.b).partName;
+            contactBlockLines.push(
+                `    <exclude body1="${escapeXml(aName)}" body2="${escapeXml(bName)}"/>`,
+            );
+        }
+        contactBlockLines.push('  </contact>');
+    }
+
+    // P11 Slice 1: `<size nconmax="500"/>` gives MuJoCo headroom for
+    // contact storage. Default is small (~100) and runs out on tight
+    // multi-part assemblies; 500 absorbs the v0.7 corpus without bumping
+    // wasm heap pressure noticeably.
     const mjcf = [
         '<?xml version="1.0" ?>',
         `<mujoco model="${escapeXml(arm.name)}">`,
         '  <option gravity="0 0 -9.81"/>',
         '  <compiler angle="radian"/>',
+        '  <size nconmax="500"/>',
+        ...assetBlockLines,
         '  <worldbody>',
         ...worldbodyBlocks,
         '  </worldbody>',
         ...tendonBlockLines,
+        ...contactBlockLines,
         '</mujoco>',
         '',
     ].join('\n');
@@ -480,6 +575,21 @@ function sanitizeJointName(s: string): string {
     // is to keep names matching the kernelCAD mate name verbatim. No
     // sanitisation needed beyond XML escaping.
     return s;
+}
+
+/**
+ * Slugified per-part mesh asset name. MJCF mesh names must be unique
+ * inside `<asset>`; we slug the kernelCAD part name into a stable
+ * `part-<slug>` form so `<geom mesh="...">` references stay readable
+ * in diagnostic output. Run-collapses non-alphanumeric chars to single
+ * '-' separators; leading/trailing separators are trimmed.
+ */
+function mjcfMeshAssetName(partName: string): string {
+    const slug = partName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    return `part-${slug.length > 0 ? slug : 'unnamed'}`;
 }
 
 function fmtNum(n: number): string {
