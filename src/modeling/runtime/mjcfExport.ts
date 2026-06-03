@@ -534,16 +534,20 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         contactBlockLines.push('  </contact>');
     }
 
-    // P11 Slice 1: `<size nconmax="500"/>` gives MuJoCo headroom for
-    // contact storage. Default is small (~100) and runs out on tight
-    // multi-part assemblies; 500 absorbs the v0.7 corpus without bumping
-    // wasm heap pressure noticeably.
+    // P11: `<size nconmax>` gives MuJoCo headroom for contact storage.
+    // Its default is small (~100) and runs out on tight multi-part
+    // assemblies. Active contacts scale with the number of part pairs, so
+    // budget grows with part count: 500 floor for the small corpus,
+    // +120/part beyond that (a 50-part assembly gets 6000) — well within
+    // wasm heap limits while removing the fixed-cap ceiling that a large
+    // collision-rich assembly could trip over.
+    const nconmax = Math.max(500, parts.length * 120);
     const mjcf = [
         '<?xml version="1.0" ?>',
         `<mujoco model="${escapeXml(arm.name)}">`,
         '  <option gravity="0 0 -9.81"/>',
         '  <compiler angle="radian"/>',
-        '  <size nconmax="500"/>',
+        `  <size nconmax="${nconmax}"/>`,
         ...assetBlockLines,
         '  <worldbody>',
         ...worldbodyBlocks,
