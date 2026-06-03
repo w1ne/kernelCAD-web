@@ -26,6 +26,9 @@ import {
   TENDON_DEFAULT_VISUAL_STYLE,
   type TendonOptions,
   type TendonRecord,
+  type TendonWrapRef,
+  type WrapGeomOptions,
+  type WrapGeomRecord,
 } from '../mates/tendon';
 import {
   reviewPoseEnvelope,
@@ -100,6 +103,11 @@ export interface AssemblyPartRef {
    *  is shared with the assembly's stored record and visible to
    *  `Assembly.model()` / `Assembly.solvedModel()`. */
   mateConnectors: Connector[];
+  /** P11 Slice 2 — wrap-geom cylinders registered via `wrapGeom(name, opts)`.
+   *  Mutated in place by the chain method, shared by reference with the
+   *  stored record so the MJCF emitter and criterion 8 see additions made
+   *  after `part(...)` returns. */
+  wrapGeoms: WrapGeomRecord[];
   /** Look up a v0.5 kinematic connector by name (declared via
    *  `assembly.part(..., { connectors })`) — returns an `AssemblyConnectorRef`
    *  for use in `opts.connect`. */
@@ -108,6 +116,11 @@ export interface AssemblyPartRef {
    *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
    *  connector with the same name is already registered on this part. */
   connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
+  /** P11 Slice 2 — declare a named collision-OFF wrap cylinder for tendon
+   *  routing and return the part-ref for chaining. Throws
+   *  `assembly.wrap-geom.duplicate-name` if the name is already used on
+   *  this part, or `feature.invalid-args` on a bad axis / radius. */
+  wrapGeom(name: string, opts: WrapGeomOptions): AssemblyPartRef;
 }
 
 function validateLimitRange(
@@ -484,7 +497,8 @@ export class Assembly {
     // below references the same array via spread (arrays are by-reference),
     // so `makeScene` sees additions made after `part(...)` returns.
     const mateConnectors: Connector[] = [];
-    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors);
+    const wrapGeoms: WrapGeomRecord[] = [];
+    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors, wrapGeoms);
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
@@ -945,6 +959,40 @@ export class Assembly {
         `invalid-args.assembly.tendon-invalid-coil-diameter — either increase coilDiameterMm (typical Anglepoise: 5-10 mm) or decrease visualDiameterMm (typical wire: 1.0-1.4 mm).`,
       );
     }
+    // P11 Slice 2 — resolve + validate wrap-geom routing rails. Each entry
+    // must name a part that exists and a `WrapGeomRecord` already declared
+    // on that part via `part.wrapGeom(...)` (declare wrap geoms BEFORE the
+    // tendon, same ordering rule as connectors before mates).
+    const wrapGeoms: TendonWrapRef[] = [];
+    if (opts.wrapGeoms !== undefined) {
+      for (const w of opts.wrapGeoms) {
+        const part = this.parts.find((p) => p.name === w.partName);
+        if (part === undefined) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.tendon.unknown-wrap-part: tendon '${name}' references wrap geom on part '${w.partName}', which is not declared on assembly '${this.name}'.`,
+            undefined,
+            `invalid-args.assembly.tendon-unknown-wrap-part — the wrap geom's partName must be a part added via arm.part(...). Check for a typo against the declared part names.`,
+          );
+        }
+        const wg = part.wrapGeoms.find((g) => g.name === w.wrapName);
+        if (wg === undefined) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.tendon.unknown-wrap-geom: tendon '${name}' references wrap geom '${w.wrapName}' on part '${w.partName}', but that part has no such wrap geom. Declared: [${part.wrapGeoms.map((g) => g.name).join(', ') || '(none)'}].`,
+            undefined,
+            `invalid-args.assembly.tendon-unknown-wrap-geom — declare it first with arm.part('${w.partName}', ...).wrapGeom('${w.wrapName}', { axis, radius }), then reference it here.`,
+          );
+        }
+        wrapGeoms.push({
+          partName: w.partName,
+          wrapName: w.wrapName,
+          ...(w.sidesite !== undefined
+            ? { sidesite: [w.sidesite[0], w.sidesite[1], w.sidesite[2]] as const }
+            : {}),
+        });
+      }
+    }
     this.tendons.push({
       name,
       from: opts.from,
@@ -956,6 +1004,7 @@ export class Assembly {
       visualStyle,
       coilTurns,
       coilDiameterMm: coilDiameter,
+      wrapGeoms,
     });
     return this;
   }
@@ -2530,6 +2579,7 @@ function makePartRef(
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
   mateConnectors: Connector[],
+  wrapGeoms: WrapGeomRecord[],
 ): AssemblyPartRef {
   // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
   // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
@@ -2589,6 +2639,62 @@ function makePartRef(
       ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
     };
   };
+  // P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
+  // routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
+  // push into the shared `wrapGeoms` array, return `ref`.
+  const wrapGeom = (
+    wrapName: string,
+    opts: WrapGeomOptions,
+  ): AssemblyPartRef => {
+    assertTopoRefSafeName(wrapName, 'wrap-geom-name', id);
+    if (wrapGeoms.some((w) => w.name === wrapName)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.duplicate-name: part '${name}' already has a wrap geom named '${wrapName}'.`,
+        id,
+        `invalid-args.assembly.wrap-geom-duplicate-name — rename one of the wrap geoms on '${name}'.`,
+      );
+    }
+    const axis = opts.axis;
+    const axisLenSq = axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2];
+    if (
+      !Number.isFinite(axis[0]) || !Number.isFinite(axis[1]) || !Number.isFinite(axis[2]) ||
+      axisLenSq <= 0
+    ) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-axis: wrap geom '${wrapName}' on part '${name}' needs a finite non-zero axis; got [${formatScalarForError(axis[0])}, ${formatScalarForError(axis[1])}, ${formatScalarForError(axis[2])}].`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-axis — pass axis: [x, y, z] pointing along the cylinder centerline (the arm's long axis for a balance spring).`,
+      );
+    }
+    if (!Number.isFinite(opts.radius) || opts.radius <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-radius: wrap geom '${wrapName}' on part '${name}' radius must be a positive finite number; got ${formatScalarForError(opts.radius)}.`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-radius — pass radius: <positive mm>. Size it to the arm half-thickness plus the cable standoff so the spring rides clear of the body.`,
+      );
+    }
+    if (opts.halfLengthMm !== undefined && (!Number.isFinite(opts.halfLengthMm) || opts.halfLengthMm <= 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-half-length: wrap geom '${wrapName}' on part '${name}' halfLengthMm must be a positive finite number when provided; got ${formatScalarForError(opts.halfLengthMm)}.`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-half-length — pass halfLengthMm: <positive mm>, or omit it for an effectively-infinite routing cylinder.`,
+      );
+    }
+    const origin = opts.origin ?? [0, 0, 0];
+    const rec: WrapGeomRecord = {
+      name: wrapName,
+      axis: [axis[0], axis[1], axis[2]],
+      origin: [origin[0], origin[1], origin[2]],
+      radiusMm: opts.radius,
+      ...(opts.halfLengthMm !== undefined ? { halfLengthMm: opts.halfLengthMm } : {}),
+    };
+    wrapGeoms.push(rec);
+    return ref;
+  };
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -2596,7 +2702,9 @@ function makePartRef(
     at,
     connectors,
     mateConnectors,
+    wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
+    wrapGeom,
   };
   return ref;
 }

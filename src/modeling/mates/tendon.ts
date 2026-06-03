@@ -29,6 +29,50 @@
  * only; physically the spring pulls each endpoint toward the other
  * symmetrically.
  */
+import type { Vec3 } from '../../shared/intent/types';
+
+/**
+ * P11 Slice 2 — a named collision-OFF cylinder declared on a Part for
+ * tendon cable routing. Emitted as `<geom type="cylinder" contype="0"
+ * conaffinity="0">` so it never generates body-body contacts; it serves
+ * only as a wrap rail the solver routes a `<spatial>` tendon around, so a
+ * balance spring physically rides over the arm instead of cutting
+ * through it. Axis / origin are part-local; converted mm→m at emit.
+ */
+export interface WrapGeomRecord {
+    /** Unique within its owning part. Surfaced in the MJCF geom name. */
+    readonly name: string;
+    /** Part-local cylinder axis direction (need not be unit length). */
+    readonly axis: Vec3;
+    /** Part-local cylinder centre. */
+    readonly origin: Vec3;
+    /** Cylinder radius (mm). > 0. */
+    readonly radiusMm: number;
+    /** Half-length (mm) along `axis`. Undefined = MuJoCo-infinite cylinder;
+     *  the emitter substitutes a large finite half-length for `fromto`. */
+    readonly halfLengthMm?: number;
+}
+
+/** Agent-facing options for `part.wrapGeom(name, opts)`. */
+export interface WrapGeomOptions {
+    readonly axis: readonly [number, number, number];
+    readonly origin?: readonly [number, number, number];
+    readonly radius: number;
+    readonly halfLengthMm?: number;
+}
+
+/**
+ * One wrap-geom reference inside a tendon's `wrapGeoms` array. `partName`
+ * + `wrapName` name a `WrapGeomRecord` the cable routes around, in array
+ * order between the two endpoints. `sidesite` (part-local) forces which
+ * side of the cylinder the cable passes; omit to let MuJoCo pick.
+ */
+export interface TendonWrapRef {
+    readonly partName: string;
+    readonly wrapName: string;
+    readonly sidesite?: readonly [number, number, number];
+}
+
 export interface TendonRecord {
     /** Unique tendon name. Surfaced in diagnostics + MJCF site / spatial
      *  identifiers. */
@@ -66,6 +110,10 @@ export interface TendonRecord {
      *  satisfy `coilDiameterMm > 2 * visualDiameterMm` (i.e. the wire
      *  fits inside the coil). Defaults to 7. */
     readonly coilDiameterMm: number;
+    /** P11 Slice 2 — ordered wrap-geom rails the cable routes around
+     *  between its two endpoints. Empty for a straight `<spatial>` tendon
+     *  (the pre-Slice-2 behavior). */
+    readonly wrapGeoms: readonly TendonWrapRef[];
 }
 
 /**
@@ -84,6 +132,14 @@ export interface TendonOptions {
     readonly visualStyle?: 'line' | 'coil';
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
+    /** P11 Slice 2 — wrap-geom rails (in routing order) the cable passes.
+     *  Each entry names a `WrapGeomRecord` declared via `part.wrapGeom(...)`
+     *  on a part the tendon passes. Omit for a straight tendon. */
+    readonly wrapGeoms?: ReadonlyArray<{
+        readonly partName: string;
+        readonly wrapName: string;
+        readonly sidesite?: readonly [number, number, number];
+    }>;
 }
 
 /** Default visual diameter (mm) used when the agent doesn't pass one. */
