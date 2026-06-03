@@ -166,19 +166,25 @@ function kernelCadMeshEndpoint(): Plugin {
           const url = new URL(req.url ?? '', 'http://localhost');
           const script = url.searchParams.get('script');
           const sessionToken = url.searchParams.get('session');
-          if (!script && !sessionToken) {
+          // POST { source } meshes ARBITRARY edited code through the node
+          // kernel — the path the Studio editor uses on localhost dev when
+          // the in-browser worker can't run the modern assembly/joint/tendon
+          // API. GET ?script= / ?session= keep their existing behaviour.
+          const isPost = (req.method ?? 'GET').toUpperCase() === 'POST';
+          if (!script && !sessionToken && !isPost) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'missing script or session query parameter' }));
+            res.end(JSON.stringify({ error: 'missing script or session query parameter (or POST { source })' }));
             return;
           }
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
+            import('./src/modeling/runtime/runScript'),
           ]);
 
           // Slice 2E.bridge: with a session token, mesh against the pooled
@@ -196,7 +202,40 @@ function kernelCadMeshEndpoint(): Plugin {
             cachedAssemblyPartMeshes?: Map<string, Map<string, unknown>>;
           };
 
-          if (sessionToken) {
+          if (isPost) {
+            // Read the JSON body { source }. Dev-only middleware on
+            // localhost, so executing the user's own edited script through
+            // runScript carries no extra trust boundary.
+            const chunks: Buffer[] = [];
+            for await (const chunk of req) chunks.push(chunk as Buffer);
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            source = parsedBody.source;
+            // Compile straight from the source string (no file). scriptDir =
+            // examples root so any relative asset paths resolve the same way
+            // a shipped example would.
+            const run = await runScript({
+              code: source,
+              fileName: 'studio-edit.kcad.ts',
+              scriptDir: resolve(repoRoot, 'examples'),
+            });
+            records = run.records;
+            paramTable = run.paramTable;
+            meshSession = run.session as unknown as typeof meshSession;
+          } else if (sessionToken) {
             const bundle = await getPoolBundle();
             const entry = bundle.pool.get(sessionToken);
             if (!entry) {
