@@ -1,12 +1,11 @@
 // src/modeling/mates/helixPolyline.ts
 //
-// P10 — pure geometry helper shared by the Studio TendonRenderer
-// (TubeGeometry path) and the CLI featureMeshing (buildHelixTubeMesh).
-// Sampling and twist-plane math live HERE so the Studio + CLI renders
-// agree pixel-for-pixel on a hero-render of the Luxo lamp.
-//
-// Re-exported by `src/studio/components/viewer/entities/tendonTransform.ts`
-// to keep the Studio import surface unchanged from PR #368.
+// P10 — pure geometry helper for tendon coil rendering, consumed by the
+// CLI/headless featureMeshing path (buildHelixTubeMesh → the baked coil
+// meshes the Studio viewer and demo player render). Sampling and
+// twist-plane math live HERE so every render path agrees on a hero-render
+// of the Luxo lamp. P11 Slice 3 adds helixPolylineRouted for wrap-routed
+// coils.
 
 import type { Vec3 } from '../../shared/intent/types';
 
