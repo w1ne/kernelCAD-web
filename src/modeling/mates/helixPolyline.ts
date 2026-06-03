@@ -14,16 +14,37 @@ import type { Vec3 } from '../../shared/intent/types';
  *  interactive Studio updates. */
 export const HELIX_SAMPLES_PER_TURN = 16;
 
+/** Fraction of the span over which the coil radius ramps in/out at each
+ *  end. The middle (1 - 2·RAMP) of the span stays at FULL coil radius. */
+const TAPER_RAMP = 0.12;
+
+/**
+ * Endpoint radius envelope for the helix. A trapezoid with smoothstep
+ * shoulders: full coil radius across the middle of the span, ramping
+ * smoothly to 0 only in the last `TAPER_RAMP` at each end so the helix
+ * still lands exactly on its anchor points. Replaces the original
+ * `4·t·(1-t)` parabola, whose peak-in-the-middle profile rendered every
+ * spring as a fat-middle / thin-end "spindle" rather than a uniform coil.
+ */
+function endpointTaper(t: number): number {
+    const e = t < TAPER_RAMP
+        ? t / TAPER_RAMP
+        : t > 1 - TAPER_RAMP
+            ? (1 - t) / TAPER_RAMP
+            : 1;
+    return e * e * (3 - 2 * e); // smoothstep
+}
+
 /**
  * Sample a HELIX polyline that spirals from world point `a` to world
  * point `b`, winding `turns` complete loops around the AB centerline
  * at radius `coilDiameterMm / 2`.
  *
  * Endpoints: the FIRST and LAST samples land exactly on `a` and `b`
- * (within 1e-9). This is achieved by a quadratic taper `4 * t * (1 - t)`
- * applied to the radial component, which peaks at 1 in the middle
- * (full helix radius) and is 0 at the endpoints — a smooth envelope
- * that preserves the helix winding sense everywhere in between.
+ * (within 1e-9). The radial component uses `endpointTaper(t)` — full coil
+ * radius across the middle of the span, ramping smoothly to 0 only at the
+ * very ends — so the helix reads as a uniform spring while still closing
+ * on both anchor points.
  *
  * Twist plane: u = normalize(worldZ × AB), falling back to worldX × AB
  * when AB is parallel to worldZ. v = AB × u. The phase reference (s=0
@@ -98,10 +119,10 @@ export function helixPolyline(
         const theta = t * safeTurns * twoPi;
         const cosT = Math.cos(theta);
         const sinT = Math.sin(theta);
-        // Endpoint taper: collapse the helix radius to 0 at t=0 and
-        // t=1 so the polyline starts and ends EXACTLY at `a` and `b`.
-        const taper = 4 * t * (1 - t);
-        const r = coilR * taper;
+        // Endpoint taper: full coil radius across the middle, ramping to
+        // 0 only at the very ends so the polyline starts/ends EXACTLY at
+        // `a` and `b` while reading as a uniform spring (not a spindle).
+        const r = coilR * endpointTaper(t);
         const lx = ax + dx * t + (ux * cosT + vx * sinT) * r;
         const ly = ay + dy * t + (uy * cosT + vy * sinT) * r;
         const lz = az + dz * t + (uz * cosT + vz * sinT) * r;
@@ -224,7 +245,7 @@ export function helixPolylineRouted(
         const bz = c[k][2] + dirs[k][2] * local * lens[k];
         const theta = t * safeTurns * twoPi;
         const cosT = Math.cos(theta), sinT = Math.sin(theta);
-        const r = coilR * 4 * t * (1 - t);
+        const r = coilR * endpointTaper(t);
         const uu = us[k], vv = vs[k];
         out[i] = [
             bx + (uu[0] * cosT + vv[0] * sinT) * r,
