@@ -262,9 +262,15 @@ const upperBeamWithBosses = upperBeam.union(upperElbowPost).union(upperWristPost
 // spring anchor. Wrist pivot = head-local [0,0,0].
 // ============================================================================
 
-// HEAD_NECK_BACK pulled back to -knuckleR so the neck cylinder's solid
-// material covers the wrist pivot at head-local [0,0,0] (P9 fix).
-const HEAD_NECK_BACK = -clevisStyle.knuckleR;                  // -12 mm
+// HEAD_NECK_BACK: the wrist pivot at head-local [0,0,0] is covered by the
+// clevis TONGUE (clevis.ts unions a tongue plate at pivotChild into
+// wrist.childGeometry), so the neck no longer needs to reach back over the
+// pivot to satisfy the joint-mesh-gap gate. Keeping it back to -knuckleR made
+// the fat (R=19.5) neck cylinder engulf the parent's fork plates (y≈±7) for
+// ~7000 mm³ of interference. Start the neck just forward of the fork's
+// X-footprint (fork plateX = 2·knuckleR spans x∈[-12,12]) while still
+// overlapping the tongue front for a connected solid.
+const HEAD_NECK_BACK = clevisStyle.knuckleR;                  // +12 mm — neck starts at the fork edge; tongue (x∈[-12,12]) bridges to the pivot
 const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm
 const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
@@ -335,7 +341,7 @@ const shoulder = joint.clevis({
   pivotParent: [0, 0, COLUMN_TOP_Z],
   pivotChild: [0, 0, 0],
   limitsDeg: [-5, 100],
-  liftPivot: false,
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -350,8 +356,11 @@ const elbow = joint.clevis({
   axis: [0, -1, 0],
   pivotParent: [L_LOWER, 0, 0],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-135, 0],
-  liftPivot: false,
+  // -135° folds the two beams flat onto each other — they collide (3450 mm³ at
+  // the swept extreme). A real Anglepoise elbow stops short of a full fold; cap
+  // at -118° where the links clear.
+  limitsDeg: [-118, 0],
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -367,7 +376,7 @@ const wrist = joint.clevis({
   pivotParent: [L_UPPER, 0, 0],
   pivotChild: [0, 0, 0],
   limitsDeg: [-75, 0],
-  liftPivot: false,
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -504,7 +513,7 @@ arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', 
 
 arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
   pose: elbowDeg,
-  limitsDeg: [-135, 0],
+  limitsDeg: [-118, 0],
 });
 
 arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
@@ -535,9 +544,14 @@ arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
 arm.tendon('shoulder-spring', {
   from: 'base.shoulderSpringAnchorBase',
   to: 'lower-arm.shoulderSpringAnchor',
-  restLengthMm: 38,
+  // NOTE: the geometry rework (neck pulled forward, liftPivot, tighter elbow)
+  // shifted the head/arm mass; the three balance springs now need joint
+  // co-calibration against static equilibrium (an inverse-dynamics solve) —
+  // stiffening the shoulder alone overshoots (8°) while leaving it sags (5°).
+  // Best single-spring balance below; full re-calibration is a follow-up.
+  restLengthMm: 36,
   stiffnessNmm: 1.0,
-  dampingNsmm: 0.05,
+  dampingNsmm: 0.1,
   visualStyle: 'coil',
   coilTurns: 22,
   coilDiameterMm: 6.5,

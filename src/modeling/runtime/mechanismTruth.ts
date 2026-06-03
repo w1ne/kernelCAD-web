@@ -51,12 +51,12 @@ import { Transform, type Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences } from './detectInterferences';
+import { jointContactCapMm3 } from './jointContactCap';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
@@ -98,37 +98,9 @@ const DISCONNECT_TOLERANCE_MM = 1;
  */
 const INTERPENETRATION_EPSILON_MM3 = 0.01;
 
-/**
- * Volume ceiling for the joint-pair contact-face exclusion at revolute /
- * prismatic / cylindrical mates. The intended clevis cheek-on-tongue /
- * pin-in-hole contact at these joints can register as a non-trivial
- * interference at swept poses (a 45° clevis swing on a typical 12 mm
- * knuckle radius easily reaches a couple of thousand mm³ of intersection
- * with the parent fork). We treat overlaps below this fraction of the
- * smaller part's bbox volume as intentional contact.
- *
- * Approach A from the plan — safer than blanket pair-exclusion which
- * would mask a real spring-through-arm-body penetration. The fraction is
- * deliberately generous for revolutes (covers the clevis swing range);
- * fastened mates use a tighter fraction below.
- *
- * Empirical: a 40×40×30 base (48000 mm³) under a ±45° clevis swing
- * produces a ~1500 mm³ contact (≈3 %); 5 % covers it with margin while
- * still flagging the order-of-magnitude penetrations a broken mechanism
- * would produce (a spring-through-knuckle at 10 % bbox volume gets
- * caught).
- */
-const REVOLUTE_CONTACT_TOLERANCE_FRACTION = 0.05;
-
-/**
- * Volume ceiling for the joint-pair contact-face exclusion at fastened
- * mates. Tighter than the revolute fraction because fastened mates
- * SHOULDN'T have material overlap by design — a small surface-tangent
- * contact at the mounting face is acceptable (mesher tolerance noise),
- * but real penetration through the body is a failure mode (PR #341's
- * vec3 spring passing through the arm's interior).
- */
-const FASTENED_CONTACT_TOLERANCE_FRACTION = 0.005;
+// Interference classification (absolute caps, SOTA-grounded) is shared with
+// the legacy `validateAssembly` interference surface — see
+// `./jointContactCap` for the model and the constants.
 
 /**
  * Micro-pose excursion for the DoF-mismatch check (degrees). Per spec
@@ -534,50 +506,29 @@ async function checkInterpenetration(
     const result = detectInterferences(scene, INTERPENETRATION_EPSILON_MM3, new Set());
     if (result.pairs.length === 0) continue;
 
-    // Build per-part bbox volumes once for the contact-face exclusion's
-    // smaller-part-volume floor.
-    const bboxVolByPart = new Map<string, number>();
-    for (const p of scene.parts) {
-      const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-      const bb = clone.boundingBox();
-      const vol = Math.max(0,
-        (bb.max[0] - bb.min[0]) *
-        (bb.max[1] - bb.min[1]) *
-        (bb.max[2] - bb.min[2]),
-      );
-      bboxVolByPart.set(p.name, vol);
-    }
-
     for (const pair of result.pairs) {
       const key = pairKey(pair.a, pair.b);
       const mateType = matedPairs.get(key);
-      // Joint-pair contact-face exclusion: revolute / prismatic /
-      // cylindrical mates expect a small intentional overlap (clevis
-      // cheek-on-tongue, pin-in-hole). Fastened mates allow only a
-      // tighter mesher-noise floor. Approach A from the plan: skip
-      // only when the volume is below the per-mate-type contact-
-      // tolerance fraction of the smaller part's bbox volume.
-      if (mateType !== undefined) {
-        const fraction =
-          mateType === 'revolute' || mateType === 'prismatic' || mateType === 'cylindrical'
-            ? REVOLUTE_CONTACT_TOLERANCE_FRACTION
-            : mateType === 'fastened'
-              ? FASTENED_CONTACT_TOLERANCE_FRACTION
-              : undefined;
-        if (fraction !== undefined) {
-          const minVol = Math.min(
-            bboxVolByPart.get(pair.a) ?? Number.POSITIVE_INFINITY,
-            bboxVolByPart.get(pair.b) ?? Number.POSITIVE_INFINITY,
-          );
-          if (pair.volumeMm3 < fraction * minVol) continue;
-        }
-      }
+      // ABSOLUTE-volume gate (replaces the old 5 %-of-bbox fraction). The cap
+      // depends ONLY on the relationship between the two parts, never on their
+      // size:
+      //   - adjacent revolute/prismatic/cylindrical → the clevis pin-in-tongue
+      //     contact forced by the locked joint-mesh-gap gate (cap 700 mm³).
+      //   - fastened / non-mated → ISO tessellation-noise floor (cap 25 mm³);
+      //     anything above is a real interference (a spring through a body, a
+      //     shade fused to a beam).
+      const cap = jointContactCapMm3(mateType);
+      if (pair.volumeMm3 <= cap) continue;
 
+      const relation = mateType === undefined
+        ? `are NOT joined by a mate that would explain the contact`
+        : `overlap far more than the ${mateType} joint's intended pin/clearance contact (cap ${cap} mm³)`;
       out.push(makeFailure(
         'mechanism.interpenetration',
-        `Parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³ at pose sample '${s.sample.name}' ` +
-        `and are NOT joined by a mate that would explain the contact. ` +
-        `Add clearance, reduce mate travel, or move the geometry so the swept pose stays collision-free.`,
+        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${pair.volumeMm3.toFixed(2)} mm³ at pose sample '${s.sample.name}' — ` +
+        `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
+        `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
+        `or pass { ignore: [['${pair.a}', '${pair.b}']] } to solvedModel(...) if this overlap is genuinely intended.`,
       ));
     }
   }
