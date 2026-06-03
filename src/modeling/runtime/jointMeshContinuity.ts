@@ -206,7 +206,7 @@ export function checkJointMeshContinuity(
  * Returns `undefined` when the OCCT pipeline throws on the inputs
  * (degenerate body, missing wasm handle). Caller skips the row.
  */
-function measureGapToBody(
+export function measureGapToBody(
   localShape: OcctBackend,
   worldTransform: Transform,
   pointWorld: readonly [number, number, number],

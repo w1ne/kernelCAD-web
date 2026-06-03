@@ -66,6 +66,10 @@ import {
   checkJointMeshContinuity,
   JOINT_MESH_GAP_TOLERANCE_MM,
 } from './jointMeshContinuity';
+import {
+  checkTendonBodyIntersectAtPose,
+  TENDON_BODY_CLEARANCE_MM,
+} from './tendonBodyIntersect';
 
 /**
  * Number of pose samples per articulated mate. Currently 3 (min, mid, max
@@ -257,6 +261,13 @@ export async function checkMechanismTruth(
   // physics are constraints on abstract rigid bodies, not assertions
   // about material continuity in the rendered geometry).
   failures.push(...(await checkJointMeshContinuityCriterion(arm, solved)));
+
+  // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
+  // routed path must not cut through a non-anchor body at any sampled
+  // pose. The static authoring backstop for "the spring goes through the
+  // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
+  // the design-time gate. No-op for assemblies with no tendons.
+  failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved)));
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
@@ -702,6 +713,47 @@ async function checkJointMeshContinuityCriterion(
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// Criterion 8 — mechanism.tendon-body-intersect
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * For every tendon, at every sampled pose, the routed cable polyline must
+ * not pass through the solid interior of any part other than its anchor
+ * parts and the wrap-geom parts it rides on. Reuses the per-sample lowered
+ * scene (criteria 2/3/7) — no extra lower for poses already evaluated.
+ *
+ * No-op when the assembly declares no tendons.
+ */
+async function checkTendonBodyIntersectCriterion(
+  arm: Assembly,
+  solved: SolvedSample[],
+): Promise<CompilerDiagnostic[]> {
+  if (arm.__tendons().length === 0) return [];
+  const out: CompilerDiagnostic[] = [];
+  const seen = new Set<string>(); // dedupe (tendon, part) across poses
+  for (const s of solved) {
+    const scene = await lowerSceneForSample(arm, s);
+    if (scene === undefined) continue;
+    const results = checkTendonBodyIntersectAtPose(arm, { transforms: s.transforms, scene });
+    for (const r of results) {
+      const key = `${r.tendonName}|${r.partName}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(makeFailure(
+        'mechanism.tendon-body-intersect',
+        `Tendon '${r.tendonName}' routes through part '${r.partName}' ` +
+        `(${r.gapMm <= 0 ? 'inside the solid' : `${r.gapMm.toFixed(2)}mm clearance`}, ` +
+        `tolerance ${TENDON_BODY_CLEARANCE_MM.toFixed(1)}mm) at pose '${s.sample.name}'. ` +
+        `The cable cuts through a body it is not anchored to or routing around — ` +
+        `add a wrap geom on '${r.partName}' to the tendon's wrapGeoms so the cable rides ` +
+        `over it, or relocate the anchors so the line stays clear at every pose.`,
+      ));
+    }
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Pose sampling
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -1101,7 +1153,8 @@ function makeFailure(
     | 'mechanism.orphan-part'
     | 'mechanism.unstable-under-gravity'
     | 'mechanism.drops-on-release'
-    | 'mechanism.joint-mesh-gap',
+    | 'mechanism.joint-mesh-gap'
+    | 'mechanism.tendon-body-intersect',
   message: string,
 ): CompilerDiagnostic {
   return {

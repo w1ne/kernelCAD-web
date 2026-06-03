@@ -120,8 +120,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  + 2 P6 physics-grounded loop: mechanism.unstable-under-gravity,
     //       mechanism.drops-on-release.
     //  + 1 P8 joint-mesh-continuity gate (this slice): mechanism.joint-mesh-gap.
-    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 = 203.
-    expect(catalogue.size).toBe(203);
+    //  + 1 P11 Slice 2 tendon-routing gate: mechanism.tendon-body-intersect.
+    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 + 1 = 204.
+    expect(catalogue.size).toBe(204);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
