@@ -56,6 +56,39 @@ export function shouldUseHostedMesh(): boolean {
   return typeof window !== 'undefined' && window.location.hostname === 'app.kernelcad.com';
 }
 
+/**
+ * True in the vite dev server (localhost). The dev middleware exposes a
+ * node-backed `/__kernelcad/mesh` that can run the modern assembly/joint/
+ * tendon API the in-browser worker can't — so when the worker throws on an
+ * undefined API global, we fall back to it. Only in `import.meta.env.DEV`
+ * (the dev middleware doesn't exist on the hosted/static build).
+ */
+export function devMeshAvailable(): boolean {
+  return Boolean(import.meta.env?.DEV) && !shouldUseHostedMesh();
+}
+
+/**
+ * Mesh arbitrary edited code through the dev server's node kernel
+ * (`POST /__kernelcad/mesh { source }`). Returns the same bridge payload
+ * shape as `meshSourceHosted`, so the GeometryContext success handler
+ * consumes it identically. Used as the localhost fallback when the
+ * in-browser worker can't evaluate the script (e.g. assembly models).
+ */
+export async function meshSourceDev(source: string): Promise<BackendMeshPayload> {
+  const response = await fetch('/__kernelcad/mesh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source }),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  if (!isBridgePayload(payload)) throw new Error('Dev mesh endpoint did not return features.');
+  return payload;
+}
+
 /** sha256 hex of a string via the Web Crypto API (available in https
  *  contexts). Matches the node `crypto.createHash('sha256')` digest the
  *  build uses for precomputed-mesh filenames, so an unedited gallery source
