@@ -17,7 +17,7 @@ import { transformFeatureMesh } from './transformMesh';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { generatePlanarUVs } from './planarUv';
-import { helixPolyline } from '../mates/helixPolyline';
+import { helixPolylineRouted } from '../mates/helixPolyline';
 
 /** Attach bbox-planar UVs to every face in-place (idempotent — pre-existing
  *  uv arrays are preserved). Called after meshing so any consumer of
@@ -243,6 +243,11 @@ interface AssemblyLikeForTendons {
     readonly visualStyle?: 'line' | 'coil';
     readonly coilTurns?: number;
     readonly coilDiameterMm?: number;
+    /** P11 Slice 3: ordered wrap-geom rails the coil routes over. */
+    readonly wrapGeoms?: readonly {
+      readonly partName: string;
+      readonly wrapName: string;
+    }[];
   }[];
   __parts(): readonly {
     readonly name: string;
@@ -251,6 +256,11 @@ interface AssemblyLikeForTendons {
       readonly origin:
         | { kind: 'vec3'; value: Vec3 }
         | { kind: 'topology'; query: unknown };
+    }[];
+    /** P11 Slice 3: wrap-geom rails declared on this part. */
+    readonly wrapGeoms?: readonly {
+      readonly name: string;
+      readonly origin: Vec3;
     }[];
   }[];
 }
@@ -379,15 +389,17 @@ function buildCylinderFaceWorld(
  * `wireDiameterMm` is the WIRE diameter (the tube sweep radius is half).
  */
 function buildHelixTubeMesh(
-  fromWorld: Vec3,
-  toWorld: Vec3,
+  centerline: readonly Vec3[],
   coilTurns: number,
   coilDiameterMm: number,
   wireDiameterMm: number,
   radialSegments = 8,
 ): FaceGeometry | null {
   if (wireDiameterMm <= 0 || coilDiameterMm <= 0 || coilTurns < 1) return null;
-  const polyline = helixPolyline(fromWorld, toWorld, coilTurns, coilDiameterMm);
+  // P11 Slice 3: spiral along the wrap-routed centerline (`[from, …wraps,
+  // to]`). A 2-point centerline is byte-identical to the old straight
+  // helixPolyline(from, to, …).
+  const polyline = helixPolylineRouted(centerline, coilTurns, coilDiameterMm);
   if (polyline.length < 2) return null;
   const ringCount = polyline.length;
   const tubeR = wireDiameterMm * 0.5;
@@ -523,11 +535,16 @@ function collectTendonMeshes(
 
   // (partName.connectorName) → vec3 origin lookup.
   const originByRef = new Map<string, Vec3>();
+  // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
+  const wrapOriginByRef = new Map<string, Vec3>();
   for (const part of arm.__parts()) {
     for (const conn of part.mateConnectors) {
       if (conn.origin.kind === 'vec3') {
         originByRef.set(`${part.name}.${conn.name}`, conn.origin.value);
       }
+    }
+    for (const wg of part.wrapGeoms ?? []) {
+      wrapOriginByRef.set(`${part.name}.${wg.name}`, wg.origin);
     }
   }
 
@@ -556,6 +573,19 @@ function collectTendonMeshes(
     if (fromT === undefined || toT === undefined) continue;
     const fromWorld = applyMat4ToPoint(fromT, fromOrigin);
     const toWorld = applyMat4ToPoint(toT, toOrigin);
+    // P11 Slice 3: routed centerline — from-anchor, each wrap-geom origin
+    // in world coords (skip ones whose part/origin can't be resolved), then
+    // the to-anchor. With no wrapGeoms this is just [from, to], so straight
+    // tendons render identically to the pre-Slice-3 path.
+    const centerline: Vec3[] = [fromWorld];
+    for (const w of t.wrapGeoms ?? []) {
+      const wLocal = wrapOriginByRef.get(`${w.partName}.${w.wrapName}`);
+      const wT = transformByPart.get(w.partName);
+      if (wLocal !== undefined && wT !== undefined) {
+        centerline.push(applyMat4ToPoint(wT, wLocal));
+      }
+    }
+    centerline.push(toWorld);
     // P10: coil tendons sweep an 8-facet tube along the helix polyline;
     // line tendons fall through to the existing PR #368 cylinder path.
     const style = t.visualStyle ?? 'line';
@@ -563,7 +593,7 @@ function collectTendonMeshes(
     if (style === 'coil') {
       const turns = t.coilTurns ?? 10;
       const coilDiameter = t.coilDiameterMm ?? 7;
-      face = buildHelixTubeMesh(fromWorld, toWorld, turns, coilDiameter, t.visualDiameterMm);
+      face = buildHelixTubeMesh(centerline, turns, coilDiameter, t.visualDiameterMm);
     } else {
       face = buildCylinderFaceWorld(fromWorld, toWorld, t.visualDiameterMm);
     }
