@@ -5,7 +5,7 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted } from '../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev } from '../scriptSource';
 import { apiCall, rewritePath } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -648,6 +648,36 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     }
                 } else {
                     message = String(err);
+                }
+                // P11 follow-up: the in-browser worker is the legacy v0.1
+                // runtime and can't evaluate the modern assembly/joint/tendon
+                // API (throws "<global> is not defined"). On localhost dev,
+                // fall back to the node-backed dev mesh endpoint, which runs
+                // the full kernel. Gated on the API-gap signature so genuine
+                // user errors still surface immediately without a round-trip.
+                if (devMeshAvailable() && /is not defined|is not a function/.test(message)) {
+                    try {
+                        const payload = await meshSourceDev(code);
+                        if (revision !== mainRevisionRef.current) {
+                            setStaleMainResponsesDropped((prev) => prev + 1);
+                            staleRecorded = true;
+                            return;
+                        }
+                        setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                        setGeometryTransformOverrides({});
+                        setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                        setScriptParams(Object.values(payload.params ?? {}));
+                        setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                        setSketchesGeometries([]);
+                        setPreviewGeometries([]);
+                        setError(null);
+                        setLastSuccessfulRevision(revision);
+                        pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                        return;
+                    } catch {
+                        // Dev fallback also failed — fall through and surface
+                        // the original worker error below.
+                    }
                 }
                 setError(message);
                 // Preserve last successful geometry; only track failed execution metadata.
