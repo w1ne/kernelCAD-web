@@ -68,6 +68,29 @@ export function devMeshAvailable(): boolean {
 }
 
 /**
+ * True when `code` is built with the modern assembly / joint / kinematic kernel
+ * API that the legacy v0.1 in-browser worker does NOT expose (the worker only
+ * has `param`/`box`/`cylinder`/`sphere`/`Sketcher`). Such a model can only run
+ * on the full node kernel, so handing it to the worker is a guaranteed
+ * `"assembly is not defined"` throw. On localhost dev we use this to route the
+ * model straight to the node-backed `/__kernelcad/mesh` endpoint up front —
+ * the worker never sees code it can't evaluate, so there is no throw-then-
+ * recover "choke". A comment that merely mentions one of these tokens only
+ * routes to the (still-correct) node kernel, so over-matching is harmless.
+ */
+const FULL_KERNEL_PATTERNS: readonly RegExp[] = [
+  /\bassembly\s*\(/,
+  /\bjoint\s*\./,
+  /\blib\s*\.\s*fromSTEP\b/,
+  /\.\s*tendon\s*\(/,
+  /\.\s*solvedModel\s*\(/,
+];
+
+export function needsFullKernel(code: string): boolean {
+  return FULL_KERNEL_PATTERNS.some((re) => re.test(code));
+}
+
+/**
  * Mesh arbitrary edited code through the dev server's node kernel
  * (`POST /__kernelcad/mesh { source }`). Returns the same bridge payload
  * shape as `meshSourceHosted`, so the GeometryContext success handler

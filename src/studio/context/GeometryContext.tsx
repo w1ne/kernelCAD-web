@@ -5,7 +5,7 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev } from '../scriptSource';
+import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload } from '../scriptSource';
 import { apiCall, rewritePath } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -546,7 +546,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         // auto-run path must resolve via build-time precompute / server mesh
         // instead of `engine.executeCode`. Not gated on worker `isReady`.
         const hosted = shouldUseHostedMesh();
-        if (!hosted && !isReady) return;
+        // Assembly/kinematic models route to the node kernel (below) and never
+        // touch the worker, so they must not be blocked on worker `isReady` —
+        // otherwise a slow or failed worker init would stall a model the worker
+        // can't run anyway.
+        const routesToDevKernel = devMeshAvailable() && needsFullKernel(code);
+        if (!hosted && !routesToDevKernel && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
 
@@ -612,24 +617,56 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 return;
             }
             setIsComputing(true);
-            try {
-                const result = await engine.executeCode(code);
-                if (revision !== mainRevisionRef.current) {
-                    setStaleMainResponsesDropped((prev) => prev + 1);
-                    staleRecorded = true;
-                    return;
-                }
-                setGeometries(result.geometries);
+            // The in-browser worker is the legacy v0.1 runtime — it only exposes
+            // `param`/`box`/`cylinder`/`sphere`/`Sketcher`. Models built with the
+            // modern assembly/joint/tendon kernel can ONLY run on the node kernel,
+            // so handing them to the worker is a guaranteed "assembly is not
+            // defined" throw. On localhost dev, detect those up front and route
+            // straight to the node-backed dev mesh endpoint — the worker is never
+            // given code it can't evaluate, so there is no throw-then-recover
+            // "choke". The reactive fallback in the catch below stays as a safety
+            // net for any other API the worker happens to lack.
+            const useDevKernel = devMeshAvailable() && needsFullKernel(code);
+            const applyDevPayload = (payload: BackendMeshPayload) => {
+                setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
                 setGeometryTransformOverrides({});
-                const remappedSketches = remapSketchNames(result.sketches, code);
-                setSketchesGeometries(remappedSketches);
+                setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                setScriptParams(Object.values(payload.params ?? {}));
+                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                setSketchesGeometries([]);
+                setPreviewGeometries([]);
                 setError(null);
                 setLastSuccessfulRevision(revision);
-                pushExecutionRecord({
-                    revision,
-                    status: 'success',
-                    executionCountAtRecord: executionCount + 1,
-                });
+                pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+            };
+            try {
+                if (useDevKernel) {
+                    const payload = await meshSourceDev(code);
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    applyDevPayload(payload);
+                } else {
+                    const result = await engine.executeCode(code);
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    setGeometries(result.geometries);
+                    setGeometryTransformOverrides({});
+                    const remappedSketches = remapSketchNames(result.sketches, code);
+                    setSketchesGeometries(remappedSketches);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({
+                        revision,
+                        status: 'success',
+                        executionCountAtRecord: executionCount + 1,
+                    });
+                }
             } catch (err: unknown) {
                 if (revision !== mainRevisionRef.current) {
                     setStaleMainResponsesDropped((prev) => prev + 1);
@@ -649,13 +686,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 } else {
                     message = String(err);
                 }
-                // P11 follow-up: the in-browser worker is the legacy v0.1
-                // runtime and can't evaluate the modern assembly/joint/tendon
-                // API (throws "<global> is not defined"). On localhost dev,
-                // fall back to the node-backed dev mesh endpoint, which runs
-                // the full kernel. Gated on the API-gap signature so genuine
-                // user errors still surface immediately without a round-trip.
-                if (devMeshAvailable() && /is not defined|is not a function/.test(message)) {
+                // Safety net: if the worker path threw because it lacks an API
+                // global (and we didn't already route to the node kernel up
+                // front), retry once through the dev mesh endpoint before
+                // surfacing the error. Genuine user errors still surface
+                // immediately without a wasted round-trip.
+                if (!useDevKernel && devMeshAvailable() && /is not defined|is not a function/.test(message)) {
                     try {
                         const payload = await meshSourceDev(code);
                         if (revision !== mainRevisionRef.current) {
@@ -663,16 +699,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                             staleRecorded = true;
                             return;
                         }
-                        setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
-                        setGeometryTransformOverrides({});
-                        setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
-                        setScriptParams(Object.values(payload.params ?? {}));
-                        setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
-                        setSketchesGeometries([]);
-                        setPreviewGeometries([]);
-                        setError(null);
-                        setLastSuccessfulRevision(revision);
-                        pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                        applyDevPayload(payload);
                         return;
                     } catch {
                         // Dev fallback also failed — fall through and surface

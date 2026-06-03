@@ -9,11 +9,32 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
   }),
 }));
 
-import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev } from './scriptSource';
+import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev, needsFullKernel } from './scriptSource';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe('needsFullKernel', () => {
+  it('matches assembly / joint / tendon / solvedModel / lib.fromSTEP models', () => {
+    expect(needsFullKernel("const arm = assembly('luxo');")).toBe(true);
+    expect(needsFullKernel('const j = joint.clevis({})')).toBe(true);
+    expect(needsFullKernel('arm.tendon("spring", {})')).toBe(true);
+    expect(needsFullKernel('return arm.solvedModel({});')).toBe(true);
+    expect(needsFullKernel('const s = lib.fromSTEP(url)')).toBe(true);
+  });
+
+  it('does not match plain v0.1 primitive models the worker can run', () => {
+    expect(needsFullKernel('const b = box(10, 20, 5); return b;')).toBe(false);
+    expect(needsFullKernel('return cylinder(10, 4).translate(1, 2, 3);')).toBe(false);
+    expect(needsFullKernel("const s = sketcher().lineTo([1, 0]); return s.close();")).toBe(false);
+  });
+
+  it('tolerates whitespace between the token and its call/member', () => {
+    expect(needsFullKernel('assembly  (\n  "x"\n)')).toBe(true);
+    expect(needsFullKernel('joint . clevis({})')).toBe(true);
+  });
 });
 
 describe('meshSourceDev', () => {
