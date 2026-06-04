@@ -153,6 +153,18 @@ topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
 - Internal: `EdgeLineage` and `PartLineage` gain a `featureId` slot for lineage-stable Query resolution; `FaceLineage`'s existing `featureId` slot is reused.
 - Added 6 cookbook snippets (`Q-S1` through `Q-S6`) under `kernelcad-features`, `kernelcad-assemblies`, and `kernelcad-mcp` skills covering construction, set-algebra, lenient composition, ownership-by-part queries, connector queries, and the inspect-first-build-after pattern.
 
+### Added — Parts catalog (Slice C)
+
+- New `kernelcad-parts` skill covering the bundled off-the-shelf parts catalog.
+- `lib.findPart`, `lib.fetchPart`, `lib.standard.*` on the user-script API.
+- Four MCP tools: `find_part`, `fetch_part`, `list_part_families`, `list_part_categories`.
+- Bundled seed catalog with 261 parts: M-series fasteners (SHCS, BHCS, flat-head, hex nuts, lock nuts, flat washers, lock washers, heat-set inserts), deep-groove ball bearings (608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900), linear shafts, NEMA stepper motor envelopes (8 / 11 / 14 / 17 / 23), 2.54 mm and 1.27 mm pin headers (straight + right-angle), JST-XH connector housings.
+- Every bundled part ships with pre-defined connector frames (`head-bearing`, `thread-tip`, `mating-face`, `inner-bore`, `output-shaft`, family-specific names) so it participates in assemblies with no manual `partRef.connector(...)` setup.
+- Any hole feature on an authored or imported part automatically receives `bolt-holes-N` connectors at the hole's bottom face + through-axis (deterministic numbering, refs resolvable as `@kc[<part>/connector/bolt-holes-N]`).
+- Opt-in remote tier: pass `partsBaseUrl` (or set `KERNELCAD_PARTS_BASE_URL`) to extend discovery to a user-configured catalog endpoint. No default URL ships with kernelCAD.
+- Six new `parts.*` diagnostic codes covering missing input, offline cache miss, sha256 mismatch, sha256 drift, remote API errors, and remote-tier-disabled paths.
+- `src/shared/cache/userCache.ts`: per-consumer user cache helper extracted from the texture loader; textures keep their 1-week TTL, parts run with no expiry on bundled bytes plus sha256-verified remote bytes.
+
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 
 - Added SDFormat export via `export_model({ format: 'sdf-gazebo' })`. Minimal-tier scope: model + link + joint + inertial + visual + collision. Differences from URDF: native `<joint type="ball">` (no decomposition for `ball` mates), and closed kinematic loops accepted natively (the 4-bar linkage that URDF refuses round-trips through SDFormat cleanly).

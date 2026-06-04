@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 203 codes', () => {
+  it('catalogue has exactly 210 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -82,8 +82,12 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  7 Slice A export trio (options-format-mismatch + six per-format
     //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
     //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
+    //  +  6 Slice C parts.* codes (parts.input.id-or-query-required,
+    //       parts.fetch.offline-and-uncached, parts.fetch.checksum-mismatch,
+    //       parts.fetch.checksum-drift, parts.fetch.api-error,
+    //       parts.fetch.remote-disabled).
     //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
-    //       web/bend/bending/size/dxf/rule)
+    //       web/bend/bending/size/dxf/rule).
     //  - 3 Slice B-rest fills urdf/srdf/sdf-gazebo placeholder slots; the
     //       three `.not-implemented` entries are removed.
     //  + 11 Slice B-rest new diagnostics:
@@ -121,8 +125,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       mechanism.drops-on-release.
     //  + 1 P8 joint-mesh-continuity gate (this slice): mechanism.joint-mesh-gap.
     //  + 1 P11 Slice 2 tendon-routing gate: mechanism.tendon-body-intersect.
-    // Final = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 + 1 = 204.
-    expect(catalogue.size).toBe(204);
+    // Develop baseline = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 + 1 = 204.
+    //  +  6 Slice C parts.* codes (itemised above) = 210.
+    expect(catalogue.size).toBe(210);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

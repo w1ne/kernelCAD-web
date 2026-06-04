@@ -43,6 +43,10 @@ import { listFeaturesTool } from './tools/listFeatures';
 import { listMatesTool } from './tools/listMates';
 import { listTopologyTool } from './tools/listTopology';
 import { lookupCookbookTool } from './tools/lookupCookbook';
+import { findPartTool } from './tools/findPart';
+import { fetchPartTool } from './tools/fetchPart';
+import { listPartCategoriesTool } from './tools/listPartCategories';
+import { listPartFamiliesTool } from './tools/listPartFamilies';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
@@ -942,6 +946,69 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
+  },
+  {
+    definition: {
+      name: 'list_part_categories',
+      description:
+        'Enumerate the top-level part-catalog categories available locally (and remotely, when partsBaseUrl is configured). The fastest path for an agent to discover what kinds of off-the-shelf parts the bundled catalog covers.',
+      inputSchema: { type: 'object', properties: {} },
+    },
+    handler: () => listPartCategoriesTool(),
+  },
+  {
+    definition: {
+      name: 'list_part_families',
+      description:
+        'Enumerate the part families within a category (e.g. socket-head-cap-screw, deep-groove-ball-bearing). Returns count and up to three exemplar ids per family. Pass { category } to filter; without filters returns every family in the bundled catalog.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          category: { type: 'string', description: 'Top-level category to filter by.' },
+        },
+      },
+    },
+    handler: input => listPartFamiliesTool(input as Parameters<typeof listPartFamiliesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'find_part',
+      description:
+        'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          category: { type: 'string' },
+          family: { type: 'string' },
+          standard: { type: 'string' },
+          tag: { type: 'string' },
+          limit: { type: 'number' },
+          source: { type: 'string', enum: ['local', 'remote', 'auto'] },
+          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+        },
+      },
+    },
+    handler: input => findPartTool(input as Parameters<typeof findPartTool>[0]),
+  },
+  {
+    definition: {
+      name: 'fetch_part',
+      description:
+        'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          query: { type: 'string' },
+          category: { type: 'string' },
+          family: { type: 'string' },
+          standard: { type: 'string' },
+          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+        },
+      },
+    },
+    handler: input => fetchPartTool(input as Parameters<typeof fetchPartTool>[0]),
   },
   {
     definition: {

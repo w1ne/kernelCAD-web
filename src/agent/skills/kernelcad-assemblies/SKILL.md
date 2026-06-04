@@ -27,6 +27,8 @@ Authoring rule: every `arm.part(name, shape)` should also appear in at least one
 
 When a real component (servo, bearing, gripper jaw, fastener) has a vendor-published STEP file, prefer `lib.fromSTEP(path)` over hand-authoring the silhouette from `box()` / `cylinder()`. Geometric fidelity matches the real part — bolt patterns, shaft positions, body cutouts — and the assembly tree carries that same fidelity through to renders, exports, and clash detection.
 
+> For standard hardware (M-series fasteners, deep-groove ball bearings, NEMA steppers, pin headers, JST-XH connectors), prefer the bundled parts catalog over hand-authored connectors on a `lib.fromSTEP` import: load `kernelcad-parts`. The catalog's pre-shipped connector frames (`head-bearing`, `thread-tip`, `mating-face`, `inner-bore`, etc.) are part of the shipped record, so mates work without any `partRef.connector(...)` setup. The bracket-side `bolt-holes-N` auto-rule pairs with this — any `.holes(...)` feature emits matching frames.
+
 ```typescript
 const servo = (await lib.fromSTEP('parts/sts3215.step')).color('servo');
 const jaw   = await lib.fromSTEP('parts/so100-jaw.step');
