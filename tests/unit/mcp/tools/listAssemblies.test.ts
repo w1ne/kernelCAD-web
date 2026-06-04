@@ -13,7 +13,12 @@ function evaluatedXYZ(v: unknown): [number, number, number] {
 describe('listAssembliesTool', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('lists assembly parts, connectors, fixed connections, joints, and models from inline code', async () => {
+  it('lists assembly parts, connectors, fixed connections, and models from inline code', async () => {
+    // G0 (2026-05-31): legacy `arm.revolute(...)` was removed; the
+    // listAssembliesTool's `joints` array reflects v0.5 assemblyJoint records
+    // only (mate-aware mates surface separately on assemblyModel.metadata).
+    // Coverage of the mate readout will move with the listAssemblies-tool
+    // mate migration (separate slice).
     const result = await listAssembliesTool({
       code: `
         const arm = assembly('inspection arm');
@@ -33,11 +38,6 @@ describe('listAssembliesTool', () => {
             to: base.connector('shoulder'),
             name: 'shoulder-fixed',
           },
-        });
-        arm.revolute('shoulder', base, link, {
-          axis: [0, 0, 1],
-          origin: [15, 15, 8],
-          limitsDeg: [-90, 90],
         });
         return arm.model();
       `,
@@ -90,16 +90,7 @@ describe('listAssembliesTool', () => {
         b: expect.objectContaining({ partName: 'link', connector: 'root' }),
       }),
     ]);
-    expect(assembly.joints).toHaveLength(1);
-    expect(assembly.joints[0]).toMatchObject({
-      name: 'shoulder',
-      kind: 'revolute',
-      partIds: { a: assembly.parts[0].id, b: assembly.parts[1].id },
-      limitsDeg: [-90, 90],
-    });
-    // v1 body-tree: joint axis/origin are plain numeric Vec3 (not Vec3Param).
-    expect(assembly.joints[0].axis).toEqual([0, 0, 1]);
-    expect(assembly.joints[0].origin).toEqual([15, 15, 8]);
+    expect(assembly.joints).toEqual([]);
     expect(assembly.models).toEqual([
       expect.objectContaining({
         partIds: [assembly.parts[0].id, assembly.parts[1].id],

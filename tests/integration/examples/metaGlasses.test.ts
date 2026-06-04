@@ -22,4 +22,17 @@ describe('Meta glasses gallery example', () => {
     expect(source).toContain('left-recessed-Meta-camera-bezel');
     expect(source).toContain('right-privacy-LED-diffuser');
   });
+
+  // P3 physics-loop sweep (2026-06-01): meta-glasses is authored as 11
+  // decorative parts with no mate edges; the physics loop flags 10
+  // orphan-parts and 6 incidental interpenetrations. Tracked rebuild
+  // (single fused part OR mate-graph with topology connectors) in the
+  // issue below.
+  //
+  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 4
+  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/350
+  it.skip('passes the physics-grounded loop — see issues/350', () => {
+    // no body — the citation in the title is what the sweep test reads
+  });
 });

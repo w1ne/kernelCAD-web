@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reviewToValidity } from '../../adapters/reviewToValidity';
+import { reviewToValidity, reviewToMechanismBanner } from '../../adapters/reviewToValidity';
 
 describe('reviewToValidity', () => {
     it('null review → null validity', () => {
@@ -38,5 +38,94 @@ describe('reviewToValidity', () => {
     it('missing severity defaults to error', () => {
         const v = reviewToValidity({ ok: false, diagnostics: [{ message: 'x' }] });
         expect(v?.diagnostics[0].severity).toBe('error');
+    });
+
+    it('mechanism: broken overrides ok:true → status=error', () => {
+        // P1 surface convergence: the loop's mechanism verdict is the
+        // merge gate, so a broken mechanism flips status to error even
+        // when the legacy fitness summary is still reporting ok:true.
+        const v = reviewToValidity({
+            ok: true,
+            mechanism: 'broken',
+            mechanismFailures: [
+                { code: 'mechanism.disconnect', severity: 'error', message: 'x', hint: 'y' },
+            ],
+        });
+        expect(v?.status).toBe('error');
+    });
+});
+
+describe('reviewToMechanismBanner', () => {
+    it('null review → null banner', () => {
+        expect(reviewToMechanismBanner(null)).toBeNull();
+    });
+
+    it('mechanism missing → null banner (unverified default)', () => {
+        expect(reviewToMechanismBanner({ ok: true })).toBeNull();
+    });
+
+    it('mechanism: real → null banner', () => {
+        expect(reviewToMechanismBanner({ ok: true, mechanism: 'real' })).toBeNull();
+    });
+
+    it('mechanism: unverified → null banner', () => {
+        expect(
+            reviewToMechanismBanner({ ok: true, mechanism: 'unverified' }),
+        ).toBeNull();
+    });
+
+    it('mechanism: broken with no failures → null banner (defensive)', () => {
+        // The recompute should never return broken + empty failures,
+        // but defend against it so we don't render a banner that says
+        // "broken" with no rows to explain why.
+        expect(
+            reviewToMechanismBanner({
+                ok: false,
+                mechanism: 'broken',
+                mechanismFailures: [],
+            }),
+        ).toBeNull();
+    });
+
+    it('mechanism: broken with failures → entries[] with code+message+hint', () => {
+        const banner = reviewToMechanismBanner({
+            ok: false,
+            mechanism: 'broken',
+            mechanismFailures: [
+                {
+                    code: 'mechanism.disconnect',
+                    severity: 'error',
+                    message: 'spring drifts',
+                    hint: 'bind to a topology connector',
+                },
+                {
+                    code: 'mechanism.interpenetration',
+                    severity: 'error',
+                    message: 'parts overlap',
+                    hint: 'add clearance',
+                },
+            ],
+        });
+        expect(banner).not.toBeNull();
+        expect(banner?.entries).toHaveLength(2);
+        expect(banner?.entries[0]).toEqual({
+            code: 'mechanism.disconnect',
+            message: 'spring drifts',
+            hint: 'bind to a topology connector',
+        });
+        expect(banner?.entries[1].code).toBe('mechanism.interpenetration');
+    });
+
+    it('entries default missing fields to safe strings', () => {
+        const banner = reviewToMechanismBanner({
+            ok: false,
+            mechanism: 'broken',
+            mechanismFailures: [{ severity: 'error' }],
+        });
+        expect(banner?.entries[0]).toEqual({
+            code: 'mechanism.unknown',
+            message: '',
+            hint: '',
+        });
     });
 });

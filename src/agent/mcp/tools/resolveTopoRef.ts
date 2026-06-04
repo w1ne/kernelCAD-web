@@ -59,6 +59,46 @@ export interface ResolveTopoRefOutput {
 export async function resolveTopoRefTool(
   input: ResolveTopoRefInput,
 ): Promise<ResolveTopoRefOutput> {
+  // Q8 — accept @kcq[...] strings too: the agent often holds a Query DSL
+  // ref from list_faces / evaluate_query output. Route @kcq[...] (and any
+  // other Query DSL surface) through evaluate_query semantics — caller
+  // gets the first canonical entity as the resolved ref. Per the Q7
+  // strings-as-sugar contract, @kc[...] remains the primary single-ref
+  // surface and falls through to the original parseTopoRef path.
+  if (typeof input.ref === 'string' && input.ref.startsWith('@kcq[')) {
+    const { evaluateQueryTool } = await import('./evaluateQuery');
+    const r = await evaluateQueryTool({
+      ...(input.file ? { file: input.file } : {}),
+      ...(input.code !== undefined ? { code: input.code } : {}),
+      ...(input.feature_id ? { feature_id: input.feature_id } : {}),
+      query: input.ref,
+      expect: 'unique',
+    });
+    if (!r.ok) {
+      return {
+        ok: false,
+        error: r.error,
+        errorCode: r.errorCode,
+        errorHint: r.errorHint,
+      };
+    }
+    const e = r.entities[0];
+    return {
+      ok: true,
+      ref: e.ref,
+      entity: {
+        // Cast: Query DSL entity kinds are a subset of TopoKind.
+        kind: e.kind as ResolveTopoRefOutput['entity'] extends infer T
+          ? T extends { kind: infer K } ? K : never : never,
+        hash: e.handle,
+        // Query DSL resolution doesn't distinguish lineage vs snapshot;
+        // mark as lineage since the evaluator's primary path walks the
+        // historyMap.
+        path: 'lineage' as const,
+      },
+    };
+  }
+
   const parsed = parseTopoRef(input.ref);
   if ('error' in parsed) {
     return {

@@ -20,6 +20,17 @@ import {
 } from '../mates/mate';
 import { isCompatiblePair, type MateType } from '../mates/mateTypes';
 import {
+  TENDON_DEFAULT_COIL_DIAMETER_MM,
+  TENDON_DEFAULT_COIL_TURNS,
+  TENDON_DEFAULT_VISUAL_DIAMETER_MM,
+  TENDON_DEFAULT_VISUAL_STYLE,
+  type TendonOptions,
+  type TendonRecord,
+  type TendonWrapRef,
+  type WrapGeomOptions,
+  type WrapGeomRecord,
+} from '../mates/tendon';
+import {
   reviewPoseEnvelope,
   type PoseEnvelopeDiagnostic,
 } from '../mates/poseEnvelope';
@@ -33,6 +44,7 @@ import {
 import { currentValue, toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { isParamRef, paramExprToDebugString, type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
+import type { PartLineage, PartLineageMap } from '../../kernel/naming/evolutionRecord';
 import type { CaptureSession } from './captureSession';
 import { forwardKinematics, type NumericPoses } from './forwardKinematics';
 import { Shape } from './proxy';
@@ -78,6 +90,13 @@ export interface AssemblyConnectorOpts {
   origin: ConnectorOriginInput;
   axis?: Vec3;
   normal?: Vec3;
+  /** Radius (mm) of the joint's pin clearance bore at this connector when it
+   *  sits at a drilled knuckle (a `joint.clevis(...)` pivot supplies
+   *  `pinR + holeClearance`). Lets the criterion-7 joint-mesh-gap gate accept
+   *  a clearance bore — solid present around the pivot — instead of requiring
+   *  the pivot POINT to be inside solid material. Omit for non-drilled
+   *  connectors (the gate then uses its 1 mm point-in-solid tolerance). */
+  jointClearanceRadius?: number;
 }
 
 export interface AssemblyPartRef {
@@ -91,6 +110,11 @@ export interface AssemblyPartRef {
    *  is shared with the assembly's stored record and visible to
    *  `Assembly.model()` / `Assembly.solvedModel()`. */
   mateConnectors: Connector[];
+  /** P11 Slice 2 — wrap-geom cylinders registered via `wrapGeom(name, opts)`.
+   *  Mutated in place by the chain method, shared by reference with the
+   *  stored record so the MJCF emitter and criterion 8 see additions made
+   *  after `part(...)` returns. */
+  wrapGeoms: WrapGeomRecord[];
   /** Look up a v0.5 kinematic connector by name (declared via
    *  `assembly.part(..., { connectors })`) — returns an `AssemblyConnectorRef`
    *  for use in `opts.connect`. */
@@ -99,6 +123,11 @@ export interface AssemblyPartRef {
    *  part-ref for chaining. Throws `assembly.connector.duplicate-name` if a
    *  connector with the same name is already registered on this part. */
   connector(name: string, opts: AssemblyConnectorOpts): AssemblyPartRef;
+  /** P11 Slice 2 — declare a named collision-OFF wrap cylinder for tendon
+   *  routing and return the part-ref for chaining. Throws
+   *  `assembly.wrap-geom.duplicate-name` if the name is already used on
+   *  this part, or `feature.invalid-args` on a bad axis / radius. */
+  wrapGeom(name: string, opts: WrapGeomOptions): AssemblyPartRef;
 }
 
 function validateLimitRange(
@@ -162,6 +191,32 @@ export interface SubAssemblyHandle {
   part(origPartName: string): AssemblyPartRef;
 }
 
+/** Beam cross-section declaration consumed by the closed-form Euler-Bernoulli
+ *  path in `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Optional —
+ *  parts without a declared cross-section fire `kinematic.load.beam-not-applicable`
+ *  when a load is applied to them. Lengths are in millimetres (the assembly's
+ *  canonical length unit). */
+export type AssemblyCrossSection =
+  | {
+      readonly kind: 'rectangle';
+      readonly widthMm: number;
+      readonly heightMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'circle';
+      readonly radiusMm: number;
+      readonly lengthMm: number;
+    }
+  | {
+      readonly kind: 'i-beam';
+      readonly flangeWidthMm: number;
+      readonly flangeThicknessMm: number;
+      readonly webHeightMm: number;
+      readonly webThicknessMm: number;
+      readonly lengthMm: number;
+    };
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
   connectors?: Record<string, AssemblyConnectorFrame>;
@@ -176,6 +231,11 @@ export interface AssemblyPartOpts {
    *  the dynamics will be off for any non-water material. Typical values:
    *  steel 7850, aluminum 2700, ABS 1050, brass 8500, titanium 4500. */
   density?: number;
+  /** Beam cross-section for closed-form Euler-Bernoulli load checking via
+   *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
+   *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
+   *  on any load applied to the part. */
+  crossSection?: AssemblyCrossSection;
 }
 
 export interface MechanicalJointIntentOpts {
@@ -251,20 +311,15 @@ export interface AssemblyConnectRef {
   kind: 'fixed';
 }
 
-export interface RevoluteJointOpts {
-  axis: Vec3;
-  origin: Vec3;
-  limitsDeg?: [number, number];
-}
+// RevoluteJointOpts / FixedJointOpts removed in G0 (2026-05-31): the v0.5
+// `arm.revolute(...)` / `arm.fixed(...)` methods no longer exist. Use
+// `arm.mate(name, a, b, 'revolute'|'fastened', opts?)` instead — limits and
+// pose are carried on the MateRecord directly.
 
 export interface PrismaticJointOpts {
   axis: Vec3;
   origin: Vec3;
   limitsMm?: [number, number];
-}
-
-export interface FixedJointOpts {
-  origin?: Vec3;
 }
 
 export interface BallJointOpts {
@@ -308,6 +363,10 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  Read by the URDF / SDF export inertial-block emitters. Undefined when
    *  the script did not declare a density on `arm.part(...)`. */
   readonly density?: number;
+  /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
+   *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
+   *  the script did not declare a cross-section on `arm.part(...)`. */
+  readonly crossSection?: AssemblyCrossSection;
 }
 
 /** SRDF planning group. Either chain-form (base/tip) or enumeration. */
@@ -352,11 +411,25 @@ export class Assembly {
   readonly name: string;
   private readonly session: CaptureSession;
   private readonly parts: AssemblyPartStored[] = [];
+  /** Q1.5: per-part lineage map (PartLineageMap) populated on every
+   *  `.part(name, shape, opts?)` capture-site. Mirrors `FaceLineage` /
+   *  `EdgeLineage` for the part scope so part-level Queries resolve
+   *  through the same lineage pathway. Read-only outside this class;
+   *  surfaced via `__partLineage()`. */
+  private readonly partLineage: PartLineageMap = new Map();
   private readonly joints: AssemblyJointStored[] = [];
   /** v0.6 Task 5: mate records declared via `arm.mate(name, aRef, bRef, type)`.
    *  Surfaced on `Scene.mates` returned by `model()` / `solvedModel()`. */
   private readonly mates: MateRecord[] = [];
   private readonly mateCouplings: MateCouplingRecord[] = [];
+  /**
+   * P7: closed-loop balance-spring records declared via
+   * `arm.tendon(name, opts)`. Each tendon spans two connectors on
+   * different parts; mapped to MJCF `<tendon><spatial>` at physics-gate
+   * export time. The capture-side store is a flat array; uniqueness
+   * (name) + endpoint-connector existence are validated at insert.
+   */
+  private readonly tendons: TendonRecord[] = [];
   private readonly mechanicalJointIntents: MechanicalJointIntentRecord[] = [];
   private readonly transmissionIntents: TransmissionIntentRecord[] = [];
   /**
@@ -374,6 +447,14 @@ export class Assembly {
   private readonly virtualJoints: VirtualJointRecord[] = [];
   private readonly groupStates: GroupStateRecord[] = [];
   private readonly disabledCollisions: DisabledCollisionRecord[] = [];
+  /**
+   * Latest known-acceptable interference pair list, as captured by the most
+   * recent `solvedModel({ ignore: [...] })` call. Read by external review
+   * surfaces (`reviewCadTool`) so the validator they run respects the same
+   * silencing the script's `solvedModel` did. The raw detection output stays
+   * unfiltered — only the validator's diagnostic emission honors this list.
+   */
+  private ignoreInterferenceList: ReadonlyArray<readonly [string, string]> = [];
 
   constructor(name: string, session: CaptureSession) {
     this.name = name;
@@ -400,20 +481,37 @@ export class Assembly {
         );
       }
     }
+    if (opts.crossSection !== undefined) {
+      validateCrossSection(name, shape.id, opts.crossSection);
+    }
     const connectors = normalizeConnectors(name, shape.id, opts.connectors);
     const at = resolvePartPlacement(this.name, name, shape.id, opts.at, connectors, opts.connect);
     const record = this.session.assemblyPart(this.name, name, shape, { at, connectors, placedBy: opts.connect });
+    // Q1.5: write the part-lineage entry now that the capture-session has
+    // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
+    // is the same id the FeatureRecord carries — anchors part-level Query
+    // resolution (`kc.q.part(kc.q.createdBy('<featureId>'))`) to the
+    // existing FeatureRecord graph rather than introducing a parallel
+    // id stream.
+    const lineage: PartLineage = {
+      featureId: record.id,
+      featureName: name,
+      featureKind: 'assemblyPart',
+    };
+    this.partLineage.set(name, lineage);
     // Shared mutable array: the part-ref's `.connector(name, opts)` chain
     // method pushes into this array, and the `AssemblyPartStored` record
     // below references the same array via spread (arrays are by-reference),
     // so `makeScene` sees additions made after `part(...)` returns.
     const mateConnectors: Connector[] = [];
-    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors);
+    const wrapGeoms: WrapGeomRecord[] = [];
+    const part = makePartRef(this.name, record.id, name, at, connectors, mateConnectors, wrapGeoms);
     const stored: AssemblyPartStored = {
       ...part,
       originalShape: shape,
       ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
       ...(opts.density !== undefined ? { density: opts.density } : {}),
+      ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     };
     this.parts.push(stored);
     if (opts.connect) {
@@ -536,48 +634,12 @@ export class Assembly {
     };
   }
 
-  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
-    if (!isValidVec3(opts.axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-        undefined,
-        'Pass axis: [x, y, z].',
-      );
-    }
-    if (!isValidVec3(opts.origin)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
-        undefined,
-        'Pass origin: [x, y, z] in the parent part local frame.',
-      );
-    }
-    if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `revolute joint limitsDeg must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(opts.limitsDeg)}.`,
-        undefined,
-        'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
-      );
-    }
-    const record = this.session.assemblyJoint(this.name, name, 'revolute', a, b, {
-      axis: opts.axis,
-      origin: opts.origin,
-      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    });
-    this.joints.push({
-      id: record.id,
-      name,
-      kind: 'revolute',
-      parentPartId: a.id,
-      childPartId: b.id,
-      axis: opts.axis,
-      origin: opts.origin,
-      ...(opts.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
-    });
-    return { id: record.id, name, kind: 'revolute' };
-  }
+  // arm.revolute(...) was the v0.5 body-tree-FK API. Removed in G0
+  // (2026-05-31, mechanism-delivery workstream) because it bypassed
+  // `arm.__mates()` — every v0.7 kinematic-grounding gate (Gates 1-4) reads
+  // the mate graph and silently early-exited on legacy-only assemblies.
+  // Use `arm.connector(...)` + `arm.mate(name, a, b, 'revolute', { ... })`
+  // instead. See examples/robot-arm/desktop-3axis-mates.kcad.ts.
 
   prismatic(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
     if (!isValidVec3(opts.axis)) {
@@ -622,27 +684,11 @@ export class Assembly {
     return { id: record.id, name, kind: 'prismatic' };
   }
 
-  fixed(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: FixedJointOpts = {}): AssemblyJointRef {
-    const origin: Vec3 = opts.origin ?? [0, 0, 0];
-    if (!isValidVec3(origin)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `fixed joint origin must be a finite Vec3 or omitted; got ${formatScalarForError(origin)}.`,
-        undefined,
-        'Pass origin: [x, y, z] or omit it.',
-      );
-    }
-    const record = this.session.assemblyJoint(this.name, name, 'fixed', a, b, { origin });
-    this.joints.push({
-      id: record.id,
-      name,
-      kind: 'fixed',
-      parentPartId: a.id,
-      childPartId: b.id,
-      origin,
-    });
-    return { id: record.id, name, kind: 'fixed' };
-  }
+  // arm.fixed(...) was the v0.5 body-tree-FK API for rigid (no-DOF) joints.
+  // Removed in G0 (2026-05-31, mechanism-delivery workstream) for the same
+  // reason as arm.revolute(...). Use `arm.connector(...)` +
+  // `arm.mate(name, a, b, 'fastened')` instead. See
+  // examples/robot-arm/desktop-3axis-mates.kcad.ts for the canonical pattern.
 
   ball(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: BallJointOpts): AssemblyJointRef {
     if (!isValidVec3(opts.origin)) {
@@ -793,6 +839,179 @@ export class Assembly {
       source: opts.source,
       ratio: opts.ratio,
       ...(opts.offset !== undefined ? { offset: opts.offset } : {}),
+    });
+    return this;
+  }
+
+  /**
+   * P7 — declare a passive balance spring (tendon) spanning two connectors
+   * on different parts. The tendon applies a restoring force
+   * `F = stiffness·(L − restLength) + damping·dL/dt` whenever the
+   * endpoint-to-endpoint distance L differs from the rest length, where
+   * L is recomputed each MuJoCo step from the live world positions of
+   * the two referenced connectors.
+   *
+   * Unlike `mate(...)`, a tendon is NOT a kinematic constraint — it
+   * doesn't add or remove DOFs. kernelCAD's spanning-tree FK ignores
+   * tendons entirely; they only fire under `validate --include-physics`,
+   * which feeds the assembly to MuJoCo via `mjcfExport`.
+   *
+   * Both endpoints must reference connectors already declared on parts
+   * already added to this assembly. The two connectors must be on
+   * DIFFERENT parts — mounting both ends to the same body produces zero
+   * net moment, which is the bug pattern that motivated P7 in the first
+   * place.
+   *
+   * Errors:
+   *   - duplicate tendon name                → feature.invalid-args
+   *   - malformed ref / unknown part / unknown connector
+   *                                          → assembly.tendon.connector-not-found
+   *   - both endpoints on same part          → assembly.tendon.same-body-endpoints
+   *   - restLengthMm <= 0 or non-finite      → assembly.tendon.invalid-rest-length
+   *   - stiffnessNmm <= 0 or non-finite      → assembly.tendon.invalid-stiffness
+   *   - dampingNsmm < 0 or non-finite        → assembly.tendon.invalid-damping
+   *   - visualDiameterMm <= 0 or non-finite  → assembly.tendon.invalid-visual-diameter
+   *
+   * Surfaced via `__tendons()` for the MJCF exporter and Studio renderer.
+   */
+  tendon(name: string, opts: TendonOptions): this {
+    if (this.tendons.some((t) => t.name === name)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.duplicate-name: tendon '${name}' is already declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.tendon-duplicate-name — pick a unique tendon name, or remove the earlier arm.tendon('${name}', ...) call.`,
+      );
+    }
+    // Resolve both endpoints. Reuse the same "<part>.<connector>" grammar
+    // as mates so the agent surface is consistent.
+    const fromRes = this.resolveTendonEndpoint(name, 'from', opts.from);
+    const toRes = this.resolveTendonEndpoint(name, 'to', opts.to);
+    if (fromRes.partName === toRes.partName) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.same-body-endpoints: tendon '${name}' has both endpoints on part '${fromRes.partName}'. A tendon must span TWO different parts to produce a restoring moment around the joint between them.`,
+        undefined,
+        `invalid-args.assembly.tendon-same-body-endpoints — pick connectors on DIFFERENT parts. The canonical pattern is one connector on the parent arm and one on the child arm of the joint the spring spans.`,
+      );
+    }
+    if (!Number.isFinite(opts.restLengthMm) || opts.restLengthMm <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-rest-length: tendon '${name}' restLengthMm must be a positive finite number; got ${formatScalarForError(opts.restLengthMm)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-rest-length — pass restLengthMm: <positive mm>. Typical Anglepoise rest length is 25-50 mm depending on the joint.`,
+      );
+    }
+    if (!Number.isFinite(opts.stiffnessNmm) || opts.stiffnessNmm <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-stiffness: tendon '${name}' stiffnessNmm must be a positive finite number; got ${formatScalarForError(opts.stiffnessNmm)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-stiffness — pass stiffnessNmm: <positive N/mm>. Typical Anglepoise spring stiffness is 0.3-1.0 N/mm.`,
+      );
+    }
+    const damping = opts.dampingNsmm ?? 0;
+    if (!Number.isFinite(damping) || damping < 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-damping: tendon '${name}' dampingNsmm must be a non-negative finite number; got ${formatScalarForError(damping)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-damping — pass dampingNsmm: <non-negative N·s/mm>, or omit it to default to 0.`,
+      );
+    }
+    const visualDiameter = opts.visualDiameterMm ?? TENDON_DEFAULT_VISUAL_DIAMETER_MM;
+    if (!Number.isFinite(visualDiameter) || visualDiameter <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-visual-diameter: tendon '${name}' visualDiameterMm must be a positive finite number; got ${formatScalarForError(visualDiameter)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-visual-diameter — pass visualDiameterMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_VISUAL_DIAMETER_MM} mm.`,
+      );
+    }
+    // P10: coil-visual-style fields. `visualStyle: 'line'` (default)
+    // ignores `coilTurns` / `coilDiameterMm`; `'coil'` validates both.
+    const visualStyle = opts.visualStyle ?? TENDON_DEFAULT_VISUAL_STYLE;
+    if (visualStyle !== 'line' && visualStyle !== 'coil') {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-visual-style: tendon '${name}' visualStyle must be 'line' or 'coil'; got ${formatScalarForError(visualStyle as unknown as number)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-visual-style — pass visualStyle: 'line' for a straight cylinder (default) or 'coil' for an Anglepoise-style helical spring.`,
+      );
+    }
+    const coilTurns = opts.coilTurns ?? TENDON_DEFAULT_COIL_TURNS;
+    if (!Number.isFinite(coilTurns) || coilTurns < 1) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-turns: tendon '${name}' coilTurns must be a finite number >= 1; got ${formatScalarForError(coilTurns)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-turns — pass coilTurns: <integer >= 1>, or omit it to default to ${TENDON_DEFAULT_COIL_TURNS}. Typical Anglepoise coil is 8-14 turns.`,
+      );
+    }
+    const coilDiameter = opts.coilDiameterMm ?? TENDON_DEFAULT_COIL_DIAMETER_MM;
+    if (!Number.isFinite(coilDiameter) || coilDiameter <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-diameter: tendon '${name}' coilDiameterMm must be a positive finite number; got ${formatScalarForError(coilDiameter)}.`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-diameter — pass coilDiameterMm: <positive mm>, or omit it to default to ${TENDON_DEFAULT_COIL_DIAMETER_MM} mm.`,
+      );
+    }
+    if (visualStyle === 'coil' && coilDiameter <= 2 * visualDiameter) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.invalid-coil-diameter: tendon '${name}' coilDiameterMm (${formatScalarForError(coilDiameter)}) must be > 2 * visualDiameterMm (${formatScalarForError(2 * visualDiameter)}) so the helix WIRE (radius visualDiameterMm/2) fits inside the COIL (radius coilDiameterMm/2).`,
+        undefined,
+        `invalid-args.assembly.tendon-invalid-coil-diameter — either increase coilDiameterMm (typical Anglepoise: 5-10 mm) or decrease visualDiameterMm (typical wire: 1.0-1.4 mm).`,
+      );
+    }
+    // P11 Slice 2 — resolve + validate wrap-geom routing rails. Each entry
+    // must name a part that exists and a `WrapGeomRecord` already declared
+    // on that part via `part.wrapGeom(...)` (declare wrap geoms BEFORE the
+    // tendon, same ordering rule as connectors before mates).
+    const wrapGeoms: TendonWrapRef[] = [];
+    if (opts.wrapGeoms !== undefined) {
+      for (const w of opts.wrapGeoms) {
+        const part = this.parts.find((p) => p.name === w.partName);
+        if (part === undefined) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.tendon.unknown-wrap-part: tendon '${name}' references wrap geom on part '${w.partName}', which is not declared on assembly '${this.name}'.`,
+            undefined,
+            `invalid-args.assembly.tendon-unknown-wrap-part — the wrap geom's partName must be a part added via arm.part(...). Check for a typo against the declared part names.`,
+          );
+        }
+        const wg = part.wrapGeoms.find((g) => g.name === w.wrapName);
+        if (wg === undefined) {
+          throw new KernelError(
+            'feature.invalid-args',
+            `assembly.tendon.unknown-wrap-geom: tendon '${name}' references wrap geom '${w.wrapName}' on part '${w.partName}', but that part has no such wrap geom. Declared: [${part.wrapGeoms.map((g) => g.name).join(', ') || '(none)'}].`,
+            undefined,
+            `invalid-args.assembly.tendon-unknown-wrap-geom — declare it first with arm.part('${w.partName}', ...).wrapGeom('${w.wrapName}', { axis, radius }), then reference it here.`,
+          );
+        }
+        wrapGeoms.push({
+          partName: w.partName,
+          wrapName: w.wrapName,
+          ...(w.sidesite !== undefined
+            ? { sidesite: [w.sidesite[0], w.sidesite[1], w.sidesite[2]] as const }
+            : {}),
+        });
+      }
+    }
+    this.tendons.push({
+      name,
+      from: opts.from,
+      to: opts.to,
+      restLengthMm: opts.restLengthMm,
+      stiffnessNmm: opts.stiffnessNmm,
+      dampingNsmm: damping,
+      visualDiameterMm: visualDiameter,
+      visualStyle,
+      coilTurns,
+      coilDiameterMm: coilDiameter,
+      wrapGeoms,
     });
     return this;
   }
@@ -1132,12 +1351,72 @@ export class Assembly {
   }
 
   /**
+   * Resolve a tendon endpoint ref. Mirrors `resolveMateConnector` but
+   * emits tendon-flavored diagnostics so authoring scripts get advice
+   * about `arm.tendon(...)` specifically rather than mate connectors.
+   * The connector type is intentionally NOT constrained — any connector
+   * (frame/axis/planar/ball) is a valid tendon anchor.
+   */
+  private resolveTendonEndpoint(
+    tendonName: string,
+    side: 'from' | 'to',
+    ref: string,
+  ): { partName: string; connectorName: string } {
+    let parsed: { partName: string; connectorName: string };
+    try {
+      parsed = parseConnectorRef(ref);
+    } catch {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: '${ref}' is not a 'partName.connectorName' reference.`,
+        undefined,
+        `invalid-args.assembly.tendon-connector-not-found — pass ${side}: '<partName>.<connectorName>' where both names are declared on this assembly.`,
+      );
+    }
+    const part = this.parts.find((p) => p.name === parsed.partName);
+    if (!part) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: part '${parsed.partName}' is not declared on assembly '${this.name}'.`,
+        undefined,
+        `invalid-args.assembly.tendon-connector-not-found — declare the part via arm.part('${parsed.partName}', ...) before referencing it in a tendon.`,
+      );
+    }
+    const connector = part.mateConnectors.find((c) => c.name === parsed.connectorName);
+    if (!connector) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.tendon.connector-not-found: tendon '${tendonName}' ${side}: connector '${parsed.connectorName}' is not declared on part '${parsed.partName}'.`,
+        part.id,
+        `invalid-args.assembly.tendon-connector-not-found — register the connector via partRef.connector('${parsed.connectorName}', { type, origin, ... }) before referencing it in a tendon.`,
+      );
+    }
+    return parsed;
+  }
+
+  /**
    * Internal accessor — read-only view of the registered parts for the v0.6
    * mate solver (`src/lib/mates/solver.ts`). Underscore-prefixed: not part of
    * the agent-facing surface. Mirrors `Scene.__sourceFeatureId` convention.
    */
   __parts(): readonly AssemblyPartStored[] {
     return this.parts;
+  }
+
+  /**
+   * Q1.5 — Internal accessor: read-only view of the per-part lineage map.
+   *
+   * Mirrors `FaceLineage` / `EdgeLineage` for the part scope. Consumed by
+   * the (future) Q3 query evaluator's `Query<Part>` branch and the future
+   * Drake `tipLink: Query<unknown>` consumer; both resolve part-level
+   * Queries by walking this map.
+   *
+   * The returned map is the live internal map by reference — callers must
+   * treat it as read-only. Mirrors the `__parts()` / `__mates()`
+   * underscore-prefixed convention; not part of the agent-facing surface.
+   */
+  __partLineage(): PartLineageMap {
+    return this.partLineage;
   }
 
   /**
@@ -1151,6 +1430,16 @@ export class Assembly {
 
   __mateCouplings(): readonly MateCouplingRecord[] {
     return this.mateCouplings;
+  }
+
+  /**
+   * P7: read-only view of declared tendon records. Consumed by
+   * `assemblyToMjcf` (physics-gate export) and the Studio
+   * TendonRenderer. Mirrors the `__mates()` underscore convention; the
+   * agent-facing surface is `arm.tendon(...)` declaration only.
+   */
+  __tendons(): readonly TendonRecord[] {
+    return this.tendons;
   }
 
   /**
@@ -1187,6 +1476,18 @@ export class Assembly {
   /** SRDF allowed-collision overrides declared via `arm.disableCollision(...)`. */
   __disabledCollisions(): readonly DisabledCollisionRecord[] {
     return this.disabledCollisions;
+  }
+
+  /**
+   * Last `ignore` list passed to `solvedModel`. External review surfaces
+   * (`reviewCadTool`) read this so the validator they re-run honors the same
+   * known-acceptable contacts the script silenced. Empty when no
+   * `solvedModel({ ignore })` has been called yet. Mirrors the `__mates()` /
+   * `__parts()` underscore-prefixed convention; not part of the agent-facing
+   * surface.
+   */
+  __ignoreInterference(): ReadonlyArray<readonly [string, string]> {
+    return this.ignoreInterferenceList;
   }
 
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
@@ -1509,6 +1810,21 @@ export class Assembly {
        * composes Gate 3 with the v0.7.5 grounding gates.
        */
       externalLoads?: Readonly<Record<string, { force?: Vec3; torque?: Vec3 }>>;
+      /**
+       * Known-acceptable interference pairs. Symmetric matching: `[a, b]`
+       * silences both `(a, b)` and `(b, a)`. Pairs in `ignore` are still
+       * DETECTED by the runtime BREP sweep (so a Studio HUD reading the raw
+       * detection output still surfaces them on the status bar), but FILTERED
+       * out of the validator's `assembly.interference.overlap` diagnostic
+       * stream — they don't throw under `validate: 'error'` and don't appear
+       * in `scene.warnings` under `validate: 'warn'`.
+       *
+       * This is the granular alternative to `validate: 'off'`. Use it when a
+       * specific known-acceptable contact (e.g. a knuckle joint where two arm
+       * parts must touch by design) should not block the validator while
+       * still letting the rest of the validation gate run.
+       */
+      ignore?: ReadonlyArray<readonly [string, string]>;
     },
   ): Promise<Scene> {
     if (this.parts.length === 0) {
@@ -1518,6 +1834,19 @@ export class Assembly {
         undefined,
         'Call assembly.part(name, shape, opts?) before assembly.solvedModel(poses).',
       );
+    }
+    // Record the ignore list on the Assembly so external review surfaces
+    // (reviewCadTool) re-run validation with the same known-acceptable
+    // contacts the script silenced. The raw detection output stays
+    // unfiltered so HUD-style consumers can show the user every contact.
+    //
+    // Only OVERWRITE when an explicit `ignore` was passed. Internal callers
+    // like `detectInterferencesForPoses` re-invoke `solvedModel` without
+    // opts.ignore to read a freshly-posed scene; nuking the list there would
+    // wipe the agent-authored silencing every time the HUD re-detects on a
+    // slider drag.
+    if (opts?.ignore !== undefined) {
+      this.ignoreInterferenceList = opts.ignore;
     }
     // v0.7.4 — validate externalLoads keys at capture entry so agent typos
     // surface immediately, not silently. Per spec open-question 5 resolution
@@ -1650,6 +1979,7 @@ export class Assembly {
         undefined,
         opts?.externalLoads,
         envelopeResult?.connectorWorkspace,
+        opts?.ignore,
       );
       const envelopeDiagnostics: readonly PoseEnvelopeDiagnostic[] =
         envelopeResult ? envelopeResult.diagnostics : [];
@@ -1832,6 +2162,7 @@ export class Assembly {
       sceneFeatureId,
       this.mates.length > 0 ? [...this.mates] : undefined,
       warnings,
+      this.tendons.length > 0 ? [...this.tendons] : undefined,
     );
   }
 }
@@ -2116,6 +2447,38 @@ function normalizeConnectors(
   return normalized;
 }
 
+/** Sanity-check every numeric field on an authored cross-section. Lengths
+ *  must be finite + positive; an invalid field raises a `feature.invalid-args`
+ *  at capture time so beam-mode load checks never see NaN-laced sections. */
+function validateCrossSection(
+  partName: string,
+  featureId: FeatureId,
+  cs: AssemblyCrossSection,
+): void {
+  const ensurePositive = (label: string, value: number): void => {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly part '${partName}': crossSection ${label} must be a positive finite number; got ${formatScalarForError(value)}.`,
+        featureId,
+        'Pass every cross-section length in millimetres as a finite number > 0.',
+      );
+    }
+  };
+  ensurePositive('lengthMm', cs.lengthMm);
+  if (cs.kind === 'rectangle') {
+    ensurePositive('widthMm', cs.widthMm);
+    ensurePositive('heightMm', cs.heightMm);
+  } else if (cs.kind === 'circle') {
+    ensurePositive('radiusMm', cs.radiusMm);
+  } else {
+    ensurePositive('flangeWidthMm', cs.flangeWidthMm);
+    ensurePositive('flangeThicknessMm', cs.flangeThicknessMm);
+    ensurePositive('webHeightMm', cs.webHeightMm);
+    ensurePositive('webThicknessMm', cs.webThicknessMm);
+  }
+}
+
 function paramToExpr(p: Param): ParamRefExpr {
   if (p.paramRef === undefined) {
     return { kind: 'lit', value: p.evaluated };
@@ -2223,6 +2586,7 @@ function makePartRef(
   at: Vec3Param,
   connectors: Record<string, AssemblyConnectorFrameStored>,
   mateConnectors: Connector[],
+  wrapGeoms: WrapGeomRecord[],
 ): AssemblyPartRef {
   // Overload: `connector(name)` returns the v0.5 kinematic AssemblyConnectorRef;
   // `connector(name, opts)` registers a v0.6 mate-style Connector and returns
@@ -2254,6 +2618,9 @@ function makePartRef(
           origin: normalizedOrigin,
           axis: opts.axis,
           normal: opts.normal,
+          ...(opts.jointClearanceRadius !== undefined
+            ? { jointClearanceRadius: opts.jointClearanceRadius }
+            : {}),
         }),
       );
       return ref;
@@ -2282,6 +2649,62 @@ function makePartRef(
       ...(frame.axis !== undefined ? { axis: frame.axis } : {}),
     };
   };
+  // P11 Slice 2 — declare a collision-OFF wrap cylinder for tendon
+  // routing. Mirrors the mate-style `connector(name, opts)` chain: validate,
+  // push into the shared `wrapGeoms` array, return `ref`.
+  const wrapGeom = (
+    wrapName: string,
+    opts: WrapGeomOptions,
+  ): AssemblyPartRef => {
+    assertTopoRefSafeName(wrapName, 'wrap-geom-name', id);
+    if (wrapGeoms.some((w) => w.name === wrapName)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.duplicate-name: part '${name}' already has a wrap geom named '${wrapName}'.`,
+        id,
+        `invalid-args.assembly.wrap-geom-duplicate-name — rename one of the wrap geoms on '${name}'.`,
+      );
+    }
+    const axis = opts.axis;
+    const axisLenSq = axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2];
+    if (
+      !Number.isFinite(axis[0]) || !Number.isFinite(axis[1]) || !Number.isFinite(axis[2]) ||
+      axisLenSq <= 0
+    ) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-axis: wrap geom '${wrapName}' on part '${name}' needs a finite non-zero axis; got [${formatScalarForError(axis[0])}, ${formatScalarForError(axis[1])}, ${formatScalarForError(axis[2])}].`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-axis — pass axis: [x, y, z] pointing along the cylinder centerline (the arm's long axis for a balance spring).`,
+      );
+    }
+    if (!Number.isFinite(opts.radius) || opts.radius <= 0) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-radius: wrap geom '${wrapName}' on part '${name}' radius must be a positive finite number; got ${formatScalarForError(opts.radius)}.`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-radius — pass radius: <positive mm>. Size it to the arm half-thickness plus the cable standoff so the spring rides clear of the body.`,
+      );
+    }
+    if (opts.halfLengthMm !== undefined && (!Number.isFinite(opts.halfLengthMm) || opts.halfLengthMm <= 0)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `assembly.wrap-geom.invalid-half-length: wrap geom '${wrapName}' on part '${name}' halfLengthMm must be a positive finite number when provided; got ${formatScalarForError(opts.halfLengthMm)}.`,
+        id,
+        `invalid-args.assembly.wrap-geom-invalid-half-length — pass halfLengthMm: <positive mm>, or omit it for an effectively-infinite routing cylinder.`,
+      );
+    }
+    const origin = opts.origin ?? [0, 0, 0];
+    const rec: WrapGeomRecord = {
+      name: wrapName,
+      axis: [axis[0], axis[1], axis[2]],
+      origin: [origin[0], origin[1], origin[2]],
+      radiusMm: opts.radius,
+      ...(opts.halfLengthMm !== undefined ? { halfLengthMm: opts.halfLengthMm } : {}),
+    };
+    wrapGeoms.push(rec);
+    return ref;
+  };
   const ref: AssemblyPartRef = {
     id,
     name,
@@ -2289,7 +2712,9 @@ function makePartRef(
     at,
     connectors,
     mateConnectors,
+    wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
+    wrapGeom,
   };
   return ref;
 }

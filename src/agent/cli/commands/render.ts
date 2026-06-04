@@ -12,6 +12,7 @@
 import { Command } from 'commander';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname, basename, join } from 'node:path';
+import sharp from 'sharp';
 import {
   headlessRender,
   composite2x2,
@@ -19,6 +20,10 @@ import {
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
 } from '../../render/headlessRender';
+import { buildModelFromFile } from '../../../modeling/buildModel';
+import type { Assembly } from '../../../modeling/capture/assembly';
+import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface RenderInput {
   file: string;
@@ -80,6 +85,121 @@ function normalizePatternList(values: readonly string[] | undefined): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Physics-grounded loop integration (P1 surface convergence).
+ *
+ * `render inspect` and `render` both refuse to display a broken
+ * mechanism without making that explicit:
+ *
+ *   - Default: WATERMARK each rendered PNG with a "MECHANISM BROKEN"
+ *     overlay listing the first few failure codes. The render is still
+ *     produced so the agent can visually diagnose, but no consumer can
+ *     mistake it for a clean build.
+ *   - `KERNELCAD_RENDER_STRICT=1`: REFUSE outright. No PNGs are
+ *     written, the failure list goes to stderr, exit code 2. CI and
+ *     hosted product pass this flag.
+ *
+ * The check runs the same `checkMechanismTruth` probe the CLI validate
+ * + Studio runtime use (single source of truth — see spec
+ * `docs/specs/2026-06-01-physics-grounded-loop-design.md`).
+ */
+async function runRenderMechanismProbe(absScriptPath: string): Promise<{
+  mechanism: 'real' | 'broken' | 'unverified';
+  failures: CompilerDiagnostic[];
+}> {
+  try {
+    const model = await buildModelFromFile({ file: absScriptPath });
+    const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+    if (assemblies.length === 0) {
+      return { mechanism: 'unverified', failures: [] };
+    }
+    let anyBroken = false;
+    const aggregated: CompilerDiagnostic[] = [];
+    for (const arm of assemblies) {
+      const verdict = await checkMechanismTruth(arm);
+      if (verdict.mechanism === 'broken') anyBroken = true;
+      aggregated.push(...verdict.failures);
+    }
+    return {
+      mechanism: anyBroken ? 'broken' : 'real',
+      failures: aggregated,
+    };
+  } catch {
+    return { mechanism: 'unverified', failures: [] };
+  }
+}
+
+function isRenderStrictMode(): boolean {
+  const v = process.env.KERNELCAD_RENDER_STRICT;
+  return v !== undefined && v !== '' && v !== '0' && v.toLowerCase() !== 'false';
+}
+
+/**
+ * Print the broken-mechanism failure list to stderr in the same
+ * "MECHANISM BROKEN" shape `kernelcad validate` uses, so an agent that
+ * already learned to read the validate output sees the same surface
+ * when render-inspect refuses.
+ */
+function reportBrokenMechanismToStderr(failures: readonly CompilerDiagnostic[]): void {
+  const isTty = Boolean(process.stderr.isTTY);
+  const RED = isTty ? '\x1b[31m' : '';
+  const BOLD = isTty ? '\x1b[1m' : '';
+  const RESET = isTty ? '\x1b[0m' : '';
+  console.error(`${BOLD}${RED}MECHANISM BROKEN${RESET} — render refused (${failures.length} failure${failures.length === 1 ? '' : 's'})`);
+  for (const d of failures) {
+    console.error(`  ${RED}[ERROR]${RESET} ${d.code}`);
+    console.error(`         ${d.message}`);
+    console.error(`         hint: ${d.hint}`);
+  }
+}
+
+/**
+ * Compose a "MECHANISM BROKEN" watermark overlay onto each PNG buffer.
+ *
+ * Uses sharp's SVG composite — sharp is already in the deps tree and
+ * the same pipeline composes the 2×2 view grid, so no new image lib.
+ *
+ * Lists the first few unique failure codes (de-duped — the same code
+ * fires per pose-sample so 3+ entries with the same code would
+ * dominate the box).
+ */
+async function watermarkBrokenMechanism(
+  buf: Buffer,
+  failures: readonly CompilerDiagnostic[],
+): Promise<Buffer> {
+  const codes = Array.from(new Set(failures.map((f) => f.code))).slice(0, 3);
+  const lines = ['MECHANISM BROKEN', ...codes.map((c) => `· ${c}`)];
+  // Each line ~16px tall, ~10px padding around the box.
+  const lineHeight = 16;
+  const pad = 10;
+  const charWidth = 7;
+  const maxLineLen = lines.reduce((m, l) => Math.max(m, l.length), 0);
+  const boxW = Math.min(560, maxLineLen * charWidth + pad * 2);
+  const boxH = lines.length * lineHeight + pad * 2;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${boxW}" height="${boxH}">
+    <rect x="0" y="0" width="${boxW}" height="${boxH}" fill="rgba(120,0,0,0.85)" rx="6" ry="6"/>
+    ${lines.map((line, i) => {
+      const y = pad + (i + 1) * lineHeight - 4;
+      const fontWeight = i === 0 ? '700' : '400';
+      const fontSize = i === 0 ? 14 : 12;
+      return `<text x="${pad}" y="${y}" fill="#ffe0e0" font-family="monospace" font-size="${fontSize}" font-weight="${fontWeight}">${escapeXml(line)}</text>`;
+    }).join('\n    ')}
+  </svg>`;
+  return sharp(buf)
+    .composite([{ input: Buffer.from(svg), top: 12, left: 12 }])
+    .png()
+    .toBuffer();
+}
+
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 function normalizeInspectChannels(values: readonly string[] | undefined): HeadlessInspectionChannel[] {
   const channels = normalizePatternList(values);
   const requested = channels.length > 0 ? channels : ['rgb'];
@@ -98,6 +218,14 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 1, outputPaths: [] };
+  }
+
+  // Physics-loop probe — P1 surface convergence. Same refuse/watermark
+  // protocol as renderInspectBundle (see runRenderMechanismProbe).
+  const mechanismProbe = await runRenderMechanismProbe(filePath);
+  if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
+    reportBrokenMechanismToStderr(mechanismProbe.failures);
+    return { exitCode: 2, outputPaths: [] };
   }
 
   let result;
@@ -122,6 +250,10 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   const dir = dirname(filePath);
   const stem = basename(filePath).replace(/\.kcad\.ts$/, '').replace(/\.ts$/, '');
   const written: string[] = [];
+  const stamp = async (buf: Buffer): Promise<Buffer> =>
+    mechanismProbe.mechanism === 'broken'
+      ? watermarkBrokenMechanism(buf, mechanismProbe.failures)
+      : buf;
 
   if (input.separate) {
     for (const view of ALL_VIEWS) {
@@ -130,7 +262,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       const outPath = input.out
         ? input.out.replace(/\.png$/i, `.${view}.png`)
         : join(dir, `${stem}.${view}.png`);
-      await writeFile(outPath, buf);
+      await writeFile(outPath, await stamp(buf));
       written.push(outPath);
     }
     // Also emit pose-keyed PNGs alongside the view tiles.
@@ -140,13 +272,13 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       const outPath = input.out
         ? input.out.replace(/\.png$/i, `.${suffix}`)
         : join(dir, `${stem}.${suffix}`);
-      await writeFile(outPath, buf);
+      await writeFile(outPath, await stamp(buf));
       written.push(outPath);
     }
   } else {
     const outPath = input.out ?? join(dir, `${stem}.png`);
     const grid = await composite2x2(result.pngsByView, input.width, input.height);
-    await writeFile(outPath, grid);
+    await writeFile(outPath, await stamp(grid));
     written.push(outPath);
     // In composite mode, pose captures still emit as separate files next to
     // the composite output. Resolves the `node ... render --pose <az,el> -o
@@ -155,7 +287,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       const [az, el] = poseKey.split(',').map((s) => s.trim());
       const suffix = `pose-${az}-${el}.png`;
       const posePath = (input.out ?? join(dir, `${stem}.png`)).replace(/\.png$/i, `.${suffix}`);
-      await writeFile(posePath, buf);
+      await writeFile(posePath, await stamp(buf));
       written.push(posePath);
     }
   }
@@ -183,6 +315,17 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 1, outputPaths: [] };
+  }
+
+  // Physics-loop probe — P1 surface convergence. Runs BEFORE the
+  // (slow) headless render so strict mode refuses without spinning up
+  // a browser tile. The renderer's existing exit-1 paths take
+  // precedence over this; only a real broken mechanism + zero render
+  // errors trigger refuse/watermark.
+  const mechanismProbe = await runRenderMechanismProbe(filePath);
+  if (mechanismProbe.mechanism === 'broken' && isRenderStrictMode()) {
+    reportBrokenMechanismToStderr(mechanismProbe.failures);
+    return { exitCode: 2, outputPaths: [] };
   }
 
   let result;
@@ -226,7 +369,15 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
       if (!buf) throw new Error(`renderInspectBundle: missing rgb view '${view}'`);
       const relativePath = `channels/rgb/${view}.png`;
       const outPath = join(outDir, relativePath);
-      await writeFile(outPath, buf);
+      // Physics-loop watermark — only the RGB channel gets the
+      // broken-mechanism overlay. Mask / depth / normals channels are
+      // analytical data; rewriting them with a text overlay would
+      // corrupt downstream tooling that reads object-ids out of mask
+      // RGB or normalized depth out of the depth tile.
+      const finalBuf = mechanismProbe.mechanism === 'broken'
+        ? await watermarkBrokenMechanism(buf, mechanismProbe.failures)
+        : buf;
+      await writeFile(outPath, finalBuf);
       channelPaths.rgb[view] = relativePath;
       pngPaths.push(outPath);
     }

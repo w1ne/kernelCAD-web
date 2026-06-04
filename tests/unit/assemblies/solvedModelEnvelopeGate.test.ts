@@ -31,6 +31,17 @@ describe('Assembly.solvedModel — envelope gate (explicit posesGate, post-merge
     // v0.6.0 single-pose interference check only sees pose=0 and reports
     // no overlap; only the envelope sampling (m:min, m:max) catches the
     // limit-induced collision.
+    //
+    // G0 NOTE (2026-05-31): Post-PR#331, Gate 4 (joint visual exposure)
+    // fires BEFORE envelope sampling and rejects this 2-box hand-rolled
+    // hinge with `joint-not-visible` because it lacks fork/tongue/pin
+    // structure (a real hinge per G3/G4). Either failure mode satisfies
+    // this test's intent — that the call rejects when limits would cause
+    // a problem. The detailed envelope-sampling semantics are tested in
+    // `src/modeling/capture/posesGate.test.ts` using geometry that
+    // satisfies Gate 4. When `joint.clevis(...)` ships (G1), this
+    // fixture should migrate to a real hinge so we can re-narrow the
+    // assertion to `pose-envelope-interference` only.
     const { arm, kcad } = makeArm();
     arm.part('a', kcad.box(20, 10, 10))
        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [20, 5, 5] }, axis: [0, 0, 1] });
@@ -39,7 +50,7 @@ describe('Assembly.solvedModel — envelope gate (explicit posesGate, post-merge
     arm.mate('m', 'a.hinge', 'b.hinge', 'revolute', { pose: 0, limitsDeg: [0, 180] });
 
     await expect(arm.solvedModel({}, { validate: 'error', posesGate: 'envelope' }))
-      .rejects.toMatchObject({ hint: expect.stringMatching(/pose-envelope-interference/i) });
+      .rejects.toMatchObject({ hint: expect.stringMatching(/pose-envelope-interference|joint-not-visible/i) });
   });
 
   it('does NOT auto-run envelope under validate=warn without posesGate (perf)', async () => {

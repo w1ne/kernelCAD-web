@@ -49,6 +49,14 @@ export interface FaceSummary {
   surfaceType: string;
   area: number;
   label: string | null;
+  /**
+   * Number of inner boundary loops (holes) on this face — i.e. cutouts fully
+   * enclosed by the face, such as the lens openings on an eyewear front. A
+   * solid/uncut face reports 0. This is a structural property of the BREP:
+   * unlike a render heuristic it is invariant to whether a lens body is
+   * inserted into the opening.
+   */
+  innerLoops: number;
 }
 
 export interface ListFacesOutput {
@@ -70,6 +78,18 @@ function faceHashOf(face: Face): string {
   const wrapped = (face as any).wrapped;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (wrapped as any).HashCode(2147483647).toString(16);
+}
+
+/** Count inner boundary loops (holes) on a face via replicad's `innerWires()`.
+ *  Returns 0 for a solid/uncut face, or on any introspection error (a missing
+ *  loop count must never crash the listing). */
+function countInnerLoops(face: Face): number {
+  try {
+    const inner = (face as unknown as { innerWires?: () => unknown[] }).innerWires?.();
+    return Array.isArray(inner) ? inner.length : 0;
+  } catch {
+    return 0;
+  }
 }
 
 export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOutput> {
@@ -162,6 +182,7 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
       surfaceType: (f as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
       area: (f as unknown as { area?: number }).area ?? 0,
       label: lineage?.labelName ?? metadataLabel ?? null,
+      innerLoops: countInnerLoops(f),
     };
   });
 

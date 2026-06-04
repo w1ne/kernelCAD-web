@@ -149,7 +149,12 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     (channel): channel is HeadlessAuxInspectionChannel => channel === 'depth' || channel === 'normals',
   );
 
-  // 1. Mesh on Node side — same path captureDemo uses.
+  // 1. Mesh on Node side — same path captureDemo uses. The CaptureSession's
+  // `assemblies` map (live `Assembly` handles by name) is consumed inside
+  // `meshFeaturesPerFeature` to synthesise tendon FeatureMeshes for each
+  // declared `arm.tendon(...)` record (P7) — so the closed-loop balance
+  // springs render as visible cylinders in the headless CLI inspect path
+  // and in any Studio recompute that runs through the same meshing helper.
   const loaded = await loadScriptFeatures(opts.scriptPath);
   const meshing = await meshFeaturesPerFeature(
     loaded.features.map((f) => f.record),

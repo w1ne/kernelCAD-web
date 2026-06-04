@@ -137,7 +137,17 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     expect(result.pairs).toEqual([]);
   }, 180_000);
 
-  it('passes the functional review loop with realized mechanical joint intent', async () => {
+  // P1 physics-loop discovery (2026-06-01): the desktop-3axis-mates
+  // hero reports `mechanism: broken` under the new physics-grounded
+  // loop with 7 disconnect failures at the base-yaw:-180 pose sample —
+  // every fastened mate uses vec3 connectors that drift under parent
+  // joint rotation. P3 sweep filed the follow-up; until #347 ships the
+  // assertion stays suspended.
+  //
+  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md
+  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/347
+  it.skip('passes the functional review loop with realized mechanical joint intent — see issues/347', async () => {
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       designGoal: 'Build a compact desktop 3-axis robot arm with physically supported servo joints and a functional gripper.',

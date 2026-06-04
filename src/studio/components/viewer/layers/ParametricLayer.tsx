@@ -1,5 +1,5 @@
 import { type ThreeEvent } from "@react-three/fiber";
-import { TransformControls } from "@react-three/drei";
+import { TransformControls } from "@react-three/drei/core/TransformControls";
 import * as THREE from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkbench } from "../../../context/WorkbenchContext";

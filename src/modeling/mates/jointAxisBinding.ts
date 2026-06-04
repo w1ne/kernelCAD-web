@@ -57,6 +57,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
+import type { FeatureId } from '../../shared/intent/types';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import type { Vec3 } from '../../shared/intent/types';
 import { Transform } from '../../shared/runtime/se3';
@@ -97,6 +98,31 @@ const GATED_MATE_TYPES: ReadonlySet<MateType> = new Set<MateType>([
 ]);
 
 /**
+ * Result of `validateJointAxisBindingWithCache`. Exposes the per-part world-
+ * transformed lowered OCCT shapes alongside the diagnostics so that Gate 4
+ * (`validateJointVisualExposure`) can reuse the same lowered geometry
+ * without paying the recompute + per-part `applyTransform` cost twice. The
+ * cache is keyed by `part.name`, same convention `worldShapes` already used
+ * internally.
+ *
+ * `worldTransforms` is exposed for the same reason — Gate 4 lifts connector
+ * origins / axes from part-local to world frame on its own, and the SE(3)
+ * transforms are an O(1) lookup that costs nothing to share.
+ */
+export interface JointAxisBindingResult {
+  readonly diagnostics: readonly ValidatorDiagnostic[];
+  /**
+   * Per-part lowered + world-transformed OCCT shape. Empty map when the
+   * assembly has no gated mates (the recompute is skipped entirely in that
+   * fast path), or when the recompute did not produce a SceneBackend (the
+   * defensive fall-through inside the implementation).
+   */
+  readonly worldShapes: ReadonlyMap<string, OcctBackend>;
+  /** Per-part SE(3) world transform, same key set as `worldShapes`. */
+  readonly worldTransforms: ReadonlyMap<string, Transform>;
+}
+
+/**
  * v0.7.4 Gate 2 entry point. Async — lowers the assembly via the same
  * recompute path used by `Assembly.computeInterferencesForGate` /
  * `detectInterferencesForPoses`.
@@ -105,37 +131,71 @@ const GATED_MATE_TYPES: ReadonlySet<MateType> = new Set<MateType>([
  * emits up to two `assembly.joint-axis.unbound` diagnostics (severity
  * `error`), one per side whose body the joint line does not intersect.
  *
- * Dead code in this slice — Phase 6 of the v0.7.4 plan wires it into
- * `validateAssemblyWithMates`.
+ * Thin wrapper over `validateJointAxisBindingWithCache` for callers that
+ * don't need the lowered-shape cache (which Gate 4 / `validateJointVisualExposure`
+ * does need — the validator uses the `WithCache` variant so Gate 4 can
+ * piggy-back on Gate 2's recompute).
  */
 export async function validateJointAxisBinding(arm: Assembly): Promise<ValidatorDiagnostic[]> {
+  const { diagnostics } = await validateJointAxisBindingWithCache(arm);
+  return [...diagnostics];
+}
+
+/**
+ * Same as `validateJointAxisBinding` but also surfaces the per-part world-
+ * transformed lowered shape cache it builds internally. The validator calls
+ * this variant so the next gate in the chain (`validateJointVisualExposure`)
+ * can reuse the same lowered geometry without re-running the recompute.
+ *
+ * For assemblies with no gated mates, returns empty diagnostics + empty
+ * caches — callers (Gate 4) should treat an empty `worldShapes` map as
+ * "nothing to gate against" and short-circuit.
+ */
+export async function validateJointAxisBindingWithCache(
+  arm: Assembly,
+): Promise<JointAxisBindingResult> {
   const gatedMates = arm.__mates().filter((m) => GATED_MATE_TYPES.has(m.type));
-  if (gatedMates.length === 0) return [];
+  if (gatedMates.length === 0) {
+    return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
+  }
 
   // Lower the assembly via a single `RecomputeEngine.run` — mirrors the
-  // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300),
-  // not `detectInterferencesForPoses`'s legacy `solvedModel + run` double-pass.
-  // We register the `solvedAssembly` FeatureRecord directly on the session
-  // (mate metadata sourced from `arm.__buildMateMetadata()`), then read the
-  // SceneBackend off `result.shapes.get(sceneShape.id)`. Skipping
-  // `arm.solvedModel(...)` avoids the redundant capture-time `solveMates`
-  // pass (which lowers per-part shapes for topology connectors and runs
-  // JS-layer FK) and the in-validator interference recompute that
-  // `validate: 'off'` would otherwise still hand-roll. Source id comes off
-  // the input `sceneShape.id`, not `scene.__sourceFeatureId()` (which would
-  // require a `solvedModel` round-trip just to recover the same value).
+  // pattern in `Assembly.computeInterferencesForGate` (assembly.ts:1273-1300).
+  // Reuse an existing `solvedAssembly` record on the session if one already
+  // exists for this assembly (the dominant in-`solvedModel` path); only
+  // register a fresh one as a fallback for standalone Gate 2 invocations.
+  // Recording a duplicate `solvedAssembly` here pollutes the session with
+  // an empty-pose phantom that doubles the SceneBackend fan-out on every
+  // assembly with declared mates — the regression that surfaced post-G0
+  // because the gate was inert on legacy `arm.revolute(...)` assemblies.
   await initOcct();
   const session = arm.__session();
-  const mateMetadata = arm.__buildMateMetadata();
-  const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
-  const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
+  let sceneFeatureId: FeatureId | undefined;
+  const records = session.getRecords();
+  for (let i = records.length - 1; i >= 0; i--) {
+    const r = records[i];
+    if (r.kind !== 'solvedAssembly') continue;
+    const meta = r.metadata as { assemblyName?: string } | undefined;
+    if (meta?.assemblyName === arm.name) {
+      sceneFeatureId = r.id;
+      break;
+    }
+  }
+  if (sceneFeatureId === undefined) {
+    const mateMetadata = arm.__buildMateMetadata();
+    const joints = arm.__joints().map((j) => ({ id: j.id, name: j.name }));
+    const sceneShape = session.solvedAssembly(arm.name, arm.__parts(), joints, {}, mateMetadata);
+    sceneFeatureId = sceneShape.id;
+  }
   const engine = new RecomputeEngine(createOcctLowerer(session));
   const recompute = await engine.run(session.getRecords(), {
     paramTable: session.paramTable,
     gatedFeatureNames: session.gatedFeatureNames,
   });
-  const lowered = recompute.shapes.get(sceneShape.id);
-  if (!lowered || !isSceneBackend(lowered)) return [];
+  const lowered = recompute.shapes.get(sceneFeatureId);
+  if (!lowered || !isSceneBackend(lowered)) {
+    return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
+  }
 
   // Apply each part's world transform once up-front (clone first — replicad
   // translate/rotate mutate-and-destroy the source OCCT handle, same lifecycle
@@ -166,7 +226,7 @@ export async function validateJointAxisBinding(arm: Assembly): Promise<Validator
       }
     }
   }
-  return out;
+  return { diagnostics: out, worldShapes, worldTransforms };
 }
 
 interface ResolvedSide {
@@ -359,7 +419,11 @@ function makeUnboundDiagnostic(mate: MateRecord, side: ResolvedSide): ValidatorD
   const fmt = (v: Vec3) => `[${v[0].toFixed(3)}, ${v[1].toFixed(3)}, ${v[2].toFixed(3)}]`;
   return {
     code: 'assembly.joint-axis.unbound',
-    severity: 'error',
+    // Demoted to 'info' under the physics-grounded loop (P3, 2026-06-01):
+    // this is an authoring-time signal that the connector axis misses
+    // the part body; the merge gate is mechanism.dof-mismatch which
+    // fires under motion at validate-time.
+    severity: 'info',
     mateName: mate.name,
     partName: side.partName,
     message:

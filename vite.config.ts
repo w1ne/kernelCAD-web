@@ -47,6 +47,31 @@ function resolveExampleScript(script: string | null): string | null {
   return scriptPath;
 }
 
+/**
+ * Auto-spawn the standalone review-paint save server in a Node worker thread
+ * when vite starts. Worker threads have their own event loop, so even when
+ * vite's main thread saturates on OCCT/replicad transforms the brush can
+ * still land a packet on disk. Killed automatically when vite exits.
+ */
+function reviewPaintSaveServer(): Plugin {
+  return {
+    name: 'kernelcad-review-paint-save-server',
+    apply: 'serve',
+    async configureServer() {
+      const { Worker } = await import('node:worker_threads');
+      const workerPath = fileURLToPath(new URL('./scripts/review-paint-server.mjs', import.meta.url));
+      const worker = new Worker(workerPath, { stderr: false, stdout: false });
+      worker.on('error', (err) => {
+        console.error('[review-paint-server] worker error:', err);
+      });
+      worker.on('exit', (code) => {
+        if (code !== 0) console.error(`[review-paint-server] worker exited with code ${code}`);
+      });
+      process.on('exit', () => { worker.terminate(); });
+    },
+  };
+}
+
 function kernelCadMeshEndpoint(): Plugin {
   return {
     name: 'kernelcad-mesh-endpoint',
@@ -141,19 +166,25 @@ function kernelCadMeshEndpoint(): Plugin {
           const url = new URL(req.url ?? '', 'http://localhost');
           const script = url.searchParams.get('script');
           const sessionToken = url.searchParams.get('session');
-          if (!script && !sessionToken) {
+          // POST { source } meshes ARBITRARY edited code through the node
+          // kernel — the path the Studio editor uses on localhost dev when
+          // the in-browser worker can't run the modern assembly/joint/tendon
+          // API. GET ?script= / ?session= keep their existing behaviour.
+          const isPost = (req.method ?? 'GET').toUpperCase() === 'POST';
+          if (!script && !sessionToken && !isPost) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
-            res.end(JSON.stringify({ error: 'missing script or session query parameter' }));
+            res.end(JSON.stringify({ error: 'missing script or session query parameter (or POST { source })' }));
             return;
           }
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
+            import('./src/modeling/runtime/runScript'),
           ]);
 
           // Slice 2E.bridge: with a session token, mesh against the pooled
@@ -171,7 +202,40 @@ function kernelCadMeshEndpoint(): Plugin {
             cachedAssemblyPartMeshes?: Map<string, Map<string, unknown>>;
           };
 
-          if (sessionToken) {
+          if (isPost) {
+            // Read the JSON body { source }. Dev-only middleware on
+            // localhost, so executing the user's own edited script through
+            // runScript carries no extra trust boundary.
+            const chunks: Buffer[] = [];
+            for await (const chunk of req) chunks.push(chunk as Buffer);
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            source = parsedBody.source;
+            // Compile straight from the source string (no file). scriptDir =
+            // examples root so any relative asset paths resolve the same way
+            // a shipped example would.
+            const run = await runScript({
+              code: source,
+              fileName: 'studio-edit.kcad.ts',
+              scriptDir: resolve(repoRoot, 'examples'),
+            });
+            records = run.records;
+            paramTable = run.paramTable;
+            meshSession = run.session as unknown as typeof meshSession;
+          } else if (sessionToken) {
             const bundle = await getPoolBundle();
             const entry = bundle.pool.get(sessionToken);
             if (!entry) {
@@ -319,6 +383,92 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       });
 
+      server.middlewares.use('/__kernelcad/review-paint', async (req, res) => {
+        try {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'POST only' }));
+            return;
+          }
+          const chunks: Buffer[] = [];
+          for await (const chunk of req as unknown as AsyncIterable<Buffer>) {
+            chunks.push(chunk);
+            if (chunks.reduce((acc, b) => acc + b.length, 0) > 16 * 1024 * 1024) {
+              res.statusCode = 413;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'packet too large (max 16MB)' }));
+              return;
+            }
+          }
+          const body = Buffer.concat(chunks).toString('utf-8');
+          const parsed = JSON.parse(body) as {
+            screenshot: string;
+            mask: string;
+            meta: { note?: string; scriptPath?: string | null; ts?: string; ua?: string };
+          };
+          const scriptPath = resolveExampleScript(parsed.meta?.scriptPath ?? null);
+          const { mkdirSync, writeFileSync, existsSync, unlinkSync, symlinkSync } =
+            await import('node:fs');
+          const { dirname, basename, join } = await import('node:path');
+          const ts = (parsed.meta?.ts ?? new Date().toISOString()).replace(/[:]/g, '-');
+          // If the request has a valid examples/*.kcad.ts scriptPath the
+          // packet lands beside it (best for the agent's hook + IDE). If
+          // not (user testing at /, or a non-examples gallery URL), fall
+          // back to a repo-root .review-paint/ so the agent's hook scan
+          // still finds it.
+          const reviewRoot = scriptPath
+            ? `${scriptPath}.review-paint`
+            : resolve(repoRoot, '.review-paint');
+          const packetDir = join(reviewRoot, ts);
+          mkdirSync(packetDir, { recursive: true });
+          const stripDataUrl = (s: string): Buffer => {
+            const comma = s.indexOf(',');
+            const b64 = comma === -1 ? s : s.slice(comma + 1);
+            return Buffer.from(b64, 'base64');
+          };
+          writeFileSync(join(packetDir, 'screenshot.png'), stripDataUrl(parsed.screenshot));
+          writeFileSync(join(packetDir, 'mask.png'), stripDataUrl(parsed.mask));
+          writeFileSync(
+            join(packetDir, 'meta.json'),
+            JSON.stringify(
+              {
+                note: parsed.meta?.note ?? '',
+                scriptPath: scriptPath ? relative(repoRoot, scriptPath) : null,
+                ts: parsed.meta?.ts ?? new Date().toISOString(),
+                ua: parsed.meta?.ua ?? '',
+              },
+              null,
+              2,
+            ),
+          );
+          const latest = join(reviewRoot, 'latest');
+          try {
+            if (existsSync(latest)) unlinkSync(latest);
+          } catch {
+            // Best-effort symlink swap; ignore if it doesn't exist.
+          }
+          try {
+            symlinkSync(basename(packetDir), latest, 'dir');
+          } catch (err) {
+            // Symlink may fail on platforms without permission; non-fatal.
+            void err;
+          }
+          // Quiet the unused-import lint when `dirname` is conditional on
+          // future tweaks.
+          void dirname;
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ ok: true, path: relative(repoRoot, packetDir) }));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
+
       server.middlewares.use('/__kernelcad/review', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
@@ -331,11 +481,53 @@ function kernelCadMeshEndpoint(): Plugin {
           }
 
           const { reviewCadTool } = await import('./src/agent/mcp/tools/reviewCad');
+          const { detectInterferences } = await import('./src/modeling/runtime/detectInterferences');
+          const { isSceneBackend } = await import('./src/kernel/backends/sceneBackend');
+
+          // When a session token is present, recompute raw interferences
+          // against the LIVE pooled session's tail scene — that captures the
+          // user's current Params-tab edits via the SSE relower path. The
+          // base reviewCadTool still re-evaluates from the script source so
+          // its validator + envelope output stays comparable across reloads;
+          // we overlay the live raw count on top for the Studio HUD's
+          // slider-drag responsiveness.
+          const sessionToken = url.searchParams.get('session');
           const review = await reviewCadTool({
             file: scriptPath,
             includePoseEnvelope: true,
             includeInterference: true,
           });
+
+          if (sessionToken) {
+            try {
+              const bundle = await getPoolBundle();
+              const entry = bundle.pool.get(sessionToken);
+              // After `session.params.update`, the pool entry's `model.tailShape`
+              // can be stale — `updateModelParams` returns a fresh BuiltModel
+              // but doesn't write back to the pool. The session's
+              // `cachedShapes` map IS updated though, so we read the latest
+              // tail from there directly to capture the user's live Params
+              // edits.
+              const session = entry?.model.session as unknown as {
+                cachedShapes?: Map<string, unknown>;
+              } | undefined;
+              const tailId = entry?.model.tailId;
+              const liveTail = tailId && session?.cachedShapes?.get(tailId);
+              const tail = liveTail ?? entry?.model.tailShape;
+              if (tail && isSceneBackend(tail as { parts?: unknown })) {
+                const livePairs = detectInterferences(
+                  tail as Parameters<typeof detectInterferences>[0],
+                  0.01,
+                  new Set<string>(),
+                ).pairs;
+                (review as { rawInterferencePairs?: unknown }).rawInterferencePairs = livePairs;
+              }
+            } catch {
+              // Session-side overlay failed; fall back to the script-eval pairs
+              // already on `review`. The HUD will show the default-pose count
+              // instead of the live count, but the request still succeeds.
+            }
+          }
 
           res.statusCode = 200;
           res.setHeader('content-type', 'application/json');
@@ -362,6 +554,7 @@ export default defineConfig(({ command }) => ({
       routeFileIgnorePattern: '\\.test\\.ts$',
     }),
     kernelCadMeshEndpoint(),
+    reviewPaintSaveServer(),
     react(),
     tailwindcss(),
   ],
@@ -374,6 +567,13 @@ export default defineConfig(({ command }) => ({
   worker: {
     format: 'es',
   },
+  resolve: {
+    alias: {
+      'verb-nurbs': fileURLToPath(
+        new URL('./vendor/verb-nurbs/build/verb.es.js', import.meta.url),
+      ),
+    },
+  },
   server: {
     watch: {
       ignored: [
@@ -382,5 +582,15 @@ export default defineConfig(({ command }) => ({
         '**/kernelCAD-web-worktrees/**',
       ],
     },
+  },
+  optimizeDeps: {
+    // ts-morph (13MB) and typescript (9.5MB) reach the Studio module graph
+    // only through `import('.../RefactoringManager')` in CodeContext (a
+    // rename-variable codepath users rarely hit). Vite's dep scanner pulls
+    // dynamic imports into the cold-start prebundle, which is what makes
+    // `npm run dev` saturate one core for ~60s and keep "Geometry kernel
+    // warming up..." visible. Excluding them defers the bundle work until
+    // (if ever) a user triggers the rename — and keeps cold-start light.
+    exclude: ['ts-morph', 'typescript'],
   },
 }))

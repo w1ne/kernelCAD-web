@@ -18,6 +18,36 @@ import type {
     ValidatorStatus,
 } from '../../modeling/mates/validator';
 
+export interface MechanismBannerEntry {
+    code: string;
+    message: string;
+    hint: string;
+}
+
+/**
+ * Physics-loop banner data extracted from the review payload (P1).
+ *
+ * The Validity tab reads this to render the red "MECHANISM BROKEN"
+ * banner above the legacy diagnostic rows when the recompute's
+ * mechanism field is broken. Returns null when the mechanism is real,
+ * unverified, or absent (no broken state to surface).
+ */
+export function reviewToMechanismBanner(
+    review: ScriptReviewSummary | null,
+): { entries: MechanismBannerEntry[] } | null {
+    if (review == null) return null;
+    if (review.mechanism !== 'broken') return null;
+    const failures = review.mechanismFailures ?? [];
+    if (failures.length === 0) return null;
+    return {
+        entries: failures.map((f) => ({
+            code: f.code ?? 'mechanism.unknown',
+            message: f.message ?? '',
+            hint: f.hint ?? '',
+        })),
+    };
+}
+
 export function reviewToValidity(review: ScriptReviewSummary | null): ValidatorResult | null {
     if (review == null) return null;
 
@@ -32,6 +62,10 @@ export function reviewToValidity(review: ScriptReviewSummary | null): ValidatorR
 }
 
 function deriveStatus(review: ScriptReviewSummary): ValidatorStatus {
+    // Broken mechanism overrides any "ok" reading from the legacy
+    // surface — P1 closes the split surface by making this the merge
+    // gate at every consumer.
+    if (review.mechanism === 'broken') return 'error';
     if (review.ok) return 'solved';
     const repairMode = review.fitness?.repairMode;
     if (repairMode && repairMode !== 'none') return 'error';
@@ -47,6 +81,12 @@ function diagnosticFromReview(d: NonNullable<ScriptReviewSummary['diagnostics']>
         severity,
         message: d.message ?? '',
         hint: d.hint ?? '',
+        // Carry part/mate attribution so SceneTab can route each diagnostic
+        // to the right row's severity dot. Older payloads omit these.
+        ...(d.partName ? { partName: d.partName } : {}),
+        ...(d.mateName ? { mateName: d.mateName } : {}),
+        ...(d.partA ? { partA: d.partA } : {}),
+        ...(d.partB ? { partB: d.partB } : {}),
     };
 }
 

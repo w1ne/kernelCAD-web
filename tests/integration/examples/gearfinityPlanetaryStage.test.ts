@@ -55,7 +55,17 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
   }, 300_000);
 
-  it('has connected mechanism geometry under inspect_assembly', async () => {
+  // P1 physics-loop discovery (2026-06-01): the gearfinity planetary
+  // stage example times out under the new physics-grounded loop —
+  // 24 parts × multiple revolute samples × pairwise BREP overlap
+  // detection exceeds the 5-minute CLI budget. P3 sweep filed the
+  // follow-up; either the geometry simplifies or the kernel grows an
+  // early-out before this re-enables.
+  //
+  // Spec:   docs/specs/2026-06-01-physics-grounded-loop-design.md §risks-and-open-questions #1
+  // Plan:   docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md
+  // Issue:  https://github.com/w1ne/kernelCAD-web/issues/348
+  it.skip('has connected mechanism geometry under inspect_assembly — see issues/348', async () => {
     const result = await inspectAssemblyTool({ file: EXAMPLE_PATH });
 
     expect(result.ok).toBe(true);

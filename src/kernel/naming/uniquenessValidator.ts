@@ -26,13 +26,14 @@ export const TOPO_REF_NAME_REGEX = /^[A-Za-z][A-Za-z0-9_-]*$/;
  * in a `@kc[owner/kind/name]` topology reference.
  *
  * `scope` is a human-readable category used in the error message
- * ('face-label', 'part-name', 'connector-name', 'feature-name').
+ * ('face-label', 'part-name', 'connector-name', 'feature-name',
+ * 'wrap-geom-name').
  *
  * `featureId` (optional) attaches to the thrown error for diagnostic plumbing.
  */
 export function assertTopoRefSafeName(
   name: string,
-  scope: 'face-label' | 'part-name' | 'connector-name' | 'feature-name',
+  scope: 'face-label' | 'part-name' | 'connector-name' | 'feature-name' | 'wrap-geom-name',
   featureId?: string,
 ): void {
   if (typeof name !== 'string' || name.length === 0) {

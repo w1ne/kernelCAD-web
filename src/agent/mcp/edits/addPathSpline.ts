@@ -14,6 +14,10 @@ export interface AddPathSplineInput {
   chain_anchor: string;
   points: Array<[number, number]>;
   tension?: number;
+  /** V slice — 2D first-derivative direction at points[0]. */
+  startTangent?: [number, number];
+  /** V slice — 2D first-derivative direction at points[N-1]. */
+  endTangent?: [number, number];
   binding_name?: string;
 }
 
@@ -50,13 +54,46 @@ export function addPathSpline(input: AddPathSplineInput): AddPathChainResult {
       error: `add_path_spline: tension must be a finite number; got ${JSON.stringify(input.tension)}.`,
     };
   }
+  const startTangentErr = validateTangent('startTangent', input.startTangent);
+  if (startTangentErr !== null) return { ok: false, error: startTangentErr };
+  const endTangentErr = validateTangent('endTangent', input.endTangent);
+  if (endTangentErr !== null) return { ok: false, error: endTangentErr };
 
   const pointsLiteral = JSON.stringify(input.points);
-  const callFragment = input.tension !== undefined
-    ? `.spline(${pointsLiteral}, { tension: ${JSON.stringify(input.tension)} })`
+  const optsParts: string[] = [];
+  if (input.tension !== undefined) {
+    optsParts.push(`tension: ${JSON.stringify(input.tension)}`);
+  }
+  if (input.startTangent !== undefined) {
+    optsParts.push(`startTangent: ${JSON.stringify(input.startTangent)}`);
+  }
+  if (input.endTangent !== undefined) {
+    optsParts.push(`endTangent: ${JSON.stringify(input.endTangent)}`);
+  }
+  const callFragment = optsParts.length > 0
+    ? `.spline(${pointsLiteral}, { ${optsParts.join(', ')} })`
     : `.spline(${pointsLiteral})`;
 
   return injectIntoChain(input.code, input.chain_anchor, callFragment);
+}
+
+/**
+ * V slice — validate an optional `[x, y]` tangent input. Returns `null`
+ * when valid (or undefined), otherwise a human-readable error string the
+ * caller can attach to the result envelope.
+ */
+function validateTangent(
+  label: 'startTangent' | 'endTangent',
+  t: [number, number] | undefined,
+): string | null {
+  if (t === undefined) return null;
+  if (!Array.isArray(t) || t.length !== 2) {
+    return `add_path_spline: ${label} must be a [x, y] tuple; got ${JSON.stringify(t)}.`;
+  }
+  if (!t.every((n) => typeof n === 'number' && Number.isFinite(n))) {
+    return `add_path_spline: ${label} must be a [x, y] tuple of two finite numbers; got ${JSON.stringify(t)}.`;
+  }
+  return null;
 }
 
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;

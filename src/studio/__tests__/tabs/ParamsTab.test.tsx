@@ -20,6 +20,8 @@ function emptyResult(): StudioRecomputeResult {
         paramTable: null,
         diagnostics: [],
         recomputeMs: 0,
+        rawInterferencePairs: [],
+        joints: [],
     };
 }
 
@@ -120,6 +122,109 @@ describe('ParamsTab', () => {
 
         expect(screen.getByTestId('param-row-heightAdjustMm')).toBeTruthy();
         expect(screen.getByTestId('scrub-slider-heightAdjustMm')).toBeTruthy();
+    });
+
+    describe('interference indicator', () => {
+        const headArmPair = { a: 'head', b: 'upper-arm', volumeMm3: 142 };
+
+        function joint(name: string, a: string, b: string, paramName: string): import('../../adapters/featureRecordsToMates').JointPoseSnapshot {
+            return {
+                mate: {
+                    name,
+                    a,
+                    b,
+                    type: 'revolute',
+                    limitsDeg: [-90, 90],
+                },
+                pose: 0,
+                poseParamNames: [paramName],
+            };
+        }
+
+        it('marks the slider implicated in an interference with a red track + "!" badge', () => {
+            const table = new ParamTable();
+            table.declare('shoulderDeg', 'number', 45, { min: -90, max: 90 });
+            table.declare('twistDeg', 'number', 0, { min: -90, max: 90 });
+            mockUseRecomputeResult.mockReturnValue({
+                ...withTable(table),
+                rawInterferencePairs: [headArmPair],
+                joints: [
+                    // shoulder joint: head ↔ upper-arm — implicated by interference
+                    joint('shoulder', 'head.bottom', 'upper-arm.top', 'shoulderDeg'),
+                    // twist joint on an unrelated subassembly — NOT implicated
+                    joint('twist', 'cap.top', 'mount.base', 'twistDeg'),
+                ],
+            });
+
+            render(<ParamsTab />);
+
+            // The implicated slider should carry the badge.
+            expect(screen.getByTestId('scrub-interference-badge-shoulderDeg')).toBeTruthy();
+            expect(screen.getByTestId('scrub-shoulderDeg').getAttribute('data-colliding')).toBe('true');
+
+            // The unrelated slider should NOT carry it (neither cap nor mount appears in the pair).
+            expect(screen.queryByTestId('scrub-interference-badge-twistDeg')).toBeNull();
+            expect(screen.getByTestId('scrub-twistDeg').getAttribute('data-colliding')).toBeNull();
+
+            // No banner fallback when at least one param could be implicated.
+            expect(screen.queryByTestId('params-interference-banner')).toBeNull();
+        });
+
+        it('implicates every joint that touches a colliding part (loose heuristic, lamp-chain case)', () => {
+            // Lamp-style kinematic chain: base ↔ arm ↔ head. Collision is
+            // arm ↔ head. The arm-joint connects base↔arm, the head-joint
+            // connects arm↔head. Both joints touch a colliding part, so
+            // both sliders flag as potentially-implicated.
+            const table = new ParamTable();
+            table.declare('armDeg', 'number', 0, { min: -90, max: 90 });
+            table.declare('headDeg', 'number', 0, { min: -90, max: 90 });
+            mockUseRecomputeResult.mockReturnValue({
+                ...withTable(table),
+                rawInterferencePairs: [{ a: 'arm', b: 'head', volumeMm3: 50 }],
+                joints: [
+                    joint('armPivot', 'base.top', 'arm.bottom', 'armDeg'),
+                    joint('headPivot', 'arm.top', 'head.base', 'headDeg'),
+                ],
+            });
+
+            render(<ParamsTab />);
+
+            expect(screen.getByTestId('scrub-interference-badge-armDeg')).toBeTruthy();
+            expect(screen.getByTestId('scrub-interference-badge-headDeg')).toBeTruthy();
+        });
+
+        it('falls back to a top-of-panel banner when interferences exist but no joint binds to a slider', () => {
+            const table = new ParamTable();
+            table.declare('wallThickness', 'number', 2.5, { min: 1, max: 5 });
+            mockUseRecomputeResult.mockReturnValue({
+                ...withTable(table),
+                rawInterferencePairs: [headArmPair],
+                joints: [],
+            });
+
+            render(<ParamsTab />);
+
+            const banner = screen.getByTestId('params-interference-banner');
+            expect(banner).toBeTruthy();
+            expect(banner.textContent).toContain('1 interference in current pose');
+            // No per-slider badge — banner is the only signal here.
+            expect(screen.queryByTestId('scrub-interference-badge-wallThickness')).toBeNull();
+        });
+
+        it('clears the indicator when there are no interference pairs', () => {
+            const table = new ParamTable();
+            table.declare('shoulderDeg', 'number', 45, { min: -90, max: 90 });
+            mockUseRecomputeResult.mockReturnValue({
+                ...withTable(table),
+                rawInterferencePairs: [],
+                joints: [joint('shoulder', 'head.bottom', 'upper-arm.top', 'shoulderDeg')],
+            });
+
+            render(<ParamsTab />);
+
+            expect(screen.queryByTestId('scrub-interference-badge-shoulderDeg')).toBeNull();
+            expect(screen.queryByTestId('params-interference-banner')).toBeNull();
+        });
     });
 
     it('does not rebuild on every slider tick and flushes the final value on release', () => {

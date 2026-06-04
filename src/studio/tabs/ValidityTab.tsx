@@ -10,7 +10,7 @@ import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/
  * the same content so a reviewer can read it without expanding the drawer.
  */
 export function ValidityTab(): JSX.Element {
-    const { validity } = useRecomputeResult();
+    const { validity, mechanismBanner } = useRecomputeResult();
     const { selectFeature } = useFeatureSelection();
 
     if (validity === null) {
@@ -29,6 +29,9 @@ export function ValidityTab(): JSX.Element {
 
     return (
         <div className="flex flex-col" data-testid="validity-tab">
+            {mechanismBanner != null && (
+                <MechanismBanner entries={mechanismBanner.entries} />
+            )}
             <div className="flex items-center gap-3 px-3 py-2">
                 <span
                     className={`px-2 py-0.5 text-[11px] font-medium rounded ${color.bg} ${color.text}`}
@@ -56,6 +59,64 @@ export function ValidityTab(): JSX.Element {
                     ))}
                 </ul>
             )}
+        </div>
+    );
+}
+
+/**
+ * Physics-grounded loop banner (P1 surface convergence).
+ *
+ * Rendered above the legacy diagnostic rows when the recompute's
+ * mechanism verdict is `'broken'`. Lists each criterion failure with
+ * its actionable hint so the agent / human reviewer sees the merge
+ * gate first, then the advisory diagnostics underneath.
+ *
+ * Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
+ */
+function MechanismBanner({
+    entries,
+}: {
+    entries: ReadonlyArray<{ code: string; message: string; hint: string }>;
+}): JSX.Element {
+    return (
+        <div
+            className="bg-red-950/60 border-b border-red-900 px-3 py-2"
+            data-testid="mechanism-banner"
+            role="alert"
+        >
+            <div className="flex items-baseline gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-red-300">
+                    MECHANISM BROKEN
+                </span>
+                <span className="text-[10px] text-red-400/80">
+                    this assembly will not work as built
+                </span>
+            </div>
+            <ul
+                className="mt-1.5 flex flex-col gap-1.5"
+                data-testid="mechanism-banner-entries"
+            >
+                {entries.map((entry, i) => (
+                    <li
+                        key={`${entry.code}-${i}`}
+                        className="text-[11px] text-red-200"
+                        data-testid="mechanism-banner-entry"
+                        data-code={entry.code}
+                    >
+                        <div className="flex items-start gap-2">
+                            <span className="font-mono text-[10px] text-red-300/90 shrink-0">
+                                {entry.code}
+                            </span>
+                            <span className="text-red-100">{entry.message}</span>
+                        </div>
+                        {entry.hint && (
+                            <div className="mt-0.5 pl-[5.5rem] text-red-300/80">
+                                Fix: {entry.hint}
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }

@@ -6,6 +6,7 @@
 import {
   copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, rmSync,
 } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -16,6 +17,12 @@ import {
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
+import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
+import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
+import { serializeForBridge } from '../../src/modeling/capture/featureMeshSerialize';
+import { validateAssemblyWithMates } from '../../src/modeling/mates/validator';
+import type { Assembly } from '../../src/modeling/capture/assembly';
+import type { CaptureSession } from '../../src/modeling/capture/captureSession';
 
 export interface BuildGalleryOptions {
   entriesPath: string;
@@ -33,6 +40,44 @@ interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'codeLocal'> {
 
 const GLB_SIZE_HARD_CAP = 500_000;
 const STUDIO_ORIGIN = 'https://app.kernelcad.com';
+/**
+ * Builds the `ScriptReviewSummary` the hosted Studio consumes (see
+ * GeometryContext) from the already-evaluated session — reusing the loaded
+ * assembly instead of re-running the script. Runs the fast structural
+ * validator (floating parts, orphans, mate validity) which carries the
+ * part/mate attribution SceneTab routes to severity dots. Skips the
+ * pose-envelope / interference sweep, which is too slow for a build step and
+ * cannot be interrupted on the single OCCT thread. Non-fatal: any failure
+ * yields a passing summary so the deploy never stalls and the Studio still
+ * shows the real feature tree.
+ */
+async function reviewFromLoadedSession(session: CaptureSession): Promise<Record<string, unknown>> {
+  try {
+    const arm = [...session.assemblies.values()][0] as Assembly | undefined;
+    if (!arm) return { ok: true, diagnostics: [] };
+    const validator = await validateAssemblyWithMates(arm);
+    const diagnostics = validator.diagnostics.map((d) => {
+      const entry: Record<string, unknown> = {
+        code: d.code,
+        severity: d.severity,
+        message: d.message,
+        hint: d.hint,
+      };
+      if (d.partName) entry.partName = d.partName;
+      if (d.mateName) entry.mateName = d.mateName;
+      if (d.partA) entry.partA = d.partA;
+      if (d.partB) entry.partB = d.partB;
+      return entry;
+    });
+    const ok = !validator.diagnostics.some((d) => d.severity === 'error');
+    return { ok, diagnostics };
+  } catch (err) {
+    console.warn(
+      `build-gallery: validity skipped — ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return { ok: true, diagnostics: [] };
+  }
+}
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const raw = JSON.parse(readFileSync(opts.entriesPath, 'utf8'));
@@ -45,6 +90,12 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   // candidates don't leave orphans the dev symlink loop would re-link.
   if (existsSync(galleryOutDir)) rmSync(galleryOutDir, { recursive: true, force: true });
   mkdirSync(galleryOutDir, { recursive: true });
+
+  // Precomputed mesh bridge payloads, keyed by sha256(source). The hosted
+  // Studio fetches `/gallery/_mesh/<sha>.json` to render a curated model's
+  // initial view with zero server compute (see scriptSource.meshSourceHosted).
+  const meshOutDir = path.join(galleryOutDir, '_mesh');
+  mkdirSync(meshOutDir, { recursive: true });
 
   const published: PublishedEntry[] = [];
 
@@ -97,6 +148,52 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(
         `entry ${entry.slug}: model.glb is ${glbSize} bytes; exceeds ${GLB_SIZE_HARD_CAP} byte hard cap. Decimate the mesh.`,
       );
+    }
+
+    // Precompute the mesh bridge payload for curated entries so the hosted
+    // Studio renders the initial view from a static file. Keyed by the
+    // sha256 of the exact source bytes served at source.kcad.ts — the same
+    // digest the browser computes via Web Crypto in scriptSource.meshSourceHosted.
+    if (entry.source === 'curated') {
+      // Non-fatal: a model that fails to precompute simply won't have a static
+      // mesh file. The hosted Studio then falls back to its backend (or shows
+      // a clear error for that one model) — far better than failing the entire
+      // marketing deploy over one bad source. exportGlb above already gates on
+      // the source meshing, so this rarely triggers.
+      try {
+        const sourceText = readFileSync(srcScript, 'utf8');
+        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+        const loaded = await loadScriptFeatures(srcScript);
+        const meshing = await meshFeaturesPerFeature(
+          loaded.features.map((f) => f.record),
+          loaded.paramTable,
+          loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
+        );
+        if (meshing.failedFeatureIds.length > 0) {
+          console.warn(
+            `build-gallery: ${entry.slug} precompute skipped — ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
+          );
+        } else {
+          // Bake the deterministic structural review so the hosted Studio
+          // shows the real adaptive feature tree (validity non-null) instead
+          // of the legacy code-history fallback, and the Validity tab reflects
+          // actual diagnostics. Reuses the loaded assembly — no re-evaluate.
+          const review = await reviewFromLoadedSession(loaded.session);
+          const bridgePayload = {
+            source: sourceText,
+            features: meshing.features.map(serializeForBridge),
+            featureRecords: loaded.features.map((f) => f.record),
+            bounds: meshing.bounds,
+            params: loaded.paramTable.serialize(),
+            review,
+          };
+          writeFileSync(path.join(meshOutDir, `${sha}.json`), JSON.stringify(bridgePayload));
+        }
+      } catch (err) {
+        console.warn(
+          `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
 
     writeFileSync(dstPrompt, entry.prompt + '\n');

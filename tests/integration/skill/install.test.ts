@@ -26,6 +26,8 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
     const dirs = readdirSync(tmp);
+    // Develop's C2 cull (2026-05-31) removed the deprecated `kernelcad-sdf`
+    // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17).
     expect(dirs.length).toBe(17);
   });
 

@@ -13,7 +13,9 @@ describe('deriveAcm — Task B4.B', () => {
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const upper = arm.part('upper', kcad.box(80, 10, 10), { density: 2700 });
-    arm.revolute('shoulder', base, upper, { axis: [0, 0, 1], origin: [0, 0, 10] });
+    base.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+    upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('shoulder', 'base.shoulder', 'upper.shoulder', 'revolute');
     const r = await deriveAcm(arm, { samplesPerMate: 4, combinatorial: false });
     const adjacent = r.pairs.filter(p => p.reason === 'Adjacent');
     expect(adjacent).toHaveLength(1);
@@ -26,7 +28,9 @@ describe('deriveAcm — Task B4.B', () => {
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
-    arm.revolute('j', base, tip, { axis: [0, 0, 1], origin: [10, 0, 0], limitsDeg: [-30, 30] });
+    base.connector('j', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+    tip.connector('j', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.mate('j', 'base.j', 'tip.j', 'revolute', { limitsDeg: [-30, 30] });
     const r = await deriveAcm(arm, { samplesPerMate: 1, combinatorial: false });
     expect(r.diagnostics.map(d => d.code)).toContain('export.srdf.acm-sparse-sampling');
   });

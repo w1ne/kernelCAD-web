@@ -14,8 +14,12 @@ describe('export_model({ format: \'urdf\' }) — 2-DOF planar arm (Task B3)', ()
       const base = arm.part('base', box(30, 30, 8), { density: 2700 });
       const upper = arm.part('upper', box(80, 12, 8), { density: 2700 });
       const lower = arm.part('lower', box(80, 12, 8), { density: 2700 });
-      arm.revolute('shoulder', base, upper, { axis: [0, 0, 1], origin: [0, 0, 8], limitsDeg: [-90, 90] });
-      arm.revolute('elbow', upper, lower, { axis: [0, 0, 1], origin: [80, 0, 0], limitsDeg: [-135, 135] });
+      base.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 8] }, axis: [0, 0, 1] });
+      upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      upper.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [80, 0, 0] }, axis: [0, 0, 1] });
+      lower.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('shoulder', 'base.shoulder', 'upper.shoulder', 'revolute', { limitsDeg: [-90, 90] });
+      arm.mate('elbow', 'upper.elbow', 'lower.elbow', 'revolute', { limitsDeg: [-135, 135] });
       return arm.model();
     `;
     const dir = await mkdtemp(join(tmpdir(), 'kc-urdf-'));

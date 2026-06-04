@@ -35,7 +35,20 @@ export type SketchCommand =
   // `points[N-1]`. Use for organic outlines (eyewear brow, ergonomic
   // grips) when you have measured waypoints rather than a closed-form
   // control-net.
-  | { kind: 'spline'; points: Array<{ x: Param; y: Param }>; tension?: Param }
+  //
+  // V slice — `startTangent` and `endTangent` (optional) constrain the
+  // first-derivative direction at the first and last waypoint. When
+  // either is present, the lowerer routes through the analytics-side
+  // tangent-constrained interpolator instead of the fast approximation
+  // path; the resulting curve is round-tripped through OCCT so the
+  // authoritative geometry stays kernel-native.
+  | {
+      kind: 'spline';
+      points: Array<{ x: Param; y: Param }>;
+      tension?: Param;
+      startTangent?: { x: Param; y: Param };
+      endTangent?: { x: Param; y: Param };
+    }
   // `nurbsSegment` — explicit B-spline segment. `controlPoints[0]` MUST
   // match the current pen position; `controlPoints[N-1]` becomes the new
   // pen position. Validates `degree+1 <= controlPoints.length`.

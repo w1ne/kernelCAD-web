@@ -6,6 +6,7 @@ import { Viewport } from './Viewport';
 import { Inspector } from './Inspector';
 import { AgentRail } from './AgentRail';
 import { BottomDrawer } from './BottomDrawer';
+import { MarkingOverlay } from './components/viewer/overlays/MarkingOverlay';
 import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
@@ -28,7 +29,10 @@ import { useProject } from './context/ProjectContext';
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen, selectedFeatureId } = useShellStore();
+    const { agentRailOpen, selectedFeatureId, markingMode } = useShellStore();
+    const handleToggleMarkingMode = useCallback(() => {
+        shellStore.toggleMarkingMode();
+    }, []);
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
 
@@ -147,9 +151,14 @@ export function StudioShell() {
         export: <ExportTab />,
     };
 
-    const interferenceCount = recompute.validity?.diagnostics.filter(
-        (d) => d.code === 'assembly.interference.overlap',
-    ).length ?? 0;
+    // HUD reads RAW interference pairs (pre-filter), not the validator's
+    // diagnostics. Scripts can silence known-acceptable contacts via
+    // `assembly.solvedModel({ ignore: [...] })` — that hides them from the
+    // validator throw path and the Validity tab, but the user must still see
+    // every live overlap on the status bar (especially when they drag a
+    // Studio param slider into a colliding pose). The two channels are
+    // wired separately on `useRecomputeResult` for exactly this reason.
+    const interferenceCount = recompute.rawInterferencePairs?.length ?? 0;
 
     return (
         <div
@@ -170,11 +179,16 @@ export function StudioShell() {
                 renderEnvironmentVisible={renderEnvironmentVisible}
                 renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
                 onToggleRenderEnvironment={handleToggleRenderEnvironment}
+                markingMode={markingMode}
+                onToggleMarkingMode={handleToggleMarkingMode}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
                 {agentRailOpen && <AgentRail />}
-                <Viewport />
+                <div className="flex-1 relative">
+                    <Viewport />
+                    <MarkingOverlay visible={markingMode} />
+                </div>
                 <Inspector tabSlots={tabSlots} />
 
                 {!workbench.isReady && (
