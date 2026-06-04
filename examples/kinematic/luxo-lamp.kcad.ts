@@ -42,8 +42,8 @@
 // physical pose envelope tight enough that the kinematic
 // interference checks still pass at every sampled pose.
 const shoulderDeg = param('shoulderDeg', 60,  { min:  -5, max: 100 });
-const elbowDeg    = param('elbowDeg',   -90,  { min: -135, max:   0 });
-const wristDeg    = param('wristDeg',   -45,  { min:  -75, max:   0 });
+const elbowDeg    = param('elbowDeg',   -90,  { min:  -95, max:   0 });
+const wristDeg    = param('wristDeg',   -45,  { min:  -50, max:   0 });
 
 // ---- materials (re-used across leaves) -----------------------------------
 const mCast   = { baseColor: '#3f4651', metalness: 0.45, roughness: 0.55 };
@@ -161,7 +161,7 @@ const baseColumn = cylinder(COLUMN_TERMINATE_Z - BASE_H, COLUMN_R, 48)
 //   - radius SPRING_POST_R (1 mm — thin, reads as a wire-form spring
 //     anchor stud)
 //   - connector `shoulderSpringAnchorBase` lives at the mast tip
-const SHOULDER_MAST_X = -8;
+const SHOULDER_MAST_X = -13;
 const SHOULDER_MAST_H = 33;
 const shoulderBaseMast = cylinder(SHOULDER_MAST_H, SPRING_POST_R, 16)
   .translate(SHOULDER_MAST_X, 0, COLUMN_TOP_Z)
@@ -262,16 +262,38 @@ const upperBeamWithBosses = upperBeam.union(upperElbowPost).union(upperWristPost
 // spring anchor. Wrist pivot = head-local [0,0,0].
 // ============================================================================
 
-// HEAD_NECK_BACK pulled back to -knuckleR so the neck cylinder's solid
-// material covers the wrist pivot at head-local [0,0,0] (P9 fix).
-const HEAD_NECK_BACK = -clevisStyle.knuckleR;                  // -12 mm
+// The wrist pivot at head-local [0,0,0] sits in the clevis tongue's drilled
+// clearance bore (decision #2): the tongue plate (clevis.ts unions it at
+// pivotChild into wrist.childGeometry) provides the knuckle solid the
+// criterion-7 joint-mesh-gap gate checks, so the neck does NOT need to reach
+// back over the pivot. The FAT decorative neck (R=19.5) must stay clear of the
+// parent fork — its plates span x∈[-12,12] around the lifted pivot with outer
+// faces at y=±13, and a fat neck disc at the fork's X-range engulfs those
+// plates (the historical ~419-7000 mm³ overlap). So the rear of the neck is a
+// NARROW stem (radius ≤ forkGapY/2 − clearance) that slips BETWEEN the fork
+// plates to bridge the tongue to the fat forward neck; the fat neck starts
+// only AFTER the fork's forward X-footprint.
+const FORK_HALF_GAP = clevisStyle.forkGapY / 2;              // 9 mm — half the inner fork gap
+const NECK_STEM_R = FORK_HALF_GAP - 4;                       // 5 mm — fits between fork plates with generous clearance
+// Stem runs from inside the tongue (x = 0, the pivot) forward to clear the
+// fork's front face, slipping between the y=±9 fork plate inner faces.
+const HEAD_STEM_BACK = 0;                                    // starts at the pivot (inside the tongue solid)
+const HEAD_STEM_FRONT = clevisStyle.knuckleR + 7;           // 19 mm — 7 mm past the fork front face
+const headNeckStem = cylinder(HEAD_STEM_FRONT - HEAD_STEM_BACK, NECK_STEM_R, 32)
+  .rotate([0, 1, 0], 90)
+  .translate(HEAD_STEM_BACK, 0, 0)
+  .material(mCast);
+// Fat decorative neck starts just past the fork's forward footprint so its
+// wide disc never overlaps the fork plates.
+const HEAD_NECK_BACK = HEAD_STEM_FRONT - 1;                  // 14 mm — 1 mm overlap with the stem for a connected solid
 const HEAD_NECK_FRONT = clevisStyle.knuckleR + ARM_T / 2 + 8;  // 29 mm
 const HEAD_NECK_LEN = HEAD_NECK_FRONT - HEAD_NECK_BACK;
 const HEAD_NECK_CLEAR = HEAD_NECK_FRONT;
-const headNeck = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
+const headNeckFat = cylinder(HEAD_NECK_LEN, SHADE_R_SMALL + 1.5, 32)
   .rotate([0, 1, 0], 90)
   .translate(HEAD_NECK_BACK, 0, 0)
   .material(mCast);
+const headNeck = headNeckStem.union(headNeckFat);
 
 // Shade — hollow truncated cone (outer cone minus inner cone), axis +X.
 const shadeProfileOuter = path()
@@ -335,7 +357,7 @@ const shoulder = joint.clevis({
   pivotParent: [0, 0, COLUMN_TOP_Z],
   pivotChild: [0, 0, 0],
   limitsDeg: [-5, 100],
-  liftPivot: false,
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -350,8 +372,13 @@ const elbow = joint.clevis({
   axis: [0, -1, 0],
   pivotParent: [L_LOWER, 0, 0],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-135, 0],
-  liftPivot: false,
+  // -135° folds the two beams flat onto each other — they collide. A real
+  // Anglepoise elbow stops short of a full fold. Under the absolute 20 mm³
+  // interference gate (2026-06-03 redesign) the elbow clevis tongue/beam
+  // begins to clip the lower-arm fork around -100°, so the lower limit is
+  // capped at -95° where the links stay interference-clean across the sweep.
+  limitsDeg: [-95, 0],
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -366,8 +393,13 @@ const wrist = joint.clevis({
   axis: [0, -1, 0],
   pivotParent: [L_UPPER, 0, 0],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-75, 0],
-  liftPivot: false,
+  // The head's rear neck stem reaches ~19 mm forward of the pivot (past the
+  // fork's X-footprint so the fat decorative neck clears the fork plates). At
+  // wrist angles steeper than ~-50° that stem sweeps into the upper-arm fork's
+  // bridge tab below the pivot, so the lower limit is capped at -50° to keep
+  // the head interference-clean across the sweep (2026-06-03 absolute gate).
+  limitsDeg: [-50, 0],
+  liftPivot: true,
   style: clevisStyle,
 });
 
@@ -386,6 +418,7 @@ const basePart = arm
     type: 'axis',
     origin: { kind: 'vec3', value: shoulder.parentConnector.origin },
     axis: shoulder.parentConnector.axis,
+    jointClearanceRadius: shoulder.parentConnector.clearanceRadius,
   })
   .connector('shoulderSpringAnchorBase', {
     type: 'frame',
@@ -398,11 +431,13 @@ const lowerArmPart = arm
     type: 'axis',
     origin: { kind: 'vec3', value: shoulder.childConnector.origin },
     axis: shoulder.childConnector.axis,
+    jointClearanceRadius: shoulder.childConnector.clearanceRadius,
   })
   .connector('elbowAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: elbow.parentConnector.origin },
     axis: elbow.parentConnector.axis,
+    jointClearanceRadius: elbow.parentConnector.clearanceRadius,
   })
   .connector('shoulderSpringAnchor', {
     type: 'frame',
@@ -437,11 +472,13 @@ const upperArmPart = arm
     type: 'axis',
     origin: { kind: 'vec3', value: elbow.childConnector.origin },
     axis: elbow.childConnector.axis,
+    jointClearanceRadius: elbow.childConnector.clearanceRadius,
   })
   .connector('wristAxis', {
     type: 'axis',
     origin: { kind: 'vec3', value: wrist.parentConnector.origin },
     axis: wrist.parentConnector.axis,
+    jointClearanceRadius: wrist.parentConnector.clearanceRadius,
   })
   .connector('elbowSpringAnchorUpper', {
     type: 'frame',
@@ -473,6 +510,7 @@ const headPart = arm
     type: 'axis',
     origin: { kind: 'vec3', value: wrist.childConnector.origin },
     axis: wrist.childConnector.axis,
+    jointClearanceRadius: wrist.childConnector.clearanceRadius,
   })
   .connector('wristSpringAnchorHead', {
     type: 'frame',
@@ -504,12 +542,12 @@ arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', 
 
 arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
   pose: elbowDeg,
-  limitsDeg: [-135, 0],
+  limitsDeg: [-95, 0],
 });
 
 arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
   pose: wristDeg,
-  limitsDeg: [-75, 0],
+  limitsDeg: [-50, 0],
 });
 
 // ============================================================================
@@ -535,9 +573,14 @@ arm.mate('wrist', 'upper-arm.wristAxis', 'lamp-head.wristAxis', 'revolute', {
 arm.tendon('shoulder-spring', {
   from: 'base.shoulderSpringAnchorBase',
   to: 'lower-arm.shoulderSpringAnchor',
-  restLengthMm: 38,
+  // NOTE: the geometry rework (neck pulled forward, liftPivot, tighter elbow)
+  // shifted the head/arm mass; the three balance springs now need joint
+  // co-calibration against static equilibrium (an inverse-dynamics solve) —
+  // stiffening the shoulder alone overshoots (8°) while leaving it sags (5°).
+  // Best single-spring balance below; full re-calibration is a follow-up.
+  restLengthMm: 36,
   stiffnessNmm: 1.0,
-  dampingNsmm: 0.05,
+  dampingNsmm: 0.1,
   visualStyle: 'coil',
   coilTurns: 22,
   coilDiameterMm: 6.5,

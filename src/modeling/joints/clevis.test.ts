@@ -60,18 +60,17 @@ describe('joint.clevis — G1 design locks', () => {
     expect(j.childGeometry.id.length).toBeGreaterThan(0);
   });
 
-  it('2. drilled hole = ONE subtract on the parent only (P8 — child tongue kept solid for joint-mesh-continuity)', () => {
-    // P8 (2026-06-02): the clevis primitive used to drill BOTH parts so
-    // each had a clean through-hole. P8's `mechanism.joint-mesh-gap`
-    // gate probes the body BREP at the joint pivot for material; a
-    // drilled-through child tongue puts the pivot in an air pocket
-    // (~pinR mm from material). To keep the child mesh covering the
-    // pivot, we now drill ONLY the parent and keep the child tongue
-    // solid — the parent's pin shaft embeds into the child's tongue
-    // material under joint motion. The resulting pin-on-tongue
-    // interference (~tongueY × π × pinR², ~400 mm³ for default style)
-    // falls under `REVOLUTE_CONTACT_TOLERANCE_FRACTION` in
-    // `mechanismTruth.ts`.
+  it('2. drilled hole = ONE subtract per part (decision #2 — child tongue drilled to a clearance bore)', () => {
+    // 2026-06-03 mechanism-validity redesign (decision #2): the clevis
+    // primitive now drills BOTH the parent fork AND the child tongue to a
+    // `pinR + holeClearance` clearance bore (ISO 286 H8/f7 running fit),
+    // so the pin floats in air rather than embedding into solid tongue
+    // material. This drops pin-in-tongue shared volume to ~0 (was ~400 mm³
+    // when the tongue was kept solid). Criterion 7 (joint-mesh-gap) is
+    // reframed to accept the clearance bore by checking the knuckle SOLID
+    // is present around the pivot, not that the pivot POINT sits in solid.
+    // There should be EXACTLY two difference (subtract) operations: the
+    // parent through-hole and the child tongue bore.
     const session = new CaptureSession();
     const kc = createApi({ session });
     const baseBody = kc.box(40, 40, 20, true);
@@ -90,14 +89,15 @@ describe('joint.clevis — G1 design locks', () => {
     // Find the lineage of subtract operations that lead into the parent and
     // child final shapes. The session records every boolean as a feature
     // record of kind 'boolean' with params.op carrying 'union' /
-    // 'difference' / 'intersection'. There should be EXACTLY one difference
-    // (subtract) total — the parent through-hole.
+    // 'difference' / 'intersection'. There should be EXACTLY two difference
+    // (subtract) operations — the parent through-hole and the child tongue
+    // bore (decision #2: both knuckles drilled to a clearance fit).
     const subtracts = records.filter((r) => {
       if (r.kind !== 'boolean') return false;
       const expr = (r as { params?: { op?: { expression?: string } } }).params?.op?.expression;
       return expr === "'difference'";
     });
-    expect(subtracts.length).toBe(1);
+    expect(subtracts.length).toBe(2);
 
     // Confirm the pin shaft span matches the design lock:
     //   shaftLen = forkGapY + 2 * plateT

@@ -43,29 +43,47 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     // interpenetration.
     const { arm, kcad } = makeArm('clevis-hinge');
     const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
-    const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
+    // The child arm beam must (a) be narrow enough to fit BETWEEN the fork
+    // plates (Y span < forkGapY) and (b) start clear of the fork's X-footprint
+    // so it does not engulf the parent fork plates — otherwise it interpenetrates
+    // the fork (caught by the absolute 20 mm³ gate). knuckleR=12 → fork plates
+    // span x∈[-12,12]; forkGapY=24 gives a ±12 gap that comfortably clears the
+    // ±10 beam half-width. The beam starts at x=12 (the fork edge) so the clevis
+    // tongue (x∈[-12,12]) bridges it to the pivot.
+    const ARM_HALF_W = 10;
+    const KNUCKLE_R = 12;
+    const armBody = kcad.box(120, 2 * ARM_HALF_W, 20, true).translate(KNUCKLE_R + 60, 0, 0);
+    // Upper limit capped at +25° so the arm's downward swing stays clear of the
+    // tall base block at the swept extreme (the absolute 20 mm³ gate flags the
+    // arm dipping into the base around +35°).
     const j = kcad.joint.clevis({
       parentBody: baseBody,
       childBody: armBody,
       axis: 'Y',
       pivotParent: [0, 0, 15],
       pivotChild: [0, 0, 0],
-      limitsDeg: [-45, 45],
+      limitsDeg: [-45, 25],
+      style: { knuckleR: KNUCKLE_R, forkGapY: 24, tongueY: 20 },
     });
     const parent = arm.part('base', j.parentGeometry);
     parent.connector('hinge', {
       type: 'axis',
       origin: { kind: 'vec3', value: j.parentConnector.origin },
       axis: j.parentConnector.axis,
+      // The clevis tongue is drilled to a clearance bore (decision #2), so the
+      // pivot sits in air with solid knuckle at the bore wall. Pass the bore
+      // radius so criterion 7 accepts the clearance fit.
+      jointClearanceRadius: j.parentConnector.clearanceRadius,
     });
     const child = arm.part('lower-arm', j.childGeometry);
     child.connector('hinge', {
       type: 'axis',
       origin: { kind: 'vec3', value: j.childConnector.origin },
       axis: j.childConnector.axis,
+      jointClearanceRadius: j.childConnector.clearanceRadius,
     });
     arm.mate('elbow', 'base.hinge', 'lower-arm.hinge', 'revolute', {
-      limitsDeg: [-45, 45],
+      limitsDeg: [-45, 25],
     });
 
     const result = await checkMechanismTruth(arm);
@@ -251,12 +269,17 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       type: 'axis',
       origin: { kind: 'vec3', value: j.parentConnector.origin },
       axis: j.parentConnector.axis,
+      // The clevis tongue is drilled to a clearance bore (decision #2), so the
+      // pivot sits in air with solid knuckle at the bore wall. Pass the bore
+      // radius so criterion 7 accepts the clearance fit.
+      jointClearanceRadius: j.parentConnector.clearanceRadius,
     });
     const child = arm.part('lower-arm', j.childGeometry);
     child.connector('hinge', {
       type: 'axis',
       origin: { kind: 'vec3', value: j.childConnector.origin },
       axis: j.childConnector.axis,
+      jointClearanceRadius: j.childConnector.clearanceRadius,
     });
     arm.mate('elbow', 'base.hinge', 'lower-arm.hinge', 'revolute', {
       limitsDeg: [-45, 45],
@@ -278,11 +301,11 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
 
   it('5. two parts overlapping without a mate → broken with mechanism.interpenetration', async () => {
     // Two overlapping boxes with a fastened mate between them so the
-    // graph is connected (criterion 4 must NOT fire). The fastened mate
-    // is over a 0,0,0 connector on each side, but the box geometries
-    // overlap by 5×5×5 mm = 125 mm³ near the origin. Since fastened
-    // mates are NOT in the joint-contact exclusion list (approach A in
-    // mechanismTruth.ts), the overlap surfaces as interpenetration.
+    // graph is connected (criterion 4 must NOT fire). The box geometries
+    // overlap by 5×20×20 mm = 2000 mm³ near the origin — far above the
+    // uniform 20 mm³ contact-noise threshold (decision #1: a single
+    // absolute cap applies to every pair, fastened or not), so the overlap
+    // surfaces as interpenetration.
     const { arm, kcad } = makeArm('overlap');
     const boxA = kcad.box(20, 20, 20, true);
     const boxB = kcad.box(20, 20, 20, true).translate(15, 0, 0); // overlaps with A in [5, 10] x ±10 x ±10

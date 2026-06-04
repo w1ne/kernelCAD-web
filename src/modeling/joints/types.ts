@@ -86,6 +86,11 @@ export interface ClevisConnectorSpec {
   origin: Vec3;
   /** Pin-axis direction in the owning part's local frame. */
   axis: Vec3;
+  /** Pin clearance-bore radius (mm) at this pivot = `pinR + holeClearance`.
+   *  Pass through to `part.connector(name, { ..., jointClearanceRadius })` so
+   *  the criterion-7 joint-mesh-gap gate accepts the drilled clearance bore
+   *  (the pivot point sits in air, with solid knuckle at the bore wall). */
+  clearanceRadius: number;
 }
 
 /**

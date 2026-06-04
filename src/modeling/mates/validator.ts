@@ -32,6 +32,7 @@ import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
+import { jointContactCapMm3 } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
@@ -247,8 +248,18 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // only to the diagnostic emission below; the raw `interferencePairs` the
   // caller passed in remain untouched so HUD-style consumers can still read
   // them via the unfiltered detection output.
+  // ABSOLUTE-volume classification (shared with mechanism-truth criterion 2 via
+  // `jointContactCap`): a SINGLE uniform noise threshold (20 mm³) applies to
+  // every pair, adjacent or not (decision #1 of the 2026-06-03 redesign). A
+  // correctly-modeled clevis joint drills the pin clearance bore through both
+  // knuckles, so the pin floats in air with ~0 shared volume — adjacency earns
+  // no extra interference budget. This replaces the old "every interference
+  // pair is an error" behaviour while still failing any real overlap above the
+  // tessellation-noise floor.
+  const cap = jointContactCapMm3();
   for (const pair of input.interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, input.ignore)) continue;
+    if (pair.volumeMm3 <= cap) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',

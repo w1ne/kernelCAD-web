@@ -5,13 +5,28 @@
 // Spec:  docs/specs/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 // Plan:  docs/plans/2026-06-02-physics-loop-P8-joint-mesh-continuity-gate.md
 //
-// For every mate in an assembly, at REST pose, the joint pivot (the
-// world-space connector origin on each side) must lie INSIDE the BREP
-// solid of its mated body, within `JOINT_MESH_GAP_TOLERANCE_MM`.
+// For every mate in an assembly, at REST pose, the joint's knuckle solid
+// must be PRESENT around the pivot (the world-space connector origin on
+// each side): the nearest BREP surface of the mated body must lie within
+// `jointClearanceRadius + JOINT_MESH_GAP_TOLERANCE_MM` of the pivot.
 // Otherwise the part is pivoting on thin air — a class of bug
 // MJCF / MuJoCo cannot see because joints there are constraints between
 // abstract rigid bodies, not material continuity assertions on the
 // visual mesh.
+//
+// Decision #3 of the 2026-06-03 mechanism-validity redesign reframed this
+// gate to accept a CLEARANCE BORE. A correctly-modeled rotating joint is a
+// clearance fit (ISO 286): the pin floats in a `pinR + holeClearance` bore,
+// so the pivot POINT itself sits in air, with solid knuckle material at the
+// bore wall a few mm out. The pre-redesign gate required the pivot point to
+// be INSIDE solid, which forced a solid (undrilled) tongue that then
+// interpenetrated the parent fork. Now the gate passes when the knuckle
+// solid surrounds the pivot within `jointClearanceRadius + margin` (a
+// drilled knuckle passes; a link floating in air, with no material for
+// 6 / 12 / 50 mm, still fails). When a connector carries no
+// `jointClearanceRadius` (non-drilled joints) the gate keeps its original
+// point-in-solid behaviour (clearance radius 0 → tolerance is the 1 mm
+// margin alone).
 //
 // Implementation notes:
 //
@@ -67,8 +82,8 @@ export interface JointMeshContinuityRestSample {
 
 /**
  * One row of helper output: a single (joint, side) check. The caller
- * filters for `signedDistanceMm > JOINT_MESH_GAP_TOLERANCE_MM` and
- * emits one diagnostic per failing row.
+ * filters for `signedDistanceMm > clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM`
+ * and emits one diagnostic per failing row.
  */
 export interface JointMeshGapResult {
   readonly mateName: string;
@@ -84,6 +99,15 @@ export interface JointMeshGapResult {
    * only inspects the positive (outside) side.
    */
   readonly signedDistanceMm: number;
+  /**
+   * Pin clearance-bore radius (mm) carried by this side's connector
+   * (`jointClearanceRadius`), or 0 when the connector is not a drilled
+   * knuckle. The gate's per-side allowed gap is
+   * `clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM`: a drilled knuckle's
+   * nearest solid is the bore wall at `clearanceRadiusMm`, so it passes,
+   * while a link floating in air fails.
+   */
+  readonly clearanceRadiusMm: number;
 }
 
 /**
@@ -160,6 +184,7 @@ export function checkJointMeshContinuity(
           partName: parsedA.partName,
           pivotWorld,
           signedDistanceMm: gap,
+          clearanceRadiusMm: aConn.jointClearanceRadius ?? 0,
         });
       }
     }
@@ -183,6 +208,7 @@ export function checkJointMeshContinuity(
           partName: parsedB.partName,
           pivotWorld: probePointForChild,
           signedDistanceMm: gap,
+          clearanceRadiusMm: bConn.jointClearanceRadius ?? 0,
         });
       }
     }

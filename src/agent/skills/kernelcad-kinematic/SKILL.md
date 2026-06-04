@@ -145,11 +145,13 @@ basePart.connector('shoulder', {
   type: 'axis',
   origin: { kind: 'vec3', value: shoulder.parentConnector.origin },
   axis: shoulder.parentConnector.axis,
+  jointClearanceRadius: shoulder.parentConnector.clearanceRadius,
 });
 lowerArmPart.connector('shoulder', {
   type: 'axis',
   origin: { kind: 'vec3', value: shoulder.childConnector.origin },
   axis: shoulder.childConnector.axis,
+  jointClearanceRadius: shoulder.childConnector.clearanceRadius,
 });
 
 arm.mate('shoulder', 'base.shoulder', 'lower-arm.shoulder', 'revolute', {
@@ -158,7 +160,7 @@ arm.mate('shoulder', 'base.shoulder', 'lower-arm.shoulder', 'revolute', {
 });
 ```
 
-The primitive returns the parent/child geometry to assign back to each part's `Shape` AND the connectors to bind the mate to. Do not pick `origin: [x, y, z]` by hand — bind to the returned connectors, which are kinematically consistent with the pin axis and the tongue/fork through-hole.
+The primitive returns the parent/child geometry to assign back to each part's `Shape` AND the connectors to bind the mate to. Do not pick `origin: [x, y, z]` by hand — bind to the returned connectors, which are kinematically consistent with the pin axis and the tongue/fork through-hole. Pass each connector's `clearanceRadius` through as `jointClearanceRadius`: the pin clearance bore is drilled through BOTH knuckles (an ISO 286 running fit — the pin floats in air, so pin-in-tongue shared volume is ~0), which means the joint-mesh-gap gate must know the pivot sits in a clearance bore rather than in solid. Omit it and the gate will false-flag the drilled knuckle as a `mechanism.joint-mesh-gap`.
 
 Authoring discipline that PAIRS with the primitive:
 
