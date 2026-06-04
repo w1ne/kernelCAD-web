@@ -6,6 +6,13 @@ import {
 } from './types.js';
 
 /**
+ * Hard upper bound a caller may configure for repair attempts.
+ * The DEFAULT stays 3. Only safe to raise toward this ceiling once the W5
+ * convergence guard ships — without it a higher cap risks repair doom-loops.
+ */
+export const MAX_REPAIR_ATTEMPTS_CEILING = 10;
+
+/**
  * Host-agnostic generate→gate→repair loop. Imports nothing from fs/CLI/oracle so it
  * bundles cleanly for the server. The host injects generate(), gateRunner, extractScript,
  * and writeScript.
