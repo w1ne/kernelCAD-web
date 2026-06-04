@@ -186,6 +186,22 @@ topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
 - Added `Shape.massProperties(density?)` returning `{ mass, com, inertia6 }`; per-part `density` option on `arm.part(...)`.
 - New diagnostic codes: `export.urdf.cylindrical-lossy`, `export.urdf.pin-slot-lossy`, `export.urdf.ball-decomposed`, `export.urdf.closed-loop`, `export.urdf.inertia-density-declared`. Removed Slice A's `export.urdf.not-implemented` placeholder.
 
+### Added — Slice D: npx skills add distribution
+
+- Cross-agent skill distribution via `npx skills add kernelcad/skills`. A separate public repo `kernelcad/skills` is regenerated on each kernelCAD release from `src/agent/skills/**/SKILL.md` via `scripts/distGenerate.mjs`. Generated artifacts: `SKILL.md` index, `skills/` subtree, `.claude-plugin/plugin.json`, `harness/{AGENTS.md,CLAUDE.md}`, `scripts/postinstall.mjs`, `README.md`, `VERSION`, `LICENSE`, `CHANGELOG.md`.
+- Local stdio MCP is the default install target (`kernelcad mcp`); the hosted endpoint at `https://api.kernelcad.com/mcp` is documented as an opt-in fallback.
+- Multi-agent parallelization rules in `harness/AGENTS.md` spell out the three buckets (mutating generation, inspection, render / review) that must serialize when multiple agents work the same `.kcad.ts` source.
+- CI gates wired into the dist publish workflow: a comparator-grep gate that fails the publish if any of the configured comparator names leak into a shipped path; a drifted-tool-name gate that cross-checks every backtick-quoted reference against `TOOL_REGISTRY` and the CLI subcommand list; and a filesystem-discovery sentinel that rejects hard-coded skill enumerations in the generator source itself.
+- Weekly cross-agent eval cron runs fresh Claude Code + Codex + Cursor sessions through the bracket prompt.
+
+### Fixed — Slice D: kernelcad skill install recursion
+
+- `kernelcad skill install` now recurses into nested SKILL.md directories. The six sub-skills under `kernelcad-from-reference/` (`blockout-model`, `image-replicator`, `kernelcad-trace-from-image`, `prepare-prompt`, `render-inspect`, `use-the-available-kernel`) were silently dropped by the depth-1 walker; all 17+ SKILL.md files now reach the install target.
+
+### Deprecated — Slice D: kernelcad skill install
+
+- `kernelcad skill install` emits a soft-deprecation notice pointing at `npx skills add kernelcad/skills` as the recommended cross-agent flow. The command remains functional; removal date is not set in this slice. Suppress the notice with `KERNELCAD_SUPPRESS_DEPRECATION=1` for scripted use.
+
 ### Added — Slice E: dfm_preflight + kernelcad-shopcheck skill
 
 - `dfm_preflight` MCP tool: vendor-parameterized shop preflight against public

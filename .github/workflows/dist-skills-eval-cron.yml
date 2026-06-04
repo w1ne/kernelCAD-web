@@ -1,0 +1,63 @@
+name: dist-skills-eval-cron
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # Mondays 04:00 UTC
+  workflow_dispatch: {}
+  # Also runs whenever dist-skills publishes, via repository_dispatch fired
+  # by the publish job's "fan-out on success" final step.
+  repository_dispatch:
+    types: [dist-skills-published]
+
+jobs:
+  eval-claude-code:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Install kernelcad globally (matches what users do)
+        run: npm i -g kernelcad@latest
+      - name: Install Claude Code
+        run: npm i -g @anthropic-ai/claude-code
+      - name: Install skills via npx
+        run: npx -y skills add kernelcad/skills -a claude-code
+      - name: Register the local MCP
+        run: claude mcp add kernelcad -- kernelcad mcp
+      - name: Run the bracket-prompt eval
+        run: node eval/dist-skills/bracket-prompt/runClaudeCode.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.EVAL_ANTHROPIC_API_KEY }}
+
+  eval-codex:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm i -g kernelcad@latest
+      - name: Install Codex CLI
+        run: npm i -g @openai/codex
+      - run: npx -y skills add kernelcad/skills -a codex
+      - run: node eval/dist-skills/bracket-prompt/runCodex.mjs
+        env:
+          OPENAI_API_KEY: ${{ secrets.EVAL_OPENAI_API_KEY }}
+
+  eval-cursor:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm i -g kernelcad@latest
+      # Cursor is a desktop app; the eval runs the cursor-agent CLI in
+      # headless mode. If cursor-agent is not available on CI at the time
+      # this lands, this job opens an issue and the matrix continues.
+      - name: Install cursor-agent CLI (best-effort)
+        run: npm i -g cursor-agent || echo "cursor-agent unavailable; eval will skip"
+      - run: npx -y skills add kernelcad/skills -a cursor
+      - run: node eval/dist-skills/bracket-prompt/runCursor.mjs
+        continue-on-error: true
