@@ -13,8 +13,10 @@ interface InterferenceLike {
 
 /**
  * Pure mapping from oracle results to typed gate verdicts.
- * - Interference verdicts get margin = volumeMm3 and locus = `${partA}∩${partB}`,
- *   pairing each diagnostic with the overlap pair at the same index when available.
+ * - Interference verdicts are driven by `pairs` (where the CLI actually reports
+ *   the overlap), giving margin = volumeMm3 and locus = `${partA}∩${partB}`.
+ *   The CLI emits the overlap data in `pairs` with `diagnostics` empty, so we
+ *   must read `pairs` — not `diagnostics` — to surface the typed evidence.
  * - Evaluate verdicts get locus = diagnostic.featureId when present.
  * Extracted as a pure function so margin/locus population is unit-testable without the CLI.
  */
@@ -27,13 +29,25 @@ export function verdictsFromOracles(evaluateResult: EvaluateLike, interferenceRe
       verdicts.push({ gate: 'evaluate', ok: false, code: diag.code, message: diag.message, hint: diag.hint, locus: diag.featureId });
     }
   }
-  if (interferenceResult.diagnostics.length === 0) {
-    verdicts.push({ gate: 'interference', ok: interferenceResult.ok, message: interferenceResult.ok ? 'No part interferences detected.' : 'Interference detected.' });
+  if (interferenceResult.pairs.length > 0) {
+    // Real overlaps — one typed verdict per pair, carrying margin (mm³) and locus.
+    for (const pair of interferenceResult.pairs) {
+      verdicts.push({
+        gate: 'interference',
+        ok: false,
+        code: 'interference.overlap',
+        message: `${pair.partA} overlaps ${pair.partB} by ${Math.round(pair.volumeMm3)} mm³`,
+        margin: pair.volumeMm3,
+        locus: `${pair.partA}∩${pair.partB}`,
+      });
+    }
+  } else if (!interferenceResult.ok && interferenceResult.diagnostics.length > 0) {
+    // Failed without pair detail (e.g. a CLI exception) — surface the diagnostics.
+    for (const diag of interferenceResult.diagnostics) {
+      verdicts.push({ gate: 'interference', ok: false, code: diag.code, message: diag.message, hint: diag.hint });
+    }
   } else {
-    interferenceResult.diagnostics.forEach((diag, index) => {
-      const pair = interferenceResult.pairs[index];
-      verdicts.push({ gate: 'interference', ok: false, code: diag.code, message: diag.message, hint: diag.hint, margin: pair?.volumeMm3, locus: pair ? `${pair.partA}∩${pair.partB}` : undefined });
-    });
+    verdicts.push({ gate: 'interference', ok: interferenceResult.ok, message: interferenceResult.ok ? 'No part interferences detected.' : 'Interference detected.' });
   }
   return verdicts;
 }
