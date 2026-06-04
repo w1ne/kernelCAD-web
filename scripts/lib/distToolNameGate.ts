@@ -65,6 +65,19 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'snake_case', // appears literally in prose about naming convention
   // Common type-like tokens.
   'shape_info',
+  // Kinematic-tool parameter names (documented alongside the real tool
+  // names check_swept_collision / check_reachable / check_load_capacity,
+  // which DO resolve in the registry — these are their params, not calls).
+  'collision_tolerance_mm3',
+  'tip_link',
+  'target_position',
+  'target_orientation',
+  'prefer_solver',
+  'max_iterations',
+  'safety_factor_threshold',
+  // Referenced in sdformat prose only to state it does NOT exist as a tool
+  // ("There is no separate `validate_sdf` MCP tool") — not a tool call.
+  'validate_sdf',
 ]);
 
 export interface ToolNameHit {

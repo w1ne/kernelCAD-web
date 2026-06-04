@@ -62,6 +62,73 @@ describe('distGrepGate', () => {
     }
   });
 
+  it('allows legitimate sendcutsend vendor-integration references (quoted token / .com domain)', () => {
+    // SendCutSend is a manufacturing/laser-cut vendor the DFM/shopcheck skill
+    // integrates with, not a rival CAD tool. Quoted identifiers and the vendor
+    // domain must pass; only bare comparator-prose stays blocked.
+    const root = mkdtempSync(join(tmpdir(), 'kc-grep-vendor-'));
+    try {
+      mkdirSync(join(root, 'skills/kernelcad-shopcheck'), { recursive: true });
+      writeFileSync(
+        join(root, 'skills/kernelcad-shopcheck/SKILL.md'),
+        "---\nname: kernelcad-shopcheck\ndescription: dfm\n---\n" +
+          "await mcp.dfm_preflight({ vendor: 'sendcutsend' });\n",
+      );
+      writeFileSync(
+        join(root, 'skills/kernelcad-shopcheck/rules.json'),
+        '{\n  "sendcutsend": {\n    "vendor": "sendcutsend",\n' +
+          '    "url": "https://sendcutsend.com/materials/"\n  }\n}\n',
+      );
+      const r = runGrepGate(root);
+      expect(r.ok).toBe(true);
+      expect(r.hits).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('still flags bare comparator-prose use of sendcutsend (not the vendor token)', () => {
+    for (const prose of ['Like SendCutSend.', 'Inspired by sendcutsend', 'use sendcutsend instead']) {
+      const root = mkdtempSync(join(tmpdir(), 'kc-grep-vendor-bad-'));
+      try {
+        writeFileSync(join(root, 'README.md'), `# kernelCAD\n\n${prose}\n`);
+        const r = runGrepGate(root);
+        expect(r.ok).toBe(false);
+        expect(r.hits.some((h) => h.match === 'sendcutsend')).toBe(true);
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    }
+  });
+
+  it('allows MoveIt inside the URDF / MoveIt / ROS interop-porting list, blocks bare prose', () => {
+    // MoveIt is a robotics-ecosystem tool the kinematic skill helps authors
+    // port FROM (alongside URDF / ROS), not a rival CAD tool. The slash-list
+    // porting idiom must pass; bare comparator-prose stays blocked.
+    const ok = mkdtempSync(join(tmpdir(), 'kc-grep-moveit-ok-'));
+    try {
+      writeFileSync(
+        join(ok, 'SKILL.md'),
+        'Authors porting code from URDF / MoveIt / ROS must convert radians.\n',
+      );
+      expect(runGrepGate(ok).ok).toBe(true);
+    } finally {
+      rmSync(ok, { recursive: true, force: true });
+    }
+
+    for (const prose of ['Like MoveIt.', 'Inspired by MoveIt for IK']) {
+      const bad = mkdtempSync(join(tmpdir(), 'kc-grep-moveit-bad-'));
+      try {
+        writeFileSync(join(bad, 'README.md'), `${prose}\n`);
+        const r = runGrepGate(bad);
+        expect(r.ok).toBe(false);
+        expect(r.hits.some((h) => h.match === 'moveit')).toBe(true);
+      } finally {
+        rmSync(bad, { recursive: true, force: true });
+      }
+    }
+  });
+
   it('also scans .claude-plugin/plugin.json, harness/, and CHANGELOG.md', () => {
     const root = mkdtempSync(join(tmpdir(), 'kc-grep-paths-'));
     try {

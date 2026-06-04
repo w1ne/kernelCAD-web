@@ -41,7 +41,16 @@ const BLOCKLIST: ReadonlyArray<BlocklistEntry> = [
   { pattern: /\bonshape\b/i, label: 'onshape' },
   { pattern: /fusion\s*360/i, label: 'fusion 360' },
   { pattern: /\bfusion360\b/i, label: 'fusion360' },
-  { pattern: /\bmoveit\b/i, label: 'moveit' },
+  // moveit is ALSO a robotics-ecosystem tool that the kinematic skill helps
+  // authors port code FROM (alongside URDF / ROS), in the same way gazebo is
+  // the ecosystem we export TO. Allow the interop-porting list idiom:
+  //   `URDF / MoveIt / ROS`   (slash-separated ecosystem list — porting note)
+  // Flag comparator-prose: a bare `MoveIt` not adjacent to a `/` list
+  // separator (e.g. "Like MoveIt.").
+  {
+    pattern: /(?<!\/\s)\bmoveit\b(?!\s*\/)/i,
+    label: 'moveit',
+  },
   // gazebo is also part of the `sdf-gazebo` format token and used as
   // the name of the robotics ecosystem we export TO (`Gazebo SDFormat`,
   // `Gazebo SDF`). Flag comparator-prose but allow:
@@ -52,7 +61,18 @@ const BLOCKLIST: ReadonlyArray<BlocklistEntry> = [
     pattern: /(?<!sdf-)\bgazebo\b(?!\s+SDF(?:ormat)?)/i,
     label: 'gazebo',
   },
-  { pattern: /sendcutsend/i, label: 'sendcutsend' },
+  // sendcutsend is ALSO the identifier of a manufacturing/laser-cut VENDOR
+  // that the DFM/shopcheck skill integrates with (it is not a rival CAD
+  // tool). Allow legitimate integration references:
+  //   `'sendcutsend'` / `"sendcutsend"`  (quoted vendor token: config value,
+  //                                        JSON key, catalog vendor id)
+  //   `sendcutsend.com`                   (vendor source/domain URL)
+  // Flag comparator-prose: a bare, unquoted `SendCutSend` not used as an
+  // identifier or domain (e.g. "Like SendCutSend.").
+  {
+    pattern: /(?<!['"])\bsendcutsend\b(?!\.com)/i,
+    label: 'sendcutsend',
+  },
   { pattern: /step\.parts/i, label: 'step.parts' },
   { pattern: /earthtojake/i, label: 'earthtojake' },
   // skills.sh is banned as a comparator-prose reference, NOT the CLI.
