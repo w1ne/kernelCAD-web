@@ -172,3 +172,43 @@ describe('runClosedLoop best-of-N', () => {
     expect(result.status).toBe('no_script');
   });
 });
+
+describe('runClosedLoop best-of-N invariants', () => {
+  it('candidates unset → single-sample path unchanged (no best_of_n event)', async () => {
+    const events: import('./types.js').ClosedLoopEvent[] = [];
+    const { generate } = scriptedGenerate([fence('cube(10)')]);
+    const result = await runClosedLoop({
+      prompt: 'make a cube',
+      generate,
+      gateRunner: scriptedGate([PASS_REPORT]),
+      extractScript,
+      writeScript,
+      onEvent: (e) => events.push(e),
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') expect(result.attempts).toBe(1);
+    expect(events.some((e) => e.type === 'best_of_n')).toBe(false);
+    expect(result.tokensIn).toBe(1); // exactly one generation
+  });
+
+  it('the oracle score never appears in any repair prompt', async () => {
+    const SENTINEL = 0.7777;
+    const repairPrompts: string[] = [];
+    const { generate } = bestOfNGenerate([fence('v0a'), fence('v1bb')], [fence('fixed')]);
+    await runClosedLoop({
+      prompt: 'make it',
+      generate,
+      gateRunner: scriptedGate([FAIL_REPORT, FAIL_REPORT, PASS_REPORT]),
+      extractScript,
+      writeScript,
+      candidates: 2,
+      maxAttempts: 3,
+      scoreCandidate: async () => SENTINEL,
+      onEvent: (e) => {
+        if (e.type === 'repair') repairPrompts.push(e.prompt);
+      },
+    });
+    expect(repairPrompts.length).toBeGreaterThan(0);
+    for (const p of repairPrompts) expect(p).not.toContain(String(SENTINEL));
+  });
+});
