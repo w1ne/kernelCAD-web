@@ -21,11 +21,9 @@ Not for: assemblies with closed kinematic loops (4-bar linkages, parallel grippe
 const arm = assembly('two-link');
 const base = arm.part('base', box(30, 30, 8), { density: 2700 });
 const link = arm.part('link', box(80, 12, 8), { density: 2700 });
-arm.revolute('shoulder', base, link, {
-  axis: [0, 0, 1],
-  origin: [0, 0, 8],
-  limitsDeg: [-90, 90],
-});
+base.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 8] }, axis: [0, 0, 1] });
+link.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('shoulder', 'base.shoulderAxis', 'link.shoulderAxis', 'revolute', { limitsDeg: [-90, 90] });
 return arm.model();
 ```
 

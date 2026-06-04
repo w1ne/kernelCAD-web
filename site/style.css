@@ -115,9 +115,13 @@ body {
 .install:hover { background: #0F1E33; }
 .install-secondary { background: #12233A; }
 .install-secondary:hover { background: #162B47; }
+.install-link { text-decoration: none; color: var(--code-text); }
+.install-link .install-command { color: var(--code-text); font-weight: 500; }
+.install-link .copy { color: var(--copper); font-size: 13px; padding-left: 8px; border-left: 1px solid #1F2A3D; }
 .install-command { overflow-wrap: anywhere; line-height: 1.45; }
 .install .prompt { color: var(--copper); }
 .install .copy { color: var(--ink-faint); font-size: 11px; padding-left: 8px; border-left: 1px solid #1F2A3D; }
+.install-note { max-width: 620px; margin: 8px 0 0; color: var(--ink-faint); font-size: 12px; line-height: 1.5; }
 
 /* DEMO */
 .hero-proof { min-width: 0; }

@@ -1,4 +1,27 @@
 // src/backends/occt/edgeSelection.ts
+//
+// Lowerer-side selector dispatch. Every feature lowerer (fillet / chamfer /
+// shell / hole / cutout / bend) reaches this module through `pickFace` and
+// `pickEdges`. The two entry-points share one dispatch convention on the
+// input ref's `kind`:
+//
+//   FaceRef.kind === 'queryDsl' / EdgeRef.kind === 'queryDsl'
+//     → Q8 path: reconstruct a Query<T> value from the serialized AST and
+//       route through the Q3 evaluator (`evaluate` / `evaluateUnique`).
+//       The resolver returns the entity's OCCT face/edge handle directly;
+//       no fallback to the legacy lineage / canonical / label paths.
+//
+//   FaceRef.kind === 'canonical' | 'label' | 'query' | 'created' | ...
+//     → Legacy path: existing resolveFaceRef / sketch-segment / metadata
+//       lookups (see findFaceLabelInMetadata + labelToEdgeQuery below).
+//       Untouched by Q8 — strings-as-sugar (kc.box(...).hole('top', ...))
+//       still routes through the canonical/label branches exactly as
+//       before, byte-for-byte.
+//
+// Both surface syntaxes (Query value and @kc/@kcq strings) bottom out on
+// the same OCCT entity through different but parallel paths; the
+// strings-as-sugar contract in spec §D0.1 (c) is preserved.
+
 import type { Edge, Face } from 'replicad';
 import type { FeatureRecord, FaceLabelsMap } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -15,6 +38,9 @@ import {
   findFallbackSnapshot,
   resolveBySnapshot,
 } from '../../naming/selectorParser';
+import { evaluate } from '../../naming/queryEvaluator';
+import { makeQuery } from '../../naming/query';
+import { isKernelError } from '../../../shared/intent/kernelError';
 
 // Bounding-box face matching tolerance (mm). base.boundingBox() returns gap-corrected values, so this can be tight.
 const TOL = 1e-4;
@@ -33,8 +59,33 @@ export function pickEdges(
   base: OcctBackend,
   records: readonly FeatureRecord[] | undefined,
 ): PickEdgesResult {
-  // 1. Edges by query / segment(s) — resolve via edgeQueries.ts
+  // Q8 — Edge selector is a Query DSL value: dispatch to the evaluator.
   const edgesRef = record.inputs.edges;
+  if (edgesRef && edgesRef.kind === 'edge' && edgesRef.ref.kind === 'queryDsl') {
+    return resolveQueryDslEdges(record, base, edgesRef.ref, records);
+  }
+  // Q8 — Face-bound edge selector via Query DSL ({ face: kc.q.face(...) }
+  // wrapper or bare kc.q.face(...) handed to .fillet({face})).
+  const faceRefForEdges = record.inputs.face;
+  if (faceRefForEdges && faceRefForEdges.kind === 'face' && faceRefForEdges.ref.kind === 'queryDsl') {
+    const faceResult = resolveQueryDslFace(record, base, faceRefForEdges.ref, records);
+    if ('error' in faceResult) return faceResult;
+    const faceEdges = collectFaceEdges([faceResult.face]);
+    if (faceEdges.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.selection.no-match',
+          featureId: record.id,
+          severity: 'error',
+          message: `Query DSL face ref resolved to a face with no edges.`,
+          hint: 'Inspect available faces with list_faces, or relax the Query.',
+        },
+      };
+    }
+    return faceEdges;
+  }
+  // 1. Edges by query / segment(s) — resolve via edgeQueries.ts
   if (edgesRef && edgesRef.kind === 'edge') {
     const result = resolveEdgesRef(record, base, edgesRef.ref);
     if ('error' in result) return result;
@@ -556,6 +607,17 @@ export function pickFace(
     };
   }
 
+  // Q8 — Query DSL face ref. Reconstruct the Query value from the serialized
+  // AST and route through the Q3 evaluator. The evaluator throws structured
+  // query.* diagnostics on miss (query.empty / query.unknown-label / ...) —
+  // wrap them in CompilerDiagnostic so the lowerer's normal error pipeline
+  // surfaces them.
+  if (faceRef.ref.kind === 'queryDsl') {
+    const r = resolveQueryDslFace(record, base, faceRef.ref, records);
+    if ('error' in r) return r;
+    return r.face;
+  }
+
   // 1. FaceRef.query → resolve via resolveFaceQuery, take first match.
   if (faceRef.ref.kind === 'query') {
     const faces = resolveFaceQuery(base, faceRef.ref.query);
@@ -1071,3 +1133,171 @@ function extractExtrudeDepth(records: readonly FeatureRecord[], record: FeatureR
   if (!base || base.kind !== 'extrude') return null;
   return base.params.depth?.evaluated ?? null;
 }
+
+// ─── Q8: Query DSL dispatchers ────────────────────────────────────────────────
+
+type QueryDslFaceRef = Extract<
+  import('../../../shared/intent/types').FaceRef,
+  { kind: 'queryDsl' }
+>;
+
+type QueryDslEdgeRef = Extract<
+  import('../../../shared/intent/types').EdgeRef,
+  { kind: 'queryDsl' }
+>;
+
+/** Q8 — resolve a Query DSL face ref against the lowered backend by
+ *  evaluating its AST through the Q3 evaluator. Returns the matched
+ *  replicad Face wrapper or a CompilerDiagnostic on miss.
+ *
+ *  Convention: face-features (shell / hole / cutout) consume exactly one
+ *  face, so the dispatcher resolves to the first matched entity when
+ *  multiple match. The Query evaluator emits canonical-ordered results
+ *  (D0.5 (a)) so the choice is deterministic across runs. Multi-face
+ *  consumers (future `holes`, multi-face shell) will resolve through a
+ *  list-shaped sibling. */
+function resolveQueryDslFace(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: QueryDslFaceRef,
+  records: readonly FeatureRecord[] | undefined,
+): { face: Face } | { error: CompilerDiagnostic } {
+  const query = makeQuery<unknown>(
+    ref.queryTarget,
+    ref.queryAst,
+    ref.lenient,
+  );
+  try {
+    const entities = evaluate(query, { backend: base, featureId: record.id, records });
+    if (entities.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'query.empty',
+          featureId: record.id,
+          severity: 'error',
+          message: `Query DSL face ref resolved to zero faces on the input shape.`,
+          hint: 'Inspect available faces with list_faces / evaluate_query, or relax the Query (remove a filter, or annotate with .asLenient()).',
+        },
+      };
+    }
+    // Resolve the first canonical-ordered entity to its replicad Face.
+    const e = entities[0];
+    try {
+      return { face: faceByHash(base, e.handle) };
+    } catch {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'feature.face-ref.not-resolvable',
+          featureId: record.id,
+          severity: 'error',
+          message: `Query DSL face ref resolved to entity '${e.ref}' but the underlying face hash '${e.handle}' is not present on the lowered backend.`,
+          hint: 'The Query targeted a face that survived lineage but not topology — try a tighter Query (.and(closestTo(...))) or rebuild against the current scene.',
+        },
+      };
+    }
+  } catch (e) {
+    return queryDiagnosticToCompilerError(record, e, 'face');
+  }
+}
+
+/** Q8 — resolve a Query DSL edge ref against the lowered backend. Returns
+ *  the matched replicad Edge wrappers (one per resolved entity) or a
+ *  CompilerDiagnostic on miss. Edge-branch of the Query evaluator currently
+ *  surfaces `query.unsupported-entity-type` (per Finding #33); this
+ *  dispatcher passes that through unchanged so the agent gets the
+ *  canonical "edge branch not yet wired" diagnostic. */
+function resolveQueryDslEdges(
+  record: FeatureRecord,
+  base: OcctBackend,
+  ref: QueryDslEdgeRef,
+  records: readonly FeatureRecord[] | undefined,
+): PickEdgesResult {
+  const query = makeQuery<unknown>(
+    ref.queryTarget,
+    ref.queryAst,
+    ref.lenient,
+  );
+  try {
+    const entities = evaluate(query, { backend: base, featureId: record.id, records });
+    if (entities.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'query.empty',
+          featureId: record.id,
+          severity: 'error',
+          message: `Query DSL edge ref resolved to zero edges on the input shape.`,
+          hint: 'Inspect available edges with list_edges / evaluate_query, or relax the Query.',
+        },
+      };
+    }
+    // Edge entities carry the OCCT edge hash on `handle`; look up the
+    // matching replicad Edge wrapper. Edge-branch wiring is the v2
+    // expansion (Finding #33); for now we surface a not-yet-wired
+    // diagnostic if the entity kind isn't face (face-of-edges is handled
+    // by the {face: Query} wrapper path in pickEdges).
+    const allEdges = (base.getReplicadShape() as unknown as { edges: Edge[] }).edges;
+    const out: Edge[] = [];
+    for (const e of entities) {
+      if (e.kind === 'edge') {
+        const matchByHash = allEdges.find((edge) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const h = ((edge as any).wrapped ?? edge as any).HashCode(2147483647).toString(16);
+          return h === e.handle;
+        });
+        if (matchByHash) out.push(matchByHash);
+      }
+    }
+    if (out.length === 0) {
+      return {
+        error: {
+          target: 'export-occt',
+          code: 'query.unsupported-entity-type',
+          featureId: record.id,
+          severity: 'error',
+          message: `Query DSL edge ref resolved to ${entities.length} entities but none are edge-kind on the lowered backend.`,
+          hint: 'The Query evaluator face-branch is fully wired; edge-branch wiring lands once the per-lowerer feature-stamp records edge lineage (cumulative finding #33). Use kc.q.face(...) plus { face: query } on .fillet for now.',
+        },
+      };
+    }
+    return out;
+  } catch (e) {
+    const diag = queryDiagnosticToCompilerError(record, e, 'edge');
+    if ('error' in diag) return diag;
+    // Shouldn't reach here — queryDiagnosticToCompilerError always returns error.
+    return { error: diag as unknown as CompilerDiagnostic };
+  }
+}
+
+/** Map a thrown Query evaluator KernelError (query.*) into the lowerer's
+ *  CompilerDiagnostic envelope so the rest of the lowering pipeline
+ *  surfaces it through the same channel as feature.* errors. */
+function queryDiagnosticToCompilerError(
+  record: FeatureRecord,
+  err: unknown,
+  consumerKind: 'face' | 'edge',
+): { error: CompilerDiagnostic } {
+  const code = isKernelError(err)
+    ? (err.code as string)
+    : 'query.empty';
+  const message = err instanceof Error ? err.message : String(err);
+  const hint = isKernelError(err) && err.hint
+    ? err.hint
+    : `The Query DSL ${consumerKind} ref failed to resolve. Inspect available entities with list_${consumerKind === 'face' ? 'faces' : 'edges'} / evaluate_query.`;
+  return {
+    error: {
+      target: 'export-occt',
+      // Cast to a known CompilerDiagnostic code shape. The registry covers
+      // every query.* and feature.* code (DIAGNOSTIC_CODES gate); the cast
+      // here keeps the helper agnostic to the precise union.
+      code: code as CompilerDiagnostic['code'],
+      featureId: record.id,
+      severity: 'error',
+      message,
+      hint,
+    },
+  };
+}
+

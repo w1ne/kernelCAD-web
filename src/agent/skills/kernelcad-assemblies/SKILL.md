@@ -11,7 +11,7 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 
 `kernelcad validate <file.kcad.ts>` runs the assembly validator over the script's Scene. Three checks today:
 
-- **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.fixed(...)` or `arm.revolute(...)`.
+- **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.mate(..., 'fastened')` or `arm.mate(..., 'revolute', ...)`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
 
@@ -21,11 +21,13 @@ Exit codes: 0 (solved) / 1 (warnings) / 2 (errors). Pipe-friendly:
 kernelcad validate so100.kcad.ts && echo "fits"
 ```
 
-Authoring rule: every `arm.part(name, shape)` should also appear as either the parent or child of at least one `arm.fixed(...)` / `arm.revolute(...)` / `arm.prismatic(...)` / `arm.ball(...)` call. Raw `at: [x, y, z]` placement without a joint produces a working geometric output but fails validation — the agent has authored a position but not a connection.
+Authoring rule: every `arm.part(name, shape)` should also appear in at least one `arm.mate(name, 'a.connector', 'b.connector', kind, opts)` call (kind ∈ `fastened` | `revolute` | `prismatic` | `ball`). Raw `at: [x, y, z]` placement without a mate produces a working geometric output but fails validation — the agent has authored a position but not a connection.
 
 ## Components from STEP files
 
 When a real component (servo, bearing, gripper jaw, fastener) has a vendor-published STEP file, prefer `lib.fromSTEP(path)` over hand-authoring the silhouette from `box()` / `cylinder()`. Geometric fidelity matches the real part — bolt patterns, shaft positions, body cutouts — and the assembly tree carries that same fidelity through to renders, exports, and clash detection.
+
+> For standard hardware (M-series fasteners, deep-groove ball bearings, NEMA steppers, pin headers, JST-XH connectors), prefer the bundled parts catalog over hand-authored connectors on a `lib.fromSTEP` import: load `kernelcad-parts`. The catalog's pre-shipped connector frames (`head-bearing`, `thread-tip`, `mating-face`, `inner-bore`, etc.) are part of the shipped record, so mates work without any `partRef.connector(...)` setup. The bracket-side `bolt-holes-N` auto-rule pairs with this — any `.holes(...)` feature emits matching frames.
 
 ```typescript
 const servo = (await lib.fromSTEP('parts/sts3215.step')).color('servo');
@@ -51,13 +53,7 @@ const link = arm.part('link', box(80, 12, 8), {
   connect: { connector: 'root', to: base.connector('shoulder') },
 });
 
-arm.connect('shoulder-fixed', base.connector('shoulder'), link.connector('root'));
-
-arm.revolute('shoulder', base, link, {
-  axis: [0, 0, 1],
-  origin: [0, 0, 8],
-  limitsDeg: [-90, 90],
-});
+arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90, 90] });
 
 // Agent-natural: return the Scene directly. The CLI / studio walks .parts,
 // the renderer paints per-part role colors, and STEP export uses
@@ -87,11 +83,13 @@ interface Assembly {
     density?: number;
   }): AssemblyPartRef;
   connect(name: string, a: AssemblyConnectorRef, b: AssemblyConnectorRef): AssemblyConnectRef;
-  revolute(name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: {
-    axis: [number, number, number];
-    origin: [number, number, number];
-    limitsDeg?: [number, number];
-  }): AssemblyJointRef;
+  mate(
+    name: string,
+    a: ConnectorRef,
+    b: ConnectorRef,
+    kind: 'fastened' | 'revolute' | 'prismatic' | 'ball' | 'cylindrical' | 'planar' | 'pin_slot',
+    opts?: { limitsDeg?: [number, number]; limitsMm?: [number, number]; pose?: Editable<number> | [number, number, number] },
+  ): AssemblyMateRef;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }
@@ -151,22 +149,53 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 ## Posing a kinematic chain
 
-`assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you both render the posed assembly and query per-part world transforms. `assembly.solvedModel(poses)` returns a posed `Scene` directly — iterate `.parts`, call `.toCompound()` for STEP, or `.toUnion()` only if a single fused Shape is required (lossy antipattern). Pose values accept `Editable<number>` per joint kind:
+`assembly.solve(poses)` returns a `SolvedKinematics` handle that lets you both render the posed assembly and query per-part world transforms. `assembly.solvedModel(poses)` returns a posed `Scene` directly — iterate `.parts`, call `.toCompound()` for STEP, or `.toUnion()` only if a single fused Shape is required (lossy antipattern). Pose values accept `Editable<number>` per mate kind:
 
-| Joint primitive | Pose value type |
+| Mate kind | Pose value type |
 |---|---|
-| `arm.fixed(name, parent, child, { origin? })` | (none — accepts no pose) |
-| `arm.revolute(name, parent, child, { axis, origin, limitsDeg? })` | `number` — degrees |
-| `arm.prismatic(name, parent, child, { axis, origin, limitsMm? })` | `number` — mm |
-| `arm.ball(name, parent, child, { origin, limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
+| `arm.mate(name, a, b, 'fastened')` | (none — accepts no pose) |
+| `arm.mate(name, a, b, 'revolute', { limitsDeg? })` | `number` — degrees |
+| `arm.mate(name, a, b, 'prismatic', { limitsMm? })` | `number` — mm |
+| `arm.mate(name, a, b, 'ball', { limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
 
-Joint origins are in the **parent part's local frame** (URDF/MuJoCo convention). Multi-joint chains compose correctly; the FK tree-walk handles N joints.
+Connector origins are in their owning **part's local frame** (URDF/MuJoCo convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
+
+**Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
+
+Concretely: if the shoulder joint is at world `(0, 0, 30)` and the lower arm has length 220 mm extending along +X from the shoulder, author the lower arm at part-local frame *centered on the joint*:
 
 ```ts
-arm.revolute('base-yaw',       base,     shoulder, { axis: [0, 0, 1], origin: [45, 35, 8],  limitsDeg: [-120, 120] });
-arm.revolute('shoulder-pitch', shoulder, elbow,    { axis: [0, 1, 0], origin: [0, 0, 90],   limitsDeg: [-45, 135] });
-arm.revolute('elbow-pitch',    elbow,    wrist,    { axis: [0, 1, 0], origin: [110, 0, 0],  limitsDeg: [-120, 120] });
-arm.fixed   ('wrist-tool',     wrist,    tool,     { origin: [75, 0, 0] });
+// ✅ Correct — lower arm in its own local frame; rest position comes from the connector origin.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 0));
+base.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 30] }, axis: [0, -1, 0] });
+lower.connector('shoulderAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, -1, 0] });
+arm.mate('shoulder', 'base.shoulderAxis', 'lower.shoulderAxis', 'revolute', { limitsDeg: [0, 110] });
+
+// ❌ Wrong — translating to the world rest position `(110, 0, 30)` puts a SHOULDER_Z offset
+//    into the part-local frame, which the FK doubles up when the mate poses.
+const lower = arm.part('lower', box(220, 24, 18, true).translate(110, 0, 30));
+```
+
+At rest (joint angle 0), worldT for `lower` equals `T(0, 0, 30)` (the joint origin in parent's frame), so part-local vertex `(110, 0, 0)` maps to world `(110, 0, 30)` — exactly what you wanted. Authoring the part with `.translate(110, 0, 30)` would put it at world `(110, 0, 60)` instead, and any non-zero joint angle would smear that compounding error visibly across the render.
+
+The same convention applies to child-of-child joints: the elbow's parent-side connector origin is expressed in the lower arm's part-local frame (`[220, 0, 0]` — at the lower arm's tip, NOT `[220, 0, 30]`).
+
+```ts
+base.connector('baseYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [45, 35, 8] }, axis: [0, 0, 1] });
+shoulder.connector('baseYawAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+arm.mate('base-yaw', 'base.baseYawAxis', 'shoulder.baseYawAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+shoulder.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 90] }, axis: [0, 1, 0] });
+elbow.connector('shoulderPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('shoulder-pitch', 'shoulder.shoulderPitchAxis', 'elbow.shoulderPitchAxis', 'revolute', { limitsDeg: [-45, 135] });
+
+elbow.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [110, 0, 0] }, axis: [0, 1, 0] });
+wrist.connector('elbowPitchAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+arm.mate('elbow-pitch', 'elbow.elbowPitchAxis', 'wrist.elbowPitchAxis', 'revolute', { limitsDeg: [-120, 120] });
+
+wrist.connector('wristToolFrame', { type: 'frame', origin: { kind: 'vec3', value: [75, 0, 0] } });
+tool.connector('wristToolFrame', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+arm.mate('wrist-tool', 'wrist.wristToolFrame', 'tool.wristToolFrame', 'fastened');
 ```
 
 **Snapshot vs reactive:** `arm.solve(poses)` resolves pose ParamRefs at call time and returns a frozen `SolvedKinematics` handle (call `.toScene()` for the snapshot Scene). `arm.solvedModel(poses)` is captured as a feature and returns a `Scene`; param updates trigger reactive re-pose → a fresh frozen Scene is emitted to the renderer. Both Scenes are frozen; reactivity always lives on the capture-time Assembly. Use `solve` to read transforms once; use `solvedModel` for editable studio renders.
@@ -203,7 +232,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 
 ## Connectors and mates
 
-v0.6 adds a mate vocabulary on top of the v0.5 kinematic-joint API. Connectors are named coordinate frames embedded in a part; mates are typed relationships between two connectors. The validator and solver treat the mate graph as the source of truth for assembly topology; the legacy `arm.fixed/.revolute/.prismatic/.ball(...)` helpers keep working untouched.
+Mates are the canonical assembly-topology vocabulary. Connectors are named coordinate frames embedded in a part; mates are typed relationships between two connectors. The validator and solver treat the mate graph as the source of truth for assembly topology. (The v0.5 `arm.fixed/.revolute/.prismatic/.ball(...)` helpers were removed in G0 — use the mate API exclusively.)
 
 ### Declaring connectors — `partRef.connector(name, opts)`
 
@@ -344,7 +373,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 
 `kernelcad evaluate` flips the default to `'error'` via the `KERNELCAD_VALIDATE_DEFAULT=error` env var, so authoring scripts surface malformed assemblies as CLI failures.
 
-Under `validate:'error'`, kinematic grounding gates fire — mounting-hole consistency, joint-axis binding, declared-load capacity.
+Under `validate:'error'`, kinematic grounding gates fire — mounting-hole consistency, joint-axis binding, declared-load capacity, joint visual exposure.
 
 ```typescript
 const scene = await arm.solvedModel({}, { validate: 'warn' });
@@ -365,13 +394,15 @@ arm.part('base', base).connector('mount', { type: 'frame', origin: { kind: 'topo
 arm.part('bracket', bracket).connector('mount', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
 arm.mate('screw', 'base.mount', 'bracket.mount', 'fastened');
 
-// Throws assembly.mounting-hole.mismatch with hint:
+// Emits assembly.mounting-hole.mismatch (info — advisory; the merge gate is
+// mechanism.disconnect under the physics-grounded loop) with hint:
 //   "invalid-args.assembly.mounting-hole-mismatch — mate 'screw' (fastened) expects
 //    compatible hole features on both bound faces. Side 'base.mount': Ø5 mm through.
 //    Side 'bracket.mount': Ø6 mm through. Adjust the diameter or depth on the side
 //    that does not match, or change the connector origin to a face that already
 //    exposes a matching hole."
-await arm.solvedModel({}, { validate: 'error' });
+const scene = await arm.solvedModel({}, { validate: 'error' });
+// scene.warnings contains the assembly.mounting-hole.mismatch (severity 'info')
 ```
 
 The hint names the mate, both connectors, both observed hole specs, and the two recovery moves. The fix is to make `bracket`'s hole `diameter: 5` (matching the base) — one edit, no further introspection needed.
@@ -577,6 +608,39 @@ When a user asks for a robot arm, hand, gripper, linkage, or other physical mech
 
 For robot arms specifically, preserve at least these interfaces between repair attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate, wrist/grip mate, tool-tip connector, and fingertip connectors. Track the tool-tip workspace and gripper aperture so the review proves movement, not just static contact.
 
+## Mechanism delivery — non-bypassable
+
+A mechanism build is **not deliverable** if any of these fail. No `ignore[]` workarounds for joint pairs; no shipping with a render that looks right while the assembly is broken.
+
+1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
+2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction.
+3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
+4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
+5. (Opt-in) `kernelcad validate --include-interference --include-physics` adds the MuJoCo-based physics gate. Two extra failure codes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose) and `mechanism.drops-on-release` (joints drift > 5° or bodies translate > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / declared actuator fail this gate; single-body springs fastened to one arm don't help — see issue #361 (closed-loop tendon API).
+
+If any of these fail, iterate the design until they pass. Do not widen `ignore[]`. Do not ship.
+
+### Use `joint.clevis(...)` for revolute joints — do not hand-roll forks
+
+The `kc.joint.clevis({...})` primitive builds the canonical revolute-joint hardware (two fork plates on the parent, one tongue on the child, a pin drilled through both knuckles) guaranteed correct by construction: bridge tabs outside the tongue's swing envelope, through-hole drilled in a single subtract after the fork and tongue are unioned in, and pin cap heads flush against the outer fork faces.
+
+```ts
+const shoulder = joint.clevis({
+  parentBody: baseBody,
+  childBody: lowerBeam,
+  axis: [0, -1, 0],
+  pivotParent: [0, 0, COLUMN_TOP_Z],
+  pivotChild: [0, 0, 0],
+  limitsDeg: [-10, 110],
+  style: { knuckleR: 14, forkGapY: 18, tongueY: 14, plateT: 4, pinR: 3.5 },
+});
+
+// shoulder.parentGeometry / .childGeometry are the bodies (assign to each part)
+// shoulder.parentConnector / .childConnector carry { origin, axis } for the mate
+```
+
+See `kernelcad-kinematic/SKILL.md` for the full pattern and the lamp-class worked example (`examples/kinematic/luxo-lamp.kcad.ts`).
+
 ## Diagnostic codes
 
 | Code | Source |
@@ -601,10 +665,57 @@ For robot arms specifically, preserve at least these interfaces between repair a
 | `assembly.visual.review-incomplete` | design_loop — missing screenshot/findings/checklist |
 | `assembly.visual.review-evidence-weak` | design_loop — accepted visual checklist text lacks concrete evidence |
 | `assembly.visual.review-check-failed` | design_loop — a visual checklist check failed |
-| `assembly.joint-axis.unbound` | solvedModel({validate:'error'}) — revolute/prismatic/cylindrical axis floats outside both bound parts' BREP |
+| `assembly.joint-axis.unbound` | solvedModel — advisory (`info`): revolute/prismatic/cylindrical axis floats outside both bound parts' BREP. Merge gate: `mechanism.dof-mismatch`. |
 | `assembly.joint.load-exceeded` | solvedModel({validate:'error'}, { externalLoads }) — declared `maxLoad` exceeded by external force/torque |
-| `assembly.mounting-hole.mismatch` | solvedModel({validate:'error'}) — `fastened` mate's two bound faces lack compatible hole features |
+| `assembly.mounting-hole.mismatch` | solvedModel — advisory (`info`): `fastened` mate's two bound faces lack compatible hole features. Merge gate: `mechanism.disconnect`. |
+| `assembly.joint.not-visible` | solvedModel({validate:'error'}) — revolute joint's fork+tongue+pin collapses into one visual block (fork-plate gap < 15% of plate extent OR pin stickout < 1.0 × PIN_R). Hint payload carries actual gap ratio and pin-stickout numbers so the agent can widen FORK_GAP_Y / shrink TONGUE_Y / extend PIN_LEN directly. Microscale joints (combined bounding sphere < 5 mm) skip the gate. |
 | `assembly.workspace.unreachable` | solvedModel({validate:'error', posesGate:'envelope'}) — `arm.workspace(...)` declared target lies outside the connector's sampled pose-envelope AABB (minus toleranceMm). Severity is `info` when the gate runs without an envelope (declarations are inert until `posesGate:'envelope'`). AABB-only containment in v0.7 Slice 1; convex-hull check queued for Slice 2 |
+
+## Cookbook — Query DSL for assemblies
+
+Each snippet below ships as a runnable `.kcad.ts` file under `src/agent/skills/kernelcad-assemblies/cookbook/snippets/`. The smoke test at `tests/integration/mcp/queryCookbookSmoke.test.ts` evaluates every snippet on every CI run.
+
+### Q-S4 — Ownership filters and Part Queries
+
+In an assembly, every face / edge / vertex belongs to exactly one part. `q.ownedByPart(...)` narrows a face Query to a specific part without naming a topology by hand — the per-variant topology can shift while the part label stays stable.
+
+```typescript
+const arm = assembly('bracket-mount');
+arm.part('bracket', box(20, 20, 10, false, { faceLabels: { mount: 'top' } }));
+
+// "The bracket part."
+const bracket = q.part().and(q.withFeatureName('bracket'));
+
+// "Faces on the bracket part."
+const bracketFaces = q.face().and(q.ownedByPart(bracket));
+
+// "The bracket's mount face."
+const mountFace = q.face()
+  .and(q.ownedByPart(bracket))
+  .and(q.withLabel('mount'));
+```
+
+See `cookbook/snippets/Q-S4-ownership-and-part-queries.kcad.ts`.
+
+### Q-S5 — Connector Queries for mate-side targeting
+
+`q.connector(...)` composed with `q.ownedByPart(...)` and `q.withLabel(...)` is the canonical pattern for identifying a connector on a specific part by label. The Query value is a descriptor today; consumer integration on `arm.mate(...)` ships in a later slice, so the string form (`'partName.connectorName'`) remains the consumed surface in parallel.
+
+```typescript
+const baseSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('base'))))
+  .and(q.withLabel('mount'));
+
+const bracketSide = q.connector()
+  .and(q.ownedByPart(q.part().and(q.withFeatureName('bracket'))))
+  .and(q.withLabel('flange'));
+
+// Consume by string ref today; the Query value above describes the same
+// connector and round-trips through JSON for diagnostic use.
+arm.mate('attach', 'base.mount', 'bracket.flange', 'fastened');
+```
+
+See `cookbook/snippets/Q-S5-connector-queries.kcad.ts`.
 
 ## Verification gates
 

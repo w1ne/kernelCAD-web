@@ -138,7 +138,11 @@ export function validateMountingHoleConsistency(arm: Assembly): ValidatorDiagnos
     if (verdict.kind === 'ok') continue;
     out.push({
       code: 'assembly.mounting-hole.mismatch',
-      severity: 'error',
+      // Demoted to 'info' under the physics-grounded loop (P3,
+      // 2026-06-01): this is an authoring-time signal that the bound
+      // hole features don't match; the merge gate is
+      // mechanism.disconnect which fires under motion at validate-time.
+      severity: 'info',
       mateName: mate.name,
       partA: aSide.partName,
       partB: bSide.partName,

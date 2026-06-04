@@ -42,4 +42,24 @@ describe('resolve_topo_ref MCP tool (F-surface F2)', () => {
     if (r.ok) throw new Error('expected not-ok');
     expect(r.error).toMatch(/owner|name/);
   });
+
+  // Q8 — strings-as-sugar parity: the @kcq[...] Query DSL form also reaches
+  // resolve_topo_ref. Internally dispatches through the same evaluator that
+  // backs evaluate_query (expect: 'unique'); the agent sees a TopoResolveResult
+  // shape so prior agents that hardcode the ok/entity envelope keep working.
+  it('accepts @kcq[...] Query DSL ref via the evaluate-then-unique path', async () => {
+    const code = `return box(10, 10, 10);`;
+    const r = await resolveTopoRefTool({ code, ref: '@kcq[face(withLabel("top"))]' });
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error(`expected ok; got: ${r.error}`);
+    expect(r.entity?.kind).toBe('face');
+  });
+
+  it('surfaces query.over-determined when @kcq[...] matches multiple', async () => {
+    const code = `return box(10, 10, 10);`;
+    const r = await resolveTopoRefTool({ code, ref: '@kcq[face(everything(face))]' });
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error('expected not-ok');
+    expect(r.errorCode).toBe('query.over-determined');
+  });
 });

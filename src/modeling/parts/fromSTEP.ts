@@ -101,3 +101,60 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
   ctx.session.importedGeometry.set(shape.id, backend);
   return shape;
 }
+
+/**
+ * Lower an already-loaded STEP byte buffer onto a Shape. Used by the parts
+ * catalog resolver (Slice C) so the orchestrator can pass cached or bundled
+ * bytes without re-reading the disk.
+ *
+ * `sourceLabel` is used only for diagnostics / metadata.sourcePath; pass the
+ * absolute path or remote URL the bytes came from.
+ */
+export async function fromStepBytes(
+  ctx: FromSTEPContext,
+  bytes: Buffer,
+  sourceLabel: string,
+): Promise<Shape> {
+  if (!bytes || bytes.length === 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `lib.fetchPart: STEP bytes for ${sourceLabel} are empty.`,
+      undefined,
+      'parts.fetch.empty-bytes — re-fetch and try again.',
+    );
+  }
+  await initOcct();
+  const blob = new Blob([new Uint8Array(bytes)]);
+  let imported: replicad.AnyShape;
+  try {
+    imported = await replicad.importSTEP(blob);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new KernelError(
+      'feature.kernel-failed',
+      `lib.fetchPart: replicad failed to parse STEP for ${sourceLabel}: ${msg}`,
+      undefined,
+      'kernel-failed.lib.fetchPart.parse — file is not a valid STEP solid.',
+    );
+  }
+  if (
+    !imported ||
+    typeof (imported as { meshShape?: unknown }).meshShape !== 'function'
+  ) {
+    throw new KernelError(
+      'feature.kernel-failed',
+      `lib.fetchPart: ${sourceLabel} did not contain a 3D solid.`,
+      undefined,
+      'kernel-failed.lib.fetchPart.no-solid.',
+    );
+  }
+  const backend = new OcctBackend(imported as replicad.Shape3D);
+  const shape = ctx.session.createShape({
+    kind: 'importedStep',
+    params: {},
+    inputs: {},
+    metadata: { sourcePath: sourceLabel },
+  });
+  ctx.session.importedGeometry.set(shape.id, backend);
+  return shape;
+}

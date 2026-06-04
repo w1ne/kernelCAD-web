@@ -1,8 +1,9 @@
 // src/script-runtime/safeOutputPath.ts
 //
 // Conservative-by-default validation for MCP tool output_path arguments.
-// First file-write MCP tool (export_stl, rc.15) sets the precedent for
-// future writers (thumbnail, STEP-export, etc).
+// First file-write MCP tool (export_model, originally landed as export_stl
+// in rc.15) sets the precedent for future writers (thumbnail, STEP-export,
+// etc).
 //
 // Rules:
 // 1. Reject paths containing `..` segments (path traversal).

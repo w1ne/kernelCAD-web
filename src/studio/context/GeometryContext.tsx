@@ -5,6 +5,8 @@ import { parseCode } from '../../shared/codeGeneration/ast';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev } from '../scriptSource';
+import { apiCall, rewritePath } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -17,13 +19,60 @@ export interface ExecutionRecord {
 
 export interface ScriptReviewSummary {
     ok: boolean;
-    diagnostics?: Array<{ code?: string; severity?: string; message?: string; hint?: string }>;
+    diagnostics?: Array<{
+        code?: string;
+        severity?: string;
+        message?: string;
+        hint?: string;
+        partName?: string;
+        mateName?: string;
+        partA?: string;
+        partB?: string;
+    }>;
     fitness?: {
         functional?: boolean;
         repairMode?: string;
         blockingReasons?: Array<{ code?: string; message?: string; repairHint?: string }>;
     };
     suggestedRepairPrompt?: string;
+    /**
+     * Raw pairwise interference results at the script's current/default pose,
+     * BEFORE any `ignore` filtering applied by `assembly.solvedModel`. The
+     * Studio status-bar HUD reads `.length` of this for the interferences
+     * counter so users see what's overlapping right now even when the script
+     * silences a known-acceptable pair (e.g. an elbow knuckle). The validator's
+     * filtered diagnostics still flow through `diagnostics` above for the
+     * Validity tab and the `validate: 'error'` throw path.
+     */
+    rawInterferencePairs?: Array<{
+        a: string;
+        b: string;
+        volumeMm3: number;
+    }>;
+    /**
+     * Physics-grounded loop verdict (P1 surface convergence).
+     *
+     * - `'real'` — every mechanism-truth criterion holds at every sampled pose
+     * - `'broken'` — at least one criterion fails; `mechanismFailures`
+     *               carries the actionable failure list
+     * - `'unverified'` — the mechanism probe wasn't run (no assembly in the
+     *                   script, or evaluation failed before lowering)
+     *
+     * The Validity panel reads this to surface a red banner above the legacy
+     * diagnostics when broken. Spec:
+     * `docs/specs/2026-06-01-physics-grounded-loop-design.md`.
+     */
+    mechanism?: 'real' | 'broken' | 'unverified';
+    /** Structured mechanism failures (one entry per failing criterion at
+     *  each sampled pose). Empty when `mechanism !== 'broken'`. Each entry
+     *  carries `code`, `message`, and `hint` — the Validity banner renders
+     *  the hint as the actionable repair direction. */
+    mechanismFailures?: Array<{
+        code?: string;
+        severity?: string;
+        message?: string;
+        hint?: string;
+    }>;
 }
 
 export interface GeometryContextType {
@@ -190,18 +239,22 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             : null;
         activeMeshFetchAbortRef.current?.abort();
         activeMeshFetchAbortRef.current = abortController;
-        const fetchInit: RequestInit | undefined = abortController
-            ? { signal: abortController.signal }
-            : undefined;
-        const meshUrl = token
+        const meshPath = token
             ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
             : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
-        const reviewUrl = token
+        const reviewPath = token
             ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}`
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         let aborted = false;
-        const promise = fetch(meshUrl, fetchInit)
+        const promise = apiCall().then(({ base, headers }) => {
+            const meshUrl = rewritePath(meshPath, base);
+            const reviewUrl = rewritePath(reviewPath, base);
+            const fetchInit: RequestInit = {
+                ...(abortController ? { signal: abortController.signal } : {}),
+                headers,
+            };
+            return fetch(meshUrl, fetchInit)
             .then(async (response) => {
                 const payload = await response.json();
                 if (!response.ok) {
@@ -291,6 +344,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     setIsComputing(false);
                 }
             });
+        });
         return { revision, promise };
     }, [pushExecutionRecord]);
 
@@ -337,7 +391,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         let cancelled = false;
         setSessionStatus('pending');
         setSessionToken(null);
-        fetch(`/__kernelcad/session?script=${encodeURIComponent(studioScript)}`)
+        apiCall()
+            .then(({ base, headers }) =>
+                fetch(
+                    rewritePath(
+                        `/__kernelcad/session?script=${encodeURIComponent(studioScript)}`,
+                        base,
+                    ),
+                    { headers },
+                ),
+            )
             .then(async (r) => {
                 const body = await r.json();
                 if (!r.ok) throw new Error(body?.error ?? r.statusText);
@@ -373,21 +436,43 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // reflect the kernel's latest state without a full script re-run.
     useEffect(() => {
         if (!studioScript || !sessionToken) return;
-        const url = `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`;
-        const es = new EventSource(url);
+        let es: EventSource | null = null;
+        let cancelled = false;
         const onRelower = () => {
-            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, skipReview: true });
+            // Re-fetch BOTH mesh AND review on relower. The review side carries
+            // the live `rawInterferencePairs` channel the Studio status-bar
+            // HUD reads — without re-fetching review on each param change the
+            // HUD never updates and the user can drag a slider into a clipping
+            // pose with the indicator stuck at the original count. (The prior
+            // `skipReview: true` flag was a perf optimisation that predated
+            // the live-interference channel.)
+            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
         };
-        es.addEventListener('relower', onRelower);
-        // The browser auto-reconnects on transient drops; we only log here.
-        es.onerror = () => {
-            // EventSource will retry on its own; a sustained outage surfaces
-            // as a stale ParamsTab — which is acceptable degradation.
-            // Intentionally silent: no console noise during dev reloads.
-        };
+        // S1: route the SSE URL through apiCall so signed-in users hit the
+        // hosted /events endpoint. (EventSource can't carry custom headers,
+        // so signed-in auth for SSE is an S3 concern — for unsigned-in the
+        // base is '' and behavior is bit-for-bit identical to today.)
+        void apiCall().then(({ base }) => {
+            if (cancelled) return;
+            const url = rewritePath(
+                `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`,
+                base,
+            );
+            es = new EventSource(url);
+            es.addEventListener('relower', onRelower);
+            // The browser auto-reconnects on transient drops; we only log here.
+            es.onerror = () => {
+                // EventSource will retry on its own; a sustained outage surfaces
+                // as a stale ParamsTab — which is acceptable degradation.
+                // Intentionally silent: no console noise during dev reloads.
+            };
+        });
         return () => {
-            es.removeEventListener('relower', onRelower);
-            es.close();
+            cancelled = true;
+            if (es) {
+                es.removeEventListener('relower', onRelower);
+                es.close();
+            }
         };
     }, [studioScript, sessionToken, requestMeshAndReview]);
 
@@ -400,11 +485,15 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         if (!sessionToken) {
             throw new Error('updateParam called before a session token was issued');
         }
+        const { base, headers } = await apiCall();
         const res = await fetch(
-            `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+            rewritePath(
+                `/__kernelcad/params?session=${encodeURIComponent(sessionToken)}`,
+                base,
+            ),
             {
                 method: 'POST',
-                headers: { 'content-type': 'application/json' },
+                headers: { 'content-type': 'application/json', ...headers },
                 body: JSON.stringify({ edits }),
             },
         );
@@ -452,7 +541,12 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // Execution Loop
     useEffect(() => {
         if (studioScript) return;
-        if (!isReady) return;
+        // Hosted deploy (app.kernelcad.com): the in-process worker is the
+        // legacy v0.1 runtime that throws on modern API globals, so this
+        // auto-run path must resolve via build-time precompute / server mesh
+        // instead of `engine.executeCode`. Not gated on worker `isReady`.
+        const hosted = shouldUseHostedMesh();
+        if (!hosted && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
 
@@ -476,6 +570,45 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     error: message,
                     executionCountAtRecord: executionCount + 1,
                 });
+                return;
+            }
+            if (hosted) {
+                setIsComputing(true);
+                try {
+                    const payload = await meshSourceHosted(code);
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                    setGeometryTransformOverrides({});
+                    setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                    setScriptParams(Object.values(payload.params ?? {}));
+                    setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                    setSketchesGeometries([]);
+                    setPreviewGeometries([]);
+                    setError(null);
+                    setLastSuccessfulRevision(revision);
+                    pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                } catch (err: unknown) {
+                    if (revision !== mainRevisionRef.current) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        staleRecorded = true;
+                        return;
+                    }
+                    const message = err instanceof Error ? err.message : String(err);
+                    setError(message);
+                    pushExecutionRecord({ revision, status: 'error', error: message, executionCountAtRecord: executionCount + 1 });
+                } finally {
+                    if (revision === mainRevisionRef.current) {
+                        setIsComputing(false);
+                        setExecutionCount(prev => prev + 1);
+                    } else if (!staleRecorded) {
+                        setStaleMainResponsesDropped((prev) => prev + 1);
+                        pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+                    }
+                }
                 return;
             }
             setIsComputing(true);
@@ -515,6 +648,36 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     }
                 } else {
                     message = String(err);
+                }
+                // P11 follow-up: the in-browser worker is the legacy v0.1
+                // runtime and can't evaluate the modern assembly/joint/tendon
+                // API (throws "<global> is not defined"). On localhost dev,
+                // fall back to the node-backed dev mesh endpoint, which runs
+                // the full kernel. Gated on the API-gap signature so genuine
+                // user errors still surface immediately without a round-trip.
+                if (devMeshAvailable() && /is not defined|is not a function/.test(message)) {
+                    try {
+                        const payload = await meshSourceDev(code);
+                        if (revision !== mainRevisionRef.current) {
+                            setStaleMainResponsesDropped((prev) => prev + 1);
+                            staleRecorded = true;
+                            return;
+                        }
+                        setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                        setGeometryTransformOverrides({});
+                        setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                        setScriptParams(Object.values(payload.params ?? {}));
+                        setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                        setSketchesGeometries([]);
+                        setPreviewGeometries([]);
+                        setError(null);
+                        setLastSuccessfulRevision(revision);
+                        pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+                        return;
+                    } catch {
+                        // Dev fallback also failed — fall through and surface
+                        // the original worker error below.
+                    }
                 }
                 setError(message);
                 // Preserve last successful geometry; only track failed execution metadata.
@@ -584,7 +747,6 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     }, [code, previewCode, isReady, engine, studioScript]);
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
-        if (!isReady) return;
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
         try {
@@ -600,6 +762,48 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             });
             return;
         }
+
+        // Hosted deploy (app.kernelcad.com): no local kernel backend, and the
+        // in-process worker is the legacy v0.1 runtime that throws on modern
+        // kernelCAD API globals (assembly, setRenderEnvironment, .material, …).
+        // Resolve via build-time precompute (static CDN) first, then the
+        // server mesh endpoint for edits. Not gated on worker `isReady` — this
+        // path doesn't need the local worker.
+        if (shouldUseHostedMesh()) {
+            setIsComputing(true);
+            try {
+                const payload = await meshSourceHosted(codeToExecute);
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+                    return;
+                }
+                setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+                setGeometryTransformOverrides({});
+                setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
+                setScriptParams(Object.values(payload.params ?? {}));
+                setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+                setSketchesGeometries([]);
+                setPreviewGeometries([]);
+                setError(null);
+                setLastSuccessfulRevision(revision);
+                pushExecutionRecord({ revision, status: 'success', executionCountAtRecord: executionCount + 1 });
+            } catch (err: unknown) {
+                if (revision !== mainRevisionRef.current) {
+                    setStaleMainResponsesDropped((prev) => prev + 1);
+                    pushExecutionRecord({ revision, status: 'stale', executionCountAtRecord: executionCount + 1 });
+                    return;
+                }
+                const message = err instanceof Error ? err.message : String(err);
+                setError(message);
+                pushExecutionRecord({ revision, status: 'error', error: message, executionCountAtRecord: executionCount + 1 });
+            } finally {
+                if (revision === mainRevisionRef.current) setIsComputing(false);
+            }
+            return;
+        }
+
+        if (!isReady) return;
         setIsComputing(true);
         try {
             const result = await engine.executeCode(codeToExecute);

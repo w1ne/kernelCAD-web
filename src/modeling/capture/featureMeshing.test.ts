@@ -149,7 +149,9 @@ describe('meshFeaturesPerFeature', () => {
       const arm = assembly('test');
       const base = arm.part('base', box(10, 10, 10));
       const link = arm.part('link', box(10, 10, 30));
-      arm.revolute('yaw', base, link, { axis: [0, 0, 1], origin: [0, 0, 10] });
+      base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 10] }, axis: [0, 0, 1] });
+      link.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('yaw', 'base.yaw', 'link.yaw', 'revolute');
       return arm.solvedModel({ yaw: 0 });
     `;
     const { records } = await runScript({ code, fileName: 'identity-assembly.kcad.ts' });

@@ -2,7 +2,7 @@
 //
 // Unified write-side export MCP tool. ONE tool, format-enum-dispatched —
 // discoverable via list_api as the single entry "export the model to a file".
-// Replaces export_stl (which lives one more release as a deprecated alias).
+// Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
 // Format enum: stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo.
 // URDF / SRDF / SDF-Gazebo are reserved on the surface but emit
@@ -46,7 +46,7 @@ export interface ExportModelOutput {
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
- * export entry point that supersedes `export_stl`.
+ * export entry point. (The legacy `export_stl` shim was removed in C2.)
  *
  * Pass either `{ file }` (path on disk) or `{ code }` (inline source),
  * plus a required `output_path` and `format`. Optional `feature_id` selects

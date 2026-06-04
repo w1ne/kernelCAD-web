@@ -12,8 +12,8 @@
 //     connecting bracket) authored with `box(...)`. These are the printed
 //     parts an SO-100 builder fabricates themselves.
 //
-//   - Every part participates in the joint graph via `arm.fixed(...)` /
-//     `arm.revolute(...)`, so `kernelcad validate` sees the assembly as
+//   - Every part participates in the mate graph via `arm.mate(..., 'fastened')`,
+//     so `kernelcad validate` sees the assembly as
 //     a connected mechanism — not just a bag of parts at random positions.
 //     This is what makes the assembly REAL: it has declared topology, not
 //     just spatial coincidence.
@@ -89,10 +89,26 @@ const jawPart     = arm.part('gripper-jaw',    jawPlaced);
 // bracket fastens to the horn, gripper-servo bolts to the bracket, jaw
 // fastens to the gripper-servo's output (fixed at the hero pose). Switch
 // to `revolute` when the demo needs articulation.
-arm.fixed('base-shoulder-bolts',   basePart,    shoulderSrv);
-arm.fixed('shoulder-horn-coupling', shoulderSrv, hornPart);
-arm.fixed('horn-bracket-bolts',    hornPart,    bracketPart);
-arm.fixed('bracket-gripper-bolts', bracketPart, gripperSrv);
-arm.fixed('gripper-jaw-coupling',  gripperSrv,  jawPart);
+// G0 (2026-05-31): legacy `arm.fixed(...)` was removed. Declare each
+// fastener as a `arm.mate(..., 'fastened')` between named frame connectors
+// on the two coupled parts. Each part gets a single frame connector at its
+// local origin (parts are already placed via `at:` so the world frame is
+// what we want for the fastened-mate alignment).
+basePart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+shoulderSrv.connector('mount-from-base', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+shoulderSrv.connector('mount-to-horn', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+hornPart.connector('mount-from-shoulder', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+hornPart.connector('mount-to-bracket', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+bracketPart.connector('mount-from-horn', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+bracketPart.connector('mount-to-gripper', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+gripperSrv.connector('mount-from-bracket', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+gripperSrv.connector('mount-to-jaw', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+jawPart.connector('mount-from-gripper', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+
+arm.mate('base-shoulder-bolts', 'base-plate.mount', 'shoulder-servo.mount-from-base', 'fastened');
+arm.mate('shoulder-horn-coupling', 'shoulder-servo.mount-to-horn', 'output-horn.mount-from-shoulder', 'fastened');
+arm.mate('horn-bracket-bolts', 'output-horn.mount-to-bracket', 'link-bracket.mount-from-horn', 'fastened');
+arm.mate('bracket-gripper-bolts', 'link-bracket.mount-to-gripper', 'gripper-servo.mount-from-bracket', 'fastened');
+arm.mate('gripper-jaw-coupling', 'gripper-servo.mount-to-jaw', 'gripper-jaw.mount-from-gripper', 'fastened');
 
 return arm.solvedModel({});

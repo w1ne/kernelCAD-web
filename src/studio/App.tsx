@@ -44,7 +44,10 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   const { activeProject, saveActiveProject } = useProject();
   const { agentRailOpen } = useShellStore();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [loadedSourceRouteKey, setLoadedSourceRouteKey] = useState<string | null>(null);
+  // setLoadedSourceRouteKey is still called for its side effects (gating the
+  // source-load effect in deps), but the value isn't read since we removed
+  // the loading-gate in commit 95dc75a3. Keeping the setter, ignoring the value.
+  const [, setLoadedSourceRouteKey] = useState<string | null>(null);
   const [sourceLoadError, setSourceLoadError] = useState<{ routeKey: string; message: string } | null>(null);
   const scriptParam = readScriptParam();
   const galleryParam = readGalleryParam();
@@ -134,13 +137,12 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     );
   }
 
-  if (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) {
-    return (
-      <main aria-live="polite">
-        <p>Loading Studio source...</p>
-      </main>
-    );
-  }
+  // Note: we deliberately do NOT block the whole shell on
+  // (sourceRouteKey && loadedSourceRouteKey !== sourceRouteKey) anymore.
+  // The script-source fetch is a few-ms dev endpoint, but mounting StudioShell
+  // immediately lets the user see/use the toolbar (including the Brush /
+  // paint-a-review toggle) even while the kernel is still warming up. The
+  // source load races into `code` state and the viewport recomputes when ready.
 
   return isDevLab ? (
     <Suspense fallback={null}>

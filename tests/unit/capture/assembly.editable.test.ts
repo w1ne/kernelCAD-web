@@ -180,21 +180,8 @@ describe('assembly capture — EditableVec3 surfaces', () => {
     expect(at.z.paramRef).toBeUndefined();
   });
 
-  it('axis stored as plain numeric Vec3 (v1 body-tree convention)', () => {
-    const session = new CaptureSession();
-    const kcad = createApi({ session });
-
-    const arm = kcad.assembly('literal-axis');
-    const a = arm.part('a', kcad.box(10, 10, 10));
-    const b = arm.part('b', kcad.box(10, 10, 10));
-    arm.revolute('joint', a, b, { axis: [0, 0, 1], origin: [0, 0, 0] });
-
-    const records = session.getRecords();
-    const jointRecord = records.at(-1)!;
-    const meta = jointRecord.metadata as { axis: [number, number, number]; origin: [number, number, number] };
-    // v1 body-tree FK: joint axis/origin are numeric Vec3, not Vec3Param.
-    // (Pose reactivity via setParamValue deferred; see body-tree-kinematics design.)
-    expect(meta.axis).toEqual([0, 0, 1]);
-    expect(meta.origin).toEqual([0, 0, 0]);
-  });
+  // G0 (2026-05-31): the v0.5 joint-axis encoding test was removed when
+  // `arm.revolute(...)` itself was deleted. Mate-side axis encoding lives
+  // on the mate-connector record (`origin: { kind: 'vec3', value }`) and is
+  // covered by src/modeling/mates/connector.test.ts.
 });

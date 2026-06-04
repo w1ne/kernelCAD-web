@@ -25,7 +25,6 @@ import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
 import { exportModelTool } from './tools/exportModel';
-import { exportStlTool } from './tools/exportStl';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
@@ -37,17 +36,23 @@ import { listEdgesTool } from './tools/listEdges';
 import { listFaceLabelsTool } from './tools/listFaceLabels';
 import { getFaceLineageTool } from './tools/getFaceLineage';
 import { resolveTopoRefTool } from './tools/resolveTopoRef';
+import { evaluateQueryTool } from './tools/evaluateQuery';
 import { listAssembliesTool } from './tools/listAssemblies';
 import { listFacesTool } from './tools/listFaces';
 import { listFeaturesTool } from './tools/listFeatures';
 import { listMatesTool } from './tools/listMates';
 import { listTopologyTool } from './tools/listTopology';
 import { lookupCookbookTool } from './tools/lookupCookbook';
+import { findPartTool } from './tools/findPart';
+import { fetchPartTool } from './tools/fetchPart';
+import { listPartCategoriesTool } from './tools/listPartCategories';
+import { listPartFamiliesTool } from './tools/listPartFamilies';
 import { paramsListTool } from './tools/paramsList';
 import { paramsUpdateTool } from './tools/paramsUpdate';
 import { removeFeatureTool } from './tools/removeFeature';
 import { designLoopTool } from './tools/designLoop';
 import { reviewCadTool } from './tools/reviewCad';
+import { reviewPaintPeekLatestTool } from './tools/reviewPaint';
 import { setParamValueTool } from './tools/setParamValue';
 import { solveMatesTool } from './tools/solveMates';
 import { validateAssemblyTool } from './tools/validateAssembly';
@@ -55,6 +60,13 @@ import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
 import { dfmPreflightTool } from './tools/dfmPreflight';
+import { checkSweptCollisionTool } from './tools/checkSweptCollision';
+import { checkReachableTool } from './tools/checkReachable';
+import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
+import { checkLoadCapacityTool } from './tools/checkLoadCapacity';
+export { runClosedLoop } from '../loop/closedLoop.js';
+export { buildRepairPrompt } from '../loop/repairPrompt.js';
+export * from '../loop/types.js';
 
 export interface McpToolDefinition {
   name: string;
@@ -437,7 +449,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'add_path_spline',
       description:
-        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
+        "Insert a `.spline(points, opts?)` call into an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()` (or before the statement terminator if `.close()` has not yet been added). `points` is a `Vec2[]` (mm) with at least 2 entries; the path interpolates through every waypoint. `points[0]` must match the current pen position within 1e-6 mm or capture-time emits `feature.path.spline.degenerate-points`. Optional `tension` forwards to the underlying `makeBSplineApproximation` call (tightens or relaxes the smoothing tolerance). Optional `startTangent` / `endTangent` are 2D direction vectors `[x, y]` that constrain the curve's first-derivative direction at the first and last waypoint (magnitude is normalised internally — `[1, 0]` and `[100, 0]` produce the same curve). When either tangent is set the underlying lowerer dispatches through a tangent-constrained interpolator; when both are omitted the existing fast approximation path is used. Use for organic 2D outlines (eyewear brow, ergonomic handle silhouettes, sneaker midsole) authored from measured waypoints. Returns the modified code + diagnostics from re-evaluating. Side-effect-free.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -450,6 +462,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
             minItems: 2,
           },
           tension: { type: 'number', description: 'Optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation.' },
+          startTangent: {
+            type: 'array',
+            description: 'Optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.',
+            items: { type: 'number' },
+            minItems: 2,
+            maxItems: 2,
+          },
+          endTangent: {
+            type: 'array',
+            description: 'Optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.',
+            items: { type: 'number' },
+            minItems: 2,
+            maxItems: 2,
+          },
           binding_name: { type: 'string', description: 'Reserved for future use; the spline injection mutates the chain anchor in place.' },
         },
         required: ['code', 'chain_anchor', 'points'],
@@ -760,7 +786,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'resolve_topo_ref',
       description:
-        'Resolve a single @kc[owner/kind/name] topology reference against a kernelCAD script\'s lowered geometry. Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string.',
+        "Resolve a single topology reference against a kernelCAD script's lowered geometry. Accepts either @kc[<owner>/<kind>/<name>] (single addressed entity, F-surface path) or @kcq[<expr>] (Query DSL form, dispatches through the Q3 evaluator with expect: 'unique'; surfaces query.over-determined when the Query matches multiple). Returns { ok, ref, entity: { kind, hash, path } } on success; on ambiguity returns candidate refs in the diagnostic. Pass either { file } or { code } plus the required { ref } string. For multi-hit inspection, prefer evaluate_query.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -773,6 +799,25 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => resolveTopoRefTool(input as unknown as Parameters<typeof resolveTopoRefTool>[0]),
+  },
+  {
+    definition: {
+      name: 'evaluate_query',
+      description:
+        "Inspect a Query against a kernelCAD script's lowered geometry before consuming it in a feature op. Accepts three input forms: (1) an @kc[<owner>/<kind>/<name>] string ref, (2) an @kcq[<expr>] Query DSL string (face(createdBy(\"id\")), union(...), intersection(...), subtraction(...), withLabel, closestTo, etc.), or (3) a JSON-AST wrapper { ast: { op: '...', ... } } that round-trips Query.toJSON(). Returns { ok: true, entities: [{ kind, ref, handle, snapshot? }], query: { ast } } on success; on diagnostic returns { ok: false, errorCode, errorHint } with the structured query.* code. Pass expect: 'unique' to assert exactly-one and surface query.over-determined on multi-hit / query.empty on no-hit.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          query: { description: 'Query input — string (@kc[...] or @kcq[...]) or JSON-AST object { ast: { op, ... } }.' },
+          expect: { type: 'string', enum: ['any', 'unique'], description: "When 'unique', emit query.over-determined on multi-hit and query.empty on no-hit." },
+          feature_id: { type: 'string', description: 'Optional FeatureId to resolve against; defaults to the last lowered shape.' },
+        },
+        required: ['query'],
+      },
+    },
+    handler: input => evaluateQueryTool(input as unknown as Parameters<typeof evaluateQueryTool>[0]),
   },
   {
     definition: {
@@ -834,30 +879,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => listDiagnosticCodesTool(input as Parameters<typeof listDiagnosticCodesTool>[0]),
-  },
-  {
-    definition: {
-      name: 'export_stl',
-      description:
-        "(DEPRECATED — use export_model with format: 'stl'.) Export the script geometry to a binary STL file. " +
-        'Pass either { file } or { code } plus a required { output_path }. ' +
-        'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Returns { ok, output_path, byte_count, feature_count, diagnostics }. ' +
-        'feature_count is the total features in the script, not the count contributing to the exported shape. ' +
-        'The STL file is written server-side; suitable for passing directly to slicers, simulators, and viewers. ' +
-        'Removal is scheduled for the next minor version.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
-          code: { type: 'string', description: 'Inline kernelCAD script source.' },
-          output_path: { type: 'string', description: 'Destination path for the binary STL file. Required.' },
-          feature_id: { type: 'string', description: 'Optional FeatureId to export; defaults to last.' },
-        },
-        required: ['output_path'],
-      },
-    },
-    handler: input => exportStlTool(input as unknown as Parameters<typeof exportStlTool>[0]),
   },
   {
     definition: {
@@ -925,6 +946,69 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
+  },
+  {
+    definition: {
+      name: 'list_part_categories',
+      description:
+        'Enumerate the top-level part-catalog categories available locally (and remotely, when partsBaseUrl is configured). The fastest path for an agent to discover what kinds of off-the-shelf parts the bundled catalog covers.',
+      inputSchema: { type: 'object', properties: {} },
+    },
+    handler: () => listPartCategoriesTool(),
+  },
+  {
+    definition: {
+      name: 'list_part_families',
+      description:
+        'Enumerate the part families within a category (e.g. socket-head-cap-screw, deep-groove-ball-bearing). Returns count and up to three exemplar ids per family. Pass { category } to filter; without filters returns every family in the bundled catalog.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          category: { type: 'string', description: 'Top-level category to filter by.' },
+        },
+      },
+    },
+    handler: input => listPartFamiliesTool(input as Parameters<typeof listPartFamiliesTool>[0]),
+  },
+  {
+    definition: {
+      name: 'find_part',
+      description:
+        'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          category: { type: 'string' },
+          family: { type: 'string' },
+          standard: { type: 'string' },
+          tag: { type: 'string' },
+          limit: { type: 'number' },
+          source: { type: 'string', enum: ['local', 'remote', 'auto'] },
+          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+        },
+      },
+    },
+    handler: input => findPartTool(input as Parameters<typeof findPartTool>[0]),
+  },
+  {
+    definition: {
+      name: 'fetch_part',
+      description:
+        'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          query: { type: 'string' },
+          category: { type: 'string' },
+          family: { type: 'string' },
+          standard: { type: 'string' },
+          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+        },
+      },
+    },
+    handler: input => fetchPartTool(input as Parameters<typeof fetchPartTool>[0]),
   },
   {
     definition: {
@@ -1300,6 +1384,39 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   },
   {
     definition: {
+      name: 'review_paint_peek_latest',
+      description:
+        'Return the newest inpainting-style review packet the user painted in Studio. ' +
+        'Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions ' +
+        'over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the ' +
+        'freshest one within a configurable freshness window (default 30 minutes). Returns base64 ' +
+        'PNGs of the screenshot + mask in-band so any MCP client can see the marked regions ' +
+        'without local-disk Read access. Call this whenever the user says "look at my mark", ' +
+        '"check what I painted", or any equivalent.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          freshness_sec: {
+            type: 'integer',
+            description: 'Maximum packet age in seconds. Default 1800 (30 min). Use a smaller value for "what did I just paint" or a larger one for "earlier today".',
+            minimum: 1,
+          },
+          extra_roots: {
+            type: 'array',
+            description: 'Optional extra checkout paths to scan (in addition to ~/projects/kernelCAD-web and ~/projects/kernelCAD-web-worktrees). Use when Studio is hosted from a non-standard location.',
+            items: { type: 'string' },
+          },
+          paths_only: {
+            type: 'boolean',
+            description: 'When true, omit base64 PNG fields and return only paths + metadata. Smaller response when the agent will Read the PNGs from disk anyway, or just wants to know "is there a packet".',
+          },
+        },
+      },
+    },
+    handler: input => reviewPaintPeekLatestTool(input as Parameters<typeof reviewPaintPeekLatestTool>[0]),
+  },
+  {
+    definition: {
       name: 'design_loop',
       description: 'Run an agent CAD design loop over one or more attempt scripts: review each attempt with review_cad, continue past functional attempts that still have unresolved review warnings, return structured repair prompts, and optionally write a Studio-compatible build record JSON for visual replay.',
       inputSchema: {
@@ -1476,6 +1593,127 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => evaluateSdfTool(input as unknown as Parameters<typeof evaluateSdfTool>[0]),
+  },
+  {
+    definition: {
+      name: 'check_swept_collision',
+      description:
+        'Sweep the assembly across declared joint range(s) and report every pose at which a pair of parts share a non-empty BREP intersection. Returns posesSampled + collidingPoses[] with per-pose contact pairs. Diagnostics: kinematic.collision.swept (K1), kinematic.collision.swept.sample-density-warning (K2). Local in-process compute; no network. Pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          joint: { type: 'string', description: 'Joint name to sweep; omit to sweep every declared joint.' },
+          range: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: 'Inclusive [lower, upper, step] in joint-native units (deg for revolute, mm for prismatic).',
+          },
+          collision_tolerance_mm3: {
+            type: 'number',
+            description: 'BREP boolean-intersection volume tolerance (default 0.01 mm^3).',
+          },
+        },
+      },
+    },
+    handler: input => checkSweptCollisionTool(input as Parameters<typeof checkSweptCollisionTool>[0]),
+  },
+  {
+    definition: {
+      name: 'check_reachable',
+      description:
+        'Solve inverse kinematics for an end-effector target on a serial open chain. Returns ok=true with the solved pose when the target is reachable within tolerance; otherwise carries axis-discriminated diagnostics so the caller can lengthen a link, add a DOF, or relax orientation. Diagnostics: kinematic.unreachable (K3), kinematic.reachability.iteration-cap-hit (K4), kinematic.solver.unsupported-config (K5). Local in-process compute. Pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          tip_link: { type: 'string', description: 'End-effector part name.' },
+          target_position: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: 'Target position [x, y, z] in mm (world frame).',
+          },
+          target_orientation: {
+            type: 'array',
+            items: { type: 'number' },
+            minItems: 3,
+            maxItems: 3,
+            description: 'Target orientation as XYZ Euler angles in radians.',
+          },
+          position_tolerance_mm: { type: 'number', description: 'Position tolerance in mm.' },
+          orientation_tolerance_rad: { type: 'number', description: 'Orientation tolerance in radians.' },
+          prefer_solver: {
+            type: 'string',
+            enum: ['analytical', 'numeric', 'auto'],
+            description: "Force the IK path; 'auto' (default) routes spherical-wrist chains to the analytical solver.",
+          },
+          max_iterations: { type: 'number', description: 'Numeric-path iteration cap (default 200).' },
+          seed: {
+            type: 'object',
+            description: 'Seed pose for the numeric path (joint name -> numeric value in deg or mm).',
+          },
+        },
+        required: ['tip_link'],
+      },
+    },
+    handler: input => checkReachableTool(input as unknown as Parameters<typeof checkReachableTool>[0]),
+  },
+  {
+    definition: {
+      name: 'check_mounting_hole_consistency',
+      description:
+        'Walk every fastened mate in the assembly and verify both sides expose the same hole diameter on their bound faces. Returns mismatches[] with per-mate side details (boundFaceName, diameterMm, depth). Diagnostics: kinematic.mounting-hole.diameter-mismatch (K9). Local in-process compute. Pass either { file } or { code }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        },
+      },
+    },
+    handler: input => checkMountingHoleConsistencyTool(input as Parameters<typeof checkMountingHoleConsistencyTool>[0]),
+  },
+  {
+    definition: {
+      name: 'check_load_capacity',
+      description:
+        "Closed-form Euler-Bernoulli beam stress check on cantilever-shaped parts that declare a rectangular crossSection. Returns the worst-of safety factor across every successfully-computed part, plus per-part stress / yield / SF records and structured failure entries. Diagnostics: kinematic.load-exceeds-yield (K6), kinematic.load.beam-not-applicable (K7), kinematic.no-material-declared (K8). Catalog materials: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom' (yieldStressMPa + youngsModulusGPa required for 'custom'). Local in-process compute. Pass either { file } or { code }.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+          loads: {
+            type: 'object',
+            description: 'Map of partName -> { force?: [Fx, Fy, Fz] (N), torque?: [Tx, Ty, Tz] (N*m) }. Applied at the loaded part\'s free end.',
+          },
+          materials: {
+            type: 'object',
+            description: "Map of partName -> { material: 'steel' | 'aluminum' | 'pla' | 'abs' | 'pet' | 'custom', yieldStressMPa?, youngsModulusGPa?, density? }.",
+          },
+          mode: {
+            type: 'string',
+            enum: ['stub', 'beam'],
+            description: "'beam' (default) runs the closed-form path; 'stub' re-exports the mate-side maxLoad-vs-externalLoads check.",
+          },
+          safety_factor_threshold: {
+            type: 'number',
+            description: 'Pass-fail floor on the computed safety factor (default 1.5).',
+          },
+        },
+      },
+    },
+    handler: input => checkLoadCapacityTool(input as Parameters<typeof checkLoadCapacityTool>[0]),
   },
 ];
 

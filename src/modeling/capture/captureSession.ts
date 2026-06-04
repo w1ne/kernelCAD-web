@@ -18,6 +18,10 @@ import type {
   CameraTargetMetadata,
   CameraTargetSpec,
 } from '../../shared/intent/cameraTargetRecord';
+import type {
+  AnimationViewMetadata,
+  AnimationViewSpec,
+} from '../../shared/intent/animationViewRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -105,6 +109,21 @@ export function buildFaceInputRef(
   baseId: import('../../shared/intent/types').FeatureId,
   face: import('./proxy').FaceSelector | string,
 ): FeatureRef {
+  // Q8 — Query DSL value (kc.q.face(...)). Detect duck-type-shape and
+  // serialize as a queryDsl FaceRef so the lowerer dispatches through
+  // the Q3 evaluator at consume time.
+  if (isQueryValue(face)) {
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: {
+        kind: 'queryDsl',
+        queryAst: face.ast,
+        queryTarget: face.target,
+        ...(face.lenient ? { lenient: true } : {}),
+      },
+    };
+  }
   // `{ face: <something> }` wrapper form
   if (typeof face === 'object' && face !== null && 'face' in face) {
     const faceVal = (face as { face: unknown }).face;
@@ -122,6 +141,19 @@ export function buildFaceInputRef(
         ref: { kind: 'label', name: faceVal },
       };
     }
+    // Wrapped Query value: { face: kc.q.face(...) }.
+    if (isQueryValue(faceVal)) {
+      return {
+        kind: 'face',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: faceVal.ast,
+          queryTarget: faceVal.target,
+          ...(faceVal.lenient ? { lenient: true } : {}),
+        },
+      };
+    }
     return {
       kind: 'face',
       featureId: baseId,
@@ -134,6 +166,21 @@ export function buildFaceInputRef(
     featureId: baseId,
     ref: { kind: 'query', query: face as import('../../kernel/backends/occt/edgeQueries').FaceQuery },
   };
+}
+
+/** Q8 duck-type check: detect the Query DSL value (kc.q.face(...) etc).
+ *  Reuses the same `_kind: 'kc.query'` runtime tag set by makeQuery, so a
+ *  selector argument that already crossed a JSON boundary still matches. */
+function isQueryValue(v: unknown): v is import('../../kernel/naming/query').Query<unknown> {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    (v as { _kind?: unknown })._kind === 'kc.query' &&
+    typeof (v as { target?: unknown }).target === 'string' &&
+    typeof (v as { ast?: unknown }).ast === 'object' &&
+    (v as { ast: { op?: unknown } }).ast !== null &&
+    typeof (v as { ast: { op?: unknown } }).ast.op === 'string'
+  );
 }
 
 export interface FeatureSpec {
@@ -238,6 +285,22 @@ export class CaptureSession {
    *  Lives on the session (not the record) because OCCT shapes carry
    *  circular references that would trip metadata walkers. */
   readonly importedGeometry: Map<string, ShapeBackend> = new Map();
+
+  /** Slice C: auto-emitted connectors keyed by feature/shape id. The
+   *  bracket-side bolt-holes-N rule (in modeling/parts/holeAutoConnectors)
+   *  registers connectors on the resulting hole feature here; the
+   *  bundled-parts manifest loader registers the pre-shipped frames on the
+   *  importedStep record. Untyped to avoid a cycle with modeling/parts. */
+  readonly autoConnectors: Map<string, ReadonlyArray<unknown>> = new Map();
+
+  /** Attach a set of auto-connectors to a feature/shape id. Subsequent calls
+   *  on the same id replace any previous entry. */
+  attachAutoConnectors(
+    shapeId: string,
+    connectors: ReadonlyArray<unknown>,
+  ): void {
+    this.autoConnectors.set(shapeId, connectors);
+  }
   /** v0.6: absolute directory of the calling `.kcad.ts` script. Used by the
    *  OCCT text lowerer to resolve relative `fontPath(...)` arguments at
    *  lower time. Mirrors how `lib.fromSTEP(path)` threads scriptDir through
@@ -611,6 +674,87 @@ export class CaptureSession {
 
     const r = this.register({
       kind: 'cameraTarget',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * Capture an animation-view virtual feature. Validates that `param` names
+   * a previously-declared `param()` (or defers the check to capture-script
+   * time if not yet registered), that `from`/`to`/`durationMs` are finite,
+   * and that `durationMs` + `fps` are positive. On invalid input a
+   * diagnostic is stashed on `metadata.diagnostics` and a default-safe
+   * record is still produced (matching the `addCameraTarget` pattern).
+   * Multiple calls register multiple records — the capture script picks
+   * the last one when more than one is declared.
+   */
+  addAnimationView(args: AnimationViewSpec): FeatureId {
+    const diagnostics: CompilerDiagnostic[] = [];
+
+    const paramOk = typeof args.param === 'string' && args.param.length > 0;
+    if (!paramOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'param' must be a non-empty string; got ${JSON.stringify(args.param)}.`,
+        hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
+      });
+    }
+
+    const fromOk = Number.isFinite(args.from);
+    const toOk = Number.isFinite(args.to);
+    if (!fromOk || !toOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'from' and 'to' must be finite numbers; got (${args.from}, ${args.to}).`,
+        hint: `invalid-args.animation-view.non-finite-range — pass finite numeric bounds for the sweep.`,
+      });
+    }
+
+    const durOk = Number.isFinite(args.durationMs) && args.durationMs > 0;
+    if (!durOk) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.invalid-args',
+        severity: 'error',
+        message: `animationView: 'durationMs' must be a positive finite number; got ${args.durationMs}.`,
+        hint: `invalid-args.animation-view.bad-duration — pass durationMs > 0 (e.g. 4000 for a 4-second sweep).`,
+      });
+    }
+
+    let fps = 30;
+    if (args.fps !== undefined) {
+      if (!Number.isFinite(args.fps) || args.fps <= 0) {
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.invalid-args',
+          severity: 'warn',
+          message: `animationView: 'fps' ${args.fps} is not a positive finite number; defaulting to 30.`,
+          hint: `invalid-args.animation-view.bad-fps — pass fps > 0 or omit for the 30 default.`,
+        });
+      } else {
+        fps = args.fps;
+      }
+    }
+
+    const metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] } = {
+      virtual: true,
+      param: paramOk ? args.param : '',
+      from: fromOk ? args.from : 0,
+      to: toOk ? args.to : 0,
+      durationMs: durOk ? args.durationMs : 1000,
+      fps,
+      ...(diagnostics.length > 0 ? { diagnostics } : {}),
+    };
+
+    const r = this.register({
+      kind: 'animationView',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,
@@ -1669,11 +1813,46 @@ function buildEdgeFeatureRef(
   baseId: string,
   selector: import('./proxy').EdgeSelector | { face: import('./proxy').FaceSelector | string },
 ): { key: 'face' | 'edges'; value: FeatureRef } {
+  // Q8 — Query DSL value (kc.q.edge(...) / kc.q.face(...)). Dispatch by
+  // target kind so the lowerer sees the right slot key (edges for edge
+  // queries, face for face queries).
+  if (isQueryValue(selector)) {
+    const key: 'face' | 'edges' = selector.target === 'face' ? 'face' : 'edges';
+    return {
+      key,
+      value: {
+        kind: key === 'face' ? 'face' : 'edge',
+        featureId: baseId,
+        ref: {
+          kind: 'queryDsl',
+          queryAst: selector.ast,
+          queryTarget: selector.target,
+          ...(selector.lenient ? { lenient: true } : {}),
+        },
+      },
+    };
+  }
   // Case 1-3: { face: ... } wrapper. We detect this by: object with `face`
   // property and NOT having the EdgeSegment full-schema markers.
   if (typeof selector === 'object' && selector !== null && 'face' in selector &&
       !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector)) {
     const faceVal = (selector as { face: unknown }).face;
+    // Q8 — { face: kc.q.face(...) } wrapper form on an edge feature.
+    if (isQueryValue(faceVal)) {
+      return {
+        key: 'face',
+        value: {
+          kind: 'face',
+          featureId: baseId,
+          ref: {
+            kind: 'queryDsl',
+            queryAst: faceVal.ast,
+            queryTarget: faceVal.target,
+            ...(faceVal.lenient ? { lenient: true } : {}),
+          },
+        },
+      };
+    }
     if (typeof faceVal === 'string') {
       if (CANONICAL_FACES.has(faceVal)) {
         return {

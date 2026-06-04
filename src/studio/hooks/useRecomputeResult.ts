@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { reviewToValidity } from '../adapters/reviewToValidity';
+import { reviewToValidity, reviewToMechanismBanner } from '../adapters/reviewToValidity';
 import { serializedParamsToTable } from '../adapters/serializedParamsToTable';
 import { reviewDiagnosticsToCompiler } from '../adapters/reviewDiagnosticsToCompiler';
 import { extractJointSnapshots } from '../adapters/featureRecordsToMates';
@@ -31,6 +31,25 @@ export function useRecomputeResult(): StudioRecomputeResult {
 
     const validity = useMemo(
         () => reviewToValidity(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
+    // Physics-loop banner (P1). `null` unless the recompute's mechanism
+    // verdict is 'broken' — the Validity tab renders the banner above
+    // the existing diagnostic rows.
+    const mechanismBanner = useMemo(
+        () => reviewToMechanismBanner(workbench.scriptReview ?? null),
+        [workbench.scriptReview],
+    );
+
+    // Raw interference pairs are read directly from the script review payload
+    // (filtering is applied at the validator layer, not here). Empty array
+    // when scriptReview is null OR when the server omitted the field — the
+    // Studio HUD treats that as "interferences: 0" rather than a missing
+    // signal. See StudioRecomputeResult.rawInterferencePairs JSDoc for why
+    // the HUD reads this and not validity.diagnostics.
+    const rawInterferencePairs = useMemo(
+        () => workbench.scriptReview?.rawInterferencePairs ?? [],
         [workbench.scriptReview],
     );
 
@@ -72,6 +91,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
             diagnostics,
             recomputeMs: workbench.recomputeMs ?? 0,
             joints,
+            rawInterferencePairs,
+            mechanismBanner,
             updateParam,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
@@ -85,6 +106,8 @@ export function useRecomputeResult(): StudioRecomputeResult {
             paramTable,
             diagnostics,
             joints,
+            rawInterferencePairs,
+            mechanismBanner,
             setGeometryTransformOverride,
             clearGeometryTransformOverrides,
         ],

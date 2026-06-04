@@ -22,6 +22,39 @@ Use this loop for every non-trivial model edit:
 9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
 
+## Inner loop: render after every visible change
+
+The authoring loop above is the *outer* loop. The *inner* loop runs after every feature you add that you expect to see in the rendered output. Skipping the inner loop is the single biggest cause of "tests green, output wrong" shipments.
+
+After every one of these operations, render and look at the result:
+
+- a new `subtract(...)` that should produce a visible hole, notch, or relief
+- a new `union(...)` of shapes that should carry distinct materials
+- a `material({...})` change on a body that should be visually distinct from its neighbors
+- a new sketch + `extrude` whose orientation matters (i.e. anything front-facing)
+- a parameter retune that should visibly move a feature
+
+The minimum check:
+
+```bash
+node dist/cli/index.js render <file> -o /tmp/check.png --pose <scorer-pose> --hide-reference-images
+```
+
+Pick the pose the scorer uses (look in the task's `harness.ts` for `REFERENCE_POSE` — typically `30,15` for canonical 3/4 product shots). Render at default views (no `--pose` flag) only when you specifically want the front/right/top/iso composite — that view often hides defects visible at the scorer pose.
+
+When you open the rendered PNG, ask three questions:
+
+1. **Is the feature I just added visibly present?** If the subtract didn't punch through, the union didn't show a color delta, or the material change didn't render, the eval-harness JSON of `ok: true, featureCount: N` is lying about success. Fix the geometry, don't ship.
+2. **Are features I didn't intend to change still where they were?** Material chaining, sketch reuse, and chained booleans regularly corrupt earlier features silently. Compare against the previous render.
+3. **Does the silhouette match the reference at the same pose?** Not pixel-perfect — but the right number of openings, right proportions, right shape category.
+
+If a render shows wrong proportions, hidden openings, floating parts, or unreadable details, repair `.kcad.ts` source and re-render. Do not pile features on top of broken geometry. Do not declare done until the most recent render shows the intent.
+
+Common inner-loop traps are catalogued in the cookbook at
+`kernelcad-nurbs/cookbook/snippets/your-first-real-build-anti-patterns.md`
+(orientation defaults, sketch-axis sign flips, material-shadowing on union,
+two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-proof).
+
 ## Assembly and mechanism loop
 
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
@@ -47,6 +80,8 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
+
+> For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
 ## Installation
 
@@ -167,6 +202,24 @@ setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
 // direction. Use when the auto-fit extents-projection reads too tight or
 // too loose at the chosen pose / aspect.
 setCameraDistance(distance: number): CameraTargetHandle;
+
+// Declare a parameter sweep for offline kinematic-motion MP4 capture. The
+// script names a previously-declared `param()`, its start/end values, and
+// the animation duration in milliseconds. `scripts/captureAnimationView.mjs`
+// reads the resulting `animationView` virtual record and renders an MP4 by
+// sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
+// leveraging the per-session mesh cache so each frame's recompute is
+// ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
+// multiple records; the capture script uses the last one. Validation
+// errors (non-empty param, finite range, positive durationMs/fps) are
+// pushed as structured diagnostics on `handle.metadata.diagnostics`.
+animationView(spec: {
+  param: string;
+  from: number;
+  to: number;
+  durationMs: number;
+  fps?: number;          // default 30
+}): AnimationViewHandle;
 ```
 
 ### Shape methods (chainable)

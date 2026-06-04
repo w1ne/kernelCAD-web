@@ -5,11 +5,13 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './captureSession';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
+import type { Query, FaceMarker, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
   type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
+import { generateBoltHoleConnectors, type HoleCenter } from '../parts/holeAutoConnectors';
 import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
@@ -37,11 +39,21 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
+  // lowerer through the same {edges} slot. Captured at append-time and
+  // dispatched through the Q3 evaluator at lower-time.
+  | Query<EdgeMarker>
+  | Query<unknown>
   | undefined;
 
 export type FaceSelector =
   | FaceQuery
-  | { face: CanonicalFace | string };
+  | { face: CanonicalFace | string }
+  // Q8 — Query DSL value (kc.q.face(...) etc) reaches every face-feature
+  // lowerer (shell / hole / cutout) through the same {face} slot. Captured
+  // at append-time and dispatched through the Q3 evaluator at lower-time.
+  | Query<FaceMarker>
+  | Query<unknown>;
 
 /**
  * IMPORTANT — drift sentinel contract:
@@ -790,12 +802,27 @@ export class Shape {
       target: { kind: 'feature', id: this.id },
       face: buildFaceInputRef(this.id, faceSel),
     };
-    return this.session.createShape({
+    const holeShape = this.session.createShape({
       kind: 'hole',
       inputs,
       params,
       metadata,
     });
+    // Auto-emit bolt-holes-1 connector at the hole's bottom face + through-axis.
+    const holeDepth =
+      resolved.depth === 'through'
+        ? 0 // through-hole: the connector sits at the back of the parent face
+        : typeof resolved.depth === 'number'
+          ? resolved.depth
+          : 0;
+    const centers: HoleCenter[] = [
+      { u: resolved.u, v: resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
+    ];
+    const partName =
+      (metadata as { partName?: string }).partName ?? holeShape.id;
+    const conns = generateBoltHoleConnectors(centers, { partName });
+    this.session.attachAutoConnectors(holeShape.id, conns);
+    return holeShape;
   }
 
   /**
@@ -821,12 +848,30 @@ export class Shape {
       target: { kind: 'feature', id: this.id },
       face: buildFaceInputRef(this.id, faceSel),
     };
-    return this.session.createShape({
+    const holesShape = this.session.createShape({
       kind: 'holes',
       inputs,
       params,
       metadata,
     });
+    // Auto-emit bolt-holes-1..N connectors, one per hole position.
+    const holesDepth =
+      resolved.depth === 'through'
+        ? 0
+        : typeof resolved.depth === 'number'
+          ? resolved.depth
+          : 0;
+    const centers: HoleCenter[] = resolved.positions.map((p) => ({
+      u: p.u,
+      v: p.v,
+      depthMm: holesDepth,
+      axis: [0, 0, -1] as [number, number, number],
+    }));
+    const partName =
+      (metadata as { partName?: string }).partName ?? holesShape.id;
+    const conns = generateBoltHoleConnectors(centers, { partName });
+    this.session.attachAutoConnectors(holesShape.id, conns);
+    return holesShape;
   }
 
   /**

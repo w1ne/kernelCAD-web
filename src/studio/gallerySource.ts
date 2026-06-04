@@ -5,11 +5,32 @@ export interface GalleryManifestEntry {
 
 const MARKETING_GALLERY_ORIGIN = 'https://kernelcad.com';
 
-function galleryManifestUrl(): string {
+/**
+ * Base origin for static gallery assets (gallery.json, per-slug source, and
+ * the precomputed `_mesh/<sha>.json` files). On the hosted app subdomain
+ * these live cross-origin on the marketing site; everywhere else (dev,
+ * preview) they're served same-origin by the vite middleware / static dir.
+ */
+function galleryAssetBase(): string {
   if (typeof window !== 'undefined' && window.location.hostname === 'app.kernelcad.com') {
-    return `${MARKETING_GALLERY_ORIGIN}/gallery.json`;
+    return MARKETING_GALLERY_ORIGIN;
   }
-  return '/gallery.json';
+  return '';
+}
+
+function galleryManifestUrl(): string {
+  return `${galleryAssetBase()}/gallery.json`;
+}
+
+/**
+ * URL of a build-time precomputed mesh bridge payload, keyed by the sha256
+ * hex of the .kcad.ts source. `build-gallery.ts` writes these under
+ * `public/gallery/_mesh/<sha>.json` for every curated entry, so the hosted
+ * Studio can render a gallery model's initial view from a static CDN file
+ * with zero server compute.
+ */
+export function galleryPrecomputedMeshUrl(sourceSha256Hex: string): string {
+  return `${galleryAssetBase()}/gallery/_mesh/${sourceSha256Hex}.json`;
 }
 
 function resolveGalleryAssetUrl(sourceUrl: string, manifestUrl: string): string {

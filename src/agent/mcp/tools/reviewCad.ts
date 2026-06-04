@@ -14,6 +14,7 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../../modeling/mates/mechanicalPlausibility';
+import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -24,6 +25,10 @@ import {
 } from '../../../modeling/mates/mechanicalTransmission';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../../modeling/mates/validator';
 import { validateAssemblyWithMates } from '../../../modeling/mates/validator';
+import type { InterferencePair } from '../../../modeling/runtime/detectInterferences';
+import { detectInterferences } from '../../../modeling/runtime/detectInterferences';
+import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
+import type { BuiltModel } from '../../../modeling/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
 export interface ReviewCadInput {
@@ -34,6 +39,14 @@ export interface ReviewCadInput {
   preserveInterfaces?: string[];
   includePoseEnvelope?: boolean;
   includeInterference?: boolean;
+  /**
+   * P6: run the MuJoCo-based physics gate (criteria 5+6) in addition to
+   * the kinematic-only criteria 1-4. Defaults to the same value as
+   * `includeInterference` (i.e. heavy-validate flag, opt-in by default
+   * for the cheap path). The Studio "validate on save" flow can pass
+   * this explicitly; the keystroke-rate recompute does NOT.
+   */
+  includePhysics?: boolean;
   epsilonMm3?: number;
   trackConnectors?: string[];
   gripperAperture?: GripperApertureRequest;
@@ -53,6 +66,19 @@ export interface RepairContext {
   readonly designGoal: string;
 }
 
+/**
+ * Physics-loop verdict (P1) folded onto every reviewCad result.
+ *
+ * - `'real'` — the mechanism-truth probe passed at every sampled pose
+ * - `'broken'` — at least one criterion failed; `mechanismFailures`
+ *               carries the structured list with actionable hints
+ * - `'unverified'` — the probe wasn't run (cheap path; no assembly in
+ *                    the script, or evaluation failed before lowering)
+ *
+ * Spec: docs/specs/2026-06-01-physics-grounded-loop-design.md
+ */
+export type MechanismVerdict = 'real' | 'broken' | 'unverified';
+
 export type ReviewCadOutput =
   | {
       ok: true;
@@ -70,6 +96,22 @@ export type ReviewCadOutput =
       gripperAperture?: PoseEnvelopeReviewResult['gripperAperture'];
       fitness: MechanismFitnessResult;
       repairContext: RepairContext;
+      /**
+       * Raw interference pairs detected at the script's default pose, BEFORE
+       * any `ignore` filtering applied by the validator. Used by interactive
+       * surfaces (e.g. the Studio status-bar HUD) that need to show the user
+       * what's overlapping right now, even when the script silences specific
+       * pairs via `assembly.solvedModel({ ignore: [...] })`. The validator's
+       * filtered diagnostic stream remains on `validator.diagnostics` for the
+       * Validity tab + throw path.
+       */
+      rawInterferencePairs: ReadonlyArray<InterferencePair>;
+      /** Physics-loop verdict (P1). Always present when an assembly was
+       *  selected. `'unverified'` when the mechanism probe didn't run. */
+      mechanism: MechanismVerdict;
+      /** Structured failure list when `mechanism === 'broken'`. Empty
+       *  otherwise. */
+      mechanismFailures: readonly CompilerDiagnostic[];
     }
   | {
       ok: false;
@@ -88,6 +130,16 @@ export type ReviewCadOutput =
       fitness?: MechanismFitnessResult;
       repairContext: RepairContext;
       suggestedRepairPrompt: string;
+      /**
+       * Raw interference pairs at the default pose (see the `ok: true`
+       * variant). Always present when an assembly was selected, even when
+       * `ok: false`, so the Studio HUD can still report the count.
+       */
+      rawInterferencePairs?: ReadonlyArray<InterferencePair>;
+      /** Physics-loop verdict (P1). `'unverified'` for pre-build failures
+       *  where no assembly reached the probe. */
+      mechanism?: MechanismVerdict;
+      mechanismFailures?: readonly CompilerDiagnostic[];
     };
 
 type ReviewDiagnostic =
@@ -132,7 +184,42 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     };
   }
 
-  const validator = await validateAssemblyWithMates(arm);
+  // Raw default-pose interferences are surfaced separately so interactive
+  // surfaces (the Studio status-bar HUD) can show the user what's actually
+  // overlapping right now, even when the script silences specific pairs via
+  // `assembly.solvedModel({ ignore: [...] })`. The validator's diagnostics
+  // already respect that ignore list; this channel deliberately does NOT.
+  //
+  // We reuse `detectInterferencesForPoses` with an empty pose map (default
+  // pose). When the script has no live param overrides this matches the
+  // capture-time scene exactly; when params are live-edited via the SSE
+  // bridge, the session's paramTable carries the live value and detection
+  // runs against the current pose. That's what makes the HUD count update on
+  // slider drag.
+  //
+  // Respect `includeInterference: false` (and `includePoseEnvelope: false`
+  // when `includeInterference` is unset) to preserve back-compat with
+  // existing callers — notably the integration test fixtures that
+  // deliberately build clashing assemblies to exercise other validators.
+  // The default flow (both unset) runs detection so the Studio HUD sees real
+  // overlaps; opt-out paths skip it. The legacy "blind to overlaps"
+  // behaviour is preserved when either flag explicitly disables interference
+  // work.
+  const wantInterference =
+    input.includeInterference !== undefined
+      ? input.includeInterference
+      : input.includePoseEnvelope !== false;
+  const rawInterferencePairs: InterferencePair[] = wantInterference
+    ? safeDetectDefaultPoseInterferences(model, input.epsilonMm3)
+    : [];
+  const validator = await validateAssemblyWithMates(
+    arm,
+    wantInterference ? rawInterferencePairs : undefined,
+    undefined,
+    undefined,
+    undefined,
+    arm.__ignoreInterference(),
+  );
   const mechanicalPlausibility = await reviewMechanicalPlausibility(arm);
   const mechanicalIntent = await reviewMechanicalIntent(arm);
   const includePoseEnvelope = input.includePoseEnvelope ?? true;
@@ -156,6 +243,42 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     ...mechanicalTransmission.diagnostics,
     ...(poseEnvelope?.diagnostics ?? []),
   ];
+  // Physics-loop probe (P1 surface convergence). Same gating shape as
+  // wantInterference above — opt-out only when the caller explicitly
+  // disables heavy work (includePoseEnvelope: false defaults the
+  // mechanism probe off too, mirroring the existing convention where
+  // envelope sampling and interference detection move together). Cheap
+  // review calls (Studio param drags, eval harness rest-pose checks)
+  // skip the pose sweep this way. The probe's broken-mechanism verdict
+  // gates the fitness summary below: a broken mechanism cannot be
+  // functional no matter what the legacy fitness checks say.
+  const wantMechanism =
+    input.includeInterference !== undefined
+      ? input.includeInterference
+      : input.includePoseEnvelope !== false;
+  let mechanism: MechanismVerdict = 'unverified';
+  let mechanismFailures: readonly CompilerDiagnostic[] = [];
+  if (wantMechanism) {
+    // Physics opt-in mirrors interference opt-in by default. The Studio
+    // recompute layer can override by passing `includePhysics: false`
+    // explicitly to keep the keystroke-rate path off MuJoCo even when
+    // it asks for the kinematic check.
+    const physicsCheck = input.includePhysics === undefined
+      ? wantMechanism
+      : input.includePhysics;
+    try {
+      const verdict = await checkMechanismTruth(arm, { physicsCheck });
+      mechanism = verdict.mechanism === 'broken' ? 'broken' : 'real';
+      mechanismFailures = verdict.failures;
+    } catch {
+      // Probe-side throw — surface as unverified so the legacy review
+      // path still produces actionable output; the CLI handles the same
+      // case symmetrically.
+      mechanism = 'unverified';
+      mechanismFailures = [];
+    }
+  }
+
   const fitness = summarizeMechanismFitness({
     validatorDiagnostics: validator.diagnostics,
     mechanicalPlausibilityDiagnostics: mechanicalPlausibility.diagnostics,
@@ -164,7 +287,11 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     poseEnvelope,
     trackConnectors: poseEnvelope !== undefined ? input.trackConnectors : undefined,
   });
-  const ok = fitness.functional;
+  // A broken mechanism overrides a "functional" fitness summary —
+  // the loop's truth criterion is the merge gate, not the legacy
+  // advisory aggregate. Spec §"the recompute is what defines the
+  // passing state".
+  const ok = fitness.functional && mechanism !== 'broken';
 
   const repairContext = await buildRepairContext(arm, diagnostics, fitness, input);
 
@@ -185,6 +312,9 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
       ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
       fitness,
       repairContext,
+      rawInterferencePairs,
+      mechanism,
+      mechanismFailures,
     };
   }
 
@@ -205,7 +335,41 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     fitness,
     repairContext,
     suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
+    rawInterferencePairs,
+    mechanism,
+    mechanismFailures,
   };
+}
+
+/**
+ * Run pairwise BREP interference detection on the BuiltModel's tail scene
+ * for the Studio HUD's raw-count channel. We deliberately read from
+ * `model.tailShape` (the already-lowered scene returned by the script's
+ * own `arm.solvedModel(poses, ...)`) instead of calling
+ * `detectInterferencesForPoses(arm, {})` — the latter re-records a new
+ * `solvedAssembly` with EMPTY poses, which trips the lowerer's
+ * "joint requires a pose value" check for revolute/prismatic joints and
+ * silently returns []. The script's already-built scene carries the
+ * script's authored param defaults (the same ones the Studio render is
+ * showing), so reading them gives the user-visible state.
+ *
+ * Wrapped in try/catch so a kernel failure on a single detection can't
+ * bring down the entire review tool — the HUD just shows
+ * `interferences: 0` in that case and the validator's other diagnostics
+ * continue to surface the real problem.
+ */
+function safeDetectDefaultPoseInterferences(
+  model: BuiltModel,
+  epsilonMm3?: number,
+): InterferencePair[] {
+  try {
+    const tail = model.tailShape;
+    if (!tail || !isSceneBackend(tail)) return [];
+    const epsilon = epsilonMm3 ?? 0.01;
+    return detectInterferences(tail, epsilon, new Set<string>()).pairs;
+  } catch {
+    return [];
+  }
 }
 
 async function evaluateForReview(input: EvaluateInput) {

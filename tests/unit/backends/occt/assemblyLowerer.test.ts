@@ -10,15 +10,23 @@ import { Transform } from '../../../../src/shared/runtime/se3';
 describe('OCCT assembly lowerer', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('keeps assembly part and joint records executable as geometry passthroughs', async () => {
+  it('keeps assembly part and mate records executable as geometry passthroughs', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const arm = kcad.assembly('two-link arm');
     const base = arm.part('base', kcad.box(20, 20, 6), { at: [0, 0, 0] });
     const link = arm.part('link', kcad.box(80, 10, 6), { at: [30, 0, 6] });
-    const shoulder = arm.revolute('shoulder', base, link, {
+    base.connector('shoulder', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 6] },
       axis: [0, 0, 1],
-      origin: [0, 0, 6],
+    });
+    link.connector('shoulder', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('shoulder', 'base.shoulder', 'link.shoulder', 'revolute', {
       limitsDeg: [-90, 90],
     });
 
@@ -27,7 +35,6 @@ describe('OCCT assembly lowerer', () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.shapes.get(base.id)).toBeDefined();
     expect(result.shapes.get(link.id)).toBeDefined();
-    expect(result.shapes.get(shoulder.id)).toBeDefined();
     expect(result.shapes.get(link.id)?.boundingBox().min[0]).toBeGreaterThan(20);
   });
 

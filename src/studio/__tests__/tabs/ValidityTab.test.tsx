@@ -142,4 +142,47 @@ describe('ValidityTab', () => {
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
+
+    it('renders the MECHANISM BROKEN banner with one entry per failure', () => {
+        // P1 surface convergence — when the recompute's mechanism
+        // verdict is broken, the Validity tab surfaces the failure
+        // list above the legacy diagnostic rows.
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('error', [], 3, 1)),
+            mechanismBanner: {
+                entries: [
+                    {
+                        code: 'mechanism.disconnect',
+                        message: 'spring drifts',
+                        hint: 'bind to a topology connector',
+                    },
+                    {
+                        code: 'mechanism.orphan-part',
+                        message: 'floating part',
+                        hint: 'add a mate edge',
+                    },
+                ],
+            },
+        });
+
+        render(<ValidityTab />);
+
+        const banner = screen.getByTestId('mechanism-banner');
+        expect(banner.textContent).toContain('MECHANISM BROKEN');
+        const entries = screen.getAllByTestId('mechanism-banner-entry');
+        expect(entries).toHaveLength(2);
+        expect(entries[0].getAttribute('data-code')).toBe('mechanism.disconnect');
+        expect(entries[0].textContent).toContain('spring drifts');
+        expect(entries[0].textContent).toContain('bind to a topology connector');
+        expect(entries[1].getAttribute('data-code')).toBe('mechanism.orphan-part');
+    });
+
+    it('omits the MECHANISM BROKEN banner when mechanismBanner is null', () => {
+        mockUseRecomputeResult.mockReturnValue({
+            ...withValidity(makeValidity('solved', [], 0, 0)),
+            mechanismBanner: null,
+        });
+        render(<ValidityTab />);
+        expect(screen.queryByTestId('mechanism-banner')).toBeNull();
+    });
 });

@@ -3,8 +3,34 @@ import { initOcct } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { urdfSerialize } from '../../../../../src/modeling/export/urdf/urdfSerializer';
 import { CaptureSession } from '../../../../../src/modeling/capture/captureSession';
 import { createApi } from '../../../../../src/modeling/api';
+import type { Vec3 } from '../../../../../src/shared/intent/types';
 
-describe('urdfSerialize — Task B3.C', () => {
+/** Helper: declare an axis connector on a part. */
+function axisConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3, axis: Vec3) {
+  part.connector(name, {
+    type: 'axis',
+    origin: { kind: 'vec3', value: origin },
+    axis,
+  });
+}
+
+/** Helper: declare a frame connector on a part. */
+function frameConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3) {
+  part.connector(name, {
+    type: 'frame',
+    origin: { kind: 'vec3', value: origin },
+  });
+}
+
+/** Helper: declare a ball connector on a part. */
+function ballConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3) {
+  part.connector(name, {
+    type: 'ball',
+    origin: { kind: 'vec3', value: origin },
+  });
+}
+
+describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('emits a well-formed <robot> with one link per part and one joint per mate', async () => {
@@ -13,7 +39,9 @@ describe('urdfSerialize — Task B3.C', () => {
     const arm = kcad.assembly('two-link');
     const base = arm.part('base', kcad.box(20, 20, 20), { density: 2700 });
     const link = arm.part('link', kcad.box(80, 10, 10), { density: 2700 });
-    arm.revolute('shoulder', base, link, { axis: [0, 0, 1], origin: [0, 0, 20], limitsDeg: [-90, 90] });
+    axisConn(base, 'shoulder', [0, 0, 20], [0, 0, 1]);
+    axisConn(link, 'shoulder', [0, 0, 0], [0, 0, 1]);
+    arm.mate('shoulder', 'base.shoulder', 'link.shoulder', 'revolute', { limitsDeg: [-90, 90] });
     const r = await urdfSerialize(arm, {});
     expect(r.urdf).toMatch(/<robot name="two-link">/);
     expect((r.urdf.match(/<link /g) ?? []).length).toBe(2);
@@ -29,10 +57,18 @@ describe('urdfSerialize — Task B3.C', () => {
     const b = arm.part('b', kcad.box(10, 10, 10), { density: 2700 });
     const c = arm.part('c', kcad.box(10, 10, 10), { density: 2700 });
     const d = arm.part('d', kcad.box(10, 10, 10), { density: 2700 });
-    arm.revolute('ab', a, b, { axis: [0, 0, 1], origin: [10, 0, 0] });
-    arm.revolute('bc', b, c, { axis: [0, 0, 1], origin: [10, 0, 0] });
-    arm.revolute('cd', c, d, { axis: [0, 0, 1], origin: [10, 0, 0] });
-    arm.revolute('da', d, a, { axis: [0, 0, 1], origin: [10, 0, 0] });
+    axisConn(a, 'ab_a', [10, 0, 0], [0, 0, 1]);
+    axisConn(b, 'ab_b', [0, 0, 0], [0, 0, 1]);
+    axisConn(b, 'bc_b', [10, 0, 0], [0, 0, 1]);
+    axisConn(c, 'bc_c', [0, 0, 0], [0, 0, 1]);
+    axisConn(c, 'cd_c', [10, 0, 0], [0, 0, 1]);
+    axisConn(d, 'cd_d', [0, 0, 0], [0, 0, 1]);
+    axisConn(d, 'da_d', [10, 0, 0], [0, 0, 1]);
+    axisConn(a, 'da_a', [0, 0, 0], [0, 0, 1]);
+    arm.mate('ab', 'a.ab_a', 'b.ab_b', 'revolute');
+    arm.mate('bc', 'b.bc_b', 'c.bc_c', 'revolute');
+    arm.mate('cd', 'c.cd_c', 'd.cd_d', 'revolute');
+    arm.mate('da', 'd.da_d', 'a.da_a', 'revolute');
     const r = await urdfSerialize(arm, {});
     expect(r.urdf).toBe('');
     expect(r.diagnostics.map(d => d.code)).toContain('export.urdf.closed-loop');
@@ -44,18 +80,22 @@ describe('urdfSerialize — Task B3.C', () => {
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10));   // no density
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
-    arm.revolute('j', base, tip, { axis: [0, 0, 1], origin: [10, 0, 0] });
+    axisConn(base, 'j', [10, 0, 0], [0, 0, 1]);
+    axisConn(tip, 'j', [0, 0, 0], [0, 0, 1]);
+    arm.mate('j', 'base.j', 'tip.j', 'revolute');
     const r = await urdfSerialize(arm, {});
     expect(r.diagnostics.map(d => d.code)).toContain('export.urdf.inertia-density-declared');
   });
 
-  it('emits ball-decomposed diagnostic and 3 chained joints for a ball joint', async () => {
+  it('emits ball-decomposed diagnostic and 3 chained joints for a ball mate', async () => {
     const session = new CaptureSession();
     const kcad = createApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
-    arm.ball('shoulder', base, tip, { origin: [0, 0, 10] });
+    ballConn(base, 'shoulder', [0, 0, 10]);
+    ballConn(tip, 'shoulder', [0, 0, 0]);
+    arm.mate('shoulder', 'base.shoulder', 'tip.shoulder', 'ball');
     const r = await urdfSerialize(arm, {});
     expect(r.diagnostics.map(d => d.code)).toContain('export.urdf.ball-decomposed');
     expect((r.urdf.match(/<joint /g) ?? []).length).toBe(3);
@@ -69,7 +109,9 @@ describe('urdfSerialize — Task B3.C', () => {
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
-    arm.fixed('j', base, tip, { origin: [10, 0, 0] });
+    frameConn(base, 'j', [10, 0, 0]);
+    frameConn(tip, 'j', [0, 0, 0]);
+    arm.mate('j', 'base.j', 'tip.j', 'fastened');
     const r = await urdfSerialize(arm, {});
     expect(r.urdf).toMatch(/package:\/\/kernelcad_export\/meshes\/base\.stl/);
   });
@@ -80,7 +122,9 @@ describe('urdfSerialize — Task B3.C', () => {
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
-    arm.fixed('j', base, tip, { origin: [10, 0, 0] });
+    frameConn(base, 'j', [10, 0, 0]);
+    frameConn(tip, 'j', [0, 0, 0]);
+    arm.mate('j', 'base.j', 'tip.j', 'fastened');
     const r = await urdfSerialize(arm, { meshPrefix: './meshes/' });
     expect(r.urdf).toMatch(/filename="\.\/meshes\/base\.stl"/);
   });

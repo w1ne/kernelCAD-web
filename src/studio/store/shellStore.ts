@@ -32,6 +32,7 @@ export interface ShellState {
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
     readonly stagedEdit: StagedEdit | null;
+    readonly markingMode: boolean;
 }
 
 const INITIAL_STATE: ShellState = {
@@ -40,6 +41,7 @@ const INITIAL_STATE: ShellState = {
     previousValidity: null,
     currentValidity: null,
     stagedEdit: null,
+    markingMode: false,
 };
 
 type Listener = () => void;
@@ -70,6 +72,17 @@ export class ShellStore {
     setAgentRailOpen = (open: boolean): void => {
         if (this.state.agentRailOpen === open) return;
         this.state = { ...this.state, agentRailOpen: open };
+        this.emit();
+    };
+
+    setMarkingMode = (on: boolean): void => {
+        if (this.state.markingMode === on) return;
+        this.state = { ...this.state, markingMode: on };
+        this.emit();
+    };
+
+    toggleMarkingMode = (): void => {
+        this.state = { ...this.state, markingMode: !this.state.markingMode };
         this.emit();
     };
 

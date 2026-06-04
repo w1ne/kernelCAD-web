@@ -6,6 +6,10 @@
     "module": "ESNext",
     "types": ["node"],
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "verb-nurbs": ["./vendor/verb-nurbs/build/verb.es.js"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -22,5 +26,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts", "src/shared/types/**/*"]
+  "include": [
+    "vite.config.ts",
+    "src/shared/types/**/*",
+    "src/kernel/backends/verb/verb-nurbs.d.ts"
+  ]
 }

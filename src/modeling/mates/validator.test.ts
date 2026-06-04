@@ -69,7 +69,7 @@ describe('validateAssembly', () => {
     expect(r.status).toBe('warning');
     const floatingDiag = r.diagnostics.find((d) => d.partName === 'floating-bracket');
     expect(floatingDiag?.code).toBe('assembly.part.floating');
-    expect(floatingDiag?.hint).toContain("arm.fixed");
+    expect(floatingDiag?.hint).toContain("arm.mate");
   });
 
   it('flags every part of a multi-part assembly when none have joints', () => {
@@ -137,8 +137,63 @@ describe('validateAssembly', () => {
     const floating = mkPart('floating');
     const r = validateAssembly({
       records: [a, b, j, floating],
-      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 1 }],
+      // Above the uniform 20 mm³ contact-noise threshold (decision #1) so it
+      // registers as a real interference error, which must win over the
+      // floating-part warning in the aggregate status.
+      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 142.5 }],
     });
+    expect(r.status).toBe('error');
+  });
+
+  it('filters interference pairs listed in `ignore` from the diagnostic stream', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const j = mkJoint('a-b', a, b);
+    const r = validateAssembly({
+      records: [a, b, j],
+      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 42 }],
+      ignore: [['a', 'b']],
+    });
+    // The ignored pair must NOT emit a diagnostic. Without other errors, the
+    // assembly is solved (no floating, no orphan).
+    expect(r.diagnostics.find((d) => d.code === 'assembly.interference.overlap')).toBeUndefined();
+    expect(r.status).toBe('solved');
+  });
+
+  it('symmetric ignore: `[a, b]` also filters `(b, a)`', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const j = mkJoint('a-b', a, b);
+    // detection happens to emit (b, a) — validator must still suppress it.
+    const r = validateAssembly({
+      records: [a, b, j],
+      interferencePairs: [{ a: 'b', b: 'a', volumeMm3: 5 }],
+      ignore: [['a', 'b']],
+    });
+    expect(r.diagnostics.find((d) => d.code === 'assembly.interference.overlap')).toBeUndefined();
+  });
+
+  it('only ignored pairs are filtered; other pairs still emit diagnostics', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const c = mkPart('c');
+    const j1 = mkJoint('a-b', a, b);
+    const j2 = mkJoint('b-c', b, c);
+    const r = validateAssembly({
+      records: [a, b, c, j1, j2],
+      interferencePairs: [
+        { a: 'a', b: 'b', volumeMm3: 50 }, // ignored (would otherwise error: > 20 mm³)
+        { a: 'b', b: 'c', volumeMm3: 50 }, // NOT ignored — must error (> 20 mm³)
+      ],
+      ignore: [['a', 'b']],
+    });
+    const overlaps = r.diagnostics.filter((d) => d.code === 'assembly.interference.overlap');
+    expect(overlaps).toHaveLength(1);
+    expect(overlaps[0].partA).toBe('b');
+    expect(overlaps[0].partB).toBe('c');
     expect(r.status).toBe('error');
   });
 });
@@ -311,19 +366,13 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     expect(connectorMissing.code).toBe('assembly.mate.connector-not-found');
   });
 
-  it('falls back to v0.5 validateAssembly for legacy joint-only scenes (regression check)', async () => {
-    // No mates declared — should pass through to v0.5 behavior. Build a
-    // clean joint-only chain (base-link via fixed) and expect 'solved'.
-    const { arm, kcad } = makeArm();
-    const base = arm.part('base', kcad.box(10, 10, 10));
-    const link = arm.part('link', kcad.box(5, 5, 5));
-    arm.fixed('base-link', base, link);
-    const result = await validateAssemblyWithMates(arm);
-    expect(result.status).toBe('solved');
-    expect(result.diagnostics).toHaveLength(0);
-    expect(result.partCount).toBe(2);
-    expect(result.jointCount).toBe(1);
-  });
+  // G0 (2026-05-31): the legacy-joint-only regression case was removed
+  // when `arm.fixed(...)` was deleted from the public API. The v0.5
+  // forwardKinematics fallback path in `validateAssemblyWithMates` is now
+  // unreachable from script callers; if it becomes the focus of a future
+  // slice it should be exercised via a hand-built FeatureRecord[] fixture
+  // (mirroring the upstream `validateAssembly` test above) rather than
+  // through the removed Assembly methods.
 });
 
 describe('validateAssemblyWithMates — v0.6.2 envelope fold + limit-missing', () => {

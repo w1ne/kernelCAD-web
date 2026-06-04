@@ -101,6 +101,13 @@ const PLANET_REL_RATIO = -(Z_SUN / Z_PLANET) * (1 - CARRIER_RATIO);   // -1.05
 setCameraTarget(0, 0, 4);
 setCameraDistance(195);
 
+// Declare a one-revolution kinematic sweep for offline MP4 capture via
+// `npx tsx scripts/captureAnimationView.mjs examples/gallery/gearfinity-planetary-stage.kcad.ts`.
+// At Z_sun = 12 and Z_ring = 28, one full revolution of the sun gear
+// (0 → 360°) carries the carrier through 360 × 12/40 = 108° — enough to
+// see the orbital motion plus the planets' 1.05× counter-rotation.
+animationView({ param: 'driveAngleDeg', from: 0, to: 360, durationMs: 4000, fps: 30 });
+
 // --- Helpers ---------------------------------------------------------------
 const D2R = Math.PI / 180;
 function polar(r: number, deg: number, z: number): [number, number, number] {

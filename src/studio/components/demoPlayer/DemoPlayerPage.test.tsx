@@ -42,6 +42,15 @@ vi.mock('three', async () => {
   return { ...actual, WebGLRenderer: FakeWebGLRenderer };
 });
 
+// S1: DemoPlayerPage's mesh fetches route through the apiBase helper now,
+// which calls supabase.auth.getSession(). Stub it so the test stays
+// behavior-equivalent to today (unsigned-in → relative URLs).
+vi.mock('../../../funnel/lib/supabaseClient', () => ({
+  getSupabase: () => ({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+  }),
+}));
+
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { DemoPlayerPage } from './DemoPlayerPage';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
@@ -292,6 +301,7 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         '/__kernelcad/mesh?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
+        expect.objectContaining({ headers: {} }),
       );
       expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
     });
@@ -350,6 +360,7 @@ describe('DemoPlayerPage.loadFeatureMeshes', () => {
       expect(fetchMock).toHaveBeenCalledWith('/records/robot-arm-skill-build.json');
       expect(fetchMock).toHaveBeenCalledWith(
         '/__kernelcad/mesh?script=examples%2Frobot-arm%2Fskill-built-supported-arm-01-colliding.kcad.ts',
+        expect.objectContaining({ headers: {} }),
       );
       expect(window.__demoPlayer!.dumpScene().meshCount).toBe(1);
     });

@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 165 codes', () => {
+  it('catalogue has exactly 210 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -82,8 +82,12 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //  +  7 Slice A export trio (options-format-mismatch + six per-format
     //       not-implemented placeholders for dxf/3mf/glb/urdf/srdf/sdf-gazebo;
     //       the dxf/3mf/glb placeholders are removed by Slice A tasks 3-5).
+    //  +  6 Slice C parts.* codes (parts.input.id-or-query-required,
+    //       parts.fetch.offline-and-uncached, parts.fetch.checksum-mismatch,
+    //       parts.fetch.checksum-drift, parts.fetch.api-error,
+    //       parts.fetch.remote-disabled).
     //  + 24 dfm.* Slice E shopcheck (input/units/material/thickness/hole/slot/
-    //       web/bend/bending/size/dxf/rule)
+    //       web/bend/bending/size/dxf/rule).
     //  - 3 Slice B-rest fills urdf/srdf/sdf-gazebo placeholder slots; the
     //       three `.not-implemented` entries are removed.
     //  + 11 Slice B-rest new diagnostics:
@@ -92,8 +96,38 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //       SRDF (2): acm-sparse-sampling, planning-group-missing
     //       SDF  (4): cylindrical-lossy, pin-slot-lossy, invalid-version,
     //                 dangling-link-ref
-    // Net catalogue = 157 - 3 + 11 = 165.
-    expect(catalogue.size).toBe(165);
+    //  +  1 V Task V1 verb-nurbs bridge (feature.nurbs.bridge-conversion-failed)
+    //  +  5 V Task V2 Curve3D.analytics namespace (degenerate-arclength /
+    //       closest-point-no-converge / derivatives-out-of-range /
+    //       tessellation-tolerance-invalid / kernel-failed)
+    //  +  2 V Task V3 Curve3D.analytics.intersect (intersect-kernel-failed /
+    //       intersect-no-intersection)
+    //  +  2 V Task V4 path().spline tangent extension (tangent-zero-magnitude /
+    //       tangent-on-2d-only)
+    //  +  7 Slice Q (Query DSL) — Q3 evaluator codes (empty / over-determined /
+    //       evaluated-too-early / unknown-id / unknown-label / id-hierarchy-
+    //       clash / unsupported-entity-type)
+    //  +  1 Slice Q4 — composition-strict-failure
+    //  +  1 Slice Q5 — type-mismatch
+    //  +  1 Slice Q7 — invalid-syntax
+    //  + 9 K1-K9 kinematic-grounding (this slice):
+    //       collision.swept, collision.swept.sample-density-warning,
+    //       unreachable, reachability.iteration-cap-hit,
+    //       solver.unsupported-config, load-exceeds-yield,
+    //       load.beam-not-applicable, no-material-declared,
+    //       mounting-hole.diameter-mismatch.
+    //  +  1 v0.7 Gate 4 (joint visual exposure): assembly.joint.not-visible.
+    //  +  1 G2 Gate 6 (mate physical realization): assembly.mate.not-physically-realized.
+    //  +  4 P0 physics-grounded loop (mechanism truth): mechanism.disconnect,
+    //       mechanism.interpenetration, mechanism.dof-mismatch,
+    //       mechanism.orphan-part.
+    //  + 2 P6 physics-grounded loop: mechanism.unstable-under-gravity,
+    //       mechanism.drops-on-release.
+    //  + 1 P8 joint-mesh-continuity gate (this slice): mechanism.joint-mesh-gap.
+    //  + 1 P11 Slice 2 tendon-routing gate: mechanism.tendon-body-intersect.
+    // Develop baseline = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 + 1 = 204.
+    //  +  6 Slice C parts.* codes (itemised above) = 210.
+    expect(catalogue.size).toBe(210);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -1,9 +1,58 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
+
+// S1: scriptSource now routes through the apiBase helper, which calls
+// supabase.auth.getSession(). Stub the Supabase client so the test stays
+// behavior-equivalent to today (unsigned-in → relative URL path).
+vi.mock('../funnel/lib/supabaseClient', () => ({
+  getSupabase: () => ({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+  }),
+}));
+
+import { loadGalleryScriptSource, loadStudioScriptSource, meshSourceDev } from './scriptSource';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe('meshSourceDev', () => {
+  it('POSTs { source } to /__kernelcad/mesh and returns the bridge payload', async () => {
+    const payload = {
+      features: [{ featureId: 'f0' }],
+      featureRecords: [],
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+      params: {},
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => payload,
+    } as Response);
+
+    await expect(meshSourceDev('return box(1,1,1);')).resolves.toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'return box(1,1,1);' }),
+    });
+  });
+
+  it('throws the endpoint error message on a non-ok response', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'assembly compile failed' }),
+    } as Response);
+    await expect(meshSourceDev('boom')).rejects.toThrow('assembly compile failed');
+  });
+
+  it('throws when the response is not a bridge payload (no features array)', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ notFeatures: true }),
+    } as Response);
+    await expect(meshSourceDev('x')).rejects.toThrow(/did not return features/);
+  });
 });
 
 describe('loadStudioScriptSource', () => {
@@ -18,9 +67,11 @@ describe('loadStudioScriptSource', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/__kernelcad/source?script=examples%2Fgallery%2Fratchet-stool.kcad.ts',
+      expect.objectContaining({ headers: {} }),
     );
     expect(fetchMock).not.toHaveBeenCalledWith(
       expect.stringContaining('/__kernelcad/mesh'),
+      expect.anything(),
     );
   });
 });

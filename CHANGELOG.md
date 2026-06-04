@@ -1,6 +1,169 @@
 # kernelCAD v0.11.0
 
-## Unreleased
+## Unreleased — borrow-integration follow-ups (conventions clarified)
+
+Documentation cleanup for the two non-bug "discoveries" that surfaced while
+debugging the Luxo lamp:
+
+- **Joint-angle unit convention is now explicit.** `kernelcad-kinematic/SKILL.md`
+  opens with a "Units (read this first)" section stating that ALL joint
+  angles in the kinematic API — `solvedModel({poses})`, `revolute({limitsDeg})`,
+  `checkReachable({seed})`, `checkReachable` result `.pose` — use **degrees
+  for revolute and millimetres for prismatic**, with no degree-vs-radian
+  split anywhere on the user-facing surface. The cookbook
+  `02-reachable-with-seed.kcad.ts` seed values are updated from a
+  copy-paste-friendly-but-misleading `0.3`/`0.2` (which looked like radians
+  but the system interpreted as 0.3°/0.2° ≈ effectively zero) to honest
+  `17`/`11`/`-11` degree values. JSDoc on `ReachableOpts.seed` and the
+  MCP `check_reachable` tool's seed field now both name the unit. No API
+  change — the convention was always degrees; the docs caught up.
+
+- **Part-local frame convention is now explicit.** `kernelcad-assemblies/SKILL.md`
+  already said joint origins live in the parent's local frame; the companion
+  rule — "author each part's geometry in its own part-local frame, where the
+  origin sits at the joint this part attaches to its parent" — is now
+  spelled out alongside, with a worked correct / wrong example. Authoring a
+  part with `.translate(110, 0, 30)` when the shoulder joint already supplies
+  the `(0, 0, 30)` rest offset doubles the offset under any non-zero pose.
+  No code change — the cookbook examples already followed the convention; the
+  docs caught up.
+
+## Unreleased — borrow-integration bug fixes
+
+Caught while building the Luxo lamp demo (2026-05-25) — actual use of the new
+V/Q/kinematic borrows together surfaced two real bugs and one no-repro.
+
+### Fixed — primitives now validate `Editable<number>` inputs
+
+`box`, `cylinder`, and `sphere` previously accepted any value for their
+dimension arguments and silently produced degenerate shapes. The most common
+authoring slip — calling `cylinder({ radius, height })` with an object literal
+instead of the positional `cylinder(h, r)` signature — let the object flow
+through `toParam` and stored `{evaluated: <the object>}` in the feature
+params. The cylinder lowered to a degenerate shape that, when wrapped in an
+`assembly().part()`, recursed into "Maximum call stack size exceeded" during
+the assembly-clone path.
+
+All three primitives now reject non-finite / non-numeric inputs at capture
+time with a clear `feature.invalid-args` diagnostic that names the bad
+argument and points at the correct positional signature. The same guard
+catches `NaN`, `Infinity`, and any value that is neither a finite number nor
+a `ParamRef<number>`. The `kernelcad-nurbs` SKILL.md cookbook snippet was
+also updated — its `cylinder({ radius: 1, height: 5 })` example is now the
+correct `cylinder(5, 1)` positional form.
+
+### Fixed — `solvedModel({poses})` now propagates joint angles to the render
+
+`arm.solvedModel({ shoulder: 90 })` correctly attached the FK-derived
+`worldTransform` to each part record, and STEP/STL exports honoured it, but
+the headless render path (`kernelcad render <file>`) dropped it entirely:
+`DemoPlayerPage`'s per-feature loop rehydrated `fm.transform` via
+`rehydrateFromBridge` and then never applied it to the `THREE.Group` it
+built. The result was that every assembly rendered at its rest pose
+regardless of the pose dict passed to `solvedModel()`.
+
+The fix: apply `fm.transform` to the group's matrix at construction (with
+`matrixAutoUpdate = false`) and compose the bbox centroid offset on top via
+`Matrix4.premultiply` instead of `position.set` (which is decoupled from
+`matrix` when `matrixAutoUpdate` is false and would otherwise silently
+no-op). Verified: a single-joint test arm at `shoulder: 90` now renders
+straight up (was: horizontal rest pose).
+
+A Playwright regression test in `tests/demo_player_smoke.spec.ts` loads a
+feature mesh with a translate-by-7 transform and asserts the KCAD group's
+matrix records the non-zero translation through the centroid recenter.
+
+### No-repro — `variableSweep` + `assembly().part()` render hang
+
+Investigated; could not reproduce on `develop` tip. Three consecutive
+`kernelcad render /tmp/repro-b2-clean.kcad.ts` runs each completed cleanly
+in 9.5–11.5 s. The hang originally observed during the Luxo lamp session
+was almost certainly a zombie-process / stale-build artefact from accumulated
+chromium instances across an extended render iteration loop.
+
+## Unreleased — V slice: NURBS curve analytics layer
+
+### Added — `Curve3D.analytics.*` namespace
+
+Every `Curve3D` (constructed via `nurbsCurve`, `spline3d`, or `hermiteG2`) now exposes a `.analytics.*` namespace with read-only methods for querying the curve geometrically:
+
+- `curve.analytics.closestPoint(pt)` / `closestParam(pt)` — nearest point or parameter on the curve to a 3D query point, exact within solver tolerance.
+- `curve.analytics.divideByEqualArcLength(n)` / `divideByArcLength(mm)` — samples spaced uniformly in arc length (not parametrically); the natural answer for placing N features evenly along a non-uniform curve. The `n`-form returns `n + 1` samples; the `mm`-form returns however many samples fit, with the last sample landing at the curve end.
+- `curve.analytics.derivatives(t, numDerivs)` — derivatives 0..N at parameter `t`; index 0 is the point, index 1 is the (unnormalised) tangent, index 2 is the curvature vector. `numDerivs` must not exceed the curve degree.
+- `curve.analytics.tessellate({ tolerance })` — viewport-grade adaptive polyline; default tolerance 0.05 mm. For hover-preview and wireframe rendering only. Export tessellation continues to go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- `curve.analytics.intersect(other)` — geometric intersection of this curve with another `Curve3D` or with a `Surface`. Overloads return `CurveCurveIntersection[]` (each record carrying `tA`, `tB`, `ptA`, `ptB`, `distance`) or `CurveSurfaceIntersection[]` (each record carrying `tCurve`, `uv`, `pt`).
+
+The analytics methods are read-only — they return data, not new geometry. The instance `intersect(other)` overload is the only geometric intersection method in the namespace; the set-theoretic intersection of `Query<Face>` selections continues to live separately on `kc.q.intersection`.
+
+### Added — fit-with-tangents on `path().spline()`
+
+`path().spline(points, opts)` accepts `opts.startTangent` and `opts.endTangent` (2D direction vectors) to constrain the curve's tangent at the first and last waypoint. Tangent magnitudes are normalised internally; only the directions matter. Existing `.spline(points)` and `.spline(points, { tension })` calls are unchanged — when both tangent fields are omitted, the call lowers through the existing fast path unchanged.
+
+The `add_path_spline` MCP tool exposes the same `startTangent` / `endTangent` fields in its input schema.
+
+### Added — diagnostic codes
+
+10 new codes under `feature.curve3d.analytics.*`, `feature.path.spline.tangent-*`, and `feature.nurbs.bridge-conversion-failed` cover invalid-tolerance, non-convergence, degenerate-arc-length, derivatives-out-of-range, tangent-zero-magnitude, 2D-only tangent inputs, internal solver failures, and bridge-conversion failures. All carry `hint` + `nextAction` per the diagnostic-vocab discipline.
+
+### Added — eval task: `eyewear-wayfarer-front` arc-length lens placement
+
+The `eyewear-wayfarer-front` eval task gains a second solution variant (`solution-v2-arclength.kcad.ts`) that anchors the lens cutouts at arc-length-uniform samples along the brow spline via `Curve3D.analytics.divideByEqualArcLength(N)`. The new variant scores at or above the baseline on silhouette IoU and SSIM at pose `30, 15`, and removes the hard-coded `LENS_CX` literal that the original solution carried.
+
+### Added — kernelCAD kinematic grounding
+
+Design-time mechanism feasibility gates. Agents can now ask whether a moving
+assembly will work — across collision sweeps, reachability targets, mounting-hole
+patterns, and static load capacity — and get back actionable diagnostics with
+machine-readable `nextAction` repair hints. Every check runs locally in the
+same Node process; no network, no auth, no quotas.
+
+- `kinematic.checkSweptCollision(arm, opts)` — sweep declared joint ranges
+  and report colliding poses with structured per-pose contact pairs.
+- `kinematic.checkReachable(arm, opts)` — IK feasibility for an end-effector
+  target. Dispatches the closed-form analytical solver on spherical-wrist
+  6-DOF chains and the damped-least-squares numeric solver otherwise.
+- `kinematic.checkMountingHoleConsistency(arm)` — fastener compatibility
+  across every fastened mate's bound faces.
+- `kinematic.checkLoadCapacity(arm, loads, opts)` — closed-form
+  Euler-Bernoulli beam-stress check on cantilever-shaped parts with declared
+  materials.
+
+Nine new `kinematic.*` diagnostic codes registered with mandatory `hint` and
+`nextAction` repair fields (K1 collision swept, K2 sample-density warn, K3
+unreachable, K4 iteration cap, K5 unsupported config, K6 load exceeds yield,
+K7 beam not applicable, K8 no material declared, K9 mounting-hole mismatch).
+
+Four MCP tools paired with the facade entries — `check_swept_collision`,
+`check_reachable`, `check_mounting_hole_consistency`, `check_load_capacity`.
+
+New `kernelcad-kinematic` agent skill with six cookbook recipes covering
+robotic arms, scissor-jack legs, clamshell hinges, and over-center latches.
+
+Four new eval tasks under `eval/tasks/kinematic-*` exercising each facade
+entry plus a cross-borrow integration task chaining a NURBS rail curve, a
+topology-bound fastener, and a swept-collision check in one `.kcad.ts`.
+
+### Added — Query DSL: lazy retargetable topology references
+
+- Added the kernelCAD Query DSL — lazy retargetable topology references with set-algebra composition, type-narrowed authoring, and string-sugar parsing. Queries survive upstream edits via lineage-stable Ids; `kc.q.face(...)`, `kc.q.edge(...)`, `kc.q.union(...)`, `.and(...)`, `.minus(...)`, `.nth(...)`, `.asLenient()`. String form `@kcq[...]` round-trips with the existing `@kc[...]` ref form — one canonical internal Query value, two surface syntaxes.
+- Added `evaluate_query` MCP tool — agent inspects a Query against the current scene before consuming it in a feature op.
+- Extended every face/edge feature consumer (fillet, chamfer, hole, cutout, shell, bend, connector, mate) to accept `Query<FaceMarker>` / `Query<EdgeMarker>` inputs alongside the existing `@kc[...]` strings; strings are parsed to Queries at the API boundary.
+- Extended `resolve_topo_ref` MCP tool to accept `@kcq[...]` Query DSL refs alongside the existing `@kc[...]` grammar.
+- Added 10 new diagnostic codes under the `query.*` family: `query.empty`, `query.over-determined`, `query.evaluated-too-early`, `query.unknown-id`, `query.unknown-label`, `query.id-hierarchy-clash`, `query.unsupported-entity-type`, `query.composition-strict-failure`, `query.type-mismatch`, `query.invalid-syntax`. The reactive-update info code is deferred to v2 (the capture-session model has no edit-and-re-resolve loop today).
+- Internal: `EdgeLineage` and `PartLineage` gain a `featureId` slot for lineage-stable Query resolution; `FaceLineage`'s existing `featureId` slot is reused.
+- Added 6 cookbook snippets (`Q-S1` through `Q-S6`) under `kernelcad-features`, `kernelcad-assemblies`, and `kernelcad-mcp` skills covering construction, set-algebra, lenient composition, ownership-by-part queries, connector queries, and the inspect-first-build-after pattern.
+
+### Added — Parts catalog (Slice C)
+
+- New `kernelcad-parts` skill covering the bundled off-the-shelf parts catalog.
+- `lib.findPart`, `lib.fetchPart`, `lib.standard.*` on the user-script API.
+- Four MCP tools: `find_part`, `fetch_part`, `list_part_families`, `list_part_categories`.
+- Bundled seed catalog with 261 parts: M-series fasteners (SHCS, BHCS, flat-head, hex nuts, lock nuts, flat washers, lock washers, heat-set inserts), deep-groove ball bearings (608 / 623 / 624 / 625 / 626 / 6800 / 688 / 6900), linear shafts, NEMA stepper motor envelopes (8 / 11 / 14 / 17 / 23), 2.54 mm and 1.27 mm pin headers (straight + right-angle), JST-XH connector housings.
+- Every bundled part ships with pre-defined connector frames (`head-bearing`, `thread-tip`, `mating-face`, `inner-bore`, `output-shaft`, family-specific names) so it participates in assemblies with no manual `partRef.connector(...)` setup.
+- Any hole feature on an authored or imported part automatically receives `bolt-holes-N` connectors at the hole's bottom face + through-axis (deterministic numbering, refs resolvable as `@kc[<part>/connector/bolt-holes-N]`).
+- Opt-in remote tier: pass `partsBaseUrl` (or set `KERNELCAD_PARTS_BASE_URL`) to extend discovery to a user-configured catalog endpoint. No default URL ships with kernelCAD.
+- Six new `parts.*` diagnostic codes covering missing input, offline cache miss, sha256 mismatch, sha256 drift, remote API errors, and remote-tier-disabled paths.
+- `src/shared/cache/userCache.ts`: per-consumer user cache helper extracted from the texture loader; textures keep their 1-week TTL, parts run with no expiry on bundled bytes plus sha256-verified remote bytes.
 
 ### Added — Slice B-rest: SDFormat export + kernelcad-sdformat skill
 

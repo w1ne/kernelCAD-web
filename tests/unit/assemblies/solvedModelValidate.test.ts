@@ -138,6 +138,76 @@ describe('Assembly.solvedModel({validate:"error"}) — interference hard gate', 
     // The two boxes touch on a face (zero overlap volume) — should NOT register.
     await expect(arm.solvedModel({}, { validate: 'error' })).resolves.not.toThrow();
   }, 60_000);
+
+  it('granular `ignore` silences a single clashing pair under validate:"error"', async () => {
+    // Two fully-overlapping boxes — would throw under bare validate:'error'.
+    // Passing the pair on `ignore` must let the call resolve while leaving
+    // the validation gate live for everything else.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+    await expect(
+      arm.solvedModel({}, { validate: 'error', ignore: [['a', 'b']] }),
+    ).resolves.not.toThrow();
+  }, 60_000);
+
+  it('`ignore` matches symmetrically: `[a, b]` also covers `(b, a)`', async () => {
+    // Even if the underlying detector emitted the pair in the other order,
+    // the validator's filter must catch it.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+    await expect(
+      arm.solvedModel({}, { validate: 'error', ignore: [['b', 'a']] }),
+    ).resolves.not.toThrow();
+  }, 60_000);
+
+  it('`ignore` does NOT silence non-listed clashing pairs', async () => {
+    // Three boxes: a-b overlap (ignored), a-c overlap (NOT ignored). The
+    // a-c pair must still throw.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('c', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m1', 'a.o', 'b.o', 'fastened');
+    arm.mate('m2', 'a.o', 'c.o', 'fastened');
+    await expect(
+      arm.solvedModel({}, { validate: 'error', ignore: [['a', 'b']] }),
+    ).rejects.toThrow(/overlap|interference/i);
+  }, 60_000);
+
+  it('`ignore` under validate:"warn" drops the matched diagnostic from scene.warnings', async () => {
+    const { arm, kcad } = makeArm();
+    arm
+      .part('a', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm
+      .part('b', kcad.box(10, 10, 10))
+      .connector('o', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('m', 'a.o', 'b.o', 'fastened');
+    // warn mode doesn't auto-run interference detection (see the test above),
+    // so there's no overlap diagnostic on the warnings either way. This test
+    // is a belt-and-suspenders check that adding `ignore` doesn't introduce
+    // a regression in warn mode either.
+    const scene = await arm.solvedModel({}, { validate: 'warn', ignore: [['a', 'b']] });
+    expect(scene.warnings.some((w) => w.code === 'assembly.interference.overlap')).toBe(false);
+  }, 60_000);
 });
 
 describe('Assembly.solvedModel — mate-driven placement (Pattern A)', () => {
