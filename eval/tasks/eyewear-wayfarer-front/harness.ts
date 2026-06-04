@@ -7,6 +7,7 @@ import { renderScript } from '../../oracle/render';
 import { scoreAgainstReference } from '../../oracle/scoreReference';
 import { scoreMesh } from '../../oracle/scoreMesh';
 import type { HarnessCtx, HarnessResult } from '../../types';
+import { computeFidelityGates, allFidelityGatesPass, type FidelityGate, type FidelityBundle } from '../../../src/lib/imageSimilarity/fidelityGates';
 
 // Reference photo: front-right product shot from approximately az=30°, el=15°.
 // See ../../docs/specs/2026-05-15-from-prompt-to-object-eval-loop-roadmap.md
@@ -36,6 +37,11 @@ const CHAMFER_CEIL_MM = 25;     // Pass if chamfer ≤ 25mm (R5's 32mm fails;
                                 //   expert's 19mm passes; R14's 12mm passes)
 const BBOX_IOU_FLOOR = 0.05;    // Pass if bbox IoU ≥ 0.05 (R5's 0.056 borderline)
 
+// W2 — VLM rubric judge floor. Used only when no reference.stl exists (the
+// deterministic 3D oracle is primary when it does). SSIM/silhouette below are
+// informational selectors only — never the iterative reward target.
+const JUDGE_FLOOR = 0.5;
+
 async function exportToStl(scriptPath: string, outPath: string): Promise<boolean> {
   // Shell out to `kernelcad export stl <script> -o <outPath>`. Doesn't need
   // a running dev server — STL export is BREP→mesh in-process.
@@ -47,6 +53,69 @@ async function exportToStl(scriptPath: string, outPath: string): Promise<boolean
     child.on('close', (code) => resolve(code === 0 && existsSync(outPath)));
     child.on('error', () => resolve(false));
   });
+}
+
+// W2 — derive a coarse foreground mask from a rendered PNG for the fidelity
+// gates. Mirrors the scorer's corner-background convention. Returns a
+// size×size Uint8Array (1 = foreground).
+async function maskFromPng(pngPath: string, size = 64): Promise<Uint8Array> {
+  const sharp = (await import('sharp')).default;
+  const { data } = await sharp(pngPath)
+    .resize(size, size, { fit: 'contain' })
+    .grayscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const corners = [data[0], data[size - 1], data[(size - 1) * size], data[size * size - 1]];
+  const bg = corners.reduce((a, b) => a + b, 0) / corners.length;
+  const mask = new Uint8Array(size * size);
+  for (let i = 0; i < size * size; i++) mask[i] = Math.abs(data[i] - bg) > 18 ? 1 : 0;
+  return mask;
+}
+
+/**
+ * Pure scoring-decision: given the fidelity gates and the raw visual metrics,
+ * produce the `scored` map. The KEY RULE: if ANY fidelity gate fails, every
+ * visual scored item is forced false — a high SSIM/silhouette can never rescue
+ * a wrong object. SSIM/silhouette are informational selectors only; the VLM
+ * rubric judge (when no STL oracle) and the 3D geometry oracle (when an STL
+ * exists) are the qualitative signals.
+ *
+ * Exported for unit testing (no render/network needed).
+ */
+export function decideScored(args: {
+  fidelityGates: FidelityGate[];
+  rendered: boolean;
+  silhouetteIoU: number;
+  composite: number;
+  ssim: number;
+  geomScored: boolean;
+  chamferMm: number;
+  bboxIoU: number;
+  judgeScore: number | undefined;
+}): Record<string, boolean> {
+  const fidelityPass = allFidelityGatesPass(args.fidelityGates);
+  const visualOk = args.rendered && fidelityPass;
+
+  const scored: Record<string, boolean> = {
+    'fidelity gates pass': fidelityPass,
+    'rendered against reference': args.rendered,
+    'silhouette IoU >= 0.45 vs photo': visualOk && args.silhouetteIoU >= SILHOUETTE_FLOOR,
+    'composite >= 0.30 vs photo': visualOk && args.composite >= COMPOSITE_FLOOR,
+    'SSIM >= 0.35 vs photo': visualOk && args.ssim >= SSIM_FLOOR,
+  };
+
+  // VLM rubric judge — only when no deterministic 3D oracle is available.
+  if (!args.geomScored && args.judgeScore !== undefined) {
+    scored[`VLM rubric judge >= ${JUDGE_FLOOR.toFixed(2)}`] = visualOk && args.judgeScore >= JUDGE_FLOOR;
+  }
+
+  // 3D geometry oracle — primary signal when reference.stl exists.
+  if (args.geomScored) {
+    scored[`chamfer distance <= ${CHAMFER_CEIL_MM} mm vs STL`] = visualOk && args.chamferMm <= CHAMFER_CEIL_MM;
+    scored[`bbox IoU >= ${BBOX_IOU_FLOOR.toFixed(2)} vs STL`] = visualOk && args.bboxIoU >= BBOX_IOU_FLOOR;
+  }
+
+  return scored;
 }
 
 export default async function harness(scriptPath: string, ctx?: HarnessCtx): Promise<HarnessResult> {
@@ -74,6 +143,7 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
   let composite = 0;
   let ssim = 0;
   let rendered = false;
+  let renderedPosePath: string | undefined;
   if (ctx) {
     const referencePath = join(ctx.taskDir, 'reference.jpg');
     const renderStem = join(ctx.runDir, 'render.png');
@@ -82,7 +152,8 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
       poses: [REFERENCE_POSE],
     });
     if (r.ok && r.paths.poses[REFERENCE_POSE]) {
-      const score = await scoreAgainstReference(r.paths.poses[REFERENCE_POSE], referencePath);
+      renderedPosePath = r.paths.poses[REFERENCE_POSE];
+      const score = await scoreAgainstReference(renderedPosePath, referencePath);
       silhouetteIoU = score.perGate.silhouetteIoU;
       composite = score.composite;
       ssim = score.perGate.ssim;
@@ -116,6 +187,36 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
     }
   }
 
+  // W2 — fidelity gates computed from the render-inspect-equivalent mask, ANDed
+  // before any visual score. Eyewear requires at least one interior opening
+  // (lens openings) visible at the pose; a single-frame part is expected.
+  let fidelityGates: FidelityGate[] = [];
+  if (rendered && renderedPosePath) {
+    const mask = await maskFromPng(renderedPosePath, 64);
+    const bundle: FidelityBundle = {
+      size: 64,
+      mask,
+      partsCount: 1,
+      solidVolume: shape.volume,
+    };
+    fidelityGates = computeFidelityGates(bundle, {
+      requireInteriorOpenings: true,
+      expectedPartsCount: 1,
+    });
+  }
+
+  const scored = decideScored({
+    fidelityGates,
+    rendered,
+    silhouetteIoU,
+    composite,
+    ssim,
+    geomScored,
+    chamferMm,
+    bboxIoU,
+    judgeScore: undefined, // no judge wired in the deterministic harness path
+  });
+
   return {
     gates: {
       'evaluates clean': true,
@@ -126,17 +227,6 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
       'eyewear-wide (>= 100 mm in some axis)': dims[0] >= 100,
       'no unintended interferences': interferenceClean,
     },
-    scored: {
-      'rendered against reference': rendered,
-      'silhouette IoU >= 0.45 vs photo': rendered && silhouetteIoU >= SILHOUETTE_FLOOR,
-      'composite >= 0.30 vs photo': rendered && composite >= COMPOSITE_FLOOR,
-      'SSIM >= 0.35 vs photo': rendered && ssim >= SSIM_FLOOR,
-      // 3D-geometric gates (only present when reference.stl is shipped).
-      // Order in object literal preserved → reads naturally in harness output.
-      ...(geomScored ? {
-        [`chamfer distance <= ${CHAMFER_CEIL_MM} mm vs STL`]: chamferMm <= CHAMFER_CEIL_MM,
-        [`bbox IoU >= ${BBOX_IOU_FLOOR.toFixed(2)} vs STL`]: bboxIoU >= BBOX_IOU_FLOOR,
-      } : {}),
-    },
+    scored,
   };
 }
