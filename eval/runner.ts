@@ -1,8 +1,10 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { AgentClient, AgentMessage, TranscriptEvent, TaskResult, HarnessResult } from './types';
-import { extractScript, formatDiagnostics, computeScore, renderTranscript } from './lib';
+import type { AgentClient, TranscriptEvent, TaskResult, HarnessResult } from './types';
+import { extractScript, computeScore, renderTranscript } from './lib';
 import { evaluateScript } from './oracle/kernelcad-client';
+import { runClosedLoop, type LoopMessage } from '../src/agent/loop/closedLoop.js';
+import { createWebGateRunner } from './loop/webGateRunner.js';
 import type { CookbookInjection } from './cookbook-injector';
 
 const MAX_ATTEMPTS = 3;
@@ -42,12 +44,11 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     });
   }
 
-  const messages: AgentMessage[] = [{ role: 'user', content: prompt }];
-  let attempts = 0;
+  // Per-turn bookkeeping. `attemptNo` mirrors the closed loop's attempt index
+  // so the existing `'turn'`/`'evaluate'` transcript events keep their numbers.
+  let attemptNo = 0;
   let totalIn = 0;
   let totalOut = 0;
-  let lastEvaluateOk = false;
-  let finalScript: string | null = null;
   // First non-OK diagnostic code observed across the loop. Set once, never
   // overwritten — downstream classifiers (portfolio attempt logger) use this
   // to tag a failed run with the diagnostic that surfaced first.
@@ -55,79 +56,85 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
 
   const start = Date.now();
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    attempts = attempt;
-    const turnStart = Date.now();
-    const resp = await args.agent.generate({
-      system: args.skillMd,
-      systemAddendum: args.cookbook?.systemPromptAddendum,
-      messages,
-      model: args.model,
-      max_tokens: MAX_TOKENS,
-    });
-    const turnMs = Date.now() - turnStart;
-    totalIn += resp.tokens_in;
-    totalOut += resp.tokens_out;
-    const script = extractScript(resp.text);
-
-    events.push({
-      kind: 'turn',
-      attempt,
-      assistant_text: resp.text,
-      script_extracted: script,
-      tokens_in: resp.tokens_in,
-      tokens_out: resp.tokens_out,
-      ms: turnMs,
-    });
-
-    if (!script) {
-      // Couldn't extract a script — append a guidance message and retry.
+  // Drive the generate→gate→repair loop through the shared closed loop. The
+  // web gate runner gates on evaluate AND interference, so the loop now retries
+  // on interference failures too — not just on evaluate failures.
+  const loopResult = await runClosedLoop({
+    prompt,
+    gateRunner: createWebGateRunner(),
+    extractScript,
+    maxAttempts: MAX_ATTEMPTS,
+    writeScript: async (code: string) => {
+      writeFileSync(outputScriptPath, code);
+      return outputScriptPath;
+    },
+    generate: async (messages: LoopMessage[]) => {
+      attemptNo += 1;
+      const turnStart = Date.now();
+      const resp = await args.agent.generate({
+        system: args.skillMd,
+        systemAddendum: args.cookbook?.systemPromptAddendum,
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        model: args.model,
+        max_tokens: MAX_TOKENS,
+      });
+      totalIn += resp.tokens_in;
+      totalOut += resp.tokens_out;
       events.push({
-        kind: 'evaluate',
-        attempt,
-        ok: false,
-        diagnostics: [
-          { code: 'eval.no-script-extracted', message: 'No script extracted from model response.' },
-        ],
+        kind: 'turn',
+        attempt: attemptNo,
+        assistant_text: resp.text,
+        script_extracted: extractScript(resp.text),
+        tokens_in: resp.tokens_in,
+        tokens_out: resp.tokens_out,
+        ms: Date.now() - turnStart,
       });
-      messages.push({ role: 'assistant', content: resp.text });
-      messages.push({
-        role: 'user',
-        content: 'I could not extract a script from your response. Please return the full script in a single ```typescript code block.',
-      });
-      continue;
-    }
+      return { text: resp.text, tokensIn: resp.tokens_in, tokensOut: resp.tokens_out };
+    },
+    onEvent: (e) => {
+      if (e.type === 'gate_report') {
+        const failing = e.report.verdicts.filter((v) => !v.ok);
+        events.push({
+          kind: 'evaluate',
+          attempt: attemptNo,
+          ok: e.report.ok,
+          diagnostics: failing.map((v) => ({
+            code: v.code ?? v.gate,
+            message: v.message,
+            hint: v.hint,
+            featureId: v.locus,
+          })),
+        });
+        if (firstFailureCode === undefined && failing.length > 0) {
+          firstFailureCode = failing[0].code ?? failing[0].gate;
+        }
+      }
+    },
+  });
 
-    writeFileSync(outputScriptPath, script);
-    finalScript = script;
-
-    const ev = await evaluateScript(outputScriptPath);
-    events.push({ kind: 'evaluate', attempt, ok: ev.ok, diagnostics: ev.diagnostics });
-
-    if (!ev.ok && firstFailureCode === undefined && ev.diagnostics.length > 0) {
-      firstFailureCode = ev.diagnostics[0].code;
-    }
-
-    if (ev.ok) {
-      lastEvaluateOk = true;
-      break;
-    }
-
-    // Feed diagnostics back and retry (unless this was the last attempt).
-    if (attempt < MAX_ATTEMPTS) {
-      messages.push({ role: 'assistant', content: resp.text });
-      messages.push({
-        role: 'user',
-        content: `Diagnostics:\n${formatDiagnostics(ev.diagnostics)}\nFix and return the full corrected script.`,
-      });
-    }
-  }
-
-  // If we never got a clean evaluate, finalScript may still be the last broken attempt or null.
-  // Write whatever we have so the human can read it; harness will mark gate-fail.
-  if (!finalScript) {
+  // If we never extracted a script, write a placeholder so the human can read
+  // the run; the harness will be skipped and gate-fail recorded below.
+  if (loopResult.status === 'no_script') {
     writeFileSync(outputScriptPath, '// (no script extracted from any attempt)');
   }
+
+  // Re-run evaluate on the final written script to preserve the EXACT prior
+  // clean-decision + firstFailureCode semantics: the harness must still run
+  // when the script evaluates clean, even though the loop may have stopped on
+  // interference (which the harness does not itself gate on).
+  const finalEvaluate =
+    loopResult.status === 'no_script'
+      ? {
+          ok: false,
+          diagnostics: [
+            { code: 'eval.no-script-extracted', message: 'No script extracted from any attempt.' },
+          ],
+        }
+      : await evaluateScript(outputScriptPath);
+  if (firstFailureCode === undefined && !finalEvaluate.ok && finalEvaluate.diagnostics.length > 0) {
+    firstFailureCode = finalEvaluate.diagnostics[0].code;
+  }
+  const lastEvaluateOk = finalEvaluate.ok;
 
   // Run the task's harness against the final output.
   let harnessResult: HarnessResult;
@@ -145,7 +152,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
   });
 
   const score = computeScore(harnessResult, {
-    attempts,
+    attempts: loopResult.attempts,
     tokens_in: totalIn,
     tokens_out: totalOut,
     time_ms: Date.now() - start,
