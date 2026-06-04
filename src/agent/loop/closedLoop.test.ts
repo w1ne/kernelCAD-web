@@ -31,6 +31,21 @@ const extractScript = (text: string): string | null => {
 };
 const writeScript = async (code: string) => `/tmp/closedloop-test-${code.length}.kcad.ts`;
 
+// Generates one text per variant on the fan-out turn; a fixed text on repair turns.
+function bestOfNGenerate(byVariant: string[], repairTexts: string[] = []) {
+  const variants: (number | undefined)[] = [];
+  let r = 0;
+  const generate = async (_messages: LoopMessage[], opts?: { variant?: number }) => {
+    variants.push(opts?.variant);
+    if (opts?.variant !== undefined) {
+      return { text: byVariant[opts.variant], tokensIn: 1, tokensOut: 1 };
+    }
+    const text = repairTexts.length ? repairTexts[Math.min(r++, repairTexts.length - 1)] : fence('repaired');
+    return { text, tokensIn: 1, tokensOut: 1 };
+  };
+  return { generate, variants };
+}
+
 describe('runClosedLoop', () => {
   it('(a) passes on first attempt when gate ok', async () => {
     const { generate } = scriptedGenerate([fence('cube(10)')]);
@@ -82,5 +97,78 @@ describe('runClosedLoop', () => {
     await runClosedLoop({ prompt: 'x', generate, gateRunner: scriptedGate([FAIL_REPORT, PASS_REPORT]), extractScript, writeScript, maxAttempts: 2, buildRepairPrompt: () => 'CUSTOM_REPAIR' });
     const lastCall = calls[1];
     expect(lastCall[lastCall.length - 1].content).toBe('CUSTOM_REPAIR');
+  });
+});
+
+describe('runClosedLoop best-of-N', () => {
+  it('selects the only gate-passing candidate as winner', async () => {
+    const { generate } = bestOfNGenerate([fence('v0aaaa'), fence('v1bb'), fence('v2c'), fence('v3dddd')]);
+    const events: import('./types.js').ClosedLoopEvent[] = [];
+    const result = await runClosedLoop({
+      prompt: 'make it',
+      generate,
+      gateRunner: scriptedGate([FAIL_REPORT, FAIL_REPORT, PASS_REPORT, FAIL_REPORT]),
+      extractScript,
+      writeScript,
+      candidates: 4,
+      onEvent: (e) => events.push(e),
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') expect(result.attempts).toBe(1);
+    const bon = events.find((e) => e.type === 'best_of_n');
+    expect(bon && bon.type === 'best_of_n' && bon.winnerIndex).toBe(2);
+    expect(result.tokensIn).toBe(4);
+  });
+
+  it('uses oracleScore to break ties among gate-passing candidates', async () => {
+    const { generate } = bestOfNGenerate([fence('a'), fence('bb'), fence('ccc')]);
+    const scores = [0.2, 0.9, 0.5];
+    let i = 0;
+    const result = await runClosedLoop({
+      prompt: 'make it',
+      generate,
+      gateRunner: scriptedGate([PASS_REPORT, PASS_REPORT, PASS_REPORT]),
+      extractScript,
+      writeScript,
+      candidates: 3,
+      scoreCandidate: async () => scores[i++],
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') {
+      expect(result.scriptPath).toContain('-2.kcad.ts');
+    }
+  });
+
+  it('repairs the winner when it fails gates (fan-out then repair)', async () => {
+    const { generate, variants } = bestOfNGenerate(
+      [fence('v0a'), fence('v1bb')],
+      [fence('fixed')],
+    );
+    const result = await runClosedLoop({
+      prompt: 'make it',
+      generate,
+      gateRunner: scriptedGate([FAIL_REPORT, FAIL_REPORT, PASS_REPORT]),
+      extractScript,
+      writeScript,
+      candidates: 2,
+      maxAttempts: 3,
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') expect(result.attempts).toBe(2);
+    expect(variants).toEqual([0, 1, undefined]);
+  });
+
+  it('falls back to no_script when no candidate yields a script', async () => {
+    const { generate } = bestOfNGenerate(['no fence here', 'still none']);
+    const result = await runClosedLoop({
+      prompt: 'make it',
+      generate,
+      gateRunner: scriptedGate([PASS_REPORT]),
+      extractScript,
+      writeScript,
+      candidates: 2,
+      maxAttempts: 1,
+    });
+    expect(result.status).toBe('no_script');
   });
 });

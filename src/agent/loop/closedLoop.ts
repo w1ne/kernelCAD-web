@@ -4,6 +4,7 @@ import {
   type ClosedLoopResult,
   type LoopMessage,
 } from './types.js';
+import { selectBest, type ScoredCandidate } from './bestOfN.js';
 
 /**
  * Hard upper bound a caller may configure for repair attempts.
@@ -17,11 +18,17 @@ export const MAX_REPAIR_ATTEMPTS_CEILING = 10;
  * bundles cleanly for the server. The host injects generate(), gateRunner, extractScript,
  * and writeScript.
  *
+ * When `candidates > 1`, the FIRST attempt fans out to N diverse samples, selects the
+ * best (gate-stages, then oracle score), and the winner alone enters the repair loop
+ * (W4 best-of-N). The oracle score is used for SELECTION ONLY — it never feeds a repair
+ * prompt, which is the guard against iterating one sample against the scorer.
+ *
  * Invariant: never returns status:'passed' unless the gate suite reported ok for the
- * written candidate. A broken artifact returns 'gate_failed' (or 'no_script').
+ * selected candidate. A broken artifact returns 'gate_failed' (or 'no_script').
  */
 export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopResult> {
   const maxAttempts = input.maxAttempts ?? 3;
+  const candidateCount = Math.max(1, input.candidates ?? 1);
   const buildRepairPrompt = input.buildRepairPrompt ?? defaultBuildRepairPrompt;
 
   const messages: LoopMessage[] = [{ role: 'user', content: input.prompt }];
@@ -33,6 +40,63 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     input.onEvent?.({ type: 'attempt', n: attempt });
 
+    // --- W4 best-of-N: fan out on the first attempt only, when configured. ---
+    if (attempt === 1 && candidateCount > 1) {
+      const genResults = await Promise.all(
+        Array.from({ length: candidateCount }, (_, i) => input.generate(messages, { variant: i })),
+      );
+      const scored: ScoredCandidate[] = [];
+      for (const gen of genResults) {
+        tokensIn += gen.tokensIn;
+        tokensOut += gen.tokensOut;
+        const code = input.extractScript(gen.text);
+        if (code === null) continue;
+        const scriptPath = await input.writeScript(code);
+        const report = await input.gateRunner.run(scriptPath);
+        const oracleScore = input.scoreCandidate ? await input.scoreCandidate(scriptPath, report) : null;
+        scored.push({ scriptPath, text: gen.text, report, oracleScore });
+      }
+
+      if (scored.length === 0) {
+        // No candidate produced a script — mirror the single-sample no_script path.
+        if (attempt < maxAttempts) {
+          messages.push({ role: 'assistant', content: genResults[genResults.length - 1].text });
+          messages.push({
+            role: 'user',
+            content: 'Could not extract a code block from your reply. Return the full script in a single fenced code block.',
+          });
+          continue;
+        }
+        return { status: 'no_script', attempts: attempt, tokensIn, tokensOut };
+      }
+
+      const winner = selectBest(scored);
+      input.onEvent?.({
+        type: 'best_of_n',
+        winnerIndex: scored.indexOf(winner),
+        candidates: scored.map((c) => ({
+          stagesPassed: c.report.verdicts.filter((v) => v.ok).length,
+          oracleScore: c.oracleScore,
+        })),
+      });
+      lastScriptPath = winner.scriptPath;
+      lastText = winner.text;
+      input.onEvent?.({ type: 'gate_report', report: winner.report });
+
+      if (winner.report.ok) {
+        return { status: 'passed', scriptPath: winner.scriptPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut };
+      }
+      if (attempt < maxAttempts) {
+        const repairPrompt = buildRepairPrompt(winner.report.verdicts);
+        input.onEvent?.({ type: 'repair', prompt: repairPrompt });
+        messages.push({ role: 'assistant', content: winner.text });
+        messages.push({ role: 'user', content: repairPrompt });
+        continue;
+      }
+      return { status: 'gate_failed', scriptPath: winner.scriptPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut };
+    }
+
+    // --- Single-sample path (unchanged: attempt > 1, or candidates <= 1). ---
     const gen = await input.generate(messages);
     tokensIn += gen.tokensIn;
     tokensOut += gen.tokensOut;

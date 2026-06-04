@@ -26,19 +26,35 @@ export interface GateRunner {
 
 export interface ClosedLoopInput {
   prompt: string;
-  generate(messages: LoopMessage[]): Promise<{ text: string; tokensIn: number; tokensOut: number }>;
+  generate(
+    messages: LoopMessage[],
+    opts?: { variant?: number },
+  ): Promise<{ text: string; tokensIn: number; tokensOut: number }>;
   gateRunner: GateRunner;
   extractScript(text: string): string | null;
   writeScript(code: string): Promise<string>; // writes the candidate, returns the scriptPath
   buildRepairPrompt?(verdicts: GateVerdict[]): string; // optional; W3 supplies the rich version. Default = simple join.
   maxAttempts?: number; // default 3
+  /** Number of diverse candidates to sample on the FIRST attempt only. Default 1 (unchanged). */
+  candidates?: number;
+  /**
+   * Oracle-as-selector. Scores a written candidate for cross-candidate ranking ONLY.
+   * Returns [0,1], or null if unscoreable (selection falls back to gate stages).
+   * MUST NOT influence repair prompts (anti-hack invariant).
+   */
+  scoreCandidate?(scriptPath: string, report: GateReport): Promise<number | null>;
   onEvent?(e: ClosedLoopEvent): void;
 }
 
 export type ClosedLoopEvent =
   | { type: 'attempt'; n: number }
   | { type: 'gate_report'; report: GateReport }
-  | { type: 'repair'; prompt: string };
+  | { type: 'repair'; prompt: string }
+  | {
+      type: 'best_of_n';
+      winnerIndex: number;
+      candidates: { stagesPassed: number; oracleScore: number | null }[];
+    };
 
 export type ClosedLoopResult =
   | {
