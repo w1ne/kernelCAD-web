@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { evaluateScript, getShapeInfo } from '../../oracle/kernelcad-client';
+import { evaluateScript, getShapeInfo, getMaxFaceInnerLoops } from '../../oracle/kernelcad-client';
 import { runInterference } from '../../oracle/interference';
 import { renderScript } from '../../oracle/render';
 import { scoreAgainstReference } from '../../oracle/scoreReference';
@@ -53,23 +53,6 @@ async function exportToStl(scriptPath: string, outPath: string): Promise<boolean
     child.on('close', (code) => resolve(code === 0 && existsSync(outPath)));
     child.on('error', () => resolve(false));
   });
-}
-
-// W2 — derive a coarse foreground mask from a rendered PNG for the fidelity
-// gates. Mirrors the scorer's corner-background convention. Returns a
-// size×size Uint8Array (1 = foreground).
-async function maskFromPng(pngPath: string, size = 64): Promise<Uint8Array> {
-  const sharp = (await import('sharp')).default;
-  const { data } = await sharp(pngPath)
-    .resize(size, size, { fit: 'contain' })
-    .grayscale()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  const corners = [data[0], data[size - 1], data[(size - 1) * size], data[size * size - 1]];
-  const bg = corners.reduce((a, b) => a + b, 0) / corners.length;
-  const mask = new Uint8Array(size * size);
-  for (let i = 0; i < size * size; i++) mask[i] = Math.abs(data[i] - bg) > 18 ? 1 : 0;
-  return mask;
 }
 
 /**
@@ -187,23 +170,22 @@ export default async function harness(scriptPath: string, ctx?: HarnessCtx): Pro
     }
   }
 
-  // W2 — fidelity gates computed from the render-inspect-equivalent mask, ANDed
-  // before any visual score. Eyewear requires at least one interior opening
-  // (lens openings) visible at the pose; a single-frame part is expected.
-  let fidelityGates: FidelityGate[] = [];
-  if (rendered && renderedPosePath) {
-    const mask = await maskFromPng(renderedPosePath, 64);
-    const bundle: FidelityBundle = {
-      size: 64,
-      mask,
-      partsCount: 1,
-      solidVolume: shape.volume,
-    };
-    fidelityGates = computeFidelityGates(bundle, {
-      requireInteriorOpenings: true,
-      expectedPartsCount: 1,
-    });
-  }
+  // W2 — fidelity gates, ANDed before any visual score. The "expected feature"
+  // gate is STRUCTURAL: eyewear must have >= 2 inner boundary loops on a face
+  // (the two lens openings), read from list_faces. This is invariant to whether
+  // tinted lens bodies are inserted into the openings — unlike a render/pixel
+  // heuristic, which false-negatives a lens-inserted frame. Geometry-only, so
+  // it runs whether or not the render succeeded.
+  const maxFaceInnerLoops = await getMaxFaceInnerLoops(scriptPath);
+  const bundle: FidelityBundle = {
+    maxFaceInnerLoops,
+    partsCount: 1,
+    solidVolume: shape.volume,
+  };
+  const fidelityGates: FidelityGate[] = computeFidelityGates(bundle, {
+    expectedInteriorLoops: 2,
+    expectedPartsCount: 1,
+  });
 
   const scored = decideScored({
     fidelityGates,
