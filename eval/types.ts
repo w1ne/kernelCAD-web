@@ -90,6 +90,7 @@ export interface AgentClient {
     messages: AgentMessage[];
     model: string;
     max_tokens: number;
+    temperature?: number;   // W4: per-candidate sampling diversity for best-of-N
   }): Promise<AgentResponse>;
 }
 
