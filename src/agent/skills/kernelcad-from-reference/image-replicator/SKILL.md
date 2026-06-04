@@ -106,10 +106,40 @@ Stop and report when:
 - Or the hard iteration cap (8 passes) is reached — report which gates remain
   below threshold and stop; do not restart the counter silently.
 
+## Policy: SSIM and silhouette are selectors, not reward targets
+
+SSIM and silhouette IoU are **selectors and gates only** — use them to pick the
+better of two candidates and to gate "is this even the right object," never as a
+quantity to iteratively maximize. They are gameable: a past run inflated body
+depth into a featureless slab and scored top on silhouette IoU while producing
+an object with **no lens openings at all** — geometrically not eyewear. Pixel
+similarity decoupled from the real goal.
+
+Therefore:
+
+- **Fidelity gates AND before any visual score.** Before the silhouette/SSIM
+  numbers count, the build must pass boolean fidelity gates (the expected
+  distinctive feature is visible at the pose — e.g. lens openings; the parts
+  count matches; the solid is non-degenerate). If any fidelity gate fails, the
+  visual scored items are forced to fail regardless of how high the pixel
+  similarity is.
+- **When a reference 3D model (`reference.stl`) exists, the deterministic 3D
+  geometry oracle is the primary signal** (chamfer distance, bbox IoU). SSIM and
+  silhouette are supplementary only.
+- **When there is no reference 3D model, a VLM rubric judge is the qualitative
+  signal** — scored against an explicit per-criterion rubric of the distinctive
+  features, at temperature 0 for repeatability. SSIM/silhouette remain selectors.
+- **Never iterate to climb SSIM or silhouette for its own sake.** If those
+  numbers rise while the distinctive features regress, you are gaming the metric.
+  Chase the feature, not the score.
+
 ## Iteration discipline
 
 - **Never edit a gate to loosen the threshold.** If the threshold seems wrong,
   stop and surface the evidence to the user.
+- **SSIM/silhouette are selectors, not reward targets** (see the policy section
+  above). Fidelity gates AND before any visual score; never iterate to climb a
+  pixel-similarity number while distinctive features regress.
 - **Commit per score, not per change.** Evaluate and score after every geometry
   change; never accumulate multiple changes and score once.
 - **Read PNGs back.** The render command writes a file; the file is not evidence
