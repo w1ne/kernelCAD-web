@@ -71,6 +71,11 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
       }
 
       const winner = selectBest(scored);
+      // The sequential fan-out above leaves the LAST candidate on disk when the
+      // host's writeScript reuses a single path. Re-materialize the winner so its
+      // scriptPath holds the winner's code — the host scores that path post-loop.
+      const winnerCode = input.extractScript(winner.text);
+      const winnerPath = winnerCode !== null ? await input.writeScript(winnerCode) : winner.scriptPath;
       input.onEvent?.({
         type: 'best_of_n',
         winnerIndex: scored.indexOf(winner),
@@ -79,12 +84,12 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
           oracleScore: c.oracleScore,
         })),
       });
-      lastScriptPath = winner.scriptPath;
+      lastScriptPath = winnerPath;
       lastText = winner.text;
       input.onEvent?.({ type: 'gate_report', report: winner.report });
 
       if (winner.report.ok) {
-        return { status: 'passed', scriptPath: winner.scriptPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut };
+        return { status: 'passed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, tokensIn, tokensOut };
       }
       if (attempt < maxAttempts) {
         const repairPrompt = buildRepairPrompt(winner.report.verdicts);
@@ -93,7 +98,7 @@ export async function runClosedLoop(input: ClosedLoopInput): Promise<ClosedLoopR
         messages.push({ role: 'user', content: repairPrompt });
         continue;
       }
-      return { status: 'gate_failed', scriptPath: winner.scriptPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut };
+      return { status: 'gate_failed', scriptPath: winnerPath, finalText: winner.text, attempts: attempt, verdicts: winner.report.verdicts, tokensIn, tokensOut };
     }
 
     // --- Single-sample path (unchanged: attempt > 1, or candidates <= 1). ---

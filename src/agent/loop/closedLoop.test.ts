@@ -171,6 +171,29 @@ describe('runClosedLoop best-of-N', () => {
     });
     expect(result.status).toBe('no_script');
   });
+
+  it('winner scriptPath holds winner code even when writeScript reuses one path', async () => {
+    // One shared path for all candidates (mirrors the eval runner). Winner is the
+    // gate-passing candidate at index 0, which is NOT the last one written.
+    const store: Record<string, string> = {};
+    const sharedWrite = async (code: string) => {
+      store['/shared.kcad.ts'] = code;
+      return '/shared.kcad.ts';
+    };
+    const { generate } = bestOfNGenerate([fence('WINNER'), fence('lastX1'), fence('lastX2'), fence('lastX3')]);
+    const result = await runClosedLoop({
+      prompt: 'x',
+      generate,
+      gateRunner: scriptedGate([PASS_REPORT, FAIL_REPORT, FAIL_REPORT, FAIL_REPORT]),
+      extractScript,
+      writeScript: sharedWrite,
+      candidates: 4,
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') {
+      expect(store[result.scriptPath]).toBe('WINNER'); // not 'lastX3'
+    }
+  });
 });
 
 describe('runClosedLoop best-of-N invariants', () => {
