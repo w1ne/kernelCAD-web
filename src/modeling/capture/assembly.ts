@@ -90,6 +90,13 @@ export interface AssemblyConnectorOpts {
   origin: ConnectorOriginInput;
   axis?: Vec3;
   normal?: Vec3;
+  /** Radius (mm) of the joint's pin clearance bore at this connector when it
+   *  sits at a drilled knuckle (a `joint.clevis(...)` pivot supplies
+   *  `pinR + holeClearance`). Lets the criterion-7 joint-mesh-gap gate accept
+   *  a clearance bore — solid present around the pivot — instead of requiring
+   *  the pivot POINT to be inside solid material. Omit for non-drilled
+   *  connectors (the gate then uses its 1 mm point-in-solid tolerance). */
+  jointClearanceRadius?: number;
 }
 
 export interface AssemblyPartRef {
@@ -2611,6 +2618,9 @@ function makePartRef(
           origin: normalizedOrigin,
           axis: opts.axis,
           normal: opts.normal,
+          ...(opts.jointClearanceRadius !== undefined
+            ? { jointClearanceRadius: opts.jointClearanceRadius }
+            : {}),
         }),
       );
       return ref;

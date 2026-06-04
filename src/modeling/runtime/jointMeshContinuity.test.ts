@@ -85,12 +85,13 @@ describe('joint-mesh-continuity helper (P8)', () => {
     const result = await checkMechanismTruth(arm);
     const gaps = result.failures.filter((f) => f.code === 'mechanism.joint-mesh-gap');
     expect(gaps.length).toBeGreaterThanOrEqual(1);
-    // The diagnostic message embeds the gap distance as `${n.toFixed(1)}mm`.
-    // Pull the parent-side row and assert the distance lands near 5 mm
-    // (tolerance for OCCT distance solver numerics).
+    // The diagnostic message embeds the gap distance as
+    // `nearest solid is ${n.toFixed(1)}mm from the pivot origin`. Pull the
+    // parent-side row and assert the distance lands near 5 mm (tolerance for
+    // OCCT distance solver numerics).
     const parentGap = gaps.find((g) => g.message.includes("parent body 'parent'"));
     expect(parentGap).toBeDefined();
-    const m = /([\d.]+)mm outside/.exec(parentGap!.message);
+    const m = /nearest solid is ([\d.]+)mm from the pivot origin/.exec(parentGap!.message);
     expect(m).not.toBeNull();
     const measuredMm = Number(m![1]);
     expect(measuredMm).toBeGreaterThan(4.5);

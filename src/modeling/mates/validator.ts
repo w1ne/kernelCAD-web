@@ -248,16 +248,17 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // only to the diagnostic emission below; the raw `interferencePairs` the
   // caller passed in remain untouched so HUD-style consumers can still read
   // them via the unfiltered detection output.
-  // Adjacency-aware ABSOLUTE-volume classification (shared with mechanism-truth
-  // criterion 2 via `jointContactCap`): a pair joined by a revolute/prismatic/
-  // cylindrical mate is allowed the clevis pin-in-tongue contact (cap 700 mm³);
-  // fastened / non-mated pairs get the ISO tessellation-noise floor (25 mm³).
-  // This replaces the old "every interference pair is an error" behaviour, which
-  // false-flagged the legit pin-in-tongue contact of a correctly-built clevis.
-  const mateTypeByPair = collectMateTypeByPair(input.records);
+  // ABSOLUTE-volume classification (shared with mechanism-truth criterion 2 via
+  // `jointContactCap`): a SINGLE uniform noise threshold (20 mm³) applies to
+  // every pair, adjacent or not (decision #1 of the 2026-06-03 redesign). A
+  // correctly-modeled clevis joint drills the pin clearance bore through both
+  // knuckles, so the pin floats in air with ~0 shared volume — adjacency earns
+  // no extra interference budget. This replaces the old "every interference
+  // pair is an error" behaviour while still failing any real overlap above the
+  // tessellation-noise floor.
+  const cap = jointContactCapMm3();
   for (const pair of input.interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, input.ignore)) continue;
-    const cap = jointContactCapMm3(mateTypeByPair.get(interferencePairKey(pair.a, pair.b)));
     if (pair.volumeMm3 <= cap) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
@@ -314,34 +315,6 @@ function collectMateEdges(records: readonly FeatureRecord[]): readonly (readonly
       const a = typeof m.a === 'string' ? m.a.split('.')[0] : undefined;
       const b = typeof m.b === 'string' ? m.b.split('.')[0] : undefined;
       if (a && b) out.push([a, b]);
-    }
-  }
-  return out;
-}
-
-/** Symmetric pair key for interference-pair → mate-type lookup. */
-function interferencePairKey(a: string, b: string): string {
-  return a < b ? `${a}\t${b}` : `${b}\t${a}`;
-}
-
-/**
- * Walk `solvedAssembly` records and build a `pairKey → mate type` map so the
- * interference classifier knows which part pairs are joined by which kind of
- * mate. Mate refs are `'partName.connectorName'`; we slice off the connector.
- */
-function collectMateTypeByPair(records: readonly FeatureRecord[]): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const r of records) {
-    if (r.kind !== 'solvedAssembly') continue;
-    const meta = r.metadata as { mates?: ReadonlyArray<{ a: string; b: string; type?: string }> } | undefined;
-    const mates = meta?.mates;
-    if (!Array.isArray(mates)) continue;
-    for (const m of mates) {
-      const a = typeof m.a === 'string' ? m.a.split('.')[0] : undefined;
-      const b = typeof m.b === 'string' ? m.b.split('.')[0] : undefined;
-      if (a && b && typeof m.type === 'string') {
-        out.set(interferencePairKey(a, b), m.type);
-      }
     }
   }
   return out;

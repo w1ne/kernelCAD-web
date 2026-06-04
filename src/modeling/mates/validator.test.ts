@@ -137,7 +137,10 @@ describe('validateAssembly', () => {
     const floating = mkPart('floating');
     const r = validateAssembly({
       records: [a, b, j, floating],
-      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 1 }],
+      // Above the uniform 20 mm³ contact-noise threshold (decision #1) so it
+      // registers as a real interference error, which must win over the
+      // floating-part warning in the aggregate status.
+      interferencePairs: [{ a: 'a', b: 'b', volumeMm3: 142.5 }],
     });
     expect(r.status).toBe('error');
   });
@@ -182,8 +185,8 @@ describe('validateAssembly', () => {
     const r = validateAssembly({
       records: [a, b, c, j1, j2],
       interferencePairs: [
-        { a: 'a', b: 'b', volumeMm3: 10 }, // ignored
-        { a: 'b', b: 'c', volumeMm3: 20 }, // NOT ignored — must error
+        { a: 'a', b: 'b', volumeMm3: 50 }, // ignored (would otherwise error: > 20 mm³)
+        { a: 'b', b: 'c', volumeMm3: 50 }, // NOT ignored — must error (> 20 mm³)
       ],
       ignore: [['a', 'b']],
     });

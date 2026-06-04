@@ -56,7 +56,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { detectInterferences } from './detectInterferences';
-import { jointContactCapMm3 } from './jointContactCap';
+import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
@@ -92,11 +92,12 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
 const DISCONNECT_TOLERANCE_MM = 1;
 
 /**
- * Volume floor for `mechanism.interpenetration` (mm³). Matches the
- * existing `detectInterferences` default — anything below this is treated
- * as numerical noise / tangential contact, not real overlap.
+ * Volume floor for `mechanism.interpenetration` (mm³). Imported from
+ * `./jointContactCap` (`INTERPENETRATION_EPSILON_MM3`, 0.01) so the
+ * "any overlap at all" floor stays in lockstep with the legacy
+ * `validateAssembly` interference surface. Anything below it is BREP
+ * boolean / tessellation roundoff, not real overlap.
  */
-const INTERPENETRATION_EPSILON_MM3 = 0.01;
 
 // Interference classification (absolute caps, SOTA-grounded) is shared with
 // the legacy `validateAssembly` interference surface — see
@@ -474,14 +475,17 @@ async function getOrComputeBboxCorners(
 
 /**
  * For each sampled pose, lower the assembly + run `detectInterferences`.
- * Exclude overlaps between parts joined by a revolute / prismatic /
- * cylindrical mate when the overlap volume is below
- * `JOINT_CONTACT_TOLERANCE_FRACTION × min(bbox-vol(a), bbox-vol(b))` —
- * intentional clevis cheek-on-tongue contact, not real interpenetration.
+ * Classify every overlap pair by a SINGLE absolute noise threshold
+ * (`JOINT_CONTACT_NOISE_MM3`, 20 mm³) applied UNIFORMLY regardless of the
+ * mate type joining the pair (decision #1 of the 2026-06-03 redesign):
+ * shared volume ≤ 20 mm³ is touching / tessellation noise → pass; > 20 mm³
+ * is a real interference → `mechanism: broken`, for ALL pairs.
  *
- * Pairs joined by `fastened` are NOT excluded — a fastened spring that
- * passes through the arm body's interior is a real failure mode (the
- * mate declares contact-only fastening, not body fusion).
+ * Adjacency does NOT excuse a real overlap. A correctly-modeled rotating
+ * joint is a clearance fit (ISO 286): the clevis primitive drills the pin
+ * bore through both knuckles so the pin floats in air and pin-in-tongue
+ * shared volume is ~0. The only escape hatch for a genuine intended overlap
+ * is the per-pair user `ignore` list on `solvedModel({ ignore: [...] })`.
  */
 async function checkInterpenetration(
   arm: Assembly,
@@ -509,20 +513,17 @@ async function checkInterpenetration(
     for (const pair of result.pairs) {
       const key = pairKey(pair.a, pair.b);
       const mateType = matedPairs.get(key);
-      // ABSOLUTE-volume gate (replaces the old 5 %-of-bbox fraction). The cap
-      // depends ONLY on the relationship between the two parts, never on their
-      // size:
-      //   - adjacent revolute/prismatic/cylindrical → the clevis pin-in-tongue
-      //     contact forced by the locked joint-mesh-gap gate (cap 700 mm³).
-      //   - fastened / non-mated → ISO tessellation-noise floor (cap 25 mm³);
-      //     anything above is a real interference (a spring through a body, a
-      //     shade fused to a beam).
-      const cap = jointContactCapMm3(mateType);
+      // ABSOLUTE-volume gate (replaces the old 5 %-of-bbox fraction). A SINGLE
+      // uniform noise threshold (20 mm³) applies to every pair, adjacent or
+      // not (decision #1) — a correct clearance-fit joint has ~0 overlap, so
+      // adjacency earns no extra budget.
+      const cap = jointContactCapMm3();
       if (pair.volumeMm3 <= cap) continue;
 
       const relation = mateType === undefined
         ? `are NOT joined by a mate that would explain the contact`
-        : `overlap far more than the ${mateType} joint's intended pin/clearance contact (cap ${cap} mm³)`;
+        : `overlap far more than the ${mateType} joint's clearance-fit contact ` +
+          `(noise threshold ${cap} mm³ — a drilled clearance bore has ~0 overlap)`;
       out.push(makeFailure(
         'mechanism.interpenetration',
         `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${pair.volumeMm3.toFixed(2)} mm³ at pose sample '${s.sample.name}' — ` +
@@ -650,14 +651,22 @@ async function checkJointMeshContinuityCriterion(
 
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
-    if (r.signedDistanceMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
+    // Decision #3 reframe: the knuckle SOLID must be present around the
+    // pivot, not the pivot POINT inside solid. A drilled clevis knuckle's
+    // nearest solid is the bore wall at `clearanceRadiusMm`; accept a gap up
+    // to that plus the mesher-noise margin. Non-drilled connectors carry
+    // clearanceRadiusMm = 0, so this collapses to the original 1 mm
+    // point-in-solid tolerance.
+    const allowedGap = r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM;
+    if (r.signedDistanceMm <= allowedGap) continue;
     out.push(makeFailure(
       'mechanism.joint-mesh-gap',
-      `Joint '${r.mateName}' ${r.side} body '${r.partName}': pivot origin is ` +
-      `${r.signedDistanceMm.toFixed(1)}mm outside its mesh (tolerance ` +
-      `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm). The link mesh does not ` +
+      `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
+      `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
+      `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
+      `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `solid covers the joint origin at rest pose.`,
+      `knuckle solid surrounds the joint origin at rest pose.`,
     ));
   }
   return out;

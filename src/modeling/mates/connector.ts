@@ -31,6 +31,15 @@ export interface Connector {
   readonly axis?: Vec3;
   /** Set on `frame` and `planar` connectors. Defaults to +Z when omitted. */
   readonly normal?: Vec3;
+  /** Radius (mm) of the joint's pin clearance bore at this connector, when
+   *  the connector sits at a drilled knuckle (e.g. a `joint.clevis(...)`
+   *  pivot, where it equals `pinR + holeClearance`). The criterion-7
+   *  joint-mesh-gap gate uses it as the knuckle-presence radius: a drilled
+   *  knuckle's nearest solid is the bore wall at this radius, so the gate
+   *  accepts a gap up to `jointClearanceRadius + margin` rather than
+   *  requiring the pivot POINT to sit in solid. Absent ⇒ the gate falls
+   *  back to the point-in-solid test (1 mm tolerance). */
+  readonly jointClearanceRadius?: number;
 }
 
 export interface MakeConnectorInput {
@@ -39,6 +48,7 @@ export interface MakeConnectorInput {
   origin: ConnectorOrigin;
   axis?: Vec3;
   normal?: Vec3;
+  jointClearanceRadius?: number;
 }
 
 /** Capture-time input form for `Connector.origin`. Accepts the canonical
@@ -142,6 +152,9 @@ export function makeConnector(input: MakeConnectorInput): Connector {
     origin: input.origin,
     axis: input.axis,
     normal: input.normal,
+    ...(input.jointClearanceRadius !== undefined
+      ? { jointClearanceRadius: input.jointClearanceRadius }
+      : {}),
   };
 }
 

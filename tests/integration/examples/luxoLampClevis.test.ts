@@ -68,6 +68,29 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(r.mechanismFailures ?? []).toEqual([]);
   }, 240_000);
 
+  it('is interference-clean across the full pose sweep: ZERO mechanism.interpenetration diagnostics (2026-06-03 absolute 20 mm³ gate)', async () => {
+    // The assertion that was MISSING and let the slop through (spec
+    // sequencing step 6): under the absolute 20 mm³ interference gate the
+    // lamp must have NO interpenetration at any sampled pose. The pre-redesign
+    // 5%-of-bbox / 2500 mm³-revolute caps hid body-near-fork overlaps; the
+    // clevis tongue-drill (decision #2), the head neck-stem restructure, and
+    // the tightened elbow (-95°) / wrist (-50°) limits make every sampled pose
+    // interference-clean. This is the `interferences === 0` contract.
+    const r = await runValidateCli({
+      file: LUXO_SCRIPT_PATH,
+      epsilon: 0.01,
+      includeInterference: true,
+      physical: false,
+      json: true,
+      includePhysics: false,
+    });
+    const interferences = (r.mechanismFailures ?? []).filter(
+      (f) => f.code === 'mechanism.interpenetration',
+    );
+    expect(interferences).toEqual([]);
+    expect(r.mechanism).toBe('real');
+  }, 240_000);
+
   it('P8 joint-mesh-continuity gate sees NO joint-mesh-gap diagnostics on the post-P9 Luxo (GREEN after P9)', async () => {
     // P9 (2026-06-02): with the spring-boss posts on each arm and the
     // extended column / pulled-back head-neck, every mate connector
@@ -124,17 +147,21 @@ describe('Luxo lamp — passes the physics-grounded loop', () => {
     expect(excludeCount).toBe(3);
   }, 240_000);
 
-  // SKIPPED — tracked under issues/379. The mechanism-validity gate redesign
-  // (absolute-cap interference model, 2026-06-03) required reworking the lamp
-  // geometry to be interference-clean across its motion range (restored
-  // liftPivot:true, neck pulled forward of the wrist fork, tighter elbow limit).
-  // liftPivot moving the joint axes + the head-neck mass shift regressed the
-  // drop-test: the shoulder sags ~5° under gravity. The three balance springs
-  // were calibrated for the OLD geometry and now need co-calibration against
-  // static equilibrium (inverse-dynamics solve) — single-spring hand-tuning
-  // overshoots. The lamp is interference-clean (kinematic gate green); only the
-  // physics drop-test is affected. Re-enable once #379 re-calibrates the springs.
-  it.skip('passes the full physics gate (criteria 1-8 incl. 5+6) — wrap-routed springs hold the lamp (issues/379 — spring re-cal after interference-clean rework)', async () => {
+  // SKIPPED — tracked under issues/379 (PHYSICS spring re-calibration, NOT an
+  // interference issue). The mechanism-validity absolute-cap redesign
+  // (2026-06-03) reworked the lamp geometry to be interference-clean across its
+  // motion range: the clevis tongue is now drilled to a clearance bore
+  // (decision #2), the head neck uses a narrow rear stem that slips between the
+  // wrist fork plates, the shoulder mast was moved behind the tongue knuckle,
+  // and the elbow / wrist limits were tightened to -95° / -50°. Under the
+  // absolute 20 mm³ gate the kinematic loop is GREEN (mechanism: real, zero
+  // interpenetration — asserted by the un-skipped test above). The remaining
+  // drop-test failure is purely physics: the three balance springs were tuned
+  // for the OLD geometry and now let the shoulder sag ~5.1° (just over the 5°
+  // threshold) under gravity. Co-calibrating them against static equilibrium is
+  // out of scope for the interference-gate work and tracked separately in #379.
+  // Re-enable once #379 re-calibrates the springs.
+  it.skip('passes the full physics gate (criteria 1-8 incl. 5+6) — wrap-routed springs hold the lamp (issues/379 — spring re-cal, NOT interference)', async () => {
     const r = await runValidateCli({
       file: LUXO_SCRIPT_PATH,
       epsilon: 0.01,
