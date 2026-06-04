@@ -45,6 +45,13 @@ export interface Score {
    * synthetic `eval.no-script-extracted` fallbacks).
    */
   firstFailureCode?: string;
+  /**
+   * W2 — funnel-gate cascade. Per-stage pass-rates derived from the gates /
+   * scored maps via a documented stage→name substring mapping (see
+   * computeScore in eval/lib.ts). Optional and additive: omitted stages had
+   * no matching gate/scored item. Existing `score`/`gate_pass` are unaffected.
+   */
+  funnel?: { stage: string; passed: number; total: number }[];
 }
 
 // Transcript events — captured during a run, rendered to markdown afterward.

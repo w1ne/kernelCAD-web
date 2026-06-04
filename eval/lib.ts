@@ -30,6 +30,37 @@ export function formatDiagnostics(diagnostics: Diagnostic[]): string {
     .join('\n');
 }
 
+// W2 — funnel-gate cascade. Each stage matches gate/scored NAMES by substring
+// (case-insensitive). A stage with zero matches is omitted from the funnel so
+// unrelated tasks don't carry empty stages.
+const FUNNEL_STAGES: { stage: string; matchers: string[] }[] = [
+  { stage: 'code-valid', matchers: ['evaluates clean'] },
+  { stage: 'watertight/non-overlapping', matchers: ['non-empty solid', 'interference', 'watertight'] },
+  { stage: 'mechanism-real', matchers: ['eyewear-wide', 'mechanism', 'joint', 'reachab'] },
+  { stage: 'design-intent', matchers: ['silhouette', 'composite', 'ssim', 'chamfer', 'bbox', 'rubric'] },
+];
+
+function buildFunnel(
+  gates: Record<string, boolean>,
+  scored: Record<string, boolean>,
+): { stage: string; passed: number; total: number }[] {
+  const all: [string, boolean][] = [...Object.entries(gates), ...Object.entries(scored)];
+  const out: { stage: string; passed: number; total: number }[] = [];
+  for (const { stage, matchers } of FUNNEL_STAGES) {
+    let passed = 0;
+    let total = 0;
+    for (const [name, value] of all) {
+      const lower = name.toLowerCase();
+      if (matchers.some((m) => lower.includes(m))) {
+        total++;
+        if (value) passed++;
+      }
+    }
+    if (total > 0) out.push({ stage, passed, total });
+  }
+  return out;
+}
+
 export function computeScore(
   result: HarnessResult,
   meta: { attempts: number; tokens_in: number; tokens_out: number; time_ms: number; firstFailureCode?: string },
@@ -61,6 +92,7 @@ export function computeScore(
     time_ms: meta.time_ms,
   };
   if (meta.firstFailureCode !== undefined) out.firstFailureCode = meta.firstFailureCode;
+  out.funnel = buildFunnel(result.gates, result.scored);
   return out;
 }
 
