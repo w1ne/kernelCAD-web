@@ -277,3 +277,72 @@ describe('renderTranscript — cookbook_inject', () => {
     expect(out).toMatch(/no match above floor/i);
   });
 });
+
+import type { HarnessResult } from './types';
+
+describe('computeScore — funnel cascade (W2)', () => {
+  const meta = { attempts: 1, tokens_in: 10, tokens_out: 20, time_ms: 100 };
+
+  it('does not change score/gate_pass for an all-pass result (regression)', () => {
+    const result: HarnessResult = {
+      gates: { 'evaluates clean': true, 'non-empty solid': true },
+      scored: { 'silhouette IoU >= 0.45 vs photo': true, 'SSIM >= 0.35 vs photo': false },
+    };
+    const score = computeScore(result, meta);
+    expect(score.gate_pass).toBe(true);
+    expect(score.score).toBe(0.5); // 1 of 2 scored passed — unchanged behavior
+  });
+
+  it('still returns score 0 when a gate fails (regression)', () => {
+    const result: HarnessResult = {
+      gates: { 'evaluates clean': false },
+      scored: { 'silhouette IoU >= 0.45 vs photo': true },
+    };
+    const score = computeScore(result, meta);
+    expect(score.gate_pass).toBe(false);
+    expect(score.score).toBe(0);
+  });
+
+  it('populates the funnel with per-stage pass counts for a partially-failing result', () => {
+    const result: HarnessResult = {
+      gates: {
+        'evaluates clean': true,
+        'non-empty solid': true,
+        'no unintended interferences': false,
+        'eyewear-wide (>= 100 mm in some axis)': true,
+      },
+      scored: {
+        'silhouette IoU >= 0.45 vs photo': true,
+        'SSIM >= 0.35 vs photo': false,
+        'chamfer distance <= 25 mm vs STL': true,
+      },
+    };
+    const score = computeScore(result, meta);
+    expect(score.funnel).toBeDefined();
+    const byStage = Object.fromEntries((score.funnel ?? []).map((s) => [s.stage, s]));
+
+    expect(byStage['code-valid']).toEqual({ stage: 'code-valid', passed: 1, total: 1 });
+    // non-empty solid (pass) + no unintended interferences (fail) = 1/2
+    expect(byStage['watertight/non-overlapping']).toEqual({
+      stage: 'watertight/non-overlapping',
+      passed: 1,
+      total: 2,
+    });
+    // eyewear-wide (pass) = 1/1
+    expect(byStage['mechanism-real']).toEqual({ stage: 'mechanism-real', passed: 1, total: 1 });
+    // silhouette (pass) + ssim (fail) + chamfer (pass) = 2/3
+    expect(byStage['design-intent']).toEqual({ stage: 'design-intent', passed: 2, total: 3 });
+  });
+
+  it('omits a stage that has no matching gate/scored item', () => {
+    const result: HarnessResult = {
+      gates: { 'evaluates clean': true },
+      scored: {},
+    };
+    const score = computeScore(result, meta);
+    const stages = (score.funnel ?? []).map((s) => s.stage);
+    expect(stages).toContain('code-valid');
+    expect(stages).not.toContain('design-intent');
+    expect(stages).not.toContain('watertight/non-overlapping');
+  });
+});
