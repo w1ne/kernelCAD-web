@@ -127,6 +127,9 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     {geometries.map((g, i) => {
                         const name = itemNames[i];
                         if (name && hiddenIds.includes(name)) return null;
+                        // Hide whole assembly parts by name (the Parts list in the
+                        // Scene tab toggles `assemblyPartName` into hiddenIds).
+                        if (g.assemblyPartName && hiddenIds.includes(g.assemblyPartName)) return null;
                         return (
                             <Shape
                                 key={i}
