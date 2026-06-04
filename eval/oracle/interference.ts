@@ -69,7 +69,15 @@ export async function runInterference(scriptPath: string, epsilonMm3 = 0.01): Pr
       partCount: parsed.partCount ?? 0,
       comparisonCount: parsed.comparisonCount ?? 0,
       epsilonMm3: parsed.epsilonMm3 ?? epsilonMm3,
-      pairs: Array.isArray(parsed.pairs) ? parsed.pairs : [],
+      // The CLI emits pairs as { a, b, volumeMm3 }; normalise to the declared
+      // { partA, partB, volumeMm3 } shape so consumers get stable field names.
+      pairs: Array.isArray(parsed.pairs)
+        ? parsed.pairs.map((p: { a?: string; b?: string; partA?: string; partB?: string; volumeMm3?: number }) => ({
+            partA: p.partA ?? p.a ?? 'partA',
+            partB: p.partB ?? p.b ?? 'partB',
+            volumeMm3: p.volumeMm3 ?? 0,
+          }))
+        : [],
       diagnostics: Array.isArray(parsed.diagnostics) ? parsed.diagnostics : [],
     };
   } catch {

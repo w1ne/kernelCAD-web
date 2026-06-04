@@ -4,6 +4,9 @@ import {
   TOOLS,
   callMcpTool,
   getToolDefinition,
+  runClosedLoop,
+  buildRepairPrompt,
+  defaultBuildRepairPrompt,
   type McpToolDefinition,
 } from './toolRegistry';
 
@@ -48,5 +51,33 @@ describe('toolRegistry public contract', () => {
     // Assignment compiles only if McpToolDefinition matches the returned shape.
     const def: McpToolDefinition | undefined = getToolDefinition('list_api');
     expect(def).toBeDefined();
+  });
+
+  it('exposes the closed-loop seam the hosted server consumes', () => {
+    // The kernelCAD-server orchestrator imports these from this public entry.
+    // Keep them exported so the hosted generation loop can repair with the
+    // typed, root-cause-first prompt instead of the generic fallback.
+    expect(typeof runClosedLoop).toBe('function');
+    expect(typeof buildRepairPrompt).toBe('function');
+    expect(typeof defaultBuildRepairPrompt).toBe('function');
+  });
+
+  it('the rich buildRepairPrompt differs from the generic fallback for a typed verdict', () => {
+    const verdicts = [
+      {
+        gate: 'interference',
+        ok: false,
+        code: 'mechanism.interpenetration',
+        message: 'Parts overlap.',
+        margin: 42,
+        locus: 'shade∩beam',
+      },
+    ];
+    const rich = buildRepairPrompt(verdicts);
+    const generic = defaultBuildRepairPrompt(verdicts);
+    expect(rich).not.toBe(generic);
+    // Rich prompt carries the numeric margin + topological locus as evidence.
+    expect(rich).toContain('42');
+    expect(rich).toContain('shade∩beam');
   });
 });

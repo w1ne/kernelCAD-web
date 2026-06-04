@@ -60,6 +60,9 @@ import { checkSweptCollisionTool } from './tools/checkSweptCollision';
 import { checkReachableTool } from './tools/checkReachable';
 import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './tools/checkLoadCapacity';
+export { runClosedLoop } from '../loop/closedLoop.js';
+export { buildRepairPrompt } from '../loop/repairPrompt.js';
+export * from '../loop/types.js';
 
 export interface McpToolDefinition {
   name: string;

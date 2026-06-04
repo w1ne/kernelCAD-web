@@ -138,6 +138,61 @@ export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
   );
 }
 
+/**
+ * Maximum inner-loop (hole) count across all faces of the model, via the
+ * `list_faces` MCP tool. A frame with N lens cutouts reports N on its
+ * front/back faces; a solid slab reports 0. This is a structural property of
+ * the BREP — invariant to whether a lens body is inserted into the opening —
+ * so it is the robust signal for "the expected lens openings exist" that pixel
+ * and volume heuristics cannot provide. Returns 0 if the tool yields no faces.
+ */
+export async function getMaxFaceInnerLoops(scriptPath: string): Promise<number> {
+  const initialize = JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'initialize',
+    params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'kernelcad-eval', version: '0.1.0' } },
+  });
+  const initialized = JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' });
+  const callTool = JSON.stringify({
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'tools/call',
+    params: { name: 'list_faces', arguments: { file: scriptPath } },
+  });
+  const stdin = `${initialize}\n${initialized}\n${callTool}\n`;
+
+  const r = await runOnce(['mcp'], stdin);
+  const lines = r.stdout.split('\n').filter((l) => l.trim().length > 0);
+  for (const line of lines) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'id' in parsed &&
+      (parsed as { id: unknown }).id === 2 &&
+      'result' in parsed
+    ) {
+      const result = (parsed as { result: { content?: Array<{ type: string; text?: string }> } }).result;
+      const text = result.content?.[0]?.text;
+      if (typeof text !== 'string') return 0;
+      const body = JSON.parse(text) as { ok?: boolean; faces?: Array<{ innerLoops?: number }> };
+      const faces = Array.isArray(body.faces) ? body.faces : [];
+      let max = 0;
+      for (const f of faces) {
+        if (typeof f.innerLoops === 'number' && f.innerLoops > max) max = f.innerLoops;
+      }
+      return max;
+    }
+  }
+  return 0;
+}
+
 export async function isKernelcadAvailable(): Promise<boolean> {
   try {
     const r = await runOnce(['--version']);
