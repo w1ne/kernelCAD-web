@@ -41,7 +41,7 @@ export class MockVisualJudge implements VisualJudge {
   constructor(canned: VisualJudgeResult) {
     this.canned = canned;
   }
-  async judge(_args: VisualJudgeArgs): Promise<VisualJudgeResult> {
+  async judge(): Promise<VisualJudgeResult> {
     return this.canned;
   }
 }
