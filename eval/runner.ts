@@ -5,6 +5,7 @@ import { extractScript, computeScore, renderTranscript } from './lib';
 import { evaluateScript } from './oracle/kernelcad-client';
 import { runClosedLoop, type LoopMessage } from '../src/agent/loop/closedLoop.js';
 import { createWebGateRunner } from './loop/webGateRunner.js';
+import { buildRepairPrompt } from '../src/agent/loop/repairPrompt';
 import type { CookbookInjection } from './cookbook-injector';
 
 const MAX_ATTEMPTS = 3;
@@ -63,6 +64,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     prompt,
     gateRunner: createWebGateRunner(),
     extractScript,
+    buildRepairPrompt,
     maxAttempts: MAX_ATTEMPTS,
     writeScript: async (code: string) => {
       writeFileSync(outputScriptPath, code);
