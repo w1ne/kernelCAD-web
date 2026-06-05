@@ -110,11 +110,14 @@ const drumGallery = cylinder(PLATE_T + 2, 10.4, 64).translate(0, 0, 3.8);      /
 // raked bore → Ø11 side mouth. No steps against the flow, no size change.
 const chuteStub   = cylinder(3.5, 5.5, 32).translate(CH_X, CH_Y, 4.4);
 const chuteAngled = cylinder(20, 5.5, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
-const stsEarScrews = cylinder(7, 0.85, 12).translate(5, 20, 3)                 // 4x M2 pilots over the STS3215 mounting ears
-  .union(cylinder(7, 0.85, 12).translate(-5, 20, 3),
-         cylinder(7, 0.85, 12).translate(5, -20, 3),
-         cylinder(7, 0.85, 12).translate(-5, -20, 3));
-const stsSeat   = box(28.5, 60, 8.7, true).translate(0, 0, -0.45);
+const stsEarScrews = cylinder(7, 0.85, 12).translate(5, 7.7, 3)                // 4x M2 pilots over the STS3215 mounting ears
+  .union(cylinder(7, 0.85, 12).translate(-5, 7.7, 3),
+         cylinder(7, 0.85, 12).translate(5, -32.7, 3),
+         cylinder(7, 0.85, 12).translate(-5, -32.7, 3));
+// STS3215's output is OFFSET 12.5 mm from its body center (measured from
+// the vendor STEP) — the body hangs toward -y so the output spline lands
+// exactly on the drum axis.
+const stsSeat   = box(28.5, 47.5, 8.7, true).translate(0, -12.5, -0.45);
 const mgRecess  = box(16, 27, 3.4).translate(MC_X - 8, MC_Y + 5.4 - 13.5, 0);
 const mgScrewA  = cylinder(6, 0.85, 12).translate(MC_X, MC_Y + 5.4 + 14, -1); // M2 pilots — MG90S flange screws bite here
 const mgScrewB  = cylinder(6, 0.85, 12).translate(MC_X, MC_Y + 5.4 - 14, -1);
@@ -149,8 +152,8 @@ const skirtFlange = cylinder(3, BASE_R, 96).translate(0, 0, -3)
 // Spice spout: the chute keeps raking 40° through a solid block bridging
 // plate and skirt wall, and breaks out the SIDE of the base band — a fully
 // enclosed channel, mouth at z -3.5..-11. Nothing falls through the bay.
-const spoutBlock = box(11, 11, 7.5, true).rotate([0, 0, 1], -19.5).translate(36, -12.75, -3.75)
-  .subtract(box(4.5, 5, 8.5, true).translate(29.0, -14.4, -3.7));              // corner relief for the MG90S case
+const spoutBlock = box(11, 11, 10.5, true).rotate([0, 0, 1], -19.5).translate(36, -12.75, -5.25)
+  .subtract(box(4.5, 5, 11.5, true).translate(29.0, -14.4, -5.2));             // corner relief for the MG90S case
 const chuteAngledS = cylinder(20, 5.5, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
 const coverBoss = cylinder(7, 3.5, 24).translate(37.5 * 0.5, 37.5 * 0.866, -37)
   .patternCircular({ count: 3, axis: [0, 0, 1] });                             // roots merge into the skirt wall
@@ -162,7 +165,8 @@ const coverInsert = cylinder(5, 1.6, 16).translate(37.5 * 0.5, 37.5 * 0.866, -37
 const cableNotch = box(14, 8, 14, true).translate(0, -41.5, -33);
 const skirt = skirtBody
   .union(skirtFlange, spoutBlock, coverBoss)
-  .subtract(chuteAngledS, skirtScrewHole, coverInsert, cableNotch)
+  .subtract(chuteAngledS, skirtScrewHole, coverInsert, cableNotch,
+            box(27, 7, 6, true).translate(0, -35.5, -2))                       // flange relief over the STS3215 far end
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.2, transmission: 0.3, ior: 1.5, thickness: 3 });
 
 // ── DRUM — cored carousel on the metal horn ──────────────────────────────────
@@ -221,7 +225,7 @@ const esp32   = box(18, 23, 7, true).translate(22.5, 5.5, 6.5).color('#1f7a3d');
 // STS3215 vendor STEP + its stock Ø20 metal horn disc on the output.
 const servoDrum = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
   .rotate([0, 0, 1], 90)
-  .translate(0, 0, -16.5)
+  .translate(0, -12.5, -16.5)                                                  // output spline (local +12.5,0) onto the drum axis
   .union(cylinder(3.0, 10, 48).translate(0, 0, 3.2).color('shaft'))             // stock metal horn disc — thin, sits right on the output
   .color('servo');
 const servoMeter = mountServo(MC_X, MC_Y, -19.5);
