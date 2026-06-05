@@ -1,136 +1,78 @@
-// Spice Dispenser — STATIC CHAMBERS + ORBITING SCOOP (v5).
+// Spice Dispenser — STATIC CHAMBERS + TRAVELING SCOOP POCKET (v6).
 //
-// The user-directed architecture: keep the proven SCOOP TUBE doser, and
-// make the scoop itself TRAVEL to the selected chamber:
-//   • six Ø18 chambers in a STATIC block (the grip body) — nothing heavy
-//     rotates and the whole outer surface is fixed
-//   • a CARRIAGE orbits in a bay under the block: a sealing disc on top
-//     (covers ALL chamber mouths, one Ø12 window over the scoop), the
-//     radial scoop tube below it, and the scoop's own micro-servo riding
-//     along (wire service loop; azimuth limited to 0..300°)
-//   • dose chamber k: drive the carriage to 30°+k·60° — the window opens
-//     ONLY that chamber and the spice column fills the scoop (mouth up);
-//     drive back to 0° — the solid disc reseals every chamber (you can
-//     always NOT dispense); flip the scoop 180° — the ~1 ml dose drops
-//     through the floor outlet. No funnel, no shared buffer: the only
-//     wetted path is the scoop itself.
-//   • carriage servo: static, vertical under the plate (revolver pattern)
+// v5's carriage (tube + riding micro-servo) had two real mechanical flaws:
+// the scoop hung in AIR below the chamber outlets (spillage past the tube =
+// residue all over the bay) and its servo's cable rode the rotor (tangle).
+// v6 merges the scoop INTO the seal disc — the scoop is a pocket that
+// travels:
+//   • a thick (8 mm) disc runs face-to-face between the chamber block and
+//     the floor — 0.15 mm running clearance on BOTH faces, so the spice
+//     column always rides on a sealed surface: no air gaps, no spillage
+//   • the 9×15 mm capsule pocket through the disc IS the scoop (~0.9 ml):
+//     under chamber k it fills (floor seals the bottom); travelling, both
+//     faces seal it; over the outlet at station 0° the floor opens and the
+//     dose drops. You can always NOT dispense — park anywhere else.
+//   • ONE motor, static, central: a Feetech STS3215 bus servo (19.5 kg·cm —
+//     ample for the face friction; vendor STEP, Apache-2.0, bundled from
+//     TheRobotStudio/SO-ARM100). No cable ever moves; the rotor is passive
+//     and can spin continuously.
 //
-// Geometry blockout — servos are MG90S modeled to datasheet (swap a vendor
-// STEP via lib.fromSTEP for exact geometry).
+// Choreography (single param `discDeg`): chambers at 30°+k·60°, outlet at
+// 0°. Dose chamber k: 30+60k (fill) → 0 (drop); repeat for more doses.
+//
+// Geometry blockout — the disc hub's socket onto the STS3215 output is
+// simplified (real build: 25T spline horn screwed to the hub).
 
 // ── Dimensions (mm) ────────────────────────────────────────────────────────
 const SHELL_R   = 38;          // Ø76 outer silhouette
-const BOLT_R    = 24;          // chambers (and the scoop station) on a Ø48 bolt circle
+const BOLT_R    = 24;          // chambers (and the pocket orbit) on a Ø48 bolt circle
 const CHAMBER_R = 9;           // Ø18 spice chambers
 
-const PLATE_T   = 10;          // base plate: floor outlet + carriage servo live here
-const BAY_H     = 24;          // carriage bay z 10..34
-const BLOCK_Z0  = PLATE_T + BAY_H;      // 34 — chamber block seat
+const PLATE_T   = 12;          // floor plate: outlet chute + servo seat live here
+const DISC_T    = 8;           // scoop-pocket depth = the dose height
+const DISC_Z0   = PLATE_T + 0.15;        // disc bottom — 0.15 running clearance on the floor
+const BLOCK_Z0  = DISC_Z0 + DISC_T + 0.15;  // 20.3 — chamber block seat
 const BLOCK_H   = 55;
-const CARR_Z0   = 10.3;        // carriage local origin (hub bottom), 0.3 above the floor
-const TUBE_Z    = 13.5;        // scoop-tube axis height in carriage-local coords (world 23.8)
 
 const LID_T       = 5;
 const LID_SKIRT_H = 8;
 const KNOB_R      = 7;
 const KNOB_H      = 12;
 
-// ── MG90S metal-gear 9 g servo (TowerPro), modeled to datasheet ────────────
-// Built shaft-up (+Z), case base at z=0, centred in X/Y; output spline OFFSET.
-const MG_L = 22.8, MG_W = 12.2, MG_H = 22.5;
-const MG_FLANGE_L = 32.2, MG_FLANGE_T = 2.5, MG_FLANGE_Z = 16.0;
-const MG_HOLE_SPACING = 28, MG_HOLE_R = 1.0;
-const MG_SHAFT_X = -MG_L / 2 + 6;
-function mg90s() {
-  const caseBody = box(MG_L, MG_W, MG_H, true).translate(0, 0, MG_H / 2).color('servo');
-  const flangeBlank = box(MG_FLANGE_L, MG_W, MG_FLANGE_T, true).translate(0, 0, MG_FLANGE_Z + MG_FLANGE_T / 2);
-  const holeA = cylinder(MG_FLANGE_T + 2, MG_HOLE_R, 16).translate(MG_HOLE_SPACING / 2, 0, MG_FLANGE_Z - 1);
-  const holeB = cylinder(MG_FLANGE_T + 2, MG_HOLE_R, 16).translate(-MG_HOLE_SPACING / 2, 0, MG_FLANGE_Z - 1);
-  const flange = flangeBlank.subtract(holeA, holeB).color('servo');
-  const boss   = cylinder(2, 3, 24).translate(MG_SHAFT_X, 0, MG_H).color('servo');
-  // Output spline with the central SCREW POINT on top.
-  const spline = cylinder(4, 2.45, 16).translate(MG_SHAFT_X, 0, MG_H + 2)
-    .subtract(cylinder(3, 1, 12).translate(MG_SHAFT_X, 0, MG_H + 3)).color('shaft');
-  const cable  = cylinder(5, 1.6, 12).alongAxis([1, 0, 0]).translate(MG_L / 2, 0, 5).color('#222222');
-  return caseBody.union(flange, boss, spline, cable);
-}
-// Seat an MG90S shaft-up with its OUTPUT SPLINE on (x, y), flange top at z=0.
-function mountServo(x, y, dz) {
-  return mg90s().rotate([0, 0, 1], 90).translate(x, y - MG_SHAFT_X, dz === undefined ? -18.5 : dz);
-}
-
-// ── Body — base plate + bay shell ring, one static printed part ─────────────
-// The plate top is the bay floor: one Ø12 outlet at station 0° (the dose
-// drops straight through), a central gallery for the carriage coupling, and
-// the carriage servo recessed underneath (revolver pattern).
+// ── Body — floor plate + bay ring, one static printed part ──────────────────
+// The plate top IS the valve floor the disc rides on: one Ø12 outlet chute
+// at station 0° and the central gallery for the disc hub. The STS3215 seats
+// in a shallow recess in the underside, body hanging below (long side along
+// Y so it clears the outlet chute).
 const plate = cylinder(PLATE_T, SHELL_R, 96);
-const ring  = cylinder(BAY_H, SHELL_R, 96).translate(0, 0, PLATE_T)
-  .subtract(cylinder(BAY_H + 2, SHELL_R - 3, 96).translate(0, 0, PLATE_T - 1));
+const ring  = cylinder(BLOCK_Z0 - PLATE_T, SHELL_R, 96).translate(0, 0, PLATE_T)
+  .subtract(cylinder(BLOCK_Z0 - PLATE_T + 2, 32.5, 96).translate(0, 0, PLATE_T - 1));
 const outletChute = cylinder(PLATE_T + 2, 6, 32).translate(BOLT_R, 0, -1);     // Ø12 drop hole, station 0°
-const gallery     = cylinder(4, 3.5, 32).translate(0, 0, 7);                   // boss + spline passage to the hub
-const ROT_CCY = 0 - MG_SHAFT_X;
-const srvRecess = box(16, 33, 7.8).translate(-8, -11.2, 0);    // covers case AND flange wings (servo raised to dz -15)
-const srvScrewA = cylinder(PLATE_T + 2, 1.1, 16).translate(0, ROT_CCY + 14, -1);
-const srvScrewB = cylinder(PLATE_T + 2, 1.1, 16).translate(0, ROT_CCY - 14, -1);
+const gallery     = cylinder(PLATE_T + 2, 7, 48).translate(0, 0, -1);          // Ø14 for the disc hub
+const servoSeat   = box(27, 47, 2.7).translate(-13.5, -23.5, 0);               // shallow recess; body hangs below
 const body = plate
   .union(ring)
-  .subtract(outletChute, gallery, srvRecess, srvScrewA, srvScrewB)
+  .subtract(outletChute, gallery, servoSeat)
   .color('frame');
 
-// ── Carriage — the orbiting rotor (sealing disc + yoke + hub) ────────────────
-// Local frame: origin on the axis at the hub bottom (world z=10.3).
-// The Ø64 disc on top seals every chamber mouth except through its one Ø12
-// window at the scoop station; the yoke arm drops past the scoop servo to
-// the central hub the index servo drives.
-const carrDisc   = cylinder(3, 32, 96).translate(0, 0, 20.45);                 // world 30.75..33.75, 0.25 under the block
-const carrWindow = cylinder(5, 6, 32).translate(BOLT_R, 0, 19.45);             // Ø12 window over the scoop mouth
-const carrArm    = box(10, 6.5, 17.75).translate(-5, -13, 2.7);                // disc → hub, tangentially beside the servo (clears its case at y=-6)
-const carrHub    = cylinder(3.6, 7, 32);                                       // world 10.3..13.9 — Ø14 so the yoke arm lands on it
-const hubSocket  = cylinder(3.55, 2.6, 16).translate(0, 0, -0.05);             // index-servo spline grips here
-// Scoop-servo mount: two tabs hang from the disc behind the flange ears
-// (the flange face rests on them at x=11.1); M2 screws run along X through
-// the ear holes into the tabs. The servo is now PHYSICALLY mounted to the
-// carriage, not just declared fastened.
-const srvTabA   = box(1.9, 4.6, 12.45).translate(11.1, -10.8, 8);              // behind ear hole y=-8.6
-const srvTabB   = box(1.9, 4.6, 12.45).translate(11.1, 17, 8);                 // behind ear hole y=+19.4
-const srvTabBoreA = cylinder(3, 1, 16).alongAxis([1, 0, 0]).translate(10.9, -8.6, TUBE_Z);
-const srvTabBoreB = cylinder(3, 1, 16).alongAxis([1, 0, 0]).translate(10.9, 19.4, TUBE_Z);
-const carriage = carrDisc
-  .union(carrArm, carrHub, srvTabA, srvTabB)
-  .subtract(carrWindow, hubSocket, srvTabBoreA, srvTabBoreB)
+// ── Scoop disc — the ONE rotor: seal disc with the traveling pocket ─────────
+// Local frame: origin on the axis at the disc bottom (world z=12.15).
+const pocket = box(9, 5, DISC_T + 2).translate(BOLT_R - 4.5, -2.5, -1)
+  .union(
+    cylinder(DISC_T + 2, 4.5, 32).translate(BOLT_R, -2.5, -1),
+    cylinder(DISC_T + 2, 4.5, 32).translate(BOLT_R, 2.5, -1),
+  );
+const hub = cylinder(9.2, 6, 32).translate(0, 0, -9.2)                          // down the gallery to the servo output
+  .subtract(cylinder(4.5, 3.15, 16).translate(0, 0, -9.25));                    // output-spline socket (simplified)
+const disc = cylinder(DISC_T, 32, 96)
+  .union(hub)
+  .subtract(pocket)
   .color('gear');
 
-// ── Scoop — the proven tap tube, riding the carriage radially ───────────────
-// Identical metering tube to the revolver: Ø13.4, blind 9×15 scoop ≈1 ml,
-// mouth up at 0° / drops at 180°. Local frame on its own axis; the mate
-// aligns it RADIALLY on the carriage at the Ø48 station.
-const doseScoop = box(9, 6, 11.5).translate(-4.5, -3, -4.5)
-  .union(
-    cylinder(11.5, 4.5, 32).translate(0, -3, -4.5),
-    cylinder(11.5, 4.5, 32).translate(0, 3, -4.5),
-  );
-const doser = cylinder(14.5, 6.7, 48).alongAxis([0, 1, 0]).translate(0, -7.5, 0)
-  .subtract(
-    doseScoop,
-    cylinder(5.5, 2.6, 16).alongAxis([0, 1, 0]).translate(0, -7.55, 0),        // servo-spline coupling bore
-    cylinder(1.2, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -7.55, 0),         // counterbore clears the servo's Ø6 boss
-  )
-  .rotate([0, 0, 1], -90)                                                       // roll axis along +X — must MATCH the carriage connector axis
-  .color('tool');
-
-// ── Scoop servo — rides the carriage, coaxial with the radial tube ──────────
-// Authored in CARRIAGE-LOCAL coordinates and fastened to the carriage; its
-// wires run in a service loop (azimuth travel is limited to 300°).
-const servoScoop = mg90s()
-  .rotate([0, 0, 1], 90)
-  .rotate([0, 1, 0], 90)
-  .translate(-7.5, 5.4, TUBE_Z);
-
 // ── Chamber block — the static grip body ────────────────────────────────────
-// Local frame: seat on the ring top (world z=34). Chambers at 30°+k·60°
-// (station 0° is the drop station, never under a chamber), Ø12 outlets the
-// carriage disc seals.
+// Local frame: seat on the ring top (world z=20.3). Chambers at 30°+k·60°
+// (station 0° is the drop station, never under a chamber); Ø12 outlets ride
+// directly on the disc face.
 const chamberLocal  = cylinder(52, CHAMBER_R, 32)
   .translate(BOLT_R, 0, 4)
   .rotate([0, 0, 1], 30);
@@ -152,28 +94,26 @@ const lid = cylinder(LID_T, SHELL_R + 2, 96)
   )
   .color('plate');
 
-// ── Index servo — static, vertical under the plate ──────────────────────────
-const servoIndex = mountServo(0, 0, -15);
+// ── Servo — Feetech STS3215, vendor STEP (SO-ARM100 bundle, Apache-2.0) ─────
+// Local bbox ≈ 45×25×40 centred on its origin, output shaft +Z on the axis.
+// Long side turned along Y to clear the outlet chute; top seats 2.4 mm into
+// the underside recess, output reaching the disc hub through the gallery.
+const servo = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
+  .rotate([0, 0, 1], 90)
+  .translate(0, 0, -17.5)
+  .color('servo');
 
-// ── Params ───────────────────────────────────────────────────────────────────
-const carriageDeg = param('carriageDeg', 0, {
-  min: 0, max: 300, description: 'Carriage azimuth — 30+60k fills from chamber k, 0 is the drop station',
-});
-const scoopDeg = param('scoopDeg', 0, {
-  min: 0, max: 180, description: 'Scoop roll — 0 mouth up (fill/carry), 180 drops the dose',
+// ── Param ────────────────────────────────────────────────────────────────────
+const discDeg = param('discDeg', 0, {
+  min: 0, max: 360, description: 'Scoop-pocket azimuth — 30+60k fills from chamber k, 0 drops the dose',
 });
 
-// ── Assembly — chained joints: body → carriage → scoop ──────────────────────
+// ── Assembly ─────────────────────────────────────────────────────────────────
 const asm = assembly('spice-dispenser-static-chambers');
 const bodyPart = asm.part('body', body);
-bodyPart.connector('carriageAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, CARR_Z0] }, axis: [0, 0, 1] });
+bodyPart.connector('discAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, DISC_Z0] }, axis: [0, 0, 1] });
 bodyPart.connector('blockSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, BLOCK_Z0] } });
-bodyPart.connector('idxMount', { type: 'frame', origin: { kind: 'vec3', value: [0, ROT_CCY, -15] } });
-
-const carrPart = asm.part('carriage', carriage);
-carrPart.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
-carrPart.connector('scoopAxis', { type: 'axis', origin: { kind: 'vec3', value: [BOLT_R, 0, TUBE_Z] }, axis: [1, 0, 0] });
-carrPart.connector('scoopServoMount', { type: 'frame', origin: { kind: 'vec3', value: [17, 0, TUBE_Z] } });
+bodyPart.connector('servoSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -17.5] } });
 
 const blockPart = asm.part('block', block);
 blockPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
@@ -182,21 +122,16 @@ blockPart.connector('lidSeat', { type: 'frame', origin: { kind: 'vec3', value: [
 const lidPart = asm.part('lid', lid);
 lidPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 
-const doserPart = asm.part('scoop', doser);
-doserPart.connector('rollAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+const discPart = asm.part('scoop-disc', disc);
+discPart.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
 
-const scoopServoPart = asm.part('servo-scoop', servoScoop);
-scoopServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [17, 0, TUBE_Z] } });
+const servoPart = asm.part('servo', servo);
+servoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -17.5] } });
 
-const idxServoPart = asm.part('servo-index', servoIndex);
-idxServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, ROT_CCY, -15] } });
-
-// Both rotors are enclosed by design — declared to Gate 4.
-asm.mate('index', 'body.carriageAxis', 'carriage.axis', 'revolute', { pose: carriageDeg, limitsDeg: [0, 300], exposure: 'concealed' });
-asm.mate('roll', 'carriage.scoopAxis', 'scoop.rollAxis', 'revolute', { pose: scoopDeg, limitsDeg: [0, 180], exposure: 'concealed' });
+// The disc runs enclosed between block and floor — declared to Gate 4.
+asm.mate('index', 'body.discAxis', 'scoop-disc.axis', 'revolute', { pose: discDeg, limitsDeg: [0, 360], exposure: 'concealed' });
 asm.mate('block-fit', 'body.blockSeat', 'block.seat', 'fastened');
 asm.mate('lid-fit', 'block.lidSeat', 'lid.seat', 'fastened');
-asm.mate('scoop-servo-fix', 'carriage.scoopServoMount', 'servo-scoop.mount', 'fastened');
-asm.mate('idx-servo-fix', 'body.idxMount', 'servo-index.mount', 'fastened');
+asm.mate('servo-fix', 'body.servoSeat', 'servo.mount', 'fastened');
 
 return asm.solvedModel({});
