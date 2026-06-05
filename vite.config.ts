@@ -73,22 +73,60 @@ function reviewPaintSaveServer(): Plugin {
 }
 
 function kernelCadMeshEndpoint(): Plugin {
+  // Slice 2E.bridge: lazily-initialised pool + middlewares. We can't import
+  // the pool at module top because it pulls in `src/modeling/buildModel`,
+  // which transitively boots OCCT — Vite's config is loaded synchronously
+  // and we want OCCT init delayed until the first request. Build the pool
+  // on demand, then close over it for the session/events/params handlers.
+  // The promise lives at plugin-factory scope so `handleHotUpdate` (the
+  // `.kcad.ts` live-edit bridge) can reach the pool too.
+  type PoolBundle = {
+    pool: import('./src/server/sessionPool').SessionPool;
+    sessionHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+    eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+    paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+    transformsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
+  };
+  let poolBundlePromise: Promise<PoolBundle> | undefined;
+
   return {
     name: 'kernelcad-mesh-endpoint',
     apply: 'serve',
+    // Live-edit bridge: `.kcad.ts` scripts are loaded through the
+    // `/__kernelcad/source` middleware, not the module graph, so Vite's
+    // default HMR does nothing when one changes on disk. Two pushes:
+    //
+    // 1. Rebuild any pooled session for the changed script and fan a
+    //    synthetic `relower` out over its SSE channel — the viewport in
+    //    `?script=` mode renders from the pooled server session (NOT from
+    //    the browser `code` state), so this is what actually re-meshes
+    //    open Studio tabs.
+    // 2. Send a `kernelcad:script-changed` WS event so the client can
+    //    refresh the Code tab text (liveScriptBridge.ts).
+    //
+    // Returning [] suppresses the default (no-op) HMR handling.
+    handleHotUpdate(ctx) {
+      if (!ctx.file.endsWith('.kcad.ts')) return;
+      if (poolBundlePromise) {
+        void poolBundlePromise
+          .then((bundle) => bundle.pool.rebuildByScript(ctx.file))
+          .then((rebuilt) => {
+            if (rebuilt) ctx.server.config.logger.info(`[kernelcad] live-rebuilt session for ${ctx.file}`);
+          })
+          .catch((err) => {
+            ctx.server.config.logger.error(
+              `[kernelcad] live rebuild failed for ${ctx.file}: ${err instanceof Error ? err.message : String(err)}`,
+            );
+          });
+      }
+      ctx.server.ws.send({
+        type: 'custom',
+        event: 'kernelcad:script-changed',
+        data: { file: relative(repoRoot, ctx.file).split('\\').join('/') },
+      });
+      return [];
+    },
     configureServer(server) {
-      // Slice 2E.bridge: lazily-initialised pool + middlewares. We can't import
-      // the pool at module top because it pulls in `src/modeling/buildModel`,
-      // which transitively boots OCCT — Vite's config is loaded synchronously
-      // and we want OCCT init delayed until the first request. Build the pool
-      // on demand, then close over it for the session/events/params handlers.
-      type PoolBundle = {
-        pool: import('./src/server/sessionPool').SessionPool;
-        sessionHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
-        eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
-        paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
-      };
-      let poolBundlePromise: Promise<PoolBundle> | undefined;
       function ensureOcctShims(): void {
         // The Node-side OCCT package is an Emscripten CommonJS artifact that
         // reads `__dirname` to locate its sibling WASM file. The CLI bundle
@@ -110,12 +148,14 @@ function kernelCadMeshEndpoint(): Plugin {
               { createSessionEndpoint },
               { createEventsEndpoint },
               { createParamsEndpoint },
+              { createTransformsEndpoint },
               { buildModelFromFile },
             ] = await Promise.all([
               import('./src/server/sessionPool'),
               import('./src/server/middleware/sessionEndpoint'),
               import('./src/server/middleware/eventsEndpoint'),
               import('./src/server/middleware/paramsEndpoint'),
+              import('./src/server/middleware/transformsEndpoint'),
               import('./src/modeling/buildModel'),
             ]);
             const pool = createSessionPool({
@@ -131,6 +171,7 @@ function kernelCadMeshEndpoint(): Plugin {
               sessionHandler: createSessionEndpoint({ pool, resolveScript: resolveExampleScript }),
               eventsHandler: createEventsEndpoint({ pool, heartbeatMs: 15_000 }),
               paramsHandler: createParamsEndpoint({ pool }),
+              transformsHandler: createTransformsEndpoint({ pool }),
             };
           })();
         }
@@ -159,6 +200,10 @@ function kernelCadMeshEndpoint(): Plugin {
       server.middlewares.use('/__kernelcad/params', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.paramsHandler(req, res);
+      });
+      server.middlewares.use('/__kernelcad/transforms', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.transformsHandler(req, res);
       });
 
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {
@@ -492,11 +537,22 @@ function kernelCadMeshEndpoint(): Plugin {
           // we overlay the live raw count on top for the Studio HUD's
           // slider-drag responsiveness.
           const sessionToken = url.searchParams.get('session');
-          const review = await reviewCadTool({
-            file: scriptPath,
-            includePoseEnvelope: true,
-            includeInterference: true,
-          });
+
+          // `live=1` (sent by the client's relower-triggered refresh): skip
+          // the FULL review — reviewCadTool re-evaluates the script from
+          // source and runs the pose-envelope sweep, which on a jointed
+          // assembly takes MINUTES — and return only the live raw
+          // interference pairs from the pooled session. The full review
+          // still runs on initial load and on an explicit Validate press;
+          // the client merges this lighter payload over the last full one.
+          const liveOnly = url.searchParams.get('live') === '1' && Boolean(sessionToken);
+          const review = liveOnly
+            ? { ok: true, diagnostics: [], live: true }
+            : await reviewCadTool({
+                file: scriptPath,
+                includePoseEnvelope: true,
+                includeInterference: true,
+              });
 
           if (sessionToken) {
             try {
@@ -579,7 +635,14 @@ export default defineConfig(({ command }) => ({
       ignored: [
         '**/.git/**',
         '**/.claude/**',
-        '**/kernelCAD-web-worktrees/**',
+        // Keep sibling worktrees out of the watch set — but only when the
+        // server itself runs from the main checkout. When the dev server is
+        // started inside a worktree, this glob would match every project
+        // file (the worktree root contains the segment) and silently kill
+        // all hot-reload, so it must be dropped there.
+        ...(repoRoot.includes('kernelCAD-web-worktrees')
+          ? []
+          : ['**/kernelCAD-web-worktrees/**']),
       ],
     },
   },
