@@ -72,19 +72,19 @@ const funnel = path()
 // proven layout as spice-revolver: Ø14 bore along Y, axis z=+7, blind at +Y,
 // 1.1 mm end wall at -Y with a Ø6.6 shaft hole for the servo coupling.
 const TAP_Z = 7;
-const valveBody = cylinder(20.5, 7.5, 48).alongAxis([0, 1, 0]).translate(0, -12, TAP_Z);
-const valveBore = cylinder(19.1, 7, 48).alongAxis([0, 1, 0]).translate(0, -10.9, TAP_Z);
-const shaftHole = cylinder(2.5, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -12.5, TAP_Z);
+const valveBody = cylinder(17.2, 7.5, 48).alongAxis([0, 1, 0]).translate(0, -8.7, TAP_Z);
+const valveBore = cylinder(15.8, 7, 48).alongAxis([0, 1, 0]).translate(0, -7.6, TAP_Z);
+const shaftHole = cylinder(2.5, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -9.2, TAP_Z);
 const inlet  = cylinder(6, 5, 32).translate(0, 0, 12);             // funnel spout → bore top
 const outlet = box(9, 6, 3).translate(-4.5, -3, -1)                // 9×15 capsule, bore → open air
   .union(cylinder(3, 4.5, 32).translate(0, -3, -1), cylinder(3, 4.5, 32).translate(0, 3, -1));
 // Doser-servo recess + mount pillars (coaxial servo at z=7, case top 13.1,
 // 2.6 mm roof; pillars at the flange ears, M2 bores along Y).
-const dsrRecess = box(33.2, 22.9, 13.4).translate(-22, -35, 0);
-const dsrMountA = box(4, 2.5, 21.4).translate(-21.4, -15.9, -8);   // pillar at ear x=-19.4
-const dsrMountB = box(4, 2.5, 21.4).translate(6.6, -15.9, -8);     // pillar at ear x=+8.6
-const dsrBoreA  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(-19.4, -18.7, TAP_Z);
-const dsrBoreB  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(8.6, -18.7, TAP_Z);
+const dsrRecess = box(33.2, 26.2, 13.4).translate(-22, -35, 0);   // stops at y=-8.8, clear of the bore's end wall
+const dsrMountA = box(4, 2.5, 13.4).translate(-21.4, -13.4, 0);    // pillar at ear x=-19.4, fully inside the plate
+const dsrMountB = box(4, 2.5, 13.4).translate(6.6, -13.4, 0);      // pillar at ear x=+8.6, fully inside the plate
+const dsrBoreA  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(-19.4, -16.4, TAP_Z);
+const dsrBoreB  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(8.6, -16.4, TAP_Z);
 const body = plate
   .union(shellRing, funnel, valveBody)
   .subtract(valveBore, shaftHole, inlet, outlet, dsrRecess)
@@ -140,11 +140,11 @@ const doseScoop = box(9, 6, 11.5).translate(-4.5, -3, -4.5)
     cylinder(11.5, 4.5, 32).translate(0, -3, -4.5),
     cylinder(11.5, 4.5, 32).translate(0, 3, -4.5),
   );
-const doser = cylinder(18, 6.7, 48).alongAxis([0, 1, 0]).translate(0, -10.8, 0)
+const doser = cylinder(14.5, 6.7, 48).alongAxis([0, 1, 0]).translate(0, -7.5, 0)
   .subtract(
     doseScoop,
-    cylinder(5.5, 2.6, 16).alongAxis([0, 1, 0]).translate(0, -10.85, 0),
-    cylinder(1.2, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -10.85, 0),
+    cylinder(5.5, 2.6, 16).alongAxis([0, 1, 0]).translate(0, -7.55, 0),
+    cylinder(1.2, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -7.55, 0),
   )
   .color('tool');
 
@@ -153,7 +153,7 @@ const doser = cylinder(18, 6.7, 48).alongAxis([0, 1, 0]).translate(0, -10.8, 0)
 const servoDoser = mg90s()
   .rotate([0, 0, 1], 180)
   .rotate([1, 0, 0], -90)
-  .translate(-5.4, -34.7, TAP_Z);
+  .translate(-5.4, -32, TAP_Z);
 // Selector servo: inverted (shaft DOWN) inside the knob housing; spline
 // reaches the spindle's socket at world z 101..105.
 const servoSelector = mg90s()
@@ -174,7 +174,7 @@ const bodyPart = asm.part('body', body);
 bodyPart.connector('selectorAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, DISC_Z0] }, axis: [0, 0, 1] });
 bodyPart.connector('tapAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, TAP_Z] }, axis: [0, 1, 0] });
 bodyPart.connector('blockSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, BLOCK_Z0] } });
-bodyPart.connector('dsrMount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -34.7, TAP_Z] } });
+bodyPart.connector('dsrMount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -32, TAP_Z] } });
 
 const blockPart = asm.part('block', block);
 blockPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
@@ -191,7 +191,7 @@ const doserPart = asm.part('doser', doser);
 doserPart.connector('tapAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
 
 const dsrServoPart = asm.part('servo-doser', servoDoser);
-dsrServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -34.7, TAP_Z] } });
+dsrServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -32, TAP_Z] } });
 
 const selServoPart = asm.part('servo-selector', servoSelector);
 selServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [5.4, 0, 129.5] } });
