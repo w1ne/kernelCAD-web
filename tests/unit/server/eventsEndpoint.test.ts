@@ -103,10 +103,19 @@ describe('eventsEndpoint', () => {
 
     void handler(req, res);
     await Promise.resolve();
+    // The single engine-level subscriber is the pool entry's relower hub
+    // (it owns the engine subscription so it can survive in-place model
+    // swaps); the SSE connection subscribes to the hub, not the engine.
     expect(engine.subscribers).toHaveLength(1);
 
     req.triggerClose();
-    expect(engine.subscribers).toHaveLength(0);
+    // The hub's engine subscription stays (it belongs to the pool entry,
+    // not the connection) — the per-connection invariant is that a closed
+    // connection receives no further frames.
+    expect(engine.subscribers).toHaveLength(1);
+    const writesBeforeEmit = res.writes.length;
+    engine.emitRelower(['feat_after_close']);
+    expect(res.writes.length).toBe(writesBeforeEmit);
   });
 
   it('returns 400 when session token is missing', async () => {

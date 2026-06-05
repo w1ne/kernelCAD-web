@@ -353,7 +353,9 @@ describe('GeometryContext latest-intent-wins', () => {
     );
     expect(fetchUrl(fetchMock, 2)).toBe('/__kernelcad/mesh?session=tok-abc');
     expectFetchSignal(fetchMock, 2);
-    expect(fetchUrl(fetchMock, 3)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts');
+    // Initial by-token load uses the cheap live review channel — the full
+    // pose-envelope review runs on an explicit Validate press instead.
+    expect(fetchUrl(fetchMock, 3)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
     expectFetchSignal(fetchMock, 3);
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
     expect(screen.getByTestId('face-count').textContent).toBe('1');
@@ -461,8 +463,12 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');
     expectFetchSignal(fetchMock, 4);
     expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
-    // 5th fetch is the review re-run that updates the HUD interference count.
-    expect(screen.getByTestId('script-review-repair').textContent).toBe('post-relower review');
+    // 5th fetch is the live-channel review re-run that refreshes the HUD
+    // interference count. The live payload overlays rawInterferencePairs
+    // onto the last full review — validator output (including the repair
+    // prompt) is intentionally kept from the initial review.
+    expect(fetchUrl(fetchMock, 5)).toBe('/__kernelcad/review?session=tok-abc&script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts&live=1');
+    expect(screen.getByTestId('script-review-repair').textContent).toBe('initial review');
   });
 
   it('coalesces relower bursts into one active mesh+review fetch pair plus one trailing pair', async () => {
