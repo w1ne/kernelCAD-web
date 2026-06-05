@@ -88,9 +88,17 @@ const carrWindow = cylinder(5, 6, 32).translate(BOLT_R, 0, 19.45);             /
 const carrArm    = box(10, 6.5, 17.75).translate(-5, -13, 2.7);                // disc → hub, tangentially beside the servo (clears its case at y=-6)
 const carrHub    = cylinder(3.6, 7, 32);                                       // world 10.3..13.9 — Ø14 so the yoke arm lands on it
 const hubSocket  = cylinder(3.55, 2.6, 16).translate(0, 0, -0.05);             // index-servo spline grips here
+// Scoop-servo mount: two tabs hang from the disc behind the flange ears
+// (the flange face rests on them at x=11.1); M2 screws run along X through
+// the ear holes into the tabs. The servo is now PHYSICALLY mounted to the
+// carriage, not just declared fastened.
+const srvTabA   = box(1.9, 4.6, 12.45).translate(11.1, -10.8, 8);              // behind ear hole y=-8.6
+const srvTabB   = box(1.9, 4.6, 12.45).translate(11.1, 17, 8);                 // behind ear hole y=+19.4
+const srvTabBoreA = cylinder(3, 1, 16).alongAxis([1, 0, 0]).translate(10.9, -8.6, TUBE_Z);
+const srvTabBoreB = cylinder(3, 1, 16).alongAxis([1, 0, 0]).translate(10.9, 19.4, TUBE_Z);
 const carriage = carrDisc
-  .union(carrArm, carrHub)
-  .subtract(carrWindow, hubSocket)
+  .union(carrArm, carrHub, srvTabA, srvTabB)
+  .subtract(carrWindow, hubSocket, srvTabBoreA, srvTabBoreB)
   .color('gear');
 
 // ── Scoop — the proven tap tube, riding the carriage radially ───────────────
