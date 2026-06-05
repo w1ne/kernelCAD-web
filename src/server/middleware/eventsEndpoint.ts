@@ -57,8 +57,7 @@ export function createEventsEndpoint(deps: EventsEndpointDeps) {
     if (!entry) {
       return writeJson(res, 404, { error: 'unknown session token' });
     }
-    const engine = entry.model.session.engine;
-    if (!engine) {
+    if (!entry.model.session.engine) {
       return writeJson(res, 409, {
         error: 'session has no engine attached (buildModel did not run)',
       });
@@ -81,7 +80,10 @@ export function createEventsEndpoint(deps: EventsEndpointDeps) {
     // relower fires; the client's EventSource fires `onopen` on first byte.
     res.write(': connected\n\n');
 
-    const unsubscribe = engine.onRelower((affectedIds) => {
+    // Subscribe to the ENTRY-level hub, not the engine directly: the hub is
+    // stable across `rebuildByScript` model swaps (disk-edit live reload),
+    // so this connection keeps receiving relower frames after a rebuild.
+    const unsubscribe = entry.onRelower((affectedIds) => {
       // Per SSE spec each frame ends with a blank line.
       res.write(`event: relower\ndata: ${JSON.stringify({ affectedIds })}\n\n`);
     });
@@ -90,6 +92,11 @@ export function createEventsEndpoint(deps: EventsEndpointDeps) {
     if (heartbeatMs > 0) {
       heartbeatTimer = setInterval(() => {
         res.write(`: keepalive ${Date.now()}\n\n`);
+        // An open SSE connection means a live viewer: bump `lastAccessAt`
+        // (pool.get touches) so `prune()` doesn't evict the session out
+        // from under an idle-but-open Studio tab — a pruned session makes
+        // disk-edit live rebuilds silently miss and params edits 404.
+        deps.pool.get(token);
       }, heartbeatMs);
     }
 
