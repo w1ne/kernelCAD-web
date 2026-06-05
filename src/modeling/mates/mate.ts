@@ -69,6 +69,15 @@ export interface MateRecord {
    *  (`validateJointLoadCapacity`). Per the field's unit semantics, see
    *  `MateLoadLimit` JSDoc. */
   readonly maxLoad?: MateLoadLimit;
+  /** Visual-exposure declaration read by Gate 4 (`jointVisualExposure`).
+   *  Default `'exposed'`: the joint must read as a hinge (fork daylight +
+   *  pin stickout thresholds). Declare `'concealed'` for mechanisms that
+   *  are enclosed BY DESIGN — valve rotors in bores, internal spindles,
+   *  worm shafts — where fork daylight is structurally impossible and the
+   *  hinge-visibility heuristic only emits false positives. An explicit
+   *  per-mate declaration, not a threshold change: exposed hinges keep
+   *  the full Gate 4 guard. */
+  readonly exposure?: 'exposed' | 'concealed';
 }
 
 export function parseConnectorRef(ref: string): { partName: string; connectorName: string } {

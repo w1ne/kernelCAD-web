@@ -170,6 +170,17 @@ export async function validateJointVisualExposure(
     // their own gates later if they exhibit the same failure mode.
     if (mate.type !== 'revolute') continue;
 
+    // Concealed-by-design skip — `exposure: 'concealed'` is the script's
+    // explicit declaration that this revolute is an ENCLOSED mechanism
+    // (valve rotor in a bore, internal spindle, worm shaft) where fork
+    // daylight is structurally impossible. The hinge-visibility
+    // measurement below assumes fork+tongue+pin construction and only
+    // produces false positives on such joints (the daylight is
+    // normalized by the parent's perpendicular extent, so a compact
+    // rotor inside a large body can never pass). Exposed hinges — the
+    // Luxo failure class this gate guards — never set this flag.
+    if (mate.exposure === 'concealed') continue;
+
     const sideA = await resolveSide(mate.a, partsByName, worldTransforms);
     const sideB = await resolveSide(mate.b, partsByName, worldTransforms);
     if (!sideA || !sideB) continue;

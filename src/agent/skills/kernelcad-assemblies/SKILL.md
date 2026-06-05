@@ -86,7 +86,18 @@ interface Assembly {
     a: ConnectorRef,
     b: ConnectorRef,
     kind: 'fastened' | 'revolute' | 'prismatic' | 'ball' | 'cylindrical' | 'planar' | 'pin_slot',
-    opts?: { limitsDeg?: [number, number]; limitsMm?: [number, number]; pose?: Editable<number> | [number, number, number] },
+    opts?: {
+      limitsDeg?: [number, number];
+      limitsMm?: [number, number];
+      pose?: Editable<number> | [number, number, number];
+      /** Gate 4 (joint visual exposure) declaration. Default 'exposed':
+       *  the revolute must read as a hinge (fork daylight + pin stickout).
+       *  Declare 'concealed' ONLY for mechanisms enclosed by design —
+       *  valve rotors in bores, internal spindles, worm shafts — where
+       *  fork daylight is structurally impossible. Never use it to
+       *  silence a hinge that should be visible. */
+      exposure?: 'exposed' | 'concealed';
+    },
   ): AssemblyMateRef;
   model(): Scene;
   solvedModel(poses: Poses): Scene;
@@ -612,7 +623,7 @@ A mechanism build is **not deliverable** if any of these fail. No `ignore[]` wor
 
 1. `kernelcad validate --include-interference` returns CLEAN. `ignore[]` is reserved for true intra-part design contacts (a spring "bolted" to a beam, a captured washer); joint-pair contacts (the parts on either side of a `revolute` / `prismatic` mate) **may not be ignored** — they are the test signal for whether the mechanism is physically realized.
 2. Every declared mate passes Gate 6 (mate physical realization): the pin/equivalent feature actually constrains the two parts, the pin stays in both holes at every pose in the mate's limits, and bearing surfaces align. Surfaces an advisory `assembly.mate.not-physically-realized` (`info` severity; revolute / prismatic only; `fastened` mates are exempt). The merge gates under the physics-grounded loop are `mechanism.disconnect` and `mechanism.interpenetration`, which fire under motion at validate-time. `joint.clevis(...)` passes by construction.
-3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view.
+3. Every revolute joint passes Gate 4 (visual exposure): the hinge mechanism reads as a hinge from at least one canonical view. Enclosed-by-design rotors (valve tubes in bores, internal spindles) declare `exposure: 'concealed'` on the mate instead of faking fork daylight.
 4. The render-inspect loop is followed: a `kernelcad render inspect` pass after every geometry change, with visible issues called out.
 5. (Opt-in) `kernelcad validate --include-interference --include-physics` adds the MuJoCo-based physics gate. Two extra failure codes: `mechanism.unstable-under-gravity` (non-finite required torque at a sampled pose) and `mechanism.drops-on-release` (joints drift > 5° or bodies translate > 50 mm in a 0.5 s drop-test from rest). Bare revolutes without a closed-loop spring / declared actuator fail this gate; single-body springs fastened to one arm don't help — see issue #361 (closed-loop tendon API).
 
