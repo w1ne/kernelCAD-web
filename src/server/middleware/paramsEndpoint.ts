@@ -31,7 +31,70 @@ export interface ParamsReqLike extends NodeJS.ReadableStream {
   method?: string;
 }
 
+type ParamEdit = { name: string; value: number | boolean };
+type UpdateResult = { relowered?: string[]; skipped?: string[]; warnings?: unknown[] };
+
+interface CoalescedBatch {
+  /** Latest value per param name across all requests merged into this batch. */
+  edits: Map<string, ParamEdit>;
+  waiters: Array<{ resolve: (r: UpdateResult) => void; reject: (e: unknown) => void }>;
+}
+
 export function createParamsEndpoint(deps: ParamsEndpointDeps) {
+  // Per-session trailing-edge coalescing. A slider drag fires one POST per
+  // tick; each kernel relower costs ~1-2 s, so running them all serially
+  // builds a minutes-deep queue (the viewport looks frozen), and running
+  // them concurrently races the single OCCT WASM instance (Aborted()
+  // crashes). Instead: while one update is in flight for a session, every
+  // further request merges into ONE pending batch (latest value per param
+  // name wins) — a drag-storm costs at most the in-flight relower plus one
+  // trailing relower, and updates on a session never overlap.
+  const inFlight = new Map<string, Promise<void>>();
+  const pending = new Map<string, CoalescedBatch>();
+
+  function enqueueUpdate(token: string, edits: ParamEdit[]): Promise<UpdateResult> {
+    return new Promise<UpdateResult>((resolve, reject) => {
+      let batch = pending.get(token);
+      if (!batch) {
+        batch = { edits: new Map(), waiters: [] };
+        pending.set(token, batch);
+      }
+      for (const e of edits) batch.edits.set(e.name, e);
+      batch.waiters.push({ resolve, reject });
+
+      if (inFlight.has(token)) return;
+      const drain = (async () => {
+        try {
+          for (;;) {
+            const next = pending.get(token);
+            if (!next) break;
+            pending.delete(token);
+            try {
+              // Resolve the entry at RUN time, not enqueue time — a live
+              // script rebuild may have swapped the session's model since
+              // the request arrived.
+              const entry = deps.pool.get(token);
+              if (!entry) {
+                throw Object.assign(new Error('session evicted while update was queued'), {
+                  code: 'session.evicted',
+                });
+              }
+              const session = entry.model.session as unknown as {
+                params: { update: (edits: ParamEdit[]) => Promise<unknown> };
+              };
+              const result = (await session.params.update([...next.edits.values()])) as UpdateResult;
+              for (const w of next.waiters) w.resolve(result);
+            } catch (error) {
+              for (const w of next.waiters) w.reject(error);
+            }
+          }
+        } finally {
+          inFlight.delete(token);
+        }
+      })();
+      inFlight.set(token, drain);
+    });
+  }
   return async function paramsHandler(req: ParamsReqLike, res: MinimalRes): Promise<void> {
     try {
       const token = readQuery(req.url, 'session');
@@ -70,13 +133,8 @@ export function createParamsEndpoint(deps: ParamsEndpointDeps) {
         }
       }
 
-      const session = entry.model.session as unknown as {
-        params: { update: (edits: Array<{ name: string; value: number | boolean }>) => Promise<unknown> };
-      };
       try {
-        const result = (await session.params.update(
-          edits as Array<{ name: string; value: number | boolean }>,
-        )) as { relowered?: string[]; skipped?: string[]; warnings?: unknown[] };
+        const result = await enqueueUpdate(token, edits as ParamEdit[]);
         return writeJson(res, 200, {
           relowered: result.relowered ?? [],
           skipped: result.skipped ?? [],
