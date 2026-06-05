@@ -106,12 +106,8 @@ const lid = cylinder(LID_T, SHELL_R + 2, 96)
 // Local bbox ≈ 45×25×40 centred on its origin, output shaft +Z on the axis.
 // Long side turned along Y to clear the outlet chute; top seats 2.4 mm into
 // the underside recess, output reaching the disc hub through the gallery.
-// Vendor STEP (TheRobotStudio SO-ARM100 bundle, Apache-2.0). The union with
-// a sliver inside the body BAKES the import through a boolean — workaround
-// for the kernel's imported-STEP lifetime flake under solvedModel; remove
-// once the kernel fix lands.
+// Vendor STEP (TheRobotStudio SO-ARM100 bundle, Apache-2.0).
 const servo = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
-  .union(box(1, 1, 1, true).translate(0, 0, -10))
   .translate(0, 0, -16.5)
   .color('servo');
 
