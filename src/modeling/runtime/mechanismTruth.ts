@@ -675,7 +675,10 @@ async function checkDofMismatch(arm: Assembly): Promise<CompilerDiagnostic[]> {
 /**
  * For every mate, at REST pose, the joint pivot must lie inside both
  * mated bodies' BREP solids within
- * `JOINT_MESH_GAP_TOLERANCE_MM`. The mate-FK pose envelope rides on
+ * `JOINT_MESH_GAP_TOLERANCE_MM` — or, when the pivot is deliberately in
+ * open space, the two mated rigid groups must maintain bearing contact
+ * within the same tolerance somewhere (see the bearing-contact fallback
+ * in `jointMeshContinuity.ts`). The mate-FK pose envelope rides on
  * the constraint surface for the rest of the joint sweep, so a clean
  * rest-pose pin guarantees the pin stays inside for the full travel
  * (the spec's non-goal: pose-swept sampling).
@@ -700,13 +703,24 @@ async function checkJointMeshContinuityCriterion(
   const out: CompilerDiagnostic[] = [];
   for (const r of results) {
     if (r.signedDistanceMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
+    // Bearing-contact fallback: a pivot deliberately in open space
+    // (annular rim seat, spindle in a fastened block's bore) is fine
+    // when the two mated rigid groups maintain bearing contact /
+    // clearance within the same tolerance ANYWHERE — the joint is
+    // constrained by material away from the axis, not floating.
+    if (r.bearingGapMm !== undefined && r.bearingGapMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
+    const bearingNote = r.bearingGapMm !== undefined
+      ? ` Nearest contact between the mated rigid groups is ` +
+        `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
+        `the joint within tolerance either.`
+      : '';
     out.push(makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': pivot origin is ` +
       `${r.signedDistanceMm.toFixed(1)}mm outside its mesh (tolerance ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `solid covers the joint origin at rest pose.`,
+      `solid covers the joint origin at rest pose.` + bearingNote,
     ));
   }
   return out;

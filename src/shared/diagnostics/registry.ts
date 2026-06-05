@@ -1051,11 +1051,11 @@ export const DIAGNOSTIC_REGISTRY = {
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
-      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body.',
+      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A joint pivot lies outside its mated body BREP surface at rest pose — the link mesh does not reach the joint it pivots on.',
+    description: 'A joint pivot lies outside its mated body BREP surface at rest pose and the mated rigid groups have no bearing contact within tolerance anywhere — the link is floating on the joint it pivots on.',
   },
   // Physics-grounded loop — P6 slice. The two physics criteria
   // (static-equilibrium + drop-on-release) emit these codes from

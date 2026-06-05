@@ -13,6 +13,17 @@
 // abstract rigid bodies, not material continuity assertions on the
 // visual mesh.
 //
+// Bearing-contact fallback: a pivot deliberately in open space (annular
+// rim seats, spindles running in a bore of a part FASTENED to the mated
+// part, hollow-axis valve rotors) is NOT floating — the joint is
+// constrained by bearing contact away from the axis. When a pivot probe
+// exceeds the tolerance, the helper measures the true minimum distance
+// between the two mated RIGID GROUPS (parts joined transitively by
+// fastened mates) and reports it as `bearingGapMm`; the caller passes
+// the joint when that distance is within the same tolerance. A
+// genuinely floating part exceeds the tolerance everywhere and still
+// fails.
+//
 // Implementation notes:
 //
 //   - `BRepClass3d_SolidClassifier` is not exposed by the
@@ -84,6 +95,16 @@ export interface JointMeshGapResult {
    * only inspects the positive (outside) side.
    */
   readonly signedDistanceMm: number;
+  /**
+   * Minimum world-space distance (mm) between the two mated rigid
+   * groups (parts joined transitively by fastened mates on each side).
+   * Only computed when at least one side's pivot probe exceeds
+   * `JOINT_MESH_GAP_TOLERANCE_MM` — the caller treats a value within
+   * the tolerance as legitimate bearing contact constraining the joint
+   * away from the axis. `undefined` when the pivot probes passed or the
+   * OCCT distance solver failed.
+   */
+  readonly bearingGapMm?: number;
 }
 
 /**
@@ -112,6 +133,26 @@ export function checkJointMeshContinuity(
   // happens through `parsedRef + connectorName`, not the scene).
   const partByName = new Map<string, ReturnType<Assembly['__parts']>[number]>();
   for (const p of arm.__parts()) partByName.set(p.name, p);
+
+  // Fastened-mate adjacency for the bearing-contact fallback: parts
+  // joined by fastened mates move as one rigid link, so a bearing
+  // surface on ANY part of the group constrains a joint mated to the
+  // group (e.g. a spindle running in a bore of a block fastened to the
+  // mate's declared parent).
+  const fastenedAdj = new Map<string, Set<string>>();
+  for (const m of arm.__mates()) {
+    if (m.type !== 'fastened') continue;
+    try {
+      const a = parseConnectorRef(m.a).partName;
+      const b = parseConnectorRef(m.b).partName;
+      if (!fastenedAdj.has(a)) fastenedAdj.set(a, new Set());
+      if (!fastenedAdj.has(b)) fastenedAdj.set(b, new Set());
+      fastenedAdj.get(a)!.add(b);
+      fastenedAdj.get(b)!.add(a);
+    } catch {
+      continue;
+    }
+  }
 
   for (const mate of arm.__mates()) {
     let parsedA: { partName: string; connectorName: string };
@@ -151,10 +192,12 @@ export function checkJointMeshContinuity(
     const aScenePart = sceneByPartName.get(parsedA.partName);
     const bScenePart = sceneByPartName.get(parsedB.partName);
 
+    const rows: JointMeshGapResult[] = [];
+
     if (aScenePart !== undefined) {
       const gap = measureGapToBody(aScenePart.shape as OcctBackend, aScenePart.worldTransform, pivotWorld);
       if (gap !== undefined) {
-        out.push({
+        rows.push({
           mateName: mate.name,
           side: 'parent',
           partName: parsedA.partName,
@@ -177,7 +220,7 @@ export function checkJointMeshContinuity(
         probePointForChild,
       );
       if (gap !== undefined) {
-        out.push({
+        rows.push({
           mateName: mate.name,
           side: 'child',
           partName: parsedB.partName,
@@ -186,9 +229,96 @@ export function checkJointMeshContinuity(
         });
       }
     }
+
+    // Bearing-contact fallback (only paid for when a pivot probe fails):
+    // measure the true minimum distance between the two mated rigid
+    // groups. The caller passes the joint when this lands within
+    // tolerance — the pivot sits in deliberately open space (annular rim
+    // seat, bushing-at-a-distance) but real material constrains the
+    // joint elsewhere.
+    if (rows.some((r) => r.signedDistanceMm > JOINT_MESH_GAP_TOLERANCE_MM)) {
+      const bearingGapMm = measureMateBearingGap(
+        fastenedAdj,
+        sceneByPartName,
+        parsedA.partName,
+        parsedB.partName,
+      );
+      if (bearingGapMm !== undefined) {
+        out.push(...rows.map((r) => ({ ...r, bearingGapMm })));
+        continue;
+      }
+    }
+
+    out.push(...rows);
   }
 
   return out;
+}
+
+/**
+ * Collect the rigid group of `root`: every part reachable from it over
+ * fastened-mate edges (inclusive of `root` itself). Articulated mates
+ * are NOT traversed — they are the joints whose bearing we're checking.
+ */
+function collectFastenedGroup(
+  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
+  root: string,
+): Set<string> {
+  const visited = new Set<string>([root]);
+  const queue = [root];
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    for (const next of fastenedAdj.get(cur) ?? []) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return visited;
+}
+
+/**
+ * Minimum world-space distance (mm) between the rigid groups of the two
+ * mated parts. Early-exits as soon as a pair lands within
+ * `JOINT_MESH_GAP_TOLERANCE_MM` (the caller only compares against that
+ * threshold). If the two groups intersect — a pathological assembly
+ * that declares both an articulated mate and a fastened chain between
+ * the same parts — falls back to the directly-mated pair so a shared
+ * part can't trivially report zero.
+ */
+function measureMateBearingGap(
+  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
+  sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
+  parentPartName: string,
+  childPartName: string,
+): number | undefined {
+  let groupA = collectFastenedGroup(fastenedAdj, parentPartName);
+  let groupB = collectFastenedGroup(fastenedAdj, childPartName);
+  if ([...groupA].some((n) => groupB.has(n))) {
+    groupA = new Set([parentPartName]);
+    groupB = new Set([childPartName]);
+  }
+
+  let best: number | undefined;
+  for (const aName of groupA) {
+    const a = sceneByPartName.get(aName);
+    if (a === undefined) continue;
+    for (const bName of groupB) {
+      const b = sceneByPartName.get(bName);
+      if (b === undefined) continue;
+      const d = measureBodyToBodyGap(
+        a.shape as OcctBackend,
+        a.worldTransform,
+        b.shape as OcctBackend,
+        b.worldTransform,
+      );
+      if (d === undefined) continue;
+      if (best === undefined || d < best) best = d;
+      if (best <= JOINT_MESH_GAP_TOLERANCE_MM) return best;
+    }
+  }
+  return best;
 }
 
 /**
@@ -233,34 +363,75 @@ export function measureGapToBody(
 
     // Outside the body. Compute the unsigned surface distance via
     // BRepExtrema_DistShapeShape from a TopoDS_Vertex at the probe
-    // point to the body's TopoDS_Shape. We use the default-construct
-    // + LoadS1 + LoadS2 + Perform pattern rather than the
-    // 5-arg constructor — the enum-value globals required for the
-    // 5-arg form aren't reliably exposed on the WASM module surface.
+    // point to the body's TopoDS_Shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const gp = new oc.gp_Pnt_3(pointWorld[0], pointWorld[1], pointWorld[2]);
     const mkVertex = new oc.BRepBuilderAPI_MakeVertex(gp);
     const vertex = mkVertex.Vertex();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bodyWrapped = (worldBody as unknown as { shape: { wrapped: any } }).shape.wrapped;
-    const dist = new oc.BRepExtrema_DistShapeShape_1();
-    dist.LoadS1(vertex);
-    dist.LoadS2(bodyWrapped);
-    let value: number;
+    let value: number | undefined;
     try {
-      const ok = dist.Perform(new oc.Message_ProgressRange_1());
-      if (!ok || !dist.IsDone()) {
-        return undefined;
-      }
-      value = dist.Value();
+      value = brepExtremaDistance(oc, vertex, wrappedShape(worldBody));
     } finally {
-      dist.delete?.();
       mkVertex.delete?.();
       gp.delete?.();
     }
     return value;
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * Measure the unsigned minimum distance (mm) between two bodies' world-
+ * space OCCT surfaces. `0` when the surfaces touch or cross. Used by
+ * the bearing-contact fallback — the spice-dispenser pattern where a
+ * selector disc seats on a funnel rim ~30 mm from the joint axis while
+ * the axis region stays open as a flow path.
+ *
+ * Returns `undefined` when the OCCT pipeline throws on the inputs.
+ */
+export function measureBodyToBodyGap(
+  localShapeA: OcctBackend,
+  worldTransformA: Transform,
+  localShapeB: OcctBackend,
+  worldTransformB: Transform,
+): number | undefined {
+  try {
+    const worldA = localShapeA.clone().applyTransform(worldTransformA);
+    const worldB = localShapeB.clone().applyTransform(worldTransformB);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    return brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+  } catch {
+    return undefined;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function wrappedShape(backend: OcctBackend): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (backend as unknown as { shape: { wrapped: any } }).shape.wrapped;
+}
+
+/**
+ * Run `BRepExtrema_DistShapeShape` between two TopoDS shapes. We use
+ * the default-construct + LoadS1 + LoadS2 + Perform pattern rather
+ * than the 5-arg constructor — the enum-value globals required for the
+ * 5-arg form aren't reliably exposed on the WASM module surface.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number | undefined {
+  const dist = new oc.BRepExtrema_DistShapeShape_1();
+  dist.LoadS1(shapeA);
+  dist.LoadS2(shapeB);
+  try {
+    const ok = dist.Perform(new oc.Message_ProgressRange_1());
+    if (!ok || !dist.IsDone()) {
+      return undefined;
+    }
+    return dist.Value();
+  } finally {
+    dist.delete?.();
   }
 }
