@@ -141,7 +141,7 @@ const base = plateBlank
 
 // ── WALL — the clear window can, flanged foot, screwed to the base ───────────
 // Local frame: origin at its bottom face (world z=14).
-const wallBoss = cylinder(6, 2.5, 24).translate(41.5 * 0.7071, 41.5 * 0.7071, 3.5)
+const wallBoss = cylinder(6, 2.4, 24).translate(41.5 * 0.7071, 41.5 * 0.7071, 3.5)
   .patternCircular({ count: 4, axis: [0, 0, 1] });                             // load-spreading boss columns over each insert
 const wallInserts = cylinder(6.5, 1.6, 16).translate(41.5 * 0.7071, 41.5 * 0.7071, -0.05)
   .patternCircular({ count: 4, axis: [0, 0, 1] });
@@ -162,7 +162,7 @@ const skirtFlange = cylinder(3, BASE_R, 96).translate(0, 0, -3)
 // and skirt wall to a side mouth on the base band, z -3.5..-11. The tube
 // is trimmed to below the base plane and inside the Ø88 silhouette.
 const spoutSheath = cylinder(21, 6.75, 48).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3)
-  .intersect(cylinder(41, BASE_R, 96).translate(0, 0, -41))
+  .intersect(cylinder(41, BASE_R - 0.2, 96).translate(0, 0, -41))              // 0.2 inside the shell face — exact tangency breaks the mesher
   .subtract(box(4.5, 11.5, 11.5, true).translate(27.35, -13.25, -5.2));        // MG90S case+flange relief: ≥0.5 to the servo, ≥1.5 bore wall
 const chuteAngledS = cylinder(20, 5.0, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
 const coverBoss = cylinder(7, 3.5, 24).translate(37.5 * 0.5, 37.5 * 0.866, -37)
@@ -173,7 +173,7 @@ const skirtScrewHole = cylinder(5, 1.1, 16).translate(41 * 0.5, 41 * 0.866, -4)
 const coverInsert = cylinder(5, 1.6, 16).translate(37.5 * 0.5, 37.5 * 0.866, -37.1)
   .patternCircular({ count: 3, axis: [0, 0, 1] });
 const cableNotch = box(14, 8, 14, true).translate(0, -41.5, -33);
-const feet = cylinder(1.5, 3, 32).translate(41, 0, -41.5)
+const feet = cylinder(1.5, 3, 32).translate(40.9, 0, -41.5)
   .patternCircular({ count: 3, axis: [0, 0, 1] });                             // 3 pads on the rim — stable stance, clear of mouth + cable notch
 const skirt = skirtBody
   .union(skirtFlange, spoutSheath, coverBoss, feet)
@@ -192,7 +192,7 @@ const hornInserts = cylinder(9, 1.6, 16).translate(6.6, 0, -7.65)              /
   .patternCircular({ count: 4, axis: [0, 0, 1] });
 const centralBore = cylinder(66, 3.5, 32).translate(0, 0, -8)                  // ONE Ø7 bore, top to horn: spigot bearing above, driver channel below
   .union(cylinder(2.5, 4.3, 32).translate(0, 0, 53.2));                        // Ø8.6 funnel entry — guides the cap spigot in by hand
-const mouthL  = cylinder(4, 11.5, 32).translate(25.5, 0, 52.5);               // Ø23 pour mouths (1.0 rim to the drum edge)
+const mouthL  = cylinder(4, 11.5, 32).translate(25.2, 0, 52.5);               // Ø23 pour mouths — outer edge 0.3 inside the chamber edge (exact coincidence breaks the mesher)
 const sideScallops = cylinder(57, 8.5, 48).translate(40.5, 0, -1)
   .rotate([0, 0, 1], 30).patternCircular({ count: 6, axis: [0, 0, 1] });       // 6 flutes between chambers, 6 deep — less resin, faster layers; >=2.4 walls
 const mouthsL = mouthL.patternCircular({ count: 6, axis: [0, 0, 1] });
