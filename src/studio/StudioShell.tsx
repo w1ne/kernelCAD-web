@@ -7,6 +7,7 @@ import { Inspector } from './Inspector';
 import { AgentRail } from './AgentRail';
 import { BottomDrawer } from './BottomDrawer';
 import { MarkingOverlay } from './components/viewer/overlays/MarkingOverlay';
+import { SectionPanel } from './components/viewer/overlays/SectionPanel';
 import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
@@ -29,9 +30,15 @@ import { useProject } from './context/ProjectContext';
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen, selectedFeatureId, markingMode } = useShellStore();
+    const { agentRailOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
+    }, []);
+    const handleToggleSectionMode = useCallback(() => {
+        // Section and marking are independent overlays; turning one on retires
+        // the other so the viewport never hosts both at once.
+        if (shellStore.getSnapshot().markingMode) shellStore.setMarkingMode(false);
+        shellStore.toggleSectionMode();
     }, []);
     const recompute = useRecomputeResult();
     const { activeProject } = useProject();
@@ -181,6 +188,8 @@ export function StudioShell() {
                 onToggleRenderEnvironment={handleToggleRenderEnvironment}
                 markingMode={markingMode}
                 onToggleMarkingMode={handleToggleMarkingMode}
+                sectionMode={sectionMode}
+                onToggleSectionMode={handleToggleSectionMode}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
@@ -188,6 +197,7 @@ export function StudioShell() {
                 <div className="flex-1 relative">
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />
+                    <SectionPanel visible={sectionMode} />
                 </div>
                 <Inspector tabSlots={tabSlots} />
 
