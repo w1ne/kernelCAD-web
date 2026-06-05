@@ -11,10 +11,13 @@ import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 
+const EMPTY_PLANES: THREE.Plane[] = [];
+
 interface ShapeProps {
     geometry: GeometryResult;
     shapeIndex: number;
     viewMode3D: ViewMode3D;
+    clippingPlanes?: THREE.Plane[];
     isSelected: boolean;
     name: string | undefined;
 }
@@ -90,6 +93,7 @@ export function ConsolidatedShape({
     geometry,
     shapeIndex,
     viewMode3D,
+    clippingPlanes,
     isSelected,
     name
 }: ShapeProps) {
@@ -152,8 +156,8 @@ export function ConsolidatedShape({
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
     const material = useMemo(
-        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D),
-        [geometry.material, isSelected, color, viewMode3D],
+        () => buildShapeMaterial(geometry.material, isSelected, color, viewMode3D, clippingPlanes ?? EMPTY_PLANES),
+        [geometry.material, isSelected, color, viewMode3D, clippingPlanes],
     );
 
     if (!mergedGeometry) return null;
