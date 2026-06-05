@@ -7,6 +7,7 @@ interface GenerateArgs {
   messages: AgentMessage[];
   model: string;
   max_tokens: number;
+  temperature?: number;
 }
 
 export class MockAgentClient implements AgentClient {
@@ -51,6 +52,7 @@ export class AnthropicAgentClient implements AgentClient {
     const resp = await this.client.messages.create({
       model: args.model,
       max_tokens: args.max_tokens,
+      ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
       system: systemBlocks,
       messages: args.messages.map((m) => ({ role: m.role, content: m.content })),
     });

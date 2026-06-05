@@ -11,6 +11,28 @@ import type { CookbookInjection } from './cookbook-injector';
 const MAX_ATTEMPTS = 3;
 const MAX_TOKENS = 8000;
 
+const BEST_OF_N = 4;
+// Distinct temperatures so the N first-attempt candidates diverge. Index 0 stays
+// low (a near-greedy anchor); the rest spread upward. Length matches BEST_OF_N.
+const VARIANT_TEMPERATURES = [0.2, 0.5, 0.7, 0.9];
+
+export { BEST_OF_N };
+
+/** Variant index → sampling temperature; undefined on repair turns (no variant). */
+export function variantTemperature(variant: number | undefined): number | undefined {
+  if (variant === undefined) return undefined;
+  return VARIANT_TEMPERATURES[Math.min(variant, VARIANT_TEMPERATURES.length - 1)];
+}
+
+/** Reduce a task harness result to a single [0,1] selector score. */
+export function reduceHarnessScore(hr: { gates: Record<string, boolean>; scored: Record<string, number> }): number {
+  const vals = Object.values(hr.scored);
+  if (vals.length > 0) return vals.reduce((a, b) => a + b, 0) / vals.length;
+  const gates = Object.values(hr.gates);
+  if (gates.length === 0) return 0;
+  return gates.every(Boolean) ? 1 : 0;
+}
+
 export interface RunTaskArgs {
   taskDir: string;            // e.g. ./eval/tasks/bracket-holes
   runDir: string;             // e.g. ./eval/runs/2026-05-02T14-00-00/bracket-holes
@@ -19,6 +41,14 @@ export interface RunTaskArgs {
   skillMd: string;
   startedAt: string;          // ISO timestamp string (filesystem-safe), used for transcript header
   cookbook?: CookbookInjection;   // optional — when set, injects cookbook snippets into the system prompt
+  /**
+   * First-attempt best-of-N fan-out width. Defaults to 1 (single sample), which
+   * is the deterministic single-sample path the corpus/golden/runner unit tests
+   * assert against. The production eval (`run.ts`, real model) sets this to
+   * BEST_OF_N; `--mock` replay keeps it at 1 so the fixed fixture queue stays
+   * deterministic.
+   */
+  candidates?: number;
 }
 
 export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
@@ -66,11 +96,25 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     extractScript,
     buildRepairPrompt,
     maxAttempts: MAX_ATTEMPTS,
+    candidates: args.candidates ?? 1,
+    scoreCandidate: async (scriptPath, report) => {
+      // Only score build-valid candidates; gate-failing ones are ranked by stages.
+      if (!report.ok) return null;
+      try {
+        const ev = await evaluateScript(scriptPath);
+        if (!ev.ok) return null;
+        const harnessModule = await import(harnessPath);
+        const hr = await harnessModule.default(scriptPath);
+        return reduceHarnessScore(hr);
+      } catch {
+        return null;
+      }
+    },
     writeScript: async (code: string) => {
       writeFileSync(outputScriptPath, code);
       return outputScriptPath;
     },
-    generate: async (messages: LoopMessage[]) => {
+    generate: async (messages: LoopMessage[], opts?: { variant?: number }) => {
       attemptNo += 1;
       const turnStart = Date.now();
       const resp = await args.agent.generate({
@@ -79,6 +123,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
         model: args.model,
         max_tokens: MAX_TOKENS,
+        temperature: variantTemperature(opts?.variant),
       });
       totalIn += resp.tokens_in;
       totalOut += resp.tokens_out;

@@ -21,36 +21,47 @@ vi.mock('../oracle/kernelcad-client.js', () => ({
   isKernelcadAvailable: vi.fn().mockResolvedValue(true),
 }));
 
-// Interference fails the first 2 calls, then passes — proving the loop retries
-// on interference (not just on evaluate, which is always clean here).
-const interferenceFail = {
-  ok: false,
-  noSceneToCheck: false,
-  partCount: 2,
-  comparisonCount: 1,
-  epsilonMm3: 0.01,
-  pairs: [{ partA: 'a', partB: 'b', volumeMm3: 5 }],
-  diagnostics: [],
-};
-const interferencePass = {
-  ok: true,
-  noSceneToCheck: false,
-  partCount: 2,
-  comparisonCount: 1,
-  epsilonMm3: 0.01,
-  pairs: [],
-  diagnostics: [],
-};
-vi.mock('../oracle/interference.js', () => ({
+// Fixtures live in vi.hoisted so the (hoisted) vi.mock factory below can read
+// them — the factory is evaluated eagerly when webGateRunner imports the module.
+const { interferenceFail, interferencePass } = vi.hoisted(() => ({
+  interferenceFail: {
+    ok: false,
+    noSceneToCheck: false,
+    partCount: 2,
+    comparisonCount: 1,
+    epsilonMm3: 0.01,
+    pairs: [{ partA: 'a', partB: 'b', volumeMm3: 5 }],
+    diagnostics: [],
+  },
+  interferencePass: {
+    ok: true,
+    noSceneToCheck: false,
+    partCount: 2,
+    comparisonCount: 1,
+    epsilonMm3: 0.01,
+    pairs: [],
+    diagnostics: [],
+  },
+}));
+// webGateRunner imports '../oracle/interference.js' (from eval/loop/), which
+// resolves to eval/oracle/interference.js — i.e. './oracle/interference.js'
+// relative to THIS test file. Register that specifier so the mock actually
+// applies (the bare '../oracle/...' form resolves outside eval/ and never bound).
+// Fails the first BEST_OF_N calls (all attempt-1 fan-out candidates), then
+// passes — so attempt 2 (a single repair sample) succeeds, proving the loop
+// retries on interference (not just on evaluate, which is always clean here).
+vi.mock('./oracle/interference.js', () => ({
   runInterference: vi
     .fn()
+    .mockResolvedValueOnce(interferenceFail)
+    .mockResolvedValueOnce(interferenceFail)
     .mockResolvedValueOnce(interferenceFail)
     .mockResolvedValueOnce(interferenceFail)
     .mockResolvedValue(interferencePass),
 }));
 
 // Import AFTER mocks are registered.
-import { runTask } from './runner';
+import { runTask, BEST_OF_N } from './runner';
 
 class CountingAgent implements AgentClient {
   public calls = 0;
@@ -113,12 +124,16 @@ describe('runTask closed-loop integration', () => {
       model: 'mock-model',
       skillMd: 'fake skill content',
       startedAt: '2026-06-04T00-00-00',
+      candidates: BEST_OF_N,
     });
 
-    // The load-bearing assertion: 3 generate() calls means the loop retried
-    // through the 2 interference failures. Evaluate-only gating would stop at 1.
-    expect(agent.calls).toBe(3);
-    expect(result.score!.attempts).toBe(3);
+    // The load-bearing assertion: attempt 1 fans out to BEST_OF_N candidates
+    // (all fail interference here), so the loop builds a repair prompt and
+    // RETRIES; attempt 2 is a single sample whose interference passes. That is
+    // BEST_OF_N + 1 generate() calls across 2 attempts. Without retry it would
+    // stop at attempt 1; evaluate-only gating would never have retried at all.
+    expect(agent.calls).toBe(BEST_OF_N + 1);
+    expect(result.score!.attempts).toBe(2);
 
     // Final attempt's interference passed → evaluate-clean → harness ran.
     expect(existsSync(join(runsDir, 'output.kcad.ts'))).toBe(true);
@@ -127,6 +142,6 @@ describe('runTask closed-loop integration', () => {
     expect(result.score!.gates['evaluates clean']).toBe(true);
 
     const score = JSON.parse(readFileSync(join(runsDir, 'score.json'), 'utf8'));
-    expect(score.attempts).toBe(3);
+    expect(score.attempts).toBe(2);
   }, 30000);
 });
