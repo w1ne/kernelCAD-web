@@ -16,7 +16,7 @@ export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) 
     const targetState = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; } | null>(null);
     const prevSketchActive = useRef(false);
     const savedCameraState = useRef<{ position: THREE.Vector3; target: THREE.Vector3; } | null>(null);
-    const lastGeometrySignature = useRef<string | null>(null);
+    const lastFitBounds = useRef<{ center: THREE.Vector3; radius: number } | null>(null);
 
     useEffect(() => {
         cameraRef.current = camera;
@@ -28,9 +28,21 @@ export function CameraHandler({ geometries }: { geometries: GeometryResult[] }) 
         const bounds = computeGeometryBounds(geometries);
         if (!bounds) return;
 
-        const signature = `${geometries.length}:${bounds.center.x.toFixed(3)},${bounds.center.y.toFixed(3)},${bounds.center.z.toFixed(3)}:${bounds.radius.toFixed(3)}`;
-        if (signature === lastGeometrySignature.current) return;
-        lastGeometrySignature.current = signature;
+        // Re-fit only when the scene bounds change SIGNIFICANTLY. An exact
+        // signature is too twitchy: rotating a part (joint pose / param edit)
+        // wobbles the tessellated AABB by fractions of a millimetre, which
+        // used to re-fit the camera — wiping the user's orbit position on
+        // every slider change. 10% of the scene radius is well above
+        // tessellation noise and well below any real shape change.
+        const last = lastFitBounds.current;
+        const tolerance = Math.max(last?.radius ?? 0, bounds.radius) * 0.1;
+        const boundsStable = Boolean(
+            last
+            && bounds.center.distanceTo(last.center) <= tolerance
+            && Math.abs(bounds.radius - last.radius) <= tolerance,
+        );
+        if (boundsStable) return;
+        lastFitBounds.current = { center: bounds.center.clone(), radius: bounds.radius };
 
         const distance = Math.max(bounds.radius * 2.8, SKETCH_DISTANCE);
         const direction = new THREE.Vector3(1, 1, 0.75).normalize();

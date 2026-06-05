@@ -228,7 +228,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const fetchMeshAndReview = useCallback((
         script: string,
         token: string | null,
-        opts?: { keepExistingOnError?: boolean; skipReview?: boolean },
+        opts?: { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean },
     ): { revision: number; promise: Promise<void> } => {
         const revision = ++mainRevisionRef.current;
         setCurrentCodeRevision(revision);
@@ -242,8 +242,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         const meshPath = token
             ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
             : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
+        // `live=1` asks the dev middleware for the cheap relower-path review:
+        // raw interference pairs from the live pooled session only, skipping
+        // the full script re-eval + pose-envelope sweep (minutes on jointed
+        // assemblies). Used by the SSE relower refresh; the full review still
+        // runs on initial load / explicit Validate.
         const reviewPath = token
-            ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}`
+            ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}${opts?.liveReview ? '&live=1' : ''}`
             : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
 
         let aborted = false;
@@ -278,7 +283,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                 setFeatureRecords(payload.featureRecords ?? []);
                 setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
                 setScriptParams(Object.values(payload.params ?? {}));
-                if (!opts?.skipReview) setScriptReview(null);
+                if (!opts?.skipReview && !opts?.liveReview) setScriptReview(null);
                 setSketchesGeometries([]);
                 setPreviewGeometries([]);
                 setError(null);
@@ -300,12 +305,23 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
                     })
                     .then((reviewPayload) => {
                         if (revision !== mainRevisionRef.current) return;
+                        if (opts?.liveReview) {
+                            // Live payload carries only the fresh interference
+                            // pairs — keep the last FULL review's validator and
+                            // envelope output and overlay the live channel.
+                            setScriptReview((prev) => prev
+                                ? { ...prev, rawInterferencePairs: reviewPayload.rawInterferencePairs }
+                                : reviewPayload);
+                            return;
+                        }
                         setScriptReview(reviewPayload);
                     })
                     .catch((err: unknown) => {
                         if (isAbortError(err)) return;
                         if (revision !== mainRevisionRef.current) return;
-                        setScriptReview(null);
+                        // A failed LIVE refresh keeps the last full review —
+                        // dropping it would blank the Validity tab mid-drag.
+                        if (!opts?.liveReview) setScriptReview(null);
                     });
             })
             .catch((err: unknown) => {
@@ -351,7 +367,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     const requestMeshAndReview = useCallback((
         script: string,
         token: string | null,
-        opts?: { keepExistingOnError?: boolean; skipReview?: boolean },
+        opts?: { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean },
     ) => {
         if (meshFetchBusyRef.current) {
             meshFetchTrailingRef.current = { script, token, opts };
@@ -427,8 +443,67 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     useEffect(() => {
         if (!studioScript) return;
         if (sessionStatus === 'pending' || sessionStatus === 'idle') return;
-        requestMeshAndReview(studioScript, sessionToken);
+        // liveReview also on the initial fetch: the FULL review's pose-envelope
+        // sweep takes minutes on a jointed assembly and would block the
+        // single-threaded kernel (param edits queue behind it). The full
+        // review runs on an explicit Validate press instead.
+        requestMeshAndReview(studioScript, sessionToken, { liveReview: Boolean(sessionToken) });
     }, [studioScript, sessionStatus, sessionToken, requestMeshAndReview]);
+
+    // Pose-only fast path: fetch the live per-part world transforms from the
+    // pooled session and swap them into the override map wholesale. The
+    // `displayGeometries` memo REPLACES each geometry's `transform` slot with
+    // its override (matched by `assemblyPartName`), so the viewport re-poses
+    // existing Three.js geometries without re-fetching the ~740KB mesh
+    // payload. Returns false on any failure so the caller can fall back to
+    // the full mesh re-fetch.
+    const applyPoseOnlyRelower = useCallback(async (token: string): Promise<boolean> => {
+        try {
+            const { base, headers } = await apiCall();
+            const url = rewritePath(
+                `/__kernelcad/transforms?session=${encodeURIComponent(token)}`,
+                base,
+            );
+            const response = await fetch(url, { headers });
+            if (!response.ok) return false;
+            const payload = await response.json() as {
+                parts?: Array<{ name?: unknown; transform?: unknown }>;
+            };
+            if (!Array.isArray(payload.parts)) return false;
+            const next: Record<string, number[]> = {};
+            for (const part of payload.parts) {
+                if (typeof part?.name !== 'string') continue;
+                if (!Array.isArray(part.transform) || part.transform.length !== 16) continue;
+                next[part.name] = part.transform as number[];
+            }
+            setGeometryTransformOverrides(next);
+            return true;
+        } catch {
+            return false;
+        }
+    }, []);
+
+    // Lightweight review-only refresh for the pose-only fast path: hits the
+    // cheap `live=1` channel and overlays the fresh interference pairs onto
+    // the last full review — same merge the liveReview mesh path performs.
+    const fetchLiveReview = useCallback(async (script: string, token: string): Promise<void> => {
+        try {
+            const { base, headers } = await apiCall();
+            const url = rewritePath(
+                `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}&live=1`,
+                base,
+            );
+            const response = await fetch(url, { headers });
+            const payload = await response.json() as ScriptReviewSummary;
+            if (!response.ok) return;
+            setScriptReview((prev) => prev
+                ? { ...prev, rawInterferencePairs: payload.rawInterferencePairs }
+                : payload);
+        } catch {
+            // A failed LIVE refresh keeps the last review — dropping it would
+            // blank the Validity tab mid-drag.
+        }
+    }, []);
 
     // Slice 2E.bridge: SSE subscription. Opens an EventSource against the
     // pooled CaptureSession's onRelower channel. Each `relower` frame
@@ -438,7 +513,49 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         if (!studioScript || !sessionToken) return;
         let es: EventSource | null = null;
         let cancelled = false;
-        const onRelower = () => {
+        let liveReviewTimer: ReturnType<typeof setTimeout> | undefined;
+        // Typed as a plain Event listener — 'relower' is a custom SSE event
+        // name, so addEventListener resolves to the generic overload; the
+        // frame is a MessageEvent carrying `{"affectedIds": [...]}`.
+        const onRelower = (event: Event) => {
+            // Pose-only fast path: when EVERY affected record is a
+            // `solvedAssembly*` (a param-driven mate pose edit), only per-part
+            // worldTransforms changed — part-LOCAL meshes are untouched — so
+            // fetch the ~1KB transforms payload instead of the full mesh.
+            // The live interference review still runs, but DEBOUNCED
+            // trailing-edge so a slider drag-storm costs one review, not a
+            // queue of them. Anything else (empty affectedIds = synthetic
+            // rebuild relower, geometry-changing records) takes the full
+            // mesh+review path below.
+            let affectedIds: string[] = [];
+            try {
+                const parsed = JSON.parse((event as MessageEvent).data) as { affectedIds?: unknown };
+                if (Array.isArray(parsed.affectedIds)) {
+                    affectedIds = parsed.affectedIds.filter((id): id is string => typeof id === 'string');
+                }
+            } catch {
+                // Malformed frame — treat as a full refresh.
+            }
+            const poseOnly = affectedIds.length > 0
+                && affectedIds.every((id) => id.startsWith('solvedAssembly'));
+            if (poseOnly) {
+                void applyPoseOnlyRelower(sessionToken).then((applied) => {
+                    if (cancelled) return;
+                    if (!applied) {
+                        // Transforms fetch failed (non-scene tail, network) —
+                        // fall back to the full path so the viewport never
+                        // shows a stale pose.
+                        requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
+                        return;
+                    }
+                    if (liveReviewTimer) clearTimeout(liveReviewTimer);
+                    liveReviewTimer = setTimeout(() => {
+                        if (cancelled) return;
+                        void fetchLiveReview(studioScript, sessionToken);
+                    }, 1000);
+                });
+                return;
+            }
             // Re-fetch BOTH mesh AND review on relower. The review side carries
             // the live `rawInterferencePairs` channel the Studio status-bar
             // HUD reads — without re-fetching review on each param change the
@@ -446,7 +563,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // pose with the indicator stuck at the original count. (The prior
             // `skipReview: true` flag was a perf optimisation that predated
             // the live-interference channel.)
-            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true });
+            requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
         };
         // S1: route the SSE URL through apiCall so signed-in users hit the
         // hosted /events endpoint. (EventSource can't carry custom headers,
@@ -469,12 +586,13 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         });
         return () => {
             cancelled = true;
+            if (liveReviewTimer) clearTimeout(liveReviewTimer);
             if (es) {
                 es.removeEventListener('relower', onRelower);
                 es.close();
             }
         };
-    }, [studioScript, sessionToken, requestMeshAndReview]);
+    }, [studioScript, sessionToken, requestMeshAndReview, applyPoseOnlyRelower, fetchLiveReview]);
 
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
