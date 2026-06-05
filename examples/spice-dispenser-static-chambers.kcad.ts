@@ -9,29 +9,30 @@
 //   2. "We can't hold the rotating part" — the entire outer surface (block,
 //      shell, lid, base) is static. Rotors are fully internal.
 //
-// Drive layout (both motors on static structure, standard practice):
-//   • servo-selector — in the top knob housing, shaft DOWN a Ø6 spindle
-//     through the block's core to the selector disc (real spice carousels
-//     put the selector knob on top).
-//   • servo-doser    — horizontal under the base, coaxial with the tap tube
-//     (same arrangement proven in spice-revolver.kcad.ts).
+// Drive layout — BOTH servos at the bottom (same as the revolver, simple):
+//   • servo-selector — vertical under the plate at the CENTER, shaft up a
+//     Ø6 spindle inside a static center column to the selector disc. The
+//     funnel spout sits 14 mm off-center to free the axis for the spindle.
+//   • servo-doser    — horizontal inside the plate, coaxial with the tap
+//     tube at x=14 (under the spout).
 //
 // Joints are revolute mates with param-driven poses → pose-only re-solves
 // in Studio and draggable in the Joints tab.
 //
-// Geometry blockout — servo screws in the knob housing are omitted (noted),
-// servos are MG90S modeled to datasheet (swap vendor STEP via lib.fromSTEP).
+// Geometry blockout — servos are MG90S modeled to datasheet (swap vendor
+// STEP via lib.fromSTEP).
 
 // ── Dimensions (mm) ────────────────────────────────────────────────────────
 const SHELL_R   = 38;          // Ø76 outer silhouette, same as the revolver
 const BOLT_R    = 24;          // chambers on a Ø48 bolt circle
 const CHAMBER_R = 9;           // Ø18 spice chambers
 
-const PLATE_T   = 16;          // bottom plate: tap valve + doser servo live here
-const FUNNEL_H  = 28;          // funnel zone z 16..44 — 43° wall, steep enough for ground spice
-const BLOCK_Z0  = PLATE_T + FUNNEL_H;   // 44 — chamber block seat
+const PLATE_T   = 16;          // bottom plate: tap valve + both servo mounts live here
+const FUNNEL_H  = 34;          // funnel zone z 16..50 — keeps the far wall at 37° with the offset spout
+const BLOCK_Z0  = PLATE_T + FUNNEL_H;   // 50 — chamber block seat
 const BLOCK_H   = 55;
-const DISC_Z0   = 40.15;       // selector disc bottom — SEATS on the funnel rim (0.15 running clearance)
+const DISC_Z0   = 46.15;       // selector disc bottom — SEATS on the funnel rim (0.15 running clearance)
+const TAP_X     = 14;          // tap axis under the off-center spout
 
 // ── MG90S metal-gear 9 g servo (TowerPro), modeled to datasheet ────────────
 // Built shaft-up (+Z), case base at z=0, centred in X/Y; output spline OFFSET.
@@ -58,74 +59,81 @@ const plate = cylinder(PLATE_T, SHELL_R, 96);
 // Shell ring: the outer skin of the funnel zone (z 16..44, 3 mm wall).
 const shellRing = cylinder(FUNNEL_H, SHELL_R, 96).translate(0, 0, PLATE_T)
   .subtract(cylinder(FUNNEL_H + 2, SHELL_R - 3, 96).translate(0, 0, PLATE_T - 1));
-// Funnel: revolved 3 mm wall from the Ø10 central spout mouth (z=16) up to
-// the rim (r 32..35, z 40, merged into the shell ring). 43° wall — spice
-// from ANY selector station slides to the central spout.
-const funnel = path()
-  .moveTo(5, PLATE_T)
-  .lineTo(8, PLATE_T)
-  .lineTo(35, BLOCK_Z0 - 4)
-  .lineTo(32, BLOCK_Z0 - 4)
-  .close()
-  .revolve();
+// Funnel: 3 mm-wall cone LOFTED from the Ø10 spout at (14, 0, 16) up to the
+// rim at the shell (z 50). The spout sits off-center so the dispenser's
+// central axis stays free for the selector spindle; far wall slope is 37°.
+const circleAt = (cx, r) => path()
+  .moveTo(cx + r, 0)
+  .bulgeArc(cx - r, 0, 1)
+  .bulgeArc(cx + r, 0, 1)
+  .close();
+const funnelOuter = circleAt(TAP_X, 8).loft(circleAt(0, 34), { spacing: FUNNEL_H - 4 }).translate(0, 0, PLATE_T);
+const funnelInner = circleAt(TAP_X, 5).loft(circleAt(0, 31), { spacing: FUNNEL_H - 4 }).translate(0, 0, PLATE_T + 0.5);
+// Center column: static Ø10 tube standing in the funnel (spice flows around
+// it, like any hopper center column); the Ø6.5 gallery inside carries the
+// selector spindle from the bottom servo up to the disc.
+const column  = cylinder(FUNNEL_H - 4, 5, 32).translate(0, 0, PLATE_T);
+const gallery = cylinder(FUNNEL_H + PLATE_T + 2, 3.25, 32).translate(0, 0, -1);
 // Tap valve in the plate, at the CENTER (fed by the funnel spout). Same
 // proven layout as spice-revolver: Ø14 bore along Y, axis z=+7, blind at +Y,
 // 1.1 mm end wall at -Y with a Ø6.6 shaft hole for the servo coupling.
 const TAP_Z = 7;
-const valveBody = cylinder(17.2, 7.5, 48).alongAxis([0, 1, 0]).translate(0, -8.7, TAP_Z);
-const valveBore = cylinder(15.8, 7, 48).alongAxis([0, 1, 0]).translate(0, -7.6, TAP_Z);
-const shaftHole = cylinder(2.5, 3.3, 24).alongAxis([0, 1, 0]).translate(0, -9.2, TAP_Z);
-const inlet  = cylinder(6, 5, 32).translate(0, 0, 12);             // funnel spout → bore top
-const outlet = box(9, 6, 3).translate(-4.5, -3, -1)                // 9×15 capsule, bore → open air
-  .union(cylinder(3, 4.5, 32).translate(0, -3, -1), cylinder(3, 4.5, 32).translate(0, 3, -1));
+const valveBody = cylinder(17.2, 7.5, 48).alongAxis([0, 1, 0]).translate(TAP_X, -8.7, TAP_Z);
+const valveBore = cylinder(15.8, 7, 48).alongAxis([0, 1, 0]).translate(TAP_X, -7.6, TAP_Z);
+const shaftHole = cylinder(2.5, 3.3, 24).alongAxis([0, 1, 0]).translate(TAP_X, -9.2, TAP_Z);
+const inlet  = cylinder(6, 5, 32).translate(TAP_X, 0, 12);         // funnel spout → bore top
+const outlet = box(9, 6, 3).translate(TAP_X - 4.5, -3, -1)         // 9×15 capsule, bore → open air
+  .union(cylinder(3, 4.5, 32).translate(TAP_X, -3, -1), cylinder(3, 4.5, 32).translate(TAP_X, 3, -1));
 // Doser-servo recess + mount pillars (coaxial servo at z=7, case top 13.1,
 // 2.6 mm roof; pillars at the flange ears, M2 bores along Y).
-const dsrRecess = box(33.2, 26.2, 13.4).translate(-22, -35, 0);   // stops at y=-8.8, clear of the bore's end wall
-const dsrMountA = box(4, 2.5, 13.4).translate(-21.4, -13.4, 0);    // pillar at ear x=-19.4, fully inside the plate
-const dsrMountB = box(4, 2.5, 13.4).translate(6.6, -13.4, 0);      // pillar at ear x=+8.6, fully inside the plate
-const dsrBoreA  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(-19.4, -16.4, TAP_Z);
-const dsrBoreB  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(8.6, -16.4, TAP_Z);
+const dsrRecess = box(33.2, 26.2, 13.4).translate(-8, -35, 0);     // stops at y=-8.8, clear of the bore's end wall
+const dsrMountA = box(4, 2.5, 13.4).translate(-7.4, -13.4, 0);     // pillar at ear x=-5.4, fully inside the plate
+const dsrMountB = box(4, 2.5, 13.4).translate(20.6, -13.4, 0);     // pillar at ear x=+22.6, fully inside the plate
+const dsrBoreA  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(-5.4, -16.4, TAP_Z);
+const dsrBoreB  = cylinder(5, 1.0, 16).alongAxis([0, 1, 0]).translate(22.6, -16.4, TAP_Z);
+// Selector-servo recess: vertical servo at the center, hanging below the
+// plate exactly like the revolver's drum servo; M2 screw passages beside it.
+const selRecess = box(13, 27, 4.3).translate(-6.5, -8.1, 0);    // case-top recess; the flange mounts below the plate, revolver-style
+const selScrewA = cylinder(5, 1.1, 16).translate(0, 19.4, -1);
+const selScrewB = cylinder(5, 1.1, 16).translate(0, -8.6, -1);
 const body = plate
-  .union(shellRing, funnel, valveBody)
-  .subtract(valveBore, shaftHole, inlet, outlet, dsrRecess)
+  .union(shellRing, funnelOuter, column, valveBody)
+  .subtract(funnelInner, valveBore, shaftHole, inlet, outlet, dsrRecess, selRecess, selScrewA, selScrewB, gallery)
   .union(dsrMountA, dsrMountB)
   .subtract(dsrBoreA, dsrBoreB)
   .color('frame');
 
-// ── Chamber block + knob housing — the static grip body ─────────────────────
+// ── Chamber block — the static grip body, now a plain cylinder ───────────────
 // Authored in its joint-local frame (origin at the seat on the shell top,
-// world z=44). Six Ø18 chambers with 4 mm floors necking to Ø10 outlets that
-// open into the selector cavity below. The Ø46 knob housing on top holds the
-// inverted selector servo (flange screws omitted in this blockout).
+// world z=50). Six Ø18 chambers with 4 mm floors necking to Ø10 outlets that
+// open into the selector cavity below. No core bore, no top housing — the
+// selector drive comes from BELOW.
 const chamberLocal  = cylinder(52, CHAMBER_R, 32).translate(BOLT_R, 0, 4);     // z 4..56, punches the top
 const chambersLocal = chamberLocal.patternCircular({ count: 6, axis: [0, 0, 1] });
 const outletLocal   = cylinder(6, 5, 32).translate(BOLT_R, 0, -2);             // Ø10 floor outlet ×6
 const outletsLocal  = outletLocal.patternCircular({ count: 6, axis: [0, 0, 1] });
-const spindleBore   = cylinder(57.5, 3.5, 32).translate(0, 0, -1);             // Ø7 core bore for the Ø6 spindle
-const knobHousing   = cylinder(34, 23, 64).translate(0, 0, BLOCK_H);           // z 55..89 local (99..133 world)
-const servoCavity   = box(33, 12.8, 25).translate(-11.2, -6.4, 62.8);          // swallows case + flange (screws omitted)
-const housingBore   = cylinder(9.5, 3.5, 24).translate(0, 0, 54);              // spindle/boss passage into the cavity
 const block = cylinder(BLOCK_H, SHELL_R, 96)
-  .union(knobHousing)
-  .subtract(chambersLocal, outletsLocal, spindleBore, servoCavity, housingBore)
+  .subtract(chambersLocal, outletsLocal)
   .color('frame');
 
-// ── Lid — static annular press-on cap around the knob housing ───────────────
-// Local frame: seat on the block top (world z=99).
-const lid = cylinder(13, 40, 96).translate(0, 0, -8)
-  .subtract(
-    cylinder(9, 38.3, 96).translate(0, 0, -8.5),    // skirt interior grips the block
-    cylinder(15, 23.6, 96).translate(0, 0, -9),     // clears the knob housing
+// ── Lid — simple press-on cap with a knob (same style as the revolver) ──────
+// Local frame: seat on the block top (world z=105).
+const lid = cylinder(5, 40, 96)
+  .union(
+    cylinder(8, 40, 96).translate(0, 0, -8)
+      .subtract(cylinder(10, 38.3, 96).translate(0, 0, -9)),   // skirt grips the block
+    cylinder(12, 7, 32).translate(0, 0, 5),                    // knob
   )
   .color('plate');
 
 // ── Selector — thin rotor: Ø60 disc with ONE port + Ø6 drive spindle ─────────
-// Local frame: origin on the axis at the disc bottom (world z=40.7). The
+// Local frame: origin on the axis at the disc bottom (world z=46.15). The
 // only rotating mass between the spice and the funnel — grams, not the drum.
+// The spindle runs DOWN the center column to the bottom servo's spline.
 const selectorDisc    = cylinder(3, 30, 96);
 const selectorPort    = cylinder(5, 5, 32).translate(BOLT_R, 0, -1);           // Ø10 port at the bolt circle
-const selectorSpindle = cylinder(62.85, 3, 32).translate(0, 0, 2);             // up through the block core, top z=64.85 (world 105)
-const splineSocket    = cylinder(5.4, 2.6, 16).translate(0, 0, 59.65);         // grips the servo spline from above
+const selectorSpindle = cylinder(40.45, 3, 32).translate(0, 0, -39.95);        // down the gallery, bottom z=6.2 world
+const splineSocket    = cylinder(5.3, 2.6, 16).translate(0, 0, -40);           // grips the servo spline from below
 const selector = selectorDisc
   .union(selectorSpindle)
   .subtract(selectorPort, splineSocket)
@@ -153,12 +161,14 @@ const doser = cylinder(14.5, 6.7, 48).alongAxis([0, 1, 0]).translate(0, -7.5, 0)
 const servoDoser = mg90s()
   .rotate([0, 0, 1], 180)
   .rotate([1, 0, 0], -90)
-  .translate(-5.4, -32, TAP_Z);
-// Selector servo: inverted (shaft DOWN) inside the knob housing; spline
-// reaches the spindle's socket at world z 101..105.
+  .translate(TAP_X - 5.4, -32, TAP_Z);
+// Selector servo: vertical at the center, shaft up — hanging below the
+// plate exactly like the revolver's drum servo (flange below the plate,
+// case top recessed 4 mm in). The spline (z 6..10) reaches the spindle's
+// socket up the gallery.
 const servoSelector = mg90s()
-  .rotate([1, 0, 0], 180)
-  .translate(5.4, 0, 129.5);
+  .rotate([0, 0, 1], 90)
+  .translate(0, 0 - MG_SHAFT_X, -18.5);
 
 // ── Params ───────────────────────────────────────────────────────────────────
 const selectorDeg = param('selectorDeg', 0, {
@@ -172,14 +182,14 @@ const doserAngleDeg = param('doserAngleDeg', 0, {
 const asm = assembly('spice-dispenser-static-chambers');
 const bodyPart = asm.part('body', body);
 bodyPart.connector('selectorAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, DISC_Z0] }, axis: [0, 0, 1] });
-bodyPart.connector('tapAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, TAP_Z] }, axis: [0, 1, 0] });
+bodyPart.connector('tapAxis', { type: 'axis', origin: { kind: 'vec3', value: [TAP_X, 0, TAP_Z] }, axis: [0, 1, 0] });
 bodyPart.connector('blockSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, BLOCK_Z0] } });
-bodyPart.connector('dsrMount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -32, TAP_Z] } });
+bodyPart.connector('dsrMount', { type: 'frame', origin: { kind: 'vec3', value: [TAP_X - 5.4, -32, TAP_Z] } });
+bodyPart.connector('selMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 5.4, -18.5] } });
 
 const blockPart = asm.part('block', block);
 blockPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 blockPart.connector('lidSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, BLOCK_H] } });
-blockPart.connector('selServoMount', { type: 'frame', origin: { kind: 'vec3', value: [5.4, 0, 85.5] } });
 
 const lidPart = asm.part('lid', lid);
 lidPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
@@ -191,10 +201,10 @@ const doserPart = asm.part('doser', doser);
 doserPart.connector('tapAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
 
 const dsrServoPart = asm.part('servo-doser', servoDoser);
-dsrServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-5.4, -32, TAP_Z] } });
+dsrServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [TAP_X - 5.4, -32, TAP_Z] } });
 
 const selServoPart = asm.part('servo-selector', servoSelector);
-selServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [5.4, 0, 129.5] } });
+selServoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 5.4, -18.5] } });
 
 // Both rotors are enclosed by design (disc inside the shell, tube inside
 // its bore) — declare that to Gate 4 instead of faking fork daylight.
@@ -203,6 +213,6 @@ asm.mate('tap', 'body.tapAxis', 'doser.tapAxis', 'revolute', { pose: doserAngleD
 asm.mate('block-fit', 'body.blockSeat', 'block.seat', 'fastened');
 asm.mate('lid-fit', 'block.lidSeat', 'lid.seat', 'fastened');
 asm.mate('dsr-servo-fix', 'body.dsrMount', 'servo-doser.mount', 'fastened');
-asm.mate('sel-servo-fix', 'block.selServoMount', 'servo-selector.mount', 'fastened');
+asm.mate('sel-servo-fix', 'body.selMount', 'servo-selector.mount', 'fastened');
 
 return asm.solvedModel({});
