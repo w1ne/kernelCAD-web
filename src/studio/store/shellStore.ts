@@ -33,6 +33,10 @@ export interface ShellState {
     readonly currentValidity: ValidatorResult | null;
     readonly stagedEdit: StagedEdit | null;
     readonly markingMode: boolean;
+    readonly sectionMode: boolean;
+    readonly sectionAxis: 'x' | 'y' | 'z';
+    readonly sectionFlip: boolean;
+    readonly sectionPosition: number;
 }
 
 const INITIAL_STATE: ShellState = {
@@ -42,6 +46,10 @@ const INITIAL_STATE: ShellState = {
     currentValidity: null,
     stagedEdit: null,
     markingMode: false,
+    sectionMode: false,
+    sectionAxis: 'z',
+    sectionFlip: false,
+    sectionPosition: 0,
 };
 
 type Listener = () => void;
@@ -83,6 +91,35 @@ export class ShellStore {
 
     toggleMarkingMode = (): void => {
         this.state = { ...this.state, markingMode: !this.state.markingMode };
+        this.emit();
+    };
+
+    setSectionMode = (on: boolean): void => {
+        if (this.state.sectionMode === on) return;
+        this.state = { ...this.state, sectionMode: on };
+        this.emit();
+    };
+
+    toggleSectionMode = (): void => {
+        this.state = { ...this.state, sectionMode: !this.state.sectionMode };
+        this.emit();
+    };
+
+    setSectionAxis = (axis: 'x' | 'y' | 'z'): void => {
+        if (this.state.sectionAxis === axis) return;
+        this.state = { ...this.state, sectionAxis: axis };
+        this.emit();
+    };
+
+    setSectionFlip = (flip: boolean): void => {
+        if (this.state.sectionFlip === flip) return;
+        this.state = { ...this.state, sectionFlip: flip };
+        this.emit();
+    };
+
+    setSectionPosition = (position: number): void => {
+        if (this.state.sectionPosition === position) return;
+        this.state = { ...this.state, sectionPosition: position };
         this.emit();
     };
 
