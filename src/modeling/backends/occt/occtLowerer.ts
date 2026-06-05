@@ -664,7 +664,12 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        shape = backend;
+        // Hand back a clone, never the parked backend itself: replicad's
+        // translate/rotate/mirror/scale destroy their source OCCT handle, so
+        // the post-hoc `r.transforms` loop below (or any destructive
+        // downstream consumer) would invalidate the map entry and the next
+        // lowering pass would throw "This object has been deleted".
+        shape = (backend as OcctBackend).clone();
         break;
       }
       case 'sdfMaterialize': {
@@ -684,7 +689,9 @@ export class OcctLowerer implements FeatureLowerer {
           });
           return { shape: undefined as unknown as ShapeBackend, diagnostics };
         }
-        shape = backend;
+        // Clone for the same reason as `importedStep` above: keep the parked
+        // backend alive across repeated lowering passes.
+        shape = (backend as OcctBackend).clone();
         break;
       }
       case 'sketch': {
