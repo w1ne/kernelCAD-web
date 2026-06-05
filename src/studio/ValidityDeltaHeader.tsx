@@ -5,6 +5,9 @@ import { computeValidityDelta } from './logic/validityDelta';
 export interface ValidityDeltaHeaderProps {
     readonly prev: ValidatorResult | null;
     readonly curr: ValidatorResult | null;
+    /** When provided, renders a collapse/expand chevron that calls back on click. */
+    readonly collapsed?: boolean;
+    readonly onToggleCollapse?: () => void;
 }
 
 function statusChipClass(status: ValidatorStatus | null): string {
@@ -24,7 +27,7 @@ function statusChipClass(status: ValidatorStatus | null): string {
     }
 }
 
-export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, curr }) => {
+export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, curr, collapsed, onToggleCollapse }) => {
     const delta = computeValidityDelta(prev, curr);
     const statusNow = delta.statusNow ?? 'unknown';
     const currentDiagnosticCount = curr?.diagnostics.length ?? 0;
@@ -46,6 +49,18 @@ export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, 
             <span className="ml-auto text-[10px] text-gray-500 italic">
                 since last recompute
             </span>
+            {onToggleCollapse && (
+                <button
+                    type="button"
+                    data-testid="validity-drawer-toggle"
+                    aria-label={collapsed ? 'Expand validity drawer' : 'Collapse validity drawer'}
+                    title={collapsed ? 'Expand validity drawer' : 'Collapse validity drawer'}
+                    onClick={onToggleCollapse}
+                    className="px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-200 rounded border border-[#3a3a3a] hover:border-[#555] bg-transparent"
+                >
+                    {collapsed ? '▲' : '▼'}
+                </button>
+            )}
         </div>
     );
 };
