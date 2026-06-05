@@ -212,7 +212,8 @@ const clampPart = asm.part('clamp-screw', clampScrew);
 clampPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 
 asm.mate('drum-index', 'base.drumAxis', 'drum.drumAxis', 'revolute', { pose: drumIndexDeg, limitsDeg: [0, 360] });
-asm.mate('tap', 'base.tapAxis', 'doser.tapAxis', 'revolute', { pose: doserAngleDeg, limitsDeg: [0, 180] });
+// The tap tube is enclosed in its bore by design — declared to Gate 4.
+asm.mate('tap', 'base.tapAxis', 'doser.tapAxis', 'revolute', { pose: doserAngleDeg, limitsDeg: [0, 180], exposure: 'concealed' });
 asm.mate('lid-fit', 'drum.lidSeat', 'lid.seat', 'fastened');
 asm.mate('clamp-fit', 'drum.clampSeat', 'clamp-screw.seat', 'fastened');
 asm.mate('rot-servo-fix', 'base.rotMount', 'servo-rotate.mount', 'fastened');
