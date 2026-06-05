@@ -124,6 +124,7 @@ describe('runTask closed-loop integration', () => {
       model: 'mock-model',
       skillMd: 'fake skill content',
       startedAt: '2026-06-04T00-00-00',
+      candidates: BEST_OF_N,
     });
 
     // The load-bearing assertion: attempt 1 fans out to BEST_OF_N candidates

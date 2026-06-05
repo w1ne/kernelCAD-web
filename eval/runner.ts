@@ -41,6 +41,14 @@ export interface RunTaskArgs {
   skillMd: string;
   startedAt: string;          // ISO timestamp string (filesystem-safe), used for transcript header
   cookbook?: CookbookInjection;   // optional — when set, injects cookbook snippets into the system prompt
+  /**
+   * First-attempt best-of-N fan-out width. Defaults to 1 (single sample), which
+   * is the deterministic single-sample path the corpus/golden/runner unit tests
+   * assert against. The production eval (`run.ts`, real model) sets this to
+   * BEST_OF_N; `--mock` replay keeps it at 1 so the fixed fixture queue stays
+   * deterministic.
+   */
+  candidates?: number;
 }
 
 export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
@@ -88,7 +96,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     extractScript,
     buildRepairPrompt,
     maxAttempts: MAX_ATTEMPTS,
-    candidates: BEST_OF_N,
+    candidates: args.candidates ?? 1,
     scoreCandidate: async (scriptPath, report) => {
       // Only score build-valid candidates; gate-failing ones are ranked by stages.
       if (!report.ok) return null;

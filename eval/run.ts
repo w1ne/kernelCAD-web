@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { runTask } from './runner';
+import { runTask, BEST_OF_N } from './runner';
 import { AnthropicAgentClient, MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import type { AgentClient, AgentResponse, TaskResult } from './types';
@@ -195,6 +195,9 @@ async function main(): Promise<void> {
         skillMd,
         startedAt,
         cookbook: cookbookInjection,
+        // Real runs fan out best-of-N on the first attempt; --mock replay stays
+        // single-sample so the fixed fixture queue remains deterministic.
+        candidates: isMock ? 1 : BEST_OF_N,
       });
       results.push(r);
     } catch (err) {
