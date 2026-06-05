@@ -20,8 +20,16 @@
 // Choreography (single param `discDeg`): chambers at 30°+k·60°, outlet at
 // 0°. Dose chamber k: 30+60k (fill) → 0 (drop); repeat for more doses.
 //
+// BUILD RULE — Formlabs SLA (Form 3/4, standard resins):
+//   running fits >= 0.25 mm per face, sliding bores >= 0.3 mm radial,
+//   walls >= 1.5 mm, M2 fastening via heat-set inserts (bores sized for
+//   inserts, not self-tapping resin threads).
+//
 // Geometry blockout — the disc hub's socket onto the STS3215 output is
-// simplified (real build: 25T spline horn screwed to the hub).
+// simplified (real build: 25T spline horn screwed to the hub). The servo is
+// modeled to datasheet; swap to the bundled vendor STEP
+// (./robot-arm/so100/parts/STS3215.step) once the kernel's imported-STEP
+// lifetime bug under solvedModel re-evaluation is fixed.
 
 // ── Dimensions (mm) ────────────────────────────────────────────────────────
 const SHELL_R   = 38;          // Ø76 outer silhouette
@@ -30,8 +38,8 @@ const CHAMBER_R = 9;           // Ø18 spice chambers
 
 const PLATE_T   = 12;          // floor plate: outlet chute + servo seat live here
 const DISC_T    = 8;           // scoop-pocket depth = the dose height
-const DISC_Z0   = PLATE_T + 0.15;        // disc bottom — 0.15 running clearance on the floor
-const BLOCK_Z0  = DISC_Z0 + DISC_T + 0.15;  // 20.3 — chamber block seat
+const DISC_Z0   = PLATE_T + 0.25;        // disc bottom — 0.25 running clearance (Formlabs SLA sliding fit)
+const BLOCK_Z0  = DISC_Z0 + DISC_T + 0.25;  // 20.5 — chamber block seat
 const BLOCK_H   = 55;
 
 const LID_T       = 5;
@@ -49,7 +57,7 @@ const ring  = cylinder(BLOCK_Z0 - PLATE_T, SHELL_R, 96).translate(0, 0, PLATE_T)
   .subtract(cylinder(BLOCK_Z0 - PLATE_T + 2, 32.5, 96).translate(0, 0, PLATE_T - 1));
 const outletChute = cylinder(PLATE_T + 2, 6, 32).translate(12, 20.78, -1);     // Ø12 drop hole, station 60° (clears the un-rotated servo body)
 const gallery     = cylinder(PLATE_T + 2, 7, 48).translate(0, 0, -1);          // Ø14 for the disc hub
-const servoSeat   = box(47, 27, 2.7).translate(-23.5, -13.5, 0);               // shallow recess; body hangs below
+const servoSeat   = box(47, 27, 5, true).translate(0, 0, -2.2);                // clearance pocket print-through guard (body top at z=-4.7)
 const body = plate
   .union(ring)
   .subtract(outletChute, gallery, servoSeat)
@@ -62,8 +70,8 @@ const pocket = box(9, 5, DISC_T + 2).translate(BOLT_R - 4.5, -2.5, -1)
     cylinder(DISC_T + 2, 4.5, 32).translate(BOLT_R, -2.5, -1),
     cylinder(DISC_T + 2, 4.5, 32).translate(BOLT_R, 2.5, -1),
   );
-const hub = cylinder(9.2, 6, 32).translate(0, 0, -9.2)                          // down the gallery to the servo output
-  .subtract(cylinder(4.5, 3.15, 16).translate(0, 0, -9.25));                    // output-spline socket (simplified)
+const hub = cylinder(9.5, 6, 32).translate(0, 0, -9.5)                          // down the gallery to the servo output
+  .subtract(cylinder(5, 3.3, 16).translate(0, 0, -9.55));                       // output-spline socket (0.3 radial, SLA sliding fit)
 const disc = cylinder(DISC_T, 32, 96)
   .union(hub)
   .subtract(pocket)
@@ -98,8 +106,13 @@ const lid = cylinder(LID_T, SHELL_R + 2, 96)
 // Local bbox ≈ 45×25×40 centred on its origin, output shaft +Z on the axis.
 // Long side turned along Y to clear the outlet chute; top seats 2.4 mm into
 // the underside recess, output reaching the disc hub through the gallery.
-const servo = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
-  .translate(0, 0, -17.5)
+const STS_L = 45.2, STS_W = 24.7, STS_H = 35;
+const stsBody   = box(STS_L, STS_W, STS_H, true).translate(0, 0, -STS_H / 2).color('servo');
+const stsTabs   = box(STS_L + 12, STS_W, 3, true).translate(0, 0, -3.5).color('servo');
+const stsBoss   = cylinder(2.5, 6, 32).color('servo');
+const stsSpline = cylinder(4.5, 3, 24).translate(0, 0, 2.5).color('shaft');
+const servo = stsBody.union(stsTabs, stsBoss, stsSpline)
+  .translate(0, 0, -4.7)
   .color('servo');
 
 // ── Param ────────────────────────────────────────────────────────────────────
@@ -112,7 +125,7 @@ const asm = assembly('spice-dispenser-static-chambers');
 const bodyPart = asm.part('body', body);
 bodyPart.connector('discAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, DISC_Z0] }, axis: [0, 0, 1] });
 bodyPart.connector('blockSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, BLOCK_Z0] } });
-bodyPart.connector('servoSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -17.5] } });
+bodyPart.connector('servoSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -4.7] } });
 
 const blockPart = asm.part('block', block);
 blockPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
@@ -125,7 +138,7 @@ const discPart = asm.part('scoop-disc', disc);
 discPart.connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
 
 const servoPart = asm.part('servo', servo);
-servoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -17.5] } });
+servoPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -4.7] } });
 
 // The disc runs enclosed between block and floor — declared to Gate 4.
 asm.mate('index', 'body.discAxis', 'scoop-disc.axis', 'revolute', { pose: discDeg, limitsDeg: [0, 360], exposure: 'concealed' });
