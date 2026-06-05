@@ -47,9 +47,9 @@ const KNOB_H      = 12;
 const plate = cylinder(PLATE_T, SHELL_R, 96);
 const ring  = cylinder(BLOCK_Z0 - PLATE_T, SHELL_R, 96).translate(0, 0, PLATE_T)
   .subtract(cylinder(BLOCK_Z0 - PLATE_T + 2, 32.5, 96).translate(0, 0, PLATE_T - 1));
-const outletChute = cylinder(PLATE_T + 2, 6, 32).translate(BOLT_R, 0, -1);     // Ø12 drop hole, station 0°
+const outletChute = cylinder(PLATE_T + 2, 6, 32).translate(12, 20.78, -1);     // Ø12 drop hole, station 60° (clears the un-rotated servo body)
 const gallery     = cylinder(PLATE_T + 2, 7, 48).translate(0, 0, -1);          // Ø14 for the disc hub
-const servoSeat   = box(27, 47, 2.7).translate(-13.5, -23.5, 0);               // shallow recess; body hangs below
+const servoSeat   = box(47, 27, 2.7).translate(-23.5, -13.5, 0);               // shallow recess; body hangs below
 const body = plate
   .union(ring)
   .subtract(outletChute, gallery, servoSeat)
@@ -99,13 +99,12 @@ const lid = cylinder(LID_T, SHELL_R + 2, 96)
 // Long side turned along Y to clear the outlet chute; top seats 2.4 mm into
 // the underside recess, output reaching the disc hub through the gallery.
 const servo = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
-  .rotate([0, 0, 1], 90)
   .translate(0, 0, -17.5)
   .color('servo');
 
 // ── Param ────────────────────────────────────────────────────────────────────
 const discDeg = param('discDeg', 0, {
-  min: 0, max: 360, description: 'Scoop-pocket azimuth — 30+60k fills from chamber k, 0 drops the dose',
+  min: 0, max: 360, description: 'Scoop-pocket azimuth — 30+60k fills from chamber k, 60 drops the dose',
 });
 
 // ── Assembly ─────────────────────────────────────────────────────────────────
