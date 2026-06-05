@@ -22,20 +22,28 @@ export function buildShapeMaterial(
     isSelected: boolean,
     color: number | string,
     viewMode3D: ViewMode3D,
+    clippingPlanes: THREE.Plane[] = [],
 ): THREE.Material {
     const isWireframe = viewMode3D === 'wireframe';
     const flatShading = viewMode3D === 'shadedWithEdges';
+    const applyClip = (m: THREE.Material): THREE.Material => {
+        // Empty array ⇒ no clipping (three.js no-ops). Non-empty ⇒ GPU clip;
+        // clipShadows keeps cast shadows consistent with the cut.
+        m.clippingPlanes = clippingPlanes;
+        m.clipShadows = true;
+        return m;
+    };
     if (pbr && !isSelected) {
         const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
         pbrMaterial.flatShading = flatShading;
         pbrMaterial.wireframe = isWireframe;
         pbrMaterial.side = THREE.DoubleSide;
         pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
-        return pbrMaterial;
+        return applyClip(pbrMaterial);
     }
-    return new THREE.MeshLambertMaterial({
+    return applyClip(new THREE.MeshLambertMaterial({
         color,
         flatShading,
         wireframe: isWireframe,
-    });
+    }));
 }
