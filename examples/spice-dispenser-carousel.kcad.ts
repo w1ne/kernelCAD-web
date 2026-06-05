@@ -106,10 +106,12 @@ const discSeat    = cylinder(8.45, DISC_R + 0.3, 96).translate(MC_X, MC_Y, PLATE
 const meterWell   = cylinder(4.4, 3.5, 32).translate(MC_X, MC_Y, 2.4);
 const discCbore   = cylinder(1.15, 5.45, 32).translate(MC_X, MC_Y, 4.65);
 const drumGallery = cylinder(PLATE_T + 2, 10.4, 64).translate(0, 0, 3.8);      // passes horn (Ø20) + drum hub; 0.4 annular dust gap
-// One Ø11 channel, monotonically widening: Ø9 pocket → Ø11 throat → Ø11
-// raked bore → Ø11 side mouth. No steps against the flow, no size change.
-const chuteStub   = cylinder(3.5, 5.5, 32).translate(CH_X, CH_Y, 4.4);
-const chuteAngled = cylinder(20, 5.5, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
+// One Ø10 channel, monotonically widening: Ø9 pocket → Ø10 throat → Ø10
+// raked bore → Ø10 side mouth. No steps against the flow, no size change.
+// (Ø10, not Ø11: the raked bore must carry a ≥1.5 mm printed wall through
+// the skirt sheath while clearing the MG90S case — Ø11 left zero wall.)
+const chuteStub   = cylinder(3.5, 5.0, 32).translate(CH_X, CH_Y, 4.4);
+const chuteAngled = cylinder(20, 5.0, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
 const stsEarScrews = cylinder(7, 0.85, 12).translate(5, 7.7, 3)                // 4x M2 pilots over the STS3215 mounting ears
   .union(cylinder(7, 0.85, 12).translate(-5, 7.7, 3),
          cylinder(7, 0.85, 12).translate(5, -32.7, 3),
@@ -118,7 +120,7 @@ const stsEarScrews = cylinder(7, 0.85, 12).translate(5, 7.7, 3)                /
 // the vendor STEP) — the body hangs toward -y so the output spline lands
 // exactly on the drum axis.
 const stsSeat   = box(28.5, 47.5, 8.7, true).translate(0, -12.5, -0.45);
-const mgRecess  = box(16, 27, 3.4).translate(MC_X - 8, MC_Y + 5.4 - 13.5, 0);
+const mgRecess  = box(16, 27, 4.4).translate(MC_X - 8, MC_Y + 5.4 - 13.5, 0);    // deep enough that the flange top seats flush on the base underside
 const mgScrewA  = cylinder(6, 0.85, 12).translate(MC_X, MC_Y + 5.4 + 14, -1); // M2 pilots — MG90S flange screws bite here
 const mgScrewB  = cylinder(6, 0.85, 12).translate(MC_X, MC_Y + 5.4 - 14, -1);
 // Fastening pattern (see header): wall screws az 45+k·90, skirt inserts az 60+k·120.
@@ -138,7 +140,7 @@ const wallBoss = cylinder(6, 2.5, 24).translate(41.5 * 0.7071, 41.5 * 0.7071, 3.
   .patternCircular({ count: 4, axis: [0, 0, 1] });                             // load-spreading boss columns over each insert
 const wallInserts = cylinder(6.5, 1.6, 16).translate(41.5 * 0.7071, 41.5 * 0.7071, -0.05)
   .patternCircular({ count: 4, axis: [0, 0, 1] });
-const wall = cylinder(DRUM_H + 0.6, WALL_R, 96)
+const wall = cylinder(DRUM_H + 1.05, WALL_R, 96)   // 0.8 axial cap-to-drum leeway (was 0.35 — too tight for a hand press over a 5-part stack)
   .union(cylinder(4, BASE_R, 96), wallBoss)                                    // flanged foot + bosses host the inserts
   .subtract(cylinder(DRUM_H + 2.6, WALL_R - WALL_T, 96).translate(0, 0, -1), wallInserts)
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.06, transmission: 0.85, ior: 1.5, thickness: 2.5 });
@@ -149,12 +151,15 @@ const skirtBody = cylinder(SKIRT_D, BASE_R, 96).translate(0, 0, -SKIRT_D)
   .subtract(cylinder(SKIRT_D + 2, 39.5, 96).translate(0, 0, -SKIRT_D - 1));
 const skirtFlange = cylinder(3, BASE_R, 96).translate(0, 0, -3)
   .subtract(cylinder(5, 36, 96).translate(0, 0, -4));
-// Spice spout: the chute keeps raking 40° through a solid block bridging
-// plate and skirt wall, and breaks out the SIDE of the base band — a fully
-// enclosed channel, mouth at z -3.5..-11. Nothing falls through the bay.
-const spoutBlock = box(11, 11, 10.5, true).rotate([0, 0, 1], -19.5).translate(36, -12.75, -5.25)
-  .subtract(box(4.5, 5, 11.5, true).translate(29.0, -14.4, -5.2));             // corner relief for the MG90S case
-const chuteAngledS = cylinder(20, 5.5, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
+// Spice spout: the chute keeps raking 40° inside a COAXIAL sheath tube
+// (Ø13.5 over the Ø10 bore = 1.75 mm wall the whole way — a box prism
+// can't follow the raked axis and left zero-wall slits), bridging plate
+// and skirt wall to a side mouth on the base band, z -3.5..-11. The tube
+// is trimmed to below the base plane and inside the Ø88 silhouette.
+const spoutSheath = cylinder(21, 6.75, 48).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3)
+  .intersect(cylinder(41, BASE_R, 96).translate(0, 0, -41))
+  .subtract(box(4.5, 11.5, 11.5, true).translate(27.35, -13.25, -5.2));        // MG90S case+flange relief: ≥0.5 to the servo, ≥1.5 bore wall
+const chuteAngledS = cylinder(20, 5.0, 32).alongAxis([0.606, -0.214, -0.766]).translate(CH_X, CH_Y, 6.3);
 const coverBoss = cylinder(7, 3.5, 24).translate(37.5 * 0.5, 37.5 * 0.866, -37)
   .patternCircular({ count: 3, axis: [0, 0, 1] });                             // roots merge into the skirt wall
 const skirtScrewHole = cylinder(5, 1.1, 16).translate(41 * 0.5, 41 * 0.866, -4)
@@ -163,8 +168,10 @@ const skirtScrewHole = cylinder(5, 1.1, 16).translate(41 * 0.5, 41 * 0.866, -4)
 const coverInsert = cylinder(5, 1.6, 16).translate(37.5 * 0.5, 37.5 * 0.866, -37.1)
   .patternCircular({ count: 3, axis: [0, 0, 1] });
 const cableNotch = box(14, 8, 14, true).translate(0, -41.5, -33);
+const feet = cylinder(1.5, 3, 32).translate(41, 0, -41.5)
+  .patternCircular({ count: 3, axis: [0, 0, 1] });                             // 3 pads on the rim — stable stance, clear of mouth + cable notch
 const skirt = skirtBody
-  .union(skirtFlange, spoutBlock, coverBoss)
+  .union(skirtFlange, spoutSheath, coverBoss, feet)
   .subtract(chuteAngledS, skirtScrewHole, coverInsert, cableNotch,
             box(27, 7, 6, true).translate(0, -35.5, -2))                       // flange relief over the STS3215 far end
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.2, transmission: 0.3, ior: 1.5, thickness: 3 });
@@ -178,7 +185,8 @@ const outletsL  = outletL.patternCircular({ count: 6, axis: [0, 0, 1] });
 const drumHub   = cylinder(8.1, 10, 48).translate(0, 0, -8.05);                // flat face onto the metal horn (world z=6.2)
 const hornInserts = cylinder(9, 1.6, 16).translate(6.6, 0, -8.15)              // 4x M2 heat-sets on the horn's Ø13.2 circle
   .patternCircular({ count: 4, axis: [0, 0, 1] });
-const centralBore = cylinder(66, 3.5, 32).translate(0, 0, -8);                 // ONE Ø7 bore, top to horn: spigot bearing above, driver channel below
+const centralBore = cylinder(66, 3.5, 32).translate(0, 0, -8)                  // ONE Ø7 bore, top to horn: spigot bearing above, driver channel below
+  .union(cylinder(2.5, 4.3, 32).translate(0, 0, 53.2));                        // Ø8.6 funnel entry — guides the cap spigot in by hand
 const lightenRing  = cylinder(52, 14.5, 64).translate(0, 0, -1)
   .subtract(cylinder(54, 10.5, 48).translate(0, 0, -2));
 const mouthL  = cylinder(4, 11, 32).translate(25, 0, 52.5);
@@ -190,8 +198,8 @@ const drum = cylinder(DRUM_H, DRUM_R, 96)
 
 // ── METER DISC ───────────────────────────────────────────────────────────────
 const meterPocket = cylinder(10, 4.5, 32).translate(PKT_X, PKT_Y, -1);
-const meterSocket = cylinder(4.35, 2.6, 16).translate(0, 0, -1.15);
-const bossRelief  = cylinder(0.85, 3.4, 16).translate(0, 0, -1.15);
+const meterSocket = cylinder(5.85, 2.6, 16).translate(0, 0, -1.15);   // +1.0 deeper: spline tip clears after the servo raise
+const bossRelief  = cylinder(1.85, 3.4, 16).translate(0, 0, -1.15);   // boss top (z 6.0 world) clears the relief ceiling
 const ventGroove  = box(1.5, 6.5, 1.4).translate(-0.75, 8.1, 6.7).rotate([0, 0, 1], 7);
 const discFlange  = cylinder(0.75, 5, 32).translate(0, 0, -1.05);
 const meterDisc = cylinder(DISC_T, DISC_R, 96)
@@ -205,15 +213,17 @@ const capPort = cylinder(16, 7, 32).translate(-BOLT_R, 0, -5);
 const cap = cylinder(5, BASE_R, 96)
   .union(
     cylinder(6, BASE_R, 96).translate(0, 0, -6)
-      .subtract(cylinder(8, WALL_R + 0.3, 96).translate(0, 0, -7)),
+      .subtract(cylinder(8, WALL_R + 0.3, 96).translate(0, 0, -7),
+                cylinder(2, WALL_R + 0.8, 96).translate(0, 0, -7)),            // flared lip — starts onto the wall without aiming
     cylinder(7, 10, 32).translate(-BOLT_R, 0, 5),
-    cylinder(6.5, 3.2, 32).translate(0, 0, -6.5),
+    cylinder(6.5, 3.2, 32).chamfer(0.8, { face: 'bottom' }).translate(0, 0, -6.5),   // chamfered nose — finds the drum bore blind
   )
   .subtract(capPort)
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.06, transmission: 0.85, ior: 1.5, thickness: 2.5 });
 
 // ── Electronics bay: cover + blockout components (cover-local frames) ────────
 const coverHoles = cylinder(5, 1.1, 16).translate(37.5 * 0.5, 37.5 * 0.866, -1)
+  .union(cylinder(1.6, 2.3, 16).translate(37.5 * 0.5, 37.5 * 0.866, -0.05))    // head recess — the device must not stand on screw heads
   .patternCircular({ count: 3, axis: [0, 0, 1] });
 const cover = cylinder(3, 39.2, 96)
   .subtract(coverHoles)
@@ -228,7 +238,7 @@ const servoDrum = (await lib.fromSTEP('./robot-arm/so100/parts/STS3215.step'))
   .translate(0, -12.5, -16.5)                                                  // output spline (local +12.5,0) onto the drum axis
   .union(cylinder(3.0, 10, 48).translate(0, 0, 3.2).color('shaft'))             // stock metal horn disc — thin, sits right on the output
   .color('servo');
-const servoMeter = mountServo(MC_X, MC_Y, -19.5);
+const servoMeter = mountServo(MC_X, MC_Y, -18.5);   // flange top exactly at z 0 — clamps against the base underside
 
 // ── Params ───────────────────────────────────────────────────────────────────
 const drumDeg = param('drumDeg', 0, {
@@ -246,11 +256,11 @@ basePart.connector('meterAxis', { type: 'axis', origin: { kind: 'vec3', value: [
 basePart.connector('wallSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, PLATE_T] } });
 basePart.connector('skirtSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 basePart.connector('stsMount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -16.5] } });
-basePart.connector('mgMount', { type: 'frame', origin: { kind: 'vec3', value: [MC_X, MC_Y + 5.4, -19.5] } });
+basePart.connector('mgMount', { type: 'frame', origin: { kind: 'vec3', value: [MC_X, MC_Y + 5.4, -18.5] } });
 
 const wallPart = asm.part('wall', wall);
 wallPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-wallPart.connector('capSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, DRUM_H + 0.6] } });
+wallPart.connector('capSeat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, DRUM_H + 1.05] } });
 
 const skirtPart = asm.part('skirt', skirt);
 skirtPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
@@ -269,7 +279,7 @@ const stsPart = asm.part('servo-drum', servoDrum);
 stsPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -16.5] } });
 
 const mgPart = asm.part('servo-meter', servoMeter);
-mgPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [MC_X, MC_Y + 5.4, -19.5] } });
+mgPart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [MC_X, MC_Y + 5.4, -18.5] } });
 
 const coverPart = asm.part('cover', cover);
 coverPart.connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
