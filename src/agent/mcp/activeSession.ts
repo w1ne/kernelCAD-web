@@ -11,6 +11,12 @@ export interface ActiveMcpSession {
   session: CaptureSession;
   tailId?: string;
   tailShape?: ShapeBackend;
+  /** Feature id of the script's `return` value (Shape or Scene); falls
+   *  back to the tail when the script returned nothing lowerable. */
+  rootId?: string;
+  /** Lowered shape of the script's `return` value. Prefer this over
+   *  `tailShape` in probe / measurement consumers. */
+  rootShape?: ShapeBackend;
 }
 
 let activeSession: ActiveMcpSession | undefined;
@@ -35,6 +41,8 @@ export async function establishActiveMcpSession(input: ScriptSourceInput): Promi
     session: model.session,
     tailId: model.tailId,
     tailShape: model.tailShape,
+    rootId: model.rootId,
+    rootShape: model.rootShape,
   };
   return activeSession;
 }

@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { normalizeInspectionTileForTest } from '../../../src/agent/render/headlessRender';
 
 describe('headlessRender inspection channel normalization', () => {
-  it('resizes object-id masks with nearest sampling and black background sentinel', async () => {
+  it('center-crops object-id masks to the output aspect with nearest sampling', async () => {
     const source = await sharp({
       create: {
         width: 2,
@@ -28,14 +28,17 @@ describe('headlessRender inspection channel normalization', () => {
 
     expect(info.width).toBe(4);
     expect(info.height).toBe(4);
+    // The 2×1 source center-crops to the 1×1 region at floor((2-1)/2) = 0
+    // (the LEFT pixel) and nearest-resizes — no background sentinel is
+    // injected because padding no longer exists.
     const colors = new Set<string>();
     for (let i = 0; i < data.length; i += info.channels) {
       colors.add(`${data[i]},${data[i + 1]},${data[i + 2]},${data[i + 3]}`);
     }
-    expect(colors).toEqual(new Set(['0,0,0,255', '0,0,1,255', '0,0,2,255']));
+    expect(colors).toEqual(new Set(['0,0,1,255']));
   });
 
-  it('resizes packed depth with nearest sampling and transparent background sentinel', async () => {
+  it('center-crops packed depth to the output aspect with nearest sampling', async () => {
     const source = await sharp({
       create: {
         width: 2,
@@ -58,10 +61,12 @@ describe('headlessRender inspection channel normalization', () => {
     });
     const { data, info } = await sharp(normalized).raw().toBuffer({ resolveWithObject: true });
 
+    expect(info.width).toBe(4);
+    expect(info.height).toBe(4);
     const colors = new Set<string>();
     for (let i = 0; i < data.length; i += info.channels) {
       colors.add(`${data[i]},${data[i + 1]},${data[i + 2]},${data[i + 3]}`);
     }
-    expect(colors).toEqual(new Set(['0,0,0,0', '10,20,30,255', '40,50,60,255']));
+    expect(colors).toEqual(new Set(['10,20,30,255']));
   });
 });

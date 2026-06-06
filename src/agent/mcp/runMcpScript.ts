@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { kernelErrorToDiagnostic } from '../script-runtime/kernelErrorToDiagnostic';
 import { runScript, type RunScriptResult } from '../../modeling/runtime/runScript';
@@ -30,9 +30,7 @@ export async function runMcpScript(input: McpScriptInput): Promise<RunMcpScriptR
   try {
     // When source came from a file, pass the script's directory so
     // `lib.fromSTEP('parts/foo.step')` resolves relative to the script.
-    const scriptDir = input.file !== undefined
-      ? resolve(input.file).replace(/[\\/][^\\/]*$/, '')
-      : undefined;
+    const scriptDir = input.file !== undefined ? dirname(resolve(input.file)) : undefined;
     return {
       ok: true,
       fileName: source.fileName,
