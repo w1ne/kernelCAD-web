@@ -319,7 +319,7 @@ describe('v0.4-rc8 pipe sweep fixture', () => {
   });
 });
 
-describe('v0.4-rc8 spring sweep fixture (helix + frenet)', () => {
+describe('v0.4-rc8 spring sweep fixture (helix + smooth spine)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the spring fixture and produces STL', async () => {
