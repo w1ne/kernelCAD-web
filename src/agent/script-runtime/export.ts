@@ -532,14 +532,15 @@ export async function resolveWorldFrameScene(
       }],
     };
   }
-  const lowered = r.shapes.get(ret.__sourceFeatureId());
+  const sourceId = ret.__sourceFeatureId();
+  const lowered = sourceId !== undefined ? r.shapes.get(sourceId) : undefined;
   if (!lowered || !isSceneBackend(lowered)) {
     return {
       featureCount,
       diagnostics: [...r.diagnostics, {
         target: 'export-occt',
         code: 'recompute.input.missing',
-        featureId: ret.__sourceFeatureId(),
+        featureId: sourceId,
         severity: 'error',
         message: 'The assembly scene did not lower successfully.',
         hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
