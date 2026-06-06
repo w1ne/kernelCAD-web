@@ -31,6 +31,11 @@ const program = new Command();
 program
   .name('kernelcad')
   .description('kernelCAD — agent-first parametric CAD CLI')
+  // Positional options: required so `render` (which has both its own
+  // options and an `inspect` subcommand sharing flag names like --width /
+  // --focus) routes options written after the subcommand name to the
+  // subcommand instead of greedily claiming them for the parent.
+  .enablePositionalOptions()
   .version(pkg.version);
 
 program.addCommand(evaluateCommand());

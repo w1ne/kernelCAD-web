@@ -472,7 +472,12 @@ export async function renderInspectBundle(input: RenderInspectInput): Promise<Re
 
 export function renderCommand(): Command {
   const cmd = new Command('render')
-    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)');
+    .description('Render a .kcad.ts script to multi-view PNG (front, right, top, iso)')
+    // Without positional options, `render`'s own --width/--height/--focus/
+    // --hide (composite mode) greedily claim the identically-named flags
+    // written after `render inspect <file> <outDir>`, so the inspect
+    // subcommand silently never received them (#394).
+    .enablePositionalOptions();
 
   cmd
     .command('inspect')
