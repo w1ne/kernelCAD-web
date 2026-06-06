@@ -25,6 +25,8 @@ import { addMateTool } from './tools/addMate';
 import { evaluateScriptTool } from './tools/evaluateScript';
 import { evaluateSdfTool } from './tools/evaluateSdf';
 import { exportModelTool } from './tools/exportModel';
+import { exportPartTool } from './tools/exportPart';
+import { listPartStatsTool } from './tools/listPartStats';
 import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
@@ -916,6 +918,48 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => exportModelTool(input as unknown as Parameters<typeof exportModelTool>[0]),
+  },
+  {
+    definition: {
+      name: 'export_part',
+      description:
+        'Export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. ' +
+        'Pass { file } or { code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
+        '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
+        'and fails the call with export.mesh.not-watertight (open-edge count + up to 5 crack cluster locations); ' +
+        'pass { no_verify: true } only to inspect broken meshes. Unknown part names fail with ' +
+        'export.part.not-found listing the valid names. ' +
+        'Returns { ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+          part: { type: 'string', description: "Part name for single-part export, or 'all'." },
+          output_path: { type: 'string', description: 'Destination .stl path (single-part mode).' },
+          output_dir: { type: 'string', description: 'Destination directory (all-parts mode); files are <dir>/<part>.stl.' },
+          no_verify: { type: 'boolean', description: 'Skip the watertight verify gate.', default: false },
+        },
+      },
+    },
+    handler: input => exportPartTool(input as unknown as Parameters<typeof exportPartTool>[0]),
+  },
+  {
+    definition: {
+      name: 'list_part_stats',
+      description:
+        'List solved-assembly parts with print-prep stats: name, exact bounding box (from the export ' +
+        'tessellation), volume (mm^3), surface area (mm^2), and export triangle count. Pass { file } or { code }. ' +
+        'Returns { ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        },
+      },
+    },
+    handler: input => listPartStatsTool(input as unknown as Parameters<typeof listPartStatsTool>[0]),
   },
   {
     definition: {

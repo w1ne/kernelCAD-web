@@ -123,6 +123,10 @@ interface RepairContext {
 
   PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
 
+- `export_part({ file? | code?, part?, output_path?, output_dir?, no_verify? })` — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. The script must return `assembly.solvedModel(...)` / `assembly.model()`. Pass `{ part, output_path }` for one part, or `{ output_dir }` (with `part` omitted or `'all'`) for all parts — files land at `<output_dir>/<part>.stl`. A watertight verify runs on every exported mesh **by default**; a failing part still writes its file (so the broken mesh can be inspected) but fails the call with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to inspect broken meshes. Unknown part names fail with `export.part.not-found` listing the valid names. Returns `{ ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }`.
+
+- `list_part_stats({ file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
+
 ## Topology references — the `@kc[...]` grammar
 
 kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.

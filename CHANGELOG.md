@@ -1,5 +1,27 @@
 # kernelCAD v0.11.0
 
+## Unreleased — print-prep export suite (W2)
+
+- **Per-part STL export.** Export each solved-assembly part as its own binary
+  STL in its modeled (world-frame) position: CLI `kernelcad export --format stl
+  --part <name>` (repeatable) / `--parts all`, MCP `export_part` (`{ part,
+  output_path }` for one part, `{ output_dir }` for all; files land at
+  `<output_dir>/<part>.stl`). Unknown part names fail with
+  `export.part.not-found` listing the valid names.
+- **Default-on watertight verify.** Every exported STL mesh is checked for
+  open edges; failures report `export.mesh.not-watertight` with the open-edge
+  count and up to 5 crack-cluster locations. The file is still written so the
+  broken mesh can be inspected. Opt out with `--no-verify` (CLI) /
+  `{ no_verify: true }` (MCP).
+- **Mesh-once heal pipeline.** The export mesher now heals its own output:
+  per-face absolute-deflection fallback remesh for faces the whole-shape pass
+  leaves untriangulated, position-key vertex weld, and T-junction crack
+  stitching.
+- **Part stats.** `kernelcad parts <file>` and MCP `list_part_stats` list
+  solved-assembly parts with exact world-frame bounding box, volume (mm³),
+  surface area (mm²), and export triangle count — same mesher as the STL
+  exporter, so the numbers match the exported files exactly.
+
 ## Unreleased — borrow-integration follow-ups (conventions clarified)
 
 Documentation cleanup for the two non-bug "discoveries" that surfaced while
