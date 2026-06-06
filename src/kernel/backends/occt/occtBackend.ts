@@ -1074,11 +1074,18 @@ export class OcctBackend implements ShapeBackend {
     throw new Error('splitByPlane not implemented in v0.1');
   }
 
-  boundingBox(): { min: Vec3; max: Vec3 } {
+  boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 } {
+    if (opts?.exact) {
+      const exact = this.tessellatedBoundingBox();
+      if (exact) return exact;
+      // Empty / unmeshable shape — fall through to Bnd_Box.
+    }
     const bb = this.shape.boundingBox;
     const [minP, maxP] = bb.bounds;
     // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
-    // exact-axis-aligned primitives report integral coordinates.
+    // exact-axis-aligned primitives report integral coordinates. NOTE: even
+    // gap-corrected, Bnd_Box stays padded on curved B-spline faces (control-
+    // point hull); pass { exact: true } for a tessellation-tight box.
     const wrapped = (bb as unknown as { wrapped?: { GetGap?: () => number } }).wrapped;
     const gap =
       wrapped && typeof wrapped.GetGap === 'function' ? wrapped.GetGap() : 0;
@@ -1086,6 +1093,24 @@ export class OcctBackend implements ShapeBackend {
       min: [minP[0] + gap, minP[1] + gap, minP[2] + gap] as Vec3,
       max: [maxP[0] - gap, maxP[1] - gap, maxP[2] - gap] as Vec3,
     };
+  }
+
+  /** Fold the standard-mesher vertex AABB. Returns undefined when the
+   *  shape yields no triangles (empty compound). */
+  private tessellatedBoundingBox(): { min: Vec3; max: Vec3 } | undefined {
+    const p = this.getMesh().positions;
+    if (p.length === 0) return undefined;
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (let i = 0; i < p.length; i += 3) {
+      if (p[i] < minX) minX = p[i];
+      if (p[i] > maxX) maxX = p[i];
+      if (p[i + 1] < minY) minY = p[i + 1];
+      if (p[i + 1] > maxY) maxY = p[i + 1];
+      if (p[i + 2] < minZ) minZ = p[i + 2];
+      if (p[i + 2] > maxZ) maxZ = p[i + 2];
+    }
+    return { min: [minX, minY, minZ] as Vec3, max: [maxX, maxY, maxZ] as Vec3 };
   }
 
   /**
