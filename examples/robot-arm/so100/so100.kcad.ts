@@ -69,12 +69,15 @@ const servo2Placed = servo2
   .translate(0, -10, servoZ2);
 
 // Jaw mounted on servo 2's output, in front of the servo so the gripper
-// reads as "open" in the hero pose. The X-offset (+50) pushes the jaw
-// clear of the servo body — SO-100's full assembly uses a coupling here.
+// reads as "open" in the hero pose. The X-offset seats the jaw against
+// the servo output side within bearing tolerance (~0.5 mm) so the
+// fastened mate is a real coupling, not a floating part — the
+// mechanism-truth joint-mesh gate requires the mated bodies to keep
+// bearing contact within 1 mm.
 const jawPlaced = jaw
   .rotate([1, 0, 0], -90)
   .rotate([0, 0, 1], 20)
-  .translate(50, -10, servoZ2);
+  .translate(40.1, -10, servoZ2);
 
 const arm = assembly('so100-gripper');
 const basePart    = arm.part('base-plate',     basePlate);
