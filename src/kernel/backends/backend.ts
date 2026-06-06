@@ -19,7 +19,20 @@ export interface ShapeBackend {
   subtract(other: ShapeBackend): ShapeBackend;
   intersect(other: ShapeBackend): ShapeBackend;
   splitByPlane(normal: Vec3, offset: number): [ShapeBackend, ShapeBackend];
-  boundingBox(): { min: Vec3; max: Vec3 };
+  /**
+   * Axis-aligned bounding box.
+   *
+   * Default (no opts): OCCT Bnd_Box. Fast, but PADDED on curved faces
+   * produced by fillets, blends, trims, and imports — a filleted ⌀20
+   * cylinder reports ~⌀21.6. Fine for culling and rough framing; wrong
+   * for print-volume tables and silhouette checks.
+   *
+   * `{ exact: true }`: meshes the shape with the standard mesher and folds
+   * the vertex AABB. Vertices lie ON the surface, so the box is tight to
+   * within the mesh deflection (slightly UNDER on convex curvature, ≲0.1mm
+   * at default tolerances). Costs a tessellation per call.
+   */
+  boundingBox(opts?: { exact?: boolean }): { min: Vec3; max: Vec3 };
   volume(): number;
   surfaceArea(): number;
   isEmpty(): boolean;

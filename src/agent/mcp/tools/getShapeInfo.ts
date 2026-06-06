@@ -2,6 +2,7 @@
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import type { FeatureKind } from '../../../shared/intent/types';
+import { resolveRootId } from '../../../modeling/buildModel';
 import { runMcpScript } from '../runMcpScript';
 
 export interface GetShapeInfoInput {
@@ -41,7 +42,8 @@ export async function getShapeInfoTool(
     return { ok: false, error: 'Script produced no features.' };
   }
 
-  const targetId = input.feature_id ?? run.records[run.records.length - 1].id;
+  const tailId = run.records[run.records.length - 1].id;
+  const targetId = input.feature_id ?? resolveRootId(run.returnValue, tailId)!;
   const targetRecord = run.records.find(r => r.id === targetId);
   if (!targetRecord) {
     return { ok: false, error: `feature_id '${targetId}' not found in script's features.` };

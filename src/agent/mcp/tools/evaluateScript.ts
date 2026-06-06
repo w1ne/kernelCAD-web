@@ -32,6 +32,8 @@ export async function evaluateScriptTool(
       session: model!.session,
       tailId: model!.tailId,
       tailShape: model!.tailShape,
+      rootId: model!.rootId,
+      rootShape: model!.rootShape,
     });
   } else {
     clearActiveMcpSession();

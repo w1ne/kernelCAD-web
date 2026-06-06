@@ -13,10 +13,16 @@ import { buildMaterialFromPBR } from '../../demoPlayer/buildMaterialFromPBR';
  * export non-component values).
  *
  * Three view modes:
- *  - `'shaded'`           — smooth shading, no wireframe, no edge overlay
- *  - `'wireframe'`        — `material.wireframe = true`, surfaces drawn as lines
+ *  - `'shaded'`           — smooth shading, no edge overlay
+ *  - `'wireframe'`        — faces ghosted to a barely-visible depth-tested film;
+ *                           the BREP edge polylines (rendered by ShapeGeometry)
+ *                           carry the visual. The triangulation is never shown.
  *  - `'shadedWithEdges'`  — flat shading + black edge overlay rendered separately
  */
+
+/** Face opacity used by the wireframe-mode ghost film. */
+export const WIREFRAME_GHOST_OPACITY = 0.08;
+
 export function buildShapeMaterial(
     pbr: GeometryResult['material'],
     isSelected: boolean,
@@ -24,7 +30,6 @@ export function buildShapeMaterial(
     viewMode3D: ViewMode3D,
     clippingPlanes: THREE.Plane[] = [],
 ): THREE.Material {
-    const isWireframe = viewMode3D === 'wireframe';
     const flatShading = viewMode3D === 'shadedWithEdges';
     const applyClip = (m: THREE.Material): THREE.Material => {
         // Empty array ⇒ no clipping (three.js no-ops). Non-empty ⇒ GPU clip;
@@ -33,10 +38,22 @@ export function buildShapeMaterial(
         m.clipShadows = true;
         return m;
     };
+    if (viewMode3D === 'wireframe') {
+        // Wireframe mode never shows the triangulation. Faces become a faint
+        // depth-tested ghost so orientation still reads, while the BREP edge
+        // curves (drawn as line segments in ShapeGeometry) define the shape.
+        // depthWrite stays off so the ghost never occludes edge lines.
+        return applyClip(new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: WIREFRAME_GHOST_OPACITY,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+        }));
+    }
     if (pbr && !isSelected) {
         const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
         pbrMaterial.flatShading = flatShading;
-        pbrMaterial.wireframe = isWireframe;
         pbrMaterial.side = THREE.DoubleSide;
         pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
         return applyClip(pbrMaterial);
@@ -44,6 +61,5 @@ export function buildShapeMaterial(
     return applyClip(new THREE.MeshLambertMaterial({
         color,
         flatShading,
-        wireframe: isWireframe,
     }));
 }

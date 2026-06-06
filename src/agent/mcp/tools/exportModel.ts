@@ -9,7 +9,7 @@
 // `export.<format>.not-implemented` until a follow-up slice fills them in.
 
 import { writeFile, mkdir } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import {
   runAndExport,
@@ -79,6 +79,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
       format,
       feature_id,
       options,
+      scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
     });
   } catch (e) {
     return {

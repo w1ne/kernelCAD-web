@@ -6,7 +6,7 @@
 // script. Use `--separate` to emit four individual files.
 //
 // Requires a studio dev server reachable at the configured base URL
-// (default http://127.0.0.1:5173). For development run `npm run dev` first;
+// (see --base-url; default DEFAULT_RENDER_BASE_URL). For development run `npm run dev` first;
 // a bundled-static-dist mode is on the v2 list.
 
 import { Command } from 'commander';
@@ -17,6 +17,7 @@ import {
   headlessRender,
   composite2x2,
   ALL_VIEWS,
+  DEFAULT_RENDER_BASE_URL,
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
 } from '../../render/headlessRender';
@@ -483,7 +484,7 @@ export function renderCommand(): Command {
     .option(
       '--base-url <url>',
       'studio dev server URL (run `npm run dev` first)',
-      'http://localhost:5173',
+      DEFAULT_RENDER_BASE_URL,
     )
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .option(
@@ -535,7 +536,7 @@ export function renderCommand(): Command {
     .option(
       '--base-url <url>',
       'studio dev server URL (run `npm run dev` first)',
-      'http://localhost:5173',
+      DEFAULT_RENDER_BASE_URL,
     )
     .option('--hide-reference-images', 'hide referenceImage() overlays in rendered output (default false)', false)
     .option(
