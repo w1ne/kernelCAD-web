@@ -106,6 +106,19 @@ export async function lowerEmbossText(
     return { ok: false, diagnostics };
   }
 
+  // 4-pre. Handedness correction (#392). `sketchOnFace` maps the drawing
+  // through the surface parameterisation S(u, v) verbatim. When the face's
+  // (∂S/∂u × ∂S/∂v) frame is LEFT-handed relative to the oriented outward
+  // normal (e.g. the top face of an OCCT box — while a cylinder end-cap is
+  // right-handed), the mapped glyphs appear mirror-imaged to a viewer
+  // outside the body. Detect the handedness at the face and pre-mirror the
+  // drawing (and negate the rotation sense) so text always reads correctly
+  // from OUTSIDE.
+  const leftHanded = faceUvIsLeftHanded(face);
+  if (leftHanded) {
+    drawing = drawing.mirror([0, 1], [0, 0], 'plane'); // x → -x about the origin
+  }
+
   // 4a. Alignment translate (so the chosen anchor lands on (0, 0)).
   const bb = drawing.boundingBox;
   const [minPt, maxPt] = bb.bounds;
@@ -117,9 +130,11 @@ export async function lowerEmbossText(
     drawing = drawing.translate(-(minPt[0] + maxPt[0]) / 2, -(minPt[1] + maxPt[1]) / 2);
   }
 
-  // 4b. Rotation around origin (now == chosen anchor).
+  // 4b. Rotation around origin (now == chosen anchor). The spec sense is
+  // CCW as seen from outside the body; under a mirrored UV frame the same
+  // visual sense requires the opposite parametric sign.
   if (meta.rotation.evaluated !== 0) {
-    drawing = drawing.rotate(meta.rotation.evaluated, [0, 0]);
+    drawing = drawing.rotate(leftHanded ? -meta.rotation.evaluated : meta.rotation.evaluated, [0, 0]);
   }
 
   // 5. UV anchor translate. Read UV bounds off the resolved face and offset
@@ -148,9 +163,17 @@ export async function lowerEmbossText(
     if (typeof (lifted as { extrude?: unknown }).extrude !== 'function') {
       throw new Error('sketchOnFace returned a non-extrudable sketch (multi-face glyph?)');
     }
+    // The sketch's default extrusion direction is the face's ORIENTED
+    // (outward) normal. Emboss raises the prism outward; engrave (#393)
+    // must descend INTO the body — a positive-distance extrusion would
+    // place the cut tool in the air above the face and the boolean would
+    // silently change nothing.
+    const signedDepth = meta.depth.evaluated > 0
+      ? Math.abs(meta.depth.evaluated)
+      : -Math.abs(meta.depth.evaluated);
     const extruded = (lifted as unknown as {
       extrude: (d: number) => replicad.Shape3D;
-    }).extrude(Math.abs(meta.depth.evaluated));
+    }).extrude(signedDepth);
     solid = extruded;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -214,6 +237,24 @@ export async function lowerEmbossText(
     return { ok: false, diagnostics };
   }
 
+  // No-op guard: a boolean that leaves the volume unchanged means the glyph
+  // tool never touched the body (e.g. an engrave descending into a void, or
+  // a glyph anchored off the solid). Silently returning the unchanged parent
+  // is the worst failure mode for an agent caller — fail loudly instead.
+  const volBefore = parent.volume();
+  const volAfter = resultIntermediate.volume();
+  if (Math.abs(volAfter - volBefore) < Math.max(1e-6, volBefore * 1e-9)) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.emboss-text.boolean-noop',
+      featureId: r.id,
+      severity: 'error',
+      message: `embossText ${fuse ? 'emboss' : 'engrave'} changed nothing: result volume equals the parent volume (${volBefore.toFixed(3)} mm³). The glyph tool did not intersect the body.`,
+      hint: HINT_TEMPLATES['feature.emboss-text.boolean-noop'].template,
+    });
+    return { ok: false, diagnostics };
+  }
+
   // Merge parent + tool histories with the boolean's evolution callbacks.
   // The parent's `historyMap` is undefined for primitives constructed via
   // `OcctBackend.box(...)` directly (e.g. in tests). The lowerer pipeline
@@ -250,6 +291,40 @@ export async function lowerEmbossText(
   refreshSnapshots(merged, resultIntermediate.getReplicadShape().faces);
 
   return { ok: true, backend: new OcctBackend(wrappedResult, undefined, merged) };
+}
+
+// ---------------------------------------------------------------------------
+// Face UV handedness
+// ---------------------------------------------------------------------------
+
+/**
+ * True when the face's (∂S/∂u × ∂S/∂v) frame points AGAINST the oriented
+ * outward normal — i.e. the UV→world map is left-handed as seen from outside
+ * the body, so a drawing mapped through it appears mirror-imaged. Probed by
+ * finite differences of `pointOnSurface` (normalized UV) near the face
+ * centre. Defensive default: `false` (no mirror) when the probe degenerates.
+ */
+function faceUvIsLeftHanded(face: Face): boolean {
+  try {
+    const e = 1e-3;
+    const u0 = 0.5, v0 = 0.5;
+    const p0 = face.pointOnSurface(u0, v0);
+    const pu = face.pointOnSurface(u0 + e, v0);
+    const pv = face.pointOnSurface(u0, v0 + e);
+    const du: Vec3 = [pu.x - p0.x, pu.y - p0.y, pu.z - p0.z];
+    const dv: Vec3 = [pv.x - p0.x, pv.y - p0.y, pv.z - p0.z];
+    const crossUv: Vec3 = [
+      du[1] * dv[2] - du[2] * dv[1],
+      du[2] * dv[0] - du[0] * dv[2],
+      du[0] * dv[1] - du[1] * dv[0],
+    ];
+    const lenCross = Math.hypot(crossUv[0], crossUv[1], crossUv[2]);
+    if (lenCross < 1e-18) return false;
+    const n = faceNormalOf(face);
+    return dot(crossUv, n) < 0;
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------

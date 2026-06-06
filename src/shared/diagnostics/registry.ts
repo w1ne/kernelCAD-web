@@ -114,6 +114,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'feature',
     description: 'embossText was called with depth === 0; no fuse or cut would change the geometry.',
   },
+  'feature.emboss-text.boolean-noop': {
+    hintTemplate:
+      'The emboss/engrave boolean left the body unchanged — the glyph tool never intersected it. Check the anchor places the text over solid material (not over a hole or off the face) and that the depth sign matches the intent (positive = emboss out, negative = engrave in).',
+    nextAction: { kind: 'fix-arg', field: 'anchorU' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'embossText boolean produced a result whose volume equals the parent volume; the feature had no effect.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is currently deferred — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
