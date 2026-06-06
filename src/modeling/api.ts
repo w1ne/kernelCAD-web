@@ -115,6 +115,12 @@ export interface KernelCadApi {
    * @param segments profile polyline segments (default 48)
    */
   torus(majorR: number, minorR: number, segments?: number): Shape;
+  /**
+   * Build a physical helical spring as a swept circular wire along a helix.
+   * Default axis is +Z; use axis 'X' for Anglepoise-style balance springs
+   * along lamp arms.
+   */
+  spring(opts: SpringOptions): Shape;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
   extrudePolygon(points: [number, number][], depth: Editable<number>, opts?: FaceLabelOpts): Shape;
@@ -394,6 +400,17 @@ export interface KernelCadApi {
   };
 }
 
+export interface SpringOptions {
+  length: number;
+  coilRadius: number;
+  wireRadius: number;
+  turns: number;
+  axis?: 'X' | 'Y' | 'Z';
+  pointsPerTurn?: number;
+  endStyle?: 'open' | 'closed';
+  segments?: number;
+}
+
 const mm = (n: Editable<number>): Param => toParam(n, 'mm');
 const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
 
@@ -405,6 +422,18 @@ function assertEditableNumber(featureKind: string, paramName: string, value: unk
     featureKind,
     `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
   );
+}
+
+function assertPositiveFinite(featureKind: string, paramName: string, value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${featureKind}: ${paramName} must be a positive finite number; got ${formatScalarForError(value)}.`,
+      featureKind,
+      `Pass a positive finite number for ${paramName}.`,
+    );
+  }
+  return value;
 }
 
 // === W1.3 NURBS surfaces validation helpers ===
@@ -540,6 +569,90 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       // is world Z.
       const profile = makePath(session).circle(majorR, 0, minorR, segments);
       return profile.revolve();
+    },
+    spring(opts) {
+      const length = assertPositiveFinite('spring', 'length', opts?.length);
+      const coilRadius = assertPositiveFinite('spring', 'coilRadius', opts?.coilRadius);
+      const wireRadius = assertPositiveFinite('spring', 'wireRadius', opts?.wireRadius);
+      const turns = assertPositiveFinite('spring', 'turns', opts?.turns);
+      if (coilRadius <= wireRadius) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spring: coilRadius (${coilRadius}) must be greater than wireRadius (${wireRadius}) so the spring has a visible coil centerline.`,
+          'spring',
+          'Pick coilRadius > wireRadius. Typical balance springs use wireRadius around 15-30% of coilRadius.',
+        );
+      }
+      const axis = opts.axis ?? 'Z';
+      if (axis !== 'X' && axis !== 'Y' && axis !== 'Z') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spring: axis must be one of 'X', 'Y', or 'Z'; got ${formatScalarForError(axis)}.`,
+          'spring',
+          'Pass axis: "X", "Y", or "Z".',
+        );
+      }
+      const pointsPerTurn = opts.pointsPerTurn ?? 24;
+      if (!Number.isInteger(pointsPerTurn) || pointsPerTurn < 6) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spring: pointsPerTurn must be an integer >= 6; got ${formatScalarForError(pointsPerTurn)}.`,
+          'spring',
+          'Use pointsPerTurn >= 6. Higher values smooth the coil at higher feature cost.',
+        );
+      }
+      const cylinderSegments = opts.segments ?? 16;
+      if (!Number.isInteger(cylinderSegments) || cylinderSegments < 6) {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spring: segments must be an integer >= 6; got ${formatScalarForError(cylinderSegments)}.`,
+          'spring',
+          'Use segments >= 6 for the circular wire cross-section.',
+        );
+      }
+      const endStyle = opts.endStyle ?? 'open';
+      if (endStyle !== 'open' && endStyle !== 'closed') {
+        throw new KernelError(
+          'feature.invalid-args',
+          `spring: endStyle must be 'open' or 'closed'; got ${formatScalarForError(endStyle)}.`,
+          'spring',
+          'Use endStyle: "open" for bare wire ends or "closed" for short integral end bars.',
+        );
+      }
+
+      const orient = (axial: number, radialA: number, radialB: number): [number, number, number] => {
+        if (axis === 'X') return [axial, radialA, radialB];
+        if (axis === 'Y') return [radialA, axial, radialB];
+        return [radialA, radialB, axial];
+      };
+
+      const cylinderBetween = (p0: [number, number, number], p1: [number, number, number], r: number): Shape => {
+        const dx = p1[0] - p0[0];
+        const dy = p1[1] - p0[1];
+        const dz = p1[2] - p0[2];
+        const len = Math.hypot(dx, dy, dz);
+        return api.cylinder(len, r, cylinderSegments)
+          .alongAxis([dx, dy, dz])
+          .translate(p0[0], p0[1], p0[2]);
+      };
+
+      const rail = helix({
+        radius: coilRadius,
+        pitch: length / turns,
+        turns,
+        axis,
+        pointsPerTurn,
+      });
+      let shape = makePath(session)
+        .circle(0, 0, wireRadius, cylinderSegments)
+        .sweep(rail, { frenet: true });
+      if (endStyle === 'closed') {
+        const barHalf = coilRadius + wireRadius;
+        shape = shape
+          .union(cylinderBetween(orient(0, -barHalf, 0), orient(0, barHalf, 0), wireRadius))
+          .union(cylinderBetween(orient(length, -barHalf, 0), orient(length, barHalf, 0), wireRadius));
+      }
+      return shape;
     },
     extrudeRect(w, h, height, opts) {
       const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
