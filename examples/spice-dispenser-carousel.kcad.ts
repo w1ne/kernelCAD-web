@@ -183,9 +183,42 @@ const lightenRing  = cylinder(52, 14.5, 64).translate(0, 0, -1)
   .subtract(cylinder(54, 10.5, 48).translate(0, 0, -2));
 const mouthL  = cylinder(4, 11, 32).translate(25, 0, 52.5);
 const mouthsL = mouthL.patternCircular({ count: 6, axis: [0, 0, 1] });
+// Chamber numbers: digits 1..6 engraved 0.8 mm into the drum top face's
+// inner annulus (r ≈ 9.5, between the Ø7 central bore and the pour-mouth
+// ring), each radially aligned with its chamber and reading outward (frosted
+// digits on Formlabs Clear). Chamber N parks at the station when
+// drumDeg = (N−1)·60 — the engraved number IS the firmware chamber index, so
+// "spice → number" maps once at fill time (cap off) and holds for dispense
+// commands. Implementation detours around two kernel gaps (2026-06-06):
+// embossText cuts silently no-op on cylinder end-caps, and its glyphs come
+// out MIRRORED — so each digit is embossed RAISED on a sacrificial box
+// plate (the tested path), the plate subtracted away to extract the glyph
+// prism, the prism un-mirrored with reflect('yz'), then used as a cutter.
+// The digit zone clears every other top cut (mouths start at r14).
+const NUM_R = 9.5, NUM_SIZE = 6, NUM_CUT = 0.8;
+const digitCutter = (k) => {
+  const glyph = box(12, 12, 2, true)                                           // plate top face at z = +1
+    .embossText({
+      textContent: String(k + 1),
+      face: 'top',
+      size: NUM_SIZE,
+      depth: 2 * NUM_CUT,                                                      // prism z = 1 .. 1 + 1.6
+      align: 'center',
+      anchorU: 0.5,
+      anchorV: 0.5,
+    })
+    .subtract(box(12, 12, 2, true))                                            // keep only the glyph prism
+    .reflect('yz');                                                            // un-mirror the glyph
+  const az = (k * 60 * Math.PI) / 180;
+  return glyph
+    .rotate([0, 0, 1], k * 60 - 90)                                            // glyph "up" points radially outward
+    .translate(NUM_R * Math.cos(az), NUM_R * Math.sin(az), DRUM_H - 1 - NUM_CUT);
+};
+const numberCutters = digitCutter(0)
+  .union(digitCutter(1), digitCutter(2), digitCutter(3), digitCutter(4), digitCutter(5));
 const drum = cylinder(DRUM_H, DRUM_R, 96)
   .union(drumHub)
-  .subtract(chambersL, outletsL, hornInserts, centralBore, lightenRing, mouthsL)
+  .subtract(chambersL, outletsL, hornInserts, centralBore, lightenRing, mouthsL, numberCutters)
   .material({ baseColor: '#ffffff', metalness: 0, roughness: 0.08, transmission: 0.8, ior: 1.5, thickness: 2 });
 
 // ── METER DISC ───────────────────────────────────────────────────────────────
@@ -232,7 +265,7 @@ const servoMeter = mountServo(MC_X, MC_Y, -19.5);
 
 // ── Params ───────────────────────────────────────────────────────────────────
 const drumDeg = param('drumDeg', 0, {
-  min: 0, max: 360, description: 'Carousel — k·60° parks chamber k at the station; k·60+180 parks it under the fill collar',
+  min: 0, max: 360, description: 'Carousel — (N−1)·60° parks engraved chamber N at the station; +180 parks it under the fill collar',
 });
 const meterDeg = param('meterDeg', 0, {
   min: 0, max: 130, description: 'Meter disc — 0 fills the pocket, ~117 drops the dose down the chute',
