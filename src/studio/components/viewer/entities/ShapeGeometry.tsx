@@ -170,9 +170,13 @@ export function ConsolidatedShape({
                 onClick={handleClick}
                 userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: name }}
             />
-            {viewMode3D === 'shadedWithEdges' && edgesGeo && (
+            {viewMode3D !== 'shaded' && edgesGeo && (
+                // BREP edge curves. In shadedWithEdges they overlay the shaded
+                // faces in black; in wireframe mode they ARE the shape (faces
+                // are ghosted by buildShapeMaterial), drawn in the body colour
+                // so they read against the viewport background.
                 <lineSegments geometry={edgesGeo} renderOrder={500}>
-                    <lineBasicMaterial color={0x000000} />
+                    <lineBasicMaterial color={viewMode3D === 'wireframe' ? color : 0x000000} />
                 </lineSegments>
             )}
             {selectedFace?.shapeIndex === shapeIndex && (
