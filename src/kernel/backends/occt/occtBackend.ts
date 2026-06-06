@@ -9,6 +9,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
+import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
@@ -1161,18 +1162,25 @@ export class OcctBackend implements ShapeBackend {
   }
 
   async exportSTLAsync(): Promise<Uint8Array> {
-    // Export-grade tessellation. The coarse preview values (0.05 / 0.3 rad)
-    // emit self-intersecting triangle slivers on curved surfaces (revolved
-    // cones, spheres, swept arcs) — open3d's `is_watertight()` rejects any
-    // mesh with self-intersections, even when the geometry is topologically
-    // manifold and within tolerance. Tightening to 0.001 mm / 0.05 rad +
-    // relative-deflection mode (linear tolerance scaled by edge length)
-    // produces matched triangulations across adjacent curved faces and
-    // eliminates the slivers on cqe-* geometry. ~3-4x slower mesh on cone-
-    // heavy parts, negligible cost on box / plate parts.
+    return (await this.exportSTLWithReportAsync()).bytes;
+  }
+
+  /**
+   * Export-grade STL with a watertight report. Meshes via the export
+   * pipeline (relative-deflection whole-shape mesh, per-face absolute
+   * fallback, position-key weld, crack stitch — see meshShapeForExport),
+   * then runs the O(n) edge-adjacency verify on the exact mesh that is
+   * encoded, so the report describes the bytes written.
+   */
+  async exportSTLWithReportAsync(): Promise<{
+    bytes: Uint8Array;
+    report: WatertightReport;
+    triangleCount: number;
+  }> {
     const mesh = meshShapeForExport(this.shape);
+    const report = verifyWatertight(mesh);
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
-    return Uint8Array.from(buf);
+    return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
   }
 
   exportSTEP(): Uint8Array {
