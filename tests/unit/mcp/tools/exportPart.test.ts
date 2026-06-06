@@ -37,7 +37,7 @@ beforeAll(async () => {
 let tmpDir: string;
 beforeEach(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'kernelcad-export-part-'));
-  vi.mocked(runAndExportParts).mockClear();
+  vi.mocked(runAndExportParts).mockReset();
 });
 afterEach(() => {
   if (tmpDir && existsSync(tmpDir)) rmSync(tmpDir, { recursive: true, force: true });
@@ -93,8 +93,7 @@ describe('export_part MCP tool', () => {
     const diag = r.diagnostics?.find(d => d.code === 'export.part.not-found');
     expect(diag).toBeDefined();
     expect(diag!.message).toContain('nonexistent');
-    expect(diag!.message).toContain('a');
-    expect(diag!.message).toContain('b');
+    expect(diag!.message).toMatch(/Valid names:.*\ba\b.*\bb\b/);
     expect(existsSync(join(tmpDir, 'x.stl'))).toBe(false);
   }, 60000);
 

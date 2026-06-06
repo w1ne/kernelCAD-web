@@ -3,7 +3,7 @@
 ## Unreleased — print-prep export suite (W2)
 
 - **Per-part STL export.** Export each solved-assembly part as its own binary
-  STL in its modeled (world-frame) position: CLI `kernelcad export --format stl
+  STL in its modeled (world-frame) position: CLI `kernelcad export stl <file>
   --part <name>` (repeatable) / `--parts all`, MCP `export_part` (`{ part,
   output_path }` for one part, `{ output_dir }` for all; files land at
   `<output_dir>/<part>.stl`). Unknown part names fail with
