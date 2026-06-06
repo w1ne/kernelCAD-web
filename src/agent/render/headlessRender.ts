@@ -104,7 +104,7 @@ export interface HeadlessRenderOpts {
   views?: readonly RenderView[];
   /** Additional arbitrary-pose captures keyed by `"<az>,<el>"`. */
   poses?: readonly string[];
-  /** URL of a running studio dev server; defaults to localhost:5173. */
+  /** URL of a running studio dev server; defaults to DEFAULT_RENDER_BASE_URL. */
   baseUrl?: string;
   /** When true, hides the `__referenceImages` overlay group before taking
    *  screenshots. Useful for clean engineering-view captures without overlays. */
@@ -138,8 +138,14 @@ export interface HeadlessRenderResult {
 
 const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
 
+/** Single source of truth for the studio dev-server URL. The CLI render
+ *  commands use this as the `--base-url` option default; no other port
+ *  literal may exist in the render pipeline (guarded by
+ *  tests/unit/cli/renderBaseUrlDefault.test.ts). */
+export const DEFAULT_RENDER_BASE_URL = 'http://localhost:5173';
+
 export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
-  const baseUrl = opts.baseUrl ?? 'http://localhost:5173';
+  const baseUrl = opts.baseUrl ?? DEFAULT_RENDER_BASE_URL;
   const views = opts.views ?? ALL_VIEWS;
   const inspectionChannels = opts.inspectionChannels ?? ['rgb'];
   const captureRgb = inspectionChannels.includes('rgb');
