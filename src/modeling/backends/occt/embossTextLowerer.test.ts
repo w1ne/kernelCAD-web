@@ -166,3 +166,135 @@ describe('lowerEmbossText — created face-ref propagation', () => {
     expect(resolve.ok).toBe(true);
   });
 });
+
+// #392 / #393 regression coverage — these tests assert GEOMETRY, not labels:
+// the earlier suite passed while cuts no-op'ed and glyphs mirrored because it
+// only checked bbox growth and historyMap label presence.
+describe('lowerEmbossText — geometry correctness (#392/#393)', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  function fRecord(
+    depth: number,
+    opts: { rotation?: number; anchorU?: number; anchorV?: number } = {},
+  ): FeatureRecord {
+    return {
+      id: 'emboss-geom-1',
+      kind: 'embossText',
+      params: {},
+      inputs: {
+        parent: { kind: 'feature', id: 'parent-0' },
+        face: {
+          kind: 'face',
+          featureId: 'parent-0',
+          ref: { kind: 'canonical', face: 'top' },
+        },
+      },
+      transforms: [],
+      suppressed: false,
+      metadata: {
+        // 'F' is asymmetric: the stem fills the LEFT half (reading from
+        // outside), the right half only carries the two arms.
+        textContent: 'F',
+        size: { expression: '6', unit: 'mm', evaluated: 6 },
+        depth: { expression: String(depth), unit: 'mm', evaluated: depth },
+        align: 'center',
+        anchorU: { expression: String(opts.anchorU ?? 0.5), unit: 'unitless', evaluated: opts.anchorU ?? 0.5 },
+        anchorV: { expression: String(opts.anchorV ?? 0.5), unit: 'unitless', evaluated: opts.anchorV ?? 0.5 },
+        rotation: { expression: String(opts.rotation ?? 0), unit: 'deg', evaluated: opts.rotation ?? 0 },
+        scaleMode: 'original',
+        faceRef: { kind: 'canonical', face: 'top' },
+      },
+    };
+  }
+
+  /** Volume of `backend ∩ axis-aligned box` spanning [x0,x1]×[y0,y1]×[z0,z1].
+   *  `OcctBackend.box` is corner-based (spans 0..w / 0..h / 0..d), so the
+   *  slab is positioned by translating its min corner to (x0, y0, z0). */
+  function regionVolume(
+    backend: OcctBackend,
+    x0: number, x1: number, y0: number, y1: number, z0: number, z1: number,
+  ): number {
+    const slab = OcctBackend.box(x1 - x0, y1 - y0, z1 - z0).translate([x0, y0, z0]);
+    return backend.intersect(slab).volume();
+  }
+
+  it('cut removes material on a box top (volume strictly decreases)', async () => {
+    const parent = OcctBackend.box(40, 20, 4);
+    const res = await lowerEmbossText(fRecord(-1), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.backend.volume()).toBeLessThan(parent.volume() - 0.5);
+    // and the cavity is BELOW the entry face, not above
+    expect(res.backend.boundingBox().max[2]).toBeCloseTo(4, 5);
+  });
+
+  it('cut removes material on a cylinder end-cap (#393)', async () => {
+    const parent = OcctBackend.cylinder(4, 20);
+    const res = await lowerEmbossText(fRecord(-1), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.backend.volume()).toBeLessThan(parent.volume() - 0.5);
+    expect(res.backend.boundingBox().max[2]).toBeCloseTo(4, 5);
+  });
+
+  it('emboss adds material on a cylinder end-cap', async () => {
+    const parent = OcctBackend.cylinder(4, 20);
+    const res = await lowerEmbossText(fRecord(1), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.backend.volume()).toBeGreaterThan(parent.volume() + 0.5);
+    expect(res.backend.boundingBox().max[2]).toBeCloseTo(5, 5);
+  });
+
+  it("glyphs read correctly from outside on a box top (#392): 'F' stem lands in the left half", async () => {
+    const parent = OcctBackend.box(40, 20, 4);
+    const res = await lowerEmbossText(fRecord(1), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    // Material ABOVE the entry plane (z 4..5), split at the glyph
+    // centerline. OcctBackend.box is corner-based, so the face centre (and
+    // glyph anchor) sits at (20, 10).
+    const left = regionVolume(res.backend, 10, 20, 0, 20, 4.001, 5.2);
+    const right = regionVolume(res.backend, 20, 30, 0, 20, 4.001, 5.2);
+    expect(left).toBeGreaterThan(0.5);
+    // Correct reading: stem (full-height bar) in the left half outweighs the
+    // arms-only right half. Mirrored output inverts this inequality.
+    expect(left).toBeGreaterThan(right * 1.3);
+  });
+
+  it("glyphs read correctly from outside on a cylinder end-cap (#392)", async () => {
+    const parent = OcctBackend.cylinder(4, 20);
+    const res = await lowerEmbossText(fRecord(1), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const left = regionVolume(res.backend, -10, 0, -10, 10, 4.001, 5.2);
+    const right = regionVolume(res.backend, 0, 10, -10, 10, 4.001, 5.2);
+    expect(left).toBeGreaterThan(0.5);
+    expect(left).toBeGreaterThan(right * 1.3);
+  });
+
+  it('rotation is CCW as seen from outside: +90° turns the F stem toward -y', async () => {
+    const parent = OcctBackend.box(40, 20, 4);
+    const res = await lowerEmbossText(fRecord(1, { rotation: 90 }), parent, undefined, undefined);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    // (x, y) → (-y, x) under +90 CCW viewed from +z: the stem (was left,
+    // x<0) lands in the y<0 half. A wrong rotation sign puts it at y>0.
+    // Corner-based box: glyph anchor at (20, 10); the y-halves split there.
+    const yNeg = regionVolume(res.backend, 10, 30, 0, 10, 4.001, 5.2);
+    const yPos = regionVolume(res.backend, 10, 30, 10, 20, 4.001, 5.2);
+    expect(yNeg).toBeGreaterThan(yPos * 1.3);
+  });
+
+  it('emits feature.emboss-text.boolean-noop when the cut changes nothing (glyph over a hole)', async () => {
+    // Anchor far past the face bounds (capture-side validation is bypassed
+    // by hand-crafting the record): the engrave prism descends through air
+    // beside the cylinder, so the cut removes nothing — the exact silent
+    // failure #393 shipped with.
+    const parent = OcctBackend.cylinder(4, 20);
+    const res = await lowerEmbossText(fRecord(-0.5, { anchorU: 1.4 }), parent, undefined, undefined);
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.diagnostics.some((d) => d.code === 'feature.emboss-text.boolean-noop')).toBe(true);
+  });
+});
