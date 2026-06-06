@@ -357,6 +357,22 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'export',
     description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
   },
+  'export.mesh.not-watertight': {
+    hintTemplate:
+      'The exported STL has open edges after the heal pass. Re-author the junctions at the reported crack-cluster locations with >=0.1 mm of overlap or offset instead of exact tangency/coincidence, then re-export. Use --no-verify only to inspect the broken mesh, never to ship it.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add >=0.1 mm overlap/offset at the reported crack locations instead of exact tangency' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
+  },
+  'export.part.not-found': {
+    hintTemplate:
+      'The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.',
+    nextAction: { kind: 'fix-arg', field: 'part' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A per-part export referenced a part name that does not exist in the solved assembly scene.',
+  },
   'export.glb.draco-glass-conflict': {
     hintTemplate:
       'Draco compression is reserved but not yet implemented. Pass options.draco: false or omit; the encoder ships in a follow-up slice. (The name nods at the most common collision: Draco encoders typically strip the `KHR_materials_transmission` extension on glass parts, which would silently break the GLB.)',
