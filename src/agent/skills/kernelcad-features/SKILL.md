@@ -136,6 +136,7 @@ const branded = bottle.union(raised);
 |---|---|---|
 | `feature.emboss-text.depth-zero` | `depth === 0` rejected at capture. | Pass a non-zero `depth`: positive = emboss, negative = engrave. |
 | `feature.emboss-text.face-too-small` | Glyph block exceeded the face bounds at wrap time. | Lower `size`, pick a larger face, or set `scaleMode: 'bounds'`. |
+| `feature.emboss-text.boolean-noop` | The emboss/engrave boolean changed nothing — the glyph tool never intersected the body (anchored over a hole, off the face, or the wrong depth sign). | Move the anchor over solid material and check the `depth` sign (positive = emboss out, negative = engrave in). |
 | `feature.project-curve.curve-empty` | `source.commands` had zero entries. | Build the path via `path().moveTo(...).lineTo(...).close().build()` so the wire has at least one segment. |
 | `feature.project-curve.no-intersection` | Closed-curve case: the curve missed the face. Open-wire case (`asEdge:true`): deferred until OCCT bindings ship `BRepProj_Projection`. | Closed: clamp curve coords into the face bounds. Open: rewrite as a closed projection. |
 | `feature.face.invalid-uv-anchor` | `anchorU` / `anchorV` outside `[0, 1]`. | Clamp the anchor to `[0, 1]`. |
