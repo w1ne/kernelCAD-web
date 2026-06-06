@@ -16,6 +16,15 @@
  * share one session so parameter edits in one tab fan out to all SSE
  * subscribers.
  *
+ * Relower hub
+ * ===========
+ * SSE subscribers attach to `entry.onRelower(...)`, an entry-level hub that
+ * is stable across model rebuilds. The pool forwards the live engine's
+ * `onRelower` events into the hub, and `rebuildByScript` re-wires the hub to
+ * the freshly-built engine before emitting a synthetic relower — so an open
+ * SSE connection survives a disk-edit rebuild and tells the browser to
+ * re-fetch mesh + review.
+ *
  * Memory bound
  * ============
  * `prune()` evicts entries whose `lastAccessAt` is older than `ttlMs`. The
@@ -24,14 +33,20 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { resolve } from 'node:path';
 import type { BuiltModel } from '../modeling/buildModel';
 
 export interface SessionPoolEntry {
   readonly token: string;
   readonly scriptPath: string;
-  readonly model: BuiltModel;
+  /** Swapped in place by `rebuildByScript` — always read, never cache. */
+  model: BuiltModel;
   /** Wall-clock ms (Date.now()) of the most recent access. */
   lastAccessAt: number;
+  /** Entry-level relower hub. Stable across `rebuildByScript` model swaps —
+   *  prefer this over `model.session.engine.onRelower` for any subscriber
+   *  that outlives a single request (SSE). */
+  onRelower(cb: (affectedIds: string[]) => void): () => void;
 }
 
 export interface SessionPoolOptions {
@@ -58,15 +73,79 @@ export interface SessionPool {
   prune(): void;
   /** Iterate live entries (for SSE broadcast / diagnostics). */
   entries(): IterableIterator<SessionPoolEntry>;
+  /**
+   * Rebuild the model for any live session whose scriptPath matches `file`
+   * (path-resolved comparison), swap it into the entry, and fan a synthetic
+   * relower out to the entry's hub subscribers. Used by the dev server's
+   * file watcher so disk edits to a `.kcad.ts` reach open Studio tabs.
+   *
+   * Returns true when a matching session existed and was rebuilt. A failed
+   * build (e.g. mid-edit syntax error) keeps the previous model and
+   * rethrows so the caller can log; the session stays usable.
+   *
+   * Concurrent calls for the same entry are serialized; at most one extra
+   * rebuild is queued (rapid successive saves coalesce onto the trailing
+   * rebuild, which reads the newest file state anyway).
+   */
+  rebuildByScript(file: string): Promise<boolean>;
+}
+
+interface EntryInternals {
+  listeners: Set<(affectedIds: string[]) => void>;
+  detachEngine: (() => void) | null;
+  rebuildInFlight: Promise<void> | null;
+  rebuildQueued: boolean;
 }
 
 export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   const byToken = new Map<string, SessionPoolEntry>();
   const byScript = new Map<string, string>();
+  const internals = new Map<string, EntryInternals>();
 
   function touch(entry: SessionPoolEntry): SessionPoolEntry {
     entry.lastAccessAt = Date.now();
     return entry;
+  }
+
+  function fanout(token: string, affectedIds: string[]): void {
+    const ints = internals.get(token);
+    if (!ints) return;
+    for (const cb of ints.listeners) cb(affectedIds);
+  }
+
+  /** Forward the entry's CURRENT engine relower events into the hub. */
+  function wireEngine(entry: SessionPoolEntry): void {
+    const ints = internals.get(entry.token);
+    if (!ints) return;
+    ints.detachEngine?.();
+    const engine = entry.model.session.engine;
+    ints.detachEngine = engine
+      ? engine.onRelower((affectedIds: string[]) => fanout(entry.token, affectedIds))
+      : null;
+  }
+
+  function drop(token: string): void {
+    const entry = byToken.get(token);
+    if (!entry) return;
+    internals.get(token)?.detachEngine?.();
+    internals.delete(token);
+    byToken.delete(token);
+    // Only drop the reverse index if it still points at this token —
+    // a subsequent `getOrCreate` for the same script may have already
+    // re-registered the script under a different token.
+    if (byScript.get(entry.scriptPath) === token) {
+      byScript.delete(entry.scriptPath);
+    }
+  }
+
+  async function rebuildEntry(entry: SessionPoolEntry): Promise<void> {
+    const model = await opts.build(entry.scriptPath);
+    entry.model = model;
+    touch(entry);
+    wireEngine(entry);
+    // Synthetic relower: the whole model may have changed, so signal with an
+    // empty affected set — subscribers re-fetch mesh + review wholesale.
+    fanout(entry.token, []);
   }
 
   return {
@@ -79,14 +158,29 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
         byScript.delete(scriptPath);
       }
       const model = await opts.build(scriptPath);
+      const token = randomUUID();
+      const listeners = new Set<(affectedIds: string[]) => void>();
       const entry: SessionPoolEntry = {
-        token: randomUUID(),
+        token,
         scriptPath,
         model,
         lastAccessAt: Date.now(),
+        onRelower(cb) {
+          listeners.add(cb);
+          return () => {
+            listeners.delete(cb);
+          };
+        },
       };
-      byToken.set(entry.token, entry);
-      byScript.set(scriptPath, entry.token);
+      internals.set(token, {
+        listeners,
+        detachEngine: null,
+        rebuildInFlight: null,
+        rebuildQueued: false,
+      });
+      byToken.set(token, entry);
+      byScript.set(scriptPath, token);
+      wireEngine(entry);
       return entry;
     },
 
@@ -97,31 +191,49 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     },
 
     eject(token: string): void {
-      const entry = byToken.get(token);
-      if (!entry) return;
-      byToken.delete(token);
-      // Only drop the reverse index if it still points at this token —
-      // a subsequent `getOrCreate` for the same script may have already
-      // re-registered the script under a different token.
-      if (byScript.get(entry.scriptPath) === token) {
-        byScript.delete(entry.scriptPath);
-      }
+      drop(token);
     },
 
     prune(): void {
       const cutoff = Date.now() - opts.ttlMs;
       for (const [token, entry] of byToken) {
         if (entry.lastAccessAt < cutoff) {
-          byToken.delete(token);
-          if (byScript.get(entry.scriptPath) === token) {
-            byScript.delete(entry.scriptPath);
-          }
+          drop(token);
         }
       }
     },
 
     entries(): IterableIterator<SessionPoolEntry> {
       return byToken.values();
+    },
+
+    async rebuildByScript(file: string): Promise<boolean> {
+      const resolved = resolve(file);
+      let rebuilt = false;
+      for (const entry of byToken.values()) {
+        if (resolve(entry.scriptPath) !== resolved) continue;
+        const ints = internals.get(entry.token);
+        if (!ints) continue;
+        if (ints.rebuildInFlight) {
+          // Coalesce: the queued rebuild reads the newest file state, so
+          // any number of saves during an in-flight rebuild need exactly
+          // one trailing rebuild.
+          ints.rebuildQueued = true;
+          await ints.rebuildInFlight;
+          if (!ints.rebuildQueued) {
+            rebuilt = true;
+            continue;
+          }
+        }
+        ints.rebuildQueued = false;
+        const run = rebuildEntry(entry).finally(() => {
+          ints.rebuildInFlight = null;
+        });
+        ints.rebuildInFlight = run;
+        await run;
+        rebuilt = true;
+      }
+      return rebuilt;
     },
   };
 }

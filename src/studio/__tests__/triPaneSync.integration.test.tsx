@@ -68,6 +68,14 @@ vi.mock('../context/WorkbenchContext', () => ({
     }),
 }));
 
+// SceneTab reads `geometries` for the assembly Parts list; the tri-pane
+// sync cases exercise the feature-row path, so an empty geometry list
+// keeps the legacy rows rendered without mounting the full GeometryProvider.
+vi.mock('../context/GeometryContext', async (importOriginal) => ({
+    ...(await importOriginal<object>()),
+    useGeometry: () => ({ geometries: [] }),
+}));
+
 beforeEach(() => {
     shellStore.reset();
     shellStore.publishValidity(validity);

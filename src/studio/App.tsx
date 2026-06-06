@@ -24,6 +24,7 @@ function isCodeParsable(code: string): boolean {
 
 import { useProject } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
+import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
 
 function readScriptParam(): string | null {
   if (typeof window === 'undefined') return null;
@@ -84,6 +85,16 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
       cancelled = true;
     };
   }, [galleryParam, scriptParam, setCode, setViewMode, sourceRouteKey]);
+
+  // Live-edit bridge (dev only): point the module-scope bridge at the
+  // active `?script=` route. The WS subscription itself lives in
+  // liveScriptBridge.ts — see the comment there for why it must not live
+  // in this component.
+  useEffect(() => {
+    if (!scriptParam || galleryParam) return;
+    registerLiveScriptTarget(scriptParam, setCode);
+    return () => unregisterLiveScriptTarget(setCode);
+  }, [galleryParam, scriptParam, setCode]);
 
   // Sync active project -> workbench state
   useEffect(() => {

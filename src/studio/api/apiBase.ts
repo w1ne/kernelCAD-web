@@ -40,7 +40,18 @@ export interface ApiCallContext {
  *  (preferred — dev override) or falls back to the prod URL.
  */
 export async function apiCall(): Promise<ApiCallContext> {
-  const supabase = getSupabase();
+  // Plain local dev has no Supabase env, so `getSupabase()` throws. That is
+  // exactly the unsigned-in case: relative paths should hit the local vite
+  // middleware. Swallow the missing-config throw and fall through to the
+  // unsigned-in default — otherwise every Studio backend fetch (source, mesh,
+  // review) crashes on localhost and the deep-link `?script=` route renders a
+  // blank "Failed to load Studio source." screen.
+  let supabase;
+  try {
+    supabase = getSupabase();
+  } catch {
+    return { base: '', headers: {} };
+  }
   const {
     data: { session },
   } = await supabase.auth.getSession();

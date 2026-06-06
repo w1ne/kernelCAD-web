@@ -770,7 +770,7 @@ export class Assembly {
     aRef: string,
     bRef: string,
     type: MateType,
-    opts?: { pose?: MatePose; limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange },
+    opts?: { pose?: MatePose; limitsDeg?: MateLimitRange; limitsMm?: MateLimitRange; exposure?: 'exposed' | 'concealed' },
   ): this {
     const a = this.resolveMateConnector(aRef);
     const b = this.resolveMateConnector(bRef);
@@ -799,6 +799,7 @@ export class Assembly {
       ...(opts?.pose !== undefined ? { pose: opts.pose } : {}),
       ...(opts?.limitsDeg !== undefined ? { limitsDeg: opts.limitsDeg } : {}),
       ...(opts?.limitsMm !== undefined ? { limitsMm: opts.limitsMm } : {}),
+      ...(opts?.exposure !== undefined ? { exposure: opts.exposure } : {}),
     });
     return this;
   }

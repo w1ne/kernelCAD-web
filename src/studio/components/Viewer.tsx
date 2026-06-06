@@ -10,6 +10,8 @@ import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometr
 import type { ViewMode3D } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
+import { useShellStore } from "../store/useShellStore";
+import { sectionPlaneFromState } from "./viewer/sectionPlane";
 import type { HoverResult } from "../features-ui/interaction/HoverManager";
 import type { SnapResult } from "../features-ui/interaction/SnapManager";
 
@@ -54,6 +56,18 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
 
     const { setContextMenu, viewportBackground } = useUI();
 
+    const { sectionMode, sectionAxis, sectionFlip, sectionPosition } = useShellStore();
+    // One stable plane instance, mutated in place so slider/axis/flip changes
+    // never rebuild materials (only on/off toggle does — see ShapeGeometry).
+    const sectionPlaneRef = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, -1), 0), []);
+    useEffect(() => {
+        sectionPlaneRef.copy(sectionPlaneFromState(sectionAxis, sectionFlip, sectionPosition));
+    }, [sectionPlaneRef, sectionAxis, sectionFlip, sectionPosition]);
+    const clippingPlanes = useMemo(
+        () => (sectionMode ? [sectionPlaneRef] : []),
+        [sectionMode, sectionPlaneRef],
+    );
+
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
     }, [codeContext]);
@@ -91,6 +105,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     // compositing and toDataURL returns a blank PNG.
                     preserveDrawingBuffer: true,
                 }}
+                onCreated={({ gl }) => {
+                    // Section tool clips per-material; opt the renderer into local clipping.
+                    gl.localClippingEnabled = true;
+                }}
                 raycaster={{
                     params: {
                         Line: { threshold: 0.4 },
@@ -127,12 +145,16 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     {geometries.map((g, i) => {
                         const name = itemNames[i];
                         if (name && hiddenIds.includes(name)) return null;
+                        // Hide whole assembly parts by name (the Parts list in the
+                        // Scene tab toggles `assemblyPartName` into hiddenIds).
+                        if (g.assemblyPartName && hiddenIds.includes(g.assemblyPartName)) return null;
                         return (
                             <Shape
                                 key={i}
                                 geometry={g}
                                 shapeIndex={i}
                                 viewMode3D={viewMode3D}
+                                clippingPlanes={clippingPlanes}
                                 isSelected={name ? selectedItemIds.includes(name) : false}
                                 name={name ?? undefined}
                             />

@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors } from 'lucide-react';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -26,6 +26,9 @@ interface ToolbarProps {
      *  picks up on the next turn. */
     markingMode: boolean;
     onToggleMarkingMode: () => void;
+    /** Section/cut tool — clips the model with one movable plane to reveal internals. */
+    sectionMode: boolean;
+    onToggleSectionMode: () => void;
 }
 
 export function Toolbar({
@@ -43,6 +46,8 @@ export function Toolbar({
     onToggleRenderEnvironment,
     markingMode,
     onToggleMarkingMode,
+    sectionMode,
+    onToggleSectionMode,
 }: ToolbarProps) {
     return (
         <div
@@ -116,6 +121,22 @@ export function Toolbar({
                 >
                     <Brush size={14} />
                     Brush
+                </button>
+                <button
+                    type="button"
+                    data-testid="toolbar-section"
+                    onClick={onToggleSectionMode}
+                    title={sectionMode ? 'Exit section view' : 'Slice the model with a plane to see inside'}
+                    aria-label={sectionMode ? 'Exit section view' : 'Enter section view'}
+                    aria-pressed={sectionMode}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded font-medium transition-colors ${
+                        sectionMode
+                            ? 'bg-sky-600 text-white ring-2 ring-sky-300'
+                            : 'bg-[#13202a] text-sky-300 hover:bg-sky-700 hover:text-white border border-sky-700'
+                    }`}
+                >
+                    <Scissors size={14} />
+                    Section
                 </button>
                 {referenceImagesPresent && (
                     <button
