@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { createApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { GLOBALS } from '../../../src/agent/mcp/tools/listApi';
@@ -51,6 +51,31 @@ describe('spring({ length, coilRadius, wireRadius, turns })', () => {
     expect(bb.max[2] - bb.min[2]).toBeGreaterThan(39);
     expect(bb.max[0] - bb.min[0]).toBeLessThan(22);
     expect(bb.max[1] - bb.min[1]).toBeLessThan(22);
+  });
+
+  it('exports watertight at the analytic swept-tube volume', async () => {
+    const length = 16;
+    const coilRadius = 8;
+    const wireRadius = 1;
+    const turns = 4;
+    const segments = 16;
+    const m = await buildModel({
+      fileName: 'spring-watertight.kcad.ts',
+      code: `return spring({ length: ${length}, coilRadius: ${coilRadius}, wireRadius: ${wireRadius}, turns: ${turns} });`,
+    });
+    expect(m.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    // Analytic tube volume = wire cross-section area × helix arc length.
+    // The wire profile is an inscribed regular N-gon (path().circle with the
+    // default 16 segments): area = ½·n·sin(2π/n)·r² ≈ 0.9745·π·r².
+    const wireArea = 0.5 * segments * Math.sin((2 * Math.PI) / segments) * wireRadius ** 2;
+    const helixLen = turns * Math.hypot(2 * Math.PI * coilRadius, length / turns);
+    const analytic = wireArea * helixLen;
+    const v = m.tailShape!.volume();
+    expect(v).toBeGreaterThan(analytic * 0.96);
+    expect(v).toBeLessThan(analytic * 1.04);
+    const { report } = await (m.tailShape as OcctBackend).exportSTLWithReportAsync();
+    expect(report.openEdgeCount).toBe(0);
+    expect(report.ok).toBe(true);
   });
 
   it('rejects invalid spring dimensions at capture time', () => {

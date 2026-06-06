@@ -21,6 +21,12 @@
   solved-assembly parts with exact world-frame bounding box, volume (mm³),
   surface area (mm²), and export triangle count — same mesher as the STL
   exporter, so the numbers match the exported files exactly.
+- **Smooth sweep spines.** `Sketch.sweep(rail, { spine: 'smooth' })` sweeps
+  along a single B-spline spine through the rail points with the profile
+  placed at the rail start — dense smooth rails (e.g. `helix(...)`) now
+  export watertight at the analytic tube volume instead of emitting unsewn
+  per-segment tubes; `spring()` uses this spine internally. Default
+  `spine: 'polyline'` behavior is unchanged.
 
 ## Unreleased — borrow-integration follow-ups (conventions clarified)
 

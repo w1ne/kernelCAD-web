@@ -1116,11 +1116,25 @@ export class OcctLowerer implements FeatureLowerer {
             return { shape: undefined as unknown as ShapeBackend, diagnostics };
           }
           const transitionMode = (rawTransition ?? 'right') as 'right' | 'transformed' | 'round';
+          const rawSpine = (r.metadata as { spine?: unknown } | undefined)?.spine;
+          const ALLOWED_SPINES = ['polyline', 'smooth'] as const;
+          if (rawSpine !== undefined && !ALLOWED_SPINES.includes(rawSpine as typeof ALLOWED_SPINES[number])) {
+            diagnostics.push({
+              target: 'export-occt',
+              code: 'feature.invalid-args',
+              featureId: r.id,
+              severity: 'error',
+              message: `sweep.spine must be one of 'polyline' | 'smooth'; got ${JSON.stringify(rawSpine)}.`,
+              hint: "Pass spine: 'polyline' (default — straight rail edges, real corners) or 'smooth' (single B-spline spine through the rail points; use for helix/curved rails).",
+            });
+            return { shape: undefined as unknown as ShapeBackend, diagnostics };
+          }
+          const spine = (rawSpine ?? 'polyline') as 'polyline' | 'smooth';
           try {
             shape = OcctBackend.sweepFromSketch(
               sketchInput,
               rail as [number, number, number][],
-              { frenet, transitionMode },
+              { frenet, transitionMode, spine },
             );
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);

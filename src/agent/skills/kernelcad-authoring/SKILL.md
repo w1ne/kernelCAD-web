@@ -304,9 +304,15 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // Profile coords are (radial-X, axial-Z); all x >= 0.
 .revolve(): Shape
 
-// Sweep this profile along a 3D polyline rail.
-// frenet: true recommended for helices/curves; default false for straight/L-bend rails.
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean }): Shape
+// Sweep this profile along a 3D rail.
+// spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
+//   transitionMode ('right' | 'transformed' | 'round') picks how those corners are bridged.
+// spine: 'smooth' builds ONE B-spline spine through the rail points and places the
+//   profile at the rail start — REQUIRED for rails that sample a smooth curve
+//   (helix(...), threads, organic paths). A polyline spine on a dense smooth rail
+//   produces per-segment tubes that do not sew and fail the watertight export verify.
+// frenet: true rotates the profile with the rail curvature.
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces.

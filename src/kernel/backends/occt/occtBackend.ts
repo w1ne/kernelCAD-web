@@ -601,6 +601,13 @@ export class OcctBackend implements ShapeBackend {
    *   corner clearance). The choice only matters when the rail has interior
    *   vertices; for smooth single-edge spines the three modes are
    *   indistinguishable.
+   * @param opts.spine how the rail points become the spine curve:
+   *   `'polyline'` (default — consecutive straight edges; corners are real
+   *   and `transitionMode` applies) or `'smooth'` (a single C2 B-spline edge
+   *   approximated through the rail points — use when the rail samples a
+   *   smooth curve such as a helix; per-segment polyline spines on dense
+   *   rails make OCCT pipe-shell emit per-segment tubes that do not sew,
+   *   leaving open square rings in the export mesh).
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If `rail.length < 2`.
@@ -609,27 +616,74 @@ export class OcctBackend implements ShapeBackend {
   static sweepFromSketch(
     sketch: OcctBackend,
     rail: [number, number, number][],
-    opts: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round' } = {},
+    opts: {
+      frenet?: boolean;
+      transitionMode?: 'right' | 'transformed' | 'round';
+      spine?: 'polyline' | 'smooth';
+    } = {},
   ): OcctBackend {
     // The kind/_drawing check is now inside liftSketchToFace; keep the
     // explicit message for the rail check (different concern).
     if (rail.length < 2) {
       throw new Error(`OcctBackend.sweepFromSketch: rail needs at least 2 points (got ${rail.length}).`);
     }
-    // Build the spine wire from rail edges (consecutive line segments).
-    const edges: replicad.Edge[] = [];
-    for (let i = 1; i < rail.length; i++) {
-      const a = rail[i - 1];
-      const b = rail[i];
-      edges.push(replicad.makeLine(
-        a as unknown as Parameters<typeof replicad.makeLine>[0],
-        b as unknown as Parameters<typeof replicad.makeLine>[1],
-      ));
+    const smoothSpine = (opts.spine ?? 'polyline') === 'smooth';
+    let spineWire: replicad.Wire;
+    if (smoothSpine) {
+      // Single C2 B-spline edge approximated through the rail points.
+      // Parameter choices:
+      // - tolerance 1e-3 mm: the rail points lie exactly on the source curve
+      //   (e.g. helix() samples), so a 1 µm approximation keeps the spine on
+      //   that curve to well below manufacturing/export tolerance while
+      //   still letting GeomAPI_PointsToBSpline drop redundant knots.
+      // - degMin 3: cubic minimum so the C2 continuity OCCT pipe-shell needs
+      //   for stable frame transport is met by construction (degree 1-2
+      //   approximations satisfy C2 only piecewise-trivially).
+      // - degMax 6: replicad's default cap; higher degrees gain nothing on
+      //   sampled rails and risk oscillation.
+      const spineEdge = replicad.makeBSplineApproximation(
+        rail as unknown as Parameters<typeof replicad.makeBSplineApproximation>[0],
+        { tolerance: 1e-3, degMin: 3, degMax: 6 },
+      );
+      spineWire = replicad.assembleWire([spineEdge]);
+    } else {
+      // Build the spine wire from rail edges (consecutive line segments).
+      const edges: replicad.Edge[] = [];
+      for (let i = 1; i < rail.length; i++) {
+        const a = rail[i - 1];
+        const b = rail[i];
+        edges.push(replicad.makeLine(
+          a as unknown as Parameters<typeof replicad.makeLine>[0],
+          b as unknown as Parameters<typeof replicad.makeLine>[1],
+        ));
+      }
+      spineWire = replicad.assembleWire(edges);
     }
-    const spineWire = replicad.assembleWire(edges);
     // Lift via the shared helper (handles sketch-kind check + multi-face guard).
     const { face } = OcctBackend.liftSketchToFace(sketch, 'XY');
-    const profileWire = face().outerWire();
+    let profileWire = face().outerWire();
+    if (smoothSpine) {
+      // Place the profile AT the rail start, normal along the spine's start
+      // tangent (replicad's own `Sketch.sweepSketch` builds the profile on
+      // exactly this plane). Lifting on world-XY at the origin and letting
+      // OCCT transport the profile→spine offset through the rotating frame
+      // distorts the solid whenever the rail does not start at the origin
+      // with a +Z tangent (e.g. a Z-axis helix starts at (r, 0, 0) with a
+      // mostly-tangential direction).
+      const tangent = spineWire.tangentAt(0).normalize();
+      const [tx, ty, tz] = [tangent.x, tangent.y, tangent.z];
+      // Rotate the profile's +Z normal onto the start tangent.
+      const dot = Math.min(1, Math.max(-1, tz));
+      if (dot < 1 - 1e-12) {
+        const angleDeg = (Math.acos(dot) * 180) / Math.PI;
+        // axis = +Z × tangent; degenerate only when tangent ∥ ±Z — for the
+        // antiparallel case any axis perpendicular to Z works, pick +X.
+        const axis: [number, number, number] =
+          Math.hypot(-ty, tx) < 1e-12 ? [1, 0, 0] : [-ty, tx, 0];
+        profileWire = profileWire.rotate(angleDeg, [0, 0, 0], axis);
+      }
+      profileWire = profileWire.translate(rail[0]);
+    }
     // Sweep. Default `forceProfileSpineOthogonality: true` (replicad's typo'd
     // spelling preserved on-wire) — without it, a perpendicular profile on a
     // planar rail silently collapses to a flat shape because the spine's

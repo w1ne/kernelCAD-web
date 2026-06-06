@@ -113,6 +113,40 @@ describe('OcctBackend.sweepFromSketch', () => {
       .toThrow(/not a sketch/);
   });
 
+  describe("spine: 'smooth' option", () => {
+    it('dense helical rail sweeps to a watertight solid at the analytic tube volume', async () => {
+      // Polyline spines on dense helical rails produce per-segment pipe
+      // tubes that do not sew (28 open square rings on this rail with the
+      // default polyline spine). A single smooth B-spline spine through the
+      // same rail points must produce one sewn solid:
+      // - export mesh watertight (0 open edges), and
+      // - volume ≈ profile-area × helix arc length (Pappus for a centered
+      //   profile): 4 mm² × turns·√((2π·r)² + pitch²).
+      const sketch = OcctBackend.fromSketchCommands(square2x2);
+      const turns = 4;
+      const radius = 8;
+      const pitch = 4;
+      const rail = helix({ radius, pitch, turns, pointsPerTurn: 24 });
+      const swept = OcctBackend.sweepFromSketch(sketch, rail, { spine: 'smooth' });
+      const helixLen = turns * Math.hypot(2 * Math.PI * radius, pitch);
+      const analytic = 4 * helixLen; // ≈ 806.8 mm³
+      const v = swept.volume();
+      expect(v).toBeGreaterThan(analytic * 0.95);
+      expect(v).toBeLessThan(analytic * 1.05);
+      const { report } = await swept.exportSTLWithReportAsync();
+      expect(report.openEdgeCount).toBe(0);
+      expect(report.ok).toBe(true);
+    });
+
+    it("default ('polyline') behavior is unchanged for the straight-rail sweep", () => {
+      // Guard: adding the spine option must not alter the default path.
+      const sketch = OcctBackend.fromSketchCommands(square2x2);
+      const sweptDefault = OcctBackend.sweepFromSketch(sketch, [[0, 0, 0], [0, 0, 50]]);
+      const sweptExplicit = OcctBackend.sweepFromSketch(sketch, [[0, 0, 0], [0, 0, 50]], { spine: 'polyline' });
+      expect(sweptExplicit.volume()).toBeCloseTo(sweptDefault.volume(), 6);
+    });
+  });
+
   describe('transitionMode option', () => {
     // L-bend rail with a sharp 90° interior corner so each mode actually
     // exercises a different BRepBuilderAPI_TransitionMode.
