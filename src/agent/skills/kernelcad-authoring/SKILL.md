@@ -304,9 +304,15 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // Profile coords are (radial-X, axial-Z); all x >= 0.
 .revolve(): Shape
 
-// Sweep this profile along a 3D polyline rail.
-// frenet: true recommended for helices/curves; default false for straight/L-bend rails.
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean }): Shape
+// Sweep this profile along a 3D rail.
+// spine: 'polyline' (default) keeps real corners — pipe runs, L-bends;
+//   transitionMode ('right' | 'transformed' | 'round') picks how those corners are bridged.
+// spine: 'smooth' builds ONE B-spline spine through the rail points and places the
+//   profile at the rail start — REQUIRED for rails that sample a smooth curve
+//   (helix(...), threads, organic paths). A polyline spine on a dense smooth rail
+//   produces per-segment tubes that do not sew and fail the watertight export verify.
+// frenet: true rotates the profile with the rail curvature.
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces.
@@ -450,6 +456,10 @@ kernelcad export step path/to/script.kcad.ts -o /tmp/out.step
 kernelcad export dxf  path/to/script.kcad.ts -o /tmp/out.dxf   # planar profile; laser / waterjet
 kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh with per-part colors
 kernelcad export glb  path/to/script.kcad.ts -o /tmp/out.glb   # web / AR viewer; PBR materials
+kernelcad export stl  path/to/script.kcad.ts --part lever -o /tmp/lever.stl  # one solved-assembly part (world-frame); repeat --part with -o <dir> for a subset
+kernelcad export stl  path/to/script.kcad.ts --parts all -o /tmp/parts/      # every assembly part as <dir>/<part>.stl
+kernelcad export stl  path/to/script.kcad.ts -o /tmp/out.stl --no-verify     # skip the default-on watertight verify gate
+kernelcad parts path/to/script.kcad.ts --json                  # list assembly parts with bbox, volume, surface area, triangle count
 
 # Render a 4-view PNG (front/right/top/iso) for visual review.
 # Tiles are framed to the requested --width/--height: the camera fits the
@@ -512,7 +522,8 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
 - Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
-- For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `frenet: true`.
+- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (subtractions/clearances) over exact tangency or coincidence between solids — exact-tangent junctions stress the export mesher; the export pipeline heals the resulting cracks, but offsets keep meshes clean at the source.
+- For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `spine: 'smooth'` — the dense helix rail needs a single B-spline spine to produce a sewn, watertight tube; the default polyline spine emits per-segment tubes that fail the watertight export verify. `frenet` is unnecessary with a smooth spine.
 
 ## Sample
 

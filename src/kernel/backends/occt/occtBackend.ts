@@ -9,6 +9,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
+import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
@@ -73,11 +74,29 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
     const rawVertices: number[] = [];
     for (const face of shape.faces) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tri = (face as any).triangulation(rawVertices.length / 3) as {
+      let tri = (face as any).triangulation(rawVertices.length / 3) as {
         vertices: number[];
         trianglesIndexes: number[];
       } | null;
-      if (!tri) continue;
+      if (!tri || tri.vertices.length === 0) {
+        // The whole-shape relative-deflection pass can leave individual faces
+        // untriangulated (boolean leftovers at exact tangencies) — silently
+        // skipping them leaves the entire face boundary as an open ring in
+        // the STL. Retry the face alone in ABSOLUTE-deflection mode (the
+        // relative-mode retry stays null on the regression corpus). The
+        // fallback boundary won't match the neighbors' discretization;
+        // the crack-stitch pass below makes the seam conformal.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fw = (face as any).wrapped;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (oc as any).BRepTools.Clean(fw, true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+        faceMesher.delete();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tri = (face as any).triangulation(rawVertices.length / 3) as typeof tri;
+        if (!tri || tri.vertices.length === 0) continue; // verify will report the hole
+      }
       for (let i = 0; i < tri.trianglesIndexes.length; i++) rawTriangles.push(tri.trianglesIndexes[i]);
       for (let i = 0; i < tri.vertices.length; i++) rawVertices.push(tri.vertices[i]);
     }
@@ -111,7 +130,15 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
     }
     const triangles: number[] = new Array(rawTriangles.length);
     for (let i = 0; i < rawTriangles.length; i++) triangles[i] = remap[rawTriangles[i]];
-    return { vertices, triangles };
+    const welded: { vertices: number[]; triangles: number[] } = {
+      vertices,
+      triangles: dropDegenerateTriangles(triangles),
+    };
+    // Heal T-junction cracks born at tangent junctions and along
+    // fallback-face seams. No-op (0 splits) on conformal meshes.
+    stitchCracks(welded, 0.05);
+    welded.triangles = dropDegenerateTriangles(welded.triangles);
+    return welded;
   } finally {
     mesher.delete();
   }
@@ -574,6 +601,13 @@ export class OcctBackend implements ShapeBackend {
    *   corner clearance). The choice only matters when the rail has interior
    *   vertices; for smooth single-edge spines the three modes are
    *   indistinguishable.
+   * @param opts.spine how the rail points become the spine curve:
+   *   `'polyline'` (default — consecutive straight edges; corners are real
+   *   and `transitionMode` applies) or `'smooth'` (a single C2 B-spline edge
+   *   approximated through the rail points — use when the rail samples a
+   *   smooth curve such as a helix; per-segment polyline spines on dense
+   *   rails make OCCT pipe-shell emit per-segment tubes that do not sew,
+   *   leaving open square rings in the export mesh).
    *
    * @throws {Error} If `sketch.kind !== 'sketch'` or `_drawing` is null.
    * @throws {Error} If `rail.length < 2`.
@@ -582,27 +616,74 @@ export class OcctBackend implements ShapeBackend {
   static sweepFromSketch(
     sketch: OcctBackend,
     rail: [number, number, number][],
-    opts: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round' } = {},
+    opts: {
+      frenet?: boolean;
+      transitionMode?: 'right' | 'transformed' | 'round';
+      spine?: 'polyline' | 'smooth';
+    } = {},
   ): OcctBackend {
     // The kind/_drawing check is now inside liftSketchToFace; keep the
     // explicit message for the rail check (different concern).
     if (rail.length < 2) {
       throw new Error(`OcctBackend.sweepFromSketch: rail needs at least 2 points (got ${rail.length}).`);
     }
-    // Build the spine wire from rail edges (consecutive line segments).
-    const edges: replicad.Edge[] = [];
-    for (let i = 1; i < rail.length; i++) {
-      const a = rail[i - 1];
-      const b = rail[i];
-      edges.push(replicad.makeLine(
-        a as unknown as Parameters<typeof replicad.makeLine>[0],
-        b as unknown as Parameters<typeof replicad.makeLine>[1],
-      ));
+    const smoothSpine = (opts.spine ?? 'polyline') === 'smooth';
+    let spineWire: replicad.Wire;
+    if (smoothSpine) {
+      // Single C2 B-spline edge approximated through the rail points.
+      // Parameter choices:
+      // - tolerance 1e-3 mm: the rail points lie exactly on the source curve
+      //   (e.g. helix() samples), so a 1 µm approximation keeps the spine on
+      //   that curve to well below manufacturing/export tolerance while
+      //   still letting GeomAPI_PointsToBSpline drop redundant knots.
+      // - degMin 3: cubic minimum so the C2 continuity OCCT pipe-shell needs
+      //   for stable frame transport is met by construction (degree 1-2
+      //   approximations satisfy C2 only piecewise-trivially).
+      // - degMax 6: replicad's default cap; higher degrees gain nothing on
+      //   sampled rails and risk oscillation.
+      const spineEdge = replicad.makeBSplineApproximation(
+        rail as unknown as Parameters<typeof replicad.makeBSplineApproximation>[0],
+        { tolerance: 1e-3, degMin: 3, degMax: 6 },
+      );
+      spineWire = replicad.assembleWire([spineEdge]);
+    } else {
+      // Build the spine wire from rail edges (consecutive line segments).
+      const edges: replicad.Edge[] = [];
+      for (let i = 1; i < rail.length; i++) {
+        const a = rail[i - 1];
+        const b = rail[i];
+        edges.push(replicad.makeLine(
+          a as unknown as Parameters<typeof replicad.makeLine>[0],
+          b as unknown as Parameters<typeof replicad.makeLine>[1],
+        ));
+      }
+      spineWire = replicad.assembleWire(edges);
     }
-    const spineWire = replicad.assembleWire(edges);
     // Lift via the shared helper (handles sketch-kind check + multi-face guard).
     const { face } = OcctBackend.liftSketchToFace(sketch, 'XY');
-    const profileWire = face().outerWire();
+    let profileWire = face().outerWire();
+    if (smoothSpine) {
+      // Place the profile AT the rail start, normal along the spine's start
+      // tangent (replicad's own `Sketch.sweepSketch` builds the profile on
+      // exactly this plane). Lifting on world-XY at the origin and letting
+      // OCCT transport the profile→spine offset through the rotating frame
+      // distorts the solid whenever the rail does not start at the origin
+      // with a +Z tangent (e.g. a Z-axis helix starts at (r, 0, 0) with a
+      // mostly-tangential direction).
+      const tangent = spineWire.tangentAt(0).normalize();
+      const [tx, ty, tz] = [tangent.x, tangent.y, tangent.z];
+      // Rotate the profile's +Z normal onto the start tangent.
+      const dot = Math.min(1, Math.max(-1, tz));
+      if (dot < 1 - 1e-12) {
+        const angleDeg = (Math.acos(dot) * 180) / Math.PI;
+        // axis = +Z × tangent; degenerate only when tangent ∥ ±Z — for the
+        // antiparallel case any axis perpendicular to Z works, pick +X.
+        const axis: [number, number, number] =
+          Math.hypot(-ty, tx) < 1e-12 ? [1, 0, 0] : [-ty, tx, 0];
+        profileWire = profileWire.rotate(angleDeg, [0, 0, 0], axis);
+      }
+      profileWire = profileWire.translate(rail[0]);
+    }
     // Sweep. Default `forceProfileSpineOthogonality: true` (replicad's typo'd
     // spelling preserved on-wire) — without it, a perpendicular profile on a
     // planar rail silently collapses to a flat shape because the spine's
@@ -1161,18 +1242,25 @@ export class OcctBackend implements ShapeBackend {
   }
 
   async exportSTLAsync(): Promise<Uint8Array> {
-    // Export-grade tessellation. The coarse preview values (0.05 / 0.3 rad)
-    // emit self-intersecting triangle slivers on curved surfaces (revolved
-    // cones, spheres, swept arcs) — open3d's `is_watertight()` rejects any
-    // mesh with self-intersections, even when the geometry is topologically
-    // manifold and within tolerance. Tightening to 0.001 mm / 0.05 rad +
-    // relative-deflection mode (linear tolerance scaled by edge length)
-    // produces matched triangulations across adjacent curved faces and
-    // eliminates the slivers on cqe-* geometry. ~3-4x slower mesh on cone-
-    // heavy parts, negligible cost on box / plate parts.
+    return (await this.exportSTLWithReportAsync()).bytes;
+  }
+
+  /**
+   * Export-grade STL with a watertight report. Meshes via the export
+   * pipeline (relative-deflection whole-shape mesh, per-face absolute
+   * fallback, position-key weld, crack stitch — see meshShapeForExport),
+   * then runs the O(n) edge-adjacency verify on the exact mesh that is
+   * encoded, so the report describes the bytes written.
+   */
+  async exportSTLWithReportAsync(): Promise<{
+    bytes: Uint8Array;
+    report: WatertightReport;
+    triangleCount: number;
+  }> {
     const mesh = meshShapeForExport(this.shape);
+    const report = verifyWatertight(mesh);
     const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
-    return Uint8Array.from(buf);
+    return { bytes: Uint8Array.from(buf), report, triangleCount: mesh.triangles.length / 3 };
   }
 
   exportSTEP(): Uint8Array {

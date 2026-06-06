@@ -112,16 +112,20 @@ interface RepairContext {
 
 ### Export
 
-- `export_model({ file? | code?, output_path, format, feature_id?, options? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
+- `export_model({ file? | code?, output_path, format, feature_id?, options?, no_verify? })` — write the script geometry to a file server-side. `format` is one of `stl`, `step`, `dxf`, `3mf`, `glb` (the reserved `urdf`, `srdf`, `sdf-gazebo` slots ship in a follow-up slice and return a structured `*.not-implemented` diagnostic today). STL exports run a watertight verify **by default**; a failing mesh still writes the file (so the broken mesh can be inspected) but the call returns `ok: false` with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to skip the gate. Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`. `feature_count` is the total features in the script, not the count contributing to the exported shape.
 
   **Per-format options** (passed via `options`):
-  - `stl` — no options.
+  - `stl` — `verify?: boolean` (default `true`): the watertight verify gate. Equivalent to the top-level `no_verify: true` when set to `false`.
   - `step` — `unit?: 'mm' | 'cm' | 'in'`.
   - `dxf` — `unit?: 'mm' | 'cm' | 'in'` (default `mm`); `tolerance?: number` (chord tolerance for polyline flattening; mm; default 0.05); `layers?: DxfLayerSpec[]` (named layers for cut profiles; bend lines always emit on a dedicated `BEND` layer). Output is `LWPOLYLINE`-only; the input must be planar — non-planar geometry fails with `export.dxf.non-planar` and a `list_faces` next-action.
   - `3mf` — `printUnit?: 'mm' | 'cm' | 'in'` (default `mm`); `embedSource?: boolean` (when `true`, the source script is attached to the 3MF under `Metadata/source.kcad.ts`). Watertightness is verified before write; non-manifold meshes fail with `export.3mf.not-watertight`.
   - `glb` — `axis?: 'y-up' | 'z-up'` (default `y-up`; world-units convention is mm). `draco?: false` is reserved for a follow-up slice; passing `draco: true` is a static type error today and a runtime `export.glb.draco-glass-conflict` if the type is widened upstream.
 
   PBR materials propagate from `.material({...})` calls in the script through `MeshPhysicalMaterial` into the glTF `KHR_materials_*` extensions (transmission / clearcoat / anisotropy / sheen / volume / ior). 3MF carries the `baseColor` only (the format has no rich PBR slot). DXF carries no material.
+
+- `export_part({ file? | code?, part?, output_path?, output_dir?, no_verify? })` — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. The script must return `assembly.solvedModel(...)` / `assembly.model()`. Pass `{ part, output_path }` for one part, or `{ output_dir }` (with `part` omitted or `'all'`) for all parts — files land at `<output_dir>/<part>.stl`. A watertight verify runs on every exported mesh **by default**; a failing part still writes its file (so the broken mesh can be inspected) but fails the call with `export.mesh.not-watertight` (open-edge count + up to 5 crack-cluster locations). Pass `{ no_verify: true }` only to inspect broken meshes. Unknown part names fail with `export.part.not-found` listing the valid names. Returns `{ ok, written: [{ part, output_path, byte_count, watertight }], diagnostics }`.
+
+- `list_part_stats({ file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
 
 ## Topology references — the `@kc[...]` grammar
 

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { runAndExport, type ExportOptions } from '../../../src/agent/script-runtime/export';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('runAndExport', () => {
   beforeAll(async () => { await initOcct(); });
@@ -14,6 +14,32 @@ describe('runAndExport', () => {
     const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'stl' });
     expect(result.bytes.length).toBeGreaterThan(84);
     expect(result.diagnostics.filter(d => d.severity === 'error')).toHaveLength(0);
+  });
+
+  it('STL verify failure returns the mesh bytes alongside export.mesh.not-watertight', async () => {
+    // Write-then-fail contract: the broken mesh must still be exportable for
+    // inspection, so the verify-failure branch carries the real STL bytes
+    // next to the error diagnostic (consumers write the file, then fail).
+    const fakeBytes = new Uint8Array(684).fill(7);
+    const spy = vi.spyOn(OcctBackend.prototype, 'exportSTLWithReportAsync').mockResolvedValueOnce({
+      bytes: fakeBytes,
+      report: {
+        ok: false,
+        openEdgeCount: 3,
+        clusters: [{ center: [1, 2, 3] as [number, number, number], edgeCount: 3 }],
+      },
+    });
+    try {
+      const result = await runAndExport({
+        code: 'return box(10, 10, 10);',
+        fileName: 'demo.kcad.ts',
+        format: 'stl',
+      });
+      expect(result.diagnostics.find(d => d.code === 'export.mesh.not-watertight')).toBeDefined();
+      expect(result.bytes).toBe(fakeBytes);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('exports STEP for the demo script', async () => {

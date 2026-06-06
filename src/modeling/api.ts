@@ -643,9 +643,14 @@ export function createApi(ctx: ApiContext): KernelCadApi {
         axis,
         pointsPerTurn,
       });
+      // spine: 'smooth' — the helix rail samples a smooth curve, so the
+      // spine must be a single B-spline edge. A polyline spine makes OCCT
+      // pipe-shell emit per-segment tubes that do not sew (open rings in
+      // the export mesh) and distorts the coil. The smooth spine's default
+      // orientation transport is well-defined on a helix; no frenet needed.
       let shape = makePath(session)
         .circle(0, 0, wireRadius, cylinderSegments)
-        .sweep(rail, { frenet: true });
+        .sweep(rail, { spine: 'smooth' });
       if (endStyle === 'closed') {
         const barHalf = coilRadius + wireRadius;
         shape = shape

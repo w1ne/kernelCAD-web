@@ -17,8 +17,11 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'install',
   'interference',
   'mcp',
+  'parts',
   'render',
   'skill',
+  'stats',
+  'telemetry',
   'validate',
 ]);
 

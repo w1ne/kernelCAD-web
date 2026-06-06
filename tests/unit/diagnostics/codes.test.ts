@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 211 codes', () => {
+  it('emits exactly 214 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
-    // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard).
-    expect(DIAGNOSTIC_CODES).toHaveLength(211);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(211);
+    // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
+    // + 2 W2 export suite: export.mesh.not-watertight, export.part.not-found
+    // + 1 cli.file-write (W2 part-mode export: structured output-write failures).
+    expect(DIAGNOSTIC_CODES).toHaveLength(214);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(214);
   });
 
   it('every code has a non-empty hint template', () => {

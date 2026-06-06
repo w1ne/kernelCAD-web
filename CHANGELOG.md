@@ -1,5 +1,35 @@
 # kernelCAD v0.11.0
 
+## Unreleased — print-prep export suite (W2)
+
+- **Per-part STL export.** Export each solved-assembly part as its own binary
+  STL in its modeled (world-frame) position: CLI `kernelcad export stl <file>
+  --part <name>` (repeatable) / `--parts all`, MCP `export_part` (`{ part,
+  output_path }` for one part, `{ output_dir }` for all; files land at
+  `<output_dir>/<part>.stl`). Unknown part names fail with
+  `export.part.not-found` listing the valid names.
+- **Default-on watertight verify.** Every exported STL mesh is checked for
+  open edges; failures report `export.mesh.not-watertight` with the open-edge
+  count and up to 5 crack-cluster locations. Both whole-model exports
+  (`kernelcad export stl`, MCP `export_model`) and per-part exports
+  (`--part`/`--parts`, MCP `export_part`) still write the file(s) before
+  failing (CLI exit 1 / MCP `ok: false`) so the broken mesh can be inspected.
+  Opt out with `--no-verify` (CLI) / `{ no_verify: true }` (MCP).
+- **Mesh-once heal pipeline.** The export mesher now heals its own output:
+  per-face absolute-deflection fallback remesh for faces the whole-shape pass
+  leaves untriangulated, position-key vertex weld, and T-junction crack
+  stitching.
+- **Part stats.** `kernelcad parts <file>` and MCP `list_part_stats` list
+  solved-assembly parts with exact world-frame bounding box, volume (mm³),
+  surface area (mm²), and export triangle count — same mesher as the STL
+  exporter, so the numbers match the exported files exactly.
+- **Smooth sweep spines.** `Sketch.sweep(rail, { spine: 'smooth' })` sweeps
+  along a single B-spline spine through the rail points with the profile
+  placed at the rail start — dense smooth rails (e.g. `helix(...)`) now
+  export watertight at the analytic tube volume instead of emitting unsewn
+  per-segment tubes; `spring()` uses this spine internally. Default
+  `spine: 'polyline'` behavior is unchanged.
+
 ## Unreleased — borrow-integration follow-ups (conventions clarified)
 
 Documentation cleanup for the two non-bug "discoveries" that surfaced while

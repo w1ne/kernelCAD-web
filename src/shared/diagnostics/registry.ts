@@ -295,7 +295,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'recompute',
     description: 'The lowering pass raised an unhandled exception while compiling intent to the backend.',
   },
-  // CLI / IO (4)
+  // CLI / IO (5)
   'cli.invalid-args': {
     hintTemplate: 'CLI was called with missing or malformed arguments. Run `kernelcad --help`.',
     nextAction: { kind: 'check-cli-args' },
@@ -318,6 +318,14 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'cli',
     description: 'kernelCAD could not read the script file at the given path.',
   },
+  'cli.file-write': {
+    hintTemplate:
+      'kernelCAD could not write the output file. Check the output path is writable and that -o points at a directory when exporting multiple parts.',
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description: 'kernelCAD could not write an export output file at the given path.',
+  },
   'cli.export-exception': {
     hintTemplate: 'An exception occurred during export. Read the diagnostic message for details.',
     nextAction: { kind: 'inspect-message' },
@@ -325,7 +333,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'cli',
     description: 'An unhandled exception occurred during an export operation (STL, STEP, etc.).',
   },
-  // Export (2)
+  // Export (19)
   'export.feature-not-found': {
     hintTemplate:
       'The feature_id passed to export_model was not found. Use list_features to see available IDs.',
@@ -364,6 +372,22 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
+  },
+  'export.mesh.not-watertight': {
+    hintTemplate:
+      'The exported STL has open edges after the heal pass. Re-author the junctions at the reported crack-cluster locations with >=0.1 mm of overlap or offset instead of exact tangency/coincidence, then re-export. Use --no-verify only to inspect the broken mesh, never to ship it.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add >=0.1 mm overlap/offset at the reported crack locations instead of exact tangency' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
+  },
+  'export.part.not-found': {
+    hintTemplate:
+      'The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.',
+    nextAction: { kind: 'fix-arg', field: 'part' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A per-part export referenced a part name that does not exist in the solved assembly scene.',
   },
   'export.glb.draco-glass-conflict': {
     hintTemplate:

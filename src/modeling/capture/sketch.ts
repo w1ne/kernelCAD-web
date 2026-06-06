@@ -131,8 +131,20 @@ export class Sketch {
    *   profile diameter exceeds the corner clearance — without this, OCCT
    *   rejects the sweep entirely. Costlier than the other modes.
    *
+   * Pick `opts.spine`:
+   * - `'polyline'` (default): the rail points become consecutive straight
+   *   spine edges. Corners are real — use for pipe runs, L-bends, and any
+   *   rail whose kinks are intentional (`transitionMode` controls how the
+   *   corners are bridged).
+   * - `'smooth'`: the rail points become a single smooth B-spline spine
+   *   edge, and the profile is placed at the rail start orthogonal to the
+   *   spine's start tangent. Use whenever the rail SAMPLES a smooth curve —
+   *   `helix(...)` rails, threads, springs, organic paths. A polyline spine
+   *   on a dense smooth rail makes the kernel emit per-segment tubes that do
+   *   not sew, leaving open rings in the export mesh (`export.mesh.not-watertight`).
+   *
    * Returns a `Shape` (3D solid). Validation (rail length, finite values,
-   * transitionMode string) happens at lowering time and surfaces as
+   * transitionMode/spine strings) happens at lowering time and surfaces as
    * `feature.sweep.*` / `feature.invalid-args` diagnostics.
    */
   sweep(
@@ -140,11 +152,13 @@ export class Sketch {
     opts: {
       frenet?: boolean;
       transitionMode?: 'right' | 'transformed' | 'round';
+      spine?: 'polyline' | 'smooth';
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
+    const spine = opts.spine ?? 'polyline';
     return this.session.createShape({
       kind: 'sweep',
       inputs: {
@@ -157,6 +171,7 @@ export class Sketch {
       metadata: {
         rail,
         transitionMode,
+        spine,
         ...(faceLabels ? { faceLabels } : {}),
       },
     });

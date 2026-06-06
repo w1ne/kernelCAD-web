@@ -1,7 +1,9 @@
 import { runScript } from '../../modeling/runtime/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
-import { exportSceneToSTEPAsync, pbrFromMetadata, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, pbrFromMetadata, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
+import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
@@ -9,7 +11,7 @@ import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backen
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
@@ -20,7 +22,7 @@ export type ExportFormat =
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
-  | { format: 'stl' }
+  | { format: 'stl'; verify?: boolean }
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
   | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
   | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
@@ -306,7 +308,18 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const shape = lowered as OcctBackend;
   switch (format) {
     case 'stl': {
-      const bytes = await shape.exportSTLAsync();
+      const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+      const { bytes, report } = await shape.exportSTLWithReportAsync();
+      if (verify && !report.ok) {
+        // Write-then-fail contract: keep the real mesh bytes next to the
+        // error diagnostic so consumers can write the broken mesh to disk
+        // for inspection before failing (same as per-part export).
+        return {
+          bytes,
+          featureCount,
+          diagnostics: [...r.diagnostics, stlNotWatertightDiagnostic(report, targetId)],
+        };
+      }
       return { bytes, featureCount, diagnostics: r.diagnostics };
     }
     case 'step': {
@@ -454,6 +467,166 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics: r.diagnostics };
+}
+
+export interface PartStlExport {
+  name: string;
+  /** name sanitized for filenames: [^A-Za-z0-9._-] -> '-' */
+  fileSafeName: string;
+  bytes: Uint8Array;
+  report: WatertightReport;
+  triangleCount: number;
+}
+
+export interface ExportPartsInput {
+  code: string;
+  fileName: string;
+  scriptDir?: string;
+  /** Part names to export; omit for all parts. */
+  parts?: string[];
+}
+
+export interface ExportPartsResult {
+  parts: PartStlExport[];
+  featureCount: number;
+  diagnostics: CompilerDiagnostic[];
+}
+
+export function fileSafePartName(name: string): string {
+  return name.replace(/[^A-Za-z0-9._-]/g, '-');
+}
+
+/** Resolved world-frame scene + run bookkeeping, shared by the per-part
+ *  exporter and the part-stats lister. `parts` is undefined when resolution
+ *  failed — `diagnostics` then carries the structured error. */
+interface WorldFrameSceneResult {
+  parts?: import('../../kernel/backends/occt/sceneToWorldFrame').WorldFramePart[];
+  featureCount: number;
+  diagnostics: CompilerDiagnostic[];
+}
+
+/**
+ * Run a script and resolve its returned Scene into world-frame parts.
+ * The script must return `assembly.solvedModel(...)` / `assembly.model()`
+ * (a Scene). Shared prelude for `runAndExportParts` and `listPartStats`.
+ */
+export async function resolveWorldFrameScene(
+  input: { code: string; fileName: string; scriptDir?: string },
+): Promise<WorldFrameSceneResult> {
+  const { code, fileName, scriptDir } = input;
+  const run = await runScript({ code, fileName, scriptDir });
+  const engine = new RecomputeEngine(createOcctLowerer(run.session));
+  const r = await engine.run(run.records, { paramTable: run.paramTable });
+  const featureCount = run.records.length;
+  const fatal = r.diagnostics.filter(d => d.severity === 'error');
+  if (fatal.length > 0) return { featureCount, diagnostics: r.diagnostics };
+
+  const ret = run.returnValue;
+  if (!(ret instanceof Scene)) {
+    return {
+      featureCount,
+      diagnostics: [...r.diagnostics, {
+        target: 'export-occt',
+        code: 'export.no-shape',
+        severity: 'error',
+        message: 'Per-part export requires the script to return assembly.solvedModel(...) or assembly.model().',
+        hint: 'End the script with `return asm.solvedModel({...});` so part names and modeled positions are available.',
+        nextAction: NEXT_ACTIONS['export.no-shape'],
+      }],
+    };
+  }
+  const sourceId = ret.__sourceFeatureId();
+  const lowered = sourceId !== undefined ? r.shapes.get(sourceId) : undefined;
+  if (!lowered || !isSceneBackend(lowered)) {
+    return {
+      featureCount,
+      diagnostics: [...r.diagnostics, {
+        target: 'export-occt',
+        code: 'recompute.input.missing',
+        featureId: sourceId,
+        severity: 'error',
+        message: 'The assembly scene did not lower successfully.',
+        hint: 'Walk the upstream chain with why_did_this_fail to find the root cause.',
+        nextAction: NEXT_ACTIONS['recompute.input.missing'],
+      }],
+    };
+  }
+  return { parts: sceneToWorldFrameParts(lowered), featureCount, diagnostics: r.diagnostics };
+}
+
+/**
+ * Run a script and export each solved-assembly part as its own binary STL,
+ * in the part's modeled (world-frame) position. The script must return
+ * `assembly.solvedModel(...)` / `assembly.model()` (a Scene). Each part is
+ * meshed through the export pipeline and carries a watertight report —
+ * callers decide whether a failing report is fatal (verify default-on).
+ */
+export async function runAndExportParts(input: ExportPartsInput): Promise<ExportPartsResult> {
+  const resolved = await resolveWorldFrameScene(input);
+  const { featureCount } = resolved;
+  if (!resolved.parts) {
+    return { parts: [], featureCount, diagnostics: resolved.diagnostics };
+  }
+  const worldParts = resolved.parts;
+  const validNames = worldParts.map(p => p.name);
+  if (input.parts !== undefined) {
+    const unknown = input.parts.filter(n => !validNames.includes(n));
+    if (unknown.length > 0) {
+      return {
+        parts: [], featureCount,
+        diagnostics: [...resolved.diagnostics, {
+          target: 'export-occt',
+          code: 'export.part.not-found',
+          severity: 'error',
+          message: `Unknown part name(s): ${unknown.join(', ')}. Valid names: ${validNames.join(', ')}.`,
+          hint: HINT_TEMPLATES['export.part.not-found'].template,
+          nextAction: NEXT_ACTIONS['export.part.not-found'],
+        }],
+      };
+    }
+  }
+  const selected = input.parts === undefined
+    ? worldParts
+    : worldParts.filter(p => input.parts!.includes(p.name));
+
+  const parts: PartStlExport[] = [];
+  for (const p of selected) {
+    const mesh = meshShapeForExport(p.shape.getReplicadShape());
+    const report = verifyWatertight(mesh);
+    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
+    parts.push({
+      name: p.name,
+      fileSafeName: fileSafePartName(p.name),
+      bytes: Uint8Array.from(buf),
+      report,
+      triangleCount: mesh.triangles.length / 3,
+    });
+  }
+  return { parts, featureCount, diagnostics: resolved.diagnostics };
+}
+
+/**
+ * Structured `export.mesh.not-watertight` diagnostic from a failing
+ * watertight report — open-edge count plus up to 5 crack-cluster xyz spots.
+ */
+export function stlNotWatertightDiagnostic(
+  report: WatertightReport,
+  targetId: string | undefined,
+  partName?: string,
+): CompilerDiagnostic {
+  const spots = report.clusters
+    .map(c => `(${c.center.map(n => n.toFixed(2)).join(', ')})×${c.edgeCount}`)
+    .join('; ');
+  const subject = partName !== undefined ? `Part '${partName}' STL mesh` : 'STL mesh';
+  return {
+    target: 'export-occt',
+    code: 'export.mesh.not-watertight',
+    featureId: targetId,
+    severity: 'error',
+    message: `${subject} is not watertight: ${report.openEdgeCount} open edge(s) in ${report.clusters.length} crack cluster(s) at ${spots}.`,
+    hint: HINT_TEMPLATES['export.mesh.not-watertight'].template,
+    nextAction: NEXT_ACTIONS['export.mesh.not-watertight'],
+  };
 }
 
 /**
