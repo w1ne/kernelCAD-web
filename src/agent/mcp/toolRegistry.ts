@@ -193,7 +193,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
     definition: {
       name: 'get_shape_info',
       description:
-        'Run + recompute a script, return volume/surfaceArea/bbox for one feature (default: last). ' +
+        "Run + recompute a script, return volume/surfaceArea/bbox for one feature (default: the script's returned shape). " +
         'Pass { file?, code?, feature_id? }.',
       inputSchema: {
         type: 'object',
@@ -202,7 +202,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           code: { type: 'string', description: 'Inline kernelCAD script source.' },
           feature_id: {
             type: 'string',
-            description: 'Feature id to inspect. Defaults to the last captured feature.',
+            description: "Feature id to inspect. Defaults to the script's returned shape (falls back to the last captured feature when nothing lowerable is returned).",
           },
         },
       },

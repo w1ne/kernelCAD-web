@@ -511,7 +511,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Always declare params at the top of the script with units; the kernel evaluates them and surfaces them as live sliders to the studio.
 - Prefer `target.hole(face, opts)` for cylindrical bores (single hole), `target.holes(face, opts)` for bolt patterns, and `target.cutout(profile, opts)` for irregular subtractive shapes (slots, D-pockets) over `subtract(cylinder)` — they emit named created refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-wall'`, `'counterbore-floor'`, `'countersink-cone'`) that downstream `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when the face filter matters; transforms commute with everything except face-ref resolution.
-- Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return.
+- Always `return` a single shape from the top of the script — the kernelCAD CLI exports whatever you return. Only the returned shape is honored by export / probe / measurement surfaces; "the last thing I created" is NOT a fallback you can rely on — mutating transforms (`.translate()`, `.rotate()`) re-use their record, and any helper shape created after the main body silently becomes the newest record. If a probe reports the same bbox no matter what you edit, you are measuring a stale or decoy record: check what the script returns.
 - For symmetric parts, prefer `.mirror(plane)` (union of source + reflection) over manual duplication. Use `.reflect(plane)` when you only want the reflected geometry without the original.
 - For helical features (coils, springs, threads), generate the rail with `helix(...)` and sweep a closed `path()` profile with `frenet: true`.
 
