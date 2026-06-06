@@ -9,7 +9,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { isSameEdge } from './edgeQueries';
 import { buildNurbsSketchOnPlane, hasNurbsSegments } from './pathNurbsLowerer';
 import { encodeBinaryStl } from './exportStlBinary';
-import { verifyWatertight, type WatertightReport } from './meshHeal';
+import { verifyWatertight, stitchCracks, dropDegenerateTriangles, type WatertightReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
@@ -74,11 +74,29 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
     const rawVertices: number[] = [];
     for (const face of shape.faces) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tri = (face as any).triangulation(rawVertices.length / 3) as {
+      let tri = (face as any).triangulation(rawVertices.length / 3) as {
         vertices: number[];
         trianglesIndexes: number[];
       } | null;
-      if (!tri) continue;
+      if (!tri || tri.vertices.length === 0) {
+        // The whole-shape relative-deflection pass can leave individual faces
+        // untriangulated (boolean leftovers at exact tangencies) — silently
+        // skipping them leaves the entire face boundary as an open ring in
+        // the STL. Retry the face alone in ABSOLUTE-deflection mode (the
+        // relative-mode retry stays null on the regression corpus). The
+        // fallback boundary won't match the neighbors' discretization;
+        // the crack-stitch pass below makes the seam conformal.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fw = (face as any).wrapped;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (oc as any).BRepTools.Clean(fw, true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+        faceMesher.delete();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tri = (face as any).triangulation(rawVertices.length / 3) as typeof tri;
+        if (!tri || tri.vertices.length === 0) continue; // verify will report the hole
+      }
       for (let i = 0; i < tri.trianglesIndexes.length; i++) rawTriangles.push(tri.trianglesIndexes[i]);
       for (let i = 0; i < tri.vertices.length; i++) rawVertices.push(tri.vertices[i]);
     }
@@ -112,7 +130,15 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
     }
     const triangles: number[] = new Array(rawTriangles.length);
     for (let i = 0; i < rawTriangles.length; i++) triangles[i] = remap[rawTriangles[i]];
-    return { vertices, triangles };
+    const welded: { vertices: number[]; triangles: number[] } = {
+      vertices,
+      triangles: dropDegenerateTriangles(triangles),
+    };
+    // Heal T-junction cracks born at tangent junctions and along
+    // fallback-face seams. No-op (0 splits) on conformal meshes.
+    stitchCracks(welded, 0.05);
+    welded.triangles = dropDegenerateTriangles(welded.triangles);
+    return welded;
   } finally {
     mesher.delete();
   }

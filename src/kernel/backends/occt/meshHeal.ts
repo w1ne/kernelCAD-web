@@ -127,10 +127,71 @@ function distPointSegInterior(
 }
 
 /**
+ * Smallest triangle height: 2*area / longest edge. Near-zero means the three
+ * corners are nearly collinear — the triangle is a degenerate flap with no
+ * geometric extent.
+ */
+function triMinHeight(V: number[], a: number, b: number, c: number): number {
+  const ax = V[a * 3], ay = V[a * 3 + 1], az = V[a * 3 + 2];
+  const bx = V[b * 3], by = V[b * 3 + 1], bz = V[b * 3 + 2];
+  const cx = V[c * 3], cy = V[c * 3 + 1], cz = V[c * 3 + 2];
+  const ux = bx - ax, uy = by - ay, uz = bz - az;
+  const vx = cx - ax, vy = cy - ay, vz = cz - az;
+  const wx = cx - bx, wy = cy - by, wz = cz - bz;
+  const crx = uy * vz - uz * vy;
+  const cry = uz * vx - ux * vz;
+  const crz = ux * vy - uy * vx;
+  const area2 = Math.hypot(crx, cry, crz);
+  const lmax = Math.max(Math.hypot(ux, uy, uz), Math.hypot(vx, vy, vz), Math.hypot(wx, wy, wz));
+  return lmax === 0 ? 0 : area2 / lmax;
+}
+
+/**
+ * Remove degenerate flap triangles that own at least one crack edge: nearly
+ * collinear slivers (min height < tol) the per-face tessellation emits along
+ * tangent-junction seams. Such a flap lies ON the seam between the two real
+ * surface chains — it over-shares one seam edge (count 3) while shadowing the
+ * conformal chain, so no vertex split can ever heal it: every owning triangle
+ * of its long edge contains the candidate split vertex. Removal restores the
+ * plain T-junction configuration the vertex split handles. Only triangles
+ * owning a crack edge are candidates, so watertight regions are never touched.
+ * Returns the number of triangles removed; rebuilds `mesh.triangles` in place.
+ */
+function removeDegenerateFlaps(
+  mesh: EditableMesh,
+  cracks: Map<string, CrackEdge>,
+  tol: number,
+): number {
+  const candidates = new Set<number>();
+  for (const e of cracks.values()) for (const t of e.tris) candidates.add(t);
+  const flaps = new Set<number>();
+  for (const t of candidates) {
+    const a = mesh.triangles[t * 3];
+    const b = mesh.triangles[t * 3 + 1];
+    const c = mesh.triangles[t * 3 + 2];
+    if (triMinHeight(mesh.vertices, a, b, c) < tol) flaps.add(t);
+  }
+  if (flaps.size === 0) return 0;
+  const rebuilt: number[] = [];
+  for (let t = 0; t < mesh.triangles.length / 3; t++) {
+    if (flaps.has(t)) continue;
+    rebuilt.push(mesh.triangles[t * 3], mesh.triangles[t * 3 + 1], mesh.triangles[t * 3 + 2]);
+  }
+  mesh.triangles.length = 0;
+  for (const i of rebuilt) mesh.triangles.push(i);
+  return flaps.size;
+}
+
+/**
  * T-junction crack stitch. For every crack edge (use-count != 2), find a
  * crack vertex lying on the edge's interior within `tol` and split ONE
- * triangle using the edge at that vertex; repeat to fixpoint. Mutates
- * `mesh.triangles` in place (append + rewrite). Returns total splits.
+ * triangle using the edge at that vertex; repeat to fixpoint. From the second
+ * pass on, each pass first culls degenerate flap triangles on crack edges
+ * (see removeDegenerateFlaps) — ordering matters: the first split round must
+ * run before any flap is removed, or seam chains lose the anchor vertices the
+ * splits pair them with (validated on the spice-carousel regression corpus).
+ * Mutates `mesh.triangles` in place (append + rewrite). Returns total heal
+ * operations (vertex splits + flap removals).
  *
  * tol = 0.05 mm: above the relative-deflection chord error of the export
  * mesher on the regression corpus, well below feature size.
@@ -138,8 +199,16 @@ function distPointSegInterior(
 export function stitchCracks(mesh: EditableMesh, tol = 0.05, maxPasses = 100): number {
   let total = 0;
   for (let pass = 0; pass < maxPasses; pass++) {
-    const cracks = collectCrackEdges(mesh.triangles);
+    let cracks = collectCrackEdges(mesh.triangles);
     if (cracks.size === 0) return total;
+    if (pass > 0) {
+      const removed = removeDegenerateFlaps(mesh, cracks, tol);
+      if (removed > 0) {
+        total += removed;
+        cracks = collectCrackEdges(mesh.triangles);
+        if (cracks.size === 0) return total;
+      }
+    }
     const crackVerts = new Set<number>();
     for (const e of cracks.values()) {
       crackVerts.add(e.u);
@@ -193,7 +262,26 @@ export function stitchCracks(mesh: EditableMesh, tol = 0.05, maxPasses = 100): n
       splits++;
     }
     total += splits;
-    if (splits === 0) return total;
+    if (splits === 0) {
+      // No vertex split applied. If a degenerate flap still owns a crack
+      // edge, give the next pass a chance to cull it (pass 0 never removes
+      // flaps); otherwise the mesh has reached its fixpoint.
+      const remaining = collectCrackEdges(mesh.triangles);
+      let anyFlap = false;
+      for (const e of remaining.values()) {
+        for (const t of e.tris) {
+          const a = mesh.triangles[t * 3];
+          const b = mesh.triangles[t * 3 + 1];
+          const c = mesh.triangles[t * 3 + 2];
+          if (triMinHeight(mesh.vertices, a, b, c) < tol) {
+            anyFlap = true;
+            break;
+          }
+        }
+        if (anyFlap) break;
+      }
+      if (!anyFlap) return total;
+    }
   }
   return total;
 }
