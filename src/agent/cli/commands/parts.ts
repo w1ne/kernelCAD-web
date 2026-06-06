@@ -5,14 +5,14 @@
 // `listPartStats` so the MCP list_part_stats tool shares the same numbers.
 
 import { Command } from 'commander';
-import { readFile } from 'node:fs/promises';
-import { resolve, dirname } from 'node:path';
+import { dirname } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { listPartStats, type PartStats } from '../../script-runtime/partStats';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import { readScriptOrDiagnostic } from '../lib/readScript';
 
 export interface PartsCliInput {
   file: string;
@@ -26,20 +26,11 @@ export interface PartsCliResult {
 
 export async function partsScript(input: PartsCliInput): Promise<PartsCliResult> {
   await initOcct();
-  const filePath = resolve(input.file);
-  let code: string;
-  try {
-    code = await readFile(filePath, 'utf8');
-  } catch (e) {
-    return {
-      exitCode: 2, parts: [],
-      diagnostics: withNextActions([{
-        target: 'export-occt', code: 'cli.file-read', severity: 'error',
-        message: e instanceof Error ? e.message : String(e),
-        hint: 'Check that the file path exists and is readable.',
-      }]),
-    };
+  const read = await readScriptOrDiagnostic(input.file);
+  if (!read.ok) {
+    return { exitCode: 2, parts: [], diagnostics: read.diagnostics };
   }
+  const { filePath, code } = read;
   let r;
   try {
     r = await listPartStats({ code, fileName: filePath, scriptDir: dirname(filePath) });

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import {
@@ -12,6 +12,16 @@ import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
+import { readScriptOrDiagnostic } from '../lib/readScript';
+
+/** Structured `cli.file-write` diagnostic from an output mkdir/write failure. */
+function fileWriteDiagnostic(e: unknown): CompilerDiagnostic {
+  return {
+    target: 'export-occt', code: 'cli.file-write', severity: 'error',
+    message: e instanceof Error ? e.message : String(e),
+    hint: 'Check that the output path is writable and that -o points at a directory when exporting multiple parts.',
+  };
+}
 
 export interface ExportInput {
   file: string;
@@ -29,20 +39,11 @@ export interface ExportCliResult {
 
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
   await initOcct();
-  const filePath = resolve(input.file);
-  let code: string;
-  try {
-    code = await readFile(filePath, 'utf8');
-  } catch (e) {
-    return {
-      exitCode: 2, bytesWritten: 0,
-      diagnostics: withNextActions([{
-        target: 'export-occt', code: 'cli.file-read', severity: 'error',
-        message: e instanceof Error ? e.message : String(e),
-        hint: 'Check that the file path exists and is readable.',
-      }]),
-    };
+  const read = await readScriptOrDiagnostic(input.file);
+  if (!read.ok) {
+    return { exitCode: 2, bytesWritten: 0, diagnostics: read.diagnostics };
   }
+  const { filePath, code } = read;
   let result;
   try {
     result = await runAndExport({
@@ -66,7 +67,14 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     return { exitCode: 1, bytesWritten: 0, diagnostics: withNextActions(result.diagnostics) };
   }
   const outPath = resolve(input.out);
-  await writeFile(outPath, result.bytes);
+  try {
+    await writeFile(outPath, result.bytes);
+  } catch (e) {
+    return {
+      exitCode: 1, bytesWritten: 0,
+      diagnostics: withNextActions([...result.diagnostics, fileWriteDiagnostic(e)]),
+    };
+  }
   return { exitCode: 0, bytesWritten: result.bytes.length, diagnostics: withNextActions(result.diagnostics) };
 }
 
@@ -104,20 +112,11 @@ export interface ExportPartsCliResult {
  */
 export async function exportPartsScript(input: ExportPartsCliInput): Promise<ExportPartsCliResult> {
   await initOcct();
-  const filePath = resolve(input.file);
-  let code: string;
-  try {
-    code = await readFile(filePath, 'utf8');
-  } catch (e) {
-    return {
-      exitCode: 2, written: [],
-      diagnostics: withNextActions([{
-        target: 'export-occt', code: 'cli.file-read', severity: 'error',
-        message: e instanceof Error ? e.message : String(e),
-        hint: 'Check that the file path exists and is readable.',
-      }]),
-    };
+  const read = await readScriptOrDiagnostic(input.file);
+  if (!read.ok) {
+    return { exitCode: 2, written: [], diagnostics: read.diagnostics };
   }
+  const { filePath, code } = read;
   let result;
   try {
     result = await runAndExportParts({
@@ -131,8 +130,23 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
     return { exitCode: 1, written: [], diagnostics: [diag] };
   }
   const fatal = result.diagnostics.some(d => d.severity === 'error');
-  if (fatal || result.parts.length === 0) {
+  if (fatal) {
     return { exitCode: 1, written: [], diagnostics: withNextActions(result.diagnostics) };
+  }
+  if (result.parts.length === 0) {
+    // No error diagnostic explains the empty result (the part-not-found and
+    // no-shape paths are fatal above) — emit one so the failure is
+    // self-explanatory instead of a bare exit 1.
+    return {
+      exitCode: 1, written: [],
+      diagnostics: withNextActions([...result.diagnostics, {
+        target: 'export-occt', code: 'cli.invalid-args', severity: 'error',
+        message: input.parts !== undefined && input.parts.length === 0
+          ? 'No parts selected: the part selection is empty. Pass --part <name> (repeatable) or --parts all.'
+          : 'The script resolved to zero assembly parts; nothing to export.',
+        hint: 'Run `kernelcad parts <file>` to list the available part names.',
+      }]),
+    };
   }
 
   // Single `--part NAME -o file.stl` writes one file; everything else
@@ -140,21 +154,26 @@ export async function exportPartsScript(input: ExportPartsCliInput): Promise<Exp
   const singleFile = result.parts.length === 1 && input.outFile !== undefined
     ? resolve(input.outFile)
     : undefined;
-  let outDir: string | undefined;
-  if (singleFile === undefined) {
-    outDir = resolve(input.outDir ?? input.outFile ?? '.');
-    await mkdir(outDir, { recursive: true });
-  }
 
   const written: WrittenPart[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
-  for (const p of result.parts) {
-    const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
-    await writeFile(path, p.bytes);
-    written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
-    if (input.verify && !p.report.ok) {
-      diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+  try {
+    let outDir: string | undefined;
+    if (singleFile === undefined) {
+      outDir = resolve(input.outDir ?? input.outFile ?? '.');
+      await mkdir(outDir, { recursive: true });
     }
+    for (const p of result.parts) {
+      const path = singleFile ?? join(outDir!, `${p.fileSafeName}.stl`);
+      await writeFile(path, p.bytes);
+      written.push({ name: p.name, path, triangleCount: p.triangleCount, watertight: p.report.ok });
+      if (input.verify && !p.report.ok) {
+        diagnostics.push(stlNotWatertightDiagnostic(p.report, undefined, p.name));
+      }
+    }
+  } catch (e) {
+    diagnostics.push(fileWriteDiagnostic(e));
+    return { exitCode: 1, written, diagnostics: withNextActions(diagnostics) };
   }
   const gateFailed = input.verify && written.some(w => !w.watertight);
   return { exitCode: gateFailed ? 1 : 0, written, diagnostics: withNextActions(diagnostics) };
@@ -173,8 +192,8 @@ export function exportCommand(): Command {
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, or GLB')
     .argument('<format>', 'stl | step | dxf | 3mf | glb | urdf | srdf | sdf-gazebo')
     .argument('<file>', 'path to .kcad.ts script')
-    .requiredOption('-o, --out <path>', 'output file path (directory for --parts all)')
-    .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset', collectParts, [] as string[])
+    .requiredOption('-o, --out <path>', 'output file path (output directory for --parts all and repeated --part)')
+    .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])
     .option('--parts <all>', "export every assembly part as <out-dir>/<part>.stl (value must be 'all')")
     .option('--no-verify', 'skip the watertight verify gate after STL export')
     .option('--json', 'emit diagnostics as JSON')

@@ -66,7 +66,7 @@ function emittedCodes(): Set<string> {
 describe('every diagnostic code emitted in src/ is in the catalogue', () => {
   const catalogue = new Set<string>(DIAGNOSTIC_CODES);
 
-  it('catalogue has exactly 211 codes', () => {
+  it('catalogue has exactly 212 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -128,7 +128,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // Develop baseline = 157 - 3 + 11 + 1 + 5 + 2 + 2 + 7 + 1 + 1 + 1 + 9 + 1 + 1 + 4 + 2 + 1 + 1 = 204.
     //  +  6 Slice C parts.* codes (itemised above) = 210.
     //  +  1 feature.emboss-text.boolean-noop (#393 silent no-op guard) = 211.
-    expect(catalogue.size).toBe(211);
+    //  +  2 W2 export suite: export.mesh.not-watertight + export.part.not-found = 213.
+    //  +  1 cli.file-write (W2 part-mode export: structured output-write failures) = 214.
+    expect(catalogue.size).toBe(214);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

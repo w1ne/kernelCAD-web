@@ -295,7 +295,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'recompute',
     description: 'The lowering pass raised an unhandled exception while compiling intent to the backend.',
   },
-  // CLI / IO (4)
+  // CLI / IO (5)
   'cli.invalid-args': {
     hintTemplate: 'CLI was called with missing or malformed arguments. Run `kernelcad --help`.',
     nextAction: { kind: 'check-cli-args' },
@@ -317,6 +317,14 @@ export const DIAGNOSTIC_REGISTRY = {
     defaultSeverity: 'error',
     group: 'cli',
     description: 'kernelCAD could not read the script file at the given path.',
+  },
+  'cli.file-write': {
+    hintTemplate:
+      'kernelCAD could not write the output file. Check the output path is writable and that -o points at a directory when exporting multiple parts.',
+    nextAction: { kind: 'check-file-path' },
+    defaultSeverity: 'error',
+    group: 'cli',
+    description: 'kernelCAD could not write an export output file at the given path.',
   },
   'cli.export-exception': {
     hintTemplate: 'An exception occurred during export. Read the diagnostic message for details.',

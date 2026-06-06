@@ -1,18 +1,23 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
-import { exportScript, exportPartsScript } from '../../../src/agent/cli/commands/export';
-import { runAndExportParts } from '../../../src/agent/script-runtime/export';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { exportScript, exportPartsScript, exportCommand } from '../../../src/agent/cli/commands/export';
+import { runAndExport, runAndExportParts } from '../../../src/agent/script-runtime/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-// Partial mock: `runAndExportParts` becomes a spy that defaults to the real
-// implementation, so individual tests can stub a failing watertight report
-// (real geometry from `box()` is always watertight). Everything else —
-// `runAndExport`, diagnostics helpers — stays untouched.
+// Partial mock: `runAndExport`/`runAndExportParts` become spies that default
+// to the real implementation, so individual tests can stub a failing
+// watertight report (real geometry from `box()` is always watertight) or
+// assert option plumbing. Everything else — diagnostics helpers — stays
+// untouched.
 vi.mock('../../../src/agent/script-runtime/export', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/agent/script-runtime/export')>();
-  return { ...actual, runAndExportParts: vi.fn(actual.runAndExportParts) };
+  return {
+    ...actual,
+    runAndExport: vi.fn(actual.runAndExport),
+    runAndExportParts: vi.fn(actual.runAndExportParts),
+  };
 });
 
 const TWO_BOX_ASSEMBLY = `
@@ -53,6 +58,36 @@ describe('export command', () => {
     writeFileSync(file, `throw new Error('boom');`);
     const r = await exportScript({ file, format: 'step', out });
     expect(r.exitCode).not.toBe(0);
+  });
+
+  it('unwritable output path returns cli.file-write diagnostic instead of throwing', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'demo.kcad.ts');
+    const out  = join(tmp, 'no-such-dir', 'demo.stl'); // parent dir missing -> ENOENT
+    writeFileSync(file, `return box(10, 10, 10);`);
+    const r = await exportScript({ file, format: 'stl', out });
+    expect(r.exitCode).toBe(1);
+    const diag = r.diagnostics.find(d => d.code === 'cli.file-write');
+    expect(diag).toBeDefined();
+    expect(diag!.severity).toBe('error');
+    expect(diag!.hint.trim().length).toBeGreaterThan(0);
+    expect(r.bytesWritten).toBe(0);
+  });
+
+  it('--no-verify plumbs verify:false into runAndExport options for stl', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'demo.kcad.ts');
+    writeFileSync(file, `return box(10, 10, 10);`);
+
+    const skipped = await exportScript({ file, format: 'stl', out: join(tmp, 'a.stl'), verify: false });
+    expect(skipped.exitCode).toBe(0);
+    const skippedCall = vi.mocked(runAndExport).mock.calls.at(-1)![0];
+    expect(skippedCall.options).toEqual({ format: 'stl', verify: false });
+
+    const gated = await exportScript({ file, format: 'stl', out: join(tmp, 'b.stl') });
+    expect(gated.exitCode).toBe(0);
+    const gatedCall = vi.mocked(runAndExport).mock.calls.at(-1)![0];
+    expect(gatedCall.options).toBeUndefined();
   });
 });
 
@@ -132,5 +167,83 @@ describe('export command --part/--parts', () => {
     expect(skipped.exitCode).toBe(0);
     expect(skipped.diagnostics.some(d => d.code === 'export.mesh.not-watertight')).toBe(false);
     expect(statSync(join(tmp, 'skipped', 'leaky.stl')).size).toBe(184);
+  });
+
+  it('-o pointing at an existing file returns cli.file-write diagnostic, exit 1', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'asm.kcad.ts');
+    writeFileSync(file, TWO_BOX_ASSEMBLY);
+    const blocker = join(tmp, 'existing-file');
+    writeFileSync(blocker, 'not a directory');
+    const r = await exportPartsScript({ file, outDir: blocker, verify: true });
+    expect(r.exitCode).toBe(1);
+    const diag = r.diagnostics.find(d => d.code === 'cli.file-write');
+    expect(diag).toBeDefined();
+    expect(diag!.severity).toBe('error');
+    expect(diag!.hint.trim().length).toBeGreaterThan(0);
+    expect(r.written).toEqual([]);
+  });
+
+  it('empty parts selection exits 1 with a self-explanatory diagnostic', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'asm.kcad.ts');
+    writeFileSync(file, TWO_BOX_ASSEMBLY);
+    const r = await exportPartsScript({ file, parts: [], outDir: join(tmp, 'out'), verify: true });
+    expect(r.exitCode).toBe(1);
+    const diag = r.diagnostics.find(d => d.code === 'cli.invalid-args');
+    expect(diag).toBeDefined();
+    expect(diag!.severity).toBe('error');
+    expect(r.written).toEqual([]);
+  });
+});
+
+describe('export command action-handler validations', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  let errSpy: ReturnType<typeof vi.spyOn>;
+  let logSpy: ReturnType<typeof vi.spyOn>;
+  beforeAll(() => {
+    errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    errSpy.mockClear();
+    logSpy.mockClear();
+    process.exitCode = 0;
+  });
+
+  it('--part with a non-stl format exits 2 with a usage error', async () => {
+    await exportCommand().parseAsync(
+      ['step', '/tmp/whatever.kcad.ts', '-o', '/tmp/out', '--part', 'a'],
+      { from: 'user' },
+    );
+    expect(process.exitCode).toBe(2);
+    expect(errSpy.mock.calls.flat().join('\n')).toMatch(/--part\/--parts are only supported for stl/);
+  });
+
+  it("--parts bogus exits 2 with a usage error", async () => {
+    await exportCommand().parseAsync(
+      ['stl', '/tmp/whatever.kcad.ts', '-o', '/tmp/out', '--parts', 'bogus'],
+      { from: 'user' },
+    );
+    expect(process.exitCode).toBe(2);
+    expect(errSpy.mock.calls.flat().join('\n')).toMatch(/--parts only accepts 'all'/);
+  });
+
+  it('--parts all --json keeps the JSON envelope intact on a file-write failure', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'asm.kcad.ts');
+    writeFileSync(file, TWO_BOX_ASSEMBLY);
+    const blocker = join(tmp, 'existing-file');
+    writeFileSync(blocker, 'not a directory');
+    await exportCommand().parseAsync(
+      ['stl', file, '--parts', 'all', '-o', blocker, '--json'],
+      { from: 'user' },
+    );
+    expect(process.exitCode).toBe(1);
+    const out = logSpy.mock.calls.flat().join('\n');
+    const envelope = JSON.parse(out) as { ok: boolean; diagnostics: { code: string }[] };
+    expect(envelope.ok).toBe(false);
+    expect(envelope.diagnostics.some(d => d.code === 'cli.file-write')).toBe(true);
   });
 });
