@@ -33,8 +33,8 @@ declare const window: {
       width: number;
       height: number;
     }) => HeadlessInspectionCapture;
-    setRenderView: (view: RenderView) => void;
-    setRenderPose: (azDeg: number, elDeg: number) => void;
+    setRenderView: (view: RenderView, outputAspect?: number) => void;
+    setRenderPose: (azDeg: number, elDeg: number, outputAspect?: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
     setRenderEnvironment: (spec: unknown) => Promise<void>;
   };
@@ -137,7 +137,6 @@ export interface HeadlessRenderResult {
 }
 
 const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
-const SCENE_BACKGROUND = { r: 144, g: 144, b: 144, alpha: 1 } as const;
 
 export async function headlessRender(opts: HeadlessRenderOpts): Promise<HeadlessRenderResult> {
   const baseUrl = opts.baseUrl ?? 'http://localhost:5173';
@@ -270,8 +269,12 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     const inspectionPngsByChannel: Partial<Record<HeadlessAuxInspectionChannel, Partial<Record<RenderView, Buffer>>>> = {};
     const inspectionChannelMetadata: HeadlessInspectionCapture['metadata'] = {};
     let maskObjects: HeadlessMaskObject[] | undefined;
+    const outputAspect = opts.viewportWidth / opts.viewportHeight;
     for (const view of views) {
-      await page.evaluate((v) => window.__demoPlayer!.setRenderView(v), view);
+      await page.evaluate(
+        ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
+        { v: view, a: outputAspect },
+      );
       if (captureRgb) {
         const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
         pngsByView[view] = buf;
@@ -314,8 +317,8 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
           throw new Error(`headlessRender: invalid --pose value '${poseKey}' (expected '<az>,<el>')`);
         }
         await page.evaluate(
-          ({ a, e }) => window.__demoPlayer!.setRenderPose(a, e),
-          { a: az, e: el },
+          ({ a, e, asp }) => window.__demoPlayer!.setRenderPose(a, e, asp),
+          { a: az, e: el, asp: outputAspect },
         );
         const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
         pngsByPose[poseKey] = buf;
@@ -343,17 +346,38 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   }
 }
 
-async function normalizeTile(buf: Buffer, opts: HeadlessRenderOpts): Promise<Buffer> {
-  if (opts.viewportWidth === HEADLESS_VIEWPORT.width && opts.viewportHeight === HEADLESS_VIEWPORT.height) {
-    return buf;
-  }
-  return sharp(buf)
-    .resize(opts.viewportWidth, opts.viewportHeight, {
-      fit: 'contain',
-      background: SCENE_BACKGROUND,
+/** Center-crop `buf` to the output aspect, then resize to the requested
+ *  tile dimensions. The camera fit (`setRenderView` / `setRenderPose` with
+ *  `outputAspect`) guarantees the model sits inside that centered region,
+ *  so no geometry is lost and no letterbox bars are introduced. */
+async function cropToAspect(
+  buf: Buffer,
+  outW: number,
+  outH: number,
+  resizeOpts: { kernel?: keyof sharp.KernelEnum },
+): Promise<Buffer> {
+  const img = sharp(buf);
+  const meta = await img.metadata();
+  const srcW = meta.width ?? HEADLESS_VIEWPORT.width;
+  const srcH = meta.height ?? HEADLESS_VIEWPORT.height;
+  if (srcW === outW && srcH === outH) return buf;
+  const outAspect = outW / outH;
+  const cropW = Math.min(srcW, Math.round(srcH * outAspect));
+  const cropH = Math.min(srcH, Math.round(srcW / outAspect));
+  return img
+    .extract({
+      left: Math.floor((srcW - cropW) / 2),
+      top: Math.floor((srcH - cropH) / 2),
+      width: cropW,
+      height: cropH,
     })
+    .resize(outW, outH, resizeOpts)
     .png()
     .toBuffer();
+}
+
+async function normalizeTile(buf: Buffer, opts: HeadlessRenderOpts): Promise<Buffer> {
+  return cropToAspect(buf, opts.viewportWidth, opts.viewportHeight, {});
 }
 
 async function normalizeInspectionTile(
@@ -361,20 +385,8 @@ async function normalizeInspectionTile(
   opts: Pick<HeadlessRenderOpts, 'viewportWidth' | 'viewportHeight'>,
   channel: 'mask' | HeadlessAuxInspectionChannel,
 ): Promise<Buffer> {
-  if (opts.viewportWidth === HEADLESS_VIEWPORT.width && opts.viewportHeight === HEADLESS_VIEWPORT.height) {
-    return buf;
-  }
-  const background = channel === 'mask'
-    ? { r: 0, g: 0, b: 0, alpha: 1 }
-    : { r: 0, g: 0, b: 0, alpha: 0 };
-  return sharp(buf)
-    .resize(opts.viewportWidth, opts.viewportHeight, {
-      fit: 'contain',
-      kernel: 'nearest',
-      background,
-    })
-    .png()
-    .toBuffer();
+  void channel; // mask/depth/normals all use nearest to preserve id/sentinel pixels
+  return cropToAspect(buf, opts.viewportWidth, opts.viewportHeight, { kernel: 'nearest' });
 }
 
 export async function normalizeInspectionTileForTest(

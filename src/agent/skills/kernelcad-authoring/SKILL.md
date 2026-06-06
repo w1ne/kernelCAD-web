@@ -452,11 +452,10 @@ kernelcad export 3mf  path/to/script.kcad.ts -o /tmp/out.3mf   # slicer mesh wit
 kernelcad export glb  path/to/script.kcad.ts -o /tmp/out.glb   # web / AR viewer; PBR materials
 
 # Render a 4-view PNG (front/right/top/iso) for visual review.
-# Always pass --width 1920 --height 1080: the demo-player page layout is
-# fixed at 1920×1080 (terminal pane 640 + viewer pane 1280); rendering at
-# the CLI default 1024×1024 silently clips the viewer pane and crops the
-# model on the right side.
-kernelcad render path/to/script.kcad.ts --width 1920 --height 1080 -o /tmp/out.png
+# Tiles are framed to the requested --width/--height: the camera fits the
+# visible geometry to the output aspect and the capture is center-cropped,
+# so the default 1024×1024 square tiles frame correctly.
+kernelcad render path/to/script.kcad.ts -o /tmp/out.png
 
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts

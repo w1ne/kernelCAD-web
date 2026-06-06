@@ -20,6 +20,7 @@ import { applyEnvironment } from '../../../shared/render/environment';
 import { buildMaterialFromPBR, DEFAULT_MESH_COLOR, disposeMaterialDeep } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { apiCall, rewritePath } from '../../api/apiBase';
+import { fitDistanceForBounds } from './cameraFit';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -118,13 +119,16 @@ export interface DemoPlayerWindow {
   /** Snap camera to one of four standard engineering views and force a
    *  render. Used by `kernelcad render` for headless multi-view PNG
    *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
-   *  appear at full visibility. */
-  setRenderView(view: RenderView): void;
+   *  appear at full visibility. `outputAspect` (optional) is the aspect of
+   *  the centered region cropped out of the canvas for the output tile —
+   *  the fit guarantees the geometry sits inside that region. */
+  setRenderView(view: RenderView, outputAspect?: number): void;
   /** Snap camera to an arbitrary az/el pose (degrees). az=0 looks down -Y
    *  (front view); az increases CCW around +Z (top-down); el increases looking
    *  up (positive el = camera above the horizon). Used by `kernelcad render
-   *  --pose <az,el>` for headless reference-photo-pose scoring. */
-  setRenderPose(azDeg: number, elDeg: number): void;
+   *  --pose <az,el>` for headless reference-photo-pose scoring.
+   *  `outputAspect` as in `setRenderView`. */
+  setRenderPose(azDeg: number, elDeg: number, outputAspect?: number): void;
   /** Set every loaded FeatureMesh material to opacity 1.0 and re-render.
    *  Used by `kernelcad render` to skip the build-animation fade-in. */
   forceFullOpacity(): void;
@@ -372,40 +376,45 @@ function fitCameraToBounds(
   camera: THREE.PerspectiveCamera,
   bounds: { min: [number, number, number]; max: [number, number, number] },
   view: RenderView | 'demo' = 'demo',
+  outputAspect?: number,
 ): void {
-  const dx = bounds.max[0] - bounds.min[0];
-  const dy = bounds.max[1] - bounds.min[1];
-  const dz = bounds.max[2] - bounds.min[2];
-  const cx = (bounds.min[0] + bounds.max[0]) / 2;
-  const cy = (bounds.min[1] + bounds.max[1]) / 2;
-  const cz = (bounds.min[2] + bounds.max[2]) / 2;
-  // Use the largest extent (not diagonal) so the model fills the viewport tightly.
-  const maxExtent = Math.max(dx, dy, dz);
-  const fov = camera.fov * (Math.PI / 180);
-  // Tighter framing for mobile-readable videos: the viewer is letterboxed next
-  // to the terminal, so the model should fill the 3D pane without clipping.
-  const distance = (maxExtent / 2 / Math.tan(fov / 2)) * 0.95;
-
-  // kernelCAD is Z-up. Each engineering view fixes camera position + up
-  // vector so the rendered tile matches first-angle drafting convention.
-  // 'demo' uses the same Z-up 3/4-front-right angle as the CLI's 'iso'
-  // view so plates lie horizontally as authored (not rotated 90° onto
-  // their side, which the legacy Y-up framing did).
-  let pos: [number, number, number];
+  const center: [number, number, number] = [
+    (bounds.min[0] + bounds.max[0]) / 2,
+    (bounds.min[1] + bounds.max[1]) / 2,
+    (bounds.min[2] + bounds.max[2]) / 2,
+  ];
+  // kernelCAD is Z-up. Each engineering view fixes the view direction +
+  // up vector so the rendered tile matches first-angle drafting
+  // convention. 'demo' shares the Z-up 3/4-front-right angle with 'iso'.
+  const isoLen = Math.hypot(0.7, 0.7, 0.5);
+  let camDir: [number, number, number];
   let up: [number, number, number] = [0, 0, 1];
   switch (view) {
-    case 'front': pos = [0, -distance, 0]; break;
-    case 'right': pos = [distance, 0, 0]; break;
-    case 'top':   pos = [0, 0, distance]; up = [0, 1, 0]; break;
-    case 'iso':   pos = [distance * 0.7, -distance * 0.7, distance * 0.5]; break;
+    case 'front': camDir = [0, -1, 0]; break;
+    case 'right': camDir = [1, 0, 0]; break;
+    case 'top':   camDir = [0, 0, 1]; up = [0, 1, 0]; break;
+    case 'iso':
     case 'demo':
     default:
-      pos = [distance * 0.7, -distance * 0.7, distance * 0.5];
+      camDir = [0.7 / isoLen, -0.7 / isoLen, 0.5 / isoLen];
       break;
   }
+  const distance = fitDistanceForBounds({
+    bounds,
+    target: center,
+    camDir,
+    worldUp: view === 'top' ? [0, 1, 0] : [0, 0, 1],
+    fovYDeg: camera.fov,
+    canvasAspect: camera.aspect,
+    outputAspect,
+  });
   camera.up.set(up[0], up[1], up[2]);
-  camera.position.set(cx + pos[0], cy + pos[1], cz + pos[2]);
-  camera.lookAt(cx, cy, cz);
+  camera.position.set(
+    center[0] + camDir[0] * distance,
+    center[1] + camDir[1] * distance,
+    center[2] + camDir[2] * distance,
+  );
+  camera.lookAt(center[0], center[1], center[2]);
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
   camera.updateProjectionMatrix();
@@ -510,7 +519,7 @@ export function DemoPlayerPage(): React.JSX.Element {
         }
       },
       setVersion: (v) => setVersion(v),
-      setRenderView: (view) => {
+      setRenderView: (view, outputAspect) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
         // Reuse the bounds the loadFeatureMeshes path computed (mesh
@@ -527,10 +536,11 @@ export function DemoPlayerPage(): React.JSX.Element {
           ctx.camera,
           { min: [minV.x, minV.y, minV.z], max: [maxV.x, maxV.y, maxV.z] },
           view,
+          outputAspect,
         );
         ctx.renderer.render(ctx.scene, ctx.camera);
       },
-      setRenderPose: (azDeg, elDeg) => {
+      setRenderPose: (azDeg, elDeg, outputAspect) => {
         if (!sceneRef.current) throw new Error('demo-player: scene not ready');
         const ctx = sceneRef.current;
         const bbox = new THREE.Box3();
@@ -563,37 +573,20 @@ export function DemoPlayerPage(): React.JSX.Element {
               camTgt.target[2] - off[2],
             )
           : bbox.getCenter(new THREE.Vector3());
-        // Build the screen-aligned basis at the target.
-        const worldUp = new THREE.Vector3(0, 0, 1);
-        const right = new THREE.Vector3().crossVectors(worldUp, camDir).normalize();
-        const up = new THREE.Vector3().crossVectors(camDir, right).normalize();
-        // Project all 8 bbox corners RELATIVE TO THE TARGET onto the screen-
-        // plane axes. The max |right-component| / aspect and |up-component|
-        // set the required half-extents that must fit the FOV. Operate on
-        // raw min/max components so we don't allocate 8 Vector3s per call.
-        const aspect = ctx.camera.aspect;
-        const rx = right.x, ry = right.y, rz = right.z;
-        const ux = up.x, uy = up.y, uz = up.z;
-        const xs = [bbox.min.x - target.x, bbox.max.x - target.x];
-        const ys = [bbox.min.y - target.y, bbox.max.y - target.y];
-        const zs = [bbox.min.z - target.z, bbox.max.z - target.z];
-        let halfHoriz = 0;
-        let halfVert = 0;
-        for (const cx of xs) for (const cy of ys) for (const cz of zs) {
-          const h = Math.abs(cx * rx + cy * ry + cz * rz);
-          const u = Math.abs(cx * ux + cy * uy + cz * uz);
-          if (h > halfHoriz) halfHoriz = h;
-          if (u > halfVert) halfVert = u;
-        }
-        const fovY = ctx.camera.fov * (Math.PI / 180);
-        const tanHalfFovY = Math.tan(fovY / 2);
-        const tanHalfFovX = tanHalfFovY * aspect;
-        // distance needed so projected radius fits both axes (with 5% margin).
+        // Aspect- and corner-depth-aware perspective fit (5% margin).
         // setCameraDistance override (when present) skips the auto-fit and
         // pins the camera at the user-supplied distance from the target.
-        const distFromVert = halfVert / tanHalfFovY;
-        const distFromHoriz = halfHoriz / tanHalfFovX;
-        const autoDist = Math.max(distFromVert, distFromHoriz) * 1.05;
+        const autoDist = fitDistanceForBounds({
+          bounds: {
+            min: [bbox.min.x, bbox.min.y, bbox.min.z],
+            max: [bbox.max.x, bbox.max.y, bbox.max.z],
+          },
+          target: [target.x, target.y, target.z],
+          camDir: [camDir.x, camDir.y, camDir.z],
+          fovYDeg: ctx.camera.fov,
+          canvasAspect: ctx.camera.aspect,
+          outputAspect,
+        });
         const distance = camTgt?.distance ?? autoDist;
         const x = target.x + distance * camDir.x;
         const y = target.y + distance * camDir.y;
