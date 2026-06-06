@@ -168,6 +168,8 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
     session: model.session,
     tailId: model.tailId,
     tailShape: model.tailShape,
+    rootId: model.rootId,
+    rootShape: model.rootShape,
   });
 
   const arm = selectAssembly(model.session.assemblies as Map<string, Assembly>, input.assembly);
@@ -342,10 +344,11 @@ export async function reviewCadTool(input: ReviewCadInput): Promise<ReviewCadOut
 }
 
 /**
- * Run pairwise BREP interference detection on the BuiltModel's tail scene
- * for the Studio HUD's raw-count channel. We deliberately read from
- * `model.tailShape` (the already-lowered scene returned by the script's
- * own `arm.solvedModel(poses, ...)`) instead of calling
+ * Run pairwise BREP interference detection on the BuiltModel's lowered
+ * scene for the Studio HUD's raw-count channel. We deliberately read the
+ * lowered scene of the script's RETURN value (`model.rootShape`, falling
+ * back to `model.tailShape` — the scene returned by the script's own
+ * `arm.solvedModel(poses, ...)`) instead of calling
  * `detectInterferencesForPoses(arm, {})` — the latter re-records a new
  * `solvedAssembly` with EMPTY poses, which trips the lowerer's
  * "joint requires a pose value" check for revolute/prismatic joints and
@@ -363,7 +366,7 @@ function safeDetectDefaultPoseInterferences(
   epsilonMm3?: number,
 ): InterferencePair[] {
   try {
-    const tail = model.tailShape;
+    const tail = model.rootShape ?? model.tailShape;
     if (!tail || !isSceneBackend(tail)) return [];
     const epsilon = epsilonMm3 ?? 0.01;
     return detectInterferences(tail, epsilon, new Set<string>()).pairs;

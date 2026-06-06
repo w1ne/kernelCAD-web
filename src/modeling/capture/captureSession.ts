@@ -34,7 +34,8 @@ import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import type { VariableSweepMetadata, VariableSweepSection } from '../../shared/intent/variableSweepRecord';
 import { imageDimensions } from './imageDimensions';
 import { existsSync } from 'node:fs';
-import { resolve as resolvePath, extname } from 'node:path';
+import { extname } from 'node:path';
+import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Shape } from './proxy';
@@ -470,8 +471,7 @@ export class CaptureSession {
     }
 
     // ── 2. Resolve and validate path existence ───────────────────────────────
-    const scriptDir = this.scriptDir ?? process.cwd();
-    const resolvedPath = resolvePath(scriptDir, args.path);
+    const resolvedPath = resolveScriptRelativePath(this.scriptDir, args.path);
     let fileExists = false;
     if (validExts.has(ext)) {
       // Only check existence when format is valid (avoid spurious second error).

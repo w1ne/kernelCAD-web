@@ -13,7 +13,12 @@ vi.mock('../../../src/agent/render/headlessRender', () => {
   const ALL_VIEWS = ['front', 'right', 'top', 'iso'] as const;
   const mockHeadlessRender = vi.fn();
   const composite2x2 = vi.fn().mockResolvedValue(Buffer.alloc(0));
-  return { headlessRender: mockHeadlessRender, composite2x2, ALL_VIEWS };
+  return {
+    headlessRender: mockHeadlessRender,
+    composite2x2,
+    ALL_VIEWS,
+    DEFAULT_RENDER_BASE_URL: 'http://localhost:5173',
+  };
 });
 
 // Import after mock registration.

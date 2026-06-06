@@ -11,6 +11,8 @@ import type { CaptureSession } from './capture/captureSession';
 import type { SoftWarning } from '../shared/runtime/softWarning';
 import { runScript } from './runtime/runScript';
 import { KernelError } from '../shared/intent/kernelError';
+import { Shape } from './capture/proxy';
+import { Scene } from './validation/scene';
 
 export interface BuildModelInput {
   code: string;
@@ -32,7 +34,21 @@ export interface BuiltModel {
   health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
   warnings: SoftWarning[];
   tailId?: FeatureId;
+  /**
+   * WARNING — last-CREATED record, NOT the script's return value. Mutating
+   * transforms (`.translate()` / `.rotate()`) append to an existing record,
+   * so `return part.translate(...)` does not move the tail — but a helper
+   * shape created after the main body DOES. Use `rootShape` for anything
+   * that measures, probes, or exports "the model". Kept for transform /
+   * animation consumers that genuinely want the newest record.
+   */
   tailShape?: ShapeBackend;
+  /** Feature id of the script's `return` value (Shape or Scene). Falls
+   *  back to `tailId` when the script returned nothing lowerable. */
+  rootId?: FeatureId;
+  /** Lowered shape of the script's `return` value. Prefer this over
+   *  `tailShape` in export / probe / measurement consumers. */
+  rootShape?: ShapeBackend;
 }
 
 export interface ParamUpdateEdit {
@@ -71,6 +87,8 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
   populateCache(session, result.shapes);
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
   const tailShape = tailId ? result.shapes.get(tailId) : undefined;
+  const rootId = resolveRootId(run.returnValue, tailId);
+  const rootShape = rootId ? result.shapes.get(rootId) : undefined;
 
   return {
     session,
@@ -81,6 +99,8 @@ export async function buildModel(input: BuildModelInput): Promise<BuiltModel> {
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,
+    rootId,
+    rootShape,
   };
 }
 
@@ -95,6 +115,21 @@ export function populateCache(session: CaptureSession, shapes: Map<FeatureId, Sh
   for (const [id, shape] of shapes) {
     session.cachedShapes.set(id, shape);
   }
+}
+
+/**
+ * Resolve the FeatureId of the value the script `return`ed.
+ * Shape → its feature id; Scene → the upstream solvedAssembly /
+ * assemblyModel record id; anything else (Region, plain data, no
+ * return) → fall back to the chain tail.
+ */
+export function resolveRootId(
+  returnValue: unknown,
+  tailId: FeatureId | undefined,
+): FeatureId | undefined {
+  if (returnValue instanceof Shape) return returnValue.id;
+  if (returnValue instanceof Scene) return returnValue.__sourceFeatureId() ?? tailId;
+  return tailId;
 }
 
 export async function updateModelParams(
@@ -172,6 +207,7 @@ export async function updateModelParams(
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,
+    rootShape: model.rootId ? result.shapes.get(model.rootId) : undefined,
   };
 
   // Slice 2E: notify `onRelower` subscribers with the records re-lowered by

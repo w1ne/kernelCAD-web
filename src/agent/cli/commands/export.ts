@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import { runAndExport, type ExportFormat } from '../../script-runtime/export';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
@@ -38,7 +38,12 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   }
   let result;
   try {
-    result = await runAndExport({ code, fileName: filePath, format: input.format });
+    result = await runAndExport({
+      code,
+      fileName: filePath,
+      format: input.format,
+      scriptDir: dirname(filePath),
+    });
   } catch (e) {
     const diag = kernelErrorToDiagnostic(e, 'cli.export-exception');
     return {

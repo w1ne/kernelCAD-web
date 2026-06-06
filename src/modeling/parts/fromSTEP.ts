@@ -8,7 +8,7 @@
 
 import * as replicad from 'replicad';
 import { readFile } from 'node:fs/promises';
-import { isAbsolute, resolve } from 'node:path';
+import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
@@ -32,11 +32,7 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
     );
   }
 
-  const absPath = isAbsolute(path)
-    ? path
-    : ctx.scriptDir
-      ? resolve(ctx.scriptDir, path)
-      : resolve(process.cwd(), path);
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
 
   let buf: Buffer;
   try {

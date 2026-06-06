@@ -43,10 +43,16 @@ export async function paramsUpdateTool(input: ParamsUpdateInput): Promise<Params
   try {
     const result = await active.session.params.update(input.edits);
     const tailId = active.session.getRecords().at(-1)?.id ?? active.tailId ?? '<unknown>';
+    // A param update never changes the record chain, so the root id carries
+    // through; its shape is refreshed from the session cache the update
+    // repopulated.
+    const rootId = active.rootId;
     setActiveMcpSession({
       session: active.session,
       tailId,
       tailShape: result.shape,
+      rootId,
+      rootShape: rootId ? active.session.cachedShapes.get(rootId) : undefined,
     });
     return {
       ok: true,
