@@ -311,8 +311,11 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
       const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
       const { bytes, report } = await shape.exportSTLWithReportAsync();
       if (verify && !report.ok) {
+        // Write-then-fail contract: keep the real mesh bytes next to the
+        // error diagnostic so consumers can write the broken mesh to disk
+        // for inspection before failing (same as per-part export).
         return {
-          bytes: new Uint8Array(),
+          bytes,
           featureCount,
           diagnostics: [...r.diagnostics, stlNotWatertightDiagnostic(report, targetId)],
         };

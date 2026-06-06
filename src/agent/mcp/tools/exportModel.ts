@@ -29,6 +29,8 @@ export interface ExportModelInput {
   feature_id?: string;
   /** Per-format options bag; discriminator `options.format` must match `format`. */
   options?: ExportOptions;
+  /** Skip the STL watertight verify gate (default: verify on). */
+  no_verify?: boolean;
 }
 
 export interface ExportModelOutput {
@@ -54,6 +56,10 @@ export interface ExportModelOutput {
  * carries per-format knobs (see the kernelcad-mcp skill for the per-format
  * keys).
  *
+ * STL exports run a watertight verify by default; a failing mesh still
+ * writes the file (so the broken mesh can be inspected) but fails the call
+ * with `export.mesh.not-watertight` unless `{ no_verify: true }`.
+ *
  * Returns `{ ok, output_path, byte_count, feature_count, format, diagnostics }`.
  */
 export async function exportModelTool(input: ExportModelInput): Promise<ExportModelOutput> {
@@ -71,6 +77,12 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   await initOcct();
 
+  // `no_verify` mirrors export_part: plumb `verify: false` into the STL
+  // options bag (the runtime gate is default-on).
+  const effectiveOptions = format === 'stl' && input.no_verify
+    ? { ...(options ?? {}), format: 'stl' as const, verify: false }
+    : options;
+
   let result;
   try {
     result = await runAndExport({
@@ -78,7 +90,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
       fileName: source.fileName,
       format,
       feature_id,
-      options,
+      options: effectiveOptions,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
     });
   } catch (e) {
@@ -88,8 +100,12 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     };
   }
 
+  // Write-then-fail: a verify-gate failure (export.mesh.not-watertight)
+  // still carries the mesh bytes — write the file for inspection BEFORE
+  // failing the call, same contract as export_part. Other fatal paths
+  // return empty bytes and fail without writing.
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
-  if (errorDiagnostics.length > 0) {
+  if (errorDiagnostics.length > 0 && result.bytes.length === 0) {
     return {
       ok: false,
       diagnostics: withNextActions(result.diagnostics),
@@ -115,7 +131,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   return {
-    ok: true,
+    ok: errorDiagnostics.length === 0,
     output_path: finalPath,
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,

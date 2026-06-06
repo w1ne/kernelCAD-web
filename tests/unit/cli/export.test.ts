@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { exportScript, exportPartsScript, exportCommand } from '../../../src/agent/cli/commands/export';
-import { runAndExport, runAndExportParts } from '../../../src/agent/script-runtime/export';
+import { runAndExport, runAndExportParts, stlNotWatertightDiagnostic } from '../../../src/agent/script-runtime/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { writeFileSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -72,6 +72,30 @@ describe('export command', () => {
     expect(diag!.severity).toBe('error');
     expect(diag!.hint.trim().length).toBeGreaterThan(0);
     expect(r.bytesWritten).toBe(0);
+  });
+
+  it('whole-model verify failure still writes the file and exits 1', async () => {
+    // Write-then-fail: same contract as part-mode — the broken mesh lands on
+    // disk for inspection, but the gate still fails the command.
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-test-'));
+    const file = join(tmp, 'demo.kcad.ts');
+    const out  = join(tmp, 'leaky.stl');
+    writeFileSync(file, `return box(10, 10, 10);`);
+    const failingReport = {
+      ok: false as const,
+      openEdgeCount: 3,
+      clusters: [{ center: [1, 2, 3] as [number, number, number], edgeCount: 3 }],
+    };
+    vi.mocked(runAndExport).mockResolvedValueOnce({
+      bytes: new Uint8Array(684).fill(7),
+      featureCount: 1,
+      diagnostics: [stlNotWatertightDiagnostic(failingReport, undefined)],
+    });
+    const r = await exportScript({ file, format: 'stl', out });
+    expect(r.exitCode).toBe(1);
+    expect(r.diagnostics.some(d => d.code === 'export.mesh.not-watertight')).toBe(true);
+    // File is still written so the broken mesh can be inspected.
+    expect(statSync(out).size).toBe(684);
   });
 
   it('--no-verify plumbs verify:false into runAndExport options for stl', async () => {

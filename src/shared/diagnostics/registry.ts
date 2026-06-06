@@ -333,7 +333,7 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'cli',
     description: 'An unhandled exception occurred during an export operation (STL, STEP, etc.).',
   },
-  // Export (2)
+  // Export (19)
   'export.feature-not-found': {
     hintTemplate:
       'The feature_id passed to export_model was not found. Use list_features to see available IDs.',

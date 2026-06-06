@@ -10,9 +10,11 @@
   `export.part.not-found` listing the valid names.
 - **Default-on watertight verify.** Every exported STL mesh is checked for
   open edges; failures report `export.mesh.not-watertight` with the open-edge
-  count and up to 5 crack-cluster locations. The file is still written so the
-  broken mesh can be inspected. Opt out with `--no-verify` (CLI) /
-  `{ no_verify: true }` (MCP).
+  count and up to 5 crack-cluster locations. Both whole-model exports
+  (`kernelcad export stl`, MCP `export_model`) and per-part exports
+  (`--part`/`--parts`, MCP `export_part`) still write the file(s) before
+  failing (CLI exit 1 / MCP `ok: false`) so the broken mesh can be inspected.
+  Opt out with `--no-verify` (CLI) / `{ no_verify: true }` (MCP).
 - **Mesh-once heal pipeline.** The export mesher now heals its own output:
   per-face absolute-deflection fallback remesh for faces the whole-shape pass
   leaves untriangulated, position-key vertex weld, and T-junction crack

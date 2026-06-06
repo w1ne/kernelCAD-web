@@ -63,9 +63,12 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     };
   }
   const fatal = result.diagnostics.filter(d => d.severity === 'error').length > 0;
-  if (fatal || result.bytes.length === 0) {
+  if (result.bytes.length === 0) {
     return { exitCode: 1, bytesWritten: 0, diagnostics: withNextActions(result.diagnostics) };
   }
+  // Write-then-fail: a verify-gate failure (export.mesh.not-watertight)
+  // still carries the mesh bytes, so the file is written for inspection
+  // BEFORE the gate fails the command — same contract as part-mode.
   const outPath = resolve(input.out);
   try {
     await writeFile(outPath, result.bytes);
@@ -75,7 +78,11 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
       diagnostics: withNextActions([...result.diagnostics, fileWriteDiagnostic(e)]),
     };
   }
-  return { exitCode: 0, bytesWritten: result.bytes.length, diagnostics: withNextActions(result.diagnostics) };
+  return {
+    exitCode: fatal ? 1 : 0,
+    bytesWritten: result.bytes.length,
+    diagnostics: withNextActions(result.diagnostics),
+  };
 }
 
 export interface ExportPartsCliInput {
