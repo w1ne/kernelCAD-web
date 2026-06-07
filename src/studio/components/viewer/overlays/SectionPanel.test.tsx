@@ -17,46 +17,58 @@ vi.mock('../../../context/WorkbenchContext', () => ({
   useWorkbench: () => ({ codeContext: null }),
 }));
 
-describe('SectionPanel cutaway controls', () => {
+describe('SectionPanel unified axis rows', () => {
   beforeEach(() => shellStore.reset());
   afterEach(() => cleanup());
 
-  it('plane mode keeps the original controls', () => {
+  it('default: plane preset active, only the z row enabled', () => {
     render(<SectionPanel visible={true} />);
-    expect(screen.getByTestId('section-axis-x')).toBeTruthy();
-    expect(screen.getByTestId('section-flip')).toBeTruthy();
-    expect(screen.getByTestId('section-position')).toBeTruthy();
+    expect(screen.getByTestId('section-preset-plane').getAttribute('aria-pressed')).toBe('true');
+    expect((screen.getByTestId('section-axis-on-z') as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByTestId('section-axis-on-x') as HTMLInputElement).checked).toBe(false);
+    expect((screen.getByTestId('section-offset-x') as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByTestId('section-offset-z') as HTMLInputElement).disabled).toBe(false);
   });
 
-  it('octant shows a side toggle and offset slider per axis', () => {
+  it('octant preset enables all three axes', () => {
     render(<SectionPanel visible={true} />);
-    fireEvent.click(screen.getByTestId('section-shape-octant'));
-    expect(shellStore.getSnapshot().sectionShape).toBe('octant');
+    fireEvent.click(screen.getByTestId('section-preset-octant'));
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: true, y: true, z: true });
     for (const a of ['x', 'y', 'z'] as const) {
-      expect(screen.getByTestId(`section-side-${a}`)).toBeTruthy();
-      expect(screen.getByTestId(`section-offset-${a}`)).toBeTruthy();
+      expect((screen.getByTestId(`section-offset-${a}`) as HTMLInputElement).disabled).toBe(false);
+      expect((screen.getByTestId(`section-side-${a}`) as HTMLButtonElement).disabled).toBe(false);
     }
-    expect(screen.queryByTestId('section-flip')).toBeNull(); // plane controls gone
   });
 
-  it('quarter hides the uncut axis row and offers the Around selector', () => {
+  it('quarter preset enables x+y; the z row stays visible but disabled', () => {
     render(<SectionPanel visible={true} />);
-    fireEvent.click(screen.getByTestId('section-shape-quarter'));
-    // default quarter axis 'z' → x and y rows only
-    expect(screen.getByTestId('section-offset-x')).toBeTruthy();
-    expect(screen.getByTestId('section-offset-y')).toBeTruthy();
-    expect(screen.queryByTestId('section-offset-z')).toBeNull();
-    fireEvent.click(screen.getByTestId('section-around-x'));
-    expect(shellStore.getSnapshot().sectionQuarterAxis).toBe('x');
-    expect(screen.queryByTestId('section-offset-x')).toBeNull();
-    expect(screen.getByTestId('section-offset-z')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('section-preset-quarter'));
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: true, y: true, z: false });
+    expect((screen.getByTestId('section-offset-z') as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByTestId('section-side-z') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByTestId('section-axis-on-z')).toBeTruthy(); // row still present
+  });
+
+  it('axis checkboxes drive any in-between combination (no preset active)', () => {
+    render(<SectionPanel visible={true} />);
+    fireEvent.click(screen.getByTestId('section-axis-on-x')); // x on (z already on)
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: true, y: false, z: true });
+    for (const id of ['plane', 'quarter', 'octant']) {
+      expect(screen.getByTestId(`section-preset-${id}`).getAttribute('aria-pressed')).toBe('false');
+    }
   });
 
   it('side toggle flips which side is removed', () => {
     render(<SectionPanel visible={true} />);
-    fireEvent.click(screen.getByTestId('section-shape-octant'));
-    fireEvent.click(screen.getByTestId('section-side-y'));
-    expect(shellStore.getSnapshot().sectionSides.y).toBe(false);
+    fireEvent.click(screen.getByTestId('section-side-z'));
+    expect(shellStore.getSnapshot().sectionSides.z).toBe(false);
+  });
+
+  it('disabling every axis shows the nothing-is-cut hint', () => {
+    render(<SectionPanel visible={true} />);
+    fireEvent.click(screen.getByTestId('section-axis-on-z'));
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: false, y: false, z: false });
+    expect(screen.getByText(/No axis enabled/)).toBeTruthy();
   });
 
   it('keep-whole checkboxes toggle the store set and show the all-excluded hint', () => {
