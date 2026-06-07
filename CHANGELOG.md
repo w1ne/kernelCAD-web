@@ -1,5 +1,29 @@
 # kernelCAD v0.11.0
 
+## Unreleased — print-readiness DFM gates (W3)
+
+- **`dfmSpec()` declaration.** Scripts declare printability gates: `minWall`,
+  `minClearance`, `ignore` pairs (design-intent contacts), `exclude`
+  (non-printed parts; trailing-`*` globs) and `channels` (expected mouth
+  openings; `sealed: true` for intentional voids). Malformed declarations fail
+  the build at capture (`feature.invalid-args`).
+- **Three gates.** Part-pair clearance (exact BREP minimum distance; mated and
+  ignored pairs exempt, excluded parts still measured), minimum wall thickness
+  (inward ray sampling over the export mesh), and void/channel topology (voxel
+  flood-fill: undeclared sealed voids + channel mouth counting). Diagnostic
+  locations are world-frame; unmeasurable clearance pairs surface as
+  `'unknown'` (warn-only, never flips the exit code).
+- **Surfaces.** Enforcement runs on every `evaluate` / `evaluate_script` once a
+  `dfmSpec` is present; standalone `kernelcad dfm <file>` (`--json`) and MCP
+  `dfm_check` return the full report. DFM-only failures keep the MCP session
+  alive for iteration.
+- **Four diagnostic codes.** `dfm.clearance.violated`, `dfm.wall.too-thin`,
+  `dfm.void.undeclared`, `dfm.channel.openings-mismatch` — registry hints and
+  next actions included.
+- **Truth set.** Integration fixtures pin the gates against a real
+  two-revision print job: the pre-fix revision fails all three gates on its
+  known defects; the shipped revision measures clearance-clean.
+
 ## Unreleased — print-prep export suite (W2)
 
 - **Per-part STL export.** Export each solved-assembly part as its own binary

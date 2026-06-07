@@ -129,7 +129,11 @@ interface RepairContext {
 
 ### DFM gates
 
-- `dfm_check({ file? | code? })` — run the print-readiness gates declared by `dfmSpec()` in the script: part-pair clearance (exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology (voxel flood-fill). Returns `{ ok, clearance, walls, voids, timings, diagnostics }`; errors if the script declares no `dfmSpec`. The same gates also run automatically inside `evaluate_script` whenever the script declares a `dfmSpec(...)` (the CLI surface is `kernelcad dfm <file>`).
+- `dfm_check({ file? | code? })` — run the print-readiness gates declared by `dfmSpec()` in the script: part-pair clearance (exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology (voxel flood-fill). Returns the flattened report `{ ok, clearance, walls, voids, timings, diagnostics }`; errors if the script declares no `dfmSpec`. Iteration notes:
+  - **Enforcement is inherited.** ANY `evaluate_script` call on a script that declares a `dfmSpec(...)` runs the same gates and fails on the same diagnostics (the CLI surface is `kernelcad dfm <file>`). `dfm_check` exists to surface the full report struct — `clearance[]` pair statuses, per-part `walls[]`/`voids[]`, `timings` — which the `evaluate_script` envelope omits; it is not an opt-in switch.
+  - **Gates re-run on every evaluate call** — budget up to ~10 s extra per call on large assemblies (per-phase wall time is in `timings`).
+  - **Dfm-only failures keep the MCP session alive**: when the build succeeded and only gate diagnostics are fatal, the active session is retained/refreshed, so the session-dependent tools stay usable while iterating on a fix. Genuine build failures still clear it.
+  - `'unknown'` clearance entries mean the measurement failed (kernel error) — warn-only, never flips `ok`. Locations embedded in diagnostics are world-frame; the raw `walls[]`/`voids[]` structs are part-local.
 
 ## Topology references — the `@kc[...]` grammar
 
