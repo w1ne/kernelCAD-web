@@ -18,8 +18,6 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 
 export interface InspectStepCliInput {
   file: string;
-  /** Emit the full report as JSON on stdout instead of the human blocks. */
-  json: boolean;
 }
 
 export interface InspectStepCliResult {
@@ -87,11 +85,17 @@ export function inspectCommand(): Command {
     .argument('<file>', 'path to a .step file')
     .option('--json', 'emit the full report as JSON on stdout', false)
     .action(async (file: string, opts: { json: boolean }) => {
-      const r = await inspectStepCli({ file, json: opts.json });
+      const r = await inspectStepCli({ file });
+      // JSON output follows the export/parts convention: always an
+      // { ok, ..., diagnostics } envelope, success and failure alike.
       if (r.report !== undefined) {
         console.log(
           opts.json
-            ? JSON.stringify(r.report, null, 2)
+            ? JSON.stringify(
+                { ok: true, report: r.report, diagnostics: r.diagnostics },
+                null,
+                2,
+              )
             : formatStepReport(r.report),
         );
       } else if (opts.json) {

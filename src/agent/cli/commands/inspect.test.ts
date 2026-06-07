@@ -4,12 +4,12 @@
 // exported action function (repo convention — commander wiring is thin).
 // Fixture: same two-disjoint-solid STEP recipe as inspectStep.test.ts.
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { OcctBackend, initOcct } from '../../../kernel/backends/occt/occtBackend';
-import { inspectStepCli, formatStepReport } from './inspect';
+import { inspectStepCli, formatStepReport, inspectCommand } from './inspect';
 
 let tmpDir: string;
 let stepPath: string;
@@ -33,7 +33,7 @@ afterAll(() => {
 
 describe('inspectStepCli', () => {
   it('inspects a valid STEP file with exit 0 and a full report', async () => {
-    const r = await inspectStepCli({ file: stepPath, json: true });
+    const r = await inspectStepCli({ file: stepPath });
     expect(r.exitCode).toBe(0);
     expect(r.diagnostics).toHaveLength(0);
     expect(r.report?.solidCount).toBe(2);
@@ -45,7 +45,6 @@ describe('inspectStepCli', () => {
   it('exits 2 with a hinted diagnostic for a missing file', async () => {
     const missing = await inspectStepCli({
       file: '/tmp/definitely-missing.step',
-      json: false,
     });
     expect(missing.exitCode).toBe(2);
     expect(missing.report).toBeUndefined();
@@ -57,7 +56,7 @@ describe('inspectStepCli', () => {
   it('exits 1 for a file that exists but is not parseable STEP', async () => {
     const badPath = join(tmpDir, 'garbage.step');
     writeFileSync(badPath, 'ISO-10303-21; this is not a valid STEP body');
-    const r = await inspectStepCli({ file: badPath, json: false });
+    const r = await inspectStepCli({ file: badPath });
     expect(r.exitCode).toBe(1);
     expect(r.report).toBeUndefined();
     expect(r.diagnostics).toHaveLength(1);
@@ -65,9 +64,39 @@ describe('inspectStepCli', () => {
   });
 });
 
+describe('inspect step --json wiring', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    process.exitCode = 0;
+  });
+
+  it('success JSON matches the { ok, report, diagnostics } convention', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await inspectCommand().parseAsync(['node', 'kernelcad', 'step', stepPath, '--json']);
+    expect(log).toHaveBeenCalledTimes(1);
+    const out = JSON.parse(log.mock.calls[0][0] as string);
+    expect(out.ok).toBe(true);
+    expect(out.report.solidCount).toBe(2);
+    expect(out.diagnostics).toEqual([]);
+    expect(process.exitCode).toBe(0);
+  });
+
+  it('failure JSON keeps the { ok: false, diagnostics } shape', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await inspectCommand().parseAsync([
+      'node', 'kernelcad', 'step', '/tmp/definitely-missing.step', '--json',
+    ]);
+    const out = JSON.parse(log.mock.calls[0][0] as string);
+    expect(out.ok).toBe(false);
+    expect(out.report).toBeUndefined();
+    expect(out.diagnostics).toHaveLength(1);
+    expect(process.exitCode).toBe(2);
+  });
+});
+
 describe('formatStepReport', () => {
   it('prints one block per solid with bbox, volume, faces, and hole lines', async () => {
-    const r = await inspectStepCli({ file: stepPath, json: false });
+    const r = await inspectStepCli({ file: stepPath });
     const text = formatStepReport(r.report!);
     const lines = text.split('\n');
     // One header line per solid.
