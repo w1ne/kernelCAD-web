@@ -52,3 +52,71 @@ describe('shellStore section state', () => {
     unsub();
   });
 });
+
+describe('shellStore cutaway state', () => {
+  beforeEach(() => shellStore.reset());
+
+  it('defaults: plane shape, positive sides removed, zero offsets, z quarter axis, empty keep-whole', () => {
+    const s = shellStore.getSnapshot();
+    expect(s.sectionShape).toBe('plane');
+    expect(s.sectionSides).toEqual({ x: true, y: true, z: true });
+    expect(s.sectionOffsets).toEqual({ x: 0, y: 0, z: 0 });
+    expect(s.sectionQuarterAxis).toBe('z');
+    expect(s.sectionKeepWhole.size).toBe(0);
+  });
+
+  it('setSectionShape switches and is idempotent', () => {
+    let hits = 0;
+    const unsub = shellStore.subscribe(() => { hits += 1; });
+    shellStore.setSectionShape('octant');
+    expect(shellStore.getSnapshot().sectionShape).toBe('octant');
+    shellStore.setSectionShape('octant'); // same value → no fan-out
+    expect(hits).toBe(1);
+    unsub();
+  });
+
+  it('setSectionSide / setSectionOffset update one axis immutably', () => {
+    const before = shellStore.getSnapshot().sectionSides;
+    shellStore.setSectionSide('y', false);
+    expect(shellStore.getSnapshot().sectionSides).toEqual({ x: true, y: false, z: true });
+    expect(before).toEqual({ x: true, y: true, z: true }); // old object untouched
+    shellStore.setSectionOffset('x', 12.5);
+    expect(shellStore.getSnapshot().sectionOffsets).toEqual({ x: 12.5, y: 0, z: 0 });
+  });
+
+  it('setSectionQuarterAxis switches', () => {
+    shellStore.setSectionQuarterAxis('x');
+    expect(shellStore.getSnapshot().sectionQuarterAxis).toBe('x');
+  });
+
+  it('toggleSectionKeepWhole adds then removes a key', () => {
+    shellStore.toggleSectionKeepWhole('servo_left');
+    expect(shellStore.getSnapshot().sectionKeepWhole.has('servo_left')).toBe(true);
+    shellStore.toggleSectionKeepWhole('servo_left');
+    expect(shellStore.getSnapshot().sectionKeepWhole.has('servo_left')).toBe(false);
+  });
+
+  it('pruneSectionKeepWhole drops stale keys only, no fan-out when all valid', () => {
+    shellStore.toggleSectionKeepWhole('a');
+    shellStore.toggleSectionKeepWhole('b');
+    let hits = 0;
+    const unsub = shellStore.subscribe(() => { hits += 1; });
+    shellStore.pruneSectionKeepWhole(['a', 'b', 'c']);
+    expect(hits).toBe(0);
+    shellStore.pruneSectionKeepWhole(['a']);
+    expect([...shellStore.getSnapshot().sectionKeepWhole]).toEqual(['a']);
+    expect(hits).toBe(1);
+    unsub();
+  });
+
+  it('turning section mode off clears keep-whole', () => {
+    shellStore.setSectionMode(true);
+    shellStore.toggleSectionKeepWhole('housing');
+    shellStore.setSectionMode(false);
+    expect(shellStore.getSnapshot().sectionKeepWhole.size).toBe(0);
+    shellStore.toggleSectionMode();        // on
+    shellStore.toggleSectionKeepWhole('housing');
+    shellStore.toggleSectionMode();        // off via toggle clears too
+    expect(shellStore.getSnapshot().sectionKeepWhole.size).toBe(0);
+  });
+});

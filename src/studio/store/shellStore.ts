@@ -1,6 +1,8 @@
 import type { ValidatorResult } from '../../modeling/mates/validator';
 import type { SelectedFeatureId } from '../types';
 
+export type SectionShape = 'plane' | 'quarter' | 'octant';
+
 // Studio shell store — UI-only state, no model semantics.
 //
 // Implemented as a tiny observable rather than via Zustand so the slice
@@ -37,6 +39,15 @@ export interface ShellState {
     readonly sectionAxis: 'x' | 'y' | 'z';
     readonly sectionFlip: boolean;
     readonly sectionPosition: number;
+    readonly sectionShape: SectionShape;
+    /** Per axis: true ⇒ the POSITIVE side of that axis is removed. */
+    readonly sectionSides: Readonly<Record<'x' | 'y' | 'z', boolean>>;
+    /** Cutaway plane positions along each axis, world mm. */
+    readonly sectionOffsets: Readonly<Record<'x' | 'y' | 'z', number>>;
+    /** Quarter mode: the UNCUT axis (the wedge runs full length along it). */
+    readonly sectionQuarterAxis: 'x' | 'y' | 'z';
+    /** Part keys excluded from clipping (rendered complete). */
+    readonly sectionKeepWhole: ReadonlySet<string>;
 }
 
 const INITIAL_STATE: ShellState = {
@@ -50,6 +61,11 @@ const INITIAL_STATE: ShellState = {
     sectionAxis: 'z',
     sectionFlip: false,
     sectionPosition: 0,
+    sectionShape: 'plane',
+    sectionSides: { x: true, y: true, z: true },
+    sectionOffsets: { x: 0, y: 0, z: 0 },
+    sectionQuarterAxis: 'z',
+    sectionKeepWhole: new Set<string>(),
 };
 
 type Listener = () => void;
@@ -96,12 +112,22 @@ export class ShellStore {
 
     setSectionMode = (on: boolean): void => {
         if (this.state.sectionMode === on) return;
-        this.state = { ...this.state, sectionMode: on };
+        this.state = {
+            ...this.state,
+            sectionMode: on,
+            // Keep-whole choices are scoped to one sectioning session.
+            sectionKeepWhole: on ? this.state.sectionKeepWhole : new Set<string>(),
+        };
         this.emit();
     };
 
     toggleSectionMode = (): void => {
-        this.state = { ...this.state, sectionMode: !this.state.sectionMode };
+        const on = !this.state.sectionMode;
+        this.state = {
+            ...this.state,
+            sectionMode: on,
+            sectionKeepWhole: on ? this.state.sectionKeepWhole : new Set<string>(),
+        };
         this.emit();
     };
 
@@ -120,6 +146,52 @@ export class ShellStore {
     setSectionPosition = (position: number): void => {
         if (this.state.sectionPosition === position) return;
         this.state = { ...this.state, sectionPosition: position };
+        this.emit();
+    };
+
+    setSectionShape = (shape: SectionShape): void => {
+        if (this.state.sectionShape === shape) return;
+        this.state = { ...this.state, sectionShape: shape };
+        this.emit();
+    };
+
+    setSectionSide = (axis: 'x' | 'y' | 'z', removed: boolean): void => {
+        if (this.state.sectionSides[axis] === removed) return;
+        this.state = {
+            ...this.state,
+            sectionSides: { ...this.state.sectionSides, [axis]: removed },
+        };
+        this.emit();
+    };
+
+    setSectionOffset = (axis: 'x' | 'y' | 'z', position: number): void => {
+        if (this.state.sectionOffsets[axis] === position) return;
+        this.state = {
+            ...this.state,
+            sectionOffsets: { ...this.state.sectionOffsets, [axis]: position },
+        };
+        this.emit();
+    };
+
+    setSectionQuarterAxis = (axis: 'x' | 'y' | 'z'): void => {
+        if (this.state.sectionQuarterAxis === axis) return;
+        this.state = { ...this.state, sectionQuarterAxis: axis };
+        this.emit();
+    };
+
+    toggleSectionKeepWhole = (key: string): void => {
+        const next = new Set(this.state.sectionKeepWhole);
+        if (!next.delete(key)) next.add(key);
+        this.state = { ...this.state, sectionKeepWhole: next };
+        this.emit();
+    };
+
+    /** Drop keep-whole keys no longer present in the scene. No-op if all valid. */
+    pruneSectionKeepWhole = (validKeys: ReadonlyArray<string>): void => {
+        const valid = new Set(validKeys);
+        const kept = [...this.state.sectionKeepWhole].filter((k) => valid.has(k));
+        if (kept.length === this.state.sectionKeepWhole.size) return;
+        this.state = { ...this.state, sectionKeepWhole: new Set(kept) };
         this.emit();
     };
 
