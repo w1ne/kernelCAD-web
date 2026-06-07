@@ -1,4 +1,4 @@
-import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors } from 'lucide-react';
+import { CheckCircle2, Play, MessageSquare, Image as ImageIcon, Plug, Brush, Scissors, PanelRight } from 'lucide-react';
 
 interface ToolbarProps {
     isModified: boolean;
@@ -29,6 +29,9 @@ interface ToolbarProps {
     /** Section/cut tool — clips the model with one movable plane to reveal internals. */
     sectionMode: boolean;
     onToggleSectionMode: () => void;
+    /** Right-side Inspector panel visibility. */
+    inspectorOpen: boolean;
+    onToggleInspector: () => void;
 }
 
 export function Toolbar({
@@ -48,6 +51,8 @@ export function Toolbar({
     onToggleMarkingMode,
     sectionMode,
     onToggleSectionMode,
+    inspectorOpen,
+    onToggleInspector,
 }: ToolbarProps) {
     return (
         <div
@@ -170,6 +175,22 @@ export function Toolbar({
                         Env: {renderEnvironmentPresetLabel}
                     </button>
                 )}
+                <button
+                    type="button"
+                    data-testid="toolbar-inspector"
+                    onClick={onToggleInspector}
+                    title={inspectorOpen ? 'Hide the inspector panel' : 'Show the inspector panel'}
+                    aria-label={inspectorOpen ? 'Hide inspector panel' : 'Show inspector panel'}
+                    aria-pressed={inspectorOpen}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                        inspectorOpen
+                            ? 'bg-[#333] text-white'
+                            : 'text-gray-300 hover:text-white hover:bg-[#222]'
+                    }`}
+                >
+                    <PanelRight size={12} />
+                    Inspector
+                </button>
             </div>
         </div>
     );
