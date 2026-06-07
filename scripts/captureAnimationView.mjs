@@ -20,7 +20,7 @@
 // Honors PW_CDP_URL (attach to an existing Chrome) and VITE_PORT.
 
 import { resolve } from 'node:path';
-import { runAnimate } from '../src/agent/cli/commands/animate.ts';
+import { runAnimate, stderrProgressSink } from '../src/agent/cli/commands/animate.ts';
 import { formatHuman } from '../src/shared/diagnostics/formatter.ts';
 
 const USAGE = `Usage: npx tsx scripts/captureAnimationView.mjs <script.kcad.ts> [outFile.mp4] [--frames <dir>]
@@ -91,9 +91,7 @@ const { exitCode, result, summary } = await runAnimate({
   file: scriptPath,
   ...(outPath !== undefined ? { out: outPath } : {}),
   ...(framesDir !== undefined ? { frames: framesDir } : {}),
-  onProgress: (msg) => {
-    process.stderr.write(`[${new Date().toISOString()}] ${msg}\n`);
-  },
+  onProgress: stderrProgressSink,
 });
 
 if (result.diagnostics.length > 0) {

@@ -85,10 +85,19 @@ return plate.fillet(9999);
 
 const FAKE_PNG = Buffer.from('fake-png-bytes');
 
-function makeFakePage() {
+function makeFakePage(opts: { screenshotThrowAt?: number } = {}) {
+  let screenshotCalls = 0;
   const page = {
     evaluate: vi.fn(async () => undefined),
-    screenshot: vi.fn(async () => FAKE_PNG),
+    screenshot: vi.fn(async () => {
+      screenshotCalls += 1;
+      // 1-based: throw on the Nth frame screenshot (frame index N-1). A
+      // browser op throwing mid-loop is an ENVIRONMENT fault.
+      if (opts.screenshotThrowAt !== undefined && screenshotCalls === opts.screenshotThrowAt) {
+        throw new Error('page.screenshot: Target page crashed');
+      }
+      return FAKE_PNG;
+    }),
     setDefaultTimeout: vi.fn(),
     setViewportSize: vi.fn(async () => undefined),
   };
@@ -142,8 +151,9 @@ class FakeFfmpeg extends EventEmitter {
 function makeDeps(
   overrides: Partial<CaptureAnimationDeps> = {},
   configureFfmpeg?: (f: FakeFfmpeg) => void,
+  pageOpts: { screenshotThrowAt?: number } = {},
 ) {
-  const { handle, page, close } = makeFakePage();
+  const { handle, page, close } = makeFakePage(pageOpts);
   // The fake emits 'spawn'/'error' one microtask after construction, so it
   // MUST be constructed inside the spawn hook (the engine attaches its
   // listeners right after calling it) — an eagerly-built instance would
@@ -254,6 +264,28 @@ describe('captureAnimation', () => {
     expect(state.ffmpeg!.killed).toBe(true);
     expect(existsSync(outPath)).toBe(false); // partial artifact deleted
     expect(close).toHaveBeenCalled(); // no zombie chromium
+  });
+
+  it('mid-frame browser render failure → abort with failureKind environment + cli.export-exception (NOT a model fault)', async () => {
+    // page.screenshot throws on the 2nd frame (index 1, tMs=50). A browser
+    // op throwing is the ENVIRONMENT, not the kernel — review fix #2 split.
+    const { deps, state, close } = makeDeps({}, undefined, { screenshotThrowAt: 2 });
+    const outPath = join(tmp, 'render-fail.mp4');
+    writeFileSync(outPath, 'partial-mp4-bytes');
+    const result = await captureAnimation({ scriptPath: animScript, outPath, skipVerify: true }, deps);
+    expect(result.ok).toBe(false);
+    expect(result.failureKind).toBe('environment');
+    expect(result.frameCount).toBe(1); // only frame 0 made it through the write
+    const d = result.diagnostics.find((x) => x.code === 'cli.export-exception');
+    expect(d).toBeDefined();
+    expect(d!.message).toContain('tMs=50');
+    expect(d!.message).toMatch(/browser render|screenshot/);
+    // NOT misclassified as a kernel solve/mesh failure.
+    expect(result.diagnostics.some((x) => x.code === 'recompute.lowering.exception')).toBe(false);
+    expect(result.outPath).toBeUndefined();
+    expect(state.ffmpeg!.killed).toBe(true);
+    expect(existsSync(outPath)).toBe(false); // partial artifact deleted
+    expect(close).toHaveBeenCalled();
   });
 
   it('framesDir mode: ffmpeg never spawned, frames named frame-%04d.png, outPath = framesDir', async () => {
@@ -466,6 +498,25 @@ describe('captureAnimation pose verification (step 4b)', () => {
     expect(result.collisions.length).toBeGreaterThanOrEqual(1);
     // The collision rows sit at frame times, none of which is 0.
     expect(result.collisions.every((c) => c.tMs > 0)).toBe(true);
+  }, 120_000);
+
+  it('invalid verifyEveryNthFrame → warn diagnostic + ignored (default sample set still verifies); never a hard throw', async () => {
+    const { deps } = makeDeps();
+    const outPath = join(tmp, 'bad-nth.mp4');
+    const result = await captureAnimation(
+      // 0 is invalid (< 1); contract is warn + ignore, not refuse.
+      { scriptPath: animScript, outPath, verifyEveryNthFrame: 0 },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    // Verification still ran on the keyframe sample set — clean box fixture.
+    expect(result.verified).toBe(true);
+    const warn = result.diagnostics.find(
+      (d) => d.code === 'cli.invalid-args' && d.severity === 'warn',
+    );
+    expect(warn).toBeDefined();
+    expect(warn!.message).toMatch(/verifyEveryNthFrame/);
+    expect(warn!.message).toMatch(/ignoring/i);
   }, 120_000);
 
   it('clean fixture: verified true with no collisions on the full default sample set', async () => {

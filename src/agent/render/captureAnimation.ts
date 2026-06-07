@@ -35,14 +35,18 @@
 //   - script build failure               → 'cli.script-exception'
 //   - build-time error diagnostics       → the model's own diagnostics,
 //                                          passed through
-//   - per-frame solve/mesh/render throw  → 'recompute.lowering.exception'
+//   - per-frame param-update/solve/mesh  → 'recompute.lowering.exception'
+//     throw                                (MODEL fault)
+//   - per-frame browser render op throw  → 'cli.export-exception'
+//     (load meshes / evaluate / screenshot — ENVIRONMENT fault)
 //   - ffmpeg missing / encode failure /
 //     frame output write failure         → 'cli.export-exception'
 //
-// Per-frame failure containment: a frame whose param-update/solve/mesh/render
-// throws aborts the capture cleanly — ffmpeg stdin ended + process killed,
-// the partial MP4 deleted (never reported as success); framesDir mode keeps
-// the already-written PNGs but the result still says ok:false.
+// Per-frame failure containment: a frame whose param-update/solve/mesh (model
+// fault) OR browser render / output write (environment fault) throws aborts
+// the capture cleanly — ffmpeg stdin ended + process killed, the partial MP4
+// deleted (never reported as success); framesDir mode keeps the
+// already-written PNGs but the result still says ok:false.
 
 import { spawn } from 'node:child_process';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
@@ -106,16 +110,21 @@ export interface CaptureAnimationOpts {
    *  the default keyframe sample set (key times + segment midpoints). */
   verifySampleTimesMs?: number[];
   /** Power knob: additionally verify at every n-th FRAME time of the fps
-   *  schedule (unioned with the keyframe sample set / verifySampleTimesMs). */
+   *  schedule (unioned with the keyframe sample set / verifySampleTimesMs).
+   *  Contract: must be a finite number >= 1 (the floor is taken). An invalid
+   *  value (non-finite or < 1) is NOT a hard error mid-API — it emits a
+   *  `cli.invalid-args` WARNING diagnostic on the result and is ignored
+   *  (the keyframe sample set / verifySampleTimesMs still runs). */
   verifyEveryNthFrame?: number;
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
  *  surfaces map failures to exit codes without string-matching messages:
  *  'model' = the script/model is at fault (build error, no animationView
- *  record, bad record fps, a pose the kernel cannot solve/mesh/render);
+ *  record, bad record fps, a pose the kernel cannot solve/mesh);
  *  'environment' = the surroundings are (ffmpeg missing or crashed, browser
- *  bootstrap failure, frame output write failure). */
+ *  bootstrap failure, a per-frame browser render op — load meshes /
+ *  page.evaluate / screenshot — throwing, frame output write failure). */
 export type CaptureFailureKind = 'model' | 'environment';
 
 export interface CaptureAnimationResult {
@@ -181,6 +190,10 @@ function defaultSpawnFfmpeg(args: readonly string[]): FfmpegProcessLike {
 
 function diag(code: DiagnosticCode, message: string, hint: string): CompilerDiagnostic {
   return withNextAction({ target: 'export-occt', code, severity: 'error', message, hint });
+}
+
+function warnDiag(code: DiagnosticCode, message: string, hint: string): CompilerDiagnostic {
+  return withNextAction({ target: 'export-occt', code, severity: 'warn', message, hint });
 }
 
 function errMsg(e: unknown): string {
@@ -322,16 +335,44 @@ export async function captureAnimation(
   if (!verifySkipped) {
     let sampleTimesMs = opts.verifySampleTimesMs;
     const nth = opts.verifyEveryNthFrame;
-    if (nth !== undefined && Number.isFinite(nth) && nth >= 1) {
-      const base = sampleTimesMs ?? keyframeSampleSet(metadata.tracks);
-      const extra = frames.filter((_, i) => i % Math.floor(nth) === 0).map((f) => f.tMs);
-      sampleTimesMs = [...new Set([...base, ...extra])].sort((a, b) => a - b);
+    if (nth !== undefined) {
+      if (Number.isFinite(nth) && nth >= 1) {
+        const base = sampleTimesMs ?? keyframeSampleSet(metadata.tracks);
+        const extra = frames.filter((_, i) => i % Math.floor(nth) === 0).map((f) => f.tMs);
+        sampleTimesMs = [...new Set([...base, ...extra])].sort((a, b) => a - b);
+      } else {
+        // Invalid mid-API value: warn + ignore (documented contract), never
+        // a hard throw. The keyframe / verifySampleTimesMs schedule still runs.
+        stashedWarns.push(warnDiag(
+          'cli.invalid-args',
+          `captureAnimation: verifyEveryNthFrame must be a finite number >= 1 (got ${nth}); ignoring it and verifying the default sample set only.`,
+          'Pass a finite verifyEveryNthFrame >= 1 to densify the verification schedule, or omit it.',
+        ));
+      }
     }
-    const v = await verifyAnimation(
-      model,
-      metadata.tracks,
-      sampleTimesMs !== undefined ? { sampleTimesMs } : {},
-    );
+    // Defensive: verifyAnimation restores params internally on every path,
+    // but if it throws OUTSIDE that contract (an unexpected kernel error in
+    // the sweep) the model session may be left mid-pose — there is no clean
+    // restore to attempt here. Classify as a MODEL fault (the inputs are all
+    // model-derived) and refuse; the message says the params may be unrestored.
+    let v: Awaited<ReturnType<typeof verifyAnimation>>;
+    try {
+      v = await verifyAnimation(
+        model,
+        metadata.tracks,
+        sampleTimesMs !== undefined ? { sampleTimesMs } : {},
+      );
+    } catch (e) {
+      return {
+        ok: false, frameCount: 0, durationMs, fps, failureKind: 'model', ...verifyFields(),
+        diagnostics: [...stashedWarns, diag(
+          'recompute.lowering.exception',
+          `captureAnimation: animation-pose verification threw: ${errMsg(e)}. `
+            + 'The model session may be left at a mid-verification pose (params not restored); rebuild before reuse.',
+          'Fix the underlying solve error in the message, or pass --no-verify to skip the pose check (the capture then renders without motion verification).',
+        )],
+      };
+    }
     onProgress(`verify: ${v.posesSampled} poses (${Date.now() - t0}ms)`);
     collisions = v.collisions;
     stashedWarns.push(...v.diagnostics);
@@ -473,23 +514,45 @@ export async function captureAnimation(
     await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
     await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
 
-    // 7. Frame loop with per-frame failure containment. Two separate
-    //    try-blocks so the diagnostic names the right subsystem: the
-    //    param-update/solve/mesh/render phase reports
-    //    'recompute.lowering.exception'; the frame OUTPUT write (ffmpeg
-    //    stdin / frame PNG file) reports 'cli.export-exception' — an
-    //    encoder dying mid-encode surfaces as an EPIPE on the write
-    //    callback, which is not a kernel failure.
+    // 7. Frame loop with per-frame failure containment. THREE failure
+    //    classes, each naming the right subsystem and fault side:
+    //      a) param-update/solve/mesh (kernel, MODEL fault) →
+    //         'recompute.lowering.exception';
+    //      b) browser ops — load meshes / page.evaluate / screenshot
+    //         (ENVIRONMENT fault: a wedged/crashed page is not a kernel
+    //         failure) → 'cli.export-exception';
+    //      c) the frame OUTPUT write — ffmpeg stdin / frame PNG file
+    //         (ENVIRONMENT fault) → 'cli.export-exception'; an encoder dying
+    //         mid-encode surfaces as an EPIPE on the write callback.
+    const partialNote = framesDir !== undefined
+      ? `The ${written} frame PNG(s) already written to ${framesDir} were kept.`
+      : 'The partial MP4 was deleted.';
     for (let i = 0; i < frames.length; i += 1) {
       const frame = frames[i];
-      let png: Buffer;
+      // (a) param-update / solve / mesh — MODEL fault.
+      let meshing;
       try {
         const updates: ParamUpdateEdit[] = Object.entries(frame.values)
           .map(([name, value]) => ({ name, value }));
         await updateModelParams(model, updates);
-        const meshing = await meshFeaturesPerFeature(
+        meshing = await meshFeaturesPerFeature(
           model.records, model.session.paramTable, model.session,
         );
+      } catch (e) {
+        await abortFfmpeg();
+        return {
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'model', ...verifyFields(),
+          diagnostics: [...stashedWarns, diag(
+            'recompute.lowering.exception',
+            `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh: ${errMsg(e)}. `
+              + partialNote,
+            'Fix the underlying solve/mesh error in the message, or adjust the animationView keyframes to avoid the failing pose.',
+          )],
+        };
+      }
+      // (b) browser render ops — ENVIRONMENT fault.
+      let png: Buffer;
+      try {
         await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), meshing.bounds);
         await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
         // Tick the AnimationEngine so Three.js renders the updated scene.
@@ -498,17 +561,16 @@ export async function captureAnimation(
       } catch (e) {
         await abortFfmpeg();
         return {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'model', ...verifyFields(),
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
           diagnostics: [...stashedWarns, diag(
-            'recompute.lowering.exception',
-            `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh/render: ${errMsg(e)}. `
-              + (framesDir !== undefined
-                ? `The ${written} frame PNG(s) already written to ${framesDir} were kept.`
-                : 'The partial MP4 was deleted.'),
-            'Fix the underlying solve/mesh error in the message, or adjust the animationView keyframes to avoid the failing pose.',
+            'cli.export-exception',
+            `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during the browser render (load meshes / page eval / screenshot): ${errMsg(e)}. `
+              + partialNote,
+            'Read the diagnostic message; common causes are a crashed/wedged demo-player page or a lost studio dev server (run `npm run dev`). Retry once the page is healthy.',
           )],
         };
       }
+      // (c) frame OUTPUT write — ENVIRONMENT fault.
       try {
         if (framesDir !== undefined) {
           await writeFile(join(framesDir, animationFrameFileName(i)), png);

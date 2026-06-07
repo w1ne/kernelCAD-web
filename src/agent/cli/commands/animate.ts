@@ -8,17 +8,19 @@
 // + segment midpoints, BEFORE any browser/ffmpeg cost); `--no-verify` skips
 // it and `--verify-every <n>` additionally samples every n-th frame time.
 //
-// Exit codes (pipe-friendly: `kernelcad animate part.kcad.ts && echo ok`;
-// the same scheme as the `kernelcad dfm` sibling — 0 clean / 1 gate
-// finding / 2 unusable):
+// Exit codes (pipe-friendly: `kernelcad animate part.kcad.ts && echo ok`):
 //   0 — animation captured AND pose verification clean (or skipped via
 //       --no-verify),
 //   1 — animation captured BUT pose verification found collisions; the
 //       MP4/frames ARE still written as evidence,
 //   2 — could not capture (bad arguments, script/build errors, no
-//       animationView record, a pose the kernel cannot solve/mesh/render,
-//       ffmpeg missing in MP4 mode, browser/page bootstrap failure, frame
+//       animationView record, a pose the kernel cannot solve/mesh, browser
+//       render/page bootstrap failure, ffmpeg missing in MP4 mode, frame
 //       output write failure).
+// (This is animate's OWN scheme. It is NOT the dfm scheme: dfm puts
+// build-fatals under exit 1; here every could-not-capture fault — build
+// errors included — exits 2, and exit 1 is reserved strictly for the
+// verification gate finding collisions on an otherwise-captured artifact.)
 // The engine's typed `failureKind` discriminant stays on the --json
 // envelope (still useful to attribute the fault), but BOTH kinds exit 2 —
 // only verification collisions distinguish 1 from 0.
@@ -66,6 +68,21 @@ export interface AnimateCliResult {
   summary?: string;
 }
 
+/** Timestamped stderr progress writer — the single source for both the
+ *  `animate` command and the deprecated scripts/captureAnimationView.mjs
+ *  wrapper, so their progress lines stay byte-identical. Writes to stderr so
+ *  that under --json stdout carries exactly the envelope. */
+export function stderrProgressSink(msg: string): void {
+  process.stderr.write(`[${new Date().toISOString()}] ${msg}\n`);
+}
+
+/** Least-misleading fps for a usage-refusal envelope: the caller's parsed
+ *  fps when it is actually usable (finite, > 0), else 0. Avoids leaking a
+ *  NaN/negative/zero sentinel that looks like a real fps in the JSON. */
+function safeFps(fps: number | undefined): number {
+  return fps !== undefined && Number.isFinite(fps) && fps > 0 ? fps : 0;
+}
+
 function usageRefusal(message: string, hint: string, fps: number): AnimateCliResult {
   const diagnostic: CompilerDiagnostic = {
     target: 'export-occt',
@@ -96,7 +113,6 @@ export function formatAnimateSummary(r: {
   frameCount: number;
   durationMs: number;
   fps: number;
-  verified: boolean;
   collisionCount: number;
   verifySkipped?: boolean;
 }): string {
@@ -114,7 +130,7 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     return usageRefusal(
       'animate: the out.mp4 positional and --frames <dir> are mutually exclusive — pick MP4 mode or PNG-sequence mode.',
       'Drop the out.mp4 positional to write a PNG sequence into the --frames directory, or drop --frames to encode an MP4.',
-      input.fps ?? 0,
+      safeFps(input.fps),
     );
   }
   if (input.fps !== undefined && (!Number.isFinite(input.fps) || input.fps <= 0)) {
@@ -131,14 +147,14 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     return usageRefusal(
       `animate: --verify-every must be an integer >= 1 (got ${input.verifyEvery}).`,
       'Pass a positive integer to --verify-every, or drop the flag to verify the keyframe sample set only.',
-      input.fps ?? 0,
+      safeFps(input.fps),
     );
   }
   if (input.skipVerify === true && input.verifyEvery !== undefined) {
     return usageRefusal(
       'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
       'Drop --no-verify to verify with the densified schedule, or drop --verify-every to skip verification entirely.',
-      input.fps ?? 0,
+      safeFps(input.fps),
     );
   }
 
@@ -164,7 +180,6 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
         frameCount: result.frameCount,
         durationMs: result.durationMs,
         fps: result.fps,
-        verified: result.verified,
         collisionCount: result.collisions.length,
         ...(result.verifySkipped === true ? { verifySkipped: true } : {}),
       }),
@@ -229,12 +244,7 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
         ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
-        ...(opts.quiet
-          ? {}
-          : {
-              onProgress: (msg: string) =>
-                process.stderr.write(`[${new Date().toISOString()}] ${msg}\n`),
-            }),
+        ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),
       });
       if (opts.json) {
         console.log(JSON.stringify(r.result, null, 2));

@@ -237,7 +237,7 @@ describe('formatAnimateSummary', () => {
   it('is one concise line with path, frames, duration, fps, and the verify verdict', () => {
     const s = formatAnimateSummary({
       outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
-      verified: true, collisionCount: 0,
+      collisionCount: 0,
     });
     expect(s).toBe('Wrote /tmp/a.mp4 — 24 frames, 2000 ms @ 12 fps; verify clean');
     expect(s).not.toContain('\n');
@@ -246,11 +246,11 @@ describe('formatAnimateSummary', () => {
   it('reports the collision count and the skipped state', () => {
     expect(formatAnimateSummary({
       outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
-      verified: false, collisionCount: 2,
+      collisionCount: 2,
     })).toContain('2 collision(s) found');
     expect(formatAnimateSummary({
       outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
-      verified: false, collisionCount: 0, verifySkipped: true,
+      collisionCount: 0, verifySkipped: true,
     })).toContain('verify skipped');
   });
 });
@@ -368,6 +368,32 @@ describe('animateCommand wiring', () => {
     expect(Array.isArray(env.diagnostics)).toBe(true);
     expect(env.diagnostics[0].code).toBe('cli.invalid-args');
     expect(process.exitCode).toBe(2);
+  });
+
+  it('--json + collisions via parseAsync: exit 1, stdout envelope carries collisions + animation.collision diag', async () => {
+    mockCapture.mockResolvedValue(okResult({
+      verified: false,
+      collisions: [{ tMs: 500, a: 'arm', b: 'base', volumeMm3: 350.5 }],
+      diagnostics: [errorDiag('animation.collision', "parts 'arm' and 'base' collide at tMs=500")],
+    }));
+    const logs: string[] = [];
+    const logSpy = vi.spyOn(console, 'log').mockImplementation((s: string) => { logs.push(s); });
+    const errSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      await animateCommand().parseAsync(['demo.kcad.ts', '/tmp/out.mp4', '--json'], { from: 'user' });
+    } finally {
+      logSpy.mockRestore();
+      errSpy.mockRestore();
+    }
+    expect(logs).toHaveLength(1);
+    const env = JSON.parse(logs[0]);
+    expect(env.ok).toBe(true); // artifact IS written — the MP4 is evidence
+    expect(env.outPath).toBe('/tmp/out.mp4');
+    expect(env.verified).toBe(false);
+    expect(env.collisions).toEqual([{ tMs: 500, a: 'arm', b: 'base', volumeMm3: 350.5 }]);
+    expect(env.diagnostics[0].code).toBe('animation.collision');
+    // Collisions on an otherwise-captured artifact are the only exit-1 case.
+    expect(process.exitCode).toBe(1);
   });
 
   it('--quiet: NO progress sink reaches the engine', async () => {

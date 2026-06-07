@@ -112,7 +112,11 @@ function modelIgnorePairs(model: BuiltModel): Set<string> {
  * `sampleTrackAt`, the model re-solves via `updateModelParams`, the chain
  * root's lowered scene is resolved, and `detectInterferences` runs with the
  * mechanism-validity gate's thresholds. Non-assembly models (root is not a
- * SceneBackend) have nothing to clash — every pose trivially passes.
+ * SceneBackend) have nothing to clash — every pose trivially passes. But if
+ * the script DECLARES an assembly (`model.session.assemblies` is non-empty)
+ * yet no sampled pose resolves a SceneBackend, the script returned a plain
+ * shape instead of its solved scene; that is a `cli.invalid-args` ERROR
+ * (`ok:false`), never a silent pass.
  *
  * Always restores the pre-verification param values before returning.
  */
@@ -140,6 +144,14 @@ export async function verifyAnimation(
     originals.push({ name: track.param, value: model.session.paramTable.get(track.param).value });
   }
 
+  // Does the script declare any assembly at all? If it does, at least one
+  // sampled pose MUST resolve a SceneBackend — otherwise the thing we lowered
+  // is a plain shape (the script returned a bare body instead of the solved
+  // scene), and motion verification literally cannot see the assembly. That
+  // is a silent gate hole, so we track scene resolution and fail closed below.
+  const declaresAssembly = model.session.assemblies.size > 0;
+  let anyPoseResolvedScene = false;
+
   let posesSampled = 0;
   let poseFailures = 0;
   for (const tMs of sampleTimes) {
@@ -166,6 +178,7 @@ export async function verifyAnimation(
     }
     posesSampled += 1;
     if (!isSceneBackend(lowered)) continue; // single-body model: nothing to clash
+    anyPoseResolvedScene = true;
     const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
     for (const pair of result.pairs) {
       // Mechanism-gate classification: at or below the cap is touching /
@@ -179,6 +192,22 @@ export async function verifyAnimation(
         `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
       ));
     }
+  }
+
+  // Gate hole: the script declared an assembly, yet not one sampled pose
+  // lowered to a SceneBackend (every solved pose was a plain shape). The
+  // script returned a bare body instead of the solved scene, so motion
+  // verification never saw the assembly and would otherwise pass silently.
+  // Fail closed.
+  let sceneUnresolved = false;
+  if (declaresAssembly && !anyPoseResolvedScene && poseFailures === 0) {
+    sceneUnresolved = true;
+    diagnostics.push(diag(
+      'cli.invalid-args',
+      'verifyAnimation: the script declares an assembly, but its return value is a plain shape rather than the solved scene, ' +
+        'so animation-pose interference verification cannot see the assembly (no sampled pose resolved a scene).',
+      "Return the solved assembly from the script — `return asm.solvedModel(...)` — so the chain tail is the scene the animation drives.",
+    ));
   }
 
   // Restore the pre-verification param values — the capture frame loop or
@@ -197,7 +226,7 @@ export async function verifyAnimation(
   }
 
   return {
-    ok: collisions.length === 0 && poseFailures === 0,
+    ok: collisions.length === 0 && poseFailures === 0 && !sceneUnresolved,
     collisions,
     posesSampled,
     diagnostics,

@@ -11,6 +11,9 @@
 // so the test can't drift from the gate it mirrors.
 
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { buildModelFromFile } from '../../../src/modeling/buildModel';
 import { jointContactCapMm3 } from '../../../src/modeling/runtime/jointContactCap';
 import { keyframeSampleSet } from '../../../src/agent/render/animationSampler';
@@ -120,5 +123,59 @@ describe('verifyAnimation', () => {
 
     expect(result.ok).toBe(true);
     expect(result.collisions).toEqual([]);
+  }, 120_000);
+
+  // Gate-hole regression (review fix #1): a script that DECLARES an assembly
+  // but returns a plain shape — the wrong return value — must NOT pass
+  // silently. Verification can't see the assembly, so it fails closed.
+  it('assembly declared but script returns a plain shape → ok:false with cli.invalid-args (gate hole closed)', async () => {
+    // Same assembly/mate/track shape as colliding-sweep, but `return arm`
+    // (a bare body) instead of `return asm.solvedModel(...)`.
+    const PLAIN_RETURN_FIXTURE = `
+const armDeg = param('armDeg', 0, { min: 0, max: 90 });
+animationView({
+  name: 'plain-return',
+  fps: 12,
+  tracks: [{ param: 'armDeg', keys: [{ atMs: 0, value: 0 }, { atMs: 1000, value: 90 }] }],
+});
+const base = box(60, 40, 10, true).translate(0, 0, 5).color('plate');
+const arm = box(40, 8, 6, true).translate(18, 0, 3).color('gear');
+const asm = assembly('plain-return');
+const basePart = asm.part('base', base);
+basePart.connector('armAxis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 12] }, axis: [0, 0, 1] });
+const armPart = asm.part('arm', arm);
+armPart.connector('hub', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+asm.mate('arm-pivot', 'base.armAxis', 'arm.hub', 'revolute', { pose: armDeg, limitsDeg: [0, 90] });
+return arm;
+`;
+    const tmp = mkdtempSync(join(tmpdir(), 'verifyAnimation-gatehole-'));
+    const file = join(tmp, 'plain-return.kcad.ts');
+    writeFileSync(file, PLAIN_RETURN_FIXTURE);
+
+    const model = await buildModelFromFile({ file });
+    expect(model.session.assemblies.size).toBeGreaterThan(0);
+    const anims = model.records.filter((r) => r.kind === 'animationView');
+    const tracks = (anims[anims.length - 1].metadata as unknown as {
+      tracks: NormalizedAnimationTrack[];
+    }).tracks;
+
+    const result = await verifyAnimation(model, tracks);
+
+    expect(result.ok).toBe(false);
+    const gate = result.diagnostics.find((d) => d.code === 'cli.invalid-args');
+    expect(gate).toBeDefined();
+    expect(gate!.severity).toBe('error');
+    expect(gate!.message).toMatch(/solved scene|plain shape/);
+    expect(gate!.message).toContain('cannot see the assembly');
+    expect(gate!.hint).toContain('solvedModel');
+    // No false collisions invented — the failure is the unresolved-scene gate.
+    expect(result.collisions).toEqual([]);
+  }, 120_000);
+
+  it('clean fixture still passes (gate-hole guard does not over-fire on a solved scene)', async () => {
+    const { model, tracks } = await buildWithTracks(CLEAN_FIXTURE);
+    const result = await verifyAnimation(model, tracks);
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics.every((d) => d.code !== 'cli.invalid-args')).toBe(true);
   }, 120_000);
 });
