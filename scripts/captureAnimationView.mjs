@@ -1,166 +1,46 @@
 // scripts/captureAnimationView.mjs
 //
-// Reads an `animationView({...})` virtual feature record from a .kcad.ts
-// script, samples its normalized keyframe tracks via the shared
-// animationSampler (per-key easing honored; `max(2, ceil(durationMs / 1000
-// * fps))` frames), and stitches an MP4 via ffmpeg. Each frame's recompute uses the
-// per-session mesh cache so warm frame meshing is ~5 ms even for 24-part
-// assemblies.
+// Thin argv wrapper around the typed animation-capture engine
+// (src/agent/render/captureAnimation.ts). Reads the `animationView({...})`
+// record from a .kcad.ts script, samples its keyframe tracks via the shared
+// animationSampler, renders each frame in the demo-player page, and stitches
+// an MP4 via ffmpeg.
 //
 // Usage:
 //   npx tsx scripts/captureAnimationView.mjs <script.kcad.ts> [outFile.mp4]
 //
-// Defaults: writes <scriptDir>/animation.mp4 next to the script.
-// Frame layout matches captureRotateOnly.ts (1920x1080); ffmpeg ingests the
-// PNG bytes via stdin to avoid touching disk between encoder and frames.
+// Defaults: writes <scriptDir>/<basename>-animation.mp4 next to the script.
+// Honors PW_CDP_URL (attach to an existing Chrome) and VITE_PORT.
 
-import { performance } from 'node:perf_hooks';
-import { readFileSync } from 'node:fs';
-import { resolve, dirname, basename } from 'node:path';
-import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
-import { buildModel, updateModelParams } from '../src/modeling/buildModel.ts';
-import { meshFeaturesPerFeature } from '../src/modeling/capture/featureMeshing.ts';
-import { serializeForBridge } from '../src/modeling/capture/featureMeshSerialize.ts';
-import { sampleTracks } from '../src/agent/render/animationSampler.ts';
+import { resolve } from 'node:path';
+import { captureAnimation } from '../src/agent/render/captureAnimation.ts';
 
-const SCRIPT_PATH = resolve(process.argv[2] ?? 'examples/gallery/gearfinity-planetary-stage.kcad.ts');
-const OUT_MP4 = resolve(process.argv[3] ?? resolve(SCRIPT_PATH, '..', basename(SCRIPT_PATH).replace(/\.kcad\.ts$/, '') + '-animation.mp4'));
-const W = 1920;
-const H = 1080;
+const scriptPath = resolve(process.argv[2] ?? 'examples/gallery/gearfinity-planetary-stage.kcad.ts');
+const outPath = process.argv[3] !== undefined ? resolve(process.argv[3]) : undefined;
 
-const code = readFileSync(SCRIPT_PATH, 'utf8');
-const scriptDir = dirname(SCRIPT_PATH);
+console.log(`script:    ${scriptPath}`);
+const t0 = Date.now();
+const result = await captureAnimation({
+  scriptPath,
+  outPath,
+  onProgress: (msg) => {
+    process.stderr.write(`[${new Date().toISOString()}] ${msg}\n`);
+  },
+});
 
-console.log(`script:    ${SCRIPT_PATH}`);
-console.log(`out:       ${OUT_MP4}`);
+for (const d of result.diagnostics) {
+  const line = `[${d.severity.toUpperCase()}] ${d.code}: ${d.message}`;
+  if (d.severity === 'error') console.error(line);
+  else console.log(line);
+  if (d.hint) console.log(`  hint: ${d.hint}`);
+}
 
-console.log('Building model...');
-let t = performance.now();
-const model = await buildModel({ code, fileName: SCRIPT_PATH, scriptDir });
-console.log(`  buildModel: ${(performance.now() - t).toFixed(0)} ms  records=${model.records.length}`);
-
-const session = model.session;
-
-// Find the last animationView record (last-wins, mirroring cameraTarget).
-const animRecords = model.records.filter((r) => r.kind === 'animationView');
-if (animRecords.length === 0) {
-  console.error(`No animationView({...}) call found in ${SCRIPT_PATH}.`);
-  console.error(`Add e.g. animationView({ param: 'driveAngleDeg', from: 0, to: 360, durationMs: 4000 });`);
+const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+if (result.ok) {
+  console.log(`Wrote ${result.outPath}`);
+  console.log(`frames=${result.frameCount}  durationMs=${result.durationMs}  fps=${result.fps}  (${elapsed}s)`);
+  process.exit(0);
+} else {
+  console.error(`Capture failed after ${elapsed}s (frames captured: ${result.frameCount}).`);
   process.exit(1);
-}
-const spec = animRecords[animRecords.length - 1].metadata;
-const fps = spec.fps ?? 30;
-const durationMs = spec.durationMs;
-// Metadata is always normalized to the track shape (keys sorted by atMs,
-// ease defaulted); the legacy sweep form arrives as one linear two-key track.
-const tracks = spec.tracks;
-// Shared sampler: honors per-key ease, holds outside the keyed span, lands
-// the last frame exactly at durationMs.
-const { frames: frameSamples } = sampleTracks(tracks, fps);
-const frames = frameSamples.length;
-console.log(`anim:      ${spec.name ? `name=${spec.name}  ` : ''}tracks=${tracks.map((track) => track.param).join(',')}  durationMs=${durationMs}  fps=${fps}  frames=${frames}`);
-
-// Cold mesh — populates the per-session triangle cache.
-t = performance.now();
-const initial = await meshFeaturesPerFeature(model.records, session.paramTable, session);
-console.log(`  cold mesh: ${(performance.now() - t).toFixed(0)} ms  features=${initial.features.length}`);
-
-console.log('Launching Playwright...');
-const cdpUrl = process.env.PW_CDP_URL ?? 'http://127.0.0.1:9222';
-let browser;
-let ctx;
-let connectedExisting = false;
-try {
-  browser = await chromium.connectOverCDP(cdpUrl);
-  // Reuse the first existing context (a fresh Playwright-launched chromium
-  // would always create a new one; CDP-attached chromes already have one).
-  const contexts = browser.contexts();
-  ctx = contexts[0] ?? await browser.newContext({ viewport: { width: W, height: H } });
-  connectedExisting = true;
-  console.log(`  attached to existing Chrome via CDP at ${cdpUrl}`);
-} catch (e) {
-  console.log(`  CDP attach failed (${e.message}); falling back to fresh chromium.launch`);
-  browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-  ctx = await browser.newContext({ viewport: { width: W, height: H } });
-}
-
-try {
-  const page = await ctx.newPage();
-  // Resize the viewport so screenshots are 1920×1080 regardless of the
-  // attached Chrome window size.
-  await page.setViewportSize({ width: W, height: H });
-  page.setDefaultTimeout(180000);
-  const port = process.env.VITE_PORT ?? '5173';
-  await page.goto(`http://127.0.0.1:${port}/demo-player?headless=1&nowatermark=1`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForFunction(() => window.__demoPlayer !== undefined, { timeout: 30000 });
-  await page.evaluate(() => window.__demoPlayer.setVersion('animation'));
-
-  // Initial load — populates the scene with the cold-mesh contents.
-  const serialized0 = initial.features.map(serializeForBridge);
-  await page.evaluate(
-    ({ feats, b }) => window.__demoPlayer.loadFeatureMeshes(feats, b),
-    { feats: serialized0, b: initial.bounds },
-  );
-
-  // Settle the AnimationEngine to final state (matches captureRotateOnly).
-  for (const fm of initial.features) {
-    await page.evaluate((e) => window.__demoPlayer.onEvent(e), {
-      kind: 'feature.compiled',
-      featureId: fm.featureId,
-      featureKind: fm.featureKind,
-      predecessors: fm.predecessors,
-      diagnostics: [],
-      health: 'healthy',
-      shape: null,
-      op: fm.op,
-    });
-  }
-  await page.evaluate(() => window.__demoPlayer.advance(2000));
-  await page.evaluate(() => window.__demoPlayer.forceFullOpacity());
-  await page.evaluate(() => window.__demoPlayer.showOnlyTailFeatures());
-  await page.evaluate(() => window.__demoPlayer.setRenderView('iso'));
-
-  console.log('ffmpeg start...');
-  const ffmpeg = spawn('ffmpeg', [
-    '-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'fast', '-crf', '22',
-    OUT_MP4,
-  ], { stdio: ['pipe', 'pipe', 'pipe'] });
-  ffmpeg.stderr.on('data', () => {});
-
-  console.log(`Capturing ${frames} frames at ${W}×${H}@${fps}fps...`);
-  const t0 = Date.now();
-  for (let i = 0; i < frames; i += 1) {
-    const { values } = frameSamples[i];
-    const updates = Object.entries(values).map(([name, value]) => ({ name, value }));
-    await updateModelParams(model, updates);
-    const meshing = await meshFeaturesPerFeature(model.records, session.paramTable, session);
-    const serialized = meshing.features.map(serializeForBridge);
-    await page.evaluate(
-      ({ feats, b }) => {
-        window.__demoPlayer.loadFeatureMeshes(feats, b);
-        window.__demoPlayer.forceFullOpacity();
-      },
-      { feats: serialized, b: meshing.bounds },
-    );
-    // Tick the AnimationEngine so Three.js renders the updated scene.
-    await page.evaluate(() => window.__demoPlayer.advance(16));
-    const buf = await page.screenshot({ type: 'png' });
-    await new Promise((res, rej) => ffmpeg.stdin.write(buf, (err) => (err ? rej(err) : res())));
-    if ((i + 1) % 15 === 0 || i === frames - 1) {
-      const dt = ((Date.now() - t0) / 1000).toFixed(1);
-      const poses = updates.map((p) => `${p.name}=${p.value.toFixed(1)}`).join('  ');
-      console.log(`  frame ${i + 1}/${frames}  ${poses}  (${dt}s elapsed)`);
-    }
-  }
-  ffmpeg.stdin.end();
-  await new Promise((res, rej) => ffmpeg.on('close', (c) => (c === 0 ? res() : rej(new Error(`ffmpeg exit ${c}`)))));
-  console.log(`Wrote ${OUT_MP4}`);
-} finally {
-  if (connectedExisting) {
-    await browser.close().catch(() => undefined); // disconnect, don't kill the attached Chrome
-  } else {
-    await browser.close().catch(() => undefined);
-  }
 }
