@@ -25,10 +25,15 @@
 //      voxels via two distance transforms: dilated = (edt2(S) ≤ r²),
 //      closed = dilated ∧ (edt2(¬dilated) > r²). Channel candidate voxels
 //      V = closed ∧ ¬S ∧ O — outside-connected air that the closing
-//      sealed, i.e. the channel interior. The declared channel is the
-//      LARGEST-volume 6-connected component of V (closing artifacts along
-//      convex hull pockets are smaller by construction). found = the number
-//      of 26-connected clusters of channel voxels that are 6-adjacent to
+//      sealed, i.e. the channel interior. The declared channel is taken to
+//      be the LARGEST-volume 6-connected component of V. HEURISTIC
+//      ASSUMPTION, not a guarantee: closing artifacts along convex hull
+//      pockets are usually far smaller than a real channel, but a wide
+//      CONCAVE pocket narrower than the ~16 mm closing diameter can
+//      out-volume a small declared channel and win the pick —
+//      `channelOpenings.channelSeed` exposes which component was chosen so
+//      such misbinding is visible downstream. found = the number of
+//      26-connected clusters of channel voxels that are 6-adjacent to
 //      O ∧ ¬closed (open air beyond the closed hull) — each cluster is one
 //      mouth.
 //
@@ -64,9 +69,29 @@ export interface VoidTopologyResult {
    *  `location` is the sampled position of the component's seed voxel —
    *  always inside the void. */
   sealedVoids: { volumeMm3: number; location: [number, number, number] }[];
+  /** Number of sealed-void components detected BEFORE declared
+   *  `sealed: true` channels consumed them. Count-based consumption hides
+   *  over-declaration from `sealedVoids` (declared 2 sealed, only 1 cavity
+   *  → sealedVoids comes back empty); declaredSealed >
+   *  detectedSealedVoidCount is the signal that at least one declared
+   *  sealed channel has NO matching cavity. */
+  detectedSealedVoidCount: number;
   /** Mouth-cluster count for the part's declared channel (undefined when no
    *  non-sealed channel is declared — mouth phase skipped). */
-  channelOpenings?: { found: number; channelVolumeMm3: number };
+  channelOpenings?: {
+    found: number;
+    channelVolumeMm3: number;
+    /** Sampled position of each mouth cluster's seed voxel (scan-order
+     *  first voxel of the cluster — on the mouth, at the part surface).
+     *  One entry per counted mouth; mismatch diagnostics can point here. */
+    mouthLocations: [number, number, number][];
+    /** Sampled position of the chosen channel component's seed voxel —
+     *  always inside the channel the largest-component heuristic picked.
+     *  Undefined when the closing sealed nothing (found: 0): there is no
+     *  channel component to point at. Lets consumers see channel
+     *  misbinding (heuristic picked a pocket, not the declared channel). */
+    channelSeed?: [number, number, number];
+  };
   /** Voxel edge length actually used (target 0.4 mm, grown under the
    *  2M-voxel budget). */
   voxelMm: number;
@@ -116,14 +141,10 @@ export function analyzeVoids(
     .sort((a, b) => b.c.voxelCount - a.c.voxelCount || a.c.seed - b.c.seed);
 
   const declaredSealed = channels.filter(ch => ch.sealed).length;
-  const sealedVoids = voids.slice(declaredSealed).map(({ c }) => {
-    const i = c.seed % nx;
-    const rest = (c.seed / nx) | 0;
-    return {
-      volumeMm3: c.voxelCount * voxelVolMm3,
-      location: samplePoint(grid, i, rest % ny, (rest / ny) | 0),
-    };
-  });
+  const sealedVoids = voids.slice(declaredSealed).map(({ c }) => ({
+    volumeMm3: c.voxelCount * voxelVolMm3,
+    location: seedPoint(grid, c.seed),
+  }));
 
   // --- Phase 3: mouth counting (only for a declared non-sealed channel) ---
   const openChannel = channels.find(ch => !ch.sealed);
@@ -134,11 +155,19 @@ export function analyzeVoids(
 
   return {
     sealedVoids,
+    detectedSealedVoidCount: voids.length,
     ...(channelOpenings !== undefined ? { channelOpenings } : {}),
     voxelMm,
     crackedColumns: grid.crackedColumns,
     phases: { sealedVoids: true, mouthCount: openChannel !== undefined },
   };
+}
+
+/** Sampled position (mm, mesh frame) of a component's seed voxel. */
+function seedPoint(grid: VoxelGrid, seed: number): [number, number, number] {
+  const i = seed % grid.nx;
+  const rest = (seed / grid.nx) | 0;
+  return samplePoint(grid, i, rest % grid.ny, (rest / grid.ny) | 0);
 }
 
 /** Morphological closing + mouth clustering (algorithm step 3). */
@@ -147,7 +176,7 @@ function countMouths(
   airLabels: Int32Array,
   isOutsideComp: boolean[],
   voxelVolMm3: number,
-): { found: number; channelVolumeMm3: number } {
+): NonNullable<VoidTopologyResult['channelOpenings']> {
   const { nx, ny, nz, solid, voxelMm } = grid;
   const n = nx * ny * nz;
   const r = Math.ceil(CLOSING_RADIUS_MM / voxelMm);
@@ -192,8 +221,9 @@ function countMouths(
   if (channelId < 0) {
     // Closing sealed nothing — no channel narrower than ~2r exists (either
     // the part has no channel, or it is too wide for the closing; the
-    // orchestrator's mismatch hint covers the wide case).
-    return { found: 0, channelVolumeMm3: 0 };
+    // orchestrator's mismatch hint covers the wide case). No channel
+    // component → no channelSeed to point at.
+    return { found: 0, channelVolumeMm3: 0, mouthLocations: [] };
   }
 
   // Mouth voxels: channel voxels 6-adjacent to open air beyond the closed
@@ -220,5 +250,7 @@ function countMouths(
   return {
     found: mouthClusters.components.length,
     channelVolumeMm3: channelVoxels * voxelVolMm3,
+    mouthLocations: mouthClusters.components.map(c => seedPoint(grid, c.seed)),
+    channelSeed: seedPoint(grid, vComps.components[channelId].seed),
   };
 }

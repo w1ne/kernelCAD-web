@@ -112,11 +112,33 @@ describe('analyzeVoids — OCCT export meshes', () => {
     expect(clean.phases).toEqual({ sealedVoids: true, mouthCount: true });
     expect(clean.crackedColumns).toBe(0);
     expect(clean.sealedVoids).toEqual([]);
+    expect(clean.detectedSealedVoidCount).toBe(0); // through-hole is outside-connected
     expect(clean.channelOpenings).toBeDefined();
     expect(clean.channelOpenings!.found).toBe(2); // === declared → clean
     // Hole volume π·2²·20 ≈ 251 mm³ (voxelized, closing meniscus at mouths).
     expect(clean.channelOpenings!.channelVolumeMm3).toBeGreaterThan(200);
     expect(clean.channelOpenings!.channelVolumeMm3).toBeLessThan(300);
+    // One mouth location per counted mouth, near the two z extremes of the
+    // bore (z = 0 and z = 20 faces; closing meniscus slop < 2 mm), both
+    // inside the hole's xy footprint (centre [10, 10], r = 2).
+    const mouths = clean.channelOpenings!.mouthLocations;
+    expect(mouths).toHaveLength(2);
+    const zs = mouths.map(m => m[2]).sort((a, b) => a - b);
+    expect(zs[0]).toBeLessThan(2);
+    expect(zs[1]).toBeGreaterThan(18);
+    for (const m of mouths) {
+      expect(m[0]).toBeGreaterThan(7);
+      expect(m[0]).toBeLessThan(13);
+      expect(m[1]).toBeGreaterThan(7);
+      expect(m[1]).toBeLessThan(13);
+    }
+    // Channel seed lies inside the bore (xy within the hole footprint).
+    const seed = clean.channelOpenings!.channelSeed;
+    expect(seed).toBeDefined();
+    expect(seed![0]).toBeGreaterThan(7);
+    expect(seed![0]).toBeLessThan(13);
+    expect(seed![1]).toBeGreaterThan(7);
+    expect(seed![1]).toBeLessThan(13);
 
     // Same geometry, declared openings: 3 — analyzeVoids still reports the
     // measured found: 2; Task 7 surfaces found ≠ declared as the mismatch.
@@ -158,6 +180,9 @@ describe('analyzeVoids — OCCT export meshes', () => {
     expect(res.crackedColumns).toBe(0);
     expect(res.sealedVoids).toEqual([]);
     expect(res.channelOpenings!.found).toBe(1);
+    // Single mouth at the top face (the hole opens at z = 20).
+    expect(res.channelOpenings!.mouthLocations).toHaveLength(1);
+    expect(res.channelOpenings!.mouthLocations[0][2]).toBeGreaterThan(18);
     // π·2²·10 ≈ 126 mm³.
     expect(res.channelOpenings!.channelVolumeMm3).toBeGreaterThan(100);
     expect(res.channelOpenings!.channelVolumeMm3).toBeLessThan(160);
@@ -175,6 +200,7 @@ describe('analyzeVoids — OCCT export meshes', () => {
     expect(res.phases).toEqual({ sealedVoids: true, mouthCount: false });
     expect(res.channelOpenings).toBeUndefined();
     expect(res.crackedColumns).toBe(0);
+    expect(res.detectedSealedVoidCount).toBe(1);
     expect(res.sealedVoids).toHaveLength(1);
     const v = res.sealedVoids[0];
     expect(v.volumeMm3).toBeGreaterThan(170); // 6³ = 216 mm³ voxelized
@@ -186,13 +212,26 @@ describe('analyzeVoids — OCCT export meshes', () => {
     }
 
     // Declared sealed → consumed, clean; mouth phase stays skipped (no
-    // non-sealed channel declared).
+    // non-sealed channel declared). The PRE-consumption count stays 1 so
+    // consumers can still see how many cavities physically exist.
     const declared = analyzeVoids(mesh, bvh, [
       { part: 'shape', name: 'pocket', openings: 0, sealed: true },
     ]);
     expect(declared.sealedVoids).toEqual([]);
+    expect(declared.detectedSealedVoidCount).toBe(1);
     expect(declared.channelOpenings).toBeUndefined();
     expect(declared.phases).toEqual({ sealedVoids: true, mouthCount: false });
+
+    // Over-declaration (2 sealed channels, only 1 cavity) leaves sealedVoids
+    // empty — detectedSealedVoidCount is the only signal that one declared
+    // sealed channel has NO matching cavity. Task 7 turns
+    // declaredSealed > detectedSealedVoidCount into a diagnostic.
+    const overDeclared = analyzeVoids(mesh, bvh, [
+      { part: 'shape', name: 'pocket', openings: 0, sealed: true },
+      { part: 'shape', name: 'phantom', openings: 0, sealed: true },
+    ]);
+    expect(overDeclared.sealedVoids).toEqual([]);
+    expect(overDeclared.detectedSealedVoidCount).toBe(1);
   }, 30000);
 
   it('skips the mouth-count phase when no channels are declared (phase flags)', async () => {
@@ -201,6 +240,7 @@ describe('analyzeVoids — OCCT export meshes', () => {
     expect(res.phases).toEqual({ sealedVoids: true, mouthCount: false });
     expect(res.channelOpenings).toBeUndefined();
     expect(res.sealedVoids).toEqual([]);
+    expect(res.detectedSealedVoidCount).toBe(0);
     expect(res.crackedColumns).toBe(0);
   }, 30000);
 });
