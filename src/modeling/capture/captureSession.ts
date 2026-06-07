@@ -812,10 +812,19 @@ export class CaptureSession {
       if (!isPair) {
         bad(`ignore[${i}]`, `must be a [partA, partB] pair of non-empty strings; got ${JSON.stringify(pair)}`);
       }
+      if (pair[0] === pair[1]) {
+        bad(`ignore[${i}]`, `must name two different parts; ['${pair[0]}', '${pair[1]}'] can never match a distinct-part pair`);
+      }
     }
     for (const [i, name] of (args.exclude ?? []).entries()) {
       if (typeof name !== 'string' || name.length === 0) {
         bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
+      }
+      // Glob shape: literal name or trailing-'*' prefix glob only. A bare '*'
+      // would silently exclude every part while the spec claims the checks.
+      const star = name.indexOf('*');
+      if (star !== -1 && (star !== name.length - 1 || name.length === 1)) {
+        bad(`exclude[${i}]`, `must be a literal part name or a trailing-'*' prefix glob (e.g. 'servo-*'); got ${JSON.stringify(name)}`);
       }
     }
     for (const [i, c] of (args.channels ?? []).entries()) {
@@ -837,6 +846,16 @@ export class CaptureSession {
       if (c.sealed === true && c.openings !== 0) {
         bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
       }
+    }
+    // Downstream matching is by (part, name) — two entries with the same key
+    // are unresolvable contradictory declarations, not a refinement.
+    const channelKeys = new Set<string>();
+    for (const [i, c] of (args.channels ?? []).entries()) {
+      const key = JSON.stringify([c.part, c.name]);
+      if (channelKeys.has(key)) {
+        bad(`channels[${i}]`, `duplicates part '${c.part}' + name '${c.name}' declared at an earlier index`);
+      }
+      channelKeys.add(key);
     }
 
     const metadata: DfmSpecMetadata = {

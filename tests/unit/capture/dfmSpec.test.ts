@@ -131,6 +131,153 @@ describe('dfmSpec capture', () => {
       expect((e as KernelError).message).toMatch(/openings/);
     }
   });
+
+  it('throws KernelError when sealed: true comes with openings !== 0', () => {
+    const { api } = makeApi();
+    const spec = { channels: [{ part: 'x', name: 'c', openings: 2, sealed: true }] };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/channels\[0\]\.openings/);
+      expect((e as KernelError).message).toMatch(/sealed/);
+    }
+  });
+
+  it('throws KernelError naming the duplicate channel for a repeated (part, name) pair', () => {
+    const { api } = makeApi();
+    const spec = {
+      channels: [
+        { part: 'shape', name: 'drain', openings: 2 },
+        { part: 'shape', name: 'drain', openings: 3 },
+      ],
+    };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/channels\[1\]/);
+      expect((e as KernelError).message).toMatch(/duplicates/);
+      expect((e as KernelError).message).toMatch(/'shape'/);
+      expect((e as KernelError).message).toMatch(/'drain'/);
+    }
+  });
+
+  it('throws KernelError for a self-pair in ignore', () => {
+    const { api } = makeApi();
+    const spec = { minWall: 1, ignore: [['lid', 'lid']] as ReadonlyArray<readonly [string, string]> };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/ignore\[0\]/);
+      expect((e as KernelError).message).toMatch(/two different parts/);
+    }
+  });
+
+  it('throws KernelError for a non-trailing * in an exclude glob', () => {
+    const { api } = makeApi();
+    for (const glob of ['ser*vo', '*servo']) {
+      const spec = { minWall: 1, exclude: [glob] };
+      expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+      try { api.dfmSpec(spec); }
+      catch (e) {
+        expect((e as KernelError).code).toBe('feature.invalid-args');
+        expect((e as KernelError).message).toMatch(/exclude\[0\]/);
+        expect((e as KernelError).message).toMatch(/trailing-'\*'/);
+      }
+    }
+  });
+
+  it('throws KernelError for a bare * exclude (would no-op every check)', () => {
+    const { api } = makeApi();
+    const spec = { minWall: 1, exclude: ['*'] };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/exclude\[0\]/);
+    }
+  });
+
+  it('throws KernelError naming minWall for NaN and Infinity', () => {
+    const { api } = makeApi();
+    for (const v of [NaN, Infinity]) {
+      expect(() => api.dfmSpec({ minWall: v })).toThrow(KernelError);
+      try { api.dfmSpec({ minWall: v }); }
+      catch (e) {
+        expect((e as KernelError).code).toBe('feature.invalid-args');
+        expect((e as KernelError).message).toMatch(/minWall/);
+      }
+    }
+  });
+
+  it('throws KernelError naming minClearance for NaN and Infinity', () => {
+    const { api } = makeApi();
+    for (const v of [NaN, Infinity]) {
+      expect(() => api.dfmSpec({ minClearance: v })).toThrow(KernelError);
+      try { api.dfmSpec({ minClearance: v }); }
+      catch (e) {
+        expect((e as KernelError).code).toBe('feature.invalid-args');
+        expect((e as KernelError).message).toMatch(/minClearance/);
+      }
+    }
+  });
+
+  it('throws KernelError for invalid exclude entries (empty string, non-string)', () => {
+    const { api } = makeApi();
+    for (const entry of ['', 42 as unknown as string]) {
+      const spec = { minWall: 1, exclude: [entry] };
+      expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+      try { api.dfmSpec(spec); }
+      catch (e) {
+        expect((e as KernelError).code).toBe('feature.invalid-args');
+        expect((e as KernelError).message).toMatch(/exclude\[0\]/);
+      }
+    }
+  });
+
+  it('throws KernelError for a non-object channel entry', () => {
+    const { api } = makeApi();
+    const spec = { channels: ['drain' as unknown as { part: string; name: string; openings: number }] };
+    expect(() => api.dfmSpec(spec)).toThrow(KernelError);
+    try { api.dfmSpec(spec); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/channels\[0\]/);
+    }
+  });
+
+  it('throws KernelError naming part / name for empty channel part and name', () => {
+    const { api } = makeApi();
+    const emptyPart = { channels: [{ part: '', name: 'drain', openings: 1 }] };
+    expect(() => api.dfmSpec(emptyPart)).toThrow(KernelError);
+    try { api.dfmSpec(emptyPart); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/channels\[0\]\.part/);
+    }
+    const emptyName = { channels: [{ part: 'shape', name: '', openings: 1 }] };
+    expect(() => api.dfmSpec(emptyName)).toThrow(KernelError);
+    try { api.dfmSpec(emptyName); }
+    catch (e) {
+      expect((e as KernelError).code).toBe('feature.invalid-args');
+      expect((e as KernelError).message).toMatch(/channels\[0\]\.name/);
+    }
+  });
+
+  it('keeps the last record when called twice', () => {
+    const { session, api } = makeApi();
+    api.dfmSpec({ minWall: 1 });
+    api.dfmSpec({ minWall: 2 });
+    const recs = session.getRecords().filter(r => r.kind === 'dfmSpec');
+    expect(recs).toHaveLength(2);
+    // Resolution rule (last wins) lives in the check engine, not the session;
+    // session simply allows multiple registrations. Readers take the LAST
+    // dfmSpec record (same convention as renderEnvironment).
+    const last = recs[recs.length - 1].metadata as unknown as DfmSpecMetadata;
+    expect(last.minWall).toBe(2);
+  });
 });
 
 describe('dfmSpec in a built model', () => {
