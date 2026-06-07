@@ -140,6 +140,23 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         expect(container.querySelectorAll('lineSegments')).toHaveLength(0);
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
     });
+
+    it('cutaway props render the same scene graph (smoke)', () => {
+        const plane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 5);
+        const { container } = render(
+            <ConsolidatedShape
+                geometry={geometryWithEdges}
+                shapeIndex={0}
+                viewMode3D="shadedWithEdges"
+                clippingPlanes={[plane, plane.clone()]}
+                clipIntersection={true}
+                isSelected={false}
+                name="body_1"
+            />,
+        );
+        expect(container.querySelectorAll('lineSegments')).toHaveLength(1);
+        expect(container.querySelectorAll('mesh')).toHaveLength(1);
+    });
 });
 
 describe('buildShapeMaterial — viewMode3D produces visually-distinct materials', () => {
