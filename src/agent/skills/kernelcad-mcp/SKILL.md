@@ -128,6 +128,14 @@ interface RepairContext {
 
 - `list_part_stats({ file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
 
+### DFM gates
+
+- `dfm_check({ file? | code? })` — run the print-readiness gates declared by `dfmSpec()` in the script: part-pair clearance (exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology (voxel flood-fill). Returns the flattened report `{ ok, clearance, walls, voids, timings, diagnostics }`; errors if the script declares no `dfmSpec`. Iteration notes:
+  - **Enforcement is inherited.** ANY `evaluate_script` call on a script that declares a `dfmSpec(...)` runs the same gates and fails on the same diagnostics (the CLI surface is `kernelcad dfm <file>`). `dfm_check` exists to surface the full report struct — `clearance[]` pair statuses, per-part `walls[]`/`voids[]`, `timings` — which the `evaluate_script` envelope omits; it is not an opt-in switch.
+  - **Gates re-run on every evaluate call** — budget up to ~10 s extra per call on large assemblies (per-phase wall time is in `timings`).
+  - **Dfm-only failures keep the MCP session alive**: when the build succeeded and only gate diagnostics are fatal, the active session is retained/refreshed, so the session-dependent tools stay usable while iterating on a fix. Genuine build failures still clear it.
+  - `'unknown'` clearance entries mean the measurement failed (kernel error) — warn-only, never flips `ok`. Locations embedded in diagnostics are world-frame; the raw `walls[]`/`voids[]` structs are part-local.
+
 ## Topology references — the `@kc[...]` grammar
 
 kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.

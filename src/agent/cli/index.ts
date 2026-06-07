@@ -1,6 +1,7 @@
 // src/agent/cli/index.ts
 import { Command } from 'commander';
 import { createRequire } from 'node:module';
+import { dfmCommand } from './commands/dfm';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
 import { inspectCommand } from './commands/inspect';
@@ -40,6 +41,7 @@ program
   .enablePositionalOptions()
   .version(pkg.version);
 
+program.addCommand(dfmCommand());
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
 program.addCommand(inspectCommand());

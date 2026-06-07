@@ -63,6 +63,7 @@ import { whyDidThisFailTool } from './tools/whyDidThisFail';
 import { flattenPatternTool } from './tools/flattenPattern';
 import { getBendTableTool } from './tools/getBendTable';
 import { dfmPreflightTool } from './tools/dfmPreflight';
+import { dfmCheckTool } from './tools/dfmCheck';
 import { checkSweptCollisionTool } from './tools/checkSweptCollision';
 import { checkReachableTool } from './tools/checkReachable';
 import { checkMountingHoleConsistencyTool } from './tools/checkMountingHoleConsistency';
@@ -1631,6 +1632,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => dfmPreflightTool(input as unknown as Parameters<typeof dfmPreflightTool>[0]) as Promise<unknown>,
+  },
+  {
+    definition: {
+      name: 'dfm_check',
+      description:
+        'Run the print-readiness gates declared by dfmSpec() in a kernelCAD script: part-pair clearance ' +
+        '(exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology ' +
+        '(voxel flood-fill). Pass either { file } or { code }. Reports per-pair distances, worst thin spots ' +
+        '(xyz + part), channel mouth counts, and diagnostics with hints. No-op error if the script declares no dfmSpec.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
+          code: { type: 'string', description: 'Inline kernelCAD script source.' },
+        },
+      },
+    },
+    handler: input => dfmCheckTool(input as Parameters<typeof dfmCheckTool>[0]),
   },
   {
     definition: {

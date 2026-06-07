@@ -1721,6 +1721,40 @@ export const DIAGNOSTIC_REGISTRY = {
     group: 'dfm',
     description: 'A rule\'s per-material threshold is null in specs.json because the vendor does not publish the value.',
   },
+  // DFM print-prep gates (4) — W3 Task 7: dfmSpec({...}) enforcement
+  // (min-wall sampling, part-pair clearance, voxel void/channel topology).
+  'dfm.wall.too-thin': {
+    hintTemplate:
+      'A printed wall is thinner than dfmSpec.minWall at the reported location. Thicken the section (offset the cut, widen the rib), or lower minWall only if the target printer resolves it.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'thicken the wall at the reported xyz to >= minWall' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Inward ray sampling measured a material wall thinner than the declared minimum.',
+  },
+  'dfm.clearance.violated': {
+    hintTemplate:
+      'Two distinct parts sit closer than dfmSpec.minClearance. Translate one part along its mating direction, or add the pair to dfmSpec.ignore if the contact is intentional (seated vendor part, fastened printed joint).',
+    nextAction: { kind: 'rewrite-feature', guidance: 'open the gap to >= minClearance or declare the pair in dfmSpec.ignore' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'BREP minimum distance between a part pair is below the declared clearance and the pair is not mated, ignored, or interfering.',
+  },
+  'dfm.channel.openings-mismatch': {
+    hintTemplate:
+      'A declared channel has a different number of mouth openings than declared — a breach adds openings, a blocked mouth removes them, and found=0 can mean the channel is wider than the ~16mm detection limit. Inspect the channel walls near the part surface.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Voxel flood-fill counted a different number of channel mouths than the dfmSpec.channels declaration.',
+  },
+  'dfm.void.undeclared': {
+    hintTemplate:
+      'A sealed internal void traps powder/resin/support and is unprintable on FDM without declaration. Open a drain channel, or declare it via dfmSpec.channels with sealed: true if intentional.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'open a drain channel or declare the void sealed: true' },
+    defaultSeverity: 'error',
+    group: 'dfm',
+    description: 'Flood-fill found an enclosed empty region not declared as a sealed channel.',
+  },
   // Kinematic grounding (9) — K1-K9. Local sampled-pose collision sweep,
   // analytical / numeric IK reachability, closed-form beam load capacity,
   // and fastener-side hole-diameter agreement. Every check runs in-process

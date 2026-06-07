@@ -25,6 +25,7 @@ import type {
   AnimationViewHandle,
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
+import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
 import { helix, type RailPoint, type HelixOptions } from './helix';
 import { solveHermiteG2, type HermiteEndpoint } from './capture/hermiteG2';
 import { createSketchModule, type SketchModule } from './sketch/index';
@@ -365,6 +366,24 @@ export interface KernelCadApi {
    * last one.
    */
   animationView(spec: AnimationViewSpec): AnimationViewHandle;
+
+  /**
+   * Declare printability (design-for-manufacture) gates for the model.
+   * Declaration-only: this registers a virtual record (no OCCT geometry).
+   * Enforcement runs on every `kernelcad evaluate` / `evaluate_script` once
+   * a dfmSpec record is present — declared gates (minimum wall thickness,
+   * inter-part clearance, internal-channel topology) fail the evaluation
+   * when violated.
+   *
+   * At least one of `minWall`, `minClearance`, or `channels` is required.
+   * Malformed declarations THROW `KernelError` (`feature.invalid-args`)
+   * rather than stashing diagnostics — dfmSpec is an enforcement gate, and
+   * a silently-disabled gate is worse than a build failure.
+   *
+   * Multiple calls register multiple records; the last record wins (same
+   * convention as `setRenderEnvironment`).
+   */
+  dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
    * Kinematic-grounding checks namespace. Four in-process feasibility
@@ -1103,6 +1122,13 @@ export function createApi(ctx: ApiContext): KernelCadApi {
       const id = session.addAnimationView(spec);
       const record = session.getRecords().find(r => r.id === id)!;
       const metadata = record.metadata as unknown as import('../shared/intent/animationViewRecord').AnimationViewMetadata;
+      return { id, metadata };
+    },
+
+    dfmSpec(spec) {
+      const id = session.addDfmSpec(spec);
+      const record = session.getRecords().find(r => r.id === id)!;
+      const metadata = record.metadata as unknown as import('../shared/intent/dfmSpecRecord').DfmSpecMetadata;
       return { id, metadata };
     },
 
