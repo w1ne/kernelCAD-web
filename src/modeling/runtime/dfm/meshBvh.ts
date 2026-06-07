@@ -71,6 +71,13 @@ export class TriangleBvh {
   private readonly rightChild: Int32Array;
   private nodeCount = 0;
 
+  // Reusable traversal stack shared by raycast/allHits. Queries are
+  // synchronous and non-reentrant (pointInside -> allHits is sequential,
+  // never nested), so a single per-instance buffer is safe and avoids a
+  // fresh Int32Array allocation per query. Depth 128 covers any tree this
+  // layout can produce (worst-case depth ~ 2*log2(n) << 128).
+  private readonly traversalStack = new Int32Array(128);
+
   constructor(mesh: DfmMesh) {
     const { vertices, triangles } = mesh;
     const numTris = (triangles.length / 3) | 0;
@@ -125,7 +132,13 @@ export class TriangleBvh {
 
     if (valid > 0) this.buildNode(0, valid, centroids);
     else {
-      // Empty tree: a single leaf with an inverted (never-hit) box.
+      // Empty tree: a placeholder root that must NEVER be traversed.
+      // Invariant: every public query early-returns on triangleCount === 0
+      // before touching node storage. The inverted bounds do NOT reject
+      // rays (the slab near/far swap turns [+Inf, -Inf] into an infinite
+      // box), and count[0] === 0 marks this node internal with
+      // rightChild 0, so an unguarded traversal would self-loop forever.
+      // Any new public query MUST keep the triangleCount === 0 guard.
       this.nodeCount = 1;
       this.bounds.set([Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity], 0);
       this.count[0] = 0;
@@ -288,7 +301,7 @@ export class TriangleBvh {
 
     let bestT = Infinity;
     let bestTri = -1;
-    const stack = new Int32Array(128);
+    const stack = this.traversalStack;
     let sp = 0;
     stack[sp++] = 0;
     while (sp > 0) {
@@ -323,7 +336,7 @@ export class TriangleBvh {
     const ix = 1 / dx, iy = 1 / dy, iz = 1 / dz;
 
     const hits: BvhHit[] = [];
-    const stack = new Int32Array(128);
+    const stack = this.traversalStack;
     let sp = 0;
     stack[sp++] = 0;
     while (sp > 0) {
