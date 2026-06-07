@@ -187,6 +187,7 @@ export function SectionPanel({ visible }: { visible: boolean }) {
               type="button"
               data-testid={`section-side-${a}`}
               title="Which side of this axis is removed"
+              aria-pressed={sectionSides[a]}
               onClick={() => shellStore.setSectionSide(a, !sectionSides[a])}
               className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333]"
             >
