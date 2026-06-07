@@ -7,6 +7,7 @@
 // required, no { code } mode).
 
 import { inspectStepFile, type StepInspectReport } from '../../inspect/inspectStep';
+import { isKernelError } from '../../../shared/intent/kernelError';
 
 export interface InspectStepInput {
   file: string;
@@ -20,6 +21,8 @@ export interface InspectStepOutput {
    *  missing/unreadable file, `feature.kernel-failed` for bytes that do not
    *  parse as a STEP model, `cli.script-exception` for non-kernel throws. */
   errorCode?: string;
+  /** Actionable next-step hint carried by the underlying KernelError, when present. */
+  errorHint?: string;
 }
 
 export async function inspectStepTool(input: InspectStepInput): Promise<InspectStepOutput> {
@@ -33,11 +36,11 @@ export async function inspectStepTool(input: InspectStepInput): Promise<InspectS
   try {
     return { ok: true, report: await inspectStepFile(input.file) };
   } catch (e) {
-    const code = (e as { code?: string }).code ?? 'cli.script-exception';
     return {
       ok: false,
       error: e instanceof Error ? e.message : String(e),
-      errorCode: code,
+      errorCode: isKernelError(e) ? e.code : 'cli.script-exception',
+      errorHint: isKernelError(e) ? e.hint : undefined,
     };
   }
 }

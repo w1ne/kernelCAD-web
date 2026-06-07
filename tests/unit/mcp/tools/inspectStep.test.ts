@@ -4,13 +4,19 @@
 // interrogation (solid tree + hole report). Unlike the script tools this
 // takes a STEP file path directly; no { code } mode exists. Fixture: same
 // two-disjoint-solid STEP recipe as the CLI tests.
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { OcctBackend, initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { inspectStepTool } from '../../../../src/agent/mcp/tools/inspectStep';
+import { inspectStepFile } from '../../../../src/agent/inspect/inspectStep';
 import { callMcpTool, getToolDefinition } from '../../../../src/agent/mcp/toolRegistry';
+
+vi.mock('../../../../src/agent/inspect/inspectStep', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/agent/inspect/inspectStep')>();
+  return { ...actual, inspectStepFile: vi.fn(actual.inspectStepFile) };
+});
 
 let tmpDir: string;
 let stepPath: string;
@@ -51,6 +57,7 @@ describe('inspect_step MCP tool', () => {
     expect(r.report).toBeUndefined();
     expect(r.errorCode).toBe('feature.invalid-args');
     expect(r.error).toBeTruthy();
+    expect(r.errorHint).toBeTruthy();
   });
 
   it('returns ok: false with feature.invalid-args when input.file is absent', async () => {
@@ -66,6 +73,15 @@ describe('inspect_step MCP tool', () => {
     const r = await inspectStepTool({ file: badPath });
     expect(r.ok).toBe(false);
     expect(r.errorCode).toBe('feature.kernel-failed');
+    expect(r.errorHint).toBeTruthy();
+  });
+
+  it('clamps non-KernelError throws to cli.script-exception (no code leak)', async () => {
+    vi.mocked(inspectStepFile).mockRejectedValueOnce({ code: 'ENOENT' });
+    const r = await inspectStepTool({ file: stepPath });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('cli.script-exception');
+    expect(r.errorHint).toBeUndefined();
   });
 
   it('is registered in TOOL_REGISTRY and dispatchable via callMcpTool', async () => {
