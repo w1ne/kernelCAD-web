@@ -60,6 +60,11 @@ const FIXTURES: Fixture[] = [
     expectCode: 'feature.invalid-args',
   },
   {
+    name: 'thin wall under dfmSpec → dfm.wall.too-thin',
+    code: `dfmSpec({ minWall: 1.5 }); return box(20, 20, 1);`,
+    expectCode: 'dfm.wall.too-thin',
+  },
+  {
     name: 'no return value → no diagnostics expected (control)',
     code: `box(10, 10, 10);`,
     expectCode: undefined,

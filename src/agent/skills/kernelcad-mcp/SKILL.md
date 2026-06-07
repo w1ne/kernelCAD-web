@@ -127,6 +127,10 @@ interface RepairContext {
 
 - `list_part_stats({ file? | code? })` — list solved-assembly parts with print-prep stats: name, exact world-frame bounding box (from the export tessellation), volume (mm³), surface area (mm²), and export triangle count (same mesher as the STL exporter, so the numbers match `export_part` exactly). Returns `{ ok, parts: [{ name, bbox, volumeMm3, surfaceAreaMm2, triangleCount }], diagnostics }`.
 
+### DFM gates
+
+- `dfm_check({ file? | code? })` — run the print-readiness gates declared by `dfmSpec()` in the script: part-pair clearance (exact BREP distance), minimum wall thickness (inward ray sampling), and void/channel topology (voxel flood-fill). Returns `{ ok, clearance, walls, voids, timings, diagnostics }`; errors if the script declares no `dfmSpec`. The same gates also run automatically inside `evaluate_script` whenever the script declares a `dfmSpec(...)` (the CLI surface is `kernelcad dfm <file>`).
+
 ## Topology references — the `@kc[...]` grammar
 
 kernelCAD addresses faces, edges, vertices, and connectors as stable string references that survive most upstream edits. The grammar is kernelCAD's topology-reference language; it is emitted by introspection tools and accepted by every tool that consumes a face / edge / connector handle.
