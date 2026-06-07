@@ -14,6 +14,7 @@ import { ParamsTab } from './tabs/ParamsTab';
 import { JointsTab } from './tabs/JointsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
+import { AnimationTab } from './components/animation/AnimationTab';
 import { StatusBar } from './components/Layout/StatusBar';
 import ProjectManagerDialog from './components/Dialogs/ProjectManagerDialog';
 import { useWorkbench } from './context/WorkbenchContext';
@@ -160,6 +161,7 @@ export function StudioShell() {
         joints: <JointsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
+        animation: <AnimationTab />,
     };
 
     // HUD reads RAW interference pairs (pre-filter), not the validator's
