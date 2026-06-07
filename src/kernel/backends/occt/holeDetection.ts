@@ -104,7 +104,11 @@ export function probePointInsideMaterial(
     point[2],
   );
   try {
-    // Clone: replicad booleans consume their operands' underlying shapes.
+    // Clone is a cheap handle copy: replicad booleans do NOT consume their
+    // operands. The clone is defensive wrapper isolation — the probe boolean
+    // runs on a throwaway wrapper so the caller's backend is never an operand
+    // of an OCCT operation (same pattern as measureGapToBody in
+    // jointMeshContinuity.ts).
     const inter = backend.clone().intersect(probe);
     return !inter.isEmpty();
   } catch {

@@ -66,6 +66,42 @@ describe('detectCylindricalHoles', () => {
     expect(detectCylindricalHoles(part)).toHaveLength(0);
   });
 
+  it('reports two through-holes on a plate with two parallel bores', () => {
+    // 20×20×10 plate with TWO Ø4 through-holes at (±5, 0).
+    const plate = OcctBackend.box(20, 20, 10, true)
+      .subtract(OcctBackend.cylinder(10, 2).translate(5, 0, -5))
+      .subtract(OcctBackend.cylinder(10, 2).translate(-5, 0, -5));
+    const holes = detectCylindricalHoles(plate);
+    expect(holes).toHaveLength(2);
+    const xs = holes.map((h) => h.axisOrigin[0]).sort((a, b) => a - b);
+    expect(xs[0]).toBeCloseTo(-5, 3);
+    expect(xs[1]).toBeCloseTo(5, 3);
+    for (const h of holes) {
+      expect(h.kind).toBe('through');
+      expect(h.diameterMm).toBeCloseTo(4, 3);
+      expect(h.depthMm).toBeCloseTo(10, 2);
+      // Loose axis pin: the axis line passes through (±5, 0, ·) ...
+      expect(Math.abs(h.axisOrigin[0])).toBeCloseTo(5, 3);
+      expect(h.axisOrigin[1]).toBeCloseTo(0, 3);
+      // ... and runs along Z. The axis SIGN is arbitrary for a through
+      // hole (no mouth/bottom asymmetry) — accept either.
+      expect(Math.abs(h.axisDirection[2])).toBeCloseTo(1, 3);
+    }
+  });
+
+  it('flags an internal duct (both axial ends closed) as blind + bothEndsClosed', () => {
+    // Cylindrical void fully interior to a 20-cube: cylinder z ∈ [-5, 5]
+    // inside box z ∈ [-10, 10] — both ends probe closed.
+    const part = OcctBackend.box(20, 20, 20, true)
+      .subtract(OcctBackend.cylinder(10, 2).translate(0, 0, -5));
+    const holes = detectCylindricalHoles(part);
+    expect(holes).toHaveLength(1);
+    expect(holes[0].kind).toBe('blind');
+    expect(holes[0].bothEndsClosed).toBe(true);
+    expect(holes[0].diameterMm).toBeCloseTo(4, 3);
+    expect(holes[0].depthMm).toBeCloseTo(10, 2);
+  });
+
   it('reports a single hole on a boolean-cut bore (faceCount >= 1)', () => {
     // A genuinely seam-split fixture is NOT attainable through the
     // OcctBackend boolean path: replicad's cut/fuse unconditionally run
