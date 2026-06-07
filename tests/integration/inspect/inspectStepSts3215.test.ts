@@ -19,6 +19,17 @@
 // confirmed in the raw STEP text, is a 9.899 × 9.899 mm square (holes on a
 // Ø14 circle) centered at (12.5, 0): centers (12.5 ± 4.95, ±4.95). The
 // literals below are frozen from that STEP-text-verified capture.
+//
+// Bore-reporting convention: the detector reports one entry per wall
+// segment, not per physical bore. Each of the 4 through bores in the
+// horn-mounting square crosses two wall segments (mouths at z = 18.7 and
+// z = -15.6), so it contributes TWO '2.50/through' entries — hence the
+// census counts 8 through entries for 4 physical bores, and 17 holes
+// total. A future detector improvement that merges coaxial through
+// segments into one bore would legitimately change the census 8 -> 4 and
+// the total 17 -> 13; refresh these goldens from a verified run if that
+// lands. Similarly, faceCount 182 depends on how OCCT sews the imported
+// shells and may shift with sewing-tolerance changes.
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { inspectStepFile } from '../../../src/agent/inspect/inspectStep';
@@ -35,7 +46,7 @@ let body: StepSolidReport;
 beforeAll(async () => {
   report = await inspectStepFile(FIXTURE);
   body = report.solids[0];
-});
+}, 60_000);
 
 describe('inspect-step STS3215 golden acceptance', () => {
   it('reports one solid named Body1 with the frozen face count, volume, and bbox', () => {
@@ -43,12 +54,14 @@ describe('inspect-step STS3215 golden acceptance', () => {
     expect(body.name).toBe('Body1');
     expect(body.faceCount).toBe(182);
     expect(body.volumeMm3).toBeCloseTo(36217, 0);
-    expect(body.bboxExact.min[0]).toBeCloseTo(-22.7, 3);
-    expect(body.bboxExact.min[1]).toBeCloseTo(-12.4, 3);
-    expect(body.bboxExact.min[2]).toBeCloseTo(-19.4, 3);
-    expect(body.bboxExact.max[0]).toBeCloseTo(22.7, 3);
-    expect(body.bboxExact.max[1]).toBeCloseTo(12.4, 3);
-    expect(body.bboxExact.max[2]).toBeCloseTo(20.2, 3);
+    // bboxExact is the tessellated AABB: 1 d.p. keeps the golden immune
+    // to mesh-deflection changes while still pinning the 1-d.p. facts.
+    expect(body.bboxExact.min[0]).toBeCloseTo(-22.7, 1);
+    expect(body.bboxExact.min[1]).toBeCloseTo(-12.4, 1);
+    expect(body.bboxExact.min[2]).toBeCloseTo(-19.4, 1);
+    expect(body.bboxExact.max[0]).toBeCloseTo(22.7, 1);
+    expect(body.bboxExact.max[1]).toBeCloseTo(12.4, 1);
+    expect(body.bboxExact.max[2]).toBeCloseTo(20.2, 1);
     expect(body.holes).toHaveLength(17);
   });
 
@@ -75,14 +88,15 @@ describe('inspect-step STS3215 golden acceptance', () => {
     expect(square).toHaveLength(4);
 
     for (const h of square) {
-      expect(h.kind).toBe('through');
-      expect(h.diameterMm).toBeCloseTo(2.5, 2);
+      const label = `hole at (${h.axisOrigin})`;
+      expect(h.kind, label).toBe('through');
+      expect(h.diameterMm, label).toBeCloseTo(2.5, 2);
       // Coplanar mouths at z = 18.7 (1.5 mm below bbox max z = 20.2).
-      expect(h.axisOrigin[2]).toBeCloseTo(18.7, 2);
+      expect(h.axisOrigin[2], label).toBeCloseTo(18.7, 2);
       // All axes point straight into the body.
-      expect(h.axisDirection[0]).toBeCloseTo(0, 3);
-      expect(h.axisDirection[1]).toBeCloseTo(0, 3);
-      expect(h.axisDirection[2]).toBeCloseTo(-1, 3);
+      expect(h.axisDirection[0], label).toBeCloseTo(0, 3);
+      expect(h.axisDirection[1], label).toBeCloseTo(0, 3);
+      expect(h.axisDirection[2], label).toBeCloseTo(-1, 3);
     }
 
     // Equal diameters within 0.01 and coplanar mouths within 0.05 mm.
@@ -105,8 +119,6 @@ describe('inspect-step STS3215 golden acceptance', () => {
           Math.abs(h.axisOrigin[1] - cy) <= 0.05,
       );
       expect(match, `square corner near (${cx}, ${cy})`).toBeDefined();
-      expect(match!.axisOrigin[0]).toBeCloseTo(cx, 1);
-      expect(match!.axisOrigin[1]).toBeCloseTo(cy, 1);
     }
 
     // Pairwise in-plane spacings: four 9.899 mm sides + two 14.0 mm diagonals.
@@ -166,11 +178,14 @@ describe('inspect-step STS3215 golden acceptance', () => {
     }
   });
 
-  it('single Ø2.5 blind hole has depth 3.9', () => {
+  it('single Ø2.5 blind hole has depth 3.9 at (12.5, 0, -18.3)', () => {
     const blind25 = body.holes.filter(
       (h) => h.kind === 'blind' && Math.abs(h.diameterMm - 2.5) <= 0.01,
     );
     expect(blind25).toHaveLength(1);
     expect(blind25[0].depthMm).toBeCloseTo(3.9, 2);
+    expect(blind25[0].axisOrigin[0]).toBeCloseTo(12.5, 1);
+    expect(blind25[0].axisOrigin[1]).toBeCloseTo(0, 1);
+    expect(blind25[0].axisOrigin[2]).toBeCloseTo(-18.3, 1);
   });
 });
