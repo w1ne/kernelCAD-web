@@ -53,7 +53,7 @@ const INTERVAL_GAP_MM = 0.05;
 /** Length-weighted angular coverage (rad) required to call a bore a hole.
  *  A seam-split full bore sums to 2π; a quarter-round fillet channel to
  *  ~π/2. 5.8 rad ≈ 332° leaves slack for boolean sliver faces. */
-const MIN_ANGULAR_COVERAGE_RAD = 5.8;
+export const MIN_ANGULAR_COVERAGE_RAD = 5.8;
 /** Near end-probe offset (mm) — catches flat caps just past the bore end. */
 const NEAR_PROBE_OFFSET_MM = 0.2;
 /** Deep end-probe offset as a fraction of hole diameter — catches conical
@@ -62,7 +62,7 @@ const DEEP_PROBE_DIAMETER_FACTOR = 0.45;
 /** Bores shorter than this (mm) are degenerate boolean artifacts. */
 const MIN_BORE_LENGTH_MM = 1e-6;
 
-type Vec3 = [number, number, number];
+export type Vec3 = [number, number, number];
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -113,8 +113,9 @@ export function probePointInsideMaterial(
   }
 }
 
-/** One concave cylindrical face, in the face's OWN cylinder frame. */
-interface ConcaveCylFace {
+/** One concave cylindrical face, in the face's OWN cylinder frame.
+ *  Exported for direct unit tests of the pure grouping/merge pipeline. */
+export interface ConcaveCylFace {
   /** Point on the cylinder axis. */
   loc: Vec3;
   /** Unit axis direction (sign as OCCT reports it for this face). */
@@ -128,17 +129,65 @@ interface ConcaveCylFace {
 }
 
 /** A face's axial interval mapped onto a group's canonical axis. */
-interface FaceInterval {
+export interface FaceInterval {
   t0: number;
   t1: number;
   du: number;
 }
 
-interface AxisGroup {
+export interface AxisGroup {
   loc0: Vec3;
   dir0: Vec3;
   radiusMm: number;
   faces: FaceInterval[];
+}
+
+/** A merged co-axial bore extent, before end-probe classification.
+ *  Exported for direct unit tests of the pure grouping/merge pipeline. */
+export interface BoreExtent {
+  /** Canonical axis frame (first face's loc/dir in the group). */
+  loc0: Vec3;
+  dir0: Vec3;
+  radiusMm: number;
+  /** Axial bounds (mm along `dir0` from `loc0`). */
+  tMin: number;
+  tMax: number;
+  /** Number of BREP faces merged into this bore (seam splits). */
+  faceCount: number;
+}
+
+/**
+ * Pure geometric core of hole detection: group concave cylindrical face
+ * descriptors by axis line + radius, union their axial intervals across
+ * small gaps, and keep only clusters whose length-weighted angular
+ * coverage clears `MIN_ANGULAR_COVERAGE_RAD` (a seam-split full bore sums
+ * to 2π; a fillet channel to ~π/2). No OCCT involvement — testable on
+ * plain descriptor data.
+ */
+export function resolveBoreExtents(faces: ConcaveCylFace[]): BoreExtent[] {
+  const bores: BoreExtent[] = [];
+  for (const group of groupCoaxialFaces(faces)) {
+    for (const cluster of mergeIntervals(group.faces)) {
+      const depth = cluster.t1 - cluster.t0;
+      if (depth < MIN_BORE_LENGTH_MM) continue;
+
+      // Length-weighted angular coverage over the merged extent. A full
+      // bore (even seam-split) sums to 2π; a fillet channel to ~π/2.
+      let weighted = 0;
+      for (const f of cluster.faces) weighted += f.du * (f.t1 - f.t0);
+      if (weighted / depth < MIN_ANGULAR_COVERAGE_RAD) continue;
+
+      bores.push({
+        loc0: group.loc0,
+        dir0: group.dir0,
+        radiusMm: group.radiusMm,
+        tMin: cluster.t0,
+        tMax: cluster.t1,
+        faceCount: cluster.faces.length,
+      });
+    }
+  }
+  return bores;
 }
 
 /**
@@ -149,66 +198,53 @@ interface AxisGroup {
  */
 export function detectCylindricalHoles(backend: OcctBackend): CylindricalHole[] {
   const faces = collectConcaveCylindricalFaces(backend);
-  const groups = groupCoaxialFaces(faces);
   const holes: CylindricalHole[] = [];
 
-  for (const group of groups) {
-    for (const cluster of mergeIntervals(group.faces)) {
-      const tMin = cluster.t0;
-      const tMax = cluster.t1;
-      const depth = tMax - tMin;
-      if (depth < MIN_BORE_LENGTH_MM) continue;
+  for (const bore of resolveBoreExtents(faces)) {
+    const { loc0, dir0, radiusMm, tMin, tMax, faceCount } = bore;
+    const depth = tMax - tMin;
+    const diameter = 2 * radiusMm;
+    const endLow = add(loc0, scale(dir0, tMin));
+    const endHigh = add(loc0, scale(dir0, tMax));
+    const lowClosed = isEndClosed(backend, endLow, scale(dir0, -1), diameter);
+    const highClosed = isEndClosed(backend, endHigh, dir0, diameter);
 
-      // Length-weighted angular coverage over the merged extent. A full
-      // bore (even seam-split) sums to 2π; a fillet channel to ~π/2.
-      let weighted = 0;
-      for (const f of cluster.faces) weighted += f.du * (f.t1 - f.t0);
-      if (weighted / depth < MIN_ANGULAR_COVERAGE_RAD) continue;
-
-      const { loc0, dir0, radiusMm } = group;
-      const diameter = 2 * radiusMm;
-      const endLow = add(loc0, scale(dir0, tMin));
-      const endHigh = add(loc0, scale(dir0, tMax));
-      const lowClosed = isEndClosed(backend, endLow, scale(dir0, -1), diameter);
-      const highClosed = isEndClosed(backend, endHigh, dir0, diameter);
-
-      let kind: 'blind' | 'through';
-      let origin: Vec3;
-      let direction: Vec3;
-      let bothEndsClosed = false;
-      if (!lowClosed && !highClosed) {
-        kind = 'through';
-        origin = endLow;
-        direction = dir0;
-      } else if (lowClosed && !highClosed) {
-        // Mouth at the high end; bottom at the low end.
-        kind = 'blind';
-        origin = endHigh;
-        direction = scale(dir0, -1);
-      } else if (highClosed && !lowClosed) {
-        kind = 'blind';
-        origin = endLow;
-        direction = dir0;
-      } else {
-        // Both ends closed — internal duct. Report as blind but flag it
-        // rather than silently misreporting; mouth choice is arbitrary.
-        kind = 'blind';
-        origin = endLow;
-        direction = dir0;
-        bothEndsClosed = true;
-      }
-
-      const hole: CylindricalHole = {
-        axisOrigin: origin,
-        axisDirection: direction,
-        diameterMm: diameter,
-        depthMm: depth,
-        kind,
-        faceCount: cluster.faces.length,
-      };
-      if (bothEndsClosed) hole.bothEndsClosed = true;
-      holes.push(hole);
+    let kind: 'blind' | 'through';
+    let origin: Vec3;
+    let direction: Vec3;
+    let bothEndsClosed = false;
+    if (!lowClosed && !highClosed) {
+      kind = 'through';
+      origin = endLow;
+      direction = dir0;
+    } else if (lowClosed && !highClosed) {
+      // Mouth at the high end; bottom at the low end.
+      kind = 'blind';
+      origin = endHigh;
+      direction = scale(dir0, -1);
+    } else if (highClosed && !lowClosed) {
+      kind = 'blind';
+      origin = endLow;
+      direction = dir0;
+    } else {
+      // Both ends closed — internal duct. Report as blind but flag it
+      // rather than silently misreporting; mouth choice is arbitrary.
+      kind = 'blind';
+      origin = endLow;
+      direction = dir0;
+      bothEndsClosed = true;
     }
+
+    const hole: CylindricalHole = {
+      axisOrigin: origin,
+      axisDirection: direction,
+      diameterMm: diameter,
+      depthMm: depth,
+      kind,
+      faceCount,
+    };
+    if (bothEndsClosed) hole.bothEndsClosed = true;
+    holes.push(hole);
   }
 
   return holes;
@@ -319,8 +355,10 @@ function collectConcaveCylindricalFaces(backend: OcctBackend): ConcaveCylFace[] 
  * is canonicalized onto the group's (loc0, dir0) frame — a co-axial face
  * may carry a flipped dir, so both v endpoints are mapped through the
  * face's OWN loc/dir first, then projected onto dir0.
+ *
+ * Exported for direct unit tests (pure — no OCCT involvement).
  */
-function groupCoaxialFaces(faces: ConcaveCylFace[]): AxisGroup[] {
+export function groupCoaxialFaces(faces: ConcaveCylFace[]): AxisGroup[] {
   const groups: AxisGroup[] = [];
   for (const f of faces) {
     let group: AxisGroup | undefined;
@@ -344,7 +382,7 @@ function groupCoaxialFaces(faces: ConcaveCylFace[]): AxisGroup[] {
   return groups;
 }
 
-interface MergedCluster {
+export interface MergedCluster {
   t0: number;
   t1: number;
   faces: FaceInterval[];
@@ -354,8 +392,10 @@ interface MergedCluster {
  * Union the faces' t-intervals, allowing `INTERVAL_GAP_MM` gaps. Disjoint
  * clusters are separate bores (two co-axial holes with material between
  * them must not merge into one).
+ *
+ * Exported for direct unit tests (pure — no OCCT involvement).
  */
-function mergeIntervals(faces: FaceInterval[]): MergedCluster[] {
+export function mergeIntervals(faces: FaceInterval[]): MergedCluster[] {
   if (faces.length === 0) return [];
   const sorted = [...faces].sort((a, b) => a.t0 - b.t0);
   const clusters: MergedCluster[] = [];
