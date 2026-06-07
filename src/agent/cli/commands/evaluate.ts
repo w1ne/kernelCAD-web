@@ -5,6 +5,10 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { kernelErrorToDiagnostic } from '../../script-runtime/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../../../modeling/buildModel';
+import {
+  runDfmChecksOnModel,
+  type DfmCheckReport,
+} from '../../../modeling/runtime/dfm/runDfmChecks';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import {
   reviewPoseEnvelope,
@@ -45,6 +49,10 @@ export interface EvaluateResult {
 export interface EvaluateAndBuildResult {
   evaluation: EvaluateResult;
   model?: BuiltModel;
+  /** DFM gate report when the script declares `dfmSpec(...)` and the build
+   *  had no fatal diagnostics. Undefined otherwise — the gates are opt-in.
+   *  Its diagnostics are already merged into `evaluation.diagnostics`. */
+  dfmReport?: DfmCheckReport;
 }
 
 export async function evaluateAndBuildScript(input: EvaluateInput): Promise<EvaluateAndBuildResult> {
@@ -90,13 +98,27 @@ export async function evaluateAndBuildScript(input: EvaluateInput): Promise<Eval
     };
   }
   const fatal = model.diagnostics.some(d => d.severity === 'error');
+
+  // W3 DFM enforcement: when the script declares dfmSpec(...), run the
+  // declared gates and merge their diagnostics into the model's. This one
+  // hook covers CLI evaluate, MCP evaluate_script (delegates here), and the
+  // eval harness. Zero cost for scripts without the record (findDfmSpec is
+  // a records scan returning undefined). Skipped after fatal build
+  // diagnostics — the underlying failure surfaces first.
+  let dfmReport: DfmCheckReport | undefined;
+  if (!fatal) {
+    dfmReport = await runDfmChecksOnModel(model);
+    if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
+  }
+  const fatalAfterDfm = model.diagnostics.some(d => d.severity === 'error');
   return {
     evaluation: {
-      exitCode: fatal ? 1 : 0,
+      exitCode: fatalAfterDfm ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
     },
     model,
+    ...(dfmReport !== undefined ? { dfmReport } : {}),
   };
 }
 

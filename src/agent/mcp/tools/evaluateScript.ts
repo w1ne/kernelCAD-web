@@ -26,14 +26,27 @@ export interface EvaluateScriptOutput {
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
-  const { evaluation: r, model } = await evaluateAndBuildScript(input as EvaluateInput);
-  if (r.exitCode === 0) {
+  const { evaluation: r, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  // Session policy: keep/refresh the active session whenever the model
+  // BUILD succeeded — even when dfm gate diagnostics made the evaluation
+  // fatal (exitCode 1). The dfm hook only runs after a clean build and
+  // pushes `dfmReport.diagnostics` into `model.diagnostics` by reference,
+  // so the build was clean iff every error-severity diagnostic came from
+  // the dfm report. Without this, a dfm-only failure would lock the agent
+  // out of the 9 session-dependent tools exactly while iterating on the
+  // dfm fix. Genuine build failures (model missing or non-dfm errors)
+  // still clear the session — its shapes would be stale or absent.
+  const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
+  const buildSucceeded =
+    model !== undefined &&
+    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d));
+  if (buildSucceeded) {
     setActiveMcpSession({
-      session: model!.session,
-      tailId: model!.tailId,
-      tailShape: model!.tailShape,
-      rootId: model!.rootId,
-      rootShape: model!.rootShape,
+      session: model.session,
+      tailId: model.tailId,
+      tailShape: model.tailShape,
+      rootId: model.rootId,
+      rootShape: model.rootShape,
     });
   } else {
     clearActiveMcpSession();

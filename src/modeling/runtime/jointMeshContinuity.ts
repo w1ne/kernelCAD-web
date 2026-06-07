@@ -58,6 +58,7 @@ import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { OcctBackend as OcctBackendClass } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from '../mates/mate';
+import { brepExtremaDistance, wrappedShape } from './brepDistance';
 
 /**
  * Per-spec tolerance (mm) for the joint-mesh-continuity check. Wide
@@ -434,30 +435,3 @@ export function measureBodyToBodyGap(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrappedShape(backend: OcctBackend): any {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (backend as unknown as { shape: { wrapped: any } }).shape.wrapped;
-}
-
-/**
- * Run `BRepExtrema_DistShapeShape` between two TopoDS shapes. We use
- * the default-construct + LoadS1 + LoadS2 + Perform pattern rather
- * than the 5-arg constructor — the enum-value globals required for the
- * 5-arg form aren't reliably exposed on the WASM module surface.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number | undefined {
-  const dist = new oc.BRepExtrema_DistShapeShape_1();
-  dist.LoadS1(shapeA);
-  dist.LoadS2(shapeB);
-  try {
-    const ok = dist.Perform(new oc.Message_ProgressRange_1());
-    if (!ok || !dist.IsDone()) {
-      return undefined;
-    }
-    return dist.Value();
-  } finally {
-    dist.delete?.();
-  }
-}

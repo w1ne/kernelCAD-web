@@ -221,6 +221,29 @@ animationView(spec: {
   durationMs: number;
   fps?: number;          // default 30
 }): AnimationViewHandle;
+
+// Declare printability (design-for-manufacture) gates for the model.
+// Declaration-only: registers a virtual record (no OCCT geometry);
+// enforcement runs on every `evaluate` / `evaluate_script` once a dfmSpec
+// record is present. At least one of minWall / minClearance / channels is
+// required. Malformed declarations THROW KernelError
+// (`feature.invalid-args`) rather than stashing diagnostics — dfmSpec is
+// an enforcement gate, and a silently-disabled gate is worse than a build
+// failure. Multiple calls register multiple records; the last one wins
+// (same convention as setRenderEnvironment). Full semantics: see the
+// "DFM gates (print readiness)" section below.
+dfmSpec(spec: {
+  minWall?: number;       // mm — min printed wall thickness per non-excluded part
+  minClearance?: number;  // mm — min distance between distinct parts
+  ignore?: [string, string][];  // part-name pairs exempt from clearance (design-intent contacts)
+  exclude?: string[];     // non-printed parts (vendor STEP, electronics); trailing-'*' glob per entry
+  channels?: Array<{
+    part: string;         // owning part name (single-shape scripts: 'shape')
+    name: string;         // author-facing label, echoed in diagnostics
+    openings: number;     // expected count of distinct mouth openings to the outside
+    sealed?: boolean;     // intentionally sealed internal void (openings must be 0)
+  }>;
+}): DfmSpecHandle;
 ```
 
 ### Shape methods (chainable)
@@ -482,6 +505,10 @@ kernelcad interference path/to/script.kcad.ts
 # Validate the assembly: floating parts, orphan clusters, interferences (v0.5 MVP)
 kernelcad validate path/to/script.kcad.ts
 
+# Run the print-readiness gates declared by the script's dfmSpec()
+# (exit 0 pass / 1 gate failed / 2 no dfmSpec declared; --json for the full report)
+kernelcad dfm path/to/script.kcad.ts
+
 # Run the MCP server (stdio transport)
 kernelcad mcp
 ```
@@ -605,6 +632,73 @@ After authoring, run before reporting done:
 | G-conventions | Units mm + degrees, Z-up, all transforms after edge/face features when face-ref names matter |
 
 For visual / reference-driven tasks the gate set extends — see `kernelcad-from-reference`.
+
+## DFM gates (print readiness)
+
+`dfmSpec({...})` declares printability gates in the script; the check engine
+enforces them at evaluate time. Three gates ship: **part-pair clearance**
+(exact BREP minimum distance), **minimum wall thickness** (inward ray sampling
+over the export-grade mesh), and **void/channel topology** (voxel flood-fill:
+undeclared sealed voids + channel mouth counting).
+
+```typescript
+dfmSpec({
+  minWall: 0.8,                       // thinnest wall the DESIGN intends to print
+  minClearance: 0.45,                 // fit gap between distinct parts
+  ignore: [['lid', 'hinge-pin']],     // design-intent contact: clearance-exempt pair
+  exclude: ['servo-*', 'pcb'],        // not printed: skips minWall + voids
+  channels: [
+    { part: 'base', name: 'cable-duct', openings: 2 },               // through-channel
+    { part: 'float', name: 'air-pocket', openings: 0, sealed: true },  // intentional sealed void
+  ],
+});
+```
+
+Semantics that matter when authoring the declaration:
+
+- **Opt-in, then always-on.** Scripts without a `dfmSpec` are untouched. Once a
+  record is present, EVERY `evaluate` / `evaluate_script` run enforces the
+  gates — there is no flag to skip them. A failing gate exits 1 with
+  error-severity `dfm.*` diagnostics.
+- **Malformed declarations THROW at capture** (`feature.invalid-args`
+  KernelError) instead of stashing warnings — dfmSpec is an enforcement gate,
+  and a silently-disabled gate is worse than a build failure. At least one of
+  `minWall` / `minClearance` / `channels` is required; `sealed: true` requires
+  `openings: 0` (and vice versa); `exclude` globs are trailing-`*` prefix only.
+- **`exclude` and `ignore` are different exemptions.** `exclude` marks parts as
+  NOT PRINTED (vendor STEP imports, electronics): they skip minWall and void
+  checks but STILL participate in clearance — a vendor part 0.2 mm from a
+  printed part is a real assembly problem. `ignore` is a per-PAIR clearance
+  exemption for design-intent contacts. Pairs joined by a declared mate are
+  clearance-exempt automatically. Overlapping pairs are tagged `interfering`
+  and emit the shared `assembly.interference.overlap` error — overlap analysis
+  belongs to the interference gate, but the DFM gate never passes over it.
+- **Choose `minWall` from the design's intended wall floor**, not a generic
+  printer guideline. Declaring `minWall: 1.5` against a design whose thinnest
+  intentional wall is 0.8 mm just fails everything and tells you nothing about
+  real defects. Also expect near-tangent authoring slivers (a boss grazing a
+  rim, a blend tangent to a bore) to surface as sub-0.1 mm wall findings —
+  those are honest measurements of sliver geometry; fix the tangency or read
+  past them deliberately.
+- **Channel detection limits.** ONE non-sealed channel per part — a second
+  declaration emits `feature.invalid-args` and the mouth count binds to the
+  first. Channels wider than ~16 mm escape the morphological closing and
+  report `found: 0` — that is a detection limit, not a blockage. The declared
+  channel binds to the LARGEST detected internal component, which can misbind
+  on parts with multiple internal voids; the reported `channelSeed` location
+  shows which component was picked (binding the declaration by location is a
+  recorded follow-up).
+- **`'unknown'` clearance status means the measurement FAILED** (kernel error
+  on that pair), not that the pair passed. Unknown pairs and kernel-failed
+  parts stay warn severity: they surface in the report and the CLI summary
+  (`, N unknown`) but never flip the exit code.
+- **Diagnostic locations are world-frame.** Every xyz in a `dfm.*` diagnostic
+  message is mapped through the part's world transform, so findings compose
+  across the parts of a posed assembly. The raw `walls[]` / `voids[]` report
+  structs keep part-local coordinates.
+
+Surfaces: automatic on `kernelcad evaluate` / MCP `evaluate_script`; standalone
+report via `kernelcad dfm <file>` (`--json`) and MCP `dfm_check`.
 
 ## Materials
 
