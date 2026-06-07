@@ -57,6 +57,12 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 ## Assembly and mechanism loop
 
+### Think in parts
+
+- Every physically distinct component is a named `assembly().part(name, shape)` — one body per part unless the component is genuinely monolithic.
+- Anonymous loose top-level bodies in a multi-body model are a defect smell: the review loop emits `assembly.structure.unstructured-bodies` (info) with the recovery hint. Wrap each loose body in a named part.
+- Part names are the durable handles for `inspect --focus`, `list_part_stats`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
+
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
 - If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.
 - Prefer `assembly().model()` for multi-part scenes so Studio receives per-part identity, material, mate, and transform metadata. Collapse with `.toCompound()` or `.toUnion()` only when a downstream export truly requires one body.

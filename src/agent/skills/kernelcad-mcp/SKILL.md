@@ -15,7 +15,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 
 ### Evaluation and introspection
 
-- `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics
+- `evaluate_script({ file? code? })` — pass/fail + featureCount + diagnostics; plus a `parts` summary `{ count, names }` when the scene is assembly-built (absent for single-shape / non-assembly scripts)
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
 - `list_assemblies({ file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
 - `inspect_assembly({ file? | code?, assembly? })` — physical assembly inventory for agents: named parts, bboxes, connectors, mates, mechanical review facts, disconnected solids, `unexplainedGeometry`, and a next-action prompt. Run this before accepting visually suspicious mechanisms; random/floating geometry must be repaired or explicitly justified by the original prompt.
