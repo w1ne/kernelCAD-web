@@ -31,8 +31,13 @@ import {
  * sampled values but the viewport does not move — an inline note says so.
  */
 export function AnimationTab(): JSX.Element {
-    const { features, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides } =
-        useRecomputeResult();
+    const {
+        features,
+        updateParam,
+        setGeometryTransformOverride,
+        clearGeometryTransformOverrides,
+        setViewportDriverLock,
+    } = useRecomputeResult();
     const { sessionToken } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
 
@@ -43,6 +48,7 @@ export function AnimationTab(): JSX.Element {
         updateParam: sessionToken ? updateParam : undefined,
         applyPartTransform: sessionToken ? setGeometryTransformOverride : undefined,
         clearPartTransforms: clearGeometryTransformOverrides,
+        setViewportDriverLock: sessionToken ? setViewportDriverLock : undefined,
     });
 
     if (!metadata) {

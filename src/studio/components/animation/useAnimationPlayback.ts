@@ -60,6 +60,13 @@ export interface UseAnimationPlaybackOptions {
     /** Drop all viewport part-transform overrides (return to the kernel's
      *  solved pose). Called when leaving baked playback. */
     clearPartTransforms?: () => void;
+    /** Claim/release sole ownership of the viewport part-transform override map
+     *  while this player is driving it (baking or playing). While locked the
+     *  GeometryContext SSE pose-only fast path will NOT replace the override
+     *  map — so the single trailing relower the bake emits after restoring the
+     *  pre-bake pose (and any concurrent ParamsTab edit) cannot yank the
+     *  viewport off the baked playback pose. No-op in editor mode. */
+    setViewportDriverLock?: (locked: boolean) => void;
     /** Injected bake fetcher for tests; defaults to the real network fetch. */
     bakeFetcher?: BakeFetcher;
     /** Injected clock for deterministic tests; defaults to real rAF. */
@@ -140,6 +147,7 @@ export function useAnimationPlayback(
         updateParam,
         applyPartTransform,
         clearPartTransforms,
+        setViewportDriverLock,
         bakeFetcher = fetchAnimationBake,
         clock = defaultClock,
     } = opts;
@@ -179,6 +187,23 @@ export function useAnimationPlayback(
     useEffect(() => { clockRef.current = clock; });
     useEffect(() => { applyRef.current = applyPartTransform; });
     useEffect(() => { updateRef.current = updateParam; });
+
+    // Viewport-driver lock: hold it while this player is baking OR playing so
+    // the GeometryContext SSE pose-only fast path won't replace the override
+    // map out from under the baked pose (the bake emits a single trailing
+    // relower after restoring the pre-bake pose; without the lock that relower
+    // would yank the viewport back to the restored pose mid-playback). Scrub is
+    // a momentary apply and intentionally NOT locked — it deliberately syncs
+    // the kernel and lets the resulting relower reflect the scrubbed pose.
+    const driverLockRef = useRef(setViewportDriverLock);
+    useEffect(() => { driverLockRef.current = setViewportDriverLock; });
+    useEffect(() => {
+        const lock = driverLockRef.current;
+        if (!lock) return;
+        const driving = isPlaying || bakeState === 'baking';
+        lock(driving);
+        return () => { driverLockRef.current?.(false); };
+    }, [isPlaying, bakeState]);
 
     // --- Bake cache -----------------------------------------------------------
     // Keyed by record identity + token. A script edit produces a fresh

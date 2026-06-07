@@ -107,6 +107,13 @@ export interface GeometryContextType {
     updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
     setGeometryTransformOverride: (partName: string, transform: number[]) => void;
     clearGeometryTransformOverrides: () => void;
+    /** Animation playback claims sole ownership of the part-transform override
+     *  map while it is driving the viewport (baking or playing). While locked,
+     *  the SSE pose-only fast path (`applyPoseOnlyRelower`) does NOT replace the
+     *  override map — otherwise the single post-bake/restore relower (or a
+     *  ParamsTab edit mid-playback) would yank the viewport off the baked pose.
+     *  Idempotent; the player releases on pause/stop/unmount. */
+    setViewportDriverLock: (locked: boolean) => void;
 }
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
@@ -152,6 +159,11 @@ function isAbortError(err: unknown): boolean {
 export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [geometryTransformOverrides, setGeometryTransformOverrides] = useState<Record<string, number[]>>({});
+    // While true, animation playback owns the override map; the SSE pose-only
+    // fast path must not replace it (see `setViewportDriverLock`). A ref, not
+    // state, so reads inside the long-lived SSE handler always see the current
+    // value without re-subscribing the EventSource.
+    const viewportDriverLockRef = useRef(false);
     const [previewGeometries, setPreviewGeometries] = useState<GeometryResult[]>([]);
     const [previewCode, setPreviewCode] = useState<string | null>(null);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
@@ -458,6 +470,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
     // payload. Returns false on any failure so the caller can fall back to
     // the full mesh re-fetch.
     const applyPoseOnlyRelower = useCallback(async (token: string): Promise<boolean> => {
+        // Animation playback owns the override map while driving the viewport.
+        // Honour the SSE event (return true = handled, no full-mesh fallback)
+        // but do NOT replace the overrides — the player's baked pose stands.
+        if (viewportDriverLockRef.current) return true;
         try {
             const { base, headers } = await apiCall();
             const url = rewritePath(
@@ -632,6 +648,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
 
     const clearGeometryTransformOverrides = useCallback(() => {
         setGeometryTransformOverrides({});
+    }, []);
+
+    const setViewportDriverLock = useCallback((locked: boolean) => {
+        viewportDriverLockRef.current = locked;
     }, []);
 
     // Slice 2E.bridge: smoke hook for browser-console verification (see the
@@ -1023,7 +1043,8 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         updateParam,
         setGeometryTransformOverride,
         clearGeometryTransformOverrides,
-    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides]);
+        setViewportDriverLock,
+    }), [displayGeometries, previewGeometries, sketchesGeometries, showSketches, toggleSketchVisibility, error, isReady, isComputing, executionCount, currentCodeRevision, lastSuccessfulRevision, executionHistory, scriptParams, scriptReview, featureRecords, recomputeMs, staleMainResponsesDropped, stalePreviewResponsesDropped, sessionToken, executeGeometry, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides, setViewportDriverLock]);
 
     return <GeometryContext.Provider value={value}>{children}</GeometryContext.Provider>;
 }

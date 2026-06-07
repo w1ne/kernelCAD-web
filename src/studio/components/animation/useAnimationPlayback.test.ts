@@ -66,6 +66,7 @@ interface Harness {
     apply: ReturnType<typeof vi.fn>;
     clear: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
+    lock: ReturnType<typeof vi.fn>;
     bakeFetcher: ReturnType<typeof vi.fn>;
     clock: ReturnType<typeof makeManualClock>;
 }
@@ -75,6 +76,7 @@ function harness(overrides: Partial<{ bakeFetcher: Harness['bakeFetcher'] }> = {
         apply: vi.fn(),
         clear: vi.fn(),
         update: vi.fn().mockResolvedValue(undefined),
+        lock: vi.fn(),
         bakeFetcher: overrides.bakeFetcher ?? vi.fn().mockResolvedValue(fakeBake()),
         clock: makeManualClock(),
     };
@@ -88,6 +90,7 @@ function renderPlayback(h: Harness, opts: { metadata?: AnimationViewMetadata | n
             updateParam: h.update,
             applyPartTransform: h.apply,
             clearPartTransforms: h.clear,
+            setViewportDriverLock: h.lock,
             bakeFetcher: h.bakeFetcher,
             clock: h.clock,
         }),
@@ -159,6 +162,25 @@ describe('useAnimationPlayback (baked)', () => {
         const batch = h.update.mock.calls[0][0] as Array<{ name: string }>;
         expect(batch.map((b) => b.name).sort()).toEqual(['drumDeg', 'meterDeg']);
         expect(at).toBeGreaterThan(0);
+    });
+
+    it('claims the viewport-driver lock while playing and releases it on pause', async () => {
+        const h = harness();
+        const { result } = renderPlayback(h);
+        // Idle: not locked yet (initial effect runs with driving=false).
+        expect(h.lock.mock.calls.every(([v]) => v === false)).toBe(true);
+
+        await act(async () => { result.current.play(); await Promise.resolve(); });
+        act(() => { h.clock.flush(0); });
+        await act(async () => { await Promise.resolve(); });
+        // Locked (true) at some point once playing.
+        expect(h.lock).toHaveBeenCalledWith(true);
+
+        h.lock.mockClear();
+        act(() => { result.current.pause(); });
+        // Released (false) on pause; never re-locked after.
+        expect(h.lock).toHaveBeenCalledWith(false);
+        expect(h.lock.mock.calls.some(([v]) => v === true)).toBe(false);
     });
 
     it('cache hit: a second scrub does NOT re-bake', async () => {

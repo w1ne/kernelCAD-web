@@ -192,7 +192,15 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
             name: track.param,
             value: frame.values[track.param],
           }));
-          const { model: updated } = await updateModelParams(model, edits);
+          // `silent` so the per-frame pose solve does NOT fan a relower out
+          // to SSE subscribers. Without this each baked frame fired one
+          // `event: relower` → the client re-fetched `/transforms` per frame
+          // (25 useless fetches across a 24-frame bake) and the live viewport
+          // twitched through every pose mid-bake. The single post-restore
+          // relower below is the only one a bake should produce.
+          const { model: updated } = await updateModelParams(model, edits, {
+            silent: true,
+          });
           const tail = liveTail(updated);
           if (!isSceneBackend(tail)) {
             return writeJson(res, 422, {
@@ -224,6 +232,12 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
         // Restore the pre-bake pose, then drop the single-flight lock. A
         // restore failure leaves the session at the last baked pose; surface
         // nothing here (the bake result already went out) but log it.
+        //
+        // This restore solve is the ONLY relower a bake emits: the per-frame
+        // sweep above ran `silent`, so this single (non-silent) update fans one
+        // `event: relower` out to SSE subscribers AFTER the session is back at
+        // its pre-bake pose — any open client resyncs its transforms exactly
+        // once instead of once per baked frame.
         if (originals.length > 0) {
           try {
             await updateModelParams(model, originals);
@@ -233,6 +247,11 @@ export function createAnimationBakeEndpoint(deps: AnimationBakeEndpointDeps) {
               e instanceof Error ? e.message : String(e),
             );
           }
+        } else {
+          // No animated params were edited (degenerate timeline): the silent
+          // sweep emitted nothing, so emit one synthetic empty relower so a
+          // client that began listening mid-bake still gets a single resync.
+          model.session.engine?.emitRelower([]);
         }
         inFlight.delete(token);
       }

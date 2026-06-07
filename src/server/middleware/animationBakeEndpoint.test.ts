@@ -125,6 +125,37 @@ describe('animationBakeEndpoint', () => {
   );
 
   it(
+    'emits EXACTLY ONE relower across a 24-frame bake (after the pose restore, not per frame)',
+    async () => {
+      const model = await buildModelFromFile({ file: FIXTURE });
+      expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+
+      // Subscribe to the SAME per-session engine the SSE hub forwards from.
+      // The silent per-frame sweep must emit nothing; only the (non-silent)
+      // post-restore updateModelParams should fan a single relower out.
+      const engine = model.session.engine;
+      expect(engine).toBeDefined();
+      const relowers: string[][] = [];
+      const off = engine!.onRelower((ids) => relowers.push([...ids]));
+
+      const handler = createAnimationBakeEndpoint({ pool: fakePool(model) });
+      const r = fakeRes();
+      try {
+        await handler(fakeReq('?session=t1'), r.res as never);
+      } finally {
+        off();
+      }
+
+      expect(r.out.statusCode).toBe(200);
+      const body = r.out.body as AnimationBakeResult;
+      expect(body.frames).toBe(24);
+      // The whole point of the fix: 24 baked frames, ONE relower (the restore).
+      expect(relowers).toHaveLength(1);
+    },
+    120_000,
+  );
+
+  it(
     'frame-cap: a timeline above MAX_BAKE_FRAMES is a typed 422 error',
     async () => {
       const model = await buildModelFromFile({ file: FIXTURE });

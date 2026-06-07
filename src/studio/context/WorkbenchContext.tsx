@@ -157,6 +157,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         updateParam: geometryCtx.updateParam,
         setGeometryTransformOverride: geometryCtx.setGeometryTransformOverride,
         clearGeometryTransformOverrides: geometryCtx.clearGeometryTransformOverrides,
+        setViewportDriverLock: geometryCtx.setViewportDriverLock,
         // Sketching context
         entities: sketchingCtx.entities,
         constraints: sketchingCtx.constraints,
@@ -245,6 +246,7 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
         geometryCtx.updateParam,
         geometryCtx.setGeometryTransformOverride,
         geometryCtx.clearGeometryTransformOverrides,
+        geometryCtx.setViewportDriverLock,
         sketchingCtx.entities,
         sketchingCtx.constraints,
         sketchingCtx.selectedEntityIds,
