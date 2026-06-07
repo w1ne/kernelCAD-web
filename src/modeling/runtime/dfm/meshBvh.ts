@@ -77,6 +77,10 @@ export class TriangleBvh {
   // fresh Int32Array allocation per query. Depth 128 covers any tree this
   // layout can produce (worst-case depth ~ 2*log2(n) << 128).
   private readonly traversalStack = new Int32Array(128);
+  // Parallel stack of node ENTRY t (raycast only): lets a popped node be
+  // discarded with one comparison when bestT shrank below its entry after
+  // it was pushed.
+  private readonly traversalTStack = new Float64Array(128);
 
   constructor(mesh: DfmMesh) {
     const { vertices, triangles } = mesh;
@@ -252,14 +256,15 @@ export class TriangleBvh {
   }
 
   /** Ray/AABB slab test for node `node` over the t interval [tMin, tMax].
+   *  Returns the clipped ENTRY t (>= tMin) on overlap, Infinity on miss.
    *  NaN lanes (origin exactly on a slab plane with zero direction) drop
    *  out of the comparisons, which is conservative-correct. */
-  private nodeHit(
+  private nodeEnterT(
     node: number,
     ox: number, oy: number, oz: number,
     ix: number, iy: number, iz: number,
     tMin: number, tMax: number,
-  ): boolean {
+  ): number {
     const b = this.bounds;
     const o = node * 6;
     let t0 = tMin;
@@ -270,27 +275,34 @@ export class TriangleBvh {
     if (tn > tf) { const tmp = tn; tn = tf; tf = tmp; }
     if (tn > t0) t0 = tn;
     if (tf < t1) t1 = tf;
-    if (t0 > t1) return false;
+    if (t0 > t1) return Infinity;
 
     tn = (b[o + 1] - oy) * iy;
     tf = (b[o + 4] - oy) * iy;
     if (tn > tf) { const tmp = tn; tn = tf; tf = tmp; }
     if (tn > t0) t0 = tn;
     if (tf < t1) t1 = tf;
-    if (t0 > t1) return false;
+    if (t0 > t1) return Infinity;
 
     tn = (b[o + 2] - oz) * iz;
     tf = (b[o + 5] - oz) * iz;
     if (tn > tf) { const tmp = tn; tn = tf; tf = tmp; }
     if (tn > t0) t0 = tn;
     if (tf < t1) t1 = tf;
-    return t0 <= t1;
+    return t0 <= t1 ? t0 : Infinity;
   }
 
   /** Nearest hit with t > tMin (default 0), optionally skipping one source
    *  triangle (original-mesh index, e.g. the triangle a sample ray was
    *  launched from). Direction need not be normalized; t is in units of
-   *  |dir|. */
+   *  |dir|.
+   *
+   *  Traversal is near-child-first: at each internal node both children's
+   *  entry t is computed and the FARTHER child is pushed first, so the
+   *  nearer subtree is explored before the farther one and bestT shrinks as
+   *  early as possible. Each stack slot carries its node's entry t; a
+   *  popped node whose entry is already >= bestT is discarded with one
+   *  comparison. */
   raycast(origin: Vec3, dir: Vec3, opts?: { tMin?: number; skipTri?: number }): BvhHit | null {
     if (this.triangleCount === 0) return null;
     const tMin = opts?.tMin ?? 0;
@@ -302,11 +314,18 @@ export class TriangleBvh {
     let bestT = Infinity;
     let bestTri = -1;
     const stack = this.traversalStack;
+    const tStack = this.traversalTStack;
     let sp = 0;
-    stack[sp++] = 0;
+    const rootT = this.nodeEnterT(0, ox, oy, oz, ix, iy, iz, tMin, Infinity);
+    if (rootT < Infinity) {
+      stack[0] = 0;
+      tStack[0] = rootT;
+      sp = 1;
+    }
     while (sp > 0) {
-      const node = stack[--sp];
-      if (!this.nodeHit(node, ox, oy, oz, ix, iy, iz, tMin, bestT)) continue;
+      sp--;
+      if (tStack[sp] >= bestT) continue; // bestT shrank since this was pushed
+      const node = stack[sp];
       const cnt = this.count[node];
       if (cnt > 0) {
         const lo = this.start[node];
@@ -320,8 +339,24 @@ export class TriangleBvh {
           }
         }
       } else {
-        stack[sp++] = node + 1;
-        stack[sp++] = this.rightChild[node];
+        let nearNode = node + 1;
+        let farNode = this.rightChild[node];
+        let nearT = this.nodeEnterT(nearNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
+        let farT = this.nodeEnterT(farNode, ox, oy, oz, ix, iy, iz, tMin, bestT);
+        if (farT < nearT) {
+          const n = nearNode; nearNode = farNode; farNode = n;
+          const t = nearT; nearT = farT; farT = t;
+        }
+        if (farT < Infinity) { // farther child first => popped last
+          stack[sp] = farNode;
+          tStack[sp] = farT;
+          sp++;
+        }
+        if (nearT < Infinity) {
+          stack[sp] = nearNode;
+          tStack[sp] = nearT;
+          sp++;
+        }
       }
     }
     return bestTri >= 0 ? { t: bestT, triIndex: bestTri } : null;
@@ -341,7 +376,7 @@ export class TriangleBvh {
     stack[sp++] = 0;
     while (sp > 0) {
       const node = stack[--sp];
-      if (!this.nodeHit(node, ox, oy, oz, ix, iy, iz, tMin, Infinity)) continue;
+      if (this.nodeEnterT(node, ox, oy, oz, ix, iy, iz, tMin, Infinity) === Infinity) continue;
       const cnt = this.count[node];
       if (cnt > 0) {
         const lo = this.start[node];
