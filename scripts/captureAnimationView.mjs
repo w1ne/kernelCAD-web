@@ -1,8 +1,9 @@
 // scripts/captureAnimationView.mjs
 //
 // Reads an `animationView({...})` virtual feature record from a .kcad.ts
-// script, samples the declared param sweep at `ceil(durationMs / 1000 * fps)`
-// frames, and stitches an MP4 via ffmpeg. Each frame's recompute uses the
+// script, samples its normalized keyframe tracks at
+// `ceil(durationMs / 1000 * fps)` frames (linear interpolation per segment),
+// and stitches an MP4 via ffmpeg. Each frame's recompute uses the
 // per-session mesh cache so warm frame meshing is ~5 ms even for 24-part
 // assemblies.
 //
@@ -49,8 +50,32 @@ if (animRecords.length === 0) {
 }
 const spec = animRecords[animRecords.length - 1].metadata;
 const fps = spec.fps ?? 30;
-const frames = Math.max(2, Math.ceil((spec.durationMs / 1000) * fps));
-console.log(`anim:      param=${spec.param}  from=${spec.from}  to=${spec.to}  durationMs=${spec.durationMs}  fps=${fps}  frames=${frames}`);
+const durationMs = spec.durationMs;
+// Metadata is always normalized to the track shape (keys sorted by atMs,
+// ease defaulted); the legacy sweep form arrives as one linear two-key track.
+const tracks = spec.tracks;
+const frames = Math.max(2, Math.ceil((durationMs / 1000) * fps));
+console.log(`anim:      ${spec.name ? `name=${spec.name}  ` : ''}tracks=${tracks.map((t) => t.param).join(',')}  durationMs=${durationMs}  fps=${fps}  frames=${frames}`);
+
+// Sample a normalized track at tMs: hold-clamp outside the keyed span,
+// per-segment linear interpolation inside.
+// TODO(T3): honor per-key `ease` (step/easeIn/easeOut/easeInOut); this
+// script is replaced by the T3 capture surface — linear-only until then.
+function sampleTrack(track, tMs) {
+  const keys = track.keys;
+  if (tMs <= keys[0].atMs) return keys[0].value;
+  const last = keys[keys.length - 1];
+  if (tMs >= last.atMs) return last.value;
+  for (let k = 1; k < keys.length; k += 1) {
+    if (tMs <= keys[k].atMs) {
+      const a = keys[k - 1];
+      const b = keys[k];
+      const u = (tMs - a.atMs) / (b.atMs - a.atMs);
+      return a.value + (b.value - a.value) * u;
+    }
+  }
+  return last.value;
+}
 
 // Cold mesh — populates the per-session triangle cache.
 t = performance.now();
@@ -124,8 +149,9 @@ try {
   const t0 = Date.now();
   for (let i = 0; i < frames; i += 1) {
     const u = frames === 1 ? 0 : i / (frames - 1);
-    const value = spec.from + (spec.to - spec.from) * u;
-    await updateModelParams(model, [{ name: spec.param, value }]);
+    const tMs = durationMs * u;
+    const updates = tracks.map((t) => ({ name: t.param, value: sampleTrack(t, tMs) }));
+    await updateModelParams(model, updates);
     const meshing = await meshFeaturesPerFeature(model.records, session.paramTable, session);
     const serialized = meshing.features.map(serializeForBridge);
     await page.evaluate(
@@ -141,7 +167,8 @@ try {
     await new Promise((res, rej) => ffmpeg.stdin.write(buf, (err) => (err ? rej(err) : res())));
     if ((i + 1) % 15 === 0 || i === frames - 1) {
       const dt = ((Date.now() - t0) / 1000).toFixed(1);
-      console.log(`  frame ${i + 1}/${frames}  ${spec.param}=${value.toFixed(1)}  (${dt}s elapsed)`);
+      const poses = updates.map((p) => `${p.name}=${p.value.toFixed(1)}`).join('  ');
+      console.log(`  frame ${i + 1}/${frames}  ${poses}  (${dt}s elapsed)`);
     }
   }
   ffmpeg.stdin.end();

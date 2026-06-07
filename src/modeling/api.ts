@@ -355,15 +355,29 @@ export interface KernelCadApi {
   setCameraDistance(distance: number): CameraTargetHandle;
 
   /**
-   * Declare a parameter sweep for offline MP4 capture. The script names a
-   * previously-declared `param()`, its start/end values, and the animation
-   * duration in milliseconds. `scripts/captureAnimationView.mjs` reads the
-   * resulting `animationView` virtual record and renders an MP4 by sampling
-   * `ceil(durationMs / 1000 * fps)` frames across the sweep — leveraging
+   * Declare an animation timeline for offline MP4 capture. Two forms:
+   *
+   *   - Legacy sweep: `{ param, from, to, durationMs, fps? }` — ONE
+   *     previously-declared `param()` swept linearly.
+   *   - Keyframe tracks: `{ name?, tracks, fps? }` — several params on one
+   *     shared timeline, each track a list of `{ atMs, value, ease? }` keys.
+   *     `ease` applies to the segment ENDING at that key (default 'linear');
+   *     outside the keyed span the value holds.
+   *
+   * Either way the stored metadata is normalized to the track shape
+   * (`AnimationViewMetadata`): keys sorted by atMs, ease defaulted, and
+   * `durationMs` = max atMs across all tracks.
+   * `scripts/captureAnimationView.mjs` reads the resulting `animationView`
+   * virtual record and renders an MP4 by sampling
+   * `ceil(durationMs / 1000 * fps)` frames across the timeline — leveraging
    * the per-session mesh cache so each frame's recompute is ~5 ms warm.
    *
+   * Every animated param must be declared by a prior `param()` call;
+   * malformed tracks/keys throw `KernelError` (`animation.*` codes), key
+   * values outside the param's declared range are clamped with a warn.
    * Multiple calls register multiple records; the capture script uses the
-   * last one.
+   * last one (the later record carries an `animation.view.shadowed` warn
+   * naming the records it shadows).
    */
   animationView(spec: AnimationViewSpec): AnimationViewHandle;
 
