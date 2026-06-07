@@ -60,20 +60,42 @@ jobs:
       - name: QC — typecheck + build:cli + cookbook + drift check
         run: npm run qc:build
 
-  test:
+  # The vitest suite is sharded across parallel runners so the merge gate
+  # stays ~2 min wall-clock instead of one ~12 min monolith. Every test still
+  # runs on every PR — sharding changes distribution, not coverage. The
+  # `test` gate job below is the required branch-protection check; it goes
+  # green only when ALL shards pass.
+  test-shard:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-cad
       # cli-bundle and eval/* integration tests require the bundled CLI at
-      # dist/cli/index.js; we rebuild it in the test job's runner because the
-      # build-and-checks job runs on a separate runner with isolated FS.
-      # The shared build cache keeps this fast (~10-15s on hit).
+      # dist/cli/index.js; we rebuild it in each shard's runner because jobs
+      # run on separate runners with isolated FS. The shared build cache
+      # keeps this fast (~10-15s on hit).
       - name: Build CLI bundle (required by integration tests)
         run: npm run build:cli
-      - name: QC — vitest
-        run: npm run qc:test
+      - name: QC — vitest (shard ${{ matrix.shard }}/12)
+        run: npm test -- --shard=${{ matrix.shard }}/12
+
+  # Gate job: carries the required-check name `test` so branch protection is
+  # unchanged. if: always() ensures it reports failure (rather than being
+  # skipped) when a shard fails or is cancelled.
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: test-shard
+    if: always()
+    steps:
+      - name: All test shards green
+        run: |
+          [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
 
   e2e:
     runs-on: ubuntu-latest

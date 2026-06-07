@@ -206,6 +206,19 @@ describe('Every example under examples/**/*.kcad.ts is loop-clean or has a track
         testSrc.includes(examplePath),
         `${examplePath}: hosting testFile ${testFile} must reference the example path`,
       ).toBe(true);
+      // The hosting file must carry the exact per-example it-title this
+      // sweep would have generated AND actually invoke the validate CLI —
+      // otherwise a skip/gut edit to the hosting file would silently drop
+      // the example's loop coverage while this gate stays green.
+      expect(
+        testSrc.includes(`${examplePath} passes the physics-grounded loop`),
+        `${examplePath}: hosting testFile ${testFile} must contain the it-title ` +
+          `"${examplePath} passes the physics-grounded loop"`,
+      ).toBe(true);
+      expect(
+        testSrc.includes('runValidateCli'),
+        `${examplePath}: hosting testFile ${testFile} must call runValidateCli`,
+      ).toBe(true);
     }
   });
 

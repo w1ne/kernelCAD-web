@@ -2,7 +2,7 @@
 //
 // G1 unit tests for `joint.clevis(...)`. Six tests covering the spec's
 // G1 design locks (plan Task 5). Heavy interference / Gate-4 / Gate-6
-// gates run in the integration test (`tests/integration/examples/luxoLampClevis.test.ts`)
+// gates run in the integration test (`tests/integration/examples/luxoLampClevis.validate.test.ts`)
 // after the Luxo lamp is rewritten to use the primitive — that test runs
 // `kernelcad validate --include-interference` on the rewritten lamp and
 // asserts zero `ignore[]` entries (the smoking gun that the primitive
