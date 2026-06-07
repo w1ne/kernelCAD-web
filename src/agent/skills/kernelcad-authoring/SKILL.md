@@ -78,6 +78,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 
 - Good candidates: motors, servos, bearings, shafts, fasteners, hinges, sensors, PCBs, connectors, rails, and purchased enclosures.
 - Store or reference the vendor STEP file deliberately; name the source, version, and license/terms in nearby metadata or README when the file is part of a demo/portfolio bundle.
+- Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect_step` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
 
@@ -466,6 +467,14 @@ kernelcad parts path/to/script.kcad.ts --json                  # list assembly p
 # visible geometry to the output aspect and the capture is center-cropped,
 # so the default 1024×1024 square tiles frame correctly.
 kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+
+# Clip the model with a section plane to expose interiors in headless captures.
+# Keeps the negative-axis side by default; --section-flip keeps the positive side.
+kernelcad render path/to/script.kcad.ts -o /tmp/cut.png --section z=10
+
+# Interrogate an external STEP file before placement: solid tree, per-solid
+# exact bbox + volume, cylindrical holes (axis, diameter, depth, blind/through)
+kernelcad inspect step path/to/part.step
 
 # Detect BREP interferences between Scene parts (industry-standard clash check)
 kernelcad interference path/to/script.kcad.ts

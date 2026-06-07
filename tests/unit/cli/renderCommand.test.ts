@@ -22,7 +22,7 @@ vi.mock('../../../src/agent/render/headlessRender', () => {
 });
 
 // Import after mock registration.
-import { renderInspectBundle, renderScript, renderCommand } from '../../../src/agent/cli/commands/render';
+import { renderInspectBundle, renderScript, renderCommand, parseSectionFlag } from '../../../src/agent/cli/commands/render';
 import { headlessRender } from '../../../src/agent/render/headlessRender';
 
 const mockHeadlessRender = headlessRender as ReturnType<typeof vi.fn>;
@@ -322,6 +322,78 @@ describe('render command', () => {
     });
     expect(result.outputPaths).toContain(join(outDir, 'channels', 'depth', 'front.png'));
     expect(result.outputPaths).toContain(join(outDir, 'channels', 'normals', 'iso.png'));
+  });
+
+  it('parseSectionFlag parses <axis>=<pos>', () => {
+    expect(parseSectionFlag('y=0')).toEqual({ axis: 'y', position: 0, positionRaw: '0' });
+    expect(parseSectionFlag('z=10')).toEqual({ axis: 'z', position: 10, positionRaw: '10' });
+    expect(parseSectionFlag('x=-2.5')).toEqual({ axis: 'x', position: -2.5, positionRaw: '-2.5' });
+  });
+
+  it('parseSectionFlag keeps raw digits verbatim where Number stringifies to exponent notation', () => {
+    // Number(1e21).toString() === '1e+21' — the demo-player `?section=` regex
+    // rejects exponent notation, so the URL must carry the raw digits.
+    const big = parseSectionFlag('z=1000000000000000000000');
+    expect(String(big.position)).toBe('1e+21');
+    expect(big.positionRaw).toBe('1000000000000000000000');
+    const tiny = parseSectionFlag('x=0.0000001');
+    expect(String(tiny.position)).toBe('1e-7');
+    expect(tiny.positionRaw).toBe('0.0000001');
+  });
+
+  it('parseSectionFlag throws on junk', () => {
+    expect(() => parseSectionFlag('q=1')).toThrow();
+    expect(() => parseSectionFlag('z=')).toThrow();
+    expect(() => parseSectionFlag('z:10')).toThrow();
+    expect(() => parseSectionFlag('z=abc')).toThrow();
+  });
+
+  it('renderCommand declares --section and --section-flip on the top-level render command only', () => {
+    const cmd = renderCommand();
+    expect(cmd.options.find((o) => o.long === '--section')).toBeDefined();
+    const flip = cmd.options.find((o) => o.long === '--section-flip');
+    expect(flip).toBeDefined();
+    expect(flip?.defaultValue).toBe(false);
+    const inspect = cmd.commands.find((subcommand) => subcommand.name() === 'inspect');
+    expect(inspect).toBeDefined();
+    expect(inspect?.options.find((o) => o.long === '--section')).toBeUndefined();
+    expect(inspect?.options.find((o) => o.long === '--section-flip')).toBeUndefined();
+  });
+
+  it('threads a valid --section through to headlessRender opts', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      out: join(tmp, 'out.png'),
+      separate: false,
+      width: 512,
+      height: 512,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      section: 'z=10',
+      sectionFlip: true,
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(mockHeadlessRender).toHaveBeenCalledOnce();
+    expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({
+      section: { axis: 'z', position: 10, positionRaw: '10', flip: true },
+    });
+  });
+
+  it('rejects an invalid --section with exit code 1 before rendering', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      out: join(tmp, 'out.png'),
+      separate: false,
+      width: 512,
+      height: 512,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      section: 'q=1',
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(mockHeadlessRender).not.toHaveBeenCalled();
   });
 
   it('rejects simultaneous focus and hide filters', async () => {

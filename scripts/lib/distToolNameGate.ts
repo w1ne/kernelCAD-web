@@ -14,6 +14,7 @@ import { TOOL_REGISTRY } from '../../src/agent/mcp/toolRegistry';
 const CLI_SUBCOMMANDS = new Set<string>([
   'evaluate',
   'export',
+  'inspect',
   'install',
   'interference',
   'mcp',
