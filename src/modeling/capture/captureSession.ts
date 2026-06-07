@@ -22,6 +22,7 @@ import type {
   AnimationViewMetadata,
   AnimationViewSpec,
 } from '../../shared/intent/animationViewRecord';
+import type { DfmSpec, DfmSpecMetadata } from '../../shared/intent/dfmSpecRecord';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextMetadata, EmbossTextAlign, EmbossTextScaleMode,
@@ -755,6 +756,102 @@ export class CaptureSession {
 
     const r = this.register({
       kind: 'animationView',
+      params: {},
+      inputs: {},
+      metadata: metadata as unknown as Record<string, unknown>,
+    });
+    return r.id;
+  }
+
+  /**
+   * Capture a dfmSpec (print-prep gate declaration) virtual feature.
+   *
+   * Validation THROWS `KernelError` — a deliberate deviation from the
+   * addRenderEnvironment / addCameraTarget stash-on-metadata pattern:
+   * stashed virtual-record `metadata.diagnostics` never reach evaluate
+   * (recomputeEngine marks virtual records healthy and skips them), so a
+   * malformed dfmSpec would silently disable the enforcement gate it
+   * declares. Failing the build is the agent-friendly behavior here.
+   *
+   * Multiple calls register multiple records; the check engine applies the
+   * last one (same convention as setRenderEnvironment).
+   */
+  addDfmSpec(args: DfmSpec): FeatureId {
+    const bad = (field: string, why: string): never => {
+      throw new KernelError(
+        'feature.invalid-args',
+        `dfmSpec: ${field} ${why}.`,
+        undefined,
+        `invalid-args.dfm-spec.${field} — fix the field; dfmSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.`,
+      );
+    };
+
+    if (args.minWall === undefined && args.minClearance === undefined && !(args.channels?.length)) {
+      bad('spec', 'declares no checks; pass minWall, minClearance, and/or channels');
+    }
+    if (args.minWall !== undefined && !(Number.isFinite(args.minWall) && args.minWall > 0)) {
+      bad('minWall', `must be a positive finite number; got ${args.minWall}`);
+    }
+    if (args.minClearance !== undefined && !(Number.isFinite(args.minClearance) && args.minClearance > 0)) {
+      bad('minClearance', `must be a positive finite number; got ${args.minClearance}`);
+    }
+    // Sandbox scripts are untyped — guard the array shapes so a wrong-shaped
+    // field surfaces as a named KernelError, not a raw TypeError.
+    if (args.ignore !== undefined && !Array.isArray(args.ignore)) {
+      bad('ignore', `must be an array of [partA, partB] pairs; got ${JSON.stringify(args.ignore)}`);
+    }
+    if (args.exclude !== undefined && !Array.isArray(args.exclude)) {
+      bad('exclude', `must be an array of part-name strings; got ${JSON.stringify(args.exclude)}`);
+    }
+    if (args.channels !== undefined && !Array.isArray(args.channels)) {
+      bad('channels', `must be an array of { part, name, openings, sealed? } entries; got ${JSON.stringify(args.channels)}`);
+    }
+    for (const [i, pair] of (args.ignore ?? []).entries()) {
+      const isPair = Array.isArray(pair) && pair.length === 2 &&
+        pair.every(p => typeof p === 'string' && p.length > 0);
+      if (!isPair) {
+        bad(`ignore[${i}]`, `must be a [partA, partB] pair of non-empty strings; got ${JSON.stringify(pair)}`);
+      }
+    }
+    for (const [i, name] of (args.exclude ?? []).entries()) {
+      if (typeof name !== 'string' || name.length === 0) {
+        bad(`exclude[${i}]`, `must be a non-empty part-name string; got ${JSON.stringify(name)}`);
+      }
+    }
+    for (const [i, c] of (args.channels ?? []).entries()) {
+      if (typeof c !== 'object' || c === null) {
+        bad(`channels[${i}]`, `must be a { part, name, openings, sealed? } object; got ${JSON.stringify(c)}`);
+      }
+      if (typeof c.part !== 'string' || c.part.length === 0) {
+        bad(`channels[${i}].part`, `must be a non-empty part-name string; got ${JSON.stringify(c.part)}`);
+      }
+      if (typeof c.name !== 'string' || c.name.length === 0) {
+        bad(`channels[${i}].name`, `must be a non-empty label string; got ${JSON.stringify(c.name)}`);
+      }
+      if (!Number.isInteger(c.openings) || c.openings < 0) {
+        bad(`channels[${i}].openings`, `must be a non-negative integer; got ${c.openings}`);
+      }
+      if (c.openings === 0 && c.sealed !== true) {
+        bad(`channels[${i}].openings`, `is 0 but the channel is not declared sealed; pass sealed: true for an intentionally sealed void`);
+      }
+      if (c.sealed === true && c.openings !== 0) {
+        bad(`channels[${i}].openings`, `must be 0 when sealed: true; got ${c.openings}`);
+      }
+    }
+
+    const metadata: DfmSpecMetadata = {
+      virtual: true,
+      ...(args.minWall !== undefined ? { minWall: args.minWall } : {}),
+      ...(args.minClearance !== undefined ? { minClearance: args.minClearance } : {}),
+      ignore: (args.ignore ?? []).map(([a, b]) => [a, b] as const),
+      exclude: [...(args.exclude ?? [])],
+      channels: (args.channels ?? []).map(c => ({
+        part: c.part, name: c.name, openings: c.openings, sealed: c.sealed ?? false,
+      })),
+    };
+
+    const r = this.register({
+      kind: 'dfmSpec',
       params: {},
       inputs: {},
       metadata: metadata as unknown as Record<string, unknown>,

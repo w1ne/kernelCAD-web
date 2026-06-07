@@ -220,6 +220,28 @@ animationView(spec: {
   durationMs: number;
   fps?: number;          // default 30
 }): AnimationViewHandle;
+
+// Declare printability (design-for-manufacture) gates for the model.
+// Declaration-only: registers a virtual record (no OCCT geometry);
+// enforcement runs on every `evaluate` / `evaluate_script` once a dfmSpec
+// record is present. At least one of minWall / minClearance / channels is
+// required. Malformed declarations THROW KernelError
+// (`feature.invalid-args`) rather than stashing diagnostics — dfmSpec is
+// an enforcement gate, and a silently-disabled gate is worse than a build
+// failure. Multiple calls register multiple records; the last one wins
+// (same convention as setRenderEnvironment).
+dfmSpec(spec: {
+  minWall?: number;       // mm — min printed wall thickness per non-excluded part
+  minClearance?: number;  // mm — min distance between distinct parts
+  ignore?: [string, string][];  // part-name pairs exempt from clearance (design-intent contacts)
+  exclude?: string[];     // non-printed parts (vendor STEP, electronics); trailing-'*' glob per entry
+  channels?: Array<{
+    part: string;         // owning part name (single-shape scripts: 'shape')
+    name: string;         // author-facing label, echoed in diagnostics
+    openings: number;     // expected count of distinct mouth openings to the outside
+    sealed?: boolean;     // intentionally sealed internal void (openings must be 0)
+  }>;
+}): DfmSpecHandle;
 ```
 
 ### Shape methods (chainable)
