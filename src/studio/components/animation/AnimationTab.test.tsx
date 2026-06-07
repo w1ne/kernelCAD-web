@@ -53,6 +53,8 @@ function result(features: FeatureRecord[], updateParam?: StudioRecomputeResult['
         rawInterferencePairs: [],
         joints: [],
         updateParam,
+        setGeometryTransformOverride: vi.fn(),
+        clearGeometryTransformOverrides: vi.fn(),
     };
 }
 
@@ -82,7 +84,8 @@ describe('AnimationTab', () => {
         // At tMs=0 both tracks hold-clamp to their first key value.
         expect(screen.getByTestId('animation-track-value-drumDeg').textContent).toBe('0.00');
         expect(screen.queryByTestId('animation-editor-mode-note')).toBeNull();
-        // Scrubbing emits one batch through the params pipeline.
+        // Scrubbing emits exactly ONE param edit — the kernel pose-sync (state
+        // coherence), carrying the sampled values at the scrubbed time.
         fireEvent.change(screen.getByTestId('animation-scrubber'), { target: { value: '600' } });
         expect(update).toHaveBeenCalledOnce();
         expect(update.mock.calls[0][0]).toEqual([

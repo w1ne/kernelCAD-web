@@ -13,28 +13,37 @@ import {
 
 /**
  * Inspector Animation tab — a review cockpit for the script's
- * `animationView(...)` timeline. Scrub or play the timeline and the viewport
- * mechanism moves: each scrub/tick samples every track (shared
- * `sampleTrackAt`, identical to the offline MP4 capture) and emits ONE
- * param-edit batch through the SAME params pipeline the Params/Joints tabs
- * drive (`updateParam` → POST /__kernelcad/params → SSE relower → mesh
- * refetch). There is no client-side mesh interpolation; every pose is a real
- * kernel re-solve, so playback is honestly capped by re-solve speed.
+ * `animationView(...)` timeline. The timeline is BAKED server-side once
+ * (`POST /__kernelcad/animation-bake` → per-part world matrices at every
+ * frame, no geometry), then played back smoothly on the client: each rAF tick
+ * interpolates (slerp rotation, lerp position) between baked frames and applies
+ * the result directly to the existing viewport part groups via
+ * `setGeometryTransformOverride` — no kernel re-solve per frame. Scrub is the
+ * same path (instant).
  *
- * Live drive needs the server-pool session (`?script=`). In editor/local mode
- * `updateParam` has no session token, so the scrubber still reads sampled
- * values but the viewport does not move — an inline note says so.
+ * State coherence: during playback the kernel session is untouched. On
+ * pause/stop and scrub the player sends ONE `updateParam` batch so the
+ * kernel/session pose matches the displayed frame (Export/Validate otherwise
+ * read the stale pre-playback pose).
+ *
+ * Live drive needs the server-pool session (`?script=`) — the bake source. In
+ * editor/local mode there is no session token, so the scrubber still reads
+ * sampled values but the viewport does not move — an inline note says so.
  */
 export function AnimationTab(): JSX.Element {
-    const { features, updateParam } = useRecomputeResult();
+    const { features, updateParam, setGeometryTransformOverride, clearGeometryTransformOverrides } =
+        useRecomputeResult();
     const { sessionToken } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
 
-    // Live drive requires both the updateParam plumbing AND a session token
-    // (the server-pool path); editor mode lacks the latter.
-    const liveUpdateParam = sessionToken ? updateParam : undefined;
-
-    const playback = useAnimationPlayback({ metadata, updateParam: liveUpdateParam });
+    const playback = useAnimationPlayback({
+        metadata,
+        sessionToken,
+        // updateParam is only the pause-sync edit now; gate on the session too.
+        updateParam: sessionToken ? updateParam : undefined,
+        applyPartTransform: sessionToken ? setGeometryTransformOverride : undefined,
+        clearPartTransforms: clearGeometryTransformOverrides,
+    });
 
     if (!metadata) {
         return (
@@ -47,7 +56,10 @@ export function AnimationTab(): JSX.Element {
         );
     }
 
-    const { durationMs, fps, name, tMs, isPlaying, mode, speed, trackValues, canDrive } = playback;
+    const {
+        durationMs, fps, name, tMs, isPlaying, mode, speed, trackValues, canDrive,
+        bakeState, bakeFrames, bakeError,
+    } = playback;
 
     return (
         <div className="flex flex-col" data-testid="animation-tab">
@@ -66,6 +78,32 @@ export function AnimationTab(): JSX.Element {
                     Live playback drives the viewport only when the model is
                     opened from a script (?script=). In the editor the scrubber
                     previews sampled values but the mechanism won&apos;t move.
+                </div>
+            )}
+
+            {canDrive && bakeState === 'baking' && (
+                <div
+                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
+                    data-testid="animation-bake-status"
+                >
+                    Baking timeline… solving every frame once so playback runs
+                    smooth.
+                </div>
+            )}
+            {canDrive && bakeState === 'ready' && (
+                <div
+                    className="mx-3 mb-2 px-2 py-1 text-[10px] leading-tight text-gray-500"
+                    data-testid="animation-bake-status"
+                >
+                    Baked {bakeFrames} frames · smooth client-side playback.
+                </div>
+            )}
+            {canDrive && bakeState === 'error' && (
+                <div
+                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
+                    data-testid="animation-bake-status"
+                >
+                    Bake failed: {bakeError ?? 'unknown error'}. Fix the script and retry.
                 </div>
             )}
 
@@ -143,9 +181,10 @@ export function AnimationTab(): JSX.Element {
             </ul>
 
             <p className="px-3 py-2 text-[10px] leading-tight text-gray-500 border-t border-[#1f1f1f]">
-                Playback rate is limited by kernel re-solve speed — each frame
-                is a real solve, not interpolated. For full-fidelity motion use
-                the offline MP4 capture.
+                Playback is smooth — the timeline is baked once (every frame
+                solved server-side into per-part transforms), then interpolated
+                and played client-side at full rate. On pause the kernel pose is
+                synced to the displayed frame.
             </p>
         </div>
     );
