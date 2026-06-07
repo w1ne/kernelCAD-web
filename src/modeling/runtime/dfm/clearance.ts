@@ -12,6 +12,9 @@
 //     two findings.
 //   - Mated pairs (joined by a declared mate) and `ignore`d pairs are
 //     design-intent contacts: recorded with their status, never measured.
+//   - Pairs the kernel cannot measure are NOT silently passed: they are
+//     recorded as 'unknown' so downstream consumers filtering on status see
+//     them and can route the pair for manual attention.
 //
 // Enumeration idiom mirrors `detectInterferences`: clone each part's
 // local-frame OCCT shape and apply its FK worldTransform once, up front
@@ -22,10 +25,10 @@
 // Diagnostics seam (consumed by the Task 7 orchestrator): a mutable
 // `diagnostics` out-param appended in place — the same convention
 // `detectInterferences` uses — so the orchestrator threads ONE array
-// through every DFM check and returns it on the combined result. A BREP
-// distance kernel failure on a pair records that pair as 'ok' with
-// `distanceMm: NaN` plus a warn-severity `feature.kernel-failed`
-// diagnostic; the sweep never aborts.
+// through every DFM check and returns it on the combined result. A kernel
+// failure on a pair (BRepExtrema or the volume probe) records that pair as
+// 'unknown' with `distanceMm: NaN` plus a warn-severity
+// `feature.kernel-failed` diagnostic; the sweep never aborts.
 
 import { getOC } from 'replicad';
 import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -38,9 +41,14 @@ export interface ClearancePairReport {
   a: string;
   b: string;
   /** Measured (or bbox-lower-bound) distance in mm. NaN for skipped pairs
-   *  ('ignored' / 'mated') and for kernel-failure pass-throughs. */
+   *  ('ignored' / 'mated') and for kernel-failed ('unknown') pairs. Note
+   *  that NaN serializes to null in JSON — consumers must key off `status`,
+   *  not the distance value. */
   distanceMm: number;
-  status: 'ok' | 'violated' | 'ignored' | 'mated' | 'interfering';
+  /** 'unknown' = the distance measurement failed (kernel error); the pair
+   *  needs manual attention. Precedence: ignored > mated > measurement
+   *  outcome (bbox pass-through / exact classification). */
+  status: 'ok' | 'violated' | 'ignored' | 'mated' | 'interfering' | 'unknown';
   /** false when the bbox lower bound already cleared the threshold (no
    *  BRepExtrema run), and on skipped / kernel-failed pairs. */
   exact: boolean;
@@ -57,6 +65,10 @@ const OVERLAP_EPSILON_MM3 = 0.01;
 /**
  * Check every unordered part pair of `scene` against `minClearance` (mm).
  *
+ * Status precedence: ignored > mated > measurement outcome — a pair listed
+ * in `ignoredPairs` is 'ignored' even if it would otherwise classify as
+ * 'interfering' or 'violated'; same for 'mated'.
+ *
  * - `ignoredPairs` / `matedPairs` are `pairKey()`-encoded part-name pairs
  *   (from `dfmSpec.ignore` and `Assembly.__mates()` respectively); both are
  *   recorded with their status and skipped without measurement
@@ -68,8 +80,10 @@ const OVERLAP_EPSILON_MM3 = 0.01;
  * - Touching/crossing pairs (distance < 1e-7 mm) are volume-probed: real
  *   overlap (> 0.01 mm³) ⇒ 'interfering' (owned by the interference gate,
  *   NOT a clearance violation); surface contact ⇒ 'violated' at 0 mm.
- * - Kernel failures append a warn `feature.kernel-failed` diagnostic to
- *   `diagnostics` and record the pair as 'ok' with `distanceMm: NaN`.
+ * - Kernel failures (BRepExtrema or the volume probe) append a warn
+ *   `feature.kernel-failed` diagnostic to `diagnostics` and record the pair
+ *   as 'unknown' with `distanceMm: NaN` — the measurement failed and the
+ *   pair needs manual attention; the sweep never aborts.
  */
 export function checkClearance(
   scene: SceneBackend,
@@ -126,19 +140,30 @@ export function checkClearance(
           message: `dfm.clearance: BRepExtrema_DistShapeShape failed on pair (${a.name}, ${b.name}); distance not measured.`,
           hint: 'The OCCT distance kernel could not process this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
         });
-        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'ok', exact: false });
+        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
         continue;
       }
 
       if (d < CONTACT_EPS_MM) {
         // Touching or crossing: a boolean-intersection volume probe decides
         // which. Clones — .intersect consumes its operands.
-        let volume = 0;
+        let volume: number | undefined;
         try {
           const inter = a.shape.clone().intersect(b.shape.clone());
           volume = inter.isEmpty() ? 0 : inter.volume();
         } catch {
-          volume = 0; // degenerate boolean ⇒ treat as surface contact
+          volume = undefined;
+        }
+        if (volume === undefined) {
+          diagnostics.push({
+            target: 'export-occt',
+            code: 'feature.kernel-failed',
+            severity: 'warn',
+            message: `dfm.clearance: boolean-intersection volume probe failed on touching pair (${a.name}, ${b.name}); contact vs overlap not resolved.`,
+            hint: 'The OCCT boolean kernel could not probe this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
+          });
+          reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
+          continue;
         }
         if (volume > OVERLAP_EPSILON_MM3) {
           reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'interfering', exact: true });

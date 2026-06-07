@@ -10,9 +10,13 @@
 //   - overlapping pair → status 'interfering' (the interference gate owns
 //     overlap; clearance emits NO violation for it),
 //   - far-apart pair → bbox pre-filter pass-through (`exact: false`,
-//     distance from the per-axis bbox lower bound, no BRepExtrema run).
+//     distance from the per-axis bbox lower bound, no BRepExtrema run),
+//   - exact tangency (shared face, gap 0) → 'violated' at exactly 0 mm,
+//   - kernel-failure pair (injected BRepExtrema throw) → 'unknown' + warn
+//     diagnostic; the sweep never aborts,
+//   - precedence: 'ignored' beats overlap classification ('interfering').
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
@@ -22,6 +26,21 @@ import { checkClearance } from '../../../src/modeling/runtime/dfm/clearance';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 const NONE: ReadonlySet<string> = new Set<string>();
+
+// Fault-injection switch for the BREP distance kernel: when set, the mocked
+// `brepExtremaDistance` throws instead of measuring, exercising the
+// kernel-failure path ('unknown' status) against an otherwise-healthy scene.
+const kernel = vi.hoisted(() => ({ failDistance: false }));
+vi.mock('../../../src/modeling/runtime/brepDistance', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/modeling/runtime/brepDistance')>();
+  return {
+    ...actual,
+    brepExtremaDistance: (...args: Parameters<typeof actual.brepExtremaDistance>) => {
+      if (kernel.failDistance) throw new Error('injected BRepExtrema failure');
+      return actual.brepExtremaDistance(...args);
+    },
+  };
+});
 
 interface BuiltScene {
   scene: SceneBackend;
@@ -61,6 +80,7 @@ function twoBoxesScript(gapMm: number): string {
 
 describe('checkClearance — DFM part-pair clearance', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
+  afterEach(() => { kernel.failDistance = false; });
 
   it('flags a pair 0.30 mm apart against minClearance 0.45 with the measured distance', async () => {
     const { scene } = await buildScene(twoBoxesScript(0.30));
@@ -129,6 +149,40 @@ describe('checkClearance — DFM part-pair clearance', () => {
     expect(r.exact).toBe(false);
     // Axis-aligned boxes: the per-axis bbox lower bound IS the gap.
     expect(Math.abs(r.distanceMm - 25)).toBeLessThanOrEqual(0.01);
+  });
+
+  it("reports exact tangency (two boxes sharing a face, gap 0) as 'violated' at 0 mm, exact", async () => {
+    const { scene } = await buildScene(twoBoxesScript(0));
+    const reports = checkClearance(scene, 0.45, NONE, NONE);
+    expect(reports).toHaveLength(1);
+    const r = reports[0];
+    expect(r.status).toBe('violated');
+    expect(r.distanceMm).toBe(0);
+    expect(r.exact).toBe(true);
+  });
+
+  it("records a pair whose distance measurement fails as 'unknown' with a warn diagnostic", async () => {
+    const { scene } = await buildScene(twoBoxesScript(0.30));
+    kernel.failDistance = true;
+    const diagnostics: CompilerDiagnostic[] = [];
+    const reports = checkClearance(scene, 0.45, NONE, NONE, diagnostics);
+    expect(reports).toHaveLength(1);
+    const r = reports[0];
+    expect(r.status).toBe('unknown');
+    expect(Number.isNaN(r.distanceMm)).toBe(true);
+    expect(r.exact).toBe(false);
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].code).toBe('feature.kernel-failed');
+    expect(diagnostics[0].severity).toBe('warn');
+  });
+
+  it("precedence: an overlapping pair listed in `ignore` is 'ignored', not 'interfering'", async () => {
+    const { scene } = await buildScene(twoBoxesScript(-5));
+    const ignored = new Set([pairKey('left', 'right')]);
+    const reports = checkClearance(scene, 0.45, ignored, NONE);
+    expect(reports).toHaveLength(1);
+    expect(reports[0].status).toBe('ignored');
+    expect(reports.filter(p => p.status === 'interfering')).toEqual([]);
   });
 
   it('appends no diagnostics on a healthy sweep', async () => {
