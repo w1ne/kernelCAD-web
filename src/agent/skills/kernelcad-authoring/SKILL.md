@@ -204,16 +204,14 @@ setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
 // too loose at the chosen pose / aspect.
 setCameraDistance(distance: number): CameraTargetHandle;
 
-// Declare a parameter sweep for offline kinematic-motion MP4 capture. The
-// script names a previously-declared `param()`, its start/end values, and
-// the animation duration in milliseconds. `scripts/captureAnimationView.mjs`
-// reads the resulting `animationView` virtual record and renders an MP4 by
-// sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
-// leveraging the per-session mesh cache so each frame's recompute is
-// ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
-// multiple records; the capture script uses the last one. Validation
-// errors (non-empty param, finite range, positive durationMs/fps) are
-// pushed as structured diagnostics on `handle.metadata.diagnostics`.
+// Declare an animation timeline for offline kinematic-motion MP4 capture.
+// Two author-surface forms — both normalize to the same stored track shape,
+// captured by `kernelcad animate` / the `capture_animation` MCP tool (full
+// authoring contract in the "Animation timelines" section below):
+//
+//   1. Legacy sweep — ONE previously-declared `param()` swept linearly from
+//      `from` to `to` over `durationMs` ms (normalizes to a two-key linear
+//      track):
 animationView(spec: {
   param: string;
   from: number;
@@ -221,6 +219,33 @@ animationView(spec: {
   durationMs: number;
   fps?: number;          // default 30
 }): AnimationViewHandle;
+
+//   2. Keyframe tracks — several params on one shared timeline. Each track
+//      animates one `param()` through `{ atMs, value, ease? }` keys. `ease`
+//      applies to the segment ENDING at that key (default 'linear'); the
+//      value HOLDS before the first key and after the last (clamp). Total
+//      duration is the max `atMs` across all tracks.
+animationView(spec: {
+  name?: string;         // optional human label, e.g. 'dispense cycle'
+  tracks: Array<{
+    param: string;       // a NUMERIC param() declared earlier; one track per param
+    keys: Array<{
+      atMs: number;      // >= 0, finite, unique within the track
+      value: number;     // clamped to the param's declared min/max (warn on clamp)
+      ease?: 'linear' | 'step' | 'easeIn' | 'easeOut' | 'easeInOut';  // default 'linear'
+    }>;
+  }>;
+  fps?: number;          // default 30
+}): AnimationViewHandle;
+// Virtual record — no OCCT geometry. Every animated param MUST be declared
+// NUMERIC by a prior param() call; undeclared/non-numeric params, two tracks
+// on the same param, and malformed keys (empty tracks/keys, non-finite or
+// negative atMs, duplicate atMs, unknown ease) THROW KernelError
+// (`animation.param.unknown` / `animation.track.duplicate-param` /
+// `animation.keys.invalid`). Out-of-range key values clamp to the param
+// boundary with an `animation.value.clamped` warn. Multiple animationView()
+// calls register multiple records; capture uses the LAST one and the later
+// record carries an `animation.view.shadowed` warn naming the shadowed ids.
 
 // Declare printability (design-for-manufacture) gates for the model.
 // Declaration-only: registers a virtual record (no OCCT geometry);
@@ -509,9 +534,92 @@ kernelcad validate path/to/script.kcad.ts
 # (exit 0 pass / 1 gate failed / 2 no dfmSpec declared; --json for the full report)
 kernelcad dfm path/to/script.kcad.ts
 
+# Capture the script's animationView({...}) timeline to MP4 (ffmpeg), verifying
+# the sampled poses for part interference (exit 0 clean / 1 collisions / 2 could
+# not capture). Requires a running studio dev server (npm run dev).
+kernelcad animate path/to/script.kcad.ts -o /tmp/out.mp4
+kernelcad animate path/to/script.kcad.ts --frames /tmp/frames   # PNG sequence; no ffmpeg
+kernelcad animate path/to/script.kcad.ts --no-verify            # skip the pose-interference gate
+kernelcad animate path/to/script.kcad.ts --hide wall,cap        # hide parts in the frames (cutaway); --focus shows only the named parts (mutually exclusive; verification still runs on the full model)
+
 # Run the MCP server (stdio transport)
 kernelcad mcp
 ```
+
+## Animation timelines (animationView)
+
+`animationView({...})` declares a kinematic-motion timeline that
+`kernelcad animate` (or the `capture_animation` MCP tool) renders to an MP4 or
+a PNG frame sequence. It is a virtual record — no OCCT geometry is produced —
+and the captured artifact is evidence of the motion, not a design source.
+
+Use the keyframe-track form for a mechanism cycle: each track animates one
+NUMERIC `param()` through `{ atMs, value, ease? }` keys on one shared timeline.
+
+```typescript
+const drumDeg  = param('drumDeg', 0, { min: 0, max: 360 });
+const swingDeg = param('swingDeg', 0, { min: 0, max: 40 });
+// ... build the assembly so drumDeg / swingDeg drive its mates ...
+
+animationView({
+  name: 'dispense cycle',
+  tracks: [
+    // Drum eases in to 60 deg, dwells (hold) to 1400 ms, then eases back to 0.
+    { param: 'drumDeg', keys: [
+      { atMs: 0,    value: 0 },
+      { atMs: 800,  value: 60, ease: 'easeInOut' },
+      { atMs: 1400, value: 60 },                    // dwell: value repeated → no motion
+      { atMs: 2200, value: 0,  ease: 'easeInOut' },
+    ] },
+    // Meter swings out while the drum dwells, then snaps closed (step).
+    { param: 'swingDeg', keys: [
+      { atMs: 800,  value: 0 },
+      { atMs: 1400, value: 35, ease: 'easeOut' },
+      { atMs: 1600, value: 0,  ease: 'step' },      // step: holds, then jumps at arrival
+    ] },
+  ],
+  fps: 30,
+});
+```
+
+**Ease semantics.** `ease` applies to the segment ENDING at the key ("arrive
+with this easing", default `linear`); the value holds (clamp) before the first
+key and after the last. `step` holds the previous value until it jumps exactly
+at the key. A dwell is two consecutive keys with the same value.
+
+**Validation (throws at capture time).** Every track param must be a NUMERIC
+`param()` declared earlier (`animation.param.unknown`); a param may appear in at
+most one track (`animation.track.duplicate-param`); empty tracks/keys, non-finite
+or negative `atMs`, **duplicate `atMs` within a track**, and unknown `ease`
+throw `animation.keys.invalid`. Key values outside the param's declared min/max
+clamp to the boundary with an `animation.value.clamped` warn. Multiple
+`animationView()` calls keep the LAST record and warn `animation.view.shadowed`.
+
+**Capture (`kernelcad animate <file> [out.mp4]`).** MP4 via ffmpeg by default;
+`--frames <dir>` writes a PNG sequence and skips ffmpeg entirely (use when
+ffmpeg is unavailable). `--fps <n>` overrides the record's fps. `--focus <names>` /
+`--hide <names>` isolate parts in the rendered frames (comma-separated feature ids
+or assembly part names, mutually exclusive — same semantics as `kernelcad render`;
+use for cutaways like an internal drum behind a frosted wall). Visibility is
+render-only and does NOT affect the pose-interference verification, which always
+runs against the full model. Exit codes:
+`0` = captured + verification clean (or skipped), `1` = captured but the pose
+gate found collisions (the MP4/frames ARE still written as evidence), `2` =
+could not capture at all (bad args, build error, no `animationView` record, an
+unsolvable pose, ffmpeg missing, browser bootstrap failure). Like
+`kernelcad render`, capture drives a headless browser against a **running
+studio dev server** (`npm run dev`; honors `VITE_PORT` / `PW_CDP_URL`).
+
+**Motion verification.** By default, before paying any browser/ffmpeg cost,
+capture verifies the sampled poses for part interference at every keyframe time
+plus each segment midpoint (`--verify-every <n>` additionally samples every
+n-th frame time of the fps schedule). `verified: true` means verification ran
+AND every sampled pose was collision-free using the mechanism-validity 20 mm³
+threshold (touching ≠ interference; declared `solvedModel({ ignore })` pairs are
+honored). Each collision is a `{ tMs, a, b, volumeMm3 }` row with an
+`animation.collision` diagnostic naming the pair and time. `--no-verify` skips
+the gate and sets `verified: false` (`verify_skipped` on the MCP envelope) — do
+not ship a mechanism animation with `--no-verify` standing in for a clean pass.
 
 ## Out of Scope
 

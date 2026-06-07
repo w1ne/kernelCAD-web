@@ -33,7 +33,7 @@ const KNOWN_ORPHANS: ReadonlySet<string> = new Set<string>();
 // false-positive on `feature.bend` (a phrase about bends) — fully-qualified
 // codes always have at least two dots.
 const CODE_LITERAL_RE =
-  /\b(feature|sketch|recompute|cli|export|assembly|kinematic)\.[a-z][a-z0-9-]+(?:\.[a-z0-9-]+)+\b/g;
+  /\b(feature|sketch|recompute|cli|export|assembly|kinematic|animation)\.[a-z][a-z0-9-]+(?:\.[a-z0-9-]+)+\b/g;
 
 function listMarkdownFiles(dir: string): string[] {
   const out: string[] = [];

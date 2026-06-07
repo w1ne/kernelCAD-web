@@ -75,7 +75,15 @@ export interface RenderInspectInput {
 
 const SUPPORTED_INSPECT_CHANNELS = new Set<HeadlessInspectionChannel>(['rgb', 'mask', 'depth', 'normals']);
 
-function buildObjectFilter(input: { focus?: string[]; hide?: string[] }): HeadlessObjectFilter | undefined {
+/**
+ * Build a HeadlessObjectFilter from `--focus` / `--hide` pattern lists.
+ *
+ * Shared by `render`, `render inspect`, AND `animate` (the animation-capture
+ * CLI reuses these exact semantics so a part name hidden in a render is hidden
+ * the same way in a capture): focus and hide are mutually exclusive, each
+ * value is comma-split + trimmed, and an all-empty input yields no filter.
+ */
+export function buildObjectFilter(input: { focus?: string[]; hide?: string[] }): HeadlessObjectFilter | undefined {
   const focus = normalizePatternList(input.focus);
   const hide = normalizePatternList(input.hide);
   if (focus.length > 0 && hide.length > 0) {

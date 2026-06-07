@@ -94,6 +94,30 @@ This skill is feasibility-checking. CAD authoring stays on
 mechanism, return to `kernelcad-authoring` to edit the `.kcad.ts` source, then
 re-run the relevant `kinematic.check*` to confirm.
 
+## Range-based vs timeline-based motion verification
+
+Two interference checks cover motion, answering different questions — pick by
+what you are validating:
+
+- **Range-based swept collision (this skill)** —
+  `kinematic.checkSweptCollision(arm, opts)` / the `check_swept_collision` MCP
+  tool sweep ONE joint across its full `range` at a sample density and ask "is
+  any pose in this joint's whole envelope a collision?" Use it as a feasibility
+  gate while designing the mechanism — it does not care about timing, easing,
+  or how multiple joints move together.
+
+- **Timeline-based animation verification (`kernelcad-authoring`)** —
+  `kernelcad animate` / the `capture_animation` MCP tool verify the specific
+  multi-track poses an `animationView({...})` timeline actually visits
+  (keyframe times + segment midpoints, eases and dwells included), then capture
+  the MP4/frames. Use it to confirm a particular authored MOTION (several joints
+  moving on a shared timeline) stays clear and to produce the motion artifact.
+
+Both reuse the mechanism-validity 20 mm³ interference threshold and honor
+declared `solvedModel({ ignore })` pairs, so a pose clean under one is judged by
+the same rule under the other. Range-based proves the joint's envelope is safe;
+timeline-based proves the choreographed cycle is safe and renders it.
+
 ## Non-robotics mechanism coverage
 
 These four calls work on any moving assembly, not just robot arms:

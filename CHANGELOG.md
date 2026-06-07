@@ -1,5 +1,33 @@
 # kernelCAD v0.11.0
 
+## Unreleased — agent animation toolset
+
+- **Keyframe-track `animationView()`.** Two author forms: the legacy
+  single-param linear sweep (`param`/`from`/`to`/`durationMs`) and multi-track
+  keyframes (`tracks: [{ param, keys: [{ atMs, value, ease? }] }]`). `ease` is
+  `linear` | `step` | `easeIn` | `easeOut` | `easeInOut` and applies to the
+  segment ENDING at the key; values hold (clamp) before the first / after the
+  last key. Stored metadata always normalizes to the track shape.
+- **Validation.** Tracks must name NUMERIC declared params; undeclared/non-numeric
+  params, duplicate-param tracks, and malformed keys THROW
+  (`animation.param.unknown` / `animation.track.duplicate-param` /
+  `animation.keys.invalid`). Out-of-range key values clamp with an
+  `animation.value.clamped` warn; multiple `animationView()` calls keep the last
+  and warn `animation.view.shadowed`.
+- **`kernelcad animate <file> [out.mp4]`.** Captures the timeline to MP4 (ffmpeg)
+  or a PNG frame sequence (`--frames <dir>`, zero external dependencies);
+  `--fps`, `--json`, `--quiet`, `--no-verify`, `--verify-every <n>`. Exit codes:
+  0 = captured + verification clean/skipped, 1 = captured but collisions found
+  (artifact still written as evidence), 2 = could not capture. Requires a
+  running studio dev server (`VITE_PORT` / localhost:5173).
+- **Motion verification.** Sampled-pose interference at keyframe times + segment
+  midpoints (and every n-th frame with `--verify-every`), reusing the
+  mechanism-validity 20 mm³ threshold; collisions report `{ tMs, a, b,
+  volumeMm3 }` rows and `animation.collision` diagnostics.
+- **`capture_animation` MCP tool.** File-only input, snake_case envelope; mirrors
+  the CLI. Collisions surface on `verified: false` + `collisions[]` and do NOT
+  flip `ok`.
+
 ## Unreleased — print-readiness DFM gates (W3)
 
 - **`dfmSpec()` declaration.** Scripts declare printability gates: `minWall`,
