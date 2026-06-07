@@ -31,6 +31,7 @@ vi.mock('../store/useShellStore', () => ({
     shellStore: {
         setAgentRailOpen: vi.fn(),
         proposeStagedEdit: vi.fn(),
+        pruneSectionKeepWhole: vi.fn(),
     },
 }));
 
