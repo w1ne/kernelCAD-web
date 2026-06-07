@@ -29,6 +29,7 @@ export interface StagedEdit {
 export interface ShellState {
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRailOpen: boolean;
+    readonly inspectorOpen: boolean;
     readonly previousValidity: ValidatorResult | null;
     readonly currentValidity: ValidatorResult | null;
     readonly stagedEdit: StagedEdit | null;
@@ -39,9 +40,31 @@ export interface ShellState {
     readonly sectionPosition: number;
 }
 
+const STORAGE_KEY_INSPECTOR_OPEN = 'kernelcad:inspectorOpen';
+
+function readStoredInspectorOpen(): boolean {
+    if (typeof window === 'undefined') return true;
+    try {
+        // Default open: only an explicit stored 'false' collapses the panel.
+        return window.localStorage.getItem(STORAGE_KEY_INSPECTOR_OPEN) !== 'false';
+    } catch {
+        return true;
+    }
+}
+
+function writeStoredInspectorOpen(open: boolean): void {
+    if (typeof window === 'undefined') return;
+    try {
+        window.localStorage.setItem(STORAGE_KEY_INSPECTOR_OPEN, String(open));
+    } catch {
+        // Private-mode / quota failures degrade to session-only state.
+    }
+}
+
 const INITIAL_STATE: ShellState = {
     selectedFeatureId: null,
     agentRailOpen: false,
+    inspectorOpen: true,
     previousValidity: null,
     currentValidity: null,
     stagedEdit: null,
@@ -55,7 +78,9 @@ const INITIAL_STATE: ShellState = {
 type Listener = () => void;
 
 export class ShellStore {
-    private state: ShellState = INITIAL_STATE;
+    // Inspector visibility persists across reloads (mirrors the validity
+    // drawer's localStorage pattern); everything else starts from defaults.
+    private state: ShellState = { ...INITIAL_STATE, inspectorOpen: readStoredInspectorOpen() };
     private readonly listeners = new Set<Listener>();
 
     getSnapshot = (): ShellState => this.state;
@@ -81,6 +106,17 @@ export class ShellStore {
         if (this.state.agentRailOpen === open) return;
         this.state = { ...this.state, agentRailOpen: open };
         this.emit();
+    };
+
+    setInspectorOpen = (open: boolean): void => {
+        if (this.state.inspectorOpen === open) return;
+        this.state = { ...this.state, inspectorOpen: open };
+        writeStoredInspectorOpen(open);
+        this.emit();
+    };
+
+    toggleInspectorOpen = (): void => {
+        this.setInspectorOpen(!this.state.inspectorOpen);
     };
 
     setMarkingMode = (on: boolean): void => {

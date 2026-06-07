@@ -21,6 +21,8 @@ import { buildMaterialFromPBR, DEFAULT_MESH_COLOR, disposeMaterialDeep } from '.
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { fitDistanceForBounds } from './cameraFit';
+import { parseSectionParam } from './sectionParam';
+import { sectionPlaneFromState } from '../viewer/sectionPlane';
 import type { RenderView } from '../../../shared/render/views';
 export type { RenderView };
 
@@ -486,6 +488,19 @@ export function DemoPlayerPage(): React.JSX.Element {
     sceneRef.current = ctx;
     animEngineRef.current = new AnimationEngine(ctx.scene);
     cameraCtrlRef.current = new CameraController(ctx.camera, ctx.scene);
+    // ?section=<axis>:<pos> (+ ?sectionflip=1) — headless render section
+    // plane, wired from the CLI's --section flag via headlessRender. GLOBAL
+    // renderer clipping is sufficient here: the demo-player scene contains
+    // only the model and reference-image planes, so no per-material
+    // traversal or localClippingEnabled is needed. Plane math is shared
+    // with the Studio section tool (sectionPlaneFromState).
+    const params = new URLSearchParams(window.location.search);
+    const sectionState = parseSectionParam(params.get('section'), params.get('sectionflip'));
+    if (sectionState) {
+      ctx.renderer.clippingPlanes = [
+        sectionPlaneFromState(sectionState.axis, sectionState.flip, sectionState.position),
+      ];
+    }
   }, []);
 
   useEffect(() => {

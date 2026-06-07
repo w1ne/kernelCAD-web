@@ -15,6 +15,7 @@ const CLI_SUBCOMMANDS = new Set<string>([
   'dfm',
   'evaluate',
   'export',
+  'inspect',
   'install',
   'interference',
   'mcp',

@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { dfmCommand } from './commands/dfm';
 import { evaluateCommand } from './commands/evaluate';
 import { exportCommand } from './commands/export';
+import { inspectCommand } from './commands/inspect';
 import { installCommand } from './commands/install';
 import { interferenceCommand } from './commands/interference';
 import { mcpCommand } from './commands/mcp';
@@ -43,6 +44,7 @@ program
 program.addCommand(dfmCommand());
 program.addCommand(evaluateCommand());
 program.addCommand(exportCommand());
+program.addCommand(inspectCommand());
 program.addCommand(installCommand());
 program.addCommand(interferenceCommand());
 program.addCommand(mcpCommand());

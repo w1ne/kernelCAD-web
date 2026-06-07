@@ -24,6 +24,19 @@
   two-revision print job: the pre-fix revision fails all three gates on its
   known defects; the shipped revision measures clearance-clean.
 
+## Unreleased — STEP inspection + section renders (W4)
+
+- **STEP file inspection.** `kernelcad inspect step <file.step>` and MCP
+  `inspect_step` interrogate an external STEP file before placement: solid
+  tree (index + best-effort name), per-solid exact bounding box + volume +
+  face count, and detected cylindrical holes (axis origin + direction,
+  diameter, depth, blind/through; co-axial seam-split faces merge into one
+  bore).
+- **Section renders.** `kernelcad render --section <axis>=<pos>` clips the
+  model with one axis-aligned section plane so headless captures show
+  interior structure; keeps the negative-axis side by default,
+  `--section-flip` keeps the positive side.
+
 ## Unreleased — print-prep export suite (W2)
 
 - **Per-part STL export.** Export each solved-assembly part as its own binary

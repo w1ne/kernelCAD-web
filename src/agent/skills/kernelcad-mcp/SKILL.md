@@ -19,6 +19,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `list_features({ file? code? })` — array of feature summaries (kind/id/params/inputs)
 - `list_assemblies({ file? code? })` — captured assembly intent: assemblies, parts, named connectors, fixed connections, joints, and aggregate models
 - `inspect_assembly({ file? | code?, assembly? })` — physical assembly inventory for agents: named parts, bboxes, connectors, mates, mechanical review facts, disconnected solids, `unexplainedGeometry`, and a next-action prompt. Run this before accepting visually suspicious mechanisms; random/floating geometry must be repaired or explicitly justified by the original prompt.
+- `inspect_step({ file })` — inspect a STEP file directly, without evaluating a script (`{ file }` is required; no `{ code }` mode): solid tree (index + best-effort name), per-solid exact bounding box + volume + face count, and detected cylindrical holes (axis origin + direction, diameter, depth, blind/through; co-axial seam-split faces merge into one bore). Run this before placing an imported vendor part — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders. CLI equivalent: `kernelcad inspect step <file.step>`.
 - `get_shape_info({ file? code?, feature_id? })` — volume/surfaceArea/bbox of a feature (default: last)
 - `list_topology({ file? code?, feature_id? })` — canonical face names + edge count
 - `get_edges_of({ file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
