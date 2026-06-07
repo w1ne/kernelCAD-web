@@ -141,6 +141,13 @@ describe('sampleTrackAt', () => {
 });
 
 describe('sampleTracks', () => {
+  it('throws on non-finite or non-positive fps', () => {
+    const tracks = [track('a', [key(0, 0), key(1000, 1)])];
+    for (const fps of [0, -30, NaN, Infinity, -Infinity]) {
+      expect(() => sampleTracks(tracks, fps)).toThrow(/fps must be a finite number > 0/);
+    }
+  });
+
   it('frameCount = ceil(durationMs/1000 · fps); last frame exactly at durationMs', () => {
     const tracks = [track('a', [key(0, 0), key(4000, 360)])];
     const { frames, durationMs } = sampleTracks(tracks, 30);

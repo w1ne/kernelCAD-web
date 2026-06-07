@@ -85,7 +85,7 @@ export function sampleTrackAt(track: NormalizedAnimationTrack, tMs: number): num
       return a.value + (b.value - a.value) * easeProgress(b.ease, u);
     }
   }
-  /* istanbul ignore next -- unreachable: tMs < last.atMs guarantees a segment */
+  // Unreachable: tMs < last.atMs guarantees a segment above.
   return last.value;
 }
 
@@ -116,6 +116,9 @@ export function sampleTracks(
   tracks: readonly NormalizedAnimationTrack[],
   fps: number,
 ): AnimationSampleResult {
+  if (!Number.isFinite(fps) || fps <= 0) {
+    throw new Error(`animationSampler: fps must be a finite number > 0 (got ${fps})`);
+  }
   let durationMs = 0;
   for (const track of tracks) {
     for (const key of track.keys) durationMs = Math.max(durationMs, key.atMs);
