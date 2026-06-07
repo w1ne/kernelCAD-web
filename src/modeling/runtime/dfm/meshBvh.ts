@@ -394,13 +394,24 @@ export class TriangleBvh {
     return hits;
   }
 
-  /** Ray-parity inside test: odd number of surface crossings along +X ⇒
-   *  inside. Welded watertight input (meshShapeForExport) makes parity
-   *  reliable; grazing hits through shared edges/vertices are deduplicated
-   *  by t (within 1e-9) before counting, since every incident triangle
-   *  reports the same crossing. */
+  /** Ray-parity inside test: odd number of surface crossings along the
+   *  parity axis ⇒ inside. Welded watertight input (meshShapeForExport)
+   *  makes parity reliable; grazing hits through shared edges/vertices are
+   *  deduplicated by t (within 1e-9) before counting, since every incident
+   *  triangle reports the same crossing.
+   *
+   *  The parity ray runs along the root-bounds axis with the SMALLEST
+   *  extent (ties prefer x, then y): the infinite ray then pierces the
+   *  fewest tree cells — a thin slab is probed through its thickness in a
+   *  point-location-style descent instead of swept across its span. Axis
+   *  choice is per-mesh deterministic, and parity is axis-invariant on
+   *  watertight input. */
   pointInside(p: Vec3): boolean {
-    const hits = this.allHits(p, [1, 0, 0], 0);
+    const b = this.bounds;
+    const ex = b[3] - b[0], ey = b[4] - b[1], ez = b[5] - b[2];
+    const dir: Vec3 =
+      ex <= ey ? (ex <= ez ? [1, 0, 0] : [0, 0, 1]) : ey <= ez ? [0, 1, 0] : [0, 0, 1];
+    const hits = this.allHits(p, dir, 0);
     let crossings = 0;
     let lastT = -Infinity;
     for (const h of hits) {
