@@ -6,7 +6,7 @@
 // Pure analysis — no capture session, no assembly solve.
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
@@ -64,6 +64,32 @@ describe('inspectStepFile', () => {
 
     // Indices are stable explorer order.
     expect(report.solids.map((s) => s.index)).toEqual([0, 1]);
+
+    // The in-process export writes empty MANIFOLD_SOLID_BREP names — the
+    // pairing must report null, never ''.
+    expect(report.solids.map((s) => s.name)).toEqual([null, null]);
+  });
+
+  it('pairs MANIFOLD_SOLID_BREP names with solids, unescaping STEP quote escapes', async () => {
+    // The exporter writes MANIFOLD_SOLID_BREP('',...) — patch real names in
+    // (file order) so the positive pairing path runs. One name carries a
+    // STEP '' quote escape, which must come back as a single apostrophe.
+    const names = ['PLATE', "Servo''s Body"];
+    let patchedCount = 0;
+    const patched = readFileSync(stepPath, 'utf8').replace(
+      /MANIFOLD_SOLID_BREP\('',/g,
+      () => `MANIFOLD_SOLID_BREP('${names[patchedCount++]}',`,
+    );
+    expect(patchedCount).toBe(2);
+    const namedPath = join(tmpDir, 'two-solids-named.step');
+    writeFileSync(namedPath, patched);
+
+    const report = await inspectStepFile(namedPath);
+    expect(report.solidCount).toBe(2);
+    expect(report.solids.map((s) => s.name).sort()).toEqual([
+      'PLATE',
+      "Servo's Body",
+    ]);
   });
 
   it('rejects a missing file with a KernelError carrying a hint', async () => {

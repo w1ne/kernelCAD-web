@@ -106,9 +106,11 @@ export async function inspectStepFile(path: string): Promise<StepInspectReport> 
   // explorer index. This pairing is heuristic — TopExp_Explorer traversal
   // order vs MANIFOLD_SOLID_BREP file order is NOT contractual — so names
   // are reported null whenever the counts disagree.
+  // STEP escapes a literal apostrophe as '' inside string tokens, so the
+  // name pattern must consume '' pairs and unescape them afterwards.
   const entityNames: string[] = [];
-  for (const m of buf.toString('utf8').matchAll(/MANIFOLD_SOLID_BREP\('([^']*)'/g)) {
-    entityNames.push(m[1]);
+  for (const m of buf.toString('utf8').matchAll(/MANIFOLD_SOLID_BREP\('((?:[^']|'')*)'/g)) {
+    entityNames.push(m[1].replace(/''/g, "'"));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
