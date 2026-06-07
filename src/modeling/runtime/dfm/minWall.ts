@@ -29,15 +29,18 @@
 // under the rigid placement transforms, so no world transform is applied.
 //
 // Clustering (deterministic): thin samples are sorted ascending by measured
-// thickness (stable ties = triangle order) and greedily grouped. A sample
-// joins the existing cluster (a) it shares a mesh vertex with — same
+// thickness (stable ties = triangle order) and grouped incrementally. A
+// sample joins the existing cluster (a) it shares a mesh vertex with — same
 // connected thin patch, the welded export mesh makes vertex identity
 // meaningful — or, failing that, (b) the first cluster whose worst-spot
 // location is within 2 × minWallMm (this merges the two sides of the same
 // wall, which are close in space but topologically disjoint). Otherwise it
-// opens a new cluster. Because samples arrive ascending, each cluster's
-// first sample is its worst spot and clusters are created in descending
-// severity order.
+// opens a new cluster. When a sample's vertices touch SEVERAL existing
+// clusters it bridges them: those clusters are UNIONED (union-find, survivor
+// = lowest id = most severe), so one connected thin region is always one
+// cluster even when its ends were discovered before its middle. Because
+// samples arrive ascending, each cluster's first sample is its worst spot
+// and surviving clusters are reported in descending severity order.
 
 import type { Vec3 } from '../../../shared/intent/types';
 import { TriangleBvh, type DfmMesh } from './meshBvh';
@@ -62,11 +65,15 @@ export interface WallViolationCluster {
 export interface MinWallResult {
   /** Thin-wall clusters, descending severity (thinnest first), capped at 10. */
   violations: WallViolationCluster[];
+  /** True when more clusters existed than `violations` reports (cap hit). */
+  truncated: boolean;
   /** Rays actually cast. */
   sampleCount: number;
   /** Global minimum measured wall thickness (Infinity if no ray hit).
    *  Air-gap crossings rejected by the midpoint inside-test are NOT wall
-   *  measurements and are excluded. */
+   *  measurements and are excluded — at ANY thickness, not just below the
+   *  threshold (the inside-test runs lazily, only when a hit would lower
+   *  this value or is a violation candidate). */
   thinnestMm: number;
 }
 
@@ -85,9 +92,19 @@ interface ThinSample {
  * `minWallMm`. Sampled, not exact: one inward ray per (non-degenerate)
  * triangle centroid, so resolution is bounded by the tessellation; meshes
  * above 150k triangles are deterministically subsampled at a fixed stride.
+ *
+ * `opts.bvh` lets several checks over the SAME mesh share one BVH build.
+ * The supplied BVH MUST have been constructed from `mesh` itself: nothing
+ * here can detect a mismatch, and a BVH built from a different mesh yields
+ * silently wrong results (its `triIndex` mapping and geometry would
+ * disagree with the triangles being sampled).
  */
-export function checkMinWall(mesh: DfmMesh, minWallMm: number): MinWallResult {
-  const bvh = new TriangleBvh(mesh);
+export function checkMinWall(
+  mesh: DfmMesh,
+  minWallMm: number,
+  opts?: { bvh?: TriangleBvh },
+): MinWallResult {
+  const bvh = opts?.bvh ?? new TriangleBvh(mesh);
   const { vertices, triangles } = mesh;
   const numTris = (triangles.length / 3) | 0;
   const stride = numTris > MAX_SAMPLED_TRIANGLES ? Math.ceil(numTris / MAX_SAMPLED_TRIANGLES) : 1;
@@ -123,43 +140,85 @@ export function checkMinWall(mesh: DfmMesh, minWallMm: number): MinWallResult {
     if (hit === null) continue;
     const t = hit.t;
 
-    if (t < minWallMm) {
-      // Midpoint inside-test: a thin segment whose midpoint is in air is an
-      // air gap between surfaces, not a wall — reject it entirely.
+    // Midpoint inside-test: a segment whose midpoint is in air is an air
+    // gap between surfaces, not a wall — reject it entirely (violations AND
+    // thinnestMm). Run lazily: only when the hit is a violation candidate
+    // or would lower thinnestMm; anything else never influences the result,
+    // so skipping the test there is pure perf with no accuracy cost.
+    if (t < minWallMm || t < thinnestMm) {
       const d = RAY_EPS_MM + t / 2;
       const mid: Vec3 = [cx - nx * d, cy - ny * d, cz - nz * d];
       if (!bvh.pointInside(mid)) continue;
-      thin.push({ t, location: [cx, cy, cz], va, vb, vc });
+      if (t < minWallMm) thin.push({ t, location: [cx, cy, cz], va, vb, vc });
+      if (t < thinnestMm) thinnestMm = t;
     }
-    if (t < thinnestMm) thinnestMm = t;
   }
 
+  const { clusters, truncated } = clusterThinSamples(thin, minWallMm);
   return {
-    violations: clusterThinSamples(thin, minWallMm),
+    violations: clusters,
+    truncated,
     sampleCount,
     thinnestMm,
   };
 }
 
-/** Greedy deterministic clustering of thin samples (see module header). */
-function clusterThinSamples(thin: ThinSample[], minWallMm: number): WallViolationCluster[] {
+/** Deterministic incremental clustering of thin samples with union-find
+ *  merging (see module header). */
+function clusterThinSamples(
+  thin: ThinSample[],
+  minWallMm: number,
+): { clusters: WallViolationCluster[]; truncated: boolean } {
   thin.sort((s, u) => s.t - u.t); // stable: ties keep triangle order
   const joinR = 2 * minWallMm;
   const joinR2 = joinR * joinR;
 
   const clusters: WallViolationCluster[] = [];
+  // Union-find over cluster ids: a sample whose vertices touch several
+  // clusters bridges them into one. Survivor = lowest id = most severe
+  // (clusters are created in ascending worst-thickness order), so the
+  // creation-order severity ordering survives merges.
+  const parent: number[] = [];
+  const find = (c: number): number => {
+    while (parent[c] !== c) {
+      parent[c] = parent[parent[c]]; // path halving
+      c = parent[c];
+    }
+    return c;
+  };
   // First cluster to claim a mesh vertex owns it; later samples sharing the
   // vertex join that cluster (connected thin patches stay together).
   const vertexCluster = new Map<number, number>();
 
   for (const s of thin) {
     let target = -1;
-    // (a) topological adjacency — prefer the most severe matching cluster.
+    // (a) topological adjacency — union every distinct cluster the sample's
+    // vertices touch; the lowest (most severe) root survives.
     for (const v of [s.va, s.vb, s.vc]) {
       const c = vertexCluster.get(v);
-      if (c !== undefined && (target === -1 || c < target)) target = c;
+      if (c === undefined) continue;
+      const root = find(c);
+      if (target === -1 || root === target) {
+        target = root;
+        continue;
+      }
+      const lo = Math.min(root, target);
+      const hi = Math.max(root, target);
+      parent[hi] = lo;
+      // Recompute the merged worst spot. By construction the lower id was
+      // created from a thinner (or tied-earlier) sample, so the survivor's
+      // worst spot already wins; keep the explicit min for safety.
+      if (clusters[hi].thicknessMm < clusters[lo].thicknessMm) {
+        clusters[lo].thicknessMm = clusters[hi].thicknessMm;
+        clusters[lo].location = clusters[hi].location;
+      }
+      clusters[lo].sampleCount += clusters[hi].sampleCount;
+      target = lo;
     }
-    // (b) proximity to a cluster's worst spot, in severity order.
+    // (b) proximity to a cluster's worst spot, in severity order. Absorbed
+    // clusters keep their original worst-spot location here on purpose:
+    // that spot is still part of the merged region, so matching it routes
+    // the sample to the surviving root.
     if (target === -1) {
       for (let c = 0; c < clusters.length; c++) {
         const loc = clusters[c].location;
@@ -167,7 +226,7 @@ function clusterThinSamples(thin: ThinSample[], minWallMm: number): WallViolatio
         const dy = s.location[1] - loc[1];
         const dz = s.location[2] - loc[2];
         if (dx * dx + dy * dy + dz * dz <= joinR2) {
-          target = c;
+          target = find(c);
           break;
         }
       }
@@ -175,6 +234,7 @@ function clusterThinSamples(thin: ThinSample[], minWallMm: number): WallViolatio
     if (target === -1) {
       // New cluster: first (= thinnest) sample is its worst spot.
       target = clusters.length;
+      parent.push(target);
       clusters.push({ thicknessMm: s.t, location: s.location, sampleCount: 0 });
     }
     clusters[target].sampleCount++;
@@ -183,6 +243,10 @@ function clusterThinSamples(thin: ThinSample[], minWallMm: number): WallViolatio
     if (!vertexCluster.has(s.vc)) vertexCluster.set(s.vc, target);
   }
 
-  // Creation order is ascending worst-thickness = descending severity.
-  return clusters.slice(0, MAX_REPORTED_CLUSTERS);
+  // Surviving roots in creation order = descending severity.
+  const live = clusters.filter((_, c) => find(c) === c);
+  return {
+    clusters: live.slice(0, MAX_REPORTED_CLUSTERS),
+    truncated: live.length > MAX_REPORTED_CLUSTERS,
+  };
 }

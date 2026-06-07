@@ -407,6 +407,7 @@ export class TriangleBvh {
    *  choice is per-mesh deterministic, and parity is axis-invariant on
    *  watertight input. */
   pointInside(p: Vec3): boolean {
+    if (this.triangleCount === 0) return false; // empty tree: placeholder root bounds must not be read
     const b = this.bounds;
     const ex = b[3] - b[0], ey = b[4] - b[1], ez = b[5] - b[2];
     const dir: Vec3 =

@@ -7,15 +7,20 @@
 //   - a shelled cube at both sides of its 1 mm wall thickness,
 //   - parallel plates across a 1 mm AIR gap (clean — gap is not a wall),
 //   - a synthetic inverted-winding mesh that forces a cast across the air
-//     gap, proving the midpoint inside-test arm rejects it,
+//     gap, proving the midpoint inside-test arm rejects it — both below the
+//     threshold (no violation) and above it (no thinnestMm pollution),
 //   - cluster separation (two pockets at opposite corners → two clusters),
-//   - the cap-at-10 / descending-severity contract on 12 distinct thin spots,
+//   - cluster UNION: a bridging sample adjacent to two existing clusters
+//     merges them into one,
+//   - the cap-at-10 / descending-severity / truncated contract on 12
+//     distinct thin spots,
+//   - a caller-supplied pre-built BVH (identical to the auto-built path),
 //   - deterministic stride subsampling above 150k triangles (also the
 //     densest-mesh timing reference for the DFM budget).
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { checkMinWall } from '../../../src/modeling/runtime/dfm/minWall';
-import type { DfmMesh } from '../../../src/modeling/runtime/dfm/meshBvh';
+import { TriangleBvh, type DfmMesh } from '../../../src/modeling/runtime/dfm/meshBvh';
 import {
   initOcct,
   OcctBackend,
@@ -78,6 +83,7 @@ describe('checkMinWall — OCCT export meshes', () => {
     expect(v.location[2]).toBeLessThanOrEqual(1);
     expect(v.sampleCount).toBe(4);
     expect(res.thinnestMm).toBeCloseTo(1.0, 3);
+    expect(res.truncated).toBe(false);
   });
 
   it('passes a 2 mm plate against minWall 1.5', async () => {
@@ -154,6 +160,74 @@ describe('checkMinWall — synthetic meshes', () => {
     expect(res.thinnestMm).toBeCloseTo(4.0, 3);
   });
 
+  it('excludes an ABOVE-threshold air-gap crossing from thinnestMm', () => {
+    // Two 3 mm plates 2 mm apart, ONE mesh, lower plate's gap-facing top
+    // face wound INWARD so its cast launches +z across the air gap and hits
+    // the upper plate at t ≈ 2 — ABOVE minWall 1.5, so it is no violation,
+    // but it is still an air crossing, not a wall: thinnestMm must stay at
+    // the real 3 mm plate thickness, not absorb the 2 mm gap.
+    const vertices: number[] = [];
+    const triangles: number[] = [];
+    appendBox(vertices, triangles, 0, 0, 0, 20, 20, 3); // lower: z 0..3
+    appendBox(vertices, triangles, 0, 0, 5, 20, 20, 3); // upper: z 5..8
+    // Flip the lower plate's top face (local tris 2 and 3 → indices 6..11).
+    [triangles[7], triangles[8]] = [triangles[8], triangles[7]];
+    [triangles[10], triangles[11]] = [triangles[11], triangles[10]];
+
+    const res = checkMinWall({ vertices, triangles }, 1.5);
+    expect(res.violations).toEqual([]);
+    expect(res.thinnestMm).toBeCloseTo(3.0, 3);
+  });
+
+  it('merges clusters bridged by a later sample into ONE (union, not first-claim)', () => {
+    // Stepped plate, ONE welded mesh: slab A (t = 0.10) and slab B
+    // (t = 0.20) share no vertex and their worst spots are > 2×minWall
+    // apart, so B opens its own cluster. Slab C (t = 0.30) bridges them —
+    // its bottom triangles reuse A's AND B's bottom-corner vertex indices —
+    // so C's first sample is adjacent to BOTH clusters at once. One
+    // physical connected thin region ⇒ exactly ONE reported cluster.
+    const vertices: number[] = [];
+    const triangles: number[] = [];
+    appendBox(vertices, triangles, 0, 0, 0, 2, 2, 0.1); // A: x 0..2, verts 0..7
+    appendBox(vertices, triangles, 6, 0, 0, 2, 2, 0.2); // B: x 6..8, verts 8..15
+    // C: x 2..6, y 0..2, z 0..0.3 — bottom ring REUSES A verts 1 (2,0,0)
+    // and 2 (2,2,0), and B verts 8 (6,0,0) and 11 (6,2,0); only the top
+    // ring is new. Same outward winding as appendBox with local→global
+    // map [0→1, 1→8, 2→11, 3→2, 4→16, 5→17, 6→18, 7→19].
+    vertices.push(2, 0, 0.3, 6, 0, 0.3, 6, 2, 0.3, 2, 2, 0.3); // 16..19
+    triangles.push(
+      1, 11, 8, 1, 2, 11, // bottom (-z)
+      16, 17, 18, 16, 18, 19, // top (+z)
+      1, 8, 17, 1, 17, 16, // y = 0 (-y)
+      2, 19, 18, 2, 18, 11, // y = 2 (+y)
+      1, 16, 19, 1, 19, 2, // x = 2 (-x)
+      8, 11, 18, 8, 18, 17, // x = 6 (+x)
+    );
+
+    const res = checkMinWall({ vertices, triangles }, 1.5);
+    expect(res.sampleCount).toBe(36);
+    expect(res.violations).toHaveLength(1);
+    const v = res.violations[0];
+    expect(v.thicknessMm).toBeCloseTo(0.1, 3); // worst spot survives the merge
+    expect(v.location[0]).toBeGreaterThanOrEqual(0);
+    expect(v.location[0]).toBeLessThanOrEqual(2); // ...and sits on slab A
+    expect(v.sampleCount).toBe(12); // 4 thin samples per slab, all merged
+    expect(res.thinnestMm).toBeCloseTo(0.1, 3);
+  });
+
+  it('returns identical results when a pre-built BVH is supplied', () => {
+    const vertices: number[] = [];
+    const triangles: number[] = [];
+    appendBox(vertices, triangles, 0, 0, 0, 20, 20, 1);
+    appendBox(vertices, triangles, 30, 0, 0, 5, 5, 0.5);
+    const mesh: DfmMesh = { vertices, triangles };
+
+    const auto = checkMinWall(mesh, 1.5);
+    const shared = checkMinWall(mesh, 1.5, { bvh: new TriangleBvh(mesh) });
+    expect(shared).toEqual(auto);
+    expect(auto.violations.length).toBeGreaterThanOrEqual(1); // non-trivial fixture
+  });
+
   it('caps reported clusters at 10, ordered by descending severity', () => {
     // 12 disjoint 5×5 slabs with thicknesses 0.1 .. 1.2 mm — 12 distinct
     // thin regions, all violating minWall 1.5.
@@ -178,6 +252,8 @@ describe('checkMinWall — synthetic meshes', () => {
       expect(res.violations[i].thicknessMm).toBeGreaterThan(res.violations[i - 1].thicknessMm);
     }
     expect(res.thinnestMm).toBeCloseTo(0.1, 3);
+    // 12 clusters existed; only 10 were reported.
+    expect(res.truncated).toBe(true);
   });
 
   it('subsamples deterministically above 150k triangles (timing reference)', () => {
@@ -231,5 +307,6 @@ describe('checkMinWall — synthetic meshes', () => {
     expect(res.violations).toEqual([]);
     expect(res.sampleCount).toBe(0);
     expect(res.thinnestMm).toBe(Infinity);
+    expect(res.truncated).toBe(false);
   });
 });
