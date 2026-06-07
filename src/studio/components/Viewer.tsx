@@ -12,6 +12,7 @@ import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
 import { cutawayPlanesFromState } from "./viewer/sectionPlane";
+import { computeGeometryBox } from "./viewer/sectionRange";
 import { sectionPartKey } from "./viewer/sectionParts";
 import type { HoverResult } from "../features-ui/interaction/HoverManager";
 import type { SnapResult } from "../features-ui/interaction/SnapManager";
@@ -58,7 +59,19 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setHoveredItemId
     } = useWorkbench();
 
-    const { setContextMenu, viewportBackground } = useUI();
+    const { setContextMenu, viewportBackground, gridVisible } = useUI();
+
+    // kernelCAD models are z-up, so the ground grid must lie in the XY plane
+    // at the model's lowest point — drei's default y-up XZ grid would slice
+    // vertically through the model. Nudged slightly below min-z to avoid
+    // z-fighting with bottom faces; fade scales with model size.
+    const gridPlacement = useMemo(() => {
+        const box = computeGeometryBox(geometries);
+        if (!box) return { z: 0, fade: 300 };
+        const size = box.getSize(new THREE.Vector3());
+        const radius = Math.max(size.x, size.y, size.z) / 2;
+        return { z: box.min.z - 0.1, fade: Math.max(300, radius * 8) };
+    }, [geometries]);
 
     const {
         sectionMode, sectionAxesEnabled, sectionSides, sectionOffsets, sectionKeepWhole,
@@ -152,8 +165,18 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 <SnapIndicator snap={snapPoint} />
                 <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
 
-                {!sketchMode.active && (
-                    <Grid args={[200, 200]} cellColor="#404040" sectionColor="#606060" fadeDistance={100} />
+                {!sketchMode.active && gridVisible && (
+                    <Grid
+                        position={[0, 0, gridPlacement.z]}
+                        rotation={[Math.PI / 2, 0, 0]}
+                        infiniteGrid
+                        cellSize={5}
+                        sectionSize={25}
+                        cellColor="#404040"
+                        sectionColor="#606060"
+                        fadeDistance={gridPlacement.fade}
+                        fadeStrength={1.5}
+                    />
                 )}
 
                 <group>
