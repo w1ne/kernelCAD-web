@@ -196,6 +196,51 @@ describe('capture_animation MCP tool — timeout race', () => {
     expect(r.failure_kind).toBe('environment');
     expect(r.error).toMatch(/did not finish|abandoned/i);
   });
+
+  it('does not emit an unhandled rejection when the losing engine promise rejects after timeout', async () => {
+    // INVARIANT: after the timeout wins the race and the call has returned a
+    // typed environment failure, the abandoned underlying capture may still
+    // REJECT (a wedged browser/ffmpeg child throwing late). That rejection must
+    // NOT escape as a process-level unhandledRejection. The tool guarantees this
+    // two ways: Promise.race subscribes a reaction to every input promise, AND
+    // the explicit no-op `.catch` on the result chain is belt-and-suspenders for
+    // any future refactor that stops routing the chain through the race.
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown): void => {
+      unhandled.push(reason);
+    };
+    process.on('unhandledRejection', onUnhandled);
+    // The engine rejects only AFTER the deadline fires — so the timeout promise
+    // wins the race and the engine's rejection lands on the (losing) chain that
+    // the race already abandoned.
+    let rejectEngine: ((e: unknown) => void) | undefined;
+    mockedEngine.mockImplementationOnce(
+      () =>
+        new Promise<CaptureAnimationResult>((_res, rej) => {
+          rejectEngine = rej;
+        }),
+    );
+    try {
+      vi.useFakeTimers();
+      const pending = captureAnimationTool({ file: 'x.kcad.ts' });
+      // Trip the deadline first — the timeout wins the race.
+      await vi.advanceTimersByTimeAsync(CAPTURE_ANIMATION_TIMEOUT_MS + 1);
+      const r = await pending;
+      expect(r.ok).toBe(false);
+      expect(r.failure_kind).toBe('environment');
+      // Switch back to real timers so Node's real unhandled-rejection check
+      // (which runs on a real event-loop turn, not a faked one) can fire.
+      vi.useRealTimers();
+      // Now the abandoned underlying capture rejects (browser/ffmpeg threw late).
+      rejectEngine?.(new Error('late browser crash after the call was abandoned'));
+      // Yield real event-loop turns so an unhandled rejection would surface.
+      await new Promise((res) => setTimeout(res, 10));
+      await new Promise((res) => setTimeout(res, 10));
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+  });
 });
 
 describe('capture_animation MCP tool — registry', () => {

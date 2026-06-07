@@ -242,8 +242,16 @@ export async function captureAnimationTool(
     timer.unref?.();
   });
 
+  // Map the engine result into the envelope. Attach a no-op .catch so that if
+  // the timeout WINS the race and the underlying capture later REJECTS (a wedged
+  // browser/ffmpeg child throwing in the background), the losing chain's
+  // rejection is swallowed instead of surfacing as an unhandled rejection. The
+  // race's own awaited branch still observes the rejection on the happy path.
+  const resultPromise = capturePromise.then(toOutput);
+  resultPromise.catch(() => undefined);
+
   try {
-    const result = await Promise.race([capturePromise.then(toOutput), timeoutPromise]);
+    const result = await Promise.race([resultPromise, timeoutPromise]);
     return result;
   } finally {
     if (timer !== undefined) clearTimeout(timer);
