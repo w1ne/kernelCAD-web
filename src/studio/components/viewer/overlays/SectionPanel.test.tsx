@@ -66,4 +66,12 @@ describe('SectionPanel cutaway controls', () => {
     fireEvent.click(screen.getByTestId('section-keep-whole-servo_left'));
     expect(screen.getByText(/All parts excluded/)).toBeTruthy();
   });
+
+  it('renders inside a draggable floating panel; close exits section mode', () => {
+    shellStore.setSectionMode(true);
+    render(<SectionPanel visible={true} />);
+    expect(screen.getByTestId('panel-section')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('Close panel'));
+    expect(shellStore.getSnapshot().sectionMode).toBe(false);
+  });
 });

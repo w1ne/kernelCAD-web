@@ -4,6 +4,7 @@ import { useRecomputeResult } from '../../../hooks/useRecomputeResult';
 import { useWorkbench } from '../../../context/WorkbenchContext';
 import { computeGeometryBox, sectionRange } from '../sectionRange';
 import { sectionPartKey } from '../sectionParts';
+import { FloatingPanel } from '../../Shared/FloatingPanel';
 import type { SectionShape } from '../../../store/shellStore';
 
 const AXES: Array<'x' | 'y' | 'z'> = ['x', 'y', 'z'];
@@ -51,6 +52,17 @@ export function SectionPanel({ visible }: { visible: boolean }) {
     [geometries, itemNames],
   );
 
+  // Default to roughly where the static panel used to sit (top-right of the
+  // viewer, clear of the inspector rail). Drag position is transient, like
+  // the rest of the section state.
+  const initialPos = useMemo(
+    () => ({
+      x: Math.max(16, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 680),
+      y: 88,
+    }),
+    [],
+  );
+
   const box = useMemo(() => computeGeometryBox([...geometries]), [geometries]);
   const rangeFor = useMemo(
     () => (axis: 'x' | 'y' | 'z'): Range => (box ? sectionRange(box, axis) : FALLBACK_RANGE),
@@ -92,12 +104,14 @@ export function SectionPanel({ visible }: { visible: boolean }) {
   const planeStep = sliderStep(planeRange);
 
   return (
-    <div
-      data-testid="section-panel"
-      className="absolute top-4 right-4 z-30 w-64 rounded border border-white/10 bg-black/80 p-3 text-xs text-white/90 shadow-lg select-none"
+    <FloatingPanel
+      id="section"
+      title="Section"
+      onClose={() => shellStore.setSectionMode(false)}
+      initialPosition={initialPos}
+      widthClassName="w-72"
     >
-      <div className="mb-2 font-medium">Section</div>
-
+      <div data-testid="section-panel" className="text-xs text-white/90 select-none">
       <div className="mb-2 flex gap-1">
         {SHAPES.map(({ id, label }) => (
           <button
@@ -230,6 +244,7 @@ export function SectionPanel({ visible }: { visible: boolean }) {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </FloatingPanel>
   );
 }
