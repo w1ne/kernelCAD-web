@@ -3,6 +3,7 @@ import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/e
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { Scene } from '../../../modeling/validation/scene';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -13,12 +14,21 @@ export interface EvaluateScriptOutput {
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /**
+   * Present ONLY when the evaluated scene is assembly-built
+   * (`assembly().part(...)` → `.model()` / `.solvedModel()`). Carries the
+   * part count and ordered part names so agents can confirm the model
+   * structured its bodies as named parts. Absent for single-shape /
+   * non-assembly scripts.
+   */
+  parts?: { count: number; names: string[] };
 }
 
 /**
  * MCP `evaluate_script` tool — runs a kernelCAD script and reports
- * pass/fail + feature count + diagnostics. One-of `{ file }` (path on
- * disk) or `{ code }` (inline source). Returns a JSON-serializable
+ * pass/fail + feature count + diagnostics, plus a `parts` summary
+ * (`{ count, names }`) when the scene is assembly-built. One-of `{ file }`
+ * (path on disk) or `{ code }` (inline source). Returns a JSON-serializable
  * envelope agents can reason over.
  *
  * No side effects — does not write to disk.
@@ -51,6 +61,17 @@ export async function evaluateScriptTool(
   } else {
     clearActiveMcpSession();
   }
+  // Assembly-built scene: surface the named-part roster so agents can
+  // confirm the model carries part identity. Absent for single-shape /
+  // non-assembly returns.
+  const parts =
+    model?.returnValue instanceof Scene
+      ? {
+          count: model.returnValue.parts.length,
+          names: model.returnValue.parts.map(p => p.name),
+        }
+      : undefined;
+
   return {
     ok: r.exitCode === 0,
     featureCount: r.featureCount,
@@ -59,5 +80,6 @@ export async function evaluateScriptTool(
     // today but ensures the contract holds if a future caller bypasses
     // the eval helper.
     diagnostics: withNextActions(r.diagnostics),
+    ...(parts !== undefined ? { parts } : {}),
   };
 }
