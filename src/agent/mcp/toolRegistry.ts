@@ -31,6 +31,7 @@ import { getEdgesOfTool } from './tools/getEdgesOf';
 import { getShapeInfoTool } from './tools/getShapeInfo';
 import { inspectAssemblyTool } from './tools/inspectAssembly';
 import { inspectRobotTool } from './tools/inspectRobot';
+import { inspectStepTool } from './tools/inspectStep';
 import { validateUrdfTool } from './tools/validateUrdf';
 import { listApiTool } from './tools/listApi';
 import { listDiagnosticCodesTool } from './tools/listDiagnosticCodes';
@@ -1057,6 +1058,24 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
       },
     },
     handler: input => fetchPartTool(input as Parameters<typeof fetchPartTool>[0]),
+  },
+  {
+    definition: {
+      name: 'inspect_step',
+      description:
+        'Inspect a STEP file without evaluating a script: solid tree (index + best-effort name), ' +
+        'per-solid exact bounding box and volume, and detected cylindrical holes ' +
+        '(axis origin + direction, diameter, depth, blind/through). Use before placing imported ' +
+        'vendor parts to find mounting-hole positions and verify the part-local frame.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file: { type: 'string', description: 'Path to a .step file (absolute, or relative to cwd).' },
+        },
+        required: ['file'],
+      },
+    },
+    handler: input => inspectStepTool(input as unknown as Parameters<typeof inspectStepTool>[0]),
   },
   {
     definition: {
