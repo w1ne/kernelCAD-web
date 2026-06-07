@@ -1,10 +1,12 @@
 // tests/unit/cli/animateCommand.test.ts
 //
-// `kernelcad animate` CLI surface: arg parsing, the failureKind → exit-code
-// mapping, the --json envelope (engine result as-is), --quiet, and deps
-// threading into the capture engine — with the engine layer mocked (no real
-// browser, no real ffmpeg), mirroring renderCommand.test.ts's approach of
-// stubbing the engine module.
+// `kernelcad animate` CLI surface: arg parsing, the exit-code scheme
+// (0 captured+verified-or-skipped / 1 captured-but-collisions / 2 could not
+// capture — the `kernelcad dfm` sibling scheme), the --json envelope (engine
+// result as-is), --quiet, verification flags (--no-verify / --verify-every),
+// and deps threading into the capture engine — with the engine layer mocked
+// (no real browser, no real ffmpeg), mirroring renderCommand.test.ts's
+// approach of stubbing the engine module.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
@@ -34,6 +36,8 @@ function okResult(overrides: Partial<CaptureAnimationResult> = {}): CaptureAnima
     durationMs: 2000,
     fps: 12,
     diagnostics: [],
+    verified: true,
+    collisions: [],
     ...overrides,
   };
 }
@@ -53,6 +57,8 @@ function failResult(
     durationMs: 0,
     fps: 0,
     diagnostics,
+    verified: false,
+    collisions: [],
     failureKind,
     ...overrides,
   };
@@ -72,7 +78,7 @@ describe('runAnimate', () => {
     const r = await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4' });
     expect(r.exitCode).toBe(0);
     expect(r.result).toEqual(okResult());
-    expect(r.summary).toBe('Wrote /tmp/out.mp4 — 24 frames, 2000 ms @ 12 fps');
+    expect(r.summary).toBe('Wrote /tmp/out.mp4 — 24 frames, 2000 ms @ 12 fps; verify clean');
   });
 
   it('threads file/out/fps/onProgress into the engine opts', async () => {
@@ -128,22 +134,24 @@ describe('runAnimate', () => {
     expect(mockCapture).not.toHaveBeenCalled();
   });
 
-  it("failureKind 'model' (no animationView record) → exit 1 with the engine diagnostics", async () => {
+  it("failureKind 'model' (no animationView record) → exit 2 (could not capture) with the engine diagnostics", async () => {
     mockCapture.mockResolvedValue(failResult('model', [
       errorDiag('cli.invalid-args', 'The script has no animationView({...}) record; nothing to capture: demo.kcad.ts'),
     ]));
     const r = await runAnimate({ file: 'demo.kcad.ts' });
-    expect(r.exitCode).toBe(1);
+    expect(r.exitCode).toBe(2);
     expect(r.summary).toBeUndefined();
     expect(r.result.diagnostics[0].message).toMatch(/no animationView/);
   });
 
-  it("failureKind 'model' (build-error diagnostics) → exit 1", async () => {
+  it("failureKind 'model' (build-error diagnostics) → exit 2 (could not capture)", async () => {
     mockCapture.mockResolvedValue(failResult('model', [
       errorDiag('recompute.lowering.exception', 'fillet radius too large'),
     ]));
     const r = await runAnimate({ file: 'demo.kcad.ts' });
-    expect(r.exitCode).toBe(1);
+    expect(r.exitCode).toBe(2);
+    // failureKind stays on the result for --json fault attribution.
+    expect(r.result.failureKind).toBe('model');
     expect(r.result.diagnostics.some((d) => d.severity === 'error')).toBe(true);
   });
 
@@ -177,19 +185,73 @@ describe('runAnimate', () => {
       errorDiag('recompute.lowering.exception', 'frame 3 failed'),
     ], { frameCount: 3, durationMs: 2000, fps: 12 }));
     const r = await runAnimate({ file: 'demo.kcad.ts' });
-    expect(r.exitCode).toBe(1);
+    expect(r.exitCode).toBe(2);
     expect(r.summary).toBeUndefined();
     expect(r.result.frameCount).toBe(3);
+  });
+
+  it('captured but verification found collisions → exit 1 with the artifact path + summary', async () => {
+    mockCapture.mockResolvedValue(okResult({
+      verified: false,
+      collisions: [{ tMs: 500, a: 'arm', b: 'base', volumeMm3: 350.5 }],
+      diagnostics: [errorDiag('animation.collision', "parts 'arm' and 'base' collide at tMs=500")],
+    }));
+    const r = await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4' });
+    expect(r.exitCode).toBe(1);
+    // The artifact IS written (evidence) and the summary names it.
+    expect(r.result.outPath).toBe('/tmp/out.mp4');
+    expect(r.summary).toContain('Wrote /tmp/out.mp4');
+    expect(r.summary).toContain('1 collision(s) found');
+  });
+
+  it('skipVerify threads into the engine and a skipped-verify capture exits 0', async () => {
+    mockCapture.mockResolvedValue(okResult({ verified: false, verifySkipped: true }));
+    const r = await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4', skipVerify: true });
+    expect(mockCapture.mock.calls[0][0]).toMatchObject({ skipVerify: true });
+    expect(r.exitCode).toBe(0);
+    expect(r.summary).toContain('verify skipped');
+  });
+
+  it('verifyEvery threads into the engine as verifyEveryNthFrame', async () => {
+    await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4', verifyEvery: 4 });
+    expect(mockCapture.mock.calls[0][0]).toMatchObject({ verifyEveryNthFrame: 4 });
+  });
+
+  it.each([0, -1, 1.5, NaN])('bad --verify-every (%s) → exit 2 (usage); engine never called', async (n) => {
+    const r = await runAnimate({ file: 'demo.kcad.ts', verifyEvery: n });
+    expect(r.exitCode).toBe(2);
+    expect(r.result.diagnostics[0].code).toBe('cli.invalid-args');
+    expect(r.result.diagnostics[0].message).toMatch(/--verify-every/);
+    expect(mockCapture).not.toHaveBeenCalled();
+  });
+
+  it('--no-verify + --verify-every together → exit 2 (usage); engine never called', async () => {
+    const r = await runAnimate({ file: 'demo.kcad.ts', skipVerify: true, verifyEvery: 2 });
+    expect(r.exitCode).toBe(2);
+    expect(r.result.diagnostics[0].message).toMatch(/mutually exclusive/);
+    expect(mockCapture).not.toHaveBeenCalled();
   });
 });
 
 describe('formatAnimateSummary', () => {
-  it('is one concise line with path, frames, duration, fps', () => {
+  it('is one concise line with path, frames, duration, fps, and the verify verdict', () => {
     const s = formatAnimateSummary({
       outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
+      verified: true, collisionCount: 0,
     });
-    expect(s).toBe('Wrote /tmp/a.mp4 — 24 frames, 2000 ms @ 12 fps');
+    expect(s).toBe('Wrote /tmp/a.mp4 — 24 frames, 2000 ms @ 12 fps; verify clean');
     expect(s).not.toContain('\n');
+  });
+
+  it('reports the collision count and the skipped state', () => {
+    expect(formatAnimateSummary({
+      outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
+      verified: false, collisionCount: 2,
+    })).toContain('2 collision(s) found');
+    expect(formatAnimateSummary({
+      outPath: '/tmp/a.mp4', frameCount: 24, durationMs: 2000, fps: 12,
+      verified: false, collisionCount: 0, verifySkipped: true,
+    })).toContain('verify skipped');
   });
 });
 
@@ -204,11 +266,13 @@ describe('animateCommand wiring', () => {
     ]);
     expect(cmd.options.find((o) => o.long === '--frames')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--fps')).toBeDefined();
+    expect(cmd.options.find((o) => o.long === '--no-verify')).toBeDefined();
+    expect(cmd.options.find((o) => o.long === '--verify-every')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--json')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--quiet')).toBeDefined();
   });
 
-  it('documents the exit codes (0 captured / 1 model at fault / 2 environment-or-usage) in help', () => {
+  it('documents the exit codes (0 captured+verified / 1 collisions / 2 could not capture) in help', () => {
     // helpInformation() omits addHelpText blocks; render full help through
     // commander's configured output instead.
     let help = '';
@@ -216,9 +280,9 @@ describe('animateCommand wiring', () => {
     cmd.configureOutput({ writeOut: (s: string) => { help += s; } });
     cmd.outputHelp();
     expect(help).toContain('Exit codes:');
-    expect(help).toContain('0  animation captured');
-    expect(help).toContain('1  the model is at fault');
-    expect(help).toContain('2  environmental/usage failure');
+    expect(help).toContain('0  animation captured; pose verification clean');
+    expect(help).toContain('1  animation captured, but pose verification found part collisions');
+    expect(help).toContain('2  could not capture');
   });
 
   it('--fps parses to a number before reaching the engine', async () => {
@@ -230,6 +294,23 @@ describe('animateCommand wiring', () => {
     }
     expect(mockCapture).toHaveBeenCalledOnce();
     expect(mockCapture.mock.calls[0][0]).toMatchObject({ scriptPath: 'demo.kcad.ts', fps: 6 });
+    expect(process.exitCode).toBe(0);
+  });
+
+  it('--no-verify maps to skipVerify; --verify-every parses to verifyEveryNthFrame', async () => {
+    const errSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      await animateCommand().parseAsync(['demo.kcad.ts', '--no-verify'], { from: 'user' });
+      expect(mockCapture.mock.calls[0][0]).toMatchObject({ skipVerify: true });
+      mockCapture.mockClear();
+      mockCapture.mockResolvedValue(okResult());
+      await animateCommand().parseAsync(['demo.kcad.ts', '--verify-every', '3'], { from: 'user' });
+      expect(mockCapture.mock.calls[0][0]).toMatchObject({ verifyEveryNthFrame: 3 });
+      // Neither flag leaks the other's key when unset.
+      expect(mockCapture.mock.calls[0][0]).not.toHaveProperty('skipVerify');
+    } finally {
+      errSpy.mockRestore();
+    }
     expect(process.exitCode).toBe(0);
   });
 
@@ -260,11 +341,13 @@ describe('animateCommand wiring', () => {
       durationMs: 2000,
       fps: 12,
       diagnostics: [],
+      verified: true,
+      collisions: [],
     });
     expect(process.exitCode).toBe(0);
   });
 
-  it('--json failure: ok:false envelope with failureKind and diagnostics; exit code 1 for model fault', async () => {
+  it('--json failure: ok:false envelope with failureKind and diagnostics; exit code 2 for model fault', async () => {
     mockCapture.mockResolvedValue(failResult('model', [
       errorDiag('cli.invalid-args', 'no animationView'),
     ]));
@@ -284,7 +367,7 @@ describe('animateCommand wiring', () => {
     expect(env.outPath).toBeUndefined();
     expect(Array.isArray(env.diagnostics)).toBe(true);
     expect(env.diagnostics[0].code).toBe('cli.invalid-args');
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
   });
 
   it('--quiet: NO progress sink reaches the engine', async () => {
@@ -315,7 +398,7 @@ describe('animateCommand wiring', () => {
       logSpy.mockRestore();
       errSpy.mockRestore();
     }
-    expect(logs).toEqual(['Wrote /tmp/out.mp4 — 24 frames, 2000 ms @ 12 fps']);
+    expect(logs).toEqual(['Wrote /tmp/out.mp4 — 24 frames, 2000 ms @ 12 fps; verify clean']);
     expect(process.exitCode).toBe(0);
   });
 

@@ -7,9 +7,11 @@
 //
 // This wrapper is kept working for the docs/plans that reference it; it now
 // delegates to the same `runAnimate` core the command runs, so behavior
-// is identical — including exit codes: 0 captured, 1 model at fault
-// (script/build error, no animationView record, unsolvable pose),
-// 2 environment/usage (ffmpeg missing, browser bootstrap, bad args).
+// is identical — including exit codes: 0 captured + pose verification
+// clean (or skipped), 1 captured but verification found collisions (the
+// artifact is still written as evidence), 2 could not capture (script/build
+// error, no animationView record, unsolvable pose, ffmpeg missing, browser
+// bootstrap, bad args).
 //
 // Usage:
 //   npx tsx scripts/captureAnimationView.mjs <script.kcad.ts> [outFile.mp4] [--frames <dir>]

@@ -10,8 +10,13 @@
 // NOTE (agent-animation workstream): capture's precondition gate is cheap
 // build-level diagnostics only — the full-range mechanism-truth probe was
 // deliberately removed (48 min before frame 1 on a real assembly); motion
-// safety at the animated poses belongs to the upcoming verifyAnimation
-// surface. See the gate test below.
+// safety at the animated poses is the verifyAnimation step (4b), which runs
+// by default BEFORE the browser/ffmpeg phase. Tests that assert exact
+// per-frame updateModelParams sequences or inject synthetic solve failures
+// by call index pass `skipVerify: true` so the verification sweep's own
+// updateModelParams calls don't shift the indices; the verification
+// behavior itself is covered by the dedicated describe-block below against
+// the real animation fixtures.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EventEmitter } from 'node:events';
@@ -203,7 +208,7 @@ describe('captureAnimation', () => {
   it('happy path (mp4): frame count from sampler, params forwarded in order, mp4 path returned', async () => {
     const { deps, state, close } = makeDeps();
     const outPath = join(tmp, 'out.mp4');
-    const result = await captureAnimation({ scriptPath: animScript, outPath }, deps);
+    const result = await captureAnimation({ scriptPath: animScript, outPath, skipVerify: true }, deps);
     expect(result.ok).toBe(true);
     expect(result.outPath).toBe(outPath);
     expect(result.frameCount).toBe(3);
@@ -236,7 +241,7 @@ describe('captureAnimation', () => {
     const outPath = join(tmp, 'partial.mp4');
     // Simulate the encoder having started writing the file.
     writeFileSync(outPath, 'partial-mp4-bytes');
-    const result = await captureAnimation({ scriptPath: animScript, outPath }, deps);
+    const result = await captureAnimation({ scriptPath: animScript, outPath, skipVerify: true }, deps);
     expect(result.ok).toBe(false);
     expect(result.outPath).toBeUndefined();
     expect(result.frameCount).toBe(1); // only frame 0 made it
@@ -268,7 +273,7 @@ describe('captureAnimation', () => {
     paramCtl.failAtCall = 3; // frame index 2 (tMs = 100)
     const { deps } = makeDeps();
     const framesDir = join(tmp, 'frames-partial');
-    const result = await captureAnimation({ scriptPath: animScript, framesDir }, deps);
+    const result = await captureAnimation({ scriptPath: animScript, framesDir, skipVerify: true }, deps);
     expect(result.ok).toBe(false);
     expect(result.frameCount).toBe(2);
     expect(result.diagnostics[0].message).toContain('tMs=100');
@@ -362,6 +367,118 @@ describe('captureAnimation', () => {
       from = idx + 1;
     }
   });
+});
+
+describe('captureAnimation pose verification (step 4b)', () => {
+  const COLLIDING_FIXTURE = 'tests/fixtures/animation/colliding-sweep.kcad.ts';
+
+  it('collision fixture: verify runs BEFORE the browser/ffmpeg phase, capture still completes, result carries verified:false + collisions', async () => {
+    const { deps, openPage, spawnFfmpeg, state } = makeDeps();
+    const messages: string[] = [];
+    const outPath = join(tmp, 'colliding.mp4');
+    const result = await captureAnimation(
+      { scriptPath: COLLIDING_FIXTURE, outPath, onProgress: (m) => messages.push(m) },
+      deps,
+    );
+    // Capture SUCCEEDS — the MP4 is evidence; collisions don't flip ok.
+    expect(result.ok).toBe(true);
+    expect(result.outPath).toBe(outPath);
+    expect(result.frameCount).toBeGreaterThan(0);
+    expect(result.verified).toBe(false);
+    expect(result.verifySkipped).toBeUndefined();
+    expect(result.collisions.length).toBeGreaterThanOrEqual(1);
+    for (const c of result.collisions) {
+      expect(c.tMs).toBeGreaterThan(0);
+      expect(c.tMs).toBeLessThan(result.durationMs);
+      expect([c.a, c.b].sort()).toEqual(['arm', 'base']);
+    }
+    // The animation.collision diagnostics ride on the (otherwise ok) result.
+    const collisionDiags = result.diagnostics.filter((d) => d.code === 'animation.collision');
+    expect(collisionDiags).toHaveLength(result.collisions.length);
+    // Page/ffmpeg phases still ran — frames were rendered and encoded.
+    expect(openPage).toHaveBeenCalled();
+    expect(spawnFfmpeg).toHaveBeenCalled();
+    expect(state.ffmpeg!.written).toHaveLength(result.frameCount);
+    // Ordering: verification progress precedes the page-ready message.
+    const verifyIdx = messages.findIndex((m) => /^verify: \d+ poses/.test(m));
+    const foundIdx = messages.findIndex((m) => /^verify: \d+ collisions found$/.test(m));
+    const pageIdx = messages.findIndex((m) => /^page ready/.test(m));
+    expect(verifyIdx).toBeGreaterThanOrEqual(0);
+    expect(foundIdx).toBeGreaterThan(verifyIdx);
+    expect(pageIdx).toBeGreaterThan(foundIdx);
+  }, 120_000);
+
+  it('skipVerify: verification never runs; result says verifySkipped with no collisions', async () => {
+    const { deps } = makeDeps();
+    const outPath = join(tmp, 'colliding-skip.mp4');
+    const messages: string[] = [];
+    const result = await captureAnimation(
+      { scriptPath: COLLIDING_FIXTURE, outPath, skipVerify: true, onProgress: (m) => messages.push(m) },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.verified).toBe(false);
+    expect(result.verifySkipped).toBe(true);
+    expect(result.collisions).toEqual([]);
+    expect(result.diagnostics.some((d) => d.code === 'animation.collision')).toBe(false);
+    expect(messages.some((m) => m.startsWith('verify:'))).toBe(false);
+  }, 120_000);
+
+  it('verifySampleTimesMs replaces the keyframe sample set (collision pose excluded → verified clean)', async () => {
+    const { deps } = makeDeps();
+    const outPath = join(tmp, 'colliding-times.mp4');
+    const messages: string[] = [];
+    const result = await captureAnimation(
+      {
+        scriptPath: COLLIDING_FIXTURE,
+        outPath,
+        // Only the two keyed poses — the mid-travel collision pose (tMs=500)
+        // is deliberately excluded, so verification reports clean.
+        verifySampleTimesMs: [0, 1000],
+        onProgress: (m) => messages.push(m),
+      },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.verified).toBe(true);
+    expect(result.collisions).toEqual([]);
+    expect(messages).toContain('verify: clean');
+    expect(messages.some((m) => /^verify: 2 poses/.test(m))).toBe(true);
+  }, 120_000);
+
+  it('verifyEveryNthFrame unions frame times onto the sample set (catches the collision a sparse explicit set missed)', async () => {
+    const { deps } = makeDeps();
+    const outPath = join(tmp, 'colliding-nth.mp4');
+    const result = await captureAnimation(
+      {
+        scriptPath: COLLIDING_FIXTURE,
+        outPath,
+        // [0] alone is clean; every 4th frame time of the 12-frame schedule
+        // adds mid-travel poses (~33° / ~65°) that DO collide.
+        verifySampleTimesMs: [0],
+        verifyEveryNthFrame: 4,
+        onProgress: () => undefined,
+      },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.verified).toBe(false);
+    expect(result.collisions.length).toBeGreaterThanOrEqual(1);
+    // The collision rows sit at frame times, none of which is 0.
+    expect(result.collisions.every((c) => c.tMs > 0)).toBe(true);
+  }, 120_000);
+
+  it('clean fixture: verified true with no collisions on the full default sample set', async () => {
+    const { deps } = makeDeps();
+    const outPath = join(tmp, 'clean.mp4');
+    const result = await captureAnimation(
+      { scriptPath: 'tests/fixtures/animation/revolute-sweep.kcad.ts', outPath },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.verified).toBe(true);
+    expect(result.collisions).toEqual([]);
+  }, 120_000);
 });
 
 describe('revolute-sweep fixture (animation smoke fixture stays green)', () => {

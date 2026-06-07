@@ -5,20 +5,25 @@
 //
 // Pipeline: buildModel → build-error diagnostics gate → last animationView
 // record → sampleTracks (shared animationSampler — Studio playback must
-// agree bit-for-bit) → per frame: updateModelParams + meshFeaturesPerFeature
-// (per-session triangle cache keeps warm frames ~5 ms) → demo-player page
-// render → PNG → ffmpeg stdin (MP4 mode) or frame-%04d.png files (framesDir
-// mode, zero external deps).
+// agree bit-for-bit) → animation-pose interference verification
+// (verifyAnimation, default-on; BEFORE any browser/ffmpeg cost) → per
+// frame: updateModelParams + meshFeaturesPerFeature (per-session triangle
+// cache keeps warm frames ~5 ms) → demo-player page render → PNG → ffmpeg
+// stdin (MP4 mode) or frame-%04d.png files (framesDir mode, zero external
+// deps).
 //
 // DECISION (agent-animation workstream): capture does NOT run the
 // full-range mechanism-truth probe (`kernelcad render` does). On real
 // assemblies that probe sweeps every mate's full limit range BEFORE frame 1
 // — measured at 48 minutes on the gearfinity planetary stage — and its
 // verdict covers poses the animation may never visit. Capture's
-// precondition gate is therefore cheap build-level diagnostics only; motion
-// safety for the poses the animation ACTUALLY visits is checked by the
-// animation-pose interference verification (the upcoming `verifyAnimation`
-// surface in this workstream), which is bounded by the frame schedule.
+// precondition gate is cheap build-level diagnostics; motion safety for the
+// poses the animation ACTUALLY visits is checked by the animation-pose
+// interference verification (`verifyAnimation`, step 4b — keyframe times +
+// segment midpoints by default), whose cost is bounded by the keyframe
+// schedule. Collisions do NOT abort the capture (the MP4 is evidence): the
+// result reports `verified: false` + `collisions` and CLI surfaces map that
+// to their exit code; `skipVerify` opts out entirely.
 //
 // Failure surface is typed: every refusal returns `{ ok: false }` plus
 // CompilerDiagnostics drawn from the EXISTING registry vocabulary — no new
@@ -54,7 +59,8 @@ import { serializeForBridge } from '../../modeling/capture/featureMeshSerialize'
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import { withNextAction, withNextActions } from '../../shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../shared/intent/animationViewRecord';
-import { sampleTracks } from './animationSampler';
+import { keyframeSampleSet, sampleTracks } from './animationSampler';
+import { verifyAnimation, type AnimationCollision } from './verifyAnimation';
 import {
   DEFAULT_RENDER_BASE_URL,
   HEADLESS_VIEWPORT,
@@ -89,10 +95,19 @@ export interface CaptureAnimationOpts {
   framesDir?: string;
   /** Override the animationView record's fps. */
   fps?: number;
-  /** Progress sink for long captures (build done, schedule, page ready,
-   *  every 10th frame, encode done, total). Default: no-op. The script
-   *  wrapper passes one that writes timestamped lines to stderr. */
+  /** Progress sink for long captures (build done, schedule, verify, page
+   *  ready, every 10th frame, encode done, total). Default: no-op. The
+   *  script wrapper passes one that writes timestamped lines to stderr. */
   onProgress?: (msg: string) => void;
+  /** Skip the animation-pose interference verification that otherwise runs
+   *  by default (after build + schedule, BEFORE the browser/ffmpeg phase). */
+  skipVerify?: boolean;
+  /** Power knob: explicit timeline positions (ms) to verify at, replacing
+   *  the default keyframe sample set (key times + segment midpoints). */
+  verifySampleTimesMs?: number[];
+  /** Power knob: additionally verify at every n-th FRAME time of the fps
+   *  schedule (unioned with the keyframe sample set / verifySampleTimesMs). */
+  verifyEveryNthFrame?: number;
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
@@ -114,6 +129,19 @@ export interface CaptureAnimationResult {
   /** Resolved frames-per-second the schedule was sampled at. */
   fps: number;
   diagnostics: CompilerDiagnostic[];
+  /** True when the animation-pose interference verification ran AND every
+   *  sampled pose was collision-free. False when collisions were found, when
+   *  verification was skipped (`verifySkipped` discriminates), or when the
+   *  capture refused before verification could run. Collisions do NOT flip
+   *  `ok` — the MP4/frames are still produced as evidence; CLI surfaces map
+   *  `collisions` to their exit code. */
+  verified: boolean;
+  /** One row per colliding pair per verified pose (empty when clean,
+   *  skipped, or refused before verification). The matching
+   *  `animation.collision` error diagnostics ride on `diagnostics`. */
+  collisions: AnimationCollision[];
+  /** True when `skipVerify` suppressed verification. */
+  verifySkipped?: boolean;
   /** Set on every ok:false result; absent on success. */
   failureKind?: CaptureFailureKind;
 }
@@ -186,9 +214,10 @@ function waitFfmpegCloseBounded(proc: FfmpegProcessLike, timeoutMs: number): Pro
  * `kernelcad render` runs: that probe sweeps every mate's full limit range
  * (48 minutes before frame 1 on the gearfinity planetary stage) and judges
  * poses the animation never visits. Interference at the poses the animation
- * ACTUALLY visits is verified by the animation-pose interference check (the
- * upcoming `verifyAnimation` surface), whose cost is bounded by the frame
- * schedule.
+ * ACTUALLY visits is verified by the animation-pose interference check
+ * (`verifyAnimation`, default-on at step 4b; `skipVerify` opts out), whose
+ * cost is bounded by the keyframe schedule. Collisions don't abort the
+ * capture — the result carries `verified` / `collisions` instead.
  */
 export async function captureAnimation(
   opts: CaptureAnimationOpts,
@@ -198,6 +227,17 @@ export async function captureAnimation(
   const spawnFfmpeg = deps.spawnFfmpeg ?? defaultSpawnFfmpeg;
   const onProgress = opts.onProgress ?? (() => undefined);
   const t0 = Date.now();
+
+  // Animation-pose verification state, threaded onto EVERY result (refusals
+  // before verification report verified:false with no collisions).
+  let verified = false;
+  let collisions: AnimationCollision[] = [];
+  const verifySkipped = opts.skipVerify === true;
+  const verifyFields = () => ({
+    verified,
+    collisions,
+    ...(verifySkipped ? { verifySkipped: true } : {}),
+  });
 
   const scriptPath = resolve(opts.scriptPath);
   const framesDir = opts.framesDir !== undefined ? resolve(opts.framesDir) : undefined;
@@ -211,7 +251,7 @@ export async function captureAnimation(
     model = await buildModelFromFile({ file: scriptPath });
   } catch (e) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model', ...verifyFields(),
       diagnostics: [diag(
         'cli.script-exception',
         `captureAnimation: building '${scriptPath}' failed: ${errMsg(e)}`,
@@ -229,7 +269,7 @@ export async function captureAnimation(
   const buildErrors = model.diagnostics.filter((d) => d.severity === 'error');
   if (buildErrors.length > 0) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model', ...verifyFields(),
       diagnostics: withNextActions(model.diagnostics),
     };
   }
@@ -240,7 +280,7 @@ export async function captureAnimation(
   const animRecords = model.records.filter((r) => r.kind === 'animationView');
   if (animRecords.length === 0) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model', ...verifyFields(),
       diagnostics: [diag(
         'cli.invalid-args',
         `The script has no animationView({...}) record; nothing to capture: ${scriptPath}`,
@@ -258,7 +298,7 @@ export async function captureAnimation(
   const fps = opts.fps ?? metadata.fps;
   if (!Number.isFinite(fps) || fps <= 0) {
     return {
-      ok: false, frameCount: 0, durationMs: metadata.durationMs, fps, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs: metadata.durationMs, fps, failureKind: 'model', ...verifyFields(),
       diagnostics: [...stashedWarns, diag(
         'cli.invalid-args',
         `captureAnimation: fps must be a finite number > 0 (got ${fps}).`,
@@ -271,6 +311,47 @@ export async function captureAnimation(
   const { frames, durationMs } = sampleTracks(metadata.tracks, fps);
   onProgress(`${frames.length} frames scheduled @ ${fps} fps (durationMs=${durationMs})`);
 
+  // 4b. Animation-pose interference verification — BEFORE the browser/ffmpeg
+  //     phase (cheaper to fail before rendering; the poses are the same model
+  //     state either way). Default sample set = keyframe times + segment
+  //     midpoints; `verifySampleTimesMs` replaces it and `verifyEveryNthFrame`
+  //     unions every n-th frame time of the fps schedule on top. Collisions
+  //     do NOT abort the capture — the MP4/frames are evidence — but a pose
+  //     that fails to SOLVE during verification is a model fault and refuses
+  //     here, exactly as it would have in the frame loop.
+  if (!verifySkipped) {
+    let sampleTimesMs = opts.verifySampleTimesMs;
+    const nth = opts.verifyEveryNthFrame;
+    if (nth !== undefined && Number.isFinite(nth) && nth >= 1) {
+      const base = sampleTimesMs ?? keyframeSampleSet(metadata.tracks);
+      const extra = frames.filter((_, i) => i % Math.floor(nth) === 0).map((f) => f.tMs);
+      sampleTimesMs = [...new Set([...base, ...extra])].sort((a, b) => a - b);
+    }
+    const v = await verifyAnimation(
+      model,
+      metadata.tracks,
+      sampleTimesMs !== undefined ? { sampleTimesMs } : {},
+    );
+    onProgress(`verify: ${v.posesSampled} poses (${Date.now() - t0}ms)`);
+    collisions = v.collisions;
+    stashedWarns.push(...v.diagnostics);
+    // Honesty rule: a pose the kernel cannot solve is a model fault — refuse
+    // before any browser or encoder starts (never silently skip a pose).
+    const poseFailures = v.diagnostics.filter(
+      (d) => d.severity === 'error' && d.code !== 'animation.collision',
+    );
+    if (poseFailures.length > 0) {
+      return {
+        ok: false, frameCount: 0, durationMs, fps, failureKind: 'model', ...verifyFields(),
+        diagnostics: [...stashedWarns],
+      };
+    }
+    verified = v.ok;
+    onProgress(
+      collisions.length > 0 ? `verify: ${collisions.length} collisions found` : 'verify: clean',
+    );
+  }
+
   // 5. Cold mesh — populates the per-session triangle cache so the per-frame
   //    recompute below is warm.
   let initial;
@@ -278,7 +359,7 @@ export async function captureAnimation(
     initial = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
   } catch (e) {
     return {
-      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model', ...verifyFields(),
       diagnostics: [...stashedWarns, diag(
         'recompute.lowering.exception',
         `captureAnimation: initial meshing failed: ${errMsg(e)}`,
@@ -288,7 +369,7 @@ export async function captureAnimation(
   }
   if (initial.failedFeatureIds.length > 0) {
     return {
-      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model',
+      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model', ...verifyFields(),
       diagnostics: [...stashedWarns, diag(
         'recompute.lowering.exception',
         `captureAnimation: ${initial.failedFeatureIds.length} feature(s) failed to compile: ${initial.failedFeatureIds.join(', ')}`,
@@ -333,7 +414,7 @@ export async function captureAnimation(
         ffmpeg = undefined;
         const enoent = (e as NodeJS.ErrnoException | null)?.code === 'ENOENT';
         return {
-          ok: false, frameCount: 0, durationMs, fps, failureKind: 'environment',
+          ok: false, frameCount: 0, durationMs, fps, failureKind: 'environment', ...verifyFields(),
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             enoent
@@ -417,7 +498,7 @@ export async function captureAnimation(
       } catch (e) {
         await abortFfmpeg();
         return {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'model',
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'model', ...verifyFields(),
           diagnostics: [...stashedWarns, diag(
             'recompute.lowering.exception',
             `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh/render: ${errMsg(e)}. `
@@ -438,7 +519,7 @@ export async function captureAnimation(
       } catch (e) {
         await abortFfmpeg();
         return {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             framesDir !== undefined
@@ -468,7 +549,7 @@ export async function captureAnimation(
       if (code !== 0) {
         await rm(outPath, { force: true }).catch(() => undefined);
         return {
-          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             `ffmpeg exited with code ${code} while encoding ${outPath}; the partial MP4 was deleted.`,
@@ -482,12 +563,12 @@ export async function captureAnimation(
     }
 
     onProgress(`total ${Date.now() - t0}ms`);
-    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns] };
+    return { ok: true, outPath, frameCount: written, durationMs, fps, diagnostics: [...stashedWarns], ...verifyFields() };
   } catch (e) {
     // Unexpected non-frame failure (browser connect, page bootstrap, fs).
     await abortFfmpeg();
     return {
-      ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
+      ok: false, frameCount: written, durationMs, fps, failureKind: 'environment', ...verifyFields(),
       diagnostics: [...stashedWarns, diag(
         'cli.export-exception',
         `captureAnimation: ${errMsg(e)}`,

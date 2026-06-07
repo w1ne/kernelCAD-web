@@ -211,7 +211,12 @@ setCameraDistance(distance: number): CameraTargetHandle;
 // reads the resulting `animationView` virtual record and renders an MP4 by
 // sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
 // leveraging the per-session mesh cache so each frame's recompute is
-// ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
+// ~5 ms warm. Before rendering, `kernelcad animate` verifies the sampled
+// poses (keyframe times + segment midpoints) for part interference by
+// default: collisions still write the MP4 as evidence but exit 1 with
+// `animation.collision` diagnostics; exit 0 = captured + verification
+// clean (or skipped via --no-verify); exit 2 = could not capture at all.
+// Virtual record (no OCCT geometry). Multiple calls register
 // multiple records; the capture command uses the last one. Validation
 // errors (non-empty param, finite range, positive durationMs/fps) are
 // pushed as structured diagnostics on `handle.metadata.diagnostics`.

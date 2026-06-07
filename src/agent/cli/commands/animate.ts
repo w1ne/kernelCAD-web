@@ -4,15 +4,24 @@
 // animationView({...}) timeline through the typed capture engine
 // (src/agent/render/captureAnimation.ts): MP4 via ffmpeg by default, or a
 // PNG frame sequence with `--frames <dir>` (zero external dependencies).
+// Animation-pose interference verification runs by default (keyframe times
+// + segment midpoints, BEFORE any browser/ffmpeg cost); `--no-verify` skips
+// it and `--verify-every <n>` additionally samples every n-th frame time.
 //
-// Exit codes (pipe-friendly: `kernelcad animate part.kcad.ts && echo ok`):
-//   0 — animation captured,
-//   1 — the model is at fault (script/build errors, no animationView
-//       record, a pose the kernel cannot solve/mesh/render),
-//   2 — environmental/usage failure (bad arguments, ffmpeg missing in MP4
-//       mode, browser/page bootstrap failure, frame output write failure).
-// The mapping reads the engine's typed `failureKind` discriminant — no
-// message string-matching.
+// Exit codes (pipe-friendly: `kernelcad animate part.kcad.ts && echo ok`;
+// the same scheme as the `kernelcad dfm` sibling — 0 clean / 1 gate
+// finding / 2 unusable):
+//   0 — animation captured AND pose verification clean (or skipped via
+//       --no-verify),
+//   1 — animation captured BUT pose verification found collisions; the
+//       MP4/frames ARE still written as evidence,
+//   2 — could not capture (bad arguments, script/build errors, no
+//       animationView record, a pose the kernel cannot solve/mesh/render,
+//       ffmpeg missing in MP4 mode, browser/page bootstrap failure, frame
+//       output write failure).
+// The engine's typed `failureKind` discriminant stays on the --json
+// envelope (still useful to attribute the fault), but BOTH kinds exit 2 —
+// only verification collisions distinguish 1 from 0.
 //
 // Progress lines go to stderr (timestamped, like the deprecated
 // scripts/captureAnimationView.mjs wrapper) in BOTH human and --json modes —
@@ -36,6 +45,11 @@ export interface AnimateCliInput {
   frames?: string;
   /** Override the animationView record's fps (`--fps <n>`). */
   fps?: number;
+  /** Skip the animation-pose interference verification (`--no-verify`). */
+  skipVerify?: boolean;
+  /** Additionally verify at every n-th frame time of the fps schedule
+   *  (`--verify-every <n>`); unioned with the keyframe sample set. */
+  verifyEvery?: number;
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
@@ -44,9 +58,9 @@ export interface AnimateCliInput {
 export interface AnimateCliResult {
   exitCode: 0 | 1 | 2;
   /** The engine result as-is — also the `--json` stdout envelope
-   *  ({ok, outPath?, frameCount, durationMs, fps, diagnostics,
-   *  failureKind?}). Usage refusals synthesize a result-shaped object with
-   *  failureKind 'environment'. */
+   *  ({ok, outPath?, frameCount, durationMs, fps, diagnostics, verified,
+   *  collisions, verifySkipped?, failureKind?}). Usage refusals synthesize
+   *  a result-shaped object with failureKind 'environment'. */
   result: CaptureAnimationResult;
   /** One-line evidence summary; present on successful capture. */
   summary?: string;
@@ -68,19 +82,30 @@ function usageRefusal(message: string, hint: string, fps: number): AnimateCliRes
       durationMs: 0,
       fps,
       diagnostics: withNextActions([diagnostic]),
+      verified: false,
+      collisions: [],
       failureKind: 'environment',
     },
   };
 }
 
-/** `Wrote <path> — <n> frames, <d> ms @ <fps> fps` */
+/** `Wrote <path> — <n> frames, <d> ms @ <fps> fps` plus the verification
+ *  verdict (`verify clean` / `N collision(s)` / `verify skipped`). */
 export function formatAnimateSummary(r: {
   outPath: string;
   frameCount: number;
   durationMs: number;
   fps: number;
+  verified: boolean;
+  collisionCount: number;
+  verifySkipped?: boolean;
 }): string {
-  return `Wrote ${r.outPath} — ${r.frameCount} frames, ${r.durationMs} ms @ ${r.fps} fps`;
+  const verdict = r.verifySkipped
+    ? 'verify skipped'
+    : r.collisionCount > 0
+      ? `${r.collisionCount} collision(s) found`
+      : 'verify clean';
+  return `Wrote ${r.outPath} — ${r.frameCount} frames, ${r.durationMs} ms @ ${r.fps} fps; ${verdict}`;
 }
 
 export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
@@ -99,37 +124,61 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
       input.fps,
     );
   }
+  if (
+    input.verifyEvery !== undefined
+    && (!Number.isInteger(input.verifyEvery) || input.verifyEvery < 1)
+  ) {
+    return usageRefusal(
+      `animate: --verify-every must be an integer >= 1 (got ${input.verifyEvery}).`,
+      'Pass a positive integer to --verify-every, or drop the flag to verify the keyframe sample set only.',
+      input.fps ?? 0,
+    );
+  }
+  if (input.skipVerify === true && input.verifyEvery !== undefined) {
+    return usageRefusal(
+      'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
+      'Drop --no-verify to verify with the densified schedule, or drop --verify-every to skip verification entirely.',
+      input.fps ?? 0,
+    );
+  }
 
   const result = await captureAnimation({
     scriptPath: input.file,
     ...(input.out !== undefined ? { outPath: input.out } : {}),
     ...(input.frames !== undefined ? { framesDir: input.frames } : {}),
     ...(input.fps !== undefined ? { fps: input.fps } : {}),
+    ...(input.skipVerify === true ? { skipVerify: true } : {}),
+    ...(input.verifyEvery !== undefined ? { verifyEveryNthFrame: input.verifyEvery } : {}),
     ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
   });
 
   if (result.ok && result.outPath !== undefined) {
     return {
-      exitCode: 0,
+      // Captured fine; pose verification distinguishes 0 from 1. The
+      // artifact IS written either way — the MP4/frames are the evidence of
+      // what collides — so the summary still reports it.
+      exitCode: result.collisions.length > 0 ? 1 : 0,
       result,
       summary: formatAnimateSummary({
         outPath: result.outPath,
         frameCount: result.frameCount,
         durationMs: result.durationMs,
         fps: result.fps,
+        verified: result.verified,
+        collisionCount: result.collisions.length,
+        ...(result.verifySkipped === true ? { verifySkipped: true } : {}),
       }),
     };
   }
-  // Typed failure → exit code via the engine's failureKind discriminant:
-  // 'model' (build errors, no animationView record, unsolvable pose) → 1;
-  // 'environment' (ffmpeg missing/crashed, browser bootstrap, output
-  // write) → 2.
-  return { exitCode: result.failureKind === 'model' ? 1 : 2, result };
+  // Could not capture — exit 2 regardless of failureKind ('model' or
+  // 'environment'; the discriminant stays on the --json envelope for fault
+  // attribution).
+  return { exitCode: 2, result };
 }
 
 export function animateCommand(): Command {
   const cmd = new Command('animate')
-    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence")
+    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference")
     .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record')
     .argument(
       '[out]',
@@ -140,17 +189,24 @@ export function animateCommand(): Command {
       'PNG-sequence mode: write frame-0000.png, frame-0001.png, ... into <dir> and skip ffmpeg entirely (mutually exclusive with the out positional)',
     )
     .option('--fps <n>', "override the animationView record's fps", (v) => Number(v))
+    .option('--no-verify', 'skip the animation-pose interference verification')
+    .option(
+      '--verify-every <n>',
+      'additionally verify at every n-th frame time of the fps schedule (unioned with the default keyframe sample set)',
+      (v) => Number(v),
+    )
     .option('--json', 'structured report to stdout (progress still goes to stderr)')
     .option('--quiet', 'suppress the stderr progress lines')
     .addHelpText(
       'after',
       `
 Exit codes:
-  0  animation captured
-  1  the model is at fault (script/build errors, no animationView record,
-     a pose the kernel cannot solve/mesh/render)
-  2  environmental/usage failure (bad arguments, ffmpeg missing in MP4 mode,
-     browser bootstrap failure, frame output write failure)
+  0  animation captured; pose verification clean (or skipped via --no-verify)
+  1  animation captured, but pose verification found part collisions —
+     the MP4/frames are still written as evidence
+  2  could not capture (bad arguments, script/build errors, no animationView
+     record, an unsolvable pose, ffmpeg missing in MP4 mode, browser
+     bootstrap failure, frame output write failure)
 
 Requires a studio dev server (run \`npm run dev\` first); honors VITE_PORT and
 PW_CDP_URL (attach to an existing Chrome over CDP).`,
@@ -158,6 +214,9 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
     .action(async (file: string, out: string | undefined, opts: {
       frames?: string;
       fps?: number;
+      /** Commander negation: `--no-verify` sets this false; default true. */
+      verify: boolean;
+      verifyEvery?: number;
       json?: boolean;
       quiet?: boolean;
     }) => {
@@ -166,6 +225,8 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
         ...(out !== undefined ? { out } : {}),
         ...(opts.frames !== undefined ? { frames: opts.frames } : {}),
         ...(opts.fps !== undefined ? { fps: opts.fps } : {}),
+        ...(opts.verify === false ? { skipVerify: true } : {}),
+        ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet
