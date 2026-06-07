@@ -1,0 +1,176 @@
+// src/modeling/runtime/dfm/clearance.ts
+//
+// W3 Task 4 — part-pair clearance check, the enforcement primitive behind
+// `dfmSpec({ minClearance })`. For every unordered part pair of an
+// already-resolved SceneBackend it reports the minimum surface-to-surface
+// distance and whether it clears the declared threshold.
+//
+// Division of labour with the interference gate:
+//   - OVERLAP (intersection volume > epsilon) belongs to
+//     `detectInterferences` — this check tags such pairs 'interfering' and
+//     emits NO clearance violation for them, so one defect never produces
+//     two findings.
+//   - Mated pairs (joined by a declared mate) and `ignore`d pairs are
+//     design-intent contacts: recorded with their status, never measured.
+//
+// Enumeration idiom mirrors `detectInterferences`: clone each part's
+// local-frame OCCT shape and apply its FK worldTransform once, up front
+// (replicad transforms mutate-and-destroy the source handle, so the
+// originals are never touched). Pair lookups use the same `pairKey`
+// encoding.
+//
+// Diagnostics seam (consumed by the Task 7 orchestrator): a mutable
+// `diagnostics` out-param appended in place — the same convention
+// `detectInterferences` uses — so the orchestrator threads ONE array
+// through every DFM check and returns it on the combined result. A BREP
+// distance kernel failure on a pair records that pair as 'ok' with
+// `distanceMm: NaN` plus a warn-severity `feature.kernel-failed`
+// diagnostic; the sweep never aborts.
+
+import { getOC } from 'replicad';
+import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
+import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { pairKey } from '../detectInterferences';
+import { brepExtremaDistance, wrappedShape } from '../brepDistance';
+
+export interface ClearancePairReport {
+  a: string;
+  b: string;
+  /** Measured (or bbox-lower-bound) distance in mm. NaN for skipped pairs
+   *  ('ignored' / 'mated') and for kernel-failure pass-throughs. */
+  distanceMm: number;
+  status: 'ok' | 'violated' | 'ignored' | 'mated' | 'interfering';
+  /** false when the bbox lower bound already cleared the threshold (no
+   *  BRepExtrema run), and on skipped / kernel-failed pairs. */
+  exact: boolean;
+}
+
+/** Distances below this are "surfaces touch or cross" — disambiguated by a
+ *  boolean-intersection volume probe. */
+const CONTACT_EPS_MM = 1e-7;
+
+/** Intersection volume above this is real overlap (the `detectInterferences`
+ *  default epsilon); at or below is numerical-artifact touching. */
+const OVERLAP_EPSILON_MM3 = 0.01;
+
+/**
+ * Check every unordered part pair of `scene` against `minClearance` (mm).
+ *
+ * - `ignoredPairs` / `matedPairs` are `pairKey()`-encoded part-name pairs
+ *   (from `dfmSpec.ignore` and `Assembly.__mates()` respectively); both are
+ *   recorded with their status and skipped without measurement
+ *   (`distanceMm: NaN`, `exact: false`).
+ * - Pairs whose per-axis bbox gap (Euclidean lower bound on the true
+ *   distance) already meets the threshold are passed through as
+ *   `{ status: 'ok', exact: false }` with the bound as `distanceMm` — no
+ *   BRepExtrema run.
+ * - Touching/crossing pairs (distance < 1e-7 mm) are volume-probed: real
+ *   overlap (> 0.01 mm³) ⇒ 'interfering' (owned by the interference gate,
+ *   NOT a clearance violation); surface contact ⇒ 'violated' at 0 mm.
+ * - Kernel failures append a warn `feature.kernel-failed` diagnostic to
+ *   `diagnostics` and record the pair as 'ok' with `distanceMm: NaN`.
+ */
+export function checkClearance(
+  scene: SceneBackend,
+  minClearance: number,
+  ignoredPairs: ReadonlySet<string>,
+  matedPairs: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[] = [],
+): ClearancePairReport[] {
+  // Clone + apply each part's worldTransform once, up front (the
+  // detectInterferences / STEP-exporter pattern).
+  const transformed = scene.parts.map((p) => {
+    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const reports: ClearancePairReport[] = [];
+
+  for (let i = 0; i < transformed.length; i++) {
+    for (let j = i + 1; j < transformed.length; j++) {
+      const a = transformed[i];
+      const b = transformed[j];
+      const key = pairKey(a.name, b.name);
+
+      if (ignoredPairs.has(key)) {
+        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'ignored', exact: false });
+        continue;
+      }
+      if (matedPairs.has(key)) {
+        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'mated', exact: false });
+        continue;
+      }
+
+      const lowerBound = bboxGap(a.bbox, b.bbox);
+      if (lowerBound >= minClearance) {
+        reports.push({ a: a.name, b: b.name, distanceMm: lowerBound, status: 'ok', exact: false });
+        continue;
+      }
+
+      let d: number | undefined;
+      try {
+        d = brepExtremaDistance(oc, wrappedShape(a.shape), wrappedShape(b.shape));
+      } catch {
+        d = undefined;
+      }
+      if (d === undefined) {
+        // Never abort the sweep on a kernel failure (same resilience stance
+        // as detectInterferences' per-pair try/catch).
+        diagnostics.push({
+          target: 'export-occt',
+          code: 'feature.kernel-failed',
+          severity: 'warn',
+          message: `dfm.clearance: BRepExtrema_DistShapeShape failed on pair (${a.name}, ${b.name}); distance not measured.`,
+          hint: 'The OCCT distance kernel could not process this part pair — check both parts for degenerate geometry with evaluate, or list the pair in dfmSpec.ignore if its clearance is established another way.',
+        });
+        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'ok', exact: false });
+        continue;
+      }
+
+      if (d < CONTACT_EPS_MM) {
+        // Touching or crossing: a boolean-intersection volume probe decides
+        // which. Clones — .intersect consumes its operands.
+        let volume = 0;
+        try {
+          const inter = a.shape.clone().intersect(b.shape.clone());
+          volume = inter.isEmpty() ? 0 : inter.volume();
+        } catch {
+          volume = 0; // degenerate boolean ⇒ treat as surface contact
+        }
+        if (volume > OVERLAP_EPSILON_MM3) {
+          reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'interfering', exact: true });
+        } else {
+          reports.push({ a: a.name, b: b.name, distanceMm: 0, status: 'violated', exact: true });
+        }
+        continue;
+      }
+
+      reports.push({
+        a: a.name,
+        b: b.name,
+        distanceMm: d,
+        status: d < minClearance ? 'violated' : 'ok',
+        exact: true,
+      });
+    }
+  }
+  return reports;
+}
+
+/** Euclidean lower bound on the distance between two parts from their
+ *  axis-aligned bboxes: per-axis `max(0, gap)`, combined. 0 when the
+ *  bboxes overlap on every axis. */
+function bboxGap(
+  a: { min: [number, number, number]; max: [number, number, number] },
+  b: { min: [number, number, number]; max: [number, number, number] },
+): number {
+  let sq = 0;
+  for (let axis = 0; axis < 3; axis++) {
+    const gap = Math.max(0, b.min[axis] - a.max[axis], a.min[axis] - b.max[axis]);
+    sq += gap * gap;
+  }
+  return Math.sqrt(sq);
+}
