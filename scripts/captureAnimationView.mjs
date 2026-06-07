@@ -1,9 +1,9 @@
 // scripts/captureAnimationView.mjs
 //
 // Reads an `animationView({...})` virtual feature record from a .kcad.ts
-// script, samples its normalized keyframe tracks at
-// `ceil(durationMs / 1000 * fps)` frames (linear interpolation per segment),
-// and stitches an MP4 via ffmpeg. Each frame's recompute uses the
+// script, samples its normalized keyframe tracks via the shared
+// animationSampler (per-key easing honored; `max(2, ceil(durationMs / 1000
+// * fps))` frames), and stitches an MP4 via ffmpeg. Each frame's recompute uses the
 // per-session mesh cache so warm frame meshing is ~5 ms even for 24-part
 // assemblies.
 //
@@ -22,6 +22,7 @@ import { chromium } from 'playwright';
 import { buildModel, updateModelParams } from '../src/modeling/buildModel.ts';
 import { meshFeaturesPerFeature } from '../src/modeling/capture/featureMeshing.ts';
 import { serializeForBridge } from '../src/modeling/capture/featureMeshSerialize.ts';
+import { sampleTracks } from '../src/agent/render/animationSampler.ts';
 
 const SCRIPT_PATH = resolve(process.argv[2] ?? 'examples/gallery/gearfinity-planetary-stage.kcad.ts');
 const OUT_MP4 = resolve(process.argv[3] ?? resolve(SCRIPT_PATH, '..', basename(SCRIPT_PATH).replace(/\.kcad\.ts$/, '') + '-animation.mp4'));
@@ -54,28 +55,11 @@ const durationMs = spec.durationMs;
 // Metadata is always normalized to the track shape (keys sorted by atMs,
 // ease defaulted); the legacy sweep form arrives as one linear two-key track.
 const tracks = spec.tracks;
-const frames = Math.max(2, Math.ceil((durationMs / 1000) * fps));
+// Shared sampler: honors per-key ease, holds outside the keyed span, lands
+// the last frame exactly at durationMs.
+const { frames: frameSamples } = sampleTracks(tracks, fps);
+const frames = frameSamples.length;
 console.log(`anim:      ${spec.name ? `name=${spec.name}  ` : ''}tracks=${tracks.map((track) => track.param).join(',')}  durationMs=${durationMs}  fps=${fps}  frames=${frames}`);
-
-// Sample a normalized track at tMs: hold-clamp outside the keyed span,
-// per-segment linear interpolation inside.
-// TODO(T3): honor per-key `ease` (step/easeIn/easeOut/easeInOut); this
-// script is replaced by the T3 capture surface — linear-only until then.
-function sampleTrack(track, tMs) {
-  const keys = track.keys;
-  if (tMs <= keys[0].atMs) return keys[0].value;
-  const last = keys[keys.length - 1];
-  if (tMs >= last.atMs) return last.value;
-  for (let k = 1; k < keys.length; k += 1) {
-    if (tMs <= keys[k].atMs) {
-      const a = keys[k - 1];
-      const b = keys[k];
-      const u = (tMs - a.atMs) / (b.atMs - a.atMs);
-      return a.value + (b.value - a.value) * u;
-    }
-  }
-  return last.value;
-}
 
 // Cold mesh — populates the per-session triangle cache.
 t = performance.now();
@@ -148,9 +132,8 @@ try {
   console.log(`Capturing ${frames} frames at ${W}×${H}@${fps}fps...`);
   const t0 = Date.now();
   for (let i = 0; i < frames; i += 1) {
-    const u = frames === 1 ? 0 : i / (frames - 1);
-    const tMs = durationMs * u;
-    const updates = tracks.map((track) => ({ name: track.param, value: sampleTrack(track, tMs) }));
+    const { values } = frameSamples[i];
+    const updates = Object.entries(values).map(([name, value]) => ({ name, value }));
     await updateModelParams(model, updates);
     const meshing = await meshFeaturesPerFeature(model.records, session.paramTable, session);
     const serialized = meshing.features.map(serializeForBridge);
