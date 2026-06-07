@@ -122,6 +122,11 @@ export interface HeadlessRenderOpts {
   objectFilter?: HeadlessObjectFilter;
   /** Inspection channels requested by the bundle writer. Defaults to RGB only. */
   inspectionChannels?: readonly HeadlessInspectionChannel[];
+  /** Clip the model with a single axis-aligned section plane so captures show
+   *  interior structure. Forwarded to the demo-player as
+   *  `?section=<axis>:<pos>` (+ `?sectionflip=1`); the page applies it via
+   *  global renderer clipping. Unflipped keeps the negative-axis side. */
+  section?: { axis: 'x' | 'y' | 'z'; position: number; flip: boolean };
 }
 
 export interface HeadlessRenderResult {
@@ -202,6 +207,10 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
     // Build query string: headless=1 always, nowatermark=1 when requested.
     const queryParts = ['headless=1'];
     if (opts.noWatermark) queryParts.push('nowatermark=1');
+    if (opts.section) {
+      queryParts.push(`section=${opts.section.axis}:${opts.section.position}`);
+      if (opts.section.flip) queryParts.push('sectionflip=1');
+    }
     await page.goto(`${baseUrl}/demo-player?${queryParts.join('&')}`, {
       waitUntil: 'domcontentloaded',
       timeout: 30_000,

@@ -45,6 +45,13 @@ export interface RenderInput {
   focus?: string[];
   /** Hide matching objects by feature/part name. */
   hide?: string[];
+  /** Raw `--section <axis>=<pos>` value (e.g. `z=10`); validated by
+   *  parseSectionFlag inside the same try/catch that buildObjectFilter
+   *  uses, so a malformed value exits 1 before the browser spins up. */
+  section?: string;
+  /** Keep the positive-axis side of the section plane instead of the
+   *  default negative-axis side. */
+  sectionFlip?: boolean;
 }
 
 export interface RenderCliResult {
@@ -77,6 +84,23 @@ function buildObjectFilter(input: { focus?: string[]; hide?: string[] }): Headle
   if (focus.length > 0) return { mode: 'focus', patterns: focus };
   if (hide.length > 0) return { mode: 'hide', patterns: hide };
   return undefined;
+}
+
+/**
+ * Validate a `--section <axis>=<pos>` flag value.
+ *
+ * Accepts `x|y|z` `=` a decimal position (e.g. `z=10`, `x=-2.5`). Throws on
+ * anything else so the caller's exit-1 try/catch (shared with
+ * buildObjectFilter) rejects before the headless browser launches.
+ */
+export function parseSectionFlag(raw: string): { axis: 'x' | 'y' | 'z'; position: number } {
+  const m = /^([xyz])=(-?\d+(?:\.\d+)?)$/.exec(raw);
+  if (!m) {
+    throw new Error(
+      `render: invalid --section value '${raw}'. Expected <axis>=<pos> with axis x, y, or z, e.g. --section z=10.`,
+    );
+  }
+  return { axis: m[1] as 'x' | 'y' | 'z', position: Number(m[2]) };
 }
 
 function normalizePatternList(values: readonly string[] | undefined): string[] {
@@ -214,8 +238,12 @@ function normalizeInspectChannels(values: readonly string[] | undefined): Headle
 export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
   const filePath = resolve(input.file);
   let objectFilter: HeadlessObjectFilter | undefined;
+  let section: { axis: 'x' | 'y' | 'z'; position: number; flip: boolean } | undefined;
   try {
     objectFilter = buildObjectFilter(input);
+    if (input.section !== undefined) {
+      section = { ...parseSectionFlag(input.section), flip: input.sectionFlip ?? false };
+    }
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return { exitCode: 1, outputPaths: [] };
@@ -242,6 +270,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       environment: input.environment,
       noWatermark: input.noWatermark,
       objectFilter,
+      section,
     });
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -561,6 +590,11 @@ export function renderCommand(): Command {
     )
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
+    .option(
+      '--section <axis>=<pos>',
+      'clip the model with a section plane, e.g. --section z=10 (keeps the negative-axis side; see --section-flip)',
+    )
+    .option('--section-flip', 'keep the positive-axis side of the section plane instead', false)
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
@@ -573,6 +607,8 @@ export function renderCommand(): Command {
       watermark: boolean;  // commander inverts --no-watermark to opts.watermark = false
       focus?: string;
       hide?: string;
+      section?: string;
+      sectionFlip: boolean;
     }) => {
       const r = await renderScript({
         file,
@@ -587,6 +623,8 @@ export function renderCommand(): Command {
         noWatermark: opts.watermark === false,
         focus: opts.focus ? [opts.focus] : undefined,
         hide: opts.hide ? [opts.hide] : undefined,
+        section: opts.section,
+        sectionFlip: opts.sectionFlip,
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
