@@ -71,6 +71,7 @@ import {
   loadFeatureMeshesIntoPage,
   openDemoPlayerPage,
   type DemoPlayerPageHandle,
+  type HeadlessObjectFilter,
 } from './headlessRender';
 
 // `page.evaluate(...)` callbacks execute inside the browser. The CLI
@@ -86,6 +87,7 @@ declare const window: {
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
     setRenderView: (view: string) => void;
+    applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
   };
 };
 
@@ -116,6 +118,15 @@ export interface CaptureAnimationOpts {
    *  `cli.invalid-args` WARNING diagnostic on the result and is ignored
    *  (the keyframe sample set / verifySampleTimesMs still runs). */
   verifyEveryNthFrame?: number;
+  /** Object-visibility filter applied to the rendered scene — SAME shape
+   *  `headlessRender` / `kernelcad render --focus/--hide` use ({ mode:
+   *  'focus' | 'hide', patterns }). 'focus' shows only matching parts;
+   *  'hide' hides them. Re-applied AFTER each frame's mesh reload, because
+   *  loadFeatureMeshes rebuilds every feature group with visible:true (the
+   *  filter would otherwise be wiped on frame 1). Visibility is a render-only
+   *  concern — it does NOT affect the animation-pose interference
+   *  verification, which always runs against the FULL model. */
+  objectFilter?: HeadlessObjectFilter;
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
@@ -554,6 +565,18 @@ export async function captureAnimation(
       let png: Buffer;
       try {
         await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), meshing.bounds);
+        // Re-apply the object-visibility filter AFTER each reload:
+        // loadFeatureMeshes rebuilds every feature group with visible:true
+        // (DemoPlayerPage.loadFeatureMeshes), so a once-after-first-load
+        // application would be wiped on frame 1. Re-applying every frame keeps
+        // the hidden/focused parts hidden across the whole capture. Visibility
+        // is render-only — it never touches the (already-run) pose verification.
+        if (opts.objectFilter !== undefined) {
+          await page.evaluate(
+            (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
+            opts.objectFilter,
+          );
+        }
         await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
         // Tick the AnimationEngine so Three.js renders the updated scene.
         await page.evaluate(() => window.__demoPlayer!.advance(16));

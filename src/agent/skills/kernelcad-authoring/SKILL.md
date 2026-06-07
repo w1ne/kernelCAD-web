@@ -540,6 +540,7 @@ kernelcad dfm path/to/script.kcad.ts
 kernelcad animate path/to/script.kcad.ts -o /tmp/out.mp4
 kernelcad animate path/to/script.kcad.ts --frames /tmp/frames   # PNG sequence; no ffmpeg
 kernelcad animate path/to/script.kcad.ts --no-verify            # skip the pose-interference gate
+kernelcad animate path/to/script.kcad.ts --hide wall,cap        # hide parts in the frames (cutaway); --focus shows only the named parts (mutually exclusive; verification still runs on the full model)
 
 # Run the MCP server (stdio transport)
 kernelcad mcp
@@ -596,7 +597,12 @@ clamp to the boundary with an `animation.value.clamped` warn. Multiple
 
 **Capture (`kernelcad animate <file> [out.mp4]`).** MP4 via ffmpeg by default;
 `--frames <dir>` writes a PNG sequence and skips ffmpeg entirely (use when
-ffmpeg is unavailable). `--fps <n>` overrides the record's fps. Exit codes:
+ffmpeg is unavailable). `--fps <n>` overrides the record's fps. `--focus <names>` /
+`--hide <names>` isolate parts in the rendered frames (comma-separated feature ids
+or assembly part names, mutually exclusive — same semantics as `kernelcad render`;
+use for cutaways like an internal drum behind a frosted wall). Visibility is
+render-only and does NOT affect the pose-interference verification, which always
+runs against the full model. Exit codes:
 `0` = captured + verification clean (or skipped), `1` = captured but the pose
 gate found collisions (the MP4/frames ARE still written as evidence), `2` =
 could not capture at all (bad args, build error, no `animationView` record, an

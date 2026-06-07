@@ -238,6 +238,41 @@ describe('captureAnimation', () => {
     expect(close).toHaveBeenCalled();
   });
 
+  it('objectFilter is forwarded to applyObjectVisibilityFilter once PER FRAME (re-applied after each mesh reload)', async () => {
+    const { deps, page } = makeDeps();
+    const objectFilter = { mode: 'hide' as const, patterns: ['wall', 'cap'] };
+    const result = await captureAnimation(
+      { scriptPath: animScript, outPath: join(tmp, 'filtered.mp4'), skipVerify: true, objectFilter },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.frameCount).toBe(3);
+    // The engine calls page.evaluate((filter) => ...applyObjectVisibilityFilter(filter), objectFilter);
+    // the filter object rides as the SECOND evaluate arg. Count those calls —
+    // it must be exactly one per frame (loadFeatureMeshes rebuilds groups with
+    // visible:true each frame, so a once-after-first-load apply would be wiped).
+    const filterCalls = (page.evaluate as ReturnType<typeof vi.fn>).mock.calls.filter(
+      (call) => call[1] === objectFilter,
+    );
+    expect(filterCalls).toHaveLength(3);
+  });
+
+  it('no objectFilter → applyObjectVisibilityFilter is never invoked (no second-arg evaluate calls)', async () => {
+    const { deps, page } = makeDeps();
+    const result = await captureAnimation(
+      { scriptPath: animScript, outPath: join(tmp, 'unfiltered.mp4'), skipVerify: true },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    // No filter → no evaluate call carries a { mode, patterns } filter payload.
+    // (loadFeatureMeshesIntoPage does pass a { feats, b } second arg, so we
+    // discriminate on the filter shape, not merely arg count.)
+    const filterShaped = (page.evaluate as ReturnType<typeof vi.fn>).mock.calls.filter(
+      (call) => call[1] !== null && typeof call[1] === 'object' && 'mode' in (call[1] as object) && 'patterns' in (call[1] as object),
+    );
+    expect(filterShaped).toHaveLength(0);
+  });
+
   it('default outPath is <scriptDir>/<basename>-animation.mp4', async () => {
     const { deps } = makeDeps();
     const result = await captureAnimation({ scriptPath: animScript }, deps);

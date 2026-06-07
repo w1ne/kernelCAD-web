@@ -231,6 +231,33 @@ describe('runAnimate', () => {
     expect(r.result.diagnostics[0].message).toMatch(/mutually exclusive/);
     expect(mockCapture).not.toHaveBeenCalled();
   });
+
+  it('--focus threads a focus objectFilter (comma-split + trimmed) into the engine', async () => {
+    await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4', focus: ['drum, meter-disc'] });
+    expect(mockCapture.mock.calls[0][0]).toMatchObject({
+      objectFilter: { mode: 'focus', patterns: ['drum', 'meter-disc'] },
+    });
+  });
+
+  it('--hide threads a hide objectFilter into the engine', async () => {
+    await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4', hide: ['wall,cap,skirt'] });
+    expect(mockCapture.mock.calls[0][0]).toMatchObject({
+      objectFilter: { mode: 'hide', patterns: ['wall', 'cap', 'skirt'] },
+    });
+  });
+
+  it('no --focus/--hide → no objectFilter key in the engine opts', async () => {
+    await runAnimate({ file: 'demo.kcad.ts', out: '/tmp/out.mp4' });
+    expect(mockCapture.mock.calls[0][0]).not.toHaveProperty('objectFilter');
+  });
+
+  it('--focus + --hide together → exit 2 (usage, render-parity exclusivity); engine never called', async () => {
+    const r = await runAnimate({ file: 'demo.kcad.ts', focus: ['drum'], hide: ['wall'] });
+    expect(r.exitCode).toBe(2);
+    expect(r.result.diagnostics[0].code).toBe('cli.invalid-args');
+    expect(r.result.diagnostics[0].message).toMatch(/mutually exclusive/);
+    expect(mockCapture).not.toHaveBeenCalled();
+  });
 });
 
 describe('formatAnimateSummary', () => {
@@ -268,6 +295,8 @@ describe('animateCommand wiring', () => {
     expect(cmd.options.find((o) => o.long === '--fps')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--no-verify')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--verify-every')).toBeDefined();
+    expect(cmd.options.find((o) => o.long === '--focus')).toBeDefined();
+    expect(cmd.options.find((o) => o.long === '--hide')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--json')).toBeDefined();
     expect(cmd.options.find((o) => o.long === '--quiet')).toBeDefined();
   });

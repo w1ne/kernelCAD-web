@@ -35,6 +35,7 @@
 
 import { Command } from 'commander';
 import { captureAnimation, type CaptureAnimationResult } from '../../render/captureAnimation';
+import { buildObjectFilter } from './render';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -52,6 +53,12 @@ export interface AnimateCliInput {
   /** Additionally verify at every n-th frame time of the fps schedule
    *  (`--verify-every <n>`); unioned with the keyframe sample set. */
   verifyEvery?: number;
+  /** Show only matching objects by feature/part name (`--focus <names>`).
+   *  Mutually exclusive with `hide` (same semantics as `kernelcad render`). */
+  focus?: string[];
+  /** Hide matching objects by feature/part name (`--hide <names>`).
+   *  Mutually exclusive with `focus`. */
+  hide?: string[];
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
@@ -157,6 +164,21 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
       safeFps(input.fps),
     );
   }
+  // --focus / --hide → object-visibility filter (render-parity: same builder,
+  // same mutual-exclusivity rule). Visibility is render-only and does NOT
+  // affect the animation-pose interference verification (it runs on the full
+  // model). A focus+hide clash is a usage refusal (exit 2) before the engine
+  // builds anything.
+  let objectFilter;
+  try {
+    objectFilter = buildObjectFilter(input);
+  } catch (e) {
+    return usageRefusal(
+      e instanceof Error ? e.message.replace(/^render: /, 'animate: ') : String(e),
+      'Pass only --focus OR --hide, not both.',
+      safeFps(input.fps),
+    );
+  }
 
   const result = await captureAnimation({
     scriptPath: input.file,
@@ -165,6 +187,7 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     ...(input.fps !== undefined ? { fps: input.fps } : {}),
     ...(input.skipVerify === true ? { skipVerify: true } : {}),
     ...(input.verifyEvery !== undefined ? { verifyEveryNthFrame: input.verifyEvery } : {}),
+    ...(objectFilter !== undefined ? { objectFilter } : {}),
     ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
   });
 
@@ -210,6 +233,8 @@ export function animateCommand(): Command {
       'additionally verify at every n-th frame time of the fps schedule (unioned with the default keyframe sample set)',
       (v) => Number(v),
     )
+    .option('--focus <names>', 'show only comma-separated feature ids or assembly part names (mutually exclusive with --hide)')
+    .option('--hide <names>', 'hide comma-separated feature ids or assembly part names (mutually exclusive with --focus)')
     .option('--json', 'structured report to stdout (progress still goes to stderr)')
     .option('--quiet', 'suppress the stderr progress lines')
     .addHelpText(
@@ -232,6 +257,8 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
       /** Commander negation: `--no-verify` sets this false; default true. */
       verify: boolean;
       verifyEvery?: number;
+      focus?: string;
+      hide?: string;
       json?: boolean;
       quiet?: boolean;
     }) => {
@@ -242,6 +269,8 @@ PW_CDP_URL (attach to an existing Chrome over CDP).`,
         ...(opts.fps !== undefined ? { fps: opts.fps } : {}),
         ...(opts.verify === false ? { skipVerify: true } : {}),
         ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
+        ...(opts.focus !== undefined ? { focus: [opts.focus] } : {}),
+        ...(opts.hide !== undefined ? { hide: [opts.hide] } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),

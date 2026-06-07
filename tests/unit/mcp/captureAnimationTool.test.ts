@@ -121,6 +121,30 @@ describe('capture_animation MCP tool — happy path', () => {
     expect(r.output_path).toBe('/tmp/frames');
     expect(mockedEngine.mock.calls.at(-1)![0].framesDir).toBe('/tmp/frames');
   });
+
+  it('maps focus[] to a focus objectFilter (render-parity builder)', async () => {
+    mockedEngine.mockResolvedValueOnce(okResult());
+    await captureAnimationTool({ file: 'x.kcad.ts', focus: ['drum', 'meter-disc'] });
+    expect(mockedEngine.mock.calls.at(-1)![0].objectFilter).toEqual({
+      mode: 'focus',
+      patterns: ['drum', 'meter-disc'],
+    });
+  });
+
+  it('maps hide[] to a hide objectFilter', async () => {
+    mockedEngine.mockResolvedValueOnce(okResult());
+    await captureAnimationTool({ file: 'x.kcad.ts', hide: ['wall,cap', 'skirt'] });
+    expect(mockedEngine.mock.calls.at(-1)![0].objectFilter).toEqual({
+      mode: 'hide',
+      patterns: ['wall', 'cap', 'skirt'],
+    });
+  });
+
+  it('no focus/hide → no objectFilter passed to the engine', async () => {
+    mockedEngine.mockResolvedValueOnce(okResult());
+    await captureAnimationTool({ file: 'x.kcad.ts' });
+    expect(mockedEngine.mock.calls.at(-1)![0]).not.toHaveProperty('objectFilter');
+  });
 });
 
 describe('capture_animation MCP tool — failure surface', () => {
@@ -151,6 +175,15 @@ describe('capture_animation MCP tool — failure surface', () => {
     expect(r.ok).toBe(false);
     expect(r.errorCode).toBe('cli.invalid-args');
     expect(r.error).toMatch(/mutually exclusive/);
+    expect(mockedEngine).not.toHaveBeenCalled();
+  });
+
+  it('refuses focus + hide together (render-parity exclusivity) before calling the engine', async () => {
+    const r = await captureAnimationTool({ file: 'x.kcad.ts', focus: ['drum'], hide: ['wall'] });
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('cli.invalid-args');
+    expect(r.error).toMatch(/mutually exclusive/);
+    expect(r.failure_kind).toBe('environment');
     expect(mockedEngine).not.toHaveBeenCalled();
   });
 
@@ -251,6 +284,8 @@ describe('capture_animation MCP tool — registry', () => {
     expect(def!.inputSchema.properties.frames_dir).toBeDefined();
     expect(def!.inputSchema.properties.no_verify).toBeDefined();
     expect(def!.inputSchema.properties.verify_every).toMatchObject({ type: 'integer', minimum: 1 });
+    expect(def!.inputSchema.properties.focus).toMatchObject({ type: 'array', items: { type: 'string' } });
+    expect(def!.inputSchema.properties.hide).toMatchObject({ type: 'array', items: { type: 'string' } });
     // Present in the flat TOOLS export the MCP server lists.
     expect(TOOLS.some((t) => t.name === 'capture_animation')).toBe(true);
   });

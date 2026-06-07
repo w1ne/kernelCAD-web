@@ -45,6 +45,7 @@ import {
   type CaptureAnimationResult,
   type CaptureFailureKind,
 } from '../../render/captureAnimation';
+import { buildObjectFilter } from '../../cli/commands/render';
 import type { AnimationCollision } from '../../render/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
@@ -72,6 +73,12 @@ export interface CaptureAnimationInput {
   /** Additionally verify at every n-th frame time of the fps schedule
    *  (unioned with the default keyframe sample set). */
   verify_every?: number;
+  /** Show only matching objects by feature id / assembly part name. Maps to a
+   *  'focus' object-visibility filter. Mutually exclusive with hide. */
+  focus?: string[];
+  /** Hide matching objects by feature id / assembly part name. Maps to a
+   *  'hide' object-visibility filter. Mutually exclusive with focus. */
+  hide?: string[];
 }
 
 export interface CaptureAnimationCollisionRow {
@@ -211,6 +218,23 @@ export async function captureAnimationTool(
       'environment',
     );
   }
+  // focus / hide → object-visibility filter (render-parity: same builder, same
+  // mutual-exclusivity rule). Visibility is render-only — it does NOT affect the
+  // pose verification, which runs against the full model.
+  let objectFilter;
+  try {
+    objectFilter = buildObjectFilter({
+      ...(input.focus !== undefined ? { focus: input.focus } : {}),
+      ...(input.hide !== undefined ? { hide: input.hide } : {}),
+    });
+  } catch (e) {
+    return toolRefusal(
+      'cli.invalid-args',
+      e instanceof Error ? e.message.replace(/^render: /, 'capture_animation: ') : String(e),
+      'Pass only focus OR hide, not both.',
+      'environment',
+    );
+  }
 
   const capturePromise = captureAnimation({
     scriptPath: input.file,
@@ -219,6 +243,7 @@ export async function captureAnimationTool(
     ...(input.fps !== undefined ? { fps: input.fps } : {}),
     ...(input.no_verify === true ? { skipVerify: true } : {}),
     ...(input.verify_every !== undefined ? { verifyEveryNthFrame: input.verify_every } : {}),
+    ...(objectFilter !== undefined ? { objectFilter } : {}),
     // No onProgress: MCP is request/response with no streaming channel.
   });
 

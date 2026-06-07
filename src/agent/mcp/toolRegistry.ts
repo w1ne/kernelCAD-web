@@ -1812,7 +1812,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
         'against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg ' +
         'entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default ' +
         '(keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and ' +
-        '{ verify_every: n } additionally samples every n-th frame time. Collisions DO NOT fail the call — the artifact ' +
+        '{ verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids ' +
+        'or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as ' +
+        '`kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. ' +
+        'Collisions DO NOT fail the call — the artifact ' +
         'is still written as evidence with ok: true; read verified: false + the collisions[] array. ' +
         'ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running ' +
         'studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static ' +
@@ -1827,6 +1830,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
           fps: { type: 'number', description: "Override the animationView record's fps." },
           no_verify: { type: 'boolean', description: 'Skip the animation-pose interference verification (default: verify on).', default: false },
           verify_every: { type: 'integer', minimum: 1, description: 'Additionally verify at every n-th frame time of the fps schedule (unioned with the keyframe sample set).' },
+          focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names in the rendered frames. Mutually exclusive with hide. Render-only; does not affect pose verification.' },
+          hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification.' },
         },
         required: ['file'],
       },
