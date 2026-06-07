@@ -5,7 +5,7 @@
 // deterministic (the mate solver + clevis geometry make end-to-end
 // fixtures unreliable for precise pierce/clear assertions). The realistic
 // end-to-end RED case is asserted on the Luxo lamp in
-// tests/integration/examples/luxoLampClevis.test.ts.
+// tests/integration/examples/luxoLampClevis.validate.test.ts.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
