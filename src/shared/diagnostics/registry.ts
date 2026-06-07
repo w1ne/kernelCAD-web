@@ -1954,11 +1954,11 @@ export const DIAGNOSTIC_REGISTRY = {
   // motion-verification surface that emits it (capture/verify slice).
   'animation.param.unknown': {
     hintTemplate:
-      "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared. Declare the param first — e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) — or fix the spelling in tracks[].param.",
+      "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared, or one declared with a non-numeric type. Declare a numeric param first — e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) — or fix the spelling in tracks[].param; boolean params cannot be animated.",
     nextAction: { kind: 'fix-arg', field: 'tracks[].param' },
     defaultSeverity: 'error',
     group: 'animation',
-    description: 'An animationView track (or legacy sweep) references a param name not declared by a prior param() call in the session.',
+    description: 'An animationView track (or legacy sweep) references a param name not declared by a prior param() call in the session, or declared with a non-numeric type.',
   },
   'animation.track.duplicate-param': {
     hintTemplate:

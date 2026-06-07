@@ -699,7 +699,8 @@ export class CaptureSession {
    *     skips them), so a malformed animation timeline would otherwise
    *     silently produce a broken or empty capture.
    *       - `animation.param.unknown` — a track (or the legacy `param`)
-   *         names a param not declared by a prior `param()` call.
+   *         names a param not declared by a prior `param()` call, or one
+   *         declared with a non-numeric type (tracks interpolate numbers).
    *       - `animation.track.duplicate-param` — two tracks target the same
    *         param.
    *       - `animation.keys.invalid` — empty tracks array, empty key list,
@@ -750,19 +751,6 @@ export class CaptureSession {
       }
     }
 
-    // Throws animation.param.unknown unless `name` is declared by a prior
-    // param() call on this session.
-    const requireDeclaredParam = (name: unknown, where: string): void => {
-      if (typeof name !== 'string' || name.length === 0 || !this.paramTable.has(name)) {
-        throw new KernelError(
-          'animation.param.unknown',
-          `animationView: ${where} names param ${JSON.stringify(name)} which is not declared by a prior param() call.`,
-          undefined,
-          HINT_TEMPLATES['animation.param.unknown'].template,
-        );
-      }
-    };
-
     // Clamps key values into the param's declared min/max range (when the
     // param() declared one), pushing an animation.value.clamped warn per
     // clamped key. Mutates the normalized tracks in place.
@@ -794,9 +782,9 @@ export class CaptureSession {
     let metadata: AnimationViewMetadata & { diagnostics?: CompilerDiagnostic[] };
 
     if (isAnimationViewTracksSpec(args)) {
-      metadata = this.validateAnimationTracks(args, fps, requireDeclaredParam);
+      metadata = this.validateAnimationTracks(args, fps);
     } else {
-      metadata = this.validateAnimationSweep(args, fps, diagnostics, requireDeclaredParam);
+      metadata = this.validateAnimationSweep(args, fps, diagnostics);
     }
 
     clampToParamRange(metadata.tracks);
@@ -811,12 +799,36 @@ export class CaptureSession {
     return r.id;
   }
 
+  /** Throws animation.param.unknown unless `name` is declared by a prior
+   *  param() call on this session AND that declaration is numeric — boolean
+   *  params cannot be keyframed (updateModelParams would reject the
+   *  interpolated number values mid-capture). Shared by both the track and
+   *  legacy sweep forms of addAnimationView. */
+  private requireDeclaredNumericParam(name: unknown, where: string): void {
+    if (typeof name !== 'string' || name.length === 0 || !this.paramTable.has(name)) {
+      throw new KernelError(
+        'animation.param.unknown',
+        `animationView: ${where} names param ${JSON.stringify(name)} which is not declared by a prior param() call.`,
+        undefined,
+        HINT_TEMPLATES['animation.param.unknown'].template,
+      );
+    }
+    const declaredType = this.paramTable.get(name).type;
+    if (declaredType !== 'number') {
+      throw new KernelError(
+        'animation.param.unknown',
+        `animationView: ${where} names param '${name}' which is declared as ${declaredType}; animation tracks require numeric params.`,
+        undefined,
+        HINT_TEMPLATES['animation.param.unknown'].template,
+      );
+    }
+  }
+
   /** Keyframe-track form of addAnimationView: throwing validation, then
    *  normalization. See addAnimationView for the mechanics rationale. */
   private validateAnimationTracks(
     args: AnimationViewTracksSpec,
     fps: number,
-    requireDeclaredParam: (name: unknown, where: string) => void,
   ): AnimationViewMetadata {
     const badKeys = (why: string): never => {
       throw new KernelError(
@@ -836,7 +848,7 @@ export class CaptureSession {
       if (typeof track !== 'object' || track === null) {
         badKeys(`tracks[${i}] must be an object { param, keys }; got ${JSON.stringify(track)}`);
       }
-      requireDeclaredParam(track.param, `tracks[${i}].param`);
+      this.requireDeclaredNumericParam(track.param, `tracks[${i}].param`);
       if (seenParams.has(track.param)) {
         throw new KernelError(
           'animation.track.duplicate-param',
@@ -880,7 +892,6 @@ export class CaptureSession {
     args: AnimationViewSweepSpec,
     fps: number,
     diagnostics: CompilerDiagnostic[],
-    requireDeclaredParam: (name: unknown, where: string) => void,
   ): AnimationViewMetadata {
     const paramOk = typeof args.param === 'string' && args.param.length > 0;
     if (!paramOk) {
@@ -892,7 +903,7 @@ export class CaptureSession {
         hint: `invalid-args.animation-view.param-empty — name a param('...') declared earlier in the script.`,
       });
     } else {
-      requireDeclaredParam(args.param, `'param'`);
+      this.requireDeclaredNumericParam(args.param, `'param'`);
     }
 
     const fromOk = Number.isFinite(args.from);

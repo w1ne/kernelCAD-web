@@ -105,6 +105,26 @@ describe('animationView capture — animation.param.unknown', () => {
       /"ghost".*not declared/,
     );
   });
+
+  it('throws for a track targeting a boolean param, naming the declared type', () => {
+    const { api } = makeApi();
+    api.param('mirrored', true);
+    expectThrowCode(
+      () => api.animationView({ tracks: [{ param: 'mirrored', keys: [{ atMs: 0, value: 0 }] }] }),
+      'animation.param.unknown',
+      /'mirrored'.*declared as boolean.*require numeric/,
+    );
+  });
+
+  it('throws for the legacy form targeting a boolean param, naming the declared type', () => {
+    const { api } = makeApi();
+    api.param('mirrored', false);
+    expectThrowCode(
+      () => api.animationView({ param: 'mirrored', from: 0, to: 1, durationMs: 1000 }),
+      'animation.param.unknown',
+      /'mirrored'.*declared as boolean.*require numeric/,
+    );
+  });
 });
 
 describe('animationView capture — animation.track.duplicate-param', () => {
@@ -222,6 +242,17 @@ describe('animationView capture — animation.value.clamped warn', () => {
     api.animationView({ tracks: [{ param: 'angle', keys: [{ atMs: 0, value: 1e6 }] }] });
     expect(lastMeta(session).diagnostics).toBeUndefined();
   });
+
+  it('does not warn for key values exactly AT the declared min and max', () => {
+    const { session, api } = makeApi();
+    api.param('angle', 0, { min: 0, max: 90 });
+    api.animationView({
+      tracks: [{ param: 'angle', keys: [{ atMs: 0, value: 0 }, { atMs: 500, value: 90 }] }],
+    });
+    const meta = lastMeta(session);
+    expect(meta.tracks[0].keys.map((k) => k.value)).toEqual([0, 90]);
+    expect(meta.diagnostics).toBeUndefined();
+  });
 });
 
 describe('animationView capture — animation.view.shadowed warn (last-wins)', () => {
@@ -240,6 +271,22 @@ describe('animationView capture — animation.view.shadowed warn (last-wins)', (
     expect(shadowWarns).toHaveLength(1);
     expect(shadowWarns![0].severity).toBe('warn');
     expect(shadowWarns![0].message).toContain(first.id);
+  });
+
+  it('third stacked call warns naming BOTH prior record ids', () => {
+    const { api } = makeApi();
+    api.param('angle', 0);
+    const first = api.animationView({ param: 'angle', from: 0, to: 1, durationMs: 1000 });
+    const second = api.animationView({ param: 'angle', from: 1, to: 0, durationMs: 1000 });
+    const third = api.animationView({
+      tracks: [{ param: 'angle', keys: [{ atMs: 0, value: 0 }, { atMs: 500, value: 1 }] }],
+    });
+    const shadowWarns = (third.metadata as MetaWithDiagnostics).diagnostics?.filter(
+      (d) => d.code === 'animation.view.shadowed',
+    );
+    expect(shadowWarns).toHaveLength(1);
+    expect(shadowWarns![0].message).toContain(first.id);
+    expect(shadowWarns![0].message).toContain(second.id);
   });
 });
 
@@ -285,5 +332,17 @@ describe('animationView capture — legacy stash-on-metadata behavior retained',
     const trackMeta = lastMeta(fresh.session);
     expect(trackMeta.fps).toBe(30);
     expect((trackMeta.diagnostics ?? []).some((d) => d.severity === 'warn' && /fps/.test(d.message))).toBe(true);
+  });
+
+  it('accepts a fractional fps (29.97) without a warn', () => {
+    const { session, api } = makeApi();
+    api.param('angle', 0);
+    api.animationView({
+      tracks: [{ param: 'angle', keys: [{ atMs: 0, value: 0 }, { atMs: 500, value: 1 }] }],
+      fps: 29.97,
+    });
+    const meta = lastMeta(session);
+    expect(meta.fps).toBe(29.97);
+    expect(meta.diagnostics).toBeUndefined();
   });
 });

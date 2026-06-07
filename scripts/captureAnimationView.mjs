@@ -55,7 +55,7 @@ const durationMs = spec.durationMs;
 // ease defaulted); the legacy sweep form arrives as one linear two-key track.
 const tracks = spec.tracks;
 const frames = Math.max(2, Math.ceil((durationMs / 1000) * fps));
-console.log(`anim:      ${spec.name ? `name=${spec.name}  ` : ''}tracks=${tracks.map((t) => t.param).join(',')}  durationMs=${durationMs}  fps=${fps}  frames=${frames}`);
+console.log(`anim:      ${spec.name ? `name=${spec.name}  ` : ''}tracks=${tracks.map((track) => track.param).join(',')}  durationMs=${durationMs}  fps=${fps}  frames=${frames}`);
 
 // Sample a normalized track at tMs: hold-clamp outside the keyed span,
 // per-segment linear interpolation inside.
@@ -150,7 +150,7 @@ try {
   for (let i = 0; i < frames; i += 1) {
     const u = frames === 1 ? 0 : i / (frames - 1);
     const tMs = durationMs * u;
-    const updates = tracks.map((t) => ({ name: t.param, value: sampleTrack(t, tMs) }));
+    const updates = tracks.map((track) => ({ name: track.param, value: sampleTrack(track, tMs) }));
     await updateModelParams(model, updates);
     const meshing = await meshFeaturesPerFeature(model.records, session.paramTable, session);
     const serialized = meshing.features.map(serializeForBridge);
