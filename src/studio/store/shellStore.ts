@@ -1,8 +1,6 @@
 import type { ValidatorResult } from '../../modeling/mates/validator';
 import type { SelectedFeatureId } from '../types';
 
-export type SectionShape = 'plane' | 'quarter' | 'octant';
-
 // Studio shell store — UI-only state, no model semantics.
 //
 // Implemented as a tiny observable rather than via Zustand so the slice
@@ -37,16 +35,16 @@ export interface ShellState {
     readonly stagedEdit: StagedEdit | null;
     readonly markingMode: boolean;
     readonly sectionMode: boolean;
-    readonly sectionAxis: 'x' | 'y' | 'z';
-    readonly sectionFlip: boolean;
-    readonly sectionPosition: number;
-    readonly sectionShape: SectionShape;
+    /**
+     * Per axis: does this axis contribute a cut plane? One enabled axis is
+     * a classic section plane, two are a quarter wedge, three an octant
+     * corner — one mechanism, no modes.
+     */
+    readonly sectionAxesEnabled: Readonly<Record<'x' | 'y' | 'z', boolean>>;
     /** Per axis: true ⇒ the POSITIVE side of that axis is removed. */
     readonly sectionSides: Readonly<Record<'x' | 'y' | 'z', boolean>>;
-    /** Cutaway plane positions along each axis, world mm. */
+    /** Cut plane positions along each axis, world mm. */
     readonly sectionOffsets: Readonly<Record<'x' | 'y' | 'z', number>>;
-    /** Quarter mode: the UNCUT axis (the wedge runs full length along it). */
-    readonly sectionQuarterAxis: 'x' | 'y' | 'z';
     /** Part keys excluded from clipping (rendered complete). */
     readonly sectionKeepWhole: ReadonlySet<string>;
 }
@@ -81,13 +79,9 @@ const INITIAL_STATE: ShellState = {
     stagedEdit: null,
     markingMode: false,
     sectionMode: false,
-    sectionAxis: 'z',
-    sectionFlip: false,
-    sectionPosition: 0,
-    sectionShape: 'plane',
+    sectionAxesEnabled: { x: false, y: false, z: true },
     sectionSides: { x: true, y: true, z: true },
     sectionOffsets: { x: 0, y: 0, z: 0 },
-    sectionQuarterAxis: 'z',
     sectionKeepWhole: new Set<string>(),
 };
 
@@ -167,27 +161,21 @@ export class ShellStore {
         this.emit();
     };
 
-    setSectionAxis = (axis: 'x' | 'y' | 'z'): void => {
-        if (this.state.sectionAxis === axis) return;
-        this.state = { ...this.state, sectionAxis: axis };
+    /** Enable/disable one axis's cut plane. */
+    setSectionAxisEnabled = (axis: 'x' | 'y' | 'z', on: boolean): void => {
+        if (this.state.sectionAxesEnabled[axis] === on) return;
+        this.state = {
+            ...this.state,
+            sectionAxesEnabled: { ...this.state.sectionAxesEnabled, [axis]: on },
+        };
         this.emit();
     };
 
-    setSectionFlip = (flip: boolean): void => {
-        if (this.state.sectionFlip === flip) return;
-        this.state = { ...this.state, sectionFlip: flip };
-        this.emit();
-    };
-
-    setSectionPosition = (position: number): void => {
-        if (this.state.sectionPosition === position) return;
-        this.state = { ...this.state, sectionPosition: position };
-        this.emit();
-    };
-
-    setSectionShape = (shape: SectionShape): void => {
-        if (this.state.sectionShape === shape) return;
-        this.state = { ...this.state, sectionShape: shape };
+    /** Set all three axis-enable flags at once (preset buttons). */
+    setSectionAxesEnabled = (enabled: Readonly<Record<'x' | 'y' | 'z', boolean>>): void => {
+        const cur = this.state.sectionAxesEnabled;
+        if (cur.x === enabled.x && cur.y === enabled.y && cur.z === enabled.z) return;
+        this.state = { ...this.state, sectionAxesEnabled: { ...enabled } };
         this.emit();
     };
 
@@ -206,12 +194,6 @@ export class ShellStore {
             ...this.state,
             sectionOffsets: { ...this.state.sectionOffsets, [axis]: position },
         };
-        this.emit();
-    };
-
-    setSectionQuarterAxis = (axis: 'x' | 'y' | 'z'): void => {
-        if (this.state.sectionQuarterAxis === axis) return;
-        this.state = { ...this.state, sectionQuarterAxis: axis };
         this.emit();
     };
 

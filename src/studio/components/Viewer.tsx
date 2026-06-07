@@ -11,7 +11,7 @@ import type { ViewMode3D } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
-import { sectionPlaneFromState, cutawayPlanesFromState } from "./viewer/sectionPlane";
+import { cutawayPlanesFromState } from "./viewer/sectionPlane";
 import { sectionPartKey } from "./viewer/sectionParts";
 import type { HoverResult } from "../features-ui/interaction/HoverManager";
 import type { SnapResult } from "../features-ui/interaction/SnapManager";
@@ -61,11 +61,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     const { setContextMenu, viewportBackground } = useUI();
 
     const {
-        sectionMode, sectionShape, sectionAxis, sectionFlip, sectionPosition,
-        sectionSides, sectionOffsets, sectionQuarterAxis, sectionKeepWhole,
+        sectionMode, sectionAxesEnabled, sectionSides, sectionOffsets, sectionKeepWhole,
     } = useShellStore();
     // Three stable plane instances, mutated in place so slider/side changes
-    // never rebuild materials (only mode/shape switches do — see ShapeGeometry).
+    // never rebuild materials (only mode/axis-count switches do — see ShapeGeometry).
     const sectionPlaneRefs = useMemo(
         () => [
             new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
@@ -75,20 +74,14 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         [],
     );
     useEffect(() => {
-        if (sectionShape === 'plane') {
-            sectionPlaneRefs[0].copy(sectionPlaneFromState(sectionAxis, sectionFlip, sectionPosition));
-            return;
-        }
-        cutawayPlanesFromState(sectionShape, sectionSides, sectionOffsets, sectionQuarterAxis)
+        cutawayPlanesFromState(sectionAxesEnabled, sectionSides, sectionOffsets)
             .forEach((p, i) => sectionPlaneRefs[i].copy(p));
-    }, [sectionPlaneRefs, sectionShape, sectionAxis, sectionFlip, sectionPosition,
-        sectionSides, sectionOffsets, sectionQuarterAxis]);
+    }, [sectionPlaneRefs, sectionAxesEnabled, sectionSides, sectionOffsets]);
     const clippingPlanes = useMemo(() => {
         if (!sectionMode) return NO_PLANES;
-        const count = sectionShape === 'plane' ? 1 : sectionShape === 'quarter' ? 2 : 3;
-        return sectionPlaneRefs.slice(0, count);
-    }, [sectionMode, sectionShape, sectionPlaneRefs]);
-    const clipIntersection = sectionShape !== 'plane';
+        const count = (['x', 'y', 'z'] as const).filter((a) => sectionAxesEnabled[a]).length;
+        return count === 0 ? NO_PLANES : sectionPlaneRefs.slice(0, count);
+    }, [sectionMode, sectionAxesEnabled, sectionPlaneRefs]);
 
     const itemNames = useMemo(() => {
         return (codeContext?.returnedVariables as (string | null)[]) || [];
@@ -178,7 +171,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                                 shapeIndex={i}
                                 viewMode3D={viewMode3D}
                                 clippingPlanes={sectionKeepWhole.has(partKey) ? NO_PLANES : clippingPlanes}
-                                clipIntersection={clipIntersection}
+                                clipIntersection={true}
                                 isSelected={name ? selectedItemIds.includes(name) : false}
                                 name={name ?? undefined}
                             />

@@ -5,13 +5,18 @@ import { useWorkbench } from '../../../context/WorkbenchContext';
 import { computeGeometryBox, sectionRange } from '../sectionRange';
 import { sectionPartKey } from '../sectionParts';
 import { FloatingPanel } from '../../Shared/FloatingPanel';
-import type { SectionShape } from '../../../store/shellStore';
 
 const AXES: Array<'x' | 'y' | 'z'> = ['x', 'y', 'z'];
-const SHAPES: Array<{ id: SectionShape; label: string }> = [
-  { id: 'plane', label: 'Plane' },
-  { id: 'quarter', label: 'Quarter' },
-  { id: 'octant', label: 'Octant' },
+
+type AxesEnabled = Readonly<Record<'x' | 'y' | 'z', boolean>>;
+
+// Presets are pure UI sugar over the per-axis enable flags: one enabled
+// axis is a classic section plane, two a quarter wedge, three an octant
+// corner. The rows stay fully editable after applying a preset.
+const PRESETS: Array<{ id: string; label: string; enabled: AxesEnabled }> = [
+  { id: 'plane', label: 'Plane', enabled: { x: false, y: false, z: true } },
+  { id: 'quarter', label: 'Quarter', enabled: { x: true, y: true, z: false } },
+  { id: 'octant', label: 'Octant', enabled: { x: true, y: true, z: true } },
 ];
 
 type Range = { min: number; max: number; center: number };
@@ -27,18 +32,17 @@ const segBtn = (active: boolean) =>
   `px-2 py-0.5 rounded ${active ? 'bg-sky-600 text-white' : 'bg-[#222] text-white/70 hover:bg-[#333]'}`;
 
 /**
- * Floating control for the section tool. Three cut shapes: Plane (the
- * original single plane), Quarter (wedge around one axis) and Octant
- * (corner box), plus a per-part "Keep whole" exclusion list so inner
- * mechanisms can stay uncut, explanatory-drawing style. Self-contained —
- * reads section state from shellStore and model geometry via
- * useRecomputeResult. View-only: writes nothing but section UI state.
+ * Floating, draggable control for the section tool. Each axis row can
+ * contribute one cut plane (enable + removed-side + offset): one enabled
+ * axis is a classic section plane, two a quarter wedge, three an octant
+ * corner — one mechanism, the Plane/Quarter/Octant buttons are just
+ * presets. A per-part "Keep whole" list excludes inner mechanisms from the
+ * cut, explanatory-drawing style. Self-contained — reads section state from
+ * shellStore and model geometry via useRecomputeResult. View-only: writes
+ * nothing but section UI state.
  */
 export function SectionPanel({ visible }: { visible: boolean }) {
-  const {
-    sectionShape, sectionAxis, sectionFlip, sectionPosition,
-    sectionSides, sectionOffsets, sectionQuarterAxis, sectionKeepWhole,
-  } = useShellStore();
+  const { sectionAxesEnabled, sectionSides, sectionOffsets, sectionKeepWhole } = useShellStore();
   const { geometries } = useRecomputeResult();
   const { codeContext } = useWorkbench();
 
@@ -68,27 +72,36 @@ export function SectionPanel({ visible }: { visible: boolean }) {
     () => (axis: 'x' | 'y' | 'z'): Range => (box ? sectionRange(box, axis) : FALLBACK_RANGE),
     [box],
   );
-  const planeRange = rangeFor(sectionAxis);
 
-  // Plane mode: on activate, and whenever the axis changes, re-center the
-  // plane to the model's mid-bounds for that axis (unchanged behaviour).
+  // A newly-enabled axis starts at the model's mid-bounds — a stale mm from
+  // an earlier model/session is useless.
+  const enableAxis = (axis: 'x' | 'y' | 'z', on: boolean) => {
+    if (on) shellStore.setSectionOffset(axis, rangeFor(axis).center);
+    shellStore.setSectionAxisEnabled(axis, on);
+  };
+
+  const applyPreset = (enabled: AxesEnabled) => {
+    for (const a of AXES) {
+      if (enabled[a] && !sectionAxesEnabled[a]) {
+        shellStore.setSectionOffset(a, rangeFor(a).center);
+      }
+    }
+    shellStore.setSectionAxesEnabled(enabled);
+  };
+
+  // On activation, re-center every enabled axis to the current model bounds.
   const wasVisible = useRef(false);
-  const lastAxis = useRef(sectionAxis);
   useEffect(() => {
     if (!visible) { wasVisible.current = false; return; }
-    if (!wasVisible.current || lastAxis.current !== sectionAxis) {
-      shellStore.setSectionPosition(planeRange.center);
+    if (!wasVisible.current) {
+      for (const a of AXES) {
+        if (shellStore.getSnapshot().sectionAxesEnabled[a]) {
+          shellStore.setSectionOffset(a, rangeFor(a).center);
+        }
+      }
     }
     wasVisible.current = true;
-    lastAxis.current = sectionAxis;
-  }, [visible, sectionAxis, planeRange.center]);
-
-  // Cutaway modes: re-center all offsets when the shape, quarter axis, or
-  // model bounds change — a stale mm from another pairing is useless.
-  useEffect(() => {
-    if (!visible || sectionShape === 'plane') return;
-    for (const a of AXES) shellStore.setSectionOffset(a, rangeFor(a).center);
-  }, [visible, sectionShape, sectionQuarterAxis, rangeFor]);
+  }, [visible, rangeFor]);
 
   // Drop keep-whole keys that no longer exist in the scene.
   useEffect(() => {
@@ -97,11 +110,10 @@ export function SectionPanel({ visible }: { visible: boolean }) {
 
   if (!visible) return null;
 
-  const cutAxes = sectionShape === 'quarter'
-    ? AXES.filter((a) => a !== sectionQuarterAxis)
-    : AXES;
   const allExcluded = partKeys.length > 0 && partKeys.every((k) => sectionKeepWhole.has(k));
-  const planeStep = sliderStep(planeRange);
+  const presetMatches = (enabled: AxesEnabled) =>
+    AXES.every((a) => sectionAxesEnabled[a] === enabled[a]);
+  const noneEnabled = AXES.every((a) => !sectionAxesEnabled[a]);
 
   return (
     <FloatingPanel
@@ -113,115 +125,66 @@ export function SectionPanel({ visible }: { visible: boolean }) {
     >
       <div data-testid="section-panel" className="text-xs text-white/90 select-none">
       <div className="mb-2 flex gap-1">
-        {SHAPES.map(({ id, label }) => (
+        {PRESETS.map(({ id, label, enabled }) => (
           <button
             key={id}
             type="button"
-            data-testid={`section-shape-${id}`}
-            onClick={() => shellStore.setSectionShape(id)}
-            aria-pressed={sectionShape === id}
-            className={segBtn(sectionShape === id)}
+            data-testid={`section-preset-${id}`}
+            onClick={() => applyPreset(enabled)}
+            aria-pressed={presetMatches(enabled)}
+            className={segBtn(presetMatches(enabled))}
           >
             {label}
           </button>
         ))}
       </div>
 
-      {sectionShape === 'plane' && (
-        <>
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-white/60">Axis</span>
-            <div className="flex gap-1">
-              {AXES.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  data-testid={`section-axis-${a}`}
-                  onClick={() => shellStore.setSectionAxis(a)}
-                  aria-pressed={sectionAxis === a}
-                  className={`uppercase ${segBtn(sectionAxis === a)}`}
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
-          </div>
-          <label className="mb-2 flex items-center gap-2">
-            <input
-              type="checkbox"
-              data-testid="section-flip"
-              checked={sectionFlip}
-              onChange={(e) => shellStore.setSectionFlip(e.target.checked)}
-            />
-            <span className="text-white/60">Flip side</span>
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="range"
-              data-testid="section-position"
-              className="flex-1"
-              min={planeRange.min}
-              max={planeRange.max}
-              step={planeStep}
-              value={sectionPosition}
-              disabled={planeRange.max - planeRange.min <= 0}
-              onChange={(e) => shellStore.setSectionPosition(Number(e.target.value))}
-            />
-            <span className="w-12 text-right tabular-nums">{sectionPosition.toFixed(1)}</span>
-          </div>
-        </>
-      )}
-
-      {sectionShape === 'quarter' && (
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-white/60">Around</span>
-          <div className="flex gap-1">
-            {AXES.map((a) => (
-              <button
-                key={a}
-                type="button"
-                data-testid={`section-around-${a}`}
-                onClick={() => shellStore.setSectionQuarterAxis(a)}
-                aria-pressed={sectionQuarterAxis === a}
-                className={`uppercase ${segBtn(sectionQuarterAxis === a)}`}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {sectionShape !== 'plane' && cutAxes.map((a) => {
+      {AXES.map((a) => {
+        const on = sectionAxesEnabled[a];
         const r = rangeFor(a);
         return (
           <div key={a} className="mb-2 flex items-center gap-2">
-            <span className="w-3 uppercase text-white/60">{a}</span>
+            <label className="flex w-9 items-center gap-1">
+              <input
+                type="checkbox"
+                data-testid={`section-axis-on-${a}`}
+                checked={on}
+                onChange={(e) => enableAxis(a, e.target.checked)}
+              />
+              <span className={`uppercase ${on ? 'text-white/80' : 'text-white/40'}`}>{a}</span>
+            </label>
             <button
               type="button"
               data-testid={`section-side-${a}`}
               title="Which side of this axis is removed"
               aria-pressed={sectionSides[a]}
+              disabled={!on}
               onClick={() => shellStore.setSectionSide(a, !sectionSides[a])}
-              className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333]"
+              className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333] disabled:opacity-40 disabled:hover:bg-[#222]"
             >
               {sectionSides[a] ? '+' : '−'}
             </button>
             <input
               type="range"
               data-testid={`section-offset-${a}`}
-              className="flex-1"
+              className="flex-1 disabled:opacity-40"
               min={r.min}
               max={r.max}
               step={sliderStep(r)}
               value={sectionOffsets[a]}
-              disabled={r.max - r.min <= 0}
+              disabled={!on || r.max - r.min <= 0}
               onChange={(e) => shellStore.setSectionOffset(a, Number(e.target.value))}
             />
-            <span className="w-10 text-right tabular-nums">{sectionOffsets[a].toFixed(1)}</span>
+            <span className={`w-10 text-right tabular-nums ${on ? '' : 'text-white/40'}`}>
+              {sectionOffsets[a].toFixed(1)}
+            </span>
           </div>
         );
       })}
+
+      {noneEnabled && (
+        <div className="mb-2 text-amber-400/80">No axis enabled — nothing is cut.</div>
+      )}
 
       {partKeys.length > 0 && (
         <div className="mt-2 border-t border-white/10 pt-2">

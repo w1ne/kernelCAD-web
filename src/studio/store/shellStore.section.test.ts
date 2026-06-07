@@ -4,12 +4,13 @@ import { shellStore } from './shellStore';
 describe('shellStore section state', () => {
   beforeEach(() => shellStore.reset());
 
-  it('defaults: off, z axis, unflipped, position 0', () => {
+  it('defaults: off, z-plane enabled, positive sides removed, zero offsets, empty keep-whole', () => {
     const s = shellStore.getSnapshot();
     expect(s.sectionMode).toBe(false);
-    expect(s.sectionAxis).toBe('z');
-    expect(s.sectionFlip).toBe(false);
-    expect(s.sectionPosition).toBe(0);
+    expect(s.sectionAxesEnabled).toEqual({ x: false, y: false, z: true });
+    expect(s.sectionSides).toEqual({ x: true, y: true, z: true });
+    expect(s.sectionOffsets).toEqual({ x: 0, y: 0, z: 0 });
+    expect(s.sectionKeepWhole.size).toBe(0);
   });
 
   it('toggleSectionMode flips the boolean and notifies', () => {
@@ -33,45 +34,25 @@ describe('shellStore section state', () => {
     unsub();
   });
 
-  it('setSectionAxis / setSectionFlip / setSectionPosition update fields', () => {
-    shellStore.setSectionAxis('x');
-    shellStore.setSectionFlip(true);
-    shellStore.setSectionPosition(12.5);
-    const s = shellStore.getSnapshot();
-    expect(s.sectionAxis).toBe('x');
-    expect(s.sectionFlip).toBe(true);
-    expect(s.sectionPosition).toBe(12.5);
-  });
-
-  it('setSectionPosition is idempotent on equal value', () => {
-    shellStore.setSectionPosition(5);
+  it('setSectionAxisEnabled toggles one axis immutably and is idempotent', () => {
+    const before = shellStore.getSnapshot().sectionAxesEnabled;
+    shellStore.setSectionAxisEnabled('x', true);
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: true, y: false, z: true });
+    expect(before).toEqual({ x: false, y: false, z: true }); // old object untouched
     let hits = 0;
     const unsub = shellStore.subscribe(() => { hits += 1; });
-    shellStore.setSectionPosition(5);
+    shellStore.setSectionAxisEnabled('x', true); // same value → no fan-out
     expect(hits).toBe(0);
     unsub();
   });
-});
 
-describe('shellStore cutaway state', () => {
-  beforeEach(() => shellStore.reset());
-
-  it('defaults: plane shape, positive sides removed, zero offsets, z quarter axis, empty keep-whole', () => {
-    const s = shellStore.getSnapshot();
-    expect(s.sectionShape).toBe('plane');
-    expect(s.sectionSides).toEqual({ x: true, y: true, z: true });
-    expect(s.sectionOffsets).toEqual({ x: 0, y: 0, z: 0 });
-    expect(s.sectionQuarterAxis).toBe('z');
-    expect(s.sectionKeepWhole.size).toBe(0);
-  });
-
-  it('setSectionShape switches and is idempotent', () => {
+  it('setSectionAxesEnabled replaces all flags at once and is idempotent', () => {
+    shellStore.setSectionAxesEnabled({ x: true, y: true, z: false });
+    expect(shellStore.getSnapshot().sectionAxesEnabled).toEqual({ x: true, y: true, z: false });
     let hits = 0;
     const unsub = shellStore.subscribe(() => { hits += 1; });
-    shellStore.setSectionShape('octant');
-    expect(shellStore.getSnapshot().sectionShape).toBe('octant');
-    shellStore.setSectionShape('octant'); // same value → no fan-out
-    expect(hits).toBe(1);
+    shellStore.setSectionAxesEnabled({ x: true, y: true, z: false });
+    expect(hits).toBe(0);
     unsub();
   });
 
@@ -84,9 +65,13 @@ describe('shellStore cutaway state', () => {
     expect(shellStore.getSnapshot().sectionOffsets).toEqual({ x: 12.5, y: 0, z: 0 });
   });
 
-  it('setSectionQuarterAxis switches', () => {
-    shellStore.setSectionQuarterAxis('x');
-    expect(shellStore.getSnapshot().sectionQuarterAxis).toBe('x');
+  it('setSectionOffset is idempotent on equal value', () => {
+    shellStore.setSectionOffset('z', 5);
+    let hits = 0;
+    const unsub = shellStore.subscribe(() => { hits += 1; });
+    shellStore.setSectionOffset('z', 5);
+    expect(hits).toBe(0);
+    unsub();
   });
 
   it('toggleSectionKeepWhole adds then removes a key', () => {
