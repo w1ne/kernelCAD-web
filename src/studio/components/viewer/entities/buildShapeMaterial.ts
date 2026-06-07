@@ -29,13 +29,20 @@ export function buildShapeMaterial(
     color: number | string,
     viewMode3D: ViewMode3D,
     clippingPlanes: THREE.Plane[] = [],
+    clipIntersection = false,
 ): THREE.Material {
     const flatShading = viewMode3D === 'shadedWithEdges';
     const applyClip = (m: THREE.Material): THREE.Material => {
         // Empty array ⇒ no clipping (three.js no-ops). Non-empty ⇒ GPU clip;
         // clipShadows keeps cast shadows consistent with the cut.
+        // clipIntersection=true (cutaway) drops fragments only where behind
+        // ALL planes — the corner wedge — instead of the union of half-spaces.
         m.clippingPlanes = clippingPlanes;
         m.clipShadows = true;
+        m.clipIntersection = clipIntersection;
+        // A clipped solid must render its interior walls, or the cut reads
+        // as an empty shell from outside.
+        if (clippingPlanes.length > 0) m.side = THREE.DoubleSide;
         return m;
     };
     if (viewMode3D === 'wireframe') {
