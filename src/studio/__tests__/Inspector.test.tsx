@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudioRecomputeResult } from '../types';
 import { ParamTable } from '../../shared/runtime/paramTable';
@@ -11,6 +11,7 @@ vi.mock('../hooks/useRecomputeResult', () => ({
 }));
 
 import { Inspector } from '../Inspector';
+import { shellStore } from '../store/shellStore';
 
 function emptyResult(): StudioRecomputeResult {
     return {
@@ -31,6 +32,7 @@ function withOneParam(): StudioRecomputeResult {
 
 afterEach(() => {
     cleanup();
+    shellStore.reset();
 });
 
 beforeEach(() => {
@@ -102,5 +104,30 @@ describe('Inspector', () => {
 
         expect(screen.getByTestId('scene-slot').textContent).toBe('SCENE BODY');
         expect(screen.queryByTestId('params-slot')).toBeNull();
+    });
+
+    it('collapses to zero width when inspectorOpen is false', () => {
+        mockUseRecomputeResult.mockReturnValue(emptyResult());
+
+        render(<Inspector tabSlots={{ scene: <div>SCENE BODY</div> }} />);
+
+        const panel = screen.getByTestId('inspector');
+        expect(panel.style.width).toBe('290px');
+        expect(panel.getAttribute('data-open')).toBe('true');
+
+        act(() => {
+            shellStore.setInspectorOpen(false);
+        });
+
+        expect(panel.style.width).toBe('0px');
+        expect(panel.getAttribute('data-open')).toBe('false');
+        expect(panel.getAttribute('aria-hidden')).toBe('true');
+
+        act(() => {
+            shellStore.setInspectorOpen(true);
+        });
+
+        expect(panel.style.width).toBe('290px');
+        expect(panel.getAttribute('aria-hidden')).toBe('false');
     });
 });
