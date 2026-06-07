@@ -28,7 +28,11 @@
 // through every DFM check and returns it on the combined result. A kernel
 // failure on a pair (BRepExtrema or the volume probe) records that pair as
 // 'unknown' with `distanceMm: NaN` plus a warn-severity
-// `feature.kernel-failed` diagnostic; the sweep never aborts.
+// `feature.kernel-failed` diagnostic; the sweep never aborts. The up-front
+// clone/applyTransform stage is guarded per part with the same stance: a
+// part whose clone or transform throws gets ONE warn diagnostic and every
+// pair touching it (after ignore/mate precedence) is recorded 'unknown' —
+// the remaining pairs are still measured.
 
 import { getOC } from 'replicad';
 import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
@@ -52,6 +56,15 @@ export interface ClearancePairReport {
   /** false when the bbox lower bound already cleared the threshold (no
    *  BRepExtrema run), and on skipped / kernel-failed pairs. */
   exact: boolean;
+}
+
+/** One scene part, cloned into the world frame for measurement. `shape` and
+ *  `bbox` are undefined when the up-front clone/applyTransform stage failed
+ *  for the part — its pairs are recorded as 'unknown'. */
+interface TransformedPart {
+  name: string;
+  shape?: OcctBackend;
+  bbox?: { min: [number, number, number]; max: [number, number, number] };
 }
 
 /** Distances below this are "surfaces touch or cross" — disambiguated by a
@@ -93,10 +106,27 @@ export function checkClearance(
   diagnostics: CompilerDiagnostic[] = [],
 ): ClearancePairReport[] {
   // Clone + apply each part's worldTransform once, up front (the
-  // detectInterferences / STEP-exporter pattern).
-  const transformed = scene.parts.map((p) => {
-    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+  // detectInterferences / STEP-exporter pattern). Guarded per part: a
+  // clone/transform kernel failure leaves `shape` undefined — every pair
+  // touching that part is recorded 'unknown' below; the sweep continues.
+  const transformed: TransformedPart[] = scene.parts.map((p) => {
+    try {
+      const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+      return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+    } catch (e) {
+      diagnostics.push({
+        target: 'export-occt',
+        code: 'feature.kernel-failed',
+        severity: 'warn',
+        message:
+          `dfm.clearance: clone/transform failed for part '${p.name}' ` +
+          `(${e instanceof Error ? e.message : String(e)}); its pairs are recorded as 'unknown'.`,
+        hint:
+          'The OCCT kernel could not clone or transform this part — check it for degenerate ' +
+          'geometry with evaluate; pairs not touching it were still measured.',
+      });
+      return { name: p.name };
+    }
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,6 +145,14 @@ export function checkClearance(
       }
       if (matedPairs.has(key)) {
         reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'mated', exact: false });
+        continue;
+      }
+
+      // Either side failed the up-front clone/transform stage (warn
+      // diagnostic already emitted, once per part): nothing to measure.
+      if (a.shape === undefined || a.bbox === undefined
+        || b.shape === undefined || b.bbox === undefined) {
+        reports.push({ a: a.name, b: b.name, distanceMm: NaN, status: 'unknown', exact: false });
         continue;
       }
 

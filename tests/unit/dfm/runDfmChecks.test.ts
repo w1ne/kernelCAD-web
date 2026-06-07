@@ -26,12 +26,20 @@
 //     (one-channel rule),
 //   - kernel-failure pair (injected BRepExtrema throw) → clearance status
 //     'unknown' survives into the report WITH its warn diagnostic,
+//   - mesh failure on one part (injected meshShapeForExport throw) → warn
+//     feature.kernel-failed; the OTHER part's walls/voids entries exist,
+//   - clone/transform failure in the clearance up-front stage → the broken
+//     part's pairs are 'unknown'; healthy pairs still measured,
+//   - overlapping pair → error assembly.interference.overlap (deferring to
+//     the interference gate); NO dfm.clearance.violated fabricated,
+//   - transformed part (at: [100, 0, 0]) → diagnostic locations are
+//     WORLD-frame while result structs stay part-LOCAL,
 //   - every emitted diagnostic carries a non-empty hint (local pre-check
 //     for the Task 8 integration gate).
 
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { buildModel, type BuiltModel } from '../../../src/modeling/buildModel';
-import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { pairKey } from '../../../src/modeling/runtime/detectInterferences';
 import {
   findDfmSpec,
@@ -52,6 +60,25 @@ vi.mock('../../../src/modeling/runtime/brepDistance', async (importOriginal) => 
     brepExtremaDistance: (...args: Parameters<typeof actual.brepExtremaDistance>) => {
       if (kernel.failDistance) throw new Error('injected BRepExtrema failure');
       return actual.brepExtremaDistance(...args);
+    },
+  };
+});
+
+// Fault-injection switch for the OCCT mesher: when set, the NEXT
+// `meshShapeForExport` call throws (then the flag self-clears), exercising
+// the per-part containment path — the first part meshed fails, the rest of
+// the sweep must continue. Everything else on the module passes through.
+const mesher = vi.hoisted(() => ({ failOnce: false }));
+vi.mock('../../../src/kernel/backends/occt/occtBackend', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/kernel/backends/occt/occtBackend')>();
+  return {
+    ...actual,
+    meshShapeForExport: (...args: Parameters<typeof actual.meshShapeForExport>) => {
+      if (mesher.failOnce) {
+        mesher.failOnce = false;
+        throw new Error('injected mesh failure');
+      }
+      return actual.meshShapeForExport(...args);
     },
   };
 });
@@ -112,7 +139,10 @@ describe('findDfmSpec', () => {
 
 describe('runDfmChecksOnModel', () => {
   beforeAll(async () => { await initOcct(); }, 60000);
-  afterEach(() => { kernel.failDistance = false; });
+  afterEach(() => {
+    kernel.failDistance = false;
+    mesher.failOnce = false;
+  });
 
   it('returns undefined when the model declares no dfmSpec', async () => {
     const model = await buildModel({
@@ -292,5 +322,112 @@ describe('runDfmChecksOnModel', () => {
     expect(warns[0].severity).toBe('warn');
     // No clearance violation fabricated for the unmeasured pair.
     expect(report.diagnostics.filter(d => d.code === 'dfm.clearance.violated')).toEqual([]);
+  }, 60000);
+
+  it("contains a mesh failure to its part: warn diagnostic for 'left', 'right' still fully checked", async () => {
+    mesher.failOnce = true; // first part meshed is 'left' (scene order)
+    const { report } = await run(twoBoxes(0.50, '{ minWall: 1.5 }'));
+    const warns = report.diagnostics.filter(d => d.code === 'feature.kernel-failed');
+    expect(warns).toHaveLength(1);
+    expect(warns[0].severity).toBe('warn');
+    expect(warns[0].message).toMatch(/'left'/);
+    // The OTHER part's wall + void entries exist — the sweep never aborted.
+    expect(report.walls.map(w => w.part)).toEqual(['right']);
+    expect(report.voids.map(v => v.part)).toEqual(['right']);
+    // Mesh-failed parts stay warn: the gate's error set is untouched.
+    expect(report.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+  }, 60000);
+
+  it("contains a clone/transform failure in clearance: the broken part's pairs are 'unknown', healthy pairs measured", async () => {
+    const model = await buildModel({
+      fileName: 'dfm-orchestrator.kcad.ts',
+      code: `
+        dfmSpec({ minClearance: 0.45 });
+        const asm = assembly('dfm-clone-fail');
+        asm.part('broken', box(10, 10, 10), { at: [0, 0, 0] });
+        asm.part('mid', box(10, 10, 10), { at: [10.3, 0, 0] });
+        asm.part('far', box(10, 10, 10), { at: [40, 0, 0] });
+        return asm.solvedModel({}, { validate: 'off' });
+      `,
+    });
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    // Inject AFTER the build so the throw lands in the clearance up-front
+    // clone/applyTransform stage (parts iterate in scene order: 'broken'
+    // first); subsequent calls fall back to the real implementation.
+    const spy = vi.spyOn(OcctBackend.prototype, 'applyTransform')
+      .mockImplementationOnce(() => { throw new Error('injected transform failure'); });
+    try {
+      const report = await runDfmChecksOnModel(model);
+      expect(report).toBeDefined();
+      assertAllHints(report!);
+      const byPair = new Map(report!.clearance.map(r => [pairKey(r.a, r.b), r.status]));
+      expect(byPair.get(pairKey('broken', 'mid'))).toBe('unknown');
+      expect(byPair.get(pairKey('broken', 'far'))).toBe('unknown');
+      // The healthy pair is still measured (bbox gap ≈ 19.7 mm → ok).
+      expect(byPair.get(pairKey('mid', 'far'))).toBe('ok');
+      const warns = report!.diagnostics.filter(d => d.code === 'feature.kernel-failed');
+      expect(warns.length).toBeGreaterThanOrEqual(1);
+      expect(warns.some(w => w.severity === 'warn' && w.message.includes("'broken'"))).toBe(true);
+    } finally {
+      spy.mockRestore();
+    }
+  }, 60000);
+
+  it("emits an error assembly.interference.overlap for 'interfering' pairs — overlap never passes silently", async () => {
+    const { report } = await run(twoBoxes(-2, '{ minClearance: 0.45 }'));
+    expect(report.clearance).toHaveLength(1);
+    expect(report.clearance[0].status).toBe('interfering');
+    const d = report.diagnostics.filter(x => x.code === 'assembly.interference.overlap');
+    expect(d).toHaveLength(1);
+    expect(d[0].severity).toBe('error');
+    expect(d[0].message).toMatch(/'left'/);
+    expect(d[0].message).toMatch(/'right'/);
+    expect(d[0].message).toMatch(/interference gate/);
+    // The overlap is NOT double-reported as a clearance violation.
+    expect(report.diagnostics.filter(x => x.code === 'dfm.clearance.violated')).toEqual([]);
+  }, 60000);
+
+  it('reports diagnostic locations in the WORLD frame; result structs stay part-local', async () => {
+    // `at:` placement bakes into the part's LOCAL shape — only the mate
+    // solver assigns non-identity worldTransforms. Mate two local-frame
+    // parts onto offset connectors so local and world frames diverge.
+    const { report } = await run(`
+      dfmSpec({ minWall: 1.5 });
+      const asm = assembly('dfm-frames');
+      const parent = asm.part('parent', box(10, 10, 10));
+      parent.connector('thinAt', { type: 'frame', origin: { kind: 'vec3', value: [100, 0, 0] } });
+      parent.connector('hollowAt', { type: 'frame', origin: { kind: 'vec3', value: [100, 0, 40] } });
+      const thin = asm.part('thin', box(20, 20, 1));
+      thin.connector('in', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      const hollow = asm.part('hollow', box(20, 20, 20).subtract(box(6, 6, 6).translate(7, 7, 7)));
+      hollow.connector('in', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      asm.mate('mThin', 'parent.thinAt', 'thin.in', 'fastened');
+      asm.mate('mHollow', 'parent.hollowAt', 'hollow.in', 'fastened');
+      return asm.solvedModel({}, { validate: 'off' });
+    `);
+    const at = (msg: string): [number, number, number] => {
+      const m = msg.match(/at \((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/);
+      expect(m, `no location in: ${msg}`).not.toBeNull();
+      return [Number(m![1]), Number(m![2]), Number(m![3])];
+    };
+
+    // Thin wall: raw result struct stays in the part's LOCAL frame...
+    const thinWalls = report.walls.find(w => w.part === 'thin')!;
+    expect(thinWalls.result.violations.length).toBeGreaterThan(0);
+    expect(thinWalls.result.violations[0].location[0]).toBeLessThanOrEqual(20);
+    // ...while the diagnostic reports the same spot in WORLD frame (+100 X).
+    const wall = report.diagnostics.find(d => d.code === 'dfm.wall.too-thin')!;
+    expect(wall).toBeDefined();
+    expect(at(wall.message)[0]).toBeGreaterThanOrEqual(100);
+
+    // Sealed void: local result vs world-frame diagnostic (+100 X, +40 Z).
+    const hollowVoids = report.voids.find(v => v.part === 'hollow')!;
+    expect(hollowVoids.result.sealedVoids).toHaveLength(1);
+    expect(hollowVoids.result.sealedVoids[0].location[0]).toBeLessThanOrEqual(20);
+    const voidDiag = report.diagnostics.find(d => d.code === 'dfm.void.undeclared')!;
+    expect(voidDiag).toBeDefined();
+    const [vx, , vz] = at(voidDiag.message);
+    expect(vx).toBeGreaterThanOrEqual(100);
+    expect(vz).toBeGreaterThanOrEqual(40);
   }, 60000);
 });

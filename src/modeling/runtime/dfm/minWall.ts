@@ -51,7 +51,10 @@ import { TriangleBvh, type DfmMesh } from './meshBvh';
 const RAY_EPS_MM = 1e-4;
 /** Above this triangle count the sampler switches to a fixed-stride subset. */
 const MAX_SAMPLED_TRIANGLES = 150_000;
-const MAX_REPORTED_CLUSTERS = 10;
+/** Cap on reported thin-wall clusters per part. Exported so report surfaces
+ *  (the Task 7 orchestrator's truncation note) quote the real cap instead of
+ *  hardcoding it. */
+export const MAX_REPORTED_CLUSTERS = 10;
 /** Same degenerate-triangle cutoff as TriangleBvh (skipped, not cast). */
 const AREA_EPS = 1e-12;
 

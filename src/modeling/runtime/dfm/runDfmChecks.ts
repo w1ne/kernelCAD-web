@@ -25,19 +25,34 @@
 // still participate in clearance: a vendor part 0.2 mm from a printed part
 // is a real assembly problem unless the pair is ignored or mated.
 //
-// Resilience: a kernel failure meshing one part downgrades to a warn
-// `feature.kernel-failed` diagnostic and the sweep continues — one broken
-// part never hides findings on the others (the checkClearance stance).
-// Pairs checkClearance could not measure keep their 'unknown' status in
-// `clearance[]` and their warn diagnostics in `diagnostics` — they are
-// never silently dropped.
+// Resilience: a kernel failure anywhere in one part's mesh / min-wall /
+// void pipeline downgrades to a warn `feature.kernel-failed` diagnostic and
+// the sweep continues — one broken part never hides findings on the others
+// (the checkClearance stance). Pairs checkClearance could not measure
+// (including pairs touching a part whose up-front clone/transform failed)
+// keep their 'unknown' status in `clearance[]` and their warn diagnostics
+// in `diagnostics` — they are never silently dropped. Contract: 'unknown'
+// pairs and kernel-failed parts stay WARN severity — they surface in the
+// report and the CLI summary but do NOT flip the gate's exit code; a
+// --strict mode that fails on unknowns is a recorded follow-up.
+//
+// Frames: min-wall and void topology are COMPUTED on each part's
+// local-frame mesh (correct and cheap — thickness and topology are
+// rigid-motion invariant), but every location REPORTED in `diagnostics` is
+// mapped through the part's FK worldTransform first, so all coordinates in
+// the diagnostics array share one world frame with clearance. The raw
+// `walls[]` / `voids[]` result structs keep part-LOCAL coordinates (see
+// DfmCheckReport).
 //
 // Diagnostics: one per thin-wall cluster, one per violated clearance pair,
-// one per undeclared sealed void, one per channel-openings mismatch
-// (including over-declared sealed channels exposed by
-// `detectedSealedVoidCount`). Severity, hint, and nextAction come from
-// DIAGNOSTIC_REGISTRY (the dfm.* W3 gate codes). Per-phase wall time lands
-// in `timings` as perf evidence for the CLI/MCP surfaces (Task 8).
+// one error `assembly.interference.overlap` per overlapping ('interfering')
+// pair — the overlap ANALYSIS itself belongs to the interference gate, but
+// the DFM gate must not pass silently over overlapping parts — one per
+// undeclared sealed void, one per channel-openings mismatch (including
+// over-declared sealed channels exposed by `detectedSealedVoidCount`).
+// Severity, hint, and nextAction come from DIAGNOSTIC_REGISTRY (the dfm.*
+// W3 gate codes plus the shared interference code). Per-phase wall time
+// lands in `timings` as perf evidence for the CLI/MCP surfaces (Task 8).
 
 import type { BuiltModel } from '../../buildModel';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
@@ -50,22 +65,32 @@ import type { ShapeBackend } from '../../../kernel/backends/backend';
 import type { Assembly } from '../../capture/assembly';
 import { pairKey } from '../detectInterferences';
 import { parseConnectorRef } from '../../mates/mate';
+import { Transform } from '../../../shared/runtime/se3';
 import { checkClearance, type ClearancePairReport } from './clearance';
-import { checkMinWall, type MinWallResult } from './minWall';
+import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWall';
 import { analyzeVoids, type VoidTopologyResult } from './voidTopology';
-import { TriangleBvh, type DfmMesh } from './meshBvh';
+import { TriangleBvh } from './meshBvh';
 
 export interface DfmCheckReport {
   /** Every part pair of the scene with its measured status — including
    *  'unknown' (kernel-failed) pairs, which must stay visible. Empty for
-   *  single-shape models and when minClearance is not declared. */
+   *  single-shape models and when minClearance is not declared. Distances
+   *  are world-frame (parts measured under their FK worldTransforms). */
   clearance: ClearancePairReport[];
   /** Min-wall results per printed (non-excluded) part; empty when minWall
-   *  is not declared. */
+   *  is not declared. Cluster locations are part-LOCAL — the frame the mesh
+   *  was computed in; apply the part's worldTransform for world coords. The
+   *  matching diagnostics already report the same spots in world frame. */
   walls: { part: string; result: MinWallResult }[];
   /** Void/channel topology per printed part — always populated (sealed-void
-   *  detection is unconditional). */
+   *  detection is unconditional). Void/mouth/seed locations are part-LOCAL
+   *  (same convention as `walls`); the matching diagnostics report them in
+   *  world frame. */
   voids: { part: string; result: VoidTopologyResult }[];
+  /** ALL locations embedded in diagnostic messages are WORLD-frame: each
+   *  part's FK worldTransform is applied before formatting (identity for
+   *  single-shape models), so they compose with clearance findings on
+   *  transformed assemblies. */
   diagnostics: CompilerDiagnostic[];
   /** Per-phase wall time (ms): 'clearance', 'mesh', 'walls', 'voids' (each
    *  present only when the phase ran) and 'total'. Perf evidence, surfaced
@@ -110,6 +135,18 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
     clearance = checkClearance(scene, spec.minClearance, ignored, mated, diagnostics);
     timings.clearance = performance.now() - t0;
     for (const r of clearance) {
+      if (r.status === 'interfering') {
+        // Overlap must fail the gate (Task 8 derives exit from
+        // error-severity presence in THIS report), but its analysis belongs
+        // to the interference gate — emit the shared code and defer.
+        diagnostics.push(emit(
+          'assembly.interference.overlap',
+          `dfm.clearance: parts '${r.a}' and '${r.b}' overlap (intersection volume not ` +
+            'measured here); the interference gate owns overlap analysis — run the ' +
+            'interference check for volume and resolution details.',
+        ));
+        continue;
+      }
       if (r.status !== 'violated') continue;
       diagnostics.push(emit(
         'dfm.clearance.violated',
@@ -131,106 +168,110 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
   for (const part of parts) {
     if (excluded(part.name)) continue;
 
-    let mesh: DfmMesh;
-    let bvh: TriangleBvh;
-    const tMesh = performance.now();
+    // Reported locations are world-frame: local mesh coords mapped through
+    // the part's FK worldTransform (identity for single-shape models).
+    const world = (p: readonly [number, number, number]): string =>
+      xyz(part.worldTransform.point(p));
+
+    // One try/catch around the part's WHOLE pipeline (mesh + min-wall +
+    // void analysis): never abort the sweep on a kernel failure — surface
+    // it and keep checking the remaining parts (the checkClearance
+    // resilience stance). Kernel-failed parts stay warn severity.
     try {
-      mesh = meshShapeForExport((part.shape as OcctBackend).getReplicadShape());
-      bvh = new TriangleBvh(mesh);
+      const tMesh = performance.now();
+      const mesh = meshShapeForExport((part.shape as OcctBackend).getReplicadShape());
+      const bvh = new TriangleBvh(mesh);
+      meshMs += performance.now() - tMesh;
+      meshedAny = true;
+
+      // Min-wall (only when declared).
+      if (spec.minWall !== undefined) {
+        const t0 = performance.now();
+        const result = checkMinWall(mesh, spec.minWall, { bvh });
+        wallsMs += performance.now() - t0;
+        walls.push({ part: part.name, result });
+        result.violations.forEach((v, i) => {
+          const note = i === 0 && result.truncated
+            ? ` More thin clusters exist; first ${MAX_REPORTED_CLUSTERS} shown.`
+            : '';
+          diagnostics.push(emit(
+            'dfm.wall.too-thin',
+            `dfm.minWall: part '${part.name}' has a ${mm(v.thicknessMm)} mm wall ` +
+              `(< minWall ${spec.minWall} mm) at ${world(v.location)}; ` +
+              `cluster of ${v.sampleCount} sample(s).${note}`,
+          ));
+        });
+      }
+
+      // Void/channel topology (always — undeclared cavities must be caught).
+      const partChannels = spec.channels.filter(c => c.part === part.name);
+      const nonSealed = partChannels.filter(c => !c.sealed);
+      if (nonSealed.length > 1) {
+        // analyzeVoids' documented scope limit: ONE non-sealed channel per
+        // part; the mouth count binds to the first declaration.
+        diagnostics.push(emit(
+          'feature.invalid-args',
+          `dfmSpec: part '${part.name}' declares ${nonSealed.length} non-sealed channels ` +
+            `(${nonSealed.map(c => `'${c.name}'`).join(', ')}); only one non-sealed channel per ` +
+            `part is supported — the mouth count binds to '${nonSealed[0].name}'. ` +
+            'Merge the declarations or split the part.',
+        ));
+      }
+      const tVoid = performance.now();
+      const result = analyzeVoids(mesh, bvh, partChannels);
+      voidsMs += performance.now() - tVoid;
+      voids.push({ part: part.name, result });
+
+      for (const v of result.sealedVoids) {
+        diagnostics.push(emit(
+          'dfm.void.undeclared',
+          `dfm.voids: part '${part.name}' contains an undeclared sealed void of ` +
+            `${v.volumeMm3.toFixed(1)} mm³ at ${world(v.location)}.`,
+        ));
+      }
+
+      // Over-declared sealed channels: count-based consumption empties
+      // sealedVoids, so the PRE-consumption count is the only signal that a
+      // declared sealed channel has no matching cavity.
+      const sealed = partChannels.filter(c => c.sealed);
+      if (sealed.length > result.detectedSealedVoidCount) {
+        diagnostics.push(emit(
+          'dfm.channel.openings-mismatch',
+          `dfm.channels: part '${part.name}' declares ${sealed.length} sealed channel(s) ` +
+            `(${sealed.map(c => `'${c.name}'`).join(', ')}) but only ` +
+            `${result.detectedSealedVoidCount} sealed cavities were detected — at least one ` +
+            'declared sealed channel has no matching cavity in the geometry.',
+        ));
+      }
+
+      // Mouth-count mismatch for the part's (first) non-sealed channel.
+      const open = nonSealed[0];
+      const co = result.channelOpenings;
+      if (open !== undefined && co !== undefined && co.found !== open.openings) {
+        const mouths = co.mouthLocations.length > 0
+          ? ` Mouths at ${co.mouthLocations.map(world).join(', ')}.`
+          : '';
+        const seed = co.channelSeed !== undefined
+          ? ` Channel interior near ${world(co.channelSeed)}.`
+          : '';
+        diagnostics.push(emit(
+          'dfm.channel.openings-mismatch',
+          `dfm.channels: channel '${open.name}' on part '${part.name}' has ${co.found} ` +
+            `mouth opening(s); declared openings: ${open.openings}.${mouths}${seed}`,
+        ));
+      }
     } catch (e) {
-      // Never abort the sweep on a kernel failure — surface it and keep
-      // checking the remaining parts (the checkClearance resilience stance).
       diagnostics.push({
         target: 'export-occt',
         code: 'feature.kernel-failed',
         severity: 'warn',
         message:
-          `dfm: meshing part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}); ` +
-          'min-wall and void checks skipped for this part.',
+          `dfm: checking part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}); ` +
+          'min-wall and void results for this part are incomplete.',
         hint:
-          'The OCCT mesher could not process this part — check it for degenerate geometry with ' +
+          'The OCCT kernel could not process this part — check it for degenerate geometry with ' +
           'evaluate; the remaining parts were still checked.',
       });
-      continue;
-    }
-    meshMs += performance.now() - tMesh;
-    meshedAny = true;
-
-    // Min-wall (only when declared).
-    if (spec.minWall !== undefined) {
-      const t0 = performance.now();
-      const result = checkMinWall(mesh, spec.minWall, { bvh });
-      wallsMs += performance.now() - t0;
-      walls.push({ part: part.name, result });
-      result.violations.forEach((v, i) => {
-        const note = i === 0 && result.truncated
-          ? ' More thin clusters exist; first 10 shown.'
-          : '';
-        diagnostics.push(emit(
-          'dfm.wall.too-thin',
-          `dfm.minWall: part '${part.name}' has a ${mm(v.thicknessMm)} mm wall ` +
-            `(< minWall ${spec.minWall} mm) at ${xyz(v.location)}; ` +
-            `cluster of ${v.sampleCount} sample(s).${note}`,
-        ));
-      });
-    }
-
-    // Void/channel topology (always — undeclared cavities must be caught).
-    const partChannels = spec.channels.filter(c => c.part === part.name);
-    const nonSealed = partChannels.filter(c => !c.sealed);
-    if (nonSealed.length > 1) {
-      // analyzeVoids' documented scope limit: ONE non-sealed channel per
-      // part; the mouth count binds to the first declaration.
-      diagnostics.push(emit(
-        'feature.invalid-args',
-        `dfmSpec: part '${part.name}' declares ${nonSealed.length} non-sealed channels ` +
-          `(${nonSealed.map(c => `'${c.name}'`).join(', ')}); only one non-sealed channel per ` +
-          `part is supported — the mouth count binds to '${nonSealed[0].name}'. ` +
-          'Merge the declarations or split the part.',
-      ));
-    }
-    const tVoid = performance.now();
-    const result = analyzeVoids(mesh, bvh, partChannels);
-    voidsMs += performance.now() - tVoid;
-    voids.push({ part: part.name, result });
-
-    for (const v of result.sealedVoids) {
-      diagnostics.push(emit(
-        'dfm.void.undeclared',
-        `dfm.voids: part '${part.name}' contains an undeclared sealed void of ` +
-          `${v.volumeMm3.toFixed(1)} mm³ at ${xyz(v.location)}.`,
-      ));
-    }
-
-    // Over-declared sealed channels: count-based consumption empties
-    // sealedVoids, so the PRE-consumption count is the only signal that a
-    // declared sealed channel has no matching cavity.
-    const sealed = partChannels.filter(c => c.sealed);
-    if (sealed.length > result.detectedSealedVoidCount) {
-      diagnostics.push(emit(
-        'dfm.channel.openings-mismatch',
-        `dfm.channels: part '${part.name}' declares ${sealed.length} sealed channel(s) ` +
-          `(${sealed.map(c => `'${c.name}'`).join(', ')}) but only ` +
-          `${result.detectedSealedVoidCount} sealed cavities were detected — at least one ` +
-          'declared sealed channel has no matching cavity in the geometry.',
-      ));
-    }
-
-    // Mouth-count mismatch for the part's (first) non-sealed channel.
-    const open = nonSealed[0];
-    const co = result.channelOpenings;
-    if (open !== undefined && co !== undefined && co.found !== open.openings) {
-      const mouths = co.mouthLocations.length > 0
-        ? ` Mouths at ${co.mouthLocations.map(xyz).join(', ')}.`
-        : '';
-      const seed = co.channelSeed !== undefined
-        ? ` Channel interior near ${xyz(co.channelSeed)}.`
-        : '';
-      diagnostics.push(emit(
-        'dfm.channel.openings-mismatch',
-        `dfm.channels: channel '${open.name}' on part '${part.name}' has ${co.found} ` +
-          `mouth opening(s); declared openings: ${open.openings}.${mouths}${seed}`,
-      ));
     }
   }
 
@@ -248,7 +289,12 @@ export async function runDfmChecksOnModel(model: BuiltModel): Promise<DfmCheckRe
 
 interface ResolvedPart {
   name: string;
+  /** LOCAL-frame shape (the SceneBackend convention). */
   shape: ShapeBackend;
+  /** Part-local → world SE(3) from the scene's FK; identity for
+   *  single-shape models. Every location REPORTED in diagnostics is mapped
+   *  through this so the diagnostics array shares one world frame. */
+  worldTransform: Transform;
 }
 
 /** Resolve the model's parts: the LAST record whose lowered shape is a
@@ -258,12 +304,19 @@ function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: Resolve
   for (let i = model.records.length - 1; i >= 0; i--) {
     const s = model.shapes.get(model.records[i].id);
     if (isSceneBackend(s)) {
-      return { scene: s, parts: s.parts.map(p => ({ name: p.name, shape: p.shape })) };
+      return {
+        scene: s,
+        parts: s.parts.map(p => ({
+          name: p.name,
+          shape: p.shape,
+          worldTransform: p.worldTransform,
+        })),
+      };
     }
   }
   const single = model.rootShape ?? model.tailShape;
   if (single !== undefined) {
-    return { parts: [{ name: 'shape', shape: single }] };
+    return { parts: [{ name: 'shape', shape: single, worldTransform: Transform.identity() }] };
   }
   return { parts: [] };
 }
