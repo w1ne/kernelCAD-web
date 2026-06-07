@@ -119,6 +119,31 @@ describe('useAnimationPlayback', () => {
         ]);
     });
 
+    it('rejected send clears in-flight so a later scrub still emits (recovery)', async () => {
+        // First send rejects; subsequent sends resolve. The `.finally` must
+        // clear `inFlightRef` either way, so a later scrub is not wedged.
+        const update = vi.fn()
+            .mockRejectedValueOnce(new Error('relower 500'))
+            .mockResolvedValue(undefined);
+        // Silence the expected console.warn from the rejected send.
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const clock = makeManualClock();
+        const { result } = renderHook(() =>
+            useAnimationPlayback({ metadata: FIXTURE, updateParam: update, clock }),
+        );
+        act(() => { result.current.scrubTo(100); });
+        expect(update).toHaveBeenCalledOnce();
+        // Let the rejected promise settle (catch → finally clears in-flight).
+        await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+        // A fresh scrub after the failure must emit again, not be stuck.
+        act(() => { result.current.scrubTo(900); });
+        expect(update).toHaveBeenCalledTimes(2);
+        expect(update.mock.calls[1][0]).toEqual([
+            { name: 'drumDeg', value: 56.25 },
+            { name: 'meterDeg', value: 0 },
+        ]);
+    });
+
     it('once stops exactly at durationMs with a final batch AT the end', async () => {
         const update = vi.fn().mockResolvedValue(undefined);
         const clock = makeManualClock();

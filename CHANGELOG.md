@@ -27,6 +27,12 @@
 - **`capture_animation` MCP tool.** File-only input, snake_case envelope; mirrors
   the CLI. Collisions surface on `verified: false` + `collisions[]` and do NOT
   flip `ok`.
+- **Studio Animation tab.** Plays the `animationView` timeline live — scrub /
+  play with once/loop/reciprocate modes and a speed control; each pose is a real
+  re-solve through the params pipeline (live drive needs a `?script=`
+  server-pool session; editor mode previews sampled values). Offline
+  `kernelcad animate` stays the full-fidelity capture.
+  `examples/animation/revolute-sweep.kcad.ts` is the runnable demo.
 
 ## Unreleased — print-readiness DFM gates (W3)
 

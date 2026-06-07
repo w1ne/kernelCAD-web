@@ -27,7 +27,7 @@ import {
  */
 export function AnimationTab(): JSX.Element {
     const { features, updateParam } = useRecomputeResult();
-    const { sessionToken } = useWorkbench() as { sessionToken?: string | null };
+    const { sessionToken } = useWorkbench();
     const metadata = selectAnimationMetadata(features);
 
     // Live drive requires both the updateParam plumbing AND a session token
