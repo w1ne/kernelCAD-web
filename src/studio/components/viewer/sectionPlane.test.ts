@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { sectionPlaneFromState } from './sectionPlane';
+import { sectionPlaneFromState, cutawayPlanesFromState } from './sectionPlane';
 
 describe('sectionPlaneFromState', () => {
   it('z axis, unflipped: keeps below the cut, removes above', () => {
@@ -27,5 +27,45 @@ describe('sectionPlaneFromState', () => {
   it('plane passes through the cut point (distance 0 on the plane)', () => {
     const p = sectionPlaneFromState('z', false, 10);
     expect(Math.abs(p.distanceToPoint(new THREE.Vector3(7, -3, 10)))).toBeLessThan(1e-9);
+  });
+});
+
+describe('cutawayPlanesFromState', () => {
+  const sides = { x: true, y: true, z: true };
+  const offsets = { x: 10, y: 20, z: 30 };
+
+  it('octant: 3 planes; a point inside the removed corner is behind ALL of them', () => {
+    const planes = cutawayPlanesFromState('octant', sides, offsets, 'z');
+    expect(planes).toHaveLength(3);
+    const inside = new THREE.Vector3(11, 21, 31);
+    for (const p of planes) expect(p.distanceToPoint(inside)).toBeLessThan(0);
+  });
+
+  it('octant: a point outside the corner is in front of at least one plane (kept)', () => {
+    const planes = cutawayPlanesFromState('octant', sides, offsets, 'z');
+    const outside = new THREE.Vector3(9, 21, 31); // on the kept side of x
+    expect(planes.some((p) => p.distanceToPoint(outside) > 0)).toBe(true);
+  });
+
+  it('side=false removes the negative side of that axis', () => {
+    const planes = cutawayPlanesFromState('octant', { ...sides, x: false }, offsets, 'z');
+    const removed = new THREE.Vector3(9, 21, 31); // x < 10 is now the removed side
+    for (const p of planes) expect(p.distanceToPoint(removed)).toBeLessThan(0);
+  });
+
+  it('quarter: 2 planes, skipping the uncut axis; cut is independent of the uncut coordinate', () => {
+    for (const uncut of ['x', 'y', 'z'] as const) {
+      const planes = cutawayPlanesFromState('quarter', sides, offsets, uncut);
+      expect(planes).toHaveLength(2);
+      const coords: Record<'x' | 'y' | 'z', number> = { x: 11, y: 21, z: 31 };
+      coords[uncut] = -999; // deep along the uncut axis — still inside the wedge
+      const probe = new THREE.Vector3(coords.x, coords.y, coords.z);
+      for (const p of planes) expect(p.distanceToPoint(probe)).toBeLessThan(0);
+    }
+  });
+
+  it('planes pass through their offsets', () => {
+    const [px] = cutawayPlanesFromState('octant', sides, offsets, 'z');
+    expect(Math.abs(px.distanceToPoint(new THREE.Vector3(10, -50, 99)))).toBeLessThan(1e-9);
   });
 });

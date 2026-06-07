@@ -27,3 +27,34 @@ export function sectionPlaneFromState(
   const point = AXIS_NORMAL[axis].clone().multiplyScalar(position);
   return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, point);
 }
+
+/**
+ * Build the 2 (quarter) or 3 (octant) cutaway planes.
+ *
+ * Used with `material.clipIntersection = true`, which drops a fragment only
+ * when it is behind ALL planes — so the removed region must be the
+ * INTERSECTION of the planes' NEGATIVE half-spaces (the corner wedge).
+ * Removing the +axis side ⇒ the normal points along -axis, so points with
+ * coordinate > offset sit at negative distance. `sides[axis] === true`
+ * removes the positive side; `false` flips to the negative side.
+ *
+ * Quarter mode cuts the two axes ≠ `quarterAxis`; the wedge runs the full
+ * length of the uncut axis. One plane per axis, always — two planes on the
+ * same axis (an empty intersection) is unrepresentable by construction.
+ */
+export function cutawayPlanesFromState(
+  shape: 'quarter' | 'octant',
+  sides: Readonly<Record<'x' | 'y' | 'z', boolean>>,
+  offsets: Readonly<Record<'x' | 'y' | 'z', number>>,
+  quarterAxis: 'x' | 'y' | 'z',
+): THREE.Plane[] {
+  const axes = (['x', 'y', 'z'] as const).filter(
+    (a) => shape === 'octant' || a !== quarterAxis,
+  );
+  return axes.map((axis) => {
+    const dir = AXIS_NORMAL[axis].clone();
+    const normal = sides[axis] ? dir.negate() : dir;
+    const point = AXIS_NORMAL[axis].clone().multiplyScalar(offsets[axis]);
+    return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, point);
+  });
+}
