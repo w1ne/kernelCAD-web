@@ -1,11 +1,15 @@
 // scripts/captureAnimationView.mjs
 //
-// Thin argv wrapper around the typed animation-capture engine
-// (src/agent/render/captureAnimation.ts). Reads the `animationView({...})`
-// record from a .kcad.ts script, samples its keyframe tracks via the shared
-// animationSampler, renders each frame in the demo-player page, and stitches
-// an MP4 via ffmpeg — or, with `--frames <dir>`, writes the PNG sequence
-// directly (no ffmpeg needed).
+// DEPRECATED — superseded by the first-class CLI command:
+//
+//   kernelcad animate <script.kcad.ts> [out.mp4] [--frames <dir>] [--fps <n>] [--json]
+//   (from source: npx tsx src/agent/cli/index.ts animate ...)
+//
+// This wrapper is kept working for the docs/plans that reference it; it now
+// delegates to the same `runAnimate` core the command runs, so behavior
+// is identical — including exit codes: 0 captured, 1 model at fault
+// (script/build error, no animationView record, unsolvable pose),
+// 2 environment/usage (ffmpeg missing, browser bootstrap, bad args).
 //
 // Usage:
 //   npx tsx scripts/captureAnimationView.mjs <script.kcad.ts> [outFile.mp4] [--frames <dir>]
@@ -14,9 +18,12 @@
 // Honors PW_CDP_URL (attach to an existing Chrome) and VITE_PORT.
 
 import { resolve } from 'node:path';
-import { captureAnimation } from '../src/agent/render/captureAnimation.ts';
+import { runAnimate } from '../src/agent/cli/commands/animate.ts';
+import { formatHuman } from '../src/shared/diagnostics/formatter.ts';
 
 const USAGE = `Usage: npx tsx scripts/captureAnimationView.mjs <script.kcad.ts> [outFile.mp4] [--frames <dir>]
+
+DEPRECATED: use \`kernelcad animate <script.kcad.ts> [out.mp4] [--frames <dir>]\` instead.
 
 Captures the script's animationView({...}) timeline.
 
@@ -66,37 +73,36 @@ if (positionals.length === 0) {
   process.exit(2);
 }
 
+console.error('DEPRECATED: scripts/captureAnimationView.mjs is superseded by `kernelcad animate <script.kcad.ts> [out.mp4] [--frames <dir>]` — delegating.');
+
 const scriptPath = resolve(positionals[0]);
 const framesDir = framesArg !== undefined ? resolve(framesArg) : undefined;
-// MP4 positional is ignored in frames mode.
+// MP4 positional is ignored in frames mode (historic wrapper contract; the
+// real command rejects the combination instead).
 const outPath = framesDir === undefined && positionals[1] !== undefined
   ? resolve(positionals[1])
   : undefined;
 
 console.log(`script:    ${scriptPath}`);
 const t0 = Date.now();
-const result = await captureAnimation({
-  scriptPath,
-  outPath,
-  framesDir,
+const { exitCode, result, summary } = await runAnimate({
+  file: scriptPath,
+  ...(outPath !== undefined ? { out: outPath } : {}),
+  ...(framesDir !== undefined ? { frames: framesDir } : {}),
   onProgress: (msg) => {
     process.stderr.write(`[${new Date().toISOString()}] ${msg}\n`);
   },
 });
 
-for (const d of result.diagnostics) {
-  const line = `[${d.severity.toUpperCase()}] ${d.code}: ${d.message}`;
-  if (d.severity === 'error') console.error(line);
-  else console.log(line);
-  if (d.hint) console.log(`  hint: ${d.hint}`);
+if (result.diagnostics.length > 0) {
+  console.log(formatHuman(result.diagnostics));
 }
 
 const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-if (result.ok) {
-  console.log(`Wrote ${result.outPath}`);
-  console.log(`frames=${result.frameCount}  durationMs=${result.durationMs}  fps=${result.fps}  (${elapsed}s)`);
-  process.exit(0);
+if (exitCode === 0) {
+  if (summary !== undefined) console.log(summary);
+  console.log(`(${elapsed}s)`);
 } else {
   console.error(`Capture failed after ${elapsed}s (frames captured: ${result.frameCount}).`);
-  process.exit(1);
 }
+process.exit(exitCode);

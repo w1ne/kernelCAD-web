@@ -12,6 +12,7 @@ import { TOOL_REGISTRY } from '../../src/agent/mcp/toolRegistry';
 
 // CLI subcommands (kept in sync with src/agent/cli/index.ts).
 const CLI_SUBCOMMANDS = new Set<string>([
+  'animate',
   'dfm',
   'evaluate',
   'export',

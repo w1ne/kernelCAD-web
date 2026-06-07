@@ -180,6 +180,7 @@ describe('captureAnimation', () => {
     expect(result.frameCount).toBe(0);
     expect(result.diagnostics).toHaveLength(1);
     expect(result.diagnostics[0].code).toBe('cli.invalid-args');
+    expect(result.failureKind).toBe('model');
     expect(result.diagnostics[0].message).toMatch(/no animationView/);
     expect(result.diagnostics[0].hint).toContain('animationView');
     expect(openPage).not.toHaveBeenCalled();
@@ -193,6 +194,7 @@ describe('captureAnimation', () => {
     expect(result.frameCount).toBe(0);
     expect(result.diagnostics.length).toBeGreaterThan(0);
     expect(result.diagnostics.some((d) => d.severity === 'error')).toBe(true);
+    expect(result.failureKind).toBe('model');
     expect(openPage).not.toHaveBeenCalled();
     expect(spawnFfmpeg).not.toHaveBeenCalled();
     expect(paramCtl.calls).toHaveLength(0);
@@ -208,6 +210,7 @@ describe('captureAnimation', () => {
     expect(result.durationMs).toBe(100);
     expect(result.fps).toBe(30);
     expect(result.diagnostics).toEqual([]);
+    expect(result.failureKind).toBeUndefined();
     // One PNG per frame went into ffmpeg stdin, then stdin was ended.
     expect(state.ffmpeg!.written).toHaveLength(3);
     expect(state.ffmpeg!.ended).toBe(true);
@@ -241,6 +244,7 @@ describe('captureAnimation', () => {
     expect(d).toBeDefined();
     expect(d!.message).toContain('tMs=50');
     expect(d!.message).toContain('synthetic solve failure');
+    expect(result.failureKind).toBe('model');
     expect(state.ffmpeg!.ended).toBe(true);
     expect(state.ffmpeg!.killed).toBe(true);
     expect(existsSync(outPath)).toBe(false); // partial artifact deleted
@@ -285,6 +289,7 @@ describe('captureAnimation', () => {
     const d = result.diagnostics.find((x) => x.code === 'cli.export-exception');
     expect(d).toBeDefined();
     expect(d!.message).toContain('exited with code 1');
+    expect(result.failureKind).toBe('environment');
     expect(existsSync(outPath)).toBe(false); // partial artifact deleted
     expect(close).toHaveBeenCalled();
   });
@@ -301,6 +306,7 @@ describe('captureAnimation', () => {
     expect(d).toBeDefined();
     expect(d!.message).toContain('EPIPE');
     expect(d!.message).toMatch(/encoder/i);
+    expect(result.failureKind).toBe('environment');
     // NOT misclassified as a solve/mesh/render failure.
     expect(result.diagnostics.some((x) => x.code === 'recompute.lowering.exception')).toBe(false);
     expect(state.ffmpeg!.killed).toBe(true);
@@ -317,6 +323,7 @@ describe('captureAnimation', () => {
     expect(result.frameCount).toBe(0);
     expect(result.diagnostics[0].code).toBe('cli.export-exception');
     expect(result.diagnostics[0].message).toMatch(/frames mode|--frames|framesDir/);
+    expect(result.failureKind).toBe('environment');
     expect(openPage).not.toHaveBeenCalled(); // availability detected FIRST
   });
 
@@ -332,6 +339,7 @@ describe('captureAnimation', () => {
     const bad = await captureAnimation({ scriptPath: animScript, fps: 0 }, makeDeps().deps);
     expect(bad.ok).toBe(false);
     expect(bad.diagnostics[0].code).toBe('cli.invalid-args');
+    expect(bad.failureKind).toBe('model');
     expect(bad.diagnostics[0].message).toMatch(/fps/);
   });
 

@@ -206,12 +206,13 @@ setCameraDistance(distance: number): CameraTargetHandle;
 
 // Declare a parameter sweep for offline kinematic-motion MP4 capture. The
 // script names a previously-declared `param()`, its start/end values, and
-// the animation duration in milliseconds. `scripts/captureAnimationView.mjs`
+// the animation duration in milliseconds. `kernelcad animate` (the
+// deprecated `scripts/captureAnimationView.mjs` wrapper delegates to it)
 // reads the resulting `animationView` virtual record and renders an MP4 by
 // sampling `ceil(durationMs / 1000 * fps)` frames across the sweep —
 // leveraging the per-session mesh cache so each frame's recompute is
 // ~5 ms warm. Virtual record (no OCCT geometry). Multiple calls register
-// multiple records; the capture script uses the last one. Validation
+// multiple records; the capture command uses the last one. Validation
 // errors (non-empty param, finite range, positive durationMs/fps) are
 // pushed as structured diagnostics on `handle.metadata.diagnostics`.
 animationView(spec: {

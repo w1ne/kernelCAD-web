@@ -95,6 +95,14 @@ export interface CaptureAnimationOpts {
   onProgress?: (msg: string) => void;
 }
 
+/** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP
+ *  surfaces map failures to exit codes without string-matching messages:
+ *  'model' = the script/model is at fault (build error, no animationView
+ *  record, bad record fps, a pose the kernel cannot solve/mesh/render);
+ *  'environment' = the surroundings are (ffmpeg missing or crashed, browser
+ *  bootstrap failure, frame output write failure). */
+export type CaptureFailureKind = 'model' | 'environment';
+
 export interface CaptureAnimationResult {
   ok: boolean;
   /** MP4 path (mp4 mode) or framesDir (PNG-sequence mode); set on success. */
@@ -106,6 +114,8 @@ export interface CaptureAnimationResult {
   /** Resolved frames-per-second the schedule was sampled at. */
   fps: number;
   diagnostics: CompilerDiagnostic[];
+  /** Set on every ok:false result; absent on success. */
+  failureKind?: CaptureFailureKind;
 }
 
 /** Minimal ffmpeg child-process surface the engine drives; lets unit tests
@@ -201,7 +211,7 @@ export async function captureAnimation(
     model = await buildModelFromFile({ file: scriptPath });
   } catch (e) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0,
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
       diagnostics: [diag(
         'cli.script-exception',
         `captureAnimation: building '${scriptPath}' failed: ${errMsg(e)}`,
@@ -219,7 +229,7 @@ export async function captureAnimation(
   const buildErrors = model.diagnostics.filter((d) => d.severity === 'error');
   if (buildErrors.length > 0) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0,
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
       diagnostics: withNextActions(model.diagnostics),
     };
   }
@@ -230,7 +240,7 @@ export async function captureAnimation(
   const animRecords = model.records.filter((r) => r.kind === 'animationView');
   if (animRecords.length === 0) {
     return {
-      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0,
+      ok: false, frameCount: 0, durationMs: 0, fps: opts.fps ?? 0, failureKind: 'model',
       diagnostics: [diag(
         'cli.invalid-args',
         `The script has no animationView({...}) record; nothing to capture: ${scriptPath}`,
@@ -248,7 +258,7 @@ export async function captureAnimation(
   const fps = opts.fps ?? metadata.fps;
   if (!Number.isFinite(fps) || fps <= 0) {
     return {
-      ok: false, frameCount: 0, durationMs: metadata.durationMs, fps,
+      ok: false, frameCount: 0, durationMs: metadata.durationMs, fps, failureKind: 'model',
       diagnostics: [...stashedWarns, diag(
         'cli.invalid-args',
         `captureAnimation: fps must be a finite number > 0 (got ${fps}).`,
@@ -268,7 +278,7 @@ export async function captureAnimation(
     initial = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
   } catch (e) {
     return {
-      ok: false, frameCount: 0, durationMs, fps,
+      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model',
       diagnostics: [...stashedWarns, diag(
         'recompute.lowering.exception',
         `captureAnimation: initial meshing failed: ${errMsg(e)}`,
@@ -278,7 +288,7 @@ export async function captureAnimation(
   }
   if (initial.failedFeatureIds.length > 0) {
     return {
-      ok: false, frameCount: 0, durationMs, fps,
+      ok: false, frameCount: 0, durationMs, fps, failureKind: 'model',
       diagnostics: [...stashedWarns, diag(
         'recompute.lowering.exception',
         `captureAnimation: ${initial.failedFeatureIds.length} feature(s) failed to compile: ${initial.failedFeatureIds.join(', ')}`,
@@ -323,7 +333,7 @@ export async function captureAnimation(
         ffmpeg = undefined;
         const enoent = (e as NodeJS.ErrnoException | null)?.code === 'ENOENT';
         return {
-          ok: false, frameCount: 0, durationMs, fps,
+          ok: false, frameCount: 0, durationMs, fps, failureKind: 'environment',
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             enoent
@@ -407,7 +417,7 @@ export async function captureAnimation(
       } catch (e) {
         await abortFfmpeg();
         return {
-          ok: false, frameCount: written, durationMs, fps,
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'model',
           diagnostics: [...stashedWarns, diag(
             'recompute.lowering.exception',
             `captureAnimation: frame ${i} (tMs=${frame.tMs}) failed during param-update/solve/mesh/render: ${errMsg(e)}. `
@@ -428,7 +438,7 @@ export async function captureAnimation(
       } catch (e) {
         await abortFfmpeg();
         return {
-          ok: false, frameCount: written, durationMs, fps,
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             framesDir !== undefined
@@ -458,7 +468,7 @@ export async function captureAnimation(
       if (code !== 0) {
         await rm(outPath, { force: true }).catch(() => undefined);
         return {
-          ok: false, frameCount: written, durationMs, fps,
+          ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
           diagnostics: [...stashedWarns, diag(
             'cli.export-exception',
             `ffmpeg exited with code ${code} while encoding ${outPath}; the partial MP4 was deleted.`,
@@ -477,7 +487,7 @@ export async function captureAnimation(
     // Unexpected non-frame failure (browser connect, page bootstrap, fs).
     await abortFfmpeg();
     return {
-      ok: false, frameCount: written, durationMs, fps,
+      ok: false, frameCount: written, durationMs, fps, failureKind: 'environment',
       diagnostics: [...stashedWarns, diag(
         'cli.export-exception',
         `captureAnimation: ${errMsg(e)}`,
