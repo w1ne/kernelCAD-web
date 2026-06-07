@@ -325,9 +325,20 @@ describe('render command', () => {
   });
 
   it('parseSectionFlag parses <axis>=<pos>', () => {
-    expect(parseSectionFlag('y=0')).toEqual({ axis: 'y', position: 0 });
-    expect(parseSectionFlag('z=10')).toEqual({ axis: 'z', position: 10 });
-    expect(parseSectionFlag('x=-2.5')).toEqual({ axis: 'x', position: -2.5 });
+    expect(parseSectionFlag('y=0')).toEqual({ axis: 'y', position: 0, positionRaw: '0' });
+    expect(parseSectionFlag('z=10')).toEqual({ axis: 'z', position: 10, positionRaw: '10' });
+    expect(parseSectionFlag('x=-2.5')).toEqual({ axis: 'x', position: -2.5, positionRaw: '-2.5' });
+  });
+
+  it('parseSectionFlag keeps raw digits verbatim where Number stringifies to exponent notation', () => {
+    // Number(1e21).toString() === '1e+21' — the demo-player `?section=` regex
+    // rejects exponent notation, so the URL must carry the raw digits.
+    const big = parseSectionFlag('z=1000000000000000000000');
+    expect(String(big.position)).toBe('1e+21');
+    expect(big.positionRaw).toBe('1000000000000000000000');
+    const tiny = parseSectionFlag('x=0.0000001');
+    expect(String(tiny.position)).toBe('1e-7');
+    expect(tiny.positionRaw).toBe('0.0000001');
   });
 
   it('parseSectionFlag throws on junk', () => {
@@ -344,6 +355,7 @@ describe('render command', () => {
     expect(flip).toBeDefined();
     expect(flip?.defaultValue).toBe(false);
     const inspect = cmd.commands.find((subcommand) => subcommand.name() === 'inspect');
+    expect(inspect).toBeDefined();
     expect(inspect?.options.find((o) => o.long === '--section')).toBeUndefined();
     expect(inspect?.options.find((o) => o.long === '--section-flip')).toBeUndefined();
   });
@@ -364,7 +376,7 @@ describe('render command', () => {
     expect(result.exitCode).toBe(0);
     expect(mockHeadlessRender).toHaveBeenCalledOnce();
     expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({
-      section: { axis: 'z', position: 10, flip: true },
+      section: { axis: 'z', position: 10, positionRaw: '10', flip: true },
     });
   });
 

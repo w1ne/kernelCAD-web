@@ -92,15 +92,24 @@ function buildObjectFilter(input: { focus?: string[]; hide?: string[] }): Headle
  * Accepts `x|y|z` `=` a decimal position (e.g. `z=10`, `x=-2.5`). Throws on
  * anything else so the caller's exit-1 try/catch (shared with
  * buildObjectFilter) rejects before the headless browser launches.
+ *
+ * `positionRaw` carries the validated digits verbatim for the demo-player
+ * URL: stringifying the Number instead would emit exponent notation for
+ * |pos| ≥ 1e21 or < 1e-6, which the page-side `?section=` regex rejects —
+ * producing a silently unclipped render.
  */
-export function parseSectionFlag(raw: string): { axis: 'x' | 'y' | 'z'; position: number } {
+export function parseSectionFlag(raw: string): {
+  axis: 'x' | 'y' | 'z';
+  position: number;
+  positionRaw: string;
+} {
   const m = /^([xyz])=(-?\d+(?:\.\d+)?)$/.exec(raw);
   if (!m) {
     throw new Error(
       `render: invalid --section value '${raw}'. Expected <axis>=<pos> with axis x, y, or z, e.g. --section z=10.`,
     );
   }
-  return { axis: m[1] as 'x' | 'y' | 'z', position: Number(m[2]) };
+  return { axis: m[1] as 'x' | 'y' | 'z', position: Number(m[2]), positionRaw: m[2] };
 }
 
 function normalizePatternList(values: readonly string[] | undefined): string[] {
@@ -238,7 +247,7 @@ function normalizeInspectChannels(values: readonly string[] | undefined): Headle
 export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
   const filePath = resolve(input.file);
   let objectFilter: HeadlessObjectFilter | undefined;
-  let section: { axis: 'x' | 'y' | 'z'; position: number; flip: boolean } | undefined;
+  let section: { axis: 'x' | 'y' | 'z'; position: number; positionRaw: string; flip: boolean } | undefined;
   try {
     objectFilter = buildObjectFilter(input);
     if (input.section !== undefined) {
