@@ -1,3 +1,9 @@
+// Per-part STL export (carousel v7.6.1) — full watertight export.
+//
+// NOTE: companion file partsExport.filters.test.ts was split out for CI
+// shard balance (per-file vitest sharding); it hosts the part-name
+// filter and not-found diagnostics tests against the same fixture.
+
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
@@ -23,25 +29,5 @@ describe('per-part STL export (carousel v7.6.1)', () => {
       expect(p.bytes.length, p.name).toBeGreaterThan(84);
       expect(p.report.ok, `${p.name}: ${p.report.openEdgeCount} open edges`).toBe(true);
     }
-  });
-
-  it('filters to requested part names', { timeout: 120_000 }, async () => {
-    const code = await readFile(FIXTURE, 'utf8');
-    const r = await runAndExportParts({
-      code, fileName: FIXTURE, scriptDir: dirname(FIXTURE), parts: ['cap', 'meter-disc'],
-    });
-    expect(r.parts.map(p => p.name).sort()).toEqual(['cap', 'meter-disc']);
-  });
-
-  it('unknown part name -> export.part.not-found listing valid names', { timeout: 120_000 }, async () => {
-    const code = await readFile(FIXTURE, 'utf8');
-    const r = await runAndExportParts({
-      code, fileName: FIXTURE, scriptDir: dirname(FIXTURE), parts: ['skrit'],
-    });
-    const diag = r.diagnostics.find(d => d.code === 'export.part.not-found');
-    expect(diag).toBeDefined();
-    expect(diag!.message).toContain('skrit');
-    expect(diag!.message).toContain('skirt'); // valid names listed
-    expect(r.parts).toEqual([]);
   });
 });
