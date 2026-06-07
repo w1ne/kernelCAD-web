@@ -72,3 +72,36 @@ describe('UIContext viewport background', () => {
         expect(result.current.viewportBackground).toBe('dark');
     });
 });
+
+describe('UIContext ground grid visibility', () => {
+    beforeEach(() => {
+        window.localStorage.clear();
+    });
+
+    it('defaults to visible', () => {
+        const { result } = renderHook(() => useUI(), { wrapper });
+        expect(result.current.gridVisible).toBe(true);
+    });
+
+    it('hides and persists across remount via localStorage', () => {
+        const { result, unmount } = renderHook(() => useUI(), { wrapper });
+
+        act(() => {
+            result.current.setGridVisible(false);
+        });
+
+        expect(result.current.gridVisible).toBe(false);
+        expect(window.localStorage.getItem('kernelcad:gridVisible')).toBe('false');
+
+        unmount();
+
+        const { result: next } = renderHook(() => useUI(), { wrapper });
+        expect(next.current.gridVisible).toBe(false);
+    });
+
+    it('treats any non-"false" stored value as visible', () => {
+        window.localStorage.setItem('kernelcad:gridVisible', 'garbage');
+        const { result } = renderHook(() => useUI(), { wrapper });
+        expect(result.current.gridVisible).toBe(true);
+    });
+});
