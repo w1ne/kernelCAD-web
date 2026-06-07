@@ -22,6 +22,7 @@ import {
   type EvaluateAndBuildResult,
 } from '../../../src/agent/cli/commands/evaluate';
 import type { DfmCheckReport } from '../../../src/modeling/runtime/dfm/runDfmChecks';
+import { measureMachineFactor } from './machineFactor';
 
 vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 
@@ -116,8 +117,17 @@ describe('carousel v7.6.1 — the shipped fix (strict)', () => {
     expect(skirt!.thinnestMm).toBeLessThan(0.05);
   });
 
-  it('full gate sweep stays inside the 10 s budget', () => {
-    expect(report761.timings.total).toBeLessThan(10_000);
+  it('full gate sweep stays inside the 10 s budget (reference-machine calibrated)', () => {
+    // The 10 s budget is a DESIGN budget defined on the reference machine
+    // (where this sweep measures ~6.7 s). CI runners are slower (2x+
+    // observed), so the raw number there is runner-hardware lottery, not a
+    // regression signal. machineFactor scales the budget by how much slower
+    // THIS machine runs a deterministic BVH-build + raycast reference
+    // workload than the frozen REF_BASELINE_MS — keeping the gate
+    // regression-sensitive everywhere. The factor never tightens below 1,
+    // so on the reference machine the gate stays exactly 10 s.
+    const machineFactor = measureMachineFactor();
+    expect(report761.timings.total).toBeLessThan(10_000 * machineFactor);
   });
 });
 
