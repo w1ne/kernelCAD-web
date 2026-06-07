@@ -31,7 +31,8 @@
 //   - build-time error diagnostics       → the model's own diagnostics,
 //                                          passed through
 //   - per-frame solve/mesh/render throw  → 'recompute.lowering.exception'
-//   - ffmpeg missing / encode failure    → 'cli.export-exception'
+//   - ffmpeg missing / encode failure /
+//     frame output write failure         → 'cli.export-exception'
 //
 // Per-frame failure containment: a frame whose param-update/solve/mesh/render
 // throws aborts the capture cleanly — ffmpeg stdin ended + process killed,
@@ -56,6 +57,7 @@ import type { AnimationViewMetadata } from '../../shared/intent/animationViewRec
 import { sampleTracks } from './animationSampler';
 import {
   DEFAULT_RENDER_BASE_URL,
+  HEADLESS_VIEWPORT,
   loadFeatureMeshesIntoPage,
   openDemoPlayerPage,
   type DemoPlayerPageHandle,
@@ -87,10 +89,6 @@ export interface CaptureAnimationOpts {
   framesDir?: string;
   /** Override the animationView record's fps. */
   fps?: number;
-  /** Capture width in pixels; default 1920. */
-  viewportWidth?: number;
-  /** Capture height in pixels; default 1080. */
-  viewportHeight?: number;
   /** Progress sink for long captures (build done, schedule, page ready,
    *  every 10th frame, encode done, total). Default: no-op. The script
    *  wrapper passes one that writes timestamped lines to stderr. */
@@ -135,6 +133,11 @@ function defaultSpawnFfmpeg(args: readonly string[]): FfmpegProcessLike {
   const proc = spawn('ffmpeg', [...args], { stdio: ['pipe', 'ignore', 'pipe'] });
   // Drain stderr so the encoder never blocks on a full pipe buffer.
   proc.stderr?.on('data', () => undefined);
+  // An encoder dying mid-encode delivers EPIPE on stdin; without a stream
+  // 'error' listener Node crashes the whole process before the typed
+  // failure can be returned. The per-write callback already routes the
+  // same failure into the frame loop, so the stream-level event is noise.
+  proc.stdin?.on('error', () => undefined);
   return proc as unknown as FfmpegProcessLike;
 }
 
@@ -187,8 +190,6 @@ export async function captureAnimation(
   const t0 = Date.now();
 
   const scriptPath = resolve(opts.scriptPath);
-  const width = opts.viewportWidth ?? 1920;
-  const height = opts.viewportHeight ?? 1080;
   const framesDir = opts.framesDir !== undefined ? resolve(opts.framesDir) : undefined;
   const stem = basename(scriptPath).replace(/\.kcad\.ts$/, '').replace(/\.ts$/, '');
   const outPath = framesDir
@@ -346,7 +347,11 @@ export async function captureAnimation(
     const port = process.env.VITE_PORT;
     pageHandle = await openPage({
       baseUrl: port !== undefined ? `http://localhost:${port}` : DEFAULT_RENDER_BASE_URL,
-      viewport: { width, height },
+      // DemoPlayer's headless ViewerPane is fixed at 1920×1080; any other
+      // viewport clips the canvas (headlessRender captures the full pane and
+      // crops afterwards). Animation capture always emits 1920×1080 frames,
+      // so CaptureAnimationOpts deliberately has no viewport options.
+      viewport: HEADLESS_VIEWPORT,
       extraQueryParts: ['nowatermark=1'],
       cdpUrl: process.env.PW_CDP_URL ?? 'http://127.0.0.1:9222',
       gotoTimeoutMs: 90_000,
@@ -377,9 +382,16 @@ export async function captureAnimation(
     await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
     await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
 
-    // 7. Frame loop with per-frame failure containment.
+    // 7. Frame loop with per-frame failure containment. Two separate
+    //    try-blocks so the diagnostic names the right subsystem: the
+    //    param-update/solve/mesh/render phase reports
+    //    'recompute.lowering.exception'; the frame OUTPUT write (ffmpeg
+    //    stdin / frame PNG file) reports 'cli.export-exception' — an
+    //    encoder dying mid-encode surfaces as an EPIPE on the write
+    //    callback, which is not a kernel failure.
     for (let i = 0; i < frames.length; i += 1) {
       const frame = frames[i];
+      let png: Buffer;
       try {
         const updates: ParamUpdateEdit[] = Object.entries(frame.values)
           .map(([name, value]) => ({ name, value }));
@@ -391,17 +403,7 @@ export async function captureAnimation(
         await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
         // Tick the AnimationEngine so Three.js renders the updated scene.
         await page.evaluate(() => window.__demoPlayer!.advance(16));
-        const png = await page.screenshot({ type: 'png' });
-        if (framesDir !== undefined) {
-          await writeFile(join(framesDir, animationFrameFileName(i)), png);
-        } else {
-          await new Promise<void>((res, rej) =>
-            ffmpeg!.stdin.write(png, (err) => (err ? rej(err) : res())));
-        }
-        written += 1;
-        if (written % 10 === 0 || written === frames.length) {
-          onProgress(`frame ${written}/${frames.length} (tMs=${Math.round(frame.tMs)}) +${Date.now() - t0}ms`);
-        }
+        png = await page.screenshot({ type: 'png' });
       } catch (e) {
         await abortFfmpeg();
         return {
@@ -415,6 +417,32 @@ export async function captureAnimation(
             'Fix the underlying solve/mesh error in the message, or adjust the animationView keyframes to avoid the failing pose.',
           )],
         };
+      }
+      try {
+        if (framesDir !== undefined) {
+          await writeFile(join(framesDir, animationFrameFileName(i)), png);
+        } else {
+          await new Promise<void>((res, rej) =>
+            ffmpeg!.stdin.write(png, (err) => (err ? rej(err) : res())));
+        }
+      } catch (e) {
+        await abortFfmpeg();
+        return {
+          ok: false, frameCount: written, durationMs, fps,
+          diagnostics: [...stashedWarns, diag(
+            'cli.export-exception',
+            framesDir !== undefined
+              ? `captureAnimation: writing frame ${i} (tMs=${frame.tMs}) to ${framesDir} failed: ${errMsg(e)}. The ${written} frame PNG(s) already written were kept.`
+              : `captureAnimation: the ffmpeg encoder rejected the frame ${i} (tMs=${frame.tMs}) stdin write: ${errMsg(e)}. The encoder likely crashed mid-encode; the partial MP4 was deleted.`,
+            framesDir !== undefined
+              ? 'Check the frames directory is writable and has free space, then re-run.'
+              : 'Re-run in frames mode (framesDir / --frames <dir>) to bypass the encoder, or read the ffmpeg error and retry.',
+          )],
+        };
+      }
+      written += 1;
+      if (written % 10 === 0 || written === frames.length) {
+        onProgress(`frame ${written}/${frames.length} (tMs=${Math.round(frame.tMs)}) +${Date.now() - t0}ms`);
       }
     }
 

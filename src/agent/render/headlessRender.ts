@@ -144,7 +144,10 @@ export interface HeadlessRenderResult {
   objectVisibility?: HeadlessObjectVisibility;
 }
 
-const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
+/** The demo-player's headless ViewerPane is fixed at this size; capturing
+ *  any other viewport clips the canvas. Static renders capture at this size
+ *  then crop/resize; animation capture emits frames at exactly this size. */
+export const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
 
 /** Single source of truth for the studio dev-server URL. The CLI render
  *  commands use this as the `--base-url` option default; no other port
@@ -175,8 +178,9 @@ export interface DemoPlayerPageOpts {
 
 export interface DemoPlayerPageHandle {
   page: Page;
-  /** True when attached to an existing Chrome over CDP. `close()` then only
-   *  disconnects — it does not kill the user's browser. */
+  /** True when attached to an existing Chrome over CDP. `close()` then
+   *  closes the capture tab and disconnects — it does not kill the user's
+   *  browser. */
   attachedOverCdp: boolean;
   /** Close (or disconnect from) the browser. Tolerant of the known
    *  timeout-on-close issue (mirrors captureDemo): races a 3 s timer. */
@@ -199,12 +203,20 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
     ({ chromium } = await import('playwright'));
   } catch {
     throw new Error(
-      "kernelcad render requires 'playwright'. Install with: npm install playwright && npx playwright install chromium",
+      "kernelcad render and animation capture require 'playwright'. Install with: npm install playwright && npx playwright install chromium",
     );
   }
   let browser: Browser | undefined;
   let attachedOverCdp = false;
-  const closeBrowser = async (): Promise<void> => {
+  let page: Page | undefined;
+  const closeHandle = async (): Promise<void> => {
+    // CDP-attached: the page lives in the user's running Chrome and
+    // disconnecting would leave it open — close it first so every capture
+    // doesn't leak a 1920×1080 tab. Fresh-launch path skips this:
+    // browser.close() tears the whole headless process down.
+    if (attachedOverCdp && page) {
+      await page.close().catch(() => undefined);
+    }
     if (!browser) return;
     await Promise.race([
       browser.close(),
@@ -230,7 +242,7 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
       browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
       context = await browser.newContext({ viewport: opts.viewport });
     }
-    const page = await context!.newPage();
+    page = await context!.newPage();
     // Pin the screenshot size regardless of the attached Chrome window size.
     await page.setViewportSize(opts.viewport);
     if (opts.pageDefaultTimeoutMs !== undefined) page.setDefaultTimeout(opts.pageDefaultTimeoutMs);
@@ -245,9 +257,9 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
     await page.waitForFunction(() => window.__demoPlayer !== undefined, {
       timeout: opts.readyTimeoutMs ?? 15_000,
     });
-    return { page, attachedOverCdp, close: closeBrowser };
+    return { page, attachedOverCdp, close: closeHandle };
   } catch (e) {
-    await closeBrowser();
+    await closeHandle();
     throw e;
   }
 }

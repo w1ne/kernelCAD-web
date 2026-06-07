@@ -97,8 +97,15 @@ class FakeFfmpeg extends EventEmitter {
   ended = false;
   killed = false;
   exitCode = 0;
+  /** When ≥ 0, the write at this 0-based index fails via the callback —
+   *  the EPIPE shape a real encoder produces when it dies mid-encode. */
+  failWriteAt = -1;
   stdin = {
     write: (chunk: Buffer, cb: (err?: Error | null) => void): boolean => {
+      if (this.written.length === this.failWriteAt) {
+        cb(new Error('write EPIPE'));
+        return false;
+      }
       this.written.push(chunk);
       cb(null);
       return true;
@@ -127,16 +134,21 @@ class FakeFfmpeg extends EventEmitter {
   }
 }
 
-function makeDeps(overrides: Partial<CaptureAnimationDeps> = {}) {
+function makeDeps(
+  overrides: Partial<CaptureAnimationDeps> = {},
+  configureFfmpeg?: (f: FakeFfmpeg) => void,
+) {
   const { handle, page, close } = makeFakePage();
   // The fake emits 'spawn'/'error' one microtask after construction, so it
   // MUST be constructed inside the spawn hook (the engine attaches its
   // listeners right after calling it) — an eagerly-built instance would
-  // fire before anyone listens.
+  // fire before anyone listens. `configureFfmpeg` runs there too, so tests
+  // can pre-set exitCode / failWriteAt before any frame is written.
   const state: { ffmpeg?: FakeFfmpeg } = {};
   const openPage = vi.fn(async () => handle);
   const spawnFfmpeg = vi.fn(() => {
     state.ffmpeg = new FakeFfmpeg();
+    configureFfmpeg?.(state.ffmpeg);
     return state.ffmpeg as unknown as FfmpegProcessLike;
   });
   const deps: CaptureAnimationDeps = { openPage, spawnFfmpeg, ...overrides };
@@ -258,6 +270,42 @@ describe('captureAnimation', () => {
     expect(result.diagnostics[0].message).toContain('tMs=100');
     expect(result.diagnostics[0].message).toContain('were kept');
     expect(readdirSync(framesDir).sort()).toEqual(['frame-0000.png', 'frame-0001.png']);
+  });
+
+  it('ffmpeg exits non-zero at finalize → ok:false with cli.export-exception; mp4 deleted', async () => {
+    const { deps, state, close } = makeDeps({}, (f) => { f.exitCode = 1; });
+    const outPath = join(tmp, 'encode-fail.mp4');
+    // Simulate the encoder having written the (corrupt) file before exiting 1.
+    writeFileSync(outPath, 'corrupt-mp4-bytes');
+    const result = await captureAnimation({ scriptPath: animScript, outPath }, deps);
+    expect(result.ok).toBe(false);
+    expect(result.outPath).toBeUndefined();
+    expect(result.frameCount).toBe(3); // every frame was captured fine
+    expect(state.ffmpeg!.written).toHaveLength(3);
+    const d = result.diagnostics.find((x) => x.code === 'cli.export-exception');
+    expect(d).toBeDefined();
+    expect(d!.message).toContain('exited with code 1');
+    expect(existsSync(outPath)).toBe(false); // partial artifact deleted
+    expect(close).toHaveBeenCalled();
+  });
+
+  it('ffmpeg stdin write failure mid-encode → cli.export-exception (not a kernel error); mp4 deleted', async () => {
+    const { deps, state, close } = makeDeps({}, (f) => { f.failWriteAt = 1; });
+    const outPath = join(tmp, 'epipe.mp4');
+    writeFileSync(outPath, 'partial-mp4-bytes');
+    const result = await captureAnimation({ scriptPath: animScript, outPath }, deps);
+    expect(result.ok).toBe(false);
+    expect(result.outPath).toBeUndefined();
+    expect(result.frameCount).toBe(1); // only frame 0's write succeeded
+    const d = result.diagnostics.find((x) => x.code === 'cli.export-exception');
+    expect(d).toBeDefined();
+    expect(d!.message).toContain('EPIPE');
+    expect(d!.message).toMatch(/encoder/i);
+    // NOT misclassified as a solve/mesh/render failure.
+    expect(result.diagnostics.some((x) => x.code === 'recompute.lowering.exception')).toBe(false);
+    expect(state.ffmpeg!.killed).toBe(true);
+    expect(existsSync(outPath)).toBe(false);
+    expect(close).toHaveBeenCalled();
   });
 
   it('ffmpeg ENOENT in mp4 mode → ok:false before any browser; message suggests frames mode', async () => {
