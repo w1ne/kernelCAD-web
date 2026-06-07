@@ -47,6 +47,7 @@ describe('SectionPanel cutaway controls', () => {
     expect(screen.getByTestId('section-offset-y')).toBeTruthy();
     expect(screen.queryByTestId('section-offset-z')).toBeNull();
     fireEvent.click(screen.getByTestId('section-around-x'));
+    expect(shellStore.getSnapshot().sectionQuarterAxis).toBe('x');
     expect(screen.queryByTestId('section-offset-x')).toBeNull();
     expect(screen.getByTestId('section-offset-z')).toBeTruthy();
   });
