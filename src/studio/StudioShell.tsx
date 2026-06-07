@@ -30,7 +30,7 @@ import { useProject } from './context/ProjectContext';
  */
 export function StudioShell() {
     const workbench = useWorkbench();
-    const { agentRailOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
+    const { agentRailOpen, inspectorOpen, selectedFeatureId, markingMode, sectionMode } = useShellStore();
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -95,6 +95,10 @@ export function StudioShell() {
     const handleToggleAgentRail = useCallback(() => {
         shellStore.setAgentRailOpen(!agentRailOpen);
     }, [agentRailOpen]);
+
+    const handleToggleInspector = useCallback(() => {
+        shellStore.toggleInspectorOpen();
+    }, []);
 
     const [referenceImagesVisible, setReferenceImagesVisible] = useState(true);
     const referenceImagesPresent = useMemo(
@@ -190,6 +194,8 @@ export function StudioShell() {
                 onToggleMarkingMode={handleToggleMarkingMode}
                 sectionMode={sectionMode}
                 onToggleSectionMode={handleToggleSectionMode}
+                inspectorOpen={inspectorOpen}
+                onToggleInspector={handleToggleInspector}
             />
 
             <div className="flex-1 flex overflow-hidden relative">
