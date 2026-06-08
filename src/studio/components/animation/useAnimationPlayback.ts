@@ -79,7 +79,10 @@ export interface UseAnimationPlaybackOptions {
      *  metadata.tracks, leaving the key unchanged and the stale bake playing
      *  pre-edit transforms. The player's OWN kernel writes (the bake's trailing
      *  relower + the pause/scrub-sync edit) are excluded from invalidation (see
-     *  `selfEditsRef`) so they don't trigger a pointless re-bake loop. */
+     *  `settledSelfCreditsRef`) so they don't trigger a pointless re-bake loop.
+     *  Foreign edits are NEVER mis-credited as self: a self-credit is registered
+     *  only once its write has settled, so an interleaved foreign relower always
+     *  invalidates (worst case: a redundant re-bake, never a stale serve). */
     kernelEpoch?: number;
 }
 
@@ -237,15 +240,25 @@ export function useAnimationPlayback(
     const bakeFetcherRef = useRef(bakeFetcher);
     useEffect(() => { bakeFetcherRef.current = bakeFetcher; });
 
-    // Count of kernel relowers the PLAYER itself caused that have not yet been
-    // observed as epoch bumps. The player's own writes — the bake's single
-    // trailing relower (after restoring the pre-bake pose) and the
-    // pause/scrub/end-sync `updateParam` — each bump the epoch, but those must
-    // NOT invalidate the bake (re-baking on a self-edit would loop: bake →
-    // trailing relower → epoch bump → invalidate → re-bake …). Each such
-    // self-edit increments this; the epoch-invalidation effect consumes one
-    // pending self-edit per bump instead of invalidating.
-    const pendingSelfEditsRef = useRef(0);
+    // Number of player-caused relowers that have SETTLED (their write completed)
+    // but whose matching epoch bump has not yet been observed. The player's own
+    // writes — the bake's single trailing relower (after restoring the pre-bake
+    // pose) and the pause/scrub/end-sync `updateParam` — each bump the epoch,
+    // but those must NOT invalidate the bake (re-baking on a self-edit would
+    // loop: bake → trailing relower → epoch bump → invalidate → re-bake …).
+    //
+    // INVARIANT (no stale serve): a self-credit is registered ONLY once its
+    // write has settled — i.e. the server has provably processed the write and
+    // therefore already emitted its relower onto the (ordered) SSE stream. A
+    // FOREIGN edit's write is never issued by the player, so it never settles
+    // here. Consequently a foreign relower that interleaves BEFORE a still-
+    // pending self-write settles finds NO outstanding credit and invalidates
+    // (bias-to-rebake). The only failure mode is a redundant re-bake when a
+    // self-write's settlement and its epoch bump momentarily disagree — never a
+    // stale bake being served. Credits are NOT pre-registered at write-issue
+    // time (the old, fungible count scheme), which is what let a foreign bump be
+    // mis-credited as self. See the I3-race test.
+    const settledSelfCreditsRef = useRef(0);
 
     const bakeKey = useMemo(() => {
         if (!metadata || !sessionToken) return null;
@@ -280,26 +293,39 @@ export function useAnimationPlayback(
         bakeKeyRef.current = bakeKey;
     }, [bakeKey, invalidateBake]);
 
-    // Invalidate the cached bake when the kernel-state epoch advances —
-    // UNLESS the advance was caused by the player's own kernel write (tracked
-    // by `pendingSelfEditsRef`). A foreign edit (Params-tab change that re-poses
-    // a non-animated mate or changes geometry) leaves the timeline key
-    // unchanged but makes the baked transforms stale; this picks it up. The
-    // re-bake happens lazily on the next play/scrub, never mid-loop.
+    // Invalidate the cached bake when the kernel-state epoch advances — UNLESS
+    // the advance is fully covered by player-caused relowers that have already
+    // SETTLED (tracked by `settledSelfCreditsRef`). A foreign edit (Params-tab
+    // change that re-poses a non-animated mate or changes geometry) leaves the
+    // timeline key unchanged but makes the baked transforms stale; this picks it
+    // up. The re-bake happens lazily on the next play/scrub, never mid-loop.
+    //
+    // BIAS-TO-REBAKE: each observed bump is matched against ONE settled credit
+    // in arrival order. The instant a bump arrives with no settled credit
+    // available, it is treated as foreign and the bake is invalidated — and ALL
+    // remaining credits are discarded, so a late-settling self bump can never
+    // "un-invalidate" a bake the foreign edit already poisoned. Because foreign
+    // writes never settle here, a foreign bump that interleaves before a pending
+    // self-write settles always lands in the no-credit branch. The worst case is
+    // a redundant re-bake (when a credit settles a beat after its bump); a stale
+    // serve is impossible.
     useEffect(() => {
         if (kernelEpoch === epochRef.current) return;
         const delta = kernelEpoch - epochRef.current;
         epochRef.current = kernelEpoch;
-        // Consume self-originated bumps first; only a NET foreign bump
-        // invalidates. (Bumps are monotonic, so delta is the number of
-        // relowers since last observed.)
-        if (pendingSelfEditsRef.current >= delta) {
-            pendingSelfEditsRef.current -= delta;
+        if (delta <= 0) return; // epoch is monotonic; ignore non-advances
+        const credits = settledSelfCreditsRef.current;
+        if (delta <= credits) {
+            // Every bump in this advance is covered by a settled self-credit.
+            settledSelfCreditsRef.current = credits - delta;
             return;
         }
-        const foreign = delta - pendingSelfEditsRef.current;
-        pendingSelfEditsRef.current = 0;
-        if (foreign > 0) invalidateBake();
+        // At least one bump has no settled credit → a foreign edit is present.
+        // Invalidate and discard ALL remaining credits (a foreign edit poisons
+        // the whole bake; surviving credits would only risk a future false
+        // cache-hit).
+        settledSelfCreditsRef.current = 0;
+        invalidateBake();
     }, [kernelEpoch, invalidateBake]);
 
     // Fetch (or reuse) the bake for the current key. Single-flight: a second
@@ -316,9 +342,11 @@ export function useAnimationPlayback(
                 const baked = await bakeFetcherRef.current(token);
                 // A completed bake restores the pre-bake pose with ONE trailing
                 // (non-silent) relower — a self-edit that must not invalidate
-                // this very bake. Account for it BEFORE storing the result so
-                // the epoch bump that follows is consumed, not acted on.
-                pendingSelfEditsRef.current += 1;
+                // this very bake. The fetch has resolved, so that relower has
+                // already been emitted on the SSE stream: register a SETTLED
+                // self-credit BEFORE storing the result so the epoch bump that
+                // follows is matched, not acted on.
+                settledSelfCreditsRef.current += 1;
                 if (!mountedRef.current) return null;
                 bakeRef.current = baked;
                 setBakeFrames(baked.frames);
@@ -366,15 +394,18 @@ export function useAnimationPlayback(
         const batch = sampleBatch(at);
         if (batch.length === 0) return;
         // This is a player-originated kernel write — it relowers ONE (the
-        // displayed pose) and bumps the kernel epoch. Account for it so the
-        // epoch-invalidation effect consumes the bump instead of re-baking.
-        pendingSelfEditsRef.current += 1;
-        fn(batch).catch((err: unknown) => {
-            // The relower never fired (the edit failed), so don't leave a
-            // phantom self-edit credit that would swallow a later foreign bump.
-            pendingSelfEditsRef.current = Math.max(0, pendingSelfEditsRef.current - 1);
-            console.warn('[AnimationTab] pause-sync updateParam failed', err, batch);
-        });
+        // displayed pose) and bumps the kernel epoch. Register the self-credit
+        // ONLY once the write SETTLES (the promise resolves), never optimistically
+        // at issue time: until the server has processed the write its relower has
+        // not been emitted, so a FOREIGN relower interleaving in that window must
+        // invalidate (bias-to-rebake) rather than be swallowed by a phantom
+        // credit. On failure no relower fired, so no credit is registered.
+        fn(batch).then(
+            () => { settledSelfCreditsRef.current += 1; },
+            (err: unknown) => {
+                console.warn('[AnimationTab] pause-sync updateParam failed', err, batch);
+            },
+        );
     }, [sampleBatch]);
 
     // --- rAF clock (absolute wall-time anchoring) -----------------------------
