@@ -69,3 +69,41 @@ export function rewritePath(localPath: string, base: string): string {
   if (base === '') return localPath;
   return base + localPath.replace(/^\/__kernelcad/, '');
 }
+
+/** Extracts the raw Supabase JWT from an `apiCall()` headers map, or
+ *  `undefined` when unsigned-in (no `Authorization` header). Lets SSE callers
+ *  reuse the exact token every other Studio fetch sends as a bearer header. */
+export function bearerToken(headers: Record<string, string>): string | undefined {
+  const auth = headers.Authorization;
+  if (!auth) return undefined;
+  const m = /^Bearer\s+(.+)$/.exec(auth);
+  return m ? m[1] : undefined;
+}
+
+/** Builds the `/__kernelcad/events` SSE URL.
+ *
+ *  `EventSource` cannot carry custom headers, so the signed-in path cannot
+ *  send `Authorization: Bearer <jwt>` the way every other Studio fetch does.
+ *  Instead we append the JWT as an `access_token` query param, which the
+ *  hosted server's injected `authenticate` hook validates (see
+ *  `eventsEndpoint.ts`). When `jwt` is absent (local vite dev, unsigned-in)
+ *  the param is omitted and behavior is bit-for-bit identical to today.
+ *
+ *  `base` is routed through `rewritePath` so signed-in users hit the hosted
+ *  endpoint and unsigned-in users hit the same-origin vite middleware.
+ *
+ *  Security note: the `access_token` rides in the query string and can land
+ *  in access logs. Accepted for now — it is the short-lived Supabase JWT, and
+ *  the `session` token is already an unguessable per-user randomUUID. */
+export function buildEventsUrl(
+  base: string,
+  sessionToken: string,
+  jwt?: string,
+): string {
+  let url = rewritePath(
+    `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`,
+    base,
+  );
+  if (jwt) url += `&access_token=${encodeURIComponent(jwt)}`;
+  return url;
+}

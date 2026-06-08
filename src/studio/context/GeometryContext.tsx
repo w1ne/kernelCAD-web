@@ -6,7 +6,7 @@ import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../modeling/
 import type { SerializedParamEntry, SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev, needsFullKernel, type BackendMeshPayload } from '../scriptSource';
-import { apiCall, rewritePath } from '../api/apiBase';
+import { apiCall, rewritePath, bearerToken, buildEventsUrl } from '../api/apiBase';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -599,16 +599,16 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
             // the live-interference channel.)
             requestMeshAndReview(studioScript, sessionToken, { keepExistingOnError: true, liveReview: true });
         };
-        // S1: route the SSE URL through apiCall so signed-in users hit the
-        // hosted /events endpoint. (EventSource can't carry custom headers,
-        // so signed-in auth for SSE is an S3 concern — for unsigned-in the
-        // base is '' and behavior is bit-for-bit identical to today.)
-        void apiCall().then(({ base }) => {
+        // Route the SSE URL through apiCall so signed-in users hit the hosted
+        // /events endpoint. EventSource can't carry custom headers, so the
+        // Supabase JWT is appended as an `access_token` query param (the
+        // hosted server validates it via its injected authenticate hook; see
+        // eventsEndpoint.ts). For unsigned-in local dev the base is '' and the
+        // JWT is undefined, so buildEventsUrl omits access_token and behavior
+        // is bit-for-bit identical to today.
+        void apiCall().then(({ base, headers }) => {
             if (cancelled) return;
-            const url = rewritePath(
-                `/__kernelcad/events?session=${encodeURIComponent(sessionToken)}`,
-                base,
-            );
+            const url = buildEventsUrl(base, sessionToken, bearerToken(headers));
             es = new EventSource(url);
             es.addEventListener('relower', onRelower);
             // The browser auto-reconnects on transient drops; we only log here.

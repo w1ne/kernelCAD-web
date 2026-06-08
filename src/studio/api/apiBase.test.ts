@@ -12,7 +12,7 @@ vi.mock('../../funnel/lib/supabaseClient', () => ({
   getSupabase: () => getSupabaseMock(),
 }));
 
-import { apiCall, rewritePath } from './apiBase';
+import { apiCall, rewritePath, bearerToken, buildEventsUrl } from './apiBase';
 
 describe('apiCall', () => {
   beforeEach(() => {
@@ -93,5 +93,47 @@ describe('rewritePath', () => {
         'https://app.kernelcad.com/api/v1',
       ),
     ).toBe('https://app.kernelcad.com/api/v1/mesh?script=foo.kcad.ts');
+  });
+});
+
+describe('bearerToken', () => {
+  it('extracts the JWT from an Authorization header', () => {
+    expect(bearerToken({ Authorization: 'Bearer tok-xyz' })).toBe('tok-xyz');
+  });
+
+  it('returns undefined when no Authorization header is present (unsigned-in)', () => {
+    expect(bearerToken({})).toBeUndefined();
+  });
+
+  it('returns undefined when the header is not a Bearer scheme', () => {
+    expect(bearerToken({ Authorization: 'Basic abc' })).toBeUndefined();
+  });
+});
+
+describe('buildEventsUrl', () => {
+  it('omits access_token when no JWT is supplied (unsigned-in / local vite)', () => {
+    expect(buildEventsUrl('', 'sess-1')).toBe(
+      '/__kernelcad/events?session=sess-1',
+    );
+  });
+
+  it('appends access_token when a JWT is supplied (signed-in)', () => {
+    expect(buildEventsUrl('', 'sess-1', 'jwt-abc')).toBe(
+      '/__kernelcad/events?session=sess-1&access_token=jwt-abc',
+    );
+  });
+
+  it('routes the base through rewritePath for the hosted endpoint', () => {
+    expect(
+      buildEventsUrl('https://app.kernelcad.com/api/v1', 'sess-1', 'jwt-abc'),
+    ).toBe(
+      'https://app.kernelcad.com/api/v1/events?session=sess-1&access_token=jwt-abc',
+    );
+  });
+
+  it('url-encodes the session token and the JWT', () => {
+    expect(buildEventsUrl('', 'a/b c', 'x+y/z')).toBe(
+      '/__kernelcad/events?session=a%2Fb%20c&access_token=x%2By%2Fz',
+    );
   });
 });
